@@ -141,7 +141,7 @@
       'ToTLinuxMSan': 'clang_tot_msan_release',
       'ToTLinuxTSan': 'clang_tot_tsan_release',
       'ToTLinuxThinLTO': 'clang_tot_release_minimal_symbols_thin_lto_static',
-      'ToTLinuxUBSanVptr': 'clang_tot_edge_ubsan_no_recover_hack_static_release',
+      'ToTLinuxUBSanVptr': 'clang_tot_ubsan_no_recover_hack_static_release',
       'ToTMac': 'clang_tot_minimal_symbols_shared_release',
       'ToTMacOfficial': 'clang_tot_official',
       'ToTMacCoverage': 'clang_tot_coverage_minimal_symbols_shared_release',
@@ -163,14 +163,14 @@
     },
 
     'chromium.fuzz': {
-      'ASAN Debug': 'asan_lsan_edge_debug_bot',
-      'ASAN Release Media': 'asan_lsan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot',
-      'ASAN Release': 'asan_lsan_edge_fuzzer_v8_heap_release_bot',
-      'ASan Debug (32-bit x86 with V8-ARM)': 'asan_edge_v8_heap_debug_bot_hybrid',
-      'ASan Release (32-bit x86 with V8-ARM)': 'asan_edge_fuzzer_v8_heap_release_bot_hybrid',
-      'ASan Release Media (32-bit x86 with V8-ARM)': 'asan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid',
+      'ASAN Debug': 'asan_lsan_debug_bot',
+      'ASAN Release Media': 'asan_lsan_fuzzer_v8_heap_chromeos_codecs_release_bot',
+      'ASAN Release': 'asan_lsan_fuzzer_v8_heap_release_bot',
+      'ASan Debug (32-bit x86 with V8-ARM)': 'asan_v8_heap_debug_bot_hybrid',
+      'ASan Release (32-bit x86 with V8-ARM)': 'asan_fuzzer_v8_heap_release_bot_hybrid',
+      'ASan Release Media (32-bit x86 with V8-ARM)': 'asan_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid',
       'Afl Upload Linux ASan': 'afl_asan_release_bot',
-      'ChromiumOS ASAN Release': 'chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot',
+      'ChromiumOS ASAN Release': 'chromeos_asan_lsan_fuzzer_v8_heap_release_bot',
       'Libfuzzer Upload Chrome OS ASan': 'libfuzzer_chromeos_asan_release_bot',
       'Libfuzzer Upload Linux32 ASan': 'libfuzzer_asan_release_bot_x86',
       'Libfuzzer Upload Linux32 ASan Debug': 'libfuzzer_asan_debug_bot_x86',
@@ -184,15 +184,15 @@
       'Libfuzzer Upload Linux UBSan': 'libfuzzer_ubsan_release_bot',
       'Libfuzzer Upload Mac ASan': 'libfuzzer_mac_asan_release_bot',
       'Libfuzzer Upload Windows ASan': 'libfuzzer_windows_asan_release_bot',
-      'MSAN Release (chained origins)': 'msan_edge_release_bot',
-      'MSAN Release (no origins)': 'msan_no_origins_edge_release_bot',
-      'Mac ASAN Debug': 'asan_disable_nacl_edge_fuzzer_v8_heap_debug_symbols_static_bot',
-      'Mac ASAN Release Media': 'asan_disable_nacl_edge_fuzzer_v8_heap_chrome_with_codecs_release_bot',
-      'Mac ASAN Release': 'asan_disable_nacl_edge_fuzzer_v8_heap_release_bot',
+      'MSAN Release (chained origins)': 'msan_release_bot',
+      'MSAN Release (no origins)': 'msan_no_origins_release_bot',
+      'Mac ASAN Debug': 'asan_disable_nacl_fuzzer_v8_heap_debug_symbols_static_bot',
+      'Mac ASAN Release Media': 'asan_disable_nacl_fuzzer_v8_heap_chrome_with_codecs_release_bot',
+      'Mac ASAN Release': 'asan_disable_nacl_fuzzer_v8_heap_release_bot',
       'TSAN Debug': 'tsan_disable_nacl_debug_bot',
       'TSAN Release': 'tsan_disable_nacl_release_bot',
       'UBSan Release': 'ubsan_release_bot',
-      'UBSan vptr Release': 'ubsan_vptr_edge_release_bot',
+      'UBSan vptr Release': 'ubsan_vptr_release_bot',
       'Win ASan Release Media': 'asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_x86',
       'Win ASan Release': 'asan_fuzzer_v8_heap_release_bot',
     },
@@ -414,22 +414,22 @@
     },
 
     'chromium.lkgr': {
-      'ASAN Debug': 'asan_lsan_edge_debug_bot',
-      'ASAN Release Media': 'asan_lsan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot',
-      'ASAN Release': 'asan_lsan_edge_fuzzer_v8_heap_release_bot',
-      'ASan Debug (32-bit x86 with V8-ARM)': 'asan_edge_v8_heap_debug_bot_hybrid',
-      'ASan Release (32-bit x86 with V8-ARM)': 'asan_edge_fuzzer_v8_heap_release_bot_hybrid',
-      'ASan Release Media (32-bit x86 with V8-ARM)': 'asan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid',
-      'ChromiumOS ASAN Release': 'chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot',
-      'MSAN Release (chained origins)': 'msan_edge_release_bot',
-      'MSAN Release (no origins)': 'msan_no_origins_edge_release_bot',
-      'Mac ASAN Debug': 'asan_disable_nacl_edge_fuzzer_v8_heap_debug_symbols_static_bot',
-      'Mac ASAN Release Media': 'asan_disable_nacl_edge_fuzzer_v8_heap_chrome_with_codecs_release_bot',
-      'Mac ASAN Release': 'asan_disable_nacl_edge_fuzzer_v8_heap_release_bot',
+      'ASAN Debug': 'asan_lsan_debug_bot',
+      'ASAN Release Media': 'asan_lsan_fuzzer_v8_heap_chromeos_codecs_release_bot',
+      'ASAN Release': 'asan_lsan_fuzzer_v8_heap_release_bot',
+      'ASan Debug (32-bit x86 with V8-ARM)': 'asan_v8_heap_debug_bot_hybrid',
+      'ASan Release (32-bit x86 with V8-ARM)': 'asan_fuzzer_v8_heap_release_bot_hybrid',
+      'ASan Release Media (32-bit x86 with V8-ARM)': 'asan_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid',
+      'ChromiumOS ASAN Release': 'chromeos_asan_lsan_fuzzer_v8_heap_release_bot',
+      'MSAN Release (chained origins)': 'msan_release_bot',
+      'MSAN Release (no origins)': 'msan_no_origins_release_bot',
+      'Mac ASAN Debug': 'asan_disable_nacl_fuzzer_v8_heap_debug_symbols_static_bot',
+      'Mac ASAN Release Media': 'asan_disable_nacl_fuzzer_v8_heap_chrome_with_codecs_release_bot',
+      'Mac ASAN Release': 'asan_disable_nacl_fuzzer_v8_heap_release_bot',
       'TSAN Debug': 'tsan_disable_nacl_debug_bot',
       'TSAN Release': 'tsan_disable_nacl_release_bot',
       'UBSan Release': 'ubsan_release_bot',
-      'UBSan vptr Release': 'ubsan_vptr_edge_release_bot',
+      'UBSan vptr Release': 'ubsan_vptr_release_bot',
       'Win ASan Release Media': 'asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_x86',
       'Win ASan Release': 'asan_fuzzer_v8_heap_release_bot',
     },
@@ -1087,28 +1087,28 @@
       'asan', 'disable_nacl', 'clang_tot', 'minimal_symbols', 'static', 'release',
     ],
 
-    'asan_disable_nacl_edge_fuzzer_v8_heap_chrome_with_codecs_release_bot': [
-      'asan', 'disable_nacl', 'edge', 'fuzzer', 'v8_heap', 'chrome_with_codecs', 'release_bot',
+    'asan_disable_nacl_fuzzer_v8_heap_chrome_with_codecs_release_bot': [
+      'asan', 'disable_nacl', 'fuzzer', 'v8_heap', 'chrome_with_codecs', 'release_bot',
     ],
 
-    'asan_disable_nacl_edge_fuzzer_v8_heap_debug_symbols_static_bot': [
-      'asan', 'disable_nacl', 'edge', 'fuzzer', 'v8_heap', 'debug_symbols_static_bot',
+    'asan_disable_nacl_fuzzer_v8_heap_debug_symbols_static_bot': [
+      'asan', 'disable_nacl', 'fuzzer', 'v8_heap', 'debug_symbols_static_bot',
     ],
 
-    'asan_disable_nacl_edge_fuzzer_v8_heap_release_bot': [
-      'asan', 'disable_nacl', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
+    'asan_disable_nacl_fuzzer_v8_heap_release_bot': [
+      'asan', 'disable_nacl', 'fuzzer', 'v8_heap', 'release_bot',
     ],
 
-    'asan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid': [
-      'asan', 'edge', 'fuzzer', 'v8_heap', 'chromeos_codecs', 'release_bot', 'hybrid',
+    'asan_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid': [
+      'asan', 'fuzzer', 'v8_heap', 'chromeos_codecs', 'release_bot', 'hybrid',
     ],
 
-    'asan_edge_fuzzer_v8_heap_release_bot_hybrid': [
-      'asan', 'edge', 'fuzzer', 'v8_heap', 'release_bot', 'hybrid',
+    'asan_fuzzer_v8_heap_release_bot_hybrid': [
+      'asan', 'fuzzer', 'v8_heap', 'release_bot', 'hybrid',
     ],
 
-    'asan_edge_v8_heap_debug_bot_hybrid': [
-      'asan', 'edge', 'v8_heap', 'debug_bot', 'hybrid',
+    'asan_v8_heap_debug_bot_hybrid': [
+      'asan', 'v8_heap', 'debug_bot', 'hybrid',
     ],
 
     'asan_minimal_symbols_disable_nacl_release_bot_dcheck_always_on': [
@@ -1127,16 +1127,16 @@
       'asan', 'lsan', 'chromeos', 'release_trybot',
     ],
 
-    'asan_lsan_edge_debug_bot': [
-      'asan', 'lsan', 'edge', 'debug_bot',
+    'asan_lsan_debug_bot': [
+      'asan', 'lsan', 'debug_bot',
     ],
 
-    'asan_lsan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot': [
-      'asan', 'lsan', 'edge', 'v8_heap', 'chromeos_codecs', 'release_bot',
+    'asan_lsan_fuzzer_v8_heap_chromeos_codecs_release_bot': [
+      'asan', 'lsan', 'v8_heap', 'chromeos_codecs', 'release_bot',
     ],
 
-    'asan_lsan_edge_fuzzer_v8_heap_release_bot': [
-      'asan', 'lsan', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
+    'asan_lsan_fuzzer_v8_heap_release_bot': [
+      'asan', 'lsan', 'fuzzer', 'v8_heap', 'release_bot',
     ],
 
     'asan_lsan_release_bot': [
@@ -1173,8 +1173,8 @@
       'cfi_full', 'cfi_icall', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on', 'goma',
     ],
 
-    'chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot': [
-      'chromeos', 'asan', 'lsan', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
+    'chromeos_asan_lsan_fuzzer_v8_heap_release_bot': [
+      'chromeos', 'asan', 'lsan', 'fuzzer', 'v8_heap', 'release_bot',
     ],
 
     'chromeos_msan_release_bot': [
@@ -1228,8 +1228,8 @@
       'dcheck_always_on', 'x86', 'win_linker_timing',
     ],
 
-    'clang_tot_edge_ubsan_no_recover_hack_static_release': [
-      'clang_tot', 'edge', 'ubsan_no_recover_hack', 'static', 'release',
+    'clang_tot_ubsan_no_recover_hack_static_release': [
+      'clang_tot', 'ubsan_no_recover_hack', 'static', 'release',
     ],
 
     'clang_tot_linux_full_symbols_shared_release': [
@@ -1637,12 +1637,12 @@
       'analysis'
     ],
 
-    'msan_edge_release_bot': [
-      'msan', 'edge', 'release_bot',
+    'msan_release_bot': [
+      'msan', 'release_bot',
     ],
 
-    'msan_no_origins_edge_release_bot': [
-      'msan_no_origins', 'edge', 'release_bot',
+    'msan_no_origins_release_bot': [
+      'msan_no_origins', 'release_bot',
     ],
 
     'msan_release_bot': [
@@ -1832,8 +1832,8 @@
       'ubsan', 'release_bot',
     ],
 
-    'ubsan_vptr_edge_release_bot': [
-      'ubsan_vptr', 'edge', 'release_bot',
+    'ubsan_vptr_release_bot': [
+      'ubsan_vptr', 'release_bot',
     ],
 
     'ubsan_vptr_release_bot': [
@@ -2064,10 +2064,6 @@
 
     'disable_nacl': {
       'gn_args': 'enable_nacl=false',
-    },
-
-    'edge': {
-      'gn_args': 'sanitizer_coverage_flags="trace-pc-guard"',
     },
 
     'enable_blink_animation_use_time_delta': {
