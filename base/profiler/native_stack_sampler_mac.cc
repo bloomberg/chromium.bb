@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/profiler/stack_sampler.h"
+#include "base/profiler/native_stack_sampler.h"
 
 #include <libkern/OSByteOrder.h>
 #include <libunwind.h>
@@ -25,7 +25,6 @@
 #include "base/mac/mach_logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/profiler/profile_builder.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/strings/string_number_conversions.h"
 
@@ -34,6 +33,9 @@ void _sigtramp(int, int, struct sigset*);
 }
 
 namespace base {
+
+using Frame = StackSamplingProfiler::Frame;
+using ProfileBuilder = StackSamplingProfiler::ProfileBuilder;
 
 namespace {
 
@@ -240,16 +242,16 @@ class ScopedSuspendThread {
 
 }  // namespace
 
-// StackSamplerMac ------------------------------------------------------
+// NativeStackSamplerMac ------------------------------------------------------
 
-class StackSamplerMac : public StackSampler {
+class NativeStackSamplerMac : public NativeStackSampler {
  public:
-  StackSamplerMac(mach_port_t thread_port,
-                  ModuleCache* module_cache,
-                  StackSamplerTestDelegate* test_delegate);
-  ~StackSamplerMac() override;
+  NativeStackSamplerMac(mach_port_t thread_port,
+                        ModuleCache* module_cache,
+                        NativeStackSamplerTestDelegate* test_delegate);
+  ~NativeStackSamplerMac() override;
 
-  // StackSamplingProfiler::StackSampler:
+  // StackSamplingProfiler::NativeStackSampler:
   void RecordStackFrames(StackBuffer* stack_buffer,
                          ProfileBuilder* profile_builder) override;
 
@@ -266,9 +268,8 @@ class StackSamplerMac : public StackSampler {
 
   // Walks the stack represented by |thread_state|, calling back to the
   // provided lambda for each frame.
-  std::vector<ProfileBuilder::Frame> WalkStack(
-      const x86_thread_state64_t& thread_state,
-      uintptr_t stack_top);
+  std::vector<Frame> WalkStack(const x86_thread_state64_t& thread_state,
+                               uintptr_t stack_top);
 
   // Weak reference: Mach port for thread being profiled.
   mach_port_t thread_port_;
@@ -276,7 +277,7 @@ class StackSamplerMac : public StackSampler {
   // Maps a module's address range to the module.
   ModuleCache* const module_cache_;
 
-  StackSamplerTestDelegate* const test_delegate_;
+  NativeStackSamplerTestDelegate* const test_delegate_;
 
   // The stack base address corresponding to |thread_handle_|.
   const void* const thread_stack_base_address_;
@@ -288,12 +289,13 @@ class StackSamplerMac : public StackSampler {
   uintptr_t sigtramp_start_;
   uintptr_t sigtramp_end_;
 
-  DISALLOW_COPY_AND_ASSIGN(StackSamplerMac);
+  DISALLOW_COPY_AND_ASSIGN(NativeStackSamplerMac);
 };
 
-StackSamplerMac::StackSamplerMac(mach_port_t thread_port,
-                                 ModuleCache* module_cache,
-                                 StackSamplerTestDelegate* test_delegate)
+NativeStackSamplerMac::NativeStackSamplerMac(
+    mach_port_t thread_port,
+    ModuleCache* module_cache,
+    NativeStackSamplerTestDelegate* test_delegate)
     : thread_port_(thread_port),
       module_cache_(module_cache),
       test_delegate_(test_delegate),
@@ -309,10 +311,10 @@ StackSamplerMac::StackSamplerMac(mach_port_t thread_port,
   GetThreadState(thread_port_, &thread_state);
 }
 
-StackSamplerMac::~StackSamplerMac() {}
+NativeStackSamplerMac::~NativeStackSamplerMac() {}
 
-void StackSamplerMac::RecordStackFrames(StackBuffer* stack_buffer,
-                                        ProfileBuilder* profile_builder) {
+void NativeStackSamplerMac::RecordStackFrames(StackBuffer* stack_buffer,
+                                              ProfileBuilder* profile_builder) {
   x86_thread_state64_t thread_state;
   uintptr_t stack_top;
 
@@ -330,12 +332,12 @@ void StackSamplerMac::RecordStackFrames(StackBuffer* stack_buffer,
 }
 
 // static
-bool StackSamplerMac::CopyStack(mach_port_t thread_port,
-                                const void* base_address,
-                                StackBuffer* stack_buffer,
-                                ProfileBuilder* profile_builder,
-                                x86_thread_state64_t* thread_state,
-                                uintptr_t* stack_top) {
+bool NativeStackSamplerMac::CopyStack(mach_port_t thread_port,
+                                      const void* base_address,
+                                      StackBuffer* stack_buffer,
+                                      ProfileBuilder* profile_builder,
+                                      x86_thread_state64_t* thread_state,
+                                      uintptr_t* stack_top) {
   // IMPORTANT NOTE: Do not do ANYTHING in this in this scope that might
   // allocate memory, including indirectly via use of DCHECK/CHECK or other
   // logging statements. Otherwise this code can deadlock on heap locks acquired
@@ -368,10 +370,10 @@ bool StackSamplerMac::CopyStack(mach_port_t thread_port,
   return true;
 }
 
-std::vector<ProfileBuilder::Frame> StackSamplerMac::WalkStack(
+std::vector<Frame> NativeStackSamplerMac::WalkStack(
     const x86_thread_state64_t& thread_state,
     uintptr_t stack_top) {
-  std::vector<ProfileBuilder::Frame> stack;
+  std::vector<Frame> stack;
 
   // Reserve enough memory for most stacks, to avoid repeated
   // allocations. Approximately 99.9% of recorded stacks are 128 frames or
@@ -394,7 +396,7 @@ std::vector<ProfileBuilder::Frame> StackSamplerMac::WalkStack(
   const ModuleCache::Module* leaf_frame_module =
       module_cache_->GetModuleForAddress(thread_state.__rip);
   if (leaf_frame_module && MayTriggerUnwInitLocalCrash(leaf_frame_module)) {
-    return {ProfileBuilder::Frame(thread_state.__rip, leaf_frame_module)};
+    return {Frame(thread_state.__rip, leaf_frame_module)};
   }
 
   unw_cursor_t unwind_cursor;
@@ -468,19 +470,19 @@ std::vector<ProfileBuilder::Frame> StackSamplerMac::WalkStack(
   return stack;
 }
 
-// StackSampler ---------------------------------------------------------
+// NativeStackSampler ---------------------------------------------------------
 
 // static
-std::unique_ptr<StackSampler> StackSampler::Create(
+std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
     PlatformThreadId thread_id,
     ModuleCache* module_cache,
-    StackSamplerTestDelegate* test_delegate) {
-  return std::make_unique<StackSamplerMac>(thread_id, module_cache,
-                                           test_delegate);
+    NativeStackSamplerTestDelegate* test_delegate) {
+  return std::make_unique<NativeStackSamplerMac>(thread_id, module_cache,
+                                                 test_delegate);
 }
 
 // static
-size_t StackSampler::GetStackBufferSize() {
+size_t NativeStackSampler::GetStackBufferSize() {
   size_t stack_size = PlatformThread::GetDefaultThreadStackSize();
 
   // If getrlimit somehow fails, return the default macOS main thread stack size
