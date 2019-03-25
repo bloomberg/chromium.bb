@@ -128,7 +128,6 @@ Java_org_chromium_android_1webview_shell_DrawFn_nativeDrawGL(JNIEnv*,
                                                              jint scroll_y) {
   FunctorData data = g_map.Get().get(functor);
   AwDrawFn_DrawGLParams params{kAwDrawFnVersion};
-  params.is_layer = false;
   params.width = width;
   params.height = height;
   params.clip_left = 0;
