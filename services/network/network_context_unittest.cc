@@ -19,6 +19,8 @@
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
 #include "base/optional.h"
+#include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
@@ -4443,6 +4445,254 @@ TEST_F(NetworkContextTest, HeaderClientFailsRequest) {
 
     client.RunUntilComplete();
     EXPECT_EQ(client.completion_status().error_code, net::ERR_FAILED);
+  }
+}
+
+class HangingTestURLLoaderHeaderClient
+    : public mojom::TrustedURLLoaderHeaderClient {
+ public:
+  class TestHeaderClient : public mojom::TrustedHeaderClient {
+   public:
+    TestHeaderClient() : binding_(this) {}
+
+    // network::mojom::TrustedHeaderClient:
+    void OnBeforeSendHeaders(const net::HttpRequestHeaders& headers,
+                             OnBeforeSendHeadersCallback callback) override {
+      auto new_headers = headers;
+      new_headers.SetHeader("foo", "bar");
+      std::move(callback).Run(net::OK, new_headers);
+    }
+
+    void OnHeadersReceived(const std::string& headers,
+                           OnHeadersReceivedCallback callback) override {
+      saved_received_headers_ = headers;
+      saved_on_headers_received_callback_ = std::move(callback);
+      on_headers_received_loop_.Quit();
+    }
+
+    void CallOnHeadersReceivedCallback() {
+      auto new_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+          saved_received_headers_);
+      new_headers->AddHeader("baz: qux");
+      std::move(saved_on_headers_received_callback_)
+          .Run(net::OK, new_headers->raw_headers(), GURL());
+    }
+
+    void WaitForOnHeadersReceived() { on_headers_received_loop_.Run(); }
+
+    void Bind(network::mojom::TrustedHeaderClientRequest request) {
+      binding_.Bind(std::move(request));
+    }
+
+   private:
+    base::RunLoop on_headers_received_loop_;
+    std::string saved_received_headers_;
+    OnHeadersReceivedCallback saved_on_headers_received_callback_;
+    mojo::Binding<mojom::TrustedHeaderClient> binding_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestHeaderClient);
+  };
+
+  HangingTestURLLoaderHeaderClient(
+      mojom::TrustedURLLoaderHeaderClientRequest request)
+      : binding_(this, std::move(request)) {}
+
+  // network::mojom::TrustedURLLoaderHeaderClient:
+  void OnLoaderCreated(
+      int32_t request_id,
+      network::mojom::TrustedHeaderClientRequest request) override {
+    header_client_.Bind(std::move(request));
+  }
+
+  void CallOnHeadersReceivedCallback() {
+    header_client_.CallOnHeadersReceivedCallback();
+  }
+
+  void WaitForOnHeadersReceived() { header_client_.WaitForOnHeadersReceived(); }
+
+ private:
+  TestHeaderClient header_client_;
+  mojo::Binding<mojom::TrustedURLLoaderHeaderClient> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(HangingTestURLLoaderHeaderClient);
+};
+
+// Test waiting on the OnHeadersReceived event, then proceeding to call the
+// OnHeadersReceivedCallback asynchronously. This mostly just verifies that
+// HangingTestURLLoaderHeaderClient works.
+TEST_F(NetworkContextTest, HangingHeaderClientModifiesHeadersAsynchronously) {
+  net::EmbeddedTestServer test_server;
+  net::test_server::RegisterDefaultHandlers(&test_server);
+  ASSERT_TRUE(test_server.Start());
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  ResourceRequest request;
+  request.url = test_server.GetURL("/echoheader?foo");
+
+  mojom::URLLoaderFactoryPtr loader_factory;
+  mojom::URLLoaderFactoryParamsPtr params =
+      mojom::URLLoaderFactoryParams::New();
+  params->process_id = mojom::kBrowserProcessId;
+  params->is_corb_enabled = false;
+  HangingTestURLLoaderHeaderClient header_client(
+      mojo::MakeRequest(&params->header_client));
+  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
+                                          std::move(params));
+
+  mojom::URLLoaderPtr loader;
+  TestURLLoaderClient client;
+  loader_factory->CreateLoaderAndStart(
+      mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
+      mojom::kURLLoadOptionUseHeaderClient, request,
+      client.CreateInterfacePtr(),
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  header_client.WaitForOnHeadersReceived();
+
+  header_client.CallOnHeadersReceivedCallback();
+
+  client.RunUntilComplete();
+
+  EXPECT_EQ(client.completion_status().error_code, net::OK);
+  // Make sure request header was modified. The value will be in the body
+  // since we used the /echoheader endpoint.
+  std::string response;
+  EXPECT_TRUE(
+      mojo::BlockingCopyToString(client.response_body_release(), &response));
+  EXPECT_EQ(response, "bar");
+
+  // Make sure response header was modified.
+  EXPECT_TRUE(client.response_head().headers->HasHeaderValue("baz", "qux"));
+}
+
+// Test destroying the mojom::URLLoader after the OnHeadersReceived event and
+// then calling the OnHeadersReceivedCallback.
+TEST_F(NetworkContextTest, HangingHeaderClientAbortedRequest) {
+  net::EmbeddedTestServer test_server;
+  net::test_server::RegisterDefaultHandlers(&test_server);
+  ASSERT_TRUE(test_server.Start());
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  ResourceRequest request;
+  request.url = test_server.GetURL("/echoheader?foo");
+
+  mojom::URLLoaderFactoryPtr loader_factory;
+  mojom::URLLoaderFactoryParamsPtr params =
+      mojom::URLLoaderFactoryParams::New();
+  params->process_id = mojom::kBrowserProcessId;
+  params->is_corb_enabled = false;
+  HangingTestURLLoaderHeaderClient header_client(
+      mojo::MakeRequest(&params->header_client));
+  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
+                                          std::move(params));
+
+  mojom::URLLoaderPtr loader;
+  TestURLLoaderClient client;
+  loader_factory->CreateLoaderAndStart(
+      mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
+      mojom::kURLLoadOptionUseHeaderClient, request,
+      client.CreateInterfacePtr(),
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  header_client.WaitForOnHeadersReceived();
+
+  loader.reset();
+
+  // Ensure the loader is destroyed before the callback is run.
+  base::RunLoop().RunUntilIdle();
+
+  header_client.CallOnHeadersReceivedCallback();
+
+  client.RunUntilComplete();
+
+  EXPECT_EQ(client.completion_status().error_code, net::ERR_FAILED);
+}
+
+// Test power monitor source that can simulate entering suspend mode. Can't use
+// the one in base/ because it insists on bringing its own MessageLoop.
+class TestPowerMonitorSource : public base::PowerMonitorSource {
+ public:
+  TestPowerMonitorSource() = default;
+  ~TestPowerMonitorSource() override = default;
+
+  void Shutdown() override {}
+
+  void Suspend() { ProcessPowerEvent(SUSPEND_EVENT); }
+
+  void Resume() { ProcessPowerEvent(RESUME_EVENT); }
+
+  bool IsOnBatteryPowerImpl() override { return false; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestPowerMonitorSource);
+};
+
+// If the OnHeadersReceivedCallback is called immediately after a Suspend event
+// (|runloop_after_suspend|==false), the URLRequest will not have been destroyed
+// yet, but the URLRequestHttpJob will have destroyed the transaction_. This
+// test ensures that URLRequestHttpJob does not attempt to dereference the
+// transaction_.
+//
+// If a Suspend event occurs and the message loop is allowed to run afterwards
+// (|runloop_after_suspend|==true), the URLLoader and URLRequest will be
+// destroyed. Attempting to call the OnHeadersReceivedCallback should do nothing
+// as URLLoader bound it to a weakptr.
+TEST_F(NetworkContextTest, HangingHeaderClientSuspendThenCallback) {
+  net::EmbeddedTestServer test_server;
+  net::test_server::RegisterDefaultHandlers(&test_server);
+  ASSERT_TRUE(test_server.Start());
+
+  for (bool runloop_after_suspend : {false, true}) {
+    SCOPED_TRACE(testing::Message()
+                 << "runloop_after_suspend=" << runloop_after_suspend);
+
+    std::unique_ptr<TestPowerMonitorSource> power_monitor_source =
+        std::make_unique<TestPowerMonitorSource>();
+    TestPowerMonitorSource* unowned_power_monitor_source =
+        power_monitor_source.get();
+    base::PowerMonitor power_monitor(std::move(power_monitor_source));
+
+    std::unique_ptr<NetworkContext> network_context =
+        CreateContextWithParams(CreateContextParams());
+
+    ResourceRequest request;
+    request.url = test_server.GetURL("/echoheader?foo");
+
+    mojom::URLLoaderFactoryPtr loader_factory;
+    mojom::URLLoaderFactoryParamsPtr params =
+        mojom::URLLoaderFactoryParams::New();
+    params->process_id = mojom::kBrowserProcessId;
+    params->is_corb_enabled = false;
+    HangingTestURLLoaderHeaderClient header_client(
+        mojo::MakeRequest(&params->header_client));
+    network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
+                                            std::move(params));
+
+    mojom::URLLoaderPtr loader;
+    TestURLLoaderClient client;
+    loader_factory->CreateLoaderAndStart(
+        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
+        mojom::kURLLoadOptionUseHeaderClient, request,
+        client.CreateInterfacePtr(),
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    header_client.WaitForOnHeadersReceived();
+
+    unowned_power_monitor_source->Suspend();
+    if (runloop_after_suspend)
+      base::RunLoop().RunUntilIdle();
+
+    header_client.CallOnHeadersReceivedCallback();
+
+    client.RunUntilComplete();
+
+    EXPECT_EQ(client.completion_status().error_code, net::ERR_ABORTED);
+
+    unowned_power_monitor_source->Resume();
   }
 }
 

@@ -907,13 +907,13 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
       OnCallToDelegate(NetLogEventType::NETWORK_DELEGATE_HEADERS_RECEIVED);
       allowed_unsafe_redirect_url_ = GURL();
       // The NetworkDelegate must watch for OnRequestDestroyed and not modify
-      // any of the arguments or invoke the callback after it's called. Not
-      // using a WeakPtr here because it's not enough, the consumer has to watch
-      // for destruction regardless, due to the pointer parameters.
+      // any of the arguments after it's called.
+      // TODO(mattm): change the API to remove the out-params and take the
+      // results as params of the callback.
       int error = network_delegate()->NotifyHeadersReceived(
           request_,
           base::BindOnce(&URLRequestHttpJob::OnHeadersReceivedCallback,
-                         base::Unretained(this)),
+                         weak_factory_.GetWeakPtr()),
           headers.get(), &override_response_headers_,
           &allowed_unsafe_redirect_url_);
       if (error != OK) {
