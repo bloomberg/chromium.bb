@@ -23,6 +23,7 @@ source_set("ui") {
     "//ios/chrome/common/ui_util",
   ]
   deps = [
+    ":resources",
     "//base",
     "//base:i18n",
     "//components/sessions",
