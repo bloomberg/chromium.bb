@@ -241,7 +241,8 @@ class ClankCompiler(object):
   """Handles compilation of clank."""
 
   def __init__(self, out_dir, step_recorder, arch, jobs, max_load, use_goma,
-               goma_dir, system_health_profiling, monochrome):
+               goma_dir, system_health_profiling, monochrome, public,
+               orderfile_location):
     self._out_dir = out_dir
     self._step_recorder = step_recorder
     self._arch = arch
@@ -250,6 +251,8 @@ class ClankCompiler(object):
     self._use_goma = use_goma
     self._goma_dir = goma_dir
     self._system_health_profiling = system_health_profiling
+    self._public = public
+    self._orderfile_location = orderfile_location
     if monochrome:
       self._apk = 'Monochrome.apk'
       self._apk_target = 'monochrome_apk'
@@ -260,6 +263,9 @@ class ClankCompiler(object):
       self._apk_target = 'chrome_apk'
       self._libname = 'libchrome'
       self._libchrome_target = 'libchrome'
+    if public:
+      self._apk = self._apk.replace('.apk', 'Public.apk')
+      self._apk_target = self._apk_target.replace('_apk', '_public_apk')
 
     self.obj_dir = os.path.join(self._out_dir, 'Release', 'obj')
     self.lib_chrome_so = os.path.join(
@@ -279,7 +285,7 @@ class ClankCompiler(object):
     # Set the "Release Official" flavor, the parts affecting performance.
     args = [
         'enable_resource_whitelist_generation=false',
-        'is_chrome_branded=true',
+        'is_chrome_branded=' + str(not self._public).lower(),
         'is_debug=false',
         'is_official_build=true',
         'target_os="android"',
@@ -292,6 +298,12 @@ class ClankCompiler(object):
     if self._system_health_profiling:
       args += ['devtools_instrumentation_dumping = ' +
                str(instrumented).lower()]
+
+    if self._public and os.path.exists(self._orderfile_location):
+      # GN needs the orderfile path to be source-absolute.
+      src_abs_orderfile = os.path.relpath(self._orderfile_location,
+                                          constants.DIR_SOURCE_ROOT)
+      args += ['chrome_orderfile="//{}"'.format(src_abs_orderfile)]
 
     self._step_recorder.RunCommand(
         ['gn', 'gen', os.path.join(self._out_dir, 'Release'),
@@ -461,34 +473,55 @@ class OrderfileUpdater(object):
     raise NotImplementedError
 
 
+class OrderfileNoopUpdater(OrderfileUpdater):
+  def CommitFileHashes(self, unpatched_orderfile_filename, orderfile_filename):
+    # pylint: disable=unused-argument
+    return
+
+  def UploadToCloudStorage(self, filename, use_debug_location):
+    # pylint: disable=unused-argument
+    return
+
+  def _CommitFiles(self, files_to_commit, commit_message_lines):
+    raise NotImplementedError
+
+
 class OrderfileGenerator(object):
   """A utility for generating a new orderfile for Clank.
 
   Builds an instrumented binary, profiles a run of the application, and
   generates an updated orderfile.
   """
-  _CLANK_REPO = os.path.join(constants.DIR_SOURCE_ROOT, 'clank')
   _CHECK_ORDERFILE_SCRIPT = os.path.join(
       constants.DIR_SOURCE_ROOT, 'tools', 'cygprofile', 'check_orderfile.py')
   _BUILD_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(
       constants.GetOutDirectory())))  # Normally /path/to/src
 
-  _UNPATCHED_ORDERFILE_FILENAME = os.path.join(
-      _CLANK_REPO, 'orderfiles', 'unpatched_orderfile.%s')
-
-  _PATH_TO_ORDERFILE = os.path.join(_CLANK_REPO, 'orderfiles',
-                                    'orderfile.%s.out')
-
   # Previous orderfile_generator debug files would be overwritten.
   _DIRECTORY_FOR_DEBUG_FILES = '/tmp/orderfile_generator_debug_files'
 
+  def _PrepareOrderfilePaths(self):
+    if self._options.public:
+      self._clank_dir = os.path.join(constants.DIR_SOURCE_ROOT,
+                                     '')
+      if not os.path.exists(os.path.join(self._clank_dir, 'orderfiles')):
+        os.makedirs(os.path.join(self._clank_dir, 'orderfiles'))
+    else:
+      self._clank_dir = os.path.join(constants.DIR_SOURCE_ROOT,
+                                     'clank')
+
+    self._unpatched_orderfile_filename = os.path.join(
+        self._clank_dir, 'orderfiles', 'unpatched_orderfile.%s')
+    self._path_to_orderfile = os.path.join(
+        self._clank_dir, 'orderfiles', 'orderfile.%s.out')
+
   def _GetPathToOrderfile(self):
     """Gets the path to the architecture-specific orderfile."""
-    return self._PATH_TO_ORDERFILE % self._options.arch
+    return self._path_to_orderfile % self._options.arch
 
   def _GetUnpatchedOrderfileFilename(self):
     """Gets the path to the architecture-specific unpatched orderfile."""
-    return self._UNPATCHED_ORDERFILE_FILENAME % self._options.arch
+    return self._unpatched_orderfile_filename % self._options.arch
 
   def _SetDevice(self):
     """ Selects the device to be used by the script.
@@ -540,6 +573,8 @@ class OrderfileGenerator(object):
     self._uninstrumented_out_dir = os.path.join(
         self._BUILD_ROOT, self._options.arch + '_uninstrumented_out')
 
+    self._PrepareOrderfilePaths()
+
     if options.profile:
       output_directory = os.path.join(self._instrumented_out_dir, 'Release')
       host_profile_dir = os.path.join(output_directory, 'profile_data')
@@ -569,8 +604,13 @@ class OrderfileGenerator(object):
     self._output_data = {}
     self._step_recorder = StepRecorder(options.buildbot)
     self._compiler = None
+    if orderfile_updater_class is None:
+      if options.public:
+        orderfile_updater_class = OrderfileNoopUpdater
+      else:
+        orderfile_updater_class = OrderfileUpdater
     assert issubclass(orderfile_updater_class, OrderfileUpdater)
-    self._orderfile_updater = orderfile_updater_class(self._CLANK_REPO,
+    self._orderfile_updater = orderfile_updater_class(self._clank_dir,
                                                       self._step_recorder,
                                                       options.branch,
                                                       options.netrc)
@@ -767,23 +807,6 @@ class OrderfileGenerator(object):
       self._orderfile_updater.UploadToCloudStorage(
           file_name, use_debug_location=False)
 
-  def _GetHashFilePathAndContents(self, base_file):
-    """Gets the name and content of the hash file created from uploading the
-    given file.
-
-    Args:
-      base_file: The file that was uploaded to cloud storage.
-
-    Returns:
-      A tuple of the hash file name, relative to the clank repo path, and the
-      content, which should be the sha1 hash of the file
-      ('base_file.sha1', hash)
-    """
-    abs_file_name = base_file + '.sha1'
-    rel_file_name = os.path.relpath(abs_file_name, self._CLANK_REPO)
-    with open(abs_file_name, 'r') as f:
-      return (rel_file_name, f.read())
-
   def Generate(self):
     """Generates and maybe upload an order."""
     profile_uploaded = False
@@ -807,7 +830,8 @@ class OrderfileGenerator(object):
             self._step_recorder, self._options.arch, self._options.jobs,
             self._options.max_load, self._options.use_goma,
             self._options.goma_dir, self._options.system_health_orderfile,
-            self._monochrome)
+            self._monochrome, self._options.public,
+            self._GetPathToOrderfile())
         if not self._options.pregenerated_profiles:
           # If there are pregenerated profiles, the instrumented build should
           # not be changed to avoid invalidating the pregenerated profile
@@ -844,7 +868,9 @@ class OrderfileGenerator(object):
             self._uninstrumented_out_dir, self._step_recorder,
             self._options.arch, self._options.jobs, self._options.max_load,
             self._options.use_goma, self._options.goma_dir,
-            self._options.system_health_orderfile, self._monochrome)
+            self._options.system_health_orderfile, self._monochrome,
+            self._options.public, self._GetPathToOrderfile())
+
         self._compiler.CompileLibchrome(False)
         self._PatchOrderfile()
         # Because identical code folding is a bit different with and without
@@ -938,6 +964,9 @@ def CreateArgumentParser():
       '--use-goma', action='store_true', help='Enable GOMA.', default=False)
   parser.add_argument('--adb-path', help='Path to the adb binary.')
 
+  parser.add_argument('--public', action='store_true',
+                      help='Required if your checkout is non-internal.',
+                      default=False)
   parser.add_argument('--nosystem-health-orderfile', action='store_false',
                       dest='system_health_orderfile', default=True,
                       help=('Create an orderfile based on an about:blank '
@@ -988,12 +1017,15 @@ def CreateArgumentParser():
   return parser
 
 
-def CreateOrderfile(options, orderfile_updater_class):
+def CreateOrderfile(options, orderfile_updater_class=None):
   """Creates an oderfile.
 
   Args:
     options: As returned from optparse.OptionParser.parse_args()
     orderfile_updater_class: (OrderfileUpdater) subclass of OrderfileUpdater.
+                             Use to explicitly set an OrderfileUpdater class,
+                             the defaults are OrderfileUpdater, or
+                             OrderfileNoopUpdater if --public is set.
 
   Returns:
     True iff success.
@@ -1026,7 +1058,7 @@ def CreateOrderfile(options, orderfile_updater_class):
 def main():
   parser = CreateArgumentParser()
   options = parser.parse_args()
-  return 0 if CreateOrderfile(options, OrderfileUpdater) else 1
+  return 0 if CreateOrderfile(options) else 1
 
 
 if __name__ == '__main__':
