@@ -588,8 +588,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirCreateWithKeyboard").EnableMyFilesVolume(),
         TestCase("dirCreateWithoutChangingCurrent").EnableMyFilesVolume(),
         TestCase("dirCreateWithoutChangingCurrent"),
-        TestCase("dirContextMenuRecent"),
+#if defined(ADDRESS_SANITIZER) || defined(DEBUG)
+        // Zip tests times out too often on ASAN and DEBUG.
         ZipCase("dirContextMenuZip"),
+#endif
+        TestCase("dirContextMenuRecent"),
         TestCase("dirContextMenuMyFiles").EnableMyFilesVolume(),
         TestCase("dirContextMenuCrostini"),
         TestCase("dirContextMenuPlayFiles"),
