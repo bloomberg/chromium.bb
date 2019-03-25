@@ -33,13 +33,6 @@ namespace cssvalue {
 
 class CSSCounterValue : public CSSValue {
  public:
-  static CSSCounterValue* Create(CSSCustomIdentValue* identifier,
-                                 CSSIdentifierValue* list_style,
-                                 CSSStringValue* separator) {
-    return MakeGarbageCollected<CSSCounterValue>(identifier, list_style,
-                                                 separator);
-  }
-
   CSSCounterValue(CSSCustomIdentValue* identifier,
                   CSSIdentifierValue* list_style,
                   CSSStringValue* separator)

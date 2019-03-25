@@ -44,10 +44,6 @@ namespace cssvalue {
 
 class CSSBasicShapeCircleValue final : public CSSValue {
  public:
-  static CSSBasicShapeCircleValue* Create() {
-    return MakeGarbageCollected<CSSBasicShapeCircleValue>();
-  }
-
   CSSBasicShapeCircleValue() : CSSValue(kBasicShapeCircleClass) {}
 
   String CustomCSSText() const;
@@ -72,10 +68,6 @@ class CSSBasicShapeCircleValue final : public CSSValue {
 
 class CSSBasicShapeEllipseValue final : public CSSValue {
  public:
-  static CSSBasicShapeEllipseValue* Create() {
-    return MakeGarbageCollected<CSSBasicShapeEllipseValue>();
-  }
-
   CSSBasicShapeEllipseValue() : CSSValue(kBasicShapeEllipseClass) {}
 
   String CustomCSSText() const;
@@ -103,10 +95,6 @@ class CSSBasicShapeEllipseValue final : public CSSValue {
 
 class CSSBasicShapePolygonValue final : public CSSValue {
  public:
-  static CSSBasicShapePolygonValue* Create() {
-    return MakeGarbageCollected<CSSBasicShapePolygonValue>();
-  }
-
   CSSBasicShapePolygonValue()
       : CSSValue(kBasicShapePolygonClass), wind_rule_(RULE_NONZERO) {}
 
@@ -137,10 +125,6 @@ class CSSBasicShapePolygonValue final : public CSSValue {
 
 class CSSBasicShapeInsetValue final : public CSSValue {
  public:
-  static CSSBasicShapeInsetValue* Create() {
-    return MakeGarbageCollected<CSSBasicShapeInsetValue>();
-  }
-
   CSSBasicShapeInsetValue() : CSSValue(kBasicShapeInsetClass) {}
 
   CSSPrimitiveValue* Top() const { return top_.Get(); }

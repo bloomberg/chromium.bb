@@ -153,7 +153,7 @@ static CSSComputedStyleDeclaration* EnsureComputedStyle(
   Element* elem = AssociatedElementOf(position);
   if (!elem)
     return nullptr;
-  return CSSComputedStyleDeclaration::Create(elem);
+  return MakeGarbageCollected<CSSComputedStyleDeclaration>(elem);
 }
 
 static MutableCSSPropertyValueSet* GetPropertiesNotIn(
@@ -519,8 +519,8 @@ void EditingStyle::Init(Node* node, PropertiesToInclude properties_to_include) {
   else if (IsTabHTMLSpanElement(node))
     node = node->parentNode();
 
-  CSSComputedStyleDeclaration* computed_style_at_position =
-      CSSComputedStyleDeclaration::Create(node);
+  auto* computed_style_at_position =
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(node);
   mutable_style_ =
       properties_to_include == kAllProperties && computed_style_at_position
           ? computed_style_at_position->CopyProperties()
@@ -769,10 +769,11 @@ void EditingStyle::RemoveStyleAddedByElement(Element* element) {
   if (!element || !element->parentNode())
     return;
   MutableCSSPropertyValueSet* parent_style = CopyEditingProperties(
-      CSSComputedStyleDeclaration::Create(element->parentNode()),
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(element->parentNode()),
       kAllEditingProperties);
   MutableCSSPropertyValueSet* node_style = CopyEditingProperties(
-      CSSComputedStyleDeclaration::Create(element), kAllEditingProperties);
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(element),
+      kAllEditingProperties);
   node_style->RemoveEquivalentProperties(parent_style);
   mutable_style_->RemoveEquivalentProperties(node_style);
 }
@@ -782,10 +783,11 @@ void EditingStyle::RemoveStyleConflictingWithStyleOfElement(Element* element) {
     return;
 
   MutableCSSPropertyValueSet* parent_style = CopyEditingProperties(
-      CSSComputedStyleDeclaration::Create(element->parentNode()),
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(element->parentNode()),
       kAllEditingProperties);
   MutableCSSPropertyValueSet* node_style = CopyEditingProperties(
-      CSSComputedStyleDeclaration::Create(element), kAllEditingProperties);
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(element),
+      kAllEditingProperties);
   node_style->RemoveEquivalentProperties(parent_style);
 
   unsigned property_count = node_style->PropertyCount();
@@ -873,8 +875,8 @@ EditingTriState EditingStyle::TriStateOfStyle(
   bool node_is_start = true;
   for (Node& node : NodeTraversal::StartsAt(*selection.Start().AnchorNode())) {
     if (node.GetLayoutObject() && HasEditableStyle(node)) {
-      CSSComputedStyleDeclaration* node_style =
-          CSSComputedStyleDeclaration::Create(&node);
+      auto* node_style =
+          MakeGarbageCollected<CSSComputedStyleDeclaration>(&node);
       if (node_style) {
         // If the selected element has <sub> or <sup> ancestor element, apply
         // the corresponding style(vertical-align) to it so that
@@ -1127,9 +1129,10 @@ bool EditingStyle::ExtractConflictingImplicitStyleOfAttributes(
 
 bool EditingStyle::StyleIsPresentInComputedStyleOfNode(Node* node) const {
   return !mutable_style_ ||
-         GetPropertiesNotIn(mutable_style_.Get(),
-                            CSSComputedStyleDeclaration::Create(node),
-                            node->GetDocument().GetSecureContextMode())
+         GetPropertiesNotIn(
+             mutable_style_.Get(),
+             MakeGarbageCollected<CSSComputedStyleDeclaration>(node),
+             node->GetDocument().GetSecureContextMode())
              ->IsEmpty();
 }
 
@@ -1430,8 +1433,8 @@ void EditingStyle::MergeStyleFromRulesForSerialization(Element* element) {
   // For example: style="height: 1%; overflow: visible;" in quirksmode
   // FIXME: There are others like this, see <rdar://problem/5195123> Slashdot
   // copy/paste fidelity problem
-  CSSComputedStyleDeclaration* computed_style_for_element =
-      CSSComputedStyleDeclaration::Create(element);
+  auto* computed_style_for_element =
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(element);
   MutableCSSPropertyValueSet* from_computed_style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   {

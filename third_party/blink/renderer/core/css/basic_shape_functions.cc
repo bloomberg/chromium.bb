@@ -135,7 +135,7 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
     case BasicShape::kBasicShapeCircleType: {
       const BasicShapeCircle* circle = To<BasicShapeCircle>(basic_shape);
       cssvalue::CSSBasicShapeCircleValue* circle_value =
-          cssvalue::CSSBasicShapeCircleValue::Create();
+          MakeGarbageCollected<cssvalue::CSSBasicShapeCircleValue>();
 
       circle_value->SetCenterX(ValueForCenterCoordinate(
           style, circle->CenterX(), EBoxOrient::kHorizontal));
@@ -147,8 +147,8 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
     }
     case BasicShape::kBasicShapeEllipseType: {
       const BasicShapeEllipse* ellipse = To<BasicShapeEllipse>(basic_shape);
-      cssvalue::CSSBasicShapeEllipseValue* ellipse_value =
-          cssvalue::CSSBasicShapeEllipseValue::Create();
+      auto* ellipse_value =
+          MakeGarbageCollected<cssvalue::CSSBasicShapeEllipseValue>();
 
       ellipse_value->SetCenterX(ValueForCenterCoordinate(
           style, ellipse->CenterX(), EBoxOrient::kHorizontal));
@@ -162,8 +162,8 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
     }
     case BasicShape::kBasicShapePolygonType: {
       const BasicShapePolygon* polygon = To<BasicShapePolygon>(basic_shape);
-      cssvalue::CSSBasicShapePolygonValue* polygon_value =
-          cssvalue::CSSBasicShapePolygonValue::Create();
+      auto* polygon_value =
+          MakeGarbageCollected<cssvalue::CSSBasicShapePolygonValue>();
 
       polygon_value->SetWindRule(polygon->GetWindRule());
       const Vector<Length>& values = polygon->Values();
@@ -176,8 +176,8 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
     }
     case BasicShape::kBasicShapeInsetType: {
       const BasicShapeInset* inset = To<BasicShapeInset>(basic_shape);
-      cssvalue::CSSBasicShapeInsetValue* inset_value =
-          cssvalue::CSSBasicShapeInsetValue::Create();
+      auto* inset_value =
+          MakeGarbageCollected<cssvalue::CSSBasicShapeInsetValue>();
 
       inset_value->SetTop(
           CSSPrimitiveValue::Create(inset->Top(), style.EffectiveZoom()));

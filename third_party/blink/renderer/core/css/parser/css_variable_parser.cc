@@ -160,12 +160,13 @@ CSSCustomPropertyDeclaration* CSSVariableParser::ParseDeclarationValue(
   if (!IsValidCSSValueID(type))
     return nullptr;
   if (type == CSSValueID::kInternalVariableValue) {
-    return CSSCustomPropertyDeclaration::Create(
+    return MakeGarbageCollected<CSSCustomPropertyDeclaration>(
         variable_name,
         CSSVariableData::Create(range, is_animation_tainted, has_references,
                                 context.BaseURL(), context.Charset()));
   }
-  return CSSCustomPropertyDeclaration::Create(variable_name, type);
+  return MakeGarbageCollected<CSSCustomPropertyDeclaration>(variable_name,
+                                                            type);
 }
 
 CSSVariableReferenceValue* CSSVariableParser::ParseRegisteredPropertyValue(

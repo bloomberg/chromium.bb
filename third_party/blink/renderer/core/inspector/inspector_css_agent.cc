@@ -1126,8 +1126,8 @@ Response InspectorCSSAgent::getComputedStyleForNode(
   if (!response.isSuccess())
     return response;
 
-  CSSComputedStyleDeclaration* computed_style_info =
-      CSSComputedStyleDeclaration::Create(node, true);
+  auto* computed_style_info =
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
   *style = protocol::Array<protocol::CSS::CSSComputedStyleProperty>::create();
   for (int id = kIntFirstCSSProperty; id <= kIntLastCSSProperty; ++id) {
     CSSPropertyID property_id = static_cast<CSSPropertyID>(id);
@@ -2365,8 +2365,8 @@ void InspectorCSSAgent::GetBackgroundColors(Element* element,
     }
   }
 
-  CSSComputedStyleDeclaration* computed_style_info =
-      CSSComputedStyleDeclaration::Create(element, true);
+  auto* computed_style_info =
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(element, true);
   const CSSValue* font_size =
       computed_style_info->GetPropertyCSSValue(GetCSSPropertyFontSize());
   *computed_font_size = font_size->CssText();

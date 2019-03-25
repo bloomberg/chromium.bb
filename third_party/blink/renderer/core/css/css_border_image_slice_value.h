@@ -35,10 +35,6 @@ namespace cssvalue {
 
 class CSSBorderImageSliceValue : public CSSValue {
  public:
-  static CSSBorderImageSliceValue* Create(CSSQuadValue* slices, bool fill) {
-    return MakeGarbageCollected<CSSBorderImageSliceValue>(slices, fill);
-  }
-
   CSSBorderImageSliceValue(CSSQuadValue* slices, bool fill);
 
   String CustomCSSText() const;

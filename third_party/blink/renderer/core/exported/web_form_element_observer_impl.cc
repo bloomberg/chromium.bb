@@ -83,8 +83,8 @@ void WebFormElementObserverImpl::ObserverCallback::Deliver(
       }
     } else {
       // Either "style" or "class" was modified. Check the computed style.
-      CSSComputedStyleDeclaration* style =
-          CSSComputedStyleDeclaration::Create(record->target());
+      auto* style =
+          MakeGarbageCollected<CSSComputedStyleDeclaration>(record->target());
       if (style->GetPropertyValue(CSSPropertyID::kDisplay) == "none") {
         callback_->ElementWasHiddenOrRemoved();
         Disconnect();

@@ -149,7 +149,8 @@ CSSCrossfadeValue* CSSCrossfadeValue::ValueWithURLsMadeAbsolute() {
   CSSValue* to_value = to_value_;
   if (auto* to_image_value = DynamicTo<CSSImageValue>(to_value_.Get()))
     to_value = to_image_value->ValueWithURLMadeAbsolute();
-  return CSSCrossfadeValue::Create(from_value, to_value, percentage_value_);
+  return MakeGarbageCollected<CSSCrossfadeValue>(from_value, to_value,
+                                                 percentage_value_);
 }
 
 FloatSize CSSCrossfadeValue::FixedSize(

@@ -576,9 +576,9 @@ HTMLElement* ApplyStyleCommand::SplitAncestorsWithUnicodeBidi(
   for (Node& runner : NodeTraversal::AncestorsOf(*node)) {
     if (runner == block)
       break;
-    CSSValueID unicode_bidi =
-        GetIdentifierValue(CSSComputedStyleDeclaration::Create(&runner),
-                           CSSPropertyID::kUnicodeBidi);
+    CSSValueID unicode_bidi = GetIdentifierValue(
+        MakeGarbageCollected<CSSComputedStyleDeclaration>(&runner),
+        CSSPropertyID::kUnicodeBidi);
     if (IsValidCSSValueID(unicode_bidi) &&
         unicode_bidi != CSSValueID::kNormal) {
       highest_ancestor_unicode_bidi = unicode_bidi;
@@ -637,9 +637,9 @@ void ApplyStyleCommand::RemoveEmbeddingUpToEnclosingBlock(
       continue;
 
     Element* element = ToElement(&runner);
-    CSSValueID unicode_bidi =
-        GetIdentifierValue(CSSComputedStyleDeclaration::Create(element),
-                           CSSPropertyID::kUnicodeBidi);
+    CSSValueID unicode_bidi = GetIdentifierValue(
+        MakeGarbageCollected<CSSComputedStyleDeclaration>(element),
+        CSSPropertyID::kUnicodeBidi);
     if (!IsValidCSSValueID(unicode_bidi) || unicode_bidi == CSSValueID::kNormal)
       continue;
 
@@ -673,9 +673,9 @@ static HTMLElement* HighestEmbeddingAncestor(Node* start_node,
                                              Node* enclosing_node) {
   for (Node* n = start_node; n && n != enclosing_node; n = n->parentNode()) {
     if (n->IsHTMLElement() &&
-        EditingStyleUtilities::IsEmbedOrIsolate(
-            GetIdentifierValue(CSSComputedStyleDeclaration::Create(n),
-                               CSSPropertyID::kUnicodeBidi))) {
+        EditingStyleUtilities::IsEmbedOrIsolate(GetIdentifierValue(
+            MakeGarbageCollected<CSSComputedStyleDeclaration>(n),
+            CSSPropertyID::kUnicodeBidi))) {
       return ToHTMLElement(n);
     }
   }
@@ -2024,8 +2024,7 @@ float ApplyStyleCommand::ComputedFontSize(Node* node) {
   if (!node)
     return 0;
 
-  CSSComputedStyleDeclaration* style =
-      CSSComputedStyleDeclaration::Create(node);
+  auto* style = MakeGarbageCollected<CSSComputedStyleDeclaration>(node);
   if (!style)
     return 0;
 

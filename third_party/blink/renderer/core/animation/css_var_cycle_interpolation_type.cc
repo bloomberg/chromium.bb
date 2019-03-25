@@ -120,8 +120,8 @@ void CSSVarCycleInterpolationType::Apply(
   StyleBuilder::ApplyProperty(
       GetProperty().GetCSSPropertyName(),
       ToCSSInterpolationEnvironment(environment).GetState(),
-      *CSSCustomPropertyDeclaration::Create(GetProperty().CustomPropertyName(),
-                                            CSSValueUnset));
+      *MakeGarbageCollected<CSSCustomPropertyDeclaration>(
+          GetProperty().CustomPropertyName(), CSSValueUnset));
 }
 
 }  // namespace blink

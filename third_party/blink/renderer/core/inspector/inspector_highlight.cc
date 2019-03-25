@@ -202,7 +202,8 @@ String ToHEXA(const Color& color) {
 void AppendStyleInfo(Node* node, protocol::DictionaryValue* element_info) {
   std::unique_ptr<protocol::DictionaryValue> computed_style =
       protocol::DictionaryValue::create();
-  CSSStyleDeclaration* style = CSSComputedStyleDeclaration::Create(node, true);
+  CSSStyleDeclaration* style =
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
   Vector<AtomicString> properties;
 
   // For text nodes, we can show color & font properties.

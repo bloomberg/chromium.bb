@@ -55,8 +55,8 @@ String ComputeCSSPropertyValue(SVGElement* element, CSSPropertyID id) {
   // Don't include any properties resulting from CSS Transitions/Animations or
   // SMIL animations, as we want to retrieve the "base value".
   element->SetUseOverrideComputedStyle(true);
-  String value =
-      CSSComputedStyleDeclaration::Create(element)->GetPropertyValue(id);
+  String value = MakeGarbageCollected<CSSComputedStyleDeclaration>(element)
+                     ->GetPropertyValue(id);
   element->SetUseOverrideComputedStyle(false);
   return value;
 }

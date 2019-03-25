@@ -437,7 +437,7 @@ WritingDirection StyleCommands::TextDirectionForSelection(
         continue;
 
       const CSSComputedStyleDeclaration& style =
-          *CSSComputedStyleDeclaration::Create(&node);
+          *MakeGarbageCollected<CSSComputedStyleDeclaration>(&node);
       const CSSValue* unicode_bidi =
           style.GetPropertyCSSValue(GetCSSPropertyUnicodeBidi());
       auto* unicode_bidi_identifier_value =
@@ -475,7 +475,7 @@ WritingDirection StyleCommands::TextDirectionForSelection(
 
     Element* element = &ToElement(runner);
     const CSSComputedStyleDeclaration& style =
-        *CSSComputedStyleDeclaration::Create(element);
+        *MakeGarbageCollected<CSSComputedStyleDeclaration>(element);
     const CSSValue* unicode_bidi =
         style.GetPropertyCSSValue(GetCSSPropertyUnicodeBidi());
     auto* unicode_bidi_identifier_value =

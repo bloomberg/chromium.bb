@@ -53,7 +53,8 @@ void InlineStylePropertyMap::SetCustomProperty(
       To<CSSVariableReferenceValue>(value).VariableDataValue();
   owner_element_->SetInlineStyleProperty(
       CSSPropertyID::kVariable,
-      *CSSCustomPropertyDeclaration::Create(property_name, variable_data));
+      *MakeGarbageCollected<CSSCustomPropertyDeclaration>(property_name,
+                                                          variable_data));
 }
 
 void InlineStylePropertyMap::RemoveProperty(CSSPropertyID property_id) {

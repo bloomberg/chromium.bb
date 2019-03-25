@@ -57,7 +57,7 @@ class CSSImageNonInterpolableValue : public NonInterpolableValue {
       return start_;
     if (progress >= 1)
       return end_;
-    return cssvalue::CSSCrossfadeValue::Create(
+    return MakeGarbageCollected<cssvalue::CSSCrossfadeValue>(
         start_, end_,
         CSSPrimitiveValue::Create(progress,
                                   CSSPrimitiveValue::UnitType::kNumber));

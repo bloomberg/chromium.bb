@@ -228,7 +228,7 @@ CSSBasicShapeCircleValue* ConsumeBasicShapeCircle(
     const CSSParserContext& context) {
   // spec: https://drafts.csswg.org/css-shapes/#supported-basic-shapes
   // circle( [<shape-radius>]? [at <position>]? )
-  CSSBasicShapeCircleValue* shape = CSSBasicShapeCircleValue::Create();
+  auto* shape = MakeGarbageCollected<CSSBasicShapeCircleValue>();
   if (CSSValue* radius = ConsumeShapeRadius(args, context.Mode()))
     shape->SetRadius(radius);
   if (css_property_parser_helpers::ConsumeIdent<CSSValueID::kAt>(args)) {
@@ -249,7 +249,7 @@ CSSBasicShapeEllipseValue* ConsumeBasicShapeEllipse(
     const CSSParserContext& context) {
   // spec: https://drafts.csswg.org/css-shapes/#supported-basic-shapes
   // ellipse( [<shape-radius>{2}]? [at <position>]? )
-  CSSBasicShapeEllipseValue* shape = CSSBasicShapeEllipseValue::Create();
+  auto* shape = MakeGarbageCollected<CSSBasicShapeEllipseValue>();
   WebFeature feature = WebFeature::kBasicShapeEllipseNoRadius;
   if (CSSValue* radius_x = ConsumeShapeRadius(args, context.Mode())) {
     shape->SetRadiusX(radius_x);
@@ -276,7 +276,7 @@ CSSBasicShapeEllipseValue* ConsumeBasicShapeEllipse(
 CSSBasicShapePolygonValue* ConsumeBasicShapePolygon(
     CSSParserTokenRange& args,
     const CSSParserContext& context) {
-  CSSBasicShapePolygonValue* shape = CSSBasicShapePolygonValue::Create();
+  auto* shape = MakeGarbageCollected<CSSBasicShapePolygonValue>();
   if (css_property_parser_helpers::IdentMatches<CSSValueID::kEvenodd,
                                                 CSSValueID::kNonzero>(
           args.Peek().Id())) {
@@ -307,7 +307,7 @@ CSSBasicShapePolygonValue* ConsumeBasicShapePolygon(
 CSSBasicShapeInsetValue* ConsumeBasicShapeInset(
     CSSParserTokenRange& args,
     const CSSParserContext& context) {
-  CSSBasicShapeInsetValue* shape = CSSBasicShapeInsetValue::Create();
+  auto* shape = MakeGarbageCollected<CSSBasicShapeInsetValue>();
   CSSPrimitiveValue* top = css_property_parser_helpers::ConsumeLengthOrPercent(
       args, context.Mode(), kValueRangeAll);
   if (!top)
@@ -481,7 +481,7 @@ CSSValue* ConsumeContentDistributionOverflowPosition(
   DCHECK(is_position_keyword);
   CSSValueID id = range.Peek().Id();
   if (css_property_parser_helpers::IdentMatches<CSSValueID::kNormal>(id)) {
-    return CSSContentDistributionValue::Create(
+    return MakeGarbageCollected<CSSContentDistributionValue>(
         CSSValueID::kInvalid, range.ConsumeIncludingWhitespace().Id(),
         CSSValueID::kInvalid);
   }
@@ -490,13 +490,13 @@ CSSValue* ConsumeContentDistributionOverflowPosition(
     CSSValue* baseline = ConsumeBaselineKeyword(range);
     if (!baseline)
       return nullptr;
-    return CSSContentDistributionValue::Create(CSSValueID::kInvalid,
-                                               GetBaselineKeyword(*baseline),
-                                               CSSValueID::kInvalid);
+    return MakeGarbageCollected<CSSContentDistributionValue>(
+        CSSValueID::kInvalid, GetBaselineKeyword(*baseline),
+        CSSValueID::kInvalid);
   }
 
   if (IsContentDistributionKeyword(id)) {
-    return CSSContentDistributionValue::Create(
+    return MakeGarbageCollected<CSSContentDistributionValue>(
         range.ConsumeIncludingWhitespace().Id(), CSSValueID::kInvalid,
         CSSValueID::kInvalid);
   }
@@ -505,7 +505,7 @@ CSSValue* ConsumeContentDistributionOverflowPosition(
                             ? range.ConsumeIncludingWhitespace().Id()
                             : CSSValueID::kInvalid;
   if (is_position_keyword(range.Peek().Id())) {
-    return CSSContentDistributionValue::Create(
+    return MakeGarbageCollected<CSSContentDistributionValue>(
         CSSValueID::kInvalid, range.ConsumeIncludingWhitespace().Id(),
         overflow);
   }
@@ -1073,7 +1073,7 @@ CSSValue* ConsumeBorderImageSlice(CSSParserTokenRange& range,
   css_property_parser_helpers::Complete4Sides(slices);
   if (default_fill == DefaultFill::kFill)
     fill = true;
-  return CSSBorderImageSliceValue::Create(
+  return MakeGarbageCollected<CSSBorderImageSliceValue>(
       CSSQuadValue::Create(slices[0], slices[1], slices[2], slices[3],
                            CSSQuadValue::kSerializeAsQuad),
       fill);

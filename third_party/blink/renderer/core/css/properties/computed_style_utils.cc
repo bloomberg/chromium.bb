@@ -354,7 +354,7 @@ CSSBorderImageSliceValue* ComputedStyleUtils::ValueForNinePieceImageSlice(
     }
   }
 
-  return CSSBorderImageSliceValue::Create(
+  return MakeGarbageCollected<CSSBorderImageSliceValue>(
       CSSQuadValue::Create(top, right, bottom, left,
                            CSSQuadValue::kSerializeAsQuad),
       image.Fill());
@@ -1744,7 +1744,8 @@ CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style) {
       }
       CSSIdentifierValue* list_style =
           CSSIdentifierValue::Create(list_style_ident);
-      list->Append(*CSSCounterValue::Create(identifier, list_style, separator));
+      list->Append(*MakeGarbageCollected<cssvalue::CSSCounterValue>(
+          identifier, list_style, separator));
     } else if (content_data->IsImage()) {
       const StyleImage* image = To<ImageContentData>(content_data)->GetImage();
       DCHECK(image);
