@@ -4,15 +4,10 @@
 
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 
-#include <string>
-
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/send_tab_to_self/desktop_notification_handler.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
-#include "chrome/browser/ui/browser.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/device_info/device_info.h"
@@ -46,7 +41,7 @@ bool IsSyncingOnMultipleDevices(Profile* profile) {
          device_sync_service->GetDeviceInfoTracker()->CountActiveDevices() > 1;
 }
 
-bool IsContentRequirementsMet(GURL& url, Profile* profile) {
+bool IsContentRequirementsMet(const GURL& url, Profile* profile) {
   bool is_http_or_https = url.SchemeIsHTTPOrHTTPS();
   bool is_native_page = url.SchemeIs(content::kChromeUIScheme);
   bool is_incognito_mode =
@@ -54,41 +49,14 @@ bool IsContentRequirementsMet(GURL& url, Profile* profile) {
   return is_http_or_https && !is_native_page && !is_incognito_mode;
 }
 
-bool ShouldOfferFeature(Browser* browser) {
-  if (!browser) {
-    return false;
-  }
-  Profile* profile = browser->profile();
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
+bool ShouldOfferFeature(Profile* profile, content::WebContents* web_contents) {
   if (!profile || !web_contents) {
     return false;
   }
 
-  GURL url = web_contents->GetURL();
   return IsFlagEnabled() && IsUserSyncTypeEnabled(profile) &&
          IsSyncingOnMultipleDevices(profile) &&
-         IsContentRequirementsMet(url, profile);
-}
-
-void CreateNewEntry(content::WebContents* tab, Profile* profile) {
-  content::NavigationEntry* navigation_entry =
-      tab->GetController().GetLastCommittedEntry();
-
-  GURL url = navigation_entry->GetURL();
-  std::string title = base::UTF16ToUTF8(navigation_entry->GetTitle());
-  base::Time navigation_time = navigation_entry->GetTimestamp();
-
-  const SendTabToSelfEntry* entry =
-      SendTabToSelfSyncServiceFactory::GetForProfile(profile)
-          ->GetSendTabToSelfModel()
-          ->AddEntry(url, title, navigation_time);
-
-  if (entry) {
-    DesktopNotificationHandler(profile).DisplaySendingConfirmation(entry);
-  } else {
-    DesktopNotificationHandler(profile).DisplayFailureMessage();
-  }
+         IsContentRequirementsMet(web_contents->GetURL(), profile);
 }
 
 }  // namespace send_tab_to_self

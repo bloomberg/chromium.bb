@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_UTIL_H_
 #define CHROME_BROWSER_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_UTIL_H_
 
-class Browser;
 class GURL;
 class Profile;
 
@@ -28,14 +27,10 @@ bool IsSyncingOnMultipleDevices(Profile* profile);
 //  User is viewing an HTTP or HTTPS page.
 //  User is not on a native page.
 //  User is not in Incongnito mode.
-bool IsContentRequirementsMet(GURL& gurl, Profile* profile);
+bool IsContentRequirementsMet(const GURL& gurl, Profile* profile);
 
 // Returns true if all conditions are true and shows the option onto the menu
-bool ShouldOfferFeature(Browser* browser);
-
-// Add a new entry to SendTabToSelfModel when user click "Share to my devices"
-// option
-void CreateNewEntry(content::WebContents* tab, Profile* profile);
+bool ShouldOfferFeature(Profile* profile, content::WebContents* web_contents);
 
 }  // namespace send_tab_to_self
 

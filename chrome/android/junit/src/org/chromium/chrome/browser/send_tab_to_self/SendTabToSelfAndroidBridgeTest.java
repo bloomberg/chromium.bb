@@ -27,6 +27,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.List;
 
@@ -40,6 +41,7 @@ public class SendTabToSelfAndroidBridgeTest {
     @Mock
     SendTabToSelfAndroidBridge.Natives mNativeMock;
     private Profile mProfile;
+    private WebContents mWebContents;
 
     private static final String GUID = "randomguid";
     private static final String URL = "http://www.tanyastacos.com";
@@ -121,5 +123,15 @@ public class SendTabToSelfAndroidBridgeTest {
     public void testDeleteEntry() {
         SendTabToSelfAndroidBridge.deleteEntry(mProfile, GUID);
         verify(mNativeMock).deleteEntry(eq(mProfile), eq(GUID));
+    }
+
+    @Test
+    @SmallTest
+    public void testIsFeatureAvailable() {
+        boolean expected = true;
+        when(mNativeMock.isFeatureAvailable(eq(mProfile), eq(mWebContents))).thenReturn(expected);
+
+        boolean actual = SendTabToSelfAndroidBridge.isFeatureAvailable(mProfile, mWebContents);
+        Assert.assertEquals(expected, actual);
     }
 }
