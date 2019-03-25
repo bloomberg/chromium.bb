@@ -30,7 +30,9 @@
 #include "components/policy/core/common/schema.h"
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
+#include "components/strings/grit/components_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "third_party/re2/src/re2/re2.h"
 
 using google::protobuf::RepeatedField;
 using google::protobuf::RepeatedPtrField;
@@ -38,6 +40,9 @@ using google::protobuf::RepeatedPtrField;
 namespace em = enterprise_management;
 
 namespace policy {
+
+// A pattern for validating hostnames.
+const char hostNameRegex[] = "^([A-z0-9][A-z0-9-]+\\.)+[A-z0-9]+$";
 
 namespace {
 
@@ -69,6 +74,19 @@ void SetJsonDevicePolicy(const std::string& policy_name,
                          PolicyMap* policies) {
   SetJsonDevicePolicy(policy_name, json_string,
                       /* external_data_fetcher */ nullptr, policies);
+}
+
+// Function that sets the policy value and validates it with a regex, adding
+// error in case of not matching.
+void SetPolicyWithValidatingRegex(const std::string& policy_name,
+                                  const std::string& policy_value,
+                                  const std::string& pattern,
+                                  PolicyMap* policies) {
+  policies->Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                POLICY_SOURCE_CLOUD,
+                std::make_unique<base::Value>(policy_value), nullptr);
+  if (!RE2::FullMatch(policy_value, pattern))
+    policies->AddError(policy_name, IDS_POLICY_INVALID_VALUE);
 }
 
 void SetExternalDataDevicePolicy(
@@ -329,12 +347,9 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
   if (policy.has_login_screen_domain_auto_complete()) {
     const em::LoginScreenDomainAutoCompleteProto& container(
         policy.login_screen_domain_auto_complete());
-    policies->Set(key::kDeviceLoginScreenDomainAutoComplete,
-                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                  POLICY_SOURCE_CLOUD,
-                  std::make_unique<base::Value>(
-                      container.login_screen_domain_auto_complete()),
-                  nullptr);
+    SetPolicyWithValidatingRegex(key::kDeviceLoginScreenDomainAutoComplete,
+                                 container.login_screen_domain_auto_complete(),
+                                 hostNameRegex, policies);
   }
 
   if (policy.has_login_screen_locales()) {
