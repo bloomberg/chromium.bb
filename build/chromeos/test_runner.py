@@ -52,6 +52,19 @@ class TestFormatError(Exception):
 
 class RemoteTest(object):
 
+  # This is a basic shell script that can be appended to in order to invoke the
+  # test on the device.
+  BASIC_SHELL_SCRIPT = [
+    '#!/bin/sh',
+
+    # /home is mounted with "noexec" in the device, but some of our tools
+    # and tests use the home dir as a workspace (eg: vpython downloads
+    # python binaries to ~/.vpython-root). /tmp doesn't have this
+    # restriction, so change the location of the home dir for the
+    # duration of the test.
+    'export HOME=/tmp',
+  ]
+
   def __init__(self, args, unknown_args):
     self._additional_args = unknown_args
     self._path_to_outdir = args.path_to_outdir
@@ -82,6 +95,22 @@ class RemoteTest(object):
       self._test_cmd += [
           '--results-src', '/var/log/',
           '--results-dest-dir', args.logs_dir,
+      ]
+
+    # This environment variable is set for tests that have been instrumented
+    # for code coverage. Its incoming value is expected to be a location
+    # inside a subdirectory of result_dir above. This is converted to an
+    # absolute path that the vm is able to write to, and passed in the
+    # --results-src flag to cros_run_vm_test for copying out of the vm before
+    # its termination.
+    self._llvm_profile_var = None
+    if os.environ.get('LLVM_PROFILE_FILE'):
+      _, llvm_profile_file = os.path.split(os.environ['LLVM_PROFILE_FILE'])
+      self._llvm_profile_var = '/tmp/profraw/%s' % llvm_profile_file
+
+      # This should make the vm test runner exfil the profiling data.
+      self._test_cmd += [
+          '--results-src', '/tmp/profraw'
       ]
 
     self._test_env = setup_env()
@@ -231,9 +260,6 @@ class GTestTest(RemoteTest):
 
     self._on_device_script = None
 
-    # If set, pass this value to the LLVM_PROFILE_FILE env var in the vm.
-    self._vm_profile_var = None
-
   @property
   def suite_name(self):
     return self._test_exe
@@ -262,34 +288,11 @@ class GTestTest(RemoteTest):
           '--results-dest-dir', result_dir,
       ]
 
-      # This environment variable is set for tests that have been instrumented
-      # for code coverage. Its incoming value is expected to be a location
-      # inside a subdirectory of result_dir above. This is converted to an
-      # absolute path that the vm is able to write to, and passed in the
-      # --results-src flag to cros_run_vm_test for copying out of the vm before
-      # its termination.
-      if os.environ.get('LLVM_PROFILE_FILE'):
-        _, vm_profile_file = os.path.split(os.environ['LLVM_PROFILE_FILE'])
-        self._vm_profile_var = '/tmp/profraw/%s' % vm_profile_file
-
-        # This should make the vm test runner exfil the profiling data.
-        self._test_cmd += [
-            '--results-src', '/tmp/profraw'
-        ]
-
     # Build the shell script that will be used on the device to invoke the test.
-    device_test_script_contents = ['#!/bin/sh']
-
-    # /home is mounted with "noexec" in the device, but some of our tools
-    # and tests use the home dir as a workspace (eg: vpython downloads
-    # python binaries to ~/.vpython-root). /tmp doesn't have this
-    # restriction, so change the location of the home dir for the
-    # duration of the test.
-    device_test_script_contents.append('export HOME=/tmp')
-
-    if self._vm_profile_var:
+    device_test_script_contents = self.BASIC_SHELL_SCRIPT[:]
+    if self._llvm_profile_var:
       device_test_script_contents += [
-          'export LLVM_PROFILE_FILE=%s'% self._vm_profile_var,
+          'export LLVM_PROFILE_FILE=%s'% self._llvm_profile_var,
       ]
 
     if self._vpython_dir:
