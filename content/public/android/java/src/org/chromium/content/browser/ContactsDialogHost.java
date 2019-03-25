@@ -80,7 +80,7 @@ public class ContactsDialogHost implements ContactsPickerListener {
 
     @Override
     public void onContactsPickerUserAction(
-            @ContactsPickerAction int action, String contactsJson, List<Contact> contacts) {
+            @ContactsPickerAction int action, List<Contact> contacts) {
         switch (action) {
             case ContactsPickerAction.CANCEL:
                 nativeEndContactsList(mNativeContactsProviderAndroid);

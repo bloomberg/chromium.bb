@@ -143,7 +143,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kJellyBeanSupported,
     &kLanguagesPreference,
     &kModalPermissionDialogView,
-    &kNewContactsPicker,
     &kNewPhotoPicker,
     &kNoCreditCardAbort,
     &kNTPButton,
@@ -415,9 +414,6 @@ const base::Feature kSearchEnginePromoExistingDevice{
 
 const base::Feature kSearchEnginePromoNewDevice{
     "SearchEnginePromo.NewDevice", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kNewContactsPicker{"NewContactsPicker",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNewPhotoPicker{"NewPhotoPicker",
                                     base::FEATURE_ENABLED_BY_DEFAULT};

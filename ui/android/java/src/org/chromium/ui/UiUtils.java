@@ -138,13 +138,6 @@ public class UiUtils {
     }
 
     /**
-     * Returns whether a contacts picker should be called.
-     */
-    public static boolean shouldShowContactsPicker() {
-        return sContactsPickerDelegate != null;
-    }
-
-    /**
      * Called to display the contacts picker.
      * @param context  The context to use.
      * @param listener The listener that will be notified of the action the user took in the

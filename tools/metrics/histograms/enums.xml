@@ -32650,7 +32650,6 @@ from previous Chrome versions.
   <int value="-787969387" label="HTTPSServerPreviewsUsingURLLoader:enabled"/>
   <int value="-787876637" label="HomeLauncherGestures:enabled"/>
   <int value="-787426248" label="ChromeHomeSurvey:disabled"/>
-  <int value="-782536046" label="NewContactsPicker:enabled"/>
   <int value="-780798969" label="disable-single-click-autofill"/>
   <int value="-778126349" label="DownloadsLocationChange:enabled"/>
   <int value="-776686417" label="SiteExplorationUi:disabled"/>
@@ -33162,7 +33161,6 @@ from previous Chrome versions.
   <int value="56723110" label="enable-webfonts-intervention"/>
   <int value="56900498" label="OmniboxOneClickUnelide:enabled"/>
   <int value="57255632" label="site-isolation-for-password-sites:disabled"/>
-  <int value="57555893" label="NewContactsPicker:disabled"/>
   <int value="57639188" label="SoundContentSetting:disabled"/>
   <int value="57791920" label="MemoryCoordinator:enabled"/>
   <int value="58099178" label="SecondaryUiMd:enabled"/>
