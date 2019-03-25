@@ -46,6 +46,23 @@ js_type_check("closure_compile") {
 
 js_library("app") {
   deps = [
+    ":model",
+    ":state",
+    "..:cloud_print_interface",
+    "..:cloud_print_interface_manager",
+    "..:native_layer",
+    "../data:destination",
+    "../data:document_info",
+    "../data:measurement_system",
+    "//ui/webui/resources/js:event_tracker",
+    "//ui/webui/resources/js:util",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
+    "//ui/webui/resources/js/cr/ui:focus_outline_manager",
+  ]
+}
+
+js_library("print_preview_sidebar") {
+  deps = [
     ":advanced_options_settings",
     ":color_settings",
     ":copies_settings",
@@ -57,26 +74,16 @@ js_library("app") {
     ":link_container",
     ":margins_settings",
     ":media_size_settings",
-    ":model",
     ":more_settings",
     ":other_options_settings",
     ":pages_per_sheet_settings",
     ":pages_settings",
-    ":preview_area",
     ":scaling_settings",
     ":state",
     "..:cloud_print_interface",
-    "..:cloud_print_interface_manager",
     "..:metrics",
-    "..:native_layer",
     "../data:destination",
-    "../data:document_info",
-    "../data:measurement_system",
     "//ui/webui/resources/cr_elements:cr_container_shadow_behavior",
-    "//ui/webui/resources/js:event_tracker",
-    "//ui/webui/resources/js:util",
-    "//ui/webui/resources/js:web_ui_listener_behavior",
-    "//ui/webui/resources/js/cr/ui:focus_outline_manager",
   ]
 }
 

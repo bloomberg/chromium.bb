@@ -23,6 +23,14 @@
                  file="new/app.js"
                  type="chrome_html"
                  preprocess="true" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_PRINT_PREVIEW_SIDEBAR_HTML"
+                 file="new/print_preview_sidebar.html"
+                 type="chrome_html"
+                 preprocess="true" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_PRINT_PREVIEW_SIDEBAR_JS"
+                 file="new/print_preview_sidebar.js"
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_PRINT_PREVIEW_NEW_MODEL_HTML"
                  file="new/model.html"
                  type="chrome_html" />

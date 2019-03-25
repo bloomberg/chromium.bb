@@ -146,7 +146,7 @@ cr.define('destination_settings_test', function() {
      */
     function initialize() {
       // Initialize destination settings.
-      destinationSettings.setCloudPrintInterface(cloudPrintInterface);
+      destinationSettings.cloudPrintInterface = cloudPrintInterface;
       destinationSettings.setSetting('recentDestinations', recentDestinations);
       destinationSettings.appKioskMode = false;
       destinationSettings.initDestinationStore(

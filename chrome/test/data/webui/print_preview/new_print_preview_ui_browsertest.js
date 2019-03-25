@@ -62,14 +62,39 @@ TEST_F('PrintPreviewAppTest', 'PrintToGoogleDrive', function() {
   this.runMochaTest(print_preview_app_test.TestNames.PrintToGoogleDrive);
 });
 
-TEST_F('PrintPreviewAppTest', 'SettingsSectionsVisibilityChange', function() {
-  this.runMochaTest(
-      print_preview_app_test.TestNames.SettingsSectionsVisibilityChange);
-});
-
 TEST_F('PrintPreviewAppTest', 'PrintPresets', function() {
   this.runMochaTest(print_preview_app_test.TestNames.PrintPresets);
 });
+
+PrintPreviewSidebarTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/print_preview_sidebar.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      '../test_browser_proxy.js',
+      'cloud_print_interface_stub.js',
+      'native_layer_stub.js',
+      'print_preview_test_utils.js',
+      'print_preview_sidebar_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return print_preview_sidebar_test.suiteName;
+  }
+};
+
+TEST_F(
+    'PrintPreviewSidebarTest', 'SettingsSectionsVisibilityChange', function() {
+      this.runMochaTest(print_preview_sidebar_test.TestNames
+                            .SettingsSectionsVisibilityChange);
+    });
 
 PrintPreviewPagesSettingsTest = class extends NewPrintPreviewTest {
   /** @override */

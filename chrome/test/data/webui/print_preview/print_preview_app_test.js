@@ -6,7 +6,6 @@ cr.define('print_preview_app_test', function() {
   /** @enum {string} */
   const TestNames = {
     PrintToGoogleDrive: 'print to google drive',
-    SettingsSectionsVisibilityChange: 'settings sections visibility change',
     PrintPresets: 'print presets',
   };
 
@@ -73,8 +72,8 @@ cr.define('print_preview_app_test', function() {
           print_preview_test_utils.getCddTemplate(page.destination_.id);
 
       // Trigger print.
-      const header = page.$$('print-preview-header');
-      header.dispatchEvent(
+      const sidebar = page.$$('print-preview-sidebar');
+      sidebar.dispatchEvent(
           new CustomEvent('print-requested', {composed: true, bubbles: true}));
 
       // Validate arguments to cloud print interface.
@@ -84,24 +83,6 @@ cr.define('print_preview_app_test', function() {
       assertEquals(
           print_preview.Destination.GooglePromotedId.DOCS, args.destination.id);
       assertEquals('1.0', JSON.parse(args.printTicket).version);
-    });
-
-    test(assert(TestNames.SettingsSectionsVisibilityChange), function() {
-      const moreSettingsElement = page.$$('print-preview-more-settings');
-      moreSettingsElement.$.label.click();
-      const camelToKebab = s => s.replace(/([A-Z])/g, '-$1').toLowerCase();
-      ['copies', 'layout', 'color', 'mediaSize', 'margins', 'dpi', 'scaling',
-       'duplex', 'otherOptions']
-          .forEach(setting => {
-            const element =
-                page.$$(`print-preview-${camelToKebab(setting)}-settings`);
-            // Show, hide and reset.
-            [true, false, true].forEach(value => {
-              page.set(`settings.${setting}.available`, value);
-              // Element expected to be visible when available.
-              assertEquals(!value, element.hidden);
-            });
-          });
     });
 
     test(assert(TestNames.PrintPresets), function() {

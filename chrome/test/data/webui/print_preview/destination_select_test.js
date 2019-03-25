@@ -85,7 +85,7 @@ cr.define('destination_select_test', function() {
           function() {
             numPrintersSelected++;
           });
-      destinationSettings.setCloudPrintInterface(cloudPrintInterface);
+      destinationSettings.cloudPrintInterface = cloudPrintInterface;
       destinationSettings.appKioskMode = initialSettings.isInAppKioskMode;
       const recentDestinations = initialSettings.serializedAppStateStr ?
           JSON.parse(initialSettings.serializedAppStateStr).recentDestinations :

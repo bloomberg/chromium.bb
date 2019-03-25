@@ -2,43 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-'use strict';
-
-/**
- * Number of settings sections to show when "More settings" is collapsed.
- * @type {number}
- */
-const MAX_SECTIONS_TO_SHOW = 6;
-
 Polymer({
   is: 'print-preview-app',
 
   behaviors: [
     SettingsBehavior,
-    CrContainerShadowBehavior,
     WebUIListenerBehavior,
   ],
 
   properties: {
-    /**
-     * Object containing current settings of Print Preview, for use by Polymer
-     * controls.
-     * @type {!Object}
-     */
-    settings: Object,
-
     /** @type {!print_preview_new.State} */
     state: {
       type: Number,
       observer: 'onStateChanged_',
     },
 
-    /** @private {boolean} */
-    controlsDisabled_: {
-      type: Boolean,
-      computed: 'computeControlsDisabled_(state)',
-    },
+    /** @private {!cloudprint.CloudPrintInterface} */
+    cloudPrintInterface_: Object,
 
     /** @private {boolean} */
     controlsManaged_: Boolean,
@@ -55,6 +35,9 @@ Polymer({
     /** @private {print_preview.DocumentSettings} */
     documentSettings_: Object,
 
+    /** @private {string} */
+    errorMessage_: String,
+
     /** @private {print_preview.Margins} */
     margins_: Object,
 
@@ -63,12 +46,6 @@ Polymer({
 
     /** @private {!print_preview.PrintableArea} */
     printableArea_: Object,
-
-    /** @private {boolean} */
-    isInAppKioskMode_: {
-      type: Boolean,
-      value: false,
-    },
 
     /** @private {?print_preview.MeasurementSystem} */
     measurementSystem_: {
@@ -81,23 +58,6 @@ Polymer({
       type: String,
       observer: 'onPreviewAreaStateChanged_',
     },
-
-    /** @private {boolean} */
-    settingsExpandedByUser_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /** @private {boolean} */
-    shouldShowMoreSettings_: {
-      type: Boolean,
-      computed: 'computeShouldShowMoreSettings_(settings.pages.available, ' +
-          'settings.copies.available, settings.layout.available, ' +
-          'settings.color.available, settings.mediaSize.available, ' +
-          'settings.dpi.available, settings.margins.available, ' +
-          'settings.pagesPerSheet.available, settings.scaling.available, ' +
-          'settings.otherOptions.available, settings.vendorItems.available)',
-    },
   },
 
   listeners: {
@@ -107,9 +67,6 @@ Polymer({
 
   /** @private {?print_preview.NativeLayer} */
   nativeLayer_: null,
-
-  /** @private {?cloudprint.CloudPrintInterface} */
-  cloudPrintInterface_: null,
 
   /** @private {!EventTracker} */
   tracker_: new EventTracker(),
@@ -160,14 +117,6 @@ Polymer({
   },
 
   /**
-   * @return {boolean} Whether the controls should be disabled.
-   * @private
-   */
-  computeControlsDisabled_: function() {
-    return this.state != print_preview_new.State.READY;
-  },
-
-  /**
    * Consume escape and enter key presses and ctrl + shift + p. Delegate
    * everything else to the preview area.
    * @param {!KeyboardEvent} e The keyboard event.
@@ -209,9 +158,7 @@ Polymer({
       if ((cr.isMac && e.metaKey && e.altKey && !e.shiftKey && !e.ctrlKey) ||
           (!cr.isMac && e.shiftKey && e.ctrlKey && !e.altKey && !e.metaKey)) {
         // Don't use system dialog if the link isn't available.
-        const linkContainer = this.$$('print-preview-link-container');
-        if (!linkContainer || !linkContainer.systemDialogLinkAvailable()) {
-          e.preventDefault();
+        if (!this.$.sidebar.systemDialogLinkAvailable()) {
           return;
         }
 
@@ -284,9 +231,8 @@ Polymer({
           settings.thousandsDelimeter, settings.decimalDelimeter,
           settings.unitType);
       this.setSetting('selectionOnly', settings.shouldPrintSelectionOnly);
-      this.isInAppKioskMode_ = settings.isInAppKioskMode;
-      this.$.destinationSettings.initDestinationStore(
-          settings.printerName,
+      this.$.sidebar.init(
+          settings.isInAppKioskMode, settings.printerName,
           settings.serializedDefaultDestinationSelectionRulesStr);
       this.isInKioskAutoPrintMode_ = settings.isInKioskAutoPrintMode;
 
@@ -321,9 +267,7 @@ Polymer({
       this.tracker_.add(
           assert(this.cloudPrintInterface_).getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.SUBMIT_FAILED,
-          this.onCloudPrintError_.bind(this));
-      this.$.destinationSettings.setCloudPrintInterface(
-          this.cloudPrintInterface_);
+          this.onCloudPrintError_.bind(this, appKioskMode));
     });
   },
 
@@ -404,14 +348,6 @@ Polymer({
         this.nativeLayer_.hidePreview();
       }
     } else if (this.state == print_preview_new.State.PRINTING) {
-      if (this.shouldShowMoreSettings_) {
-        print_preview.MetricsContext.printSettingsUi().record(
-            this.settingsExpandedByUser_ ?
-                print_preview.Metrics.PrintSettingsUiBucket
-                    .PRINT_WITH_SETTINGS_EXPANDED :
-                print_preview.Metrics.PrintSettingsUiBucket
-                    .PRINT_WITH_SETTINGS_COLLAPSED);
-      }
       const destination = assert(this.destination_);
       const whenPrintDone =
           this.nativeLayer_.print(this.$.model.createPrintTicket(
@@ -512,7 +448,7 @@ Polymer({
   onPrintFailed_: function(httpError) {
     console.error('Printing failed with error code ' + httpError);
     this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
-    this.$.header.setErrorMessage(loadTimeData.getString('couldNotPrint'));
+    this.errorMessage_ = loadTimeData.getString('couldNotPrint');
   },
 
   /** @private */
@@ -541,17 +477,18 @@ Polymer({
   /**
    * Called when there was an error communicating with Google Cloud print.
    * Displays an error message in the print header.
+   * @param {boolean} appKioskMode
    * @param {!CustomEvent<!cloudprint.CloudPrintInterfaceErrorEventDetail>}
    *     event Contains the error message.
    * @private
    */
-  onCloudPrintError_: function(event) {
+  onCloudPrintError_: function(appKioskMode, event) {
     if (event.detail.status == 0 ||
-        (event.detail.status == 403 && !this.isInAppKioskMode_)) {
+        (event.detail.status == 403 && !appKioskMode)) {
       return;  // No internet connectivity or not signed in.
     }
     this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
-    this.$.header.setErrorMessage(event.detail.message);
+    this.errorMessage_ = event.detail.message;
     if (event.detail.status == 200) {
       console.error(
           'Google Cloud Print Error: ' +
@@ -597,36 +534,6 @@ Polymer({
   },
 
   /**
-   * @return {boolean} Whether to show the "More settings" link.
-   * @private
-   */
-  computeShouldShowMoreSettings_: function() {
-    // Destination settings is always available. See if the total number of
-    // available sections exceeds the maximum number to show.
-    return [
-      'pages', 'copies', 'layout', 'color', 'mediaSize', 'margins', 'dpi',
-      'pagesPerSheet', 'scaling', 'otherOptions', 'vendorItems'
-    ].reduce((count, setting) => {
-      return this.getSetting(setting).available ? count + 1 : count;
-    }, 1) > MAX_SECTIONS_TO_SHOW;
-  },
-
-  /**
-   * @return {boolean} Whether the "more settings" collapse should be expanded.
-   * @private
-   */
-  shouldExpandSettings_: function() {
-    if (this.settingsExpandedByUser_ === undefined ||
-        this.shouldShowMoreSettings_ === undefined) {
-      return false;
-    }
-
-    // Expand the settings if the user has requested them expanded or if more
-    // settings is not displayed (i.e. less than 6 total settings available).
-    return this.settingsExpandedByUser_ || !this.shouldShowMoreSettings_;
-  },
-
-  /**
    * @param {!CustomEvent<number>} e Contains the new preview request ID.
    * @private
    */
@@ -639,4 +546,3 @@ Polymer({
     this.$.state.transitTo(print_preview_new.State.CLOSING);
   },
 });
-})();

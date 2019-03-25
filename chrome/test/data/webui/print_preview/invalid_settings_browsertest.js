@@ -151,9 +151,11 @@ cr.define('invalid_settings_browsertest', function() {
       const previewAreaEl = page.$.previewArea;
       const overlay = previewAreaEl.$$('.preview-area-overlay-layer');
       const messageEl = previewAreaEl.$$('.preview-area-message');
-      const header = page.$$('print-preview-header');
+      const sidebar = page.$$('print-preview-sidebar');
+      const header = sidebar.$$('print-preview-header');
       const printButton = header.$$('.action-button');
-      const destinationSettings = page.$$('print-preview-destination-settings');
+      const destinationSettings =
+          sidebar.$$('print-preview-destination-settings');
 
       return Promise
           .all([
@@ -250,12 +252,14 @@ cr.define('invalid_settings_browsertest', function() {
       const previewAreaEl = page.$.previewArea;
       const overlayEl = previewAreaEl.$$('.preview-area-overlay-layer');
       const messageEl = previewAreaEl.$$('.preview-area-message');
-      const header = page.$$('print-preview-header');
+      const sidebar = page.$$('print-preview-sidebar');
+      const header = sidebar.$$('print-preview-header');
       const printButton = header.$$('.action-button');
-      const destinationSettings = page.$$('print-preview-destination-settings');
-      const scalingSettings = page.$$('print-preview-scaling-settings')
+      const destinationSettings =
+          sidebar.$$('print-preview-destination-settings');
+      const scalingSettings = sidebar.$$('print-preview-scaling-settings')
                                   .$$('print-preview-number-settings-section');
-      const layoutSettings = page.$$('print-preview-layout-settings');
+      const layoutSettings = sidebar.$$('print-preview-layout-settings');
 
       return Promise
           .all([
@@ -335,10 +339,11 @@ cr.define('invalid_settings_browsertest', function() {
           const previewAreaEl = page.$.previewArea;
           const overlayEl = previewAreaEl.$$('.preview-area-overlay-layer');
           const messageEl = previewAreaEl.$$('.preview-area-message');
-          const header = page.$$('print-preview-header');
+          const sidebar = page.$$('print-preview-sidebar');
+          const header = sidebar.$$('print-preview-header');
           const printButton = header.$$('.action-button');
           const destinationSettings =
-              page.$$('print-preview-destination-settings');
+              sidebar.$$('print-preview-destination-settings');
 
           return Promise
               .all([

@@ -21,6 +21,11 @@ Polymer({
     /** @type {!print_preview.Destination} */
     destination: Object,
 
+    errorMessage: {
+      type: String,
+      observer: 'onErrorMessageSet_',
+    },
+
     /** @type {!print_preview_new.State} */
     state: Number,
 
@@ -156,11 +161,11 @@ Polymer({
     this.lastState_ = this.state;
   },
 
-  /** @param {string} message The message to display. */
-  setErrorMessage: function(message) {
+  /** @private */
+  onErrorMessageSet_: function(message) {
     this.printButtonEnabled_ = false;
-    this.summary_ = message;
-    this.summaryLabel_ = message;
+    this.summary_ = this.errorMessage;
+    this.summaryLabel_ = this.errorMessage;
   },
 
   /**

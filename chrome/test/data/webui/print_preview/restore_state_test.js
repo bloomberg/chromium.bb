@@ -257,9 +257,7 @@ cr.define('restore_state_test', function() {
           value: true,
         },
         {
-          // Use the model to set vendor items, because the advanced settings
-          // section doesn't actually set this value in production.
-          section: 'print-preview-model',
+          section: 'print-preview-advanced-options-settings',
           settingName: 'vendorItems',
           key: 'vendorOptions',
           value: {
@@ -290,8 +288,12 @@ cr.define('restore_state_test', function() {
               if (index == testData.length - 1) {
                 nativeLayer.resetResolver('saveAppState');
               }
-              page.$$(testValue.section)
-                  .setSetting(testValue.settingName, testValue.value);
+              // Since advanced options settings doesn't set this setting in
+              // production, just use the model instead of creating the dialog.
+              const element = testValue.settingName === 'vendorItems' ?
+                  print_preview.Model.getInstance() :
+                  page.$$('print-preview-sidebar').$$(testValue.section);
+              element.setSetting(testValue.settingName, testValue.value);
             });
             // Wait on only the last call to saveAppState, which should
             // contain all the update settings values.
