@@ -544,6 +544,7 @@ def GeneralTemplates(site_config):
       site_config.templates.informational,
       unittests=True,
       description='Build TOT Chrome with Address Sanitizer (Clang)',
+      board_replace=True,
   )
 
   site_config.AddTemplate(
@@ -553,6 +554,7 @@ def GeneralTemplates(site_config):
       site_config.templates.informational,
       unittests=True,
       description='Build TOT Chrome with Undefined Behavior Sanitizer (Clang)',
+      board_replace=True,
   )
   site_config.AddTemplate(
       'chrome_perf',
@@ -2748,6 +2750,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       disk_layout='4gb-rootfs',
       # Every 3 hours.
       schedule='0 */3 * * *',
+      board_replace=True,
   )
 
   site_config.Add(
@@ -2769,7 +2772,8 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       boards=['betty'],
       description='Build with Address Sanitizer (Clang)',
       # Once every day. 3 PM UTC is 7 AM PST (no daylight savings).
-      schedule='0 15 * * *'
+      schedule='0 15 * * *',
+      board_replace=True,
   )
 
   site_config.Add(
@@ -2788,7 +2792,8 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
       # Every 3 hours.
-      schedule='0 */3 * * *'
+      schedule='0 */3 * * *',
+      board_replace=True,
   )
 
   site_config.Add(
@@ -2800,7 +2805,8 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       gs_path='gs://chromeos-fuzzing-artifacts/libfuzzer-msan',
       disk_layout='4gb-rootfs',
       # Every 3 hours.
-      schedule='0 */3 * * *'
+      schedule='0 */3 * * *',
+      board_replace=True,
   )
 
   site_config.Add(
@@ -2815,6 +2821,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       disk_layout='16gb-rootfs',
       # Every 3 hours.
       schedule='0 */3 * * *',
+      board_replace=True,
   )
 
   site_config.Add(
@@ -2826,7 +2833,8 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       gs_path='gs://chromeos-fuzzing-artifacts/libfuzzer-ubsan',
       disk_layout='4gb-rootfs',
       # Every 3 hours.
-      schedule='0 */3 * * *'
+      schedule='0 */3 * * *',
+      board_replace=True,
   )
 
   site_config.Add(
