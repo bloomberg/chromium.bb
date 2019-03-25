@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -34,7 +33,6 @@ public class GridTabSwitcherCoordinator
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
     private final TabListCoordinator mTabGridCoordinator;
     private final GridTabSwitcherMediator mMediator;
-    private final MultiThumbnailCardProvider mMultiThumbnailCardProvider;
 
     public GridTabSwitcherCoordinator(Context context,
             ActivityLifecycleDispatcher lifecycleDispatcher, ToolbarManager toolbarManager,
@@ -42,22 +40,8 @@ public class GridTabSwitcherCoordinator
             CompositorViewHolder compositorViewHolder, ChromeFullscreenManager fullscreenManager) {
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
-        mMultiThumbnailCardProvider =
-                new MultiThumbnailCardProvider(context, tabContentManager, tabModelSelector);
-
-        TabListMediator.TitleProvider titleProvider = tab -> {
-            int numRelatedTabs = tabModelSelector.getTabModelFilterProvider()
-                                         .getCurrentTabModelFilter()
-                                         .getRelatedTabList(tab.getId())
-                                         .size();
-            if (numRelatedTabs == 1) return tab.getTitle();
-            return context.getResources().getQuantityString(
-                    R.plurals.bottom_tab_grid_title_placeholder, numRelatedTabs, numRelatedTabs);
-        };
-
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
-                tabModelSelector, mMultiThumbnailCardProvider, titleProvider, compositorViewHolder,
-                true, COMPONENT_NAME);
+                tabModelSelector, tabContentManager, compositorViewHolder, true, COMPONENT_NAME);
 
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabGridCoordinator.getContainerView(), TabGridContainerViewBinder::bind);

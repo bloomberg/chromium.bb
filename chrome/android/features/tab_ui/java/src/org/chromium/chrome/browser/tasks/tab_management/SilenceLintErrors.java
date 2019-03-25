@@ -26,8 +26,6 @@ import org.chromium.chrome.R;
                     R.string.iph_tab_groups_tap_to_see_another_tab_accessibility_text,
                     R.string.accessibility_bottom_tab_strip_expand_tab_sheet,
                     R.layout.bottom_tab_strip_toolbar, R.drawable.tabstrip_selected,
-                    R.dimen.tab_list_card_padding, R.dimen.tab_list_mini_card_text_size,
-                    R.dimen.tab_list_mini_card_frame_size, R.dimen.tab_list_mini_card_radius,
                     R.drawable.tabstrip_favicon_background};
 
     private SilenceLintErrors() {}

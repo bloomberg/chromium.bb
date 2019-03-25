@@ -122,9 +122,8 @@ public class TabListMediatorUnitTest {
                 .getFaviconForUrlAsync(anyString(), anyBoolean(), mCallbackCaptor.capture());
 
         mModel = new TabListModel();
-        mMediator = new TabListMediator(mModel, mTabModelSelector,
-                mTabContentManager::getTabThumbnailWithCallback, null, mTabListFaviconProvider,
-                getClass().getSimpleName());
+        mMediator = new TabListMediator(mModel, mTabModelSelector, mTabContentManager,
+                mTabListFaviconProvider, getClass().getSimpleName());
     }
 
     @After
