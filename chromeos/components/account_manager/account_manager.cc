@@ -19,6 +19,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
@@ -139,18 +140,21 @@ void AccountManager::RegisterPrefs(PrefRegistrySimple* registry) {
 void AccountManager::Initialize(
     const base::FilePath& home_dir,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    DelayNetworkCallRunner delay_network_call_runner) {
+    DelayNetworkCallRunner delay_network_call_runner,
+    PrefService* pref_service) {
   Initialize(
       home_dir, url_loader_factory, std::move(delay_network_call_runner),
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()}));
+          {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()}),
+      pref_service);
 }
 
 void AccountManager::Initialize(
     const base::FilePath& home_dir,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     DelayNetworkCallRunner delay_network_call_runner,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    PrefService* pref_service) {
   VLOG(1) << "AccountManager::Initialize";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -169,6 +173,7 @@ void AccountManager::Initialize(
   task_runner_ = task_runner;
   writer_ = std::make_unique<base::ImportantFileWriter>(
       home_dir.Append(kTokensFileName), task_runner_);
+  pref_service_ = pref_service;
 
   PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
@@ -393,6 +398,12 @@ void AccountManager::UpsertAccountInternal(const AccountKey& account_key,
   auto it = accounts_.find(account_key);
   if (it == accounts_.end()) {
     // New account. Insert it.
+    if (!pref_service_->GetBoolean(
+            chromeos::prefs::kSecondaryGoogleAccountSigninAllowed)) {
+      // Secondary Account additions are disabled by policy and all flows for
+      // adding a Secondary Account are already blocked.
+      CHECK(accounts_.empty());
+    }
     accounts_.emplace(account_key, account);
     PersistAccountsAsync();
     NotifyTokenObservers(Account{account_key, account.raw_email});

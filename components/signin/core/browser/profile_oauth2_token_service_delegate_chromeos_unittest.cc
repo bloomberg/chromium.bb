@@ -144,11 +144,12 @@ class CrOSOAuthDelegateTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
+    chromeos::AccountManager::RegisterPrefs(pref_service_.registry());
 
     client_ = std::make_unique<TestSigninClient>(&pref_service_);
     account_manager_.Initialize(tmp_dir_.GetPath(),
                                 client_->GetURLLoaderFactory(),
-                                immediate_callback_runner_);
+                                immediate_callback_runner_, &pref_service_);
     task_environment_.RunUntilIdle();
 
     account_tracker_service_.Initialize(&pref_service_, base::FilePath());
@@ -357,7 +358,7 @@ TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
   // chromeos::AccountManager will not be fully initialized until
   // |task_environment_.RunUntilIdle()| is called.
   account_manager.Initialize(tmp_dir_.GetPath(), client_->GetURLLoaderFactory(),
-                             immediate_callback_runner_);
+                             immediate_callback_runner_, &pref_service_);
 
   // Register callbacks before chromeos::AccountManager has been fully
   // initialized.
