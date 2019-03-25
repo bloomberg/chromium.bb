@@ -75,6 +75,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 // Enables the Supervised User Deprecation notices.
 ASH_PUBLIC_EXPORT extern const base::Feature kSupervisedUserDeprecationNotice;
 
+// Uses fragment shader for all the rounded corners instead of mask layer. This
+// improves memory performance by avoiding render surfaces where ever possible.
+ASH_PUBLIC_EXPORT extern const base::Feature kUseShaderRoundedCorner;
+
 // Enables the notification stacking bar redesigned UI.
 ASH_PUBLIC_EXPORT extern const base::Feature kNotificationStackingBarRedesign;
 
@@ -101,6 +105,8 @@ ASH_PUBLIC_EXPORT bool IsViewsLoginEnabled();
 ASH_PUBLIC_EXPORT bool IsVirtualDesksEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSupervisedUserDeprecationNoticeEnabled();
+
+ASH_PUBLIC_EXPORT bool ShouldUseShaderRoundedCorner();
 
 ASH_PUBLIC_EXPORT bool IsNotificationStackingBarRedesignEnabled();
 

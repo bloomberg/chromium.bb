@@ -241,21 +241,30 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
       -shelf->SelectValueForShelfAlignment(safety_margin, 0, 0));
 
   // Show rounded corners except in maximized (which includes split view) mode.
-  if (background_type == SHELF_BACKGROUND_MAXIMIZED) {
-    if (mask_)
-      opaque_background_.RemoveCacheRenderSurfaceRequest();
-    mask_ = nullptr;
-    opaque_background_.SetMaskLayer(nullptr);
-  } else {
-    if (!mask_) {
-      mask_ = views::Painter::CreatePaintedLayer(
-          views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK, radius));
-      mask_->layer()->SetFillsBoundsOpaquely(false);
-      opaque_background_.SetMaskLayer(mask_->layer());
+  if (ash::features::ShouldUseShaderRoundedCorner()) {
+    if (background_type == SHELF_BACKGROUND_MAXIMIZED) {
+      opaque_background_.SetRoundedCornerRadius({0, 0, 0, 0});
+    } else {
+      opaque_background_.SetRoundedCornerRadius({radius, radius, 0, 0});
       opaque_background_.AddCacheRenderSurfaceRequest();
     }
-    if (mask_->layer()->bounds() != opaque_background_bounds)
-      mask_->layer()->SetBounds(opaque_background_bounds);
+  } else {
+    if (background_type == SHELF_BACKGROUND_MAXIMIZED) {
+      if (mask_)
+        opaque_background_.RemoveCacheRenderSurfaceRequest();
+      mask_ = nullptr;
+      opaque_background_.SetMaskLayer(nullptr);
+    } else {
+      if (!mask_) {
+        mask_ = views::Painter::CreatePaintedLayer(
+            views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK, radius));
+        mask_->layer()->SetFillsBoundsOpaquely(false);
+        opaque_background_.SetMaskLayer(mask_->layer());
+        opaque_background_.AddCacheRenderSurfaceRequest();
+      }
+      if (mask_->layer()->bounds() != opaque_background_bounds)
+        mask_->layer()->SetBounds(opaque_background_bounds);
+    }
   }
   opaque_background_.SetBounds(opaque_background_bounds);
   UpdateBackgroundBlur();

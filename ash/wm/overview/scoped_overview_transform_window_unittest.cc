@@ -4,8 +4,10 @@
 
 #include "ash/wm/overview/scoped_overview_transform_window.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -245,9 +247,27 @@ TEST_F(ScopedOverviewTransformWindowTest, ExtremeWindowBounds) {
   EXPECT_EQ(GridWindowFillMode::kNormal, scoped_normal.type());
 }
 
+class ScopedOverviewTransformWindowWithMaskTest
+    : public ScopedOverviewTransformWindowTest {
+ public:
+  ScopedOverviewTransformWindowWithMaskTest() = default;
+  ~ScopedOverviewTransformWindowWithMaskTest() override = default;
+
+  void SetUp() override {
+    ScopedOverviewTransformWindowTest::SetUp();
+    scoped_feature_list_.InitAndDisableFeature(
+        ash::features::kUseShaderRoundedCorner);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedOverviewTransformWindowWithMaskTest);
+};
+
 // Verify that if the window's bounds are changed while it's in overview mode,
 // the rounded edge mask's bounds are also changed accordingly.
-TEST_F(ScopedOverviewTransformWindowTest, WindowBoundsChangeTest) {
+TEST_F(ScopedOverviewTransformWindowWithMaskTest, WindowBoundsChangeTest) {
   UpdateDisplay("400x400");
   const gfx::Rect bounds(10, 10, 200, 200);
   std::unique_ptr<aura::Window> window = CreateTestWindow(bounds);

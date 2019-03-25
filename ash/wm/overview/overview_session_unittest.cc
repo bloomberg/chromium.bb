@@ -14,6 +14,7 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/drag_drop/drag_drop_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
@@ -46,6 +47,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_types.h"
@@ -330,6 +332,11 @@ class OverviewSessionTest : public AshTestBase {
 
   views::Widget* minimized_widget(OverviewItem* item) {
     return item->transform_window_.minimized_widget();
+  }
+
+  const ScopedOverviewTransformWindow& transform_window(
+      OverviewItem* item) const {
+    return item->transform_window_;
   }
 
   bool HasMaskForItem(OverviewItem* item) const {
@@ -2287,11 +2294,48 @@ TEST_F(OverviewSessionTest, Backdrop) {
   ToggleOverview();
 }
 
+class OverviewSessionRoundedCornerTest
+    : public OverviewSessionTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  OverviewSessionRoundedCornerTest() = default;
+  ~OverviewSessionRoundedCornerTest() override = default;
+
+  void SetUp() override {
+    OverviewSessionTest::SetUp();
+    if (UseShaderForRoundedCorner()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          ash::features::kUseShaderRoundedCorner);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          ash::features::kUseShaderRoundedCorner);
+    }
+  }
+
+  bool UseShaderForRoundedCorner() const { return GetParam(); }
+
+  bool HasRoundedCorner(OverviewItem* item) {
+    if (!UseShaderForRoundedCorner())
+      return HasMaskForItem(item);
+    const ui::Layer* layer =
+        minimized_widget(item)
+            ? minimized_widget(item)->GetNativeWindow()->layer()
+            : transform_window(item).window()->layer();
+    const std::array<uint32_t, 4>& radii = layer->rounded_corner_radii();
+    return (radii[0] + radii[1] + radii[2] + radii[3]) > 0;
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverviewSessionRoundedCornerTest);
+};
+
 // Test that the mask that is applied to add rounded corners in overview mode
 // is removed during animations.
 // TODO(crbug.com/941048): this test leaks WindowMirrorView, which causes
 // problems. Fix leak and then reenable.
-TEST_F(OverviewSessionTest, DISABLED_RoundedEdgeMaskVisibility) {
+TEST_F(OverviewSessionRoundedCornerTest, DISABLED_RoundedEdgeMaskVisibility) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 
@@ -2307,17 +2351,17 @@ TEST_F(OverviewSessionTest, DISABLED_RoundedEdgeMaskVisibility) {
   ToggleOverview();
   OverviewItem* item1 = GetWindowItemForWindow(0, window1.get());
   OverviewItem* item2 = GetWindowItemForWindow(0, window2.get());
-  EXPECT_FALSE(HasMaskForItem(item1));
-  EXPECT_FALSE(HasMaskForItem(item2));
+  EXPECT_FALSE(HasRoundedCorner(item1));
+  EXPECT_FALSE(HasRoundedCorner(item2));
   window1->layer()->GetAnimator()->StopAnimating();
   window2->layer()->GetAnimator()->StopAnimating();
 
   // Mask is set asynchronously.
-  EXPECT_FALSE(HasMaskForItem(item1));
-  EXPECT_FALSE(HasMaskForItem(item2));
+  EXPECT_FALSE(HasRoundedCorner(item1));
+  EXPECT_FALSE(HasRoundedCorner(item2));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(HasMaskForItem(item1));
-  EXPECT_TRUE(HasMaskForItem(item2));
+  EXPECT_TRUE(HasRoundedCorner(item1));
+  EXPECT_TRUE(HasRoundedCorner(item2));
 
   // Tests that entering overview mode with all windows minimized (launcher
   // button pressed) will still disable all the masks until the animation is
@@ -2328,8 +2372,8 @@ TEST_F(OverviewSessionTest, DISABLED_RoundedEdgeMaskVisibility) {
   ToggleOverview();
   item1 = GetWindowItemForWindow(0, window1.get());
   item2 = GetWindowItemForWindow(0, window2.get());
-  EXPECT_FALSE(HasMaskForItem(item1));
-  EXPECT_FALSE(HasMaskForItem(item2));
+  EXPECT_FALSE(HasRoundedCorner(item1));
+  EXPECT_FALSE(HasRoundedCorner(item2));
   minimized_widget(item1)
       ->GetNativeWindow()
       ->layer()
@@ -2340,11 +2384,11 @@ TEST_F(OverviewSessionTest, DISABLED_RoundedEdgeMaskVisibility) {
       ->layer()
       ->GetAnimator()
       ->StopAnimating();
-  EXPECT_FALSE(HasMaskForItem(item1));
-  EXPECT_FALSE(HasMaskForItem(item2));
+  EXPECT_FALSE(HasRoundedCorner(item1));
+  EXPECT_FALSE(HasRoundedCorner(item2));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(HasMaskForItem(item1));
-  EXPECT_TRUE(HasMaskForItem(item2));
+  EXPECT_TRUE(HasRoundedCorner(item1));
+  EXPECT_TRUE(HasRoundedCorner(item2));
 
   // Test that leaving overview mode cleans up properly.
   ToggleOverview();
@@ -2352,7 +2396,7 @@ TEST_F(OverviewSessionTest, DISABLED_RoundedEdgeMaskVisibility) {
 
 // Test that the mask that is applied to add rounded corners in overview mode
 // is removed during drags.
-TEST_F(OverviewSessionTest, RoundedEdgeMaskVisibilityDragging) {
+TEST_P(OverviewSessionRoundedCornerTest, RoundedEdgeMaskVisibilityDragging) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 
@@ -2376,8 +2420,9 @@ TEST_F(OverviewSessionTest, RoundedEdgeMaskVisibilityDragging) {
   generator->PressLeftButton();
   EXPECT_FALSE(window1->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
-  EXPECT_FALSE(HasMaskForItem(item1));
-  EXPECT_TRUE(HasMaskForItem(item2));
+
+  EXPECT_FALSE(HasRoundedCorner(item1));
+  EXPECT_TRUE(HasRoundedCorner(item2));
 
   // Drag to horizontally and then back to the start to avoid activating the
   // window, drag to close or entering splitview. Verify that the mask is
@@ -2387,17 +2432,17 @@ TEST_F(OverviewSessionTest, RoundedEdgeMaskVisibilityDragging) {
   generator->ReleaseLeftButton();
   EXPECT_TRUE(window1->layer()->GetAnimator()->is_animating());
   EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
-  EXPECT_FALSE(HasMaskForItem(item1));
-  EXPECT_FALSE(HasMaskForItem(item2));
+  EXPECT_FALSE(HasRoundedCorner(item1));
+  EXPECT_FALSE(HasRoundedCorner(item2));
 
   // Verify that the mask is visble again after animation is finished.
   window1->layer()->GetAnimator()->StopAnimating();
   window2->layer()->GetAnimator()->StopAnimating();
-  EXPECT_TRUE(HasMaskForItem(item1));
-  EXPECT_TRUE(HasMaskForItem(item2));
+  EXPECT_TRUE(HasRoundedCorner(item1));
+  EXPECT_TRUE(HasRoundedCorner(item2));
 }
 
-TEST_F(OverviewSessionTest, NoRoundedEdgeMaskFor11Windows) {
+TEST_P(OverviewSessionRoundedCornerTest, NoRoundedEdgeMaskFor11Windows) {
   std::vector<std::unique_ptr<aura::Window>> windows;
   for (int i = 0; i < 11; i++)
     windows.push_back(CreateTestWindow());
@@ -2406,16 +2451,21 @@ TEST_F(OverviewSessionTest, NoRoundedEdgeMaskFor11Windows) {
   base::RunLoop().RunUntilIdle();
   for (auto& window : windows) {
     OverviewItem* item = GetWindowItemForWindow(0, window.get());
-    EXPECT_FALSE(HasMaskForItem(item));
+    EXPECT_FALSE(HasRoundedCorner(item));
   }
   // Remove 1 window and windows will have rounded corners.
   windows.pop_back();
   ASSERT_EQ(10u, windows.size());
   for (auto& window : windows) {
     OverviewItem* item = GetWindowItemForWindow(0, window.get());
-    EXPECT_TRUE(HasMaskForItem(item));
+    EXPECT_TRUE(HasRoundedCorner(item));
   }
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    /* prefix intentionally left blank due to only one parameterization */,
+    OverviewSessionRoundedCornerTest,
+    testing::Bool());
 
 // Tests that the shadows in overview mode are placed correctly.
 TEST_F(OverviewSessionTest, ShadowBounds) {

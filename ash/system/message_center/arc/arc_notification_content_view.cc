@@ -4,6 +4,7 @@
 
 #include "ash/system/message_center/arc/arc_notification_content_view.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/system/message_center/arc/arc_notification_surface.h"
 #include "ash/system/message_center/arc/arc_notification_view.h"
 // TODO(https://crbug.com/768439): Remove nogncheck when moved to ash.
@@ -514,15 +515,21 @@ void ArcNotificationContentView::ShowCopiedSurface() {
   surface_copy_->root()->SetBounds(size);
   layer()->Add(surface_copy_->root());
 
-  if (!surface_copy_mask_) {
-    surface_copy_mask_ = views::Painter::CreatePaintedLayer(
-        std::make_unique<message_center::NotificationBackgroundPainter>(
-            top_radius_, bottom_radius_));
-    surface_copy_mask_->layer()->SetBounds(size);
-    surface_copy_mask_->layer()->SetFillsBoundsOpaquely(false);
+  if (ash::features::ShouldUseShaderRoundedCorner()) {
+    surface_copy_->root()->SetRoundedCornerRadius(
+        {top_radius_, top_radius_, bottom_radius_, bottom_radius_});
+    surface_copy_->root()->SetIsFastRoundedCorner(true);
+  } else {
+    if (!surface_copy_mask_) {
+      surface_copy_mask_ = views::Painter::CreatePaintedLayer(
+          std::make_unique<message_center::NotificationBackgroundPainter>(
+              top_radius_, bottom_radius_));
+      surface_copy_mask_->layer()->SetBounds(size);
+      surface_copy_mask_->layer()->SetFillsBoundsOpaquely(false);
+    }
+    DCHECK(!surface_copy_mask_->layer()->parent());
+    surface_copy_->root()->SetMaskLayer(surface_copy_mask_->layer());
   }
-  DCHECK(!surface_copy_mask_->layer()->parent());
-  surface_copy_->root()->SetMaskLayer(surface_copy_mask_->layer());
 
   // Changes the opacity instead of setting the visibility, to keep
   // |EventFowarder| working.
