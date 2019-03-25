@@ -66,13 +66,11 @@ class BASE_EXPORT Sequence : public TaskSource {
   };
 
   // |traits| is metadata that applies to all Tasks in the Sequence.
-  // |task_runner| is a reference to the TaskRunner feeding this TaskSource.
-  // |task_runner| can be nullptr only for tasks with no TaskRunner, in which
-  // case |execution_mode| must be kParallel. Otherwise, |execution_mode| is the
-  // execution mode of |task_runner|.
+  // |scheduler_parallel_task_runner| is a reference to the
+  // SchedulerParallelTaskRunner that created this Sequence, if any.
   Sequence(const TaskTraits& traits,
-           TaskRunner* task_runner,
-           TaskSourceExecutionMode execution_mode);
+           scoped_refptr<SchedulerParallelTaskRunner>
+               scheduler_parallel_task_runner = nullptr);
 
   // Begins a Transaction. This method cannot be called on a thread which has an
   // active Sequence::Transaction.
@@ -92,14 +90,9 @@ class BASE_EXPORT Sequence : public TaskSource {
 
   // TaskSource:
   Optional<Task> TakeTask() override;
-  bool DidRunTask() override;
   SequenceSortKey GetSortKey() const override;
   bool IsEmpty() const override;
   void Clear() override;
-
-  // Releases reference to TaskRunner. This might cause this object to be
-  // deleted; therefore, no member access should be made after this method.
-  void ReleaseTaskRunner();
 
   const SequenceToken token_ = SequenceToken::Create();
 
@@ -108,6 +101,12 @@ class BASE_EXPORT Sequence : public TaskSource {
 
   // Holds data stored through the SequenceLocalStorageSlot API.
   SequenceLocalStorageMap sequence_local_storage_;
+
+  // A reference to the SchedulerParallelTaskRunner that created this Sequence,
+  // if any. Used to remove Sequence from the TaskRunner's list of Sequence
+  // references when Sequence is deleted.
+  const scoped_refptr<SchedulerParallelTaskRunner>
+      scheduler_parallel_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(Sequence);
 };

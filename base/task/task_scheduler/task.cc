@@ -35,7 +35,11 @@ Task::Task(const Location& posted_from, OnceClosure task, TimeDelta delay)
 
 // This should be "= default but MSVC has trouble with "noexcept = default" in
 // this case.
-Task::Task(Task&& other) noexcept : PendingTask(std::move(other)) {}
+Task::Task(Task&& other) noexcept
+    : PendingTask(std::move(other)),
+      sequenced_task_runner_ref(std::move(other.sequenced_task_runner_ref)),
+      single_thread_task_runner_ref(
+          std::move(other.single_thread_task_runner_ref)) {}
 
 Task::~Task() = default;
 
