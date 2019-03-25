@@ -1168,7 +1168,7 @@ void ExistingUserController::OnOldEncryptionDetected(
       chromeos::GetDeviceDMTokenForUserPolicyGetter(
           user_context.GetAccountId()));
   pre_signin_policy_fetcher_ = std::make_unique<policy::PreSigninPolicyFetcher>(
-      DBusThreadManager::Get()->GetCryptohomeClient(),
+      CryptohomeClient::Get(),
       DBusThreadManager::Get()->GetSessionManagerClient(),
       std::move(cloud_policy_client), IsActiveDirectoryManaged(),
       user_context.GetAccountId(),
@@ -1221,7 +1221,7 @@ void ExistingUserController::OnPolicyFetchResult(
       account_identifier.set_account_id(
           cryptohome::Identification(user_context.GetAccountId()).id());
 
-      DBusThreadManager::Get()->GetCryptohomeClient()->RemoveEx(
+      CryptohomeClient::Get()->RemoveEx(
           account_identifier,
           base::BindOnce(&ExistingUserController::WipePerformed,
                          weak_factory_.GetWeakPtr(), user_context));
@@ -1771,11 +1771,9 @@ void ExistingUserController::ContinueLoginIfDeviceNotDisabled(
     return;
   }
 
-  chromeos::DBusThreadManager::Get()
-      ->GetCryptohomeClient()
-      ->WaitForServiceToBeAvailable(base::Bind(
-          &ExistingUserController::ContinueLoginWhenCryptohomeAvailable,
-          weak_factory_.GetWeakPtr(), continuation));
+  CryptohomeClient::Get()->WaitForServiceToBeAvailable(
+      base::Bind(&ExistingUserController::ContinueLoginWhenCryptohomeAvailable,
+                 weak_factory_.GetWeakPtr(), continuation));
 }
 
 void ExistingUserController::DoCompleteLogin(

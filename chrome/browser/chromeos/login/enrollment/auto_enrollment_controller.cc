@@ -752,10 +752,9 @@ void AutoEnrollmentController::UpdateState(
 void AutoEnrollmentController::StartCleanupForcedReEnrollment() {
   // D-Bus services may not be available yet, so we call
   // WaitForServiceToBeAvailable. See https://crbug.com/841627.
-  DBusThreadManager::Get()->GetCryptohomeClient()->WaitForServiceToBeAvailable(
-      base::BindOnce(
-          &AutoEnrollmentController::StartRemoveFirmwareManagementParameters,
-          weak_ptr_factory_.GetWeakPtr()));
+  CryptohomeClient::Get()->WaitForServiceToBeAvailable(base::BindOnce(
+      &AutoEnrollmentController::StartRemoveFirmwareManagementParameters,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutoEnrollmentController::StartRemoveFirmwareManagementParameters(
@@ -768,13 +767,11 @@ void AutoEnrollmentController::StartRemoveFirmwareManagementParameters(
   }
 
   cryptohome::RemoveFirmwareManagementParametersRequest request;
-  DBusThreadManager::Get()
-      ->GetCryptohomeClient()
-      ->RemoveFirmwareManagementParametersFromTpm(
-          request,
-          base::BindOnce(
-              &AutoEnrollmentController::OnFirmwareManagementParametersRemoved,
-              weak_ptr_factory_.GetWeakPtr()));
+  CryptohomeClient::Get()->RemoveFirmwareManagementParametersFromTpm(
+      request,
+      base::BindOnce(
+          &AutoEnrollmentController::OnFirmwareManagementParametersRemoved,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutoEnrollmentController::OnFirmwareManagementParametersRemoved(

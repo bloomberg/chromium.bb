@@ -86,7 +86,7 @@ void EulaScreen::OnViewDestroyed(EulaView* view) {
 
 void EulaScreen::Show() {
   // Command to own the TPM.
-  DBusThreadManager::Get()->GetCryptohomeClient()->TpmCanAttemptOwnership(
+  CryptohomeClient::Get()->TpmCanAttemptOwnership(
       EmptyVoidDBusMethodCallback());
   if (WizardController::UsingHandsOffEnrollment())
     OnUserAction(kUserActionAcceptButtonClicked);

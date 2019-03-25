@@ -29,6 +29,7 @@
 namespace chromeos {
 
 namespace {
+
 // Signature nonces are twenty bytes. This matches the attestation code.
 constexpr char kTwentyBytesNonce[] = "+addtwentybytesnonce";
 // A symbolic signature.
@@ -40,6 +41,10 @@ constexpr uint64_t kDircryptoMigrationMaxProgress = 15;
 // Buffer size for reading install attributes file. 16k should be plenty. The
 // file contains six attributes only (see InstallAttributes::LockDevice).
 constexpr size_t kInstallAttributesFileMaxSize = 16384;
+
+// Used to track the fake instance, mirrors the instance in the base class.
+FakeCryptohomeClient* g_instance = nullptr;
+
 }  // namespace
 
 FakeCryptohomeClient::FakeCryptohomeClient()
@@ -49,6 +54,9 @@ FakeCryptohomeClient::FakeCryptohomeClient()
       unmount_result_(true),
       system_salt_(GetStubSystemSalt()),
       weak_ptr_factory_(this) {
+  DCHECK(!g_instance);
+  g_instance = this;
+
   base::FilePath cache_path;
   locked_ = base::PathService::Get(dbus_paths::FILE_INSTALL_ATTRIBUTES,
                                    &cache_path) &&
@@ -57,9 +65,15 @@ FakeCryptohomeClient::FakeCryptohomeClient()
     LoadInstallAttributes();
 }
 
-FakeCryptohomeClient::~FakeCryptohomeClient() = default;
+FakeCryptohomeClient::~FakeCryptohomeClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
-void FakeCryptohomeClient::Init(dbus::Bus* bus) {}
+// static
+FakeCryptohomeClient* FakeCryptohomeClient::Get() {
+  return g_instance;
+}
 
 void FakeCryptohomeClient::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);

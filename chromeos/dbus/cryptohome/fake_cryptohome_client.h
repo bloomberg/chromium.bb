@@ -26,11 +26,17 @@ namespace chromeos {
 class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCryptohomeClient
     : public CryptohomeClient {
  public:
+  // FakeCryptohomeClient can be embedded in unit tests, but the
+  // InitializeFake/Shutdown pattern should be preferred. Constructing the
+  // instance will set the global instance for the fake and for the base class,
+  // so the static Get() accessor can be used with that pattern.
   FakeCryptohomeClient();
   ~FakeCryptohomeClient() override;
 
+  // Checks that a FakeCryptohome instance was initialized and returns it.
+  static FakeCryptohomeClient* Get();
+
   // CryptohomeClient overrides
-  void Init(dbus::Bus* bus) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   void WaitForServiceToBeAvailable(

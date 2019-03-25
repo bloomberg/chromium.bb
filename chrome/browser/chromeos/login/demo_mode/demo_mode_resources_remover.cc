@@ -257,7 +257,7 @@ DemoModeResourcesRemover::DemoModeResourcesRemover(PrefService* local_state)
   CHECK(!g_instance);
   g_instance = this;
 
-  cryptohome_observer_.Add(DBusThreadManager::Get()->GetCryptohomeClient());
+  cryptohome_observer_.Add(CryptohomeClient::Get());
   ChromeUserManager::Get()->AddSessionStateObserver(this);
 }
 

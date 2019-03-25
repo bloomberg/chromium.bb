@@ -24,6 +24,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/biod/biod_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -50,12 +51,13 @@ class ScreenLockerUnitTest : public testing::Test {
   void SetUp() override {
     DBusThreadManager::Initialize();
     BiodClient::InitializeFake();
+    CryptohomeClient::InitializeFake();
 
     // MojoSystemInfoDispatcher dependency:
     bluez::BluezDBusManager::GetSetterForTesting();
 
     // Initialize SessionControllerClient and dependencies:
-    chromeos::LoginState::Initialize();
+    LoginState::Initialize();
     CHECK(testing_profile_manager_.SetUp());
     session_controller_client_ = std::make_unique<SessionControllerClient>();
     session_controller_client_->Init();
@@ -89,7 +91,8 @@ class ScreenLockerUnitTest : public testing::Test {
     input_method::InputMethodManager::Shutdown();
     audio::SoundsManager::Shutdown();
     session_controller_client_.reset();
-    chromeos::LoginState::Shutdown();
+    LoginState::Shutdown();
+    CryptohomeClient::Shutdown();
     BiodClient::Shutdown();
     DBusThreadManager::Shutdown();
     audio::AudioStreamHandler::SetObserverForTesting(NULL);

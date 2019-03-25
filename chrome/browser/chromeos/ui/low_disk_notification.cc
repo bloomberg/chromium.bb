@@ -43,13 +43,13 @@ namespace chromeos {
 
 LowDiskNotification::LowDiskNotification()
     : notification_interval_(kNotificationInterval), weak_ptr_factory_(this) {
-  DCHECK(DBusThreadManager::Get()->GetCryptohomeClient());
-  DBusThreadManager::Get()->GetCryptohomeClient()->AddObserver(this);
+  DCHECK(CryptohomeClient::Get());
+  CryptohomeClient::Get()->AddObserver(this);
 }
 
 LowDiskNotification::~LowDiskNotification() {
-  DCHECK(DBusThreadManager::Get()->GetCryptohomeClient());
-  DBusThreadManager::Get()->GetCryptohomeClient()->RemoveObserver(this);
+  DCHECK(CryptohomeClient::Get());
+  CryptohomeClient::Get()->RemoveObserver(this);
 }
 
 void LowDiskNotification::LowDiskSpace(uint64_t free_disk_bytes) {

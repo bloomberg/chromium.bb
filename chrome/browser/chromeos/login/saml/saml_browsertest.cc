@@ -326,9 +326,7 @@ void SecretInterceptingFakeCryptohomeClient::MountEx(
 
 class SamlTest : public OobeBaseTest {
  public:
-  SamlTest() : cryptohome_client_(new SecretInterceptingFakeCryptohomeClient) {
-    fake_gaia_.set_initialize_fake_merge_session(false);
-  }
+  SamlTest() { fake_gaia_.set_initialize_fake_merge_session(false); }
   ~SamlTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -357,10 +355,14 @@ class SamlTest : public OobeBaseTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::unique_ptr<CryptohomeClient>(cryptohome_client_));
+    // Creates a fake CryptohomeClient. Will be destroyed in browser shutdown.
+    cryptohome_client_ = new SecretInterceptingFakeCryptohomeClient;
 
     OobeBaseTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    OobeBaseTest::TearDownInProcessBrowserTestFixture();
   }
 
   void SetUpOnMainThread() override {

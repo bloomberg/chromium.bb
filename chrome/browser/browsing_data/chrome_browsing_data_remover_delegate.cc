@@ -1048,18 +1048,16 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       if (!user) {
         LOG(WARNING) << "Failed to find user for current profile.";
       } else {
-        chromeos::DBusThreadManager::Get()
-            ->GetCryptohomeClient()
-            ->TpmAttestationDeleteKeys(
-                chromeos::attestation::KEY_USER,
-                cryptohome::CreateAccountIdentifierFromAccountId(
-                    user->GetAccountId()),
-                chromeos::attestation::kContentProtectionKeyPrefix,
-                base::BindOnce(
-                    &ChromeBrowsingDataRemoverDelegate::OnClearPlatformKeys,
-                    weak_ptr_factory_.GetWeakPtr(),
-                    CreateTaskCompletionClosure(
-                        TracingDataType::kTpmAttestationKeys)));
+        chromeos::CryptohomeClient::Get()->TpmAttestationDeleteKeys(
+            chromeos::attestation::KEY_USER,
+            cryptohome::CreateAccountIdentifierFromAccountId(
+                user->GetAccountId()),
+            chromeos::attestation::kContentProtectionKeyPrefix,
+            base::BindOnce(
+                &ChromeBrowsingDataRemoverDelegate::OnClearPlatformKeys,
+                weak_ptr_factory_.GetWeakPtr(),
+                CreateTaskCompletionClosure(
+                    TracingDataType::kTpmAttestationKeys)));
       }
     }
 #endif  // defined(OS_CHROMEOS)

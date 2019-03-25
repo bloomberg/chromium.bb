@@ -21,6 +21,7 @@
 #include "base/optional.h"
 #include "chromeos/dbus/blocking_method_caller.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "dbus/bus.h"
@@ -30,6 +31,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
+
 namespace {
 
 // This suffix is appended to cryptohome_id to get hash in stub implementation:
@@ -46,6 +48,8 @@ const char kAttestationServerDefault[] = "default";
 const char kAttestationServerTest[] = "test";
 
 constexpr char kCryptohomeClientUmaPrefix[] = "CryptohomeClient.";
+
+CryptohomeClient* g_instance = nullptr;
 
 static attestation::VerifiedAccessType GetVerifiedAccessType() {
   std::string value =
@@ -72,7 +76,7 @@ void UmaCallbackWraper(const std::string& metric_name,
 
 class DbusObjectProxyWithUma {
  public:
-  DbusObjectProxyWithUma(dbus::ObjectProxy* proxy) : proxy_(proxy) {}
+  explicit DbusObjectProxyWithUma(dbus::ObjectProxy* proxy) : proxy_(proxy) {}
 
   void CallMethod(dbus::MethodCall* method_call,
                   int timeout_ms,
@@ -1022,8 +1026,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
- protected:
-  void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) {
     dbus::ObjectProxy* proxy = bus->GetObjectProxy(
         cryptohome::kCryptohomeServiceName,
         dbus::ObjectPath(cryptohome::kCryptohomeServicePath));
@@ -1365,13 +1368,39 @@ class CryptohomeClientImpl : public CryptohomeClient {
 ////////////////////////////////////////////////////////////////////////////////
 // CryptohomeClient
 
-CryptohomeClient::CryptohomeClient() = default;
+CryptohomeClient::CryptohomeClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-CryptohomeClient::~CryptohomeClient() = default;
+CryptohomeClient::~CryptohomeClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
 // static
-CryptohomeClient* CryptohomeClient::Create() {
-  return new CryptohomeClientImpl();
+void CryptohomeClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+  (new CryptohomeClientImpl())->Init(bus);
+}
+
+// static
+void CryptohomeClient::InitializeFake() {
+  // Do not create a new fake if it was initialized early in a browser test (for
+  // early setup calls dependent on CryptohomeClient).
+  if (!FakeCryptohomeClient::Get())
+    new FakeCryptohomeClient();
+}
+
+// static
+void CryptohomeClient::Shutdown() {
+  DCHECK(g_instance);
+  delete g_instance;
+}
+
+// static
+CryptohomeClient* CryptohomeClient::Get() {
+  return g_instance;
 }
 
 // static

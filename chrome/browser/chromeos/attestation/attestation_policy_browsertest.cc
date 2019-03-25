@@ -63,8 +63,8 @@ class AttestationDevicePolicyTest
   // to verify a Chrome OS platform.
   PlatformVerificationFlow::Result SyncContentProtectionAttestation() {
     scoped_refptr<PlatformVerificationFlow> verifier(
-        new PlatformVerificationFlow(NULL, NULL, &fake_cryptohome_client_,
-                                     NULL));
+        new PlatformVerificationFlow(
+            nullptr, nullptr, chromeos::FakeCryptohomeClient::Get(), nullptr));
     verifier->ChallengePlatformKey(
         browser()->tab_strip_model()->GetActiveWebContents(), "fake_service_id",
         "fake_challenge", base::Bind(&AttestationDevicePolicyTest::Callback,
@@ -76,7 +76,6 @@ class AttestationDevicePolicyTest
  private:
   bool operation_complete_;
   PlatformVerificationFlow::Result result_;
-  chromeos::FakeCryptohomeClient fake_cryptohome_client_;
 
   void WaitForAsyncOperation() {
     while (!operation_complete_) {

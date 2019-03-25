@@ -30,12 +30,10 @@ class PinMigrationTest : public LoginManagerTest {
   ~PinMigrationTest() override = default;
 
   void SetUp() override {
-    // Setup DBusThreadManager before calling ExtensionApiUnittest::SetUp()
-    // since that will set dbus up with the default fake configuration.
-    auto cryptohome_client = std::make_unique<chromeos::FakeCryptohomeClient>();
-    cryptohome_client->set_supports_low_entropy_credentials(true);
-    DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::move(cryptohome_client));
+    // Initialize CryptohomeClient and configure it for testing. It will be
+    // destroyed in ChromeBrowserMain.
+    CryptohomeClient::InitializeFake();
+    FakeCryptohomeClient::Get()->set_supports_low_entropy_credentials(true);
 
     LoginManagerTest::SetUp();
   }

@@ -449,7 +449,7 @@ std::unique_ptr<chromeos::attestation::AttestationFlow>
 BrowserPolicyConnectorChromeOS::CreateAttestationFlow() {
   return std::make_unique<chromeos::attestation::AttestationFlow>(
       cryptohome::AsyncMethodCaller::GetInstance(),
-      chromeos::DBusThreadManager::Get()->GetCryptohomeClient(),
+      chromeos::CryptohomeClient::Get(),
       std::make_unique<chromeos::attestation::AttestationCAClient>());
 }
 

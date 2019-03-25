@@ -130,7 +130,7 @@ void EnrollmentPolicyObserver::Start() {
   request_in_flight_ = true;
 
   if (!cryptohome_client_)
-    cryptohome_client_ = DBusThreadManager::Get()->GetCryptohomeClient();
+    cryptohome_client_ = CryptohomeClient::Get();
 
   GetEnrollmentId();
 }

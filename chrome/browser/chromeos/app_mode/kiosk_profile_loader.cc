@@ -71,10 +71,8 @@ class KioskProfileLoader::CryptohomedChecker
   ~CryptohomedChecker() {}
 
   void StartCheck() {
-    DBusThreadManager::Get()
-        ->GetCryptohomeClient()
-        ->WaitForServiceToBeAvailable(base::Bind(
-            &CryptohomedChecker::OnServiceAvailibityChecked, AsWeakPtr()));
+    CryptohomeClient::Get()->WaitForServiceToBeAvailable(base::Bind(
+        &CryptohomedChecker::OnServiceAvailibityChecked, AsWeakPtr()));
   }
 
  private:
@@ -99,7 +97,7 @@ class KioskProfileLoader::CryptohomedChecker
       return;
     }
 
-    DBusThreadManager::Get()->GetCryptohomeClient()->IsMounted(
+    CryptohomeClient::Get()->IsMounted(
         base::Bind(&CryptohomedChecker::OnCryptohomeIsMounted, AsWeakPtr()));
   }
 

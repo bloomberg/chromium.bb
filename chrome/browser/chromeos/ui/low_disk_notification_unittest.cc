@@ -38,10 +38,8 @@ class LowDiskNotificationTest : public BrowserWithTestWindowTest {
   ~LowDiskNotificationTest() override {}
 
   void SetUp() override {
-    DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::unique_ptr<CryptohomeClient>(new FakeCryptohomeClient));
-
     BrowserWithTestWindowTest::SetUp();
+    CryptohomeClient::InitializeFake();
 
     TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
         std::make_unique<SystemNotificationHelper>());
@@ -55,6 +53,7 @@ class LowDiskNotificationTest : public BrowserWithTestWindowTest {
 
   void TearDown() override {
     low_disk_notification_.reset();
+    CryptohomeClient::Shutdown();
     BrowserWithTestWindowTest::TearDown();
   }
 

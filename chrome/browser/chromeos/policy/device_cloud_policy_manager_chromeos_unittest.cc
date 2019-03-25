@@ -125,9 +125,7 @@ class DeviceCloudPolicyManagerChromeOSTest
       public DeviceCloudPolicyManagerChromeOS::Observer {
  protected:
   DeviceCloudPolicyManagerChromeOSTest()
-      : fake_cryptohome_client_(new chromeos::FakeCryptohomeClient()),
-        state_keys_broker_(&fake_session_manager_client_),
-        store_(nullptr) {
+      : state_keys_broker_(&fake_session_manager_client_), store_(nullptr) {
     fake_statistics_provider_.SetMachineStatistic(
         chromeos::system::kSerialNumberKeyForTest, "test_sn");
     fake_statistics_provider_.SetMachineStatistic(
@@ -147,12 +145,15 @@ class DeviceCloudPolicyManagerChromeOSTest
 
   void SetUp() override {
     DeviceSettingsTestBase::SetUp();
-    dbus_setter_->SetCryptohomeClient(
-        std::unique_ptr<chromeos::CryptohomeClient>(fake_cryptohome_client_));
     cryptohome::AsyncMethodCaller::Initialize();
 
-    install_attributes_ =
-        std::make_unique<chromeos::InstallAttributes>(fake_cryptohome_client_);
+    if (set_empty_system_salt_) {
+      chromeos::FakeCryptohomeClient::Get()->set_system_salt(
+          std::vector<uint8_t>());
+    }
+
+    install_attributes_ = std::make_unique<chromeos::InstallAttributes>(
+        chromeos::FakeCryptohomeClient::Get());
     store_ = new DeviceCloudPolicyStoreChromeOS(
         device_settings_service_.get(), install_attributes_.get(),
         base::ThreadTaskRunnerHandle::Get());
@@ -275,7 +276,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   MockDeviceManagementService device_management_service_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   chromeos::FakeSessionManagerClient fake_session_manager_client_;
-  chromeos::FakeCryptohomeClient* fake_cryptohome_client_;
+  bool set_empty_system_salt_ = false;
   ServerBackedStateKeysBroker state_keys_broker_;
   StrictMock<chromeos::attestation::MockAttestationFlow>* mock_;
 
@@ -830,8 +831,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentBlankSystemSaltTest
     : public DeviceCloudPolicyManagerChromeOSEnrollmentTest {
  protected:
   DeviceCloudPolicyManagerChromeOSEnrollmentBlankSystemSaltTest() {
-    // Set up a FakeCryptohomeClient with a blank system salt.
-    fake_cryptohome_client_->set_system_salt(std::vector<uint8_t>());
+    set_empty_system_salt_ = true;
   }
 };
 

@@ -92,7 +92,7 @@ void PerformDelayedCryptohomeRemovals(bool service_is_available) {
     cryptohome::AccountIdentifier account_id_proto;
     account_id_proto.set_account_id(cryptohome_id.id());
 
-    DBusThreadManager::Get()->GetCryptohomeClient()->RemoveEx(
+    CryptohomeClient::Get()->RemoveEx(
         account_id_proto, base::BindOnce(&OnRemoveAppCryptohomeComplete,
                                          cryptohome_id, base::OnceClosure()));
   }
@@ -114,8 +114,7 @@ void ArcKioskAppManager::RegisterPrefs(PrefRegistrySimple* registry) {
 
 // static
 void ArcKioskAppManager::RemoveObsoleteCryptohomes() {
-  chromeos::CryptohomeClient* const client =
-      chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
+  chromeos::CryptohomeClient* const client = chromeos::CryptohomeClient::Get();
   client->WaitForServiceToBeAvailable(
       base::Bind(&PerformDelayedCryptohomeRemovals));
 }
@@ -302,7 +301,7 @@ void ArcKioskAppManager::ClearRemovedApps(
       cryptohome::AccountIdentifier account_id_proto;
       account_id_proto.set_account_id(cryptohome_id.id());
 
-      DBusThreadManager::Get()->GetCryptohomeClient()->RemoveEx(
+      CryptohomeClient::Get()->RemoveEx(
           account_id_proto, base::BindOnce(&OnRemoveAppCryptohomeComplete,
                                            cryptohome_id, base::OnceClosure()));
     }

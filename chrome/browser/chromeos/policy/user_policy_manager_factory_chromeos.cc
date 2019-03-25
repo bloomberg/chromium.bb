@@ -343,7 +343,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
 
   std::unique_ptr<UserCloudPolicyStoreChromeOS> store =
       std::make_unique<UserCloudPolicyStoreChromeOS>(
-          chromeos::DBusThreadManager::Get()->GetCryptohomeClient(),
+          chromeos::CryptohomeClient::Get(),
           chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
           background_task_runner, account_id, policy_key_dir,
           is_active_directory);

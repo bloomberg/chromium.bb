@@ -1118,7 +1118,7 @@ void ProfileManager::Observe(
       // TODO(davemoore) Once we have better api this check should ensure that
       // our profile directory is the one that's mounted, and that it's mounted
       // as the current user.
-      chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->IsMounted(
+      chromeos::CryptohomeClient::Get()->IsMounted(
           base::BindOnce(&CheckCryptohomeIsMounted));
 
       // Confirm that we hadn't loaded the new profile previously.

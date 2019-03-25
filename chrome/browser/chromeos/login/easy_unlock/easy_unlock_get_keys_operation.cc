@@ -32,7 +32,7 @@ EasyUnlockGetKeysOperation::~EasyUnlockGetKeysOperation() {}
 
 void EasyUnlockGetKeysOperation::Start() {
   // Register for asynchronous notification of cryptohome being ready.
-  DBusThreadManager::Get()->GetCryptohomeClient()->WaitForServiceToBeAvailable(
+  CryptohomeClient::Get()->WaitForServiceToBeAvailable(
       base::Bind(&EasyUnlockGetKeysOperation::OnCryptohomeAvailable,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -54,7 +54,7 @@ void EasyUnlockGetKeysOperation::GetKeyData() {
   cryptohome::GetKeyDataRequest request;
   request.mutable_key()->mutable_data()->set_label(
       EasyUnlockKeyManager::GetKeyLabel(key_index_));
-  DBusThreadManager::Get()->GetCryptohomeClient()->GetKeyDataEx(
+  CryptohomeClient::Get()->GetKeyDataEx(
       cryptohome::CreateAccountIdentifierFromAccountId(
           user_context_.GetAccountId()),
       cryptohome::AuthorizationRequest(), request,

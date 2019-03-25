@@ -440,11 +440,9 @@ class SystemTokenCertDBInitializer {
   void Initialize() {
     // Only start loading the system token once cryptohome is available and only
     // if the TPM is ready (available && owned && not being owned).
-    DBusThreadManager::Get()
-        ->GetCryptohomeClient()
-        ->WaitForServiceToBeAvailable(
-            base::Bind(&SystemTokenCertDBInitializer::OnCryptohomeAvailable,
-                       weak_ptr_factory_.GetWeakPtr()));
+    CryptohomeClient::Get()->WaitForServiceToBeAvailable(
+        base::Bind(&SystemTokenCertDBInitializer::OnCryptohomeAvailable,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -457,7 +455,7 @@ class SystemTokenCertDBInitializer {
     }
 
     VLOG(1) << "SystemTokenCertDBInitializer: Cryptohome available.";
-    DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsReady(
+    CryptohomeClient::Get()->TpmIsReady(
         base::Bind(&SystemTokenCertDBInitializer::OnGotTpmIsReady,
                    weak_ptr_factory_.GetWeakPtr()));
   }
@@ -475,7 +473,7 @@ class SystemTokenCertDBInitializer {
         // have been lost if initialization was interrupted.
         // We don't care about the result, and don't block waiting for it.
         LOG(WARNING) << "Request attempting TPM ownership.";
-        DBusThreadManager::Get()->GetCryptohomeClient()->TpmCanAttemptOwnership(
+        CryptohomeClient::Get()->TpmCanAttemptOwnership(
             EmptyVoidDBusMethodCallback());
       }
 

@@ -14,7 +14,6 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
-#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -44,12 +43,16 @@ class UpdateKeyRequest;
 
 }  // namespace cryptohome
 
+namespace dbus {
+class Bus;
+}
+
 namespace chromeos {
 
 // CryptohomeClient is used to communicate with the Cryptohome service.
 // All method should be called from the origin thread (UI thread) which
 // initializes the DBusThreadManager instance.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) CryptohomeClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) CryptohomeClient {
  public:
   class Observer {
    public:
@@ -125,11 +128,17 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CryptohomeClient : public DBusClient {
     std::string vendor_specific;
   };
 
-  ~CryptohomeClient() override;
+  // Creates and initializes the global instance. |bus| must not be null.
+  static void Initialize(dbus::Bus* bus);
 
-  // Factory function, creates a new instance and returns ownership.
-  // For normal usage, access the singleton via DBusThreadManager::Get().
-  static CryptohomeClient* Create();
+  // Creates and initializes a fake global instance if not already created.
+  static void InitializeFake();
+
+  // Destroys the global instance which must have been initialized.
+  static void Shutdown();
+
+  // Returns the global instance if initialized. May return null.
+  static CryptohomeClient* Get();
 
   // Returns the sanitized |username| that the stub implementation would return.
   static std::string GetStubSanitizedUsername(
@@ -620,8 +629,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CryptohomeClient : public DBusClient {
                                      DBusMethodCallback<int64_t> callback) = 0;
 
  protected:
-  // Create() should be used instead.
+  // Initialize/Shutdown should be used instead.
   CryptohomeClient();
+  virtual ~CryptohomeClient();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CryptohomeClient);

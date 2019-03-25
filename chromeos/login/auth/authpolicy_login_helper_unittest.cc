@@ -56,10 +56,8 @@ class MockAuthPolicyClient : public FakeAuthPolicyClient {
 
 // Check that helper calls RefreshDevicePolicy after JoinAdDomain.
 TEST(AuthPolicyLoginHelper, JoinFollowedByRefreshDevicePolicy) {
-  DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-      std::make_unique<FakeCryptohomeClient>());
-
   auto* mock_client = new MockAuthPolicyClient;
+  CryptohomeClient::InitializeFake();
 
   AuthPolicyLoginHelper helper;
   helper.set_dm_token(kDMToken);
@@ -72,6 +70,8 @@ TEST(AuthPolicyLoginHelper, JoinFollowedByRefreshDevicePolicy) {
                         EXPECT_TRUE(domain.empty());
                       }));
   mock_client->CheckExpectations();
+
+  CryptohomeClient::Shutdown();
   AuthPolicyClient::Shutdown();
 }
 

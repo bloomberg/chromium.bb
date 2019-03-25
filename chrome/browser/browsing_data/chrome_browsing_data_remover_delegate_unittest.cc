@@ -115,7 +115,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif  // defined(OS_CHROMEOS)
@@ -1766,10 +1765,9 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   user_manager::ScopedUserManager user_manager_enabler(
       base::WrapUnique(mock_user_manager));
 
-  // Owned by DBusThreadManager.
-  FakeCryptohomeClient* cryptohome_client = new FakeCryptohomeClient();
-  chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-      base::WrapUnique(cryptohome_client));
+  // Creates a derived fake global instance destroyed in
+  // CryptohomeClient::Shutdown().
+  auto* cryptohome_client = new FakeCryptohomeClient();
 
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
@@ -1779,7 +1777,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   // than one call means a significant performance problem.
   EXPECT_EQ(1, cryptohome_client->delete_keys_call_count());
 
-  chromeos::DBusThreadManager::Shutdown();
+  chromeos::CryptohomeClient::Shutdown();
 }
 #endif
 

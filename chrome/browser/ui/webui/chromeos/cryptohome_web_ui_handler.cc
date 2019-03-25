@@ -29,8 +29,7 @@ void CryptohomeWebUIHandler::RegisterMessages() {
 }
 
 void CryptohomeWebUIHandler::OnPageLoaded(const base::ListValue* args) {
-  CryptohomeClient* cryptohome_client =
-      DBusThreadManager::Get()->GetCryptohomeClient();
+  CryptohomeClient* cryptohome_client = CryptohomeClient::Get();
 
   cryptohome_client->IsMounted(GetCryptohomeBoolCallback("is-mounted"));
   cryptohome_client->TpmIsReady(GetCryptohomeBoolCallback("tpm-is-ready"));

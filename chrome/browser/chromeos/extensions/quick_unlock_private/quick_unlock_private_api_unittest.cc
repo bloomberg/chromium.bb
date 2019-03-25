@@ -31,7 +31,6 @@
 #include "chromeos/cryptohome/mock_homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/auth/fake_extended_authenticator.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
@@ -140,15 +139,12 @@ class QuickUnlockPrivateUnitTest
 
  protected:
   void SetUp() override {
-    // Setup DBusThreadManager before calling ExtensionApiUnittest::SetUp()
-    // since that will set dbus up with the default fake configuration.
-    auto cryptohome_client = std::make_unique<chromeos::FakeCryptohomeClient>();
+    CryptohomeClient::InitializeFake();
     if (GetParam() == TestType::kCryptohome) {
+      auto* cryptohome_client = FakeCryptohomeClient::Get();
       cryptohome_client->set_supports_low_entropy_credentials(true);
       cryptohome_client->set_enable_auth_check(true);
     }
-    DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::move(cryptohome_client));
     SystemSaltGetter::Initialize();
 
     fake_user_manager_ = new FakeChromeUserManager();
@@ -199,7 +195,7 @@ class QuickUnlockPrivateUnitTest
     scoped_user_manager_.reset();
 
     SystemSaltGetter::Shutdown();
-    DBusThreadManager::Shutdown();
+    CryptohomeClient::Shutdown();
     cryptohome::HomedirMethods::Shutdown();
   }
 

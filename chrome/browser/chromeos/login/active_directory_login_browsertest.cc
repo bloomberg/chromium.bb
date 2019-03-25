@@ -91,8 +91,6 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
 
     // Note: FakeCryptohomeClient needs paths to be set to load install attribs.
     active_directory_test_helper::OverridePaths();
-    DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::make_unique<FakeCryptohomeClient>());
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

@@ -34,6 +34,7 @@ void InitializeDBus() {
   if (bus) {
     AuthPolicyClient::Initialize(bus);
     BiodClient::Initialize(bus);  // For device::Fingerprint.
+    CryptohomeClient::Initialize(bus);
     KerberosClient::Initialize(bus);
     MachineLearningClient::Initialize(bus);
     PowerManagerClient::Initialize(bus);
@@ -42,6 +43,7 @@ void InitializeDBus() {
   } else {
     AuthPolicyClient::InitializeFake();
     BiodClient::InitializeFake();  // For device::Fingerprint.
+    CryptohomeClient::InitializeFake();
     KerberosClient::InitializeFake();
     MachineLearningClient::InitializeFake();
     PowerManagerClient::InitializeFake();
@@ -62,6 +64,7 @@ void ShutdownDBus() {
   PowerManagerClient::Shutdown();
   MachineLearningClient::Shutdown();
   KerberosClient::Shutdown();
+  CryptohomeClient::Shutdown();
   BiodClient::Shutdown();
   AuthPolicyClient::Shutdown();
 

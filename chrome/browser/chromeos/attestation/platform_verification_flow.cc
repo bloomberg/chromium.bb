@@ -155,7 +155,7 @@ PlatformVerificationFlow::ChallengeContext::~ChallengeContext() {}
 PlatformVerificationFlow::PlatformVerificationFlow()
     : attestation_flow_(NULL),
       async_caller_(cryptohome::AsyncMethodCaller::GetInstance()),
-      cryptohome_client_(DBusThreadManager::Get()->GetCryptohomeClient()),
+      cryptohome_client_(CryptohomeClient::Get()),
       delegate_(NULL),
       timeout_delay_(base::TimeDelta::FromSeconds(kTimeoutInSeconds)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

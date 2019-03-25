@@ -37,7 +37,7 @@ void SystemSaltGetter::GetSystemSalt(
     return;
   }
 
-  DBusThreadManager::Get()->GetCryptohomeClient()->WaitForServiceToBeAvailable(
+  CryptohomeClient::Get()->WaitForServiceToBeAvailable(
       base::BindOnce(&SystemSaltGetter::DidWaitForServiceToBeAvailable,
                      weak_ptr_factory_.GetWeakPtr(), callback));
 }
@@ -68,7 +68,7 @@ void SystemSaltGetter::DidWaitForServiceToBeAvailable(
     callback.Run(std::string());
     return;
   }
-  DBusThreadManager::Get()->GetCryptohomeClient()->GetSystemSalt(
+  CryptohomeClient::Get()->GetSystemSalt(
       base::BindOnce(&SystemSaltGetter::DidGetSystemSalt,
                      weak_ptr_factory_.GetWeakPtr(), callback));
 }

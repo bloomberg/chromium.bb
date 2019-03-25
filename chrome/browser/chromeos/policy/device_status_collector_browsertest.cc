@@ -402,6 +402,7 @@ class DeviceStatusCollectorTest : public testing::Test {
         base::WrapUnique<chromeos::UpdateEngineClient>(update_engine_client_));
 
     chromeos::CrasAudioHandler::InitializeForTesting();
+    chromeos::CryptohomeClient::InitializeFake();
     chromeos::PowerManagerClient::InitializeFake();
     chromeos::LoginState::Initialize();
   }
@@ -409,6 +410,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   ~DeviceStatusCollectorTest() override {
     chromeos::LoginState::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
+    chromeos::CryptohomeClient::Shutdown();
     chromeos::CrasAudioHandler::Shutdown();
     chromeos::KioskAppManager::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
