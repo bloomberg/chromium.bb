@@ -71,12 +71,10 @@ class ScheduledURLNavigation : public ScheduledNavigation {
                          Document* origin_document,
                          const KURL& url,
                          WebFrameLoadType frame_load_type,
-                         bool is_location_change,
                          base::TimeTicks input_timestamp)
       : ScheduledNavigation(reason,
                             delay,
                             origin_document,
-                            is_location_change,
                             input_timestamp),
         url_(url),
         should_check_main_world_content_security_policy_(
@@ -147,7 +145,6 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
                                origin_document,
                                url,
                                frame_load_type,
-                               false,
                                input_timestamp) {
     ClearUserGesture();
   }
@@ -207,7 +204,6 @@ class ScheduledFrameNavigation final : public ScheduledURLNavigation {
                                origin_document,
                                url,
                                frame_load_type,
-                               !url.ProtocolIsJavaScript(),
                                input_timestamp) {}
 };
 
@@ -230,7 +226,6 @@ class ScheduledFormSubmission final : public ScheduledNavigation {
                                 : ClientNavigationReason::kFormSubmissionPost,
                             0,
                             document,
-                            true,
                             input_timestamp),
         submission_(submission),
         frame_load_type_(frame_load_type) {
@@ -265,10 +260,6 @@ NavigationScheduler::NavigationScheduler(LocalFrame* frame) : frame_(frame) {}
 NavigationScheduler::~NavigationScheduler() {
 }
 
-bool NavigationScheduler::LocationChangePending() {
-  return redirect_ && redirect_->IsLocationChange();
-}
-
 bool NavigationScheduler::IsNavigationScheduledWithin(double interval) const {
   return redirect_ && redirect_->Delay() <= interval;
 }
@@ -298,7 +289,8 @@ void NavigationScheduler::ScheduleRedirect(
       frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
     Schedule(ScheduledRedirect::Create(delay, frame_->GetDocument(), url,
                                        http_refresh_type, frame_load_type,
-                                       InputTimestamp()));
+                                       InputTimestamp()),
+             kDoNotCancelParsing);
   }
 }
 
@@ -357,7 +349,8 @@ void NavigationScheduler::ScheduleFrameNavigation(
   }
 
   Schedule(ScheduledFrameNavigation::Create(origin_document, url,
-                                            frame_load_type, input_timestamp));
+                                            frame_load_type, input_timestamp),
+           kCancelParsing);
 }
 
 void NavigationScheduler::ScheduleFormSubmission(Document* document,
@@ -366,8 +359,14 @@ void NavigationScheduler::ScheduleFormSubmission(Document* document,
   WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
   if (MustReplaceCurrentItem(frame_))
     frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
+  // Cancel parsing if the form submission is targeted at this frame.
+  CancelParsingPolicy policy =
+      submission->Target().IsEmpty() || submission->Target() == "_self"
+          ? kCancelParsing
+          : kDoNotCancelParsing;
   Schedule(ScheduledFormSubmission::Create(document, submission,
-                                           frame_load_type, InputTimestamp()));
+                                           frame_load_type, InputTimestamp()),
+           policy);
 }
 
 void NavigationScheduler::NavigateTask() {
@@ -383,7 +382,8 @@ void NavigationScheduler::NavigateTask() {
   probe::FrameClearedScheduledNavigation(frame_);
 }
 
-void NavigationScheduler::Schedule(ScheduledNavigation* redirect) {
+void NavigationScheduler::Schedule(ScheduledNavigation* redirect,
+                                   CancelParsingPolicy cancel_parsing_policy) {
   DCHECK(frame_->GetPage());
 
   // In a back/forward navigation, we sometimes restore history state to
@@ -402,8 +402,14 @@ void NavigationScheduler::Schedule(ScheduledNavigation* redirect) {
 
   Cancel();
   redirect_ = redirect;
-  if (redirect_->IsLocationChange())
-    frame_->GetDocument()->SuppressLoadEvent();
+
+  // Most navigations are guaranteed to transition documents if they reach this
+  // point. JS urls aren't, and refresh headers are delayed. Don't immediately
+  // cancel parsing for those.
+  if (cancel_parsing_policy == kCancelParsing &&
+      !redirect->Url().ProtocolIsJavaScript()) {
+    frame_->GetDocument()->CancelParsing();
+  }
   StartTimer();
 }
 

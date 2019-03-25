@@ -305,20 +305,6 @@ bool HTMLDocumentParser::CanTakeNextToken() {
     RunScriptsForPausedTreeBuilder();
   if (IsStopped() || IsPaused())
     return false;
-
-  // FIXME: It's wrong for the HTMLDocumentParser to reach back to the
-  // LocalFrame, but this approach is how the old parser handled stopping when
-  // the page assigns window.location.  What really should happen is that
-  // assigning window.location causes the parser to stop parsing cleanly.  The
-  // problem is we're not perpared to do that at every point where we run
-  // JavaScript.
-  if (!IsParsingFragment() && GetDocument()->GetFrame() &&
-      GetDocument()
-          ->GetFrame()
-          ->GetNavigationScheduler()
-          .LocationChangePending())
-    return false;
-
   return true;
 }
 
@@ -521,22 +507,6 @@ size_t HTMLDocumentParser::ProcessTokenizedChunkFromBackgroundParser(
     if (!chunk->starting_script && (it->GetType() == HTMLToken::kStartTag ||
                                     it->GetType() == HTMLToken::kEndTag))
       element_token_count++;
-
-    if (GetDocument()->GetFrame() && GetDocument()
-                                         ->GetFrame()
-                                         ->GetNavigationScheduler()
-                                         .LocationChangePending()) {
-      // To match main-thread parser behavior (which never checks
-      // locationChangePending on the EOF path) we peek to see if this chunk has
-      // an EOF and process it anyway.
-      if (tokens.back().GetType() == HTMLToken::kEndOfFile) {
-        DCHECK(
-            speculations_
-                .IsEmpty());  // There should never be any chunks after the EOF.
-        PrepareToStopParsing();
-      }
-      break;
-    }
 
     text_position_ = it->GetTextPosition();
 

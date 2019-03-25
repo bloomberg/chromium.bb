@@ -242,9 +242,6 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(
 
   Document* owner_document = GetFrame()->GetDocument();
 
-  bool location_change_before =
-      GetFrame()->GetNavigationScheduler().LocationChangePending();
-
   v8::HandleScope handle_scope(GetIsolate());
 
   // https://html.spec.whatwg.org/C/#navigate
@@ -269,13 +266,6 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(
   if (result.IsEmpty() || !result->IsString())
     return true;
   String script_result = ToCoreString(v8::Local<v8::String>::Cast(result));
-
-  // We're still in a frame, so there should be a DocumentLoader.
-  DCHECK(GetFrame()->GetDocument()->Loader());
-  if (!location_change_before &&
-      GetFrame()->GetNavigationScheduler().LocationChangePending())
-    return true;
-
   GetFrame()->Loader().ReplaceDocumentWhileExecutingJavaScriptURL(
       script_result, owner_document);
   return true;
