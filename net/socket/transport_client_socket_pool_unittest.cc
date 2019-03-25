@@ -38,6 +38,7 @@
 #include "net/socket/socks_connect_job.h"
 #include "net/socket/ssl_connect_job.h"
 #include "net/socket/stream_socket.h"
+#include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_client_socket_pool_test_util.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/spdy/spdy_test_util_common.h"
@@ -53,8 +54,6 @@ using net::test::IsError;
 using net::test::IsOk;
 
 namespace net {
-
-using internal::ClientSocketPoolBaseHelper;
 
 namespace {
 
@@ -152,7 +151,7 @@ class TransportClientSocketPoolTest : public ::testing::Test,
   }
 
   ~TransportClientSocketPoolTest() override {
-    internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
+    TransportClientSocketPool::set_connect_backup_jobs_enabled(
         connect_backup_jobs_enabled_);
   }
 

@@ -54,11 +54,12 @@ TransportClientSocketPool::TransportConnectJobFactory::
 
 std::unique_ptr<ConnectJob>
 TransportClientSocketPool::TransportConnectJobFactory::NewConnectJob(
-    const PoolBase::Request& request,
+    RequestPriority request_priority,
+    SocketTag socket_tag,
+    scoped_refptr<SocketParams> socket_params,
     ConnectJob::Delegate* delegate) const {
-  return request.params()->create_connect_job_callback().Run(
-      request.priority(), request.socket_tag(), common_connect_job_params_,
-      delegate);
+  return socket_params->create_connect_job_callback().Run(
+      request_priority, socket_tag, common_connect_job_params_, delegate);
 }
 
 TransportClientSocketPool::TransportClientSocketPool(
@@ -87,8 +88,7 @@ TransportClientSocketPool::CreateForTesting(
     int max_sockets_per_group,
     base::TimeDelta unused_idle_socket_timeout,
     base::TimeDelta used_idle_socket_timeout,
-    std::unique_ptr<ClientSocketPoolBase<SocketParams>::ConnectJobFactory>
-        connect_job_factory,
+    std::unique_ptr<ConnectJobFactory> connect_job_factory,
     SSLConfigService* ssl_config_service,
     bool connect_backup_jobs_enabled) {
   return base::WrapUnique<TransportClientSocketPool>(
@@ -110,9 +110,9 @@ int TransportClientSocketPool::RequestSocket(
     const NetLogWithSource& net_log) {
   NetLogTcpClientSocketPoolRequestedSocket(net_log, group_id);
 
-  return base_.RequestSocket(group_id, socket_params, priority, socket_tag,
-                             respect_limits, handle, std::move(callback),
-                             proxy_auth_callback, net_log);
+  return ClientSocketPoolBaseHelper::RequestSocket(
+      group_id, socket_params, priority, socket_tag, respect_limits, handle,
+      std::move(callback), proxy_auth_callback, net_log);
 }
 
 void TransportClientSocketPool::NetLogTcpClientSocketPoolRequestedSocket(
@@ -138,79 +138,8 @@ void TransportClientSocketPool::RequestSockets(
                                          base::Unretained(&group_id)));
   }
 
-  base_.RequestSockets(group_id, socket_params, num_sockets, net_log);
-}
-
-void TransportClientSocketPool::SetPriority(const GroupId& group_id,
-                                            ClientSocketHandle* handle,
-                                            RequestPriority priority) {
-  base_.SetPriority(group_id, handle, priority);
-}
-
-void TransportClientSocketPool::CancelRequest(const GroupId& group_id,
-                                              ClientSocketHandle* handle) {
-  base_.CancelRequest(group_id, handle);
-}
-
-void TransportClientSocketPool::ReleaseSocket(
-    const GroupId& group_id,
-    std::unique_ptr<StreamSocket> socket,
-    int id) {
-  base_.ReleaseSocket(group_id, std::move(socket), id);
-}
-
-void TransportClientSocketPool::FlushWithError(int error) {
-  base_.FlushWithError(error);
-}
-
-void TransportClientSocketPool::CloseIdleSockets() {
-  base_.CloseIdleSockets();
-}
-
-void TransportClientSocketPool::CloseIdleSocketsInGroup(
-    const GroupId& group_id) {
-  base_.CloseIdleSocketsInGroup(group_id);
-}
-
-int TransportClientSocketPool::IdleSocketCount() const {
-  return base_.idle_socket_count();
-}
-
-size_t TransportClientSocketPool::IdleSocketCountInGroup(
-    const GroupId& group_id) const {
-  return base_.IdleSocketCountInGroup(group_id);
-}
-
-LoadState TransportClientSocketPool::GetLoadState(
-    const GroupId& group_id,
-    const ClientSocketHandle* handle) const {
-  return base_.GetLoadState(group_id, handle);
-}
-
-std::unique_ptr<base::DictionaryValue>
-TransportClientSocketPool::GetInfoAsValue(const std::string& name,
-                                          const std::string& type) const {
-  return base_.GetInfoAsValue(name, type);
-}
-
-bool TransportClientSocketPool::IsStalled() const {
-  return base_.IsStalled();
-}
-
-void TransportClientSocketPool::AddHigherLayeredPool(
-    HigherLayeredPool* higher_pool) {
-  base_.AddHigherLayeredPool(higher_pool);
-}
-
-void TransportClientSocketPool::RemoveHigherLayeredPool(
-    HigherLayeredPool* higher_pool) {
-  base_.RemoveHigherLayeredPool(higher_pool);
-}
-
-void TransportClientSocketPool::DumpMemoryStats(
-    base::trace_event::ProcessMemoryDump* pmd,
-    const std::string& parent_dump_absolute_name) const {
-  base_.DumpMemoryStats(pmd, parent_dump_absolute_name);
+  ClientSocketPoolBaseHelper::RequestSockets(group_id, socket_params,
+                                             num_sockets, net_log);
 }
 
 TransportClientSocketPool::TransportClientSocketPool(
@@ -218,17 +147,17 @@ TransportClientSocketPool::TransportClientSocketPool(
     int max_sockets_per_group,
     base::TimeDelta unused_idle_socket_timeout,
     base::TimeDelta used_idle_socket_timeout,
-    std::unique_ptr<PoolBase::ConnectJobFactory> connect_job_factory,
+    std::unique_ptr<ConnectJobFactory> connect_job_factory,
     SSLConfigService* ssl_config_service,
     bool connect_backup_jobs_enabled)
-    : base_(max_sockets,
-            max_sockets_per_group,
-            unused_idle_socket_timeout,
-            used_idle_socket_timeout,
-            connect_job_factory.release()),
+    : ClientSocketPoolBaseHelper(max_sockets,
+                                 max_sockets_per_group,
+                                 unused_idle_socket_timeout,
+                                 used_idle_socket_timeout,
+                                 connect_job_factory.release()),
       ssl_config_service_(ssl_config_service) {
   if (connect_backup_jobs_enabled)
-    base_.EnableConnectBackupJobs();
+    EnableConnectBackupJobs();
   if (ssl_config_service_)
     ssl_config_service_->AddObserver(this);
 }
