@@ -81,18 +81,29 @@ const puppeteer = require('puppeteer');
     "images/UNKNOWN_FORMAT.JPG",
   ];
 
+  let time = 0.0;
+
   for (let i = 0; i < images.length; ++i) {
+    const start = await page.evaluate(() => {
+      return window.performance.now();
+    });
+
     await page.evaluate((image) => {
       window.runTest(image);
     }, images[i]);
 
     await page.mainFrame().waitForFunction('document.title == "DONE"');
 
+    time += await page.evaluate(() => {
+      return window.performance.now();
+    }) - start;
+
     if (program.debug) {
       await sleep(2000);
     }
   }
 
+  console.log('test: done total time', time.toFixed(3));
   browser.close();
 
 })();
