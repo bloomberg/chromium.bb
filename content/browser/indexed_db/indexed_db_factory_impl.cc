@@ -723,14 +723,12 @@ IndexedDBFactoryImpl::OpenBackingStore(const Origin& origin,
   if (!s.ok())
     return {std::move(backing_store), s, data_loss_info, disk_full};
 
-  if (data_directory.empty()) {
-    backing_store = base::MakeRefCounted<IndexedDBBackingStore>(
-        nullptr, origin, base::FilePath(), std::move(database),
-        context_->TaskRunner());
-  } else {
-    backing_store = CreateBackingStore(origin, blob_path, std::move(database),
-                                       context_->TaskRunner());
-  }
+  IndexedDBBackingStore::Mode backing_store_mode =
+      data_directory.empty() ? IndexedDBBackingStore::Mode::kInMemory
+                             : IndexedDBBackingStore::Mode::kOnDisk;
+  backing_store =
+      CreateBackingStore(backing_store_mode, origin, blob_path,
+                         std::move(database), context_->TaskRunner());
   bool first_open_since_startup =
       backends_opened_since_startup_.insert(origin).second;
   s = backing_store->Initialize(
@@ -753,12 +751,13 @@ IndexedDBFactoryImpl::OpenBackingStore(const Origin& origin,
 }
 
 scoped_refptr<IndexedDBBackingStore> IndexedDBFactoryImpl::CreateBackingStore(
+    IndexedDBBackingStore::Mode backing_store_mode,
     const url::Origin& origin,
     const base::FilePath& blob_path,
     std::unique_ptr<LevelDBDatabase> db,
     base::SequencedTaskRunner* task_runner) {
   return base::MakeRefCounted<IndexedDBBackingStore>(
-      this, origin, blob_path, std::move(db), task_runner);
+      backing_store_mode, this, origin, blob_path, std::move(db), task_runner);
 }
 
 void IndexedDBFactoryImpl::Open(

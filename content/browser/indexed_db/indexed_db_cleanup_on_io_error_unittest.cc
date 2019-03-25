@@ -39,7 +39,7 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
   auto task_runner = base::SequencedTaskRunnerHandle::Get();
   scoped_refptr<IndexedDBBackingStore> backing_store =
       base::MakeRefCounted<IndexedDBBackingStore>(
-          nullptr, origin, path,
+          IndexedDBBackingStore::Mode::kInMemory, nullptr, origin, path,
           std::make_unique<LevelDBDatabase>(
               indexed_db::FakeLevelDBFactory::GetBrokenLevelDB(
                   leveldb::Status::IOError("It's broken!"), path),
@@ -71,7 +71,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
   for (leveldb::Status error_status : errors) {
     scoped_refptr<IndexedDBBackingStore> backing_store =
         base::MakeRefCounted<IndexedDBBackingStore>(
-            nullptr, origin, path,
+            IndexedDBBackingStore::Mode::kInMemory, nullptr, origin, path,
             std::make_unique<LevelDBDatabase>(
                 indexed_db::FakeLevelDBFactory::GetBrokenLevelDB(error_status,
                                                                  path),
