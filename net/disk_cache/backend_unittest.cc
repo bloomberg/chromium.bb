@@ -4765,7 +4765,16 @@ TEST_F(DiskCacheBackendTest, SimpleMaxSizeLimit) {
 }
 
 void DiskCacheBackendTest::BackendOpenOrCreateEntry() {
-  InitCache();
+  // Avoid the weird kNoRandom flag on blockfile, since this needs to
+  // test cleanup behavior actually used in production.
+  if (memory_only_) {
+    InitCache();
+  } else {
+    CleanupCacheDir();
+    // Since we're not forcing a clean shutdown, integrity check may fail.
+    DisableIntegrityCheck();
+    CreateBackend(disk_cache::kNone);
+  }
 
   // Test that new key is created.
   disk_cache::EntryWithOpened es1;
@@ -4802,6 +4811,30 @@ void DiskCacheBackendTest::BackendOpenOrCreateEntry() {
   es2.entry->Close();
   es3.entry->Close();
   es4.entry->Close();
+
+  // Test proper cancellation of writes to EntryWithOpened. In-memory cache
+  // is always synchronous, so this isn't' meaningful for it.
+  if (!memory_only_) {
+    auto heap_entry_with_open = std::make_unique<disk_cache::EntryWithOpened>();
+    net::TestCompletionCallback callback;
+
+    // Using "first" here:
+    // 1) It's an existing entry, so SimpleCache can't cheat with an optimistic
+    //    create.
+    // 2) "second"'s creation is a cheated post-doom create one, which also
+    //    makes testing trickier.
+    int rv = cache_->OpenOrCreateEntry(
+        "first", net::HIGHEST, heap_entry_with_open.get(), callback.callback());
+    ASSERT_EQ(net::ERR_IO_PENDING, rv);
+    cache_ = nullptr;
+    heap_entry_with_open = nullptr;
+
+    // Callback is supposed to be cancelled, so have to flush everything
+    // to check for any trouble.
+    disk_cache::FlushCacheThreadForTesting();
+    RunUntilIdle();
+    EXPECT_FALSE(callback.have_result());
+  }
 }
 
 TEST_F(DiskCacheBackendTest, InMemoryOnlyOpenOrCreateEntry) {
