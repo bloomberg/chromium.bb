@@ -27,14 +27,6 @@ namespace ntp_snippets {
 extern const base::Feature* const kAllFeatures[];
 
 ////////////////////////////////////////////////////////////////////////////////
-// Dependent features.
-// DO NOT check directly whether these features are enabled (i.e. do
-// not use base::FeatureList::IsEnabled()). They are enabled conditionally. Use
-// helpers in chrome/browser/ntp_snippets/dependent_features.h instead.
-
-extern const base::Feature kBookmarkSuggestionsFeature;
-
-////////////////////////////////////////////////////////////////////////////////
 // Independent features. Treat as normal
 
 extern const base::Feature kArticleSuggestionsFeature;
