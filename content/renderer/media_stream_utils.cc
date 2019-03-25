@@ -9,11 +9,11 @@
 
 #include "base/callback.h"
 #include "base/guid.h"
-#include "content/renderer/media/stream/media_stream_video_capturer_source.h"
 #include "media/capture/video_capturer_source.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 
@@ -32,7 +32,7 @@ bool AddVideoTrackToMediaStream(
   media::VideoCaptureFormats preferred_formats =
       video_source->GetPreferredFormats();
   blink::MediaStreamVideoSource* const media_stream_source =
-      new MediaStreamVideoCapturerSource(
+      new blink::MediaStreamVideoCapturerSource(
           blink::WebPlatformMediaStreamSource::SourceStoppedCallback(),
           std::move(video_source));
   const blink::WebString track_id =
