@@ -1578,17 +1578,6 @@ void LayoutGrid::UpdateAutoMarginsInColumnAxisIfNeeded(LayoutBox& child) {
 
 // TODO(lajava): This logic is shared by LayoutFlexibleBox, so it might be
 // refactored somehow.
-LayoutUnit LayoutGrid::SynthesizedBaselineFromContentBox(
-    const LayoutBox& box,
-    LineDirectionMode direction) {
-  if (direction == kHorizontalLine) {
-    return box.Size().Height() - box.BorderBottom() - box.PaddingBottom() -
-           box.HorizontalScrollbarHeight();
-  }
-  return box.Size().Width() - box.BorderLeft() - box.PaddingLeft() -
-         box.VerticalScrollbarWidth();
-}
-
 LayoutUnit LayoutGrid::SynthesizedBaselineFromBorderBox(
     const LayoutBox& box,
     LineDirectionMode direction) {
@@ -1602,9 +1591,11 @@ LayoutUnit LayoutGrid::BaselinePosition(FontBaseline,
                                         LinePositionMode mode) const {
   DCHECK_EQ(mode, kPositionOnContainingLine);
   LayoutUnit baseline = FirstLineBoxBaseline();
-  // We take content-box's bottom if no valid baseline.
-  if (baseline == -1)
-    baseline = SynthesizedBaselineFromContentBox(*this, direction);
+  // We take border-box's bottom if no valid baseline.
+  if (baseline == -1) {
+    return SynthesizedBaselineFromBorderBox(*this, direction) +
+           MarginLogicalHeight();
+  }
 
   return baseline + BeforeMarginInLineDirection(direction);
 }
@@ -1666,13 +1657,7 @@ LayoutUnit LayoutGrid::FirstLineBoxBaseline() const {
 }
 
 LayoutUnit LayoutGrid::InlineBlockBaseline(LineDirectionMode direction) const {
-  LayoutUnit baseline = FirstLineBoxBaseline();
-  if (baseline != -1)
-    return baseline;
-
-  LayoutUnit margin_height =
-      direction == kHorizontalLine ? MarginTop() : MarginRight();
-  return SynthesizedBaselineFromContentBox(*this, direction) + margin_height;
+  return FirstLineBoxBaseline();
 }
 
 bool LayoutGrid::IsBaselineAlignmentForChild(const LayoutBox& child) const {
