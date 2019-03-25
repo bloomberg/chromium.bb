@@ -407,6 +407,9 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual void CreateRendererService(
       service_manager::mojom::ServiceRequest service_request) {}
 
+  // Allows the embedder to return a (possibly null) URLLoaderThrottleProvider
+  // for a frame or worker. For frames this is called on the main thread, and
+  // for workers it's called on the worker thread.
   virtual std::unique_ptr<URLLoaderThrottleProvider>
   CreateURLLoaderThrottleProvider(URLLoaderThrottleProviderType provider_type);
 
