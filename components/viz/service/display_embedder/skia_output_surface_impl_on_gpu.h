@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
+#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
@@ -86,12 +87,14 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
       std::unique_ptr<gpu::SharedImageRepresentationFactory> sir_factory,
       gpu::raster::GrShaderCache* gr_shader_cache,
       VulkanContextProvider* vulkan_context_provider,
+      const RendererSettings& renderer_settings_,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
       const BufferPresentedCallback& buffer_presented_callback,
       const ContextLostCallback& context_lost_callback);
   SkiaOutputSurfaceImplOnGpu(
       GpuServiceImpl* gpu_service,
       gpu::SurfaceHandle surface_handle,
+      const RendererSettings& renderer_settings_,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
       const BufferPresentedCallback& buffer_presented_callback,
       const ContextLostCallback& context_lost_callback);
@@ -100,6 +103,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
       scoped_refptr<gl::GLSurface> gl_surface,
       scoped_refptr<gpu::SharedContextState> shared_context_state,
       gpu::SequenceId sequence_id,
+      const RendererSettings& renderer_settings_,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
       const BufferPresentedCallback& buffer_presented_callback,
       const ContextLostCallback& context_lost_callback);
@@ -217,6 +221,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
       shared_image_representation_factory_;
   gpu::raster::GrShaderCache* const gr_shader_cache_;
   VulkanContextProvider* const vulkan_context_provider_;
+  const RendererSettings renderer_settings_;
   DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
   BufferPresentedCallback buffer_presented_callback_;
   ContextLostCallback context_lost_callback_;
