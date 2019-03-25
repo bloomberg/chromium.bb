@@ -518,12 +518,12 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   int64_t since_last_progress_report =
       (current_timeticks - last_reported_progress_timeticks_).InSeconds();
   crash_keys::seconds_since_last_progress_report.Set(
-      base::Int64ToString(since_last_progress_report));
+      base::NumberToString(since_last_progress_report));
 
   int64_t available_physical_memory =
       base::SysInfo::AmountOfAvailablePhysicalMemory() >> 20;
   crash_keys::available_physical_memory_in_mb.Set(
-      base::Int64ToString(available_physical_memory));
+      base::NumberToString(available_physical_memory));
 
   // Deliberately crash the process to create a crash dump.
   *((volatile int*)0) = 0x1337;
