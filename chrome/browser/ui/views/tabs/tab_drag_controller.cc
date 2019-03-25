@@ -247,6 +247,30 @@ class TabDragController::SourceTabStripEmptinessTracker
   ScopedObserver<TabStripModel, TabStripModelObserver> observer_;
 };
 
+class TabDragController::DraggedTabsClosedTracker
+    : public TabStripModelObserver {
+ public:
+  DraggedTabsClosedTracker(TabStripModel* tabstrip, TabDragController* parent)
+      : parent_(parent), observer_(this) {
+    observer_.Add(tabstrip);
+  }
+
+  void OnTabStripModelChanged(
+      TabStripModel* model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (change.type() != TabStripModelChange::Type::kRemoved)
+      return;
+    for (auto it = change.deltas().begin(); it != change.deltas().end(); it++) {
+      parent_->OnActiveStripWebContentsRemoved(it->remove.contents);
+    }
+  }
+
+ private:
+  TabDragController* const parent_;
+  ScopedObserver<TabStripModel, TabStripModelObserver> observer_;
+};
+
 TabDragController::TabDragData::TabDragData()
     : contents(NULL),
       source_model_index(-1),
@@ -645,6 +669,17 @@ void TabDragController::OnSourceTabStripEmpty() {
         ->ClearProperty(ash::kTabDraggingSourceWindowKey);
   }
 #endif
+}
+
+void TabDragController::OnActiveStripWebContentsRemoved(
+    content::WebContents* contents) {
+  // Mark closed tabs as destroyed so we don't try to manipulate them later.
+  for (auto it = drag_data_.begin(); it != drag_data_.end(); it++) {
+    if (it->contents == contents) {
+      it->contents = nullptr;
+      break;
+    }
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1205,11 +1240,16 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
     attached_tabstrip_->GetWidget()->SetCapture(attached_tabstrip_);
   attached_tabstrip_->OwnDragController(this);
   SetTabDraggingInfo();
+  attached_tabstrip_tabs_closed_tracker_ =
+      std::make_unique<DraggedTabsClosedTracker>(GetModel(attached_tabstrip_),
+                                                 this);
 }
 
 void TabDragController::Detach(ReleaseCapture release_capture) {
   TRACE_EVENT1("views", "TabDragController::Detach",
                "release_capture", release_capture);
+
+  attached_tabstrip_tabs_closed_tracker_.reset();
 
   attach_index_ = -1;
 
@@ -1434,6 +1474,7 @@ std::vector<gfx::Rect> TabDragController::CalculateBoundsForDraggedTabs() {
 void TabDragController::EndDragImpl(EndDragType type) {
   DragState previous_state = current_state_;
   current_state_ = DragState::kStopped;
+  attached_tabstrip_tabs_closed_tracker_.reset();
 
   bring_to_front_timer_.Stop();
   move_stacked_timer_.Stop();
