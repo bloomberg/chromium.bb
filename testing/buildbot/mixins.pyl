@@ -317,7 +317,7 @@
   'mac_10.13': {
     'swarming': {
       'dimensions': {
-        'os': 'Mac-10.13',
+        'os': 'Mac-10.13.6',
       },
     },
   },
@@ -357,7 +357,7 @@
     'swarming': {
       'dimensions': {
         'gpu': '1002:679e',
-        'os': 'Mac-10.12',
+        'os': 'Mac-10.12.6',
         'pool': 'Chrome-GPU',
       },
     },
