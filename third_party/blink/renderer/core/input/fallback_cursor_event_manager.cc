@@ -68,7 +68,7 @@ bool CanScrollAnyDirection(const ScrollableArea& scrollable) {
   return !scroll_dimensions.IsZero();
 }
 
-IntSize ScrollableAreaClipSizeInViewport(const ScrollableArea& scrollable) {
+IntSize ScrollableAreaClipSizeInRootFrame(const ScrollableArea& scrollable) {
   LayoutBox* box = scrollable.GetLayoutBox();
   DCHECK(box);
   LocalFrameView* view = box->GetFrameView();
@@ -77,7 +77,7 @@ IntSize ScrollableAreaClipSizeInViewport(const ScrollableArea& scrollable) {
   LayoutRect layout_rect =
       LayoutRect(scrollable.VisibleContentRect(blink::kIncludeScrollbars));
   layout_rect = view->DocumentToFrame(layout_rect);
-  IntRect rect = view->FrameToViewport(EnclosedIntRect(layout_rect));
+  IntRect rect = view->ConvertToRootFrame(EnclosedIntRect(layout_rect));
   return rect.Size();
 }
 
@@ -242,23 +242,23 @@ void FallbackCursorEventManager::ComputeLockCursor(
   ScrollableArea* scrollable = CurrentScrollingScrollableArea();
 
   DCHECK(scrollable);
-  IntSize scrollable_clip_size_in_viewport =
-      ScrollableAreaClipSizeInViewport(*scrollable);
+  IntSize scrollable_clip_size_in_root_frame =
+      ScrollableAreaClipSizeInRootFrame(*scrollable);
   IntPoint location_in_scrollable =
       RootFrameLocationToScrollable(location_in_root_frame, *scrollable);
 
   bool left =
       ShouldLock(Direction::kLeft, *scrollable,
-                 scrollable_clip_size_in_viewport, location_in_scrollable);
+                 scrollable_clip_size_in_root_frame, location_in_scrollable);
   bool right =
       ShouldLock(Direction::kRight, *scrollable,
-                 scrollable_clip_size_in_viewport, location_in_scrollable);
+                 scrollable_clip_size_in_root_frame, location_in_scrollable);
   bool up =
-      ShouldLock(Direction::kUp, *scrollable, scrollable_clip_size_in_viewport,
-                 location_in_scrollable);
+      ShouldLock(Direction::kUp, *scrollable,
+                 scrollable_clip_size_in_root_frame, location_in_scrollable);
   bool down =
       ShouldLock(Direction::kDown, *scrollable,
-                 scrollable_clip_size_in_viewport, location_in_scrollable);
+                 scrollable_clip_size_in_root_frame, location_in_scrollable);
 
   LockCursor(left, right, up, down);
 }
@@ -272,16 +272,16 @@ void FallbackCursorEventManager::HandleMouseMoveEvent(const WebMouseEvent& e) {
 
   DCHECK(scrollable);
 
-  IntPoint location_in_root_frame{e.PositionInWidget().x,
-                                  e.PositionInWidget().y};
+  IntPoint location_in_root_frame{e.PositionInRootFrame().x,
+                                  e.PositionInRootFrame().y};
 
-  IntSize scrollable_clip_size_in_viewport =
-      ScrollableAreaClipSizeInViewport(*scrollable);
+  IntSize scrollable_clip_size_in_root_frame =
+      ScrollableAreaClipSizeInRootFrame(*scrollable);
   IntPoint location_in_scrollable =
       RootFrameLocationToScrollable(location_in_root_frame, *scrollable);
 
   // Check if mouse out of current node.
-  IntRect rect = IntRect(IntPoint(), scrollable_clip_size_in_viewport);
+  IntRect rect = IntRect(IntPoint(), scrollable_clip_size_in_root_frame);
   if (!rect.Contains(location_in_scrollable))
     ResetCurrentScrollable();
 

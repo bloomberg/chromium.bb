@@ -61,12 +61,12 @@ class FallbackCursorEventManagerTest : public RenderingTest {
     GetDocument().GetFrame()->GetEventHandler().SetIsFallbackCursorModeOn(true);
   }
 
-  void MouseMove(int x, int y) {
+  void MouseMove(int x, int y, float scale = 1.0f) {
     WebMouseEvent event(WebInputEvent::kMouseMove, WebFloatPoint(x, y),
                         WebFloatPoint(x, y),
                         WebPointerProperties::Button::kNoButton, 0,
                         WebInputEvent::kNoModifiers, CurrentTimeTicks());
-    event.SetFrameScale(1);
+    event.SetFrameScale(scale);
     GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
         event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
   }
@@ -143,6 +143,36 @@ TEST_F(FallbackCursorEventManagerTest, MouseMoveCursorLockOnRootFrame) {
 
   // Move to the right of scroll right line.
   MouseMove(600, 400);
+  ExpectLock(false, true, false, false);
+}
+
+TEST_F(FallbackCursorEventManagerTest,
+       MouseMoveCursorLockOnRootFrameWithScale) {
+  const float SCALE = 0.5f;
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    html, body {
+      margin: 0px;
+    }
+    .big {
+      height: 10000px;
+      width: 10000px;
+    }
+    </style>
+    <div class='big'></div>
+  )HTML");
+  TurnOnFallbackCursorMode();
+
+  // Move below the scroll down line.
+  MouseMove(50, 250, SCALE);
+  ExpectLock(false, false, false, true);
+
+  // Move above the scroll down line.
+  MouseMove(50, 200, SCALE);
+  ExpectLock(false, false, false, false);
+
+  // Move to the right of scroll right line.
+  MouseMove(300, 200, SCALE);
   ExpectLock(false, true, false, false);
 }
 
