@@ -244,6 +244,9 @@ class SystemMonitor {
   static SystemMonitor::MetricVector EvaluateMetrics(
       MetricVector metric_vector);
 
+  // Create a |MetricEvaluatorsHelper| instance for the current platform.
+  static std::unique_ptr<MetricEvaluatorsHelper> CreateMetricEvaluatorsHelper();
+
   // Create the array of MetricMetadata used to initialize
   // |metric_evaluators_metadata_|.
   static MetricMetadataArray CreateMetricMetadataArray();

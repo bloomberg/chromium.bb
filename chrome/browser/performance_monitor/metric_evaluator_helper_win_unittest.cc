@@ -19,27 +19,26 @@ class MetricEvaluatorsHelperWinTest : public testing::Test {
  protected:
   base::win::ScopedCOMInitializer scoped_com_initializer_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  MetricEvaluatorsHelperWin metric_evaluator_helper_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MetricEvaluatorsHelperWinTest);
 };
 
 TEST_F(MetricEvaluatorsHelperWinTest, GetFreeMemory) {
-  MetricEvaluatorsHelperWin metric_evaluator_helper;
-  auto value = metric_evaluator_helper.GetFreePhysicalMemoryMb();
+  auto value = metric_evaluator_helper_.GetFreePhysicalMemoryMb();
   EXPECT_TRUE(value);
   EXPECT_GT(value.value(), 0);
 }
 
 TEST_F(MetricEvaluatorsHelperWinTest, DiskIdleTime) {
-  MetricEvaluatorsHelperWin metric_evaluator_helper;
-  while (!metric_evaluator_helper.wmi_refresher_initialized_for_testing())
+  while (!metric_evaluator_helper_.wmi_refresher_initialized_for_testing())
     scoped_task_environment_.RunUntilIdle();
 
   // Measuring the disk idle time will always return base::nullopt for the first
   // sample on Windows.
-  metric_evaluator_helper.GetDiskIdleTimePercent();
-  auto refreshed_metrics = metric_evaluator_helper.GetDiskIdleTimePercent();
+  metric_evaluator_helper_.GetDiskIdleTimePercent();
+  auto refreshed_metrics = metric_evaluator_helper_.GetDiskIdleTimePercent();
   EXPECT_TRUE(refreshed_metrics);
   EXPECT_LE(0.0, refreshed_metrics.value());
   EXPECT_GE(1.0, refreshed_metrics.value());

@@ -59091,6 +59091,7 @@ Full version information for the fingerprint enum values:
   <int value="2" label="Call to GetObjects failed"/>
   <int value="3" label="Call to GetPropertyHandle failed"/>
   <int value="4" label="Call to Read failed"/>
+  <int value="5" label="Call to GetObjects returned no objects"/>
 </enum>
 
 <enum name="WorkerThreadExitCode">

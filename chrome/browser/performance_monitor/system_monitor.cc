@@ -37,17 +37,6 @@ constexpr base::TimeDelta kDefaultRefreshInterval =
 const base::Feature kSystemMonitorMetricLogger{
     "SystemMonitorMetricLogger", base::FEATURE_DISABLED_BY_DEFAULT};
 
-std::unique_ptr<MetricEvaluatorsHelper> CreateMetricEvaluatorsHelper() {
-#if defined(OS_WIN)
-  MetricEvaluatorsHelper* helper = new MetricEvaluatorsHelperWin();
-#elif defined(OS_POSIX)
-  MetricEvaluatorsHelper* helper = new MetricEvaluatorsHelperPosix();
-#else
-#error Unsupported platform
-#endif
-  return base::WrapUnique(helper);
-}
-
 }  // namespace
 
 SystemMonitor::SystemMonitor(
@@ -239,6 +228,19 @@ void SystemMonitor::NotifyObservers(SystemMonitor::MetricVector metrics) {
       }
     }
   }
+}
+
+// static
+std::unique_ptr<MetricEvaluatorsHelper>
+SystemMonitor::CreateMetricEvaluatorsHelper() {
+#if defined(OS_WIN)
+  MetricEvaluatorsHelper* helper = new MetricEvaluatorsHelperWin();
+#elif defined(OS_POSIX)
+  MetricEvaluatorsHelper* helper = new MetricEvaluatorsHelperPosix();
+#else
+#error Unsupported platform
+#endif
+  return base::WrapUnique(helper);
 }
 
 SystemMonitor::MetricEvaluator::MetricEvaluator(Type type) : type_(type) {}
