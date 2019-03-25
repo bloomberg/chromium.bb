@@ -556,7 +556,10 @@ void Display::DidSwapWithSize(const gfx::Size& pixel_size) {
 
 void Display::DidReceivePresentationFeedback(
     const gfx::PresentationFeedback& feedback) {
-  DCHECK(!pending_presented_callbacks_.empty());
+  if (pending_presented_callbacks_.empty()) {
+    DLOG(ERROR) << "Received unexpected PresentationFeedback";
+    return;
+  }
   ++last_presented_trace_id_;
   TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
       "viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
