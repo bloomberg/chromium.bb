@@ -48,8 +48,6 @@ std::unique_ptr<base::Value> NetLogCreateConnectJobCallback(
 
 }  // namespace
 
-namespace internal {
-
 ClientSocketPoolBaseHelper::Request::Request(
     ClientSocketHandle* handle,
     CompletionOnceCallback callback,
@@ -58,6 +56,7 @@ ClientSocketPoolBaseHelper::Request::Request(
     const SocketTag& socket_tag,
     ClientSocketPool::RespectLimits respect_limits,
     Flags flags,
+    scoped_refptr<SocketParams> socket_params,
     const NetLogWithSource& net_log)
     : handle_(handle),
       callback_(std::move(callback)),
@@ -65,6 +64,7 @@ ClientSocketPoolBaseHelper::Request::Request(
       priority_(priority),
       respect_limits_(respect_limits),
       flags_(flags),
+      socket_params_(std::move(socket_params)),
       net_log_(net_log),
       socket_tag_(socket_tag),
       job_(nullptr) {
@@ -185,9 +185,20 @@ void ClientSocketPoolBaseHelper::RemoveHigherLayeredPool(
 
 int ClientSocketPoolBaseHelper::RequestSocket(
     const ClientSocketPool::GroupId& group_id,
-    std::unique_ptr<Request> request) {
-  CHECK(request->has_callback());
-  CHECK(request->handle());
+    scoped_refptr<SocketParams> params,
+    RequestPriority priority,
+    const SocketTag& socket_tag,
+    ClientSocketPool::RespectLimits respect_limits,
+    ClientSocketHandle* handle,
+    CompletionOnceCallback callback,
+    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
+    const NetLogWithSource& net_log) {
+  CHECK(callback);
+  CHECK(handle);
+
+  std::unique_ptr<Request> request = std::make_unique<Request>(
+      handle, std::move(callback), proxy_auth_callback, priority, socket_tag,
+      respect_limits, NORMAL, std::move(params), net_log);
 
   // Cleanup any timed-out idle sockets.
   CleanupIdleSockets(false);
@@ -223,10 +234,13 @@ int ClientSocketPoolBaseHelper::RequestSocket(
 
 void ClientSocketPoolBaseHelper::RequestSockets(
     const ClientSocketPool::GroupId& group_id,
-    const Request& request,
-    int num_sockets) {
-  DCHECK(!request.has_callback());
-  DCHECK(!request.handle());
+    scoped_refptr<SocketParams> params,
+    int num_sockets,
+    const NetLogWithSource& net_log) {
+  Request request(nullptr /* no handle */, CompletionOnceCallback(),
+                  ClientSocketPool::ProxyAuthCallback(), IDLE, SocketTag(),
+                  ClientSocketPool::RespectLimits::ENABLED, NO_IDLE_SOCKETS,
+                  std::move(params), net_log);
 
   // Cleanup any timed-out idle sockets.
   CleanupIdleSockets(false);
@@ -313,7 +327,7 @@ int ClientSocketPoolBaseHelper::RequestSocketInternal(
       request.respect_limits() == ClientSocketPool::RespectLimits::ENABLED) {
     // NOTE(mmenke):  Wonder if we really need different code for each case
     // here.  Only reason for them now seems to be preconnects.
-    if (idle_socket_count() > 0) {
+    if (idle_socket_count_ > 0) {
       // There's an idle socket in this pool. Either that's because there's
       // still one in this group, but we got here due to preconnecting
       // bypassing idle sockets, or because there's an idle socket in another
@@ -336,7 +350,9 @@ int ClientSocketPoolBaseHelper::RequestSocketInternal(
   group = GetOrCreateGroup(group_id);
   connecting_socket_count_++;
   std::unique_ptr<ConnectJob> owned_connect_job(
-      connect_job_factory_->NewConnectJob(request, group));
+      connect_job_factory_->NewConnectJob(request.priority(),
+                                          request.socket_tag(),
+                                          request.socket_params(), group));
   owned_connect_job->net_log().AddEvent(
       NetLogEventType::SOCKET_POOL_CONNECT_JOB_CREATED,
       base::BindRepeating(&NetLogCreateConnectJobCallback,
@@ -516,11 +532,6 @@ void ClientSocketPoolBaseHelper::CancelRequest(
   }
 }
 
-bool ClientSocketPoolBaseHelper::HasGroup(
-    const ClientSocketPool::GroupId& group_id) const {
-  return base::ContainsKey(group_map_, group_id);
-}
-
 void ClientSocketPoolBaseHelper::CloseIdleSockets() {
   CleanupIdleSockets(true);
   DCHECK_EQ(0, idle_socket_count_);
@@ -536,6 +547,10 @@ void ClientSocketPoolBaseHelper::CloseIdleSocketsInGroup(
   CleanupIdleSocketsInGroup(true, it->second, base::TimeTicks::Now());
   if (it->second->IsEmpty())
     RemoveGroup(it);
+}
+
+int ClientSocketPoolBaseHelper::IdleSocketCount() const {
+  return idle_socket_count_;
 }
 
 size_t ClientSocketPoolBaseHelper::IdleSocketCountInGroup(
@@ -680,6 +695,11 @@ bool ClientSocketPoolBaseHelper::IdleSocket::IsUsable() const {
   return socket->IsConnected();
 }
 
+bool ClientSocketPoolBaseHelper::HasGroup(
+    const ClientSocketPool::GroupId& group_id) const {
+  return base::ContainsKey(group_map_, group_id);
+}
+
 void ClientSocketPoolBaseHelper::CleanupIdleSockets(bool force) {
   if (idle_socket_count_ == 0)
     return;
@@ -699,6 +719,23 @@ void ClientSocketPoolBaseHelper::CleanupIdleSockets(bool force) {
       ++i;
     }
   }
+}
+
+bool ClientSocketPoolBaseHelper::CloseOneIdleSocket() {
+  if (idle_socket_count_ == 0)
+    return false;
+  return CloseOneIdleSocketExceptInGroup(nullptr);
+}
+
+bool ClientSocketPoolBaseHelper::CloseOneIdleConnectionInHigherLayeredPool() {
+  // This pool doesn't have any idle sockets. It's possible that a pool at a
+  // higher layer is holding one of this sockets active, but it's actually idle.
+  // Query the higher layers.
+  for (auto it = higher_pools_.begin(); it != higher_pools_.end(); ++it) {
+    if ((*it)->CloseOneIdleConnection())
+      return true;
+  }
+  return false;
 }
 
 void ClientSocketPoolBaseHelper::CleanupIdleSocketsInGroup(
@@ -807,7 +844,7 @@ void ClientSocketPoolBaseHelper::CheckForStalledSocketGroups() {
       return;
 
     if (ReachedMaxSocketsLimit()) {
-      if (idle_socket_count() > 0) {
+      if (idle_socket_count_ > 0) {
         CloseOneIdleSocket();
       } else {
         // We can't activate more sockets since we're already at our global
@@ -944,7 +981,7 @@ void ClientSocketPoolBaseHelper::HandOutSocket(
     // The socket being handed out is no longer considered idle, but was
     // considered idle until just before this method was called.
     UMA_HISTOGRAM_CUSTOM_COUNTS("Net.Socket.NumIdleSockets",
-                                idle_socket_count() + 1, 1, 256, 50);
+                                idle_socket_count_ + 1, 1, 256, 50);
   }
 
   net_log.AddEvent(
@@ -1014,8 +1051,8 @@ void ClientSocketPoolBaseHelper::CancelAllRequestsWithError(int error) {
 
 bool ClientSocketPoolBaseHelper::ReachedMaxSocketsLimit() const {
   // Each connecting socket will eventually connect and be handed out.
-  int total = handed_out_socket_count_ + connecting_socket_count_ +
-      idle_socket_count();
+  int total =
+      handed_out_socket_count_ + connecting_socket_count_ + idle_socket_count_;
   // There can be more sockets than the limit since some requests can ignore
   // the limit
   if (total < max_sockets_)
@@ -1023,15 +1060,9 @@ bool ClientSocketPoolBaseHelper::ReachedMaxSocketsLimit() const {
   return true;
 }
 
-bool ClientSocketPoolBaseHelper::CloseOneIdleSocket() {
-  if (idle_socket_count() == 0)
-    return false;
-  return CloseOneIdleSocketExceptInGroup(nullptr);
-}
-
 bool ClientSocketPoolBaseHelper::CloseOneIdleSocketExceptInGroup(
     const Group* exception_group) {
-  CHECK_GT(idle_socket_count(), 0);
+  CHECK_GT(idle_socket_count_, 0);
 
   for (auto i = group_map_.begin(); i != group_map_.end(); ++i) {
     Group* group = i->second;
@@ -1050,17 +1081,6 @@ bool ClientSocketPoolBaseHelper::CloseOneIdleSocketExceptInGroup(
     }
   }
 
-  return false;
-}
-
-bool ClientSocketPoolBaseHelper::CloseOneIdleConnectionInHigherLayeredPool() {
-  // This pool doesn't have any idle sockets. It's possible that a pool at a
-  // higher layer is holding one of this sockets active, but it's actually idle.
-  // Query the higher layers.
-  for (auto it = higher_pools_.begin(); it != higher_pools_.end(); ++it) {
-    if ((*it)->CloseOneIdleConnection())
-      return true;
-  }
   return false;
 }
 
@@ -1370,9 +1390,11 @@ void ClientSocketPoolBaseHelper::Group::OnBackupJobTimerFired(
   if (unbound_requests_.empty())
     return;
 
+  Request* request = unbound_requests_.FirstMax().value().get();
   std::unique_ptr<ConnectJob> owned_backup_job =
       client_socket_pool_base_helper_->connect_job_factory_->NewConnectJob(
-          *unbound_requests_.FirstMax().value(), this);
+          request->priority(), request->socket_tag(), request->socket_params(),
+          this);
   owned_backup_job->net_log().AddEvent(
       NetLogEventType::SOCKET_POOL_CONNECT_JOB_CREATED,
       base::BindRepeating(&NetLogCreateConnectJobCallback,
@@ -1778,7 +1800,5 @@ void ClientSocketPoolBaseHelper::Group::TransferJobBetweenRequests(
   DCHECK(source->job());
   dest->AssignJob(source->ReleaseJob());
 }
-
-}  // namespace internal
 
 }  // namespace net

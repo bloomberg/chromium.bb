@@ -23,8 +23,19 @@ namespace net {
 
 struct CommonConnectJobParams;
 
+// TransportClientSocketPool establishes network connections through using
+// ConnectJobs, and maintains a list of idle persistent sockets available for
+// reuse. It restricts the number of sockets open at a time, both globally, and
+// for each unique GroupId, which rougly corresponds to origin and privacy mode
+// setting. TransportClientSocketPools is designed to work with HTTP reuse
+// semantics, handling each request serially, before reusable sockets are
+// returned to the socket pool.
+//
+// In order to manage connection limits on a per-Proxy basis, separate
+// TransportClientSocketPools are created for each proxy, and another for
+// connections that have no proxy.
 class NET_EXPORT_PRIVATE TransportClientSocketPool
-    : public ClientSocketPool,
+    : public ClientSocketPoolBaseHelper,
       public SSLConfigService::Observer {
  public:
   TransportClientSocketPool(
@@ -46,8 +57,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
       int max_sockets_per_group,
       base::TimeDelta unused_idle_socket_timeout,
       base::TimeDelta used_idle_socket_timeout,
-      std::unique_ptr<ClientSocketPoolBase<SocketParams>::ConnectJobFactory>
-          connect_job_factory,
+      std::unique_ptr<ConnectJobFactory> connect_job_factory,
       SSLConfigService* ssl_config_service,
       bool connect_backup_jobs_enabled);
 
@@ -65,63 +75,6 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
                       scoped_refptr<SocketParams> socket_params,
                       int num_sockets,
                       const NetLogWithSource& net_log) override;
-  void SetPriority(const GroupId& group_id,
-                   ClientSocketHandle* handle,
-                   RequestPriority priority) override;
-
-  void CancelRequest(const GroupId& group_id,
-                     ClientSocketHandle* handle) override;
-  void ReleaseSocket(const GroupId& group_id,
-                     std::unique_ptr<StreamSocket> socket,
-                     int id) override;
-  void FlushWithError(int error) override;
-  void CloseIdleSockets() override;
-  void CloseIdleSocketsInGroup(const GroupId& group_id) override;
-  int IdleSocketCount() const override;
-  size_t IdleSocketCountInGroup(const GroupId& group_id) const override;
-  LoadState GetLoadState(const GroupId& group_id,
-                         const ClientSocketHandle* handle) const override;
-  std::unique_ptr<base::DictionaryValue> GetInfoAsValue(
-      const std::string& name,
-      const std::string& type) const override;
-
-  // LowerLayeredPool implementation.
-  bool IsStalled() const override;
-  void AddHigherLayeredPool(HigherLayeredPool* higher_pool) override;
-  void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool) override;
-
-  void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
-                       const std::string& parent_dump_absolute_name) const;
-
-  // Testing methods.
-
-  size_t NumNeverAssignedConnectJobsInGroupForTesting(
-      const GroupId& group_id) const {
-    return base_.NumNeverAssignedConnectJobsInGroup(group_id);
-  }
-
-  size_t NumUnassignedConnectJobsInGroupForTesting(
-      const GroupId& group_id) const {
-    return base_.NumUnassignedConnectJobsInGroup(group_id);
-  }
-
-  size_t NumConnectJobsInGroupForTesting(const GroupId& group_id) const {
-    return base_.NumConnectJobsInGroup(group_id);
-  }
-
-  int NumActiveSocketsInGroupForTesting(const GroupId& group_id) const {
-    return base_.NumActiveSocketsInGroup(group_id);
-  }
-
-  bool RequestInGroupWithHandleHasJobForTesting(
-      const GroupId& group_id,
-      const ClientSocketHandle* handle) const {
-    return base_.RequestInGroupWithHandleHasJobForTesting(group_id, handle);
-  }
-
-  bool HasGroupForTesting(const ClientSocketPool::GroupId& group_id) const {
-    return base_.HasGroup(group_id);
-  }
 
  protected:
   // Methods shared with WebSocketTransportClientSocketPool
@@ -129,19 +82,16 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
                                                 const GroupId& group_id);
 
  private:
-  typedef ClientSocketPoolBase<SocketParams> PoolBase;
-
   TransportClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
       base::TimeDelta unused_idle_socket_timeout,
       base::TimeDelta used_idle_socket_timeout,
-      std::unique_ptr<PoolBase::ConnectJobFactory> connect_job_factory,
+      std::unique_ptr<ConnectJobFactory> connect_job_factory,
       SSLConfigService* ssl_config_service,
       bool connect_backup_jobs_enabled);
 
-  class TransportConnectJobFactory
-      : public PoolBase::ConnectJobFactory {
+  class TransportConnectJobFactory : public ConnectJobFactory {
    public:
     TransportConnectJobFactory(
         const CommonConnectJobParams* common_connect_job_params);
@@ -150,7 +100,9 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     // ClientSocketPoolBase::ConnectJobFactory methods.
 
     std::unique_ptr<ConnectJob> NewConnectJob(
-        const PoolBase::Request& request,
+        RequestPriority request_priority,
+        SocketTag socket_tag,
+        scoped_refptr<SocketParams> socket_params,
         ConnectJob::Delegate* delegate) const override;
 
    private:
@@ -162,7 +114,6 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   // SSLConfigService::Observer methods.
   void OnSSLConfigChanged() override;
 
-  PoolBase base_;
   SSLConfigService* const ssl_config_service_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPool);

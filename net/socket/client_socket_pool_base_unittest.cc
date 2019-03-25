@@ -315,14 +315,14 @@ class TestConnectJob : public ConnectJob {
   static const int kPendingConnectDelay = 2;
 
   TestConnectJob(JobType job_type,
-                 const ClientSocketPoolBase<
-                     TransportClientSocketPool::SocketParams>::Request& request,
+                 RequestPriority request_priority,
+                 SocketTag socket_tag,
                  base::TimeDelta timeout_duration,
                  const CommonConnectJobParams* common_connect_job_params,
                  ConnectJob::Delegate* delegate,
                  MockClientSocketFactory* client_socket_factory)
-      : ConnectJob(request.priority(),
-                   request.socket_tag(),
+      : ConnectJob(request_priority,
+                   socket_tag,
                    timeout_duration,
                    common_connect_job_params,
                    delegate,
@@ -531,8 +531,7 @@ class TestConnectJob : public ConnectJob {
 };
 
 class TestConnectJobFactory
-    : public ClientSocketPoolBase<
-          TransportClientSocketPool::SocketParams>::ConnectJobFactory {
+    : public TransportClientSocketPool::ConnectJobFactory {
  public:
   TestConnectJobFactory(MockClientSocketFactory* client_socket_factory,
                         NetLog* net_log)
@@ -572,8 +571,9 @@ class TestConnectJobFactory
   // ConnectJobFactory implementation.
 
   std::unique_ptr<ConnectJob> NewConnectJob(
-      const ClientSocketPoolBase<
-          TransportClientSocketPool::SocketParams>::Request& request,
+      RequestPriority request_priority,
+      SocketTag socket_tag,
+      scoped_refptr<ClientSocketPool::SocketParams> socket_params,
       ConnectJob::Delegate* delegate) const override {
     EXPECT_TRUE(!job_types_ || !job_types_->empty());
     TestConnectJob::JobType job_type = job_type_;
@@ -582,8 +582,8 @@ class TestConnectJobFactory
       job_types_->pop_front();
     }
     return std::make_unique<TestConnectJob>(
-        job_type, request, timeout_duration_, &common_connect_job_params_,
-        delegate, client_socket_factory_);
+        job_type, request_priority, socket_tag, timeout_duration_,
+        &common_connect_job_params_, delegate, client_socket_factory_);
   }
 
  private:
@@ -631,12 +631,12 @@ class ClientSocketPoolBaseTest : public TestWithScopedTaskEnvironment {
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
         params_(CreateDummyParams()) {
     connect_backup_jobs_enabled_ =
-        internal::ClientSocketPoolBaseHelper::connect_backup_jobs_enabled();
-    internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(true);
+        TransportClientSocketPool::connect_backup_jobs_enabled();
+    TransportClientSocketPool::set_connect_backup_jobs_enabled(true);
   }
 
   ~ClientSocketPoolBaseTest() override {
-    internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
+    TransportClientSocketPool::set_connect_backup_jobs_enabled(
         connect_backup_jobs_enabled_);
   }
 
