@@ -13,7 +13,7 @@ source_set("common") {
   ]
 
   deps = [
-    ":resources",
+    ":resources_header",
     "//base",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/strings",
@@ -21,7 +21,7 @@ source_set("common") {
   ]
 }
 
-source_set("resources") {
+source_set("resources_header") {
   sources = [
     "engine_resources.h",
   ]
@@ -41,7 +41,7 @@ source_set("dummy_engine_resources") {
   ]
 
   deps = [
-    ":resources",
+    ":resources_header",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//chrome/chrome_cleaner/test:test_uws_catalog",
   ]

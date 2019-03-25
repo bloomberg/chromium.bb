@@ -54,10 +54,7 @@ source_set("common") {
   if (!is_official_chrome_cleaner_build) {
     # Unofficial builds allow loading some target-only code in the broker, for
     # testing.
-    deps += [
-      "//chrome/chrome_cleaner/engines/target:common",
-      "//chrome/chrome_cleaner/engines/target:engine_delegate_factory",
-    ]
+    deps += [ "//chrome/chrome_cleaner/engines/target:common" ]
   }
 }
 
@@ -86,7 +83,7 @@ source_set("cleaner_sandbox_interface") {
     "//chrome/chrome_cleaner/chrome_utils:chrome_util_lib",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/engines/common:common",
-    "//chrome/chrome_cleaner/engines/common:resources",
+    "//chrome/chrome_cleaner/engines/common:resources_header",
     "//chrome/chrome_cleaner/os:cleaner_os",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",

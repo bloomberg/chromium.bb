@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("engine_settings") {
+source_set("engine_settings_header") {
   sources = [
     "engine_settings.h",
   ]
@@ -19,7 +19,7 @@ source_set("dummy_engine_settings") {
   ]
 
   deps = [
-    ":engine_settings",
+    ":engine_settings_header",
   ]
 }
 
@@ -43,7 +43,7 @@ source_set("settings") {
   ]
 
   public_deps = [
-    ":engine_settings",
+    ":engine_settings_header",
     ":settings_definitions",
     "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
     "//mojo/public/cpp/platform",
@@ -88,7 +88,7 @@ source_set("unittest_sources") {
   ]
 
   deps = [
-    ":engine_settings",
+    ":engine_settings_header",
     ":settings",
     ":settings_definitions",
     "//base:base",

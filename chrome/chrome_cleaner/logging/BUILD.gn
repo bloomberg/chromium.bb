@@ -45,7 +45,7 @@ source_set("common") {
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
-    "//chrome/chrome_cleaner/settings:engine_settings",
+    "//chrome/chrome_cleaner/settings:engine_settings_header",
     "//chrome/chrome_cleaner/settings:settings",
     "//chrome/chrome_cleaner/settings:settings_types",
     "//components/chrome_cleaner/public/constants:constants",
@@ -85,6 +85,18 @@ source_set("dummy_api_keys") {
   ]
 }
 
+group("api_keys") {
+  if (is_internal_chrome_cleaner_build) {
+    deps = [
+      "//chrome/chrome_cleaner_internal/logging:api_keys",
+    ]
+  } else {
+    deps = [
+      ":dummy_api_keys",
+    ]
+  }
+}
+
 static_library("cleaner_logging") {
   sources = [
     "cleaner_logging_service.cc",
@@ -96,6 +108,7 @@ static_library("cleaner_logging") {
   ]
 
   deps = [
+    ":api_keys",
     ":api_keys_header",
     "//base",
     "//chrome/chrome_cleaner/chrome_utils:chrome_util_lib",
@@ -113,12 +126,6 @@ static_library("cleaner_logging") {
     "//components/chrome_cleaner/public/constants:constants",
   ]
 
-  if (is_official_chrome_cleaner_build) {
-    deps += [ "//chrome_cleaner_internal/logging:api_keys" ]
-  } else {
-    deps += [ ":dummy_api_keys" ]
-  }
-
   public_deps = [
     ":common",
   ]
@@ -131,6 +138,7 @@ static_library("reporter_logging") {
   ]
 
   deps = [
+    ":api_keys",
     ":api_keys_header",
     "//base",
     "//chrome/chrome_cleaner/chrome_utils:chrome_util_lib",
@@ -144,12 +152,6 @@ static_library("reporter_logging") {
     "//chrome/chrome_cleaner/settings:settings",
     "//components/chrome_cleaner/public/constants:constants",
   ]
-
-  if (is_official_chrome_cleaner_build) {
-    deps += [ "//chrome_cleaner_internal/logging:api_keys" ]
-  } else {
-    deps += [ ":dummy_api_keys" ]
-  }
 
   public_deps = [
     ":common",
