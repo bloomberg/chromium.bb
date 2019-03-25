@@ -52,6 +52,7 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   void ForceImmediateDrawAndSwapIfPossible() override;
 #if defined(OS_ANDROID)
   void SetVSyncPaused(bool paused) override;
+  void UpdateRefreshRate(float refresh_rate) override;
 #endif
 
   // mojom::CompositorFrameSink:

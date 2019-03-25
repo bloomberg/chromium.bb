@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 
@@ -298,6 +299,12 @@ class VIZ_COMMON_EXPORT ExternalBeginFrameSource : public BeginFrameSource {
 
   void OnSetBeginFrameSourcePaused(bool paused);
   void OnBeginFrame(const BeginFrameArgs& args);
+
+#if defined(OS_ANDROID)
+  // Notifies when the refresh rate of the display is updated. |refresh_rate| is
+  // the rate in frames per second.
+  virtual void UpdateRefreshRate(float refresh_rate) {}
+#endif
 
  protected:
   // Called on AddObserver and gets missed BeginFrameArgs for the given

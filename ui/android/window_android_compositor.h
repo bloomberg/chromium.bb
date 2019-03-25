@@ -38,6 +38,7 @@ class UI_ANDROID_EXPORT WindowAndroidCompositor {
       base::TimeDelta timeout) = 0;
   virtual bool IsDrawingFirstVisibleFrame() const = 0;
   virtual void SetVSyncPaused(bool paused) = 0;
+  virtual void OnUpdateRefreshRate(float refresh_rate) = 0;
 };
 
 }  // namespace ui

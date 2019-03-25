@@ -684,7 +684,7 @@ public class VrShell extends GvrLayout
             }
         }
         Point size = new Point(contentWidth, contentHeight);
-        mContentVirtualDisplay.update(size, dpr, dip / dpr, null, null, null, null, null);
+        mContentVirtualDisplay.update(size, dpr, dip / dpr, null, null, null, null, null, null);
         if (mTab != null && mTab.getWebContents() != null) {
             mTab.getWebContents().setSize(contentWidth, contentHeight);
         }

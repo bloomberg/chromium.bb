@@ -158,6 +158,7 @@ class CONTENT_EXPORT CompositorImpl
       base::TimeDelta timeout) override;
   bool IsDrawingFirstVisibleFrame() const override;
   void SetVSyncPaused(bool paused) override;
+  void OnUpdateRefreshRate(float refresh_rate) override;
 
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;

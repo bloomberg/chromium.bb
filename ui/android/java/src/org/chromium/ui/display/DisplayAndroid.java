@@ -36,6 +36,13 @@ public class DisplayAndroid {
          * @param dipScale Density Independent Pixel scale.
          */
         default void onDIPScaleChanged(float dipScale) {}
+
+        /**
+         * Called whenever the attached display's refresh rate changes.
+         *
+         * @param refreshRate the display's refresh rate in frames per second.
+         */
+        default void onRefreshRateChanged(float refreshRate) {}
     }
 
     private static final DisplayAndroidObserver[] EMPTY_OBSERVER_ARRAY =
@@ -50,6 +57,7 @@ public class DisplayAndroid {
     private int mBitsPerPixel;
     private int mBitsPerComponent;
     private int mRotation;
+    private float mRefreshRate;
     protected boolean mIsDisplayWideColorGamut;
     protected boolean mIsDisplayServerWideColorGamut;
 
@@ -178,6 +186,13 @@ public class DisplayAndroid {
     }
 
     /**
+     * @return Display's refresh rate in frames per second.
+     */
+    public float getRefreshRate() {
+        return mRefreshRate;
+    }
+
+    /**
      * Add observer. Note repeat observers will be called only one.
      * Observers are held only weakly by Display.
      */
@@ -204,7 +219,7 @@ public class DisplayAndroid {
     }
 
     public void updateIsDisplayServerWideColorGamut(Boolean isDisplayServerWideColorGamut) {
-        update(null, null, null, null, null, null, isDisplayServerWideColorGamut);
+        update(null, null, null, null, null, null, isDisplayServerWideColorGamut, null);
     }
 
     /**
@@ -212,7 +227,7 @@ public class DisplayAndroid {
      */
     protected void update(Point size, Float dipScale, Integer bitsPerPixel,
             Integer bitsPerComponent, Integer rotation, Boolean isDisplayWideColorGamut,
-            Boolean isDisplayServerWideColorGamut) {
+            Boolean isDisplayServerWideColorGamut, Float refreshRate) {
         boolean sizeChanged = size != null && !mSize.equals(size);
         // Intentional comparison of floats: we assume that if scales differ, they differ
         // significantly.
@@ -225,10 +240,11 @@ public class DisplayAndroid {
                 && mIsDisplayWideColorGamut != isDisplayWideColorGamut;
         boolean isDisplayServerWideColorGamutChanged = isDisplayServerWideColorGamut != null
                 && mIsDisplayServerWideColorGamut != isDisplayServerWideColorGamut;
+        boolean isRefreshRateChanged = refreshRate != null && mRefreshRate != refreshRate;
 
         boolean changed = sizeChanged || dipScaleChanged || bitsPerPixelChanged
                 || bitsPerComponentChanged || rotationChanged || isDisplayWideColorGamutChanged
-                || isDisplayServerWideColorGamutChanged;
+                || isDisplayServerWideColorGamutChanged || isRefreshRateChanged;
         if (!changed) return;
 
         if (sizeChanged) mSize = size;
@@ -240,6 +256,7 @@ public class DisplayAndroid {
         if (isDisplayServerWideColorGamutChanged) {
             mIsDisplayServerWideColorGamut = isDisplayServerWideColorGamut;
         }
+        if (isRefreshRateChanged) mRefreshRate = refreshRate;
 
         getManager().updateDisplayOnNativeSide(this);
         if (rotationChanged) {
@@ -252,6 +269,12 @@ public class DisplayAndroid {
             DisplayAndroidObserver[] observers = getObservers();
             for (DisplayAndroidObserver o : observers) {
                 o.onDIPScaleChanged(mDipScale);
+            }
+        }
+        if (isRefreshRateChanged) {
+            DisplayAndroidObserver[] observers = getObservers();
+            for (DisplayAndroidObserver o : observers) {
+                o.onRefreshRateChanged(mRefreshRate);
             }
         }
     }
