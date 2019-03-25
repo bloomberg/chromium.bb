@@ -130,11 +130,9 @@ class PiexReader {
 
   static emscripten::val GetColorSpace(const piex::PreviewImageData& image) {
     const auto space = static_cast<uint32_t>(image.color_space);
-    if (space == ::piex::PreviewImageData::kSrgb)
-      return emscripten::val("sRgb");
     if (space == ::piex::PreviewImageData::kAdobeRgb)
       return emscripten::val("adobeRgb");
-    return emscripten::val::undefined();
+    return emscripten::val("sRgb");
   }
 };
 
