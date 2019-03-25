@@ -3365,6 +3365,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   NSData* imageData = data;
   UIImage* image = [UIImage imageWithData:data];
   gfx::Image gfxImage(image);
+  // Converting to gfx::Image creates an empty image if UIImage is nil. However,
+  // we still want to do the image search with nil data because that gives
+  // the user the best error experience.
+  if (gfxImage.IsEmpty()) {
+    [self searchByResizedImageData:imageData atURL:&imageURL inNewTab:YES];
+    return;
+  }
   UIImage* resizedImage =
       gfx::ResizedImageForSearchByImage(gfxImage).ToUIImage();
   if (![image isEqual:resizedImage]) {
