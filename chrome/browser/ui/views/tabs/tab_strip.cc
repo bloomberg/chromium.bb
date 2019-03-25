@@ -85,6 +85,10 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
+
 using MD = ui::MaterialDesignController;
 
 namespace {
@@ -1124,6 +1128,10 @@ void TabStrip::UpdateHoverCard(Tab* tab, bool should_show) {
       return;
     hover_card_ = new TabHoverCardBubbleView(tab);
     hover_card_->views::View::AddObserver(this);
+#if defined(USE_AURA)
+    if (GetWidget() && GetWidget()->GetNativeWindow())
+      GetWidget()->GetNativeWindow()->AddPreTargetHandler(hover_card_);
+#endif
   }
   if (should_show)
     hover_card_->UpdateAndShow(tab);
@@ -2817,6 +2825,10 @@ views::View* TabStrip::TargetForRect(views::View* root, const gfx::Rect& rect) {
 void TabStrip::OnViewIsDeleting(views::View* observed_view) {
   if (observed_view == hover_card_) {
     hover_card_->views::View::RemoveObserver(this);
+#if defined(USE_AURA)
+    if (GetWidget() && GetWidget()->GetNativeWindow())
+      GetWidget()->GetNativeWindow()->RemovePreTargetHandler(hover_card_);
+#endif
     hover_card_ = nullptr;
   }
 }

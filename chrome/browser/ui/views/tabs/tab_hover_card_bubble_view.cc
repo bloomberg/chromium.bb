@@ -328,6 +328,10 @@ void TabHoverCardBubbleView::UpdatePreviewImage(gfx::ImageSkia preview_image) {
   preview_image_->SetImage(preview_image);
 }
 
+void TabHoverCardBubbleView::OnKeyEvent(ui::KeyEvent* event) {
+  FadeOutToHide();
+}
+
 gfx::Size TabHoverCardBubbleView::CalculatePreferredSize() const {
   gfx::Size preferred_size = GetLayoutManager()->GetPreferredSize(this);
   preferred_size.set_width(GetPreferredTabHoverCardWidth());
