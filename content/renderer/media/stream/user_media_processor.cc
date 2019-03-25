@@ -25,7 +25,6 @@
 #include "content/renderer/media/stream/media_stream_constraints_util_audio.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_video_content.h"
 #include "content/renderer/media/stream/media_stream_device_observer.h"
-#include "content/renderer/media/stream/media_stream_video_capturer_source.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/stream/user_media_client_impl.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
@@ -46,6 +45,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/origin.h"
@@ -1068,8 +1068,8 @@ UserMediaProcessor::CreateVideoSource(
   DCHECK(current_request_info_);
   DCHECK(current_request_info_->video_capture_settings().HasValue());
 
-  return std::make_unique<MediaStreamVideoCapturerSource>(
-      render_frame_->GetRoutingID(), stop_callback, device,
+  return std::make_unique<blink::MediaStreamVideoCapturerSource>(
+      render_frame_->GetWebFrame(), stop_callback, device,
       current_request_info_->video_capture_settings().capture_params(),
       base::BindRepeating(
           &LocalVideoCapturerSource::Create,

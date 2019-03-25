@@ -2,31 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_video_capturer_source.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
 
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
-#include "content/child/child_process.h"
-#include "content/renderer/media/stream/mock_mojo_media_stream_dispatcher_host.h"
 #include "media/base/bind_to_current_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/video_track_adapter.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/modules/mediastream/mock_mojo_media_stream_dispatcher_host.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 using ::testing::_;
 using ::testing::InSequence;
 
-namespace content {
+namespace blink {
 
 namespace {
+
+class IOTaskRunnerTestingPlatformSupport : public TestingPlatformSupport {
+ public:
+  IOTaskRunnerTestingPlatformSupport()
+      : io_thread_(Thread::CreateThread(
+            ThreadCreationParams(WebThreadType::kTestThread))) {}
+  scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const override {
+    return io_thread_->GetTaskRunner();
+  }
+
+ private:
+  std::unique_ptr<Thread> io_thread_;
+};
 
 class MockVideoCapturerSource : public media::VideoCapturerSource {
  public:
@@ -36,22 +50,20 @@ class MockVideoCapturerSource : public media::VideoCapturerSource {
   MOCK_METHOD0(GetPreferredFormats, media::VideoCaptureFormats());
   MOCK_METHOD3(MockStartCapture,
                void(const media::VideoCaptureParams& params,
-                    const blink::VideoCaptureDeliverFrameCB& new_frame_callback,
+                    const VideoCaptureDeliverFrameCB& new_frame_callback,
                     const RunningCallback& running_callback));
   MOCK_METHOD0(MockStopCapture, void());
   void StartCapture(const media::VideoCaptureParams& params,
-                    const blink::VideoCaptureDeliverFrameCB& new_frame_callback,
+                    const VideoCaptureDeliverFrameCB& new_frame_callback,
                     const RunningCallback& running_callback) override {
     running_cb_ = running_callback;
     capture_params_ = params;
     MockStartCapture(params, new_frame_callback, running_callback);
     SetRunning(true);
   }
-  void StopCapture() override {
-    MockStopCapture();
-  }
+  void StopCapture() override { MockStopCapture(); }
   void SetRunning(bool is_running) {
-    blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
+    scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
         FROM_HERE, base::BindOnce(running_cb_, is_running));
   }
   const media::VideoCaptureParams& capture_params() const {
@@ -63,7 +75,7 @@ class MockVideoCapturerSource : public media::VideoCapturerSource {
   media::VideoCaptureParams capture_params_;
 };
 
-class FakeMediaStreamVideoSink : public blink::MediaStreamVideoSink {
+class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
  public:
   FakeMediaStreamVideoSink(base::TimeTicks* capture_time,
                            media::VideoFrameMetadata* metadata,
@@ -72,17 +84,15 @@ class FakeMediaStreamVideoSink : public blink::MediaStreamVideoSink {
         metadata_(metadata),
         got_frame_cb_(got_frame_cb) {}
 
-  void ConnectToTrack(const blink::WebMediaStreamTrack& track) {
-    blink::MediaStreamVideoSink::ConnectToTrack(
+  void ConnectToTrack(const WebMediaStreamTrack& track) {
+    MediaStreamVideoSink::ConnectToTrack(
         track,
         base::Bind(&FakeMediaStreamVideoSink::OnVideoFrame,
                    base::Unretained(this)),
         true);
   }
 
-  void DisconnectFromTrack() {
-    blink::MediaStreamVideoSink::DisconnectFromTrack();
-  }
+  void DisconnectFromTrack() { MediaStreamVideoSink::DisconnectFromTrack(); }
 
   void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
                     base::TimeTicks capture_time) {
@@ -102,11 +112,7 @@ class FakeMediaStreamVideoSink : public blink::MediaStreamVideoSink {
 
 class MediaStreamVideoCapturerSourceTest : public testing::Test {
  public:
-  MediaStreamVideoCapturerSourceTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        child_process_(new ChildProcess()),
-        source_stopped_(false) {
+  MediaStreamVideoCapturerSourceTest() : source_stopped_(false) {
     auto delegate = std::make_unique<MockVideoCapturerSource>();
     delegate_ = delegate.get();
     EXPECT_CALL(*delegate_, GetPreferredFormats());
@@ -114,12 +120,13 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
         base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
                    base::Unretained(this)),
         std::move(delegate));
-    blink::mojom::MediaStreamDispatcherHostPtr dispatcher_host =
+    mojom::blink::MediaStreamDispatcherHostPtr dispatcher_host =
         mock_dispatcher_host_.CreateInterfacePtrAndBind();
-    source_->dispatcher_host_ = std::move(dispatcher_host);
-    webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
-                              blink::WebMediaStreamSource::kTypeVideo,
-                              blink::WebString::FromASCII("dummy_source_name"),
+    // source_->impl_->dispatcher_host_ = std::move(dispatcher_host);
+    source_->SetMediaStreamDispatcherHostForTesting(&dispatcher_host);
+    webkit_source_.Initialize(WebString::FromASCII("dummy_source_id"),
+                              WebMediaStreamSource::kTypeVideo,
+                              WebString::FromASCII("dummy_source_name"),
                               false /* remote */);
     webkit_source_.SetPlatformSource(base::WrapUnique(source_));
     webkit_source_id_ = webkit_source_.Id();
@@ -133,17 +140,17 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
 
   void TearDown() override {
     webkit_source_.Reset();
-    blink::WebHeap::CollectAllGarbageForTesting();
+    WebHeap::CollectAllGarbageForTesting();
   }
 
-  blink::WebMediaStreamTrack StartSource(
-      const blink::VideoTrackAdapterSettings& adapter_settings,
+  WebMediaStreamTrack StartSource(
+      const VideoTrackAdapterSettings& adapter_settings,
       const base::Optional<bool>& noise_reduction,
       bool is_screencast,
       double min_frame_rate) {
     bool enabled = true;
     // CreateVideoTrack will trigger OnConstraintsApplied.
-    return blink::MediaStreamVideoTrack::CreateVideoTrack(
+    return MediaStreamVideoTrack::CreateVideoTrack(
         source_, adapter_settings, noise_reduction, is_screencast,
         min_frame_rate,
         base::Bind(&MediaStreamVideoCapturerSourceTest::OnConstraintsApplied,
@@ -153,7 +160,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
 
   MockVideoCapturerSource& mock_delegate() { return *delegate_; }
 
-  void OnSourceStopped(const blink::WebMediaStreamSource& source) {
+  void OnSourceStopped(const WebMediaStreamSource& source) {
     source_stopped_ = true;
     if (source.IsNull())
       return;
@@ -176,21 +183,17 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   }
 
  protected:
-  void OnConstraintsApplied(blink::WebPlatformMediaStreamSource* source,
-                            blink::MediaStreamRequestResult result,
-                            const blink::WebString& result_name) {}
+  void OnConstraintsApplied(WebPlatformMediaStreamSource* source,
+                            MediaStreamRequestResult result,
+                            const WebString& result_name) {}
 
-  // A ChildProcess is needed to fool the Tracks and Sources into believing they
-  // are on the right threads. A ScopedTaskEnvironment must be instantiated
-  // before ChildProcess to prevent it from leaking a TaskScheduler.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::unique_ptr<ChildProcess> child_process_;
+  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
 
-  blink::WebMediaStreamSource webkit_source_;
+  WebMediaStreamSource webkit_source_;
   MockMojoMediaStreamDispatcherHost mock_dispatcher_host_;
   MediaStreamVideoCapturerSource* source_;  // owned by |webkit_source_|.
   MockVideoCapturerSource* delegate_;       // owned by |source_|.
-  blink::WebString webkit_source_id_;
+  WebString webkit_source_id_;
   bool source_stopped_;
   bool stop_capture_flag_ = false;
 };
@@ -198,10 +201,10 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
 TEST_F(MediaStreamVideoCapturerSourceTest, StartAndStop) {
   InSequence s;
   EXPECT_CALL(mock_delegate(), MockStartCapture(_, _, _));
-  blink::WebMediaStreamTrack track = StartSource(
-      blink::VideoTrackAdapterSettings(), base::nullopt, false, 0.0);
+  WebMediaStreamTrack track =
+      StartSource(VideoTrackAdapterSettings(), base::nullopt, false, 0.0);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
+  EXPECT_EQ(WebMediaStreamSource::kReadyStateLive,
             webkit_source_.GetReadyState());
   EXPECT_FALSE(source_stopped_);
 
@@ -209,7 +212,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, StartAndStop) {
   // already started should not change the state.
   delegate_->SetRunning(true);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
+  EXPECT_EQ(WebMediaStreamSource::kReadyStateLive,
             webkit_source_.GetReadyState());
   EXPECT_FALSE(source_stopped_);
   EXPECT_TRUE(source_->GetCurrentCaptureParams().has_value());
@@ -218,15 +221,15 @@ TEST_F(MediaStreamVideoCapturerSourceTest, StartAndStop) {
   EXPECT_CALL(mock_delegate(), MockStopCapture());
   delegate_->SetRunning(false);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded,
+  EXPECT_EQ(WebMediaStreamSource::kReadyStateEnded,
             webkit_source_.GetReadyState());
-  // Verify that blink::WebPlatformMediaStreamSource::SourceStoppedCallback has
+  // Verify that WebPlatformMediaStreamSource::SourceStoppedCallback has
   // been triggered.
   EXPECT_TRUE(source_stopped_);
 }
 
 TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
-  blink::VideoCaptureDeliverFrameCB deliver_frame_cb;
+  VideoCaptureDeliverFrameCB deliver_frame_cb;
   media::VideoCapturerSource::RunningCallback running_cb;
 
   InSequence s;
@@ -235,8 +238,8 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
                                testing::SaveArg<2>(&running_cb)));
   EXPECT_CALL(mock_delegate(), RequestRefreshFrame());
   EXPECT_CALL(mock_delegate(), MockStopCapture());
-  blink::WebMediaStreamTrack track = StartSource(
-      blink::VideoTrackAdapterSettings(), base::nullopt, false, 0.0);
+  WebMediaStreamTrack track =
+      StartSource(VideoTrackAdapterSettings(), base::nullopt, false, 0.0);
   running_cb.Run(true);
 
   base::RunLoop run_loop;
@@ -251,7 +254,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
   const scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::CreateBlackFrame(gfx::Size(2, 2));
   frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE, 30.0);
-  child_process_->io_task_runner()->PostTask(
+  Platform::Current()->GetIOTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(deliver_frame_cb, frame, reference_capture_time));
   run_loop.Run();
@@ -266,28 +269,27 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
 TEST_F(MediaStreamVideoCapturerSourceTest, Restart) {
   InSequence s;
   EXPECT_CALL(mock_delegate(), MockStartCapture(_, _, _));
-  blink::WebMediaStreamTrack track = StartSource(
-      blink::VideoTrackAdapterSettings(), base::nullopt, false, 0.0);
+  WebMediaStreamTrack track =
+      StartSource(VideoTrackAdapterSettings(), base::nullopt, false, 0.0);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
+  EXPECT_EQ(WebMediaStreamSource::kReadyStateLive,
             webkit_source_.GetReadyState());
   EXPECT_FALSE(source_stopped_);
 
   EXPECT_CALL(mock_delegate(), MockStopCapture());
   EXPECT_TRUE(source_->IsRunning());
   source_->StopForRestart(
-      base::BindOnce([](blink::MediaStreamVideoSource::RestartResult result) {
-        EXPECT_EQ(result,
-                  blink::MediaStreamVideoSource::RestartResult::IS_STOPPED);
+      base::BindOnce([](MediaStreamVideoSource::RestartResult result) {
+        EXPECT_EQ(result, MediaStreamVideoSource::RestartResult::IS_STOPPED);
       }));
   base::RunLoop().RunUntilIdle();
   // When the source has stopped for restart, the source is not considered
   // stopped, even if the underlying delegate is not running anymore.
-  // blink::WebPlatformMediaStreamSource::SourceStoppedCallback should not be
+  // WebPlatformMediaStreamSource::SourceStoppedCallback should not be
   // triggered.
   EXPECT_EQ(webkit_source_.GetReadyState(),
-            blink::WebMediaStreamSource::kReadyStateLive);
+            WebMediaStreamSource::kReadyStateLive);
   EXPECT_FALSE(source_stopped_);
   EXPECT_FALSE(source_->IsRunning());
 
@@ -296,13 +298,12 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Restart) {
   // the same.
   EXPECT_FALSE(source_->IsRunning());
   source_->StopForRestart(
-      base::BindOnce([](blink::MediaStreamVideoSource::RestartResult result) {
-        EXPECT_EQ(result,
-                  blink::MediaStreamVideoSource::RestartResult::INVALID_STATE);
+      base::BindOnce([](MediaStreamVideoSource::RestartResult result) {
+        EXPECT_EQ(result, MediaStreamVideoSource::RestartResult::INVALID_STATE);
       }));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(webkit_source_.GetReadyState(),
-            blink::WebMediaStreamSource::kReadyStateLive);
+            WebMediaStreamSource::kReadyStateLive);
   EXPECT_FALSE(source_stopped_);
   EXPECT_FALSE(source_->IsRunning());
 
@@ -311,13 +312,12 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Restart) {
   EXPECT_FALSE(source_->IsRunning());
   source_->Restart(
       media::VideoCaptureFormat(),
-      base::BindOnce([](blink::MediaStreamVideoSource::RestartResult result) {
-        EXPECT_EQ(result,
-                  blink::MediaStreamVideoSource::RestartResult::IS_RUNNING);
+      base::BindOnce([](MediaStreamVideoSource::RestartResult result) {
+        EXPECT_EQ(result, MediaStreamVideoSource::RestartResult::IS_RUNNING);
       }));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(webkit_source_.GetReadyState(),
-            blink::WebMediaStreamSource::kReadyStateLive);
+            WebMediaStreamSource::kReadyStateLive);
   EXPECT_TRUE(source_->IsRunning());
 
   // A second Restart() should fail with invalid state since Restart() is
@@ -326,13 +326,12 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Restart) {
   EXPECT_TRUE(source_->IsRunning());
   source_->Restart(
       media::VideoCaptureFormat(),
-      base::BindOnce([](blink::MediaStreamVideoSource::RestartResult result) {
-        EXPECT_EQ(result,
-                  blink::MediaStreamVideoSource::RestartResult::INVALID_STATE);
+      base::BindOnce([](MediaStreamVideoSource::RestartResult result) {
+        EXPECT_EQ(result, MediaStreamVideoSource::RestartResult::INVALID_STATE);
       }));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(webkit_source_.GetReadyState(),
-            blink::WebMediaStreamSource::kReadyStateLive);
+            WebMediaStreamSource::kReadyStateLive);
   EXPECT_TRUE(source_->IsRunning());
 
   // An delegate stop should stop the source and change the track state to
@@ -340,9 +339,9 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Restart) {
   EXPECT_CALL(mock_delegate(), MockStopCapture());
   delegate_->SetRunning(false);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded,
+  EXPECT_EQ(WebMediaStreamSource::kReadyStateEnded,
             webkit_source_.GetReadyState());
-  // Verify that blink::WebPlatformMediaStreamSource::SourceStoppedCallback has
+  // Verify that WebPlatformMediaStreamSource::SourceStoppedCallback has
   // been triggered.
   EXPECT_TRUE(source_stopped_);
   EXPECT_FALSE(source_->IsRunning());
@@ -351,10 +350,10 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Restart) {
 TEST_F(MediaStreamVideoCapturerSourceTest, StartStopAndNotify) {
   InSequence s;
   EXPECT_CALL(mock_delegate(), MockStartCapture(_, _, _));
-  blink::WebMediaStreamTrack web_track = StartSource(
-      blink::VideoTrackAdapterSettings(), base::nullopt, false, 0.0);
+  WebMediaStreamTrack web_track =
+      StartSource(VideoTrackAdapterSettings(), base::nullopt, false, 0.0);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
+  EXPECT_EQ(WebMediaStreamSource::kReadyStateLive,
             webkit_source_.GetReadyState());
   EXPECT_FALSE(source_stopped_);
 
@@ -363,12 +362,12 @@ TEST_F(MediaStreamVideoCapturerSourceTest, StartStopAndNotify) {
       .WillOnce(InvokeWithoutArgs(
           this, &MediaStreamVideoCapturerSourceTest::SetStopCaptureFlag));
   EXPECT_CALL(*this, MockNotification());
-  blink::WebPlatformMediaStreamTrack* track =
-      blink::WebPlatformMediaStreamTrack::GetTrack(web_track);
+  WebPlatformMediaStreamTrack* track =
+      WebPlatformMediaStreamTrack::GetTrack(web_track);
   track->StopAndNotify(
       base::BindOnce(&MediaStreamVideoCapturerSourceTest::MockNotification,
                      base::Unretained(this)));
-  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded,
+  EXPECT_EQ(WebMediaStreamSource::kReadyStateEnded,
             webkit_source_.GetReadyState());
   EXPECT_TRUE(source_stopped_);
   // It is a requirement that StopCapture() gets called in the same task as
@@ -382,10 +381,10 @@ TEST_F(MediaStreamVideoCapturerSourceTest, StartStopAndNotify) {
 TEST_F(MediaStreamVideoCapturerSourceTest, ChangeSource) {
   InSequence s;
   EXPECT_CALL(mock_delegate(), MockStartCapture(_, _, _));
-  blink::WebMediaStreamTrack track = StartSource(
-      blink::VideoTrackAdapterSettings(), base::nullopt, false, 0.0);
+  WebMediaStreamTrack track =
+      StartSource(VideoTrackAdapterSettings(), base::nullopt, false, 0.0);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
+  EXPECT_EQ(WebMediaStreamSource::kReadyStateLive,
             webkit_source_.GetReadyState());
   EXPECT_FALSE(source_stopped_);
 
@@ -393,18 +392,17 @@ TEST_F(MediaStreamVideoCapturerSourceTest, ChangeSource) {
   // already started should not change the state.
   delegate_->SetRunning(true);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
+  EXPECT_EQ(WebMediaStreamSource::kReadyStateLive,
             webkit_source_.GetReadyState());
   EXPECT_FALSE(source_stopped_);
 
   // |ChangeSourceImpl()| will recreate the |delegate_|, so check the
   // |MockStartCapture()| invoking in the |RecreateVideoCapturerSource()|.
   EXPECT_CALL(mock_delegate(), MockStopCapture());
-  blink::MediaStreamDevice fake_video_device(
-      blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, "Fake_Video_Device",
-      "Fake Video Device");
+  MediaStreamDevice fake_video_device(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
+                                      "Fake_Video_Device", "Fake Video Device");
   source_->ChangeSourceImpl(fake_video_device);
-  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
+  EXPECT_EQ(WebMediaStreamSource::kReadyStateLive,
             webkit_source_.GetReadyState());
   EXPECT_FALSE(source_stopped_);
 
@@ -412,11 +410,11 @@ TEST_F(MediaStreamVideoCapturerSourceTest, ChangeSource) {
   EXPECT_CALL(mock_delegate(), MockStopCapture());
   delegate_->SetRunning(false);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded,
+  EXPECT_EQ(WebMediaStreamSource::kReadyStateEnded,
             webkit_source_.GetReadyState());
-  // Verify that blink::WebPlatformMediaStreamSource::SourceStoppedCallback has
+  // Verify that WebPlatformMediaStreamSource::SourceStoppedCallback has
   // been triggered.
   EXPECT_TRUE(source_stopped_);
 }
 
-}  // namespace content
+}  // namespace blink

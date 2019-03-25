@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/viz/common/gl_helper.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/media/stream/media_stream_video_capturer_source.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
@@ -22,6 +21,7 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -486,7 +486,7 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
   const blink::WebString track_id = blink::WebString::FromASCII(str_track_id);
   media::VideoCaptureFormats preferred_formats = source->GetPreferredFormats();
   blink::MediaStreamVideoSource* media_stream_source =
-      new MediaStreamVideoCapturerSource(
+      new blink::MediaStreamVideoCapturerSource(
           blink::WebPlatformMediaStreamSource::SourceStoppedCallback(),
           std::move(source));
   blink::WebMediaStreamSource webkit_source;
