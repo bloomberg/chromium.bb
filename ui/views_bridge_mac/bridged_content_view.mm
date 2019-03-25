@@ -1434,16 +1434,15 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     client->EndDrag();
 }
 
-// NSAccessibility informal protocol implementation.
+// NSAccessibility formal protocol implementation:
 
-- (id)accessibilityAttributeValue:(NSString*)attribute {
-  if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
-    if (id accessible = bridge_->host_helper()->GetNativeViewAccessible())
-      return @[ accessible ];
-  }
-
-  return [super accessibilityAttributeValue:attribute];
+- (NSArray*)accessibilityChildren {
+  if (id accessible = bridge_->host_helper()->GetNativeViewAccessible())
+    return @[ accessible ];
+  return [super accessibilityChildren];
 }
+
+// NSAccessibility informal protocol implementation:
 
 - (id)accessibilityHitTest:(NSPoint)point {
   return [bridge_->host_helper()->GetNativeViewAccessible()
