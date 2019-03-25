@@ -15,7 +15,9 @@ namespace viz {
 
 SkiaOutputDeviceX11::SkiaOutputDeviceX11(GrContext* gr_context,
                                          gfx::AcceleratedWidget widget)
-    : SkiaOutputDeviceOffscreen(gr_context),
+    : SkiaOutputDeviceOffscreen(gr_context,
+                                false /* flipped */,
+                                true /* has_alpha */),
       display_(gfx::GetXDisplay()),
       widget_(widget),
       gc_(XCreateGC(display_, widget_, 0, nullptr)) {

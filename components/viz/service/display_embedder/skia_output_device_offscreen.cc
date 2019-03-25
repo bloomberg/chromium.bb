@@ -8,8 +8,10 @@
 
 namespace viz {
 
-SkiaOutputDeviceOffscreen::SkiaOutputDeviceOffscreen(GrContext* gr_context)
-    : gr_context_(gr_context) {}
+SkiaOutputDeviceOffscreen::SkiaOutputDeviceOffscreen(GrContext* gr_context,
+                                                     bool flipped,
+                                                     bool has_alpha)
+    : gr_context_(gr_context), flipped_(flipped), has_alpha_(has_alpha) {}
 
 SkiaOutputDeviceOffscreen::~SkiaOutputDeviceOffscreen() = default;
 
@@ -18,10 +20,14 @@ sk_sp<SkSurface> SkiaOutputDeviceOffscreen::DrawSurface() {
 }
 
 void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size) {
-  auto image_info =
-      SkImageInfo::MakeN32(size.width(), size.height(), kOpaque_SkAlphaType);
-  draw_surface_ =
-      SkSurface::MakeRenderTarget(gr_context_, SkBudgeted::kNo, image_info);
+  auto image_info = SkImageInfo::Make(
+      size.width(), size.height(),
+      has_alpha_ ? kRGBA_8888_SkColorType : kRGB_888x_SkColorType,
+      has_alpha_ ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
+  draw_surface_ = SkSurface::MakeRenderTarget(
+      gr_context_, SkBudgeted::kNo, image_info, 0 /* sampleCount */,
+      flipped_ ? kTopLeft_GrSurfaceOrigin : kBottomLeft_GrSurfaceOrigin,
+      nullptr /* surfaceProps */);
 }
 
 gfx::SwapResult SkiaOutputDeviceOffscreen::SwapBuffers() {

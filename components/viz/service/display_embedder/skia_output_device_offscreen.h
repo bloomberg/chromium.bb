@@ -14,7 +14,9 @@ namespace viz {
 
 class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
  public:
-  explicit SkiaOutputDeviceOffscreen(GrContext* gr_context);
+  SkiaOutputDeviceOffscreen(GrContext* gr_context,
+                            bool flipped,
+                            bool has_alpha);
   ~SkiaOutputDeviceOffscreen() override;
 
   sk_sp<SkSurface> DrawSurface() override;
@@ -24,6 +26,8 @@ class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
  protected:
   GrContext* const gr_context_;
   sk_sp<SkSurface> draw_surface_;
+  const bool flipped_;
+  const bool has_alpha_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDeviceOffscreen);
