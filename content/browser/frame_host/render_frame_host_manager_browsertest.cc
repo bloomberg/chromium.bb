@@ -1614,8 +1614,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // Ensures that a pending navigation's URL  is no longer visible after the
 // speculative RFH is discarded due to a concurrent renderer-initiated
 // navigation.  See https://crbug.com/760342.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       ResetVisibleURLOnCrossProcessNavigationInterrupted) {
+// TODO(https://crbug.com/945194): Disabled due to flaky timeouts.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostManagerTest,
+    DISABLED_ResetVisibleURLOnCrossProcessNavigationInterrupted) {
   const std::string kVictimPath = "/victim.html";
   const std::string kAttackPath = "/attack.html";
   net::test_server::ControllableHttpResponse victim_response(
