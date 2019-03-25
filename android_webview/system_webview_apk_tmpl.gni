@@ -7,6 +7,7 @@ import("//build/config/android/chrome_version.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
+import("//chrome/android/trichrome.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 
 template("system_webview_apk_tmpl") {
@@ -27,8 +28,6 @@ template("system_webview_apk_tmpl") {
     if (!defined(alternative_android_sdk_dep)) {
       alternative_android_sdk_dep = webview_framework_dep
     }
-
-    shared_resources = true
 
     _use_trichrome_library =
         defined(use_trichrome_library) && use_trichrome_library
@@ -52,8 +51,14 @@ template("system_webview_apk_tmpl") {
         secondary_abi_loadable_modules =
             [ "$_secondary_out_dir/libcrashpad_handler_trampoline.so" ]
       }
+      shared_resources = true
     } else {
       uncompress_shared_libraries = true
+
+      app_as_shared_lib = true
+      if (trichrome_synchronized_proguard) {
+        emit_resource_ids = true
+      }
 
       # Include placeholder libraries to ensure we are treated as the desired
       # architecture.
