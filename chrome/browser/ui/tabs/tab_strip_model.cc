@@ -770,9 +770,10 @@ void TabStripModel::SetTabPinned(int index, bool pinned) {
     index = non_pinned_tab_index - 1;
   }
 
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
     observer.TabPinnedStateChanged(this, contents_data_[index]->web_contents(),
                                    index);
+  }
 }
 
 bool TabStripModel::IsTabPinned(int index) const {
@@ -795,6 +796,17 @@ std::vector<TabGroupData*> TabStripModel::ListTabGroups() const {
   }
 
   return groups;
+}
+
+std::vector<int> TabStripModel::ListTabsInGroup(
+    const TabGroupData* group) const {
+  DCHECK(group);
+  std::vector<int> result;
+  for (size_t i = 0; i < contents_data_.size(); ++i) {
+    if (contents_data_[i]->group() == group)
+      result.push_back(i);
+  }
+  return result;
 }
 
 int TabStripModel::IndexOfFirstNonPinnedTab() const {
@@ -1015,7 +1027,6 @@ void TabStripModel::RemoveFromGroup(const std::vector<int>& indices) {
     const TabGroupData* old_group = GetTabGroupForTab(index);
     if (old_group == nullptr)
       continue;
-    UngroupTab(index);
 
     // Move the tab until it's the rightmost tab in its group
     int new_index = index;
@@ -1023,7 +1034,7 @@ void TabStripModel::RemoveFromGroup(const std::vector<int>& indices) {
            GetTabGroupForTab(new_index + 1) == old_group) {
       new_index++;
     }
-    MoveWebContentsAt(index, new_index, false);
+    MoveAndSetGroup(index, new_index, nullptr);
   }
 }
 
@@ -1250,8 +1261,7 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
 
     case CommandRemoveFromGroup: {
       base::RecordAction(UserMetricsAction("TabContextMenu_RemoveFromGroup"));
-      std::vector<int> indices = GetIndicesForCommand(context_index);
-      RemoveFromGroup(indices);
+      RemoveFromGroup(GetIndicesForCommand(context_index));
       break;
     }
 
@@ -1651,12 +1661,6 @@ void TabStripModel::MoveSelectedTabsToImpl(int index,
 void TabStripModel::MoveTabsIntoGroup(const std::vector<int>& indices,
                                       int destination_index,
                                       const TabGroupData* group) {
-  auto move_tab = [&](int current_index, int insertion_index) {
-    UngroupTab(current_index);
-    MoveWebContentsAt(current_index, insertion_index, false);
-    contents_data_[insertion_index]->set_group(group);
-  };
-
   // Some tabs will need to be moved to the right, some to the left. We need to
   // handle those separately. First, move tabs to the right, starting with the
   // rightmost tab so we don't cause other tabs we are about to move to shift.
@@ -1665,8 +1669,10 @@ void TabStripModel::MoveTabsIntoGroup(const std::vector<int>& indices,
        i++) {
     numTabsMovingRight++;
   }
-  for (int i = numTabsMovingRight - 1; i >= 0; i--)
-    move_tab(indices[i], destination_index - numTabsMovingRight + i);
+  for (int i = numTabsMovingRight - 1; i >= 0; i--) {
+    MoveAndSetGroup(indices[i], destination_index - numTabsMovingRight + i,
+                    group);
+  }
 
   // Collect indices for tabs moving to the left.
   std::vector<int> move_left_indices;
@@ -1675,13 +1681,34 @@ void TabStripModel::MoveTabsIntoGroup(const std::vector<int>& indices,
   }
   // Move tabs to the left, starting with the leftmost tab.
   for (size_t i = 0; i < move_left_indices.size(); i++)
-    move_tab(move_left_indices[i], destination_index + i);
+    MoveAndSetGroup(move_left_indices[i], destination_index + i, group);
 }
 
-void TabStripModel::UngroupTab(int index) {
+void TabStripModel::MoveAndSetGroup(int index,
+                                    int new_index,
+                                    const TabGroupData* new_group) {
+  const TabGroupData* old_group = UngroupTab(index);
+
+  // TODO(crbug.com/940677): Ideally the delta of type kGroupChanged below would
+  // be batched with the move deltas resulting from MoveWebContentsAt, but that
+  // is not possible right now.
+  MoveWebContentsAt(index, new_index, false);
+  WebContentsData* contents_data = contents_data_[new_index].get();
+  contents_data->set_group(new_group);
+
+  TabStripModelChange::Delta delta =
+      TabStripModelChange::CreateGroupChangeDelta(
+          contents_data->web_contents(), new_index, old_group, new_group);
+  TabStripModelChange change(TabStripModelChange::kGroupChanged, {delta});
+  TabStripSelectionChange selection(GetActiveWebContents(), selection_model_);
+  for (auto& observer : observers_)
+    observer.OnTabStripModelChanged(this, change, selection);
+}
+
+const TabGroupData* TabStripModel::UngroupTab(int index) {
   const TabGroupData* group = GetTabGroupForTab(index);
   if (group == nullptr)
-    return;
+    return nullptr;
 
   contents_data_[index]->set_group(nullptr);
   // Delete the group if we just ungrouped the last tab in that group.
@@ -1696,6 +1723,7 @@ void TabStripModel::UngroupTab(int index) {
       }
     }
   }
+  return group;
 }
 
 std::vector<int> TabStripModel::SetTabsPinned(const std::vector<int>& indices,
