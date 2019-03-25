@@ -111,14 +111,6 @@ bool IsInAutofillSuggestionsDisabledExperiment() {
   return group_name == "Disabled";
 }
 
-bool IsAutofillCreditCardAssistEnabled() {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  return false;
-#else
-  return base::FeatureList::IsEnabled(features::kAutofillCreditCardAssist);
-#endif
-}
-
 features::LocalCardMigrationExperimentalFlag
 GetLocalCardMigrationExperimentalFlag() {
   if (!base::FeatureList::IsEnabled(
