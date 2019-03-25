@@ -32,9 +32,8 @@ class ManualFillingController;
 
 // Use either PasswordAccessoryController::GetOrCreate or
 // PasswordAccessoryController::GetIfExisting to obtain instances of this class.
-//
-// TODO(crbug.com/854150): This class currently only supports credentials
-// originating from the main frame. Supporting iframes is intended.
+// This class exists for every tab and should never store state based on the
+// contents of one of its frames. This can cause cross-origin hazards.
 class PasswordAccessoryControllerImpl
     : public PasswordAccessoryController,
       public content::WebContentsUserData<PasswordAccessoryControllerImpl> {
@@ -97,9 +96,18 @@ class PasswordAccessoryControllerImpl
       url::Origin origin,
       const favicon_base::FaviconRawBitmapResult& bitmap_results);
 
+  // Returns true if |suggestion| matches a credential for |origin|.
+  bool AppearsInSuggestions(const base::string16& suggestion,
+                            bool is_password,
+                            const url::Origin& origin) const;
+
   // Lazy-initializes and returns the ManualFillingController for the current
   // |web_contents_|. The lazy initialization allows injecting mocks for tests.
   base::WeakPtr<ManualFillingController> GetManualFillingController();
+
+  // ------------------------------------------------------------------------
+  // Members - Make sure to NEVER store state related to a single frame here!
+  // ------------------------------------------------------------------------
 
   // Contains the last set of credentials by origin.
   std::map<url::Origin, std::vector<SuggestionElementData>> origin_suggestions_;
@@ -107,6 +115,7 @@ class PasswordAccessoryControllerImpl
   // The tab for which this class is scoped.
   content::WebContents* web_contents_;
 
+  // TODO(fhorschig): Make sure this works across frames
   // The origin of the currently focused frame. It's used to ensure that
   // favicons are not displayed across origins.
   url::Origin current_origin_;
@@ -122,10 +131,6 @@ class PasswordAccessoryControllerImpl
 
   // The password accessory controller object to forward client requests to.
   base::WeakPtr<ManualFillingController> mf_controller_;
-
-  // Remembers whether the last focused field was a password field. That way,
-  // the reconstructed elements have the correct type.
-  bool last_focused_field_was_for_passwords_ = false;
 
   // The favicon service used to make retrieve icons for a given origin.
   favicon::FaviconService* favicon_service_;
