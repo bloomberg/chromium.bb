@@ -24,7 +24,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/media/cast_session.h"
 #include "chrome/renderer/media/cast_udp_transport.h"
-#include "content/public/renderer/media_stream_utils.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/video_encode_accelerator.h"
 #include "media/base/audio_bus.h"
@@ -40,6 +39,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/public/web/modules/mediastream/web_media_stream_utils.h"
 #include "ui/gfx/geometry/size.h"
 
 using media::cast::FrameSenderConfig;
@@ -180,7 +180,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
 
   ~CastVideoSink() override {
     if (is_connected_to_track_)
-      content::RemoveSinkFromMediaStreamTrack(track_, this);
+      blink::RemoveSinkFromMediaStreamTrack(track_, this);
   }
 
   // Attach this sink to a video track represented by |track_|.
@@ -195,7 +195,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
         base::TimeDelta::FromMilliseconds(kRefreshIntervalMilliseconds),
         base::Bind(&CastVideoSink::OnRefreshTimerFired,
                    base::Unretained(this)));
-    content::AddSinkToMediaStreamTrack(
+    blink::AddSinkToMediaStreamTrack(
         track_, this, base::BindRepeating(&Deliverer::OnVideoFrame, deliverer_),
         is_sink_secure);
     is_connected_to_track_ = true;
@@ -269,7 +269,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
     DVLOG(1) << "CastVideoSink is requesting another refresh frame "
                 "(consecutive count=" << consecutive_refresh_count_ << ").";
     expecting_a_refresh_frame_ = true;
-    content::RequestRefreshFrameFromVideoTrack(track_);
+    blink::RequestRefreshFrameFromVideoTrack(track_);
   }
 
   void DidReceiveFrame() {

@@ -156,14 +156,14 @@ void MediaStreamVideoRendererSink::Start() {
 
   frame_deliverer_.reset(new MediaStreamVideoRendererSink::FrameDeliverer(
       repaint_cb_,
-      base::BindRepeating(&MediaStreamVideoSink::OnFrameDropped,
+      base::BindRepeating(&blink::MediaStreamVideoSink::OnFrameDropped,
                           weak_factory_.GetWeakPtr()),
       main_render_task_runner_));
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&FrameDeliverer::Start,
                                 base::Unretained(frame_deliverer_.get())));
 
-  MediaStreamVideoSink::ConnectToTrack(
+  blink::MediaStreamVideoSink::ConnectToTrack(
       video_track_,
       // This callback is run on IO thread. It is safe to use base::Unretained
       // here because |frame_receiver_| will be destroyed on IO thread after
@@ -185,7 +185,7 @@ void MediaStreamVideoRendererSink::Start() {
 void MediaStreamVideoRendererSink::Stop() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
-  MediaStreamVideoSink::DisconnectFromTrack();
+  blink::MediaStreamVideoSink::DisconnectFromTrack();
   if (frame_deliverer_)
     io_task_runner_->DeleteSoon(FROM_HERE, frame_deliverer_.release());
 }

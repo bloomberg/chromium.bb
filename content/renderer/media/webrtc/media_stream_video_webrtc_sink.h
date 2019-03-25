@@ -8,8 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "content/renderer/media_stream_video_sink.h"
+#include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace base {
@@ -34,7 +35,8 @@ class WebRtcVideoTrackSource;
 // to an RTCPeerConnection object.
 // Instances of this class is owned by the WebRtcMediaStreamAdapter object that
 // created it.
-class CONTENT_EXPORT MediaStreamVideoWebRtcSink : public MediaStreamVideoSink {
+class CONTENT_EXPORT MediaStreamVideoWebRtcSink
+    : public blink::MediaStreamVideoSink {
  public:
   MediaStreamVideoWebRtcSink(
       const blink::WebMediaStreamTrack& track,
