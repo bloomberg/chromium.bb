@@ -101,13 +101,22 @@ enum AppListModelStatus {
   kStatusSyncing,  // Syncing apps or installing synced apps.
 };
 
-// The UI component the user launched the app from. Must match
+// The UI component the user launched the search result from. Must match
 // chrome/browser/ui/app_list/app_launch_event_logger.proto.
 enum AppListLaunchedFrom {
   kLaunchedFromGrid = 1,
   kLaunchedFromSuggestionChip,
   kLaunchedFromShelf,
   kLaunchedFromSearchBox,
+};
+
+// The UI representation of the search result. Currently all search results
+// that are not apps (OminboxResult, LauncherSearcResult, etc.) are grouped
+// into kSearchResult. Meanwhile SearchResultTileItemView (shown in zero state)
+// and suggested chips are considered kAppSearchResult.
+enum AppListLaunchType {
+ kSearchResult = 0,
+ kAppSearchResult,
 };
 
 // How the result should be displayed. Do not change the order of these as
@@ -323,17 +332,17 @@ interface AppListClient {
   // Triggers a search query.
   // |trimmed_query|: the trimmed input texts from the search text field.
   StartSearch(mojo_base.mojom.String16 trimmed_query);
-  // Opens a search result when its view is clicked or pressed.
+  // Opens a search result and logs to metrics when its view is clicked or
+  // pressed.
   // |result_id|: the id of the search result the user wants to open.
-  OpenSearchResult(string result_id, int32 event_flags);
-  // Logs a click on the search result.
-  // |result_id|: the id of the search result that was clicked on.
-  // |suggestion_index|: the position of the result in the suggestion chip.
-  // |launched_from|: where the app was launched.
-  LogSearchClick(
-      string result_id,
-      int32 suggestion_index,
-      AppListLaunchedFrom launched_from);
+  // |launched_from|: where the result was launched.
+  // |launch_type|: how the result is represented in the UI.
+  // |suggestion_index|: the position of the result as a suggestion chip in
+  // the AppsGridView or the position of the result in the zero state search
+  // page.
+  OpenSearchResult(string result_id, int32 event_flags,
+                   AppListLaunchedFrom launched_from,
+                   AppListLaunchType launch_type, int32 suggestion_index);
   // Invokes a custom action on a result with |result_id|.
   // |action_index| corresponds to the index of an action on the search result,
   // for example, installing. They are stored in SearchResult::actions_.

@@ -14,7 +14,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
@@ -162,7 +161,6 @@ OmniboxResult::OmniboxResult(Profile* profile,
 OmniboxResult::~OmniboxResult() = default;
 
 void OmniboxResult::Open(int event_flags) {
-  RecordHistogram(OMNIBOX_SEARCH_RESULT);
   RecordOmniboxResultHistogram();
   list_controller_->OpenURL(profile_, match_.destination_url, match_.transition,
                             ui::DispositionFromEventFlags(event_flags));
@@ -186,6 +184,55 @@ void OmniboxResult::InvokeAction(int action_index, int event_flags) {
 
 int OmniboxResult::GetSubType() const {
   return static_cast<int>(match_.type);
+}
+
+SearchResultType OmniboxResult::GetSearchResultType() const {
+  switch (match_.type) {
+    case AutocompleteMatchType::URL_WHAT_YOU_TYPED:
+      return OMNIBOX_URL_WHAT_YOU_TYPED;
+    case AutocompleteMatchType::HISTORY_URL: {
+      BookmarkModel* bookmark_model =
+          BookmarkModelFactory::GetForBrowserContext(profile_);
+      if (bookmark_model &&
+          bookmark_model->IsBookmarked(match_.destination_url)) {
+        return OMNIBOX_BOOKMARK;
+      }
+      return OMNIBOX_RECENTLY_VISITED_WEBSITE;
+    }
+    case AutocompleteMatchType::HISTORY_TITLE:
+      return OMNIBOX_RECENT_DOC_IN_DRIVE;
+    case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED:
+      return OMNIBOX_WEB_QUERY;
+    case AutocompleteMatchType::SEARCH_HISTORY:
+    case AutocompleteMatchType::SEARCH_SUGGEST:
+    case AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED:
+      return OMNIBOX_HISTORY;
+
+    case AutocompleteMatchType::HISTORY_KEYWORD:
+    case AutocompleteMatchType::NAVSUGGEST:
+    case AutocompleteMatchType::SEARCH_SUGGEST_ENTITY:
+    case AutocompleteMatchType::SEARCH_SUGGEST_TAIL:
+    case AutocompleteMatchType::SEARCH_SUGGEST_PROFILE:
+    case AutocompleteMatchType::SEARCH_OTHER_ENGINE:
+    case AutocompleteMatchType::CONTACT_DEPRECATED:
+    case AutocompleteMatchType::BOOKMARK_TITLE:
+    case AutocompleteMatchType::NAVSUGGEST_PERSONALIZED:
+    case AutocompleteMatchType::CALCULATOR:
+    case AutocompleteMatchType::CLIPBOARD_URL:
+    case AutocompleteMatchType::VOICE_SUGGEST:
+    case AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED:
+    case AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
+    case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:
+    case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
+    case AutocompleteMatchType::DOCUMENT_SUGGESTION:
+    case AutocompleteMatchType::PEDAL:
+    case AutocompleteMatchType::CLIPBOARD_TEXT:
+    case AutocompleteMatchType::CLIPBOARD_IMAGE:
+    case AutocompleteMatchType::NUM_TYPES:
+    case AutocompleteMatchType::HISTORY_BODY:
+      NOTREACHED();
+      return SEARCH_RESULT_TYPE_BOUNDARY;
+  }
 }
 
 void OmniboxResult::UpdateIcon() {

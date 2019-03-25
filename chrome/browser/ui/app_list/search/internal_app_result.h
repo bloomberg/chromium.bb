@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "components/favicon_base/favicon_types.h"
 #include "url/gurl.h"
 
@@ -44,6 +45,7 @@ class InternalAppResult : public AppResult {
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
   void GetContextMenuModel(GetMenuModelCallback callback) override;
+  SearchResultType GetSearchResultType() const override;
 
   // AppContextMenuDelegate overrides:
   void ExecuteLaunchCommand(int event_flags) override;

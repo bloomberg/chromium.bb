@@ -59,10 +59,11 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   SearchModel* GetSearchModel() override;
   void StartAssistant() override {}
   void StartSearch(const base::string16& raw_query) override {}
-  void OpenSearchResult(const std::string& result_id, int event_flags) override;
-  void LogSearchClick(const std::string& result_id,
-                      int suggestion_index,
-                      ash::mojom::AppListLaunchedFrom launched_from) override {}
+  void OpenSearchResult(const std::string& result_id,
+                        int event_flags,
+                        ash::mojom::AppListLaunchedFrom launched_from,
+                        ash::mojom::AppListLaunchType launch_type,
+                        int suggestion_index) override;
   void LogResultLaunchHistogram(
       app_list::SearchResultLaunchLocation launch_location,
       int suggestion_index) override {}

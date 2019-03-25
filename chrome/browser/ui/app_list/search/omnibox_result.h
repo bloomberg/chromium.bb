@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 
 class AppListControllerDelegate;
@@ -39,6 +40,7 @@ class OmniboxResult : public ChromeSearchResult {
   void Open(int event_flags) override;
   void InvokeAction(int action_index, int event_flags) override;
   int GetSubType() const override;
+  SearchResultType GetSearchResultType() const override;
 
  private:
   void UpdateIcon();

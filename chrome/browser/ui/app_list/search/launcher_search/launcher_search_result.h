@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "extensions/common/extension.h"
 #include "url/gurl.h"
 
@@ -31,7 +32,10 @@ class LauncherSearchResult : public ChromeSearchResult,
           error_reporter);
   ~LauncherSearchResult() override;
   std::unique_ptr<LauncherSearchResult> Duplicate() const;
+
+  // ChromeSearchResult overrides:
   void Open(int event_flags) override;
+  SearchResultType GetSearchResultType() const override;
 
   void OnIconImageChanged(LauncherSearchIconImageLoader* image_loader) override;
   void OnBadgeIconImageChanged(

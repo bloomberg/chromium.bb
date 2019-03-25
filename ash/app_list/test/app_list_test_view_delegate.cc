@@ -35,8 +35,12 @@ SearchModel* AppListTestViewDelegate::GetSearchModel() {
   return search_model_.get();
 }
 
-void AppListTestViewDelegate::OpenSearchResult(const std::string& result_id,
-                                               int event_flags) {
+void AppListTestViewDelegate::OpenSearchResult(
+    const std::string& result_id,
+    int event_flags,
+    ash::mojom::AppListLaunchedFrom launched_from,
+    ash::mojom::AppListLaunchType launch_type,
+    int suggestion_index) {
   const SearchModel::SearchResults* results = search_model_->results();
   for (size_t i = 0; i < results->item_count(); ++i) {
     if (results->GetItemAt(i)->id() == result_id) {

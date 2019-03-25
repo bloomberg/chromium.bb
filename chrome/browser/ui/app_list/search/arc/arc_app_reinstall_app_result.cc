@@ -57,4 +57,8 @@ void ArcAppReinstallAppResult::OnVisibilityChanged(bool visibility) {
   observer_->OnVisibilityChanged(id(), visibility);
 }
 
+SearchResultType ArcAppReinstallAppResult::GetSearchResultType() const {
+  return PLAY_STORE_REINSTALL_APP;
+}
+
 }  // namespace app_list

@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 
 class Profile;
 
@@ -23,6 +24,7 @@ class CrostiniRepositorySearchResult : public ChromeSearchResult {
 
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
+  SearchResultType GetSearchResultType() const override;
 
  private:
   void OnOpen(const crostini::LinuxPackageInfo& package);

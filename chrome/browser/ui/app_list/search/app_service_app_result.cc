@@ -88,6 +88,23 @@ void AppServiceAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
   context_menu_->GetMenuModel(std::move(callback));
 }
 
+SearchResultType AppServiceAppResult::GetSearchResultType() const {
+  switch (app_type_) {
+    case apps::mojom::AppType::kArc:
+      return PLAY_STORE_APP;
+    case apps::mojom::AppType::kBuiltIn:
+      return INTERNAL_APP;
+    case apps::mojom::AppType::kCrostini:
+      return CROSTINI_APP;
+    case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kWeb:
+      return EXTENSION_APP;
+    default:
+      NOTREACHED();
+      return SEARCH_RESULT_TYPE_BOUNDARY;
+  }
+}
+
 AppContextMenu* AppServiceAppResult::GetAppContextMenu() {
   return context_menu_.get();
 }

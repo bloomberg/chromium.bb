@@ -6,14 +6,15 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_UTIL_H_
 
 namespace app_list {
-
-// The type of the chrome search result. This is used for logging so do not
-// change the order of this enum.
+// The type of the ChromeSearchResult. This is used for logging so do not
+// change the order of this enum. If you add to this enum update
+// AppListSearchResult in enums.xml.
 enum SearchResultType {
-  // A result that forwards an omnibox search result.
-  OMNIBOX_SEARCH_RESULT,
-  // An app result.
-  APP_SEARCH_RESULT,
+  // A result that forwards an omnibox search result. Use or create OMNIBOX_*
+  // instead (Deprecated).
+  OMNIBOX_SEARCH_RESULT_DEPRECATED,
+  // An app result. Use or create platform specific types below (Deprecated).
+  APP_SEARCH_RESULT_DEPRECATED,
   // A search result from the webstore (Deprecated).
   WEBSTORE_SEARCH_RESULT_DEPRECATED,
   // A result that opens a webstore search (Deprecated)
@@ -22,7 +23,7 @@ enum SearchResultType {
   SEARCH_PEOPLE_SEARCH_RESULT_DEPRECATED,
   // A result that opens a suggestion (Deprecated).
   SUGGESTIONS_SEARCH_RESULT_DEPRECATED,
-  // A result that is provided by the custom launcher search provider.
+  // A result which is either a local file or drive file.
   LAUNCHER_SEARCH_PROVIDER_RESULT,
   // A result that is an uninstalled app from a Play Store app search.
   PLAY_STORE_UNINSTALLED_APP,
@@ -30,14 +31,42 @@ enum SearchResultType {
   PLAY_STORE_INSTANT_APP,
   // A result that is an answer card.
   ANSWER_CARD,
-  // A result that open a specific activity in an app installed from Play Store.
+  // A result that opens a specific activity in an app installed from Play
+  // Store.
   PLAY_STORE_APP_SHORTCUT,
+  // A result that is a URL.
+  OMNIBOX_URL_WHAT_YOU_TYPED,
+  // A result which is a bookmark.
+  OMNIBOX_BOOKMARK,
+  // A result which is a recently visited website.
+  OMNIBOX_RECENTLY_VISITED_WEBSITE,
+  // A result which is a recently used doc in drive.
+  OMNIBOX_RECENT_DOC_IN_DRIVE,
+  // A result which is a web query.
+  OMNIBOX_WEB_QUERY,
+  // A result which was a web query that was previously searched.
+  OMNIBOX_HISTORY,
+  // An app result which is an installed playstore app.
+  PLAY_STORE_APP,
+  // An app result which is an app that was installed on another device.
+  PLAY_STORE_REINSTALL_APP,
+  // An app result which is an internal app (files, settings, etc).
+  INTERNAL_APP,
+  // An app result which is an extension.
+  EXTENSION_APP,
+  // A Crostini App Result.
+  CROSTINI_APP,
+  // An app result which is a quick action in settings.
+  SETTINGS_SHORTCUT,
+  // An ArcAppDataSearchResult which is a person from contacts.
+  APP_DATA_RESULT_PERSON,
+  // An ArcAppDataSearchResult which is a note document.
+  APP_DATA_RESULT_NOTE_DOCUMENT,
   // Boundary is always last.
   SEARCH_RESULT_TYPE_BOUNDARY
 };
 
-// Record a UMA histogram.
-void RecordHistogram(SearchResultType type);
+void RecordSearchResultOpenTypeHistogram(SearchResultType type);
 
 }  // namespace app_list
 

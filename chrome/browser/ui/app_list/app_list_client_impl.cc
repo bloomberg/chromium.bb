@@ -92,26 +92,36 @@ void AppListClientImpl::StartSearch(const base::string16& trimmed_query) {
   }
 }
 
-void AppListClientImpl::OpenSearchResult(const std::string& result_id,
-                                         int event_flags) {
+void AppListClientImpl::OpenSearchResult(
+    const std::string& result_id,
+    int event_flags,
+    ash::mojom::AppListLaunchedFrom launched_from,
+    ash::mojom::AppListLaunchType launch_type,
+    int suggestion_index) {
   if (!search_controller_)
     return;
+
   ChromeSearchResult* result = search_controller_->FindSearchResult(result_id);
-  if (result) {
-    search_controller_->OpenResult(result, event_flags);
+  if (!result)
+    return;
 
-    // Send training signal to search controller.
-    search_controller_->Train(
-        result_id, app_list::RankingItemTypeFromSearchResult(*result));
+  search_controller_->OpenResult(result, event_flags);
+
+  // Send training signal to search controller.
+  search_controller_->Train(result_id,
+                            app_list::RankingItemTypeFromSearchResult(*result));
+
+  if (launch_type == ash::mojom::AppListLaunchType::kAppSearchResult) {
+    // Log the AppResult (either in the search result page, or in chip form in
+    // AppsGridView) to the UKM system.
+    app_launch_event_logger_.OnSuggestionChipOrSearchBoxClicked(
+        result_id, suggestion_index, static_cast<int>(launched_from));
   }
-}
 
-void AppListClientImpl::LogSearchClick(
-    const std::string& result_id,
-    int suggestion_index,
-    ash::mojom::AppListLaunchedFrom launched_from) {
-  app_launch_event_logger_.OnSuggestionChipOrSearchBoxClicked(
-      result_id, suggestion_index, static_cast<int>(launched_from));
+  if (launched_from ==
+      ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox) {
+    RecordSearchResultOpenTypeHistogram(result->GetSearchResultType());
+  }
 }
 
 void AppListClientImpl::InvokeSearchResultAction(const std::string& result_id,

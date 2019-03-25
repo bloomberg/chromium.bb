@@ -43,4 +43,8 @@ void AppResult::UpdateFromLastLaunchedOrInstalledTime(
   set_relevance(1 / (1 + delta.InSecondsF() / kSecondsInWeek));
 }
 
+SearchResultType AppResult::GetSearchResultType() const {
+  return SEARCH_RESULT_TYPE_BOUNDARY;
+}
+
 }  // namespace app_list

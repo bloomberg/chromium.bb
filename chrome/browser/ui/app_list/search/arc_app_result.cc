@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_context_menu.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
-#include "chrome/browser/ui/app_list/search/search_util.h"
 
 namespace {
 const char kArcAppPrefix[] = "arc://";
@@ -78,16 +77,16 @@ void ArcAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
   context_menu_->GetMenuModel(std::move(callback));
 }
 
+SearchResultType ArcAppResult::GetSearchResultType() const {
+  return PLAY_STORE_APP;
+}
+
 AppContextMenu* ArcAppResult::GetAppContextMenu() {
   return context_menu_.get();
 }
 
 void ArcAppResult::Launch(int event_flags,
                           arc::UserInteractionType interaction) {
-  // Record the search metric if the result is not a suggested app.
-  if (display_type() != ash::SearchResultDisplayType::kRecommendation)
-    RecordHistogram(APP_SEARCH_RESULT);
-
   arc::LaunchApp(profile(), app_id(), event_flags, interaction,
                  controller()->GetAppListDisplayId());
 }

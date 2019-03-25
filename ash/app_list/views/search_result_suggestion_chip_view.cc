@@ -71,10 +71,11 @@ void SearchResultSuggestionChipView::ButtonPressed(views::Button* sender,
   LogAppLaunch(index_in_suggestion_chip_container_);
   RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                view_delegate_->GetSearchModel());
-  view_delegate_->OpenSearchResult(result()->id(), event.flags());
-  view_delegate_->LogSearchClick(
-      result()->id(), index_in_suggestion_chip_container_,
-      ash::mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip);
+  view_delegate_->OpenSearchResult(
+      result()->id(), event.flags(),
+      ash::mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip,
+      ash::mojom::AppListLaunchType::kAppSearchResult,
+      index_in_suggestion_chip_container_);
 }
 
 void SearchResultSuggestionChipView::Layout() {

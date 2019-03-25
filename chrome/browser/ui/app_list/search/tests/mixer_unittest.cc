@@ -20,9 +20,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,6 +55,9 @@ class TestSearchResult : public ChromeSearchResult {
   // ChromeSearchResult overrides:
   void Open(int event_flags) override {}
   void InvokeAction(int action_index, int event_flags) override {}
+  SearchResultType GetSearchResultType() const override {
+    return app_list::SEARCH_RESULT_TYPE_BOUNDARY;
+  }
 
   // For reference equality testing. (Addresses cannot be used to test reference
   // equality because it is possible that an object will be allocated at the

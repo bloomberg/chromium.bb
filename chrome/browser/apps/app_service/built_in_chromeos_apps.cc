@@ -143,7 +143,6 @@ void BuiltInChromeOsApps::Launch(const std::string& app_id,
       break;
     case apps::mojom::LaunchSource::kFromAppListQuery:
     case apps::mojom::LaunchSource::kFromAppListQueryContextMenu:
-      app_list::RecordHistogram(app_list::APP_SEARCH_RESULT);
       app_list::InternalAppResult::RecordOpenHistogram(app_id);
       break;
     case apps::mojom::LaunchSource::kFromAppListRecommendation:

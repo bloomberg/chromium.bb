@@ -1804,17 +1804,31 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AppListSearchResult">
-  <int value="0" label="OMNIBOX"/>
-  <int value="1" label="APP"/>
-  <int value="2" label="WEBSTORE"/>
-  <int value="3" label="SEARCH_WEBSTORE"/>
-  <int value="4" label="SEARCH_PEOPLE"/>
-  <int value="5" label="SUGGESTION"/>
-  <int value="6" label="LAUNCHER_SEARCH_PROVIDER"/>
-  <int value="7" label="PLAY_STORE_UNINSTALLED_APP"/>
-  <int value="8" label="PLAY_STORE_INSTANT_APP"/>
-  <int value="9" label="ANSWER_CARD"/>
-  <int value="10" label="PLAY_STORE_APP_SHORTCUT"/>
+  <int value="0" label="OMNIBOX_DEPRECATED"/>
+  <int value="1" label="APP_DEPRECATED"/>
+  <int value="2" label="WEBSTORE_DEPRECATED"/>
+  <int value="3" label="SEARCH_WEBSTORE_DEPRECATED"/>
+  <int value="4" label="SEARCH_PEOPLE_DEPRECATED"/>
+  <int value="5" label="SUGGESTION_DEPRECATED"/>
+  <int value="6" label="LauncherSearchProvider (local or drive file)"/>
+  <int value="7" label="Uninstalled App From PlayStore"/>
+  <int value="8" label="Arc++ Instant App"/>
+  <int value="9" label="Answer Card"/>
+  <int value="10" label="Arc++ App Shortcut"/>
+  <int value="11" label="Omnibox, URL What You Typed"/>
+  <int value="12" label="Omnibox, Bookmark"/>
+  <int value="13" label="Omnibox, Recently Visited Website"/>
+  <int value="14" label="Omnibox, Recent Doc In Drive"/>
+  <int value="15" label="Omnibox, Web Query"/>
+  <int value="16" label="Omnibox, History"/>
+  <int value="17" label="Arc++ App"/>
+  <int value="18" label="Arc++ Reinstall App"/>
+  <int value="19" label="Internal App"/>
+  <int value="20" label="Extension App"/>
+  <int value="21" label="Crostini App"/>
+  <int value="22" label="Settings Shortcut"/>
+  <int value="23" label="AppDataResult, Person From Contacts"/>
+  <int value="24" label="AppDataResult, Note Document"/>
 </enum>
 
 <enum name="AppListSearchResultDisplayType">

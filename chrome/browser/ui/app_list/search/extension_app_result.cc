@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/extension_app_context_menu.h"
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
-#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "extensions/browser/extension_registry.h"
@@ -80,10 +79,8 @@ void ExtensionAppResult::Open(int event_flags) {
     return;
 
   // Record the search metrics if the ChromeSearchResult is not a suggested app.
-  if (display_type() != ash::SearchResultDisplayType::kRecommendation) {
-    RecordHistogram(APP_SEARCH_RESULT);
+  if (display_type() != ash::SearchResultDisplayType::kRecommendation)
     extensions::RecordAppListSearchLaunch(extension);
-  }
 
   controller()->ActivateApp(
       profile(), extension,
@@ -97,6 +94,10 @@ void ExtensionAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
   }
 
   context_menu_->GetMenuModel(std::move(callback));
+}
+
+SearchResultType ExtensionAppResult::GetSearchResultType() const {
+  return EXTENSION_APP;
 }
 
 void ExtensionAppResult::StartObservingExtensionRegistry() {

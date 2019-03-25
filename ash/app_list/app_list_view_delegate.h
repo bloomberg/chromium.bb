@@ -49,17 +49,18 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // box by the user.
   virtual void StartSearch(const base::string16& raw_query) = 0;
 
-  // Invoked to open the search result.
+  // Invoked to open the search result and log a click. If the result is
+  // represented by a SuggestedChipView or is a zero state result,
+  // |suggested_index| is the index of the view in the list of suggestions.
+  // |launched_from| values must match the LaunchedFrom enum in
+  // chrome/browser/ui/app_list/app_launch_event_logger.proto. |launch_type| is
+  // either kAppSearchResult or kSearchResult and is used to determine which
+  // histograms to log to.
   virtual void OpenSearchResult(const std::string& result_id,
-                                int event_flags) = 0;
-  // Called to log a click on the search result with |result_id| located at
-  // position |suggestion_index|. Logged for the suggestion chip and the tile
-  // item view. |launched_from| values must match the LaunchedFrom enum in
-  // chrome/browser/ui/app_list/app_launch_event_logger.proto.
-  virtual void LogSearchClick(
-      const std::string& result_id,
-      int suggestion_index,
-      ash::mojom::AppListLaunchedFrom launched_from) = 0;
+                                int event_flags,
+                                ash::mojom::AppListLaunchedFrom launched_from,
+                                ash::mojom::AppListLaunchType launch_type,
+                                int suggestion_index) = 0;
 
   // Called to log UMA metrics for the launch of an item either in the app tile
   // list or the search result list. The |launch_location| argument determines

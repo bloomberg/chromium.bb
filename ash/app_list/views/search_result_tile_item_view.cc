@@ -251,17 +251,7 @@ void SearchResultTileItemView::SetParentBackgroundColor(SkColor color) {
 
 void SearchResultTileItemView::ButtonPressed(views::Button* sender,
                                              const ui::Event& event) {
-  if (IsSuggestedAppTile())
-    LogAppLaunch();
-
-  RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
-                               view_delegate_->GetSearchModel());
-  view_delegate_->OpenSearchResult(result()->id(), event.flags());
-  view_delegate_->LogResultLaunchHistogram(
-      SearchResultLaunchLocation::kTileList, index_in_item_list_view_);
-  view_delegate_->LogSearchClick(
-      result()->id(), index_in_item_list_view_,
-      ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox);
+  ActivateResult(event.flags());
 }
 
 void SearchResultTileItemView::GetAccessibleNodeData(
@@ -289,14 +279,9 @@ bool SearchResultTileItemView::OnKeyPressed(const ui::KeyEvent& event) {
     return true;
 
   if (event.key_code() == ui::VKEY_RETURN) {
-    if (IsSuggestedAppTile())
-      LogAppLaunch();
-    RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
-                                 view_delegate_->GetSearchModel());
-    view_delegate_->OpenSearchResult(result()->id(), event.flags());
+    ActivateResult(event.flags());
     return true;
   }
-
   return false;
 }
 
@@ -404,6 +389,20 @@ void SearchResultTileItemView::ExecuteCommand(int command_id, int event_flags) {
   }
 }
 
+void SearchResultTileItemView::ActivateResult(int event_flags) {
+  LogAppLaunchForSuggestedApp();
+
+  RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
+                               view_delegate_->GetSearchModel());
+  view_delegate_->OpenSearchResult(
+      result()->id(), event_flags,
+      ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
+      ash::mojom::AppListLaunchType::kAppSearchResult,
+      index_in_item_list_view_);
+  view_delegate_->LogResultLaunchHistogram(
+      SearchResultLaunchLocation::kTileList, index_in_item_list_view_);
+}
+
 void SearchResultTileItemView::SetIcon(const gfx::ImageSkia& icon) {
   const int icon_size = AppListConfig::instance().search_tile_icon_dimension();
   gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(
@@ -500,7 +499,7 @@ bool SearchResultTileItemView::IsSuggestedAppTileShownInAppPage() const {
   return IsSuggestedAppTile() && show_in_apps_page_;
 }
 
-void SearchResultTileItemView::LogAppLaunch() const {
+void SearchResultTileItemView::LogAppLaunchForSuggestedApp() const {
   // Only log the app launch if the class is being used as a suggested app.
   if (!IsSuggestedAppTile())
     return;
