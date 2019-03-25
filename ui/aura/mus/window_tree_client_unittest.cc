@@ -2969,4 +2969,33 @@ TEST_F(WindowTreeClientTest,
   EXPECT_EQ(updated_lsia, embed_root->window()->GetLocalSurfaceIdAllocation());
 }
 
+// Verifies a failed CrashInFlightChange dumps out window names.
+TEST_F(WindowTreeClientTest, CrashInFlightChange) {
+  aura::Window root_window(nullptr);
+  root_window.SetName("RootWindow");
+  root_window.Init(ui::LAYER_NOT_DRAWN);
+
+  Window* w1 = new Window(nullptr);
+  w1->SetName("w1");
+  w1->Init(ui::LAYER_NOT_DRAWN);
+  root_window.AddChild(w1);
+
+  Window* w2 = new Window(nullptr);
+  w2->SetName("w2");
+  w2->Init(ui::LAYER_NOT_DRAWN);
+  root_window.AddChild(w2);
+
+  window_tree()->AckAllChanges();
+
+  // Client attempts to reorder |w1|.
+  root_window.StackChildAtTop(w1);
+
+  // Server rejects the change and triggers a CrashInFlightChange crash.
+  EXPECT_DEATH_IF_SUPPORTED(
+      window_tree()->AckSingleChangeOfType(WindowTreeChangeType::REORDER,
+                                           false),
+      "change failed, type=REORDER\\(16\\), window=RootWindow, "
+      "parent=\\(null\\), from=OnWindowMusMoveChild@");
+}
+
 }  // namespace aura

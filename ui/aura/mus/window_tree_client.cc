@@ -15,6 +15,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -761,8 +762,9 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
   base::flat_map<std::string, std::vector<uint8_t>> transport_properties =
       property_converter->GetTransportProperties(window->GetWindow());
 
-  const uint32_t change_id = ScheduleInFlightChange(
-      std::make_unique<CrashInFlightChange>(window, ChangeType::NEW_WINDOW));
+  const uint32_t change_id =
+      ScheduleInFlightChange(std::make_unique<CrashInFlightChange>(
+          FROM_HERE, window, ChangeType::NEW_WINDOW));
   tree_->NewWindow(change_id, window->server_id(),
                    std::move(transport_properties));
   if (window->GetWindow()->event_targeting_policy() !=
@@ -785,7 +787,7 @@ void WindowTreeClient::OnWindowMusDestroyed(WindowMus* window, Origin origin) {
       (WasCreatedByThisClient(window) || IsRoot(window))) {
     delete_change_id =
         ScheduleInFlightChange(std::make_unique<CrashInFlightChange>(
-            window, ChangeType::DELETE_WINDOW));
+            FROM_HERE, window, ChangeType::DELETE_WINDOW));
     tree_->DeleteWindow(delete_change_id.value(), window->server_id());
   }
 
@@ -830,16 +832,18 @@ void WindowTreeClient::OnWindowMusTransformChanged(
 void WindowTreeClient::OnWindowMusAddChild(WindowMus* parent,
                                            WindowMus* child) {
   // TODO: add checks to ensure this can work.
-  const uint32_t change_id = ScheduleInFlightChange(
-      std::make_unique<CrashInFlightChange>(parent, ChangeType::ADD_CHILD));
+  const uint32_t change_id =
+      ScheduleInFlightChange(std::make_unique<CrashInFlightChange>(
+          FROM_HERE, parent, ChangeType::ADD_CHILD));
   tree_->AddWindow(change_id, parent->server_id(), child->server_id());
 }
 
 void WindowTreeClient::OnWindowMusRemoveChild(WindowMus* parent,
                                               WindowMus* child) {
   // TODO: add checks to ensure this can work.
-  const uint32_t change_id = ScheduleInFlightChange(
-      std::make_unique<CrashInFlightChange>(parent, ChangeType::REMOVE_CHILD));
+  const uint32_t change_id =
+      ScheduleInFlightChange(std::make_unique<CrashInFlightChange>(
+          FROM_HERE, parent, ChangeType::REMOVE_CHILD));
   tree_->RemoveWindowFromParent(change_id, child->server_id());
 }
 
@@ -848,8 +852,9 @@ void WindowTreeClient::OnWindowMusMoveChild(WindowMus* parent,
                                             size_t dest_index) {
   DCHECK_NE(current_index, dest_index);
   // TODO: add checks to ensure this can work, e.g. we own the parent.
-  const uint32_t change_id = ScheduleInFlightChange(
-      std::make_unique<CrashInFlightChange>(parent, ChangeType::REORDER));
+  const uint32_t change_id =
+      ScheduleInFlightChange(std::make_unique<CrashInFlightChange>(
+          FROM_HERE, parent, ChangeType::REORDER));
   WindowMus* window =
       WindowMus::Get(parent->GetWindow()->children()[current_index]);
   WindowMus* relative_window = nullptr;
@@ -1693,8 +1698,9 @@ void WindowTreeClient::OnWindowTreeHostSetOpacity(
     WindowTreeHostMus* window_tree_host,
     float opacity) {
   WindowMus* window = WindowMus::Get(window_tree_host->window());
-  const uint32_t change_id = ScheduleInFlightChange(
-      std::make_unique<CrashInFlightChange>(window, ChangeType::OPACITY));
+  const uint32_t change_id =
+      ScheduleInFlightChange(std::make_unique<CrashInFlightChange>(
+          FROM_HERE, window, ChangeType::OPACITY));
   tree_->SetWindowOpacity(change_id, window->server_id(), opacity);
 }
 
@@ -1709,16 +1715,18 @@ void WindowTreeClient::OnWindowTreeHostStackAbove(
     Window* window) {
   WindowMus* above = WindowMus::Get(window_tree_host->window());
   WindowMus* below = WindowMus::Get(window);
-  const uint32_t change_id = ScheduleInFlightChange(
-      std::make_unique<CrashInFlightChange>(above, ChangeType::REORDER));
+  const uint32_t change_id =
+      ScheduleInFlightChange(std::make_unique<CrashInFlightChange>(
+          FROM_HERE, above, ChangeType::REORDER));
   tree_->StackAbove(change_id, above->server_id(), below->server_id());
 }
 
 void WindowTreeClient::OnWindowTreeHostStackAtTop(
     WindowTreeHostMus* window_tree_host) {
   WindowMus* window = WindowMus::Get(window_tree_host->window());
-  const uint32_t change_id = ScheduleInFlightChange(
-      std::make_unique<CrashInFlightChange>(window, ChangeType::REORDER));
+  const uint32_t change_id =
+      ScheduleInFlightChange(std::make_unique<CrashInFlightChange>(
+          FROM_HERE, window, ChangeType::REORDER));
   tree_->StackAtTop(change_id, window->server_id());
 }
 
@@ -1766,7 +1774,7 @@ std::unique_ptr<WindowPortMus> WindowTreeClient::CreateWindowPortForTopLevel(
 
   const uint32_t change_id =
       ScheduleInFlightChange(std::make_unique<CrashInFlightChange>(
-          window_port.get(), ChangeType::NEW_TOP_LEVEL_WINDOW));
+          FROM_HERE, window_port.get(), ChangeType::NEW_TOP_LEVEL_WINDOW));
   tree_->NewTopLevelWindow(change_id, window_port->server_id(),
                            transport_properties);
   return window_port;
@@ -1798,7 +1806,7 @@ void WindowTreeClient::OnTransientChildWindowAdded(Window* parent,
   WindowMus* parent_mus = WindowMus::Get(parent);
   const uint32_t change_id =
       ScheduleInFlightChange(std::make_unique<CrashInFlightChange>(
-          parent_mus, ChangeType::ADD_TRANSIENT_WINDOW));
+          FROM_HERE, parent_mus, ChangeType::ADD_TRANSIENT_WINDOW));
   tree_->AddTransientWindow(change_id, parent_mus->server_id(),
                             WindowMus::Get(transient_child)->server_id());
 }
@@ -1818,7 +1826,8 @@ void WindowTreeClient::OnTransientChildWindowRemoved(Window* parent,
   WindowMus* child_mus = WindowMus::Get(transient_child);
   const uint32_t change_id =
       ScheduleInFlightChange(std::make_unique<CrashInFlightChange>(
-          child_mus, ChangeType::REMOVE_TRANSIENT_WINDOW_FROM_PARENT));
+          FROM_HERE, child_mus,
+          ChangeType::REMOVE_TRANSIENT_WINDOW_FROM_PARENT));
   tree_->RemoveTransientWindowFromParent(change_id, child_mus->server_id());
 }
 

@@ -162,8 +162,10 @@ void InFlightTransformChange::Revert() {
 
 // CrashInFlightChange --------------------------------------------------------
 
-CrashInFlightChange::CrashInFlightChange(WindowMus* window, ChangeType type)
-    : InFlightChange(window, type) {}
+CrashInFlightChange::CrashInFlightChange(const base::Location& from_here,
+                                         WindowMus* window,
+                                         ChangeType type)
+    : InFlightChange(window, type), location_(from_here) {}
 
 CrashInFlightChange::~CrashInFlightChange() {}
 
@@ -172,10 +174,17 @@ void CrashInFlightChange::SetRevertValueFrom(const InFlightChange& change) {
 }
 
 void CrashInFlightChange::ChangeFailed() {
-  // TODO(crbug.com/912228): remove LOG(). Used to figure out why this is being
-  // hit.
-  LOG(ERROR) << "change failed, type=" << static_cast<int>(change_type());
-  CHECK(false);
+  // TODO(crbug.com/912228, crbug.com/940620): remove LOG(). Used to figure out
+  // why this is being hit.
+  LOG(FATAL) << "change failed, type=" << ChangeTypeToString(change_type())
+             << "(" << static_cast<int>(change_type()) << ")"
+             << ", window="
+             << (window() ? window()->GetWindow()->GetName() : "(null)")
+             << ", parent="
+             << (window() && window()->GetWindow()->parent()
+                     ? window()->GetWindow()->parent()->GetName()
+                     : "(null)")
+             << ", from=" << location_.ToString();
 }
 
 void CrashInFlightChange::Revert() {
