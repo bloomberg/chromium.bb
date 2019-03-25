@@ -4311,13 +4311,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
-- (void)navigateToMemexTabSwitcher {
-  // TODO(crbug.com/799601): Delete this once its not needed.
-  const GURL memexURL("https://chrome-memex.appspot.com");
-  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-      ->Load(UrlLoadParams::InCurrentTab(memexURL));
-}
-
 - (void)prepareForPopupMenuPresentation:(PopupMenuCommandType)type {
   DCHECK(_browserState);
   DCHECK(self.visible || self.dismissingModal);

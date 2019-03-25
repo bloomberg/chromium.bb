@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_search_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
-#import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
@@ -82,21 +81,12 @@
   [self configureButton:tabGridButton width:kAdaptiveToolbarButtonWidth];
   SetA11yLabelAndUiAutomationName(tabGridButton, IDS_IOS_TOOLBAR_SHOW_TABS,
                                   kToolbarStackButtonIdentifier);
-
-  // TODO(crbug.com/799601): Delete this once its not needed.
-  if (base::FeatureList::IsEnabled(kMemexTabSwitcher)) {
-    [tabGridButton addTarget:self.dispatcher
-                      action:@selector(navigateToMemexTabSwitcher)
-            forControlEvents:UIControlEventTouchUpInside];
-  } else {
-    [tabGridButton addTarget:self.dispatcher
-                      action:@selector(prepareTabSwitcher)
-            forControlEvents:UIControlEventTouchDown];
-    [tabGridButton addTarget:self.dispatcher
-                      action:@selector(displayTabSwitcher)
-            forControlEvents:UIControlEventTouchUpInside];
-  }
-
+  [tabGridButton addTarget:self.dispatcher
+                    action:@selector(prepareTabSwitcher)
+          forControlEvents:UIControlEventTouchDown];
+  [tabGridButton addTarget:self.dispatcher
+                    action:@selector(displayTabSwitcher)
+          forControlEvents:UIControlEventTouchUpInside];
   tabGridButton.visibilityMask =
       self.visibilityConfiguration.tabGridButtonVisibility;
   return tabGridButton;
