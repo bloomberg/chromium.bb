@@ -74,6 +74,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) UpstartClient {
   // Provides an interface for stopping the media analytics process.
   virtual void StopMediaAnalytics(VoidDBusMethodCallback callback) = 0;
 
+  // Start wilco DTC services.
+  virtual void StartWilcoDtcService(VoidDBusMethodCallback callback) = 0;
+
+  // Stops wilco DTC services.
+  virtual void StopWilcoDtcService(VoidDBusMethodCallback callback) = 0;
+
  protected:
   // Initialize() should be used instead.
   UpstartClient();
