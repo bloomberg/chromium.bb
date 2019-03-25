@@ -63,20 +63,13 @@ TEST(NetworkPropertyTest, TestSetterGetterCaptivePortal) {
   std::string network_id("test");
   network_properties_manager.OnChangeInNetworkID(network_id);
 
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(true));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(true));
 
   network_properties_manager.SetIsCaptivePortal(true);
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
-  EXPECT_FALSE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyAllowed(true));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
   EXPECT_TRUE(network_properties_manager.IsCaptivePortal());
-  EXPECT_FALSE(
-      network_properties_manager.HasWarmupURLProbeFailed(false, false));
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, false));
   base::RunLoop().RunUntilIdle();
 
   // Verify the prefs.
@@ -93,14 +86,9 @@ TEST(NetworkPropertyTest, TestSetterGetterCaptivePortal) {
   }
 
   network_properties_manager.SetIsCaptivePortal(false);
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(true));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
   EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
-  EXPECT_FALSE(
-      network_properties_manager.HasWarmupURLProbeFailed(false, false));
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, false));
   base::RunLoop().RunUntilIdle();
 
   {
@@ -126,28 +114,15 @@ TEST(NetworkPropertyTest, TestSetterGetterDisallowedByCarrier) {
   TestNetworkPropertiesManager network_properties_manager(
       &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
-
   network_properties_manager.SetIsSecureProxyDisallowedByCarrier(true);
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
-  EXPECT_FALSE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyAllowed(true));
   EXPECT_TRUE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
   EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
-  EXPECT_FALSE(
-      network_properties_manager.HasWarmupURLProbeFailed(false, false));
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, false));
 
   network_properties_manager.SetIsSecureProxyDisallowedByCarrier(false);
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(true));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
   EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
-  EXPECT_FALSE(
-      network_properties_manager.HasWarmupURLProbeFailed(false, false));
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, false));
 }
 
 TEST(NetworkPropertyTest, TestWarmupURLFailedOnSecureCoreProxy) {
@@ -158,35 +133,22 @@ TEST(NetworkPropertyTest, TestWarmupURLFailedOnSecureCoreProxy) {
   TestNetworkPropertiesManager network_properties_manager(
       &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
-
   network_properties_manager.SetHasWarmupURLProbeFailed(
       true /* secure_proxy */, true /* is_core_proxy */,
       true /* warmup_url_probe_failed */);
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(true));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyAllowed(true));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
   EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(
-      false /* secure_proxy */, false /* is_core_proxy */));
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, false));
   EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(false, true));
   EXPECT_TRUE(network_properties_manager.HasWarmupURLProbeFailed(true, true));
 
   network_properties_manager.SetHasWarmupURLProbeFailed(true, true, false);
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(true));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(true));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
   EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
-  EXPECT_FALSE(
-      network_properties_manager.HasWarmupURLProbeFailed(false, false));
   EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(false, true));
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, false));
   EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, true));
 }
 
@@ -198,37 +160,25 @@ TEST(NetworkPropertyTest, TestWarmupURLFailedOnInSecureCoreProxy) {
   TestNetworkPropertiesManager network_properties_manager(
       &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(true));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(true));
 
   network_properties_manager.SetHasWarmupURLProbeFailed(
       false /* secure_proxy */, true /* is_core_proxy */,
       true /* warmup_url_probe_failed */);
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
   EXPECT_FALSE(network_properties_manager.IsInsecureProxyAllowed(true));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(true));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
   EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(
-      false /* secure_proxy */, false /* is_core_proxy */));
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, false));
   EXPECT_TRUE(network_properties_manager.HasWarmupURLProbeFailed(false, true));
   EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, true));
 
   network_properties_manager.SetHasWarmupURLProbeFailed(false, true, false);
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(true));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(true));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
   EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
-  EXPECT_FALSE(
-      network_properties_manager.HasWarmupURLProbeFailed(false, false));
   EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(false, true));
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, false));
   EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, true));
 }
 

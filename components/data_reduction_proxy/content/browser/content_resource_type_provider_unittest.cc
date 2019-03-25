@@ -149,10 +149,8 @@ TEST_F(ContentResourceProviderTest, VerifyCorrectProxyUsed) {
   net::ProxyServer core_fallback = net::ProxyServer::FromURI(
       "http://fallback.net:80", net::ProxyServer::SCHEME_HTTP);
 
-  proxies_for_http.push_back(
-      DataReductionProxyServer(core_primary, ProxyServer_ProxyType_CORE));
-  proxies_for_http.push_back(
-      DataReductionProxyServer(core_fallback, ProxyServer_ProxyType_CORE));
+  proxies_for_http.push_back(DataReductionProxyServer(core_primary));
+  proxies_for_http.push_back(DataReductionProxyServer(core_fallback));
   Init(proxies_for_http);
 
   const struct {
@@ -226,10 +224,8 @@ TEST_F(ContentResourceProviderTest, SetAndGetContentResourceTypeContent) {
   net::ProxyServer core = net::ProxyServer::FromURI(
       "http://fallback.net:80", net::ProxyServer::SCHEME_HTTP);
 
-  proxies_for_http.push_back(DataReductionProxyServer(
-      unspecified, ProxyServer_ProxyType_UNSPECIFIED_TYPE));
-  proxies_for_http.push_back(
-      DataReductionProxyServer(core, ProxyServer_ProxyType_CORE));
+  proxies_for_http.push_back(DataReductionProxyServer(unspecified));
+  proxies_for_http.push_back(DataReductionProxyServer(core));
   Init(proxies_for_http);
 
   const struct {
@@ -289,12 +285,7 @@ TEST_F(ContentResourceProviderTest, SetAndGetContentResourceTypeContent) {
     EXPECT_EQ(test.expected_content_type,
               content_resource_type_provider()->GetContentType(request->url()));
 
-    if (test.expected_content_type ==
-        ResourceTypeProvider::CONTENT_TYPE_MEDIA) {
-      EXPECT_EQ(core, request->proxy_server());
-    } else {
       EXPECT_EQ(unspecified, request->proxy_server());
-    }
   }
 }
 
@@ -308,10 +299,8 @@ TEST_F(ContentResourceProviderTest, FetchDirect) {
   net::ProxyServer core = net::ProxyServer::FromURI(
       "http://fallback.net:80", net::ProxyServer::SCHEME_HTTP);
 
-  proxies_for_http.push_back(DataReductionProxyServer(
-      unspecified, ProxyServer_ProxyType_UNSPECIFIED_TYPE));
-  proxies_for_http.push_back(
-      DataReductionProxyServer(core, ProxyServer_ProxyType_UNSPECIFIED_TYPE));
+  proxies_for_http.push_back(DataReductionProxyServer(unspecified));
+  proxies_for_http.push_back(DataReductionProxyServer(core));
   Init(proxies_for_http);
 
   const struct {
@@ -371,12 +360,7 @@ TEST_F(ContentResourceProviderTest, FetchDirect) {
     EXPECT_EQ(test.expected_content_type,
               content_resource_type_provider()->GetContentType(request->url()));
 
-    if (test.expected_content_type ==
-        ResourceTypeProvider::CONTENT_TYPE_MEDIA) {
-      EXPECT_EQ(net::ProxyServer::Direct(), request->proxy_server());
-    } else {
-      EXPECT_EQ(unspecified, request->proxy_server());
-    }
+    EXPECT_EQ(unspecified, request->proxy_server());
   }
 }
 

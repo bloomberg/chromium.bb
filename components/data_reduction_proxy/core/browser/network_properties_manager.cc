@@ -300,6 +300,7 @@ NetworkPropertiesManager::ConvertDictionaryValueToParsedPrefs(
 
 bool NetworkPropertiesManager::IsSecureProxyAllowed(bool is_core_proxy) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(is_core_proxy);
   return !network_properties_.secure_proxy_disallowed_by_carrier() &&
          !network_properties_.has_captive_portal() &&
          !HasWarmupURLProbeFailed(true, is_core_proxy);
@@ -308,6 +309,7 @@ bool NetworkPropertiesManager::IsSecureProxyAllowed(bool is_core_proxy) const {
 bool NetworkPropertiesManager::IsInsecureProxyAllowed(
     bool is_core_proxy) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(is_core_proxy);
   return !HasWarmupURLProbeFailed(false, is_core_proxy);
 }
 
@@ -338,6 +340,7 @@ void NetworkPropertiesManager::SetIsCaptivePortal(bool is_captive_portal) {
 bool NetworkPropertiesManager::HasWarmupURLProbeFailed(
     bool secure_proxy,
     bool is_core_proxy) const {
+  DCHECK(is_core_proxy);
   if (secure_proxy && is_core_proxy) {
     return network_properties_.secure_proxy_flags()
         .disallowed_due_to_warmup_probe_failure();
@@ -362,6 +365,7 @@ void NetworkPropertiesManager::SetHasWarmupURLProbeFailed(
     bool secure_proxy,
     bool is_core_proxy,
     bool warmup_url_probe_failed) {
+  DCHECK(is_core_proxy);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (secure_proxy && is_core_proxy) {

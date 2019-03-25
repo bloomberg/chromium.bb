@@ -95,10 +95,10 @@ void SimulateNetworkChange(network::mojom::ConnectionType type) {
 
 ClientConfig CreateConfigForServer(const net::EmbeddedTestServer& server) {
   net::HostPortPair host_port_pair = server.host_port_pair();
-  return CreateConfig(
-      kSessionKey, 1000, 0, ProxyServer_ProxyScheme_HTTP, host_port_pair.host(),
-      host_port_pair.port(), ProxyServer::CORE, ProxyServer_ProxyScheme_HTTP,
-      "fallback.net", 80, ProxyServer::UNSPECIFIED_TYPE, 0.5f, false);
+  return CreateConfig(kSessionKey, 1000, 0, ProxyServer_ProxyScheme_HTTP,
+                      host_port_pair.host(), host_port_pair.port(),
+                      ProxyServer_ProxyScheme_HTTP, "fallback.net", 80, 0.5f,
+                      false);
 }
 
 }  // namespace
@@ -487,9 +487,8 @@ class DataReductionProxyFallbackBrowsertest
     SetConfig(CreateConfig(
         kSessionKey, 1000, 0, ProxyServer_ProxyScheme_HTTP,
         primary_host_port_pair.host(), primary_host_port_pair.port(),
-        ProxyServer::CORE, ProxyServer_ProxyScheme_HTTP,
-        secondary_host_port_pair.host(), secondary_host_port_pair.port(),
-        ProxyServer::CORE, 0.5f, false));
+        ProxyServer_ProxyScheme_HTTP, secondary_host_port_pair.host(),
+        secondary_host_port_pair.port(), 0.5f, false));
 
     DataReductionProxyBrowsertest::SetUpOnMainThread();
   }
@@ -703,15 +702,12 @@ class DataReductionProxyResourceTypeBrowsertest
     : public DataReductionProxyBrowsertest {
  public:
   void SetUpOnMainThread() override {
-    // Two proxies are set up here, one with type CORE and one UNSPECIFIED_TYPE.
-    // The CORE proxy is the secondary, and should be used for requests from the
-    // <video> tag.
     unspecified_server_.RegisterRequestHandler(base::BindRepeating(
-        &IncrementRequestCount, "/video", &unspecified_request_count_));
+        &IncrementRequestCount, "/video", &first_proxy_request_count_));
     ASSERT_TRUE(unspecified_server_.Start());
 
     core_server_.RegisterRequestHandler(base::BindRepeating(
-        &IncrementRequestCount, "/video", &core_request_count_));
+        &IncrementRequestCount, "/video", &second_proxy_request_count_));
     ASSERT_TRUE(core_server_.Start());
 
     net::HostPortPair unspecified_host_port_pair =
@@ -720,15 +716,14 @@ class DataReductionProxyResourceTypeBrowsertest
     SetConfig(CreateConfig(
         kSessionKey, 1000, 0, ProxyServer_ProxyScheme_HTTP,
         unspecified_host_port_pair.host(), unspecified_host_port_pair.port(),
-        ProxyServer::UNSPECIFIED_TYPE, ProxyServer_ProxyScheme_HTTP,
-        core_host_port_pair.host(), core_host_port_pair.port(),
-        ProxyServer::CORE, 0.5f, false));
+        ProxyServer_ProxyScheme_HTTP, core_host_port_pair.host(),
+        core_host_port_pair.port(), 0.5f, false));
 
     DataReductionProxyBrowsertest::SetUpOnMainThread();
   }
 
-  int unspecified_request_count_ = 0;
-  int core_request_count_ = 0;
+  int first_proxy_request_count_ = 0;
+  int second_proxy_request_count_ = 0;
 
  private:
   net::EmbeddedTestServer unspecified_server_;
@@ -736,7 +731,7 @@ class DataReductionProxyResourceTypeBrowsertest
 };
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyResourceTypeBrowsertest,
-                       CoreProxyUsedForMedia) {
+                       FirstProxyUsedForMedia) {
   ui_test_utils::NavigateToURL(
       browser(), GetURLWithMockHost(*embedded_test_server(), "/echo"));
 
@@ -756,8 +751,8 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyResourceTypeBrowsertest,
       &result));
   EXPECT_EQ(result, "done");
 
-  EXPECT_EQ(unspecified_request_count_, 0);
-  EXPECT_EQ(core_request_count_, 1);
+  EXPECT_EQ(first_proxy_request_count_, 1);
+  EXPECT_EQ(second_proxy_request_count_, 0);
 }
 
 class DataReductionProxyWarmupURLBrowsertest
@@ -790,9 +785,8 @@ class DataReductionProxyWarmupURLBrowsertest
     SetConfig(CreateConfig(
         kSessionKey, 1000, 0, std::get<0>(GetParam()),
         primary_host_port_pair.host(), primary_host_port_pair.port(),
-        ProxyServer::UNSPECIFIED_TYPE, std::get<0>(GetParam()),
-        secondary_host_port_pair.host(), secondary_host_port_pair.port(),
-        ProxyServer::CORE, 0.5f, false));
+        std::get<0>(GetParam()), secondary_host_port_pair.host(),
+        secondary_host_port_pair.port(), 0.5f, false));
 
     DataReductionProxyBrowsertestBase::SetUpOnMainThread();
   }
@@ -818,12 +812,12 @@ class DataReductionProxyWarmupURLBrowsertest
     }
   }
 
-  std::string GetHistogramName(ProxyServer::ProxyType type) {
+  std::string GetHistogramName() {
     return base::StrCat(
         {"DataReductionProxy.WarmupURLFetcherCallback.SuccessfulFetch.",
          std::get<0>(GetParam()) == ProxyServer_ProxyScheme_HTTP ? "Insecure"
                                                                  : "Secure",
-         "Proxy.", type == ProxyServer::CORE ? "Core" : "NonCore"});
+         "Proxy.Core"});
   }
 
   std::unique_ptr<base::RunLoop> primary_server_loop_;
@@ -858,18 +852,11 @@ class DataReductionProxyWarmupURLBrowsertest
 IN_PROC_BROWSER_TEST_P(DataReductionProxyWarmupURLBrowsertest,
                        WarmupURLsFetchedForEachProxy) {
   primary_server_loop_->Run();
-  secondary_server_loop_->Run();
 
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-  RetryForHistogramUntilCountReached(
-      &histogram_tester_, GetHistogramName(ProxyServer::UNSPECIFIED_TYPE), 1);
-  RetryForHistogramUntilCountReached(&histogram_tester_,
-                                     GetHistogramName(ProxyServer::CORE), 1);
+  RetryForHistogramUntilCountReached(&histogram_tester_, GetHistogramName(), 1);
 
-  histogram_tester_.ExpectUniqueSample(
-      GetHistogramName(ProxyServer::UNSPECIFIED_TYPE), std::get<1>(GetParam()),
-      1);
-  histogram_tester_.ExpectUniqueSample(GetHistogramName(ProxyServer::CORE),
+  histogram_tester_.ExpectUniqueSample(GetHistogramName(),
                                        std::get<1>(GetParam()), 1);
 }
 

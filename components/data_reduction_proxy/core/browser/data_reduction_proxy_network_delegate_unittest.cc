@@ -327,8 +327,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
         .WithURLRequestContext(context_.get());
 
     if (proxy_config != BYPASS_PROXY) {
-      builder.WithProxiesForHttp({DataReductionProxyServer(
-          proxy_server, ProxyServer::UNSPECIFIED_TYPE)});
+      builder.WithProxiesForHttp({DataReductionProxyServer(proxy_server)});
     }
 
     test_context_ = builder.Build();
@@ -1699,8 +1698,7 @@ class DataReductionProxyNetworkDelegateClientLoFiTest : public testing::Test {
         DataReductionProxyTestContext::Builder()
             .WithURLRequestContext(context_.get())
             .WithMockClientSocketFactory(mock_socket_factory_.get())
-            .WithProxiesForHttp({DataReductionProxyServer(
-                proxy_server, ProxyServer::UNSPECIFIED_TYPE)})
+            .WithProxiesForHttp({DataReductionProxyServer(proxy_server)})
             .Build();
 
     drp_test_context_->AttachToURLRequestContext(context_storage_.get());

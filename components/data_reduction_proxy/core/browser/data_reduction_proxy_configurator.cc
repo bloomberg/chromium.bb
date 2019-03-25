@@ -59,25 +59,13 @@ net::ProxyConfig DataReductionProxyConfigurator::CreateProxyConfig(
     // usable for non-proble traffic.
     if (!probe_url_config &&
         !network_properties_manager.IsSecureProxyAllowed(true) &&
-        http_proxy.IsSecureProxy() && http_proxy.IsCoreProxy()) {
+        http_proxy.IsSecureProxy()) {
       continue;
     }
 
     if (!probe_url_config &&
         !network_properties_manager.IsInsecureProxyAllowed(true) &&
-        !http_proxy.IsSecureProxy() && http_proxy.IsCoreProxy()) {
-      continue;
-    }
-
-    if (!probe_url_config &&
-        !network_properties_manager.IsSecureProxyAllowed(false) &&
-        http_proxy.IsSecureProxy() && !http_proxy.IsCoreProxy()) {
-      continue;
-    }
-
-    if (!probe_url_config &&
-        !network_properties_manager.IsInsecureProxyAllowed(false) &&
-        !http_proxy.IsSecureProxy() && !http_proxy.IsCoreProxy()) {
+        !http_proxy.IsSecureProxy()) {
       continue;
     }
 

@@ -190,8 +190,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLNoViaHeader) {
   auto proxy_server = net::ProxyServer::Direct();
   WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
-  warmup_url_fetcher.FetchWarmupURL(
-      0, DataReductionProxyServer(proxy_server, ProxyServer::UNSPECIFIED_TYPE));
+  warmup_url_fetcher.FetchWarmupURL(0, DataReductionProxyServer(proxy_server));
   EXPECT_TRUE(warmup_url_fetcher.IsFetchInFlight());
   scoped_task_environment.RunUntilIdle();
 
@@ -240,8 +239,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
   auto proxy_server = net::ProxyServer::Direct();
   WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
-  warmup_url_fetcher.FetchWarmupURL(
-      0, DataReductionProxyServer(proxy_server, ProxyServer::UNSPECIFIED_TYPE));
+  warmup_url_fetcher.FetchWarmupURL(0, DataReductionProxyServer(proxy_server));
   EXPECT_TRUE(warmup_url_fetcher.IsFetchInFlight());
   scoped_task_environment.RunUntilIdle();
 
@@ -295,8 +293,7 @@ TEST(WarmupURLFetcherTest,
 
   auto proxy_server = net::ProxyServer::Direct();
   WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
-  warmup_url_fetcher.FetchWarmupURL(
-      0, DataReductionProxyServer(proxy_server, ProxyServer::UNSPECIFIED_TYPE));
+  warmup_url_fetcher.FetchWarmupURL(0, DataReductionProxyServer(proxy_server));
   base::RunLoop().RunUntilIdle();
 
   auto resource_response_head =
@@ -340,8 +337,7 @@ TEST(WarmupURLFetcherTest, TestConnectionResetFetchWarmupURL) {
   WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
   warmup_url_fetcher.FetchWarmupURL(
-      0, DataReductionProxyServer(net::ProxyServer::Direct(),
-                                  ProxyServer::UNSPECIFIED_TYPE));
+      0, DataReductionProxyServer(net::ProxyServer::Direct()));
   EXPECT_TRUE(warmup_url_fetcher.IsFetchInFlight());
   base::RunLoop().RunUntilIdle();
 
@@ -389,8 +385,7 @@ TEST(WarmupURLFetcherTest, TestFetchTimesout) {
   warmup_url_fetcher.SetFetchTimeout(base::TimeDelta::FromSeconds(0));
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
   warmup_url_fetcher.FetchWarmupURL(
-      0, DataReductionProxyServer(net::ProxyServer::Direct(),
-                                  ProxyServer::UNSPECIFIED_TYPE));
+      0, DataReductionProxyServer(net::ProxyServer::Direct()));
   EXPECT_TRUE(warmup_url_fetcher.IsFetchInFlight());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
@@ -427,8 +422,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
   WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
   warmup_url_fetcher.SetFetchWaitTime(base::TimeDelta::FromMilliseconds(1));
-  warmup_url_fetcher.FetchWarmupURL(
-      1, DataReductionProxyServer(proxy_server, ProxyServer::UNSPECIFIED_TYPE));
+  warmup_url_fetcher.FetchWarmupURL(1, DataReductionProxyServer(proxy_server));
   scoped_task_environment.FastForwardBy(base::TimeDelta::FromMilliseconds(2));
 
   auto resource_response_head =
@@ -482,8 +476,7 @@ TEST(WarmupURLFetcherTest, TestFetchTimeoutIncreasing) {
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory);
 
-  DataReductionProxyServer proxy_server(net::ProxyServer::Direct(),
-                                        ProxyServer::UNSPECIFIED_TYPE);
+  DataReductionProxyServer proxy_server(net::ProxyServer::Direct());
   WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
 
@@ -516,8 +509,7 @@ TEST(WarmupURLFetcherTest, TestFetchWaitTime) {
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory);
 
-  DataReductionProxyServer proxy_server(net::ProxyServer::Direct(),
-                                        ProxyServer::UNSPECIFIED_TYPE);
+  DataReductionProxyServer proxy_server(net::ProxyServer::Direct());
   WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
 
@@ -549,8 +541,7 @@ TEST(WarmupURLFetcherTest, TestFetchWaitTimeWithFieldTrial) {
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory);
 
-  DataReductionProxyServer proxy_server(net::ProxyServer::Direct(),
-                                        ProxyServer::UNSPECIFIED_TYPE);
+  DataReductionProxyServer proxy_server(net::ProxyServer::Direct());
   WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
 
@@ -580,8 +571,7 @@ TEST(WarmupURLFetcherTest, TestFetchTimeoutIncreasingWithFieldTrial) {
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory);
 
-  DataReductionProxyServer proxy_server(net::ProxyServer::Direct(),
-                                        ProxyServer::UNSPECIFIED_TYPE);
+  DataReductionProxyServer proxy_server(net::ProxyServer::Direct());
   WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
 
