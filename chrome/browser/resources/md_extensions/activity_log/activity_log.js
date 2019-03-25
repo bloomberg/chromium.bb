@@ -37,12 +37,6 @@ cr.define('extensions', function() {
       /** @type {!extensions.ActivityLogDelegate} */
       delegate: Object,
 
-      /** @private */
-      lastSearch_: {
-        type: String,
-        value: '',
-      },
-
       /** @private {!ActivityLogSubpage} */
       selectedSubpage_: {
         type: Number,
@@ -94,22 +88,6 @@ cr.define('extensions', function() {
     onCloseButtonTap_: function() {
       extensions.navigation.navigateTo(
           {page: Page.DETAILS, extensionId: this.extensionInfo.id});
-    },
-
-    /**
-     * @private
-     * @param {!CustomEvent<string>} e
-     */
-    onSearchChanged_: function(e) {
-      // Remove all whitespaces from the search term, as API call names and
-      // urls should not contain any whitespace. As of now, only single term
-      // search queries are allowed.
-      const searchTerm = e.detail.replace(/\s+/g, '');
-      if (searchTerm === this.lastSearch_) {
-        return;
-      }
-
-      this.lastSearch_ = searchTerm;
     },
   });
 

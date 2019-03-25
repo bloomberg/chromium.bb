@@ -205,10 +205,11 @@ cr.define('extensions', function() {
         value: ActivityLogPageState.LOADING,
       },
 
-      lastSearch: {
+      /** @private */
+      lastSearch_: {
         type: String,
-        observer: 'onSearchChanged_',
-      }
+        value: '',
+      },
     },
 
     listeners: {
@@ -304,11 +305,11 @@ cr.define('extensions', function() {
      * @return {!Promise<void>}
      */
     refreshActivities_: function() {
-      if (this.lastSearch === '') {
+      if (this.lastSearch_ === '') {
         return this.getActivityLog_();
       }
 
-      return this.getFilteredActivityLog_(this.lastSearch);
+      return this.getFilteredActivityLog_(this.lastSearch_);
     },
 
     /**
@@ -339,20 +340,19 @@ cr.define('extensions', function() {
 
     /**
      * @private
-     * @param {string} newSearch
-     * @param {string|undefined} oldSearch
+     * @param {!CustomEvent<string>} e
      */
-    onSearchChanged_: function(newSearch, oldSearch) {
-      // |this.delegate| may be undefined if --disable-features=WebUIPolymer2
-      // is set (happens on the chromeos tryjob), which causes an error. This
-      // happens only for the first time the observer for |lastSearch| is
-      // invoked, when |lastSearch| changes value from |undefined| to the
-      // initial value set in activity_log.js.
-      // TODO(kelvinjiang): Remove this when migration to Polymer 2 is complete
-      // (crbug.com/738611).
-      if (oldSearch != undefined) {
-        this.refreshActivities_();
+    onSearchChanged_: function(e) {
+      // Remove all whitespaces from the search term, as API call names and
+      // urls should not contain any whitespace. As of now, only single term
+      // search queries are allowed.
+      const searchTerm = e.detail.replace(/\s+/g, '');
+      if (searchTerm === this.lastSearch_) {
+        return;
       }
+
+      this.lastSearch_ = searchTerm;
+      this.refreshActivities_();
     },
   });
 

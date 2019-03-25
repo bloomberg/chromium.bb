@@ -2,7 +2,6 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_tabs_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
@@ -16,21 +15,17 @@
 <link rel="import" href="../item_behavior.html">
 <link rel="import" href="../navigation_helper.html">
 <link rel="import" href="../shared_style.html">
+<link rel="import" href="../shared_vars.html">
 
 <dom-module id="extensions-activity-log">
   <template>
     <style include="cr-icons shared-style paper-tabs-style">
       #activity-log-heading {
         @apply --cr-title-text;
-        flex-grow: 1;
       }
 
       #clear-activities-button {
         margin-inline-start: 8px;
-      }
-
-      cr-search-field  {
-        padding-inline-end: 8px;
       }
 
       #icon {
@@ -41,6 +36,7 @@
       }
 
       paper-tabs {
+        border-bottom: 1px solid var(--google-grey-refresh-300); 
         font-size: inherit;
         height: 40px;
       }
@@ -79,9 +75,6 @@
           <div id="activity-log-heading">
             [[i18n('activityLogPageHeading', extensionInfo.name)]]
           </div>
-          <cr-search-field label="$i18n{activityLogSearchLabel}"
-              on-search-changed="onSearchChanged_">
-          </cr-search-field >
         </div>
         <paper-tabs noink selected="{{selectedSubpage_}}">
           <paper-tab id="history-tab">
@@ -96,7 +89,7 @@
             <template is="dom-if"
                 if="[[isHistoryTabSelected_(selectedSubpage_)]]" restamp>
               <activity-log-history extension-id="[[extensionInfo.id]]"
-                  delegate="[[delegate]]" last-search="[[lastSearch_]]">
+                  delegate="[[delegate]]">
               </activity-log-history>
             </template>
           </div>
