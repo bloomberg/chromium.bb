@@ -221,9 +221,7 @@ void UiControllerAndroid::SetupForState() {
 
     case AutofillAssistantState::INACTIVE:
       // TODO(crbug.com/806868): Add support for switching back to the inactive
-      // state, which is the initial state. We never enter it, so there should
-      // never be a call OnStateChanged(INACTIVE)
-      NOTREACHED() << "Switching to the inactive state is not supported.";
+      // state, which is the initial state.
       return;
   }
   NOTREACHED() << "Unknown state: " << static_cast<int>(state);
