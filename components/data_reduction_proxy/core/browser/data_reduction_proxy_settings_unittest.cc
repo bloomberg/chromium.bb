@@ -257,11 +257,13 @@ TEST(DataReductionProxySettingsStandaloneTest, TestIsProxyEnabledOrManaged) {
   EXPECT_FALSE(settings->IsDataReductionProxyEnabled());
   EXPECT_FALSE(settings->IsDataReductionProxyManaged());
 
+  drp_test_context->SetDataReductionProxyEnabled(false);
   drp_test_context->pref_service()->SetManagedPref(
       prefs::kDataSaverEnabled, std::make_unique<base::Value>(false));
   EXPECT_FALSE(settings->IsDataReductionProxyEnabled());
   EXPECT_TRUE(settings->IsDataReductionProxyManaged());
 
+  drp_test_context->SetDataReductionProxyEnabled(true);
   drp_test_context->pref_service()->SetManagedPref(
       prefs::kDataSaverEnabled, std::make_unique<base::Value>(true));
   EXPECT_TRUE(settings->IsDataReductionProxyEnabled());
@@ -370,11 +372,12 @@ TEST_F(DataReductionProxySettingsTest, TestSetDataReductionProxyEnabled) {
   test_context_->SetDataReductionProxyEnabled(true);
   InitDataReductionProxy(true);
 
-  settings_->SetDataReductionProxyEnabled(false);
+  test_context_->SetDataReductionProxyEnabled(false);
   test_context_->RunUntilIdle();
   CheckDataReductionProxySyntheticTrial(false);
 
-  settings->SetDataReductionProxyEnabled(true);
+  test_context_->SetDataReductionProxyEnabled(true);
+  test_context_->RunUntilIdle();
   CheckDataReductionProxySyntheticTrial(true);
 }
 
@@ -389,14 +392,16 @@ TEST_F(DataReductionProxySettingsTest, TestSettingsEnabledStateHistograms) {
   test_context_->RunUntilIdle();
   histogram_tester.ExpectTotalCount(kUMAEnabledState, 0);
 
-  settings_->SetDataReductionProxyEnabled(true);
+  test_context_->SetDataReductionProxyEnabled(true);
+  settings_->MaybeActivateDataReductionProxy(false);
   test_context_->RunUntilIdle();
   histogram_tester.ExpectBucketCount(
       kUMAEnabledState, DATA_REDUCTION_SETTINGS_ACTION_OFF_TO_ON, 1);
   histogram_tester.ExpectBucketCount(
       kUMAEnabledState, DATA_REDUCTION_SETTINGS_ACTION_ON_TO_OFF, 0);
 
-  settings_->SetDataReductionProxyEnabled(false);
+  test_context_->SetDataReductionProxyEnabled(false);
+  settings_->MaybeActivateDataReductionProxy(false);
   test_context_->RunUntilIdle();
   histogram_tester.ExpectBucketCount(
       kUMAEnabledState, DATA_REDUCTION_SETTINGS_ACTION_OFF_TO_ON, 1);
@@ -423,7 +428,8 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledWithTestClock) {
     histogram_tester.ExpectTotalCount(kUMAEnabledState, 0);
 
     // Enable data reduction proxy. The metric should be recorded.
-    settings_->SetDataReductionProxyEnabled(true /* enabled */);
+    test_context_->SetDataReductionProxyEnabled(true);
+    settings_->MaybeActivateDataReductionProxy(false);
     test_context_->RunUntilIdle();
 
     last_enabled_time = clock.Now();
@@ -438,11 +444,12 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledWithTestClock) {
   {
     // Simulate turning off and on of data reduction proxy while Chromium is
     // running.
-    settings_->SetDataReductionProxyEnabled(false /* enabled */);
+    test_context_->SetDataReductionProxyEnabled(false);
+    settings_->MaybeActivateDataReductionProxy(false);
     clock.Advance(base::TimeDelta::FromDays(1));
     last_enabled_time = clock.Now();
 
-    settings_->SetDataReductionProxyEnabled(true);
+    test_context_->SetDataReductionProxyEnabled(true);
     base::HistogramTester histogram_tester;
     settings_->MaybeActivateDataReductionProxy(false /* at_startup */);
     test_context_->RunUntilIdle();
@@ -522,7 +529,7 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceSavingsCleared) {
   clock.Advance(base::TimeDelta::FromDays(100));
 
   // Simulate Chromium startup with data reduction proxy already enabled.
-  settings_->SetDataReductionProxyEnabled(true);
+  test_context_->SetDataReductionProxyEnabled(true);
   settings_->MaybeActivateDataReductionProxy(true /* at_startup */);
   test_context_->RunUntilIdle();
   histogram_tester.ExpectUniqueSample(

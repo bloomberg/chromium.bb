@@ -28,11 +28,10 @@ namespace {
 
 void SetDataSaverEnabled(content::BrowserContext* browser_context,
                          bool enabled) {
-  data_reduction_proxy::DataReductionProxySettings*
-      data_reduction_proxy_settings =
-          DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-              browser_context);
-  data_reduction_proxy_settings->SetDataReductionProxyEnabled(enabled);
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+
+  data_reduction_proxy::DataReductionProxySettings::
+      SetDataSaverEnabledForTesting(profile->GetPrefs(), enabled);
   base::RunLoop().RunUntilIdle();
 }
 

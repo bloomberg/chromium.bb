@@ -584,6 +584,15 @@ void DataReductionProxyTestContext::RegisterDataReductionProxyEnabledPref() {
 }
 
 void DataReductionProxyTestContext::SetDataReductionProxyEnabled(bool enabled) {
+  // Set the command line so that |IsDataSaverEnabledByUser| returns as expected
+  // on all platforms.
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  if (enabled) {
+    cmd->AppendSwitch(switches::kEnableDataReductionProxy);
+  } else {
+    cmd->RemoveSwitch(switches::kEnableDataReductionProxy);
+  }
+
   simple_pref_service_->SetBoolean(prefs::kDataSaverEnabled, enabled);
 }
 
@@ -678,7 +687,7 @@ void DataReductionProxyTestContext::
                                         "OK");
 
   // Set the pref to cause the secure proxy check to be issued.
-  pref_service()->SetBoolean(prefs::kDataSaverEnabled, true);
+  SetDataReductionProxyEnabled(true);
   RunUntilIdle();
 }
 

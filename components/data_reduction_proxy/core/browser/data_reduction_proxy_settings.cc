@@ -117,7 +117,28 @@ bool DataReductionProxySettings::IsDataSaverEnabledByUser(PrefService* prefs) {
   if (params::ShouldForceEnableDataReductionProxy())
     return true;
 
+#if defined(OS_ANDROID)
   return prefs && prefs->GetBoolean(prefs::kDataSaverEnabled);
+#else
+  return false;
+#endif
+}
+
+// static
+void DataReductionProxySettings::SetDataSaverEnabledForTesting(
+    PrefService* prefs,
+    bool enabled) {
+  // Set the command line so that |IsDataSaverEnabledByUser| returns as expected
+  // on all platforms.
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  if (enabled) {
+    cmd->AppendSwitch(switches::kEnableDataReductionProxy);
+  } else {
+    cmd->RemoveSwitch(switches::kEnableDataReductionProxy);
+  }
+
+  // Set the pref so that all the pref change callbacks run.
+  prefs->SetBoolean(prefs::kDataSaverEnabled, enabled);
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() const {

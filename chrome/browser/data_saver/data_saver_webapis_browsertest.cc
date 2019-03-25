@@ -27,12 +27,9 @@
 class DataSaverWebAPIsBrowserTest : public InProcessBrowserTest {
  protected:
   void EnableDataSaver(bool enabled) {
-    data_reduction_proxy::DataReductionProxySettings*
-        data_reduction_proxy_settings =
-            DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-                browser()->profile());
-    data_reduction_proxy_settings->SetDataReductionProxyEnabled(enabled);
-    base::RunLoop().RunUntilIdle();
+    data_reduction_proxy::DataReductionProxySettings::
+        SetDataSaverEnabledForTesting(browser()->profile()->GetPrefs(),
+                                      enabled);
   }
 
   void SetUp() override {
