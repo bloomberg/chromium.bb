@@ -1408,7 +1408,10 @@ void SimpleEntryImpl::CreationOperationComplete(
   if (backend_ && doom_state_ == DOOM_NONE)
     backend_->index()->Insert(entry_hash_);
 
-  if (out_opened)
+  // Access to out_opened must be guarded by backend_ check since there is no
+  // requirement to keep this alive past backend destruction, as the callback
+  // will not be invoked.
+  if (backend_ && out_opened)
     *out_opened = !in_results->created;
 
   // If out_entry is NULL, it means we already called ReturnEntryToCaller from
