@@ -24,7 +24,6 @@ class WebState;
 }
 
 @protocol CRWWebViewProxy;
-@protocol FormInputSuggestionsProvider;
 
 // Handles form focus events and presents input suggestions.
 @interface FormSuggestionController : NSObject<CRWWebStateObserver,
