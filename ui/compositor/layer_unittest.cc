@@ -1002,15 +1002,12 @@ TEST_F(LayerWithNullDelegateTest, EscapedDebugNames) {
   std::string json;
   debug_info->AppendAsTraceFormat(&json);
   base::JSONReader json_reader;
-  std::unique_ptr<base::Value> debug_info_value(
-      json_reader.ReadToValueDeprecated(json));
-  EXPECT_TRUE(debug_info_value);
-  EXPECT_TRUE(debug_info_value->is_dict());
-  base::DictionaryValue* dictionary = 0;
-  EXPECT_TRUE(debug_info_value->GetAsDictionary(&dictionary));
-  std::string roundtrip;
-  EXPECT_TRUE(dictionary->GetString("layer_name", &roundtrip));
-  EXPECT_EQ(name, roundtrip);
+  base::Optional<base::Value> debug_info_value = json_reader.ReadToValue(json);
+  ASSERT_TRUE(debug_info_value.has_value());
+  ASSERT_TRUE(debug_info_value->is_dict());
+  const std::string* roundtrip = debug_info_value->FindStringKey("layer_name");
+  ASSERT_TRUE(roundtrip);
+  EXPECT_EQ(name, *roundtrip);
 }
 
 TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
