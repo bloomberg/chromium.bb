@@ -111,6 +111,10 @@ bool WindowTreeClientTestApi::HasChangeInFlightOfType(ChangeType type) {
   return false;
 }
 
+DragDropControllerMus* WindowTreeClientTestApi::GetDragDropController() {
+  return tree_client_impl_->drag_drop_controller_.get();
+}
+
 ws::mojom::WindowDataPtr WindowTreeClientTestApi::CreateWindowDataForEmbed(
     bool visible) {
   ws::mojom::WindowDataPtr root_data(ws::mojom::WindowData::New());

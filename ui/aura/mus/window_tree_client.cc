@@ -1422,6 +1422,14 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
     return;
   }
 
+  if (event->IsLocatedEvent() && drag_drop_controller_->IsRunningDragLoop()) {
+    // If we started a drag loop, then we should ignore any located events,
+    // otherwise we may trigger another drag session. It's likely the server
+    // shouldn't send spurious events like this. See https://crbug.com/944616.
+    tree_->OnWindowInputEventAck(event_id, ws::mojom::EventResult::UNHANDLED);
+    return;
+  }
+
   if (matches_event_observer) {
     std::unique_ptr<ui::Event> cloned_event(ui::Event::Clone(*event));
     // Set the window as the event target, so event locations will be useful.
