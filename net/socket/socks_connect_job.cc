@@ -23,11 +23,11 @@ namespace net {
 static const int kSOCKSConnectJobTimeoutInSeconds = 30;
 
 SOCKSSocketParams::SOCKSSocketParams(
-    const scoped_refptr<TransportSocketParams>& proxy_server,
+    scoped_refptr<TransportSocketParams> proxy_server_params,
     bool socks_v5,
     const HostPortPair& host_port_pair,
     const NetworkTrafficAnnotationTag& traffic_annotation)
-    : transport_params_(proxy_server),
+    : transport_params_(std::move(proxy_server_params)),
       destination_(host_port_pair),
       socks_v5_(socks_v5),
       traffic_annotation_(traffic_annotation) {}
@@ -38,7 +38,7 @@ SOCKSConnectJob::SOCKSConnectJob(
     RequestPriority priority,
     const SocketTag& socket_tag,
     const CommonConnectJobParams* common_connect_job_params,
-    const scoped_refptr<SOCKSSocketParams>& socks_params,
+    scoped_refptr<SOCKSSocketParams> socks_params,
     ConnectJob::Delegate* delegate,
     const NetLogWithSource* net_log)
     : ConnectJob(priority,
@@ -49,7 +49,7 @@ SOCKSConnectJob::SOCKSConnectJob(
                  net_log,
                  NetLogSourceType::SOCKS_CONNECT_JOB,
                  NetLogEventType::SOCKS_CONNECT_JOB_CONNECT),
-      socks_params_(socks_params) {}
+      socks_params_(std::move(socks_params)) {}
 
 SOCKSConnectJob::~SOCKSConnectJob() {
   // In the case the job was canceled, need to delete nested job first to

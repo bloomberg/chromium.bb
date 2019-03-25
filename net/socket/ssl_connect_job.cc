@@ -33,15 +33,15 @@
 namespace net {
 
 SSLSocketParams::SSLSocketParams(
-    const scoped_refptr<TransportSocketParams>& direct_params,
-    const scoped_refptr<SOCKSSocketParams>& socks_proxy_params,
-    const scoped_refptr<HttpProxySocketParams>& http_proxy_params,
+    scoped_refptr<TransportSocketParams> direct_params,
+    scoped_refptr<SOCKSSocketParams> socks_proxy_params,
+    scoped_refptr<HttpProxySocketParams> http_proxy_params,
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     PrivacyMode privacy_mode)
-    : direct_params_(direct_params),
-      socks_proxy_params_(socks_proxy_params),
-      http_proxy_params_(http_proxy_params),
+    : direct_params_(std::move(direct_params)),
+      socks_proxy_params_(std::move(socks_proxy_params)),
+      http_proxy_params_(std::move(http_proxy_params)),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       privacy_mode_(privacy_mode) {
@@ -94,7 +94,7 @@ SSLConnectJob::SSLConnectJob(
     RequestPriority priority,
     const SocketTag& socket_tag,
     const CommonConnectJobParams* common_connect_job_params,
-    const scoped_refptr<SSLSocketParams>& params,
+    scoped_refptr<SSLSocketParams> params,
     ConnectJob::Delegate* delegate,
     const NetLogWithSource* net_log)
     : ConnectJob(priority,
@@ -107,7 +107,7 @@ SSLConnectJob::SSLConnectJob(
                  net_log,
                  NetLogSourceType::SSL_CONNECT_JOB,
                  NetLogEventType::SSL_CONNECT_JOB_CONNECT),
-      params_(params),
+      params_(std::move(params)),
       callback_(base::BindRepeating(&SSLConnectJob::OnIOComplete,
                                     base::Unretained(this))) {}
 

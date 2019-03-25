@@ -42,14 +42,13 @@ class QuicStreamRequest;
 class NET_EXPORT_PRIVATE HttpProxySocketParams
     : public base::RefCounted<HttpProxySocketParams> {
  public:
-  HttpProxySocketParams(
-      const scoped_refptr<TransportSocketParams>& transport_params,
-      const scoped_refptr<SSLSocketParams>& ssl_params,
-      bool is_quic,
-      const HostPortPair& endpoint,
-      bool is_trusted_proxy,
-      bool tunnel,
-      const NetworkTrafficAnnotationTag traffic_annotation);
+  HttpProxySocketParams(scoped_refptr<TransportSocketParams> transport_params,
+                        scoped_refptr<SSLSocketParams> ssl_params,
+                        bool is_quic,
+                        const HostPortPair& endpoint,
+                        bool is_trusted_proxy,
+                        bool tunnel,
+                        const NetworkTrafficAnnotationTag traffic_annotation);
 
   const scoped_refptr<TransportSocketParams>& transport_params() const {
     return transport_params_;
@@ -88,7 +87,7 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob,
   HttpProxyConnectJob(RequestPriority priority,
                       const SocketTag& socket_tag,
                       const CommonConnectJobParams* common_connect_job_params,
-                      const scoped_refptr<HttpProxySocketParams>& params,
+                      scoped_refptr<HttpProxySocketParams> params,
                       ConnectJob::Delegate* delegate,
                       const NetLogWithSource* net_log);
   ~HttpProxyConnectJob() override;

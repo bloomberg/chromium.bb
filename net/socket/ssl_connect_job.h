@@ -37,9 +37,9 @@ class NET_EXPORT_PRIVATE SSLSocketParams
 
   // Exactly one of |direct_params|, |socks_proxy_params|, and
   // |http_proxy_params| must be non-NULL.
-  SSLSocketParams(const scoped_refptr<TransportSocketParams>& direct_params,
-                  const scoped_refptr<SOCKSSocketParams>& socks_proxy_params,
-                  const scoped_refptr<HttpProxySocketParams>& http_proxy_params,
+  SSLSocketParams(scoped_refptr<TransportSocketParams> direct_params,
+                  scoped_refptr<SOCKSSocketParams> socks_proxy_params,
+                  scoped_refptr<HttpProxySocketParams> http_proxy_params,
                   const HostPortPair& host_and_port,
                   const SSLConfig& ssl_config,
                   PrivacyMode privacy_mode);
@@ -85,7 +85,7 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
   SSLConnectJob(RequestPriority priority,
                 const SocketTag& socket_tag,
                 const CommonConnectJobParams* common_connect_job_params,
-                const scoped_refptr<SSLSocketParams>& params,
+                scoped_refptr<SSLSocketParams> params,
                 ConnectJob::Delegate* delegate,
                 const NetLogWithSource* net_log);
   ~SSLConnectJob() override;

@@ -128,20 +128,22 @@ CreateSocketParamsAndGetGroupId(
       if (!proxy_info.is_http()) {
         // Set ssl_params, and unset proxy_tcp_params
         ssl_params = base::MakeRefCounted<SSLSocketParams>(
-            proxy_tcp_params, nullptr, nullptr, proxy_server.host_port_pair(),
-            ssl_config_for_proxy, PRIVACY_MODE_DISABLED);
+            std::move(proxy_tcp_params), nullptr, nullptr,
+            proxy_server.host_port_pair(), ssl_config_for_proxy,
+            PRIVACY_MODE_DISABLED);
         proxy_tcp_params = nullptr;
       }
 
       http_proxy_params = base::MakeRefCounted<HttpProxySocketParams>(
-          proxy_tcp_params, ssl_params, proxy_info.is_quic(), endpoint,
-          proxy_server.is_trusted_proxy(), force_tunnel || using_ssl,
+          std::move(proxy_tcp_params), std::move(ssl_params),
+          proxy_info.is_quic(), endpoint, proxy_server.is_trusted_proxy(),
+          force_tunnel || using_ssl,
           NetworkTrafficAnnotationTag(proxy_info.traffic_annotation()));
     } else {
       DCHECK(proxy_info.is_socks());
       socks_params = base::MakeRefCounted<SOCKSSocketParams>(
-          proxy_tcp_params, proxy_server.scheme() == ProxyServer::SCHEME_SOCKS5,
-          endpoint,
+          std::move(proxy_tcp_params),
+          proxy_server.scheme() == ProxyServer::SCHEME_SOCKS5, endpoint,
           NetworkTrafficAnnotationTag(proxy_info.traffic_annotation()));
     }
   }
@@ -155,8 +157,9 @@ CreateSocketParamsAndGetGroupId(
     }
     scoped_refptr<SSLSocketParams> ssl_params =
         base::MakeRefCounted<SSLSocketParams>(
-            ssl_tcp_params, socks_params, http_proxy_params, endpoint,
-            ssl_config_for_origin, privacy_mode);
+            std::move(ssl_tcp_params), std::move(socks_params),
+            std::move(http_proxy_params), endpoint, ssl_config_for_origin,
+            privacy_mode);
     return TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
         std::move(ssl_params));
   }
@@ -168,7 +171,7 @@ CreateSocketParamsAndGetGroupId(
 
   if (proxy_info.is_socks()) {
     return TransportClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
-        socks_params);
+        std::move(socks_params));
   }
 
   DCHECK(proxy_info.is_direct());
