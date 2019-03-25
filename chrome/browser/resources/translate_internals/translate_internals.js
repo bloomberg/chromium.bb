@@ -354,6 +354,14 @@ cr.define('cr.translateInternals', function() {
     parent.appendChild(td);
   }
 
+  function appendBooleanTD(parent, value, className) {
+    const td = document.createElement('td');
+    td.textContent = value;
+    td.className = className;
+    td.bgColor = value ? '#3cba54' : '#db3236';
+    parent.appendChild(td);
+  }
+
   /**
    * Handles the message of 'languageDetectionInfoAdded' from the
    * browser.
@@ -417,6 +425,62 @@ cr.define('cr.translateInternals', function() {
     const tbody = tabpanel.getElementsByTagName('tbody')[0];
     tbody.appendChild(tr);
   }
+
+  /**
+   * Handles the message of 'translateInitDetailsAdded' from the
+   * browser.
+   *
+   * @param {Object} details The object which represents the logs.
+   */
+  function onTranslateInitDetailsAdded(details) {
+    const tr = document.createElement('tr');
+
+    appendTD(tr, formatDate(new Date(details['time'])), 'init-logs-time');
+    appendTD(tr, details['url'], 'init-logs-url');
+
+    appendTD(tr, details['page_language_code'], 'init-logs-page-language-code');
+    appendTD(tr, details['target_lang'], 'init-logs-target-lang');
+
+    appendBooleanTD(tr, details['ui_shown'], 'init-logs-ui-shown');
+
+    appendBooleanTD(
+        tr, details['can_auto_translate'], 'init-logs-can-auto-translate');
+    appendBooleanTD(tr, details['can_show_ui'], 'init-logs-can-show-ui');
+    appendBooleanTD(
+        tr, details['can_auto_href_translate'],
+        'init-logs-can-auto-href-translate');
+    appendBooleanTD(
+        tr, details['can_show_href_translate_ui'],
+        'init-logs-can-show-href-translate-ui');
+    appendBooleanTD(
+        tr, details['can_show_predefined_language_translate_ui'],
+        'init-logs-can-show-predefined-language-translate-ui');
+    appendBooleanTD(
+        tr, details['should_suppress_from_ranker'],
+        'init-logs-should-suppress-from-ranker');
+    appendBooleanTD(
+        tr, details['is_triggering_possible'],
+        'init-logs-is-triggering-possible');
+    appendBooleanTD(
+        tr, details['should_auto_translate'],
+        'init-logs-should-auto-translate');
+    appendBooleanTD(tr, details['should_show_ui'], 'init-logs-should-show-ui');
+
+    appendTD(
+        tr, details['auto_translate_target'],
+        'init-logs-auto-translate-target');
+    appendTD(
+        tr, details['href_translate_target'],
+        'init-logs-href-translate-target');
+    appendTD(
+        tr, details['predefined_translate_target'],
+        'init-logs-predefined-translate-target');
+
+    const tabpanel = $('tabpanel-init-logs');
+    const tbody = tabpanel.getElementsByTagName('tbody')[0];
+    tbody.appendChild(tr);
+  }
+
 
   /**
    * Handles the message of 'translateEventDetailsAdded' from the browser.
@@ -486,6 +550,9 @@ cr.define('cr.translateInternals', function() {
         break;
       case 'translateEventDetailsAdded':
         onTranslateEventDetailsAdded(details);
+        break;
+      case 'translateInitDetailsAdded':
+        onTranslateInitDetailsAdded(details);
         break;
       default:
         console.error('Unknown message:', message);

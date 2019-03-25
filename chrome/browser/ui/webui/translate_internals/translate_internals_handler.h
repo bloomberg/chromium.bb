@@ -20,6 +20,7 @@
 namespace translate {
 struct TranslateErrorDetails;
 struct TranslateEventDetails;
+struct TranslateInitDetails;
 }
 
 namespace base {
@@ -50,6 +51,9 @@ class TranslateInternalsHandler : public content::WebUIMessageHandler,
 
   // Callback for translate errors.
   void OnTranslateError(const translate::TranslateErrorDetails& details);
+
+  // Callback for translate initialisations.
+  virtual void OnTranslateInit(const translate::TranslateInitDetails& details);
 
   // Callback for translate events.
   virtual void OnTranslateEvent(
@@ -96,6 +100,10 @@ class TranslateInternalsHandler : public content::WebUIMessageHandler,
   std::unique_ptr<
       translate::TranslateManager::TranslateErrorCallbackList::Subscription>
       error_subscription_;
+
+  std::unique_ptr<
+      translate::TranslateManager::TranslateInitCallbackList::Subscription>
+      init_subscription_;
 
   content::NotificationRegistrar notification_registrar_;
 
