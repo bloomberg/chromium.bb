@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.autofill_assistant.header;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.view.View;
 
@@ -23,21 +22,15 @@ import java.util.Queue;
 class AnimatedProgressBar {
     // The number of ms the progress bar would take to go from 0 to 100%.
     private static final int PROGRESS_BAR_SPEED_MS = 3_000;
-    private static final int PROGRESS_BAR_PULSING_DURATION_MS = 1_000;
 
     private final MaterialProgressBar mProgressBar;
-    private final int mNormalColor;
-    private final int mPulsedColor;
 
     private boolean mIsRunningProgressAnimation;
     private int mLastProgress;
     private Queue<ValueAnimator> mPendingIncreaseAnimations = new ArrayDeque<>();
-    private ValueAnimator mPulseAnimation;
 
-    AnimatedProgressBar(MaterialProgressBar progressBar, int normalColor, int pulsedColor) {
+    AnimatedProgressBar(MaterialProgressBar progressBar) {
         mProgressBar = progressBar;
-        mNormalColor = normalColor;
-        mPulsedColor = pulsedColor;
     }
 
     public void show() {
@@ -80,33 +73,6 @@ class AnimatedProgressBar {
         } else {
             mIsRunningProgressAnimation = true;
             progressAnimation.start();
-        }
-    }
-
-    public void enablePulsing() {
-        if (mPulseAnimation == null) {
-            mPulseAnimation = ValueAnimator.ofInt(mNormalColor, mPulsedColor);
-            mPulseAnimation.setDuration(PROGRESS_BAR_PULSING_DURATION_MS);
-            mPulseAnimation.setEvaluator(new ArgbEvaluator());
-            mPulseAnimation.setRepeatCount(ValueAnimator.INFINITE);
-            mPulseAnimation.setRepeatMode(ValueAnimator.REVERSE);
-            mPulseAnimation.setInterpolator(CompositorAnimator.ACCELERATE_INTERPOLATOR);
-            mPulseAnimation.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationCancel(Animator animation) {
-                    mProgressBar.setProgressColor(mNormalColor);
-                }
-            });
-            mPulseAnimation.addUpdateListener(
-                    animation -> mProgressBar.setProgressColor((int) animation.getAnimatedValue()));
-            mPulseAnimation.start();
-        }
-    }
-
-    public void disablePulsing() {
-        if (mPulseAnimation != null) {
-            mPulseAnimation.cancel();
-            mPulseAnimation = null;
         }
     }
 }

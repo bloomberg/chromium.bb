@@ -133,7 +133,7 @@ class UiControllerAndroid : public UiController {
   void SetOverlayState(OverlayState state);
   void AllowShowingSoftKeyboard(bool enabled);
   void ExpandBottomSheet();
-  void SetProgressPulsingEnabled(bool enabled);
+  void SetSpinPoodle(bool enabled);
   void SetAllowSwipingSheet(bool allow);
   std::string GetDebugContext();
   void DestroySelf();
