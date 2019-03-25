@@ -294,7 +294,8 @@ class FCMInvalidationListenerTest : public testing::Test {
 TEST_F(FCMInvalidationListenerTest, InvalidateNoPayload) {
   const Topic& topic = kBookmarksTopic_;
 
-  RegisterAndFireInvalidate(topic, base::IntToString(kVersion1), std::string());
+  RegisterAndFireInvalidate(topic, base::NumberToString(kVersion1),
+                            std::string());
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -308,7 +309,8 @@ TEST_F(FCMInvalidationListenerTest, InvalidateNoPayload) {
 TEST_F(FCMInvalidationListenerTest, InvalidateEmptyPayload) {
   const Topic& topic = kBookmarksTopic_;
 
-  RegisterAndFireInvalidate(topic, base::IntToString(kVersion1), std::string());
+  RegisterAndFireInvalidate(topic, base::NumberToString(kVersion1),
+                            std::string());
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -321,7 +323,7 @@ TEST_F(FCMInvalidationListenerTest, InvalidateEmptyPayload) {
 TEST_F(FCMInvalidationListenerTest, InvalidateWithPayload) {
   const Topic& topic = kPreferencesTopic_;
 
-  RegisterAndFireInvalidate(topic, base::IntToString(kVersion1), kPayload1);
+  RegisterAndFireInvalidate(topic, base::NumberToString(kVersion1), kPayload1);
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -335,7 +337,7 @@ TEST_F(FCMInvalidationListenerTest, ManyInvalidations_NoDrop) {
   const Topic& topic = kPreferencesTopic_;
   int64_t initial_version = kVersion1;
   for (int64_t i = initial_version; i < initial_version + kRepeatCount; ++i) {
-    RegisterAndFireInvalidate(topic, base::IntToString(i), kPayload1);
+    RegisterAndFireInvalidate(topic, base::NumberToString(i), kPayload1);
   }
   ASSERT_EQ(static_cast<size_t>(kRepeatCount), GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -354,7 +356,7 @@ TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Simple) {
 
   EXPECT_EQ(0U, GetInvalidationCount(topic));
 
-  FireInvalidate(topic, base::IntToString(kVersion1), kPayload1);
+  FireInvalidate(topic, base::NumberToString(kVersion1), kPayload1);
 
   ASSERT_EQ(0U, GetInvalidationCount(topic));
 
@@ -381,7 +383,7 @@ TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Drop) {
 
   int64_t initial_version = kVersion1;
   for (int64_t i = initial_version; i < initial_version + kRepeatCount; ++i) {
-    FireInvalidate(topic, base::IntToString(i), kPayload1);
+    FireInvalidate(topic, base::NumberToString(i), kPayload1);
   }
 
   EnableNotifications();
@@ -396,14 +398,14 @@ TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Drop) {
 TEST_F(FCMInvalidationListenerTest, InvalidateVersion) {
   const Topic& topic = kPreferencesTopic_;
 
-  RegisterAndFireInvalidate(topic, base::IntToString(kVersion2), kPayload2);
+  RegisterAndFireInvalidate(topic, base::NumberToString(kVersion2), kPayload2);
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
   EXPECT_EQ(kVersion2, GetVersion(topic));
   EXPECT_EQ(kPayload2, GetPayload(topic));
 
-  FireInvalidate(topic, base::IntToString(kVersion1), kPayload1);
+  FireInvalidate(topic, base::NumberToString(kVersion1), kPayload1);
 
   ASSERT_EQ(2U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
