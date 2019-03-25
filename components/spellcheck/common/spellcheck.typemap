@@ -12,6 +12,15 @@ deps = [
   "//components/spellcheck:buildflags",
 ]
 
+public_deps = [
+  ":spellcheck_result",
+]
+
+sources = [
+  "spellcheck_struct_traits.cc",
+  "spellcheck_struct_traits.h",
+]
+
 type_mappings = [
   "spellcheck.mojom.Decoration=::SpellCheckResult::Decoration",
   "spellcheck.mojom.SpellCheckResult=::SpellCheckResult",
