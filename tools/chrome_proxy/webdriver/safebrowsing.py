@@ -28,18 +28,10 @@ class SafeBrowsing(IntegrationTest):
         pass
 
   @AndroidOnly
-  @ChromeVersionEqualOrAfterM(72)
+  @ChromeVersionEqualOrAfterM(74)
   def testSafeBrowsingMalwareWithOnDeviceChecksOn(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')
-      t.AddChromeArg(
-          '--force-fieldtrial-params='
-          'DataReductionProxyServerExperiments.'
-          'OnDeviceSafeBrowsingFieldTrialEnabled:'
-          'exp/disable_server_safebrowsing')
-      t.AddChromeArg(
-          '--force-fieldtrials=DataReductionProxyServerExperiments/'
-          'OnDeviceSafeBrowsingFieldTrialEnabled')
 
       # Starting in M63 LoadURL will timeout when the safebrowsing
       # interstitial appears.
