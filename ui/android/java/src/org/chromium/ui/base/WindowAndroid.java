@@ -229,6 +229,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         mOutstandingIntents = new SparseArray<>();
         mIntentErrors = new HashMap<>();
         mDisplayAndroid = display;
+        mDisplayAndroid.addObserver(this);
         // Temporary solution for flaky tests, see https://crbug.com/767624 for context
         try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
             mVSyncMonitor =
