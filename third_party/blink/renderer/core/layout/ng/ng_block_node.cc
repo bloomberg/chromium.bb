@@ -214,8 +214,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   if (!CanUseNewLayout())
     return RunOldLayout(constraint_space);
 
-  LayoutBlockFlow* block_flow =
-      box_->IsLayoutNGMixin() ? ToLayoutBlockFlow(box_) : nullptr;
+  LayoutBlockFlow* block_flow = ToLayoutBlockFlowOrNull(box_);
   if (RuntimeEnabledFeatures::TrackLayoutPassesPerBlockEnabled() && block_flow)
     block_flow->IncrementLayoutPassCount();
 
@@ -223,18 +222,15 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   if (block_flow && !first_child)
     block_flow->ClearNGInlineNodeData();
 
-  scoped_refptr<const NGLayoutResult> layout_result;
-  if (block_flow) {
-    layout_result =
-        block_flow->CachedLayoutResult(constraint_space, break_token);
-    if (layout_result) {
-      // TODO(layoutng): Figure out why these two call can't be inside the
-      // !constraint_space.IsIntermediateLayout() block below.
-      UpdateShapeOutsideInfoIfNeeded(
-          *layout_result, constraint_space.PercentageResolutionInlineSize());
+  scoped_refptr<const NGLayoutResult> layout_result =
+      box_->CachedLayoutResult(constraint_space, break_token);
+  if (layout_result) {
+    // TODO(layoutng): Figure out why these two call can't be inside the
+    // !constraint_space.IsIntermediateLayout() block below.
+    UpdateShapeOutsideInfoIfNeeded(
+        *layout_result, constraint_space.PercentageResolutionInlineSize());
 
-      return layout_result;
-    }
+    return layout_result;
   }
 
   // This follows the code from LayoutBox::UpdateLogicalWidth
@@ -327,8 +323,8 @@ void NGBlockNode::FinishLayout(
 
   DCHECK(layout_result->PhysicalFragment());
 
+  box_->SetCachedLayoutResult(*layout_result, break_token);
   if (block_flow) {
-    block_flow->SetCachedLayoutResult(*layout_result, break_token);
     NGLayoutInputNode first_child = FirstChild();
     bool has_inline_children = first_child && first_child.IsInline();
     if (has_inline_children || box_->IsLayoutNGFieldset()) {

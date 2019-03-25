@@ -40,6 +40,7 @@ class EventHandler;
 class LayoutBlockFlow;
 class LayoutMultiColumnSpannerPlaceholder;
 class NGBoxFragmentBuilder;
+class NGConstraintSpace;
 class ShapeOutsideInfo;
 struct BoxLayoutExtraInput;
 class NGBreakToken;
@@ -910,6 +911,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   const NGLayoutResult* GetCachedLayoutResult() const {
     return cached_layout_result_.get();
   }
+  // Returns the last layout result for this block flow with the given
+  // constraint space and break token, or null if it is not up-to-date or
+  // otherwise unavailable.
+  scoped_refptr<const NGLayoutResult> CachedLayoutResult(
+      const NGConstraintSpace&,
+      const NGBreakToken*);
 
   void SetSpannerPlaceholder(LayoutMultiColumnSpannerPlaceholder&);
   void ClearSpannerPlaceholder();
@@ -1751,6 +1758,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // is just to make sure that left-hand scrollbars don't mess up
   // scrollWidth. For the full story, visit http://crbug.com/724255.
   LayoutUnit VerticalScrollbarWidthClampedToContentBox() const;
+
+  bool NeedsRelativePositionedLayoutOnly() const {
+    return NeedsPositionedMovementLayoutOnly() &&
+           StyleRef().GetPosition() == EPosition::kRelative;
+  }
 
   // The CSS border box rect for this box.
   //

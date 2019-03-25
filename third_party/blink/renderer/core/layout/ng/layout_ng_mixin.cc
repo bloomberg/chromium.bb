@@ -228,82 +228,6 @@ LayoutUnit LayoutNGMixin<Base>::InlineBlockBaseline(
 }
 
 template <typename Base>
-scoped_refptr<const NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
-    const NGConstraintSpace& new_space,
-    const NGBreakToken* break_token) {
-  if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())
-    return nullptr;
-
-  if (break_token)
-    return nullptr;
-
-  if (Base::SelfNeedsLayoutForStyle() || Base::NormalChildNeedsLayout() ||
-      Base::PosChildNeedsLayout() || Base::NeedsSimplifiedNormalFlowLayout() ||
-      (Base::NeedsPositionedMovementLayout() &&
-       !NeedsRelativePositionedLayoutOnly()))
-    return nullptr;
-
-  const NGLayoutResult* cached_layout_result = Base::GetCachedLayoutResult();
-  if (!cached_layout_result)
-    return nullptr;
-
-  // If we have an orthogonal flow root descendant, we don't attempt to cache
-  // our layout result. This is because the initial containing block size may
-  // have changed, having a high likelihood of changing the size of the
-  // orthogonal flow root.
-  if (cached_layout_result->HasOrthogonalFlowRoots())
-    return nullptr;
-
-  if (!MaySkipLayout(NGBlockNode(this), *cached_layout_result, new_space))
-    return nullptr;
-
-  const NGConstraintSpace& old_space =
-      cached_layout_result->GetConstraintSpaceForCaching();
-
-  // Check the BFC offset. Even if they don't match, there're some cases we can
-  // still reuse the fragment.
-  base::Optional<LayoutUnit> bfc_block_offset =
-      cached_layout_result->BfcBlockOffset();
-  LayoutUnit bfc_line_offset = new_space.BfcOffset().line_offset;
-
-  DCHECK_EQ(old_space.BfcOffset().line_offset,
-            cached_layout_result->BfcLineOffset());
-
-  bool is_bfc_offset_equal = new_space.BfcOffset() == old_space.BfcOffset();
-  if (!is_bfc_offset_equal) {
-    // Earlier floats may affect this box if block offset changes.
-    if (new_space.HasFloats() || old_space.HasFloats())
-      return nullptr;
-
-    // Even for the first fragment, when block fragmentation is enabled, block
-    // offset changes should cause re-layout, since we will fragment at other
-    // locations than before.
-    if (new_space.HasBlockFragmentation() || old_space.HasBlockFragmentation())
-      return nullptr;
-
-    if (bfc_block_offset.has_value()) {
-      bfc_block_offset = *bfc_block_offset -
-                         old_space.BfcOffset().block_offset +
-                         new_space.BfcOffset().block_offset;
-    }
-  }
-
-  // We can safely re-use this fragment if we are position relative, and only
-  // our position constraints changed (left/top/etc). However we need to clear
-  // the dirty layout bit.
-  Base::ClearNeedsLayout();
-
-  // The checks above should be enough to bail if layout is incomplete, but
-  // let's verify:
-  DCHECK(IsBlockLayoutComplete(old_space, *cached_layout_result));
-  if (is_bfc_offset_equal)
-    return cached_layout_result;
-
-  return base::AdoptRef(new NGLayoutResult(*cached_layout_result,
-                                           bfc_line_offset, bfc_block_offset));
-}
-
-template <typename Base>
 bool LayoutNGMixin<Base>::AreCachedLinesValidFor(
     const NGConstraintSpace& new_space) const {
   const NGLayoutResult* cached_layout_result = Base::GetCachedLayoutResult();
@@ -452,12 +376,6 @@ void LayoutNGMixin<Base>::DirtyLinesFromChangedChild(
   // NGInlineNode::MarkLineBoxesDirty().
   if (child->IsInLayoutNGInlineFormattingContext())
     NGPaintFragment::DirtyLinesFromChangedChild(child);
-}
-
-template <typename Base>
-bool LayoutNGMixin<Base>::NeedsRelativePositionedLayoutOnly() const {
-  return Base::NeedsPositionedMovementLayoutOnly() &&
-         Base::StyleRef().GetPosition() == EPosition::kRelative;
 }
 
 template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutTableCaption>;
