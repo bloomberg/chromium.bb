@@ -199,7 +199,6 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
 
     params->width = window_->surface_size().width();
     params->height = window_->surface_size().height();
-    params->is_layer = false;
 
     gfx::Transform transform;
     if (draw_gl_count_on_rt_ == 0)

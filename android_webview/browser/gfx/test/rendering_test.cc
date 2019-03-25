@@ -139,7 +139,6 @@ void RenderingTest::WillOnDraw() {
 bool RenderingTest::WillDrawOnRT(HardwareRendererDrawParams* params) {
   params->width = window_->surface_size().width();
   params->height = window_->surface_size().height();
-  params->is_layer = false;
   gfx::Transform transform;
   transform.matrix().asColMajorf(params->transform);
   return true;

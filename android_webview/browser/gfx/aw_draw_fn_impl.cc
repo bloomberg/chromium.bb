@@ -642,7 +642,6 @@ void AwDrawFnImpl::DrawInternal(T* params, SkColorSpace* color_space) {
   hr_params.clip_bottom = params->clip_bottom;
   hr_params.width = params->width;
   hr_params.height = params->height;
-  hr_params.is_layer = params->is_layer;
   if (color_space)
     hr_params.color_space = gfx::ColorSpace(*color_space);
 

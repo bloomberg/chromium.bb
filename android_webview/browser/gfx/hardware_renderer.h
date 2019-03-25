@@ -34,7 +34,6 @@ struct HardwareRendererDrawParams {
   int clip_bottom;
   int width;
   int height;
-  bool is_layer;
   float transform[16];
   gfx::ColorSpace color_space;
 };
