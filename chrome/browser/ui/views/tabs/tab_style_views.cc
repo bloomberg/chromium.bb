@@ -581,26 +581,26 @@ TabStyle::SeparatorOpacities GM2TabStyle::GetSeparatorOpacities(
   if (tab_->IsActive()) {
     leading_opacity = trailing_opacity = 0;
   } else {
-    // Fade out the trailing separator while this tab or the subsequent tab is
-    // hovered.  If the subsequent tab is active, don't consider its hover
-    // animation value, lest the trailing separator on this tab disappear while
-    // the subsequent tab is being dragged.
-    const float hover_value = GetHoverAnimationValue();
     const Tab* subsequent_tab = tab_->controller()->GetAdjacentTab(tab_, 1);
-    float subsequent_hover = 0;
-    if (!for_layout && subsequent_tab && !subsequent_tab->IsActive()) {
-      auto* subsequent_tab_style =
-          static_cast<const GM2TabStyle*>(subsequent_tab->tab_style());
-      subsequent_hover = float{subsequent_tab_style->GetHoverAnimationValue()};
-    }
-    trailing_opacity = 1.f - std::max(hover_value, subsequent_hover);
-
-    // The leading separator need not consider the previous tab's hover value,
-    // since if there is a previous tab that's hovered and not being dragged,
-    // it will draw atop this tab.
-    leading_opacity = 1.f - hover_value;
-
     const Tab* previous_tab = tab_->controller()->GetAdjacentTab(tab_, -1);
+
+    // Fade out the intervening separator while this tab or an adjacent tab is
+    // hovered, which prevents sudden opacity changes when scrubbing the mouse
+    // across the tabstrip. If that adjacent tab is active, don't consider its
+    // hover animation value, otherwise the separator on this tab will disappear
+    // while that tab is being dragged.
+    auto adjacent_hover_value = [for_layout](const Tab* tab) {
+      if (for_layout || !tab || tab->IsActive())
+        return 0.f;
+      auto* tab_style = static_cast<const GM2TabStyle*>(tab->tab_style());
+      return float{tab_style->GetHoverAnimationValue()};
+    };
+    const float hover_value = GetHoverAnimationValue();
+    trailing_opacity =
+        1.f - std::max(hover_value, adjacent_hover_value(subsequent_tab));
+    leading_opacity =
+        1.f - std::max(hover_value, adjacent_hover_value(previous_tab));
+
     if (tab_->IsSelected()) {
       // Since this tab is selected, its shape will be visible against adjacent
       // unselected tabs, so remove the separator in those cases.
