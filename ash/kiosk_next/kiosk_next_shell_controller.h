@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/kiosk_next_shell.mojom.h"
+#include "ash/session/session_observer.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
@@ -18,7 +19,8 @@ namespace ash {
 // session. During this session most system functions are disabled and we launch
 // a specific app (Kiosk Next Home) that takes the whole screen.
 class ASH_EXPORT KioskNextShellController
-    : public mojom::KioskNextShellController {
+    : public mojom::KioskNextShellController,
+      public SessionObserver {
  public:
   KioskNextShellController();
   ~KioskNextShellController() override;
@@ -33,18 +35,17 @@ class ASH_EXPORT KioskNextShellController
   // no signed-in user, this returns false.
   bool IsEnabled();
 
-  // Tries to start the Kiosk Next shell by sending a
-  // LaunchKioskNextShell command to the KioskNextShellClient. We will only
-  // launch if |IsEnabled()| is true, so it's safe to call this every time a
-  // successful sign in happens.
-  void LaunchKioskNextShellIfEnabled();
-
   // mojom::KioskNextShellController:
   void SetClient(mojom::KioskNextShellClientPtr client) override;
+
+  // SessionObserver:
+  void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
 
  private:
   mojom::KioskNextShellClientPtr kiosk_next_shell_client_;
   mojo::BindingSet<mojom::KioskNextShellController> bindings_;
+  ScopedSessionObserver session_observer_{this};
+  bool kiosk_next_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(KioskNextShellController);
 };
