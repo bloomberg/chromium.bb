@@ -35,19 +35,6 @@ unsigned int GLInternalFormat(uint32_t buffer_format) {
   }
 }
 
-void InsertGLFence(base::ScopedFD fence_fd) {
-  if (!fence_fd.is_valid())
-    return;
-
-  gfx::GpuFenceHandle handle;
-  handle.type = gfx::GpuFenceHandleType::kAndroidNativeFenceSync;
-  handle.native_fd =
-      base::FileDescriptor(fence_fd.release(), /*auto_close=*/true);
-  gfx::GpuFence gpu_fence(handle);
-  auto gl_fence = GLFence::CreateFromGpuFence(gpu_fence);
-  gl_fence->ServerWait();
-}
-
 }  // namespace
 
 class GLImageAHardwareBuffer::ScopedHardwareBufferFenceSyncImpl
@@ -55,15 +42,24 @@ class GLImageAHardwareBuffer::ScopedHardwareBufferFenceSyncImpl
  public:
   ScopedHardwareBufferFenceSyncImpl(
       scoped_refptr<GLImageAHardwareBuffer> image,
-      base::android::ScopedHardwareBufferHandle handle,
-      base::ScopedFD fence_fd)
-      : ScopedHardwareBufferFenceSync(std::move(handle), std::move(fence_fd)),
+      base::android::ScopedHardwareBufferHandle handle)
+      : ScopedHardwareBufferFenceSync(std::move(handle), base::ScopedFD()),
         image_(std::move(image)) {}
   ~ScopedHardwareBufferFenceSyncImpl() override = default;
 
-  void SetReadFence(base::ScopedFD fence_fd) override {
-    image_->release_fence_ =
-        MergeFDs(std::move(image_->release_fence_), std::move(fence_fd));
+  void SetReadFence(base::ScopedFD fence_fd, bool has_context) override {
+    DCHECK(fence_fd.is_valid());
+
+    if (!has_context)
+      return;
+
+    gfx::GpuFenceHandle handle;
+    handle.type = gfx::GpuFenceHandleType::kAndroidNativeFenceSync;
+    handle.native_fd =
+        base::FileDescriptor(fence_fd.release(), /*auto_close=*/true);
+    gfx::GpuFence gpu_fence(handle);
+    auto gl_fence = GLFence::CreateFromGpuFence(gpu_fence);
+    gl_fence->ServerWait();
   }
 
  private:
@@ -92,7 +88,6 @@ unsigned GLImageAHardwareBuffer::GetInternalFormat() {
 }
 
 bool GLImageAHardwareBuffer::BindTexImage(unsigned target) {
-  InsertGLFence(std::move(release_fence_));
   return GLImageEGL::BindTexImage(target);
 }
 
@@ -127,8 +122,7 @@ void GLImageAHardwareBuffer::OnMemoryDump(
 std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
 GLImageAHardwareBuffer::GetAHardwareBuffer() {
   return std::make_unique<ScopedHardwareBufferFenceSyncImpl>(
-      this, base::android::ScopedHardwareBufferHandle::Create(handle_.get()),
-      std::move(release_fence_));
+      this, base::android::ScopedHardwareBufferHandle::Create(handle_.get()));
 }
 
 }  // namespace gl

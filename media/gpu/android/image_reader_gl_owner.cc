@@ -68,7 +68,7 @@ class ImageReaderGLOwner::ScopedHardwareBufferImpl
     texture_owner_->ReleaseRefOnImage(image_, std::move(read_fence_));
   }
 
-  void SetReadFence(base::ScopedFD fence_fd) final {
+  void SetReadFence(base::ScopedFD fence_fd, bool has_context) final {
     DCHECK(!read_fence_.is_valid());
     read_fence_ = std::move(fence_fd);
   }
