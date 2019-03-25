@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import module as mojom
+import mojom.generate.module as mojom
 
 # This module provides a mechanism for determining the packed order and offsets
 # of a mojom.Struct.
@@ -165,7 +165,7 @@ class PackedStruct(object):
     # Then find first slot that each field will fit.
     for src_field in src_fields[1:]:
       last_field = dst_fields[0]
-      for i in xrange(1, len(dst_fields)):
+      for i in range(1, len(dst_fields)):
         next_field = dst_fields[i]
         offset, bit = GetFieldOffset(src_field, last_field)
         if offset + src_field.size <= next_field.offset:
@@ -190,16 +190,16 @@ class ByteInfo(object):
 def GetByteLayout(packed_struct):
   total_payload_size = GetPayloadSizeUpToField(
       packed_struct.packed_fields[-1] if packed_struct.packed_fields else None)
-  bytes = [ByteInfo() for i in xrange(total_payload_size)]
+  bytes = [ByteInfo() for i in range(total_payload_size)]
 
   limit_of_previous_field = 0
   for packed_field in packed_struct.packed_fields:
-    for i in xrange(limit_of_previous_field, packed_field.offset):
+    for i in range(limit_of_previous_field, packed_field.offset):
       bytes[i].is_padding = True
     bytes[packed_field.offset].packed_fields.append(packed_field)
     limit_of_previous_field = packed_field.offset + packed_field.size
 
-  for i in xrange(limit_of_previous_field, len(bytes)):
+  for i in range(limit_of_previous_field, len(bytes)):
     bytes[i].is_padding = True
 
   for byte in bytes:

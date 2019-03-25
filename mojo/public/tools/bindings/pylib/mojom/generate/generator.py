@@ -4,13 +4,15 @@
 
 """Code shared by the various language-specific code generators."""
 
+from __future__ import print_function
+
 from functools import partial
 import os.path
 import re
 
-import module as mojom
+import mojom.generate.module as mojom
 import mojom.fileutil as fileutil
-import pack
+import mojom.generate.pack as pack
 
 
 def ExpectedArraySize(kind):
@@ -81,7 +83,7 @@ def WriteFile(contents, full_path):
   fileutil.EnsureDirectoryExists(full_dir)
 
   # Dump the data to disk.
-  with open(full_path, "wb") as f:
+  with open(full_path, "w") as f:
     f.write(contents)
 
 
@@ -184,7 +186,7 @@ class Generator(object):
 
   def Write(self, contents, filename):
     if self.output_dir is None:
-      print contents
+      print(contents)
       return
     full_path = os.path.join(self.output_dir, filename)
     WriteFile(contents, full_path)
