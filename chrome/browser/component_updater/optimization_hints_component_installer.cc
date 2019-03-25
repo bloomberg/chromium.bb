@@ -13,8 +13,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "components/component_updater/component_updater_paths.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/prefs/pref_service.h"
@@ -142,13 +141,10 @@ void RegisterOptimizationHintsComponent(ComponentUpdateService* cus,
     return;
   }
 
-  bool data_saver_enabled =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          data_reduction_proxy::switches::kEnableDataReductionProxy) ||
-      (profile_prefs && profile_prefs->GetBoolean(
-                            data_reduction_proxy::prefs::kDataSaverEnabled));
-  if (!data_saver_enabled)
+  if (!data_reduction_proxy::DataReductionProxySettings::
+          IsDataSaverEnabledByUser(profile_prefs)) {
     return;
+  }
   auto installer = base::MakeRefCounted<ComponentInstaller>(
       std::make_unique<OptimizationHintsComponentInstallerPolicy>());
   installer->Register(cus, base::OnceClosure());
