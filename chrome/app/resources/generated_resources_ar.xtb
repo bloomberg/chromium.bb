@@ -1394,6 +1394,7 @@
 <translation id="3045447014237878114">نزَّل هذا الموقع عدة ملفات تلقائيًا</translation>
 <translation id="3046910703532196514">صفحة الويب، كاملة</translation>
 <translation id="304747341537320566">محركات الكلام</translation>
+<translation id="3047644958362961983">‏تساعدنا هذه المعلومات في فهم مشكلتك على "مساعد Google" بشكل أفضل. يتم تخزينها لمدة تصل إلى 90 يومًا ويقتصر الوصول على فرق الهندسة والتعليقات المختصة.</translation>
 <translation id="3053013834507634016">استخدام مفتاح الشهادة</translation>
 <translation id="3057861065630527966">نسخ الصور والفيديوهات احتياطيًا</translation>
 <translation id="3058498974290601450">يمكنك تفعيل المزامنة في أي وقت في الإعدادات.</translation>
@@ -3793,6 +3794,7 @@
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">‏هل تريد أن يترجم Google هذه الصفحة من <ph name="SOURCE_LANGUAGE" /> إلى <ph name="TARGET_LANGUAGE" />؟</translation>
 <translation id="6675665718701918026">الإشارة إلى الأجهزة المتصلة</translation>
+<translation id="6676212663108450937">يُرجى مراعاة استخدام سماعات الرأس أثناء تدريب صوتك.</translation>
 <translation id="6678717876183468697">‏عنوان URL للاستعلام</translation>
 <translation id="6680442031740878064">المساحة المتاحة: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">تقييم</translation>
@@ -4518,6 +4520,7 @@
 <translation id="7788383851298063850">أخبرنا بما يحدث</translation>
 <translation id="7788444488075094252">اللغات والإدخال</translation>
 <translation id="7788668840732459509">الموضع:</translation>
+<translation id="7789963078219276159">تم تغيير خلفية الصفحة الرئيسية إلى <ph name="CATEGORY" />.</translation>
 <translation id="7791543448312431591">إضافة</translation>
 <translation id="7792012425874949788">حدث خطأ ما عند تسجيل الدخول</translation>
 <translation id="7792388396321542707">إيقاف المشاركة</translation>
@@ -5200,6 +5203,7 @@
 <translation id="8767621466733104912">‏تحديث Chrome لجميع المستخدمين تلقائيًا</translation>
 <translation id="8770406935328356739">الدليل الجذر للإضافة</translation>
 <translation id="8770507190024617908">إدارة الأشخاص</translation>
+<translation id="8771300903067484968">تمت إعادة ضبط خلفية الصفحة الرئيسية إلى الخلفية التلقائية.</translation>
 <translation id="8774934320277480003">الهامش العلوي</translation>
 <translation id="8775144690796719618">‏عنوان URL غير صالح</translation>
 <translation id="8775404590947523323">يتم حفظ التعديلات تلقائيًا.<ph name="BREAKS" />للاحتفاظ بنسخة من الصورة الأصلية، يجب إلغاء تحديد "استبدال الملف الأصلي"</translation>
@@ -5224,7 +5228,7 @@
 <translation id="8803953437405899238">يمكنك فتح علامة تبويب جديدة بنقرة واحدة</translation>
 <translation id="8804398419035066391">السماح بالاتصال بالمواقع المتعاونة</translation>
 <translation id="8805140816472474147">يُرجى تأكيد إعدادات المزامنة لبدء المزامنة.</translation>
-<translation id="8806680466228877631">يتمكَّن <ph name="SHORTCUT" /> من إعادة فتح علامات التبويب المغلقة عن طريق الخطأ</translation>
+<translation id="8806680466228877631">يعيد <ph name="SHORTCUT" /> فتح علامات التبويب المغلقة عن طريق الخطأ.</translation>
 <translation id="8807632654848257479">ثابت</translation>
 <translation id="8808478386290700967">السوق الإلكتروني</translation>
 <translation id="8808686172382650546">قط</translation>

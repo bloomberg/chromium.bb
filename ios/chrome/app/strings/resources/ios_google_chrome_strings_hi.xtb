@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
-<translation id="1326317727527857210">अपने अन्य डिवाइस से अपने टैब पाने के लिए, Chrome में साइन इन करें.</translation>
+<translation id="1326317727527857210">अपने दूसरे डिवाइस से अपने टैब पाने के लिए, Chrome में साइन इन करें.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome निजता सूचना</translation>
 <translation id="1863312987075920112">इस ऐप्‍लिकेशन का इस्तेमाल करके, आप Chrome की <ph name="BEGIN_LINK_TOS" />सेवा की शर्तों<ph name="END_LINK_TOS" /> और <ph name="BEGIN_LINK_PRIVACY" />निजता सूचना<ph name="END_LINK_PRIVACY" /> से सहमत होते हैं.</translation>
@@ -17,15 +17,15 @@
 <translation id="3030414234702425231">क्‍योंकि आप <ph name="SIGNOUT_MANAGED_DOMAIN" /> की ओर से प्रबंधित खाते से साइन आउट कर रहे हैं, इसलिए आपका Chrome डेटा इस डिवाइस से मिट जाएगा. आपका डेटा आपके Google खाते में बना रहेगा.</translation>
 <translation id="3148434565183091099">अपने सभी डिवाइस पर अपने बुकमार्क प्राप्‍त करने के लिए, Chrome में प्रवेश करें.</translation>
 <translation id="3148688391461398285">अपने स्थान के आधार पर Chrome में बेहतर अनुभव प्राप्त करें.</translation>
-<translation id="3167189358072330585">आपका खाता Google Chrome पर काम नहीं करता. कृपया साइन इन करने के लिए अपने डोमेन व्यवस्थापक से संपर्क करें या नियमित Google खाते का उपयोग करें.</translation>
+<translation id="3167189358072330585">आपका खाता Google Chrome पर काम नहीं करता. कृपया साइन इन करने के लिए अपने डोमेन एडमिन से संपर्क करें या नियमित Google खाते का इस्तेमाल करें.</translation>
 <translation id="3196546062792660320">Chrome आपके खातों को वेब पर लाकर आपका समय बचाता है. आप सेटिंग में खाते जोड़ सकते हैं या उन्हें निकाल सकते हैं.</translation>
-<translation id="3282568296779691940">Chrome में प्रवेश करें</translation>
+<translation id="3282568296779691940">Chrome में साइन इन करें</translation>
 <translation id="3345341804167540816">Chrome का सभी जगह उपयोग करना</translation>
 <translation id="384394811301901750">Google Chrome इस समय आपके कैमरे का उपयोग नहीं कर सकता</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3980220367029651214">आप समन्वयित खातों को <ph name="USER_EMAIL1" /> से <ph name="USER_EMAIL2" /> में बदल रहे हैं. आपका मौजूदा Chrome डेटा <ph name="DOMAIN" /> द्वारा प्रबंधित किया जाता है. इससे आपका डेटा इस सेवा से हट जाएगा, लेकिन आपका डेटा <ph name="USER_EMAIL1" /> में बना रहेगा.</translation>
 <translation id="3988789688219830639">Google Chrome के पास आपकी फ़ोटो या वीडियो का एक्सेस नहीं है. iOS सेटिंग &gt; निजता &gt; फ़ोटो में एक्सेस सक्षम करें.</translation>
-<translation id="4099578267706723511">'इस्तेमाल के आंकड़े' और 'खराबी रिपोर्ट' Google को भेजकर Chrome को बेहतर बनाने में सहायता करें.</translation>
+<translation id="4099578267706723511">Google को 'इस्तेमाल के आंकड़े' और 'खराबी रिपोर्ट' भेजकर Chrome को बेहतर बनाने में मदद करें.</translation>
 <translation id="415767770115540173">अपने स्थान के आधार पर Chrome में एक बेहतर Google अनुभव प्राप्त करें.</translation>
 <translation id="424864128008805179">Chrome से प्रस्थान करें?</translation>
 <translation id="447252321002412580">Chrome के फ़ीचर और परफ़ॉर्मेंस को बेहतर बनाने में सहायता करें</translation>

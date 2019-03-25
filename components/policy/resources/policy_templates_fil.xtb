@@ -993,9 +993,9 @@
 <translation id="2824715612115726353">Paganahin ang Incognito mode</translation>
 <translation id="2836621397261130126">Nagkokontrol kung susundin ba ang pag-apruba ng patakaran ng KDC para magpasya kung maglalaan ba ng mga ticket ng <ph name="KERBEROS" />.
 
-          Kung true ang patakarang ito, susundin ng pag-authenticate ng HTTP ang pag-apruba ng patakaran ng KDC, ibig sabihin, maglalaan lang ang Chrome ng mga kredensyal kung itatakda ng KDC ang <ph name="OK_AS_DELEGATE" /> sa isang ticket ng serbisyo. Pakitingnan ang https://tools.ietf.org/html/rfc5896.html para sa higit pang impormasyon. Dapat ding tumugma ang serbisyo sa patakaran ng 'AuthNegotiateDelegateWhitelist.'
+          Kung "true" ang patakarang ito, susundin ng pag-authenticate ng HTTP ang pag-apruba ng patakaran ng KDC, ibig sabihin, maglalaan lang ang Chrome ng mga kredensyal kung itatakda ng KDC ang <ph name="OK_AS_DELEGATE" /> sa isang ticket ng serbisyo. Pakitingnan ang https://tools.ietf.org/html/rfc5896.html para sa higit pang impormasyon. Dapat ding tumugma ang serbisyo sa patakaran ng 'AuthNegotiateDelegateWhitelist.'
 
-          Kung hindi nakatakda o nakatakda sa false ang patakarang ito, babalewalain ang patakaran ng KDC sa mga sinusuportahang platform at ang patakaran ng 'AuthNegotiateDelegateWhitelist' lang ang susundin.
+          Kung hindi nakatakda o nakatakda sa "false" ang patakarang ito, babalewalain ang patakaran ng KDC sa mga sinusuportahang platform at ang patakaran ng 'AuthNegotiateDelegateWhitelist' lang ang susundin.
 
           Sa Windows, palaging sinusunod ang patakaran ng KDC.</translation>
 <translation id="283695852388224413">Kung itatakda ang patakaran, ipapatupad ang naka-configure na maximal na haba ng PIN. Ang value na 0 o mas mababa ay nangangahulugang walang maximum na haba; sa ganitong sitwasyon, puwedeng magtakda ang user ng PIN gaano man kahaba nila gusto. Kung ang setting na ito ay mas mababa sa <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME" /> ngunit mas malaki sa 0, pareho ang maximum na haba at ang minimum na haba.

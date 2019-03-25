@@ -453,7 +453,7 @@
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Adicionar a impressora ao Google Cloud Print para poder imprimir de qualquer lugar.}one{Adicionar # impressoras ao Google Cloud Print para poder imprimir de qualquer lugar.}other{Adicionar # impressoras ao Google Cloud Print para poder imprimir de qualquer lugar.}}</translation>
 <translation id="1657406563541664238">Ajudar a tornar o <ph name="PRODUCT_NAME" /> melhor enviando automaticamente estatísticas de uso e relatórios de problemas ao Google.</translation>
 <translation id="1658424621194652532">Esta página está acessando seu microfone.</translation>
-<translation id="1660204651932907780">Permitir que os sites reproduzam sons (recomendado)</translation>
+<translation id="1660204651932907780">Permitir o áudio dos sites (recomendado)</translation>
 <translation id="1661156625580498328">Aplicar a codificação AES (recomendado).</translation>
 <translation id="166179487779922818">A senha é muito pequena.</translation>
 <translation id="1661867754829461514">PIN ausente</translation>
@@ -461,7 +461,7 @@
 <translation id="166278006618318542">Algoritmo da chave pública do requerente</translation>
 <translation id="166439687370499867">A alteração das configurações de rede compartilhada não é permitida</translation>
 <translation id="1665611772925418501">Não foi possível modificar o arquivo.</translation>
-<translation id="1670399744444387456">Básicas</translation>
+<translation id="1670399744444387456">Básico</translation>
 <translation id="167160931442925455">Volume máximo</translation>
 <translation id="1673103856845176271">Não foi possível acessar o arquivo por motivos de segurança.</translation>
 <translation id="1673137583248014546"><ph name="URL" /> quer ver a marca e o modelo da sua chave de segurança</translation>
@@ -1395,6 +1395,7 @@
 <translation id="3045447014237878114">Este site fez o download de vários arquivos automaticamente</translation>
 <translation id="3046910703532196514">Página da web, completa</translation>
 <translation id="304747341537320566">Mecanismos de fala</translation>
+<translation id="3047644958362961983">Estas informações nos ajudam a entender melhor o problema com o Assistente. Elas ficam armazenadas por até 90 dias, com acesso restrito às equipes adequadas de feedback e engenharia.</translation>
 <translation id="3053013834507634016">Uso da chave de certificado</translation>
 <translation id="3057861065630527966">Fazer backup de suas fotos e seus vídeos</translation>
 <translation id="3058498974290601450">Ative a sincronização quando quiser nas configurações</translation>
@@ -1741,7 +1742,7 @@
 <translation id="3593965109698325041">Restrições de nome do certificado</translation>
 <translation id="3596235046596950091">Ativar serviços em nuvem</translation>
 <translation id="3599863153486145794">Limpa o histórico de todos os dispositivos conectados. Sua Conta do Google pode ter outras formas de histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="3600792891314830896">Silenciar sites que reproduzem sons</translation>
+<translation id="3600792891314830896">Silenciar sites com áudio</translation>
 <translation id="360180734785106144">Oferecer novos recursos à medida que sejam disponibilizados</translation>
 <translation id="3602290021589620013">Visualizar</translation>
 <translation id="3603533104205588786">Você pode clicar no ícone da estrela para adicionar uma página aos favoritos</translation>
@@ -2920,7 +2921,7 @@
 <translation id="5384883051496921101">Este site está prestes a compartilhar informações com um app fora do modo de navegação anônima.</translation>
 <translation id="5388885445722491159">Emparelhado</translation>
 <translation id="5389237414310520250">Não foi possível criar o novo usuário. Verifique o espaço no seu disco rígido e suas permissões e tente novamente.</translation>
-<translation id="5390100381392048184">Permitir que os sites reproduzam sons</translation>
+<translation id="5390100381392048184">Permitir o áudio dos sites</translation>
 <translation id="5390743329570580756">Enviar para</translation>
 <translation id="5397794290049113714">Você</translation>
 <translation id="5398572795982417028">Referência de página fora do limite, que é <ph name="MAXIMUM_PAGE" /></translation>
@@ -3799,6 +3800,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Quer que o Google traduza esta página de <ph name="SOURCE_LANGUAGE" /> para <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Dispositivo apontador conectado</translation>
+<translation id="6676212663108450937">Recomendamos o uso de fones de ouvido para treinar sua voz</translation>
 <translation id="6678717876183468697">URL de consulta</translation>
 <translation id="6680442031740878064">Disponível: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Velocidade</translation>
@@ -3920,7 +3922,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6860097299815761905">Configurações de proxy...</translation>
 <translation id="6860427144121307915">Abrir em uma guia</translation>
 <translation id="6862635236584086457">Todos os arquivos salvos nessa pasta são salvos em backup on-line automaticamente</translation>
-<translation id="6865313869410766144">Preenchimento automático dos dados do formulário</translation>
+<translation id="6865313869410766144">Preenchimento automático de dados de formulário</translation>
 <translation id="6865708901122695652">Logs de eventos WebRTC (<ph name="WEBRTC_EVENT_LOG_COUNT" />)</translation>
 <translation id="686664946474413495">Temperatura da cor</translation>
 <translation id="6870888490422746447">Escolha um app para compartilhar:</translation>
@@ -4342,7 +4344,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7506541170099744506">Seu <ph name="DEVICE_TYPE" /> foi inscrito para o gerenciamento empresarial.</translation>
 <translation id="7507930499305566459">Certificado do respondente de status</translation>
 <translation id="7508545000531937079">Apresentação de slides</translation>
-<translation id="7513029293694390567">Faça login automaticamente nos websites que usam credenciais armazenadas. Quando o recurso estiver desativado, será necessário fornecer uma confirmação todas as vezes antes de fazer login em um website.</translation>
+<translation id="7513029293694390567">Faça login automaticamente nos sites que usam credenciais armazenadas. Quando o recurso estiver desativado, será necessário fornecer uma confirmação todas as vezes que fizer login em um site.</translation>
 <translation id="7517786267097410259">Criar uma senha:</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Diga "Ok Google"</translation>
@@ -4524,6 +4526,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7788383851298063850">Conte-nos o que está acontecendo</translation>
 <translation id="7788444488075094252">Idiomas e entrada</translation>
 <translation id="7788668840732459509">Posição:</translation>
+<translation id="7789963078219276159">O plano de fundo da página inicial foi alterado para <ph name="CATEGORY" />.</translation>
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="7792012425874949788">Ocorreu algo errado no login</translation>
 <translation id="7792388396321542707">Interromper compartilhamento</translation>
@@ -4587,7 +4590,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7846634333498149051">Teclado</translation>
 <translation id="7847212883280406910">Pressione Ctrl + Alt + S para alternar para <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="7849264908733290972">Abrir &amp;imagem em uma nova guia</translation>
-<translation id="784934925303690534">Intervalo de tempo</translation>
+<translation id="784934925303690534">Período</translation>
 <translation id="7850851215703745691">Estes arquivos do Google Drive ainda não foram compartilhados</translation>
 <translation id="7851457902707056880">O login foi restrito somente à conta do proprietário. Reinicie e faça login com a conta do proprietário. A máquina reiniciará automaticamente dentro de 30 segundos.</translation>
 <translation id="7851716364080026749">Sempre bloquear acesso à câmera e ao microfone</translation>
@@ -4977,7 +4980,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="843760761634048214">Salvar cartão de crédito</translation>
 <translation id="8438328416656800239">Mudar para um navegador inteligente</translation>
 <translation id="8438566539970814960">Melhorar pesquisas e navegação</translation>
-<translation id="8439506636278576865">Oferecer para traduzir páginas neste idioma</translation>
+<translation id="8439506636278576865">Oferecer a tradução de páginas neste idioma</translation>
 <translation id="8440630305826533614">Aplicativos Linux</translation>
 <translation id="8443338615972234259">Crie uma nova conta para seu usuário supervisionado agora mesmo.</translation>
 <translation id="8446884382197647889">Saiba mais</translation>
@@ -5207,6 +5210,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8767621466733104912">Atualizar automaticamente o Chrome para todos os usuários</translation>
 <translation id="8770406935328356739">Diretório raiz da extensão</translation>
 <translation id="8770507190024617908">Gerenciar pessoas</translation>
+<translation id="8771300903067484968">O plano de fundo da página inicial foi redefinido para o plano de fundo padrão.</translation>
 <translation id="8774934320277480003">Margem superior</translation>
 <translation id="8775144690796719618">URL inválido</translation>
 <translation id="8775404590947523323">Suas edições são salvas automaticamente. <ph name="BREAKS" />Para manter uma cópia da imagem original, desmarque a opção "Substituir original"</translation>

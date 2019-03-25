@@ -894,7 +894,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="751961395872307827">Hindi makakonekta sa site</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Hindi makakuha ng mga suhestyon</translation>
-<translation id="7559245342362162951">Ipakita ang mga tab ng pangkat sa fullscreen grid</translation>
+<translation id="7559245342362162951">Ipakita ang mga tab ng grupo sa fullscreen grid</translation>
 <translation id="7559975015014302720">Naka-off ang Lite mode</translation>
 <translation id="7562080006725997899">Kini-clear ang data mula sa pagba-browse</translation>
 <translation id="756809126120519699">Na-clear ang data ng Chrome</translation>
@@ -1106,9 +1106,9 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="9137013805542155359">Ipakita ang orihinal</translation>
 <translation id="9139068048179869749">Magtanong bago payagan ang mga site na magpadala ng mga notification (inirerekomenda)</translation>
 <translation id="9139318394846604261">Shopping</translation>
-<translation id="9150694013019234766">Magpalipat-lipat sa mga tab sa iyong pangkat ng tab malapit sa ibaba ng screen</translation>
+<translation id="9150694013019234766">Magpalipat-lipat sa mga tab sa iyong grupo ng tab malapit sa ibaba ng screen</translation>
 <translation id="9155898266292537608">Makakapaghanap ka rin gamit ang mabilisang pag-tap sa isang salita</translation>
-<translation id="9169594135889675189">Magdagdag ng bagong tab sa pangkat</translation>
+<translation id="9169594135889675189">Magdagdag ng bagong tab sa grupo</translation>
 <translation id="9188680907066685419">Mag-sign out sa pinamamahalaang account</translation>
 <translation id="9204836675896933765">1 file ang natitira</translation>
 <translation id="9206873250291191720">A</translation>

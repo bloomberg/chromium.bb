@@ -575,7 +575,7 @@
 <translation id="2043770014371753404">Onemogočeni tiskalniki v podjetjih</translation>
 <translation id="2050629715135525072">Nadzira možnost uporabnika, povezanega z gostiteljem za oddaljeni dostop, da prenaša datoteke med odjemalcem in gostiteljem. To ne velja za povezave za oddaljeno pomoč, ki ne podpirajo prenosa podatkov.
 
-          Če je ta nastavitev onemogočena, prenos datotek ne bo dovoljen. Če je ta nastavitev omogočena ali ni nastavljena, prenos podatkov ne bo dovoljen.</translation>
+          Če je ta nastavitev onemogočena, prenos datotek ne bo dovoljen. Če je ta nastavitev omogočena ali ni nastavljena, bo prenos podatkov dovoljen.</translation>
 <translation id="2057317273526988987">Dovoli dostop do seznama URL-jev</translation>
 <translation id="2061810934846663491">Nastavitev zahtevanih imen domene za dostop do oddaljenih gostiteljev</translation>
 <translation id="206623763829450685">Določa, katere načine preverjanja pristnosti HTTP podpira <ph name="PRODUCT_NAME" />.
@@ -702,7 +702,7 @@
       Če to nastavitev onemogočite ali je ne določite, spletnim stranem načeloma dovolite uporabo API-ja WebGL, vtičnikom pa API Pepper 3D. Privzete nastavitve brskalnika lahko še vedno določajo, da je treba za uporabo teh API-jev uporabiti argumente ukazne vrstice.
 
       Če je pravilnik HardwareAccelerationModeEnabled onemogočen, se pravilnik Disable3DAPIs prezre in je enako, kot če je pravilnik Disable3DAPIs omogočen.</translation>
-<translation id="2258126710006312594">Uporabnikom oddaljenega dostopa dovoli prenos datotek iz gostitelju in v njega</translation>
+<translation id="2258126710006312594">Uporabnikom oddaljenega dostopa dovoli prenos datotek iz gostitelja in v njega</translation>
 <translation id="2265214338421787313">Skrbnik lahko s tem pravilnikom določi, da lahko stran med razkladanjem prikazuje pojavna okna.
 
       Če je ta pravilnik omogočen, je stranem med razkladanjem dovoljeno prikazovanje pojavnih oken.

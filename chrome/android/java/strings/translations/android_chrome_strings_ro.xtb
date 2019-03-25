@@ -224,6 +224,7 @@
 <translation id="2593272815202181319">Un singur spațiu</translation>
 <translation id="2610239185026711824">Sugerează o parolă</translation>
 <translation id="2612676031748830579">Număr card</translation>
+<translation id="2613747923081026172">Creează grupul</translation>
 <translation id="2621115761605608342">Permite JavaScript pentru un anumit site.</translation>
 <translation id="2625189173221582860">Parola a fost copiată</translation>
 <translation id="2631006050119455616">Economisite</translation>
@@ -883,6 +884,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7473891865547856676">Nu, mulțumesc</translation>
 <translation id="7475192538862203634">Dacă acest mesaj apare frecvent, încearcă următoarele <ph name="BEGIN_LINK" />sugestii<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Nu s-a găsit cardul SD. Este posibil ca unele fișiere să lipsească.</translation>
+<translation id="7479104141328977413">Gestionarea filelor</translation>
 <translation id="7481312909269577407">Înainte</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Actualizată la <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Afișează parolele</translation>

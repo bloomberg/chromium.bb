@@ -1634,7 +1634,6 @@
 <translation id="3440663250074896476">Tindakan lainnya untuk <ph name="BOOKMARK_NAME" /></translation>
 <translation id="3440761377721825626">Tanyakan saat situs ingin menggunakan plugin untuk mengakses komputer</translation>
 <translation id="3441653493275994384">Layar</translation>
-<translation id="3442151986393356303">Sertakan histori Asisten terbaru melalui Sherlog. Histori dapat mencakup identitas, lokasi, dan info debug <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="3445925074670675829">Perangkat USB-C</translation>
 <translation id="344630545793878684">Membaca data Anda di sejumlah situs</translation>
 <translation id="3449839693241009168">Tekan <ph name="SEARCH_KEY" /> untuk mengirimkan perintah ke <ph name="EXTENSION_NAME" /></translation>
@@ -4975,7 +4974,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8435395510592618362">Verifikasi identitas Anda dengan <ph name="APP_NAME" /></translation>
 <translation id="843760761634048214">Simpan kartu kredit</translation>
 <translation id="8438328416656800239">Beralih ke browser cerdas</translation>
-<translation id="8438566539970814960">Jadikan penelusuran dan browsing lebih baik</translation>
+<translation id="8438566539970814960">Jadikan penelusuran dan penjelajahan lebih baik</translation>
 <translation id="8439506636278576865">Tawarkan penerjemahan halaman ke dalam bahasa ini</translation>
 <translation id="8440630305826533614">Aplikasi Linux</translation>
 <translation id="8443338615972234259">Buat akun baru untuk pengguna yang dilindungi sekarang.</translation>
@@ -5132,7 +5131,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8669284339312441707">Hangat</translation>
 <translation id="8669949407341943408">Memindahkan...</translation>
 <translation id="867085395664725367">Terjadi error server sementara.</translation>
-<translation id="8671210955687109937">Dapat berkomentar</translation>
+<translation id="8671210955687109937">Dapat mengomentari</translation>
 <translation id="8673026256276578048">Telusuri Web...</translation>
 <translation id="8673383193459449849">Server bermasalah</translation>
 <translation id="8675354002693747642">Kunci yang dibagikan sebelumnya</translation>

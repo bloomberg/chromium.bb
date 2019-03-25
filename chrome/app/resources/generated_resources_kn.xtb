@@ -1632,7 +1632,6 @@
 <translation id="3440663250074896476"><ph name="BOOKMARK_NAME" /> ಗಾಗಿ ಇನ್ನಷ್ಟು ಕ್ರಿಯೆಗಳು</translation>
 <translation id="3440761377721825626">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಪ್ರವೇಶಿಸಲು ಸೈಟ್ ಪ್ಲಗ್ ಇನ್ ಬಳಸಲು ಬಯಸಿದಾಗ ಕೇಳಿ</translation>
 <translation id="3441653493275994384">ಸ್ಕ್ರೀನ್‌</translation>
-<translation id="3442151986393356303">Sherlog ಮೂಲಕ ಇತ್ತೀಚಿನ ಅಸಿಸ್ಟೆಂಟ್ ಇತಿಹಾಸವನ್ನು ಸೇರಿಸಿ. ಇದು ನಿಮ್ಮ ಗುರುತು, ಸ್ಥಳ ಮತ್ತು ಡೀಬಗ್ ಮಾಹಿತಿಯನ್ನು ಒಳಗೊಂಡಿರಬಹುದು <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
 <translation id="3445925074670675829">USB-C ಸಾಧನ</translation>
 <translation id="344630545793878684">ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಹಲವಾರು ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿ ಓದಿ</translation>
 <translation id="3449839693241009168"><ph name="EXTENSION_NAME" /> ಗೆ ಆದೇಶಗಳನ್ನು ಕಳುಹಿಸಲು <ph name="SEARCH_KEY" /> ಒತ್ತಿರಿ</translation>
@@ -5225,7 +5224,7 @@
 <translation id="8803953437405899238">ಒಂದೇ ಕ್ಲಿಕ್‌ ಮಾಡುವ ಮೂಲಕ ಹೊಸ ಟ್ಯಾಬ್‌ ತೆರೆಯಿರಿ</translation>
 <translation id="8804398419035066391">ಸಹಕಾರಿ ವೆಬ್‌ಸೈಟ್‌ಗಳೊಂದಿಗೆ ಸಂವಹಿಸಿ</translation>
 <translation id="8805140816472474147">ಸಿಂಕ್ ಮಾಡುವುದನ್ನು ಪ್ರಾರಂಭಿಸಲು, ಸಿಂಕ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಖಚಿತಪಡಿಸಿ.</translation>
-<translation id="8806680466228877631"><ph name="SHORTCUT" /> ಬಳಸಿಕೊಂಡು ಆಕಸ್ಮಿಕವಾಗಿ ಮುಚ್ಚಲಾದ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಪುನಃ ತೆರೆಯಬಹುದು</translation>
+<translation id="8806680466228877631">ಆಕಸ್ಮಿಕವಾಗಿ ಮುಚ್ಚಲಾದ ಟ್ಯಾಬ್‌ಗಳನ್ನು <ph name="SHORTCUT" /> ಬಳಸಿ ಪುನಃ ತೆರೆಯಬಹುದು</translation>
 <translation id="8807632654848257479">ಸ್ಥಿರ</translation>
 <translation id="8808478386290700967">ವೆಬ್‌ ಸ್ಟೋರ್‌</translation>
 <translation id="8808686172382650546">ಬೆಕ್ಕು</translation>

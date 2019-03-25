@@ -865,7 +865,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="2824715612115726353">Activa el mode d'incògnit</translation>
 <translation id="2836621397261130126">Controla si es respecta l'aprovació de la política del KDC per decidir si es poden delegar els tiquets de <ph name="KERBEROS" />.
 
-          Si aquesta política s'estableix en "true", l'autenticació HTTP respecta l'aprovació per part de la política del KDC. És a dir, Chrome només delega les credencials si el KDC estableix <ph name="OK_AS_DELEGATE" /> en un tiquet de servei. Per obtenir més informació, consulta https://tools.ietf.org/html/rfc5896.html.  El servei també ha de coincidir amb la política AuthNegotiateDelegateWhitelist.
+          Si aquesta política s'estableix en "true", l'autenticació HTTP respecta l'aprovació per part de la política del KDC. És a dir, Chrome només delega les credencials si el KDC estableix <ph name="OK_AS_DELEGATE" /> en un tiquet de servei. Per obtenir més informació, consulta https://tools.ietf.org/html/rfc5896.html. El servei també ha de coincidir amb la política AuthNegotiateDelegateWhitelist.
 
           Si aquesta política no s'estableix o s'estableix en "false", s'ignora la política del KDC a les plataformes admeses i només es respecta la política AuthNegotiateDelegateWhitelist.
 
