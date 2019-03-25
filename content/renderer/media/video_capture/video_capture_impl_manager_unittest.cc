@@ -4,6 +4,7 @@
 
 #include <array>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -12,18 +13,18 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/video_capture_impl.h"
-#include "content/renderer/media/video_capture_impl_manager.h"
+#include "content/renderer/media/video_capture/video_capture_impl.h"
+#include "content/renderer/media/video_capture/video_capture_impl_manager.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/mojom/video_capture.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using media::BindToCurrentLoop;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::SaveArg;
-using media::BindToCurrentLoop;
 
 namespace content {
 
@@ -81,8 +82,7 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
   }
 
   MOCK_METHOD1(RequestRefreshFrame, void(int32_t));
-  MOCK_METHOD3(ReleaseBuffer,
-               void(int32_t, int32_t, double));
+  MOCK_METHOD3(ReleaseBuffer, void(int32_t, int32_t, double));
 
   void GetDeviceSupportedFormats(int32_t,
                                  int32_t,
@@ -175,7 +175,8 @@ class VideoCaptureImplManagerTest : public ::testing::Test,
       std::array<base::Closure, kNumClients>* stop_callbacks) {
     base::RunLoop run_loop;
     base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
-    EXPECT_CALL(*this, OnStopped(_)).Times(kNumClients - 1)
+    EXPECT_CALL(*this, OnStopped(_))
+        .Times(kNumClients - 1)
         .RetiresOnSaturation();
     EXPECT_CALL(*this, OnStopped(_))
         .WillOnce(RunClosure(std::move(quit_closure)))
@@ -206,8 +207,9 @@ class VideoCaptureImplManagerTest : public ::testing::Test,
   base::Closure StartCapture(media::VideoCaptureSessionId id,
                              const media::VideoCaptureParams& params) {
     return manager_->StartCapture(
-        id, params, base::Bind(&VideoCaptureImplManagerTest::OnStateUpdate,
-                               base::Unretained(this), id),
+        id, params,
+        base::Bind(&VideoCaptureImplManagerTest::OnStateUpdate,
+                   base::Unretained(this), id),
         base::Bind(&VideoCaptureImplManagerTest::OnFrameReady,
                    base::Unretained(this)));
   }

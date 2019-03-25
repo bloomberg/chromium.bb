@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_IMPL_MANAGER_H_
-#define CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_IMPL_MANAGER_H_
+#ifndef CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_IMPL_MANAGER_H_
+#define CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_IMPL_MANAGER_H_
 
 #include <memory>
 #include <string>
@@ -141,4 +141,4 @@ class CONTENT_EXPORT VideoCaptureImplManager {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_IMPL_MANAGER_H_
+#endif  // CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_IMPL_MANAGER_H_

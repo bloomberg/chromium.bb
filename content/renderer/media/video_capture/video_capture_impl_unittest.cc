@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -11,7 +13,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/video_capture_impl.h"
+#include "content/renderer/media/video_capture/video_capture_impl.h"
 #include "media/capture/mojom/video_capture.mojom.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -189,18 +191,16 @@ class VideoCaptureImplTest : public ::testing::Test {
   }
 
   void GetDeviceSupportedFormats() {
-    const base::Callback<void(const media::VideoCaptureFormats&)>
-        callback = base::Bind(
-            &VideoCaptureImplTest::OnDeviceSupportedFormats,
-            base::Unretained(this));
+    const base::Callback<void(const media::VideoCaptureFormats&)> callback =
+        base::Bind(&VideoCaptureImplTest::OnDeviceSupportedFormats,
+                   base::Unretained(this));
     video_capture_impl_->GetDeviceSupportedFormats(callback);
   }
 
   void GetDeviceFormatsInUse() {
-    const base::Callback<void(const media::VideoCaptureFormats&)>
-        callback = base::Bind(
-            &VideoCaptureImplTest::OnDeviceFormatsInUse,
-            base::Unretained(this));
+    const base::Callback<void(const media::VideoCaptureFormats&)> callback =
+        base::Bind(&VideoCaptureImplTest::OnDeviceFormatsInUse,
+                   base::Unretained(this));
     video_capture_impl_->GetDeviceFormatsInUse(callback);
   }
 

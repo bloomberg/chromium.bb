@@ -9,10 +9,13 @@
 // VideoCaptureImpl never post task to itself. All operations must be
 // synchronous.
 
-#include "content/renderer/media/video_capture_impl.h"
+#include "content/renderer/media/video_capture/video_capture_impl.h"
 
 #include <stddef.h>
+#include <algorithm>
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -499,8 +502,8 @@ void VideoCaptureImpl::OnAllClientsFinishedConsumingFrame(
   buffer_context = nullptr;
 #endif
 
-  GetVideoCaptureHost()->ReleaseBuffer(
-      device_id_, buffer_id, consumer_resource_utilization);
+  GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id,
+                                       consumer_resource_utilization);
 }
 
 void VideoCaptureImpl::StopDevice() {

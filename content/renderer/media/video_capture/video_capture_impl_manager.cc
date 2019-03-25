@@ -22,7 +22,7 @@
 // We make sure deletion is the last task on the IO thread for a
 // VideoCaptureImpl object. This allows the use of Unretained() binding.
 
-#include "content/renderer/media/video_capture_impl_manager.h"
+#include "content/renderer/media/video_capture/video_capture_impl_manager.h"
 
 #include <algorithm>
 #include <string>
@@ -32,7 +32,7 @@
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/video_capture_impl.h"
+#include "content/renderer/media/video_capture/video_capture_impl.h"
 
 namespace content {
 
@@ -81,7 +81,7 @@ base::Closure VideoCaptureImplManager::UseDevice(
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   auto it = std::find_if(
       devices_.begin(), devices_.end(),
-      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
+      [id](const DeviceEntry& entry) { return entry.session_id == id; });
   if (it == devices_.end()) {
     devices_.push_back(DeviceEntry());
     it = devices_.end() - 1;
@@ -113,7 +113,7 @@ base::Closure VideoCaptureImplManager::StartCapture(
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
-      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
+      [id](const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
 
   // This ID is used to identify a client of VideoCaptureImpl.
@@ -134,7 +134,7 @@ void VideoCaptureImplManager::RequestRefreshFrame(
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
-      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
+      [id](const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
   // Use of base::Unretained() is safe because |devices_| is released on the
   // |io_task_runner()| as well.
@@ -147,7 +147,7 @@ void VideoCaptureImplManager::Suspend(media::VideoCaptureSessionId id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
-      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
+      [id](const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
   if (it->is_individually_suspended)
     return;  // Device has already been individually suspended.
@@ -167,7 +167,7 @@ void VideoCaptureImplManager::Resume(media::VideoCaptureSessionId id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
-      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
+      [id](const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
   if (!it->is_individually_suspended)
     return;  // Device was not individually suspended.
@@ -187,7 +187,7 @@ void VideoCaptureImplManager::GetDeviceSupportedFormats(
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
-      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
+      [id](const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
   // Use of base::Unretained() is safe because |devices_| is released on the
   // |io_task_runner()| as well.
@@ -202,7 +202,7 @@ void VideoCaptureImplManager::GetDeviceFormatsInUse(
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
-      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
+      [id](const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
   // Use of base::Unretained() is safe because |devices_| is released on the
   // |io_task_runner()| as well.
@@ -214,7 +214,7 @@ void VideoCaptureImplManager::GetDeviceFormatsInUse(
 std::unique_ptr<VideoCaptureImpl>
 VideoCaptureImplManager::CreateVideoCaptureImplForTesting(
     media::VideoCaptureSessionId session_id) const {
-  return std::unique_ptr<VideoCaptureImpl>();
+  return nullptr;
 }
 
 void VideoCaptureImplManager::StopCapture(int client_id,
@@ -222,7 +222,7 @@ void VideoCaptureImplManager::StopCapture(int client_id,
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
-      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
+      [id](const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
   // Use of base::Unretained() is safe because |devices_| is released on the
   // |io_task_runner()| as well.
@@ -231,12 +231,11 @@ void VideoCaptureImplManager::StopCapture(int client_id,
                                 base::Unretained(it->impl.get()), client_id));
 }
 
-void VideoCaptureImplManager::UnrefDevice(
-    media::VideoCaptureSessionId id) {
+void VideoCaptureImplManager::UnrefDevice(media::VideoCaptureSessionId id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
-      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
+      [id](const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
   DCHECK_GT(it->client_count, 0);
   --it->client_count;

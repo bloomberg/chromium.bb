@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/local_video_capturer_source.h"
+#include "content/renderer/media/video_capture/local_video_capturer_source.h"
 
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "content/renderer/media/video_capture_impl_manager.h"
+#include "content/renderer/media/video_capture/video_capture_impl_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
 
