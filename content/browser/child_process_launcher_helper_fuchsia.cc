@@ -19,7 +19,6 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
     const ChildProcessLauncherPriority& priority) {
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
   // TODO(https://crbug.com/926583): Fuchsia does not currently support this.
-  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 ChildProcessTerminationInfo ChildProcessLauncherHelper::GetTerminationInfo(
