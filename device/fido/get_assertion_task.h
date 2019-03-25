@@ -43,19 +43,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
   // FidoTask:
   void StartTask() override;
 
-  void GetAssertion(bool enforce_user_presence = false);
+  void GetAssertion();
   void U2fSign();
 
-  // Callback logic for CTAP2 GetAssertion. This will fall back to U2F on hybrid
-  // U2F/CTAP2 devices when:
-  //   a) No credentials were recognized via CTAP2 and,
-  //   b) The request contains the appID extension.
-  void GetAssertionCallbackWithU2fFallback(
-      bool is_silent_authentication,
-      UserVerificationRequirement user_verification_required,
-      GetAssertionTaskCallback callback,
-      CtapDeviceResponseCode,
-      base::Optional<AuthenticatorGetAssertionResponse>);
+  // HandleResponseToSilentRequest is a callback to a request without user-
+  // presence requested used when this assertion request may require falling
+  // back to U2F.
+  void HandleResponseToSilentRequest(
+      UserVerificationRequirement original_uv_configuration,
+      CtapDeviceResponseCode response_code,
+      base::Optional<AuthenticatorGetAssertionResponse> response_data);
 
   CtapGetAssertionRequest request_;
   std::unique_ptr<SignOperation> sign_operation_;
