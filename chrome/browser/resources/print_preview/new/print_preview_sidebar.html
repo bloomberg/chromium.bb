@@ -1,0 +1,143 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
+<link rel="import" href="../metrics.html">
+<link rel="import" href="../data/destination.html">
+<link rel="import" href="print_preview_shared_css.html">
+<link rel="import" href="strings.html">
+<link rel="import" href="settings_behavior.html">
+<link rel="import" href="state.html">
+<link rel="import" href="header.html">
+<link rel="import" href="destination_settings.html">
+<link rel="import" href="pages_settings.html">
+<link rel="import" href="copies_settings.html">
+<link rel="import" href="layout_settings.html">
+<link rel="import" href="color_settings.html">
+<link rel="import" href="media_size_settings.html">
+<link rel="import" href="margins_settings.html">
+<link rel="import" href="dpi_settings.html">
+<link rel="import" href="pages_per_sheet_settings.html">
+<link rel="import" href="scaling_settings.html">
+<link rel="import" href="duplex_settings.html">
+<link rel="import" href="other_options_settings.html">
+<link rel="import" href="advanced_options_settings.html">
+<link rel="import" href="more_settings.html">
+<if expr="not chromeos">
+  <link rel="import" href="link_container.html">
+</if>
+<dom-module id="print-preview-sidebar">
+  <template>
+    <style include="print-preview-shared cr-shared-style">
+      :host {
+        background-color: white;
+        border-inline-end: var(--print-preview-settings-border);
+        display: flex;
+        flex-direction: column;
+      }
+
+      #container {
+        color: var(--google-grey-900);
+        flex: 1;
+        overflow: overlay;
+        padding-bottom: 16px;
+      }
+
+      .settings-section {
+        display: block;
+        margin-bottom: 16px;
+        margin-top: 16px;
+      }
+    </style>
+    <print-preview-header id="header" destination="[[destination]]"
+        error-message="[[errorMessage]]" state="[[state]]"
+        settings="[[settings]]" managed="[[controlsManaged]]">
+    </print-preview-header>
+    <div id="container">
+      <print-preview-destination-settings id="destinationSettings"
+          cloud-print-interface="[[cloudPrintInterface]]"
+          destination="{{destination}}" settings="[[settings]]"
+          destination-state="{{destinationState}}"
+          app-kiosk-mode="[[isInAppKioskMode_]]"
+          disabled="[[controlsDisabled_]]"
+          available class="settings-section">
+      </print-preview-destination-settings>
+      <print-preview-pages-settings settings="[[settings]]"
+          page-count="[[pageCount]]" disabled="[[controlsDisabled_]]"
+          hidden$="[[!settings.pages.available]]" class="settings-section">
+      </print-preview-pages-settings>
+      <print-preview-copies-settings settings="[[settings]]"
+          disabled="[[controlsDisabled_]]"
+          hidden$="[[!settings.copies.available]]" class="settings-section">
+      </print-preview-copies-settings>
+      <print-preview-layout-settings settings="[[settings]]"
+          disabled="[[controlsDisabled_]]"
+          hidden$="[[!settings.layout.available]]" class="settings-section">
+      </print-preview-layout-settings>
+      <print-preview-color-settings settings="[[settings]]"
+          disabled="[[controlsDisabled_]]"
+          hidden$="[[!settings.color.available]]" class="settings-section">
+      </print-preview-color-settings>
+      <print-preview-more-settings
+          settings-expanded-by-user="{{settingsExpandedByUser_}}"
+          disabled="[[controlsDisabled_]]"
+          hidden$="[[!shouldShowMoreSettings_]]">
+      </print-preview-more-settings>
+      <iron-collapse id="moreSettings"
+          opened="[[shouldExpandSettings_(
+              settingsExpandedByUser_, shouldShowMoreSettings_)]]">
+        <print-preview-media-size-settings settings="[[settings]]"
+            capability="[[destination.capabilities.printer.media_size]]"
+            disabled="[[controlsDisabled_]]"
+            hidden$="[[!settings.mediaSize.available]]"
+            class="settings-section">
+        </print-preview-media-size-settings>
+        <print-preview-pages-per-sheet-settings settings="[[settings]]"
+            disabled="[[controlsDisabled_]]"
+            hidden$="[[!settings.pagesPerSheet.available]]"
+            class="settings-section">
+        </print-preview-pages-per-sheet-settings>
+        <print-preview-margins-settings settings="[[settings]]"
+            disabled="[[controlsDisabled_]]"
+            hidden$="[[!settings.margins.available]]"
+            class="settings-section">
+        </print-preview-margins-settings>
+        <print-preview-dpi-settings settings="[[settings]]"
+            capability="[[destination.capabilities.printer.dpi]]"
+            disabled="[[controlsDisabled_]]"
+            hidden$="[[!settings.dpi.available]]" class="settings-section">
+        </print-preview-dpi-settings>
+        <print-preview-scaling-settings settings="[[settings]]"
+            disabled="[[controlsDisabled_]]"
+            hidden$="[[!settings.scaling.available]]"
+            class="settings-section">
+        </print-preview-scaling-settings>
+        <print-preview-duplex-settings settings="[[settings]]"
+            disabled="[[controlsDisabled_]]"
+            hidden$="[[!settings.duplex.available]]"
+            class="settings-section">
+        </print-preview-duplex-settings>
+        <print-preview-other-options-settings settings="[[settings]]"
+            disabled="[[controlsDisabled_]]"
+            hidden$="[[!settings.otherOptions.available]]"
+            class="settings-section">
+        </print-preview-other-options-settings>
+        <print-preview-advanced-options-settings
+            settings="[[settings]]" destination="[[destination]]"
+            disabled="[[controlsDisabled_]]"
+            hidden$="[[!settings.vendorItems.available]]"
+            class="settings-section">
+        </print-preview-advanced-options-settings>
+      </iron-collapse>
+<if expr="not chromeos">
+      <print-preview-link-container destination="[[destination]]"
+          app-kiosk-mode="[[isInAppKioskMode_]]"
+          disabled="[[controlsDisabled_]]">
+      </print-preview-link-container>
+</if>
+    </div>
+  </template>
+  <script src="print_preview_sidebar.js"></script>
+</dom-module>

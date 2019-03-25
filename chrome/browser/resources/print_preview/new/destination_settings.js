@@ -20,6 +20,12 @@ Polymer({
   properties: {
     appKioskMode: Boolean,
 
+    /** @type {cloudprint.CloudPrintInterface} */
+    cloudPrintInterface: {
+      type: Object,
+      observer: 'onCloudPrintInterfaceSet_',
+    },
+
     /** @type {?print_preview.Destination} */
     destination: {
       type: Object,
@@ -118,8 +124,9 @@ Polymer({
     this.tracker_.removeAll();
   },
 
-  /** @param {!cloudprint.CloudPrintInterface} cloudPrintInterface */
-  setCloudPrintInterface: function(cloudPrintInterface) {
+  /** @private */
+  onCloudPrintInterfaceSet_: function() {
+    const cloudPrintInterface = assert(this.cloudPrintInterface);
     [cloudprint.CloudPrintInterfaceEventType.SEARCH_FAILED,
      cloudprint.CloudPrintInterfaceEventType.PRINTER_FAILED,
     ].forEach(eventType => {

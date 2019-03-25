@@ -55,7 +55,8 @@ cr.define('print_button_test', function() {
         // since previewArea.onPluginLoad_() indicates to the UI that the
         // preview is ready.
         if (printBeforePreviewReady) {
-          const header = page.$$('print-preview-header');
+          const sidebar = page.$$('print-preview-sidebar');
+          const header = sidebar.$$('print-preview-header');
           const printButton = header.$$('.action-button');
           assertFalse(printButton.disabled);
           printButton.click();
@@ -111,12 +112,15 @@ cr.define('print_button_test', function() {
             printBeforePreviewReady = true;
 
             // Select Save as PDF destination
-            const pdfDestination = page.$$('print-preview-destination-settings')
-                                       .destinationStore_.destinations()
-                                       .find(d => d.id == 'Save as PDF');
+            const destinationSettings =
+                page.$$('print-preview-sidebar')
+                    .$$('print-preview-destination-settings');
+            const pdfDestination =
+                destinationSettings.destinationStore_.destinations().find(
+                    d => d.id == 'Save as PDF');
             assertTrue(!!pdfDestination);
-            page.$$('print-preview-destination-settings')
-                .destinationStore_.selectDestination(pdfDestination);
+            destinationSettings.destinationStore_.selectDestination(
+                pdfDestination);
 
             // Reload preview and wait for print.
             return nativeLayer.whenCalled('print');

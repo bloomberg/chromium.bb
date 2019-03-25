@@ -34,7 +34,6 @@ cr.define('header_test', function() {
           'FooDevice', print_preview.DestinationType.GOOGLE,
           print_preview.DestinationOrigin.COOKIES, 'FooName',
           print_preview.DestinationConnectionStatus.ONLINE);
-      header.errorMessage = '';
       header.state = print_preview_new.State.READY;
       header.managed = false;
       test_util.fakeDataBind(model, header, 'settings');
@@ -119,7 +118,7 @@ cr.define('header_test', function() {
 
       const testError = 'Error printing to cloud print';
       header.set('state', print_preview_new.State.FATAL_ERROR);
-      header.setErrorMessage(testError);
+      header.errorMessage = testError;
       assertEquals(testError, summary.textContent);
       assertTrue(printButton.disabled);
     });
