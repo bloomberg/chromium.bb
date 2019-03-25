@@ -1089,7 +1089,7 @@
   },
   {
     "name": "enable-encryption-migration",
-    // "owners": [ "your-team" ],
+    "owners": [ "fukino" ],
     "expiry_milestone": 76
   },
   {
