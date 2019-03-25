@@ -392,11 +392,8 @@ void SpatialNavigationController::MoveInterestTo(Node* next_node) {
       LayoutObject* layout_object = interest_element_->GetLayoutObject();
       DCHECK(layout_object);
 
-      auto params = WebScrollIntoViewParams();
-      if (page_->GetSettings().GetScrollAnimatorEnabled())
-        params.behavior = WebScrollIntoViewParams::kSmooth;
       layout_object->ScrollRectToVisible(
-          element->BoundingBoxForScrollIntoView(), params);
+          element->BoundingBoxForScrollIntoView(), WebScrollIntoViewParams());
     }
     return;
   }
