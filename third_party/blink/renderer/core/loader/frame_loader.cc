@@ -830,13 +830,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   bool should_navigate_target_frame = policy == kNavigationPolicyCurrentTab;
 
   if (target_frame && target_frame != frame_ && should_navigate_target_frame) {
-    auto* target_local_frame = DynamicTo<LocalFrame>(target_frame);
-    if (target_local_frame && !target_local_frame->IsNavigationAllowed()) {
-      return;
-    }
-
     bool was_in_same_page = target_frame->GetPage() == frame_->GetPage();
-
     request.SetFrameName("_self");
     target_frame->Navigate(request, frame_load_type);
     Page* page = target_frame->GetPage();
