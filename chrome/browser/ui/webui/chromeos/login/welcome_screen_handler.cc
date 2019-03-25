@@ -50,6 +50,7 @@ WelcomeScreenHandler::WelcomeScreenHandler(JSCallsContainer* js_calls_container,
     : BaseScreenHandler(kScreenId, js_calls_container),
       core_oobe_view_(core_oobe_view) {
   set_call_js_prefix(kJsScreenPath);
+  set_user_acted_method_path("login.WelcomeScreen.userActed");
   DCHECK(core_oobe_view_);
 }
 

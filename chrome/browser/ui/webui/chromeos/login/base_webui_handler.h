@@ -99,6 +99,17 @@ class BaseWebUIHandler : public content::WebUIMessageHandler {
   }
 
  protected:
+  // Set the method identifier for a userActed callback. The actual callback
+  // will be registered in RegisterMessages so this should be called in the
+  // constructor. This takes the full method path, ie,
+  // "login.WelcomeScreen.userActed".
+  //
+  // If this is not called then userActed-style callbacks will not be available
+  // for the screen.
+  void set_user_acted_method_path(const std::string& user_acted_method_path) {
+    user_acted_method_path_ = user_acted_method_path;
+  }
+
   // All subclasses should implement this method to provide localized values.
   virtual void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) = 0;
@@ -238,11 +249,11 @@ class BaseWebUIHandler : public content::WebUIMessageHandler {
     web_ui()->CallJavascriptFunctionUnsafe(function_name, args...);
   }
 
-  // Returns full name of JS method based on screen and method names.
-  std::string FullMethodPath(const std::string& method) const;
-
   // Handles user action.
   void HandleUserAction(const std::string& action_id);
+
+  // Path that is used to invoke user actions.
+  std::string user_acted_method_path_;
 
   // Keeps whether page is ready.
   bool page_is_ready_ = false;

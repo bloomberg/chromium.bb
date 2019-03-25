@@ -48,14 +48,11 @@ void BaseWebUIHandler::GetLocalizedStrings(base::DictionaryValue* dict) {
   GetAdditionalParameters(dict);
 }
 
-std::string BaseWebUIHandler::FullMethodPath(const std::string& method) const {
-  DCHECK(!method.empty());
-  return js_screen_path_prefix_ + method;
-}
-
 void BaseWebUIHandler::RegisterMessages() {
-  AddCallback(FullMethodPath("userActed"),
-              &BaseScreenHandler::HandleUserAction);
+  if (!user_acted_method_path_.empty()) {
+    AddCallback(user_acted_method_path_, &BaseScreenHandler::HandleUserAction);
+  }
+
   DeclareJSCallbacks();
 }
 
