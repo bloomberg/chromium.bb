@@ -5,6 +5,14 @@
 
 <merge xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- This view provides a background for the toolbar when the page's background
+         is visible through the lateral margins of the search view -->
+    <View
+        android:id="@+id/action_bar_bg"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/toolbar_height_no_shadow"
+        android:background="@color/toolbar_background_primary" />
+
     <ViewStub
         android:id="@+id/action_bar_stub"
         android:inflatedId="@+id/action_bar"
