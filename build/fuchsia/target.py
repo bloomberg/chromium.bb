@@ -275,7 +275,7 @@ class Target(object):
             _GetPackageInfo(next_package_path)
         logging.info('Installing %s version %s.' %
                      (install_package_name, package_version))
-        return_code = self.RunCommand(['amber_ctl', 'get_up', '-n',
+        return_code = self.RunCommand(['amberctl', 'get_up', '-n',
                                        install_package_name, '-v',
                                        package_version],
                                        timeout_secs=_INSTALL_TIMEOUT_SECS)
@@ -328,19 +328,19 @@ class Target(object):
 
     # Register the repo.
     return_code = self.RunCommand(
-        [('amber_ctl rm_src -n %s; ' +
-          'amber_ctl add_src -f http://127.0.0.1:%d/repo_config.json')
+        [('amberctl rm_src -n %s; ' +
+          'amberctl add_src -f http://127.0.0.1:%d/repo_config.json')
          % (_REPO_NAME, remote_port)])
     if return_code != 0:
-      raise Exception('Error code %d when running amber_ctl.' % return_code)
+      raise Exception('Error code %d when running amberctl.' % return_code)
 
 
   def _UnregisterAmberRepository(self):
     """Unregisters the Amber repository."""
 
     logging.debug('Unregistering Amber repository.')
-    self.RunCommand(['amber_ctl', 'rm_src', '-n', _REPO_NAME])
+    self.RunCommand(['amberctl', 'rm_src', '-n', _REPO_NAME])
 
     # Re-enable 'devhost' repo if it's present. This is useful for devices that
     # were booted with 'fx serve'.
-    self.RunCommand(['amber_ctl', 'enable_src', '-n', 'devhost'], silent=True)
+    self.RunCommand(['amberctl', 'enable_src', '-n', 'devhost'], silent=True)
