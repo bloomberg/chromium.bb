@@ -906,8 +906,17 @@ void AppListControllerImpl::ViewShown(int64_t display_id) {
 }
 
 void AppListControllerImpl::ViewClosing() {
-  if (presenter_.GetView()->search_box_view()->is_search_box_active())
+  if (presenter_.GetView()->search_box_view()->is_search_box_active()) {
     LogSearchAbandonHistogram();
+
+    // Close the virtual keyboard before the app list view is dismissed.
+    // Otherwise if the browser is behind the app list view, after the latter is
+    // closed, IME is updated because of the changed focus. Consequently,
+    // the virtual keyboard is hidden for the wrong IME instance, which may
+    // bring troubles when restoring the virtual keyboard (see
+    // https://crbug.com/944233).
+    keyboard::KeyboardController::Get()->HideKeyboardExplicitlyBySystem();
+  }
 
   CloseAssistantUi(AssistantExitPoint::kLauncherClose);
   if (client_)
