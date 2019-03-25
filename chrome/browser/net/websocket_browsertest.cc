@@ -195,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest,
     content::TitleWatcher connected_title_watcher(
         raw_new_tab, base::ASCIIToUTF16("CONNECTED"));
     connected_title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("CLOSED"));
-    NavigateToHTTP("counted_connection.html");
+    NavigateToHTTP("connect_and_be_observed.html");
     const base::string16 result = connected_title_watcher.WaitAndGetTitle();
     EXPECT_TRUE(base::EqualsASCII(result, "CONNECTED"));
 
@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest,
     destroyed_watcher.Wait();
   }
 
-  NavigateToHTTP("count_connection.html");
+  NavigateToHTTP("close_observer.html");
   EXPECT_EQ("PASS", WaitAndGetTitle());
 }
 
