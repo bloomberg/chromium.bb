@@ -12,8 +12,8 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/google/core/common/google_util.h"
 #include "components/language/core/browser/url_language_histogram.h"
-#include "components/search_engines/template_url_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/translate_util.h"
@@ -43,13 +43,11 @@ const int kMaxTranslateLoadCheckAttempts = 20;
 
 ContentTranslateDriver::ContentTranslateDriver(
     content::NavigationController* nav_controller,
-    const TemplateURLService* template_url_service,
     language::UrlLanguageHistogram* url_language_histogram)
     : content::WebContentsObserver(nav_controller->GetWebContents()),
       navigation_controller_(nav_controller),
       translate_manager_(nullptr),
       max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts),
-      template_url_service_(template_url_service),
       next_page_seq_no_(0),
       language_histogram_(url_language_histogram),
       weak_pointer_factory_(this) {
@@ -251,37 +249,19 @@ void ContentTranslateDriver::DidFinishNavigation(
   const base::Optional<url::Origin>& initiator_origin =
       navigation_handle->GetInitiatorOrigin();
 
-  bool navigation_from_dse =
+  bool navigation_from_google =
       initiator_origin.has_value() &&
-      IsDefaultSearchEngineOriginator(initiator_origin.value());
+      google_util::IsGoogleDomainUrl(initiator_origin->GetURL(),
+                                     google_util::DISALLOW_SUBDOMAIN,
+                                     google_util::ALLOW_NON_STANDARD_PORTS);
 
   translate_manager_->GetLanguageState().DidNavigate(
       navigation_handle->IsSameDocument(), navigation_handle->IsInMainFrame(),
-      reload, navigation_handle->GetHrefTranslate(), navigation_from_dse);
+      reload, navigation_handle->GetHrefTranslate(), navigation_from_google);
 }
 
 void ContentTranslateDriver::OnPageAway(int page_seq_no) {
   pages_.erase(page_seq_no);
-}
-
-bool ContentTranslateDriver::IsDefaultSearchEngineOriginator(
-    const url::Origin& originating_origin) const {
-  // This isn't always set in tests
-  if (!template_url_service_)
-    return false;
-
-  const TemplateURL* default_provider =
-      template_url_service_->GetDefaultSearchProvider();
-
-  if (default_provider) {
-    GURL search_url = default_provider->GenerateSearchURL(
-        template_url_service_->search_terms_data());
-
-    return search_url.is_valid() &&
-           url::Origin::Create(search_url) == originating_origin;
-  }
-
-  return false;
 }
 
 void ContentTranslateDriver::AddBinding(
