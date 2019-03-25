@@ -80,8 +80,8 @@ config("chromium_sqlite3_compile_options") {
     # syntax, for instance SQLITE_OMIT_VIRTUALTABLE omits the virtual table
     # syntax entirely. Missing an item usually results in syntax working but
     # execution failing. Review:
-    #   src/src/parse.py
-    #   src/tool/mkkeywordhash.c
+    #   patched/src/parse.py
+    #   patched/tool/mkkeywordhash.c
 
     # The flags below are recommended in the SQLite documentation, and disable
     # features Chrome doesn't use.
@@ -270,7 +270,7 @@ config("sqlite_warnings") {
     ]
   }
   if (is_win && !is_clang) {
-    cflags += [ "/wd4101" ]  # 'zTrace' unreferenced variable in src/vdbe.c
+    cflags += [ "/wd4101" ]  # 'zTrace' unreferenced variable in patched/vdbe.c
   }
 }
 
@@ -279,15 +279,15 @@ component("chromium_sqlite3") {
   visibility = [ ":*" ]
 
   public = [
+    "patched/src/recover.h",
     "sqlite3.h",
-    "src/src/recover.h",
   ]
 
   sources = [
     "amalgamation/sqlite3.h",
+    "patched/src/recover.c",
+    "patched/src/recover_varint.c",
     "sqlite3_shim.c",
-    "src/src/recover.c",
-    "src/src/recover_varint.c",
   ]
 
   inputs = [
@@ -394,11 +394,11 @@ if (is_win || is_mac || is_linux) {
     ]
 
     if (is_linux) {
-      sources += [ "src/src/shell_icu_linux.c" ]
+      sources += [ "patched/src/shell_icu_linux.c" ]
     }
 
     if (is_win) {
-      sources += [ "src/src/shell_icu_win.c" ]
+      sources += [ "patched/src/shell_icu_win.c" ]
     }
 
     deps = [
@@ -422,7 +422,7 @@ if (is_win || is_mac || is_linux) {
 fuzzer_test("sqlite3_ossfuzz_fuzzer") {
   include_dirs = [ "." ]
   sources = [
-    "src/test/ossfuzz.c",
+    "patched/test/ossfuzz.c",
   ]
   deps = [
     ":sqlite",
@@ -582,7 +582,7 @@ if (use_fuzzing_engine) {
   fuzzer_test("sqlite3_dbfuzz2_fuzzer") {
     include_dirs = [ "." ]
     sources = [
-      "src/test/dbfuzz2.c",
+      "patched/test/dbfuzz2.c",
     ]
     deps = [
       ":sqlite",

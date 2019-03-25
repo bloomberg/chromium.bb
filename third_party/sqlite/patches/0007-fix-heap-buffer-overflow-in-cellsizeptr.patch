@@ -7,13 +7,13 @@ This backports https://www.sqlite.org/src/info/e7aca0714bc475e0
 
 Bug: 925656
 ---
- third_party/sqlite/src/src/pager.c | 10 ++++++++--
+ third_party/sqlite/patched/src/pager.c | 10 ++++++++--
  1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/third_party/sqlite/src/src/pager.c b/third_party/sqlite/src/src/pager.c
+diff --git a/third_party/sqlite/patched/src/pager.c b/third_party/sqlite/patched/src/pager.c
 index 35f625d2c03a..efb9155f545d 100644
---- a/third_party/sqlite/src/src/pager.c
-+++ b/third_party/sqlite/src/src/pager.c
+--- a/third_party/sqlite/patched/src/pager.c
++++ b/third_party/sqlite/patched/src/pager.c
 @@ -3786,8 +3786,14 @@ int sqlite3PagerSetPagesize(Pager *pPager, u32 *pPageSize, int nReserve){
        rc = sqlite3OsFileSize(pPager->fd, &nByte);
      }
@@ -29,8 +29,8 @@ index 35f625d2c03a..efb9155f545d 100644
 +        memset(pNew+pageSize, 0, 8);
 +      }
      }
- 
+
      if( rc==SQLITE_OK ){
--- 
+--
 2.21.0.225.g810b269d1ac-goog
 

@@ -16,7 +16,9 @@
 #include "sql/database.h"
 #include "sql/statement.h"
 #include "third_party/sqlite/sqlite3.h"
-#include "third_party/sqlite/src/src/recover.h"
+
+// Needs to be included after "third_party/sqlite/sqlite.h".
+#include "third_party/sqlite/patched/src/recover.h"
 
 namespace sql {
 
