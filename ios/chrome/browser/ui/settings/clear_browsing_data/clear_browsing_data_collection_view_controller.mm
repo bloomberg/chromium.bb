@@ -34,7 +34,7 @@
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_manager.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_table_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -287,7 +287,7 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
   switch (itemType) {
     case ItemTypeTimeRange: {
       UIViewController* controller =
-          [[TimeRangeSelectorCollectionViewController alloc]
+          [[TimeRangeSelectorTableViewController alloc]
               initWithPrefs:_browserState->GetPrefs()
                    delegate:self.dataManager];
       [self.navigationController pushViewController:controller animated:YES];

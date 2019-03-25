@@ -506,7 +506,7 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
         [[LegacySettingsDetailItem alloc] initWithType:ItemTypeTimeRange];
     collectionTimeRangeItem.text = l10n_util::GetNSString(
         IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE);
-    NSString* detailText = [TimeRangeSelectorCollectionViewController
+    NSString* detailText = [TimeRangeSelectorTableViewController
         timePeriodLabelForPrefs:self.browserState->GetPrefs()];
     DCHECK(detailText);
     collectionTimeRangeItem.detailText = detailText;
@@ -675,12 +675,12 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
   [self.consumer updateCellsForItem:footerItem];
 }
 
-#pragma mark TimeRangeSelectorCollectionViewControllerDelegate
+#pragma mark TimeRangeSelectorTableViewControllerDelegate
 
 - (void)timeRangeSelectorViewController:
-            (TimeRangeSelectorCollectionViewController*)collectionViewController
+            (TimeRangeSelectorTableViewController*)tableViewController
                     didSelectTimePeriod:(browsing_data::TimePeriod)timePeriod {
-  NSString* detailText = [TimeRangeSelectorCollectionViewController
+  NSString* detailText = [TimeRangeSelectorTableViewController
       timePeriodLabelForPrefs:self.browserState->GetPrefs()];
   self.collectionViewTimeRangeItem.detailText = detailText;
   [self.consumer updateCellsForItem:self.collectionViewTimeRangeItem];
