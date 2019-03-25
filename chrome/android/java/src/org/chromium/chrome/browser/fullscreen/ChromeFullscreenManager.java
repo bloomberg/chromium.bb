@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.tab.TabBrowserControlsOffsetHelper;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -323,7 +324,8 @@ public class ChromeFullscreenManager
                 // there is no touchscreen when browsing in VR, the toast doesn't have any useful
                 // information.
                 return !isOverlayVideoMode() && !VrModuleProvider.getDelegate().isInVr()
-                        && !VrModuleProvider.getDelegate().bootsToVr();
+                        && !VrModuleProvider.getDelegate().bootsToVr()
+                        && !FeatureUtilities.isNoTouchModeEnabled();
             }
         };
     }
