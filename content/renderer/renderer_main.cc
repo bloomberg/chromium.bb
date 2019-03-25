@@ -30,6 +30,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
@@ -142,6 +143,10 @@ int RendererMain(const MainFunctionParams& parameters) {
   RendererMainPlatformDelegate platform(parameters);
 
   base::PlatformThread::SetName("CrRendererMain");
+
+  // Force main thread initialization. When the implementation is based on a
+  // better means of determining which is the main thread, remove.
+  RenderThread::IsMainThread();
 
 #if defined(OS_ANDROID)
   // If we have any pending LibraryLoader histograms, record them.
