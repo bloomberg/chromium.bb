@@ -1977,10 +1977,6 @@
     "label": "//cc/paint:paint_op_buffer_fuzzer",
     "type": "fuzzer",
   },
-  "password_generator_fips181_fuzzer": {
-    "label": "//components/autofill/core/browser:password_generator_fips181_fuzzer",
-    "type": "fuzzer",
-  },
   "password_generator_proto_fuzzer": {
     "label": "//components/autofill/core/browser:password_generator_proto_fuzzer",
     "type": "fuzzer",

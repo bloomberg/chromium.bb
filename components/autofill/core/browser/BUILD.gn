@@ -321,7 +321,6 @@ jumbo_static_library("browser") {
   ]
   deps = [
     ":password_generator",
-    ":password_generator_fips181",
     "proto:legacy_proto_bridge",
     "//base",
     "//base:i18n",
@@ -480,17 +479,6 @@ static_library("password_generator") {
   ]
 }
 
-static_library("password_generator_fips181") {
-  sources = [
-    "password_generator_fips181.cc",
-    "password_generator_fips181.h",
-  ]
-  deps = [
-    "//base",
-    "//third_party/fips181",
-  ]
-}
-
 bundle_data("unit_tests_bundle_data") {
   sources = [
     "//components/test/data/autofill/merge/input/ambiguous.in",
@@ -560,7 +548,6 @@ source_set("unit_tests") {
     "label_formatter_unittest.cc",
     "label_formatter_utils_unittest.cc",
     "name_field_unittest.cc",
-    "password_generator_fips181_unittest.cc",
     "password_generator_unittest.cc",
     "password_requirements_spec_fetcher_unittest.cc",
     "payments/autofill_wallet_data_type_controller_unittest.cc",
@@ -618,7 +605,6 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     ":password_generator",
-    ":password_generator_fips181",
     ":test_support",
     ":unit_tests_bundle_data",
     "proto:legacy_proto_bridge",
@@ -676,15 +662,6 @@ fuzzer_test("form_structure_fuzzer") {
   ]
   seed_corpus = "form_structure_fuzzer_corpus"
   dict = "form_structure_fuzzer.dict"
-}
-
-fuzzer_test("password_generator_fips181_fuzzer") {
-  sources = [
-    "password_generator_fips181_fuzzer.cc",
-  ]
-  deps = [
-    ":password_generator_fips181",
-  ]
 }
 
 if (use_libfuzzer) {
