@@ -45,6 +45,8 @@ public class DownloadPreferences
         if (PrefetchConfiguration.isPrefetchingFlagEnabled()) {
             mPrefetchingEnabled = (ChromeSwitchPreference) findPreference(PREF_PREFETCHING_ENABLED);
             mPrefetchingEnabled.setOnPreferenceChangeListener(this);
+
+            updatePrefetchSummary();
         } else {
             getPreferenceScreen().removePreference(findPreference(PREF_PREFETCHING_ENABLED));
         }
@@ -70,7 +72,26 @@ public class DownloadPreferences
         }
 
         if (mPrefetchingEnabled != null) {
-            mPrefetchingEnabled.setChecked(PrefetchConfiguration.isPrefetchingEnabled());
+            mPrefetchingEnabled.setChecked(PrefetchConfiguration.isPrefetchingEnabledInSettings());
+            updatePrefetchSummary();
+        }
+    }
+
+    private void updatePrefetchSummary() {
+        // The summary text should remain empty if mPrefetchingEnabled is switched off so it is only
+        // updated when the setting is on.
+        if (PrefetchConfiguration.isPrefetchingEnabled()) {
+            mPrefetchingEnabled.setSummaryOn("");
+        } else if (PrefetchConfiguration.isPrefetchingEnabledInSettings()) {
+            // If prefetching is enabled by the user but isPrefetchingEnabled() returned false, we
+            // know that prefetching is forbidden by the server.
+            if (PrefetchConfiguration.isEnabledByServerUnknown()) {
+                mPrefetchingEnabled.setSummaryOn(
+                        R.string.download_settings_prefetch_maybe_unavailable_description);
+            } else {
+                mPrefetchingEnabled.setSummaryOn(
+                        R.string.download_settings_prefetch_unavailable_description);
+            }
         }
     }
 
@@ -92,6 +113,7 @@ public class DownloadPreferences
             }
         } else if (PREF_PREFETCHING_ENABLED.equals(preference.getKey())) {
             PrefetchConfiguration.setPrefetchingEnabledInSettings((boolean) newValue);
+            updatePrefetchSummary();
         }
         return true;
     }

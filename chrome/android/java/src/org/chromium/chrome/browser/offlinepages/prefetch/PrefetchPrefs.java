@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.offlinepages.prefetch;
 import org.chromium.base.ContextUtils;
 
 /**
- * Preferences used to provide prefetch related notofications.
+ * Preferences used to provide prefetch related notifications.
  *  - Having new pages: boolean indicating whether new pages have been saved or not
  *  - Notification timestamp: the last time a notification is shown
  *  - Offline counter: how many times the task ran and seen that we are offline
