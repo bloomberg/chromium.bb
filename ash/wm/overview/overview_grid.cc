@@ -1248,6 +1248,17 @@ void OverviewGrid::UpdateYPositionAndOpacity(
     float opacity,
     const gfx::Rect& work_area,
     OverviewSession::UpdateAnimationSettingsCallback callback) {
+  // Translate the window items to |new_y| with the opacity.
+  for (const auto& window_item : window_list_)
+    window_item->UpdateYPositionAndOpacity(new_y, opacity, callback);
+
+  // Shield widget can be null because it's created asynchronously. The
+  // shield_widget won't use the same transform when created if this
+  // happened. Since shield widget will be removed soon, this is leave it as is.
+  // (https://crbug.com/942759)
+  if (!shield_widget_)
+    return;
+
   // Translate |shield_widget_| to |new_y|. The shield widget covers the shelf
   // so scale it down while moving it, so that it does not cover the launcher,
   // which is showing as this is disappearing.
@@ -1265,10 +1276,6 @@ void OverviewGrid::UpdateYPositionAndOpacity(
   shield_window->SetTransform(gfx::Transform(1.f, 0.f, 0.f, height_ratio, 0.f,
                                              static_cast<float>(new_y)));
   shield_window->layer()->SetOpacity(opacity);
-
-  // Apply the same translation and opacity change to the windows in the grid.
-  for (const auto& window_item : window_list_)
-    window_item->UpdateYPositionAndOpacity(new_y, opacity, callback);
 }
 
 aura::Window* OverviewGrid::GetTargetWindowOnLocation(
