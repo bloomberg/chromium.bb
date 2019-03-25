@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/core/loader/navigation_policy.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 
@@ -75,6 +76,11 @@ struct CORE_EXPORT FrameLoadRequest {
   ClientRedirectPolicy ClientRedirect() const { return client_redirect_; }
   void SetClientRedirect(ClientRedirectPolicy client_redirect) {
     client_redirect_ = client_redirect;
+  }
+
+  NavigationPolicy GetNavigationPolicy() const { return navigation_policy_; }
+  void SetNavigationPolicy(NavigationPolicy navigation_policy) {
+    navigation_policy_ = navigation_policy;
   }
 
   WebTriggeringEventInfo TriggeringEventInfo() const {
@@ -146,6 +152,7 @@ struct CORE_EXPORT FrameLoadRequest {
   AtomicString frame_name_;
   AtomicString href_translate_;
   ClientRedirectPolicy client_redirect_;
+  NavigationPolicy navigation_policy_ = kNavigationPolicyCurrentTab;
   WebTriggeringEventInfo triggering_event_info_ =
       WebTriggeringEventInfo::kNotFromEvent;
   Member<HTMLFormElement> form_;
