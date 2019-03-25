@@ -770,14 +770,25 @@ ManagementGenerateAppForLinkFunction::ManagementGenerateAppForLinkFunction() {
 ManagementGenerateAppForLinkFunction::~ManagementGenerateAppForLinkFunction() {
 }
 
-void ManagementGenerateAppForLinkFunction::FinishCreateBookmarkApp(
-    const Extension* extension,
-    const WebApplicationInfo& web_app_info) {
-  ResponseValue response =
-      extension
-          ? ArgumentList(management::GenerateAppForLink::Results::Create(
-                CreateExtensionInfo(nullptr, *extension, browser_context())))
-          : Error(keys::kGenerateAppForLinkInstallError);
+void ManagementGenerateAppForLinkFunction::FinishCreateWebApp(
+    const std::string& web_app_id,
+    bool install_success) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
+  const Extension* extension =
+      registry->enabled_extensions().GetByID(web_app_id);
+
+  // |extension| is nullptr here if install succeeds with
+  // kDesktopPWAsWithoutExtensions mode enabled: there is no underlying
+  // extension for |web_app_id|.
+  // TODO(loyso): Rework generateAppForLink API: crbug.com/945205.
+  ResponseValue response;
+  if (install_success && extension) {
+    response = ArgumentList(management::GenerateAppForLink::Results::Create(
+        CreateExtensionInfo(nullptr, *extension, browser_context())));
+  } else {
+    response = Error(keys::kGenerateAppForLinkInstallError);
+  }
+
   Respond(std::move(response));
   Release();  // Balanced in Run().
 }
