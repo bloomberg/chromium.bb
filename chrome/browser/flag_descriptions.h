@@ -1188,9 +1188,6 @@ extern const char kUsePdfCompositorServiceDescription[];
 extern const char kUserActivationV2Name[];
 extern const char kUserActivationV2Description[];
 
-extern const char kUserConsentForExtensionScriptsName[];
-extern const char kUserConsentForExtensionScriptsDescription[];
-
 extern const char kUseSuggestionsEvenIfFewFeatureName[];
 extern const char kUseSuggestionsEvenIfFewFeatureDescription[];
 

@@ -119,30 +119,27 @@ base::string16 ExtensionActionViewController::GetAccessibleName(
   base::string16 title_utf16 =
       base::UTF8ToUTF16(title.empty() ? extension()->name() : title);
 
-  // With runtime host permissions, include a "host access" portion of the
-  // tooltip if the extension has or wants access to the site.
-  if (base::FeatureList::IsEnabled(
-          extensions_features::kRuntimeHostPermissions)) {
-    PageInteractionStatus interaction_status =
-        GetPageInteractionStatus(web_contents);
-    int interaction_status_description_id = -1;
-    switch (interaction_status) {
-      case PageInteractionStatus::kNone:
-        // No string for neither having nor wanting access.
-        break;
-      case PageInteractionStatus::kPending:
-        interaction_status_description_id = IDS_EXTENSIONS_WANTS_ACCESS_TO_SITE;
-        break;
-      case PageInteractionStatus::kActive:
-        interaction_status_description_id = IDS_EXTENSIONS_HAS_ACCESS_TO_SITE;
-        break;
-    }
+  // Include a "host access" portion of the tooltip if the extension has or
+  // wants access to the site.
+  PageInteractionStatus interaction_status =
+      GetPageInteractionStatus(web_contents);
+  int interaction_status_description_id = -1;
+  switch (interaction_status) {
+    case PageInteractionStatus::kNone:
+      // No string for neither having nor wanting access.
+      break;
+    case PageInteractionStatus::kPending:
+      interaction_status_description_id = IDS_EXTENSIONS_WANTS_ACCESS_TO_SITE;
+      break;
+    case PageInteractionStatus::kActive:
+      interaction_status_description_id = IDS_EXTENSIONS_HAS_ACCESS_TO_SITE;
+      break;
+  }
 
-    if (interaction_status_description_id != -1) {
-      title_utf16 = base::StrCat(
-          {title_utf16, base::UTF8ToUTF16("\n"),
-           l10n_util::GetStringUTF16(interaction_status_description_id)});
-    }
+  if (interaction_status_description_id != -1) {
+    title_utf16 = base::StrCat(
+        {title_utf16, base::UTF8ToUTF16("\n"),
+         l10n_util::GetStringUTF16(interaction_status_description_id)});
   }
 
   return title_utf16;
@@ -457,21 +454,13 @@ ExtensionActionViewController::GetIconImageSource(
   bool grayscale = false;
   bool was_blocked = false;
   bool action_is_visible = extension_action_->GetIsVisible(tab_id);
-  if (base::FeatureList::IsEnabled(
-          extensions_features::kRuntimeHostPermissions)) {
-    PageInteractionStatus interaction_status =
-        GetPageInteractionStatus(web_contents);
-    // With the runtime host permissions feature, we only grayscale the icon if
-    // it cannot interact with the page and the icon is disabled.
-    grayscale = interaction_status == PageInteractionStatus::kNone &&
-                !action_is_visible;
-    was_blocked = interaction_status == PageInteractionStatus::kPending;
-  } else {
-    // Without runtime host permissions enabled, grayscaling is purely used to
-    // indicate "clickability", and not any kind of access.
-    grayscale = !action_is_visible;
-    // was_blocked is always false without runtime host permissions.
-  }
+  PageInteractionStatus interaction_status =
+      GetPageInteractionStatus(web_contents);
+  // We only grayscale the icon if it cannot interact with the page and the icon
+  // is disabled.
+  grayscale =
+      interaction_status == PageInteractionStatus::kNone && !action_is_visible;
+  was_blocked = interaction_status == PageInteractionStatus::kPending;
 
   image_source->set_grayscale(grayscale);
   image_source->set_paint_blocked_actions_decoration(was_blocked);

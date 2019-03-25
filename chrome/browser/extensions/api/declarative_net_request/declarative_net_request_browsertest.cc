@@ -25,7 +25,6 @@
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -1939,13 +1938,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
 }
 
 // Tests that redirecting requests using the declarativeNetRequest API works
-// with extensions_features::kRuntimeHostPermissions.
+// with runtime host permissions.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        WithheldPermissions_Redirect) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   // Load an extension which redirects all script requests made to
   // "b.com/subresources/not_a_valid_script.js", to
   // "b.com/subresources/script.js".
@@ -2078,10 +2073,6 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 // the declarative net request API.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        WithheldPermissions_Block) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   // Load an extension with access to <all_urls> which blocks all script
   // requests made on example.com.
   TestRule rule = CreateGenericRule();

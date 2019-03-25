@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -43,7 +42,6 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
@@ -680,12 +678,6 @@ class BrowserActionsBarRuntimeHostPermissionsBrowserTest
   BrowserActionsBarRuntimeHostPermissionsBrowserTest() = default;
   ~BrowserActionsBarRuntimeHostPermissionsBrowserTest() override = default;
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    BrowserActionsBarBrowserTest::SetUpCommandLine(command_line);
-    scoped_feature_list_.InitAndEnableFeature(
-        extensions_features::kRuntimeHostPermissions);
-  }
-
   void SetUpOnMainThread() override {
     BrowserActionsBarBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -739,7 +731,6 @@ class BrowserActionsBarRuntimeHostPermissionsBrowserTest
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   extensions::TestExtensionDir extension_dir_;
   scoped_refptr<const extensions::Extension> extension_;
 

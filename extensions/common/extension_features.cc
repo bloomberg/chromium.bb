@@ -18,11 +18,6 @@ const char kBypassCorbAllowlistParamName[] = "BypassCorbExtensionsAllowlist";
 const base::Feature kNewExtensionUpdaterService{
     "NewExtensionUpdaterService", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Forces extensions with <all_hosts> to use activeTab-style runtime host
-// permissions.
-const base::Feature kRuntimeHostPermissions{"RuntimeHostPermissions",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Forces requests to go through WebRequestProxyingURLLoaderFactory.
 const base::Feature kForceWebRequestProxyForTest{
     "ForceWebRequestProxyForTest", base::FEATURE_DISABLED_BY_DEFAULT};
