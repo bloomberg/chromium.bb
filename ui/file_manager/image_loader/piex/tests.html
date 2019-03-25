@@ -26,14 +26,16 @@ piex wasm raw image preview / thumbnail test page
       this.length = buffer.byteLength;
     }
 
-    process(done) {
-      const memory = Module._malloc(this.source.byteLength);
+    process(resolve, reject) {
+      const memory = Module._malloc(this.length);
+      if (!memory)
+        return reject(new Error('image malloc failure'));
 
       const callback = Module.addFunction((result) => {
         this.result = result;
         Module.removeFunction(callback);
         Module._free(memory);
-        done(this);
+        resolve(this);
       }, 'vi');
 
       // Process the image: blocks until |callback| is called.
@@ -186,8 +188,8 @@ piex wasm raw image preview / thumbnail test page
 
     // Extract its preview and thumbnail images, render them.
     time = performance.now();
-    new Promise(resolve => {
-      new ImageBuffer(buffer).process(resolve);
+    new Promise((resolve, reject) => {
+      new ImageBuffer(buffer).process(resolve, reject);
     }).then((imageBuffer) => {
       time = performance.now() - time;
       console.log('test: result ' + JSON.stringify(imageBuffer.result));
