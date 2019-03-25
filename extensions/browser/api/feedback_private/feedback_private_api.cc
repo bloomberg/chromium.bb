@@ -11,6 +11,8 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -331,13 +333,15 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
 
   delegate->FetchAndMergeIwlwifiDumpLogsIfPresent(
       std::move(sys_logs), browser_context(),
-      base::Bind(&FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched, this,
-                 feedback_data,
-                 feedback_info.send_bluetooth_logs &&
-                     *feedback_info.send_bluetooth_logs));
+      base::BindOnce(
+          &FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched, this,
+          feedback_data,
+          feedback_info.send_histograms && *feedback_info.send_histograms,
+          feedback_info.send_bluetooth_logs &&
+              *feedback_info.send_bluetooth_logs));
 #else
-  OnAllLogsFetched(feedback_data, false /* send_bluetooth_logs */,
-                   std::move(sys_logs));
+  OnAllLogsFetched(feedback_data, false /* send_histograms */,
+                   false /* send_bluetooth_logs */, std::move(sys_logs));
 #endif  // defined(OS_CHROMEOS)
 
   return RespondLater();
@@ -345,11 +349,20 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
 
 void FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched(
     scoped_refptr<FeedbackData> feedback_data,
+    bool send_histograms,
     bool send_bluetooth_logs,
     std::unique_ptr<system_logs::SystemLogsResponse> sys_logs) {
   VLOG(1) << "All logs have been fetched. Proceeding with sending the report.";
 
   feedback_data->SetAndCompressSystemInfo(std::move(sys_logs));
+
+  if (send_histograms) {
+    auto histograms = std::make_unique<std::string>();
+    *histograms =
+        base::StatisticsRecorder::ToJSON(base::JSON_VERBOSITY_LEVEL_FULL);
+    if (!histograms->empty())
+      feedback_data->SetAndCompressHistograms(std::move(histograms));
+  }
 
   if (send_bluetooth_logs) {
     std::unique_ptr<std::string> bluetooth_logs =
