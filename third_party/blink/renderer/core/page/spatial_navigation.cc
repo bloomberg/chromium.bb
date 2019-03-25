@@ -275,8 +275,14 @@ bool ScrollInDirection(Node* container, SpatialNavigationDirection direction) {
       return false;
   }
 
-  container->GetLayoutBox()->GetScrollableArea()->UserScroll(
-      kScrollByPixel, ScrollOffset(dx, dy));
+  // TODO(crbug.com/914775): Use UserScroll() instead. UserScroll() does a
+  // smooth, animated scroll which might make it easier for users to understand
+  // spatnav's moves. Another advantage of using ScrollableArea::UserScroll() is
+  // that it returns a ScrollResult so we don't need to call
+  // CanScrollInDirection(). Regular arrow-key scrolling (without
+  // --enable-spatial-navigation) already uses smooth scrolling by default.
+  container->GetLayoutBox()->GetScrollableArea()->ScrollBy(ScrollOffset(dx, dy),
+                                                           kUserScroll);
   return true;
 }
 

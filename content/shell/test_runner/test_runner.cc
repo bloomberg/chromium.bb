@@ -2229,8 +2229,6 @@ void TestRunner::OverridePreference(gin::Arguments* args) {
     ConvertAndSet(args, &prefs->web_security_enabled);
   } else if (key == "WebKitSpatialNavigationEnabled") {
     ConvertAndSet(args, &prefs->spatial_navigation_enabled);
-  } else if (key == "ScrollAnimatorEnabled") {
-    ConvertAndSet(args, &prefs->scroll_animator_enabled);
   } else {
     args->ThrowTypeError("Invalid name for preference: " + key);
   }
