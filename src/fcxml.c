@@ -1338,7 +1338,7 @@ _get_real_path_from_prefix(FcConfigParse *parse, const FcChar8 *path, const FcCh
 	if (!GetModuleFileName (NULL, (LPCH) buffer, sizeof (buffer) - 20))
 	{
 	    FcConfigMessage (parse, FcSevereError, "GetModuleFileName failed");
-	    goto bail;
+	    return NULL;
 	}
 	/*
 	 * Must use the multi-byte aware function to search
@@ -1357,7 +1357,7 @@ _get_real_path_from_prefix(FcConfigParse *parse, const FcChar8 *path, const FcCh
 	if (!GetModuleFileName (NULL, (LPCH) buffer, sizeof (buffer) - 20))
 	{
 	    FcConfigMessage (parse, FcSevereError, "GetModuleFileName failed");
-	    goto bail;
+	    return NULL;
 	}
 	p = _mbsrchr (data, '\\');
 	if (p) *p = '\0';
@@ -1371,7 +1371,7 @@ _get_real_path_from_prefix(FcConfigParse *parse, const FcChar8 *path, const FcCh
 	if (rc == 0 || rc > sizeof (buffer) - 20)
 	{
 	    FcConfigMessage (parse, FcSevereError, "GetSystemWindowsDirectory failed");
-	    goto bail;
+	    return NULL;
 	}
 	if (data [strlen ((const char *) data) - 1] != '\\')
 	    strcat ((char *) data, "\\");
