@@ -129,5 +129,13 @@
     });
   }
 
+  function addPictureInPictureEventListeners() {
+    video.addEventListener('enterpictureinpicture', () => {
+      document.title = 'enterpictureinpicture';
+    });
+    video.addEventListener('leavepictureinpicture', () => {
+      document.title = 'leavepictureinpicture';
+    });
+  }
 </script>
 </html>
