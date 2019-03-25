@@ -177,12 +177,8 @@ void ThreadHeap::DecommitCallbackStacks() {
     NotFullyConstructedItem item;
     while (not_fully_constructed_worklist_->Pop(WorklistTaskId::MainThread,
                                                 &item)) {
-      BasePage* const page = PageFromObject(item);
-      HeapObjectHeader* const header =
-          page->IsLargeObjectPage()
-              ? static_cast<LargeObjectPage*>(page)->ObjectHeader()
-              : static_cast<NormalPage*>(page)->FindHeaderFromAddress(
-                    reinterpret_cast<Address>(const_cast<void*>(item)));
+      HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(
+          reinterpret_cast<Address>(const_cast<void*>(item)));
       DCHECK(header->IsMarked());
     }
 #else
@@ -611,12 +607,8 @@ void ThreadHeap::WriteBarrier(void* value) {
   // '-1' is used to indicate deleted values.
   DCHECK_NE(value, reinterpret_cast<void*>(-1));
 
-  BasePage* const page = PageFromObject(value);
-  HeapObjectHeader* const header =
-      page->IsLargeObjectPage()
-          ? static_cast<LargeObjectPage*>(page)->ObjectHeader()
-          : static_cast<NormalPage*>(page)->FindHeaderFromAddress(
-                reinterpret_cast<Address>(const_cast<void*>(value)));
+  HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(
+      reinterpret_cast<Address>(const_cast<void*>(value)));
   if (header->IsMarked())
     return;
 

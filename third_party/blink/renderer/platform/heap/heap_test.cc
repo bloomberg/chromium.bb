@@ -6244,12 +6244,8 @@ TEST(HeapTest, GarbageCollectedInConstruction) {
 TEST(HeapTest, GarbageCollectedMixinInConstruction) {
   using O = ObjectWithMixinWithCallbackBeforeInitializer<IntWrapper>;
   MakeGarbageCollected<O>(base::BindOnce([](O::Mixin* thiz) {
-    BasePage* const page = PageFromObject(thiz);
-    HeapObjectHeader* const header =
-        page->IsLargeObjectPage()
-            ? static_cast<LargeObjectPage*>(page)->ObjectHeader()
-            : static_cast<NormalPage*>(page)->FindHeaderFromAddress(
-                  reinterpret_cast<Address>(thiz));
+    const HeapObjectHeader* const header =
+        HeapObjectHeader::FromInnerAddress(reinterpret_cast<Address>(thiz));
     CHECK(header->IsInConstruction());
   }));
 }
