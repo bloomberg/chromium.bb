@@ -103,6 +103,11 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
     // TODO(https://crbug.com/806092): Remove this when legacy IPC-based Ozone
     // is removed.
     virtual void SendGpuProcessMessage(IPC::Message* message) = 0;
+
+    virtual void OnEstablishGpuChannelTimeout(int client_id,
+                                              uint64_t client_tracing_id,
+                                              bool is_gpu_host) = 0;
+
 #endif
 
    protected:
@@ -132,7 +137,10 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
 
     // Task runner corresponding to the main thread.
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner;
-  };
+
+    // The time (milliseconds) waiting for establishing GPU channel
+    std::size_t establish_channel_time_out_ms{5000};
+};
 
   enum class EstablishChannelStatus {
     kGpuAccessDenied,  // GPU access was not allowed.
@@ -273,6 +281,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   // These are the channel requests that we have already sent to the GPU
   // service, but haven't heard back about yet.
   base::queue<EstablishChannelCallback> channel_requests_;
+  base::OneShotTimer establish_channel_timeout_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
