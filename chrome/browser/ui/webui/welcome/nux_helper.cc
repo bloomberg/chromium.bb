@@ -13,7 +13,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/ntp_features.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/webui/welcome/nux/constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 
@@ -42,10 +45,28 @@ const base::FeatureParam<std::string>
 const base::FeatureParam<bool> kNuxOnboardingForceEnabledShowEmailInterstitial =
     {&kNuxOnboardingForceEnabled, "show-email-interstitial", true};
 
+// Our current running experiment of testing the nux-ntp-background module
+// depends on the Local NTP feature/experiment being enabled. To avoid polluting
+// our data with users who cannot use the nux-ntp-background module, we need
+// to check to make sure the Local NTP feature is enabled before running
+// any experiment or even reading any feature params from our experiment.
+bool CanExperimentWithVariations(Profile* profile) {
+  return (base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kForceLocalNtp) ||
+          base::FeatureList::IsEnabled(features::kUseGoogleLocalNtp)) &&
+         search::DefaultSearchProviderIsGoogle(profile);
+}
+
 // Must match study name in configs.
 const char kNuxOnboardingStudyName[] = "NaviOnboarding";
 
-std::string GetOnboardingGroup() {
+std::string GetOnboardingGroup(Profile* profile) {
+  if (!CanExperimentWithVariations(profile)) {
+    // If we cannot run any variations, we bucket the users into a separate
+    // synthetic group that we will ignore data for.
+    return "NaviNoVariationSynthetic";
+  }
+
   // We need to use |base::GetFieldTrialParamValue| instead of
   // |base::FeatureParam| because our control group needs a custom value for
   // this param.
@@ -76,7 +97,12 @@ bool IsNuxOnboardingEnabled(Profile* profile) {
   std::string onboard_group = prefs->GetString(prefs::kNaviOnboardGroup);
 
   if (onboard_group.empty()) {
+    // Users who onboarded before Navi or are part of an enterprise.
     return false;
+  }
+
+  if (!CanExperimentWithVariations(profile)) {
+    return true;  // Default Navi behavior.
   }
 
   // User will be tied to their original onboarding group, even after
@@ -107,12 +133,17 @@ base::DictionaryValue GetNuxOnboardingModules(Profile* profile) {
                       kNuxOnboardingForceEnabledReturningUserModules.Get());
     modules.SetBoolean("show-email-interstitial",
                        kNuxOnboardingForceEnabledShowEmailInterstitial.Get());
-  } else {  // This means |nux::kNuxOnboardingFeature| is enabled.
+  } else if (CanExperimentWithVariations(profile)) {
     modules.SetString("new-user", kNuxOnboardingNewUserModules.Get());
     modules.SetString("returning-user",
                       kNuxOnboardingReturningUserModules.Get());
     modules.SetBoolean("show-email-interstitial",
                        kNuxOnboardingShowEmailInterstitial.Get());
+  } else {
+    // Default behavior w/o checking feature flag.
+    modules.SetString("new-user", kDefaultNewUserModules);
+    modules.SetString("returning-user", kDefaultReturningUserModules);
+    modules.SetString("show-email-interstitial", false);
   }
 
   return modules;

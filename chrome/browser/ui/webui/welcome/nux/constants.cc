@@ -9,16 +9,22 @@
 namespace nux {
 
 const base::Feature kNuxOnboardingFeature{"NuxOnboarding",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+// nux-ntp-background should not be added here until we can guarantee that
+// kUseGoogleLocalNtp is enabled
+const char kDefaultNewUserModules[] =
+    "nux-google-apps,nux-email,nux-set-as-default,signin-view";
+const char kDefaultReturningUserModules[] = "nux-set-as-default";
 
 // The value of these FeatureParam values should be a comma-delimited list
 // of element names whitelisted in the MODULES_WHITELIST list, defined in
 // chrome/browser/resources/welcome/onboarding_welcome/welcome_app.js
 const base::FeatureParam<std::string> kNuxOnboardingNewUserModules{
-    &kNuxOnboardingFeature, "new-user-modules",
-    "nux-google-apps,nux-email,nux-set-as-default,signin-view"};
+    &kNuxOnboardingFeature, "new-user-modules", kDefaultNewUserModules};
 const base::FeatureParam<std::string> kNuxOnboardingReturningUserModules{
-    &kNuxOnboardingFeature, "returning-user-modules", "nux-set-as-default"};
+    &kNuxOnboardingFeature, "returning-user-modules",
+    kDefaultReturningUserModules};
 const base::FeatureParam<bool> kNuxOnboardingShowEmailInterstitial{
     &kNuxOnboardingFeature, "show-email-interstitial", false};
 
