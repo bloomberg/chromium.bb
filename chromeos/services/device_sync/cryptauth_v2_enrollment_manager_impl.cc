@@ -9,6 +9,7 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
@@ -27,6 +28,30 @@ namespace chromeos {
 namespace device_sync {
 
 namespace {
+
+// Timeout values for asynchronous operations.
+// TODO(https://crbug.com/933656): Tune these values.
+constexpr base::TimeDelta kWaitingForGcmRegistrationTimeout =
+    base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kWaitingForClientAppMetadataTimeout =
+    base::TimeDelta::FromSeconds(10);
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class UserKeyPairState {
+  // No v1 key; no v2 key. (Not enrolled)
+  kNoV1KeyNoV2Key = 0,
+  // v1 key exists; no v2 key. (Only v1 enrolled)
+  kYesV1KeyNoV2Key = 1,
+  // No v1 key; v2 key exists. (Only v2 enrolled)
+  kNoV1KeyYesV2Key = 2,
+  // v1 and v2 keys exist and agree.
+  kYesV1KeyYesV2KeyAgree = 3,
+  // v1 and v2 keys exist and disagree. (Enrolled with v2, rolled back to v1,
+  // enrolled with v1, rolled forward to v2)
+  kYesV1KeyYesV2KeyDisagree = 4,
+  kMaxValue = kYesV1KeyYesV2KeyDisagree
+};
 
 cryptauthv2::ClientMetadata::InvocationReason ConvertInvocationReasonV1ToV2(
     cryptauth::InvocationReason invocation_reason_v1) {
@@ -66,12 +91,37 @@ cryptauthv2::ClientMetadata::InvocationReason ConvertInvocationReasonV1ToV2(
   }
 }
 
-// Timeout values for asynchronous operations.
-// TODO(https://crbug.com/933656): Tune these values.
-constexpr base::TimeDelta kWaitingForGcmRegistrationTimeout =
-    base::TimeDelta::FromSeconds(10);
-constexpr base::TimeDelta kWaitingForClientAppMetadataTimeout =
-    base::TimeDelta::FromSeconds(10);
+void RecordEnrollmentResult(CryptAuthEnrollmentResult result) {
+  base::UmaHistogramBoolean("CryptAuth.EnrollmentV2.Result.Success",
+                            result.IsSuccess());
+  base::UmaHistogramEnumeration("CryptAuth.EnrollmentV2.Result.ResultCode",
+                                result.result_code());
+}
+
+void RecordUserKeyPairState(const std::string& public_key_v1,
+                            const std::string& private_key_v1,
+                            const CryptAuthKey* key_v2) {
+  bool v1_key_exists = !public_key_v1.empty() && !private_key_v1.empty();
+
+  UserKeyPairState key_pair_state;
+  if (v1_key_exists && key_v2) {
+    if (public_key_v1 == key_v2->public_key() &&
+        private_key_v1 == key_v2->private_key()) {
+      key_pair_state = UserKeyPairState::kYesV1KeyYesV2KeyAgree;
+    } else {
+      key_pair_state = UserKeyPairState::kYesV1KeyYesV2KeyDisagree;
+    }
+  } else if (v1_key_exists && !key_v2) {
+    key_pair_state = UserKeyPairState::kYesV1KeyNoV2Key;
+  } else if (!v1_key_exists && key_v2) {
+    key_pair_state = UserKeyPairState::kNoV1KeyYesV2Key;
+  } else {
+    key_pair_state = UserKeyPairState::kNoV1KeyNoV2Key;
+  }
+
+  base::UmaHistogramEnumeration("CryptAuth.EnrollmentV2.UserKeyPairState",
+                                key_pair_state);
+}
 
 }  // namespace
 
@@ -298,7 +348,10 @@ void CryptAuthV2EnrollmentManagerImpl::OnEnrollmentRequested(
         cryptauthv2::ClientMetadata::INVOCATION_REASON_UNSPECIFIED;
   }
 
-  // TODO(http://crbug.com/940944): [Metrics] Log invocation reason.
+  base::UmaHistogramExactLinear(
+      "CryptAuth.EnrollmentV2.InvocationReason",
+      *current_enrollment_invocation_reason_,
+      cryptauthv2::ClientMetadata::InvocationReason_ARRAYSIZE);
 
   AttemptEnrollment();
 }
@@ -405,8 +458,7 @@ void CryptAuthV2EnrollmentManagerImpl::OnEnrollmentFinished(
 
   current_enrollment_invocation_reason_.reset();
 
-  // TODO(http://crbug.com/940944): [Metrics] Log enrollment result code to
-  // UMA.
+  RecordEnrollmentResult(enrollment_result);
 
   scheduler_->HandleEnrollmentResult(enrollment_result);
 
@@ -498,26 +550,20 @@ std::string CryptAuthV2EnrollmentManagerImpl::GetV1UserPrivateKey() const {
 void CryptAuthV2EnrollmentManagerImpl::AddV1UserKeyPairToRegistryIfNecessary() {
   std::string public_key_v1 = GetV1UserPublicKey();
   std::string private_key_v1 = GetV1UserPrivateKey();
-
   const CryptAuthKey* key_v2 =
       key_registry_->GetActiveKey(CryptAuthKeyBundle::Name::kUserKeyPair);
 
-  bool v1_key_exists = !public_key_v1.empty() && !private_key_v1.empty();
-  bool v1_and_v2_keys_exist_and_agree =
-      (v1_key_exists && key_v2 && public_key_v1 == key_v2->public_key() &&
-       private_key_v1 == key_v2->private_key());
+  RecordUserKeyPairState(public_key_v1, public_key_v1, key_v2);
 
-  // TODO(http://crbug.com/940944): [Metrics] Log the following scenarios to
-  // UMA:
-  //   - No v1 key; no v2 key. (Not enrolled)
-  //   - v1 key exists; no v2 key. (Only v1 enrolled)
-  //   - No v1 key; v2 key exists. (Only v2 enrolled)
-  //   - v1 and v2 keys exist and agree.
-  //   - v1 and v2 keys exist and disagree. (Enrolled with v2, rolled back to
-  //     v1, enrolled with v1, rolled forward to v2)
-
-  if (!v1_key_exists || v1_and_v2_keys_exist_and_agree)
+  // If the v1 user key pair does not exist, no action is needed.
+  if (public_key_v1.empty() || private_key_v1.empty())
     return;
+
+  // If the v1 and v2 user key pairs already agree, no action is needed.
+  if (key_v2 && key_v2->public_key() == public_key_v1 &&
+      key_v2->private_key() == private_key_v1) {
+    return;
+  }
 
   key_registry_->AddEnrolledKey(
       CryptAuthKeyBundle::Name::kUserKeyPair,

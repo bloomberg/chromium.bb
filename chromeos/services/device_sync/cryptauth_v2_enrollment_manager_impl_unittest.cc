@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <unordered_map>
 #include <utility>
 
 #include "base/base64url.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/timer/mock_timer.h"
@@ -273,11 +275,15 @@ class DeviceSyncCryptAuthV2EnrollmentManagerImplTest
     auto mock_timer = std::make_unique<base::MockOneShotTimer>();
     mock_timer_ = mock_timer.get();
 
+    VerifyUserKeyPairStateHistogram(0u /* total_count */);
+
     enrollment_manager_ =
         CryptAuthV2EnrollmentManagerImpl::Factory::Get()->BuildInstance(
             &fake_client_app_metadata_provider_, key_registry_.get(),
             &mock_client_factory_, &fake_gcm_manager_, &test_pref_service_,
             &test_clock_, std::move(mock_timer));
+
+    VerifyUserKeyPairStateHistogram(1u /* total_count */);
 
     enrollment_manager_->AddObserver(this);
   }
@@ -364,6 +370,32 @@ class DeviceSyncCryptAuthV2EnrollmentManagerImplTest
       const std::vector<CryptAuthEnrollmentResult>& expected_results) {
     VerifyResultsSentToEnrollmentManagerObservers(expected_results);
     VerifyResultsSentToEnrollmentScheduler(expected_results);
+    VerifyEnrollmentResultHistograms(expected_results);
+  }
+
+  void VerifyInvocationReasonHistogram(
+      const std::vector<cryptauthv2::ClientMetadata::InvocationReason>&
+          expected_invocation_reasons) {
+    std::unordered_map<cryptauthv2::ClientMetadata::InvocationReason, size_t>
+        reason_to_count_map;
+    for (const auto& reason : expected_invocation_reasons)
+      ++reason_to_count_map[reason];
+
+    size_t total_count = 0;
+    for (const auto& reason_count_pair : reason_to_count_map) {
+      histogram_tester_.ExpectBucketCount(
+          "CryptAuth.EnrollmentV2.InvocationReason", reason_count_pair.first,
+          reason_count_pair.second);
+      total_count += reason_count_pair.second;
+    }
+
+    histogram_tester_.ExpectTotalCount(
+        "CryptAuth.EnrollmentV2.InvocationReason", total_count);
+  }
+
+  void VerifyUserKeyPairStateHistogram(size_t total_count) {
+    histogram_tester_.ExpectTotalCount(
+        "CryptAuth.EnrollmentV2.UserKeyPairState", total_count);
   }
 
   CryptAuthKeyRegistry* key_registry() { return key_registry_.get(); }
@@ -431,6 +463,38 @@ class DeviceSyncCryptAuthV2EnrollmentManagerImplTest
                 prefs::kCryptAuthEnrollmentFailureRecoveryInvocationReason)));
   }
 
+  void VerifyEnrollmentResultHistograms(
+      const std::vector<CryptAuthEnrollmentResult>
+          expected_enrollment_results) {
+    std::unordered_map<CryptAuthEnrollmentResult::ResultCode, size_t>
+        result_code_to_count_map;
+    for (const auto& result : expected_enrollment_results)
+      ++result_code_to_count_map[result.result_code()];
+
+    size_t success_count = 0;
+    size_t failure_count = 0;
+    for (const auto& result_count_pair : result_code_to_count_map) {
+      histogram_tester_.ExpectBucketCount(
+          "CryptAuth.EnrollmentV2.Result.ResultCode", result_count_pair.first,
+          result_count_pair.second);
+
+      if (CryptAuthEnrollmentResult(result_count_pair.first, base::nullopt)
+              .IsSuccess()) {
+        success_count += result_count_pair.second;
+      } else {
+        failure_count += result_count_pair.second;
+      }
+    }
+
+    histogram_tester_.ExpectTotalCount(
+        "CryptAuth.EnrollmentV2.Result.ResultCode",
+        success_count + failure_count);
+    histogram_tester_.ExpectBucketCount("CryptAuth.EnrollmentV2.Result.Success",
+                                        true, success_count);
+    histogram_tester_.ExpectBucketCount("CryptAuth.EnrollmentV2.Result.Success",
+                                        false, failure_count);
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   size_t num_enrollment_started_notifications_ = 0;
@@ -443,6 +507,7 @@ class DeviceSyncCryptAuthV2EnrollmentManagerImplTest
   base::SimpleTestClock test_clock_;
   base::MockOneShotTimer* mock_timer_;
   MockCryptAuthClientFactory mock_client_factory_;
+  base::HistogramTester histogram_tester_;
   std::unique_ptr<CryptAuthKeyRegistry> key_registry_;
   std::unique_ptr<FakeNetworkAwareEnrollmentSchedulerFactory>
       fake_enrollment_scheduler_factory_;
@@ -775,6 +840,7 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
                           expected_invocation_reasons.back(),
                           expected_enrollment_results.back());
 
+  VerifyInvocationReasonHistogram(expected_invocation_reasons);
   VerifyEnrollmentResults(expected_enrollment_results);
 }
 

@@ -10455,6 +10455,72 @@ Called by update_net_error_codes.py.-->
   <int value="8" label="SMS_CONNECT_CLIENT"/>
 </enum>
 
+<enum name="CryptAuthV2EnrollmentInvocationReason">
+  <int value="0" label="Invocation reason unspecified"/>
+  <int value="1" label="Initialization"/>
+  <int value="2" label="Periodic"/>
+  <int value="3" label="Slow periodic"/>
+  <int value="4" label="Fast periodic"/>
+  <int value="5" label="Expiration"/>
+  <int value="6" label="Failure recovery"/>
+  <int value="7" label="New account"/>
+  <int value="8" label="Changed account"/>
+  <int value="9" label="Feature toggled"/>
+  <int value="10" label="Server initiated"/>
+  <int value="11" label="Address change"/>
+  <int value="12" label="Software update"/>
+  <int value="13" label="Manual"/>
+  <int value="14" label="Custom key invalidation"/>
+  <int value="15" label="Proximity periodic"/>
+</enum>
+
+<enum name="CryptAuthV2EnrollmentResult">
+  <int value="0" label="Success: No new keys needed"/>
+  <int value="1" label="Success: New keys enrolled"/>
+  <int value="2" label="Error (SyncKeys API call): Offline"/>
+  <int value="3" label="Error (SyncKeys API call): Endpoint not found"/>
+  <int value="4" label="Error (SyncKeys API call): Authentication error"/>
+  <int value="5" label="Error (SyncKeys API call): Bad request"/>
+  <int value="6" label="Error (SyncKeys API call): Response malformed"/>
+  <int value="7" label="Error (SyncKeys API call): Internal server error"/>
+  <int value="8" label="Error (SyncKeys API call): Unknown error"/>
+  <int value="9" label="Error (EnrollKeys API call): Offline"/>
+  <int value="10" label="Error (EnrollKeys API call): Endpoint not found"/>
+  <int value="11" label="Error (EnrollKeys API call): Authentication error"/>
+  <int value="12" label="Error (EnrollKeys API call): Bad request"/>
+  <int value="13" label="Error (EnrollKeys API call): Response malformed"/>
+  <int value="14" label="Error (EnrollKeys API call): Internal server error"/>
+  <int value="15" label="Error (EnrollKeys API call): Unknown error"/>
+  <int value="16" label="Error: CryptAuth server overloaded"/>
+  <int value="17" label="Error: SyncKeysResponse missing random session ID"/>
+  <int value="18" label="Error: SyncKeysResponse invalid ClientDirective"/>
+  <int value="19" label="Error: Wrong number of SyncSingleKeyResponses"/>
+  <int value="20" label="Error: Wrong number of KeyActions"/>
+  <int value="21" label="Error: Invalid KeyAction enum value"/>
+  <int value="22" label="Error: KeyActions specify multiple active keys"/>
+  <int value="23" label="Error: KeyActions do not specify an active key"/>
+  <int value="24" label="Error: Key creation KeyType not supported"/>
+  <int value="25" label="Error: User key pair creation instructions invalid"/>
+  <int value="26"
+      label="Error: Symmetric key creation missing server Diffie-Hellman"/>
+  <int value="27" label="Error: Key proof computation failed"/>
+  <int value="28" label="Error: Timeout waiting for SyncKeys response"/>
+  <int value="29" label="Error: Timeout waiting for key creation"/>
+  <int value="30" label="Error: Timeout waiting for EnrollKeys response"/>
+  <int value="31" label="Error: GCM registration failed"/>
+  <int value="32" label="Error: ClientAppMetadata fetch failed"/>
+  <int value="33" label="Error: Timeout waiting for GCM registration"/>
+  <int value="34" label="Error: Timeout waiting for ClientAppMetadata"/>
+</enum>
+
+<enum name="CryptAuthV2EnrollmentUserKeyPairState">
+  <int value="0" label="v1 and v2 do not exist"/>
+  <int value="1" label="v1 exists but not v2"/>
+  <int value="2" label="v2 exists but not v1"/>
+  <int value="3" label="v1 and v2 exist and agree"/>
+  <int value="4" label="v1 and v2 exist and disagree"/>
+</enum>
+
 <enum name="CryptohomeChecksumStatus">
   <int value="0" label="Checksum OK"/>
   <int value="1" label="Checksum does not exist"/>
