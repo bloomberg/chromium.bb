@@ -112,8 +112,6 @@
     },
     "11": {
         "benchmarks": {
-            "smoothness.gpu_rasterization.tough_pinch_zoom_cases": {},
-            "smoothness.tough_pinch_zoom_cases": {},
             "speedometer": {},
             "speedometer-future": {},
             "speedometer2": {},
