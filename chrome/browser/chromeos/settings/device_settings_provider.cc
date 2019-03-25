@@ -38,6 +38,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
+#include "third_party/re2/src/re2/re2.h"
 
 using google::protobuf::RepeatedField;
 using google::protobuf::RepeatedPtrField;
@@ -146,6 +147,15 @@ void SetJsonDeviceSetting(const std::string& setting_name,
     pref_value_map->SetValue(
         setting_name, base::Value::FromUniquePtrValue(std::move(decoded_json)));
   }
+}
+
+// Puts the policy value into the settings store if only it matches the regex pattern.
+void SetSettingWithValidatingRegex(const std::string& policy_name,
+                                   const std::string& policy_value,
+                                   const std::string& pattern,
+                                   PrefValueMap* pref_value_map) {
+  if (RE2::FullMatch(policy_value, pattern))
+    pref_value_map->SetString(policy_name, policy_value);
 }
 
 void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
@@ -316,9 +326,10 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
       !policy.login_screen_domain_auto_complete()
            .login_screen_domain_auto_complete()
            .empty()) {
-    new_values_cache->SetString(kAccountsPrefLoginScreenDomainAutoComplete,
-                                policy.login_screen_domain_auto_complete()
-                                    .login_screen_domain_auto_complete());
+    SetSettingWithValidatingRegex(kAccountsPrefLoginScreenDomainAutoComplete,
+                                  policy.login_screen_domain_auto_complete()
+                                      .login_screen_domain_auto_complete(),
+                                  policy::hostNameRegex, new_values_cache);
   }
 
   if (policy.has_login_authentication_behavior() &&
