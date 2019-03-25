@@ -95,7 +95,7 @@
 #include "content/renderer/media/render_media_client.h"
 #include "content/renderer/media/stream/aec_dump_message_filter.h"
 #include "content/renderer/media/stream/media_stream_center.h"
-#include "content/renderer/media/video_capture_impl_manager.h"
+#include "content/renderer/media/video_capture/video_capture_impl_manager.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"

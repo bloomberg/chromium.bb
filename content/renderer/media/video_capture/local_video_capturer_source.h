@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_LOCAL_VIDEO_CAPTURER_SOURCE_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_LOCAL_VIDEO_CAPTURER_SOURCE_H_
+#ifndef CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_LOCAL_VIDEO_CAPTURER_SOURCE_H_
+#define CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_LOCAL_VIDEO_CAPTURER_SOURCE_H_
 
 #include <memory>
 #include <string>
@@ -78,4 +78,4 @@ class LocalVideoCapturerSource : public media::VideoCapturerSource {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_LOCAL_VIDEO_CAPTURER_SOURCE_H_
+#endif  // CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_LOCAL_VIDEO_CAPTURER_SOURCE_H_
