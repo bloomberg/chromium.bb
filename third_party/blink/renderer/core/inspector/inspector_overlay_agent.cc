@@ -844,6 +844,17 @@ Page* InspectorOverlayAgent::OverlayPage() {
   overlay_settings.SetPluginsEnabled(false);
   overlay_settings.SetLoadsImagesAutomatically(true);
 
+  DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, dummy_local_frame_client,
+                      (EmptyLocalFrameClient::Create()));
+  LocalFrame* frame =
+      LocalFrame::Create(dummy_local_frame_client, *overlay_page_, nullptr);
+  frame->SetView(LocalFrameView::Create(*frame));
+  frame->Init();
+  frame->View()->SetCanHaveScrollbars(false);
+  frame->View()->SetBaseBackgroundColor(Color::kTransparent);
+  frame->SetPageZoomFactor(WindowToViewportScale());
+  frame->View()->Resize(overlay_page_->GetVisualViewport().Size());
+
   return overlay_page_.Get();
 }
 
@@ -851,7 +862,7 @@ void InspectorOverlayAgent::UpdateFrameForTool() {
   CString resource_name =
       inspect_tool_ ? inspect_tool_->GetDataResourceName() : CString();
   if (resource_name == frame_resource_name_) {
-    if (overlay_page_ && OverlayMainFrame()) {
+    if (overlay_page_) {
       OverlayMainFrame()->SetPageZoomFactor(WindowToViewportScale());
       OverlayMainFrame()->View()->Resize(
           OverlayPage()->GetVisualViewport().Size());
