@@ -518,8 +518,8 @@ std::list<ACMatches::iterator>::iterator AutocompleteResult::BetterMatch(
   CompareWithDemoteByType<AutocompleteMatch> compare_demote_by_type(
       page_classification);
 
-  // The following logic enforces two constraints we care about regarding the
-  // the characteristics of the candidate matches.
+  // The following logic enforces constraints we care about regarding the
+  // the characteristics of the candidate matches. In order of priority:
   //
   // Entity suggestions:
   //   Entity suggestions are always preferred over non-entity suggestions,
@@ -538,6 +538,11 @@ std::list<ACMatches::iterator>::iterator AutocompleteResult::BetterMatch(
   // Note that together these two constraints enforce an overall constraint,
   // that if either candidate has allowed_to_be_default_match = true, the match
   // which is preferred will always have allowed_to_be_default_match = true.
+  //
+  // Document suggestions:
+  //   The icon and display of document suggestions are preferred over
+  //   history, bookmark, etc. items. The actual URLs may be different, but
+  //   logically dedupe to the same entity to which we'll navigate.
   if ((*first)->type == ACMatchType::SEARCH_SUGGEST_ENTITY &&
       (*second)->type != ACMatchType::SEARCH_SUGGEST_ENTITY &&
       (*first)->fill_into_edit == (*second)->fill_into_edit) {
@@ -564,6 +569,14 @@ std::list<ACMatches::iterator>::iterator AutocompleteResult::BetterMatch(
     non_preferred_match = second;
   } else if ((*second)->allowed_to_be_default_match &&
              !(*first)->allowed_to_be_default_match) {
+    preferred_match = second;
+    non_preferred_match = first;
+  } else if ((*first)->type == ACMatchType::DOCUMENT_SUGGESTION &&
+             (*second)->type != ACMatchType::DOCUMENT_SUGGESTION) {
+    preferred_match = first;
+    non_preferred_match = second;
+  } else if ((*first)->type != ACMatchType::DOCUMENT_SUGGESTION &&
+             (*second)->type == ACMatchType::DOCUMENT_SUGGESTION) {
     preferred_match = second;
     non_preferred_match = first;
   } else {
