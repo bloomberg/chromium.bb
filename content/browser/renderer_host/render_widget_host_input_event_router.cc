@@ -1426,7 +1426,8 @@ bool IsPinchCurrentlyAllowedInTarget(RenderWidgetHostViewBase* target) {
             ->input_router()
             ->AllowedTouchAction();
   }
-  DCHECK(target_allowed_touch_action.has_value());
+  if (!target_allowed_touch_action)
+    target_allowed_touch_action = cc::kTouchActionNone;
   return (target_allowed_touch_action.value() &
           cc::TouchAction::kTouchActionPinchZoom);
 }
