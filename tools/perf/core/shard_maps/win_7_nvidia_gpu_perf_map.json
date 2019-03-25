@@ -36,8 +36,6 @@
             "rasterize_and_record_micro.partial_invalidation": {},
             "rasterize_and_record_micro.top_25": {},
             "rendering.desktop": {},
-            "smoothness.gpu_rasterization.tough_pinch_zoom_cases": {},
-            "smoothness.tough_pinch_zoom_cases": {},
             "speedometer": {},
             "speedometer-future": {},
             "speedometer2": {},

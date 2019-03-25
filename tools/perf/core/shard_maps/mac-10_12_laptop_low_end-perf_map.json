@@ -120,8 +120,6 @@
             "rendering.desktop": {
                 "begin": 215
             },
-            "smoothness.gpu_rasterization.tough_pinch_zoom_cases": {},
-            "smoothness.tough_pinch_zoom_cases": {},
             "speedometer": {},
             "speedometer-future": {}
         }
