@@ -117,12 +117,18 @@ void PaymentRequestSpec::UpdateWith(mojom::PaymentDetailsPtr details) {
   RecomputeSpecForDetails();
 }
 
-void PaymentRequestSpec::Retry(mojom::PaymentValidationErrorsPtr errors) {
-  if (!errors)
+void PaymentRequestSpec::Retry(
+    mojom::PaymentValidationErrorsPtr validation_errors) {
+  if (!validation_errors)
     return;
 
-  details_->shipping_address_errors = std::move(errors->shipping_address);
-  payer_errors_ = std::move(errors->payer);
+  retry_error_message_ =
+      validation_errors->error.empty()
+          ? l10n_util::GetStringUTF16(IDS_PAYMENTS_ERROR_MESSAGE)
+          : base::UTF8ToUTF16(std::move(validation_errors->error));
+  details_->shipping_address_errors =
+      std::move(validation_errors->shipping_address);
+  payer_errors_ = std::move(validation_errors->payer);
   current_update_reason_ = UpdateReason::RETRY;
   NotifyOnSpecUpdated();
   current_update_reason_ = UpdateReason::NONE;

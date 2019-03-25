@@ -424,6 +424,13 @@ void PaymentSheetViewController::FillContentView(views::View* content_view) {
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
                      views::GridLayout::USE_PREF, 0, 0);
 
+  if (!spec()->retry_error_message().empty()) {
+    std::unique_ptr<views::View> warning_view =
+        CreateWarningView(spec()->retry_error_message(), true /* show_icon */);
+    layout->StartRow(views::GridLayout::kFixedSize, 0);
+    layout->AddView(warning_view.release());
+  }
+
   // The shipping address and contact info rows are optional.
   std::unique_ptr<PaymentRequestRowView> summary_row =
       CreatePaymentSheetSummaryRow();
@@ -482,6 +489,7 @@ void PaymentSheetViewController::ButtonPressed(views::Button* sender,
   if (!dialog()->IsInteractive())
     return;
 
+  bool should_reset_retry_error_message = true;
   switch (sender->tag()) {
     case static_cast<int>(
         PaymentSheetViewControllerTags::SHOW_ORDER_SUMMARY_BUTTON):
@@ -542,7 +550,14 @@ void PaymentSheetViewController::ButtonPressed(views::Button* sender,
 
     default:
       PaymentRequestSheetController::ButtonPressed(sender, event);
+      should_reset_retry_error_message = false;
       break;
+  }
+
+  if (should_reset_retry_error_message &&
+      !spec()->retry_error_message().empty()) {
+    spec()->reset_retry_error_message();
+    UpdateContentView();
   }
 }
 

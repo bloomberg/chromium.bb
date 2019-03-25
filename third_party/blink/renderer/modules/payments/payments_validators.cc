@@ -125,7 +125,9 @@ bool PaymentsValidators::IsValidPayerErrorsFormat(
 bool PaymentsValidators::IsValidPaymentValidationErrorsFormat(
     const PaymentValidationErrors* errors,
     String* optional_error_message) {
-  return (!errors->hasPayer() ||
+  return (!errors->hasError() ||
+          IsValidErrorMsgFormat(errors->error(), optional_error_message)) &&
+         (!errors->hasPayer() ||
           IsValidPayerErrorsFormat(errors->payer(), optional_error_message)) &&
          (!errors->hasShippingAddress() ||
           IsValidAddressErrorsFormat(errors->shippingAddress(),
