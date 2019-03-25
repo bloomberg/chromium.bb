@@ -247,6 +247,14 @@ void AssistantOptInFlowScreenHandler::OnEmailOptInResult(bool opted_in) {
                      weak_factory_.GetWeakPtr()));
 }
 
+void AssistantOptInFlowScreenHandler::OnDialogClosed() {
+  // Disable hotword for user if voice match enrollment has not completed.
+  if (!voice_match_enrollment_done_ && !is_retrain_flow_) {
+    ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
+        arc::prefs::kVoiceInteractionHotwordEnabled, false);
+  }
+}
+
 void AssistantOptInFlowScreenHandler::OnStateChanged(
     ash::mojom::VoiceInteractionState state) {
   if (state != ash::mojom::VoiceInteractionState::NOT_READY) {
@@ -444,6 +452,7 @@ void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
 
   if (action == kVoiceMatchDone) {
     RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_DONE);
+    voice_match_enrollment_done_ = true;
     ShowNextScreen();
   } else if (action == kSkipPressed) {
     RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_SKIPPED);
@@ -508,6 +517,15 @@ void AssistantOptInFlowScreenHandler::HandleHotwordResult(bool enable_hotword) {
 }
 
 void AssistantOptInFlowScreenHandler::HandleFlowFinished() {
+  auto* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  if (!prefs->GetUserPrefValue(::assistant::prefs::kAssistantConsentStatus)) {
+    // Set consent status to unknown if user consent is needed but not provided.
+    ::assistant::prefs::SetConsentStatus(
+        prefs, activity_control_needed_
+                   ? ash::mojom::ConsentStatus::kUnknown
+                   : ash::mojom::ConsentStatus::kActivityControlAccepted);
+  }
+
   UMA_HISTOGRAM_EXACT_LINEAR("Assistant.OptInFlow.LoadingTimeoutCount",
                              loading_timeout_counter_, 10);
   if (screen_)

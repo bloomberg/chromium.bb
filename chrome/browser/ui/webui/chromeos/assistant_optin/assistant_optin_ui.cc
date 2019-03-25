@@ -61,14 +61,14 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
 
   auto assistant_handler =
       std::make_unique<AssistantOptInFlowScreenHandler>(&js_calls_container_);
-  auto* assistant_handler_ptr = assistant_handler.get();
+  assistant_handler_ptr_ = assistant_handler.get();
   web_ui->AddMessageHandler(std::move(assistant_handler));
-  assistant_handler_ptr->set_on_initialized(base::BindOnce(
+  assistant_handler_ptr_->set_on_initialized(base::BindOnce(
       &AssistantOptInUI::Initialize, weak_factory_.GetWeakPtr()));
-  assistant_handler_ptr->SetupAssistantConnection();
+  assistant_handler_ptr_->SetupAssistantConnection();
 
   base::DictionaryValue localized_strings;
-  assistant_handler_ptr->GetLocalizedStrings(&localized_strings);
+  assistant_handler_ptr_->GetLocalizedStrings(&localized_strings);
   source->AddLocalizedStrings(localized_strings);
   source->SetJsonPath("strings.js");
   source->AddResourcePath("assistant_optin.js", IDR_ASSISTANT_OPTIN_JS);
@@ -97,6 +97,12 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
 
 AssistantOptInUI::~AssistantOptInUI() = default;
 
+void AssistantOptInUI::OnDialogClosed() {
+  if (assistant_handler_ptr_) {
+    assistant_handler_ptr_->OnDialogClosed();
+  }
+}
+
 void AssistantOptInUI::Initialize() {
   js_calls_container_.ExecuteDeferredJSCalls();
 }
@@ -107,7 +113,8 @@ void AssistantOptInUI::Initialize() {
 void AssistantOptInDialog::Show(
     ash::mojom::FlowType type,
     ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback) {
-  DCHECK(!is_active);
+  if (is_active)
+    return;
   AssistantOptInDialog* dialog =
       new AssistantOptInDialog(type, std::move(callback));
 
@@ -147,7 +154,16 @@ bool AssistantOptInDialog::ShouldShowDialogTitle() const {
   return false;
 }
 
+void AssistantOptInDialog::OnDialogShown(
+    content::WebUI* webui,
+    content::RenderViewHost* render_view_host) {
+  assistant_ui_ = static_cast<AssistantOptInUI*>(webui->GetController());
+}
+
 void AssistantOptInDialog::OnDialogClosed(const std::string& json_retval) {
+  if (assistant_ui_)
+    assistant_ui_->OnDialogClosed();
+
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   const bool completed =
       prefs->GetBoolean(arc::prefs::kVoiceInteractionEnabled) &&
@@ -155,6 +171,10 @@ void AssistantOptInDialog::OnDialogClosed(const std::string& json_retval) {
        ash::mojom::ConsentStatus::kActivityControlAccepted);
   std::move(callback_).Run(completed);
   SystemWebDialogDelegate::OnDialogClosed(json_retval);
+}
+
+bool AssistantOptInDialog::CanCloseDialog() const {
+  return false;
 }
 
 }  // namespace chromeos

@@ -63,6 +63,9 @@ class AssistantOptInFlowScreenHandler
   void OnActivityControlOptInResult(bool opted_in);
   void OnEmailOptInResult(bool opted_in);
 
+  // Called when the UI dialog is closed.
+  void OnDialogClosed();
+
  private:
   // BaseScreenHandler:
   void Initialize() override;
@@ -120,6 +123,9 @@ class AssistantOptInFlowScreenHandler
 
   // Whether user chose to enable hotword.
   bool enable_hotword_ = true;
+
+  // Whether the use has completed voice match enrollment.
+  bool voice_match_enrollment_done_ = false;
 
   bool is_retrain_flow_ = false;
 
