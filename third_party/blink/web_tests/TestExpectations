@@ -5803,7 +5803,7 @@ crbug.com/840659 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/video-co
 # Sheriff 2019-01-11
 crbug.com/921038 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/legacy-performance-memory-counters-enabled.html [ Skip ]
 
-# Mac doesn't support lowLatency Canvas Contexts.
+# Mac doesn't support lowLatency/desynchronized Canvas Contexts.
 crbug.com/922218 [ Mac ] fast/canvas-api/canvas-lowlatency-getContext.html [ Failure ]
 
 # Sheriff 2019-01-14

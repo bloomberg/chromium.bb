@@ -22,7 +22,7 @@ let g_c2d;
 function main()
 {
   g_canvas = document.getElementById("c");
-  g_c2d = g_canvas.getContext("2d", {lowLatency: true});
+  g_c2d = g_canvas.getContext("2d", {desynchronized: true});
   draw();
 }
 

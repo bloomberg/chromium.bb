@@ -190,7 +190,7 @@ void CanvasRenderingContext2DTest::CreateContext(OpacityMode opacity_mode,
   String canvas_type("2d");
   CanvasContextCreationAttributesCore attributes;
   attributes.alpha = opacity_mode == kNonOpaque;
-  attributes.low_latency = latency_mode == kLowLatency;
+  attributes.desynchronized = latency_mode == kLowLatency;
   canvas_element_->GetCanvasRenderingContext(canvas_type, attributes);
 }
 
@@ -1245,7 +1245,7 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
 
 TEST_F(CanvasRenderingContext2DTest, LowLatencyIsSingleBuffered) {
 #if defined(OS_MACOSX)
-  // TODO(crbug.com/922218): enable lowLatency on Mac.
+  // TODO(crbug.com/922218): enable desynchronized on Mac.
   return;
 #endif
   CreateContext(kNonOpaque, kLowLatency);
