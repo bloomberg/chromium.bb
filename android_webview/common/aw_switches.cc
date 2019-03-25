@@ -6,6 +6,8 @@
 
 namespace switches {
 
+const char kWebViewLogJsConsoleMessages[] = "webview-log-js-console-messages";
+
 const char kWebViewSandboxedRenderer[] = "webview-sandboxed-renderer";
 
 // used to enable safebrowsing functionality in webview
