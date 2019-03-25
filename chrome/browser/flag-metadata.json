@@ -2843,11 +2843,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "show-overdraw-feedback",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "show-taps",
     "owners": [ "//ash/OWNERS" ],
     // This is a debug flag, so that video bug reports can show input taps to
