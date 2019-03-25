@@ -198,6 +198,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   static const uint32_t kZappedMagicForbidden = 0x2c2c2c2c;
 
   static HeapObjectHeader* FromPayload(const void*);
+  static HeapObjectHeader* FromInnerAddress(const void*);
 
   // Checks sanity of the header given a payload pointer.
   static void CheckFromPayload(const void*);
@@ -900,6 +901,15 @@ inline HeapObjectHeader* HeapObjectHeader::FromPayload(const void* payload) {
       reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
   header->CheckHeader();
   return header;
+}
+
+inline HeapObjectHeader* HeapObjectHeader::FromInnerAddress(
+    const void* address) {
+  BasePage* const page = PageFromObject(address);
+  return page->IsLargeObjectPage()
+             ? static_cast<LargeObjectPage*>(page)->ObjectHeader()
+             : static_cast<NormalPage*>(page)->FindHeaderFromAddress(
+                   reinterpret_cast<Address>(const_cast<void*>(address)));
 }
 
 inline void HeapObjectHeader::CheckFromPayload(const void* payload) {
