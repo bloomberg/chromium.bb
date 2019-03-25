@@ -5,7 +5,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,7 +22,7 @@
 // support type inference, classification, and transformation, as well as
 // make it easier to write templates based on generic type behavior.
 //
-// See http://en.cppreference.com/w/cpp/header/type_traits
+// See https://en.cppreference.com/w/cpp/header/type_traits
 //
 // WARNING: use of many of the constructs in this header will count as "complex
 // template metaprogramming", so before proceeding, please carefully consider
@@ -246,7 +246,7 @@ struct is_trivially_destructible
 // For the purposes of this check, the call to std::declval is considered
 // trivial."
 //
-// Notes from http://en.cppreference.com/w/cpp/types/is_constructible:
+// Notes from https://en.cppreference.com/w/cpp/types/is_constructible:
 // In many implementations, is_nothrow_constructible also checks if the
 // destructor throws because it is effectively noexcept(T(arg)). Same
 // applies to is_trivially_constructible, which, in these implementations, also
@@ -483,6 +483,69 @@ inline void AssertHashEnabled() {
 
 }  // namespace type_traits_internal
 
+// An internal namespace that is required to implement the C++17 swap traits.
+// It is not further nested in type_traits_internal to avoid long symbol names.
+namespace swap_internal {
+
+// Necessary for the traits.
+using std::swap;
+
+// This declaration prevents global `swap` and `absl::swap` overloads from being
+// considered unless ADL picks them up.
+void swap();
+
+template <class T>
+using IsSwappableImpl = decltype(swap(std::declval<T&>(), std::declval<T&>()));
+
+// NOTE: This dance with the default template parameter is for MSVC.
+template <class T,
+          class IsNoexcept = std::integral_constant<
+              bool, noexcept(swap(std::declval<T&>(), std::declval<T&>()))>>
+using IsNothrowSwappableImpl = typename std::enable_if<IsNoexcept::value>::type;
+
+// IsSwappable
+//
+// Determines whether the standard swap idiom is a valid expression for
+// arguments of type `T`.
+template <class T>
+struct IsSwappable
+    : absl::type_traits_internal::is_detected<IsSwappableImpl, T> {};
+
+// IsNothrowSwappable
+//
+// Determines whether the standard swap idiom is a valid expression for
+// arguments of type `T` and is noexcept.
+template <class T>
+struct IsNothrowSwappable
+    : absl::type_traits_internal::is_detected<IsNothrowSwappableImpl, T> {};
+
+// Swap()
+//
+// Performs the swap idiom from a namespace where valid candidates may only be
+// found in `std` or via ADL.
+template <class T, absl::enable_if_t<IsSwappable<T>::value, int> = 0>
+void Swap(T& lhs, T& rhs) noexcept(IsNothrowSwappable<T>::value) {
+  swap(lhs, rhs);
+}
+
+// StdSwapIsUnconstrained
+//
+// Some standard library implementations are broken in that they do not
+// constrain `std::swap`. This will effectively tell us if we are dealing with
+// one of those implementations.
+using StdSwapIsUnconstrained = IsSwappable<void()>;
+
+}  // namespace swap_internal
+
+namespace type_traits_internal {
+
+// Make the swap-related traits/function accessible from this namespace.
+using swap_internal::IsNothrowSwappable;
+using swap_internal::IsSwappable;
+using swap_internal::Swap;
+using swap_internal::StdSwapIsUnconstrained;
+
+}  // namespace type_traits_internal
 }  // namespace absl
 
 #endif  // ABSL_META_TYPE_TRAITS_H_

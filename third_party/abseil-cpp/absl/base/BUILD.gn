@@ -313,3 +313,23 @@ source_set("bits") {
   visibility = []
   visibility += [ "../*" ]
 }
+
+source_set("scoped_set_env") {
+  testonly = true
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
+  public = [
+    "internal/scoped_set_env.h",
+  ]
+  sources = [
+    "internal/scoped_set_env.cc",
+  ]
+  deps = [
+    ":base",
+  ]
+  visibility = []
+  visibility += [ "../*" ]
+}

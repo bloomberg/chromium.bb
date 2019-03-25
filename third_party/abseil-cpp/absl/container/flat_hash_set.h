@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -212,8 +212,12 @@ class flat_hash_set
   //   Erases the element at `position` of the `flat_hash_set`, returning
   //   `void`.
   //
-  //   NOTE: this return behavior is different than that of STL containers in
-  //   general and `std::unordered_map` in particular.
+  //   NOTE: returning `void` in this case is different than that of STL
+  //   containers in general and `std::unordered_set` in particular (which
+  //   return an iterator to the element following the erased element). If that
+  //   iterator is needed, simply post increment the iterator:
+  //
+  //     set.erase(it++);
   //
   // iterator erase(const_iterator first, const_iterator last):
   //
