@@ -136,21 +136,23 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
     extension_ = extension;
   }
 
-  void CompleteInstallableCheck(const char* manifest_url,
+  void CompleteInstallableCheck(const char* manifest_url_str,
                                 const blink::Manifest& manifest,
                                 ForInstallableSite for_installable_site) {
     bool installable = for_installable_site == ForInstallableSite::kYes;
+    GURL manifest_url(manifest_url_str);
+    GURL primary_icon_url(kAppIconURL1);
     InstallableData data = {
         installable
             ? std::vector<InstallableStatusCode>()
             : std::vector<
                   InstallableStatusCode>{MANIFEST_DISPLAY_NOT_SUPPORTED},
-        GURL(manifest_url),
+        manifest_url,
         &manifest,
-        GURL(kAppIconURL1),
+        primary_icon_url,
         &bitmap_,
         false,
-        GURL(),
+        GURL::EmptyGURL(),
         nullptr,
         installable,
         installable,
@@ -160,7 +162,7 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
 
   void CompleteIconDownload(
       bool success,
-      const std::map<GURL, std::vector<SkBitmap> >& bitmaps) {
+      const std::map<GURL, std::vector<SkBitmap>>& bitmaps) {
     BookmarkAppHelper::OnIconsDownloaded(success, bitmaps);
   }
 
@@ -288,7 +290,7 @@ TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
   manifest.theme_color = SK_ColorBLUE;
   helper.CompleteInstallableCheck(kManifestUrl, manifest, GetParam());
 
-  std::map<GURL, std::vector<SkBitmap> > icon_map;
+  std::map<GURL, std::vector<SkBitmap>> icon_map;
   helper.CompleteIconDownload(true, icon_map);
 
   content::RunAllTasksUntilIdle();

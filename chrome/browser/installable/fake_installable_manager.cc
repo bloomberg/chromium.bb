@@ -48,6 +48,7 @@ FakeInstallableManager::CreateForWebContentsWithManifest(
   FakeInstallableManager* installable_manager =
       FakeInstallableManager::CreateForWebContents(web_contents);
 
+  installable_manager->manifest_url_ = manifest_url;
   installable_manager->manifest_ = std::move(manifest);
 
   const bool valid_manifest = true;
@@ -55,16 +56,15 @@ FakeInstallableManager::CreateForWebContentsWithManifest(
   std::vector<InstallableStatusCode> errors;
 
   // Not used:
-  const GURL icon_url;
   const std::unique_ptr<SkBitmap> icon;
 
   if (installable_code != NO_ERROR_DETECTED)
     errors.push_back(installable_code);
 
   auto installable_data = std::make_unique<InstallableData>(
-      std::move(errors), manifest_url, installable_manager->manifest_.get(),
-      icon_url, icon.get(), false, icon_url, icon.get(), valid_manifest,
-      has_worker);
+      std::move(errors), installable_manager->manifest_url_,
+      installable_manager->manifest_.get(), GURL::EmptyGURL(), icon.get(),
+      false, GURL::EmptyGURL(), icon.get(), valid_manifest, has_worker);
 
   installable_manager->data_ = std::move(installable_data);
 

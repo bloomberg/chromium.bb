@@ -35,6 +35,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "url/gurl.h"
 
 namespace extensions {
 
@@ -66,8 +67,16 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
   void CompleteInstallableCheck() {
     blink::Manifest manifest;
     InstallableData data = {
-        {NO_MANIFEST}, GURL(), &manifest, GURL(), nullptr,
-        false,         GURL(), nullptr,   false,  false,
+        {NO_MANIFEST},
+        GURL::EmptyGURL(),
+        &manifest,
+        GURL::EmptyGURL(),
+        nullptr,
+        false,
+        GURL::EmptyGURL(),
+        nullptr,
+        false,
+        false,
     };
     BookmarkAppHelper::OnDidPerformInstallableCheck(data);
   }
