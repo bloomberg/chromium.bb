@@ -1594,7 +1594,7 @@
             { # This should match Mac10.12 Tests on chromium.mac.
               'gpu': '8086:0a2e',
               'hidpi': '0',
-              'os': 'Mac-10.12',
+              'os': 'Mac-10.12.6',
             },
           ],
         },
@@ -1605,7 +1605,7 @@
             { # This should match Chromium Mac 10.13 on chromium.fyi.
               'gpu': '8086:0a2e',
               'hidpi': '0',
-              'os': 'Mac-10.13',
+              'os': 'Mac-10.13.6',
             },
           ],
           'shards': 12,
@@ -1695,7 +1695,7 @@
           'dimension_sets': [
             {
               'gpu': '8086:0a2e',
-              'os': 'Mac-10.13',
+              'os': 'Mac-10.13.6',
             },
           ],
           'shards': 12,

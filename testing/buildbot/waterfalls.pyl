@@ -1620,7 +1620,7 @@
               # This matches the dimensions for "Chromium Mac10.13" in
               # chromium_fyi.py.
               'gpu': '8086:0a2e',
-              'os': 'Mac-10.13',
+              'os': 'Mac-10.13.6',
             },
           ],
           'hard_timeout': 900,
