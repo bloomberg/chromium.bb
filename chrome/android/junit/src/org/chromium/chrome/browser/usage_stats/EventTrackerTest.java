@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.usage_stats;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -41,6 +42,8 @@ public class EventTrackerTest {
             mLoadCallbackCaptor;
     @Captor
     private ArgumentCaptor<Callback<Boolean>> mWriteCallbackCaptor;
+    @Captor
+    private ArgumentCaptor<Callback<Boolean>> mDeleteCallbackCaptor;
 
     @Before
     public void setUp() {
@@ -65,6 +68,36 @@ public class EventTrackerTest {
                 (result) -> { assertEquals(result.size(), 49); });
     }
 
+    @Test
+    public void testClearAll() {
+        resolveLoadCallback();
+        addEntries(100, 1l, 0l);
+        mEventTracker.clearAll().then((dummy) -> {
+            mEventTracker.queryWebsiteEvents(0l, 1000l).then(
+                    (result) -> { assertEquals(result.size(), 0); });
+        });
+
+        verify(mBridge, times(1)).deleteAllEvents(mDeleteCallbackCaptor.capture());
+        resolveDeleteCallback();
+    }
+
+    @Test
+    public void testClearRange() {
+        resolveLoadCallback();
+        addEntries(100, 1l, 0l);
+        mEventTracker.clearRange(0l, 50l).then((dummy) -> {
+            mEventTracker.queryWebsiteEvents(0l, 50l).then(
+                    (result) -> { assertEquals(result.size(), 0); });
+            mEventTracker.queryWebsiteEvents(50l, 1000l).then((result) -> {
+                assertEquals(result.size(), 50);
+            });
+        });
+
+        verify(mBridge, times(1))
+                .deleteEventsInRange(eq(0l), eq(50l), mDeleteCallbackCaptor.capture());
+        resolveDeleteCallback();
+    }
+
     private void addEntries(int quantity, long stepSize, long startTime) {
         for (int i = 0; i < quantity; i++) {
             Promise<Void> writePromise = mEventTracker.addWebsiteEvent(
@@ -81,5 +114,9 @@ public class EventTrackerTest {
 
     private void resolveWriteCallback() {
         mWriteCallbackCaptor.getValue().onResult(true);
+    }
+
+    private void resolveDeleteCallback() {
+        mDeleteCallbackCaptor.getValue().onResult(true);
     }
 }

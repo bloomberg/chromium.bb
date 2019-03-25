@@ -11,7 +11,6 @@
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
-#include "base/time/time.h"
 #include "chrome/browser/android/usage_stats/website_event.pb.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
@@ -97,12 +96,13 @@ UsageStatsDatabase::Error ToError(bool isSuccess) {
                    : UsageStatsDatabase::Error::kUnknownError;
 }
 
-std::string CreateWebsiteEventKey(int64_t seconds, const std::string& fqdn) {
-  // Zero-pad the Unix time in seconds since epoch. Allows ascending timestamps
+std::string CreateWebsiteEventKey(int64_t seconds_since_unix_epoch,
+                                  const std::string& fqdn) {
+  // Zero-pad |seconds_since_unix_epoch|. Allows ascending timestamps
   // to sort lexicographically, supporting efficient range queries by key.
   char unixTime[kUnixTimeDigits + 1];
-  ssize_t printed =
-      base::strings::SafeSPrintf(unixTime, kUnixTimeFormat, seconds);
+  ssize_t printed = base::strings::SafeSPrintf(unixTime, kUnixTimeFormat,
+                                               seconds_since_unix_epoch);
   DCHECK(printed == kUnixTimeDigits);
 
   // Create the key from the time and fqdn (example: 01548276551_foo.com).
@@ -140,24 +140,25 @@ void UsageStatsDatabase::GetAllEvents(EventsCallback callback) {
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void UsageStatsDatabase::QueryEventsInRange(int64_t start,
-                                            int64_t end,
+void UsageStatsDatabase::QueryEventsInRange(base::Time startTime,
+                                            base::Time endTime,
                                             EventsCallback callback) {
   // Defer execution if database is uninitialized.
   if (!website_event_db_initialized_) {
     website_event_db_callbacks_.emplace(base::BindOnce(
         &UsageStatsDatabase::QueryEventsInRange, weak_ptr_factory_.GetWeakPtr(),
-        start, end, std::move(callback)));
+        startTime, endTime, std::move(callback)));
     return;
   }
 
-  // Load all WebsiteEvents where the timestamp is
-  // in the specified range. Function accepts a half-open range [start, end) as
-  // input, but the database operates on fully-closed ranges. Because the
-  // timestamps are represented by integers, [start, end) is equivalent to
-  // [start, end - 1].
+  // Load all WebsiteEvents where the timestamp is in the specified range.
+  // Function accepts a half-open range [startTime, endTime) as input, but the
+  // database operates on fully-closed ranges. Because the timestamps are
+  // represented by integers, [startTime, endTime) is equivalent to  [startTime,
+  // endTime - 1].
   website_event_db_->LoadKeysAndEntriesInRange(
-      CreateWebsiteEventKey(start, ""), CreateWebsiteEventKey(end - 1, ""),
+      CreateWebsiteEventKey(startTime.ToDoubleT(), ""),
+      CreateWebsiteEventKey(endTime.ToDoubleT() - 1, ""),
       base::BindOnce(&UsageStatsDatabase::OnLoadEntriesForQueryEventsInRange,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -206,14 +207,16 @@ void UsageStatsDatabase::DeleteAllEvents(StatusCallback callback) {
       base::BindOnce(&UsageStatsDatabase::OnUpdateEntries,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
-void UsageStatsDatabase::DeleteEventsInRange(int64_t start,
-                                             int64_t end,
+
+void UsageStatsDatabase::DeleteEventsInRange(base::Time startTime,
+                                             base::Time endTime,
                                              StatusCallback callback) {
   // Defer execution if database is uninitialized.
   if (!website_event_db_initialized_) {
-    website_event_db_callbacks_.emplace(base::BindOnce(
-        &UsageStatsDatabase::DeleteEventsInRange,
-        weak_ptr_factory_.GetWeakPtr(), start, end, std::move(callback)));
+    website_event_db_callbacks_.emplace(
+        base::BindOnce(&UsageStatsDatabase::DeleteEventsInRange,
+                       weak_ptr_factory_.GetWeakPtr(), startTime, endTime,
+                       std::move(callback)));
     return;
   }
 
@@ -221,13 +224,14 @@ void UsageStatsDatabase::DeleteEventsInRange(int64_t start,
   // function, we should consolidate these two proto_db_ calls into a single
   // call.
 
-  // Load all keys where the timestamp is in the specified range, passing a
-  // callback to delete those entries. Function accepts a half-open range
-  // [start, end) as input, but the database operates on fully-closed ranges.
-  // Because the timestamps are represented by integers, [start, end) is
-  // equivalent to [start, end - 1].
+  // Load all WebsiteEvents where the timestamp is in the specified range.
+  // Function accepts a half-open range [startTime, endTime) as input, but the
+  // database operates on fully-closed ranges. Because the timestamps are
+  // represented by integers, [startTime, endTime) is equivalent to  [startTime,
+  // endTime - 1].
   website_event_db_->LoadKeysAndEntriesInRange(
-      CreateWebsiteEventKey(start, ""), CreateWebsiteEventKey(end - 1, ""),
+      CreateWebsiteEventKey(startTime.ToDoubleT(), ""),
+      CreateWebsiteEventKey(endTime.ToDoubleT() - 1, ""),
       base::BindOnce(&UsageStatsDatabase::OnLoadEntriesForDeleteEventsInRange,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -253,11 +257,10 @@ void UsageStatsDatabase::DeleteEventsWithMatchingDomains(
 }
 
 void UsageStatsDatabase::ExpireEvents(base::Time now) {
-  long seven_days_ago =
-      (long)(now - base::TimeDelta::FromDays(EXPIRY_THRESHOLD_DAYS))
-          .ToDoubleT();
+  base::Time seven_days_ago =
+      now - base::TimeDelta::FromDays(EXPIRY_THRESHOLD_DAYS);
   DeleteEventsInRange(
-      1, seven_days_ago,
+      base::Time::FromDoubleT(1), seven_days_ago,
       base::BindOnce(&UsageStatsDatabase::OnWebsiteEventExpiryDone,
                      weak_ptr_factory_.GetWeakPtr()));
 }
