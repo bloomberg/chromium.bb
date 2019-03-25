@@ -268,6 +268,10 @@ void ProducerClient::NotifyDataSourceStarted(
   NOTREACHED();
 }
 
+void ProducerClient::ActivateTriggers(const std::vector<std::string>&) {
+  NOTREACHED();
+}
+
 void ProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
                                 CommitDataCallback callback) {
   producer_host_->CommitData(commit);
