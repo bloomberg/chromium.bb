@@ -15,6 +15,8 @@ source_set("platform") {
     "api/network_interface.cc",
     "api/network_interface.h",
     "api/socket.h.",
+    "api/task_runner.h",
+    "api/task_runner_factory.h",
     "api/time.h",
     "base/event_loop.cc",
     "base/event_loop.h",

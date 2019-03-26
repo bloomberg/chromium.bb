@@ -33,6 +33,8 @@ source_set("api") {
     "service_listener.h",
     "service_publisher.cc",
     "service_publisher.h",
+    "task_runner.h",
+    "task_runner_factory.h",
   ]
 
   public_deps = [
