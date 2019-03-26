@@ -2293,7 +2293,7 @@ TEST_F(TransportClientSocketPoolMockNowSourceTest, IdleUnusedSocketTimeout) {
     base::test::ScopedFeatureList scoped_feature_list_;
     std::map<std::string, std::string> parameters;
     parameters["unused_idle_socket_timeout_seconds"] =
-        base::IntToString(test.unused_idle_socket_timeout_seconds);
+        base::NumberToString(test.unused_idle_socket_timeout_seconds);
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         net::features::kNetUnusedIdleSocketTimeout, parameters);
 
