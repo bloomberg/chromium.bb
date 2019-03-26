@@ -143,8 +143,8 @@ void GCMSocketStreamTest::PumpLoop() {
 
 base::StringPiece GCMSocketStreamTest::DoInputStreamRead(int bytes) {
   int total_bytes_read = 0;
-  const void* initial_buffer = NULL;
-  const void* buffer = NULL;
+  const void* initial_buffer = nullptr;
+  const void* buffer = nullptr;
   int size = 0;
 
   do {

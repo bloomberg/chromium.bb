@@ -190,7 +190,7 @@ typedef BaseRequestsTest MultipartUploadRequestBaseTest;
 TEST_F(BaseRequestsTest, ParseValidJson) {
   std::unique_ptr<base::Value> json(ParseJson(kValidJsonString));
 
-  base::DictionaryValue* root_dict = NULL;
+  base::DictionaryValue* root_dict = nullptr;
   ASSERT_TRUE(json);
   ASSERT_TRUE(json->GetAsDictionary(&root_dict));
 

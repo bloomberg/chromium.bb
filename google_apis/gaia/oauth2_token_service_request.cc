@@ -121,7 +121,7 @@ void OAuth2TokenServiceRequest::Core::Stop() {
 
   // Detaches |owner_| from this instance so |owner_| will be called back only
   // if |Stop()| has never been called.
-  owner_ = NULL;
+  owner_ = nullptr;
 
   // Stop on the token service thread.  RefCountedDeleteOnSequence ensures we
   // will be destroyed on the owner thread.
@@ -133,7 +133,7 @@ void OAuth2TokenServiceRequest::Core::Stop() {
 
 bool OAuth2TokenServiceRequest::Core::IsStopped() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return owner_ == NULL;
+  return owner_ == nullptr;
 }
 
 OAuth2TokenService* OAuth2TokenServiceRequest::Core::token_service() {
