@@ -44,6 +44,10 @@ extern const base::Feature kCompositorTouchAction;
 
 // Enables fallback cursor mode for dpad devices.
 extern const base::Feature kFallbackCursorMode;
+
+// When enabled, this feature prevent blink sending key event to web unless it
+// is on installed PWA.
+extern const base::Feature kDontSendKeyEventsToJavascript;
 }
 
 #endif  // UI_EVENTS_BLINK_BLINK_FEATURES_H_

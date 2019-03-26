@@ -842,6 +842,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       static_cast<blink::WebEffectiveConnectionType>(
           prefs.network_quality_estimator_web_holdback));
 
+  settings->SetDontSendKeyEventsToJavascript(
+      prefs.dont_send_key_events_to_javascript);
   settings->SetWebAppScope(WebString::FromASCII(prefs.web_app_scope.spec()));
 
 #if defined(OS_ANDROID)

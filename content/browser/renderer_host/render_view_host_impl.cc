@@ -90,6 +90,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
+#include "ui/events/blink/blink_features.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/image/image_skia.h"
@@ -517,6 +518,9 @@ const WebPreferences RenderViewHostImpl::ComputeWebPreferences() {
   } else {
     NOTREACHED();
   }
+
+  prefs.dont_send_key_events_to_javascript =
+      base::FeatureList::IsEnabled(features::kDontSendKeyEventsToJavascript);
 
 // TODO(dtapuska): Enable barrel button selection drag support on Android.
 // crbug.com/758042

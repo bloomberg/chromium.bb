@@ -30,4 +30,7 @@ const base::Feature kCompositorTouchAction{"CompositorTouchAction",
 
 const base::Feature kFallbackCursorMode{"FallbackCursorMode",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDontSendKeyEventsToJavascript{
+    "DontSendKeyEventsToJavascript", base::FEATURE_DISABLED_BY_DEFAULT};
 }

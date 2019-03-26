@@ -1018,5 +1018,9 @@
       initial: false,
       invalidate: "MediaQuery",
     },
+    {
+      name: "DontSendKeyEventsToJavascript",
+      initial: false,
+    },
   ],
 }

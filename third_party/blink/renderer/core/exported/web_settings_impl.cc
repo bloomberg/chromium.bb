@@ -322,6 +322,12 @@ void WebSettingsImpl::SetUseWideViewport(bool use_wide_viewport) {
   settings_->SetUseWideViewport(use_wide_viewport);
 }
 
+void WebSettingsImpl::SetDontSendKeyEventsToJavascript(
+    bool dont_send_key_events_to_javascript) {
+  settings_->SetDontSendKeyEventsToJavascript(
+      dont_send_key_events_to_javascript);
+}
+
 void WebSettingsImpl::SetDoubleTapToZoomEnabled(
     bool double_tap_to_zoom_enabled) {
   dev_tools_emulator_->SetDoubleTapToZoomEnabled(double_tap_to_zoom_enabled);

@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input/event_handling_util.h"
@@ -201,29 +202,50 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
   if (initial_key_event.GetType() == WebInputEvent::kKeyDown)
     matched_an_access_key = HandleAccessKey(initial_key_event);
 
-  // FIXME: it would be fair to let an input method handle KeyUp events before
-  // DOM dispatch.
-  if (initial_key_event.GetType() == WebInputEvent::kKeyUp ||
-      initial_key_event.GetType() == WebInputEvent::kChar) {
-    KeyboardEvent* dom_event = KeyboardEvent::Create(
-        initial_key_event, frame_->GetDocument()->domWindow());
+  // Don't expose key events to pages while browsing on the drive-by web. This
+  // is to prevent pages from accidentally interfering with the built-in
+  // behavior eg. spatial-navigation. Installed PWAs are a signal from the user
+  // that they trust the app more than a random page on the drive-by web so we
+  // allow PWAs to receive and override key events. The only exception is the
+  // browser display mode since it must always behave like the the drive-by web.
+  bool should_send_key_events_to_js =
+      !frame_->GetSettings()->GetDontSendKeyEventsToJavascript();
 
-    return event_handling_util::ToWebInputEventResult(
-        node->DispatchEvent(*dom_event));
+  if (!should_send_key_events_to_js &&
+      frame_->GetDocument()->IsInWebAppScope()) {
+    DCHECK(frame_->View());
+    WebDisplayMode display_mode = frame_->View()->DisplayMode();
+    should_send_key_events_to_js = display_mode == kWebDisplayModeMinimalUi ||
+                                   display_mode == kWebDisplayModeStandalone ||
+                                   display_mode == kWebDisplayModeFullscreen;
   }
 
-  WebKeyboardEvent key_down_event = initial_key_event;
-  if (key_down_event.GetType() != WebInputEvent::kRawKeyDown)
-    key_down_event.SetType(WebInputEvent::kRawKeyDown);
-  KeyboardEvent* keydown =
-      KeyboardEvent::Create(key_down_event, frame_->GetDocument()->domWindow());
-  if (matched_an_access_key)
-    keydown->SetDefaultPrevented(true);
-  keydown->SetTarget(node);
+  if (should_send_key_events_to_js) {
+    // FIXME: it would be fair to let an input method handle KeyUp events before
+    // DOM dispatch.
+    if (initial_key_event.GetType() == WebInputEvent::kKeyUp ||
+        initial_key_event.GetType() == WebInputEvent::kChar) {
+      KeyboardEvent* dom_event = KeyboardEvent::Create(
+          initial_key_event, frame_->GetDocument()->domWindow());
 
-  DispatchEventResult dispatch_result = node->DispatchEvent(*keydown);
-  if (dispatch_result != DispatchEventResult::kNotCanceled)
-    return event_handling_util::ToWebInputEventResult(dispatch_result);
+      return event_handling_util::ToWebInputEventResult(
+          node->DispatchEvent(*dom_event));
+    }
+
+    WebKeyboardEvent key_down_event = initial_key_event;
+    if (key_down_event.GetType() != WebInputEvent::kRawKeyDown)
+      key_down_event.SetType(WebInputEvent::kRawKeyDown);
+    KeyboardEvent* keydown = KeyboardEvent::Create(
+        key_down_event, frame_->GetDocument()->domWindow());
+    if (matched_an_access_key)
+      keydown->SetDefaultPrevented(true);
+    keydown->SetTarget(node);
+
+    DispatchEventResult dispatch_result = node->DispatchEvent(*keydown);
+    if (dispatch_result != DispatchEventResult::kNotCanceled)
+      return event_handling_util::ToWebInputEventResult(dispatch_result);
+  }
+
   // If frame changed as a result of keydown dispatch, then return early to
   // avoid sending a subsequent keypress message to the new frame.
   bool changed_focused_frame =

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/editing/editing_behavior.h"
@@ -1554,6 +1555,43 @@ TEST_F(EventHandlerSimTest, SmallCustomCursorIntersectsViewport) {
         GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
     EXPECT_EQ(Cursor::Type::kCustom, cursor.GetType());
   }
+}
+
+TEST_F(EventHandlerSimTest, NotExposeKeyboardEvent) {
+  GetDocument().GetSettings()->SetDontSendKeyEventsToJavascript(true);
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    Last event: <br>
+    <p id='log'>no event</p>
+    <script>
+      document.addEventListener('keydown', (e) => {
+        let log = document.getElementById('log');
+        log.innerText = 'keydown';
+      });
+      document.addEventListener('keyup', (e) => {
+        let log = document.getElementById('log');
+        log.innerText = 'keyup';
+      });
+    </script>
+  )HTML");
+  Compositor().BeginFrame();
+
+  WebElement element = GetDocument().getElementById("log");
+  WebKeyboardEvent e{WebInputEvent::kRawKeyDown, WebInputEvent::kNoModifiers,
+                     WebInputEvent::GetStaticTimeStampForTests()};
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyDown);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("no event", element.InnerHTML().Utf8());
 }
 
 }  // namespace blink
