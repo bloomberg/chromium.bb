@@ -904,13 +904,31 @@ void WebController::OnFindElementForFocusElement(
     return;
   }
 
+  std::string element_object_id = element_result->object_id;
+  WaitForDocumentToBecomeInteractive(
+      kPeriodicCheckRounds, element_object_id,
+      base::BindOnce(
+          &WebController::OnWaitDocumentToBecomeInteractiveForFocusElement,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+          std::move(element_result)));
+}
+
+void WebController::OnWaitDocumentToBecomeInteractiveForFocusElement(
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<FindElementResult> target_element,
+    bool result) {
+  if (!result) {
+    OnResult(false, std::move(callback));
+    return;
+  }
+
   std::vector<std::unique_ptr<runtime::CallArgument>> argument;
   argument.emplace_back(runtime::CallArgument::Builder()
-                            .SetObjectId(element_result->object_id)
+                            .SetObjectId(target_element->object_id)
                             .Build());
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
-          .SetObjectId(element_result->object_id)
+          .SetObjectId(target_element->object_id)
           .SetArguments(std::move(argument))
           .SetFunctionDeclaration(std::string(kScrollIntoViewScript))
           .SetReturnByValue(true)

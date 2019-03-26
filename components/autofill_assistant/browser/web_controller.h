@@ -372,6 +372,10 @@ class WebController {
   void OnFindElementForFocusElement(
       base::OnceCallback<void(bool)> callback,
       std::unique_ptr<FindElementResult> element_result);
+  void OnWaitDocumentToBecomeInteractiveForFocusElement(
+      base::OnceCallback<void(bool)> callback,
+      std::unique_ptr<FindElementResult> target_element,
+      bool result);
   void OnFocusElement(base::OnceCallback<void(bool)> callback,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForSelectOption(
