@@ -7,13 +7,10 @@
 
 #include <windows.graphics.holographic.h>
 #include <windows.perception.spatial.h>
-#include <windows.ui.input.spatial.h>
 
 #include <wrl.h>
 
 #include <memory>
-#include <unordered_map>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
@@ -25,6 +22,7 @@
 #include "device/vr/vr_device.h"
 #include "device/vr/windows/compositor_base.h"
 #include "device/vr/windows/d3d11_texture_helper.h"
+#include "device/vr/windows_mixed_reality/mixed_reality_input_helper.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -57,7 +55,6 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
   bool SubmitCompositedFrame() override;
 
   // Helpers to implement XRDeviceAbstraction.
-  std::vector<mojom::XRInputSourceStatePtr> GetInputState();
   bool EnsureSpatialInteractionManager();
   void InitializeOrigin();
   void InitializeSpace();
@@ -101,10 +98,7 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
       camera_;
 
   // Input Data
-  Microsoft::WRL::ComPtr<
-      ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager>
-      spatial_interaction_manager_;
-  std::unordered_map<uint32_t, bool> controller_pressed_state_;
+  std::unique_ptr<MixedRealityInputHelper> input_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(MixedRealityRenderLoop);
 };

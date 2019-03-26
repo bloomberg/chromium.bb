@@ -143,6 +143,8 @@ if (enable_vr) {
       sources += [
         "windows_mixed_reality/mixed_reality_device.cc",
         "windows_mixed_reality/mixed_reality_device.h",
+        "windows_mixed_reality/mixed_reality_input_helper.cc",
+        "windows_mixed_reality/mixed_reality_input_helper.h",
         "windows_mixed_reality/mixed_reality_renderloop.cc",
         "windows_mixed_reality/mixed_reality_renderloop.h",
         "windows_mixed_reality/mixed_reality_statics.cc",
