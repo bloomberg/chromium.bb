@@ -6133,5 +6133,8 @@ crbug.com/945470 [ Mac ] fast/forms/validation-bubble-appearance-escape.html [ P
 # Failing on: https://ci.chromium.org/buildbot/chromium.mac/Mac10.13%20Tests/11291
 crbug.com/945832 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Failure Timeout Crash ]
 
+# Sheriff 2019-03-26
+crbug.com/945774 [ Mac10.13 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
+
 # WebGPU tests are only run with --enable-unsafe-webgpu
 Bug(none) webgpu/fence.html [ Skip ]
