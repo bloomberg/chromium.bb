@@ -571,7 +571,7 @@ void DomDistillerViewerSourceBrowserTest::PrefTest(bool is_error_page) {
             browser()->profile())->GetDistilledPagePrefs();
 
   // Test theme.
-  distilled_page_prefs->SetTheme(DistilledPagePrefs::DARK);
+  distilled_page_prefs->SetTheme(DistilledPagePrefs::THEME_DARK);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       contents, kGetBodyClass, &result));
@@ -581,7 +581,7 @@ void DomDistillerViewerSourceBrowserTest::PrefTest(bool is_error_page) {
   EXPECT_EQ(kDarkToolbarThemeColor, contents->GetThemeColor());
 
   // Test font family.
-  distilled_page_prefs->SetFontFamily(DistilledPagePrefs::SERIF);
+  distilled_page_prefs->SetFontFamily(DistilledPagePrefs::FONT_FAMILY_SERIF);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(
       content::ExecuteScriptAndExtractString(contents, kGetBodyClass, &result));
@@ -624,8 +624,8 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefPersist) {
 
   // Set preference.
   const double kScale = 1.23;
-  distilled_page_prefs->SetTheme(DistilledPagePrefs::DARK);
-  distilled_page_prefs->SetFontFamily(DistilledPagePrefs::SERIF);
+  distilled_page_prefs->SetTheme(DistilledPagePrefs::THEME_DARK);
+  distilled_page_prefs->SetFontFamily(DistilledPagePrefs::FONT_FAMILY_SERIF);
   distilled_page_prefs->SetFontScaling(kScale);
 
   base::RunLoop().RunUntilIdle();

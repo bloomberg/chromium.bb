@@ -24,8 +24,8 @@ public final class DistilledPagePrefs {
      * Observer interface for observing DistilledPagePrefs changes.
      */
     public interface Observer {
-        void onChangeFontFamily(FontFamily font);
-        void onChangeTheme(Theme theme);
+        void onChangeFontFamily(@FontFamily int font);
+        void onChangeTheme(@Theme int theme);
         void onChangeFontScaling(float scaling);
     }
 
@@ -42,14 +42,13 @@ public final class DistilledPagePrefs {
         }
 
         @CalledByNative("DistilledPagePrefsObserverWrapper")
-        private void onChangeFontFamily(int fontFamily) {
-            mDistilledPagePrefsObserver.onChangeFontFamily(
-                    FontFamily.getFontFamilyForValue(fontFamily));
+        private void onChangeFontFamily(@FontFamily int fontFamily) {
+            mDistilledPagePrefsObserver.onChangeFontFamily(fontFamily);
         }
 
         @CalledByNative("DistilledPagePrefsObserverWrapper")
-        private void onChangeTheme(int theme) {
-            mDistilledPagePrefsObserver.onChangeTheme(Theme.getThemeForValue(theme));
+        private void onChangeTheme(@Theme int theme) {
+            mDistilledPagePrefsObserver.onChangeTheme(theme);
         }
 
         @CalledByNative("DistilledPagePrefsObserverWrapper")
@@ -103,20 +102,20 @@ public final class DistilledPagePrefs {
         return true;
     }
 
-    public void setFontFamily(FontFamily fontFamily) {
-        nativeSetFontFamily(mDistilledPagePrefsAndroid, fontFamily.asNativeEnum());
+    public void setFontFamily(@FontFamily int fontFamily) {
+        nativeSetFontFamily(mDistilledPagePrefsAndroid, fontFamily);
     }
 
-    public FontFamily getFontFamily() {
-        return FontFamily.getFontFamilyForValue(nativeGetFontFamily(mDistilledPagePrefsAndroid));
+    public @FontFamily int getFontFamily() {
+        return nativeGetFontFamily(mDistilledPagePrefsAndroid);
     }
 
-    public void setTheme(Theme theme) {
-        nativeSetTheme(mDistilledPagePrefsAndroid, theme.asNativeEnum());
+    public void setTheme(@Theme int theme) {
+        nativeSetTheme(mDistilledPagePrefsAndroid, theme);
     }
 
-    public Theme getTheme() {
-        return Theme.getThemeForValue(nativeGetTheme(mDistilledPagePrefsAndroid));
+    public @Theme int getTheme() {
+        return nativeGetTheme(mDistilledPagePrefsAndroid);
     }
 
     public void setFontScaling(float scaling) {

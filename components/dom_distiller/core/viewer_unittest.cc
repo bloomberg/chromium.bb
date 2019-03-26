@@ -140,13 +140,13 @@ TEST_F(DomDistillerViewerTest, TestGetDistilledPageThemeJsOutput) {
   std::string kSepiaJs = "useTheme('sepia');";
   std::string kLightJs = "useTheme('light');";
   EXPECT_EQ(kDarkJs.compare(viewer::GetDistilledPageThemeJs(
-                DistilledPagePrefs::DARK)),
+                DistilledPagePrefs::THEME_DARK)),
             0);
   EXPECT_EQ(kLightJs.compare(viewer::GetDistilledPageThemeJs(
-                DistilledPagePrefs::LIGHT)),
+                DistilledPagePrefs::THEME_LIGHT)),
             0);
   EXPECT_EQ(kSepiaJs.compare(viewer::GetDistilledPageThemeJs(
-                DistilledPagePrefs::SEPIA)),
+                DistilledPagePrefs::THEME_SEPIA)),
             0);
 }
 
@@ -155,13 +155,13 @@ TEST_F(DomDistillerViewerTest, TestGetDistilledPageFontFamilyJsOutput) {
   std::string kMonospaceJsFontFamily = "useFontFamily('monospace');";
   std::string kSansSerifJsFontFamily = "useFontFamily('sans-serif');";
   EXPECT_EQ(kSerifJsFontFamily.compare(viewer::GetDistilledPageFontFamilyJs(
-                DistilledPagePrefs::SERIF)),
+                DistilledPagePrefs::FONT_FAMILY_SERIF)),
             0);
   EXPECT_EQ(kMonospaceJsFontFamily.compare(viewer::GetDistilledPageFontFamilyJs(
-                DistilledPagePrefs::MONOSPACE)),
+                DistilledPagePrefs::FONT_FAMILY_MONOSPACE)),
             0);
   EXPECT_EQ(kSansSerifJsFontFamily.compare(viewer::GetDistilledPageFontFamilyJs(
-                DistilledPagePrefs::SANS_SERIF)),
+                DistilledPagePrefs::FONT_FAMILY_SANS_SERIF)),
             0);
 }
 
