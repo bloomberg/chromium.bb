@@ -295,8 +295,9 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
 
 // Check that configuration allows to skip Update screen and get to Enrollment
 // screen.
+// https://crbug.com/945834
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
-                       TestEnrollUsingToken) {
+                       DISABLED_TestEnrollUsingToken) {
   enrollment_helper_.DisableAttributePromptUpdate();
   // Token from configuration file:
   enrollment_helper_.ExpectTokenEnrollmentSuccess(
