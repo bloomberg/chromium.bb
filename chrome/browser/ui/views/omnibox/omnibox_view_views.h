@@ -180,6 +180,9 @@ class OmniboxViewViews : public OmniboxView,
 
   void ClearAccessibilityLabel();
 
+  void SetAccessibilityLabel(const base::string16& display_text,
+                             const AutocompleteMatch& match);
+
   // Selects the whole omnibox contents as a result of the user gesture. This
   // may also unapply steady state elisions depending on user preferences.
   void SelectAllForUserGesture();
@@ -215,7 +218,8 @@ class OmniboxViewViews : public OmniboxView,
   bool OnInlineAutocompleteTextMaybeChanged(const base::string16& display_text,
                                             size_t user_text_length) override;
   void OnInlineAutocompleteTextCleared() override;
-  void OnRevertTemporaryText() override;
+  void OnRevertTemporaryText(const base::string16& display_text,
+                             const AutocompleteMatch& match) override;
   void OnBeforePossibleChange() override;
   bool OnAfterPossibleChange(bool allow_keyword_ui_change) override;
   gfx::NativeView GetNativeView() const override;
