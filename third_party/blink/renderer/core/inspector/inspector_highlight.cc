@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
-#include "third_party/blink/renderer/core/inspector/inspector_css_agent.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_grid.h"
@@ -199,7 +198,9 @@ String ToHEXA(const Color& color) {
                         color.Blue(), color.Alpha());
 }
 
-void AppendStyleInfo(Node* node, protocol::DictionaryValue* element_info) {
+void AppendStyleInfo(Node* node,
+                     protocol::DictionaryValue* element_info,
+                     const InspectorHighlightContrastInfo& node_contrast) {
   std::unique_ptr<protocol::DictionaryValue> computed_style =
       protocol::DictionaryValue::create();
   CSSStyleDeclaration* style =
@@ -236,23 +237,15 @@ void AppendStyleInfo(Node* node, protocol::DictionaryValue* element_info) {
   }
   element_info->setValue("style", std::move(computed_style));
 
-  if (!node->IsElementNode())
-    return;
-
-  Vector<Color> bgcolors;
-  String font_size;
-  String font_weight;
-  InspectorCSSAgent::GetBackgroundColors(ToElement(node), &bgcolors, &font_size,
-                                         &font_weight);
-  if (bgcolors.size() != 1 || font_size.IsEmpty())
-    return;
-
-  std::unique_ptr<protocol::DictionaryValue> contrast =
-      protocol::DictionaryValue::create();
-  contrast->setString("fontSize", font_size);
-  contrast->setString("fontWeight", font_weight);
-  contrast->setString("backgroundColor", ToHEXA(bgcolors[0]));
-  element_info->setValue("contrast", std::move(contrast));
+  if (!node_contrast.font_size.IsEmpty()) {
+    std::unique_ptr<protocol::DictionaryValue> contrast =
+        protocol::DictionaryValue::create();
+    contrast->setString("fontSize", node_contrast.font_size);
+    contrast->setString("fontWeight", node_contrast.font_weight);
+    contrast->setString("backgroundColor",
+                        ToHEXA(node_contrast.background_color));
+    element_info->setValue("contrast", std::move(contrast));
+  }
 }
 
 std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
@@ -402,7 +395,9 @@ InspectorHighlightConfig::InspectorHighlightConfig()
 
 InspectorHighlight::InspectorHighlight(
     Node* node,
-    const InspectorHighlightConfig& highlight_config)
+    const InspectorHighlightConfig& highlight_config,
+    const InspectorHighlightContrastInfo& node_contrast,
+    bool append_element_info)
     : highlight_paths_(protocol::ListValue::create()),
       show_rulers_(highlight_config.show_rulers),
       show_extension_lines_(highlight_config.show_extension_lines),
@@ -412,16 +407,12 @@ InspectorHighlight::InspectorHighlight(
     scale_ = 1.f / frame_view->GetChromeClient()->WindowToViewportScalar(1.f);
   AppendPathsForShapeOutside(node, highlight_config);
   AppendNodeHighlight(node, highlight_config);
-  bool append_element_info = (node->IsElementNode() || node->IsTextNode()) &&
-                             highlight_config.show_info &&
-                             node->GetLayoutObject() &&
-                             node->GetDocument().GetFrame();
   if (append_element_info && node->IsElementNode())
     element_info_ = BuildElementInfo(ToElement(node));
   else if (append_element_info && node->IsTextNode())
     element_info_ = BuildTextNodeInfo(ToText(node));
   if (element_info_ && highlight_config.show_styles)
-    AppendStyleInfo(node, element_info_.get());
+    AppendStyleInfo(node, element_info_.get(), node_contrast);
 }
 
 InspectorHighlight::~InspectorHighlight() = default;
