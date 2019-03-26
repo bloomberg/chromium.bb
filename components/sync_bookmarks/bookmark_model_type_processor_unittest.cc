@@ -258,8 +258,9 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
   EXPECT_THAT(bookmark_node->url(), Eq(GURL(kNewUrl)));
 }
 
-TEST_F(BookmarkModelTypeProcessorTest,
-       ShouldScheduleSaveAfterRemoteUpdateWithOnlyMetadataChange) {
+TEST_F(
+    BookmarkModelTypeProcessorTest,
+    ShouldScheduleSaveAfterRemoteUpdateWithOnlyMetadataChangeAndReflections) {
   const std::string kNodeId = "node_id";
   const std::string kTitle = "title";
   const std::string kUrl = "http://www.url.com";
@@ -444,7 +445,6 @@ TEST_F(BookmarkModelTypeProcessorTest,
   sync_pb::ModelTypeState model_type_state(CreateDummyModelTypeState());
   model_type_state.set_encryption_key_name(kEncryptionKeyName);
 
-  EXPECT_CALL(*schedule_save_closure(), Run());
   // Push empty updates list to the processor together with the updated model
   // type state.
   processor()->OnUpdateReceived(model_type_state,
