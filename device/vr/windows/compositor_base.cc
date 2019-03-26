@@ -58,7 +58,10 @@ XRCompositorCommon::~XRCompositorCommon() {
 void XRCompositorCommon::ClearPendingFrame() {
   pending_frame_.reset();
   // Send frame data to outstanding requests.
-  if (delayed_get_frame_data_callback_ && webxr_visible_) {
+  if (delayed_get_frame_data_callback_ &&
+      (webxr_visible_ || on_webxr_submitted_)) {
+    // If WebXR is not visible, but the browser wants to know when it submits a
+    // frame, we allow the renderer to receive poses.
     std::move(delayed_get_frame_data_callback_).Run();
   }
 
@@ -74,7 +77,7 @@ void XRCompositorCommon::SubmitFrameMissing(int16_t frame_index,
     // WebXR for this frame is hidden.
     pending_frame_->waiting_for_webxr_ = false;
   }
-
+  webxr_has_pose_ = false;
   MaybeCompositeAndSubmit();
 }
 
@@ -96,6 +99,12 @@ void XRCompositorCommon::SubmitFrameWithTextureHandle(
     int16_t frame_index,
     mojo::ScopedHandle texture_handle) {
   TRACE_EVENT1("xr", "SubmitFrameWithTextureHandle", "frameIndex", frame_index);
+
+  webxr_has_pose_ = false;
+  // Tell the browser that WebXR has submitted a frame.
+  if (on_webxr_submitted_)
+    std::move(on_webxr_submitted_).Run();
+
   if (!pending_frame_ || pending_frame_->frame_data_->frame_id != frame_index) {
     // We weren't expecting a submitted frame.  This can happen if WebXR was
     // hidden by an overlay for some time.
@@ -130,6 +139,7 @@ void XRCompositorCommon::SubmitFrameWithTextureHandle(
 
 void XRCompositorCommon::CleanUp() {
   submit_client_ = nullptr;
+  webxr_has_pose_ = false;
   presentation_binding_.Close();
   frame_data_binding_.Close();
   gamepad_provider_.Close();
@@ -172,6 +182,7 @@ void XRCompositorCommon::RequestSession(
     mojom::XRRuntimeSessionOptionsPtr options,
     RequestSessionCallback callback) {
   DCHECK(options->immersive);
+  webxr_has_pose_ = false;
   presentation_binding_.Close();
   frame_data_binding_.Close();
 
@@ -223,6 +234,7 @@ void XRCompositorCommon::RequestSession(
 void XRCompositorCommon::ExitPresent() {
   TRACE_EVENT_INSTANT0("xr", "ExitPresent", TRACE_EVENT_SCOPE_THREAD);
   is_presenting_ = false;
+  webxr_has_pose_ = false;
   presentation_binding_.Close();
   frame_data_binding_.Close();
   submit_client_ = nullptr;
@@ -295,7 +307,10 @@ void XRCompositorCommon::GetFrameData(
 
   // If we've already given out a pose for the current frame, or aren't visible,
   // delay giving out a pose until the next frame we are visible.
-  if (!webxr_visible_ || (pending_frame_ && pending_frame_->webxr_has_pose_)) {
+  // However, if we aren't visible and the browser is waiting to learn that
+  // WebXR has submitted a frame, we can give out a pose as though we are
+  // visible.
+  if ((!webxr_visible_ && !on_webxr_submitted_) || webxr_has_pose_) {
     // There should only be one outstanding GetFrameData call at a time.  We
     // shouldn't get new ones until this resolves or presentation ends/restarts.
     if (delayed_get_frame_data_callback_) {
@@ -308,6 +323,7 @@ void XRCompositorCommon::GetFrameData(
   }
 
   StartPendingFrame();
+  webxr_has_pose_ = true;
   pending_frame_->webxr_has_pose_ = true;
   pending_frame_->sent_frame_data_time_ = base::TimeTicks::Now();
 
@@ -423,6 +439,11 @@ void XRCompositorCommon::SetOverlayAndWebXRVisibility(bool overlay_visible,
   // Maybe composite and submit if we have a pending that is now valid to
   // submit.
   MaybeCompositeAndSubmit();
+}
+
+void XRCompositorCommon::RequestNotificationOnWebXrSubmitted(
+    RequestNotificationOnWebXrSubmittedCallback callback) {
+  on_webxr_submitted_ = std::move(callback);
 }
 
 void XRCompositorCommon::MaybeCompositeAndSubmit() {

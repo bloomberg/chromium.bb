@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
+#include "chrome/browser/vr/test/ui_utils.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 
 #include <memory>
@@ -161,6 +162,8 @@ std::string GetPoseAsString(const Frame& frame) {
 // out. Validates that submitted frames used expected pose.
 void TestPresentationPosesImpl(WebXrVrBrowserTestBase* t,
                                std::string filename) {
+  // Disable frame-timeout UI to test what WebXR renders.
+  UiUtils::DisableFrameTimeoutForTesting();
   MyXRMock my_mock;
 
   // Load the test page, and enter presentation.

@@ -121,6 +121,8 @@ class XRCompositorCommon : public base::Thread,
   void RequestNextOverlayPose(RequestNextOverlayPoseCallback callback) override;
   void SetOverlayAndWebXRVisibility(bool overlay_visible,
                                     bool webxr_visible) override;
+  void RequestNotificationOnWebXrSubmitted(
+      RequestNotificationOnWebXrSubmittedCallback callback) override;
 
   struct OutstandingFrame {
     OutstandingFrame();
@@ -156,6 +158,8 @@ class XRCompositorCommon : public base::Thread,
 
   mojom::XRPresentationClientPtr submit_client_;
   SubmitOverlayTextureCallback overlay_submit_callback_;
+  RequestNotificationOnWebXrSubmittedCallback on_webxr_submitted_;
+  bool webxr_has_pose_ = false;
   base::OnceCallback<void()> on_presentation_ended_;
   mojom::IsolatedXRGamepadProvider::RequestUpdateCallback gamepad_callback_;
   mojo::Binding<mojom::XRPresentationProvider> presentation_binding_;

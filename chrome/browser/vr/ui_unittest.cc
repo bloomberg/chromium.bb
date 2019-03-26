@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "chrome/browser/vr/elements/button.h"
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/disc_button.h"
@@ -785,14 +786,19 @@ TEST_F(UiTest, WebVrTimeout) {
   model_->web_vr.state = kWebVrAwaitingFirstFrame;
 
   RunForMs(500);
+  // On Windows, the timeout message button is not shown.
+#if !defined(OS_WIN)
   VerifyVisibility(
-      {
-          kWebVrTimeoutSpinner, kWebVrTimeoutMessage,
-          kWebVrTimeoutMessageLayout, kWebVrTimeoutMessageIcon,
-          kWebVrTimeoutMessageText, kWebVrTimeoutMessageButton,
-          kWebVrTimeoutMessageButtonText,
-      },
+      {kWebVrTimeoutSpinner, kWebVrTimeoutMessage, kWebVrTimeoutMessageLayout,
+       kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText,
+       kWebVrTimeoutMessageButton, kWebVrTimeoutMessageButtonText},
       false);
+#else
+  VerifyVisibility(
+      {kWebVrTimeoutSpinner, kWebVrTimeoutMessage, kWebVrTimeoutMessageLayout,
+       kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText},
+      false);
+#endif  // OS_WIN
   VerifyVisibility(
       {
           kWebVrBackground,
@@ -801,13 +807,17 @@ TEST_F(UiTest, WebVrTimeout) {
 
   model_->web_vr.state = kWebVrTimeoutImminent;
   RunForMs(500);
-  VerifyVisibility(
-      {
-          kWebVrTimeoutMessage, kWebVrTimeoutMessageLayout,
-          kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText,
-          kWebVrTimeoutMessageButton, kWebVrTimeoutMessageButtonText,
-      },
-      false);
+  // On Windows, the timeout message button is not shown.
+#if !defined(OS_WIN)
+  VerifyVisibility({kWebVrTimeoutMessage, kWebVrTimeoutMessageLayout,
+                    kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText,
+                    kWebVrTimeoutMessageButton, kWebVrTimeoutMessageButtonText},
+                   false);
+#else
+  VerifyVisibility({kWebVrTimeoutMessage, kWebVrTimeoutMessageLayout,
+                    kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText},
+                   false);
+#endif  // OS_WIN
   VerifyVisibility(
       {
           kWebVrTimeoutSpinner, kWebVrBackground,
@@ -821,13 +831,19 @@ TEST_F(UiTest, WebVrTimeout) {
           kWebVrTimeoutSpinner,
       },
       false);
+// On Windows, the timeout message button is not shown.
+#if !defined(OS_WIN)
   VerifyVisibility(
-      {
-          kWebVrBackground, kWebVrTimeoutMessage, kWebVrTimeoutMessageLayout,
-          kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText,
-          kWebVrTimeoutMessageButton, kWebVrTimeoutMessageButtonText,
-      },
+      {kWebVrBackground, kWebVrTimeoutMessage, kWebVrTimeoutMessageLayout,
+       kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText,
+       kWebVrTimeoutMessageButton, kWebVrTimeoutMessageButtonText},
       true);
+#else
+  VerifyVisibility(
+      {kWebVrBackground, kWebVrTimeoutMessage, kWebVrTimeoutMessageLayout,
+       kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText},
+      true);
+#endif  // OS_WIN
 }
 
 TEST_F(UiTest, SpeechRecognitionUiVisibility) {
