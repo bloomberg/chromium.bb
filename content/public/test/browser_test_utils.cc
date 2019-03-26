@@ -90,6 +90,7 @@
 #include "content/test/accessibility_browser_test_utils.h"
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "ipc/ipc_security_test_util.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
 #include "net/cookies/canonical_cookie.h"
@@ -504,9 +505,9 @@ void AppendGzippedResource(const base::RefCountedMemory& encoded,
       std::move(source_stream), net::SourceStream::TYPE_GZIP);
   scoped_refptr<net::IOBufferWithSize> dest_buffer =
       base::MakeRefCounted<net::IOBufferWithSize>(4096);
-  net::CompletionCallback callback;
   while (true) {
-    int rv = filter->Read(dest_buffer.get(), dest_buffer->size(), callback);
+    int rv = filter->Read(dest_buffer.get(), dest_buffer->size(),
+                          net::CompletionOnceCallback());
     ASSERT_LE(0, rv);
     if (rv <= 0)
       break;

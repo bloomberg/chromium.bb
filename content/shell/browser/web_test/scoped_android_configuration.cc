@@ -11,6 +11,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
@@ -25,6 +26,8 @@
 #include "content/shell/browser/web_test/blink_test_controller.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/web_test/web_test_switches.h"
+#include "net/base/completion_once_callback.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -38,15 +41,15 @@ namespace content {
 
 namespace {
 
-void ConnectCompleted(const base::Closure& socket_connected, int rv) {
+void ConnectCompleted(base::OnceClosure socket_connected, int rv) {
   LOG_IF(FATAL, net::OK != rv)
       << " Failed to redirect to socket: " << net::ErrorToString(rv);
-  socket_connected.Run();
+  std::move(socket_connected).Run();
 }
 
 void CreateAndConnectSocket(
     uint16_t port,
-    const base::Callback<void(std::unique_ptr<net::SocketPosix>)>&
+    base::OnceCallback<void(std::unique_ptr<net::SocketPosix>)>
         socket_connected) {
   net::SockaddrStorage storage;
   net::IPAddress address;
@@ -72,9 +75,11 @@ void CreateAndConnectSocket(
   }
 
   net::SocketPosix* socket_ptr = socket.get();
-  net::CompletionCallback connect_completed =
-      base::Bind(&ConnectCompleted,
-                 base::Bind(socket_connected, base::Passed(std::move(socket))));
+  net::CompletionRepeatingCallback connect_completed =
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &ConnectCompleted,
+          base::BindOnce(std::move(socket_connected), std::move(socket))));
+
   result = socket_ptr->Connect(storage, connect_completed);
   if (result != net::ERR_IO_PENDING) {
     connect_completed.Run(result);
@@ -118,7 +123,7 @@ void RedirectStream(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CreateAndConnectSocket, port,
-                     base::Bind(finish_redirection, &redirected)));
+                     base::BindOnce(finish_redirection, &redirected)));
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait;
   while (!redirected.IsSignaled())
     redirected.Wait();
