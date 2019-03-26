@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_legacy_view_controller.h"
 
 #include "components/omnibox/browser/autocomplete_match.h"
-#import "ios/chrome/browser/ui/omnibox/autocomplete_match_formatter.h"
+#import "ios/chrome/browser/ui/omnibox/popup/autocomplete_match_formatter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"

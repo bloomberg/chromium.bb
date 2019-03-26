@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_AUTOCOMPLETE_MATCH_FORMATTER_H_
-#define IOS_CHROME_BROWSER_UI_OMNIBOX_AUTOCOMPLETE_MATCH_FORMATTER_H_
+#ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_AUTOCOMPLETE_MATCH_FORMATTER_H_
+#define IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_AUTOCOMPLETE_MATCH_FORMATTER_H_
 
-#import "ios/chrome/browser/ui/omnibox/autocomplete_suggestion.h"
+#import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
 
 struct AutocompleteMatch;
-@interface AutocompleteMatchFormatter : NSObject<AutocompleteSuggestion>
+@interface AutocompleteMatchFormatter : NSObject <AutocompleteSuggestion>
 
 // This is a temporary solution for coloring strings.
 @property(nonatomic, assign, getter=isIncognito) BOOL incognito;
@@ -23,4 +23,4 @@ struct AutocompleteMatch;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_AUTOCOMPLETE_MATCH_FORMATTER_H_
+#endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_AUTOCOMPLETE_MATCH_FORMATTER_H_

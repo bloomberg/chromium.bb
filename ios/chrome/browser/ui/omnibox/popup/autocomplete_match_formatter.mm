@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/omnibox/autocomplete_match_formatter.h"
+#import "ios/chrome/browser/ui/omnibox/popup/autocomplete_match_formatter.h"
 
 #import <UIKit/UIKit.h>
 
@@ -21,15 +21,15 @@
 namespace {
 // The color of the main text of a suggest cell.
 UIColor* SuggestionTextColor() {
-    return [UIColor blackColor];
+  return [UIColor blackColor];
 }
 // The color of the detail text of a suggest cell.
 UIColor* SuggestionDetailTextColor() {
-    return [UIColor colorWithWhite:0 alpha:0.41];
+  return [UIColor colorWithWhite:0 alpha:0.41];
 }
 // The color of the detail text of a suggest cell.
 UIColor* SuggestionDetailTextColorIncognito() {
-    return [UIColor colorWithWhite:1 alpha:0.5];
+  return [UIColor colorWithWhite:1 alpha:0.5];
 }
 // The color of the text in the portion of a search suggestion that matches the
 // omnibox input text.
@@ -331,11 +331,11 @@ UIColor* DimColorIncognito() {
 
 // Create a formatted string given text and classifications.
 - (NSMutableAttributedString*)
-attributedStringWithString:(NSString*)text
-           classifications:(const ACMatchClassifications*)classifications
-                 smallFont:(BOOL)smallFont
-                     color:(UIColor*)defaultColor
-                  dimColor:(UIColor*)dimColor {
+    attributedStringWithString:(NSString*)text
+               classifications:(const ACMatchClassifications*)classifications
+                     smallFont:(BOOL)smallFont
+                         color:(UIColor*)defaultColor
+                      dimColor:(UIColor*)dimColor {
   if (text == nil)
     return nil;
 
@@ -353,8 +353,8 @@ attributedStringWithString:(NSString*)text
   [styledText addAttributes:dict range:NSMakeRange(0, [text length])];
 
   if (classifications != NULL) {
-    UIFont* boldFontRef =
-          [UIFont systemFontOfSize:fontRef.pointSize weight:UIFontWeightMedium];
+    UIFont* boldFontRef = [UIFont systemFontOfSize:fontRef.pointSize
+                                            weight:UIFontWeightMedium];
 
     for (ACMatchClassifications::const_iterator i = classifications->begin();
          i != classifications->end(); ++i) {

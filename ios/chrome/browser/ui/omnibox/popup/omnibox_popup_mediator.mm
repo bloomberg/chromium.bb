@@ -14,7 +14,7 @@
 #include "components/omnibox/common/omnibox_features.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
-#import "ios/chrome/browser/ui/omnibox/autocomplete_match_formatter.h"
+#import "ios/chrome/browser/ui/omnibox/popup/autocomplete_match_formatter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 

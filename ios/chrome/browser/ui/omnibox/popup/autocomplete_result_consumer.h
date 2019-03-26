@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_AUTOCOMPLETE_RESULT_CONSUMER_H_
-#define IOS_CHROME_BROWSER_UI_OMNIBOX_AUTOCOMPLETE_RESULT_CONSUMER_H_
+#ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_AUTOCOMPLETE_RESULT_CONSUMER_H_
+#define IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_AUTOCOMPLETE_RESULT_CONSUMER_H_
 
-#import "ios/chrome/browser/ui/omnibox/autocomplete_suggestion.h"
+#import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
 
 @protocol AutocompleteResultConsumer;
 
 // Delegate for AutocompleteResultConsumer.
-@protocol AutocompleteResultConsumerDelegate<NSObject>
+@protocol AutocompleteResultConsumerDelegate <NSObject>
 
 // Tells the delegate when a row containing a suggestion is highlighted (i.e.
 // with arrow keys).
@@ -33,7 +33,7 @@
 @end
 
 // An abstract consumer of autocomplete results.
-@protocol AutocompleteResultConsumer<NSObject>
+@protocol AutocompleteResultConsumer <NSObject>
 // Updates the current data and forces a redraw. If animation is YES, adds
 // CALayer animations to fade the OmniboxPopupRows in.
 - (void)updateMatches:(NSArray<id<AutocompleteSuggestion>>*)result
@@ -42,4 +42,4 @@
 - (void)setTextAlignment:(NSTextAlignment)alignment;
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_AUTOCOMPLETE_RESULT_CONSUMER_H_
+#endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_AUTOCOMPLETE_RESULT_CONSUMER_H_

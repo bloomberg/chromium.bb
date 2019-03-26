@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_AUTOCOMPLETE_SUGGESTION_H_
-#define IOS_CHROME_BROWSER_UI_OMNIBOX_AUTOCOMPLETE_SUGGESTION_H_
+#ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_AUTOCOMPLETE_SUGGESTION_H_
+#define IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_AUTOCOMPLETE_SUGGESTION_H_
 
 #import <UIKit/UIKit.h>
 
 class GURL;
 
 // Represents an autocomplete suggestion in UI.
-@protocol AutocompleteSuggestion<NSObject>
+@protocol AutocompleteSuggestion <NSObject>
 // Some suggestions can be deleted with a swipe-to-delete gesture.
 - (BOOL)supportsDeletion;
 // Some suggestions are answers that are displayed inline, such as for weather
@@ -42,4 +42,4 @@ class GURL;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_AUTOCOMPLETE_SUGGESTION_H_
+#endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_AUTOCOMPLETE_SUGGESTION_H_

@@ -8,8 +8,8 @@
 #import <UIKit/UIKit.h>
 #include "components/omnibox/browser/autocomplete_result.h"
 
-#import "ios/chrome/browser/ui/omnibox/autocomplete_result_consumer.h"
-#import "ios/chrome/browser/ui/omnibox/image_retriever.h"
+#import "ios/chrome/browser/ui/omnibox/popup/autocomplete_result_consumer.h"
+#import "ios/chrome/browser/ui/omnibox/popup/image_retriever.h"
 #include "ui/base/window_open_disposition.h"
 
 @protocol BrowserCommands;
