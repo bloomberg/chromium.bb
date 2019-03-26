@@ -69,7 +69,7 @@ Currently, both Linux and Mac OS X build configurations use clang by default.
 On Linux, the build will automatically download the Clang compiler from the
 Google storage cache, the same way that Chromium does it.
 
-On Linux, ensure that libstdc++ 8 is installed, as clang depends on the system
+Ensure that libstdc++ 8 is installed, as clang depends on the system
 instance of it. On Debian flavors, you can run:
 
 ```bash
@@ -85,6 +85,33 @@ installed.
 
 Setting the `gn` argument "is_gcc=true" on Linux enables building using gcc
 instead.  Note that g++ must be installed.
+
+```bash
+  gn gen out/Default --args="is_gcc=true"
+```
+
+### Debug build
+
+Setting the `gn` argument "is_debug=true" enables debug build.
+
+```bash
+  gn gen out/Default --args="is_debug=true"
+```
+
+To install debug information for libstdc++ 8 on Debian flavors, you can run:
+
+```bash
+   sudo apt-get install libstdc++6-8-dbg
+```
+
+### gn configuration
+
+Running `gn args` opens an editor that allows to create a list of arguments
+passed to every invocation of `gn gen`.
+
+```bash
+  gn args out/Default
+```
 
 ### Building the sample executable
 
