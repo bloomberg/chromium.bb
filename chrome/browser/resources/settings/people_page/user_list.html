@@ -50,7 +50,8 @@
           </div>
           <paper-icon-button-light class="icon-clear"
               hidden="[[shouldHideCloseButton_(disabled, item.isOwner)]]">
-            <button on-click="removeUser_"></button>
+            <button title="$i18n{removeUserTooltip}" on-click="removeUser_">
+            </button>
           </paper-icon-button-light>
         </div>
       </template>

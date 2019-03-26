@@ -3915,6 +3915,9 @@
     <message name="IDS_SETTINGS_USERS_DEVICE_OWNER_LABEL" desc="Label for a user who is the device owner.">
       <ph name="USER_NAME">$1<ex>John Smith</ex></ph> (owner)
     </message>
+    <message name="IDS_SETTINGS_USERS_REMOVE_USER_TOOLTIP" desc="Tooltip for the button that removes a user from the list of restricted sign in users.">
+      Remove
+    </message>
     <message name="IDS_SETTINGS_USERS_ADD_USERS" desc="Label the dialog for adding users.">
       Add person
     </message>
