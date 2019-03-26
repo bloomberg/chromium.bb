@@ -8,12 +8,16 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/hint_cache.h"
 #include "components/previews/core/previews_experiments.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
+#include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -22,10 +26,8 @@ namespace previews {
 
 HintsFetcher::HintsFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    GURL optimization_guide_service_url,
-    HintCache* hint_cache)
-    : hint_cache_(hint_cache),
-      optimization_guide_service_url_(net::AppendOrReplaceQueryParameter(
+    GURL optimization_guide_service_url)
+    : optimization_guide_service_url_(net::AppendOrReplaceQueryParameter(
           optimization_guide_service_url,
           "key",
           params::GetOptimizationGuideServiceAPIKey())) {
@@ -37,7 +39,8 @@ HintsFetcher::HintsFetcher(
 HintsFetcher::~HintsFetcher() {}
 
 bool HintsFetcher::FetchOptimizationGuideServiceHints(
-    const std::vector<std::string>& hosts) {
+    const std::vector<std::string>& hosts,
+    HintsFetchedCallback hints_fetched_callback) {
   SEQUENCE_CHECKER(sequence_checker_);
 
   if (url_loader_)
@@ -119,14 +122,29 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&HintsFetcher::OnURLLoadComplete, base::Unretained(this)));
+
+  hints_fetched_callback_ = std::move(hints_fetched_callback);
   return true;
 }
 
-void HintsFetcher::HandleResponse(const std::string& config_data,
-                                  int status,
+void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
+                                  int net_status,
                                   int response_code) {
-  // TODO(mcrouse): Handle received string and convert to GetHintsResponse
-  // and pass back via the callback provided by the owner that requested hints.
+  std::unique_ptr<optimization_guide::proto::GetHintsResponse>
+      get_hints_response =
+          std::make_unique<optimization_guide::proto::GetHintsResponse>();
+
+  UMA_HISTOGRAM_ENUMERATION("Previews.HintsFetcher.GetHintsRequest.Status",
+                            static_cast<net::HttpStatusCode>(response_code),
+                            net::HTTP_VERSION_NOT_SUPPORTED);
+  // Net error codes are negative but histogram enums must be positive.
+  base::UmaHistogramSparse("Previews.HintsFetcher.GetHintsRequest.NetErrorCode",
+                           -net_status);
+
+  if (net_status == net::OK && response_code == net::HTTP_OK &&
+      get_hints_response->ParseFromString(get_hints_response_data)) {
+    std::move(hints_fetched_callback_).Run(std::move(get_hints_response));
+  }
 }
 
 void HintsFetcher::OnURLLoadComplete(
@@ -138,12 +156,6 @@ void HintsFetcher::OnURLLoadComplete(
   HandleResponse(response_body ? *response_body : "", url_loader_->NetError(),
                  response_code);
   url_loader_.reset();
-}
-
-bool HintsFetcher::ParseGetHintsResponseAndApplyHints(
-    const optimization_guide::proto::GetHintsResponse& get_hints_response) {
-  ALLOW_UNUSED_LOCAL(hint_cache_);
-  return false;
 }
 
 }  // namespace previews

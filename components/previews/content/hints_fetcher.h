@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
@@ -23,8 +24,6 @@ class SimpleURLLoader;
 
 namespace previews {
 
-class HintCache;
-
 // A class to handle requests for optimization hints from a remote Optimization
 // Guide Service.
 //
@@ -32,18 +31,25 @@ class HintCache;
 // Owner must ensure that |hint_cache| remains alive for the lifetime of
 // |HintsFetcher|.
 class HintsFetcher {
+  // Callback to inform the caller that the remote hints have been fetched and
+  // to pass back the fetched hints response from the remote Optimization Guide
+  // Service.
+  using HintsFetchedCallback = base::OnceCallback<void(
+      std::unique_ptr<optimization_guide::proto::GetHintsResponse>)>;
+
  public:
   HintsFetcher(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      GURL optimization_guide_service_url,
-      HintCache* hint_cache);
+      GURL optimization_guide_service_url);
   ~HintsFetcher();
 
   // Requests hints from the Optimization Guide Service if a request for
   // them is not already in progress. Returns whether a new request was
-  // issued.
+  // issued. |hints_fetched_callback| is only run if a fetch was successful
+  // and GetHintsResponse can be returned.
   bool FetchOptimizationGuideServiceHints(
-      const std::vector<std::string>& hosts);
+      const std::vector<std::string>& hosts,
+      HintsFetchedCallback hints_fetched_callback);
 
  private:
   // URL loader completion callback.
@@ -57,22 +63,14 @@ class HintsFetcher {
                       int status,
                       int response_code);
 
-
-  // Parses the hints component of |get_hints_response| and applies it to
-  // |hints_|. Returns true if |get_hints_response| was successfully
-  // parsed and applied.
-  bool ParseGetHintsResponseAndApplyHints(
-      const optimization_guide::proto::GetHintsResponse& get_hints_response);
-
   // Used to hold the GetHintsRequest being constructed and sent as a remote
   // request.
   std::unique_ptr<optimization_guide::proto::GetHintsRequest>
       get_hints_request_;
 
-  // HintCache (unowned) is a reference to the set of Optimization Hints
-  // provided by the remote Optimization Guide Service. The caller must ensure
-  // that the |hints_cache_| outlives this instance.
-  HintCache* hint_cache_ = nullptr;
+  // Used to hold the callback while the SimpleURLLoader performs the request
+  // asynchronously.
+  HintsFetchedCallback hints_fetched_callback_;
 
   // The URL for the remote Optimization Guide Service.
   const GURL optimization_guide_service_url_;

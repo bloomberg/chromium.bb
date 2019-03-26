@@ -80,6 +80,15 @@ class HintCacheTest : public testing::Test {
     }
   }
 
+  bool StoreFetchedHints(
+      std::unique_ptr<optimization_guide::proto::GetHintsResponse>
+          get_hints_response) {
+    bool result = hint_cache_->StoreFetchedHints(std::move(get_hints_response));
+
+    RunUntilIdle();
+    return result;
+  }
+
   // Loads hint for the specified host from the cache and waits for callback
   // indicating that loading the hint is complete.
   void LoadHint(const std::string& host) {
@@ -475,6 +484,34 @@ TEST_F(HintCacheTest, TestMemoryCacheLoadCallback) {
 
   EXPECT_TRUE(GetLoadedHint());
   EXPECT_EQ(hint_key, GetLoadedHint()->key());
+}
+
+TEST_F(HintCacheTest, ParseValidFetchedHints) {
+  const int kMemoryCacheSize = 5;
+  CreateAndInitializeHintCache(kMemoryCacheSize);
+
+  std::unique_ptr<optimization_guide::proto::GetHintsResponse>
+      get_hints_response =
+          std::make_unique<optimization_guide::proto::GetHintsResponse>();
+
+  optimization_guide::proto::Hint* hint = get_hints_response->add_hints();
+  hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint->set_key("host.domain.org");
+  optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+  page_hint->set_page_pattern("page pattern");
+
+  EXPECT_TRUE(StoreFetchedHints(std::move(get_hints_response)));
+}
+
+TEST_F(HintCacheTest, ParseEmptyFetchedHints) {
+  const int kMemoryCacheSize = 5;
+  CreateAndInitializeHintCache(kMemoryCacheSize);
+
+  std::unique_ptr<optimization_guide::proto::GetHintsResponse>
+      get_hints_response =
+          std::make_unique<optimization_guide::proto::GetHintsResponse>();
+
+  EXPECT_FALSE(StoreFetchedHints(std::move(get_hints_response)));
 }
 
 }  // namespace

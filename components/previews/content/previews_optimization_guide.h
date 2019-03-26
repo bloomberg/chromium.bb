@@ -116,6 +116,13 @@ class PreviewsOptimizationGuide
   // OptimizationGuideService and registers as an observer with it.
   void OnHintCacheInitialized();
 
+  // Callback executed after remote hints have been fetched and returned from
+  // the remote Optimization Guide Service. At this point, the hints response
+  // is ready to be processed and stored for use.
+  void OnHintsFetched(
+      std::unique_ptr<optimization_guide::proto::GetHintsResponse>
+          get_hints_response);
+
   // Called when the hints have been fully updated with the latest hints from
   // the Component Updater. This is used as a signal during tests.
   // |update_closure| is called immediately if not null.

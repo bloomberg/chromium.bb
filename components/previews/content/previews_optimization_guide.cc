@@ -224,19 +224,7 @@ void PreviewsOptimizationGuide::OnHintCacheInitialized() {
                         base::Version(kManualConfigComponentVersion))));
   }
 
-  // If the client is eligible to fetch hints, currently controlled by a feature
-  // flag |kOptimizationHintsFetching|, fetch hints from the remote
-  // Optimization Guide Service.
-  //
-  // TODO(mcrouse): Add a check for user specific state in addition to the
-  // feature state: (1) Data saver should be enabled (2) Infobar notification
-  // does not need to be shown to the user.
 
-  if (previews::params::IsHintsFetchingEnabled()) {
-    // TODO(mcrouse): On initialize, we should check if hints have be fetched
-    // recently. We will also schedule this to be called on a timer.
-    FetchHints();
-  }
 
   // Register as an observer regardless of hint proto override usage. This is
   // needed as a signal during testing.
@@ -277,11 +265,24 @@ void PreviewsOptimizationGuide::FetchHints() {
             top_hosts.size());
   if (!hints_fetcher_) {
     hints_fetcher_ = std::make_unique<HintsFetcher>(
-        url_loader_factory_, params::GetOptimizationGuideServiceURL(),
-        hint_cache_.get());
+        url_loader_factory_, params::GetOptimizationGuideServiceURL());
   }
 
-  hints_fetcher_->FetchOptimizationGuideServiceHints(top_hosts);
+  hints_fetcher_->FetchOptimizationGuideServiceHints(
+      top_hosts, base::BindOnce(&PreviewsOptimizationGuide::OnHintsFetched,
+                                ui_weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PreviewsOptimizationGuide::OnHintsFetched(
+    std::unique_ptr<optimization_guide::proto::GetHintsResponse>
+        get_hints_response) {
+  DCHECK(get_hints_response);
+
+  // TODO(mcrouse): this will be dropped into a backgroundtask as it will likely
+  // be intensive/slow storing hints.
+  // The callback will be UpdateHints().
+
+  hint_cache_->StoreFetchedHints(std::move(get_hints_response));
 }
 
 void PreviewsOptimizationGuide::UpdateHints(
@@ -311,6 +312,20 @@ void PreviewsOptimizationGuide::OnHintsUpdated(
   LOCAL_HISTOGRAM_BOOLEAN(
       kPreviewsOptimizationGuideUpdateHintsResultHistogramString,
       hints_ != NULL);
+
+  // If the client is eligible to fetch hints, currently controlled by a feature
+  // flag |kOptimizationHintsFetching|, fetch hints from the remote Optimization
+  // Guide Service.
+  //
+  // TODO(mcrouse): Add a check for user specific state in addition to the
+  // feature state: (1) Data saver should be enabled (2) Check if Infobar
+  // notification needs to be shown to the user.
+
+  if (previews::params::IsHintsFetchingEnabled()) {
+    // TODO(mcrouse): On initialize, we should check if hints have been fetched
+    // recently. We will also schedule this to be called on a timer.
+    FetchHints();
+  }
 }
 
 void PreviewsOptimizationGuide::ListenForNextUpdateForTesting(

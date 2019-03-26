@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -35,23 +36,33 @@ class HintsFetcherTest : public testing::Test {
         features::kOptimizationHintsFetching, {});
 
     hints_fetcher_ = std::make_unique<HintsFetcher>(
-        shared_url_loader_factory_, GURL(optimization_guide_service_url),
-        hint_cache_);
+        shared_url_loader_factory_, GURL(optimization_guide_service_url));
   }
 
   ~HintsFetcherTest() override {}
 
+  void OnHintsFetched(
+      std::unique_ptr<optimization_guide::proto::GetHintsResponse>
+          get_hints_response) {
+    hints_fetched_ = true;
+  }
+
+  bool HintsFetched() { return hints_fetched_; }
+
  protected:
   bool FetchHints(const std::vector<std::string>& hosts) {
-    bool status = hints_fetcher_->FetchOptimizationGuideServiceHints(hosts);
+    bool status = hints_fetcher_->FetchOptimizationGuideServiceHints(
+        hosts, base::BindOnce(&HintsFetcherTest::OnHintsFetched,
+                              base::Unretained(this)));
     RunUntilIdle();
     return status;
   }
 
   // Return a 200 response with provided content to any pending requests.
-  bool SimulateResponse(const std::string& content) {
+  bool SimulateResponse(const std::string& content,
+                        net::HttpStatusCode http_status) {
     return test_url_loader_factory_.SimulateResponseForPendingRequest(
-        optimization_guide_service_url, content, net::HTTP_OK,
+        optimization_guide_service_url, content, http_status,
         network::TestURLLoaderFactory::kUrlMatchPrefix);
   }
 
@@ -72,9 +83,8 @@ class HintsFetcherTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  bool hints_fetched_ = false;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-
-  HintCache* hint_cache_;
 
   std::unique_ptr<HintsFetcher> hints_fetcher_;
 
@@ -88,7 +98,8 @@ TEST_F(HintsFetcherTest, FetchOptimizationGuideServiceHints) {
   std::string response_content;
   EXPECT_TRUE(FetchHints(std::vector<std::string>()));
   VerifyHasPendingFetchRequests();
-  EXPECT_TRUE(SimulateResponse(response_content));
+  EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
+  EXPECT_TRUE(HintsFetched());
 }
 
 // Tests to ensure that multiple hint fetches by the same object cannot be in
@@ -101,8 +112,27 @@ TEST_F(HintsFetcherTest, FetchInProcess) {
   EXPECT_FALSE(FetchHints(std::vector<std::string>()));
 
   // Once response arrives, check to make sure a new fetch can start.
-  SimulateResponse(response_content);
+  SimulateResponse(response_content, net::HTTP_OK);
   EXPECT_TRUE(FetchHints(std::vector<std::string>()));
+}
+
+// Tests 404 response from request.
+TEST_F(HintsFetcherTest, FetchReturned404) {
+  std::string response_content;
+
+  EXPECT_TRUE(FetchHints(std::vector<std::string>()));
+
+  // Send a 404 to HintsFetcher.
+  SimulateResponse(response_content, net::HTTP_NOT_FOUND);
+  EXPECT_FALSE(HintsFetched());
+}
+
+TEST_F(HintsFetcherTest, FetchReturnBadResponse) {
+  std::string response_content = "not proto";
+  EXPECT_TRUE(FetchHints(std::vector<std::string>()));
+  VerifyHasPendingFetchRequests();
+  EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
+  EXPECT_FALSE(HintsFetched());
 }
 
 }  // namespace previews

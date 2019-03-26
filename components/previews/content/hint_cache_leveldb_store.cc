@@ -141,6 +141,14 @@ HintCacheLevelDBStore::MaybeCreateComponentUpdateData(
   return std::make_unique<LevelDBComponentUpdateData>(version);
 }
 
+std::unique_ptr<HintCacheStore::ComponentUpdateData>
+HintCacheLevelDBStore::CreateUpdateDataForFetchedHints() const {
+  // TODO(mcrouse): Currently returns a LevelDBComponentUpdateData, future
+  // refactor will create a LevelDBFetchedHintsData that will take a cache
+  // expiry time. The version for this object will be ignored.
+  return std::make_unique<LevelDBComponentUpdateData>(base::Version("0.0.1"));
+}
+
 void HintCacheLevelDBStore::UpdateComponentData(
     std::unique_ptr<ComponentUpdateData> component_data,
     base::OnceClosure callback) {

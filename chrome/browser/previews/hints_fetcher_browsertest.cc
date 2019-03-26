@@ -92,6 +92,9 @@ class OptimizationGuideServiceNoHintsFetcherBrowserTest
                             base::Unretained(this)));
     ASSERT_TRUE(https_server_->Start());
 
+    https_url_ = https_server_->GetURL("/hint_setup.html");
+    ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
+
     InProcessBrowserTest::SetUp();
   }
 
@@ -102,11 +105,37 @@ class OptimizationGuideServiceNoHintsFetcherBrowserTest
     // at the time of first navigation. That may prevent Preview from
     // triggering, and causing the test to flake.
     cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
+    cmd->AppendSwitch("purge_hint_cache_store");
 
     // Set up OptimizationGuideServiceURL, this does not enable HintsFetching,
     // only provides the URL.
     cmd->AppendSwitchASCII(previews::switches::kOptimizationGuideServiceURL,
                            https_server_->base_url().spec());
+  }
+
+  // Creates hint data for the |hint_setup_url|'s so that OnHintsUpdated in
+  // Previews Optimization Guide is called and HintsFetch can be tested.
+  void SetUpComponentUpdateHints(const GURL& hint_setup_url) {
+    const optimization_guide::HintsComponentInfo& component_info =
+        test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
+            optimization_guide::proto::NOSCRIPT, {hint_setup_url.host()}, {});
+
+    // Register a QuitClosure for when the next hint update is started below.
+    base::RunLoop run_loop;
+    PreviewsServiceFactory::GetForProfile(
+        Profile::FromBrowserContext(browser()
+                                        ->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetBrowserContext()))
+        ->previews_ui_service()
+        ->previews_decider_impl()
+        ->previews_opt_guide()
+        ->ListenForNextUpdateForTesting(run_loop.QuitClosure());
+
+    g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
+        component_info);
+
+    run_loop.Run();
   }
 
   const GURL& https_url() const { return https_url_; }
@@ -136,6 +165,9 @@ class OptimizationGuideServiceNoHintsFetcherBrowserTest
   GURL https_url_;
 
   base::HistogramTester histogram_tester_;
+
+  optimization_guide::testing::TestHintsComponentCreator
+      test_hints_component_creator_;
 
   DISALLOW_COPY_AND_ASSIGN(OptimizationGuideServiceNoHintsFetcherBrowserTest);
 };
@@ -171,6 +203,9 @@ class OptimizationGuideServiceHintsFetcherBrowserTest
 IN_PROC_BROWSER_TEST_F(OptimizationGuideServiceHintsFetcherBrowserTest,
                        OptimizationGuideServiceHintsFetcher) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
+
+  // Whitelist NoScript for https_url()'s' host.
+  SetUpComponentUpdateHints(https_url());
 
   // Expect that the browser initialization will record at least one sample
   // in each of the follow histograms as One Platform Hints are enabled.

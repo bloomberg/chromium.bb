@@ -63,6 +63,9 @@ class HintCacheLevelDBStore : public HintCacheStore {
   std::unique_ptr<ComponentUpdateData> MaybeCreateComponentUpdateData(
       const base::Version& version) const override;
 
+  std::unique_ptr<HintCacheStore::ComponentUpdateData>
+  CreateUpdateDataForFetchedHints() const override;
+
   void UpdateComponentData(std::unique_ptr<ComponentUpdateData> component_data,
                            base::OnceClosure callback) override;
 

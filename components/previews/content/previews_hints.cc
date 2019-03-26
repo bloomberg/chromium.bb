@@ -282,8 +282,9 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsConfiguration(
   PreviewsProcessHintsResult process_hints_result =
       ProcessConfigurationHints(config.get(), component_update_data.get());
 
-  // Construct the PrevewsHints object with |component_update_data|, which will
-  // later be used to update the HintCache's component data during Initialize().
+  // Construct the PrevewsHints object with |component_update_data|, which
+  // will later be used to update the HintCache's component data during
+  // Initialize().
   std::unique_ptr<PreviewsHints> hints(
       new PreviewsHints(std::move(component_update_data)));
 
@@ -436,8 +437,8 @@ bool PreviewsHints::IsBlacklisted(const GURL& url, PreviewsType type) const {
   // Check large scale blacklists received from the server.
   // (At some point, we may have blacklisting to check in HintCache as well.)
   if (type == PreviewsType::LITE_PAGE_REDIRECT) {
-    // If no bloom filter blacklist is provided by the component update, assume
-    // a server error and return true.
+    // If no bloom filter blacklist is provided by the component update,
+    // assume a server error and return true.
     if (!lite_page_redirect_blacklist_) {
       return true;
     }
