@@ -141,12 +141,11 @@ void TraceEventAgent::WaitForTracingEnabled(
     Agent::WaitForTracingEnabledCallback callback) {
   DCHECK(TracingUsesPerfettoBackend());
   DCHECK(!tracing_enabled_callback_);
+  tracing_enabled_callback_ = std::move(callback);
   if (base::trace_event::TraceLog::GetInstance()->IsEnabled()) {
-    std::move(callback).Run();
+    std::move(tracing_enabled_callback_).Run();
     return;
   }
-
-  tracing_enabled_callback_ = std::move(callback);
 }
 
 // This callback will always come on the same sequence

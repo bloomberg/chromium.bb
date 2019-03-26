@@ -90,7 +90,10 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
 
   // Returns true if TraceLog is enabled on recording mode.
   // Note: Returns false even if FILTERING_MODE is enabled.
-  bool IsEnabled() { return enabled_modes_ & RECORDING_MODE; }
+  bool IsEnabled() {
+    AutoLock lock(lock_);
+    return enabled_modes_ & RECORDING_MODE;
+  }
 
   // Returns a bitmap of enabled modes from TraceLog::Mode.
   uint8_t enabled_modes() { return enabled_modes_; }
