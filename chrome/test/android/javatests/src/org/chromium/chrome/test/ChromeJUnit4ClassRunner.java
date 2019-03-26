@@ -20,7 +20,6 @@ import org.junit.runners.model.InitializationError;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseTestResult.PreTestHook;
 import org.chromium.base.test.util.RestrictionSkipCheck;
 import org.chromium.base.test.util.SkipCheck;
@@ -28,6 +27,7 @@ import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.policy.test.annotations.Policies;
 
 import java.util.List;
@@ -83,7 +83,7 @@ public class ChromeJUnit4ClassRunner extends ContentJUnit4ClassRunner {
             // We need to ensure that the DaydreamApi instance is created on the main thread.
             DaydreamApi daydreamApi;
             try {
-                daydreamApi = ThreadUtils.runOnUiThreadBlocking(
+                daydreamApi = TestThreadUtils.runOnUiThreadBlocking(
                         () -> { return DaydreamApi.create(ContextUtils.getApplicationContext()); });
             } catch (ExecutionException e) {
                 return false;

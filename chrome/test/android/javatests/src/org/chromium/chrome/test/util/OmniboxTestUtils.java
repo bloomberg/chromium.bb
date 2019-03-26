@@ -11,7 +11,6 @@ import android.widget.ListView;
 
 import org.junit.Assert;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.UrlBar;
@@ -22,6 +21,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchCl
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 
 import java.util.ArrayList;
@@ -249,7 +249,7 @@ public class OmniboxTestUtils {
      * @return Whether the UrlBar has focus.
      */
     public static boolean doesUrlBarHaveFocus(final UrlBar urlBar) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return urlBar.hasFocus();
@@ -258,7 +258,7 @@ public class OmniboxTestUtils {
     }
 
     private static boolean isKeyboardActiveForView(final View view) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 InputMethodManager imm =
@@ -287,12 +287,7 @@ public class OmniboxTestUtils {
 
             TouchCommon.singleClickView(urlBar);
         } else {
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    urlBar.clearFocus();
-                }
-            });
+            TestThreadUtils.runOnUiThreadBlocking(() -> { urlBar.clearFocus(); });
         }
     }
 
