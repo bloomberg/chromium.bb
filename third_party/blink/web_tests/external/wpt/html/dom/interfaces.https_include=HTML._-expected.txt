@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 3613 tests; 3566 PASS, 47 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 3613 tests; 3568 PASS, 45 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface mixin NavigatorID: original interface mixin defined
@@ -916,7 +916,7 @@ PASS HTMLVideoElement interface: attribute height
 PASS HTMLVideoElement interface: attribute videoWidth
 PASS HTMLVideoElement interface: attribute videoHeight
 PASS HTMLVideoElement interface: attribute poster
-FAIL HTMLVideoElement interface: attribute playsInline assert_true: The prototype object must have a property "playsInline" expected true got false
+PASS HTMLVideoElement interface: attribute playsInline
 PASS HTMLVideoElement must be primary interface of document.createElement("video")
 PASS Stringification of document.createElement("video")
 PASS HTMLVideoElement interface: document.createElement("video") must inherit property "width" with the proper type
@@ -924,7 +924,7 @@ PASS HTMLVideoElement interface: document.createElement("video") must inherit pr
 PASS HTMLVideoElement interface: document.createElement("video") must inherit property "videoWidth" with the proper type
 PASS HTMLVideoElement interface: document.createElement("video") must inherit property "videoHeight" with the proper type
 PASS HTMLVideoElement interface: document.createElement("video") must inherit property "poster" with the proper type
-FAIL HTMLVideoElement interface: document.createElement("video") must inherit property "playsInline" with the proper type assert_inherits: property "playsInline" not found in prototype chain
+PASS HTMLVideoElement interface: document.createElement("video") must inherit property "playsInline" with the proper type
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "error" with the proper type
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "src" with the proper type
 FAIL HTMLMediaElement interface: document.createElement("video") must inherit property "srcObject" with the proper type Unrecognized type MediaStream

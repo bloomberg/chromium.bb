@@ -1155,6 +1155,7 @@ html element video
     property play
     property playbackRate
     property played
+    property playsInline
     property poster
     property preload
     property readyState

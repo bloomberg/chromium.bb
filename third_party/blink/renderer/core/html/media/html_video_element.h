@@ -220,6 +220,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   const AtomicString ImageSourceURL() const override;
 
   void UpdateDisplayState() override;
+  void OnPlay() final;
   void DidMoveToNewDocument(Document& old_document) override;
   void SetDisplayMode(DisplayMode) override;
 

@@ -2477,6 +2477,8 @@ void HTMLMediaElement::PlayInternal() {
 
   can_autoplay_ = false;
 
+  OnPlay();
+
   SetIgnorePreloadNone();
   UpdatePlayState();
 }

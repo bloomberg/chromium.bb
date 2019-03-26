@@ -188,7 +188,15 @@ void AutoplayPolicy::DidMoveToNewDocument(Document& old_document) {
 }
 
 bool AutoplayPolicy::IsEligibleForAutoplayMuted() const {
-  return element_->IsHTMLVideoElement() && element_->muted() &&
+  if (!element_->IsHTMLVideoElement())
+    return false;
+
+  if (RuntimeEnabledFeatures::VideoAutoFullscreenEnabled() &&
+      !element_->FastHasAttribute(html_names::kPlaysinlineAttr)) {
+    return false;
+  }
+
+  return element_->muted() &&
          DocumentShouldAutoplayMutedVideos(element_->GetDocument());
 }
 
@@ -312,15 +320,9 @@ bool AutoplayPolicy::IsGestureNeededForPlayback() const {
     return false;
 
   // We want to allow muted video to autoplay if:
-  // - the flag is enabled;
-  // - Autoplay is enabled in settings;
-  if (element_->IsHTMLVideoElement() && element_->muted() &&
-      DocumentShouldAutoplayMutedVideos(element_->GetDocument()) &&
-      IsAutoplayAllowedPerSettings()) {
-    return false;
-  }
-
-  return true;
+  // - The element is allowed to autoplay muted;
+  // - Autoplay is enabled in settings.
+  return !(IsEligibleForAutoplayMuted() && IsAutoplayAllowedPerSettings());
 }
 
 String AutoplayPolicy::GetPlayErrorMessage() const {
