@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/containers/flat_set.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -14,6 +15,14 @@
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace net {
+
+namespace {
+
+bool IsTLS13(const SSL_SESSION* session) {
+  return SSL_SESSION_get_protocol_version(session) >= TLS1_3_VERSION;
+}
+
+}  // namespace
 
 SSLClientSessionCache::SSLClientSessionCache(const Config& config)
     : clock_(base::DefaultClock::GetInstance()),
@@ -58,6 +67,15 @@ bssl::UniquePtr<SSL_SESSION> SSLClientSessionCache::Lookup(
 
   if (IsExpired(session.get(), now))
     session = nullptr;
+
+  if (session != nullptr && IsTLS13(session.get())) {
+    base::Time session_created =
+        base::Time::FromTimeT(SSL_SESSION_get_time(session.get()));
+    base::TimeDelta time_to_use = clock_->Now() - session_created;
+    UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSLTLS13SessionTimeToUse", time_to_use,
+                               base::TimeDelta::FromMinutes(1),
+                               base::TimeDelta::FromDays(7), 50);
+  }
   return session;
 }
 
@@ -71,6 +89,14 @@ void SSLClientSessionCache::ResetLookupCount(const std::string& cache_key) {
 
 void SSLClientSessionCache::Insert(const std::string& cache_key,
                                    bssl::UniquePtr<SSL_SESSION> session) {
+  if (IsTLS13(session.get())) {
+    base::TimeDelta lifetime =
+        base::TimeDelta::FromSeconds(SSL_SESSION_get_timeout(session.get()));
+    UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSLTLS13SessionLifetime", lifetime,
+                               base::TimeDelta::FromMinutes(1),
+                               base::TimeDelta::FromDays(7), 50);
+  }
+
   auto iter = cache_.Get(cache_key);
   if (iter == cache_.end())
     iter = cache_.Put(cache_key, Entry());
