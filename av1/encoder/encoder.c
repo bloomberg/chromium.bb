@@ -5459,7 +5459,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
       generate_psnr_packet(cpi);
     }
   }
-  if (cpi->keep_level_stats && oxcf->pass != 1 && !cm->show_existing_frame)
+  if (cpi->keep_level_stats && oxcf->pass != 1)
     av1_update_level_info(cpi, *size, *time_stamp, *time_end);
 
 #if CONFIG_INTERNAL_STATS
