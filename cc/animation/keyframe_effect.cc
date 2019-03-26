@@ -206,12 +206,10 @@ void KeyframeEffect::UpdateState(bool start_ready_keyframe_models,
 void KeyframeEffect::UpdateTickingState() {
   if (animation_->has_animation_host()) {
     bool was_ticking = is_ticking_;
-    is_ticking_ = HasNonDeletedKeyframeModel();
+    is_ticking_ = HasNonDeletedKeyframeModel() &&
+                  element_animations_->has_element_in_any_list();
 
-    bool has_element_in_any_list =
-        element_animations_->has_element_in_any_list();
-
-    if (is_ticking_ && !was_ticking && has_element_in_any_list) {
+    if (is_ticking_ && !was_ticking) {
       animation_->AddToTicking();
     } else if (!is_ticking_ && was_ticking) {
       RemoveFromTicking();
