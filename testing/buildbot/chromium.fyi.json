@@ -4607,12 +4607,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "ios_components_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "ios_web_view_inttests"
       }
     ]
   },
