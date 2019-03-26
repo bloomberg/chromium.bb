@@ -77,6 +77,7 @@ public class Snackbar {
     public static final int UMA_WEBAPK_PRIVACY_DISCLOSURE = 27;
     public static final int UMA_TWA_PRIVACY_DISCLOSURE = 28;
     public static final int UMA_AUTOFILL_ASSISTANT_STOP_UNDO = 29;
+    public static final int UMA_TAB_CLOSE_MULTIPLE_UNDO = 30;
 
     private SnackbarController mController;
     private CharSequence mText;
