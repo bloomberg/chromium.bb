@@ -88,6 +88,8 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   int GetTableCellAriaRowIndex() const override;
   int32_t GetCellId(int32_t row_index, int32_t col_index) const override;
   int32_t CellIndexToId(int32_t cell_index) const override;
+  bool IsCellOrHeaderOfARIATable() const override;
+  bool IsCellOrHeaderOfARIAGrid() const override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
   bool AccessibilityPerformAction(const AXActionData& data) override;
   base::string16 GetLocalizedRoleDescriptionForUnlabeledImage() const override;
@@ -113,7 +115,10 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   void ReplaceIntAttribute(int32_t node_id,
                            ax::mojom::IntAttribute attribute,
                            int32_t value);
+  void ReplaceFloatAttribute(ax::mojom::FloatAttribute attribute, float value);
   void ReplaceBoolAttribute(ax::mojom::BoolAttribute attribute, bool value);
+  void ReplaceStringAttribute(ax::mojom::StringAttribute attribute,
+                              std::string value);
 
   TestAXNodeWrapper* HitTestSyncInternal(int x, int y);
 

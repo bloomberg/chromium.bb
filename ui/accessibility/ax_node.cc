@@ -533,6 +533,33 @@ void AXNode::GetTableCellRowHeaders(std::vector<AXNode*>* row_headers) const {
   IdVectorToNodeVector(row_header_ids, row_headers);
 }
 
+bool AXNode::IsCellOrHeaderOfARIATable() const {
+  if (!IsTableCellOrHeader())
+    return false;
+
+  const AXNode* node = this;
+  while (node && !node->IsTable())
+    node = node->parent();
+  if (!node)
+    return false;
+
+  return node->data().role == ax::mojom::Role::kTable;
+}
+
+bool AXNode::IsCellOrHeaderOfARIAGrid() const {
+  if (!IsTableCellOrHeader())
+    return false;
+
+  const AXNode* node = this;
+  while (node && !node->IsTable())
+    node = node->parent();
+  if (!node)
+    return false;
+
+  return node->data().role == ax::mojom::Role::kGrid ||
+         node->data().role == ax::mojom::Role::kTreeGrid;
+}
+
 AXTableInfo* AXNode::GetAncestorTableInfo() const {
   const AXNode* node = this;
   while (node && !node->IsTable())

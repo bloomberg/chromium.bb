@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_table_info.h"
 #include "ui/accessibility/ax_tree_observer.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -236,6 +237,20 @@ void TestAXNodeWrapper::ReplaceIntAttribute(int32_t node_id,
   node->SetData(new_data);
 }
 
+void TestAXNodeWrapper::ReplaceFloatAttribute(
+    ax::mojom::FloatAttribute attribute,
+    float value) {
+  AXNodeData new_data = GetData();
+  std::vector<std::pair<ax::mojom::FloatAttribute, float>>& attributes =
+      new_data.float_attributes;
+
+  base::EraseIf(attributes,
+                [attribute](auto& pair) { return pair.first == attribute; });
+
+  new_data.AddFloatAttribute(attribute, value);
+  node_->SetData(new_data);
+}
+
 void TestAXNodeWrapper::ReplaceBoolAttribute(ax::mojom::BoolAttribute attribute,
                                              bool value) {
   AXNodeData new_data = GetData();
@@ -246,6 +261,20 @@ void TestAXNodeWrapper::ReplaceBoolAttribute(ax::mojom::BoolAttribute attribute,
                 [attribute](auto& pair) { return pair.first == attribute; });
 
   new_data.AddBoolAttribute(attribute, value);
+  node_->SetData(new_data);
+}
+
+void TestAXNodeWrapper::ReplaceStringAttribute(
+    ax::mojom::StringAttribute attribute,
+    std::string value) {
+  AXNodeData new_data = GetData();
+  std::vector<std::pair<ax::mojom::StringAttribute, std::string>>& attributes =
+      new_data.string_attributes;
+
+  base::EraseIf(attributes,
+                [attribute](auto& pair) { return pair.first == attribute; });
+
+  new_data.AddStringAttribute(attribute, value);
   node_->SetData(new_data);
 }
 
@@ -364,6 +393,14 @@ int32_t TestAXNodeWrapper::CellIndexToId(int32_t cell_index) const {
   return -1;
 }
 
+bool TestAXNodeWrapper::IsCellOrHeaderOfARIATable() const {
+  return node_->IsCellOrHeaderOfARIATable();
+}
+
+bool TestAXNodeWrapper::IsCellOrHeaderOfARIAGrid() const {
+  return node_->IsCellOrHeaderOfARIAGrid();
+}
+
 bool TestAXNodeWrapper::AccessibilityPerformAction(
     const ui::AXActionData& data) {
   switch (data.action) {
@@ -386,6 +423,15 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
                              !current_value);
       }
       g_node_from_last_default_action = node_;
+      return true;
+
+    case ax::mojom::Action::kSetValue:
+      if (IsRangeValueSupported(GetData())) {
+        ReplaceFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
+                              std::stof(data.value));
+      } else if (GetData().role == ax::mojom::Role::kTextField) {
+        ReplaceStringAttribute(ax::mojom::StringAttribute::kValue, data.value);
+      }
       return true;
 
     case ax::mojom::Action::kSetSelection:

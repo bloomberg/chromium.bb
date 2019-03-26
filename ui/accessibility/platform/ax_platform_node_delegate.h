@@ -205,6 +205,10 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual int32_t GetCellId(int32_t row_index, int32_t col_index) const = 0;
   virtual int32_t CellIndexToId(int32_t cell_index) const = 0;
 
+  // Helper methods to check if a cell is an ARIA-1.1+ 'cell' or 'gridcell'
+  virtual bool IsCellOrHeaderOfARIATable() const = 0;
+  virtual bool IsCellOrHeaderOfARIAGrid() const = 0;
+
   // Ordered-set-like and item-like nodes.
   virtual bool IsOrderedSetItem() const = 0;
   virtual bool IsOrderedSet() const = 0;

@@ -368,21 +368,6 @@ base::string16 AXPlatformNodeBase::GetInnerText() const {
   return text;
 }
 
-bool AXPlatformNodeBase::IsRangeValueSupported() const {
-  switch (GetData().role) {
-    case ax::mojom::Role::kMeter:
-    case ax::mojom::Role::kProgressIndicator:
-    case ax::mojom::Role::kSlider:
-    case ax::mojom::Role::kSpinButton:
-    case ax::mojom::Role::kScrollBar:
-      return true;
-    case ax::mojom::Role::kSplitter:
-      return GetData().HasState(ax::mojom::State::kFocusable);
-    default:
-      return false;
-  }
-}
-
 bool AXPlatformNodeBase::IsSelectionItemSupported() const {
   switch (GetData().role) {
     // An ARIA 1.1+ role of "cell", or a role of "row" inside
@@ -705,12 +690,13 @@ base::string16 AXPlatformNodeBase::GetText() const {
 
 base::string16 AXPlatformNodeBase::GetValue() const {
   // Expose slider value.
-  if (IsRangeValueSupported()) {
+  if (IsRangeValueSupported(GetData()))
     return GetRangeValueText();
-  } else if (ui::IsDocument(GetData().role)) {
-    // On Windows, the value of a document should be its URL.
+
+  // On Windows, the value of a document should be its URL.
+  if (ui::IsDocument(GetData().role))
     return base::UTF8ToUTF16(delegate_->GetTreeData().url);
-  }
+
   base::string16 value =
       GetString16Attribute(ax::mojom::StringAttribute::kValue);
 
@@ -957,7 +943,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
   }
 
   // Expose slider value.
-  if (IsRangeValueSupported()) {
+  if (IsRangeValueSupported(GetData())) {
     std::string value = base::UTF16ToUTF8(GetRangeValueText());
     if (!value.empty())
       AddAttributeToList("valuetext", value, attributes);

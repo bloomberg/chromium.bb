@@ -813,6 +813,17 @@ void AXNodeData::SetTextDirection(ax::mojom::TextDirection text_direction) {
   }
 }
 
+bool AXNodeData::IsReadOnlyOrDisabled() const {
+  switch (GetRestriction()) {
+    case ax::mojom::Restriction::kReadOnly:
+    case ax::mojom::Restriction::kDisabled:
+      return true;
+    case ax::mojom::Restriction::kNone:
+      return false;
+  }
+  return false;
+}
+
 std::string AXNodeData::ToString() const {
   std::string result;
 
