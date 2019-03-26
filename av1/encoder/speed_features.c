@@ -201,6 +201,8 @@ static void set_good_speed_features_framesize_independent(
 
   // TODO(debargha): Test, tweak and turn on either 1 or 2
   sf->inter_mode_rd_model_estimation = 1;
+  sf->inter_mode_rd_model_estimation_adaptive = 0;
+
   sf->two_loop_comp_search = 0;
   sf->prune_ref_frame_for_rect_partitions =
       boosted ? 0 : (is_boosted_arf2_bwd_type ? 1 : 2);
@@ -433,6 +435,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
 
   // TODO(debargha): Test, tweak and turn on either 1 or 2
   sf->inter_mode_rd_model_estimation = 0;
+  sf->inter_mode_rd_model_estimation_adaptive = 0;
   sf->two_loop_comp_search = 0;
 
   sf->prune_ref_frame_for_rect_partitions = !boosted;
@@ -773,6 +776,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   // inter_mode_rd_model_estimation in conjunction with
   // model_based_motion_mode_rd_breakout
   sf->inter_mode_rd_model_estimation = 0;
+  sf->inter_mode_rd_model_estimation_adaptive = 0;
 
   sf->obmc_full_pixel_search_level = 0;
   sf->skip_sharp_interp_filter_search = 0;
@@ -881,7 +885,9 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
 #endif  // CONFIG_DIST_8X8
   if (cpi->oxcf.row_mt == 1 && (cpi->oxcf.max_threads > 1)) {
     sf->adaptive_rd_thresh = 0;
-    if (sf->inter_mode_rd_model_estimation == 1)
+    if (sf->inter_mode_rd_model_estimation == 1) {
       sf->inter_mode_rd_model_estimation = 0;
+      sf->inter_mode_rd_model_estimation_adaptive = 0;
+    }
   }
 }

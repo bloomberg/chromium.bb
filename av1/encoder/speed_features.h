@@ -582,7 +582,7 @@ typedef struct SPEED_FEATURES {
 
   // 2-pass inter mode model estimation where the preliminary pass skips
   // transform search and uses a model to estimate rd, while the final pass
-  // computes the full transform search. two types of models are supported:
+  // computes the full transform search. Two types of models are supported:
   // 0: not used
   // 1: used with online dynamic rd model
   // 2: used with static rd model
@@ -690,6 +690,11 @@ typedef struct SPEED_FEATURES {
 
   // use reduced ref set for real-time mode
   int use_real_time_ref_set;
+
+  // Perform a full TX search on some modes while using the
+  // inter-mode RD model for others. Only enabled when
+  // inter_mode_rd_model_estimation != 0
+  int inter_mode_rd_model_estimation_adaptive;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

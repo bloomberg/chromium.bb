@@ -12629,17 +12629,13 @@ static void release_compound_type_rd_buffers(
 }
 
 // Enables do_tx_search on a per-mode basis.
-int do_tx_search_mode(int do_tx_search_global, int midx) {
-  // 0 and 1 correspond to off and on for all modes.
-  switch (do_tx_search_global) {
-    case 0:
-    case 1: return do_tx_search_global;
-    default:
-      // Otherwise, turn it on conditionally for some modes.
-      // A value of 2 indicates it is being turned on conditionally
-      // for the mode. Turn it on for the first 7 modes.
-      return midx < 7 ? 2 : 0;
+int do_tx_search_mode(int do_tx_search_global, int midx, int adaptive) {
+  if (!adaptive || do_tx_search_global) {
+    return do_tx_search_global;
   }
+  // A value of 2 indicates it is being turned on conditionally
+  // for the mode. Turn it on for the first 7 modes.
+  return midx < 7 ? 2 : 0;
 }
 
 void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
@@ -12735,7 +12731,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   alloc_compound_type_rd_buffers(cm, &rd_buffers);
 
   for (int midx = 0; midx < MAX_MODES; ++midx) {
-    const int do_tx_search = do_tx_search_mode(do_tx_search_global, midx);
+    const int do_tx_search = do_tx_search_mode(
+        do_tx_search_global, midx, sf->inter_mode_rd_model_estimation_adaptive);
     const MODE_DEFINITION *mode_order = &av1_mode_order[midx];
     this_mode = mode_order->mode;
     const MV_REFERENCE_FRAME ref_frame = mode_order->ref_frame[0];
