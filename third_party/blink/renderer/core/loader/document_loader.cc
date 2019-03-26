@@ -585,8 +585,6 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
   WebHistoryCommitType history_commit_type = LoadTypeToCommitType(load_type_);
   switch (state_) {
     case kNotStarted:
-      FALLTHROUGH;
-    case kProvisional:
       state_ = kSentDidFinishLoad;
       GetLocalFrameClient().DispatchDidFailProvisionalLoad(error,
                                                            history_commit_type);
@@ -602,6 +600,8 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
       GetFrameLoader().DidFinishNavigation();
       break;
     case kSentDidFinishLoad:
+      FALLTHROUGH;
+    case kProvisional:
       NOTREACHED();
       break;
   }
