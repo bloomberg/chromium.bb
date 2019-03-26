@@ -73,7 +73,7 @@ constexpr int k420MCUSize = 16;
 
 // The largest maximum supported surface size we expect a driver to report for
 // JPEG decoding.
-constexpr gfx::Size kLargestSupportedSize(8192, 8192);
+constexpr gfx::Size kLargestSupportedSize(16 * 1024, 16 * 1024);
 
 // Compares the result of sw decoding |encoded_image| with |decoded_image| using
 // SSIM. Returns true if all conversions work and SSIM is above a given
