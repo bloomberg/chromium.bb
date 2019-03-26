@@ -6127,3 +6127,5 @@ crbug.com/945629 virtual/binary-for-devtools/http/tests/devtools/network/network
 
 crbug.com/945666 [ Win ] paint/invalidation/window-resize/window-resize-percent-width-height.html [ Pass Failure ]
 crbug.com/945666 [ Win ] paint/invalidation/window-resize/window-resize-child-background-image-fixed-centered.html [ Pass Failure ]
+
+crbug.com/945470 [ Mac ] fast/forms/validation-bubble-appearance-escape.html [ Pass Failure ]
