@@ -2260,7 +2260,8 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
 }
 
 #if defined(OS_CHROMEOS)
-void AddGoogleAssistantStrings(content::WebUIDataSource* html_source) {
+void AddGoogleAssistantStrings(content::WebUIDataSource* html_source,
+                               Profile* profile) {
   static constexpr LocalizedString kLocalizedStrings[] = {
       {"googleAssistantPageTitle", IDS_SETTINGS_GOOGLE_ASSISTANT},
       {"googleAssistantEnableContext",
@@ -2891,7 +2892,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddResetStrings(html_source);
   AddSearchEnginesStrings(html_source);
 #if defined(OS_CHROMEOS)
-  AddGoogleAssistantStrings(html_source);
+  AddGoogleAssistantStrings(html_source, profile);
 #endif
   AddSearchInSettingsStrings(html_source);
   AddSearchStrings(html_source, profile);
