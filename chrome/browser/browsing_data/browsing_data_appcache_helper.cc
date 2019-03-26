@@ -18,7 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 using content::AppCacheService;
@@ -100,7 +100,7 @@ void BrowsingDataAppCacheHelper::DeleteAppCachesOnIOThread(
     const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   appcache_service_->DeleteAppCachesForOrigin(origin,
-                                              net::CompletionCallback());
+                                              net::CompletionOnceCallback());
 }
 
 CannedBrowsingDataAppCacheHelper::CannedBrowsingDataAppCacheHelper(
