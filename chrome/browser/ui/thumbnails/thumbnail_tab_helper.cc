@@ -114,7 +114,9 @@ void ThumbnailTabHelper::ScheduleThumbnailCapture(CaptureSchedule schedule) {
   }
 
   base::PostDelayedTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
+      FROM_HERE,
+      {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ThumbnailTabHelper::StartThumbnailCapture,
                      weak_factory_.GetWeakPtr(), schedule),
       delay);
