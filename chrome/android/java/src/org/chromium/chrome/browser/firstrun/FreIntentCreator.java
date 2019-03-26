@@ -87,11 +87,6 @@ public class FreIntentCreator {
         final Class<?> activityClass;
         if (shouldSwitchToTabbedMode(context)) {
             activityClass = TabbedModeFirstRunActivity.class;
-
-            // Going to launch TabbedModeFRE. Have to disable animation on the intent launched after
-            // the FRE is completed to make the transition seamless.
-            intentToLaunchAfterFreComplete = new Intent(intentToLaunchAfterFreComplete);
-            intentToLaunchAfterFreComplete.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         } else {
             activityClass = FirstRunActivity.class;
         }
