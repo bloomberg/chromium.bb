@@ -648,15 +648,7 @@ Schema::InternalStorage::~InternalStorage() {
 scoped_refptr<const Schema::InternalStorage> Schema::InternalStorage::Wrap(
     const SchemaData* data) {
   InternalStorage* storage = new InternalStorage();
-  storage->schema_data_.schema_nodes = data->schema_nodes;
-  storage->schema_data_.property_nodes = data->property_nodes;
-  storage->schema_data_.properties_nodes = data->properties_nodes;
-  storage->schema_data_.restriction_nodes = data->restriction_nodes;
-  storage->schema_data_.required_properties = data->required_properties;
-  storage->schema_data_.int_enums = data->int_enums;
-  storage->schema_data_.string_enums = data->string_enums;
-  storage->schema_data_.validation_schema_root_index =
-      data->validation_schema_root_index;
+  storage->schema_data_ = *data;
   return storage;
 }
 
