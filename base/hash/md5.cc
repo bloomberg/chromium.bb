@@ -21,7 +21,7 @@
  * will fill a supplied 16-byte array with the digest.
  */
 
-#include "base/md5.h"
+#include "base/hash/md5.h"
 
 #include <stddef.h>
 
@@ -38,9 +38,9 @@ struct Context {
  */
 void byteReverse(uint8_t* buf, unsigned longs) {
   do {
-    uint32_t temp = static_cast<uint32_t>(
-        static_cast<unsigned>(buf[3]) << 8 |
-        buf[2]) << 16 |
+    uint32_t temp =
+        static_cast<uint32_t>(static_cast<unsigned>(buf[3]) << 8 | buf[2])
+            << 16 |
         (static_cast<unsigned>(buf[1]) << 8 | buf[0]);
     *reinterpret_cast<uint32_t*>(buf) = temp;
     buf += 4;
