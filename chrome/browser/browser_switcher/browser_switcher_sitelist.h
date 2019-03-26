@@ -16,6 +16,10 @@ namespace browser_switcher {
 class BrowserSwitcherPrefs;
 class ParsedXml;
 
+// Pre-processes the URL rule and modifies it in-place if needed, to avoid
+// having to convert uppercase/lowercase for every rule at every navigation.
+void CanonicalizeRule(std::string* rule);
+
 // Interface that decides whether a navigation should trigger a browser
 // switch.
 class BrowserSwitcherSitelist {
