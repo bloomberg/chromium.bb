@@ -144,7 +144,7 @@ bool WebFrameImpl::CallJavaScriptFunction(
 }
 
 bool WebFrameImpl::CallJavaScriptFunction(
-    std::string name,
+    const std::string& name,
     const std::vector<base::Value>& parameters,
     base::OnceCallback<void(const base::Value*)> callback,
     base::TimeDelta timeout) {

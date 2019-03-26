@@ -32,7 +32,7 @@ class FakeWebFrame : public WebFrame {
   // |can_call_function_|. Will execute callback with value passed in to
   // AddJsResultForFunctionCall(). If no such value exists, will pass null.
   bool CallJavaScriptFunction(
-      std::string name,
+      const std::string& name,
       const std::vector<base::Value>& parameters,
       base::OnceCallback<void(const base::Value*)> callback,
       base::TimeDelta timeout) override;
