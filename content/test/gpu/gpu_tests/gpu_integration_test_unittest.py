@@ -8,6 +8,10 @@ import shutil
 import tempfile
 import unittest
 import mock
+import sys
+import run_gpu_integration_test
+import gpu_project_config
+
 
 from telemetry.testing import browser_test_runner
 from telemetry.internal.platform import system_info
@@ -131,6 +135,26 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
   def setUp(self):
     self._test_state = {}
     self._test_result = {}
+
+  def testTestNamePrefixGenerationInRunGpuIntegrationTests(self):
+    temp_file = tempfile.NamedTemporaryFile(delete=False)
+    temp_file.close()
+    try:
+      sys.argv = [
+          run_gpu_integration_test.__file__, 'simple_integration_unittest',
+          '--write-full-results-to=%s' % temp_file.name]
+      gpu_project_config.CONFIG = chromium_config.ChromiumConfig(
+          top_level_dir=path_util.GetGpuTestDir(),
+          benchmark_dirs=[
+              os.path.join(path_util.GetGpuTestDir(), 'unittest_data')])
+      run_gpu_integration_test.main()
+      with open(temp_file.name) as f:
+        results = json.load(f)
+      self.assertIn('expected_failure', results['tests'])
+      self.assertEqual(results['test_name_prefix'],
+                       'unittest_data.integration_tests.SimpleTest.')
+    finally:
+      temp_file.close()
 
   def testWithoutExpectationsFilesGenerateTagsReturnsEmptyList(self):
     # we need to make sure that GenerateTags() returns an empty list if
