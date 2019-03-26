@@ -289,6 +289,8 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
   }
   DCHECK_EQ(state_, new_state);
   delegated_frame_host_->AttachToCompositor(GetCompositor());
+  if (!dfh_local_surface_id_allocator_.HasValidLocalSurfaceIdAllocation())
+    dfh_local_surface_id_allocator_.GenerateId();
   delegated_frame_host_->WasShown(
       GetRendererLocalSurfaceIdAllocation().local_surface_id(), dfh_size_dip_,
       false /* record_presentation_time */);
@@ -418,9 +420,6 @@ BrowserCompositorMac::GetScopedRendererSurfaceIdAllocator(
 
 const viz::LocalSurfaceIdAllocation&
 BrowserCompositorMac::GetRendererLocalSurfaceIdAllocation() {
-  if (!dfh_local_surface_id_allocator_.HasValidLocalSurfaceIdAllocation())
-    dfh_local_surface_id_allocator_.GenerateId();
-
   return dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
 }
 
