@@ -23,6 +23,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.UiUtils;
 
 import java.io.File;
@@ -145,19 +146,20 @@ public class RenderTestRule extends TestWatcher {
     public void render(final View view, String id) throws IOException {
         Assert.assertTrue("Render Tests must have the RenderTest feature.", mHasRenderTestFeature);
 
-        Bitmap testBitmap = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Bitmap>() {
-            @Override
-            public Bitmap call() throws Exception {
-                int height = view.getMeasuredHeight();
-                int width = view.getMeasuredWidth();
-                if (height <= 0 || width <= 0) {
-                    throw new IllegalStateException(
-                            "Invalid view dimensions: " + width + "x" + height);
-                }
+        Bitmap testBitmap =
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Bitmap>() {
+                    @Override
+                    public Bitmap call() throws Exception {
+                        int height = view.getMeasuredHeight();
+                        int width = view.getMeasuredWidth();
+                        if (height <= 0 || width <= 0) {
+                            throw new IllegalStateException(
+                                    "Invalid view dimensions: " + width + "x" + height);
+                        }
 
-                return UiUtils.generateScaledScreenshot(view, 0, Bitmap.Config.ARGB_8888);
-            }
-        });
+                        return UiUtils.generateScaledScreenshot(view, 0, Bitmap.Config.ARGB_8888);
+                    }
+                });
 
         compareForResult(testBitmap, id);
     }
@@ -210,7 +212,7 @@ public class RenderTestRule extends TestWatcher {
      * example it will disable the blinking cursor in EditTexts.
      */
     public static void sanitize(View view) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Add more sanitizations as we discover more flaky attributes.
             if (view instanceof ViewGroup) {
                 ViewGroup viewGroup = (ViewGroup) view;

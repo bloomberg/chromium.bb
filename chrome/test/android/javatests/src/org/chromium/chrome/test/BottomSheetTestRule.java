@@ -11,7 +11,6 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.UiDevice;
 import android.view.ViewGroup;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
@@ -19,6 +18,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Junit4 rule for tests testing the bottom sheet. This rule creates a new, separate bottom sheet
@@ -96,7 +96,7 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
     private @BottomSheet.SheetState int mStartingBottomSheetState = BottomSheet.SheetState.FULL;
 
     protected void afterStartingActivity() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ViewGroup coordinator = getActivity().findViewById(R.id.coordinator);
             mBottomSheet = getActivity()
                                    .getLayoutInflater()
@@ -144,7 +144,7 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
      * @param animate If the sheet should animate to the provided state.
      */
     public void setSheetState(int state, boolean animate) {
-        ThreadUtils.runOnUiThreadBlocking(() -> getBottomSheet().setSheetState(state, animate));
+        TestThreadUtils.runOnUiThreadBlocking(() -> getBottomSheet().setSheetState(state, animate));
     }
 
     /**
@@ -153,7 +153,7 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
      * @param offset The offset from the bottom that the sheet should be.
      */
     public void setSheetOffsetFromBottom(float offset) {
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> getBottomSheet().setSheetOffsetFromBottomForTesting(offset));
     }
 

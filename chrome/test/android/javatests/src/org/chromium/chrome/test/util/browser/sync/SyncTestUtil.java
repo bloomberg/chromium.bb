@@ -14,10 +14,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -41,7 +41,7 @@ public final class SyncTestUtil {
      * Returns whether sync is requested.
      */
     public static boolean isSyncRequested() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return ProfileSyncService.get().isSyncRequested();
@@ -53,7 +53,7 @@ public final class SyncTestUtil {
      * Returns whether sync-the-feature can start.
      */
     public static boolean canSyncFeatureStart() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return ProfileSyncService.get().canSyncFeatureStart();
@@ -65,7 +65,7 @@ public final class SyncTestUtil {
      * Returns whether sync is active.
      */
     public static boolean isSyncActive() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return ProfileSyncService.get().isSyncActive();
@@ -103,12 +103,7 @@ public final class SyncTestUtil {
      * Triggers a sync cycle.
      */
     public static void triggerSync() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ProfileSyncService.get().triggerSync();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { ProfileSyncService.get().triggerSync(); });
     }
 
     /**
@@ -131,7 +126,7 @@ public final class SyncTestUtil {
     }
 
     private static long getCurrentSyncTime() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Long>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Long>() {
             @Override
             public Long call() {
                 return ProfileSyncService.get().getLastSyncedTimeForTest();
@@ -155,12 +150,8 @@ public final class SyncTestUtil {
                     }
         };
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ProfileSyncService.get().getAllNodes(callback);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { ProfileSyncService.get().getAllNodes(callback); });
 
         try {
             Assert.assertTrue("Semaphore should have been released.",
@@ -276,7 +267,7 @@ public final class SyncTestUtil {
      * is successfully using the passphrase.
      */
     public static void encryptWithPassphrase(final String passphrase) {
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> ProfileSyncService.get().setEncryptionPassphrase(passphrase));
         // Make sure the new encryption settings make it to the server.
         SyncTestUtil.triggerSyncAndWaitForCompletion();
@@ -286,7 +277,7 @@ public final class SyncTestUtil {
      * Decrypts the profile using the input |passphrase|.
      */
     public static void decryptWithPassphrase(final String passphrase) {
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { ProfileSyncService.get().setDecryptionPassphrase(passphrase); });
     }
 }
