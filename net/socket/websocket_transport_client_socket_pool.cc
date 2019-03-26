@@ -20,7 +20,6 @@
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
 #include "net/socket/client_socket_handle.h"
-#include "net/socket/client_socket_pool_base.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/socket/websocket_transport_connect_job.h"

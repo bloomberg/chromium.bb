@@ -103,7 +103,7 @@ class TransportClientSocketPoolTest : public ::testing::Test,
       base::test::ScopedTaskEnvironment::NowSource now_source)
       : WithScopedTaskEnvironment(type, now_source),
         connect_backup_jobs_enabled_(
-            ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(true)),
+            TransportClientSocketPool::set_connect_backup_jobs_enabled(true)),
         group_id_(HostPortPair("www.google.com", 80),
                   ClientSocketPool::SocketType::kHttp,
                   false /* privacy_mode */),
