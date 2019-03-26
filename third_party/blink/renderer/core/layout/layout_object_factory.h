@@ -5,7 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_OBJECT_FACTORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_OBJECT_FACTORY_H_
 
+#include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -15,6 +17,8 @@ class LayoutBlockFlow;
 enum class LegacyLayout;
 class LayoutTableCaption;
 class LayoutTableCell;
+class LayoutText;
+class LayoutTextFragment;
 class Node;
 
 // Helper class for creation of certain LayoutObject-derived objects that may
@@ -45,6 +49,12 @@ class LayoutObjectFactory {
                                           const ComputedStyle&,
                                           LegacyLayout);
   static LayoutBlock* CreateFieldset(Node&, const ComputedStyle&, LegacyLayout);
+  static LayoutText* CreateText(Node*, scoped_refptr<StringImpl>, LegacyLayout);
+  static LayoutTextFragment* CreateTextFragment(Node*,
+                                                StringImpl*,
+                                                int start_offset,
+                                                int length,
+                                                LegacyLayout);
 };
 
 }  // namespace blink
