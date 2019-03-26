@@ -440,7 +440,7 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
     password_store_sync_->NotifyLoginsChanged(password_store_changes);
   }
 
-  return base::nullopt;
+  return error;
 }
 
 base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(

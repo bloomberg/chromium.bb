@@ -651,6 +651,27 @@ TEST_F(PasswordSyncBridgeTest,
   EXPECT_TRUE(error);
 }
 
+// This tests that if storing model type state fails,
+// ShouldMergeSync() would return an error without crashing.
+TEST_F(
+    PasswordSyncBridgeTest,
+    ShouldMergeSyncRemoteAndLocalPasswordsWithErrorWhenStoreUpdateModelTypeStateFails) {
+  // Simulate failure in UpdateModelTypeState();
+  ON_CALL(*mock_sync_metadata_store_sync(), UpdateModelTypeState(_, _))
+      .WillByDefault(testing::Return(false));
+
+  sync_pb::ModelTypeState model_type_state;
+  model_type_state.set_initial_sync_done(true);
+
+  std::unique_ptr<syncer::MetadataChangeList> metadata_changes =
+      bridge()->CreateMetadataChangeList();
+  metadata_changes->UpdateModelTypeState(model_type_state);
+
+  base::Optional<syncer::ModelError> error =
+      bridge()->MergeSyncData(std::move(metadata_changes), {});
+  EXPECT_TRUE(error);
+}
+
 TEST_F(PasswordSyncBridgeTest, ShouldGetAllDataForDebuggingWithHiddenPassword) {
   const int kPrimaryKey1 = 1000;
   const int kPrimaryKey2 = 1001;
