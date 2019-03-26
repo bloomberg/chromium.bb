@@ -841,6 +841,15 @@ static void RemoveHeadContents(ReplacementFragment& fragment) {
 static bool FollowBlockElementStyle(const Node* node) {
   if (!node->IsHTMLElement())
     return false;
+  // When content is inserted into an empty block, use the original style
+  // instead of the block style.
+  if (!node->firstChild())
+    return false;
+  // A block with a placeholder BR appears the same as an empty block.
+  if (node->firstChild() == node->lastChild() &&
+      IsHTMLBRElement(node->firstChild())) {
+    return false;
+  }
 
   const HTMLElement& element = ToHTMLElement(*node);
   return IsListItem(node) || IsTableCell(node) || element.HasTagName(kPreTag) ||
