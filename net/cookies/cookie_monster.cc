@@ -773,8 +773,8 @@ void CookieMonster::FetchAllCookies() {
 
   // We bind in the current time so that we can report the wall-clock time for
   // loading cookies.
-  store_->Load(base::Bind(&CookieMonster::OnLoaded,
-                          weak_ptr_factory_.GetWeakPtr(), TimeTicks::Now()),
+  store_->Load(base::BindOnce(&CookieMonster::OnLoaded,
+                              weak_ptr_factory_.GetWeakPtr(), TimeTicks::Now()),
                net_log_);
 }
 
@@ -1816,8 +1816,8 @@ void CookieMonster::DoCookieCallbackForHostOrDomain(
       auto it = tasks_pending_for_key_.find(key);
       if (it == tasks_pending_for_key_.end()) {
         store_->LoadCookiesForKey(
-            key, base::Bind(&CookieMonster::OnKeyLoaded,
-                            weak_ptr_factory_.GetWeakPtr(), key));
+            key, base::BindOnce(&CookieMonster::OnKeyLoaded,
+                                weak_ptr_factory_.GetWeakPtr(), key));
         it = tasks_pending_for_key_
                  .insert(std::make_pair(
                      key, base::circular_deque<base::OnceClosure>()))
