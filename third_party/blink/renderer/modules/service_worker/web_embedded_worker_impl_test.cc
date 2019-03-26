@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/modules/service_worker/thread_safe_script_container.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
@@ -101,6 +102,9 @@ class FakeWebURLLoader final : public WebURLLoader {
   void Cancel() override {}
   void SetDefersLoading(bool defers) override {}
   void DidChangePriority(WebURLRequest::Priority, int) override {}
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override {
+    return base::MakeRefCounted<scheduler::FakeTaskRunner>();
+  }
 };
 
 // A fake WebURLLoaderFactory which is used for off-main-thread script fetch

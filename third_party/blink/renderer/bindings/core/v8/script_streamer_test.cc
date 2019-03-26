@@ -98,6 +98,9 @@ class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
     void DidChangePriority(WebURLRequest::Priority, int) override {
       NOTREACHED();
     }
+    scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override {
+      return base::MakeRefCounted<scheduler::FakeTaskRunner>();
+    }
   };
 };
 

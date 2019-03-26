@@ -1333,6 +1333,10 @@ void WebURLLoaderImpl::DidChangePriority(WebURLRequest::Priority new_priority,
   context_->DidChangePriority(new_priority, intra_priority_value);
 }
 
+scoped_refptr<base::SingleThreadTaskRunner> WebURLLoaderImpl::GetTaskRunner() {
+  return context_->task_runner();
+}
+
 // static
 // We have this function at the bottom of this file because it confuses
 // syntax highliting.
