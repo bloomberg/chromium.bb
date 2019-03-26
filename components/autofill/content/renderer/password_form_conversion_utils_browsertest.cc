@@ -358,10 +358,6 @@ TEST_F(PasswordFormConversionUtilsTest, OnlyDisabledFields) {
 }
 
 TEST_F(PasswordFormConversionUtilsTest, HTMLDetector_DeveloperGroupAttributes) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      password_manager::features::kHtmlBasedUsernameDetector);
-
   // Each test case consists of a set of parameters to be plugged into the
   // PasswordFormBuilder below, plus the corresponding expectations.
   // The test data contains cases that are identified by HTML detector, and not
@@ -480,10 +476,6 @@ TEST_F(PasswordFormConversionUtilsTest, HTMLDetector_DeveloperGroupAttributes) {
 }
 
 TEST_F(PasswordFormConversionUtilsTest, HTMLDetector_SeveralDetections) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      password_manager::features::kHtmlBasedUsernameDetector);
-
   // If word matches in more than 2 fields, we don't match on it.
   // We search for match with another word.
   PasswordFormBuilder builder(kTestFormActionURL);
@@ -513,10 +505,6 @@ TEST_F(PasswordFormConversionUtilsTest, HTMLDetector_SeveralDetections) {
 }
 
 TEST_F(PasswordFormConversionUtilsTest, HTMLDetector_UserGroupAttributes) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      password_manager::features::kHtmlBasedUsernameDetector);
-
   // Each test case consists of a set of parameters to be plugged into the
   // PasswordFormBuilder below, plus the corresponding expectations.
   // The test data contains cases that are identified by HTML detector, and not
@@ -633,10 +621,6 @@ TEST_F(PasswordFormConversionUtilsTest, HTMLDetector_UserGroupAttributes) {
 }
 
 TEST_F(PasswordFormConversionUtilsTest, HTMLDetectorCache) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      password_manager::features::kHtmlBasedUsernameDetector);
-
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddTextField("unknown", "12345", nullptr);
   builder.AddTextField("something", "smith", nullptr);
@@ -2285,9 +2269,6 @@ TEST_F(PasswordFormConversionUtilsTest,
 TEST_F(PasswordFormConversionUtilsTest, ResetPasswordForm) {
   // GetPassword (including HTML classifier) should process correctly forms
   // without any text fields.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      password_manager::features::kHtmlBasedUsernameDetector);
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddPasswordField("password", "secret", nullptr);
   builder.AddSubmitButton("submit");

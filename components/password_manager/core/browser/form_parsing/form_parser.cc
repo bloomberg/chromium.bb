@@ -984,9 +984,7 @@ std::unique_ptr<PasswordForm> FormDataParser::Parse(const FormData& form_data,
   // heuristics, try to improve the username based on the context of the
   // fields, unless the username already came from more reliable types of
   // analysis.
-  if (!username_found_before_heuristic &&
-      base::FeatureList::IsEnabled(
-          password_manager::features::kHtmlBasedUsernameDetector)) {
+  if (!username_found_before_heuristic) {
     const FormFieldData* username_field_by_context = FindUsernameInPredictions(
         form_data.username_predictions, processed_fields, username_max);
     if (username_field_by_context &&
