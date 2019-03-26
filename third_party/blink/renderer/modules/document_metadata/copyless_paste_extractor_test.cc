@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/modules/document_metadata/copyless_paste_extractor.h"
+
 #include <memory>
 #include <utility>
+
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/document_metadata/copyless_paste.mojom-blink.h"
+#include "third_party/blink/public/mojom/document_metadata/copyless_paste.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
-#include "third_party/blink/renderer/modules/document_metadata/copyless_paste_extractor.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 
 namespace blink {
