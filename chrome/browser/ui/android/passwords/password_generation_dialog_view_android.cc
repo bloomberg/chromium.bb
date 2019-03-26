@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/password_manager/password_generation_dialog_view_android.h"
+#include "chrome/browser/ui/android/passwords/password_generation_dialog_view_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -35,7 +35,7 @@ PasswordGenerationDialogViewAndroid::~PasswordGenerationDialogViewAndroid() {
 void PasswordGenerationDialogViewAndroid::Show(base::string16& password) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
-   base::string16 explanation_text =
+  base::string16 explanation_text =
       l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_PROMPT);
 
   Java_PasswordGenerationDialogBridge_showDialog(
