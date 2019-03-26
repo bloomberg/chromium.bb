@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -101,7 +102,13 @@ class FakeAudioWorkerTest : public testing::Test {
 };
 
 // Ensure the worker runs on the audio thread and fires callbacks.
-TEST_F(FakeAudioWorkerTest, FakeBasicCallback) {
+// TODO(https://crbug.com/945486): Flakily failing on Fuchsia.
+#if defined(OS_FUCHSIA)
+#define MAYBE_FakeBasicCallback DISABLED_FakeBasicCallback
+#else
+#define MAYBE_FakeBasicCallback FakeBasicCallback
+#endif
+TEST_F(FakeAudioWorkerTest, MAYBE_FakeBasicCallback) {
   message_loop_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&FakeAudioWorkerTest::RunOnceOnAudioThread,
                                 base::Unretained(this)));
