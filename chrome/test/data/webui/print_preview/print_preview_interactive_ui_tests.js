@@ -56,8 +56,10 @@ PrintPreviewPrintHeaderInteractiveTest =
   }
 };
 
+// Disabled due to flakiness crbug.com/945630
 TEST_F(
-    'PrintPreviewPrintHeaderInteractiveTest', 'FocusPrintOnReady', function() {
+    'PrintPreviewPrintHeaderInteractiveTest', 'DISABLED_FocusPrintOnReady',
+    function() {
       this.runMochaTest(
           print_header_interactive_test.TestNames.FocusPrintOnReady);
     });
@@ -87,15 +89,17 @@ PrintPreviewDestinationDialogInteractiveTest =
   }
 };
 
+// Disabled due to flakiness crbug.com/945630
 TEST_F(
-    'PrintPreviewDestinationDialogInteractiveTest', 'FocusSearchBox',
+    'PrintPreviewDestinationDialogInteractiveTest', 'DISABLED_FocusSearchBox',
     function() {
       this.runMochaTest(
           destination_dialog_interactive_test.TestNames.FocusSearchBox);
     });
 
+// Disabled due to flakiness crbug.com/945630
 TEST_F(
-    'PrintPreviewDestinationDialogInteractiveTest', 'EscapeSearchBox',
+    'PrintPreviewDestinationDialogInteractiveTest', 'DISABLED_EscapeSearchBox',
     function() {
       this.runMochaTest(
           destination_dialog_interactive_test.TestNames.EscapeSearchBox);
@@ -122,19 +126,23 @@ PrintPreviewPagesSettingsTest = class extends PrintPreviewInteractiveUITest {
   }
 };
 
-TEST_F('PrintPreviewPagesSettingsTest', 'ClearInput', function() {
+// Disabled due to flakiness crbug.com/945630
+TEST_F('PrintPreviewPagesSettingsTest', 'DISABLED_ClearInput', function() {
   this.runMochaTest(pages_settings_test.TestNames.ClearInput);
 });
 
+// Disabled due to flakiness crbug.com/945630
 TEST_F(
-    'PrintPreviewPagesSettingsTest', 'InputNotDisabledOnValidityChange',
-    function() {
+    'PrintPreviewPagesSettingsTest',
+    'DISABLED_InputNotDisabledOnValidityChange', function() {
       this.runMochaTest(
           pages_settings_test.TestNames.InputNotDisabledOnValidityChange);
     });
 
+// Disabled due to flakiness crbug.com/945630
 TEST_F(
-    'PrintPreviewPagesSettingsTest', 'EnterOnInputTriggersPrint', function() {
+    'PrintPreviewPagesSettingsTest', 'DISABLED_EnterOnInputTriggersPrint',
+    function() {
       this.runMochaTest(
           pages_settings_test.TestNames.EnterOnInputTriggersPrint);
     });
@@ -161,9 +169,10 @@ PrintPreviewNumberSettingsSectionInteractiveTest =
   }
 };
 
+// Disabled due to flakiness crbug.com/945630
 TEST_F(
-    'PrintPreviewNumberSettingsSectionInteractiveTest', 'BlurResetsEmptyInput',
-    function() {
+    'PrintPreviewNumberSettingsSectionInteractiveTest',
+    'DISABLED_BlurResetsEmptyInput', function() {
       this.runMochaTest(number_settings_section_interactive_test.TestNames
                             .BlurResetsEmptyInput);
     });
