@@ -335,8 +335,9 @@ std::unique_ptr<BackgroundTracingConfig> CreateReactiveConfig() {
 }
 
 // This tests that the endpoint receives the final trace data.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       ReceiveTraceFinalContentsOnTrigger) {
+                       DISABLED_ReceiveTraceFinalContentsOnTrigger) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -364,8 +365,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests triggering more than once still only gathers once.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       CallTriggersMoreThanOnceOnlyGatherOnce) {
+                       DISABLED_CallTriggersMoreThanOnceOnlyGatherOnce) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -395,14 +397,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests that non-whitelisted args get stripped if required.
-#if defined(OS_ANDROID)
-// Disabled on Android due to flakiness, https://crbug.com/945516 for details.
-#define MAYBE_NotWhitelistedArgsStripped DISABLED_NotWhitelistedArgsStripped
-#else
-#define MAYBE_NotWhitelistedArgsStripped NotWhitelistedArgsStripped
-#endif
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       MAYBE_NotWhitelistedArgsStripped) {
+                       DISABLED_NotWhitelistedArgsStripped) {
   TestTraceReceiverHelper trace_receiver_helper;
   TestBackgroundTracingHelper background_tracing_helper;
 
@@ -443,8 +440,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 // the full WaitForTracingEnabled() callback (background tracing will directly
 // enable the TraceLog so we get events prior to waiting for the whole IPC
 // sequence to enable tracing coming back from the tracing service).
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       EarlyTraceEventsInTrace) {
+                       DISABLED_EarlyTraceEventsInTrace) {
   TestTraceReceiverHelper trace_receiver_helper;
   TestBackgroundTracingHelper background_tracing_helper;
 
@@ -477,8 +475,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests that browser metadata gets included in the trace.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       TraceMetadataInTrace) {
+                       DISABLED_TraceMetadataInTrace) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -508,12 +507,11 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   EXPECT_TRUE(trace_receiver_helper.TraceHasMatchingString("user-agent"));
 }
 
-// Flaky on android, linux, and windows: https://crbug.com/639706 and
-// https://crbug.com/643415.
 // This tests subprocesses (like a navigating renderer) which gets told to
 // provide a argument-filtered trace and has no predicate in place to do the
 // filtering (in this case, only the browser process gets it set), will crash
 // rather than return potential PII.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
                        DISABLED_CrashWhenSubprocessWithoutArgumentFilter) {
   TestBackgroundTracingHelper background_tracing_helper;
@@ -548,8 +546,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests multiple triggers still only gathers once.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       CallMultipleTriggersOnlyGatherOnce) {
+                       DISABLED_CallMultipleTriggersOnlyGatherOnce) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -605,8 +604,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
 // This tests that delayed histogram triggers work as expected
 // with preemptive scenarios.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       CallPreemptiveTriggerWithDelay) {
+                       DISABLED_CallPreemptiveTriggerWithDelay) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -668,8 +668,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests that you can't trigger without a scenario set.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       CannotTriggerWithoutScenarioSet) {
+                       DISABLED_CannotTriggerWithoutScenarioSet) {
   content::BackgroundTracingManager::TriggerHandle handle =
       content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
           "preemptive_test");
@@ -682,8 +683,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
 // This tests that no trace is triggered with a handle that isn't specified
 // in the config.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       DoesNotTriggerWithWrongHandle) {
+                       DISABLED_DoesNotTriggerWithWrongHandle) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -711,8 +713,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests that no trace is triggered with an invalid handle.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       DoesNotTriggerWithInvalidHandle) {
+                       DISABLED_DoesNotTriggerWithInvalidHandle) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -743,8 +746,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests that no preemptive trace is triggered with 0 chance set.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       PreemptiveNotTriggerWithZeroChance) {
+                       DISABLED_PreemptiveNotTriggerWithZeroChance) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -789,8 +793,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests that no reactive trace is triggered with 0 chance set.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       ReactiveNotTriggerWithZeroChance) {
+                       DISABLED_ReactiveNotTriggerWithZeroChance) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -835,8 +840,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests that histogram triggers for preemptive mode configs.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       ReceiveTraceSucceedsOnHigherHistogramSample) {
+                       DISABLED_ReceiveTraceSucceedsOnHigherHistogramSample) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -878,8 +884,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests that histogram triggers for reactive mode configs.
-IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       ReceiveReactiveTraceSucceedsOnHigherHistogramSample) {
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
+IN_PROC_BROWSER_TEST_F(
+    BackgroundTracingManagerBrowserTest,
+    DISABLED_ReceiveReactiveTraceSucceedsOnHigherHistogramSample) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -923,8 +931,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests that histogram values < reference value don't trigger.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       ReceiveTraceFailsOnLowerHistogramSample) {
+                       DISABLED_ReceiveTraceFailsOnLowerHistogramSample) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -967,8 +976,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests that histogram values > upper reference value don't trigger.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       ReceiveTraceFailsOnHigherHistogramSample) {
+                       DISABLED_ReceiveTraceFailsOnHigherHistogramSample) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -1012,8 +1022,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests that invalid preemptive mode configs will fail.
-IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       SetActiveScenarioFailsWithInvalidPreemptiveConfig) {
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
+IN_PROC_BROWSER_TEST_F(
+    BackgroundTracingManagerBrowserTest,
+    DISABLED_SetActiveScenarioFailsWithInvalidPreemptiveConfig) {
   base::DictionaryValue dict;
   dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
   dict.SetString("category", "BENCHMARK");
@@ -1035,8 +1047,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests that reactive mode records and terminates with timeout.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       ReactiveTimeoutTermination) {
+                       DISABLED_ReactiveTimeoutTermination) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -1066,8 +1079,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests that reactive mode records and terminates with a second trigger.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       ReactiveSecondTriggerTermination) {
+                       DISABLED_ReactiveSecondTriggerTermination) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -1096,8 +1110,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests that reactive mode uploads on a second set of triggers.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       ReactiveSecondUpload) {
+                       DISABLED_ReactiveSecondUpload) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestMultipleTraceReceiverHelper trace_receiver_helper;
 
@@ -1139,8 +1154,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests that reactive mode only terminates with the same trigger.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       ReactiveSecondTriggerMustMatchForTermination) {
+                       DISABLED_ReactiveSecondTriggerMustMatchForTermination) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -1206,8 +1222,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests a third trigger in reactive more does not start another trace.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       ReactiveThirdTriggerTimeout) {
+                       DISABLED_ReactiveThirdTriggerTimeout) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -1242,8 +1259,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
 // This tests that reactive mode only terminates with a repeated trigger
 // if the config specifies that it should.
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       ReactiveSecondTriggerIgnored) {
+                       DISABLED_ReactiveSecondTriggerIgnored) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -1300,8 +1318,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   EXPECT_TRUE(trace_receiver_helper.trace_received());
 }
 
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       SetupStartupTracing) {
+                       DISABLED_SetupStartupTracing) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
 
@@ -1348,7 +1367,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   EXPECT_FALSE(trace_receiver_helper.trace_received());
 }
 
-IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest, RunStartupTracing) {
+// TODO(https://crbug.com/945484): Tracing tests are flaky due to a data race.
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       DISABLED_RunStartupTracing) {
   TestTraceLogHelper tracelog_helper;
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
