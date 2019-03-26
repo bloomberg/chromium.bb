@@ -56,7 +56,7 @@ class WebFrame : public base::SupportsUserData {
   // may still fail even if this function returns true. Always returns false if
   // |CanCallJavaScriptFunction| is false.
   virtual bool CallJavaScriptFunction(
-      std::string name,
+      const std::string& name,
       const std::vector<base::Value>& parameters,
       base::OnceCallback<void(const base::Value*)> callback,
       base::TimeDelta timeout) = 0;

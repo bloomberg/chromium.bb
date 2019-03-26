@@ -61,7 +61,7 @@ bool FakeWebFrame::CallJavaScriptFunction(
 }
 
 bool FakeWebFrame::CallJavaScriptFunction(
-    std::string name,
+    const std::string& name,
     const std::vector<base::Value>& parameters,
     base::OnceCallback<void(const base::Value*)> callback,
     base::TimeDelta timeout) {
