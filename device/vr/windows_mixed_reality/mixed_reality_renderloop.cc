@@ -5,12 +5,10 @@
 #include "device/vr/windows_mixed_reality/mixed_reality_renderloop.h"
 
 #include <HolographicSpaceInterop.h>
-#include <SpatialInteractionManagerInterop.h>
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 #include <windows.graphics.holographic.h>
 #include <windows.perception.h>
 #include <windows.perception.spatial.h>
-#include <windows.ui.input.spatial.h>
 
 #include <algorithm>
 #include <utility>
@@ -23,6 +21,7 @@
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_hstring.h"
 #include "device/vr/windows/d3d11_texture_helper.h"
+#include "device/vr/windows_mixed_reality/mixed_reality_input_helper.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform.h"
@@ -108,95 +107,6 @@ mojom::VRFieldOfViewPtr ParseProjection(
   // TODO(billorr): Expand the mojo interface to support just sending the
   // projection matrix directly, instead of decomposing it.
   return field_of_view;
-}
-
-gfx::Transform CreateTransform(WFN::Vector3 position,
-                               WFN::Quaternion rotation) {
-  gfx::DecomposedTransform decomposed_transform;
-  decomposed_transform.translate[0] = position.X;
-  decomposed_transform.translate[1] = position.Y;
-  decomposed_transform.translate[2] = position.Z;
-
-  decomposed_transform.quaternion =
-      gfx::Quaternion(rotation.X, rotation.Y, rotation.Z, rotation.W);
-  return gfx::ComposeTransform(decomposed_transform);
-}
-
-bool TryGetGripFromLocation(
-    ComPtr<WInput::ISpatialInteractionSourceLocation> location_in_origin,
-    gfx::Transform* origin_from_grip) {
-  DCHECK(origin_from_grip);
-  *origin_from_grip = gfx::Transform();
-
-  if (!location_in_origin)
-    return false;
-
-  ComPtr<IReference<WFN::Vector3>> pos_ref;
-
-  if (FAILED(location_in_origin->get_Position(&pos_ref)) || !pos_ref)
-    return false;
-
-  WFN::Vector3 pos;
-  if (FAILED(pos_ref->get_Value(&pos)))
-    return false;
-
-  ComPtr<WInput::ISpatialInteractionSourceLocation2> location_in_origin2;
-  if (FAILED(location_in_origin.As(&location_in_origin2)))
-    return false;
-
-  ComPtr<IReference<WFN::Quaternion>> quat_ref;
-  if (FAILED(location_in_origin2->get_Orientation(&quat_ref)) || !quat_ref)
-    return false;
-
-  WFN::Quaternion quat;
-  if (FAILED(quat_ref->get_Value(&quat)))
-    return false;
-
-  *origin_from_grip = CreateTransform(pos, quat);
-  return true;
-}
-
-bool TryGetPointerOffsetFromLocation(
-    ComPtr<WInput::ISpatialInteractionSourceLocation> location_in_origin,
-    gfx::Transform origin_from_grip,
-    gfx::Transform* grip_from_pointer) {
-  DCHECK(grip_from_pointer);
-  *grip_from_pointer = gfx::Transform();
-
-  if (!location_in_origin)
-    return false;
-
-  // We can get the pointer position, but we'll need to transform it to an
-  // offset from the grip position.  If we can't get an inverse of that,
-  // then go ahead and bail early.
-  gfx::Transform grip_from_origin;
-  if (!origin_from_grip.GetInverse(&grip_from_origin))
-    return false;
-
-  ComPtr<WInput::ISpatialInteractionSourceLocation3> location_in_origin3;
-  if (FAILED(location_in_origin.As(&location_in_origin3)))
-    return false;
-
-  ComPtr<WInput::ISpatialPointerInteractionSourcePose> pointer_pose;
-  if (FAILED(location_in_origin3->get_SourcePointerPose(&pointer_pose)) ||
-      !pointer_pose)
-    return false;
-
-  WFN::Vector3 pos;
-  if (FAILED(pointer_pose->get_Position(&pos)))
-    return false;
-
-  ComPtr<WInput::ISpatialPointerInteractionSourcePose2> pose2;
-  if (FAILED(pointer_pose.As(&pose2)))
-    return false;
-
-  WFN::Quaternion rot;
-  if (FAILED(pose2->get_Orientation(&rot)))
-    return false;
-
-  gfx::Transform origin_from_pointer = CreateTransform(pos, rot);
-  *grip_from_pointer = (grip_from_origin * origin_from_pointer);
-  return true;
 }
 }  // namespace
 
@@ -297,6 +207,8 @@ bool MixedRealityRenderLoop::StartRuntime() {
   if (!holographic_space_)
     return false;
 
+  input_helper_ = std::make_unique<MixedRealityInputHelper>(window_->hwnd());
+
   ABI::Windows::Graphics::Holographic::HolographicAdapterId id;
   HRESULT hr = holographic_space_->get_PrimaryAdapterId(&id);
   if (FAILED(hr))
@@ -343,7 +255,7 @@ void MixedRealityRenderLoop::StopRuntime() {
   pose_ = nullptr;
   rendering_params_ = nullptr;
   camera_ = nullptr;
-  spatial_interaction_manager_ = nullptr;
+  input_helper_ = nullptr;
 
   if (window_)
     DestroyWindow(window_->hwnd());
@@ -791,7 +703,7 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
                                   current_display_info_.Clone()));
   }
 
-  ret->pose->input_state = GetInputState();
+  ret->pose->input_state = input_helper_->GetInputState(origin_, timestamp_);
 
   return ret;
 }
@@ -803,148 +715,6 @@ void MixedRealityRenderLoop::GetEnvironmentIntegrationProvider(
   // be made on this device.
   mojo::ReportBadMessage("Environment integration is not supported.");
   return;
-}
-
-bool MixedRealityRenderLoop::EnsureSpatialInteractionManager() {
-  if (spatial_interaction_manager_)
-    return true;
-
-  if (!window_)
-    return false;
-
-  ComPtr<ISpatialInteractionManagerInterop> spatial_interaction_interop;
-  base::win::ScopedHString spatial_interaction_interop_string =
-      base::win::ScopedHString::Create(
-          RuntimeClass_Windows_UI_Input_Spatial_SpatialInteractionManager);
-  HRESULT hr = base::win::RoGetActivationFactory(
-      spatial_interaction_interop_string.get(),
-      IID_PPV_ARGS(&spatial_interaction_interop));
-  if (FAILED(hr))
-    return false;
-
-  hr = spatial_interaction_interop->GetForWindow(
-      window_->hwnd(), IID_PPV_ARGS(&spatial_interaction_manager_));
-  return SUCCEEDED(hr);
-}
-
-std::vector<mojom::XRInputSourceStatePtr>
-MixedRealityRenderLoop::GetInputState() {
-  std::vector<mojom::XRInputSourceStatePtr> input_states;
-
-  if (!timestamp_ || !origin_ || !EnsureSpatialInteractionManager())
-    return input_states;
-
-  ComPtr<WFC::IVectorView<WInput::SpatialInteractionSourceState*>>
-      source_states;
-  if (FAILED(spatial_interaction_manager_->GetDetectedSourcesAtTimestamp(
-          timestamp_.Get(), &source_states)))
-    return input_states;
-
-  unsigned int size;
-  if (FAILED(source_states->get_Size(&size)))
-    return input_states;
-
-  for (unsigned int i = 0; i < size; i++) {
-    ComPtr<WInput::ISpatialInteractionSourceState> state;
-    if (FAILED(source_states->GetAt(i, &state)))
-      continue;
-
-    // Get the source and query for all of the state that we send first
-    ComPtr<WInput::ISpatialInteractionSource> source;
-    if (FAILED(state->get_Source(&source)))
-      continue;
-
-    WInput::SpatialInteractionSourceKind source_kind;
-    if (FAILED(source->get_Kind(&source_kind)) ||
-        source_kind != WInput::SpatialInteractionSourceKind_Controller)
-      continue;
-
-    uint32_t id;
-    if (FAILED(source->get_Id(&id)))
-      continue;
-
-    ComPtr<WInput::ISpatialInteractionSourceState2> state2;
-    if (FAILED(state.As(&state2)))
-      continue;
-
-    boolean pressed = false;
-    if (FAILED(state2->get_IsSelectPressed(&pressed)))
-      continue;
-
-    ComPtr<WInput::ISpatialInteractionSourceProperties> props;
-    if (FAILED(state->get_Properties(&props)))
-      continue;
-
-    ComPtr<WInput::ISpatialInteractionSourceLocation> location_in_origin;
-    if (FAILED(props->TryGetLocation(origin_.Get(), &location_in_origin)) ||
-        !location_in_origin)
-      continue;
-
-    gfx::Transform origin_from_grip;
-    if (!TryGetGripFromLocation(location_in_origin, &origin_from_grip))
-      continue;
-
-    ComPtr<WInput::ISpatialInteractionSource2> source2;
-    boolean pointingSupported = false;
-    if (FAILED(source.As(&source2)) ||
-        FAILED(source2->get_IsPointingSupported(&pointingSupported)) ||
-        !pointingSupported)
-      continue;
-
-    gfx::Transform grip_from_pointer;
-    if (!TryGetPointerOffsetFromLocation(location_in_origin, origin_from_grip,
-                                         &grip_from_pointer))
-      continue;
-
-    // Now that we've queried for all of the state we're going to send,
-    // build the object to send it.
-    device::mojom::XRInputSourceStatePtr source_state =
-        device::mojom::XRInputSourceState::New();
-
-    // Hands may not have the same id especially if they are lost but since we
-    // are only tracking controllers, this id should be consistent.
-    source_state->source_id = id;
-
-    source_state->primary_input_pressed = pressed;
-    source_state->primary_input_clicked =
-        !pressed && controller_pressed_state_[id];
-    controller_pressed_state_[id] = pressed;
-
-    source_state->grip = origin_from_grip;
-
-    device::mojom::XRInputSourceDescriptionPtr description =
-        device::mojom::XRInputSourceDescription::New();
-
-    // It's a fully 6DoF handheld pointing device
-    description->emulated_position = false;
-    description->target_ray_mode = device::mojom::XRTargetRayMode::POINTING;
-
-    description->pointer_offset = grip_from_pointer;
-
-    WInput::SpatialInteractionSourceHandedness handedness;
-    ComPtr<WInput::ISpatialInteractionSource3> source3;
-    if (SUCCEEDED(source.As(&source3) &&
-                  SUCCEEDED(source3->get_Handedness(&handedness)))) {
-      switch (handedness) {
-        case WInput::SpatialInteractionSourceHandedness_Left:
-          description->handedness = device::mojom::XRHandedness::LEFT;
-          break;
-        case WInput::SpatialInteractionSourceHandedness_Right:
-          description->handedness = device::mojom::XRHandedness::RIGHT;
-          break;
-        default:
-          description->handedness = device::mojom::XRHandedness::NONE;
-          break;
-      }
-    } else {
-      description->handedness = device::mojom::XRHandedness::NONE;
-    }
-
-    source_state->description = std::move(description);
-    input_states.push_back(std::move(source_state));
-  }
-
-  return input_states;
 }
 
 }  // namespace device
