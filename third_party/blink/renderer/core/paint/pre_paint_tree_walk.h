@@ -26,6 +26,9 @@ class CORE_EXPORT PrePaintTreeWalk {
   PrePaintTreeWalk() = default;
   void WalkTree(LocalFrameView& root_frame);
 
+  static bool ObjectRequiresPrePaint(const LayoutObject&);
+  static bool ObjectRequiresTreeBuilderContext(const LayoutObject&);
+
  private:
   friend PaintInvalidatorContext::ParentContextAccessor;
 
@@ -79,6 +82,13 @@ class CORE_EXPORT PrePaintTreeWalk {
     bool clip_changed = false;
   };
 
+  static bool ContextRequiresPrePaint(const PrePaintTreeWalkContext&);
+  static bool ContextRequiresTreeBuilderContext(const PrePaintTreeWalkContext&,
+                                                const LayoutObject&);
+
+  void CheckTreeBuilderContextState(const LayoutObject&,
+                                    const PrePaintTreeWalkContext&);
+
   const PrePaintTreeWalkContext& ContextAt(wtf_size_t index) {
     DCHECK_LT(index, context_storage_.size());
     return context_storage_[index];
@@ -96,8 +106,6 @@ class CORE_EXPORT PrePaintTreeWalk {
 
   bool NeedsTreeBuilderContextUpdate(const LocalFrameView&,
                                      const PrePaintTreeWalkContext&);
-  bool NeedsTreeBuilderContextUpdate(const LayoutObject&,
-                                     const PrePaintTreeWalkContext&);
   void UpdateAuxiliaryObjectProperties(const LayoutObject&,
                                        PrePaintTreeWalkContext&);
 
@@ -109,8 +117,6 @@ class CORE_EXPORT PrePaintTreeWalk {
   // which will ensure the subtree is updated too.
   void UpdateEffectiveWhitelistedTouchAction(const LayoutObject&,
                                              PrePaintTreeWalkContext&);
-  bool NeedsHitTestingPaintInvalidation(const LayoutObject&,
-                                        const PrePaintTreeWalkContext&) const;
   void InvalidatePaintForHitTesting(const LayoutObject&,
                                     PrePaintTreeWalkContext&);
 

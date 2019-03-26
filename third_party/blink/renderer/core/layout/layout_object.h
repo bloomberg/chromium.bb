@@ -2054,6 +2054,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void EnsureIsReadyForPaintInvalidation() {
       layout_object_.EnsureIsReadyForPaintInvalidation();
     }
+    void MarkEffectiveWhitelistedTouchActionChanged() {
+      layout_object_.MarkEffectiveWhitelistedTouchActionChanged();
+    }
 
     // The following setters store the current values as calculated during the
     // pre-paint tree walk. TODO(wangxianzhu): Add check of lifecycle states.
@@ -2257,6 +2260,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetHasNonCollapsedBorderDecoration(b);
   }
 
+  DisplayLockContext* GetDisplayLockContext() const {
+    if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
+      return nullptr;
+    if (!GetNode() || !GetNode()->IsElementNode())
+      return nullptr;
+    return ToElement(GetNode())->GetDisplayLockContext();
+  }
+
  protected:
   enum LayoutObjectType {
     kLayoutObjectBr,
@@ -2421,14 +2432,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void NotifyDisplayLockDidLayout() {
     if (auto* context = GetDisplayLockContext())
       context->DidLayout();
-  }
-
-  DisplayLockContext* GetDisplayLockContext() const {
-    if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
-      return nullptr;
-    if (!GetNode() || !GetNode()->IsElementNode())
-      return nullptr;
-    return ToElement(GetNode())->GetDisplayLockContext();
   }
 
   bool BackgroundIsKnownToBeObscured() const {
