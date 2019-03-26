@@ -108,7 +108,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // Providing an outputContext to an exclusive session indicates that
           // it should be used as the mirror destination.
           session.updateRenderState({ outputContext: outputCanvas.getContext('xrpresent') });
-          onSessionStarted(session).
+          onSessionStarted(session);
         });
       }
 

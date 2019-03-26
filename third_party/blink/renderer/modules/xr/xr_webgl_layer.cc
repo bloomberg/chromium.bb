@@ -129,8 +129,8 @@ XRWebGLLayer::XRWebGLLayer(XRSession* session,
       ignore_depth_values_(ignore_depth_values) {
   DCHECK(drawing_buffer_);
   // If the contents need mirroring, indicate that to the drawing buffer.
-  if (session->immersive() && session->outputContext() && session->External()) {
-    mirroring_ = true;
+  if (session->immersive() && session->External()) {
+    can_mirror_ = true;
 
     mirror_client_ = base::AdoptRef(new XRWebGLDrawingBuffer::MirrorClient());
     drawing_buffer_->SetMirrorClient(mirror_client_);
@@ -139,7 +139,7 @@ XRWebGLLayer::XRWebGLLayer(XRSession* session,
 }
 
 XRWebGLLayer::~XRWebGLLayer() {
-  if (mirroring_) {
+  if (can_mirror_) {
     drawing_buffer_->SetMirrorClient(nullptr);
     mirror_client_->BeginDestruction();
   }
@@ -332,11 +332,12 @@ scoped_refptr<StaticBitmapImage> XRWebGLLayer::TransferToStaticBitmapImage(
 }
 
 void XRWebGLLayer::UpdateWebXRMirror() {
-  if (mirroring_) {
+  XRPresentationContext* mirror_context = session()->outputContext();
+  if (can_mirror_ && mirror_context) {
     scoped_refptr<StaticBitmapImage> image = mirror_client_->GetLastImage();
     if (image) {
       ImageBitmap* image_bitmap = ImageBitmap::Create(std::move(image));
-      session()->outputContext()->SetImage(image_bitmap);
+      mirror_context->SetImage(image_bitmap);
       mirror_client_->CallLastReleaseCallback();
     }
   }
