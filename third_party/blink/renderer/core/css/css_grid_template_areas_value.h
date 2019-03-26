@@ -41,14 +41,6 @@ namespace cssvalue {
 
 class CSSGridTemplateAreasValue : public CSSValue {
  public:
-  static CSSGridTemplateAreasValue* Create(
-      const NamedGridAreaMap& grid_area_map,
-      size_t row_count,
-      size_t column_count) {
-    return MakeGarbageCollected<CSSGridTemplateAreasValue>(
-        grid_area_map, row_count, column_count);
-  }
-
   CSSGridTemplateAreasValue(const NamedGridAreaMap&,
                             size_t row_count,
                             size_t column_count);

@@ -18,11 +18,6 @@ namespace cssvalue {
 
 class CSSLayoutFunctionValue : public CSSValue {
  public:
-  static CSSLayoutFunctionValue* Create(CSSCustomIdentValue* name,
-                                        bool is_inline) {
-    return MakeGarbageCollected<CSSLayoutFunctionValue>(name, is_inline);
-  }
-
   CSSLayoutFunctionValue(CSSCustomIdentValue* name, bool is_inline);
   ~CSSLayoutFunctionValue();
 

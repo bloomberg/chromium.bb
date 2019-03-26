@@ -40,10 +40,6 @@ class StyleRuleKeyframe;
 
 class StyleRuleKeyframes final : public StyleRuleBase {
  public:
-  static StyleRuleKeyframes* Create() {
-    return MakeGarbageCollected<StyleRuleKeyframes>();
-  }
-
   StyleRuleKeyframes();
   explicit StyleRuleKeyframes(const StyleRuleKeyframes&);
   ~StyleRuleKeyframes();
@@ -91,11 +87,6 @@ class CSSKeyframesRule final : public CSSRule {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSKeyframesRule* Create(StyleRuleKeyframes* rule,
-                                  CSSStyleSheet* sheet) {
-    return MakeGarbageCollected<CSSKeyframesRule>(rule, sheet);
-  }
-
   CSSKeyframesRule(StyleRuleKeyframes*, CSSStyleSheet* parent);
   ~CSSKeyframesRule() override;
 

@@ -41,10 +41,6 @@ class StyleImage;
 
 class CSSImageSetValue : public CSSValueList {
  public:
-  static CSSImageSetValue* Create(CSSParserMode parser_mode) {
-    return MakeGarbageCollected<CSSImageSetValue>(parser_mode);
-  }
-
   explicit CSSImageSetValue(CSSParserMode);
   ~CSSImageSetValue();
 

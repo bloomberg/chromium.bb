@@ -1176,7 +1176,7 @@ void AddValuesForNamedGridLinesAtIndex(OrderedNamedLinesCollector& collector,
   if (collector.IsEmpty())
     return;
 
-  CSSGridLineNamesValue* line_names = CSSGridLineNamesValue::Create();
+  auto* line_names = MakeGarbageCollected<CSSGridLineNamesValue>();
   collector.CollectLineNamesForIndex(*line_names, i);
   if (line_names->length())
     list.Append(*line_names);

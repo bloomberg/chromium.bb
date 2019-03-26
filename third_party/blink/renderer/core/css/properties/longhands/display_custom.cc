@@ -40,7 +40,7 @@ const CSSValue* Display::ParseSingleValue(CSSParserTokenRange& range,
     return nullptr;
 
   range = range_copy;
-  return cssvalue::CSSLayoutFunctionValue::Create(
+  return MakeGarbageCollected<cssvalue::CSSLayoutFunctionValue>(
       name, /* is_inline */ function == CSSValueID::kInlineLayout);
 }
 
@@ -51,7 +51,7 @@ const CSSValue* Display::CSSValueFromComputedStyleInternal(
     Node*,
     bool allow_visited_style) const {
   if (style.IsDisplayLayoutCustomBox()) {
-    return cssvalue::CSSLayoutFunctionValue::Create(
+    return MakeGarbageCollected<cssvalue::CSSLayoutFunctionValue>(
         MakeGarbageCollected<CSSCustomIdentValue>(
             style.DisplayLayoutCustomName()),
         style.IsDisplayInlineType());

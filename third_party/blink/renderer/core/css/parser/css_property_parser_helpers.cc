@@ -1218,9 +1218,9 @@ static CSSValue* ConsumeDeprecatedGradient(CSSParserTokenRange& args,
           ? CSSRadialGradientValue::Create(
                 first_x, first_y, first_radius, second_x, second_y,
                 second_radius, kNonRepeating, kCSSDeprecatedRadialGradient)
-          : CSSLinearGradientValue::Create(first_x, first_y, second_x, second_y,
-                                           nullptr, kNonRepeating,
-                                           kCSSDeprecatedLinearGradient);
+          : MakeGarbageCollected<CSSLinearGradientValue>(
+                first_x, first_y, second_x, second_y, nullptr, kNonRepeating,
+                kCSSDeprecatedLinearGradient);
   CSSGradientColorStop stop;
   while (ConsumeCommaIncludingWhitespace(args)) {
     if (!ConsumeDeprecatedGradientColorStop(args, stop, css_parser_mode))
@@ -1465,7 +1465,7 @@ static CSSValue* ConsumeLinearGradient(CSSParserTokenRange& args,
   if (expect_comma && !ConsumeCommaIncludingWhitespace(args))
     return nullptr;
 
-  CSSGradientValue* result = CSSLinearGradientValue::Create(
+  CSSGradientValue* result = MakeGarbageCollected<CSSLinearGradientValue>(
       end_x, end_y, nullptr, nullptr, angle, repeating, gradient_type);
   return ConsumeGradientColorStops(args, context, result,
                                    ConsumeGradientLengthOrPercent)
@@ -1671,7 +1671,7 @@ static CSSValue* ConsumeImageSet(CSSParserTokenRange& range,
                                  const CSSParserContext* context) {
   CSSParserTokenRange range_copy = range;
   CSSParserTokenRange args = ConsumeFunction(range_copy);
-  CSSImageSetValue* image_set = CSSImageSetValue::Create(context->Mode());
+  auto* image_set = MakeGarbageCollected<CSSImageSetValue>(context->Mode());
   do {
     AtomicString url_value = ConsumeUrlAsStringView(args).ToAtomicString();
     if (url_value.IsNull())

@@ -323,9 +323,8 @@ TEST(ComputedStyleTest, CursorList) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   scoped_refptr<ComputedStyle> other = ComputedStyle::Create();
 
-  cssvalue::CSSGradientValue* gradient =
-      cssvalue::CSSLinearGradientValue::Create(
-          nullptr, nullptr, nullptr, nullptr, nullptr, cssvalue::kRepeating);
+  auto* gradient = MakeGarbageCollected<cssvalue::CSSLinearGradientValue>(
+      nullptr, nullptr, nullptr, nullptr, nullptr, cssvalue::kRepeating);
 
   StyleImage* image_value = StyleGeneratedImage::Create(*gradient);
   StyleImage* other_image_value = StyleGeneratedImage::Create(*gradient);
