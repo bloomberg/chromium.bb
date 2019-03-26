@@ -4735,8 +4735,16 @@ void WebContentsImpl::OnGoToEntryAtOffset(RenderFrameHostImpl* source,
   }
 
   // All frames are allowed to navigate the global history.
-  if (!delegate_ || delegate_->OnGoToEntryOffset(offset))
-    controller_.GoToOffset(offset);
+  if (!delegate_ || delegate_->OnGoToEntryOffset(offset)) {
+    if (source->IsSandboxed(blink::WebSandboxFlags::kTopNavigation)) {
+      // Keep track of whether this is a session history from a sandboxed iframe
+      // with top level navigation disallowed.
+      controller_.GoToOffsetInSandboxedFrame(offset,
+                                             source->GetFrameTreeNodeId());
+    } else {
+      controller_.GoToOffset(offset);
+    }
+  }
 }
 
 void WebContentsImpl::OnUpdateZoomLimits(RenderViewHostImpl* source,

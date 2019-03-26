@@ -9249,4 +9249,151 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
   EXPECT_EQ(start_url, controller.GetLastCommittedEntry()->GetURL());
 }
 
+class SandboxedNavigationControllerBrowserTest
+    : public NavigationControllerBrowserTest {
+ protected:
+  void SetupNavigation() {
+    NavigationControllerImpl& controller =
+        static_cast<NavigationControllerImpl&>(
+            shell()->web_contents()->GetController());
+    GURL preload_url(embedded_test_server()->GetURL(
+        "/navigation_controller/page_with_links.html"));
+    EXPECT_TRUE(NavigateToURL(shell(), preload_url));
+    ASSERT_EQ(1, controller.GetEntryCount());
+
+    GURL main_url(embedded_test_server()->GetURL(
+        "/navigation_controller/page_with_sandbox_iframe.html"));
+    EXPECT_TRUE(NavigateToURL(shell(), main_url));
+    ASSERT_EQ(2, controller.GetEntryCount());
+
+    FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                              ->GetFrameTree()
+                              ->root();
+    ASSERT_EQ(2U, root->child_count());
+    ASSERT_NE(nullptr, root->child_at(0));
+    ASSERT_NE(nullptr, root->child_at(1));
+    ASSERT_NE(nullptr, root->child_at(1)->child_at(0));
+
+    GURL sub_subframe_url(embedded_test_server()->GetURL(
+        "/navigation_controller/simple_page_2.html"));
+    // Navigate sibling frame to simple_page_2.
+    NavigateFrameToURL(root->child_at(0), sub_subframe_url);
+    ASSERT_EQ(3, controller.GetEntryCount());
+
+    // Navigate sandbox frame to simple_page_2.
+    NavigateFrameToURL(root->child_at(1)->child_at(0), sub_subframe_url);
+    ASSERT_EQ(4, controller.GetEntryCount());
+
+    // Click link inside sandboxed iframe.
+    std::string script = "document.getElementById('test_anchor').click()";
+    EXPECT_TRUE(ExecJs(root->child_at(1), script));
+    ASSERT_EQ(5, controller.GetEntryCount());
+
+    // History should now be:
+    // [preload_url, main(simple1, sandbox(simple1)),
+    // main(simple2, sandbox(simple1)), main(simple2, sandbox(simple2)),
+    // *main(simple2, sandbox#test(simple2))]
+  }
+
+  static constexpr const char* kWithinSubtreeHistogram =
+      "Navigation.SandboxFrameBackForwardStaysWithinSubtree";
+};
+
+// Tests navigations which occur from a sandboxed frame are tracked
+// accordingly in histograms.
+IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerBrowserTest,
+                       TopLevelNavigationFromSandboxSource) {
+  base::HistogramTester histogram;
+  SetupNavigation();
+  histogram.ExpectTotalCount(kWithinSubtreeHistogram, 0);
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  std::string back_script = "history.back();";
+  std::string forward_script = "history.forward();";
+
+  // Navigate sandbox frame back same-document.
+  EXPECT_TRUE(ExecJs(root->child_at(1), back_script));
+  histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 1);
+  histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 0);
+
+  // Navigate innermost frame back cross-document.
+  EXPECT_TRUE(ExecJs(root->child_at(1), back_script));
+  histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 2);
+  histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 0);
+
+  // Navigate sibling frame back cross-document.
+  EXPECT_TRUE(ExecJs(root->child_at(1), back_script));
+  histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 2);
+  histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 1);
+
+  // Navigate main frame back cross-document.
+  EXPECT_TRUE(ExecJs(root->child_at(1), back_script));
+  histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 2);
+  histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 2);
+}
+
+// Tests navigations that occur inside a doubly nested sandbox
+// that affect the parent sandbox are considered outside of tree navigation.
+IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerBrowserTest,
+                       DoublyNestedSandboxConsideredOutsideOfTree) {
+  base::HistogramTester histogram;
+  SetupNavigation();
+  histogram.ExpectTotalCount(kWithinSubtreeHistogram, 0);
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  std::string back_script = "history.back();";
+
+  // Test that a navigation in the innermost frame affecting its parent
+  // in the same sandbox is considered outside the subtree.
+  EXPECT_TRUE(ExecJs(root->child_at(1)->child_at(0), back_script));
+  histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 0);
+  histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 1);
+}
+
+// Tests navigations that influence a sandboxed frame that originate
+// from outside the sandboxed frame are not tracked in histograms.
+IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerBrowserTest,
+                       TopLevelNavigationFromNonSandboxSource) {
+  base::HistogramTester histogram;
+  SetupNavigation();
+  histogram.ExpectTotalCount(kWithinSubtreeHistogram, 0);
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  std::string back_script = "history.back();";
+  std::string forward_script = "history.forward();";
+
+  // Browser initiated back. Make sure histograms don't change.
+  ASSERT_TRUE(controller.CanGoBack());
+  controller.GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  histogram.ExpectTotalCount(kWithinSubtreeHistogram, 0);
+
+  // Browser initiated forward. Make sure histograms don't change.
+  ASSERT_TRUE(controller.CanGoForward());
+  controller.GoForward();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  histogram.ExpectTotalCount(kWithinSubtreeHistogram, 0);
+
+  // Navigate sandbox frame back same-document originated from
+  // the main frame though.
+  EXPECT_TRUE(ExecJs(root, back_script));
+  histogram.ExpectTotalCount(kWithinSubtreeHistogram, 0);
+
+  // Navigate sandbox frame forward same-document originated from
+  // the main frame though.
+  EXPECT_TRUE(ExecJs(root, forward_script));
+  histogram.ExpectTotalCount(kWithinSubtreeHistogram, 0);
+}
+
 }  // namespace content
