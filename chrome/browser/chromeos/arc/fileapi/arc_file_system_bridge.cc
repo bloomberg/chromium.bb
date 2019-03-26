@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"

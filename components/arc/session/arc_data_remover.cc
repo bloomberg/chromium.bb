@@ -4,6 +4,7 @@
 
 #include "components/arc/session/arc_data_remover.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"

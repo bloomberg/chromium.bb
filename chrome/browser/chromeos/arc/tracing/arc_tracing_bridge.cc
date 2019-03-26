@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_bridge.h"
 
-#include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

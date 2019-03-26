@@ -54,7 +54,8 @@ std::unique_ptr<message_center::MessageView> CreateCustomMessageView(
 
 class DoNotDisturbManager : public message_center::MessageCenterObserver {
  public:
-  DoNotDisturbManager(ArcNotificationManager* manager) : manager_(manager) {}
+  explicit DoNotDisturbManager(ArcNotificationManager* manager)
+      : manager_(manager) {}
   void OnQuietModeChanged(bool in_quiet_mode) override {
     manager_->SetDoNotDisturbStatusOnAndroid(in_quiet_mode);
   }

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/arc/screen_capture/arc_screen_capture_bridge.h"
 
+#include <utility>
+#include <vector>
+
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"

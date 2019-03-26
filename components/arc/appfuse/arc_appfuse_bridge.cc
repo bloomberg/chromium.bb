@@ -4,6 +4,8 @@
 
 #include "components/arc/appfuse/arc_appfuse_bridge.h"
 
+#include <sys/epoll.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -13,8 +15,6 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-
-#include <sys/epoll.h>
 
 namespace arc {
 

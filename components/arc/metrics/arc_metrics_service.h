@@ -6,6 +6,7 @@
 #define COMPONENTS_ARC_METRICS_ARC_METRICS_SERVICE_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"

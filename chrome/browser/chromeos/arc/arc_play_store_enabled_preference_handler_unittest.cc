@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/arc_play_store_enabled_preference_handler.h"
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
