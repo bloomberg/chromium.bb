@@ -7,8 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/omnibox/autocomplete_suggestion.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
+#import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
 
 // Fake class implementing AutocompleteSuggestion for Showcase.
 @interface FakeAutocompleteSuggestion : NSObject <AutocompleteSuggestion>
@@ -21,7 +20,7 @@
 @property(nonatomic) NSAttributedString* text;
 @property(nonatomic) NSAttributedString* detailText;
 @property(nonatomic) NSInteger numberOfLines;
-@property(nonatomic) OmniboxSuggestionIconType iconType;
+@property(nonatomic) UIImage* suggestionTypeIcon;
 @property(nonatomic) GURL imageURL;
 
 @end

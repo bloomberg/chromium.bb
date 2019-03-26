@@ -19,14 +19,12 @@
     _text = [[NSAttributedString alloc] initWithString:@""];
     _detailText = [[NSAttributedString alloc] initWithString:@""];
     _numberOfLines = 1;
-    _iconType = DEFAULT_FAVICON;
+    _suggestionTypeIcon =
+        [[UIImage imageNamed:@"omnibox_completion_default_favicon"]
+            imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     _imageURL = GURL();
   }
   return self;
-}
-
-- (UIImage*)suggestionTypeIcon {
-  return GetOmniboxSuggestionIcon(self.iconType);
 }
 
 - (BOOL)hasImage {

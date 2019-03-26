@@ -10,7 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
-#import "ios/chrome/browser/ui/omnibox/truncating_attributed_label.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_truncating_label.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/history_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"

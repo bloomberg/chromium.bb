@@ -9,12 +9,11 @@
 
 #include "base/ios/ios_util.h"
 #include "base/metrics/histogram_macros.h"
-#import "ios/chrome/browser/ui/omnibox/image_retriever.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
+#import "ios/chrome/browser/ui/omnibox/popup/image_retriever.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_truncating_label.h"
 #import "ios/chrome/browser/ui/omnibox/popup/self_sizing_table_view.h"
-#import "ios/chrome/browser/ui/omnibox/truncating_attributed_label.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #include "ios/chrome/browser/ui/util/animation_util.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
@@ -24,6 +23,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

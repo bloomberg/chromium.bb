@@ -26,7 +26,6 @@
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ios/web/public/web_thread.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/gfx/geometry/rect.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

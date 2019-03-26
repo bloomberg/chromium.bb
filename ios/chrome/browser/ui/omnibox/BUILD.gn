@@ -23,15 +23,6 @@ source_set("omnibox_popup_shared") {
   sources = [
     "omnibox_constants.h",
     "omnibox_constants.mm",
-    "truncating_attributed_label.h",
-    "truncating_attributed_label.mm",
-  ]
-  deps = [
-    "//base",
-    "//components/omnibox/browser",
-  ]
-  public_deps = [
-    "//ui/base",
   ]
 }
 
@@ -43,6 +34,13 @@ source_set("omnibox_util") {
     "omnibox_util.mm",
   ]
   deps = [
+    "resources:omnibox_background",
+    "resources:omnibox_clear_icon",
+    "resources:omnibox_completion_bookmark",
+    "resources:omnibox_completion_calculator",
+    "resources:omnibox_completion_default_favicon",
+    "resources:omnibox_completion_history",
+    "resources:omnibox_completion_search",
     "//base",
     "//components/omnibox/browser",
     "//components/security_state/core",
@@ -55,13 +53,8 @@ source_set("omnibox_util") {
 source_set("omnibox_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "autocomplete_match_formatter.h",
-    "autocomplete_match_formatter.mm",
-    "autocomplete_result_consumer.h",
-    "autocomplete_suggestion.h",
     "chrome_omnibox_client_ios.h",
     "chrome_omnibox_client_ios.mm",
-    "image_retriever.h",
     "omnibox_consumer.h",
     "omnibox_container_view.h",
     "omnibox_container_view.mm",
@@ -85,24 +78,15 @@ source_set("omnibox_internal") {
     ":omnibox",
     ":omnibox_popup_shared",
     ":omnibox_util",
-    "resources:omnibox_background",
-    "resources:omnibox_clear_icon",
-    "resources:omnibox_completion_bookmark",
-    "resources:omnibox_completion_calculator",
-    "resources:omnibox_completion_default_favicon",
-    "resources:omnibox_completion_history",
-    "resources:omnibox_completion_search",
     "resources:omnibox_transparent_background",
     "//base",
     "//components/favicon/ios",
-    "//components/image_fetcher/ios",
     "//components/open_from_clipboard:",
     "//components/resources",
     "//components/search_engines",
     "//components/security_state/core",
     "//components/strings",
     "//ios/chrome/app/strings",
-    "//ios/chrome/app/theme",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autocomplete",
     "//ios/chrome/browser/bookmarks",
@@ -119,13 +103,11 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/ui/location_bar:constants",
     "//ios/chrome/browser/ui/omnibox/popup",
     "//ios/chrome/browser/ui/orchestrator:orchestrator",
-    "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/toolbar/public:feature_flags",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser",
-    "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",
     "//net",
@@ -135,10 +117,6 @@ source_set("omnibox_internal") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//url",
-  ]
-  allow_circular_includes_from = [
-    "//ios/chrome/browser/ui/omnibox/popup",
-    ":omnibox",
   ]
   public_deps = [
     "//components/omnibox/browser",

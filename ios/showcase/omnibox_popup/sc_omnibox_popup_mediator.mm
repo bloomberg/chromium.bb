@@ -4,7 +4,7 @@
 
 #import "ios/showcase/omnibox_popup/sc_omnibox_popup_mediator.h"
 
-#import "ios/chrome/browser/ui/omnibox/autocomplete_result_consumer.h"
+#import "ios/chrome/browser/ui/omnibox/popup/autocomplete_result_consumer.h"
 #import "ios/showcase/omnibox_popup/fake_autocomplete_suggestion.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
