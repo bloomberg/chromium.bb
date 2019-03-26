@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/modules/media_controls/non_touch/resources/grit/media_controls_non_touch_resources.h"
 #include "third_party/blink/renderer/modules/media_controls/resources/grit/media_controls_resources.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -36,10 +35,6 @@ String MediaControlsResourceLoader::GetMediaControlsCSS() const {
       RuntimeEnabledFeatures::ModernMediaControlsEnabled()
           ? IDR_UASTYLE_MODERN_MEDIA_CONTROLS_CSS
           : IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_CSS);
-}
-
-String MediaControlsResourceLoader::GetNonTouchMediaControlsCSS() const {
-  return UncompressResourceAsString(IDR_UASTYLE_MEDIA_CONTROLS_NON_TOUCH_CSS);
 }
 
 String MediaControlsResourceLoader::GetMediaControlsAndroidCSS() const {

@@ -92,6 +92,10 @@
 #include "extensions/common/mojo/keep_alive.mojom.h"   // nogncheck
 #endif
 
+#if defined(BROWSER_MEDIA_CONTROLS_MENU)
+#include "third_party/blink/public/mojom/media_controls/touchless/media_controls.mojom.h"
+#endif
+
 namespace {
 
 service_manager::Manifest MaybeAddTestInterfaces(
@@ -209,6 +213,9 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                     blink::mojom::InstalledAppProvider,
                     blink::mojom::ShareService,
                     blink::mojom::TextSuggestionHost,
+#if defined(BROWSER_MEDIA_CONTROLS_MENU)
+                    blink::mojom::MediaControlsMenuHost,
+#endif
                     chrome::mojom::OfflinePageAutoFetcher,
                     chrome::mojom::PrerenderCanceler,
 #if defined(OS_CHROMEOS)

@@ -5,6 +5,10 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//third_party/blink/public/public_features.gni")
 
+if (is_android) {
+  import("//build/config/android/config.gni")
+}
+
 # This target includes all mojom interfaces which can be used from
 # renderer/platform. In particular these mojom interfaces can't use types that
 # are typemapped to a type in renderer/core.
@@ -188,6 +192,9 @@ mojom("android_mojo_bindings") {
     "webauthn/authenticator.mojom",
     "webshare/webshare.mojom",
   ]
+  if (is_android && notouch_build) {
+    sources += [ "media_controls/touchless/media_controls.mojom" ]
+  }
   public_deps = [
     "//components/payments/mojom",
     "//mojo/public/mojom/base",

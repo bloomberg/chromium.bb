@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -13,15 +15,22 @@
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
+#include "third_party/blink/renderer/core/html/track/text_track_list.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_text_track_manager.h"
 #include "third_party/blink/renderer/modules/media_controls/non_touch/elements/media_controls_non_touch_overlay_element.h"
 #include "third_party/blink/renderer/modules/media_controls/non_touch/media_controls_non_touch_media_event_listener.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
 namespace {
+
+// When specified as trackIndex, disable text tracks.
+constexpr int kTrackIndexOffValue = -1;
 
 // Number of seconds to jump when press left/right arrow.
 constexpr int kNumberOfSecondsToJumpForNonTouch = 10;
@@ -54,7 +63,9 @@ MediaControlsNonTouchImpl::MediaControlsNonTouchImpl(
       hide_media_controls_timer_(
           media_element.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
           this,
-          &MediaControlsNonTouchImpl::HideMediaControlsTimerFired) {
+          &MediaControlsNonTouchImpl::HideMediaControlsTimerFired),
+      text_track_manager_(
+          MakeGarbageCollected<MediaControlsTextTrackManager>(media_element)) {
   SetShadowPseudoId(AtomicString("-internal-media-controls-non-touch"));
   media_event_listener_->AddObserver(this);
 }
@@ -162,6 +173,86 @@ void MediaControlsNonTouchImpl::OnKeyDown(KeyboardEvent* event) {
     event->SetDefaultHandled();
 }
 
+void MediaControlsNonTouchImpl::EnsureMediaControlsMenuHost() {
+  if (!media_controls_host_) {
+    GetDocument().GetFrame()->GetInterfaceProvider().GetInterface(
+        mojo::MakeRequest(&media_controls_host_,
+                          GetExecutionContext()->GetTaskRunner(
+                              blink::TaskType::kMediaElementEvent)));
+    media_controls_host_.set_connection_error_handler(WTF::Bind(
+        &MediaControlsNonTouchImpl::OnMediaControlsMenuHostConnectionError,
+        WrapWeakPersistent(this)));
+  }
+}
+
+mojom::blink::VideoStatePtr MediaControlsNonTouchImpl::GetVideoState() {
+  mojom::blink::VideoStatePtr video_state = mojom::blink::VideoState::New();
+  video_state->is_muted = MediaElement().muted();
+  video_state->is_fullscreen = MediaElement().IsFullscreen();
+  return video_state;
+}
+
+WTF::Vector<mojom::blink::TextTrackMetadataPtr>
+MediaControlsNonTouchImpl::GetTextTracks() {
+  WTF::Vector<mojom::blink::TextTrackMetadataPtr> text_tracks;
+  TextTrackList* track_list = MediaElement().textTracks();
+  for (unsigned i = 0; i < track_list->length(); i++) {
+    TextTrack* track = track_list->AnonymousIndexedGetter(i);
+    if (!track->CanBeRendered())
+      continue;
+
+    mojom::blink::TextTrackMetadataPtr text_track(
+        mojom::blink::TextTrackMetadata::New());
+    text_track->track_index = track->TrackIndex();
+    text_track->label = text_track_manager_->GetTextTrackLabel(track);
+    text_tracks.push_back(std::move(text_track));
+  }
+
+  if (!text_tracks.IsEmpty()) {
+    mojom::blink::TextTrackMetadataPtr text_track(
+        mojom::blink::TextTrackMetadata::New());
+    text_track->track_index = kTrackIndexOffValue;
+    text_track->label = text_track_manager_->GetTextTrackLabel(nullptr);
+    text_tracks.push_front(std::move(text_track));
+  }
+
+  return text_tracks;
+}
+
+void MediaControlsNonTouchImpl::ShowContextMenu() {
+  EnsureMediaControlsMenuHost();
+
+  mojom::blink::VideoStatePtr video_state = GetVideoState();
+  WTF::Vector<mojom::blink::TextTrackMetadataPtr> text_tracks = GetTextTracks();
+
+  WTF::Vector<mojom::blink::MenuItem> menu_items;
+
+  // TODO(jazzhsu, https://crbug.com/942577): Populate fullscreen list entry
+  // properly.
+  menu_items.push_back(mojom::blink::MenuItem::FULLSCREEN);
+
+  if (MediaElement().HasAudio())
+    menu_items.push_back(mojom::blink::MenuItem::MUTE);
+
+  if (MediaElement().SupportsSave())
+    menu_items.push_back(mojom::blink::MenuItem::DOWNLOAD);
+
+  if (!text_tracks.IsEmpty())
+    menu_items.push_back(mojom::blink::MenuItem::CAPTIONS);
+
+  media_controls_host_->ShowMediaMenu(
+      std::move(menu_items), std::move(video_state), std::move(text_tracks),
+      WTF::Bind(&MediaControlsNonTouchImpl::OnMediaMenuResult,
+                WrapWeakPersistent(this)));
+}
+
+void MediaControlsNonTouchImpl::OnMediaMenuResult(
+    mojom::blink::MenuResponsePtr reponse) {}
+
+void MediaControlsNonTouchImpl::OnMediaControlsMenuHostConnectionError() {
+  media_controls_host_.reset();
+}
+
 MediaControlsNonTouchImpl::ArrowDirection
 MediaControlsNonTouchImpl::OrientArrowPress(ArrowDirection direction) {
   switch (GetOrientation()) {
@@ -260,6 +351,7 @@ void MediaControlsNonTouchImpl::MaybeJump(int seconds) {
 
 void MediaControlsNonTouchImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(media_event_listener_);
+  visitor->Trace(text_track_manager_);
   MediaControls::Trace(visitor);
   HTMLDivElement::Trace(visitor);
 }

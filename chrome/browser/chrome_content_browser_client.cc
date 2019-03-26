@@ -608,6 +608,10 @@
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #endif
 
+#if defined(BROWSER_MEDIA_CONTROLS_MENU)
+#include "third_party/blink/public/mojom/media_controls/touchless/media_controls.mojom.h"
+#endif
+
 using base::FileDescriptor;
 using content::BrowserThread;
 using content::BrowserURLHandler;
@@ -4480,6 +4484,10 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
       base::Bind(&ForwardToJavaFrameRegistry<payments::mojom::PaymentRequest>));
   frame_interfaces_parameterized_->AddInterface(
       base::Bind(&ForwardToJavaFrameRegistry<blink::mojom::Authenticator>));
+#if defined(BROWSER_MEDIA_CONTROLS_MENU)
+  frame_interfaces_parameterized_->AddInterface(base::Bind(
+      &ForwardToJavaFrameRegistry<blink::mojom::MediaControlsMenuHost>));
+#endif
 #else
   if (base::FeatureList::IsEnabled(features::kWebPayments)) {
     frame_interfaces_parameterized_->AddInterface(

@@ -11,6 +11,10 @@ import("//third_party/blink/renderer/build/scripts/scripts.gni")
 import("//third_party/blink/renderer/modules/modules.gni")
 import("//third_party/blink/renderer/modules/modules_idl_files.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 visibility = [ "//third_party/blink/renderer/*" ]
 
 if (!is_component_build && is_win) {
@@ -298,7 +302,6 @@ jumbo_source_set("unit_tests") {
     "media_controls/media_controls_impl_test.cc",
     "media_controls/media_controls_orientation_lock_delegate_test.cc",
     "media_controls/media_controls_rotate_to_fullscreen_delegate_test.cc",
-    "media_controls/non_touch/media_controls_non_touch_impl_test.cc",
     "mediastream/media_constraints_test.cc",
     "mediastream/media_devices_test.cc",
     "mediastream/media_stream_video_capturer_source_test.cc",
@@ -370,6 +373,11 @@ jumbo_source_set("unit_tests") {
     "xr/xr_test_utils.cc",
     "xr/xr_view_test.cc",
   ]
+
+  if (is_android && notouch_build) {
+    sources +=
+        [ "media_controls/non_touch/media_controls_non_touch_impl_test.cc" ]
+  }
 
   configs += [
     "//third_party/blink/renderer:config",

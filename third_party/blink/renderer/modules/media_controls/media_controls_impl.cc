@@ -87,6 +87,7 @@
 #include "third_party/blink/renderer/modules/media_controls/media_controls_orientation_lock_delegate.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_rotate_to_fullscreen_delegate.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_text_track_manager.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -414,7 +415,9 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       volume_slider_wanted_timer_(
           media_element.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
           this,
-          &MediaControlsImpl::VolumeSliderWantedTimerFired) {
+          &MediaControlsImpl::VolumeSliderWantedTimerFired),
+      text_track_manager_(
+          MakeGarbageCollected<MediaControlsTextTrackManager>(media_element)) {
   // On touch devices, start with the assumption that the user will interact via
   // touch events.
   Settings* settings = media_element.GetDocument().GetSettings();
@@ -1202,46 +1205,12 @@ void MediaControlsImpl::ToggleTextTrackList() {
   text_track_list_->SetIsWanted(!text_track_list_->IsWanted());
 }
 
-void MediaControlsImpl::ShowTextTrackAtIndex(unsigned index_to_enable) {
-  TextTrackList* track_list = MediaElement().textTracks();
-  if (index_to_enable >= track_list->length())
-    return;
-  TextTrack* track = track_list->AnonymousIndexedGetter(index_to_enable);
-  if (track && track->CanBeRendered())
-    track->setMode(TextTrack::ShowingKeyword());
-}
-
-void MediaControlsImpl::DisableShowingTextTracks() {
-  TextTrackList* track_list = MediaElement().textTracks();
-  for (unsigned i = 0; i < track_list->length(); ++i) {
-    TextTrack* track = track_list->AnonymousIndexedGetter(i);
-    if (track->mode() == TextTrack::ShowingKeyword())
-      track->setMode(TextTrack::DisabledKeyword());
-  }
-}
-
 bool MediaControlsImpl::TextTrackListIsWanted() {
   return text_track_list_->IsWanted();
 }
 
-String MediaControlsImpl::GetTextTrackLabel(TextTrack* track) const {
-  if (!track) {
-    return MediaElement().GetLocale().QueryString(
-        WebLocalizedString::kTextTracksOff);
-  }
-
-  String track_label = track->label();
-
-  if (track_label.IsEmpty())
-    track_label = track->language();
-
-  if (track_label.IsEmpty()) {
-    track_label = String(MediaElement().GetLocale().QueryString(
-        WebLocalizedString::kTextTracksNoLabel,
-        String::Number(track->TrackIndex() + 1)));
-  }
-
-  return track_label;
+MediaControlsTextTrackManager& MediaControlsImpl::GetTextTrackManager() {
+  return *text_track_manager_;
 }
 
 void MediaControlsImpl::RefreshCastButtonVisibility() {
@@ -2391,6 +2360,7 @@ void MediaControlsImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(loading_panel_);
   visitor->Trace(display_cutout_fullscreen_button_);
   visitor->Trace(volume_control_container_);
+  visitor->Trace(text_track_manager_);
   MediaControls::Trace(visitor);
   HTMLDivElement::Trace(visitor);
 }
