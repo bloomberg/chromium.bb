@@ -1067,6 +1067,22 @@ BrowserAccessibility::FindTextBoundariesAtOffset(
   }
 }
 
+const std::vector<gfx::NativeViewAccessible>
+BrowserAccessibility::GetDescendants() const {
+  std::vector<gfx::NativeViewAccessible> descendants;
+  if (PlatformChildCount() > 0) {
+    BrowserAccessibility* next_sibling_node = GetNextSibling();
+    BrowserAccessibility* next_descendant_node =
+        BrowserAccessibilityManager::NextInTreeOrder(this);
+    while (next_descendant_node && next_descendant_node != next_sibling_node) {
+      descendants.emplace_back(next_descendant_node->GetNativeViewAccessible());
+      next_descendant_node =
+          BrowserAccessibilityManager::NextInTreeOrder(next_descendant_node);
+    }
+  }
+  return descendants;
+}
+
 gfx::NativeViewAccessible BrowserAccessibility::GetNativeViewAccessible() {
   // TODO(703369) On Windows, where we have started to migrate to an
   // AXPlatformNode implementation, the BrowserAccessibilityWin subclass has

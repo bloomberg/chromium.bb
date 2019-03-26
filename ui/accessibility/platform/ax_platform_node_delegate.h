@@ -167,6 +167,10 @@ class AX_EXPORT AXPlatformNodeDelegate {
       int offset,
       ax::mojom::TextAffinity affinity) const = 0;
 
+  // Return a vector of all the descendants of this delegate's node.
+  virtual const std::vector<gfx::NativeViewAccessible> GetDescendants()
+      const = 0;
+
   //
   // Tables. All of these should be called on a node that's a table-like
   // role.

@@ -104,6 +104,9 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   bool IsOrderedSet() const override;
   int32_t GetPosInSet() const override;
   int32_t GetSetSize() const override;
+  const std::vector<gfx::NativeViewAccessible> GetDescendants() const override;
+  void Descendants(const AXNode* node,
+                   std::vector<gfx::NativeViewAccessible>& descendants) const;
 
  private:
   TestAXNodeWrapper(AXTree* tree, AXNode* node);

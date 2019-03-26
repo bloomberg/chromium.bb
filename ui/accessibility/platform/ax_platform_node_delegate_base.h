@@ -129,6 +129,8 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
       int offset,
       ax::mojom::TextAffinity affinity) const override;
 
+  const std::vector<gfx::NativeViewAccessible> GetDescendants() const override;
+
   //
   // Tables. All of these should be called on a node that's a table-like
   // role.

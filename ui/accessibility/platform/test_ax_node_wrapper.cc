@@ -503,4 +503,26 @@ int32_t TestAXNodeWrapper::GetSetSize() const {
   return node_->GetSetSize();
 }
 
+// Recursive helper function for GetDescendants. Aggregates all of the
+// descendants for a given node within the descendants vector.
+void TestAXNodeWrapper::Descendants(
+    const AXNode* node,
+    std::vector<gfx::NativeViewAccessible>& descendants) const {
+  std::vector<AXNode*> child_nodes = node->children();
+  for (AXNode* child : child_nodes) {
+    descendants.emplace_back(ax_platform_node()
+                                 ->GetDelegate()
+                                 ->GetFromNodeID(child->id())
+                                 ->GetNativeViewAccessible());
+    Descendants(child, descendants);
+  }
+}
+
+const std::vector<gfx::NativeViewAccessible> TestAXNodeWrapper::GetDescendants()
+    const {
+  std::vector<gfx::NativeViewAccessible> descendants;
+  Descendants(node_, descendants);
+  return descendants;
+}
+
 }  // namespace ui
