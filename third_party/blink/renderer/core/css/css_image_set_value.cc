@@ -185,7 +185,7 @@ void CSSImageSetValue::TraceAfterDispatch(blink::Visitor* visitor) {
 }
 
 CSSImageSetValue* CSSImageSetValue::ValueWithURLsMadeAbsolute() {
-  CSSImageSetValue* value = CSSImageSetValue::Create(parser_mode_);
+  auto* value = MakeGarbageCollected<CSSImageSetValue>(parser_mode_);
   for (auto& item : *this) {
     auto* image_value = DynamicTo<CSSImageValue>(item.Get());
     image_value ? value->Append(*image_value->ValueWithURLMadeAbsolute())

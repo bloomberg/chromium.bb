@@ -40,8 +40,8 @@ const CSSValue* GridTemplateAreas::ParseSingleValue(
   if (row_count == 0)
     return nullptr;
   DCHECK(column_count);
-  return cssvalue::CSSGridTemplateAreasValue::Create(grid_area_map, row_count,
-                                                     column_count);
+  return MakeGarbageCollected<cssvalue::CSSGridTemplateAreasValue>(
+      grid_area_map, row_count, column_count);
 }
 
 const CSSValue* GridTemplateAreas::CSSValueFromComputedStyleInternal(
@@ -55,7 +55,7 @@ const CSSValue* GridTemplateAreas::CSSValueFromComputedStyleInternal(
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   }
 
-  return cssvalue::CSSGridTemplateAreasValue::Create(
+  return MakeGarbageCollected<cssvalue::CSSGridTemplateAreasValue>(
       style.NamedGridArea(), style.NamedGridAreaRowCount(),
       style.NamedGridAreaColumnCount());
 }

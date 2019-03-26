@@ -827,7 +827,7 @@ StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(
     observer_->StartRuleBody(block.Offset());
   }
 
-  StyleRuleKeyframes* keyframe_rule = StyleRuleKeyframes::Create();
+  auto* keyframe_rule = MakeGarbageCollected<StyleRuleKeyframes>();
   ConsumeRuleList(
       block, kKeyframesRuleList, [keyframe_rule](StyleRuleBase* keyframe) {
         keyframe_rule->ParserAppendKeyframe(To<StyleRuleKeyframe>(keyframe));

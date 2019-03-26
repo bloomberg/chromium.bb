@@ -153,18 +153,6 @@ class CSSGradientValue : public CSSImageGeneratorValue {
 
 class CSSLinearGradientValue final : public CSSGradientValue {
  public:
-  static CSSGradientValue* Create(
-      const CSSValue* first_x,
-      const CSSValue* first_y,
-      const CSSValue* second_x,
-      const CSSValue* second_y,
-      const CSSPrimitiveValue* angle,
-      CSSGradientRepeat repeat,
-      CSSGradientType gradient_type = kCSSLinearGradient) {
-    return MakeGarbageCollected<CSSLinearGradientValue>(
-        first_x, first_y, second_x, second_y, angle, repeat, gradient_type);
-  }
-
   CSSLinearGradientValue(const CSSValue* first_x,
                          const CSSValue* first_y,
                          const CSSValue* second_x,

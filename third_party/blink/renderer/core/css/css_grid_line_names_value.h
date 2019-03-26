@@ -39,10 +39,6 @@ namespace cssvalue {
 
 class CSSGridLineNamesValue : public CSSValueList {
  public:
-  static CSSGridLineNamesValue* Create() {
-    return MakeGarbageCollected<CSSGridLineNamesValue>();
-  }
-
   CSSGridLineNamesValue();
 
   String CustomCSSText() const;

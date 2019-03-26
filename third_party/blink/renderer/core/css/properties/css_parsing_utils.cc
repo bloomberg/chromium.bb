@@ -1710,7 +1710,7 @@ CSSGridLineNamesValue* ConsumeGridLineNames(
   if (range_copy.ConsumeIncludingWhitespace().GetType() != kLeftBracketToken)
     return nullptr;
   if (!line_names)
-    line_names = CSSGridLineNamesValue::Create();
+    line_names = MakeGarbageCollected<CSSGridLineNamesValue>();
   while (CSSCustomIdentValue* line_name =
              ConsumeCustomIdentForGridLine(range_copy, context))
     line_names->Append(*line_name);
@@ -1735,8 +1735,8 @@ bool ConsumeGridTrackRepeatFunction(CSSParserTokenRange& range,
       CSSValueID::kAutoFill, CSSValueID::kAutoFit>(args.Peek().Id());
   CSSValueList* repeated_values;
   if (is_auto_repeat) {
-    repeated_values =
-        CSSGridAutoRepeatValue::Create(args.ConsumeIncludingWhitespace().Id());
+    repeated_values = MakeGarbageCollected<CSSGridAutoRepeatValue>(
+        args.ConsumeIncludingWhitespace().Id());
   } else {
     // TODO(rob.buis): a consumeIntegerRaw would be more efficient here.
     CSSPrimitiveValue* repetition =
@@ -1844,8 +1844,8 @@ bool ConsumeGridTemplateRowsAndAreasAndColumns(bool important,
   }
 
   template_rows = template_rows_value_list;
-  template_areas =
-      CSSGridTemplateAreasValue::Create(grid_area_map, row_count, column_count);
+  template_areas = MakeGarbageCollected<CSSGridTemplateAreasValue>(
+      grid_area_map, row_count, column_count);
   return true;
 }
 
