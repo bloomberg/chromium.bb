@@ -20,7 +20,6 @@
 #include "net/base/net_export.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_pool.h"
-#include "net/socket/client_socket_pool_base.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/transport_client_socket_pool.h"
