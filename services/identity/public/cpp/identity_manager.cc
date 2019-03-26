@@ -271,8 +271,13 @@ bool IdentityManager::IsAccountIdMigrationSupported() {
 }
 
 // static
-void IdentityManager::RegisterPrefs(PrefRegistrySimple* registry) {
+void IdentityManager::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   SigninManagerBase::RegisterPrefs(registry);
+}
+
+// static
+void IdentityManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  SigninManagerBase::RegisterProfilePrefs(registry);
 }
 
 std::string IdentityManager::PickAccountIdForAccount(

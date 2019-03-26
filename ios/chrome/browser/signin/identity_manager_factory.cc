@@ -78,7 +78,7 @@ class IdentityManagerWrapper : public KeyedService,
 
 void IdentityManagerFactory::RegisterBrowserStatePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  SigninManagerBase::RegisterProfilePrefs(registry);
+  identity::IdentityManager::RegisterProfilePrefs(registry);
 }
 
 IdentityManagerFactory::IdentityManagerFactory()

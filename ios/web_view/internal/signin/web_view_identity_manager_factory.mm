@@ -90,7 +90,7 @@ class IdentityManagerWrapper : public KeyedService,
 
 void WebViewIdentityManagerFactory::RegisterBrowserStatePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  SigninManagerBase::RegisterProfilePrefs(registry);
+  identity::IdentityManager::RegisterProfilePrefs(registry);
 }
 
 WebViewIdentityManagerFactory::WebViewIdentityManagerFactory()

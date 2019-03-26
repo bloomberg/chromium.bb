@@ -259,8 +259,8 @@ class IdentityManagerTest : public testing::Test {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     AccountFetcherService::RegisterPrefs(pref_service_.registry());
     ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
-    SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
-    SigninManagerBase::RegisterPrefs(pref_service_.registry());
+    IdentityManager::RegisterProfilePrefs(pref_service_.registry());
+    IdentityManager::RegisterLocalStatePrefs(pref_service_.registry());
 
     account_tracker_.Initialize(&pref_service_, base::FilePath());
     account_fetcher_.Initialize(
