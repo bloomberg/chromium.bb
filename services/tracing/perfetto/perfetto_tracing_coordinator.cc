@@ -96,9 +96,9 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
     auto* trace_event_data_source = perfetto_config.add_data_sources();
     for (auto& enabled_pid :
          chrome_config.process_filter_config().included_process_ids()) {
-      *trace_event_data_source->add_producer_name_filter() =
-          base::StrCat({mojom::kPerfettoProducerName, ".",
-                        base::NumberToString(enabled_pid)});
+      *trace_event_data_source->add_producer_name_filter() = base::StrCat(
+          {mojom::kPerfettoProducerNamePrefix,
+           base::NumberToString(static_cast<uint32_t>(enabled_pid))});
     }
 
     // We strip the process filter from the config string we send to Perfetto,

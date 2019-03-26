@@ -118,9 +118,9 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   // Called through Mojo by the ProducerHost on the service-side to control
   // tracing and toggle specific DataSources.
   void OnTracingStart(mojo::ScopedSharedBufferHandle shared_memory) override;
-  void StartDataSource(
-      uint64_t id,
-      const perfetto::DataSourceConfig& data_source_config) override;
+  void StartDataSource(uint64_t id,
+                       const perfetto::DataSourceConfig& data_source_config,
+                       StartDataSourceCallback callback) override;
 
   void StopDataSource(uint64_t id, StopDataSourceCallback callback) override;
   void Flush(uint64_t flush_request_id,
