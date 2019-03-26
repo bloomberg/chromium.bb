@@ -1620,11 +1620,6 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
 - (void)showSignin:(ShowSigninCommand*)command
     baseViewController:(UIViewController*)baseViewController {
-  if (command.operation == AUTHENTICATION_OPERATION_DISMISS) {
-    [self dismissSigninInteractionCoordinator];
-    return;
-  }
-
   if (!self.signinInteractionCoordinator) {
     self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
         initWithBrowserState:_mainBrowserState
@@ -1632,10 +1627,6 @@ enum class EnterTabSwitcherSnapshotResult {
   }
 
   switch (command.operation) {
-    case AUTHENTICATION_OPERATION_DISMISS:
-      // Special case handled above.
-      NOTREACHED();
-      break;
     case AUTHENTICATION_OPERATION_REAUTHENTICATE:
       [self.signinInteractionCoordinator
           reAuthenticateWithAccessPoint:command.accessPoint
