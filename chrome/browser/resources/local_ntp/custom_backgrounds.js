@@ -206,7 +206,8 @@ customBackgrounds.setMenuVisibility = function() {
   $(customBackgrounds.IDS.UPLOAD_IMAGE).hidden = false;
   $(customBackgrounds.IDS.RESTORE_DEFAULT).hidden = false;
   $(customBackgrounds.IDS.EDIT_BG_DIVIDER).hidden = false;
-  $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).hidden = false;
+  $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).hidden =
+      configData.hideShortcuts;
 };
 
 /**

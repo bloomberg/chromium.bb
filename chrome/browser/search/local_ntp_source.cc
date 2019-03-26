@@ -563,6 +563,9 @@ class LocalNtpSource::SearchConfigurationProvider
       config_data.SetBoolean(
           "fakeboxSearchIcon",
           base::FeatureList::IsEnabled(features::kFakeboxSearchIconOnNtp));
+      config_data.SetBoolean(
+          "hideShortcuts",
+          base::FeatureList::IsEnabled(features::kHideShortcutsOnNtp));
     }
 
     // Serialize the dictionary.

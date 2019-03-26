@@ -1028,12 +1028,14 @@ function handlePostMessage(event) {
           injectPromo(promo);
         };
       }
-      $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT)
-          .classList.toggle(
-              customBackgrounds.CLASSES.OPTION_DISABLED,
-              !args.showRestoreDefault);
-      $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).tabIndex =
-          (args.showRestoreDefault ? 0 : -1);
+      if (!configData.hideShortcuts) {
+        $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT)
+            .classList.toggle(
+                customBackgrounds.CLASSES.OPTION_DISABLED,
+                !args.showRestoreDefault);
+        $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).tabIndex =
+            (args.showRestoreDefault ? 0 : -1);
+      }
     }
   } else if (cmd === 'tileBlacklisted') {
     if (configData.isGooglePage) {
@@ -1346,6 +1348,11 @@ function createIframes() {
     clIframe.onload = () => {
       sendThemeInfoToEditCustomLinkIframe();
     };
+
+    if (configData.hideShortcuts) {
+      $(IDS.TILES).style.display = 'none';
+      clIframeDialog.style.display = 'none';
+    }
   }
 
   window.addEventListener('message', handlePostMessage);

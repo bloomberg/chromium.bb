@@ -20,6 +20,7 @@ extern const base::Feature kUseGoogleLocalNtp;
 
 extern const base::Feature kFakeboxSearchIconOnNtp;
 extern const base::Feature kUseAlternateFakeboxOnNtp;
+extern const base::Feature kHideShortcutsOnNtp;
 
 // Returns whether the Google search style fakebox is enabled.
 bool IsUseAlternateFakeboxOnNtpEnabled();
