@@ -17,6 +17,8 @@ blink_modules_sources("webgpu") {
     "gpu_adapter.h",
     "gpu_device.cc",
     "gpu_device.h",
+    "gpu_fence.cc",
+    "gpu_fence.h",
     "gpu_queue.cc",
     "gpu_queue.h",
     "navigator_gpu.cc",

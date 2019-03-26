@@ -6107,7 +6107,7 @@ crbug.com/943969 [ Mac10.10 Mac10.11 ] inspector-protocol/css/css-get-media-quer
 
 crbug.com/945085 [ Mac10.13 ] printing/composited-thead-tfoot-repeat.html [ Failure Pass ]
 
- # Sheriff 2019-03-25
+# Sheriff 2019-03-25
 crbug.com/943940 http/tests/security/mixedContent/empty-url-plugin-in-frame.html [ Pass Failure ]
 crbug.com/943940 virtual/outofblink-cors/http/tests/security/mixedContent/empty-url-plugin-in-frame.html [ Pass Failure ]
 crbug.com/944025 http/tests/preload/meta-viewport-device-width-link-headers.html [ Pass Failure ]
@@ -6132,3 +6132,6 @@ crbug.com/945470 [ Mac ] fast/forms/validation-bubble-appearance-escape.html [ P
 
 # Failing on: https://ci.chromium.org/buildbot/chromium.mac/Mac10.13%20Tests/11291
 crbug.com/945832 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Failure Timeout Crash ]
+
+# WebGPU tests are only run with --enable-unsafe-webgpu
+Bug(none) webgpu/fence.html [ Skip ]

@@ -4,9 +4,6 @@
 
 // https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
 
-[
-    RuntimeEnabled=WebGPU
-] interface GPUQueue {
-    void signal(GPUFence fence, unsigned long long signalValue);
-    GPUFence createFence(GPUFenceDescriptor descriptor);
+dictionary GPUFenceDescriptor {
+    unsigned long long initialValue = 0;
 };

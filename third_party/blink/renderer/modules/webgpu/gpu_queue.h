@@ -9,6 +9,9 @@
 
 namespace blink {
 
+class GPUFence;
+class GPUFenceDescriptor;
+
 class GPUQueue : public DawnObject<DawnQueue> {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -16,7 +19,11 @@ class GPUQueue : public DawnObject<DawnQueue> {
   static GPUQueue* Create(GPUDevice* device, DawnQueue queue);
   explicit GPUQueue(GPUDevice* device, DawnQueue queue);
   ~GPUQueue() override;
-  
+
+  // gpu_queue.idl
+  void signal(GPUFence* fence, uint64_t signal_value);
+  GPUFence* createFence(const GPUFenceDescriptor* descriptor);
+
   DISALLOW_COPY_AND_ASSIGN(GPUQueue);
 };
 

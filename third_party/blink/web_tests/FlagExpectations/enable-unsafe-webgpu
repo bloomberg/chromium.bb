@@ -1,0 +1,2 @@
+# WebGPU tests are only run with --enable-unsafe-webgpu
+Bug(none) webgpu/fence.html [ Pass ]

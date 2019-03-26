@@ -161,9 +161,19 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   bool HasPendingQueries() const override { return false; }
   void ProcessPendingQueries(bool did_finish) override {}
   bool HasMoreIdleWork() const override { return false; }
-  void PerformIdleWork() override { NOTREACHED(); }
-  bool HasPollingWork() const override { return false; }
-  void PerformPollingWork() override { NOTREACHED(); }
+  void PerformIdleWork() override {}
+
+  // TODO(crbug.com/940985): Optimize so that this only returns true when
+  // deviceTick is needed.
+  bool HasPollingWork() const override { return true; }
+
+  void PerformPollingWork() override {
+    DCHECK(dawn_device_);
+    DCHECK(wire_serializer_);
+    dawn_procs_.deviceTick(dawn_device_);
+    wire_serializer_->Flush();
+  }
+
   TextureBase* GetTextureBase(uint32_t client_id) override {
     NOTREACHED();
     return nullptr;
