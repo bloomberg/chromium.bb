@@ -125,8 +125,8 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
         *context_);
 
     if (is_shorthand) {
-      const CSSPendingSubstitutionValue& pending_value =
-          *CSSPendingSubstitutionValue::Create(property_id, variable);
+      const cssvalue::CSSPendingSubstitutionValue& pending_value =
+          *cssvalue::CSSPendingSubstitutionValue::Create(property_id, variable);
       AddExpandedPropertyForValue(property_id, pending_value, important,
                                   *parsed_properties_);
     } else {

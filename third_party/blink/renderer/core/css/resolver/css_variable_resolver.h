@@ -15,7 +15,6 @@ namespace blink {
 
 class CSSCustomPropertyDeclaration;
 class CSSParserTokenRange;
-class CSSPendingSubstitutionValue;
 class CSSVariableData;
 class CSSVariableReferenceValue;
 class PropertyRegistration;
@@ -23,6 +22,12 @@ class PropertyRegistry;
 class StyleInheritedVariables;
 class StyleNonInheritedVariables;
 class StyleResolverState;
+
+namespace cssvalue {
+
+class CSSPendingSubstitutionValue;
+
+}
 
 class CORE_EXPORT CSSVariableResolver {
   STACK_ALLOCATED();
@@ -118,7 +123,7 @@ class CORE_EXPORT CSSVariableResolver {
 
   const CSSValue* ResolvePendingSubstitutions(
       CSSPropertyID,
-      const CSSPendingSubstitutionValue&,
+      const cssvalue::CSSPendingSubstitutionValue&,
       const Options&);
   const CSSValue* ResolveVariableReferences(CSSPropertyID,
                                             const CSSVariableReferenceValue&,

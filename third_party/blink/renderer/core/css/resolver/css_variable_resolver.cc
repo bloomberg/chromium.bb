@@ -456,7 +456,8 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
     options.disallow_registered_root_font_units = is_root;
   }
 
-  if (auto* substition_value = DynamicTo<CSSPendingSubstitutionValue>(value)) {
+  if (auto* substition_value =
+          DynamicTo<cssvalue::CSSPendingSubstitutionValue>(value)) {
     return ResolvePendingSubstitutions(id, *substition_value, options);
   }
 
@@ -488,7 +489,7 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
 
 const CSSValue* CSSVariableResolver::ResolvePendingSubstitutions(
     CSSPropertyID id,
-    const CSSPendingSubstitutionValue& pending_value,
+    const cssvalue::CSSPendingSubstitutionValue& pending_value,
     const Options& options) {
   // Longhands from shorthand references follow this path.
   HeapHashMap<CSSPropertyID, Member<const CSSValue>>& property_cache =
