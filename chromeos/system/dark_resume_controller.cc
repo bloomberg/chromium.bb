@@ -87,8 +87,7 @@ void DarkResumeController::HandleDarkResumeWakeLockCheckTimeout() {
   device::mojom::WakeLockObserverPtr observer;
   wake_lock_observer_binding_.Bind(mojo::MakeRequest(&observer));
   wake_lock_provider_->NotifyOnWakeLockDeactivation(
-      device::mojom::WakeLockType::kPreventDisplaySleepAllowDimming,
-      std::move(observer));
+      device::mojom::WakeLockType::kPreventAppSuspension, std::move(observer));
 
   // Schedule task that will tell the power daemon to re-suspend after a dark
   // resume irrespective of any state. This is a last resort timeout to ensure

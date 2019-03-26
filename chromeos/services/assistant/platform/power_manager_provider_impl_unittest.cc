@@ -120,29 +120,24 @@ class PowerManagerProviderImplTest : public testing::Test {
 TEST_F(PowerManagerProviderImplTest, CheckAcquireAndReleaseWakeLock) {
   // Acquire wake lock and check wake lock count.
   AcquireWakeLock();
-  EXPECT_EQ(1,
-            GetActiveWakeLocks(
-                device::mojom::WakeLockType::kPreventDisplaySleepAllowDimming));
+  EXPECT_EQ(1, GetActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventAppSuspension));
   // Acquire another wake lock, this shouldn't change the overall count.
   AcquireWakeLock();
-  EXPECT_EQ(1,
-            GetActiveWakeLocks(
-                device::mojom::WakeLockType::kPreventDisplaySleepAllowDimming));
+  EXPECT_EQ(1, GetActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventAppSuspension));
   // Release wake lock, this shouldn't change the overall count.
   ReleaseWakeLock();
-  EXPECT_EQ(1,
-            GetActiveWakeLocks(
-                device::mojom::WakeLockType::kPreventDisplaySleepAllowDimming));
+  EXPECT_EQ(1, GetActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventAppSuspension));
   // Release wake lock, this should finally release the wake lock.
   ReleaseWakeLock();
-  EXPECT_EQ(0,
-            GetActiveWakeLocks(
-                device::mojom::WakeLockType::kPreventDisplaySleepAllowDimming));
+  EXPECT_EQ(0, GetActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventAppSuspension));
   // An unbalanced release call shouldn't do anything.
   ReleaseWakeLock();
-  EXPECT_EQ(0,
-            GetActiveWakeLocks(
-                device::mojom::WakeLockType::kPreventDisplaySleepAllowDimming));
+  EXPECT_EQ(0, GetActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventAppSuspension));
 }
 
 TEST_F(PowerManagerProviderImplTest, CheckWakeAlarms) {

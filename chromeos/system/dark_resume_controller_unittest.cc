@@ -39,7 +39,7 @@ class DarkResumeControllerTest : public testing::Test {
   void SetUp() override {
     // Create wake lock that will be acquired and released in tests.
     wake_lock_provider_.GetWakeLockWithoutContext(
-        WakeLockType::kPreventDisplaySleepAllowDimming,
+        WakeLockType::kPreventAppSuspension,
         device::mojom::WakeLockReason::kOther, kWakeLockDescription,
         mojo::MakeRequest(&wake_lock_));
 
@@ -159,8 +159,7 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeHardTimeout) {
   // device should re-suspend even though the wake lock is acquired.
   scoped_task_environment_.FastForwardBy(
       DarkResumeController::kDarkResumeHardTimeout);
-  EXPECT_EQ(1,
-            GetActiveWakeLocks(WakeLockType::kPreventDisplaySleepAllowDimming));
+  EXPECT_EQ(1, GetActiveWakeLocks(WakeLockType::kPreventAppSuspension));
   base::RunLoop run_loop2;
   run_loop2.RunUntilIdle();
   EXPECT_TRUE(dark_resume_controller_->IsDarkResumeStateClearedForTesting());
