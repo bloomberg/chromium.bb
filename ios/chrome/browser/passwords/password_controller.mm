@@ -502,6 +502,10 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 #pragma mark - PasswordManagerClientDelegate
 
+- (web::WebState*)webState {
+  return _webState;
+}
+
 - (ios::ChromeBrowserState*)browserState {
   return _webState ? ios::ChromeBrowserState::FromBrowserState(
                          _webState->GetBrowserState())
