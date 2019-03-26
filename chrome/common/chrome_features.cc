@@ -238,7 +238,7 @@ const base::Feature kDesktopPWAsWithoutExtensions{
 
 // Enables or disables the ability to install PWAs from the omnibox.
 const base::Feature kDesktopPWAsOmniboxInstall{
-    "DesktopPWAsOmniboxInstall", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DesktopPWAsOmniboxInstall", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Disables downloads of unsafe file types over HTTP.
 const base::Feature kDisallowUnsafeHttpDownloads{

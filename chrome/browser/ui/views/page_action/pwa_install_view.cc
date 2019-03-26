@@ -29,7 +29,9 @@ bool PwaInstallView::Update() {
 
   banners::AppBannerManager* manager =
       banners::AppBannerManager::FromWebContents(web_contents);
-  DCHECK(manager);
+  // May not be present e.g. in incognito mode.
+  if (!manager)
+    return false;
 
   bool is_installable = manager->IsProbablyInstallable();
   bool is_installed =
