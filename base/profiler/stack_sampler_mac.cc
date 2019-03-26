@@ -26,6 +26,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/profiler/profile_builder.h"
+#include "base/profiler/unwind_result.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/strings/string_number_conversions.h"
 
@@ -264,11 +265,10 @@ class StackSamplerMac : public StackSampler {
                         x86_thread_state64_t* thread_state,
                         uintptr_t* stack_top);
 
-  // Walks the stack represented by |thread_state|, calling back to the
-  // provided lambda for each frame.
-  std::vector<ProfileBuilder::Frame> WalkStack(
-      const x86_thread_state64_t& thread_state,
-      uintptr_t stack_top);
+  // Walks the stack represented by |thread_state|, writing frames to |stack|.
+  UnwindResult WalkStack(const x86_thread_state64_t& thread_state,
+                         uintptr_t stack_top,
+                         std::vector<ProfileBuilder::Frame>* stack);
 
   // Weak reference: Mach port for thread being profiled.
   mach_port_t thread_port_;
@@ -325,8 +325,17 @@ void StackSamplerMac::RecordStackFrames(StackBuffer* stack_buffer,
   if (test_delegate_)
     test_delegate_->OnPreStackWalk();
 
+  std::vector<ProfileBuilder::Frame> stack;
+
+  // Reserve enough memory for most stacks, to avoid repeated
+  // allocations. Approximately 99.9% of recorded stacks are 128 frames or
+  // fewer.
+  stack.reserve(128);
+
   // Walk the stack and record it.
-  profile_builder->OnSampleCompleted(WalkStack(thread_state, stack_top));
+  WalkStack(thread_state, stack_top, &stack);
+
+  profile_builder->OnSampleCompleted(std::move(stack));
 }
 
 // static
@@ -368,16 +377,10 @@ bool StackSamplerMac::CopyStack(mach_port_t thread_port,
   return true;
 }
 
-std::vector<ProfileBuilder::Frame> StackSamplerMac::WalkStack(
+UnwindResult StackSamplerMac::WalkStack(
     const x86_thread_state64_t& thread_state,
-    uintptr_t stack_top) {
-  std::vector<ProfileBuilder::Frame> stack;
-
-  // Reserve enough memory for most stacks, to avoid repeated
-  // allocations. Approximately 99.9% of recorded stacks are 128 frames or
-  // fewer.
-  stack.reserve(128);
-
+    uintptr_t stack_top,
+    std::vector<ProfileBuilder::Frame>* stack) {
   // There isn't an official way to create a unw_context other than to create it
   // from the current state of the current thread's stack. Since we're walking a
   // different thread's stack we must forge a context. The unw_context is just a
@@ -394,7 +397,8 @@ std::vector<ProfileBuilder::Frame> StackSamplerMac::WalkStack(
   const ModuleCache::Module* leaf_frame_module =
       module_cache_->GetModuleForAddress(thread_state.__rip);
   if (leaf_frame_module && MayTriggerUnwInitLocalCrash(leaf_frame_module)) {
-    return {ProfileBuilder::Frame(thread_state.__rip, leaf_frame_module)};
+    stack->emplace_back(thread_state.__rip, leaf_frame_module);
+    return UnwindResult::ABORTED;
   }
 
   unw_cursor_t unwind_cursor;
@@ -406,37 +410,46 @@ std::vector<ProfileBuilder::Frame> StackSamplerMac::WalkStack(
     unw_word_t instruction_pointer;
     unw_get_reg(&unwind_cursor, UNW_REG_IP, &instruction_pointer);
 
-    // Ensure IP is in a module.
-    //
-    // Frameless unwinding (non-DWARF) works by fetching the function's stack
-    // size from the unwind encoding or stack, and adding it to the stack
-    // pointer to determine the function's return address.
-    //
-    // If we're in a function prologue or epilogue, the actual stack size may be
-    // smaller than it will be during the normal course of execution. When
-    // libunwind adds the expected stack size, it will look for the return
-    // address in the wrong place. This check should ensure that we bail before
-    // trying to deref a bad IP obtained this way in the previous frame.
     const ModuleCache::Module* module =
         module_cache_->GetModuleForAddress(instruction_pointer);
-    if (!module)
-      break;
+    if (!module) {
+      // There's no loaded module containing the instruction pointer. This is
+      // due to either executing code that is not in a module (e.g. V8
+      // runtime-generated code), or to a previous bad unwind.
+      //
+      // The bad unwind scenario can occur in frameless (non-DWARF) unwinding,
+      // which works by fetching the function's stack size from the unwind
+      // encoding or stack, and adding it to the stack pointer to determine the
+      // function's return address.
+      //
+      // If we're in a function prologue or epilogue, the actual stack size may
+      // be smaller than it will be during the normal course of execution. When
+      // libunwind adds the expected stack size, it will look for the return
+      // address in the wrong place. This check ensures we don't continue trying
+      // to unwind using the resulting bad IP value.
+      //
+      // We return UNRECOGNIZED_FRAME on the optimistic assumption that this may
+      // be a frame the AuxUnwinder knows how to handle (e.g. a frame in V8
+      // generated code).
+      return UnwindResult::UNRECOGNIZED_FRAME;
+    }
 
     // Record the frame.
-    stack.emplace_back(instruction_pointer, module);
+    stack->emplace_back(instruction_pointer, module);
 
     // Don't continue if we're in sigtramp. Unwinding this from another thread
     // is very fragile. It's a complex DWARF unwind that needs to restore the
     // entire thread context which was saved by the kernel when the interrupt
     // occurred.
     if (instruction_pointer >= sigtramp_start_ &&
-        instruction_pointer < sigtramp_end_)
-      break;
+        instruction_pointer < sigtramp_end_) {
+      return UnwindResult::ABORTED;
+    }
 
     // Don't continue if rbp appears to be invalid (due to a previous bad
     // unwind).
     if (!HasValidRbp(&unwind_cursor, stack_top))
-      break;
+      return UnwindResult::ABORTED;
 
     step_result = unw_step(&unwind_cursor);
 
@@ -465,7 +478,7 @@ std::vector<ProfileBuilder::Frame> StackSamplerMac::WalkStack(
     at_top_frame = false;
   } while (step_result > 0);
 
-  return stack;
+  return UnwindResult::COMPLETED;
 }
 
 // StackSampler ---------------------------------------------------------
