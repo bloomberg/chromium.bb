@@ -13,7 +13,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/account_fetcher_service_factory.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
-#include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_ios_provider_impl.h"
@@ -127,6 +126,4 @@ IdentityTestEnvironmentChromeBrowserStateAdaptor::
           static_cast<FakeProfileOAuth2TokenService*>(
               ProfileOAuth2TokenServiceFactory::GetForBrowserState(
                   browser_state)),
-          ios::GaiaCookieManagerServiceFactory::GetForBrowserState(
-              browser_state),
           IdentityManagerFactory::GetForBrowserState(browser_state)) {}

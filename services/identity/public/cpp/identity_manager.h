@@ -198,11 +198,11 @@ class IdentityManager : public SigninManagerBase::Observer,
   };
 
   IdentityManager(
+      std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service,
       std::unique_ptr<SigninManagerBase> signin_manager,
       ProfileOAuth2TokenService* token_service,
       AccountFetcherService* account_fetcher_service,
       AccountTrackerService* account_tracker_service,
-      GaiaCookieManagerService* gaia_cookie_manager_service,
       std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
       std::unique_ptr<AccountsMutator> accounts_mutator,
       std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator,
@@ -469,6 +469,9 @@ class IdentityManager : public SigninManagerBase::Observer,
   void AddDiagnosticsObserver(DiagnosticsObserver* observer);
   void RemoveDiagnosticsObserver(DiagnosticsObserver* observer);
 
+ protected:
+  void Shutdown();
+
  private:
   // These test helpers need to use some of the private methods below.
   friend CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
@@ -549,6 +552,31 @@ class IdentityManager : public SigninManagerBase::Observer,
   FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest, RemoveAccessTokenFromCache);
   FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
                            CreateAccessTokenFetcherWithCustomURLLoaderFactory);
+  FRIEND_TEST_ALL_PREFIXES(
+      IdentityManagerTest,
+      CallbackSentOnUpdateToAccountsInCookieWithNoAccounts);
+  FRIEND_TEST_ALL_PREFIXES(
+      IdentityManagerTest,
+      CallbackSentOnUpdateToAccountsInCookieWithOneAccount);
+  FRIEND_TEST_ALL_PREFIXES(
+      IdentityManagerTest,
+      CallbackSentOnUpdateToAccountsInCookieWithTwoAccounts);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           CallbackSentOnUpdateToSignOutAccountsInCookie);
+  FRIEND_TEST_ALL_PREFIXES(
+      IdentityManagerTest,
+      CallbackSentOnUpdateToAccountsInCookieWithStaleAccounts);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           CallbackSentOnSuccessfulAdditionOfAccountToCookie);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           CallbackSentOnFailureAdditionOfAccountToCookie);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           CallbackSentOnSetAccountsInCookieCompleted_Success);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           CallbackSentOnSetAccountsInCookieCompleted_Failure);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           CallbackSentOnAccountsCookieDeletedByUserAction);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest, OnNetworkInitialized);
 
   // Private getters used for testing only (i.e. see identity_test_utils.h).
   SigninManagerBase* GetSigninManager();
@@ -616,11 +644,11 @@ class IdentityManager : public SigninManagerBase::Observer,
   // these classes in the IdentityManager implementation, as all such
   // synchronous access will become impossible when IdentityManager is
   // backed by the Identity Service.
+  std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service_;
   std::unique_ptr<SigninManagerBase> signin_manager_;
   ProfileOAuth2TokenService* token_service_;
   AccountFetcherService* account_fetcher_service_;
   AccountTrackerService* account_tracker_service_;
-  GaiaCookieManagerService* gaia_cookie_manager_service_;
 
   // PrimaryAccountMutator instance. May be null if mutation of the primary
   // account state is not supported on the current platform.
