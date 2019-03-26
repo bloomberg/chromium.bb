@@ -284,7 +284,7 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
                                          root_uia.Get());
     } else {
       Microsoft::WRL::ComPtr<IAccessible> root_msaa(root);
-      return LresultFromObject(IID_IAccessible, w_param, root_msaa.Detach());
+      return LresultFromObject(IID_IAccessible, w_param, root_msaa.Get());
     }
   }
 
@@ -293,7 +293,7 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
     Microsoft::WRL::ComPtr<IAccessible> ax_system_caret_accessible =
         ax_system_caret_->GetCaret();
     return LresultFromObject(IID_IAccessible, w_param,
-                             ax_system_caret_accessible.Detach());
+                             ax_system_caret_accessible.Get());
   }
 
   return static_cast<LRESULT>(0L);
@@ -532,6 +532,17 @@ LRESULT LegacyRenderWidgetHostHWND::OnWindowPosChanged(UINT message,
     }
   }
   SetMsgHandled(FALSE);
+  return 0;
+}
+
+LRESULT LegacyRenderWidgetHostHWND::OnDestroy(UINT message,
+                                              WPARAM w_param,
+                                              LPARAM l_param) {
+  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+    // Signal to UIA that all objects associated with this HWND can be
+    // discarded.
+    UiaReturnRawElementProvider(hwnd(), 0, 0, nullptr);
+  }
   return 0;
 }
 
