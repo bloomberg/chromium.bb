@@ -94,9 +94,6 @@
                             "setRequestInterception", "continueInterceptedRequest", "getResponseBodyForInterception",
                             "takeResponseBodyForInterceptionAsStream"],
                 "async": ["getResponseBody", "getRequestPostData"]
-            },
-            {
-                "domain": "Testing"
             }
         ]
     },
