@@ -144,7 +144,10 @@
 - (id<NSAccessibility>)rootAccessibilityObject {
   id<NSAccessibility> obj =
       bridgeImpl_ ? bridgeImpl_->host_helper()->GetNativeViewAccessible() : nil;
-  DCHECK([obj conformsToProtocol:@protocol(NSAccessibility)]);
+  // We should like to DCHECK that the object returned implemements the
+  // NSAccessibility protocol, but the NSAccessibilityRemoteUIElement interface
+  // does not conform.
+  // TODO(https://crbug.com/944698): Create a sub-class that does.
   return obj;
 }
 

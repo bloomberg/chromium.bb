@@ -9,6 +9,7 @@
 
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace ui {
 
@@ -33,9 +34,6 @@ class ViewsHostableView {
     // The id for the views::View's NSView. Used to add the
     // content::WebContentsView's NSView as a child view.
     virtual uint64_t GetNSViewId() const = 0;
-
-    // Query the parent accessibility element of the host.
-    virtual id GetAccessibilityElement() const = 0;
 
     // Called when the hostable view will be destroyed.
     virtual void OnHostableViewDestroying() = 0;
@@ -63,6 +61,13 @@ class ViewsHostableView {
 
   // Make the WebContentsView's NSView be a first responder.
   virtual void ViewsHostableMakeFirstResponder() = 0;
+
+  // Set the WebContentsView's parent accessibility element.
+  virtual void ViewsHostableSetParentAccessible(
+      gfx::NativeViewAccessible parent_accessibility_element) = 0;
+
+  // Retrieve the WebContentsView's accessibility element.
+  virtual gfx::NativeViewAccessible ViewsHostableGetAccessibilityElement() = 0;
 };
 
 }  // namespace ui

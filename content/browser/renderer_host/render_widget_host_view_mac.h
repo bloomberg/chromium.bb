@@ -32,6 +32,7 @@
 
 namespace ui {
 enum class DomCode;
+class Layer;
 class ScopedPasswordInputEnabler;
 }
 
@@ -160,7 +161,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       override;
   base::Optional<SkColor> GetBackgroundColor() const override;
 
-  void SetParentUiLayer(ui::Layer* parent_ui_layer) override;
   void TransformPointToRootSurface(gfx::PointF* point) override;
   gfx::Rect GetBoundsInRootWindow() override;
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
@@ -461,6 +461,15 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // referred to by |parent_ns_view_id|.
   void MigrateNSViewBridge(NSViewBridgeFactoryHost* bridge_factory_host,
                            uint64_t parent_ns_view_id);
+
+  // Specify a ui::Layer into which the renderer's content should be
+  // composited. If nullptr is specified, then this layer will create a
+  // separate ui::Compositor as needed (e.g, for tab capture).
+  void SetParentUiLayer(ui::Layer* parent_ui_layer);
+
+  // Specify the element to return as the accessibility parent of the
+  // |cocoa_view_|.
+  void SetParentAccessibilityElement(id parent_accessibility_element);
 
   MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
 
