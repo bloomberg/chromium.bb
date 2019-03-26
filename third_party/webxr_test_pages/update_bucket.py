@@ -153,10 +153,14 @@ def write_index():
   content = template.render({'items': items})
   logging.debug('index.html content:\n%s', content)
 
-  with tempfile.NamedTemporaryFile(suffix='.html') as temp:
-    temp.write(content)
-    temp.seek(0)
-    run_modify('gsutil.py', 'cp', temp.name, BUCKET + '/index.html')
+  with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as temp:
+    try:
+      temp.write(content)
+      temp.seek(0)
+      temp.close()
+      run_modify('gsutil.py', 'cp', temp.name, BUCKET + '/index.html')
+    finally:
+      os.unlink(temp.name)
 
 def update_test_copies():
   """Uploads a new test copy if available"""
