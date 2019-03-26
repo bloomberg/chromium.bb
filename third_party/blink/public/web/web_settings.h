@@ -148,6 +148,7 @@ class WebSettings {
   void SetDeferred2dCanvasEnabled(bool) {}  // temporary stub
   virtual void SetDeviceScaleAdjustment(float) = 0;
   virtual void SetDisableReadingFromCanvas(bool) = 0;
+  virtual void SetDontSendKeyEventsToJavascript(bool) = 0;
   virtual void SetDoubleTapToZoomEnabled(bool) = 0;
   virtual void SetDownloadableBinaryFontsEnabled(bool) = 0;
   virtual void SetEditingBehavior(EditingBehavior) = 0;

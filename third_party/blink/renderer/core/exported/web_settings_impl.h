@@ -78,6 +78,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetDeviceScaleAdjustment(float) override;
 
   void SetDisableReadingFromCanvas(bool) override;
+  void SetDontSendKeyEventsToJavascript(bool) override;
   void SetDoubleTapToZoomEnabled(bool) override;
   void SetDownloadableBinaryFontsEnabled(bool) override;
   void SetEditingBehavior(EditingBehavior) override;
