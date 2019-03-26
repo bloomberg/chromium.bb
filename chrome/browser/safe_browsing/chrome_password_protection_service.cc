@@ -1219,7 +1219,10 @@ base::string16 ChromePasswordProtectionService::GetWarningDetailText(
 
   if (GetSyncAccountType() !=
       safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::GSUITE) {
-    return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS);
+    return l10n_util::GetStringUTF16(
+        GetSyncAccountType() == PasswordReuseEvent::NOT_SIGNED_IN
+            ? IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SIGNED_IN_NON_SYNC
+            : IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SYNC);
   }
 
   std::string org_name = GetOrganizationName(password_type);

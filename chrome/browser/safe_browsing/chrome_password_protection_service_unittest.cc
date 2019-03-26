@@ -1054,16 +1054,16 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyGetWarningDetailTextEnterprise) {
-  base::string16 default_warning_text =
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS);
+  base::string16 warning_text_non_sync = l10n_util::GetStringUTF16(
+      IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SIGNED_IN_NON_SYNC);
   base::string16 generic_enterprise_warning_text = l10n_util::GetStringUTF16(
       IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE);
   base::string16 warning_text_with_org_name = l10n_util::GetStringFUTF16(
       IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE_WITH_ORG_NAME,
       base::UTF8ToUTF16("example.com"));
 
-  EXPECT_EQ(default_warning_text, service_->GetWarningDetailText(
-                                      PasswordReuseEvent::SIGN_IN_PASSWORD));
+  EXPECT_EQ(warning_text_non_sync, service_->GetWarningDetailText(
+                                       PasswordReuseEvent::SIGN_IN_PASSWORD));
   EXPECT_EQ(
       generic_enterprise_warning_text,
       service_->GetWarningDetailText(PasswordReuseEvent::ENTERPRISE_PASSWORD));
@@ -1081,13 +1081,15 @@ TEST_F(ChromePasswordProtectionServiceTest,
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextGmail) {
-  base::string16 default_warning_text =
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS);
+  base::string16 warning_text_non_sync = l10n_util::GetStringUTF16(
+      IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SIGNED_IN_NON_SYNC);
+  base::string16 warning_text_sync =
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SYNC);
   base::string16 generic_enterprise_warning_text = l10n_util::GetStringUTF16(
       IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE);
 
-  EXPECT_EQ(default_warning_text, service_->GetWarningDetailText(
-                                      PasswordReuseEvent::SIGN_IN_PASSWORD));
+  EXPECT_EQ(warning_text_non_sync, service_->GetWarningDetailText(
+                                       PasswordReuseEvent::SIGN_IN_PASSWORD));
   EXPECT_EQ(
       generic_enterprise_warning_text,
       service_->GetWarningDetailText(PasswordReuseEvent::ENTERPRISE_PASSWORD));
@@ -1096,8 +1098,8 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextGmail) {
   CoreAccountInfo account_info = SetPrimaryAccount(kTestGmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
-  EXPECT_EQ(default_warning_text, service_->GetWarningDetailText(
-                                      PasswordReuseEvent::SIGN_IN_PASSWORD));
+  EXPECT_EQ(warning_text_sync, service_->GetWarningDetailText(
+                                   PasswordReuseEvent::SIGN_IN_PASSWORD));
   EXPECT_EQ(
       generic_enterprise_warning_text,
       service_->GetWarningDetailText(PasswordReuseEvent::ENTERPRISE_PASSWORD));
