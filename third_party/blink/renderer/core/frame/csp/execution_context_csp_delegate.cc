@@ -21,7 +21,6 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
-#include "third_party/blink/renderer/platform/weborigin/reporting_service_proxy_ptr_holder.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -154,15 +153,19 @@ void ExecutionContextCSPDelegate::PostViolationReport(
   scoped_refptr<EncodedFormData> report =
       EncodedFormData::Create(stringified_report.Utf8());
 
-  DEFINE_STATIC_LOCAL(ReportingServiceProxyPtrHolder,
-                      reporting_service_proxy_holder, ());
-
   // Construct and route the report to the ReportingContext, to be observed
   // by any ReportingObservers.
   CSPViolationReportBody* body = CSPViolationReportBody::Create(violation_data);
   Report* observed_report =
       MakeGarbageCollected<Report>("csp-violation", Url().GetString(), body);
-  ReportingContext::From(document)->QueueReport(observed_report);
+  auto* reporting_context = ReportingContext::From(document);
+  reporting_context->QueueReport(observed_report);
+
+  bool is_null;
+  int line_number = body->lineNumber(is_null);
+  line_number = is_null ? 0 : line_number;
+  int column_number = body->columnNumber(is_null);
+  column_number = is_null ? 0 : column_number;
 
   for (const auto& report_endpoint : report_endpoints) {
     if (use_reporting_api) {
@@ -173,8 +176,21 @@ void ExecutionContextCSPDelegate::PostViolationReport(
       // https://w3c.github.io/reporting/#queue-report
       // Step 2. If url was not provided by the caller, let url be settings’s
       // creation URL. [spec text]
-      reporting_service_proxy_holder.QueueCspViolationReport(
-          Url(), report_endpoint, &violation_data);
+      reporting_context->GetReportingService()->QueueCspViolationReport(
+          Url(),
+          report_endpoint,
+          body->documentURL() ? body->documentURL() : "",
+          body->referrer() ? body->referrer() : "",
+          body->effectiveDirective() ? body->effectiveDirective() : "",
+          body->effectiveDirective() ? body->effectiveDirective() : "",
+          body->originalPolicy() ? body->originalPolicy() : "",
+          body->disposition() ? body->disposition() : "",
+          body->blockedURL() ? body->blockedURL() : "",
+          line_number,
+          column_number,
+          body->sourceFile() ? body->sourceFile() : "",
+          body->statusCode(),
+          body->sample() ? body->sample() : "");
       continue;
     }
 
