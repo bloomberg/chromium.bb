@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/profiler/stack_sampling_profiler.h"
 #include "base/rand_util.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
@@ -126,7 +125,7 @@ void HeapProfilerController::RetrieveAndSendSnapshot() {
                                                    &metadata_recorder);
 
   for (const base::SamplingHeapProfiler::Sample& sample : samples) {
-    std::vector<base::StackSamplingProfiler::Frame> frames;
+    std::vector<base::ProfileBuilder::Frame> frames;
     frames.reserve(sample.stack.size());
     for (const void* frame : sample.stack) {
       uintptr_t address = reinterpret_cast<uintptr_t>(frame);

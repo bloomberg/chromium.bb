@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/profiler/native_stack_sampler.h"
+#include "base/profiler/stack_sampler.h"
 
 #include <pthread.h>
 
@@ -11,14 +11,14 @@
 
 namespace base {
 
-std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
+std::unique_ptr<StackSampler> StackSampler::Create(
     PlatformThreadId thread_id,
     ModuleCache* module_cache,
-    NativeStackSamplerTestDelegate* test_delegate) {
-  return std::unique_ptr<NativeStackSampler>();
+    StackSamplerTestDelegate* test_delegate) {
+  return nullptr;
 }
 
-size_t NativeStackSampler::GetStackBufferSize() {
+size_t StackSampler::GetStackBufferSize() {
   size_t stack_size = PlatformThread::GetDefaultThreadStackSize();
 
   pthread_attr_t attr;
