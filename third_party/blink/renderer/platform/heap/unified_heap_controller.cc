@@ -136,14 +136,6 @@ bool UnifiedHeapController::IsRootForNonTracingGCInternal(
       class_id != WrapperTypeInfo::kObjectClassId)
     return true;
 
-  const bool collect_non_node_wrappers =
-      RuntimeEnabledFeatures::HeapCollectLiveNonNodeWrappersEnabled();
-
-  if (!collect_non_node_wrappers &&
-      class_id == WrapperTypeInfo::kObjectClassId) {
-    return true;
-  }
-
   const v8::TracedGlobal<v8::Object>& traced = handle.As<v8::Object>();
   if (ToWrapperTypeInfo(traced)->IsActiveScriptWrappable() &&
       ToScriptWrappable(traced)->HasPendingActivity()) {
