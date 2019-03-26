@@ -45,6 +45,8 @@ class FormFetcherImpl : public FormFetcher,
       const override;
   const std::vector<const autofill::PasswordForm*>& GetFederatedMatches()
       const override;
+  const std::vector<const autofill::PasswordForm*>& GetBlacklistedMatches()
+      const override;
   const std::vector<const autofill::PasswordForm*>& GetSuppressedHTTPSForms()
       const override;
   const std::vector<const autofill::PasswordForm*>&
@@ -84,6 +86,9 @@ class FormFetcherImpl : public FormFetcher,
   // non-federated matches.
   std::vector<std::unique_ptr<autofill::PasswordForm>> federated_;
 
+  // List of blacklisted credentials obtained form the password store.
+  std::vector<std::unique_ptr<autofill::PasswordForm>> blacklisted_;
+
   // Statistics for the current domain.
   std::vector<InteractionsStats> interactions_stats_;
 
@@ -100,8 +105,10 @@ class FormFetcherImpl : public FormFetcher,
   bool did_complete_querying_suppressed_forms_ = false;
 
   // Non-owning copies of the vectors above.
+  // TODO(https://crbug.com/945864): Clean this up.
   std::vector<const autofill::PasswordForm*> weak_non_federated_;
   std::vector<const autofill::PasswordForm*> weak_federated_;
+  std::vector<const autofill::PasswordForm*> weak_blacklisted_;
   std::vector<const autofill::PasswordForm*>
       weak_suppressed_same_origin_https_forms_;
   std::vector<const autofill::PasswordForm*>
@@ -114,10 +121,6 @@ class FormFetcherImpl : public FormFetcher,
 
   // Client used to obtain a CredentialFilter.
   const PasswordManagerClient* const client_;
-
-  // The number of non-federated forms which were filtered out by
-  // CredentialsFilter and not included in |non_federated_|.
-  size_t filtered_count_ = 0;
 
   // State of the fetcher.
   State state_ = State::NOT_WAITING;
@@ -138,7 +141,7 @@ class FormFetcherImpl : public FormFetcher,
   // Responsible for looking up `suppressed` credentials. These are stored
   // credentials that were not filled, even though they might be related to the
   // origin that this instance was created for. Look-up happens asynchronously,
-  // without blocking Consumer::ProcessMatches.
+  // without blocking Consumer::OnFetchCompleted.
   std::unique_ptr<SuppressedFormFetcher> suppressed_form_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(FormFetcherImpl);

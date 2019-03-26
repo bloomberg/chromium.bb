@@ -78,7 +78,7 @@ void ManagePasswordsTest::SetupPendingPassword() {
           nullptr, &client_, driver_.AsWeakPtr(), *test_form(),
           base::WrapUnique(new password_manager::StubFormSaver), &fetcher_));
   test_form_manager->Init(nullptr);
-  fetcher_.SetNonFederated(std::vector<const autofill::PasswordForm*>(), 0u);
+  fetcher_.NotifyFetchCompleted();
   GetController()->OnPasswordSubmitted(std::move(test_form_manager));
 }
 
@@ -88,7 +88,7 @@ void ManagePasswordsTest::SetupAutomaticPassword() {
           nullptr, &client_, driver_.AsWeakPtr(), *test_form(),
           base::WrapUnique(new password_manager::StubFormSaver), &fetcher_));
   test_form_manager->Init(nullptr);
-  fetcher_.SetNonFederated(std::vector<const autofill::PasswordForm*>(), 0u);
+  fetcher_.NotifyFetchCompleted();
   GetController()->OnAutomaticPasswordSave(std::move(test_form_manager));
 }
 

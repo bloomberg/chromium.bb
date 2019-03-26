@@ -416,6 +416,7 @@ class PasswordFormMetricsRecorder
       const autofill::FormData& submitted_form,
       const std::set<base::string16>& saved_usernames,
       const std::set<base::string16>& saved_passwords,
+      bool is_blacklisted,
       const std::vector<InteractionsStats>& interactions_stats);
 
  private:

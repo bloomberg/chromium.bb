@@ -44,6 +44,11 @@ FakeFormFetcher::GetFederatedMatches() const {
   return federated_;
 }
 
+const std::vector<const autofill::PasswordForm*>&
+FakeFormFetcher::GetBlacklistedMatches() const {
+  return blacklisted_;
+}
+
 const std::vector<const PasswordForm*>&
 FakeFormFetcher::GetSuppressedHTTPSForms() const {
   return suppressed_https_forms_;
@@ -64,13 +69,19 @@ bool FakeFormFetcher::DidCompleteQueryingSuppressedForms() const {
 }
 
 void FakeFormFetcher::SetNonFederated(
-    const std::vector<const autofill::PasswordForm*>& non_federated,
-    size_t filtered_count) {
-  state_ = State::NOT_WAITING;
+    const std::vector<const autofill::PasswordForm*>& non_federated) {
   non_federated_ = non_federated;
-  for (Consumer* consumer : consumers_) {
-    consumer->ProcessMatches(non_federated, filtered_count);
-  }
+}
+
+void FakeFormFetcher::SetBlacklisted(
+    const std::vector<const autofill::PasswordForm*>& blacklisted) {
+  blacklisted_ = blacklisted;
+}
+
+void FakeFormFetcher::NotifyFetchCompleted() {
+  state_ = State::NOT_WAITING;
+  for (Consumer* consumer : consumers_)
+    consumer->OnFetchCompleted();
 }
 
 void FakeFormFetcher::Fetch() {

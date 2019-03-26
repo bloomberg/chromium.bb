@@ -434,7 +434,7 @@ class PasswordFormManagerTest : public testing::Test {
     form_to_save.username_value = match.username_value;
     form_to_save.password_value = match.password_value;
 
-    fetcher.SetNonFederated({&match}, 0u);
+    SetNonFederatedAndNotifyFetchCompleted(&fetcher, {&match});
     std::string expected_login_signature;
     autofill::FormStructure observed_structure(observed_form_data);
     autofill::FormStructure pending_structure(saved_match()->form_data);
@@ -545,7 +545,7 @@ class PasswordFormManagerTest : public testing::Test {
         password_manager(), client(), client()->driver(), *observed_form(),
         std::make_unique<NiceMock<MockFormSaver>>(), &fetcher);
     form_manager.Init(nullptr);
-    fetcher.SetNonFederated({saved_match()}, 0u);
+    SetNonFederatedAndNotifyFetchCompleted(&fetcher, {saved_match()});
 
     // User submits current and new credentials to the observed form.
     PasswordForm submitted_form(*observed_form());
@@ -691,7 +691,7 @@ class PasswordFormManagerTest : public testing::Test {
         password_manager(), client(), client()->driver(), form,
         std::make_unique<NiceMock<MockFormSaver>>(), &fetcher);
     form_manager.Init(nullptr);
-    fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+    fetcher.NotifyFetchCompleted();
 
     autofill::ServerFieldTypeSet expected_available_field_types;
     // Don't send autofill votes if the user didn't press "Save" button.
@@ -805,7 +805,7 @@ class PasswordFormManagerTest : public testing::Test {
         std::make_unique<NiceMock<MockFormSaver>>(), &fetcher);
     // *Move* the metrics recorder to not hold on to a reference.
     form_manager->Init(std::move(metrics_recorder));
-    fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+    fetcher.NotifyFetchCompleted();
 
     autofill::ServerFieldTypeSet expected_available_field_types;
     // Don't send autofill votes if the user didn't press "Save" button.
@@ -937,6 +937,18 @@ class PasswordFormManagerTest : public testing::Test {
     return form;
   }
 
+  void SetNonFederatedAndNotifyFetchCompleted(
+      const std::vector<const autofill::PasswordForm*>& non_federated) {
+    SetNonFederatedAndNotifyFetchCompleted(fake_form_fetcher(), non_federated);
+  }
+
+  void SetNonFederatedAndNotifyFetchCompleted(
+      FakeFormFetcher* fetcher,
+      const std::vector<const autofill::PasswordForm*>& non_federated) {
+    fetcher->SetNonFederated(non_federated);
+    fetcher->NotifyFetchCompleted();
+  }
+
   void SimulateActionsOnHTTPObservedForm(
       FakeFormFetcher* fetcher,
       SimulatedManagerAction manager_action,
@@ -973,7 +985,7 @@ class PasswordFormManagerTest : public testing::Test {
     }
 
     fetcher->Fetch();
-    fetcher->SetNonFederated(matches, 0u);
+    SetNonFederatedAndNotifyFetchCompleted(fetcher, matches);
 
     if (submit_result != SimulatedSubmitResult::NONE) {
       PasswordForm submitted_form(*observed_form());
@@ -1020,7 +1032,7 @@ class PasswordFormManagerFillOnAccountSelectTest
 
 // Test provisionally saving a new login.
 TEST_F(PasswordFormManagerTest, TestNewLogin) {
-  fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fake_form_fetcher()->NotifyFetchCompleted();
 
   // User submits credentials for the observed form.
   PasswordForm credentials = *observed_form();
@@ -1053,7 +1065,7 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
 
 // Test provisionally saving a new login in presence of other saved logins.
 TEST_F(PasswordFormManagerTest, TestAdditionalLogin) {
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
 
   base::string16 new_user = ASCIIToUTF16("newuser");
   base::string16 new_pass = ASCIIToUTF16("newpass");
@@ -1086,7 +1098,7 @@ TEST_F(PasswordFormManagerTest, TestAdditionalLogin) {
 TEST_F(PasswordFormManagerTest, TestBlacklist) {
   saved_match()->origin = observed_form()->origin;
   saved_match()->action = observed_form()->action;
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
 
   PasswordForm new_login = *observed_form();
   new_login.username_value = ASCIIToUTF16("newuser");
@@ -1118,16 +1130,6 @@ TEST_F(PasswordFormManagerTest, TestBlacklist) {
 // Test that stored blacklisted forms are correctly evaluated for whether they
 // apply to the observed form.
 TEST_F(PasswordFormManagerTest, TestBlacklistMatching) {
-  // Doesn't apply because it is just a PSL match of the observed form.
-  PasswordForm blacklisted_psl = *observed_form();
-  blacklisted_psl.signon_realm = "http://m.accounts.google.com";
-  blacklisted_psl.is_public_suffix_match = true;
-  blacklisted_psl.blacklisted_by_user = true;
-
-  // Doesn't apply because of different PasswordForm::Scheme.
-  PasswordForm blacklisted_not_match = *observed_form();
-  blacklisted_not_match.scheme = PasswordForm::SCHEME_BASIC;
-
   // Applies despite different element names and path.
   PasswordForm blacklisted_match = *observed_form();
   blacklisted_match.origin = GURL("http://accounts.google.com/a/LoginAuth1234");
@@ -1136,12 +1138,9 @@ TEST_F(PasswordFormManagerTest, TestBlacklistMatching) {
   blacklisted_match.submit_element = ASCIIToUTF16("Element3");
   blacklisted_match.blacklisted_by_user = true;
 
-  std::vector<const PasswordForm*> matches = {&blacklisted_psl,
-                                              &blacklisted_not_match,
-                                              &blacklisted_match,
-                                              saved_match()};
-  fake_form_fetcher()->SetNonFederated(matches, 0u);
-
+  fake_form_fetcher()->SetNonFederated({saved_match()});
+  fake_form_fetcher()->SetBlacklisted({&blacklisted_match});
+  fake_form_fetcher()->NotifyFetchCompleted();
   EXPECT_TRUE(form_manager()->IsBlacklisted());
   EXPECT_THAT(form_manager()->GetBlacklistedMatches(),
               ElementsAre(Pointee(blacklisted_match)));
@@ -1164,7 +1163,9 @@ TEST_F(PasswordFormManagerTest, AutofillBlacklisted) {
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
       .WillOnce(SaveArg<0>(&fill_data));
 
-  fake_form_fetcher()->SetNonFederated({&saved_form, &blacklisted}, 0u);
+  fake_form_fetcher()->SetNonFederated({&saved_form});
+  fake_form_fetcher()->SetBlacklisted({&blacklisted});
+  fake_form_fetcher()->NotifyFetchCompleted();
   EXPECT_EQ(1u, form_manager()->GetBlacklistedMatches().size());
   EXPECT_TRUE(form_manager()->IsBlacklisted());
   EXPECT_EQ(1u, form_manager()->GetBestMatches().size());
@@ -1178,7 +1179,7 @@ TEST_F(PasswordFormManagerTest, AutofillBlacklisted) {
 TEST_F(PasswordFormManagerTest,
        OverriddenPSLMatchedCredentialsNotMarkedAsPSLMatched) {
   // The suggestion needs to be PSL-matched.
-  fake_form_fetcher()->SetNonFederated({psl_saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({psl_saved_match()});
 
   // User modifies the suggested password and submits the form.
   PasswordForm credentials(*observed_form());
@@ -1196,7 +1197,7 @@ TEST_F(PasswordFormManagerTest,
 TEST_F(PasswordFormManagerTest, PSLMatchedCredentialsMetadataUpdated) {
   PasswordForm psl_suggestion = *saved_match();
   psl_suggestion.is_public_suffix_match = true;
-  fake_form_fetcher()->SetNonFederated({&psl_suggestion}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({&psl_suggestion});
 
   PasswordForm submitted_form(*observed_form());
   submitted_form.preferred = true;
@@ -1239,7 +1240,7 @@ TEST_F(PasswordFormManagerTest, TestNewLoginFromNewPasswordElement) {
                                    client()->driver(), *observed_form(),
                                    std::make_unique<MockFormSaver>(), &fetcher);
   form_manager.Init(nullptr);
-  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fetcher.NotifyFetchCompleted();
 
   // User enters current and new credentials to the observed form.
   PasswordForm credentials(*observed_form());
@@ -1272,7 +1273,7 @@ TEST_F(PasswordFormManagerTest, TestNewLoginFromNewPasswordElement) {
 }
 
 TEST_F(PasswordFormManagerTest, TestUpdatePassword) {
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
 
   // User submits credentials for the observed form using a username previously
   // stored, but a new password. Note that the observed form may have different
@@ -1313,7 +1314,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatePasswordFromNewPasswordElement) {
                                    client()->driver(), *observed_form(),
                                    std::make_unique<MockFormSaver>(), &fetcher);
   form_manager.Init(nullptr);
-  fetcher.SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted(&fetcher, {saved_match()});
 
   // User submits current and new credentials to the observed form.
   PasswordForm credentials(*observed_form());
@@ -1369,7 +1370,7 @@ TEST_F(PasswordFormManagerTest, TestIgnoreResult_Paths) {
   PasswordForm saved_form = observed;
   saved_form.origin = GURL("https://accounts.google.com/a/OtherLoginAuth");
   saved_form.action = GURL("https://accounts.google.com/a/OtherLogin");
-  fetcher.SetNonFederated({&saved_form}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted(&fetcher, {&saved_form});
 
   // Different paths for action / origin are okay.
   EXPECT_EQ(1u, form_manager.GetBestMatches().size());
@@ -1379,7 +1380,7 @@ TEST_F(PasswordFormManagerTest, TestIgnoreResult_Paths) {
 // Test that saved empty action URL is updated with the submitted action URL.
 TEST_F(PasswordFormManagerTest, TestEmptyAction) {
   saved_match()->action = GURL();
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
 
   // User logs in with the autofilled username / password from saved_match.
   PasswordForm login = *observed_form();
@@ -1395,7 +1396,7 @@ TEST_F(PasswordFormManagerTest, TestEmptyAction) {
 
 TEST_F(PasswordFormManagerTest, TestUpdateAction) {
   saved_match()->action = GURL("http://accounts.google.com/a/ServiceLogin");
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
 
   // User logs in with the autofilled username / password from saved_match.
   observed_form()->action = GURL("http://accounts.google.com/a/Login");
@@ -1413,7 +1414,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateAction) {
 }
 
 TEST_F(PasswordFormManagerTest, TestDynamicAction) {
-  fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fake_form_fetcher()->NotifyFetchCompleted();
 
   observed_form()->action = GURL("http://accounts.google.com/a/Login");
   PasswordForm login(*observed_form());
@@ -1438,7 +1439,7 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername_NoChange) {
       ValueElementPair(ASCIIToUTF16("other_possible@gmail.com"),
                        ASCIIToUTF16("other_username")));
 
-  fake_form_fetcher()->SetNonFederated({&saved_form}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({&saved_form});
 
   // The saved match has the right username already.
   PasswordForm login(*observed_form());
@@ -1468,7 +1469,7 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage_NoCredentials) {
   // credentials. AllowPasswordGenerationForForm should be called to send the
   // "not blacklisted" message.
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
-  fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fake_form_fetcher()->NotifyFetchCompleted();
 }
 
 TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage_Credentials) {
@@ -1477,7 +1478,7 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage_Credentials) {
   // should be called to send the "not blacklisted" message.
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
   PasswordForm simulated_result = CreateSavedMatch(false);
-  fake_form_fetcher()->SetNonFederated({&simulated_result}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({&simulated_result});
 }
 
 TEST_F(PasswordFormManagerTest,
@@ -1496,7 +1497,7 @@ TEST_F(PasswordFormManagerTest,
   form_manager.Init(nullptr);
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
   PasswordForm simulated_result = CreateSavedMatch(false);
-  fetcher.SetNonFederated({&simulated_result}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted(&fetcher, {&simulated_result});
 }
 
 // Test that exactly one match for each username is chosen as a best match, even
@@ -1532,10 +1533,9 @@ TEST_F(PasswordFormManagerTest, TestBestCredentialsForEachUsernameAreIncluded) {
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
       .WillOnce(SaveArg<0>(&fill_data));
 
-  fake_form_fetcher()->SetNonFederated(
-      {&best_scoring, &other_form, &other_username, &psl_match,
-       &psl_match_other},
-      0u);
+  SetNonFederatedAndNotifyFetchCompleted({&best_scoring, &other_form,
+                                          &other_username, &psl_match,
+                                          &psl_match_other});
 
   const std::map<base::string16, const PasswordForm*>& best_matches =
       form_manager()->GetBestMatches();
@@ -1555,7 +1555,7 @@ TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
   const ValueElementPair kUsernameOther(ASCIIToUTF16("other username"),
                                         ASCIIToUTF16("other_username_id"));
 
-  fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fake_form_fetcher()->NotifyFetchCompleted();
 
   PasswordForm credentials(*observed_form());
   credentials.other_possible_usernames.push_back(
@@ -1588,7 +1588,7 @@ TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernamesDuplicates) {
   const ValueElementPair kUsernameRandom(ASCIIToUTF16("random"),
                                          ASCIIToUTF16("random_id"));
 
-  fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fake_form_fetcher()->NotifyFetchCompleted();
 
   PasswordForm credentials(*observed_form());
   credentials.other_possible_usernames.push_back(kUsernameSsn);
@@ -1613,7 +1613,7 @@ TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernamesDuplicates) {
 }
 
 TEST_F(PasswordFormManagerTest, TestAllPossiblePasswords) {
-  fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fake_form_fetcher()->NotifyFetchCompleted();
 
   ValueElementPair pair1 = {ASCIIToUTF16("pass1"), ASCIIToUTF16("el1")};
   ValueElementPair pair2 = {ASCIIToUTF16("pass2"), ASCIIToUTF16("el2")};
@@ -1651,7 +1651,7 @@ TEST_F(PasswordFormManagerTest, TestScoringPublicSuffixMatch) {
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
       .WillOnce(SaveArg<0>(&fill_data));
 
-  fake_form_fetcher()->SetNonFederated({&psl_match, &same_origin_match}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({&psl_match, &same_origin_match});
   EXPECT_TRUE(fill_data.additional_logins.empty());
   EXPECT_EQ(1u, form_manager()->GetBestMatches().size());
   EXPECT_FALSE(
@@ -1677,7 +1677,7 @@ TEST_F(PasswordFormManagerTest, AndroidCredentialsAreAutofilled) {
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
       .WillOnce(SaveArg<0>(&fill_data));
 
-  fake_form_fetcher()->SetNonFederated({&android_login}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({&android_login});
   EXPECT_TRUE(fill_data.additional_logins.empty());
   EXPECT_FALSE(fill_data.wait_for_username);
   EXPECT_EQ(1u, form_manager()->GetBestMatches().size());
@@ -1743,8 +1743,8 @@ TEST_F(PasswordFormManagerTest, AndroidCredentialsAreProtected) {
   autofill::PasswordFormFillData fill_data;
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
       .WillOnce(SaveArg<0>(&fill_data));
-  fake_form_fetcher()->SetNonFederated(
-      {&website_login, &android_same, &android_other}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted(
+      {&website_login, &android_same, &android_other});
 
   EXPECT_FALSE(fill_data.wait_for_username);
   EXPECT_EQ(1u, fill_data.additional_logins.size());
@@ -1928,7 +1928,7 @@ TEST_F(PasswordFormManagerTest, CorrectlyUpdatePasswordsWithSameUsername) {
   third.password_value = ASCIIToUTF16("second");
   third.preferred = false;
 
-  fake_form_fetcher()->SetNonFederated({&first, &second, &third}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({&first, &second, &third});
 
   // |first| scored slightly higher.
   EXPECT_EQ(ASCIIToUTF16("first"),
@@ -1973,7 +1973,7 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
       password_manager(), client(), client()->driver(), *saved_match(),
       std::make_unique<NiceMock<MockFormSaver>>(), &fetcher);
   form_manager.Init(nullptr);
-  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fetcher.NotifyFetchCompleted();
 
   PasswordForm form_to_save(*saved_match());
   form_to_save.preferred = true;
@@ -1997,7 +1997,7 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword_Blacklist) {
       password_manager(), client(), client()->driver(), *saved_match(),
       std::make_unique<NiceMock<MockFormSaver>>(), &fetcher);
   blacklist_form_manager.Init(nullptr);
-  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fetcher.NotifyFetchCompleted();
 
   autofill::ServerFieldTypeSet expected_available_field_types;
   expected_available_field_types.insert(autofill::USERNAME);
@@ -2050,7 +2050,7 @@ TEST_F(PasswordFormManagerTest, UploadPasswordForm) {
 TEST_F(PasswordFormManagerTest, CorrectlySavePasswordWithoutUsernameFields) {
   EXPECT_CALL(*client()->mock_driver(), AllowPasswordGenerationForForm(_));
 
-  fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fake_form_fetcher()->NotifyFetchCompleted();
 
   PasswordForm login(*observed_form());
   login.username_element.clear();
@@ -2098,7 +2098,7 @@ TEST_F(PasswordFormManagerTest, DriverDeletedBeforeStoreDone) {
   // Suddenly, the frame and its driver disappear.
   client()->KillDriver();
 
-  fetcher.SetNonFederated({&form}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({&form});
 }
 
 TEST_F(PasswordFormManagerTest, PreferredMatchIsUpToDate) {
@@ -2113,7 +2113,7 @@ TEST_F(PasswordFormManagerTest, PreferredMatchIsUpToDate) {
   generated_form.password_value = ASCIIToUTF16("password2");
   generated_form.preferred = true;
 
-  fake_form_fetcher()->SetNonFederated({&form, &generated_form}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({&form, &generated_form});
 
   EXPECT_EQ(1u, form_manager()->GetBestMatches().size());
   EXPECT_EQ(form_manager()->preferred_match(),
@@ -2182,7 +2182,7 @@ TEST_F(PasswordFormManagerTest, TestSuggestingPasswordChangeForms) {
       .WillOnce(SaveArg<0>(&fill_data));
 
   PasswordForm result = CreateSavedMatch(false);
-  fetcher.SetNonFederated({&result}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted(&fetcher, {&result});
   EXPECT_EQ(1u, manager_creds.GetBestMatches().size());
   EXPECT_EQ(0u, fill_data.additional_logins.size());
   EXPECT_TRUE(fill_data.wait_for_username);
@@ -2204,7 +2204,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateMethod) {
                                    client()->driver(), *observed_form(),
                                    std::make_unique<MockFormSaver>(), &fetcher);
   form_manager.Init(nullptr);
-  fetcher.SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted(&fetcher, {saved_match()});
 
   // User submits current and new credentials to the observed form.
   PasswordForm credentials(*observed_form());
@@ -2258,7 +2258,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateNoUsernameTextfieldPresent) {
                                    client()->driver(), *observed_form(),
                                    std::make_unique<MockFormSaver>(), &fetcher);
   form_manager.Init(nullptr);
-  fetcher.SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted(&fetcher, {saved_match()});
 
   // User submits current and new credentials to the observed form.
   PasswordForm credentials(*observed_form());
@@ -2324,8 +2324,7 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_ValueOfAnotherField) {
         password_manager(), client(), client()->driver(), observed,
         std::make_unique<NiceMock<MockFormSaver>>(), fake_form_fetcher());
     form_manager.Init(nullptr);
-    fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(),
-                                         0u);
+    fake_form_fetcher()->NotifyFetchCompleted();
 
     // User enters credential in the form.
     PasswordForm credential(observed);
@@ -2392,7 +2391,7 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_ValueSavedInStore) {
     SCOPED_TRACE(testing::Message() << "captured_username_is_empty="
                                     << captured_username_is_empty);
     // We have an already existing credential.
-    fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+    SetNonFederatedAndNotifyFetchCompleted({saved_match()});
 
     // User enters credential in the form.
     PasswordForm credential(*observed_form());
@@ -2462,7 +2461,7 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_NoMatchNeitherOnFormNorInStore) {
         std::make_unique<NiceMock<MockFormSaver>>(), fake_form_fetcher());
     form_manager.Init(nullptr);
     // We have an already existing credential.
-    fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+    SetNonFederatedAndNotifyFetchCompleted({saved_match()});
 
     // A user enters a credential in the form.
     PasswordForm credential(observed);
@@ -2522,7 +2521,7 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_UserRemovedUsername) {
       password_manager(), client(), client()->driver(), observed,
       std::make_unique<NiceMock<MockFormSaver>>(), fake_form_fetcher());
   form_manager.Init(nullptr);
-  fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fake_form_fetcher()->NotifyFetchCompleted();
 
   // The user enters credential in the form.
   PasswordForm credential(observed);
@@ -2560,7 +2559,7 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_UserRemovedUsername) {
 // Test that when user updates username to a PSL matching credential, we should
 // handle it as a new login.
 TEST_F(PasswordFormManagerTest, UpdateUsername_PslMatch) {
-  fake_form_fetcher()->SetNonFederated({psl_saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({psl_saved_match()});
   // The user submits a credential of the observed form.
   PasswordForm credential(*observed_form());
   credential.username_value = ASCIIToUTF16("some_username");
@@ -2620,8 +2619,7 @@ TEST_F(PasswordFormManagerTest, TestSelectPasswordMethod) {
             password_manager(), client(), client()->driver(), observed,
             std::make_unique<NiceMock<MockFormSaver>>(), fake_form_fetcher());
         form_manager.Init(nullptr);
-        fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(),
-                                             0u);
+        fake_form_fetcher()->NotifyFetchCompleted();
 
         // User enters credential in the form. We autodetect the wrong password
         // field.
@@ -2697,7 +2695,7 @@ TEST_F(PasswordFormManagerTest, GenerationStatusChangedWithPassword) {
   PasswordForm submitted_form(generated_form);
   submitted_form.password_value = ASCIIToUTF16("password3");
 
-  fake_form_fetcher()->SetNonFederated({&generated_form}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({&generated_form});
 
   form_manager()->ProvisionallySave(submitted_form);
 
@@ -2720,7 +2718,7 @@ TEST_F(PasswordFormManagerTest, GenerationStatusNotUpdatedIfPasswordUnchanged) {
 
   PasswordForm submitted_form(generated_form);
 
-  fake_form_fetcher()->SetNonFederated({&generated_form}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({&generated_form});
 
   form_manager()->ProvisionallySave(submitted_form);
 
@@ -2735,7 +2733,7 @@ TEST_F(PasswordFormManagerTest, GenerationStatusNotUpdatedIfPasswordUnchanged) {
 
   // On the second reuse, the metric is not reported.
   generated_form.times_used = 1;
-  fake_form_fetcher()->SetNonFederated({&generated_form}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({&generated_form});
   form_manager()->ProvisionallySave(submitted_form);
   EXPECT_CALL(MockFormSaver::Get(form_manager()), Update(_, _, _, _));
   form_manager()->Save();
@@ -2755,7 +2753,7 @@ TEST_F(PasswordFormManagerTest, GeneratedPasswordIsOverridden) {
   PasswordForm submitted_form(generated_form);
   submitted_form.password_value = ASCIIToUTF16("another_password");
 
-  fake_form_fetcher()->SetNonFederated({&generated_form}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({&generated_form});
 
   form_manager()->ProvisionallySave(submitted_form);
 
@@ -2770,7 +2768,7 @@ TEST_F(PasswordFormManagerTest, GeneratedPasswordIsOverridden) {
                                      metrics_util::PASSWORD_OVERRIDDEN, 1);
 
   // On the reuse of the overriden password, the metric is not reported.
-  fake_form_fetcher()->SetNonFederated({&new_credentials}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({&new_credentials});
   form_manager()->ProvisionallySave(new_credentials);
   EXPECT_CALL(MockFormSaver::Get(form_manager()), Update(_, _, _, _));
   form_manager()->Save();
@@ -2784,20 +2782,20 @@ TEST_F(PasswordFormManagerTest, GeneratedPasswordIsOverridden) {
 // resulting in a FillPasswordForm call.
 TEST_F(PasswordFormManagerTest, ProcessFrame) {
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_));
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
 }
 
 // Test that driver is informed when there are not saved credentials.
 TEST_F(PasswordFormManagerTest, InformNoSavedCredentials) {
   EXPECT_CALL(*client()->mock_driver(), InformNoSavedCredentials());
-  fake_form_fetcher()->SetNonFederated({}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({});
 }
 
 // Test that ProcessFrame can also be called directly, resulting in an
 // additional FillPasswordForm call.
 TEST_F(PasswordFormManagerTest, ProcessFrame_MoreProcessFrameMoreFill) {
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_)).Times(2);
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
   form_manager()->ProcessFrame(client()->mock_driver()->AsWeakPtr());
 }
 
@@ -2808,7 +2806,7 @@ TEST_F(PasswordFormManagerTest, ProcessFrame_MaxTimes) {
   // Expect one call for each ProcessFrame() and one for SetNonFederated().
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
       .Times(kMaxAutofills + 1);
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
   // Process more times to exceed the limit.
   for (int i = 0; i < kMaxAutofills + kExtraProcessRequests; i++) {
     form_manager()->ProcessFrame(client()->mock_driver()->AsWeakPtr());
@@ -2822,7 +2820,7 @@ TEST_F(PasswordFormManagerTest, ProcessFrame_TwoDrivers) {
 
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_));
   EXPECT_CALL(second_driver, FillPasswordForm(_));
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
   form_manager()->ProcessFrame(second_driver.AsWeakPtr());
 }
 
@@ -2834,7 +2832,7 @@ TEST_F(PasswordFormManagerTest, ProcessFrame_DriverBeforeMatching) {
 
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_));
   EXPECT_CALL(second_driver, FillPasswordForm(_));
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
 }
 
 // Test that if the fetcher updates the information about stored matches,
@@ -2842,9 +2840,9 @@ TEST_F(PasswordFormManagerTest, ProcessFrame_DriverBeforeMatching) {
 TEST_F(PasswordFormManagerTest, ProcessFrame_StoreUpdatesCausesAutofill) {
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_)).Times(2);
   std::vector<const PasswordForm*> matches = {saved_match()};
-  fake_form_fetcher()->SetNonFederated(matches, 0u);
+  SetNonFederatedAndNotifyFetchCompleted(matches);
   fake_form_fetcher()->Fetch();
-  fake_form_fetcher()->SetNonFederated(matches, 0u);
+  SetNonFederatedAndNotifyFetchCompleted(matches);
 }
 
 // TODO(crbug.com/639786): Restore the following test:
@@ -2869,7 +2867,8 @@ TEST_F(PasswordFormManagerTest, TestUpdatePSLMatchedCredentials) {
                                    client()->driver(), *observed_form(),
                                    std::make_unique<MockFormSaver>(), &fetcher);
   form_manager.Init(nullptr);
-  fetcher.SetNonFederated({saved_match(), psl_saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted(&fetcher,
+                                         {saved_match(), psl_saved_match()});
 
   // User submits a credentials with an old username and a new password.
   PasswordForm credentials(*observed_form());
@@ -2922,7 +2921,8 @@ TEST_F(PasswordFormManagerTest,
                                    std::make_unique<MockFormSaver>(), &fetcher);
   form_manager.Init(nullptr);
   psl_saved_match()->username_value += ASCIIToUTF16("1");
-  fetcher.SetNonFederated({saved_match(), psl_saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted(&fetcher,
+                                         {saved_match(), psl_saved_match()});
 
   // User submits a credentials with an old username and a new password.
   PasswordForm credentials(*observed_form());
@@ -2963,7 +2963,8 @@ TEST_F(PasswordFormManagerTest,
                                    std::make_unique<MockFormSaver>(), &fetcher);
   form_manager.Init(nullptr);
   psl_saved_match()->password_value += ASCIIToUTF16("1");
-  fetcher.SetNonFederated({saved_match(), psl_saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted(&fetcher,
+                                         {saved_match(), psl_saved_match()});
 
   // User submits a credentials with an old username and a new password.
   PasswordForm credentials(*observed_form());
@@ -3002,7 +3003,7 @@ TEST_F(PasswordFormManagerTest, TestNotUpdateWhenOnlyPslMatched) {
                                    client()->driver(), *observed_form(),
                                    std::make_unique<MockFormSaver>(), &fetcher);
   form_manager.Init(nullptr);
-  fetcher.SetNonFederated({psl_saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted(&fetcher, {psl_saved_match()});
 
   // User submits a credentials with an old username and a new password.
   PasswordForm credentials(*observed_form());
@@ -3033,7 +3034,7 @@ TEST_F(PasswordFormManagerTest, TestNotUpdateWhenOnlyPslMatched) {
 
 TEST_F(PasswordFormManagerTest,
        TestSavingOnChangePasswordFormGenerationNoStoredForms) {
-  fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fake_form_fetcher()->NotifyFetchCompleted();
 
   // User submits change password form and there is no stored credentials.
   PasswordForm credentials = *observed_form();
@@ -3068,7 +3069,7 @@ TEST_F(PasswordFormManagerTest,
 }
 
 TEST_F(PasswordFormManagerTest, TestUpdatingOnChangePasswordFormGeneration) {
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
 
   // User submits credentials for the change password form, and old password is
   // coincide with password from an existing credentials, so stored credentials
@@ -3104,7 +3105,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatingOnChangePasswordFormGeneration) {
 
 TEST_F(PasswordFormManagerTest,
        TestSavingOnChangePasswordFormGenerationNoMatchedForms) {
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
 
   // User submits credentials for the change password form, and old password is
   // not coincide with password from existing credentials, so new credentials
@@ -3161,7 +3162,7 @@ TEST_F(PasswordFormManagerTest,
                                    client()->driver(), *observed_form(),
                                    std::make_unique<MockFormSaver>(), &fetcher);
   form_manager.Init(nullptr);
-  fetcher.SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted(&fetcher, {saved_match()});
 
   // User submits current and new credentials to the observed form.
   PasswordForm submitted_form(*observed_form());
@@ -3300,7 +3301,7 @@ TEST_F(PasswordFormManagerTest, FieldPropertiesMasksUpload) {
       password_manager(), client(), client()->driver(), form,
       std::make_unique<NiceMock<MockFormSaver>>(), &fetcher);
   form_manager.Init(nullptr);
-  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fetcher.NotifyFetchCompleted();
 
   DCHECK_EQ(3U, form.form_data.fields.size());
   submitted_form.form_data.fields[1].properties_mask =
@@ -3335,7 +3336,7 @@ TEST_F(PasswordFormManagerTest, TestSavingAPIFormsWithSamePassword) {
                                    client()->driver(), *observed_form(),
                                    std::make_unique<MockFormSaver>(), &fetcher);
   form_manager.Init(nullptr);
-  fetcher.SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted(&fetcher, {saved_match()});
 
   // User submits new credentials with the same password as in already saved
   // one.
@@ -3365,7 +3366,7 @@ TEST_F(PasswordFormManagerTest, TestSavingAPIFormsWithSamePassword) {
 TEST_F(PasswordFormManagerTest, SkipZeroClickIntact) {
   saved_match()->skip_zero_click = true;
   psl_saved_match()->skip_zero_click = true;
-  fake_form_fetcher()->SetNonFederated({saved_match(), psl_saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match(), psl_saved_match()});
   EXPECT_EQ(1u, form_manager()->GetBestMatches().size());
 
   // User submits a credentials with an old username and a new password.
@@ -3393,14 +3394,14 @@ TEST_F(PasswordFormManagerTest, SkipZeroClickIntact) {
 TEST_F(PasswordFormManagerFillOnAccountSelectTest, ProcessFrame) {
   EXPECT_CALL(*client()->mock_driver(),
               ShowInitialPasswordAccountSuggestions(_));
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
 }
 
 // Check that PasswordFormManager records
 // PasswordManager_LoginFollowingAutofill as part of processing a credential
 // update.
 TEST_F(PasswordFormManagerTest, ReportProcessingUpdate) {
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
   PasswordForm pending = *observed_form();
   pending.username_value = saved_match()->username_value;
   pending.password_value = saved_match()->password_value;
@@ -3416,13 +3417,13 @@ TEST_F(PasswordFormManagerTest, ReportProcessingUpdate) {
   EXPECT_EQ(1, tester.GetActionCount("PasswordManager_LoginFollowingAutofill"));
 }
 
-// Sanity check for calling ProcessMatches with empty vector. Should not crash
-// or make sanitizers scream.
+// Sanity check for calling OnFetchCompleted with empty vector. Should not
+// crash or make sanitizers scream.
 TEST_F(PasswordFormManagerTest, ProcessMatches_Empty) {
-  fake_form_fetcher()->SetNonFederated({}, 0u);
+  fake_form_fetcher()->NotifyFetchCompleted();
 }
 
-// For all combinations of PasswordForm schemes, test that ProcessMatches
+// For all combinations of PasswordForm schemes, test that OnFetchCompleted
 // filters out forms with schemes not matching the observed form.
 TEST_F(PasswordFormManagerTest, RemoveResultsWithWrongScheme_ObservingHTML) {
   for (int correct = 0; correct <= PasswordForm::SCHEME_LAST; ++correct) {
@@ -3455,14 +3456,14 @@ TEST_F(PasswordFormManagerTest, RemoveResultsWithWrongScheme_ObservingHTML) {
       non_match.scheme = kWrongScheme;
 
       // First try putting the correct scheme first in returned matches.
-      fetcher.SetNonFederated({&match, &non_match}, 0);
+      SetNonFederatedAndNotifyFetchCompleted(&fetcher, {&match, &non_match});
 
       EXPECT_EQ(1u, form_manager.GetBestMatches().size());
       EXPECT_EQ(kCorrectScheme,
                 form_manager.GetBestMatches().begin()->second->scheme);
 
       // Now try putting the correct scheme last in returned matches.
-      fetcher.SetNonFederated({&non_match, &match}, 0);
+      SetNonFederatedAndNotifyFetchCompleted(&fetcher, {&non_match, &match});
 
       EXPECT_EQ(1u, form_manager.GetBestMatches().size());
       EXPECT_EQ(kCorrectScheme,
@@ -3534,7 +3535,7 @@ TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
       form_manager.Init(nullptr);
 
       base::HistogramTester histogram_tester;
-      fake_form_fetcher()->SetNonFederated({saved_credential}, 0u);
+      SetNonFederatedAndNotifyFetchCompleted({saved_credential});
       form_manager.ProvisionallySave(new_login);
       histogram_tester.ExpectUniqueSample(
           "PasswordManager.UsernameCorrectionFound", 1, 1);
@@ -3588,7 +3589,7 @@ TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
 }
 
 TEST_F(PasswordFormManagerTest, NoUsernameCorrectionVote) {
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
   PasswordForm new_login = *observed_form();
   // The username is from |saved_match_.other_possible_usernames|, but the
   // password is different. So, no username correction found.
@@ -3623,7 +3624,7 @@ TEST_F(PasswordFormManagerTest,
 
     saved_match()->other_possible_usernames.push_back(
         ValueElementPair(base::string16(), ASCIIToUTF16("empty_field")));
-    fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+    SetNonFederatedAndNotifyFetchCompleted({saved_match()});
 
     // A user enters the password in the form. The username is absent or not
     // captured, but the user doesn't enter the username in a prompt.
@@ -3675,7 +3676,9 @@ TEST_F(PasswordFormManagerTest, ResetStoredMatches) {
   blacklisted.username_value.clear();
 
   fake_form_fetcher()->SetNonFederated(
-      {&best_match1, &best_match2, &non_best_match, &blacklisted}, 0u);
+      {&best_match1, &best_match2, &non_best_match});
+  fake_form_fetcher()->SetBlacklisted({&blacklisted});
+  fake_form_fetcher()->NotifyFetchCompleted();
 
   EXPECT_EQ(2u, form_manager()->GetBestMatches().size());
   EXPECT_TRUE(form_manager()->preferred_match());
@@ -3703,7 +3706,7 @@ TEST_F(PasswordFormManagerTest, ResetStoredMatches) {
   // Simulate updating a saved credential again, but this time without non-best
   // matches. Verify that the old non-best matches are no longer present.
   fake_form_fetcher()->Fetch();
-  fake_form_fetcher()->SetNonFederated({&best_match1}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({&best_match1});
 
   form_manager()->ProvisionallySave(updated);
   credentials_to_update.clear();
@@ -3757,7 +3760,7 @@ TEST_F(PasswordFormManagerTest, GrabFetcher_Different) {
   PasswordForm old_match = *observed_form();
   old_match.username_value = ASCIIToUTF16("user1");
   old_match.password_value = ASCIIToUTF16("pass");
-  fake_form_fetcher()->SetNonFederated({&old_match}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({&old_match});
   EXPECT_EQ(1u, form_manager()->GetBestMatches().size());
   EXPECT_EQ(&old_match, form_manager()->GetBestMatches().begin()->second);
 
@@ -3765,7 +3768,7 @@ TEST_F(PasswordFormManagerTest, GrabFetcher_Different) {
   // different from |fetcher| below.
   auto fetcher = std::make_unique<MockFormFetcher>();
   fetcher->Fetch();
-  fetcher->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fetcher->NotifyFetchCompleted();
   EXPECT_CALL(*fetcher, AddConsumer(form_manager()));
   form_manager()->GrabFetcher(std::move(fetcher));
 
@@ -3802,7 +3805,7 @@ TEST_F(PasswordFormManagerTest,
           password_manager(), client(), client()->driver(), *observed_form(),
           std::make_unique<NiceMock<MockFormSaver>>(), fake_form_fetcher());
   form_manager->Init(nullptr);
-  fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fake_form_fetcher()->NotifyFetchCompleted();
   form_manager.reset();
 
   histogram_tester.ExpectUniqueSample(
@@ -4020,7 +4023,7 @@ TEST_F(PasswordFormManagerTest, SuppressedHTTPSFormsHistogram_NotRecordedFor) {
           password_manager(), client(), client()->driver(), https_observed_form,
           std::make_unique<NiceMock<MockFormSaver>>(), &fetcher);
   form_manager->Init(nullptr);
-  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fetcher.NotifyFetchCompleted();
   form_manager.reset();
 
   histogram_tester.ExpectUniqueSample(
@@ -4046,7 +4049,7 @@ TEST_F(PasswordFormManagerTest, Clone_OnSave) {
       password_manager(), client(), client()->driver(), *observed_form(),
       std::make_unique<MockFormSaver>(), &fetcher);
   form_manager->Init(nullptr);
-  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fetcher.NotifyFetchCompleted();
 
   PasswordForm saved_login = *observed_form();
   saved_login.username_value = ASCIIToUTF16("newuser");
@@ -4074,7 +4077,7 @@ TEST_F(PasswordFormManagerTest, Clone_OnNeverClicked) {
       password_manager(), client(), client()->driver(), *observed_form(),
       std::make_unique<MockFormSaver>(), &fetcher);
   form_manager->Init(nullptr);
-  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fetcher.NotifyFetchCompleted();
 
   PasswordForm saved_login = *observed_form();
   saved_login.username_value = ASCIIToUTF16("newuser");
@@ -4095,7 +4098,7 @@ TEST_F(PasswordFormManagerTest, Clone_SurvivesOriginal) {
   auto form_manager = std::make_unique<PasswordFormManager>(
       password_manager(), client(), client()->driver(), *observed_form(),
       std::make_unique<MockFormSaver>(), &fetcher);
-  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fetcher.NotifyFetchCompleted();
   form_manager->Init(nullptr);
 
   PasswordForm saved_login = *observed_form();
@@ -4162,7 +4165,7 @@ TEST_F(PasswordFormManagerTest, TestUkmForFilling) {
           test.is_http_basic_auth ? nullptr : client()->driver(), form_to_fill,
           std::make_unique<NiceMock<MockFormSaver>>(), &fetcher);
       form_manager.Init(metrics_recorder);
-      fetcher.SetNonFederated(fetched_forms, 0u);
+      SetNonFederatedAndNotifyFetchCompleted(&fetcher, fetched_forms);
     }
 
     auto entries = test_ukm_recorder.GetEntriesByName(
@@ -4230,7 +4233,8 @@ TEST_F(PasswordFormManagerTest,
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
       .Times(0);
   PasswordForm simulated_result = CreateSavedMatch(true);
-  fake_form_fetcher()->SetNonFederated({&simulated_result}, 0u);
+  fake_form_fetcher()->SetBlacklisted({&simulated_result});
+  fake_form_fetcher()->NotifyFetchCompleted();
 }
 
 TEST_F(PasswordFormManagerTest, FirstLoginVote) {
@@ -4253,7 +4257,7 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote) {
     SCOPED_TRACE(testing::Message()
                  << "Stored credentials: " << test_case.description);
 
-    fake_form_fetcher()->SetNonFederated(test_case.stored_creds, 0u);
+    SetNonFederatedAndNotifyFetchCompleted(test_case.stored_creds);
 
     PasswordForm submitted_form =
         CreateMinimalCrowdsourcableForm(*observed_form());
@@ -4334,7 +4338,7 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote_NoVote) {
     SCOPED_TRACE(testing::Message()
                  << "Stored credentials: " << test_case.description);
 
-    fake_form_fetcher()->SetNonFederated(test_case.stored_creds, 0u);
+    SetNonFederatedAndNotifyFetchCompleted(test_case.stored_creds);
 
     // User submits credentials for the observed form.
     PasswordForm submitted_form =
@@ -4365,7 +4369,7 @@ TEST_F(PasswordFormManagerTest,
        FirstLoginVote_UpdatePasswordVotesOnlyForUsername) {
   PasswordForm different_password(*saved_match());
   different_password.password_value = ASCIIToUTF16("DifferentPassword");
-  fake_form_fetcher()->SetNonFederated({&different_password}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({&different_password});
 
   PasswordForm submitted_form =
       CreateMinimalCrowdsourcableForm(*observed_form());
@@ -4420,8 +4424,8 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote_MatchOnlySubmittedCredentials) {
   PasswordForm alternative_credential = *saved_match();
   alternative_credential.username_value = ASCIIToUTF16("flatmate");
   alternative_credential.password_value = ASCIIToUTF16("p@ssword");
-  fake_form_fetcher()->SetNonFederated({&alternative_credential, saved_match()},
-                                       0u);
+  SetNonFederatedAndNotifyFetchCompleted(
+      {&alternative_credential, saved_match()});
 
   // User submits credentials for the observed form.
   PasswordForm submitted_form =
@@ -4483,7 +4487,7 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote_NoUsernameSaved) {
   // We have a credential without a username saved.
   saved_match()->username_element.clear();
   saved_match()->username_value.clear();
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
 
   // User submits credentials for the observed form.
   PasswordForm submitted_form =
@@ -4543,7 +4547,7 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote_NoUsernameSaved) {
 // Upload a first login (i.e. first use) vote when the form has no username
 // field.
 TEST_F(PasswordFormManagerTest, FirstLoginVote_NoUsernameSubmitted) {
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
 
   // User submits credentials for the observed form.
   PasswordForm submitted_form = *observed_form();
@@ -4608,7 +4612,7 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote_NoUsernameSubmitted) {
 
 // All fields with a known value should have the KNOWN_VALUE flag.
 TEST_F(PasswordFormManagerTest, FirstLoginVote_KnownValue) {
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
 
   autofill::FormFieldData field;
   field.name = ASCIIToUTF16("email");
@@ -4732,7 +4736,7 @@ TEST_F(PasswordFormManagerTest, UploadPasswordAttributesVote) {
       password_manager(), client(), client()->driver(), credentials,
       std::make_unique<NiceMock<MockFormSaver>>(), &fetcher);
   form_manager.Init(nullptr);
-  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  fetcher.NotifyFetchCompleted();
 
   credentials.username_value = saved_match()->username_value;
   credentials.password_value = ASCIIToUTF16("12345");
@@ -4748,7 +4752,7 @@ TEST_F(PasswordFormManagerTest, UploadPasswordAttributesVote) {
 TEST_F(PasswordFormManagerTest, PresaveGeneratedPassword_UnknownUsername) {
   // Checks whether the generated password is presaved with the captured
   // username. The username is new, so there will be no credentail override.
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted({saved_match()});
   PasswordForm credentials = *observed_form();
   credentials.username_value = ASCIIToUTF16("new_user");
   credentials.password_value = ASCIIToUTF16("generatated_password");
@@ -4763,8 +4767,8 @@ TEST_F(PasswordFormManagerTest, PresaveGeneratedPassword_KnownUsername) {
   // there is already an entry with the captured username in the store.
   PasswordForm saved_form_without_username(*saved_match());
   saved_form_without_username.username_value.clear();
-  fake_form_fetcher()->SetNonFederated(
-      {saved_match(), &saved_form_without_username}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted(
+      {saved_match(), &saved_form_without_username});
   PasswordForm credentials = *observed_form();
   credentials.username_value = saved_match()->username_value;
   credentials.password_value = ASCIIToUTF16("generatated_password");
@@ -4781,8 +4785,8 @@ TEST_F(PasswordFormManagerTest, PresaveGeneratedPassword_EmptyUsername) {
   // username is empty.
   PasswordForm saved_form_without_username(*saved_match());
   saved_form_without_username.username_value.clear();
-  fake_form_fetcher()->SetNonFederated(
-      {saved_match(), &saved_form_without_username}, 0u);
+  SetNonFederatedAndNotifyFetchCompleted(
+      {saved_match(), &saved_form_without_username});
   PasswordForm credentials = *observed_form();
   credentials.username_value.clear();
   credentials.password_value = ASCIIToUTF16("generatated_password");
@@ -4796,8 +4800,7 @@ TEST_F(PasswordFormManagerTest, MetricForManuallyTypedAndGeneratedPasswords) {
   for (bool is_generated_password : {false, true}) {
     SCOPED_TRACE(testing::Message("is_generated_password = ")
                  << is_generated_password);
-    fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(),
-                                         0u);
+    fake_form_fetcher()->NotifyFetchCompleted();
 
     PasswordForm credentials(*observed_form());
     credentials.username_value = ASCIIToUTF16("test@gmail.com");
@@ -4889,8 +4892,8 @@ TEST_F(PasswordFormManagerTest, ProvisionallySaveUpdatesUserAction) {
   PasswordForm psl_match = *psl_saved_match();
   psl_match.username_value = ASCIIToUTF16("psl_match_username");
 
-  fake_form_fetcher()->SetNonFederated(
-      {&preferred_match, &other_match, &psl_match}, 0);
+  SetNonFederatedAndNotifyFetchCompleted(
+      {&preferred_match, &other_match, &psl_match});
 
   // Verify that provisionally saving the |preferred_match| results in the
   // correct user action.
@@ -4938,8 +4941,8 @@ TEST_F(PasswordFormManagerTest, ProvisionallySaveUpdatesUserAction) {
   // account select results in the corresponding user action. Fill on account
   // select is simulated by pretending we are in incognito mode.
   EXPECT_CALL(*client(), IsIncognito).WillOnce(Return(true));
-  fake_form_fetcher()->SetNonFederated(
-      {&preferred_match, &other_match, &psl_match}, 0);
+  SetNonFederatedAndNotifyFetchCompleted(
+      {&preferred_match, &other_match, &psl_match});
 
   form_manager()->ProvisionallySave(preferred_match);
   EXPECT_EQ(UserAction::kChoose,

@@ -484,9 +484,7 @@ void PasswordFormManager::SaveSubmittedFormTypeForMetrics(
   metrics_recorder_->SetSubmittedFormType(type);
 }
 
-void PasswordFormManager::ProcessMatches(
-    const std::vector<const PasswordForm*>& non_federated,
-    size_t filtered_count) {
+void PasswordFormManager::OnFetchCompleted() {
   blacklisted_matches_.clear();
   new_blacklisted_.reset();
 
@@ -494,29 +492,27 @@ void PasswordFormManager::ProcessMatches(
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
-    logger->LogMessage(Logger::STRING_PROCESS_MATCHES_METHOD);
+    logger->LogMessage(Logger::STRING_ON_FETCH_COMPLETED_METHOD);
   }
 
   // Copy out and score non-blacklisted matches.
   std::vector<const PasswordForm*> matches;
-  std::copy_if(non_federated.begin(), non_federated.end(),
-               std::back_inserter(matches),
-               [this](const PasswordForm* form) { return IsMatch(*form); });
+  for (const auto* match : form_fetcher_->GetNonFederatedMatches()) {
+    if (match->scheme == observed_form_.scheme)
+      matches.push_back(match);
+  }
 
   password_manager_util::FindBestMatches(std::move(matches), &best_matches_,
                                          &not_best_matches_, &preferred_match_);
 
   // Copy out blacklisted matches.
-  blacklisted_matches_.clear();
-  std::copy_if(
-      non_federated.begin(), non_federated.end(),
-      std::back_inserter(blacklisted_matches_), [](const PasswordForm* form) {
-        return form->blacklisted_by_user && !form->is_public_suffix_match;
-      });
+  blacklisted_matches_ = form_fetcher_->GetBlacklistedMatches();
 
-  UMA_HISTOGRAM_COUNTS_1M(
-      "PasswordManager.NumPasswordsNotShown",
-      non_federated.size() + filtered_count - best_matches_.size());
+  UMA_HISTOGRAM_COUNTS_1M("PasswordManager.NumPasswordsNotShown",
+                          form_fetcher_->GetNonFederatedMatches().size() +
+                              form_fetcher_->GetFederatedMatches().size() +
+                              form_fetcher_->GetBlacklistedMatches().size() -
+                              best_matches_.size());
 
   // If password store was slow and provisionally saved form is already here
   // then create pending credentials (see http://crbug.com/470322).
@@ -760,10 +756,6 @@ void PasswordFormManager::CreatePendingCredentials() {
     pending_credentials_.type = PasswordForm::TYPE_GENERATED;
 }
 
-bool PasswordFormManager::IsMatch(const autofill::PasswordForm& form) const {
-  return !form.blacklisted_by_user && form.scheme == observed_form_.scheme;
-}
-
 const PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
     const base::string16& password) const {
   // This function is called for forms that do not contain a username field.
@@ -1002,7 +994,8 @@ std::unique_ptr<PasswordFormManager> PasswordFormManager::Clone() {
   //       calling Clone().
   //   (2) They are potentially used in the clone as the clone is used in the UI
   //       code.
-  //   (3) They are not changed during ProcessMatches, triggered at some point
+  //   (3) They are not changed during OnFetchCompleted, triggered at some
+  //   point
   //       by the cloned FormFetcher.
   if (submitted_form_)
     result->submitted_form_ = std::make_unique<PasswordForm>(*submitted_form_);
