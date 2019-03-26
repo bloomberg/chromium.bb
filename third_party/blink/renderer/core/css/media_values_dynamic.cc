@@ -21,7 +21,7 @@ MediaValues* MediaValuesDynamic::Create(Document& document) {
 MediaValues* MediaValuesDynamic::Create(LocalFrame* frame) {
   if (!frame || !frame->View() || !frame->GetDocument() ||
       !frame->GetDocument()->GetLayoutView())
-    return MediaValuesCached::Create();
+    return MakeGarbageCollected<MediaValuesCached>();
   return MakeGarbageCollected<MediaValuesDynamic>(frame);
 }
 

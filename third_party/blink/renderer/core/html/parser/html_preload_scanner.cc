@@ -711,7 +711,8 @@ TokenPreloadScanner::TokenPreloadScanner(
       in_script_(false),
       template_count_(0),
       document_parameters_(std::move(document_parameters)),
-      media_values_(MediaValuesCached::Create(media_values_cached_data)),
+      media_values_(
+          MakeGarbageCollected<MediaValuesCached>(media_values_cached_data)),
       scanner_type_(scanner_type),
       priority_hints_origin_trial_enabled_(priority_hints_origin_trial_enabled),
       did_rewind_(false) {

@@ -37,12 +37,6 @@ class CORE_EXPORT StyleSheetList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static StyleSheetList* Create();
-
-  static StyleSheetList* Create(TreeScope* tree_scope) {
-    return MakeGarbageCollected<StyleSheetList>(tree_scope);
-  }
-
   explicit StyleSheetList(TreeScope*);
   StyleSheetList() {}
 

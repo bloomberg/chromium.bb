@@ -802,7 +802,7 @@ SelectorQueryCache& Document::GetSelectorQueryCache() {
 
 MediaQueryMatcher& Document::GetMediaQueryMatcher() {
   if (!media_query_matcher_)
-    media_query_matcher_ = MediaQueryMatcher::Create(*this);
+    media_query_matcher_ = MakeGarbageCollected<MediaQueryMatcher>(*this);
   return *media_query_matcher_;
 }
 
@@ -4465,7 +4465,7 @@ void Document::CloneDataFromDocument(const Document& other) {
 
 StyleSheetList& Document::StyleSheets() {
   if (!style_sheet_list_)
-    style_sheet_list_ = StyleSheetList::Create(this);
+    style_sheet_list_ = MakeGarbageCollected<StyleSheetList>(this);
   return *style_sheet_list_;
 }
 

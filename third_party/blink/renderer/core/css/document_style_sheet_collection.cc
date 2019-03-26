@@ -124,7 +124,7 @@ void DocumentStyleSheetCollection::CollectStyleSheets(
 void DocumentStyleSheetCollection::UpdateActiveStyleSheets(
     StyleEngine& master_engine) {
   // StyleSheetCollection is GarbageCollected<>, allocate it on the heap.
-  StyleSheetCollection* collection = StyleSheetCollection::Create();
+  auto* collection = MakeGarbageCollected<StyleSheetCollection>();
   ActiveDocumentStyleSheetCollector collector(*collection);
   CollectStyleSheets(master_engine, collector);
   ApplyActiveStyleSheetChanges(*collection);

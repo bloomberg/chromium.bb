@@ -25,7 +25,7 @@ namespace blink {
 MediaValues* MediaValues::CreateDynamicIfFrameExists(LocalFrame* frame) {
   if (frame)
     return MediaValuesDynamic::Create(frame);
-  return MediaValuesCached::Create();
+  return MakeGarbageCollected<MediaValuesCached>();
 }
 
 double MediaValues::CalculateViewportWidth(LocalFrame* frame) {

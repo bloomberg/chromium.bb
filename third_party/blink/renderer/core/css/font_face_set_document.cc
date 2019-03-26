@@ -177,7 +177,7 @@ FontFaceSetDocument* FontFaceSetDocument::From(Document& document) {
   FontFaceSetDocument* fonts =
       Supplement<Document>::From<FontFaceSetDocument>(document);
   if (!fonts) {
-    fonts = FontFaceSetDocument::Create(document);
+    fonts = MakeGarbageCollected<FontFaceSetDocument>(document);
     Supplement<Document>::ProvideTo(document, fonts);
   }
 

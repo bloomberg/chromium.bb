@@ -36,13 +36,6 @@ class MutableCSSPropertyValueSet;
 
 class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration {
  public:
-  static StyleRuleCSSStyleDeclaration* Create(
-      MutableCSSPropertyValueSet& property_set,
-      CSSRule* parent_rule) {
-    return MakeGarbageCollected<StyleRuleCSSStyleDeclaration>(property_set,
-                                                              parent_rule);
-  }
-
   StyleRuleCSSStyleDeclaration(MutableCSSPropertyValueSet&, CSSRule*);
   ~StyleRuleCSSStyleDeclaration() override;
 

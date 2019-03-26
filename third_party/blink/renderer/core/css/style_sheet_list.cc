@@ -29,10 +29,6 @@
 
 namespace blink {
 
-StyleSheetList* StyleSheetList::Create() {
-  return MakeGarbageCollected<StyleSheetList>();
-}
-
 StyleSheetList::StyleSheetList(TreeScope* tree_scope)
     : tree_scope_(tree_scope) {
   CHECK(tree_scope);

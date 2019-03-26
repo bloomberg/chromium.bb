@@ -433,7 +433,7 @@ WorkerGlobalScope::WorkerGlobalScope(
       thread_(thread),
       timers_(GetTaskRunner(TaskType::kJavascriptTimer)),
       time_origin_(time_origin),
-      font_selector_(OffscreenFontSelector::Create(this)),
+      font_selector_(MakeGarbageCollected<OffscreenFontSelector>(this)),
       animation_frame_provider_(WorkerAnimationFrameProvider::Create(
           this,
           creation_params->begin_frame_provider_params)),

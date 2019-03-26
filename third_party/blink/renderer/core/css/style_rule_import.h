@@ -36,9 +36,6 @@ class StyleRuleImport : public StyleRuleBase {
   USING_PRE_FINALIZER(StyleRuleImport, Dispose);
 
  public:
-  static StyleRuleImport* Create(const String& href,
-                                 scoped_refptr<MediaQuerySet>);
-
   StyleRuleImport(const String& href, scoped_refptr<MediaQuerySet>);
   ~StyleRuleImport();
 
