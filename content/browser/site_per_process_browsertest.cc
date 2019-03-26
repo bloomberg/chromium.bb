@@ -12567,8 +12567,10 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
   const bool compositor_touch_action_enabled_;
 };
 
+// Flaky on every platform, failing most of the time on Android.
+// See https://crbug.com/945734
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
-                       EffectiveTouchActionPropagatesAcrossFrames) {
+                       DISABLED_EffectiveTouchActionPropagatesAcrossFrames) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
