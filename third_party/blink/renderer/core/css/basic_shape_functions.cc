@@ -121,7 +121,7 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
   switch (basic_shape->GetType()) {
     case BasicShape::kStyleRayType: {
       const StyleRay& ray = To<StyleRay>(*basic_shape);
-      return cssvalue::CSSRayValue::Create(
+      return MakeGarbageCollected<cssvalue::CSSRayValue>(
           *CSSPrimitiveValue::Create(ray.Angle(),
                                      CSSPrimitiveValue::UnitType::kDegrees),
           *CSSIdentifierValue::Create(RaySizeToKeyword(ray.Size())),

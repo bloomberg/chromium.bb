@@ -17,10 +17,6 @@ namespace cssvalue {
 
 class CSSRayValue : public CSSValue {
  public:
-  static CSSRayValue* Create(const CSSPrimitiveValue& angle,
-                             const CSSIdentifierValue& size,
-                             const CSSIdentifierValue* contain);
-
   CSSRayValue(const CSSPrimitiveValue& angle,
               const CSSIdentifierValue& size,
               const CSSIdentifierValue* contain);

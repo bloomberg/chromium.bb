@@ -355,8 +355,8 @@ CSSBorderImageSliceValue* ComputedStyleUtils::ValueForNinePieceImageSlice(
   }
 
   return MakeGarbageCollected<CSSBorderImageSliceValue>(
-      CSSQuadValue::Create(top, right, bottom, left,
-                           CSSQuadValue::kSerializeAsQuad),
+      MakeGarbageCollected<CSSQuadValue>(top, right, bottom, left,
+                                         CSSQuadValue::kSerializeAsQuad),
       image.Fill());
 }
 
@@ -401,8 +401,8 @@ CSSQuadValue* ComputedStyleUtils::ValueForNinePieceImageQuad(
         left = ValueForBorderImageLength(box.Left(), style);
     }
   }
-  return CSSQuadValue::Create(top, right, bottom, left,
-                              CSSQuadValue::kSerializeAsQuad);
+  return MakeGarbageCollected<CSSQuadValue>(top, right, bottom, left,
+                                            CSSQuadValue::kSerializeAsQuad);
 }
 
 CSSValueID ValueForRepeatRule(int rule) {
@@ -495,7 +495,7 @@ CSSValue* ComputedStyleUtils::ValueForReflection(
       break;
   }
 
-  return CSSReflectValue::Create(
+  return MakeGarbageCollected<CSSReflectValue>(
       direction, offset, ValueForNinePieceImage(reflection->Mask(), style));
 }
 
@@ -1740,7 +1740,8 @@ CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style) {
       DCHECK(counter);
       auto* identifier =
           MakeGarbageCollected<CSSCustomIdentValue>(counter->Identifier());
-      CSSStringValue* separator = CSSStringValue::Create(counter->Separator());
+      auto* separator =
+          MakeGarbageCollected<CSSStringValue>(counter->Separator());
       CSSValueID list_style_ident = CSSValueID::kNone;
       if (counter->ListStyle() != EListStyleType::kNone) {
         // TODO(sashab): Change this to use a converter instead of
@@ -1757,7 +1758,7 @@ CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style) {
       DCHECK(image);
       list->Append(*image->ComputedCSSValue());
     } else if (content_data->IsText()) {
-      list->Append(*CSSStringValue::Create(
+      list->Append(*MakeGarbageCollected<CSSStringValue>(
           To<TextContentData>(content_data)->GetText()));
     } else if (content_data->IsQuote()) {
       const QuoteType quote_type = To<QuoteContentData>(content_data)->Quote();
@@ -1936,7 +1937,8 @@ CSSValue* ComputedStyleUtils::ValueForShadowData(const ShadowData& shadow,
           ? nullptr
           : CSSIdentifierValue::Create(CSSValueID::kInset);
   CSSValue* color = CurrentColorOrValidColor(style, shadow.GetColor());
-  return CSSShadowValue::Create(x, y, blur, spread, shadow_style, color);
+  return MakeGarbageCollected<CSSShadowValue>(x, y, blur, spread, shadow_style,
+                                              color);
 }
 
 CSSValue* ComputedStyleUtils::ValueForShadowList(const ShadowList* shadow_list,
@@ -1969,7 +1971,7 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
     switch (filter_operation->GetType()) {
       case FilterOperation::REFERENCE:
         filter_value = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kUrl);
-        filter_value->Append(*CSSStringValue::Create(
+        filter_value->Append(*MakeGarbageCollected<CSSStringValue>(
             ToReferenceFilterOperation(filter_operation)->Url()));
         break;
       case FilterOperation::GRAYSCALE:

@@ -28,7 +28,7 @@ const CSSValue* WebkitHyphenateCharacter::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (style.HyphenationString().IsNull())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
-  return CSSStringValue::Create(style.HyphenationString());
+  return MakeGarbageCollected<CSSStringValue>(style.HyphenationString());
 }
 
 }  // namespace css_longhand

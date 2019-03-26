@@ -188,7 +188,7 @@ const CSSFunctionValue* CSSTranslate::ToCSSValue() const {
   const CSSValue* x = x_->ToCSSValue();
   const CSSValue* y = y_->ToCSSValue();
 
-  auto* result = MakeGarbageCollected<CSSFunctionValue>(
+  CSSFunctionValue* result = MakeGarbageCollected<CSSFunctionValue>(
       is2D() ? CSSValueID::kTranslate : CSSValueID::kTranslate3d);
   result->Append(*x);
   result->Append(*y);

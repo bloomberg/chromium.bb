@@ -167,7 +167,7 @@ const CSSFunctionValue* CSSRotate::ToCSSValue() const {
   DCHECK(z_->to(CSSPrimitiveValue::UnitType::kNumber));
   DCHECK(angle_->to(CSSPrimitiveValue::UnitType::kRadians));
 
-  auto* result = MakeGarbageCollected<CSSFunctionValue>(
+  CSSFunctionValue* result = MakeGarbageCollected<CSSFunctionValue>(
       is2D() ? CSSValueID::kRotate : CSSValueID::kRotate3d);
   if (!is2D()) {
     const CSSValue* x = x_->ToCSSValue();

@@ -32,14 +32,6 @@ class CORE_EXPORT CSSQuadValue : public CSSValue {
  public:
   enum TypeForSerialization { kSerializeAsRect, kSerializeAsQuad };
 
-  static CSSQuadValue* Create(CSSValue* top,
-                              CSSValue* right,
-                              CSSValue* bottom,
-                              CSSValue* left,
-                              TypeForSerialization serialization_type) {
-    return MakeGarbageCollected<CSSQuadValue>(top, right, bottom, left,
-                                              serialization_type);
-  }
   static CSSQuadValue* Create(CSSValue* value,
                               TypeForSerialization serialization_type) {
     return MakeGarbageCollected<CSSQuadValue>(value, value, value, value,

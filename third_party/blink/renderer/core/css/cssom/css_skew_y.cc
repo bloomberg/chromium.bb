@@ -64,7 +64,8 @@ const CSSFunctionValue* CSSSkewY::ToCSSValue() const {
   if (!ay)
     return nullptr;
 
-  auto* result = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSkewY);
+  CSSFunctionValue* result =
+      MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSkewY);
   result->Append(*ay);
   return result;
 }

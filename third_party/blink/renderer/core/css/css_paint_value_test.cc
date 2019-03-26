@@ -57,7 +57,7 @@ void CheckTargetObject(Document* document) {
   EXPECT_NE(target_layout_object->Style()->InsideLink(),
             EInsideLink::kNotInsideLink);
 
-  auto* css_paint_value = CSSPaintValue::Create(
+  auto* css_paint_value = MakeGarbageCollected<CSSPaintValue>(
       MakeGarbageCollected<CSSCustomIdentValue>("linkpainter"));
   EXPECT_EQ(css_paint_value->GetImage(*target_layout_object, *document,
                                       target_layout_object->StyleRef(),

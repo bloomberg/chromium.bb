@@ -39,12 +39,6 @@ namespace cssvalue {
 
 class CSSReflectValue : public CSSValue {
  public:
-  static CSSReflectValue* Create(CSSIdentifierValue* direction,
-                                 CSSPrimitiveValue* offset,
-                                 CSSValue* mask) {
-    return MakeGarbageCollected<CSSReflectValue>(direction, offset, mask);
-  }
-
   CSSReflectValue(CSSIdentifierValue* direction,
                   CSSPrimitiveValue* offset,
                   CSSValue* mask)

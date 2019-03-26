@@ -28,7 +28,7 @@ const CSSValue* WebkitLocale::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (style.Locale().IsNull())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
-  return CSSStringValue::Create(style.Locale());
+  return MakeGarbageCollected<CSSStringValue>(style.Locale());
 }
 
 void WebkitLocale::ApplyValue(StyleResolverState& state,

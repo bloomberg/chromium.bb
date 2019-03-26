@@ -1075,8 +1075,9 @@ CSSValue* ConsumeBorderImageSlice(CSSParserTokenRange& range,
   if (default_fill == DefaultFill::kFill)
     fill = true;
   return MakeGarbageCollected<CSSBorderImageSliceValue>(
-      CSSQuadValue::Create(slices[0], slices[1], slices[2], slices[3],
-                           CSSQuadValue::kSerializeAsQuad),
+      MakeGarbageCollected<CSSQuadValue>(slices[0], slices[1], slices[2],
+                                         slices[3],
+                                         CSSQuadValue::kSerializeAsQuad),
       fill);
 }
 
@@ -1103,8 +1104,9 @@ CSSValue* ConsumeBorderImageWidth(CSSParserTokenRange& range) {
   if (!widths[0])
     return nullptr;
   css_property_parser_helpers::Complete4Sides(widths);
-  return CSSQuadValue::Create(widths[0], widths[1], widths[2], widths[3],
-                              CSSQuadValue::kSerializeAsQuad);
+  return MakeGarbageCollected<CSSQuadValue>(widths[0], widths[1], widths[2],
+                                            widths[3],
+                                            CSSQuadValue::kSerializeAsQuad);
 }
 
 CSSValue* ConsumeBorderImageOutset(CSSParserTokenRange& range) {
@@ -1125,8 +1127,9 @@ CSSValue* ConsumeBorderImageOutset(CSSParserTokenRange& range) {
   if (!outsets[0])
     return nullptr;
   css_property_parser_helpers::Complete4Sides(outsets);
-  return CSSQuadValue::Create(outsets[0], outsets[1], outsets[2], outsets[3],
-                              CSSQuadValue::kSerializeAsQuad);
+  return MakeGarbageCollected<CSSQuadValue>(outsets[0], outsets[1], outsets[2],
+                                            outsets[3],
+                                            CSSQuadValue::kSerializeAsQuad);
 }
 
 CSSValue* ParseBorderRadiusCorner(CSSParserTokenRange& range,
@@ -1222,8 +1225,9 @@ CSSShadowValue* ParseSingleShadow(CSSParserTokenRange& range,
       }
     }
   }
-  return CSSShadowValue::Create(horizontal_offset, vertical_offset, blur_radius,
-                                spread_distance, style, color);
+  return MakeGarbageCollected<CSSShadowValue>(horizontal_offset,
+                                              vertical_offset, blur_radius,
+                                              spread_distance, style, color);
 }
 
 CSSValue* ConsumeColumnCount(CSSParserTokenRange& range) {
@@ -2233,7 +2237,7 @@ CSSValue* ConsumeRay(CSSParserTokenRange& range,
   if (!angle || !size)
     return nullptr;
   range = function_range;
-  return CSSRayValue::Create(*angle, *size, contain);
+  return MakeGarbageCollected<CSSRayValue>(*angle, *size, contain);
 }
 
 CSSValue* ConsumeMaxWidthOrHeight(

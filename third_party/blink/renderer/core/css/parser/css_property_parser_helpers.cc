@@ -89,7 +89,8 @@ CSSFunctionValue* ConsumeFilterFunction(CSSParserTokenRange& range,
     return nullptr;
   CSSParserTokenRange args =
       css_property_parser_helpers::ConsumeFunction(range);
-  auto* filter_value = MakeGarbageCollected<CSSFunctionValue>(filter_type);
+  CSSFunctionValue* filter_value =
+      MakeGarbageCollected<CSSFunctionValue>(filter_type);
   CSSValue* parsed_value = nullptr;
 
   if (filter_type == CSSValueID::kDropShadow) {
@@ -605,7 +606,7 @@ CSSCustomIdentValue* ConsumeCustomIdent(CSSParserTokenRange& range,
 CSSStringValue* ConsumeString(CSSParserTokenRange& range) {
   if (range.Peek().GetType() != kStringToken)
     return nullptr;
-  return CSSStringValue::Create(
+  return MakeGarbageCollected<CSSStringValue>(
       range.ConsumeIncludingWhitespace().Value().ToString());
 }
 
@@ -1568,7 +1569,7 @@ static CSSValue* ConsumePaint(CSSParserTokenRange& args,
     return nullptr;
 
   if (args.AtEnd())
-    return CSSPaintValue::Create(name);
+    return MakeGarbageCollected<CSSPaintValue>(name);
 
   if (!RuntimeEnabledFeatures::CSSPaintAPIArgumentsEnabled()) {
     // Arguments not enabled, but exists. Invalid.
@@ -1598,7 +1599,7 @@ static CSSValue* ConsumePaint(CSSParserTokenRange& args,
   if (!AddCSSPaintArgument(argument_tokens, &variable_data, context))
     return nullptr;
 
-  return CSSPaintValue::Create(name, variable_data);
+  return MakeGarbageCollected<CSSPaintValue>(name, variable_data);
 }
 
 static CSSValue* ConsumeGeneratedImage(CSSParserTokenRange& range,

@@ -45,8 +45,10 @@ const CSSValue* Quotes::CSSValueFromComputedStyleInternal(
   if (style.Quotes()->size()) {
     CSSValueList* list = CSSValueList::CreateSpaceSeparated();
     for (int i = 0; i < style.Quotes()->size(); i++) {
-      list->Append(*CSSStringValue::Create(style.Quotes()->GetOpenQuote(i)));
-      list->Append(*CSSStringValue::Create(style.Quotes()->GetCloseQuote(i)));
+      list->Append(*MakeGarbageCollected<CSSStringValue>(
+          style.Quotes()->GetOpenQuote(i)));
+      list->Append(*MakeGarbageCollected<CSSStringValue>(
+          style.Quotes()->GetCloseQuote(i)));
     }
     return list;
   }
