@@ -859,9 +859,11 @@ class BackgroundSyncRestorer {
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncRestorer);
 };
 
-NetworkHandler::NetworkHandler(const std::string& host_id,
-                               const base::UnguessableToken& devtools_token,
-                               DevToolsIOContext* io_context)
+NetworkHandler::NetworkHandler(
+    const std::string& host_id,
+    const base::UnguessableToken& devtools_token,
+    DevToolsIOContext* io_context,
+    base::RepeatingClosure update_loader_factories_callback)
     : DevToolsDomainHandler(Network::Metainfo::domainName),
       host_id_(host_id),
       devtools_token_(devtools_token),
@@ -872,6 +874,8 @@ NetworkHandler::NetworkHandler(const std::string& host_id,
       enabled_(false),
       bypass_service_worker_(false),
       cache_disabled_(false),
+      update_loader_factories_callback_(
+          std::move(update_loader_factories_callback)),
       weak_factory_(this) {
   DCHECK(io_context_);
   static bool have_configured_service_worker_context = false;
@@ -1848,32 +1852,14 @@ void NetworkHandler::OnSignedExchangeReceived(
       std::move(signed_exchange_info));
 }
 
-namespace {
-void UpdateSubresourceLoaderFactories(FrameTreeNode* root) {
-  base::queue<FrameTreeNode*> queue;
-  queue.push(root);
-  while (!queue.empty()) {
-    FrameTreeNode* node = queue.front();
-    queue.pop();
-    RenderFrameHostImpl* host = node->current_frame_host();
-    if (node != root && host->IsCrossProcessSubframe())
-      continue;
-    host->UpdateSubresourceLoaderFactories();
-    for (size_t i = 0; i < node->child_count(); ++i)
-      queue.push(node->child_at(i));
-  }
-}
-}  // namespace
-
 DispatchResponse NetworkHandler::SetRequestInterception(
     std::unique_ptr<protocol::Array<protocol::Network::RequestPattern>>
         patterns) {
   if (!patterns->length()) {
     interception_handle_.reset();
     if (url_loader_interceptor_) {
-      if (host_)
-        UpdateSubresourceLoaderFactories(host_->frame_tree_node());
       url_loader_interceptor_.reset();
+      update_loader_factories_callback_.Run();
     }
     return Response::OK();
   }
@@ -1903,7 +1889,7 @@ DispatchResponse NetworkHandler::SetRequestInterception(
           base::BindRepeating(&NetworkHandler::RequestIntercepted,
                               weak_factory_.GetWeakPtr()));
       url_loader_interceptor_->SetPatterns(interceptor_patterns, true);
-      UpdateSubresourceLoaderFactories(host_->frame_tree_node());
+      update_loader_factories_callback_.Run();
     } else {
       url_loader_interceptor_->SetPatterns(interceptor_patterns, true);
     }

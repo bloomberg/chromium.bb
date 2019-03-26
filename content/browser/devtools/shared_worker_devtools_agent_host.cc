@@ -72,7 +72,8 @@ bool SharedWorkerDevToolsAgentHost::Close() {
 bool SharedWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(std::make_unique<protocol::InspectorHandler>());
   session->AddHandler(std::make_unique<protocol::NetworkHandler>(
-      GetId(), devtools_worker_token_, GetIOContext()));
+      GetId(), devtools_worker_token_, GetIOContext(),
+      base::BindRepeating([] {})));
   session->AddHandler(std::make_unique<protocol::SchemaHandler>());
   session->AddHandler(std::make_unique<protocol::TargetHandler>(
       protocol::TargetHandler::AccessMode::kAutoAttachOnly, GetId(),

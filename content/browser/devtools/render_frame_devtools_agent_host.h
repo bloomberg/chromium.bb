@@ -132,6 +132,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   void SynchronousSwapCompositorFrame(
       viz::CompositorFrameMetadata frame_metadata);
+  void UpdateResourceLoaderFactories();
 
   std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
 #if defined(OS_ANDROID)

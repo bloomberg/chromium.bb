@@ -28,9 +28,13 @@ std::vector<FetchHandler*> FetchHandler::ForAgentHost(
   return host->HandlersByName<FetchHandler>(Fetch::Metainfo::domainName);
 }
 
-FetchHandler::FetchHandler(DevToolsIOContext* io_context)
+FetchHandler::FetchHandler(
+    DevToolsIOContext* io_context,
+    base::RepeatingClosure update_loader_factories_callback)
     : DevToolsDomainHandler(Fetch::Metainfo::domainName),
       io_context_(io_context),
+      update_loader_factories_callback_(
+          std::move(update_loader_factories_callback)),
       weak_factory_(this) {}
 
 FetchHandler::~FetchHandler() = default;
@@ -111,11 +115,15 @@ Response FetchHandler::Enable(Maybe<Array<Fetch::RequestPattern>> patterns,
         "Can\'t specify empty patterns with handleAuth set");
   interceptor_->SetPatterns(std::move(interception_patterns),
                             handleAuth.fromMaybe(false));
+  update_loader_factories_callback_.Run();
   return Response::OK();
 }
 
 Response FetchHandler::Disable() {
+  const bool was_enabled = !!interceptor_;
   interceptor_.reset();
+  if (was_enabled)
+    update_loader_factories_callback_.Run();
   return Response::OK();
 }
 

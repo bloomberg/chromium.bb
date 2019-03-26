@@ -56,12 +56,11 @@ class FetchHandler {
 };
 
 class FetchHelper {
-  constructor(testRunner, targetProtocol, pageProtocol) {
+  constructor(testRunner, targetProtocol) {
     this._handlers = [];
     this._onceHandlers = [];
     this._testRunner = testRunner;
     this._protocol = targetProtocol;
-    this._pageProtocol = pageProtocol;
     this._protocol.Fetch.onRequestPaused(event => {
       this._logRequest(event);
       const handler = this._findHandler(event);
@@ -70,12 +69,8 @@ class FetchHelper {
     });
   }
 
-  async enable(reload) {
-    await this._protocol.Fetch.enable({});
-    if (reload) {
-      this.onceRequest().continueRequest();
-      await this._pageProtocol.Page.reload();
-    }
+  enable() {
+    return this._protocol.Fetch.enable({});
   }
 
   onRequest(pattern) {
