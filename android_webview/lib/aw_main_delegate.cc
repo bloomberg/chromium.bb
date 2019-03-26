@@ -189,9 +189,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     features.DisableIfNotSet(media::kUseAndroidOverlay);
 
     // WebView doesn't support embedding CompositorFrameSinks which is needed
-    // for UseSurfaceLayerForVideo[PIP] feature. https://crbug.com/853832
+    // for UseSurfaceLayerForVideo feature. https://crbug.com/853832
     features.DisableIfNotSet(media::kUseSurfaceLayerForVideo);
-    features.DisableIfNotSet(media::kUseSurfaceLayerForVideoPIP);
 
     // WebView does not support EME persistent license yet, because it's not
     // clear on how user can remove persistent media licenses from UI.

@@ -156,10 +156,7 @@ MediaFactory::GetVideoSurfaceLayerMode() {
   if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo))
     return blink::WebMediaPlayer::SurfaceLayerMode::kAlways;
 
-  if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideoPIP))
-    return blink::WebMediaPlayer::SurfaceLayerMode::kOnDemand;
-
-  return blink::WebMediaPlayer::SurfaceLayerMode::kNever;
+  return blink::WebMediaPlayer::SurfaceLayerMode::kOnDemand;
 }
 
 MediaFactory::MediaFactory(
