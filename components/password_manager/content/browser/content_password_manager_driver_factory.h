@@ -41,6 +41,10 @@ class ContentPasswordManagerDriverFactory
   static ContentPasswordManagerDriverFactory* FromWebContents(
       content::WebContents* web_contents);
 
+  static void BindAutofillDriver(
+      autofill::mojom::PasswordManagerDriverAssociatedRequest request,
+      content::RenderFrameHost* render_frame_host);
+
   ContentPasswordManagerDriver* GetDriverForFrame(
       content::RenderFrameHost* render_frame_host);
 

@@ -51,7 +51,6 @@ class ChromePasswordManagerClient
       public password_manager::PasswordManagerClientHelperDelegate,
       public content::WebContentsObserver,
       public content::WebContentsUserData<ChromePasswordManagerClient>,
-      public autofill::mojom::PasswordManagerDriver,
       public autofill::mojom::PasswordGenerationDriver,
       public content::RenderWidgetHost::InputEventObserver {
  public:
@@ -72,6 +71,10 @@ class ChromePasswordManagerClient
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       bool has_generated_password,
       bool is_update) override;
+  void HideManualFallbackForSaving() override;
+  void FocusedInputChanged(const url::Origin& last_committed_origin,
+                           bool is_fillable,
+                           bool is_password_field) override;
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const GURL& origin,
@@ -98,6 +101,7 @@ class ChromePasswordManagerClient
       const std::map<base::string16, const autofill::PasswordForm*>&
           best_matches,
       const autofill::PasswordForm& preferred_match) const override;
+  bool IsIsolationForPasswordSitesEnabled() const override;
 
   PrefService* GetPrefs() const override;
   password_manager::PasswordStore* GetPasswordStore() const override;
@@ -140,6 +144,8 @@ class ChromePasswordManagerClient
   void FrameWasScrolled() override;
 
 #if defined(FULL_SAFE_BROWSING)
+  void CheckSafeBrowsingReputation(const GURL& form_action,
+                                   const GURL& frame_url) override;
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
       const override;
 
@@ -184,33 +190,6 @@ class ChromePasswordManagerClient
 
  private:
   friend class content::WebContentsUserData<ChromePasswordManagerClient>;
-
-  // autofill::mojom::PasswordManagerDriver:
-  // Note that these messages received from a potentially compromised renderer.
-  // For that reason, any access to form data should be validated via
-  // bad_message::CheckChildProcessSecurityPolicy.
-  void PasswordFormsParsed(
-      const std::vector<autofill::PasswordForm>& forms) override;
-  void PasswordFormsRendered(
-      const std::vector<autofill::PasswordForm>& visible_forms,
-      bool did_stop_loading) override;
-  void PasswordFormSubmitted(
-      const autofill::PasswordForm& password_form) override;
-  void ShowManualFallbackForSaving(const autofill::PasswordForm& form) override;
-  void HideManualFallbackForSaving() override;
-  void SameDocumentNavigation(
-      const autofill::PasswordForm& password_form) override;
-  void ShowPasswordSuggestions(base::i18n::TextDirection text_direction,
-                               const base::string16& typed_username,
-                               int options,
-                               const gfx::RectF& bounds) override;
-  void RecordSavePasswordProgress(const std::string& log) override;
-  void UserModifiedPasswordField() override;
-  void CheckSafeBrowsingReputation(const GURL& form_action,
-                                   const GURL& frame_url) override;
-  void FocusedInputChanged(bool is_fillable, bool is_password_field) override;
-  void LogFirstFillingResult(uint32_t form_renderer_id,
-                             int32_t result) override;
 
   // content::WebContentsObserver overrides.
   void DidStartNavigation(
@@ -276,8 +255,6 @@ class ChromePasswordManagerClient
 
   content::WebContentsFrameBindingSet<autofill::mojom::PasswordGenerationDriver>
       password_generation_driver_bindings_;
-  content::WebContentsFrameBindingSet<autofill::mojom::PasswordManagerDriver>
-      password_manager_driver_bindings_;
 
   // Observer for password generation popup.
   PasswordGenerationPopupObserver* observer_;

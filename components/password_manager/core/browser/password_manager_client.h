@@ -124,6 +124,12 @@ class PasswordManagerClient {
   // fallback for password saving should be not available.
   virtual void HideManualFallbackForSaving() = 0;
 
+  // Informs the embedder that the focus changed to a different input in the
+  // same frame (e.g. tabbed from email to password field).
+  virtual void FocusedInputChanged(const url::Origin& last_committed_origin,
+                                   bool is_fillable,
+                                   bool is_password_field) = 0;
+
   // Informs the embedder of a password forms that the user should choose from.
   // Returns true if the prompt is indeed displayed. If the prompt is not
   // displayed, returns false and does not call |callback|.
@@ -288,6 +294,8 @@ class PasswordManagerClient {
   // Causes a navigation to the manage passwords page.
   virtual void NavigateToManagePasswordsPage(ManagePasswordsReferrer referrer) {
   }
+
+  virtual bool IsIsolationForPasswordSitesEnabled() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);

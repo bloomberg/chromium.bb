@@ -3755,6 +3755,12 @@ bool ChromeContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
         autofill::mojom::AutofillDriverAssociatedRequest(std::move(*handle)),
         render_frame_host);
     return true;
+  } else if (interface_name == autofill::mojom::PasswordManagerDriver::Name_) {
+    password_manager::ContentPasswordManagerDriverFactory::BindAutofillDriver(
+        autofill::mojom::PasswordManagerDriverAssociatedRequest(
+            std::move(*handle)),
+        render_frame_host);
+    return true;
   } else if (interface_name ==
              content_capture::mojom::ContentCaptureReceiver::Name_) {
     content_capture::ContentCaptureReceiverManager::BindContentCaptureReceiver(

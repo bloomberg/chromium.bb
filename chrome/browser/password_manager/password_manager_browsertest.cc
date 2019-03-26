@@ -2468,8 +2468,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   std::vector<autofill::PasswordForm> password_forms;
   password_forms.push_back(autofill::PasswordForm());
   password_forms.back().origin = main_frame_url;
+  ContentPasswordManagerDriverFactory* factory =
+      ContentPasswordManagerDriverFactory::FromWebContents(WebContents());
+  EXPECT_TRUE(factory);
   autofill::mojom::PasswordManagerDriver* driver =
-      ChromePasswordManagerClient::FromWebContents(WebContents());
+      factory->GetDriverForFrame(iframe);
   EXPECT_TRUE(driver);
   driver->PasswordFormsParsed(password_forms);
 
@@ -3950,8 +3953,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
   NavigateToFile("/password/password_form.html");
 
+  ContentPasswordManagerDriverFactory* factory =
+      ContentPasswordManagerDriverFactory::FromWebContents(WebContents());
   autofill::mojom::PasswordManagerDriver* driver =
-      ChromePasswordManagerClient::FromWebContents(WebContents());
+      factory->GetDriverForFrame(WebContents()->GetMainFrame());
+
   // Instruct Chrome to show the password dropdown.
   driver->ShowPasswordSuggestions(base::i18n::LEFT_TO_RIGHT, base::string16(),
                                   0, gfx::RectF());
