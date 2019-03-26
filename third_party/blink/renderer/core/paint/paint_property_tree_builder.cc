@@ -207,7 +207,7 @@ class FragmentPaintPropertyTreeBuilder {
   void OnUpdateClip(PaintPropertyChangeType change) {
     OnUpdate(change);
     full_context_.clip_changed |=
-        change >= PaintPropertyChangeType::kChangedOnlyValues;
+        change >= PaintPropertyChangeType::kChangedOnlySimpleValues;
   }
   // Like |OnUpdate| but forces a piercing subtree update if the scroll tree
   // hierarchy changes because the scroll tree does not have isolation nodes

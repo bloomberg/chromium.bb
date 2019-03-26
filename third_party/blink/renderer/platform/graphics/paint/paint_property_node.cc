@@ -98,6 +98,8 @@ const char* PaintPropertyChangeTypeToString(PaintPropertyChangeType change) {
       return "animation";
     case PaintPropertyChangeType::kChangedOnlyNonRerasterValues:
       return "non-reraster";
+    case PaintPropertyChangeType::kChangedOnlySimpleValues:
+      return "simple-values";
     case PaintPropertyChangeType::kChangedOnlyValues:
       return "values";
     case PaintPropertyChangeType::kNodeAddedOrRemoved:

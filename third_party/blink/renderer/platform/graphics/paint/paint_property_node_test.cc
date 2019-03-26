@@ -120,6 +120,26 @@ class PaintPropertyNodeTest : public testing::Test {
 };
 
 #define STATE(node) PropertyTreeState(*transform.node, *clip.node, *effect.node)
+#define EXPECT_CHANGE_EQ(node, state, expected_value)                          \
+  do {                                                                         \
+    if (expected_value != PaintPropertyChangeType::kUnchanged) {               \
+      for (int change_type = 0;                                                \
+           change_type <= static_cast<int>(expected_value); ++change_type) {   \
+        SCOPED_TRACE(testing::Message() << "change_type=" << change_type);     \
+        EXPECT_TRUE(                                                           \
+            node->Changed(static_cast<PaintPropertyChangeType>(change_type),   \
+                          state, nullptr));                                    \
+      }                                                                        \
+    }                                                                          \
+    for (int change_type = static_cast<int>(expected_value) + 1;               \
+         change_type <=                                                        \
+         static_cast<int>(PaintPropertyChangeType::kNodeAddedOrRemoved);       \
+         ++change_type) {                                                      \
+      SCOPED_TRACE(testing::Message() << "change_type=" << change_type);       \
+      EXPECT_FALSE(node->Changed(                                              \
+          static_cast<PaintPropertyChangeType>(change_type), state, nullptr)); \
+    }                                                                          \
+  } while (false)
 
 TEST_F(PaintPropertyNodeTest, LowestCommonAncestor) {
   EXPECT_EQ(transform.ancestor,
@@ -226,30 +246,66 @@ TEST_F(PaintPropertyNodeTest, EffectChangeAncestor) {
   ExpectUnchangedState();
   EffectPaintPropertyNode::State state{transform.ancestor.get(),
                                        clip.ancestor.get()};
+  // The initial test starts with opacity 0.5, and we're changing it to 0.9
+  // here.
   state.opacity = 0.9;
   effect.ancestor->Update(*effect.root, std::move(state));
 
   // Test descendant->Changed(ancestor).
-  EXPECT_TRUE(effect.ancestor->Changed(
-      PaintPropertyChangeType::kChangedOnlyValues, STATE(root), nullptr));
-  EXPECT_FALSE(effect.ancestor->Changed(
-      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
-  EXPECT_TRUE(effect.child1->Changed(
-      PaintPropertyChangeType::kChangedOnlyValues, STATE(root), nullptr));
-  EXPECT_FALSE(effect.child1->Changed(
-      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
-  EXPECT_TRUE(effect.grandchild1->Changed(
-      PaintPropertyChangeType::kChangedOnlyValues, STATE(root), nullptr));
-  EXPECT_FALSE(effect.grandchild1->Changed(
-      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
+  EXPECT_CHANGE_EQ(effect.ancestor, STATE(root),
+                   PaintPropertyChangeType::kChangedOnlySimpleValues);
+  EXPECT_CHANGE_EQ(effect.ancestor, STATE(ancestor),
+                   PaintPropertyChangeType::kUnchanged);
+  EXPECT_CHANGE_EQ(effect.child1, STATE(root),
+                   PaintPropertyChangeType::kChangedOnlySimpleValues);
+  EXPECT_CHANGE_EQ(effect.child1, STATE(ancestor),
+                   PaintPropertyChangeType::kUnchanged);
+  EXPECT_CHANGE_EQ(effect.grandchild1, STATE(root),
+                   PaintPropertyChangeType::kChangedOnlySimpleValues);
+  EXPECT_CHANGE_EQ(effect.grandchild1, STATE(ancestor),
+                   PaintPropertyChangeType::kUnchanged);
 
   // Test property->Changed(non-ancestor-property).
   // Simply walk to the root.
-  EXPECT_TRUE(effect.grandchild1->Changed(
-      PaintPropertyChangeType::kChangedOnlyValues, STATE(child2), nullptr));
-  EXPECT_TRUE(
-      effect.grandchild1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
-                                  STATE(grandchild2), nullptr));
+  EXPECT_CHANGE_EQ(effect.grandchild1, STATE(child2),
+                   PaintPropertyChangeType::kChangedOnlySimpleValues);
+  EXPECT_CHANGE_EQ(effect.grandchild1, STATE(grandchild2),
+                   PaintPropertyChangeType::kChangedOnlySimpleValues);
+
+  ResetAllChanged();
+  ExpectUnchangedState();
+}
+
+TEST_F(PaintPropertyNodeTest, EffectOpacityChangesToOne) {
+  ResetAllChanged();
+  ExpectUnchangedState();
+  EffectPaintPropertyNode::State state{transform.ancestor.get(),
+                                       clip.ancestor.get()};
+  // The initial test starts with opacity 0.5, and we're changing it to 1
+  // here.
+  state.opacity = 1.f;
+  effect.ancestor->Update(*effect.root, std::move(state));
+
+  // Test descendant->Changed(ancestor).
+  EXPECT_CHANGE_EQ(effect.ancestor, STATE(root),
+                   PaintPropertyChangeType::kChangedOnlyValues);
+  EXPECT_CHANGE_EQ(effect.ancestor, STATE(ancestor),
+                   PaintPropertyChangeType::kUnchanged);
+  EXPECT_CHANGE_EQ(effect.child1, STATE(root),
+                   PaintPropertyChangeType::kChangedOnlyValues);
+  EXPECT_CHANGE_EQ(effect.child1, STATE(ancestor),
+                   PaintPropertyChangeType::kUnchanged);
+  EXPECT_CHANGE_EQ(effect.grandchild1, STATE(root),
+                   PaintPropertyChangeType::kChangedOnlyValues);
+  EXPECT_CHANGE_EQ(effect.grandchild1, STATE(ancestor),
+                   PaintPropertyChangeType::kUnchanged);
+
+  // Test property->Changed(non-ancestor-property).
+  // Simply walk to the root.
+  EXPECT_CHANGE_EQ(effect.grandchild1, STATE(child2),
+                   PaintPropertyChangeType::kChangedOnlyValues);
+  EXPECT_CHANGE_EQ(effect.grandchild1, STATE(grandchild2),
+                   PaintPropertyChangeType::kChangedOnlyValues);
 
   ResetAllChanged();
   ExpectUnchangedState();
