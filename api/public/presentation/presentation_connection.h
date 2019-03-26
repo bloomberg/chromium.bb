@@ -15,6 +15,7 @@
 #include "base/ip_address.h"
 #include "base/macros.h"
 #include "platform/api/logging.h"
+#include "platform/api/time.h"
 #include "third_party/abseil/src/absl/strings/string_view.h"
 #include "third_party/abseil/src/absl/types/optional.h"
 
@@ -178,7 +179,7 @@ class ConnectionManager final : public MessageDemuxer::MessageCallback {
                                   msgs::Type message_type,
                                   const uint8_t* buffer,
                                   size_t buffer_size,
-                                  platform::TimeDelta now) override;
+                                  platform::Clock::time_point now) override;
 
   Connection* GetConnection(const std::string& presentation_id,
                             uint64_t connection_id);

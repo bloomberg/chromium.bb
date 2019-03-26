@@ -10,7 +10,6 @@
 #include <set>
 #include <string>
 
-#include "api/public/clock.h"
 #include "api/public/message_demuxer.h"
 #include "api/public/presentation/presentation_controller.h"
 #include "api/public/protocol_connection_client.h"
@@ -30,7 +29,7 @@ namespace presentation {
 // given URL.
 class UrlAvailabilityRequester {
  public:
-  explicit UrlAvailabilityRequester(Clock* clock);
+  explicit UrlAvailabilityRequester(platform::ClockNowFunctionPtr now_function);
   ~UrlAvailabilityRequester();
 
   // Adds a persistent availability request for |urls| to all known receivers.
@@ -64,7 +63,7 @@ class UrlAvailabilityRequester {
   // Ensures that all open availability watches (to all receivers) that are
   // about to expire are refreshed by sending a new request with the same URLs.
   // Returns the time point at which this should next be scheduled to run.
-  platform::TimeDelta RefreshWatches();
+  platform::Clock::time_point RefreshWatches();
 
  private:
   // Handles Presentation API URL availability requests and watches for one
@@ -83,7 +82,7 @@ class UrlAvailabilityRequester {
     };
 
     struct Watch {
-      platform::TimeDelta deadline;
+      platform::Clock::time_point deadline;
       std::vector<std::string> urls;
     };
 
@@ -98,7 +97,7 @@ class UrlAvailabilityRequester {
     void RequestUrlAvailabilities(std::vector<std::string> urls);
     ErrorOr<uint64_t> SendRequest(uint64_t request_id,
                                   const std::vector<std::string>& urls);
-    platform::TimeDelta RefreshWatches(platform::TimeDelta now);
+    platform::Clock::time_point RefreshWatches(platform::Clock::time_point now);
     void UpdateAvailabilities(
         const std::vector<std::string>& urls,
         const std::vector<msgs::PresentationUrlAvailability>& availabilities);
@@ -118,7 +117,7 @@ class UrlAvailabilityRequester {
                                     msgs::Type message_type,
                                     const uint8_t* buffer,
                                     size_t buffer_size,
-                                    platform::TimeDelta now) override;
+                                    platform::Clock::time_point now) override;
 
     UrlAvailabilityRequester* const listener;
 
@@ -144,7 +143,7 @@ class UrlAvailabilityRequester {
         known_availability_by_url;
   };
 
-  Clock* const clock_;
+  const platform::ClockNowFunctionPtr now_function_;
 
   std::map<std::string, std::vector<ReceiverObserver*>> observers_by_url_;
 

@@ -18,6 +18,12 @@
 #include "platform/api/time.h"
 #include "third_party/mDNSResponder/src/mDNSCore/mDNSEmbeddedAPI.h"
 
+using openscreen::platform::Clock;
+using std::chrono::duration_cast;
+using std::chrono::hours;
+using std::chrono::milliseconds;
+using std::chrono::seconds;
+
 extern "C" {
 
 const char ProgramName[] = "openscreen";
@@ -108,12 +114,35 @@ mStatus mDNSPlatformTimeInit() {
 }
 
 mDNSs32 mDNSPlatformRawTime() {
-  return static_cast<int32_t>(
-      openscreen::platform::GetMonotonicTimeNow().AsMilliseconds());
+  const Clock::time_point now = Clock::now();
+
+  // A signed 32-bit integer counting milliseconds only gives ~24.8 days of
+  // range. Thus, the first time this function is called, record a new origin
+  // timestamp to subtract from the raw monotonic clock values. The "one hour
+  // before now" value is used to keep the results well-ahead of zero because
+  // the mDNS library assumes this is the time since kernel boot and has hacks
+  // to disable certain things in the first few minutes. :-/
+  static const Clock::time_point origin = now - hours(1);
+
+  const int64_t millis_since_origin =
+      duration_cast<milliseconds>(now - origin).count();
+  OSP_CHECK_LE(millis_since_origin, std::numeric_limits<mDNSs32>::max());
+  return static_cast<mDNSs32>(millis_since_origin);
 }
 
 mDNSs32 mDNSPlatformUTC() {
-  return static_cast<int32_t>(openscreen::platform::GetUTCNow().AsSeconds());
+  const auto seconds_since_epoch =
+      duration_cast<seconds>(openscreen::platform::GetWallTimeSinceUnixEpoch())
+          .count();
+
+  // The return type will cause overflow in early 2038. Warn future developers
+  // a year ahead of time.
+  constexpr mDNSs32 a_year_before_overflow =
+      std::numeric_limits<mDNSs32>::max() -
+      duration_cast<seconds>(365 * hours(24)).count();
+  OSP_DCHECK_LE(seconds_since_epoch, a_year_before_overflow);
+
+  return static_cast<mDNSs32>(seconds_since_epoch);
 }
 
 void mDNSPlatformWriteDebugMsg(const char* msg) {

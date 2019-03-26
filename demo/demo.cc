@@ -27,6 +27,7 @@
 #include "msgs/osp_messages.h"
 #include "platform/api/logging.h"
 #include "platform/api/network_interface.h"
+#include "platform/api/time.h"
 #include "third_party/abseil/src/absl/strings/string_view.h"
 #include "third_party/tinycbor/src/src/cbor.h"
 
@@ -346,15 +347,16 @@ void ListenerDemo() {
   auto mdns_listener =
       MdnsServiceListenerFactory::Create(listener_config, &listener_observer);
 
-  MessageDemuxer demuxer;
+  MessageDemuxer demuxer(platform::Clock::now,
+                         MessageDemuxer::kDefaultBufferLimit);
   ConnectionClientObserver client_observer;
   auto connection_client =
       ProtocolConnectionClientFactory::Create(&demuxer, &client_observer);
 
   auto* network_service = NetworkServiceManager::Create(
       std::move(mdns_listener), nullptr, std::move(connection_client), nullptr);
-  PlatformClock clock;
-  auto controller = std::make_unique<presentation::Controller>(&clock);
+  auto controller =
+      std::make_unique<presentation::Controller>(platform::Clock::now);
 
   network_service->GetMdnsServiceListener()->Start();
   network_service->GetProtocolConnectionClient()->Start();
@@ -445,7 +447,8 @@ void PublisherDemo(absl::string_view friendly_name) {
         IPEndpoint{interface.addresses[0].address, server_port});
   }
 
-  MessageDemuxer demuxer;
+  MessageDemuxer demuxer(platform::Clock::now,
+                         MessageDemuxer::kDefaultBufferLimit);
   ConnectionServerObserver server_observer;
   auto connection_server = ProtocolConnectionServerFactory::Create(
       server_config, &demuxer, &server_observer);

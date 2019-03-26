@@ -4,6 +4,7 @@
 
 #include "api/public/message_demuxer.h"
 
+#include "api/impl/testing/fake_clock.h"
 #include "api/public/testing/message_demuxer_test_support.h"
 #include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -45,10 +46,12 @@ class MessageDemuxerTest : public ::testing::Test {
 
   const uint64_t endpoint_id_ = 13;
   const uint64_t connection_id_ = 45;
+  FakeClock fake_clock_{
+      platform::Clock::time_point(std::chrono::milliseconds(1298424))};
   msgs::CborEncodeBuffer buffer_;
   msgs::PresentationConnectionOpenRequest request_{1, "fry-am-the-egg-man", 3};
   MockMessageCallback mock_callback_;
-  MessageDemuxer demuxer_;
+  MessageDemuxer demuxer_{FakeClock::now, MessageDemuxer::kDefaultBufferLimit};
 };
 
 }  // namespace
@@ -71,7 +74,8 @@ TEST_F(MessageDemuxerTest, WatchStartStop) {
       .WillOnce(Invoke([&decode_result, &received_request](
                            uint64_t endpoint_id, uint64_t connection_id,
                            msgs::Type message_type, const uint8_t* buffer,
-                           size_t buffer_size, platform::TimeDelta now) {
+                           size_t buffer_size,
+                           platform::Clock::time_point now) {
         decode_result = msgs::DecodePresentationConnectionOpenRequest(
             buffer, buffer_size, &received_request);
         return ConvertDecodeResult(decode_result);
@@ -87,7 +91,6 @@ TEST_F(MessageDemuxerTest, WatchStartStop) {
 }
 
 TEST_F(MessageDemuxerTest, BufferPartialMessage) {
-  MessageDemuxer demuxer_;
   MockMessageCallback mock_callback_;
   constexpr uint64_t endpoint_id_ = 13;
 
@@ -106,7 +109,8 @@ TEST_F(MessageDemuxerTest, BufferPartialMessage) {
       .WillRepeatedly(Invoke([&decode_result, &received_request](
                                  uint64_t endpoint_id, uint64_t connection_id,
                                  msgs::Type message_type, const uint8_t* buffer,
-                                 size_t buffer_size, platform::TimeDelta now) {
+                                 size_t buffer_size,
+                                 platform::Clock::time_point now) {
         decode_result = msgs::DecodePresentationConnectionOpenRequest(
             buffer, buffer_size, &received_request);
         return ConvertDecodeResult(decode_result);
@@ -119,7 +123,6 @@ TEST_F(MessageDemuxerTest, BufferPartialMessage) {
 }
 
 TEST_F(MessageDemuxerTest, DefaultWatch) {
-  MessageDemuxer demuxer_;
   MockMessageCallback mock_callback_;
   constexpr uint64_t endpoint_id_ = 13;
 
@@ -136,7 +139,8 @@ TEST_F(MessageDemuxerTest, DefaultWatch) {
       .WillOnce(Invoke([&decode_result, &received_request](
                            uint64_t endpoint_id, uint64_t connection_id,
                            msgs::Type message_type, const uint8_t* buffer,
-                           size_t buffer_size, platform::TimeDelta now) {
+                           size_t buffer_size,
+                           platform::Clock::time_point now) {
         decode_result = msgs::DecodePresentationConnectionOpenRequest(
             buffer, buffer_size, &received_request);
         return ConvertDecodeResult(decode_result);
@@ -147,7 +151,6 @@ TEST_F(MessageDemuxerTest, DefaultWatch) {
 }
 
 TEST_F(MessageDemuxerTest, DefaultWatchOverridden) {
-  MessageDemuxer demuxer_;
   MockMessageCallback mock_callback_global;
   MockMessageCallback mock_callback_;
   constexpr uint64_t endpoint_id_ = 13;
@@ -172,7 +175,8 @@ TEST_F(MessageDemuxerTest, DefaultWatchOverridden) {
       .WillOnce(Invoke([&decode_result, &received_request](
                            uint64_t endpoint_id, uint64_t connection_id,
                            msgs::Type message_type, const uint8_t* buffer,
-                           size_t buffer_size, platform::TimeDelta now) {
+                           size_t buffer_size,
+                           platform::Clock::time_point now) {
         decode_result = msgs::DecodePresentationConnectionOpenRequest(
             buffer, buffer_size, &received_request);
         return ConvertDecodeResult(decode_result);
@@ -188,7 +192,8 @@ TEST_F(MessageDemuxerTest, DefaultWatchOverridden) {
       .WillOnce(Invoke([&decode_result, &received_request](
                            uint64_t endpoint_id, uint64_t connection_id,
                            msgs::Type message_type, const uint8_t* buffer,
-                           size_t buffer_size, platform::TimeDelta now) {
+                           size_t buffer_size,
+                           platform::Clock::time_point now) {
         decode_result = msgs::DecodePresentationConnectionOpenRequest(
             buffer, buffer_size, &received_request);
         return ConvertDecodeResult(decode_result);
@@ -211,7 +216,8 @@ TEST_F(MessageDemuxerTest, WatchAfterData) {
       .WillOnce(Invoke([&decode_result, &received_request](
                            uint64_t endpoint_id, uint64_t connection_id,
                            msgs::Type message_type, const uint8_t* buffer,
-                           size_t buffer_size, platform::TimeDelta now) {
+                           size_t buffer_size,
+                           platform::Clock::time_point now) {
         decode_result = msgs::DecodePresentationConnectionOpenRequest(
             buffer, buffer_size, &received_request);
         return ConvertDecodeResult(decode_result);
@@ -252,7 +258,8 @@ TEST_F(MessageDemuxerTest, WatchAfterMultipleData) {
       .WillOnce(Invoke([&decode_result1, &received_request](
                            uint64_t endpoint_id, uint64_t connection_id,
                            msgs::Type message_type, const uint8_t* buffer,
-                           size_t buffer_size, platform::TimeDelta now) {
+                           size_t buffer_size,
+                           platform::Clock::time_point now) {
         decode_result1 = msgs::DecodePresentationConnectionOpenRequest(
             buffer, buffer_size, &received_request);
         return ConvertDecodeResult(decode_result1);
@@ -264,7 +271,8 @@ TEST_F(MessageDemuxerTest, WatchAfterMultipleData) {
       .WillOnce(Invoke([&decode_result2, &received_init_request](
                            uint64_t endpoint_id, uint64_t connection_id,
                            msgs::Type message_type, const uint8_t* buffer,
-                           size_t buffer_size, platform::TimeDelta now) {
+                           size_t buffer_size,
+                           platform::Clock::time_point now) {
         decode_result2 = msgs::DecodePresentationInitiationRequest(
             buffer, buffer_size, &received_init_request);
         return ConvertDecodeResult(decode_result2);
@@ -296,7 +304,8 @@ TEST_F(MessageDemuxerTest, GlobalWatchAfterData) {
       .WillOnce(Invoke([&decode_result, &received_request](
                            uint64_t endpoint_id, uint64_t connection_id,
                            msgs::Type message_type, const uint8_t* buffer,
-                           size_t buffer_size, platform::TimeDelta now) {
+                           size_t buffer_size,
+                           platform::Clock::time_point now) {
         decode_result = msgs::DecodePresentationConnectionOpenRequest(
             buffer, buffer_size, &received_request);
         return ConvertDecodeResult(decode_result);
@@ -308,7 +317,7 @@ TEST_F(MessageDemuxerTest, GlobalWatchAfterData) {
 }
 
 TEST_F(MessageDemuxerTest, BufferLimit) {
-  MessageDemuxer demuxer(10);
+  MessageDemuxer demuxer(FakeClock::now, 10);
 
   demuxer.OnStreamData(endpoint_id_, connection_id_, buffer_.data(),
                        buffer_.size());
@@ -326,7 +335,8 @@ TEST_F(MessageDemuxerTest, BufferLimit) {
       .WillOnce(Invoke([&decode_result, &received_request](
                            uint64_t endpoint_id, uint64_t connection_id,
                            msgs::Type message_type, const uint8_t* buffer,
-                           size_t buffer_size, platform::TimeDelta now) {
+                           size_t buffer_size,
+                           platform::Clock::time_point now) {
         decode_result = msgs::DecodePresentationConnectionOpenRequest(
             buffer, buffer_size, &received_request);
         return ConvertDecodeResult(decode_result);

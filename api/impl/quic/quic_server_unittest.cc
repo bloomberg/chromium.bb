@@ -8,6 +8,7 @@
 
 #include "api/impl/quic/testing/fake_quic_connection_factory.h"
 #include "api/impl/quic/testing/quic_test_support.h"
+#include "api/impl/testing/fake_clock.h"
 #include "api/public/network_metrics.h"
 #include "api/public/network_service_manager.h"
 #include "api/public/testing/message_demuxer_test_support.h"
@@ -94,7 +95,8 @@ class QuicServerTest : public Test {
         .WillOnce(Invoke([&decode_result, &received_message](
                              uint64_t endpoint_id, uint64_t connection_id,
                              msgs::Type message_type, const uint8_t* buffer,
-                             size_t buffer_size, platform::TimeDelta now) {
+                             size_t buffer_size,
+                             platform::Clock::time_point now) {
           decode_result = msgs::DecodePresentationConnectionMessage(
               buffer, buffer_size, &received_message);
           if (decode_result < 0)
@@ -112,7 +114,9 @@ class QuicServerTest : public Test {
     EXPECT_EQ(received_message.message.str, message.message.str);
   }
 
-  FakeQuicBridge quic_bridge_;
+  FakeClock fake_clock_{
+      platform::Clock::time_point(std::chrono::milliseconds(1298424))};
+  FakeQuicBridge quic_bridge_{FakeClock::now};
   QuicServer* server_;
 };
 

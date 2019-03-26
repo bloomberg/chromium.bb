@@ -19,6 +19,7 @@
 namespace openscreen {
 namespace presentation {
 
+using std::chrono::seconds;
 using ::testing::_;
 using ::testing::Invoke;
 
@@ -61,7 +62,7 @@ class ControllerTest : public ::testing::Test {
     NetworkServiceManager::Create(std::move(service_listener), nullptr,
                                   std::move(quic_bridge_.quic_client),
                                   std::move(quic_bridge_.quic_server));
-    controller_ = std::make_unique<Controller>(&fake_clock_);
+    controller_ = std::make_unique<Controller>(FakeClock::now);
     ON_CALL(quic_bridge_.mock_server_observer, OnIncomingConnectionMock(_))
         .WillByDefault(
             Invoke([this](std::unique_ptr<ProtocolConnection>& connection) {
@@ -83,10 +84,10 @@ class ControllerTest : public ::testing::Test {
       MockMessageCallback* mock_callback,
       msgs::PresentationUrlAvailabilityRequest* request) {
     EXPECT_CALL(*mock_callback, OnStreamMessage(_, _, _, _, _, _))
-        .WillOnce(
-            Invoke([request](uint64_t endpoint_id, uint64_t cid,
-                             msgs::Type message_type, const uint8_t* buffer,
-                             size_t buffer_size, platform::TimeDelta now) {
+        .WillOnce(Invoke(
+            [request](uint64_t endpoint_id, uint64_t cid,
+                      msgs::Type message_type, const uint8_t* buffer,
+                      size_t buffer_size, platform::Clock::time_point now) {
               ssize_t result = msgs::DecodePresentationUrlAvailabilityRequest(
                   buffer, buffer_size, request);
               return result;
@@ -123,9 +124,9 @@ class ControllerTest : public ::testing::Test {
 
   MessageDemuxer::MessageWatch availability_watch_;
   MockMessageCallback mock_callback_;
-  FakeClock fake_clock_{platform::TimeDelta::FromSeconds(11111)};
+  FakeClock fake_clock_{platform::Clock::time_point(seconds(11111))};
+  FakeQuicBridge quic_bridge_{FakeClock::now};
   MockServiceListenerDelegate mock_listener_delegate_;
-  FakeQuicBridge quic_bridge_;
   std::unique_ptr<Controller> controller_;
   ServiceInfo receiver_info1{"service-id1",
                              "lucas-auer",

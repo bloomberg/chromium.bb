@@ -82,8 +82,9 @@ void swap(Controller::ConnectRequest& a, Controller::ConnectRequest& b) {
   swap(a.controller_, b.controller_);
 }
 
-Controller::Controller(Clock* clock) {
-  availability_requester_ = std::make_unique<UrlAvailabilityRequester>(clock);
+Controller::Controller(platform::ClockNowFunctionPtr now_function) {
+  availability_requester_ =
+      std::make_unique<UrlAvailabilityRequester>(now_function);
   const std::vector<ServiceInfo>& receivers =
       NetworkServiceManager::Get()->GetMdnsServiceListener()->GetReceivers();
   for (const auto& info : receivers) {

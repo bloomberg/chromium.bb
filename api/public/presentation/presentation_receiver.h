@@ -92,7 +92,7 @@ class Receiver final : public MessageDemuxer::MessageCallback {
                                   msgs::Type message_type,
                                   const uint8_t* buffer,
                                   size_t buffer_size,
-                                  platform::TimeDelta now) override;
+                                  platform::Clock::time_point now) override;
 
  private:
   struct QueuedResponse {

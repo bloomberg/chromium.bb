@@ -60,3 +60,22 @@ source_set("platform") {
     }
   }
 }
+
+source_set("platform_unittests") {
+  testonly = true
+
+  sources = [
+    "api/time_unittest.cc",
+  ]
+
+  # The unit tests in base/ assume the standalone implementation is being used.
+  # Exclude them if an embedder is providing the implementation.
+  if (!build_with_chromium) {
+    sources += [ "base/time_unittest.cc" ]
+  }
+
+  deps = [
+    ":platform",
+    "//third_party/googletest:gtest",
+  ]
+}

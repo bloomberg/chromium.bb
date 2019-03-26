@@ -5,22 +5,22 @@
 #ifndef API_IMPL_TESTING_FAKE_CLOCK_H_
 #define API_IMPL_TESTING_FAKE_CLOCK_H_
 
-#include "api/public/clock.h"
+#include "platform/api/time.h"
 
 namespace openscreen {
 
-class FakeClock final : public Clock {
+class FakeClock {
  public:
-  explicit FakeClock(platform::TimeDelta now);
-  FakeClock(FakeClock& other);
-  ~FakeClock() override;
+  explicit FakeClock(platform::Clock::time_point start_time);
+  ~FakeClock();
 
-  platform::TimeDelta Now() override;
+  void Advance(platform::Clock::duration delta);
 
-  void Advance(platform::TimeDelta delta);
+  static platform::Clock::time_point now() noexcept;
 
  private:
-  platform::TimeDelta now_;
+  static FakeClock* instance_;
+  static platform::Clock::time_point now_;
 };
 
 }  // namespace openscreen

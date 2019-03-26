@@ -82,7 +82,7 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
                                           msgs::Type message_type,
                                           const uint8_t* buffer,
                                           size_t buffer_size,
-                                          platform::TimeDelta now) {
+                                          platform::Clock::time_point now) {
   switch (message_type) {
     case msgs::Type::kPresentationUrlAvailabilityRequest: {
       OSP_VLOG << "got presentation-url-availability-request";

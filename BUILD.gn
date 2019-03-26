@@ -40,6 +40,7 @@ executable("unittests") {
     "//base:base_unittests",
     "//discovery/mdns:mdns_unittests",
     "//msgs:unittests",
+    "//platform:platform_unittests",
     "//sample:hello_unittests",
     "//third_party/abseil",
     "//third_party/googletest:gtest_main",

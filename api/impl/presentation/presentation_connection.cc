@@ -236,12 +236,13 @@ void ConnectionManager::RemoveConnection(Connection* connection) {
 // TODO(jophba): refine the RegisterWatch/OnStreamMessage API. We
 // should add a layer between the message logic and the parse/dispatch
 // logic, and remove the CBOR information from ConnectionManager.
-ErrorOr<size_t> ConnectionManager::OnStreamMessage(uint64_t endpoint_id,
-                                                   uint64_t connection_id,
-                                                   msgs::Type message_type,
-                                                   const uint8_t* buffer,
-                                                   size_t buffer_size,
-                                                   platform::TimeDelta now) {
+ErrorOr<size_t> ConnectionManager::OnStreamMessage(
+    uint64_t endpoint_id,
+    uint64_t connection_id,
+    msgs::Type message_type,
+    const uint8_t* buffer,
+    size_t buffer_size,
+    platform::Clock::time_point now) {
   switch (message_type) {
     case msgs::Type::kPresentationConnectionMessage: {
       msgs::PresentationConnectionMessage message;

@@ -6,6 +6,7 @@
 #define API_PUBLIC_TESTING_MESSAGE_DEMUXER_TEST_SUPPORT_H_
 
 #include "api/public/message_demuxer.h"
+#include "platform/api/time.h"
 #include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
 
 namespace openscreen {
@@ -20,7 +21,7 @@ class MockMessageCallback final : public MessageDemuxer::MessageCallback {
                                msgs::Type message_type,
                                const uint8_t* buffer,
                                size_t buffer_size,
-                               platform::TimeDelta now));
+                               platform::Clock::time_point now));
 };
 
 }  // namespace openscreen

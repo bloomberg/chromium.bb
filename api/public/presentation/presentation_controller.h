@@ -9,11 +9,11 @@
 #include <memory>
 #include <string>
 
-#include "api/public/clock.h"
 #include "api/public/presentation/presentation_connection.h"
 #include "api/public/protocol_connection.h"
 #include "api/public/service_listener.h"
 #include "base/error.h"
+#include "platform/api/time.h"
 #include "third_party/abseil/src/absl/types/optional.h"
 
 namespace openscreen {
@@ -94,7 +94,7 @@ class Controller final : public ServiceListener::Observer {
     Controller* controller_;
   };
 
-  explicit Controller(Clock* clock);
+  explicit Controller(platform::ClockNowFunctionPtr now_function);
   ~Controller();
 
   // Requests receivers compatible with all urls in |urls| and registers

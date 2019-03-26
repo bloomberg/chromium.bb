@@ -16,6 +16,7 @@
 #include "api/public/protocol_connection_client.h"
 #include "api/public/protocol_connection_server.h"
 #include "base/ip_address.h"
+#include "platform/api/time.h"
 #include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
 
 namespace openscreen {
@@ -51,12 +52,10 @@ class MockServerObserver final : public ProtocolConnectionServer::Observer {
 
 class FakeQuicBridge {
  public:
-  FakeQuicBridge();
+  explicit FakeQuicBridge(platform::ClockNowFunctionPtr now_function);
   ~FakeQuicBridge();
 
   void RunTasksUntilIdle();
-
-  platform::TimeDelta initial_clock_time;
 
   const IPEndpoint kControllerEndpoint{{192, 168, 1, 3}, 4321};
   const IPEndpoint kReceiverEndpoint{{192, 168, 1, 17}, 1234};

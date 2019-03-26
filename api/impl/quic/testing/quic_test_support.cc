@@ -12,17 +12,14 @@
 
 namespace openscreen {
 
-FakeQuicBridge::FakeQuicBridge()
-    : initial_clock_time(platform::TimeDelta::FromMilliseconds(1298424)) {
+FakeQuicBridge::FakeQuicBridge(platform::ClockNowFunctionPtr now_function) {
   fake_bridge =
       std::make_unique<FakeQuicConnectionFactoryBridge>(kControllerEndpoint);
 
   controller_demuxer = std::make_unique<MessageDemuxer>(
-      MessageDemuxer::kDefaultBufferLimit,
-      std::make_unique<FakeClock>(initial_clock_time));
+      now_function, MessageDemuxer::kDefaultBufferLimit);
   receiver_demuxer = std::make_unique<MessageDemuxer>(
-      MessageDemuxer::kDefaultBufferLimit,
-      std::make_unique<FakeClock>(initial_clock_time));
+      now_function, MessageDemuxer::kDefaultBufferLimit);
 
   auto fake_client_factory =
       std::make_unique<FakeClientQuicConnectionFactory>(fake_bridge.get());
