@@ -34,6 +34,7 @@ import org.chromium.android_webview.AwAutofillProvider;
 import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.ResourcesContextWrapperFactory;
 import org.chromium.android_webview.ScopedSysTraceEvent;
 import org.chromium.android_webview.WebViewChromiumRunQueue;
@@ -287,7 +288,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             }
             if (multiProcess) {
                 CommandLine cl = CommandLine.getInstance();
-                cl.appendSwitch("webview-sandboxed-renderer");
+                cl.appendSwitch(AwSwitches.WEBVIEW_SANDBOXED_RENDERER);
             }
 
             int applicationFlags = ContextUtils.getApplicationContext().getApplicationInfo().flags;
@@ -297,7 +298,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             // it's a debugable android build.
             if (isAppDebuggable || isOsDebuggable) {
                 CommandLine cl = CommandLine.getInstance();
-                cl.appendSwitch("webview-log-js-console-messages");
+                cl.appendSwitch(AwSwitches.WEBVIEW_LOG_JS_CONSOLE_MESSAGES);
             }
 
             ThreadUtils.setWillOverrideUiThread(true);
