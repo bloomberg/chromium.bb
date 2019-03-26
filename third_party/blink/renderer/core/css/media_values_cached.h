@@ -69,9 +69,6 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
     }
   };
 
-  static MediaValuesCached* Create();
-  static MediaValuesCached* Create(const MediaValuesCachedData&);
-
   MediaValuesCached();
   MediaValuesCached(LocalFrame*);
   MediaValuesCached(const MediaValuesCachedData&);

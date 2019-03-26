@@ -230,7 +230,7 @@ void ShadowRoot::ChildrenChanged(const ChildrenChange& change) {
 
 StyleSheetList& ShadowRoot::StyleSheets() {
   if (!style_sheet_list_)
-    SetStyleSheets(StyleSheetList::Create(this));
+    SetStyleSheets(MakeGarbageCollected<StyleSheetList>(this));
   return *style_sheet_list_;
 }
 

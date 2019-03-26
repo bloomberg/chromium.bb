@@ -79,7 +79,7 @@ StyleEngine::StyleEngine(Document& document)
     : document_(&document),
       is_master_(!document.IsHTMLImport()),
       document_style_sheet_collection_(
-          DocumentStyleSheetCollection::Create(document)) {
+          MakeGarbageCollected<DocumentStyleSheetCollection>(document)) {
   if (document.GetFrame()) {
     // We don't need to create CSSFontSelector for imported document or
     // HTMLTemplateElement's document, because those documents have no frame.

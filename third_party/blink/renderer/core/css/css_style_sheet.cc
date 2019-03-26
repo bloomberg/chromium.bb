@@ -116,8 +116,8 @@ CSSStyleSheet* CSSStyleSheet::Create(Document& document,
     media_query_set = MediaQuerySet::Create(options->media().GetAsString());
   else
     media_query_set = options->media().GetAsMediaList()->Queries()->Copy();
-  MediaList* media_list =
-      MediaList::Create(media_query_set, const_cast<CSSStyleSheet*>(sheet));
+  auto* media_list = MakeGarbageCollected<MediaList>(
+      media_query_set, const_cast<CSSStyleSheet*>(sheet));
   sheet->SetMedia(media_list);
   if (options->alternate())
     sheet->SetAlternateFromConstructor(true);
@@ -526,9 +526,10 @@ MediaList* CSSStyleSheet::media() {
   if (!media_queries_)
     media_queries_ = MediaQuerySet::Create();
 
-  if (!media_cssom_wrapper_)
-    media_cssom_wrapper_ = MediaList::Create(media_queries_.get(),
-                                             const_cast<CSSStyleSheet*>(this));
+  if (!media_cssom_wrapper_) {
+    media_cssom_wrapper_ = MakeGarbageCollected<MediaList>(
+        media_queries_.get(), const_cast<CSSStyleSheet*>(this));
+  }
   return media_cssom_wrapper_.Get();
 }
 

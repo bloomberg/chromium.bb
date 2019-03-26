@@ -77,15 +77,6 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
   }
 }
 
-MediaValuesCached* MediaValuesCached::Create() {
-  return MakeGarbageCollected<MediaValuesCached>();
-}
-
-MediaValuesCached* MediaValuesCached::Create(
-    const MediaValuesCachedData& data) {
-  return MakeGarbageCollected<MediaValuesCached>(data);
-}
-
 MediaValuesCached::MediaValuesCached() = default;
 
 MediaValuesCached::MediaValuesCached(const MediaValuesCachedData& data)

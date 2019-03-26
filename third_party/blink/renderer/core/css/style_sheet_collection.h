@@ -50,10 +50,6 @@ class CORE_EXPORT StyleSheetCollection
   friend class ActiveDocumentStyleSheetCollector;
   friend class ImportedDocumentStyleSheetCollector;
 
-  static StyleSheetCollection* Create() {
-    return MakeGarbageCollected<StyleSheetCollection>();
-  }
-
   StyleSheetCollection();
 
   const ActiveStyleSheetVector& ActiveAuthorStyleSheets() const {

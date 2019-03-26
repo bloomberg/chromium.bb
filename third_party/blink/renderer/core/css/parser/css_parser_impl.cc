@@ -626,7 +626,7 @@ StyleRuleCharset* CSSParserImpl::ConsumeCharsetRule(
   const CSSParserToken& string = prelude.ConsumeIncludingWhitespace();
   if (string.GetType() != kStringToken || !prelude.AtEnd())
     return nullptr;  // Parse error, expected a single string
-  return StyleRuleCharset::Create();
+  return MakeGarbageCollected<StyleRuleCharset>();
 }
 
 StyleRuleImport* CSSParserImpl::ConsumeImportRule(
@@ -643,8 +643,8 @@ StyleRuleImport* CSSParserImpl::ConsumeImportRule(
     observer_->EndRuleBody(prelude_offset.end);
   }
 
-  return StyleRuleImport::Create(uri,
-                                 MediaQueryParser::ParseMediaQuerySet(prelude));
+  return MakeGarbageCollected<StyleRuleImport>(
+      uri, MediaQueryParser::ParseMediaQuerySet(prelude));
 }
 
 StyleRuleNamespace* CSSParserImpl::ConsumeNamespaceRule(
@@ -658,7 +658,7 @@ StyleRuleNamespace* CSSParserImpl::ConsumeNamespaceRule(
   if (uri.IsNull() || !prelude.AtEnd())
     return nullptr;  // Parse error, expected string or URI
 
-  return StyleRuleNamespace::Create(namespace_prefix, uri);
+  return MakeGarbageCollected<StyleRuleNamespace>(namespace_prefix, uri);
 }
 
 StyleRuleMedia* CSSParserImpl::ConsumeMediaRule(
@@ -712,7 +712,8 @@ StyleRuleSupports* CSSParserImpl::ConsumeSupportsRule(
   if (observer_)
     observer_->EndRuleBody(block.Offset());
 
-  return StyleRuleSupports::Create(prelude_serialized, supported, rules);
+  return MakeGarbageCollected<StyleRuleSupports>(prelude_serialized, supported,
+                                                 rules);
 }
 
 StyleRuleViewport* CSSParserImpl::ConsumeViewportRule(
@@ -738,7 +739,7 @@ StyleRuleViewport* CSSParserImpl::ConsumeViewportRule(
     style_sheet_->SetHasViewportRule();
 
   ConsumeDeclarationList(block, StyleRule::kViewport);
-  return StyleRuleViewport::Create(
+  return MakeGarbageCollected<StyleRuleViewport>(
       CreateCSSPropertyValueSet(parsed_properties_, kCSSViewportRuleMode));
 }
 
@@ -798,7 +799,8 @@ StyleRuleFontFeatureValues* CSSParserImpl::ConsumeFontFeatureValuesRule(
 
   if (!block.AtEnd())
     return nullptr;
-  return StyleRuleFontFeatureValues::Create(font_family, font_display);
+  return MakeGarbageCollected<StyleRuleFontFeatureValues>(font_family,
+                                                          font_display);
 }
 
 StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(
@@ -875,7 +877,7 @@ StyleRuleKeyframe* CSSParserImpl::ConsumeKeyframeStyleRule(
 
   ConsumeDeclarationList(block, StyleRule::kKeyframe);
 
-  return StyleRuleKeyframe::Create(
+  return MakeGarbageCollected<StyleRuleKeyframe>(
       std::move(key_list),
       CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
 }

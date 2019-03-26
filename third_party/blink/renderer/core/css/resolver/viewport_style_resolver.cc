@@ -67,7 +67,7 @@ ViewportStyleResolver::ViewportStyleResolver(Document& document)
     : document_(document) {
   DCHECK(document.GetFrame());
   initial_viewport_medium_ = MakeGarbageCollected<MediaQueryEvaluator>(
-      MediaValuesInitialViewport::Create(*document.GetFrame()));
+      MakeGarbageCollected<MediaValuesInitialViewport>(*document.GetFrame()));
 }
 
 void ViewportStyleResolver::Reset() {

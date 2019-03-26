@@ -38,9 +38,11 @@ CSSPageRule::CSSPageRule(StyleRulePage* page_rule, CSSStyleSheet* parent)
 CSSPageRule::~CSSPageRule() = default;
 
 CSSStyleDeclaration* CSSPageRule::style() const {
-  if (!properties_cssom_wrapper_)
-    properties_cssom_wrapper_ = StyleRuleCSSStyleDeclaration::Create(
-        page_rule_->MutableProperties(), const_cast<CSSPageRule*>(this));
+  if (!properties_cssom_wrapper_) {
+    properties_cssom_wrapper_ =
+        MakeGarbageCollected<StyleRuleCSSStyleDeclaration>(
+            page_rule_->MutableProperties(), const_cast<CSSPageRule*>(this));
+  }
   return properties_cssom_wrapper_.Get();
 }
 

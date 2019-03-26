@@ -181,8 +181,8 @@ ScriptPromise FontFaceSet::load(ScriptState* script_state,
       segmented_font_face->Match(text, faces);
   }
 
-  LoadFontPromiseResolver* resolver =
-      LoadFontPromiseResolver::Create(faces, script_state);
+  auto* resolver =
+      MakeGarbageCollected<LoadFontPromiseResolver>(faces, script_state);
   ScriptPromise promise = resolver->Promise();
   // After this, resolver->promise() may return null.
   resolver->LoadFonts();

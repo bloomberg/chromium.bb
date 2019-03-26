@@ -122,7 +122,7 @@ TEST(SizesCalcParserTest, Basic) {
   data.media_type = media_type_names::kScreen;
   data.strict_mode = true;
   data.display_mode = kWebDisplayModeBrowser;
-  MediaValues* media_values = MediaValuesCached::Create(data);
+  auto* media_values = MakeGarbageCollected<MediaValuesCached>(data);
 
   for (unsigned i = 0; test_cases[i].input; ++i) {
     SizesCalcParser calc_parser(

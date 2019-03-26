@@ -106,7 +106,7 @@ FontFaceSetWorker* FontFaceSetWorker::From(WorkerGlobalScope& worker) {
   FontFaceSetWorker* fonts =
       Supplement<WorkerGlobalScope>::From<FontFaceSetWorker>(worker);
   if (!fonts) {
-    fonts = FontFaceSetWorker::Create(worker);
+    fonts = MakeGarbageCollected<FontFaceSetWorker>(worker);
     ProvideTo(worker, fonts);
   }
 
