@@ -17,7 +17,6 @@
 #include "base/strings/pattern.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
-#include "build/build_config.h"
 #include "content/browser/tracing/background_startup_tracing_observer.h"
 #include "content/browser/tracing/background_tracing_active_scenario.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
@@ -395,14 +394,8 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests that non-whitelisted args get stripped if required.
-#if defined(OS_ANDROID)
-// Disabled on Android due to flakiness, https://crbug.com/945516 for details.
-#define MAYBE_NotWhitelistedArgsStripped DISABLED_NotWhitelistedArgsStripped
-#else
-#define MAYBE_NotWhitelistedArgsStripped NotWhitelistedArgsStripped
-#endif
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       MAYBE_NotWhitelistedArgsStripped) {
+                       NotWhitelistedArgsStripped) {
   TestTraceReceiverHelper trace_receiver_helper;
   TestBackgroundTracingHelper background_tracing_helper;
 
