@@ -405,7 +405,8 @@ void CastStreamingNativeHandler::CreateCastSession(
 
   v8::Isolate* isolate = context()->v8_context()->GetIsolate();
 
-  scoped_refptr<CastSession> session(new CastSession());
+  scoped_refptr<CastSession> session(new CastSession(
+      context()->web_frame()->GetTaskRunner(blink::TaskType::kInternalMedia)));
   std::unique_ptr<CastRtpStream> stream1, stream2;
   if ((args[0]->IsNull() || args[0]->IsUndefined()) &&
       (args[1]->IsNull() || args[1]->IsUndefined())) {
