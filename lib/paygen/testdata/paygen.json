@@ -13056,21 +13056,6 @@
     },
     {
       "board": {
-        "public_codename": "rowan",
-        "is_active": false,
-        "builder_name": "rowan"
-      },
-      "delta_type": "OMAHA",
-      "channel": "canary",
-      "chrome_os_version": "9675.0.0",
-      "chrome_version": "61.0.3136.5",
-      "milestone": 61,
-      "generate_delta": true,
-      "delta_payload_tests": true,
-      "full_payload_tests": false
-    },
-    {
-      "board": {
         "public_codename": "rush",
         "is_active": false,
         "builder_name": "rush"
