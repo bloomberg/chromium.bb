@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.touchless.ui.iph;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.CursorObserver;
@@ -75,10 +76,8 @@ public class KeyFunctionsIPHMediator implements CursorObserver {
         }
 
         @Override
-        public void onPageLoadFinished(Tab tab, String url) {
-            if (tab.isNativePage()) return;
-
-            if (tab.isShowingErrorPage()) return;
+        public void onPageLoadStarted(Tab tab, String url) {
+            if (NativePageFactory.isNativePageUrl(url, tab.isIncognito())) return;
 
             show(false);
         }
