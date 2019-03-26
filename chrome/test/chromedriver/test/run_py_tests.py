@@ -405,9 +405,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testDragAndDropWithSVGImage(self):
     self._driver.Load(
                     self.GetHttpUrlForFile('/chromedriver/drag_and_drop.svg'))
-
-    drag = self._driver.FindElement("id", "GreenRectangle")
-    drop = self._driver.FindElement("id", "FolderRectangle")
+    drag = self._driver.FindElement("css selector", "#GreenRectangle")
+    drop = self._driver.FindElement("css selector", "#FolderRectangle")
     self._driver.MouseMoveTo(drag)
     self._driver.MouseButtonDown()
     self._driver.MouseMoveTo(drop)
@@ -421,13 +420,13 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testCloseWindow(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
     old_handles = self._driver.GetWindowHandles()
-    self._driver.FindElement('id', 'link').Click()
+    self._driver.FindElement('css selector', '#link').Click()
     new_window_handle = self.WaitForNewWindow(self._driver, old_handles)
     self.assertNotEqual(None, new_window_handle)
     self._driver.SwitchToWindow(new_window_handle)
     self.assertEquals(new_window_handle, self._driver.GetCurrentWindowHandle())
     self.assertRaises(chromedriver.NoSuchElement,
-                      self._driver.FindElement, 'id', 'link')
+                      self._driver.FindElement, 'css selector', '#link')
     close_returned_handles = self._driver.CloseWindow()
     self.assertRaises(chromedriver.NoSuchWindow,
                       self._driver.GetCurrentWindowHandle)
@@ -447,13 +446,13 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testCloseWindowUsingJavascript(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
     old_handles = self._driver.GetWindowHandles()
-    self._driver.FindElement('id', 'link').Click()
+    self._driver.FindElement('css selector', '#link').Click()
     new_window_handle = self.WaitForNewWindow(self._driver, old_handles)
     self.assertNotEqual(None, new_window_handle)
     self._driver.SwitchToWindow(new_window_handle)
     self.assertEquals(new_window_handle, self._driver.GetCurrentWindowHandle())
     self.assertRaises(chromedriver.NoSuchElement,
-                      self._driver.FindElement, 'id', 'link')
+                      self._driver.FindElement, 'css selector', '#link')
     self._driver.ExecuteScript('window.close()')
     with self.assertRaises(chromedriver.NoSuchWindow):
       self._driver.GetTitle()
@@ -461,7 +460,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testGetWindowHandles(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
     old_handles = self._driver.GetWindowHandles()
-    self._driver.FindElement('id', 'link').Click()
+    self._driver.FindElement('css selector', '#link').Click()
     self.assertNotEqual(None, self.WaitForNewWindow(self._driver, old_handles))
 
   def testGetWindowHandlesInPresenceOfSharedWorker(self):
@@ -475,13 +474,13 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         1, self._driver.ExecuteScript('window.name = "oldWindow"; return 1;'))
     window1_handle = self._driver.GetCurrentWindowHandle()
     old_handles = self._driver.GetWindowHandles()
-    self._driver.FindElement('id', 'link').Click()
+    self._driver.FindElement('css selector', '#link').Click()
     new_window_handle = self.WaitForNewWindow(self._driver, old_handles)
     self.assertNotEqual(None, new_window_handle)
     self._driver.SwitchToWindow(new_window_handle)
     self.assertEquals(new_window_handle, self._driver.GetCurrentWindowHandle())
     self.assertRaises(chromedriver.NoSuchElement,
-                      self._driver.FindElement, 'id', 'link')
+                      self._driver.FindElement, 'css selector', '#link')
     self._driver.SwitchToWindow('oldWindow')
     self.assertEquals(window1_handle, self._driver.GetCurrentWindowHandle())
 
@@ -553,16 +552,19 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/nested_frameset.html'))
     self._driver.SwitchToFrameByIndex(0)
-    self.assertTrue(self._driver.FindElement("id", "link").IsDisplayed())
+    self.assertTrue(self._driver.FindElement("css selector", "#link")
+                    .IsDisplayed())
     self._driver.SwitchToMainFrame()
     self._driver.SwitchToFrame('2Frame')
-    self.assertTrue(self._driver.FindElement("id", "l1").IsDisplayed())
+    self.assertTrue(self._driver.FindElement("css selector", "#l1")
+                    .IsDisplayed())
     self._driver.SwitchToMainFrame()
     self._driver.SwitchToFrame('fourth_frame')
     self.assertTrue('One' in self._driver.GetPageSource())
     self._driver.SwitchToMainFrame()
     self._driver.SwitchToFrameByIndex(4)
-    self.assertTrue(self._driver.FindElement("id", "aa1").IsDisplayed())
+    self.assertTrue(self._driver.FindElement("css selector", "#aa1")
+                    .IsDisplayed())
 
   def testExecuteInRemovedFrame(self):
     self._driver.ExecuteScript(
@@ -584,7 +586,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         'frame.id="id";'
         'frame.name="name";'
         'document.body.appendChild(frame);')
-    element = self._driver.FindElement("id", "id")
+    element = self._driver.FindElement("css selector", "#id")
     self._driver.SwitchToFrame(element)
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     with self.assertRaises(chromedriver.StaleElementReference):
@@ -688,9 +690,9 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
   def testClickElementAfterNavigation(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/link_nav.html'))
-    link = self._driver.FindElement('id', 'l1')
+    link = self._driver.FindElement('css selector', '#l1')
     link.Click()
-    alert_button = self._driver.FindElement('id', 'aa1')
+    alert_button = self._driver.FindElement('css selector', '#aa1')
     alert_button.Click()
     self.assertTrue(self._driver.IsAlertOpen())
 
@@ -919,8 +921,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
   def testSendingTabKeyMovesToNextInputElement(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/two_inputs.html'))
-    first = self._driver.FindElement('id', 'first')
-    second = self._driver.FindElement('id', 'second')
+    first = self._driver.FindElement('css selector', '#first')
+    second = self._driver.FindElement('css selector', '#second')
     first.Click()
     self._driver.SendKeys('snoopy')
     self._driver.SendKeys(u'\uE004')
@@ -947,27 +949,27 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testGetElementAttribute(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/attribute_colon_test.html'))
-    elem = self._driver.FindElement("name", "phones")
+    elem = self._driver.FindElement("css selector", "*[name='phones']")
     self.assertEquals('3', elem.GetAttribute('size'))
 
   def testGetElementProperty(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/two_inputs.html'))
-    elem = self._driver.FindElement("id", "first")
+    elem = self._driver.FindElement("css selector", "#first")
     self.assertEquals('text', elem.GetProperty('type'))
     self.assertEquals('first', elem.GetProperty('id'))
 
   def testGetElementSpecialCharAttribute(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/attribute_colon_test.html'))
-    elem = self._driver.FindElement("name", "phones")
+    elem = self._driver.FindElement("css selector", "*[name='phones']")
     self.assertEquals('colonvalue', elem.GetAttribute('ext:qtip'))
 
   def testGetCurrentUrl(self):
     url = self.GetHttpUrlForFile('/chromedriver/frame_test.html')
     self._driver.Load(url)
     self.assertEquals(url, self._driver.GetCurrentUrl())
-    self._driver.SwitchToFrame(self._driver.FindElement('tagName', 'iframe'))
+    self._driver.SwitchToFrame(self._driver.FindElement('tag name', 'iframe'))
     self.assertEquals(url, self._driver.GetCurrentUrl())
 
   def testGoBackAndGoForward(self):
@@ -990,7 +992,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
   def testBackNavigationAfterClickElement(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/link_nav.html'))
-    link = self._driver.FindElement('id', 'l1')
+    link = self._driver.FindElement('css selector', '#l1')
     link.Click()
     self._driver.GoBack()
     self.assertNotEqual('data:,', self._driver.GetCurrentUrl())
@@ -1159,7 +1161,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         </html>""" % self._sync_server.GetUrl())
     self._driver.Load(self._http_server.GetUrl() + '/newwindow')
     old_windows = self._driver.GetWindowHandles()
-    self._driver.FindElement('tagName', 'a').Click()
+    self._driver.FindElement('tag name', 'a').Click()
     new_window = self.WaitForNewWindow(self._driver, old_windows)
     self.assertNotEqual(None, new_window)
 
@@ -1181,7 +1183,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
                       self._driver.SwitchToFrame, 'nosuchframe')
     self.assertRaises(chromedriver.NoSuchFrame,
                       self._driver.SwitchToFrame,
-                      self._driver.FindElement('tagName', 'body'))
+                      self._driver.FindElement('tag name', 'body'))
 
   def testWindowPosition(self):
     position = self._driver.GetWindowPosition()
@@ -1302,7 +1304,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testGetLogOnClosedWindow(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
     old_handles = self._driver.GetWindowHandles()
-    self._driver.FindElement('id', 'link').Click()
+    self._driver.FindElement('css selector', '#link').Click()
     self.WaitForNewWindow(self._driver, old_handles)
     self._driver.CloseWindow()
     try:
@@ -1330,7 +1332,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
   def testContextMenuEventFired(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/context_menu.html'))
-    self._driver.MouseMoveTo(self._driver.FindElement('tagName', 'div'))
+    self._driver.MouseMoveTo(self._driver.FindElement('tag name', 'div'))
     self._driver.MouseClick(2)
     self.assertTrue(self._driver.ExecuteScript('return success'))
 
@@ -1481,7 +1483,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         # Enter the corresponding shadow root.
         current = self._driver.ExecuteScript(
             'return arguments[0].shadowRoot', current)
-      current = current.FindElement('css', selector)
+      current = current.FindElement('css selector', selector)
     return current
 
   def testShadowDomFindElement(self):
@@ -1498,7 +1500,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         '/chromedriver/shadow_dom_test.html'))
     elem = self._FindElementInShadowDom(
         ["#innerDiv", "#parentDiv", "#childDiv"])
-    self.assertTrue(elem.FindElement("id", "textBox"))
+    self.assertTrue(elem.FindElement("css selector", "#textBox"))
 
   def testShadowDomFindElementFailsFromRoot(self):
     """Checks that chromedriver can't find elements in a shadow DOM from
@@ -1507,7 +1509,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         '/chromedriver/shadow_dom_test.html'))
     # can't find element from the root without /deep/
     with self.assertRaises(chromedriver.NoSuchElement):
-      self._driver.FindElement("id", "#textBox")
+      self._driver.FindElement("css selector", "#textBox")
 
   def testShadowDomText(self):
     """Checks that chromedriver can find extract the text from a shadow DOM
@@ -1583,7 +1585,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     elem = self._FindElementInShadowDom(
         ["#innerDiv", "#parentDiv", "#button"])
     self.assertTrue(elem.IsDisplayed())
-    elem2 = self._driver.FindElement("css", "#hostContent")
+    elem2 = self._driver.FindElement("css selector", "#hostContent")
     self.assertTrue(elem2.IsDisplayed())
     self._driver.ExecuteScript(
         'document.querySelector("#outerDiv").style.display="None";')
@@ -1592,18 +1594,18 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testTouchSingleTapElement(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/touch_action_tests.html'))
-    target = self._driver.FindElement('id', 'target')
+    target = self._driver.FindElement('css selector', '#target')
     target.SingleTap()
-    events = self._driver.FindElement('id', 'events')
+    events = self._driver.FindElement('css selector', '#events')
     self.assertEquals('events: touchstart touchend', events.GetText())
 
   def testTouchDownMoveUpElement(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/touch_action_tests.html'))
-    target = self._driver.FindElement('id', 'target')
+    target = self._driver.FindElement('css selector', '#target')
     location = target.GetLocation()
     self._driver.TouchDown(location['x'], location['y'])
-    events = self._driver.FindElement('id', 'events')
+    events = self._driver.FindElement('css selector', '#events')
     self.assertEquals('events: touchstart', events.GetText())
     self._driver.TouchMove(location['x'] + 1, location['y'] + 1)
     self.assertEquals('events: touchstart touchmove', events.GetText())
@@ -1613,7 +1615,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testGetElementRect(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/absolute_position_element.html'))
-    target = self._driver.FindElement('id', 'target')
+    target = self._driver.FindElement('css selector', '#target')
     rect = target.GetRect()
     self.assertEquals(18, rect['x'])
     self.assertEquals(10, rect['y'])
@@ -1627,7 +1629,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     scroll_top = 'return document.documentElement.scrollTop;'
     self.assertEquals(0, self._driver.ExecuteScript(scroll_left))
     self.assertEquals(0, self._driver.ExecuteScript(scroll_top))
-    target = self._driver.FindElement('id', 'target')
+    target = self._driver.FindElement('css selector', '#target')
     self._driver.TouchScroll(target, 47, 53)
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1179
     self.assertAlmostEqual(47, self._driver.ExecuteScript(scroll_left), delta=1)
@@ -1636,18 +1638,18 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testTouchDoubleTapElement(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/touch_action_tests.html'))
-    target = self._driver.FindElement('id', 'target')
+    target = self._driver.FindElement('css selector', '#target')
     target.DoubleTap()
-    events = self._driver.FindElement('id', 'events')
+    events = self._driver.FindElement('css selector', '#events')
     self.assertEquals('events: touchstart touchend touchstart touchend',
         events.GetText())
 
   def testTouchLongPressElement(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/touch_action_tests.html'))
-    target = self._driver.FindElement('id', 'target')
+    target = self._driver.FindElement('css selector', '#target')
     target.LongPress()
-    events = self._driver.FindElement('id', 'events')
+    events = self._driver.FindElement('css selector', '#events')
     self.assertEquals('events: touchstart touchcancel', events.GetText())
 
   def testTouchFlickElement(self):
@@ -1832,9 +1834,9 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       'page_with_frame.html')
     url = 'file://' + urllib.pathname2url(path)
     self._driver.Load(url)
-    frame = self._driver.FindElement('id', 'frm')
+    frame = self._driver.FindElement('css selector', '#frm')
     self._driver.SwitchToFrame(frame)
-    a = self._driver.FindElement('id', 'btn')
+    a = self._driver.FindElement('css selector', '#btn')
     a.Click()
     self.WaitForCondition(lambda: self._driver.IsAlertOpen())
     self._driver.HandleAlert(True)
@@ -1866,7 +1868,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
   def testElementReference(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/element_ref.html'))
-    element = self._driver.FindElement('id', 'link')
+    element = self._driver.FindElement('css selector', '#link')
     self._driver.FindElements('tag name', 'br')
     w3c_id_length = 36
     if (self._driver.w3c_compliant):
@@ -1929,15 +1931,15 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.Load(self._http_server.GetUrl() + '/top.html')
     thread = threading.Thread(target=waitAndRespond)
     thread.start()
-    self._driver.FindElement('id', 'button').Click()
+    self._driver.FindElement('css selector', '#button').Click()
     # If ChromeDriver correctly waits for slow iframe to load, then
     # SwitchToFrame succeeds, and element with id='top' won't be found.
     # If ChromeDriver didn't wait for iframe load, then SwitchToFrame fails,
     # we remain in top frame, and FindElement succeeds.
-    frame = self._driver.FindElement('id', 'iframe')
+    frame = self._driver.FindElement('css selector', '#iframe')
     self._driver.SwitchToFrame(frame)
     with self.assertRaises(chromedriver.NoSuchElement):
-      self._driver.FindElement('id', 'top')
+      self._driver.FindElement('css selector', '#top')
     thread.join()
 
   @staticmethod
@@ -1988,7 +1990,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.Load(self.GetHttpUrlForFile(
                       '/chromedriver/page_with_redbox.html'))
     elementScreenshotPNGBase64 = self._driver.FindElement(
-        'id', 'box').TakeElementScreenshot()
+        'css selector', '#box').TakeElementScreenshot()
     self.assertIsNotNone(elementScreenshotPNGBase64)
     analysisResult = self._driver.ExecuteAsyncScript(
         ChromeDriverTest.MakeRedImageTestScript(elementScreenshotPNGBase64))
@@ -1997,10 +1999,10 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testTakeElementScreenshotInIframe(self):
     self._driver.Load(self.GetHttpUrlForFile(
                       '/chromedriver/page_with_iframe_redbox.html'))
-    frame = self._driver.FindElement('id', 'frm')
+    frame = self._driver.FindElement('css selector', '#frm')
     self._driver.SwitchToFrame(frame)
     elementScreenshotPNGBase64 = self._driver.FindElement(
-        'id', 'box').TakeElementScreenshot()
+        'css selector', '#box').TakeElementScreenshot()
     self.assertIsNotNone(elementScreenshotPNGBase64)
     analysisResult = self._driver.ExecuteAsyncScript(
         ChromeDriverTest.MakeRedImageTestScript(elementScreenshotPNGBase64))
@@ -2298,7 +2300,7 @@ class ChromeDriverAndroidTest(ChromeDriverBaseTest):
     self._driver.Load(
       ChromeDriverTest.GetHttpUrlForFile('/chromedriver/page_test.html'))
     window1 = self._driver.GetCurrentWindowHandle()
-    self._driver.FindElement('id', 'link').Click()
+    self._driver.FindElement('css selector', '#link').Click()
     orientation = self._driver.GetScreenOrientation()
     self.assertEqual(orientation['orientation'], 'LANDSCAPE')
 
@@ -2369,7 +2371,7 @@ class ChromeDownloadDirTest(ChromeDriverBaseTest):
     driver = self.CreateDriver(download_dir=download_dir)
     driver.Load(ChromeDriverTest.GetHttpUrlForFile(
         '/chromedriver/download.html'))
-    driver.FindElement('id', 'red-dot').Click()
+    driver.FindElement('css selector', '#red-dot').Click()
     self.WaitForFileToDownload(download_name)
     self.assertEqual(
         ChromeDriverTest.GetHttpUrlForFile('/chromedriver/download.html'),
@@ -2445,7 +2447,8 @@ class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
       except:
         continue
       driver.Load('chrome:version')
-      command_line = driver.FindElement('id', 'command_line').GetText()
+      command_line = driver.FindElement('css selector',
+                                        '#command_line').GetText()
       self.assertIn(port_flag, command_line)
       break
     else:  # Else clause gets invoked if "break" never happens.
@@ -2572,7 +2575,7 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
         ChromeDriverTest._http_server.GetUrl() +
           '/chromedriver/iframe_extension.html')
     driver.SwitchToFrame('testframe')
-    element = driver.FindElement('id', 'p1')
+    element = driver.FindElement('css selector', '#p1')
     self.assertEqual('Its a frame with extension source', element.GetText())
 
   def testDontExecuteScriptsInContentScriptContext(self):
@@ -2595,7 +2598,7 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
     driver = self.CreateDriver(
         experimental_options={'useAutomationExtension': False})
     driver.Load('chrome:version')
-    command_line = driver.FindElement('id', 'command_line').GetText()
+    command_line = driver.FindElement('css selector', '#command_line').GetText()
     self.assertNotIn('load-extension', command_line)
 
 
@@ -2860,9 +2863,9 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
         self._http_server.GetUrl() +'/chromedriver/xmlrequest_test.html')
     window1_handle = driver.GetCurrentWindowHandle()
     old_handles = driver.GetWindowHandles()
-    driver.FindElement('id', 'requestButton').Click()
+    driver.FindElement('css selector', '#requestButton').Click()
 
-    driver.FindElement('id', 'link').Click()
+    driver.FindElement('css selector', '#link').Click()
     new_window_handle = self.WaitForNewWindow(driver, old_handles)
     self.assertNotEqual(None, new_window_handle)
     driver.SwitchToWindow(new_window_handle)
@@ -2894,13 +2897,13 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     self.assertEquals(network, connection_type)
 
     # Navigate to another window.
-    driver.FindElement('id', 'link').Click()
+    driver.FindElement('css selector', '#link').Click()
     new_window_handle = self.WaitForNewWindow(driver, old_handles)
     self.assertNotEqual(None, new_window_handle)
     driver.SwitchToWindow(new_window_handle)
     self.assertEquals(new_window_handle, driver.GetCurrentWindowHandle())
     self.assertRaises(
-        chromedriver.NoSuchElement, driver.FindElement, 'id', 'link')
+        chromedriver.NoSuchElement, driver.FindElement, 'css selector', '#link')
 
     # Set connection to 3G in second window.
     connection_type = 0x10;
@@ -3242,7 +3245,7 @@ class HeadlessInvalidCertificateTest(ChromeDriverBaseTest):
     print "loading"
     self._driver.Load(self.GetHttpsUrlForFile('/chromedriver/page_test.html'))
     # Verify that page content loaded.
-    self._driver.FindElement('id', 'link')
+    self._driver.FindElement('css selector', '#link')
 
   def testNavigateNewWindow(self):
     print "loading"
@@ -3251,13 +3254,13 @@ class HeadlessInvalidCertificateTest(ChromeDriverBaseTest):
         'document.getElementById("link").href = "page_test.html";')
 
     old_handles = self._driver.GetWindowHandles()
-    self._driver.FindElement('id', 'link').Click()
+    self._driver.FindElement('css selector', '#link').Click()
     new_window_handle = self.WaitForNewWindow(self._driver, old_handles)
     self.assertNotEqual(None, new_window_handle)
     self._driver.SwitchToWindow(new_window_handle)
     self.assertEquals(new_window_handle, self._driver.GetCurrentWindowHandle())
     # Verify that page content loaded in new window.
-    self._driver.FindElement('id', 'link')
+    self._driver.FindElement('css selector', '#link')
 
 
 class SupportIPv4AndIPv6(ChromeDriverBaseTest):
