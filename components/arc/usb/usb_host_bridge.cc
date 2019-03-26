@@ -4,6 +4,7 @@
 
 #include "components/arc/usb/usb_host_bridge.h"
 
+#include <unordered_set>
 #include <utility>
 
 #include "base/bind.h"

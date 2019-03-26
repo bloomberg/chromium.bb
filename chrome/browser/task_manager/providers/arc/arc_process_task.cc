@@ -4,6 +4,8 @@
 
 #include "chrome/browser/task_manager/providers/arc/arc_process_task.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string_number_conversions.h"

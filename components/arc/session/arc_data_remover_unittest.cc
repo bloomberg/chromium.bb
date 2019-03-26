@@ -5,6 +5,9 @@
 #include "components/arc/session/arc_data_remover.h"
 
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/run_loop.h"

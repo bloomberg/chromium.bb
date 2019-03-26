@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
 
+#include <algorithm>
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"

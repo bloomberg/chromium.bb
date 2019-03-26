@@ -4,6 +4,8 @@
 
 #include "components/arc/disk_quota/arc_disk_quota_bridge.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/optional.h"

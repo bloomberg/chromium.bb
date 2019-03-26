@@ -4,6 +4,8 @@
 
 #include "components/arc/media_session/arc_media_session_bridge.h"
 
+#include <utility>
+
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"

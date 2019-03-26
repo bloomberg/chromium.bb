@@ -345,8 +345,8 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     profile_->set_profile_name(username);
   }
 
-  network::TestURLLoaderFactory& test_url_loader_factory() {
-    return test_url_loader_factory_;
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
   }
   ArcAuthService& auth_service() { return *auth_service_; }
   FakeAuthInstance& auth_instance() { return auth_instance_; }
@@ -385,8 +385,8 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
                        SuccessfulBackgroundFetchViaDeprecatedApi) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
-                                        GetFakeAuthTokenResponse());
+  test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
+                                         GetFakeAuthTokenResponse());
 
   base::RunLoop run_loop;
   auth_instance().RequestAccountInfoDeprecated(run_loop.QuitClosure());
@@ -406,8 +406,8 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
 // Chrome supplies the info configured in SetAccountAndProfile() method.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
-                                        GetFakeAuthTokenResponse());
+  test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
+                                         GetFakeAuthTokenResponse());
 
   base::RunLoop run_loop;
   auth_instance().RequestPrimaryAccountInfo(run_loop.QuitClosure());
@@ -426,8 +426,8 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
                        ReAuthenticatePrimaryAccountSucceeds) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
-                                        GetFakeAuthTokenResponse());
+  test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
+                                         GetFakeAuthTokenResponse());
 
   base::RunLoop run_loop;
   auth_instance().RequestAccountInfo(kFakeUserName, run_loop.QuitClosure());
@@ -446,9 +446,9 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
                        ReAuthenticatePrimaryAccountFailsForInvalidAccount) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
-                                        std::string() /* response */,
-                                        net::HTTP_UNAUTHORIZED);
+  test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
+                                         std::string() /* response */,
+                                         net::HTTP_UNAUTHORIZED);
 
   base::RunLoop run_loop;
   auth_instance().RequestAccountInfo(kFakeUserName, run_loop.QuitClosure());
@@ -463,8 +463,8 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, FetchSecondaryAccountInfoSucceeds) {
   // Add a Secondary Account.
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
   SeedAccountInfo(kSecondaryAccountEmail);
-  test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
-                                        GetFakeAuthTokenResponse());
+  test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
+                                         GetFakeAuthTokenResponse());
 
   base::RunLoop run_loop;
   auth_instance().RequestAccountInfo(kSecondaryAccountEmail,
@@ -486,9 +486,9 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
   // Add a Secondary Account.
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
   SeedAccountInfo(kSecondaryAccountEmail);
-  test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
-                                        std::string() /* response */,
-                                        net::HTTP_UNAUTHORIZED);
+  test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
+                                         std::string() /* response */,
+                                         net::HTTP_UNAUTHORIZED);
 
   base::RunLoop run_loop;
   auth_instance().RequestAccountInfo(kSecondaryAccountEmail,
@@ -637,7 +637,7 @@ class ArcRobotAccountAuthServiceTest : public ArcAuthServiceTest {
 
  protected:
   void ResponseJob(const network::ResourceRequest& request,
-                   network::TestURLLoaderFactory& factory) {
+                   network::TestURLLoaderFactory* factory) {
     enterprise_management::DeviceManagementResponse response;
     response.mutable_service_api_access_response()->set_auth_code(
         kFakeAuthCode);
@@ -645,7 +645,7 @@ class ArcRobotAccountAuthServiceTest : public ArcAuthServiceTest {
     std::string response_data;
     EXPECT_TRUE(response.SerializeToString(&response_data));
 
-    factory.AddResponse(request.url.spec(), response_data);
+    factory->AddResponse(request.url.spec(), response_data);
   }
 
  private:
@@ -680,7 +680,7 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
-  test_url_loader_factory().SetInterceptor(
+  test_url_loader_factory()->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
         ResponseJob(request, test_url_loader_factory());
       }));
@@ -708,7 +708,7 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetDemoAccount) {
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
-  test_url_loader_factory().SetInterceptor(
+  test_url_loader_factory()->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
         ResponseJob(request, test_url_loader_factory());
       }));
@@ -776,10 +776,10 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
-  test_url_loader_factory().SetInterceptor(
+  test_url_loader_factory()->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
-        test_url_loader_factory().AddResponse(request.url.spec(), std::string(),
-                                              net::HTTP_NOT_FOUND);
+        test_url_loader_factory()->AddResponse(
+            request.url.spec(), std::string(), net::HTTP_NOT_FOUND);
       }));
 
   base::RunLoop run_loop;
@@ -803,10 +803,10 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
-  test_url_loader_factory().SetInterceptor(
+  test_url_loader_factory()->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
-        test_url_loader_factory().AddResponse(request.url.spec(), std::string(),
-                                              net::HTTP_NOT_FOUND);
+        test_url_loader_factory()->AddResponse(
+            request.url.spec(), std::string(), net::HTTP_NOT_FOUND);
       }));
 
   base::RunLoop run_loop;
@@ -846,8 +846,8 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest,
                        ChildAccountFetchViaDeprecatedApi) {
   SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
   EXPECT_TRUE(profile()->IsChild());
-  test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
-                                        GetFakeAuthTokenResponse());
+  test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
+                                         GetFakeAuthTokenResponse());
 
   base::RunLoop run_loop;
   auth_instance().RequestAccountInfoDeprecated(run_loop.QuitClosure());
@@ -868,8 +868,8 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest,
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest, ChildAccountFetch) {
   SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
   EXPECT_TRUE(profile()->IsChild());
-  test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
-                                        GetFakeAuthTokenResponse());
+  test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
+                                         GetFakeAuthTokenResponse());
 
   base::RunLoop run_loop;
   auth_instance().RequestPrimaryAccountInfo(run_loop.QuitClosure());
