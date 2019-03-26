@@ -5,11 +5,13 @@
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
@@ -142,6 +144,10 @@ void IdlenessDetector::WillProcessTask(base::TimeTicks start_time) {
       }
     }
     local_frame_->GetDocument()->Fetcher()->OnNetworkQuiet();
+    if (WebServiceWorkerNetworkProvider* service_worker_network_provider =
+            loader->GetServiceWorkerNetworkProvider()) {
+      service_worker_network_provider->DispatchNetworkQuiet();
+    }
     FirstMeaningfulPaintDetector::From(*local_frame_->GetDocument())
         .OnNetwork2Quiet();
     in_network_2_quiet_period_ = false;

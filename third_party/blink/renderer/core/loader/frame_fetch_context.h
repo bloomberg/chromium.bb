@@ -148,8 +148,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   bool CalculateIfAdSubresource(const ResourceRequest& resource_request,
                                 ResourceType type) override;
 
-  void DispatchNetworkQuiet() override;
-
  private:
   class FrameConsoleLogger;
   friend class FrameFetchContextTest;
