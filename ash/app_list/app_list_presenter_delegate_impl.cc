@@ -85,9 +85,8 @@ void AppListPresenterDelegateImpl::Init(app_list::AppListView* view,
   const bool is_tablet_mode = IsTabletMode();
   aura::Window* parent_window =
       RootWindowController::ForWindow(root_window)
-          ->GetContainer(is_tablet_mode
-                             ? kShellWindowId_AppListTabletModeContainer
-                             : kShellWindowId_AppListContainer);
+          ->GetContainer(is_tablet_mode ? kShellWindowId_HomeScreenContainer
+                                        : kShellWindowId_AppListContainer);
   params.parent = parent_window;
   params.initial_apps_page = current_apps_page;
   params.is_tablet_mode = is_tablet_mode;

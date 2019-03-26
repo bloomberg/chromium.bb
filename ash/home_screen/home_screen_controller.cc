@@ -29,7 +29,7 @@ namespace {
 bool MinimizeAllWindows() {
   bool handled = false;
   aura::Window* container = Shell::Get()->GetPrimaryRootWindow()->GetChildById(
-      kShellWindowId_AppListTabletModeContainer);
+      kShellWindowId_HomeScreenContainer);
   aura::Window::Windows windows =
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
   for (auto it = windows.rbegin(); it != windows.rend(); it++) {

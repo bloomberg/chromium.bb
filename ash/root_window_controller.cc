@@ -863,8 +863,8 @@ void RootWindowController::CreateContainers() {
       "LockScreenRelatedContainersContainer", screen_rotation_container);
 
   aura::Window* app_list_tablet_mode_container =
-      CreateContainer(kShellWindowId_AppListTabletModeContainer,
-                      "AppListTabletModeContainer", non_lock_screen_containers);
+      CreateContainer(kShellWindowId_HomeScreenContainer, "HomeScreenContainer",
+                      non_lock_screen_containers);
   wm::SetSnapsChildrenToPhysicalPixelBoundary(app_list_tablet_mode_container);
   app_list_tablet_mode_container->SetProperty(::wm::kUsesScreenCoordinatesKey,
                                               true);

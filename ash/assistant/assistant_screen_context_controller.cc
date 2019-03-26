@@ -85,8 +85,8 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
 
   aura::Window* app_list_container =
       ash::Shell::GetContainer(root_window, kShellWindowId_AppListContainer);
-  aura::Window* app_list_tablet_mode_container = ash::Shell::GetContainer(
-      root_window, kShellWindowId_AppListTabletModeContainer);
+  aura::Window* app_list_tablet_mode_container =
+      ash::Shell::GetContainer(root_window, kShellWindowId_HomeScreenContainer);
 
   // Ignore app list to prevent interfering with app list animations.
   if (app_list_container)

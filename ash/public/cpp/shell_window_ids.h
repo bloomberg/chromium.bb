@@ -57,8 +57,8 @@ enum ShellWindowId {
   // The container for the app list.
   kShellWindowId_AppListContainer,
 
-  // The container for the app list in tablet mode.
-  kShellWindowId_AppListTabletModeContainer,
+  // The container for the home screen, e.g. the app list in tablet mode.
+  kShellWindowId_HomeScreenContainer,
 
   // The container for the PIP window.
   kShellWindowId_PipContainer,
@@ -168,7 +168,7 @@ const int32_t kAllShellContainerIds[] = {
     kShellWindowId_DefaultContainer,
     kShellWindowId_AlwaysOnTopContainer,
     kShellWindowId_AppListContainer,
-    kShellWindowId_AppListTabletModeContainer,
+    kShellWindowId_HomeScreenContainer,
     kShellWindowId_ArcImeWindowParentContainer,
     kShellWindowId_ArcVirtualKeyboardContainer,
     kShellWindowId_ShelfContainer,

@@ -1220,11 +1220,10 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, ParentWindowContainer) {
                   ->Contains(window));
 
   // Turn on tablet mode. The window container should be
-  // kShellWindowId_AppListTabletModeContainer.
+  // kShellWindowId_HomeScreenContainer.
   EnableTabletMode(true);
-  EXPECT_TRUE(
-      root_window->GetChildById(kShellWindowId_AppListTabletModeContainer)
-          ->Contains(window));
+  EXPECT_TRUE(root_window->GetChildById(kShellWindowId_HomeScreenContainer)
+                  ->Contains(window));
 }
 
 // Tests that the background opacity change for app list.

@@ -23,7 +23,7 @@ const int32_t kActivatableShellWindowIds[] = {
     kShellWindowId_AlwaysOnTopContainer,
     kShellWindowId_AppListContainer,
     kShellWindowId_DefaultContainer,
-    kShellWindowId_AppListTabletModeContainer,
+    kShellWindowId_HomeScreenContainer,
 
     // Launcher and status are intentionally checked after other containers
     // even though these layers are higher. The user expects their windows
