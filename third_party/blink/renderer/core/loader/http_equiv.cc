@@ -183,8 +183,8 @@ void HttpEquiv::ProcessHttpEquivRefresh(Document& document,
                                         Element* element) {
   UseCounter::Count(document, WebFeature::kMetaRefresh);
   if (!document.GetContentSecurityPolicy()->AllowInline(
-          ContentSecurityPolicy::InlineType::kInlineScriptElement, element,
-          "" /* content */, "" /* nonce */, NullURL(), OrdinalNumber(),
+          ContentSecurityPolicy::InlineType::kScript, element, "" /* content */,
+          "" /* nonce */, NullURL(), OrdinalNumber(),
           SecurityViolationReportingPolicy::kSuppressReporting)) {
     UseCounter::Count(document,
                       WebFeature::kMetaRefreshWhenCSPBlocksInlineScript);
@@ -199,8 +199,8 @@ void HttpEquiv::ProcessHttpEquivSetCookie(Document& document,
   Deprecation::CountDeprecation(document, WebFeature::kMetaSetCookie);
 
   if (!document.GetContentSecurityPolicy()->AllowInline(
-          ContentSecurityPolicy::InlineType::kInlineScriptElement, element,
-          "" /* content */, "" /* nonce */, NullURL(), OrdinalNumber(),
+          ContentSecurityPolicy::InlineType::kScript, element, "" /* content */,
+          "" /* nonce */, NullURL(), OrdinalNumber(),
           SecurityViolationReportingPolicy::kSuppressReporting)) {
     UseCounter::Count(document,
                       WebFeature::kMetaSetCookieWhenCSPBlocksInlineScript);

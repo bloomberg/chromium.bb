@@ -4961,7 +4961,7 @@ void Element::StyleAttributeChanged(
              (ContainingShadowRoot() &&
               ContainingShadowRoot()->IsUserAgent()) ||
              GetDocument().GetContentSecurityPolicy()->AllowInline(
-                 ContentSecurityPolicy::InlineType::kInlineStyleAttribute, this,
+                 ContentSecurityPolicy::InlineType::kStyleAttribute, this,
                  new_style_string, String() /* nonce */, GetDocument().Url(),
                  start_line_number)) {
     SetInlineStyleFromString(new_style_string);

@@ -245,8 +245,8 @@ bool HTMLScriptElement::AllowInlineScriptForCSP(
     const WTF::OrdinalNumber& context_line,
     const String& script_content) {
   return GetDocument().GetContentSecurityPolicy()->AllowInline(
-      ContentSecurityPolicy::InlineType::kInlineScriptElement, this,
-      script_content, nonce, GetDocument().Url(), context_line);
+      ContentSecurityPolicy::InlineType::kScript, this, script_content, nonce,
+      GetDocument().Url(), context_line);
 }
 
 Document& HTMLScriptElement::GetDocument() const {

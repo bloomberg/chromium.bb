@@ -74,41 +74,52 @@ bool ParseBase64Digest(String base64, DigestValue* hash) {
   return true;
 }
 
+// https://w3c.github.io/webappsec-csp/#effective-directive-for-inline-check
 // TODO(hiroshige): The following two methods are slightly different.
 // Investigate the correct behavior and merge them.
 ContentSecurityPolicy::DirectiveType
 GetDirectiveTypeForAllowInlineFromInlineType(
     ContentSecurityPolicy::InlineType inline_type) {
+  // 1. Switch on type: [spec text]
   switch (inline_type) {
-    case ContentSecurityPolicy::InlineType::kJavaScriptURL:
-    case ContentSecurityPolicy::InlineType::kInlineScriptElement:
+    // "script":
+    // "navigation":
+    // 1. Return script-src-elem. [spec text]
+    case ContentSecurityPolicy::InlineType::kScript:
+    case ContentSecurityPolicy::InlineType::kNavigation:
       return ContentSecurityPolicy::DirectiveType::kScriptSrcElem;
 
-    case ContentSecurityPolicy::InlineType::kInlineEventHandler:
+    // "script attribute":
+    // 1. Return script-src-attr. [spec text]
+    case ContentSecurityPolicy::InlineType::kScriptAttribute:
       return ContentSecurityPolicy::DirectiveType::kScriptSrcAttr;
 
-    case ContentSecurityPolicy::InlineType::kInlineStyleAttribute:
-      return ContentSecurityPolicy::DirectiveType::kStyleSrcAttr;
-
-    case ContentSecurityPolicy::InlineType::kInlineStyleElement:
+    // "style":
+    // 1. Return style-src-elem. [spec text]
+    case ContentSecurityPolicy::InlineType::kStyle:
       return ContentSecurityPolicy::DirectiveType::kStyleSrcElem;
+
+    // "style attribute":
+    // 1. Return style-src-attr. [spec text]
+    case ContentSecurityPolicy::InlineType::kStyleAttribute:
+      return ContentSecurityPolicy::DirectiveType::kStyleSrcAttr;
   }
 }
 
 ContentSecurityPolicy::DirectiveType GetDirectiveTypeForAllowHashFromInlineType(
     ContentSecurityPolicy::InlineType inline_type) {
   switch (inline_type) {
-    case ContentSecurityPolicy::InlineType::kInlineScriptElement:
+    case ContentSecurityPolicy::InlineType::kScript:
       return ContentSecurityPolicy::DirectiveType::kScriptSrcElem;
 
-    case ContentSecurityPolicy::InlineType::kJavaScriptURL:
-    case ContentSecurityPolicy::InlineType::kInlineEventHandler:
+    case ContentSecurityPolicy::InlineType::kNavigation:
+    case ContentSecurityPolicy::InlineType::kScriptAttribute:
       return ContentSecurityPolicy::DirectiveType::kScriptSrcAttr;
 
-    case ContentSecurityPolicy::InlineType::kInlineStyleAttribute:
+    case ContentSecurityPolicy::InlineType::kStyleAttribute:
       return ContentSecurityPolicy::DirectiveType::kStyleSrcAttr;
 
-    case ContentSecurityPolicy::InlineType::kInlineStyleElement:
+    case ContentSecurityPolicy::InlineType::kStyle:
       return ContentSecurityPolicy::DirectiveType::kStyleSrcElem;
   }
 }
@@ -671,8 +682,8 @@ bool CSPDirectiveList::AllowInline(
   if (IsMatchingNoncePresent(directive, nonce))
     return true;
 
-  if (inline_type == ContentSecurityPolicy::InlineType::kInlineScriptElement &&
-      element && IsHTMLScriptElement(element) &&
+  if (inline_type == ContentSecurityPolicy::InlineType::kScript && element &&
+      IsHTMLScriptElement(element) &&
       !ToHTMLScriptElement(element)->Loader()->IsParserInserted() &&
       AllowDynamic(type)) {
     return true;
@@ -680,34 +691,34 @@ bool CSPDirectiveList::AllowInline(
   if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
     String hash_value;
     switch (inline_type) {
-      case ContentSecurityPolicy::InlineType::kJavaScriptURL:
-      case ContentSecurityPolicy::InlineType::kInlineEventHandler:
+      case ContentSecurityPolicy::InlineType::kNavigation:
+      case ContentSecurityPolicy::InlineType::kScriptAttribute:
         hash_value = "sha256-...";
         break;
 
-      case ContentSecurityPolicy::InlineType::kInlineScriptElement:
-      case ContentSecurityPolicy::InlineType::kInlineStyleAttribute:
-      case ContentSecurityPolicy::InlineType::kInlineStyleElement:
+      case ContentSecurityPolicy::InlineType::kScript:
+      case ContentSecurityPolicy::InlineType::kStyleAttribute:
+      case ContentSecurityPolicy::InlineType::kStyle:
         hash_value = GetSha256String(content);
         break;
     }
 
     String message;
     switch (inline_type) {
-      case ContentSecurityPolicy::InlineType::kJavaScriptURL:
+      case ContentSecurityPolicy::InlineType::kNavigation:
         message = "run the JavaScript URL";
         break;
 
-      case ContentSecurityPolicy::InlineType::kInlineEventHandler:
+      case ContentSecurityPolicy::InlineType::kScriptAttribute:
         message = "execute inline event handler";
         break;
 
-      case ContentSecurityPolicy::InlineType::kInlineScriptElement:
+      case ContentSecurityPolicy::InlineType::kScript:
         message = "execute inline script";
         break;
 
-      case ContentSecurityPolicy::InlineType::kInlineStyleAttribute:
-      case ContentSecurityPolicy::InlineType::kInlineStyleElement:
+      case ContentSecurityPolicy::InlineType::kStyleAttribute:
+      case ContentSecurityPolicy::InlineType::kStyle:
         message = "apply inline style";
         break;
     }
@@ -875,19 +886,20 @@ bool CSPDirectiveList::AllowHash(
     const ContentSecurityPolicy::InlineType inline_type) const {
   ContentSecurityPolicy::DirectiveType directive_type =
       GetDirectiveTypeForAllowHashFromInlineType(inline_type);
-  switch (directive_type) {
-    case ContentSecurityPolicy::DirectiveType::kScriptSrcAttr:
-    case ContentSecurityPolicy::DirectiveType::kStyleSrcAttr:
+
+  // https://w3c.github.io/webappsec-csp/#match-element-to-source-list
+  // Step 5. If type is "script" or "style", or unsafe-hashes flag is true:
+  // [spec text]
+  switch (inline_type) {
+    case ContentSecurityPolicy::InlineType::kNavigation:
+    case ContentSecurityPolicy::InlineType::kScriptAttribute:
+    case ContentSecurityPolicy::InlineType::kStyleAttribute:
       if (!CheckUnsafeHashesAllowed(OperativeDirective(directive_type)))
         return false;
       break;
 
-    case ContentSecurityPolicy::DirectiveType::kScriptSrcElem:
-    case ContentSecurityPolicy::DirectiveType::kStyleSrcElem:
-      break;
-
-    default:
-      NOTREACHED();
+    case ContentSecurityPolicy::InlineType::kScript:
+    case ContentSecurityPolicy::InlineType::kStyle:
       break;
   }
   return CheckHash(OperativeDirective(directive_type), hash_value);

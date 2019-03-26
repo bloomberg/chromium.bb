@@ -390,7 +390,7 @@ DOMWindow* CreateWindow(const String& url_string,
         completed_url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
 
     if (!opener_frame.GetDocument()->GetContentSecurityPolicy()->AllowInline(
-            ContentSecurityPolicy::InlineType::kJavaScriptURL,
+            ContentSecurityPolicy::InlineType::kNavigation,
             nullptr /* element */, script_source, String() /* nonce */,
             opener_frame.GetDocument()->Url(), OrdinalNumber())) {
       return nullptr;

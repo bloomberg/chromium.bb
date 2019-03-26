@@ -705,7 +705,7 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
         request.ShouldCheckMainWorldContentSecurityPolicy() ==
             kDoNotCheckContentSecurityPolicy ||
         origin_document->GetContentSecurityPolicy()->AllowInline(
-            ContentSecurityPolicy::InlineType::kJavaScriptURL,
+            ContentSecurityPolicy::InlineType::kNavigation,
             frame_->DeprecatedLocalOwner(), url.GetString(),
             String() /* nonce */, origin_document->Url(),
             OrdinalNumber::First());

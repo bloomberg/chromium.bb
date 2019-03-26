@@ -6591,9 +6591,14 @@ bool Document::AllowInlineEventHandler(Node* node,
                                        const String& context_url,
                                        const WTF::OrdinalNumber& context_line) {
   Element* element = node && node->IsElementNode() ? ToElement(node) : nullptr;
+
+  // https://html.spec.whatwg.org/multipage/webappapis.html#event-handler-content-attributes
+  // Step 5.1. If the Should element's inline behavior be blocked by Content
+  // Security Policy? algorithm returns "Blocked" when executed upon element,
+  // "script attribute", and value, then return. [CSP] [spec text]
   if (!ContentSecurityPolicy::ShouldBypassMainWorld(this) &&
       !GetContentSecurityPolicy()->AllowInline(
-          ContentSecurityPolicy::InlineType::kInlineEventHandler, element,
+          ContentSecurityPolicy::InlineType::kScriptAttribute, element,
           listener->ScriptBody(), String() /* nonce */, context_url,
           context_line))
     return false;

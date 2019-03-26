@@ -145,12 +145,16 @@ class CORE_EXPORT ContentSecurityPolicy
     kTrustedTypesViolation
   };
 
+  // The |type| argument given to inline checks, e.g.:
+  // https://w3c.github.io/webappsec-csp/#should-block-inline
+  // Its possible values are listed in:
+  // https://w3c.github.io/webappsec-csp/#effective-directive-for-inline-check
   enum class InlineType {
-    kJavaScriptURL,
-    kInlineEventHandler,
-    kInlineScriptElement,
-    kInlineStyleAttribute,
-    kInlineStyleElement
+    kNavigation,
+    kScript,
+    kScriptAttribute,
+    kStyle,
+    kStyleAttribute
   };
 
   enum class DirectiveType {
