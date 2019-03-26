@@ -385,8 +385,7 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
     // Because there is no counter for cookies, an explanatory text is
     // displayed.
     if (itemType == ItemTypeDataTypeCookiesSiteData &&
-        IsNewClearBrowsingDataUIEnabled() &&
-        prefs->GetBoolean(browsing_data::prefs::kDeleteCookies)) {
+        IsNewClearBrowsingDataUIEnabled()) {
       collectionClearDataItem.detailText =
           l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
     }
