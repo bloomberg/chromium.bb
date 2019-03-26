@@ -45,6 +45,7 @@
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/core/SkString.h"
+#include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkOverdrawColorFilter.h"
 #include "third_party/skia/include/effects/SkShaderMaskFilter.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -1128,7 +1129,7 @@ void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
       uv_rect, gfx::RectF(quad->rect), gfx::RectF(quad->visible_rect));
   SkRect sk_uv_rect = gfx::RectFToSkRect(visible_uv_rect);
   SkRect quad_rect = gfx::RectToSkRect(quad->visible_rect);
-  // TODO: figure out how to set correct filter quality.
+  // TODO(vikassoni): figure out how to set correct filter quality.
   paint->setFilterQuality(kLow_SkFilterQuality);
   current_canvas_->drawImageRect(image, sk_uv_rect, quad_rect, paint);
 }
@@ -1226,6 +1227,17 @@ bool SkiaRenderer::CalculateRPDQParams(sk_sp<SkImage> content,
       params->color_filter = color_filter;
       filter = sk_ref_sp(filter->getInput(0));
     }
+  }
+
+  // If we need to apply filter, apply opacity as the last step of image filter
+  // so it is uniform across.
+  if (filter && quad->shared_quad_state->opacity != 1.f) {
+    SkColor alpha_as_color =
+        SkColor4f({1.f, 1.f, 1.f, quad->shared_quad_state->opacity})
+            .toSkColor();
+    sk_sp<SkColorFilter> cf =
+        SkColorFilter::MakeModeFilter(alpha_as_color, SkBlendMode::kDstIn);
+    filter = SkColorFilterImageFilter::Make(cf, filter);
   }
 
   // If after applying the filter we would be clipped out, skip the draw.
@@ -1328,6 +1340,12 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
   // Add image filter.
   if (params.image_filter)
     paint->setImageFilter(params.image_filter);
+
+  // If this render pass has filter, reset paint to opaque. Render Pass should
+  // apply their opacity as last step, this is done by using a color filter.
+  // This is required for reflector filter.
+  if (params.image_filter)
+    paint->setAlpha(255);
 
   SkRect content_rect = RectFToSkRect(quad->tex_coord_rect);
   SkRect dest_visible_rect = gfx::RectToSkRect(quad->visible_rect);
