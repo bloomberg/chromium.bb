@@ -365,8 +365,8 @@ SkFontStyle FontDescription::SkiaFontStyle() const {
   }
 
   int skia_weight = SkFontStyle::kNormal_Weight;
-  if (Weight() >= MinWeightValue() && Weight() <= MaxWeightValue())
-    skia_weight = static_cast<int>(Weight());
+  if (Weight() >= 100 && Weight() <= 1000)
+    skia_weight = static_cast<int>(roundf(Weight() / 100) * 100);
 
   return SkFontStyle(skia_weight, skia_width, slant);
 }
