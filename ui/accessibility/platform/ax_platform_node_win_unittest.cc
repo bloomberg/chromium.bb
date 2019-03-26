@@ -4511,49 +4511,59 @@ TEST_F(AXPlatformNodeWinTest, TestGetPatternProviderSupportedPatterns) {
   grid.role = ax::mojom::Role::kGrid;
   root.child_ids.push_back(grid_id);
 
+  ui::AXNodeData grid_cell;
+  int32_t grid_cell_id = 7;
+  grid_cell.id = grid_cell_id;
+  grid_cell.role = ax::mojom::Role::kCell;
+  grid.child_ids.push_back(grid_cell_id);
+
   ui::AXNodeData checkbox;
-  int32_t checkbox_id = 7;
+  int32_t checkbox_id = 8;
   checkbox.id = checkbox_id;
   checkbox.role = ax::mojom::Role::kCheckBox;
   root.child_ids.push_back(checkbox_id);
 
   ui::AXNodeData link;
-  int32_t link_id = 8;
+  int32_t link_id = 9;
   link.id = link_id;
   link.role = ax::mojom::Role::kLink;
   root.child_ids.push_back(link_id);
 
   Init(root, text_field_with_combo_box, table, table_cell, meter,
-       group_with_scroll, grid, checkbox, link);
+       group_with_scroll, grid, grid_cell, checkbox, link);
 
-  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
-                        UIA_TextEditPatternId, UIA_TextPatternId}),
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_TextEditPatternId,
+                        UIA_TextPatternId}),
             GetSupportedPatternsFromNodeId(root_id));
 
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
                         UIA_ExpandCollapsePatternId}),
             GetSupportedPatternsFromNodeId(text_field_with_combo_box_id));
 
-  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
-                        UIA_GridPatternId, UIA_TablePatternId}),
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_GridPatternId,
+                        UIA_TablePatternId}),
             GetSupportedPatternsFromNodeId(table_id));
 
-  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
-                        UIA_GridItemPatternId, UIA_TableItemPatternId}),
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_GridItemPatternId,
+                        UIA_TableItemPatternId}),
             GetSupportedPatternsFromNodeId(table_cell_id));
 
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
                         UIA_RangeValuePatternId}),
             GetSupportedPatternsFromNodeId(meter_id));
 
-  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
-                        UIA_ScrollPatternId}),
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ScrollPatternId}),
             GetSupportedPatternsFromNodeId(group_with_scroll_id));
 
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
                         UIA_SelectionPatternId, UIA_GridPatternId,
                         UIA_TablePatternId}),
             GetSupportedPatternsFromNodeId(grid_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
+                        UIA_GridItemPatternId, UIA_TableItemPatternId,
+                        UIA_SelectionItemPatternId}),
+            GetSupportedPatternsFromNodeId(grid_cell_id));
 
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
                         UIA_TogglePatternId}),
@@ -5186,6 +5196,155 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderGetSelectionContainer) {
   EXPECT_HRESULT_SUCCEEDED(item_provider->get_SelectionContainer(&container));
   EXPECT_NE(nullptr, container);
   EXPECT_EQ(container, container_provider.Get());
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIValueProvider_GetValue) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kNone;
+
+  AXNodeData child1;
+  child1.id = 2;
+  child1.role = ax::mojom::Role::kProgressIndicator;
+  child1.AddFloatAttribute(ax::mojom::FloatAttribute::kValueForRange, 3.0f);
+  root.child_ids.push_back(child1.id);
+
+  AXNodeData child2;
+  child2.id = 3;
+  child2.role = ax::mojom::Role::kTextField;
+  child2.AddStringAttribute(ax::mojom::StringAttribute::kValue, "test");
+  root.child_ids.push_back(child2.id);
+
+  AXNodeData child3;
+  child3.id = 4;
+  child3.role = ax::mojom::Role::kTextField;
+  child3.AddStringAttribute(ax::mojom::StringAttribute::kValue, "test");
+  child3.AddIntAttribute(ax::mojom::IntAttribute::kRestriction,
+                         static_cast<int>(ax::mojom::Restriction::kReadOnly));
+  root.child_ids.push_back(child3.id);
+
+  Init(root, child1, child2, child3);
+
+  ScopedBstr bstr_value;
+
+  EXPECT_HRESULT_SUCCEEDED(
+      QueryInterfaceFromNode<IValueProvider>(GetRootNode()->children()[0])
+          ->get_Value(bstr_value.Receive()));
+  EXPECT_STREQ(L"3", bstr_value);
+  bstr_value.Reset();
+
+  EXPECT_HRESULT_SUCCEEDED(
+      QueryInterfaceFromNode<IValueProvider>(GetRootNode()->children()[1])
+          ->get_Value(bstr_value.Receive()));
+  EXPECT_STREQ(L"test", bstr_value);
+  bstr_value.Reset();
+
+  EXPECT_HRESULT_SUCCEEDED(
+      QueryInterfaceFromNode<IValueProvider>(GetRootNode()->children()[2])
+          ->get_Value(bstr_value.Receive()));
+  EXPECT_STREQ(L"test", bstr_value);
+  bstr_value.Reset();
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIValueProvider_SetValue) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kNone;
+
+  AXNodeData child1;
+  child1.id = 2;
+  child1.role = ax::mojom::Role::kProgressIndicator;
+  child1.AddFloatAttribute(ax::mojom::FloatAttribute::kValueForRange, 3.0f);
+  root.child_ids.push_back(child1.id);
+
+  AXNodeData child2;
+  child2.id = 3;
+  child2.role = ax::mojom::Role::kTextField;
+  child2.AddStringAttribute(ax::mojom::StringAttribute::kValue, "test");
+  root.child_ids.push_back(child2.id);
+
+  AXNodeData child3;
+  child3.id = 4;
+  child3.role = ax::mojom::Role::kTextField;
+  child3.AddStringAttribute(ax::mojom::StringAttribute::kValue, "test");
+  child3.AddIntAttribute(ax::mojom::IntAttribute::kRestriction,
+                         static_cast<int>(ax::mojom::Restriction::kReadOnly));
+  root.child_ids.push_back(child3.id);
+
+  Init(root, child1, child2, child3);
+
+  ComPtr<IValueProvider> root_provider =
+      QueryInterfaceFromNode<IValueProvider>(GetRootNode());
+  ComPtr<IValueProvider> provider1 =
+      QueryInterfaceFromNode<IValueProvider>(GetRootNode()->children()[0]);
+  ComPtr<IValueProvider> provider2 =
+      QueryInterfaceFromNode<IValueProvider>(GetRootNode()->children()[1]);
+  ComPtr<IValueProvider> provider3 =
+      QueryInterfaceFromNode<IValueProvider>(GetRootNode()->children()[2]);
+
+  ScopedBstr bstr_value;
+
+  // Note: TestAXNodeWrapper::AccessibilityPerformAction will
+  // modify the value when the kSetValue action is fired.
+
+  EXPECT_HRESULT_SUCCEEDED(provider1->SetValue(L"2"));
+  EXPECT_HRESULT_SUCCEEDED(provider1->get_Value(bstr_value.Receive()));
+  EXPECT_STREQ(L"2", bstr_value);
+  bstr_value.Reset();
+
+  EXPECT_HRESULT_SUCCEEDED(provider2->SetValue(L"changed"));
+  EXPECT_HRESULT_SUCCEEDED(provider2->get_Value(bstr_value.Receive()));
+  EXPECT_STREQ(L"changed", bstr_value);
+  bstr_value.Reset();
+
+  EXPECT_UIA_ELEMENTNOTENABLED(provider3->SetValue(L"changed"));
+  EXPECT_HRESULT_SUCCEEDED(provider3->get_Value(bstr_value.Receive()));
+  EXPECT_STREQ(L"test", bstr_value);
+  bstr_value.Reset();
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIValueProvider_IsReadOnly) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kNone;
+
+  AXNodeData child1;
+  child1.id = 2;
+  child1.role = ax::mojom::Role::kTextField;
+  root.child_ids.push_back(child1.id);
+
+  AXNodeData child2;
+  child2.id = 3;
+  child2.role = ax::mojom::Role::kTextField;
+  child2.AddIntAttribute(ax::mojom::IntAttribute::kRestriction,
+                         static_cast<int>(ax::mojom::Restriction::kReadOnly));
+  root.child_ids.push_back(child2.id);
+
+  AXNodeData child3;
+  child3.id = 4;
+  child3.role = ax::mojom::Role::kTextField;
+  child3.AddIntAttribute(ax::mojom::IntAttribute::kRestriction,
+                         static_cast<int>(ax::mojom::Restriction::kDisabled));
+  root.child_ids.push_back(child3.id);
+
+  Init(root, child1, child2, child3);
+
+  BOOL is_readonly = false;
+
+  EXPECT_HRESULT_SUCCEEDED(
+      QueryInterfaceFromNode<IValueProvider>(GetRootNode()->children()[0])
+          ->get_IsReadOnly(&is_readonly));
+  EXPECT_FALSE(is_readonly);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      QueryInterfaceFromNode<IValueProvider>(GetRootNode()->children()[1])
+          ->get_IsReadOnly(&is_readonly));
+  EXPECT_TRUE(is_readonly);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      QueryInterfaceFromNode<IValueProvider>(GetRootNode()->children()[2])
+          ->get_IsReadOnly(&is_readonly));
+  EXPECT_TRUE(is_readonly);
 }
 
 }  // namespace ui

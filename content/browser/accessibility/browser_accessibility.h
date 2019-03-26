@@ -406,6 +406,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   int32_t GetCellId(int32_t row_index, int32_t col_index) const override;
   int32_t CellIndexToId(int32_t cell_index) const override;
 
+  bool IsCellOrHeaderOfARIATable() const override;
+  bool IsCellOrHeaderOfARIAGrid() const override;
+
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
   base::string16 GetLocalizedStringForImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus status) const override;

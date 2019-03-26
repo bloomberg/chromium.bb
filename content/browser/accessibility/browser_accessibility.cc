@@ -1322,6 +1322,14 @@ int32_t BrowserAccessibility::CellIndexToId(int32_t cell_index) const {
   return -1;
 }
 
+bool BrowserAccessibility::IsCellOrHeaderOfARIATable() const {
+  return node()->IsCellOrHeaderOfARIATable();
+}
+
+bool BrowserAccessibility::IsCellOrHeaderOfARIAGrid() const {
+  return node()->IsCellOrHeaderOfARIAGrid();
+}
+
 bool BrowserAccessibility::AccessibilityPerformAction(
     const ui::AXActionData& data) {
   switch (data.action) {

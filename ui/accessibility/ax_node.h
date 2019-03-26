@@ -281,6 +281,10 @@ class AX_EXPORT AXNode final {
   void GetTableCellColHeaders(std::vector<AXNode*>* col_headers) const;
   void GetTableCellRowHeaders(std::vector<AXNode*>* row_headers) const;
 
+  // Helper methods to check if a cell is an ARIA-1.1+ 'cell' or 'gridcell'
+  bool IsCellOrHeaderOfARIATable() const;
+  bool IsCellOrHeaderOfARIAGrid() const;
+
   // Return an object containing information about the languages used.
   // Callers should not retain this pointer, instead they should request it
   // every time it is needed.

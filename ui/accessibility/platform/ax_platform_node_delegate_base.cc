@@ -206,6 +206,14 @@ int32_t AXPlatformNodeDelegateBase::CellIndexToId(int32_t cell_index) const {
   return -1;
 }
 
+bool AXPlatformNodeDelegateBase::IsCellOrHeaderOfARIATable() const {
+  return false;
+}
+
+bool AXPlatformNodeDelegateBase::IsCellOrHeaderOfARIAGrid() const {
+  return false;
+}
+
 bool AXPlatformNodeDelegateBase::AccessibilityPerformAction(
     const ui::AXActionData& data) {
   return false;

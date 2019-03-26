@@ -178,6 +178,9 @@ struct AX_EXPORT AXNodeData {
   ax::mojom::ImageAnnotationStatus GetImageAnnotationStatus() const;
   void SetImageAnnotationStatus(ax::mojom::ImageAnnotationStatus status);
 
+  // Helper to determine if |GetRestriction| is either ReadOnly or Disabled
+  bool IsReadOnlyOrDisabled() const;
+
   // Return a string representation of this data, for debugging.
   virtual std::string ToString() const;
 

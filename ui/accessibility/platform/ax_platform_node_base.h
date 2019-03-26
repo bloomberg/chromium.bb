@@ -231,7 +231,6 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // navigate within the suggestion popup.
   bool IsFocusedInputWithSuggestions() const;
   bool IsRichTextField() const;
-  bool IsRangeValueSupported() const;
   bool IsSelectionItemSupported() const;
 
   // Get the range value text, which might come from aria-valuetext or

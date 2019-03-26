@@ -33,6 +33,7 @@
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
+#include "ui/accessibility/platform/ax_platform_node_delegate_utils_win.h"
 #include "ui/accessibility/platform/ax_platform_node_textprovider_win.h"
 #include "ui/accessibility/platform/ax_platform_relation_win.h"
 #include "ui/base/win/atl_module.h"
@@ -943,79 +944,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accValue(VARIANT var_id, BSTR* value) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_VALUE);
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, value, target);
-
-  // get_accValue() has two sets of special cases depending on the node's role.
-  // The first set apply without regard for the nodes |value| attribute. That is
-  // the nodes value attribute isn't consider for the first set of special
-  // cases. For example, if the node role is ax::mojom::Role::kColorWell, we do
-  // not care at all about the node's ax::mojom::StringAttribute::kValue
-  // attribute. The second set of special cases only apply if the value
-  // attribute for the node is empty.  That is, if
-  // ax::mojom::StringAttribute::kValue is empty, we do something special.
-
-  base::string16 result;
-
-  //
-  // Color Well special case (Use ax::mojom::IntAttribute::kColorValue)
-  //
-  if (target->GetData().role == ax::mojom::Role::kColorWell) {
-    unsigned int color = static_cast<unsigned int>(target->GetIntAttribute(
-        ax::mojom::IntAttribute::kColorValue));  // todo, why the static cast?
-
-    unsigned int red = SkColorGetR(color);
-    unsigned int green = SkColorGetG(color);
-    unsigned int blue = SkColorGetB(color);
-    base::string16 value_text;
-    value_text = base::NumberToString16(red * 100 / 255) + L"% red " +
-                 base::NumberToString16(green * 100 / 255) + L"% green " +
-                 base::NumberToString16(blue * 100 / 255) + L"% blue";
-    *value = SysAllocString(value_text.c_str());
-    DCHECK(*value);
-    return S_OK;
-  }
-
-  //
-  // Document special case (Use the document's URL)
-  //
-  if (target->GetData().role == ax::mojom::Role::kRootWebArea ||
-      target->GetData().role == ax::mojom::Role::kWebArea) {
-    result = base::UTF8ToUTF16(target->GetDelegate()->GetTreeData().url);
-    *value = SysAllocString(result.c_str());
-    DCHECK(*value);
-    return S_OK;
-  }
-
-  //
-  // Links (Use ax::mojom::StringAttribute::kUrl)
-  //
-  if (target->GetData().role == ax::mojom::Role::kLink) {
-    result = target->GetString16Attribute(ax::mojom::StringAttribute::kUrl);
-    *value = SysAllocString(result.c_str());
-    DCHECK(*value);
-    return S_OK;
-  }
-
-  // For range controls, e.g. sliders and spin buttons, |ax_attr_value| holds
-  // the aria-valuetext if present but not the inner text. The actual value,
-  // provided either via aria-valuenow or the actual control's value is held in
-  // |ax::mojom::FloatAttribute::kValueForRange|.
-  result = target->GetString16Attribute(ax::mojom::StringAttribute::kValue);
-  if (result.empty() && target->IsRangeValueSupported()) {
-    float fval;
-    if (target->GetFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
-                                  &fval)) {
-      result = base::NumberToString16(fval);
-      *value = SysAllocString(result.c_str());
-      DCHECK(*value);
-      return S_OK;
-    }
-  }
-
-  if (result.empty() && target->IsRichTextField())
-    result = target->GetInnerText();
-
-  *value = SysAllocString(result.c_str());
-  DCHECK(*value);
+  *value = GetValueAttributeAsBstr(target);
   return S_OK;
 }
 
@@ -2139,6 +2068,9 @@ IFACEMETHODIMP AXPlatformNodeWin::SetValue(LPCWSTR value) {
   if (!value)
     return E_INVALIDARG;
 
+  if (GetData().IsReadOnlyOrDisabled())
+    return UIA_E_ELEMENTNOTENABLED;
+
   AXActionData data;
   data.action = ax::mojom::Action::kSetValue;
   data.value = base::WideToUTF8(value);
@@ -2150,21 +2082,15 @@ IFACEMETHODIMP AXPlatformNodeWin::SetValue(LPCWSTR value) {
 IFACEMETHODIMP AXPlatformNodeWin::get_IsReadOnly(BOOL* result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_VALUE_GET_ISREADONLY);
   UIA_VALIDATE_CALL_1_ARG(result);
-  int restriction;
-  if (GetIntAttribute(ax::mojom::IntAttribute::kRestriction, &restriction)) {
-    *result = static_cast<ax::mojom::Restriction>(restriction) ==
-              ax::mojom::Restriction::kReadOnly;
-    return S_OK;
-  }
-  return E_FAIL;
+  *result = GetData().IsReadOnlyOrDisabled();
+  return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_Value(BSTR* result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_VALUE_GET_VALUE);
   UIA_VALIDATE_CALL_1_ARG(result);
-  if (GetStringAttributeAsBstr(ax::mojom::StringAttribute::kValue, result))
-    return S_OK;
-  return E_FAIL;
+  *result = GetValueAttributeAsBstr(this);
+  return S_OK;
 }
 
 //
@@ -3616,7 +3542,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       break;
 
     case UIA_RangeValuePatternId:
-      if (IsRangeValueSupported()) {
+      if (IsRangeValueSupported(data)) {
         AddRef();
         *result = static_cast<IRangeValueProvider*>(this);
       }
@@ -3678,8 +3604,10 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       break;
 
     case UIA_ValuePatternId:
-      AddRef();
-      *result = static_cast<IValueProvider*>(this);
+      if (IsValuePatternSupported(GetDelegate())) {
+        AddRef();
+        *result = static_cast<IValueProvider*>(this);
+      }
       break;
 
     case UIA_WindowPatternId:
@@ -3958,15 +3886,15 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_IsEnabledPropertyId:
-      result->vt = VT_BOOL;
+      V_VT(result) = VT_BOOL;
       switch (data.GetRestriction()) {
-        case ax::mojom::Restriction::kReadOnly:
         case ax::mojom::Restriction::kDisabled:
-          result->boolVal = VARIANT_FALSE;
+          V_BOOL(result) = VARIANT_FALSE;
           break;
 
         case ax::mojom::Restriction::kNone:
-          result->boolVal = VARIANT_TRUE;
+        case ax::mojom::Restriction::kReadOnly:
+          V_BOOL(result) = VARIANT_TRUE;
           break;
       }
       break;
@@ -5548,7 +5476,7 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
 
   HtmlAttributeToUIAAriaProperty(properties, "aria-tabindex", "tabindex");
 
-  if (IsRangeValueSupported()) {
+  if (IsRangeValueSupported(data)) {
     FloatAttributeToUIAAriaProperty(
         properties, ax::mojom::FloatAttribute::kMaxValueForRange, "valuemax");
     FloatAttributeToUIAAriaProperty(
@@ -6383,6 +6311,84 @@ base::Optional<EVENTID> AXPlatformNodeWin::UIAEvent(ax::mojom::Event event) {
     default:
       return base::nullopt;
   }
+}
+
+// static
+BSTR AXPlatformNodeWin::GetValueAttributeAsBstr(AXPlatformNodeWin* target) {
+  // GetValueAttributeAsBstr() has two sets of special cases depending on the
+  // node's role.
+  // The first set apply without regard for the nodes |value| attribute. That is
+  // the nodes value attribute isn't consider for the first set of special
+  // cases. For example, if the node role is ax::mojom::Role::kColorWell, we do
+  // not care at all about the node's ax::mojom::StringAttribute::kValue
+  // attribute. The second set of special cases only apply if the value
+  // attribute for the node is empty.  That is, if
+  // ax::mojom::StringAttribute::kValue is empty, we do something special.
+  base::string16 result;
+
+  //
+  // Color Well special case (Use ax::mojom::IntAttribute::kColorValue)
+  //
+  if (target->GetData().role == ax::mojom::Role::kColorWell) {
+    // static cast because SkColor is a 4-byte unsigned int
+    unsigned int color = static_cast<unsigned int>(
+        target->GetIntAttribute(ax::mojom::IntAttribute::kColorValue));
+
+    unsigned int red = SkColorGetR(color);
+    unsigned int green = SkColorGetG(color);
+    unsigned int blue = SkColorGetB(color);
+    base::string16 value_text;
+    value_text = base::NumberToString16(red * 100 / 255) + L"% red " +
+                 base::NumberToString16(green * 100 / 255) + L"% green " +
+                 base::NumberToString16(blue * 100 / 255) + L"% blue";
+    BSTR value = SysAllocString(value_text.c_str());
+    DCHECK(value);
+    return value;
+  }
+
+  //
+  // Document special case (Use the document's URL)
+  //
+  if (target->GetData().role == ax::mojom::Role::kRootWebArea ||
+      target->GetData().role == ax::mojom::Role::kWebArea) {
+    result = base::UTF8ToUTF16(target->GetDelegate()->GetTreeData().url);
+    BSTR value = SysAllocString(result.c_str());
+    DCHECK(value);
+    return value;
+  }
+
+  //
+  // Links (Use ax::mojom::StringAttribute::kUrl)
+  //
+  if (target->GetData().role == ax::mojom::Role::kLink) {
+    result = target->GetString16Attribute(ax::mojom::StringAttribute::kUrl);
+    BSTR value = SysAllocString(result.c_str());
+    DCHECK(value);
+    return value;
+  }
+
+  // For range controls, e.g. sliders and spin buttons, |ax_attr_value| holds
+  // the aria-valuetext if present but not the inner text. The actual value,
+  // provided either via aria-valuenow or the actual control's value is held in
+  // |ax::mojom::FloatAttribute::kValueForRange|.
+  result = target->GetString16Attribute(ax::mojom::StringAttribute::kValue);
+  if (result.empty() && IsRangeValueSupported(target->GetData())) {
+    float fval;
+    if (target->GetFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
+                                  &fval)) {
+      result = base::NumberToString16(fval);
+      BSTR value = SysAllocString(result.c_str());
+      DCHECK(value);
+      return value;
+    }
+  }
+
+  if (result.empty() && target->IsRichTextField())
+    result = target->GetInnerText();
+
+  BSTR value = SysAllocString(result.c_str());
+  DCHECK(value);
+  return value;
 }
 
 HRESULT AXPlatformNodeWin::GetStringAttributeAsBstr(
