@@ -30,6 +30,8 @@ cast_source_set("renderer") {
     "cast_content_renderer_client.h",
     "cast_media_playback_options.cc",
     "cast_media_playback_options.h",
+    "cast_url_loader_throttle_provider.cc",
+    "cast_url_loader_throttle_provider.h",
   ]
 
   public_deps = [
@@ -54,6 +56,7 @@ cast_source_set("renderer") {
     "//crypto",
     "//ipc",
     "//media",
+    "//services/network/public/cpp:cpp",
     "//services/service_manager/public/cpp",
   ]
 
