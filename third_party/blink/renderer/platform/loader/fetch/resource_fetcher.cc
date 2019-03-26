@@ -2016,7 +2016,6 @@ String ResourceFetcher::GetCacheIdentifier() const {
 }
 
 void ResourceFetcher::OnNetworkQuiet() {
-  Context().DispatchNetworkQuiet();
   scheduler_->OnNetworkQuiet();
 }
 

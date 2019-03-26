@@ -231,9 +231,6 @@ class PLATFORM_EXPORT FetchContext
     return false;
   }
 
-  // Called when IdlenessDetector emits its network idle signal.
-  virtual void DispatchNetworkQuiet() {}
-
  private:
   Member<PlatformProbeSink> platform_probe_sink_;
   Member<const ResourceFetcherProperties> resource_fetcher_properties_;

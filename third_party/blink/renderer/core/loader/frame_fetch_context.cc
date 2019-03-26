@@ -1193,13 +1193,6 @@ bool FrameFetchContext::CalculateIfAdSubresource(
       known_ad);
 }
 
-void FrameFetchContext::DispatchNetworkQuiet() {
-  if (WebServiceWorkerNetworkProvider* service_worker_network_provider =
-          MasterDocumentLoader()->GetServiceWorkerNetworkProvider()) {
-    service_worker_network_provider->DispatchNetworkQuiet();
-  }
-}
-
 base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(
     ResourceType type,
     const ResourceRequest& resource_request,
