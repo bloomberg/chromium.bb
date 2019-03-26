@@ -62,16 +62,11 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/239359
     "race:media::TestInputCallback::OnData\n"
 
-    // http://crbug.com/244368
-    "race:skia::BeginPlatformPaint\n"
-
     // http://crbug.com/244385
     "race:unixTempFileDir\n"
 
     // http://crbug.com/244755
     "race:v8::internal::Zone::NewExpand\n"
-    "race:TooLateToEnableNow\n"
-    "race:adjust_segment_bytes_allocated\n"
 
     // http://crbug.com/244774
     "race:webrtc::RTPReceiver::ProcessBitrate\n"
@@ -83,7 +78,6 @@ char kTSanDefaultSuppressions[] =
     "race:webrtc::ViEEncoder::DeliverFrame\n"
     "race:webrtc::vcm::VideoReceiver::Decode\n"
     "race:webrtc::VCMReceiver::FrameForDecoding\n"
-    "race:*trace_event_unique_catstatic*\n"
 
     // http://crbug.com/244856
     "race:libpulsecommon*.so\n"
@@ -93,7 +87,6 @@ char kTSanDefaultSuppressions[] =
 
     // http://crbug.com/257396
     "race:base::trace_event::"
-    "TraceEventTestFixture_TraceSamplingScope_Test::TestBody\n"
 
     // http://crbug.com/258479
     "race:SamplingStateScope\n"
@@ -132,21 +125,6 @@ char kTSanDefaultSuppressions[] =
     "race:content::"
     "VideoCaptureImplTest::MockVideoCaptureImpl::~MockVideoCaptureImpl\n"
 
-    // http://crbug.com/333871
-    "race:v8::internal::Interface::NewValue()::value_interface\n"
-    "race:v8::internal::IsMinusZero(double)::minus_zero\n"
-    "race:v8::internal::FastCloneShallowObjectStub::"
-    "InitializeInterfaceDescriptor\n"
-    "race:v8::internal::KeyedLoadStubCompiler::registers\n"
-    "race:v8::internal::KeyedStoreStubCompiler::registers()::registers\n"
-    "race:v8::internal::KeyedLoadFastElementStub::"
-    "InitializeInterfaceDescriptor\n"
-    "race:v8::internal::KeyedStoreFastElementStub::"
-    "InitializeInterfaceDescriptor\n"
-    "race:v8::internal::LoadStubCompiler::registers\n"
-    "race:v8::internal::StoreStubCompiler::registers\n"
-    "race:v8::internal::HValue::LoopWeight\n"
-
     // http://crbug.com/334140
     "race:CommandLine::HasSwitch\n"
     "race:CommandLine::current_process_commandline_\n"
@@ -184,9 +162,6 @@ char kTSanDefaultSuppressions[] =
     // http:://crbug.com/386385
     "race:content::AppCacheStorageImpl::DatabaseTask::CallRunCompleted\n"
 
-    // http://crbug.com/388730
-    "race:g_next_user_script_id\n"
-
     // http://crbug.com/397022
     "deadlock:"
     "base::trace_event::TraceEventTestFixture_ThreadOnceBlocking_Test::"
@@ -201,9 +176,6 @@ char kTSanDefaultSuppressions[] =
     // https://code.google.com/p/skia/issues/detail?id=3294
     "race:SkBaseMutex::acquire\n"
 
-    // https://crbug.com/430533
-    "race:TileTaskGraphRunner::Run\n"
-
     // Lock inversion in third party code, won't fix.
     // https://crbug.com/455638
     "deadlock:dbus::Bus::ShutdownAndBlock\n"
@@ -213,9 +185,6 @@ char kTSanDefaultSuppressions[] =
 
     // https://crbug.com/454655
     "race:content::BrowserTestBase::PostTaskToInProcessRendererAndWait\n"
-
-    // https://crbug.com/569682
-    "race:blink::ThreadState::visitStackRoots\n"
 
     // http://crbug.com/582274
     "race:usrsctp_close\n"
