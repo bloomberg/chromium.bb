@@ -124,7 +124,8 @@ ServiceWorkerDevToolsAgentHost::~ServiceWorkerDevToolsAgentHost() {
 bool ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(base::WrapUnique(new protocol::InspectorHandler()));
   session->AddHandler(base::WrapUnique(new protocol::NetworkHandler(
-      GetId(), devtools_worker_token_, GetIOContext())));
+      GetId(), devtools_worker_token_, GetIOContext(),
+      base::BindRepeating([] {}))));
   session->AddHandler(base::WrapUnique(new protocol::SchemaHandler()));
   session->AddHandler(std::make_unique<protocol::TargetHandler>(
       protocol::TargetHandler::AccessMode::kAutoAttachOnly, GetId(),

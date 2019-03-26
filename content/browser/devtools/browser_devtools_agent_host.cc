@@ -79,7 +79,8 @@ bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session) {
 
   session->AddHandler(std::make_unique<protocol::BrowserHandler>());
   session->AddHandler(std::make_unique<protocol::IOHandler>(GetIOContext()));
-  session->AddHandler(std::make_unique<protocol::FetchHandler>(GetIOContext()));
+  session->AddHandler(std::make_unique<protocol::FetchHandler>(
+      GetIOContext(), base::BindRepeating([] {})));
   session->AddHandler(std::make_unique<protocol::MemoryHandler>());
   session->AddHandler(std::make_unique<protocol::SecurityHandler>());
   session->AddHandler(std::make_unique<protocol::SystemInfoHandler>());

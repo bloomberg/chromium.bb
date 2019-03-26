@@ -3,7 +3,7 @@
       `Tests that service worker requests are intercepted.`);
 
   const FetchHelper = await testRunner.loadScript('resources/fetch-test.js');
-  const globalFetcher = new FetchHelper(testRunner, testRunner.browserP(), dp);
+  const globalFetcher = new FetchHelper(testRunner, testRunner.browserP());
   await globalFetcher.enable();
 
   globalFetcher.onRequest().continueRequest({});

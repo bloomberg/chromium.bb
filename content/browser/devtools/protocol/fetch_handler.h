@@ -24,7 +24,8 @@ namespace protocol {
 
 class FetchHandler : public DevToolsDomainHandler, public Fetch::Backend {
  public:
-  explicit FetchHandler(DevToolsIOContext* io_context);
+  FetchHandler(DevToolsIOContext* io_context,
+               base::RepeatingClosure update_loader_factories_callback);
   ~FetchHandler() override;
 
   static std::vector<FetchHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
@@ -85,6 +86,7 @@ class FetchHandler : public DevToolsDomainHandler, public Fetch::Backend {
   DevToolsIOContext* const io_context_;
   std::unique_ptr<Fetch::Frontend> frontend_;
   std::unique_ptr<DevToolsURLLoaderInterceptor> interceptor_;
+  base::RepeatingClosure update_loader_factories_callback_;
   base::WeakPtrFactory<FetchHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FetchHandler);

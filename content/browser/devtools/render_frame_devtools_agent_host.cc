@@ -294,8 +294,15 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
       GetId(),
       frame_tree_node_ ? frame_tree_node_->devtools_frame_token()
                        : base::UnguessableToken(),
-      GetIOContext()));
-  session->AddHandler(std::make_unique<protocol::FetchHandler>(GetIOContext()));
+      GetIOContext(),
+      base::BindRepeating(
+          &RenderFrameDevToolsAgentHost::UpdateResourceLoaderFactories,
+          base::Unretained(this))));
+  session->AddHandler(std::make_unique<protocol::FetchHandler>(
+      GetIOContext(),
+      base::BindRepeating(
+          &RenderFrameDevToolsAgentHost::UpdateResourceLoaderFactories,
+          base::Unretained(this))));
   session->AddHandler(std::make_unique<protocol::SchemaHandler>());
   session->AddHandler(std::make_unique<protocol::ServiceWorkerHandler>());
   session->AddHandler(std::make_unique<protocol::StorageHandler>());
@@ -764,6 +771,23 @@ bool RenderFrameDevToolsAgentHost::ShouldAllowSession(
   if (!session->client()->MayAttachToRenderer(frame_host_, is_webui))
     return false;
   return true;
+}
+
+void RenderFrameDevToolsAgentHost::UpdateResourceLoaderFactories() {
+  if (!frame_tree_node_)
+    return;
+  base::queue<FrameTreeNode*> queue;
+  queue.push(frame_tree_node_);
+  while (!queue.empty()) {
+    FrameTreeNode* node = queue.front();
+    queue.pop();
+    RenderFrameHostImpl* host = node->current_frame_host();
+    if (node != frame_tree_node_ && host->IsCrossProcessSubframe())
+      continue;
+    host->UpdateSubresourceLoaderFactories();
+    for (size_t i = 0; i < node->child_count(); ++i)
+      queue.push(node->child_at(i));
+  }
 }
 
 }  // namespace content

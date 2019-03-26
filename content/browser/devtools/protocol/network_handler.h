@@ -59,7 +59,8 @@ class NetworkHandler : public DevToolsDomainHandler,
  public:
   NetworkHandler(const std::string& host_id,
                  const base::UnguessableToken& devtools_token,
-                 DevToolsIOContext* io_context);
+                 DevToolsIOContext* io_context,
+                 base::RepeatingClosure update_loader_factories_callback);
   ~NetworkHandler() override;
 
   static std::vector<NetworkHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
@@ -232,6 +233,7 @@ class NetworkHandler : public DevToolsDomainHandler,
   bool bypass_service_worker_;
   bool cache_disabled_;
   std::unique_ptr<BackgroundSyncRestorer> background_sync_restorer_;
+  base::RepeatingClosure update_loader_factories_callback_;
   base::WeakPtrFactory<NetworkHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);

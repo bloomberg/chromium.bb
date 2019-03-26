@@ -3,8 +3,12 @@
       `Tests basic function of the fetch domain.`);
 
   var FetchHelper = await testRunner.loadScript('resources/fetch-test.js');
-  var helper = new FetchHelper(testRunner, testRunner.browserP(), dp);
-  await helper.enable(true);
+  var helper = new FetchHelper(testRunner, testRunner.browserP());
+  await helper.enable();
+  helper.onceRequest().continueRequest();
+  dp.Page.enable();
+  dp.Page.reload();
+  await dp.Page.onceLoadEventFired();
 
   helper.onceRequest().fulfill({
     responseCode: 200,
