@@ -12,11 +12,121 @@
  * when the user changes the time or timezone.
  */
 
+(function() {
+'use strict';
+
+/**
+ * @return {!Array<!{id: string, name: string, selected: Boolean}>} Items for
+ *     the timezone select element.
+ */
+function getTimezoneItems() {
+  const currentTimezoneId =
+      /** @type {string} */ (loadTimeData.getValue('currentTimezoneId'));
+  const timezoneList =
+      /** @type {!Array} */ (loadTimeData.getValue('timezoneList'));
+  return timezoneList.map(
+      tz => ({id: tz[0], name: tz[1], selected: tz[0] === currentTimezoneId}));
+}
+
+/**
+ * Builds date and time strings suitable for the values of HTML date and
+ * time elements.
+ * @param {!Date} date The date object to represent.
+ * @return {!{date: string, time: string}} Date is an RFC 3339 formatted date
+ *     and time is an HH:MM formatted time.
+ * @private
+ */
+function dateToHtmlValues(date) {
+  // Get the current time and subtract the timezone offset, so the
+  // JSON string is in local time.
+  const localDate = new Date(date);
+  localDate.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  return {
+    date: localDate.toISOString().slice(0, 10),
+    time: localDate.toISOString().slice(11, 16)
+  };
+}
+
+/**
+ * @return {string} Minimum date for the date picker in RFC 3339 format.
+ */
+function getMinDate() {
+  // Start with the build date because we can't trust the clock. The build time
+  // doesn't include a timezone, so subtract 1 day to get a safe minimum date.
+  let minDate = new Date(loadTimeData.getValue('buildTime'));
+  minDate.setDate(minDate.getDate() - 1);
+  // Make sure the ostensible date is in range.
+  const now = new Date();
+  if (now < minDate)
+    minDate = now;
+  // Convert to string for date input min attribute.
+  return dateToHtmlValues(minDate).date;
+}
+
+/**
+ * @return {string} Maximum date for the date picker in RFC 3339 format.
+ */
+function getMaxDate() {
+  // Set the max date to the build date plus 20 years.
+  let maxDate = new Date(loadTimeData.getValue('buildTime'));
+  maxDate.setFullYear(maxDate.getFullYear() + 20);
+  // Make sure the ostensible date is in range.
+  const now = new Date();
+  if (now > maxDate)
+    maxDate = now;
+  // Convert to string for date input max attribute.
+  return dateToHtmlValues(maxDate).date;
+}
+
 Polymer({
   is: 'set-time',
 
   // Remove listeners on detach.
   behaviors: [WebUIListenerBehavior],
+
+  properties: {
+    /**
+     * Populates the timezone select even if the element is hidden. Browser
+     * tests simulate a logged-in user, and hence don't show the timezone
+     * select, but still need to exercise it.
+     * @private
+     */
+    timezoneItems_: {
+      type: Array,
+      readonly: true,
+      value: getTimezoneItems,
+    },
+
+    /**
+     * Whether the timezone select element is visible.
+     * @private
+     */
+    isTimezoneVisible_: {
+      type: Boolean,
+      readonly: true,
+      value: () => loadTimeData.getValue('currentTimezoneId') != '',
+    },
+
+    /**
+     * The minimum date allowed in the date picker.
+     * @private
+     */
+    minDate_: {
+      type: String,
+      readonly: true,
+      value: getMinDate,
+    },
+
+    /**
+     * The maximum date allowed in the date picker.
+     * @private
+     */
+    maxDate_: {
+      type: String,
+      readonly: true,
+      value: getMaxDate,
+    },
+  },
 
   /**
    * Values for reverting inputs when the user's date/time is invalid.
@@ -41,46 +151,7 @@ Polymer({
 
   /** @override */
   ready: function() {
-    // The build time doesn't include a timezone, so subtract 1 day to get a
-    // safe minimum date.
-    let minDate = new Date(loadTimeData.getValue('buildTime'));
-    minDate.setDate(minDate.getDate() - 1);
-
-    // Set the max date to the min date plus 20 years.
-    let maxDate = new Date(minDate);
-    maxDate.setFullYear(minDate.getFullYear() + 20);
-
-    // Make sure the ostensible date is within this range.
-    const now = new Date();
-    if (now > maxDate)
-      maxDate = now;
-    else if (now < minDate)
-      minDate = now;
-
-    // Apply the date range limit.
-    const dateInput = this.$.dateInput;
-    dateInput.setAttribute('min', this.toHtmlValues_(minDate).date);
-    dateInput.setAttribute('max', this.toHtmlValues_(maxDate).date);
-
     this.updateTime_();
-
-    // Populate the timezone select, even if we are not going to show the
-    // element. Browser tests simulate a logged-in user, and hence don't
-    // show the timezone select, but still need to exercise it.
-    const select = this.$.timezoneSelect;
-    const timezoneList =
-        /** @type {!Array} */ (loadTimeData.getValue('timezoneList'));
-    for (const [id, name] of timezoneList) {
-      select.appendChild(new Option(name, id));
-    }
-
-    // Show the timezone select if we have a timezone ID.
-    const currentTimezoneId =
-        /** @type {string} */ (loadTimeData.getValue('currentTimezoneId'));
-    if (currentTimezoneId) {
-      this.setTimezone_(currentTimezoneId);
-      this.$.timezone.hidden = false;
-    }
   },
 
   /** @override */
@@ -101,6 +172,7 @@ Polymer({
    * @private
    */
   setTimezone_: function(timezoneId) {
+    assert(this.$.timezoneSelect.childElementCount > 0);
     this.$.timezoneSelect.value = timezoneId;
     this.updateTime_();
   },
@@ -116,7 +188,7 @@ Polymer({
     // Only update time controls if neither is focused.
     if (document.activeElement.id != 'dateInput' &&
         document.activeElement.id != 'timeInput') {
-      const htmlValues = this.toHtmlValues_(now);
+      const htmlValues = dateToHtmlValues(now);
       this.prevValues_.date = this.$.dateInput.value = htmlValues.date;
       this.prevValues_.time = this.$.timeInput.value = htmlValues.time;
     }
@@ -175,23 +247,5 @@ Polymer({
   onDoneClick_: function() {
     this.browserProxy_.dialogClose();
   },
-
-  /**
-   * Builds date and time strings suitable for the values of HTML date and
-   * time elements.
-   * @param {!Date} date The date object to represent.
-   * @return {!{date: string, time: string}} Date is an RFC 3339 formatted date
-   *     and time is an HH:MM formatted time.
-   * @private
-   */
-  toHtmlValues_: function(date) {
-    // Get the current time and subtract the timezone offset, so the
-    // JSON string is in local time.
-    const localDate = new Date(date);
-    localDate.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-    return {
-      date: localDate.toISOString().slice(0, 10),
-      time: localDate.toISOString().slice(11, 16)
-    };
-  },
 });
+})();
