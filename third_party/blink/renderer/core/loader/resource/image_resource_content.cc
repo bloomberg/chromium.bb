@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_info.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
@@ -502,11 +503,11 @@ bool ImageResourceContent::IsAcceptableContentType() {
 }
 
 // Return true if the image content is well-compressed (and not full of
-// extraneous metadata). This is currently defined as no using more than 0.5
-// byte per pixel of image data with approximate header size(1KB) removed.
-// TODO(crbug.com/838263): Support site-defined bit-per-pixel ratio through
-// feature policy declarations.
-bool ImageResourceContent::IsAcceptableCompressionRatio() {
+// extraneous metadata). "well-compressed" is determined by comparing the
+// image's compression ratio against a specific value that is defined by an
+// unoptimized image feature policy on |context|.
+bool ImageResourceContent::IsAcceptableCompressionRatio(
+    const SecurityContext& context) {
   uint64_t pixels = IntrinsicSize(kDoNotRespectImageOrientation).Area();
   if (!pixels)
     return true;
@@ -517,8 +518,26 @@ bool ImageResourceContent::IsAcceptableCompressionRatio() {
     // WPT and LayoutTests server returns -1 or 0 for the content length.
     resource_length = static_cast<double>(GetImage()->Data()->size());
   }
-  // Allow no more than 10 bits per compressed pixel
-  return (resource_length - 1024) / pixels <= 0.5;
+
+  // Calculate the image's adjusted compression ratio (in bytes per pixel). A
+  // constant allowance (1024 bytes) is provided to allow room for headers and
+  // to account for small images (which are harder to compress).
+  double compression_ratio = (resource_length - 1024) / pixels;
+
+  // Note that this approach may not always correctly identify the image (for
+  // example, due to a misconfigured web server). This approach SHOULD work in
+  // all usual cases, but content sniffing could be used in the future to more
+  // confidently identify the image type.
+  // TODO(crbug.com/943203): Implement content sniffing.
+  AtomicString mime_type = GetResponse().HttpContentType();
+  if (MIMETypeRegistry::IsLossyImageMIMEType(mime_type)) {
+    // Enforce the lossy image policy.
+    return context.IsFeatureEnabled(
+        mojom::FeaturePolicyFeature::kUnoptimizedLossyImages,
+        PolicyValue(compression_ratio), ReportOptions::kReportOnFailure);
+  }
+
+  return true;
 }
 
 void ImageResourceContent::DecodedSizeChangedTo(const blink::Image* image,

@@ -46,8 +46,13 @@ bool IsOriginTrialDisabled(const String& feature_name,
 // parse the policy value for each parameterized feature, and for non
 // parameterized feature (i.e. boolean-type policy value).
 PolicyValue GetFallbackValueForFeature(mojom::FeaturePolicyFeature feature) {
-  if (feature == mojom::FeaturePolicyFeature::kOversizedImages)
-    return PolicyValue(2.0, mojom::PolicyValueType::kDecDouble);
+  if (feature == mojom::FeaturePolicyFeature::kOversizedImages) {
+    return PolicyValue(2.0);
+  }
+  if (feature == mojom::FeaturePolicyFeature::kUnoptimizedLossyImages) {
+    return PolicyValue(0.5);
+  }
+
   return PolicyValue(false);
 }
 
@@ -317,9 +322,6 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
           "document-domain", mojom::FeaturePolicyFeature::kDocumentDomain);
       default_feature_name_map.Set("font-display-late-swap",
                                    mojom::FeaturePolicyFeature::kFontDisplay);
-      default_feature_name_map.Set(
-          "unoptimized-images",
-          mojom::FeaturePolicyFeature::kUnoptimizedImages);
       default_feature_name_map.Set("lazyload",
                                    mojom::FeaturePolicyFeature::kLazyLoad);
       default_feature_name_map.Set(
@@ -333,6 +335,9 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
           "vertical-scroll", mojom::FeaturePolicyFeature::kVerticalScroll);
       default_feature_name_map.Set("sync-script",
                                    mojom::FeaturePolicyFeature::kSyncScript);
+      default_feature_name_map.Set(
+          "unoptimized-lossy-images",
+          mojom::FeaturePolicyFeature::kUnoptimizedLossyImages);
     }
     if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
       default_feature_name_map.Set(
