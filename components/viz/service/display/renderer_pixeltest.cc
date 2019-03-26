@@ -1050,7 +1050,7 @@ TYPED_TEST(RendererPixelTest, PremultipliedTextureWithBackground) {
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-TYPED_TEST(GLOnlyRendererPixelTest, SolidColorBlend) {
+TYPED_TEST(GLCapableRendererPixelTest, SolidColorBlend) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -3131,8 +3131,8 @@ TYPED_TEST(GLOnlyRendererPixelTest, AxisAligned) {
 
 // This test tests that forcing anti-aliasing off works as expected for
 // solid color draw quads.
-// Anti-aliasing is only supported in the gl renderer.
-TYPED_TEST(GLOnlyRendererPixelTest, SolidColorDrawQuadForceAntiAliasingOff) {
+// Anti-aliasing is only supported in the gl and skia renderers.
+TYPED_TEST(GLCapableRendererPixelTest, SolidColorDrawQuadForceAntiAliasingOff) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -3168,8 +3168,8 @@ TYPED_TEST(GLOnlyRendererPixelTest, SolidColorDrawQuadForceAntiAliasingOff) {
 
 // This test tests that forcing anti-aliasing off works as expected for
 // render pass draw quads.
-// Anti-aliasing is only supported in the gl renderer.
-TYPED_TEST(GLOnlyRendererPixelTest, RenderPassDrawQuadForceAntiAliasingOff) {
+// Anti-aliasing is only supported in the gl and skia renderers.
+TYPED_TEST(GLCapableRendererPixelTest, RenderPassDrawQuadForceAntiAliasingOff) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -3226,8 +3226,8 @@ TYPED_TEST(GLOnlyRendererPixelTest, RenderPassDrawQuadForceAntiAliasingOff) {
 
 // This test tests that forcing anti-aliasing off works as expected for
 // tile draw quads.
-// Anti-aliasing is only supported in the gl renderer.
-TYPED_TEST(GLOnlyRendererPixelTest, TileDrawQuadForceAntiAliasingOff) {
+// Anti-aliasing is only supported in the gl and skia renderers.
+TYPED_TEST(GLCapableRendererPixelTest, TileDrawQuadForceAntiAliasingOff) {
   gfx::Rect rect(this->device_viewport_size_);
 
   SkBitmap bitmap;

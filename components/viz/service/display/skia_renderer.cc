@@ -1069,7 +1069,15 @@ void SkiaRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
                                       SkPaint* paint) {
   DCHECK(paint);
   paint->setColor(quad->color);
-  paint->setAlpha(quad->shared_quad_state->opacity * SkColorGetA(quad->color));
+  // The flag |force_anti_aliasing_off| is also expected to disable alpha
+  // blending, so set full opacity.
+  if (quad->force_anti_aliasing_off) {
+    paint->setAlpha(255);
+    paint->setAntiAlias(false);
+  } else {
+    paint->setAlpha(quad->shared_quad_state->opacity *
+                    SkColorGetA(quad->color));
+  }
   current_canvas_->drawRect(gfx::RectToSkRect(quad->visible_rect), *paint);
 }
 
@@ -1279,6 +1287,14 @@ const TileDrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(
 void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
                                       SkPaint* paint) {
   DCHECK(paint);
+  // The flag |force_anti_aliasing_off| is also expected to disable alpha
+  // blending, so switch from kSrcOver blending to kSrc.
+  if (quad->force_anti_aliasing_off) {
+    paint->setAntiAlias(false);
+    if (paint->isSrcOver()) {
+      paint->setBlendMode(SkBlendMode::kSrc);
+    }
+  }
   auto bypass = render_pass_bypass_quads_.find(quad->render_pass_id);
   // When Render Pass has a single quad inside we would draw that directly.
   if (bypass != render_pass_bypass_quads_.end()) {
