@@ -59,7 +59,7 @@ class CORE_EXPORT HTMLProgressElement final : public HTMLElement {
   bool IsLabelable() const override { return true; }
   bool ShouldForceLegacyLayout() const final { return true; }
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
   LayoutProgress* GetLayoutProgress() const;
 
   void ParseAttribute(const AttributeModificationParams&) override;

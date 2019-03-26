@@ -92,8 +92,8 @@ void SVGRadialGradientElement::SvgAttributeChanged(
   SVGGradientElement::SvgAttributeChanged(attr_name);
 }
 
-LayoutObject* SVGRadialGradientElement::CreateLayoutObject(
-    const ComputedStyle&) {
+LayoutObject* SVGRadialGradientElement::CreateLayoutObject(const ComputedStyle&,
+                                                           LegacyLayout) {
   return new LayoutSVGResourceRadialGradient(this);
 }
 

@@ -71,9 +71,9 @@ void HTMLDetailsElement::DispatchPendingEvent() {
   DispatchEvent(*Event::Create(event_type_names::kToggle));
 }
 
-LayoutObject* HTMLDetailsElement::CreateLayoutObject(
-    const ComputedStyle& style) {
-  return LayoutObjectFactory::CreateBlockFlow(*this, style);
+LayoutObject* HTMLDetailsElement::CreateLayoutObject(const ComputedStyle& style,
+                                                     LegacyLayout legacy) {
+  return LayoutObjectFactory::CreateBlockFlow(*this, style, legacy);
 }
 
 void HTMLDetailsElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {

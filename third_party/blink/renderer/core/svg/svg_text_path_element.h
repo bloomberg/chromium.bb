@@ -81,7 +81,7 @@ class SVGTextPathElement final : public SVGTextContentElement,
 
   void SvgAttributeChanged(const QualifiedName&) override;
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
 
   bool SelfHasRelativeLengths() const override;

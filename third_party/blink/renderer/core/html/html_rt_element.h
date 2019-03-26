@@ -18,7 +18,7 @@ class HTMLRTElement final : public HTMLElement {
   explicit HTMLRTElement(Document&);
 
  private:
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 };
 
 }  // namespace blink

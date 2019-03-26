@@ -38,7 +38,8 @@ namespace blink {
 DetailsMarkerControl::DetailsMarkerControl(Document& document)
     : HTMLDivElement(document) {}
 
-LayoutObject* DetailsMarkerControl::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* DetailsMarkerControl::CreateLayoutObject(const ComputedStyle&,
+                                                       LegacyLayout) {
   return new LayoutDetailsMarker(this);
 }
 

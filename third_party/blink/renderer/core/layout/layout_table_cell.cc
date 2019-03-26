@@ -1147,8 +1147,8 @@ void LayoutTableCell::ScrollbarsChanged(bool horizontal_scrollbar_changed,
 LayoutTableCell* LayoutTableCell::CreateAnonymous(
     Document* document,
     scoped_refptr<ComputedStyle> style) {
-  LayoutTableCell* layout_object =
-      LayoutObjectFactory::CreateTableCell(*document, *style);
+  LayoutTableCell* layout_object = LayoutObjectFactory::CreateTableCell(
+      *document, *style, LegacyLayout::kAuto);
   layout_object->SetDocumentForAnonymous(document);
   layout_object->SetStyle(std::move(style));
   return layout_object;

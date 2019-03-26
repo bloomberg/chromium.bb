@@ -193,7 +193,8 @@ void SVGPatternElement::InvalidatePattern(
     layout_object->InvalidateCacheAndMarkForLayout(reason);
 }
 
-LayoutObject* SVGPatternElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGPatternElement::CreateLayoutObject(const ComputedStyle&,
+                                                    LegacyLayout) {
   return new LayoutSVGResourcePattern(this);
 }
 

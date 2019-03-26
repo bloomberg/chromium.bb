@@ -139,7 +139,8 @@ void SVGFilterElement::ChildrenChanged(const ChildrenChange& change) {
   InvalidateFilterChain();
 }
 
-LayoutObject* SVGFilterElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGFilterElement::CreateLayoutObject(const ComputedStyle&,
+                                                   LegacyLayout) {
   return new LayoutSVGResourceFilter(this);
 }
 

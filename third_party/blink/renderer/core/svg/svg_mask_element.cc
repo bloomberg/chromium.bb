@@ -148,7 +148,8 @@ void SVGMaskElement::ChildrenChanged(const ChildrenChange& change) {
   }
 }
 
-LayoutObject* SVGMaskElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGMaskElement::CreateLayoutObject(const ComputedStyle&,
+                                                 LegacyLayout) {
   return new LayoutSVGResourceMasker(this);
 }
 

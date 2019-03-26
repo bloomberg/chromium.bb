@@ -210,7 +210,8 @@ void HTMLTextAreaElement::ParseAttribute(
   }
 }
 
-LayoutObject* HTMLTextAreaElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* HTMLTextAreaElement::CreateLayoutObject(const ComputedStyle&,
+                                                      LegacyLayout) {
   return new LayoutTextControlMultiLine(this);
 }
 

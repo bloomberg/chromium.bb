@@ -50,7 +50,7 @@ class SVGClipPathElement final : public SVGGraphicsElement {
   void SvgAttributeChanged(const QualifiedName&) override;
   void ChildrenChanged(const ChildrenChange&) override;
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> clip_path_units_;
 };

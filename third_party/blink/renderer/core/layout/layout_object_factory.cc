@@ -25,17 +25,19 @@ namespace blink {
 
 namespace {
 
-inline bool ShouldUseNewLayout(Document& document, const ComputedStyle& style) {
+inline bool ShouldUseNewLayout(Document& document,
+                               const ComputedStyle& style,
+                               LegacyLayout legacy) {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return false;
+  if (legacy == LegacyLayout::kForce || style.ForceLegacyLayout())
     return false;
   bool requires_ng_block_fragmentation =
       document.Printing() ||
       (document.GetLayoutView() &&
        document.GetLayoutView()->StyleRef().IsOverflowPaged());
-  if (requires_ng_block_fragmentation &&
-      !RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled())
-    return false;
-  return !style.ForceLegacyLayout();
+  return !requires_ng_block_fragmentation ||
+         RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled();
 }
 
 inline Element* GetElementForLayoutObject(Node& node) {
@@ -50,55 +52,59 @@ inline Element* GetElementForLayoutObject(Node& node) {
 
 LayoutBlockFlow* LayoutObjectFactory::CreateBlockFlow(
     Node& node,
-    const ComputedStyle& style) {
+    const ComputedStyle& style,
+    LegacyLayout legacy) {
   Element* element = GetElementForLayoutObject(node);
-  if (ShouldUseNewLayout(node.GetDocument(), style))
+  if (ShouldUseNewLayout(node.GetDocument(), style, legacy))
     return new LayoutNGBlockFlow(element);
   return new LayoutBlockFlow(element);
 }
 
-LayoutBlock* LayoutObjectFactory::CreateFlexibleBox(
-    Node& node,
-    const ComputedStyle& style) {
+LayoutBlock* LayoutObjectFactory::CreateFlexibleBox(Node& node,
+                                                    const ComputedStyle& style,
+                                                    LegacyLayout legacy) {
   Element* element = GetElementForLayoutObject(node);
   if (RuntimeEnabledFeatures::LayoutNGFlexBoxEnabled() &&
-      ShouldUseNewLayout(node.GetDocument(), style))
+      ShouldUseNewLayout(node.GetDocument(), style, legacy))
     return new LayoutNGFlexibleBox(element);
   return new LayoutFlexibleBox(element);
 }
 
-LayoutBlockFlow* LayoutObjectFactory::CreateListItem(
-    Node& node,
-    const ComputedStyle& style) {
+LayoutBlockFlow* LayoutObjectFactory::CreateListItem(Node& node,
+                                                     const ComputedStyle& style,
+                                                     LegacyLayout legacy) {
   Element* element = GetElementForLayoutObject(node);
-  if (ShouldUseNewLayout(node.GetDocument(), style))
+  if (ShouldUseNewLayout(node.GetDocument(), style, legacy))
     return new LayoutNGListItem(element);
   return new LayoutListItem(element);
 }
 
 LayoutTableCaption* LayoutObjectFactory::CreateTableCaption(
     Node& node,
-    const ComputedStyle& style) {
+    const ComputedStyle& style,
+    LegacyLayout legacy) {
   Element* element = GetElementForLayoutObject(node);
-  if (ShouldUseNewLayout(node.GetDocument(), style))
+  if (ShouldUseNewLayout(node.GetDocument(), style, legacy))
     return new LayoutNGTableCaption(element);
   return new LayoutTableCaption(element);
 }
 
 LayoutTableCell* LayoutObjectFactory::CreateTableCell(
     Node& node,
-    const ComputedStyle& style) {
+    const ComputedStyle& style,
+    LegacyLayout legacy) {
   Element* element = GetElementForLayoutObject(node);
-  if (ShouldUseNewLayout(node.GetDocument(), style))
+  if (ShouldUseNewLayout(node.GetDocument(), style, legacy))
     return new LayoutNGTableCell(element);
   return new LayoutTableCell(element);
 }
 
 LayoutBlock* LayoutObjectFactory::CreateFieldset(Node& node,
-                                                 const ComputedStyle& style) {
+                                                 const ComputedStyle& style,
+                                                 LegacyLayout legacy) {
   Element* element = GetElementForLayoutObject(node);
   if (RuntimeEnabledFeatures::LayoutNGFieldsetEnabled() &&
-      ShouldUseNewLayout(node.GetDocument(), style)) {
+      ShouldUseNewLayout(node.GetDocument(), style, legacy)) {
     return new LayoutNGFieldset(element);
   }
   return new LayoutFieldset(element);

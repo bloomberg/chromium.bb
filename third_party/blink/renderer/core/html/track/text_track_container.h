@@ -58,7 +58,7 @@ class TextTrackContainer final : public HTMLDivElement {
   bool IsTextTrackContainer() const override { return true; }
   void ObserveSizeChanges(Element&);
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   Member<ResizeObserver> video_size_observer_;
   float default_font_size_;

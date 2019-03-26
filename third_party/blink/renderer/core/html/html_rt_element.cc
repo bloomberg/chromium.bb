@@ -16,10 +16,11 @@ inline HTMLRTElement::HTMLRTElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLRTElement)
 
-LayoutObject* HTMLRTElement::CreateLayoutObject(const ComputedStyle& style) {
+LayoutObject* HTMLRTElement::CreateLayoutObject(const ComputedStyle& style,
+                                                LegacyLayout legacy) {
   if (style.Display() == EDisplay::kBlock)
     return new LayoutRubyText(this);
-  return LayoutObject::CreateObject(this, style);
+  return LayoutObject::CreateObject(this, style, legacy);
 }
 
 }  // namespace blink

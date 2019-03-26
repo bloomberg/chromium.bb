@@ -51,7 +51,8 @@ bool HTMLFrameElement::LayoutObjectIsNeeded(const ComputedStyle&) const {
   return ContentFrame();
 }
 
-LayoutObject* HTMLFrameElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* HTMLFrameElement::CreateLayoutObject(const ComputedStyle&,
+                                                   LegacyLayout) {
   return new LayoutFrame(this);
 }
 

@@ -60,7 +60,7 @@ class SliderThumbElement final : public HTMLDivElement {
   void StopDragging();
 
  private:
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() final;
   Element& CloneWithoutAttributesAndChildren(Document&) const override;
   bool IsDisabledFormControl() const override;
@@ -100,7 +100,7 @@ class SliderContainerElement final : public HTMLDivElement {
   void RemoveAllEventListeners() override;
 
  private:
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() final;
   const AtomicString& ShadowPseudoId() const override;
   Direction GetDirection(LayoutPoint&, LayoutPoint&);

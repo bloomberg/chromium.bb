@@ -73,7 +73,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   // Element overrides
   bool IsURLAttribute(const Attribute&) const override;
   void ParseAttribute(const AttributeModificationParams&) override;
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   // HTMLFrameOwnerElement overrides
   ParsedFeaturePolicy ConstructContainerPolicy(Vector<String>*) const override {

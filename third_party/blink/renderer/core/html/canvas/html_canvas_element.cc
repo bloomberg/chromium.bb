@@ -185,12 +185,12 @@ void HTMLCanvasElement::ParseAttribute(
   HTMLElement::ParseAttribute(params);
 }
 
-LayoutObject* HTMLCanvasElement::CreateLayoutObject(
-    const ComputedStyle& style) {
+LayoutObject* HTMLCanvasElement::CreateLayoutObject(const ComputedStyle& style,
+                                                    LegacyLayout legacy) {
   LocalFrame* frame = GetDocument().GetFrame();
   if (frame && GetDocument().CanExecuteScripts(kNotAboutToExecuteScript))
     return new LayoutHTMLCanvas(this);
-  return HTMLElement::CreateLayoutObject(style);
+  return HTMLElement::CreateLayoutObject(style, legacy);
 }
 
 Node::InsertionNotificationRequest HTMLCanvasElement::InsertedInto(

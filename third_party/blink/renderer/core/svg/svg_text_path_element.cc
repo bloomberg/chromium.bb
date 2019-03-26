@@ -107,7 +107,8 @@ void SVGTextPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   SVGTextContentElement::SvgAttributeChanged(attr_name);
 }
 
-LayoutObject* SVGTextPathElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGTextPathElement::CreateLayoutObject(const ComputedStyle&,
+                                                     LegacyLayout) {
   return new LayoutSVGTextPath(this);
 }
 

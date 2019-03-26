@@ -877,8 +877,9 @@ bool HTMLInputElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
          TextControlElement::LayoutObjectIsNeeded(style);
 }
 
-LayoutObject* HTMLInputElement::CreateLayoutObject(const ComputedStyle& style) {
-  return input_type_view_->CreateLayoutObject(style);
+LayoutObject* HTMLInputElement::CreateLayoutObject(const ComputedStyle& style,
+                                                   LegacyLayout legacy) {
+  return input_type_view_->CreateLayoutObject(style, legacy);
 }
 
 void HTMLInputElement::AttachLayoutTree(AttachContext& context) {

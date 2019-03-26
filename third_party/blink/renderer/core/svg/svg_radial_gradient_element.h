@@ -51,7 +51,7 @@ class SVGRadialGradientElement final : public SVGGradientElement {
  private:
   void SvgAttributeChanged(const QualifiedName&) override;
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   bool SelfHasRelativeLengths() const override;
 

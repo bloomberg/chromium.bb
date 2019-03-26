@@ -75,7 +75,7 @@ class CORE_EXPORT HTMLIFrameElement final
   void RemovedFrom(ContainerNode&) override;
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   bool IsInteractiveContent() const override;
 

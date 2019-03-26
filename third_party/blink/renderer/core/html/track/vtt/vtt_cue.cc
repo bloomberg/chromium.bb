@@ -218,13 +218,14 @@ void VTTCueBox::ApplyCSSProperties(
   snap_to_lines_position_ = display_parameters.snap_to_lines_position;
 }
 
-LayoutObject* VTTCueBox::CreateLayoutObject(const ComputedStyle& style) {
+LayoutObject* VTTCueBox::CreateLayoutObject(const ComputedStyle& style,
+                                            LegacyLayout legacy) {
   // If WebVTT Regions are used, the regular WebVTT layout algorithm is no
   // longer necessary, since cues having the region parameter set do not have
   // any positioning parameters. Also, in this case, the regions themselves
   // have positioning information.
   if (style.GetPosition() == EPosition::kRelative)
-    return HTMLDivElement::CreateLayoutObject(style);
+    return HTMLDivElement::CreateLayoutObject(style, legacy);
 
   return new LayoutVTTCue(this, snap_to_lines_position_);
 }

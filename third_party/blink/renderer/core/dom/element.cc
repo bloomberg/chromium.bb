@@ -1939,8 +1939,9 @@ bool Element::LayoutObjectIsNeeded(const ComputedStyle& style) const {
          style.Display() != EDisplay::kContents;
 }
 
-LayoutObject* Element::CreateLayoutObject(const ComputedStyle& style) {
-  return LayoutObject::CreateObject(this, style);
+LayoutObject* Element::CreateLayoutObject(const ComputedStyle& style,
+                                          LegacyLayout legacy) {
+  return LayoutObject::CreateObject(this, style, legacy);
 }
 
 Node::InsertionNotificationRequest Element::InsertedInto(
@@ -2086,7 +2087,7 @@ void Element::AttachLayoutTree(AttachContext& context) {
   if (style) {
     if (CanParticipateInFlatTree()) {
       LayoutTreeBuilderForElement builder(*this, style);
-      builder.CreateLayoutObjectIfNeeded();
+      builder.CreateLayoutObjectIfNeeded(LegacyLayout::kAuto);
     }
   }
 

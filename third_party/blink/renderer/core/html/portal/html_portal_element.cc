@@ -280,8 +280,8 @@ void HTMLPortalElement::ParseAttribute(
     Navigate();
 }
 
-LayoutObject* HTMLPortalElement::CreateLayoutObject(
-    const ComputedStyle& style) {
+LayoutObject* HTMLPortalElement::CreateLayoutObject(const ComputedStyle& style,
+                                                    LegacyLayout) {
   return new LayoutIFrame(this);
 }
 

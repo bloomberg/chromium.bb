@@ -513,7 +513,7 @@ class CORE_EXPORT Element : public ContainerNode {
   void AttachLayoutTree(AttachContext&) override;
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;
 
-  virtual LayoutObject* CreateLayoutObject(const ComputedStyle&);
+  virtual LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout);
   virtual bool LayoutObjectIsNeeded(const ComputedStyle&) const;
   void RecalcStyle(const StyleRecalcChange);
   void RecalcStyleForTraversalRootAncestor();

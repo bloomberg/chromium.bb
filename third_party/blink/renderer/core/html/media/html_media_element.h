@@ -379,7 +379,7 @@ class CORE_EXPORT HTMLMediaElement
   bool SupportsFocus() const final;
   bool IsMouseFocusable() const final;
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
   void DidNotifySubtreeInsertionsToDocument() override;
   void DidRecalcStyle(const StyleRecalcChange) final;
 

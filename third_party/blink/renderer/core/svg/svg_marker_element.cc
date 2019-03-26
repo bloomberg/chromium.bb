@@ -144,7 +144,8 @@ void SVGMarkerElement::setOrientToAngle(SVGAngleTearOff* angle) {
   setAttribute(svg_names::kOrientAttr, AtomicString(target->ValueAsString()));
 }
 
-LayoutObject* SVGMarkerElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGMarkerElement::CreateLayoutObject(const ComputedStyle&,
+                                                   LegacyLayout) {
   return new LayoutSVGResourceMarker(this);
 }
 

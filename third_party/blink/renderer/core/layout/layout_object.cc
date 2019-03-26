@@ -209,7 +209,8 @@ void LayoutObject::operator delete(void* ptr) {
 }
 
 LayoutObject* LayoutObject::CreateObject(Element* element,
-                                         const ComputedStyle& style) {
+                                         const ComputedStyle& style,
+                                         LegacyLayout legacy) {
   DCHECK(IsAllowedToModifyLayoutTreeStructure(element->GetDocument()));
 
   // Minimal support for content properties replacing an entire element.
@@ -245,9 +246,9 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kBlock:
     case EDisplay::kFlowRoot:
     case EDisplay::kInlineBlock:
-      return LayoutObjectFactory::CreateBlockFlow(*element, style);
+      return LayoutObjectFactory::CreateBlockFlow(*element, style, legacy);
     case EDisplay::kListItem:
-      return LayoutObjectFactory::CreateListItem(*element, style);
+      return LayoutObjectFactory::CreateListItem(*element, style, legacy);
     case EDisplay::kTable:
     case EDisplay::kInlineTable:
       return new LayoutTable(element);
@@ -261,16 +262,16 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kTableColumn:
       return new LayoutTableCol(element);
     case EDisplay::kTableCell:
-      return LayoutObjectFactory::CreateTableCell(*element, style);
+      return LayoutObjectFactory::CreateTableCell(*element, style, legacy);
     case EDisplay::kTableCaption:
-      return LayoutObjectFactory::CreateTableCaption(*element, style);
+      return LayoutObjectFactory::CreateTableCaption(*element, style, legacy);
     case EDisplay::kWebkitBox:
     case EDisplay::kWebkitInlineBox:
       return new LayoutDeprecatedFlexibleBox(*element);
     case EDisplay::kFlex:
     case EDisplay::kInlineFlex:
       UseCounter::Count(element->GetDocument(), WebFeature::kCSSFlexibleBox);
-      return LayoutObjectFactory::CreateFlexibleBox(*element, style);
+      return LayoutObjectFactory::CreateFlexibleBox(*element, style, legacy);
     case EDisplay::kGrid:
     case EDisplay::kInlineGrid:
       UseCounter::Count(element->GetDocument(), WebFeature::kCSSGridLayout);

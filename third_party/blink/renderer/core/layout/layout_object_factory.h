@@ -12,6 +12,7 @@ namespace blink {
 class ComputedStyle;
 class LayoutBlock;
 class LayoutBlockFlow;
+enum class LegacyLayout;
 class LayoutTableCaption;
 class LayoutTableCell;
 class Node;
@@ -28,12 +29,22 @@ class LayoutObjectFactory {
   // LayoutObject. Otherwise it will be assumed to be a Document node, in which
   // case the LayoutObject created will be anonymous. The |style| reference
   // passed will only be used to determine which object type to create.
-  static LayoutBlockFlow* CreateBlockFlow(Node&, const ComputedStyle&);
-  static LayoutBlock* CreateFlexibleBox(Node&, const ComputedStyle&);
-  static LayoutBlockFlow* CreateListItem(Node&, const ComputedStyle&);
-  static LayoutTableCaption* CreateTableCaption(Node&, const ComputedStyle&);
-  static LayoutTableCell* CreateTableCell(Node&, const ComputedStyle&);
-  static LayoutBlock* CreateFieldset(Node&, const ComputedStyle&);
+  static LayoutBlockFlow* CreateBlockFlow(Node&,
+                                          const ComputedStyle&,
+                                          LegacyLayout);
+  static LayoutBlock* CreateFlexibleBox(Node&,
+                                        const ComputedStyle&,
+                                        LegacyLayout);
+  static LayoutBlockFlow* CreateListItem(Node&,
+                                         const ComputedStyle&,
+                                         LegacyLayout);
+  static LayoutTableCaption* CreateTableCaption(Node&,
+                                                const ComputedStyle&,
+                                                LegacyLayout);
+  static LayoutTableCell* CreateTableCell(Node&,
+                                          const ComputedStyle&,
+                                          LegacyLayout);
+  static LayoutBlock* CreateFieldset(Node&, const ComputedStyle&, LegacyLayout);
 };
 
 }  // namespace blink
