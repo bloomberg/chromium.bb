@@ -198,8 +198,6 @@ jumbo_component("wtf") {
     "type_traits.h",
     "typed_arrays/array_buffer.cc",
     "typed_arrays/array_buffer.h",
-    "typed_arrays/array_buffer_builder.cc",
-    "typed_arrays/array_buffer_builder.h",
     "typed_arrays/array_buffer_contents.cc",
     "typed_arrays/array_buffer_contents.h",
     "typed_arrays/array_buffer_view.cc",
@@ -333,7 +331,6 @@ jumbo_source_set("wtf_unittests_sources") {
     "threading_primitives_test.cc",
     "tree_node_test.cc",
     "type_traits_test.cc",
-    "typed_arrays/array_buffer_builder_test.cc",
     "vector_test.cc",
   ]
 
