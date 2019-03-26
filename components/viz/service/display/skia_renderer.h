@@ -89,6 +89,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void GenerateMipmap() override;
 
  private:
+  struct DrawQuadParams;
   struct DrawRenderPassDrawQuadParams;
   class ScopedSkImageBuilder;
   class ScopedYUVSkImageBuilder;
@@ -96,11 +97,34 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void ClearCanvas(SkColor color);
   void ClearFramebuffer();
 
+  // TODO(michaelludwig):
+  // The majority of quad types need to be updated to call the new experimental
+  // SkCanvas APIs, which changes what is needed for canvas prep. This is the
+  // old implementation of DoDrawQuad and types will be migrated individually
+  // to the new system and handled directly in the new DoDrawQuad definition,
+  // after which this function can be removed.
+  void DoSingleDrawQuad(const DrawQuad* quad, const gfx::QuadF* draw_region);
+
   void PrepareCanvasForDrawQuads(
       gfx::Transform contents_device_transform,
       const gfx::QuadF* draw_region,
       const gfx::Rect* scissor_rect,
       base::Optional<SkAutoCanvasRestore>* auto_canvas_restore);
+
+  DrawQuadParams CalculateDrawQuadParams(const DrawQuad* quad,
+                                         const gfx::QuadF* draw_region);
+
+  bool MustFlushBatchedQuads(const DrawQuad* new_quad,
+                             const DrawQuadParams& params);
+  void AddQuadToBatch(const DrawQuad* quad,
+                      const DrawQuadParams& params,
+                      sk_sp<SkImage> image,
+                      const gfx::RectF& tex_coords);
+  void FlushBatchedQuads();
+
+  // DebugBorder, Picture, RPDQ, and SolidColor quads cannot be batched. They
+  // either are not textures (debug, picture, solid color), or it's very likely
+  // the texture will have advanced paint effects (rpdq)
   void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad, SkPaint* paint);
   void DrawPictureQuad(const PictureDrawQuad* quad, SkPaint* paint);
   void DrawRenderPassQuad(const RenderPassDrawQuad* quad, SkPaint* paint);
@@ -111,13 +135,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void DrawSolidColorQuad(const SolidColorDrawQuad* quad, SkPaint* paint);
   void DrawTextureQuad(const TextureDrawQuad* quad, SkPaint* paint);
   void DrawStreamVideoQuad(const StreamVideoDrawQuad* quad, SkPaint* paint);
-  bool MustDrawBatchedTileQuads(const DrawQuad* new_quad,
-                                const gfx::Transform& content_device_transform,
-                                bool apply_transform_and_scissor,
-                                const gfx::QuadF* draw_region);
-  void AddTileQuadToBatch(const TileDrawQuad* quad,
-                          const gfx::QuadF* draw_region);
-  void DrawBatchedTileQuads();
+  void DrawTileDrawQuad(const TileDrawQuad* quad, const DrawQuadParams& params);
   void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad, SkPaint* paint);
   void DrawUnsupportedQuad(const DrawQuad* quad, SkPaint* paint);
   bool CalculateRPDQParams(sk_sp<SkImage> src_image,
@@ -185,18 +203,22 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   gfx::Rect swap_buffer_rect_;
   std::vector<gfx::Rect> swap_content_bounds_;
 
-  // State common to all tile quads in a batch
-  struct BatchedTileState {
-    gfx::Transform contents_device_transform;
+  // State common to all quads in a batch. Draws that require an SkPaint not
+  // captured by this state cannot be batched.
+  struct BatchedQuadState {
     gfx::Rect scissor_rect;
-    gfx::QuadF draw_region;
     SkBlendMode blend_mode;
     bool is_nearest_neighbor;
     bool has_scissor_rect;
-    bool has_draw_region;
   };
-  BatchedTileState batched_tile_state_;
-  std::vector<SkCanvas::ImageSetEntry> batched_tiles_;
+  BatchedQuadState batched_quad_state_;
+  std::vector<SkCanvas::ImageSetEntry> batched_quads_;
+  // Same order as batched_quads_, but only includes draw regions for the
+  // entries that have fHasClip == true. Each draw region is 4 consecutive pts
+  std::vector<SkPoint> batched_draw_regions_;
+  // Each entry of batched_quads_ will have an index into this vector; multiple
+  // entries may point to the same matrix.
+  std::vector<SkMatrix> batched_cdt_matrices_;
 
   // Specific for SkDDL.
   SkiaOutputSurface* const skia_output_surface_ = nullptr;

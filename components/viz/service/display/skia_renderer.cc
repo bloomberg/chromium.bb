@@ -56,6 +56,215 @@
 #include "ui/gfx/transform.h"
 
 namespace viz {
+
+namespace {
+
+// Smallest unit that impacts anti-aliasing output. We use this to determine
+// when an exterior edge (with AA) has been clipped (no AA). The specific value
+// was chosen to match that used by gl_renderer.
+static const float kAAEpsilon = 1.0f / 1024.0f;
+
+// The gfx::QuadF draw_region passed to DoDrawQuad, converted to Skia types
+struct SkDrawRegion {
+  SkDrawRegion() = default;
+  explicit SkDrawRegion(const gfx::QuadF& draw_region);
+
+  SkPoint points[4];
+};
+
+SkDrawRegion::SkDrawRegion(const gfx::QuadF& draw_region) {
+  points[0] = gfx::PointFToSkPoint(draw_region.p1());
+  points[1] = gfx::PointFToSkPoint(draw_region.p2());
+  points[2] = gfx::PointFToSkPoint(draw_region.p3());
+  points[3] = gfx::PointFToSkPoint(draw_region.p4());
+}
+
+bool IsTextureResource(DisplayResourceProvider* resource_provider,
+                       ResourceId resource_id) {
+  return !resource_provider->IsResourceSoftwareBacked(resource_id);
+}
+
+bool CanExplicitlyScissor(const DrawQuad* quad,
+                          const gfx::QuadF* draw_region,
+                          const gfx::Transform& contents_device_transform) {
+  // PICTURE_CONTENT is not like the others, since it is executing a list of
+  // draw calls into the canvas.
+  if (quad->material == DrawQuad::PICTURE_CONTENT)
+    return false;
+  // Intersection with scissor and a quadrilateral is not necessarily a quad,
+  // so don't complicate things
+  if (draw_region)
+    return false;
+
+  // This is slightly different than
+  // gfx::Transform::IsPositiveScaleAndTranslation in that it also allows zero
+  // scales. This is because in the common orthographic case the z scale is 0.
+  if (!contents_device_transform.IsScaleOrTranslation())
+    return false;
+
+  return contents_device_transform.matrix().get(0, 0) >= 0.0 &&
+         contents_device_transform.matrix().get(1, 1) >= 0.0 &&
+         contents_device_transform.matrix().get(2, 2) >= 0.0;
+}
+
+void ApplyExplicitScissor(const DrawQuad* quad,
+                          const gfx::Rect& scissor_rect,
+                          const gfx::Transform& device_transform,
+                          unsigned* aa_flags,
+                          gfx::RectF* vis_rect) {
+  // Inset rectangular edges and turn off the AA for clipped edges. Operates in
+  // the quad's space, so apply inverse of transform to get new scissor
+  gfx::RectF scissor(scissor_rect);
+  device_transform.TransformRectReverse(&scissor);
+
+  float left_inset = scissor.x() - vis_rect->x();
+  float top_inset = scissor.y() - vis_rect->y();
+  float right_inset = vis_rect->right() - scissor.right();
+  float bottom_inset = vis_rect->bottom() - scissor.bottom();
+
+  if (left_inset >= kAAEpsilon) {
+    *aa_flags &= ~SkCanvas::kLeft_QuadAAFlag;
+  } else {
+    left_inset = 0;
+  }
+  if (top_inset >= kAAEpsilon) {
+    *aa_flags &= ~SkCanvas::kTop_QuadAAFlag;
+  } else {
+    top_inset = 0;
+  }
+  if (right_inset >= kAAEpsilon) {
+    *aa_flags &= ~SkCanvas::kRight_QuadAAFlag;
+  } else {
+    right_inset = 0;
+  }
+  if (bottom_inset >= kAAEpsilon) {
+    *aa_flags &= ~SkCanvas::kBottom_QuadAAFlag;
+  } else {
+    bottom_inset = 0;
+  }
+
+  vis_rect->Inset(left_inset, top_inset, right_inset, bottom_inset);
+}
+
+unsigned GetCornerAAFlags(const DrawQuad* quad,
+                          const SkPoint& vertex,
+                          unsigned edge_mask) {
+  // Returns mask of SkCanvas::QuadAAFlags, with bits set for each edge of the
+  // shared quad state's quad_layer_rect that vertex is touching.
+
+  unsigned mask = SkCanvas::kNone_QuadAAFlags;
+  if (std::abs(vertex.x()) < kAAEpsilon)
+    mask |= SkCanvas::kLeft_QuadAAFlag;
+  if (std::abs(vertex.x() - quad->shared_quad_state->quad_layer_rect.width()) <
+      kAAEpsilon)
+    mask |= SkCanvas::kRight_QuadAAFlag;
+  if (std::abs(vertex.y()) < kAAEpsilon)
+    mask |= SkCanvas::kTop_QuadAAFlag;
+  if (std::abs(vertex.y() - quad->shared_quad_state->quad_layer_rect.height()) <
+      kAAEpsilon)
+    mask |= SkCanvas::kBottom_QuadAAFlag;
+  // & with the overall edge_mask to take into account edges that were clipped
+  // by the visible rect.
+  return mask & edge_mask;
+}
+
+bool IsExteriorEdge(unsigned corner_mask1, unsigned corner_mask2) {
+  return (corner_mask1 & corner_mask2) != 0;
+}
+
+unsigned GetRectilinearEdgeFlags(const DrawQuad* quad) {
+  // In the normal case, turn on AA for edges that represent the outside of
+  // the layer, and that aren't clipped by the visible rect.
+  unsigned mask = SkCanvas::kNone_QuadAAFlags;
+  if (quad->IsLeftEdge() &&
+      std::abs(quad->rect.x() - quad->visible_rect.x()) < kAAEpsilon)
+    mask |= SkCanvas::kLeft_QuadAAFlag;
+  if (quad->IsTopEdge() &&
+      std::abs(quad->rect.y() - quad->visible_rect.y()) < kAAEpsilon)
+    mask |= SkCanvas::kTop_QuadAAFlag;
+  if (quad->IsRightEdge() &&
+      std::abs(quad->rect.right() - quad->visible_rect.right()) < kAAEpsilon)
+    mask |= SkCanvas::kRight_QuadAAFlag;
+  if (quad->IsBottomEdge() &&
+      std::abs(quad->rect.bottom() - quad->visible_rect.bottom()) < kAAEpsilon)
+    mask |= SkCanvas::kBottom_QuadAAFlag;
+
+  return mask;
+}
+
+// This also modifies draw_region to clean up any degeneracies
+void GetClippedEdgeFlags(const DrawQuad* quad,
+                         unsigned* edge_mask,
+                         SkDrawRegion* draw_region) {
+  // Instead of trying to rotate vertices of draw_region to align with Skia's
+  // edge label conventions, turn on an edge's label if it is aligned to any
+  // exterior edge.
+  unsigned p0Mask = GetCornerAAFlags(quad, draw_region->points[0], *edge_mask);
+  unsigned p1Mask = GetCornerAAFlags(quad, draw_region->points[1], *edge_mask);
+  unsigned p2Mask = GetCornerAAFlags(quad, draw_region->points[2], *edge_mask);
+  unsigned p3Mask = GetCornerAAFlags(quad, draw_region->points[3], *edge_mask);
+
+  unsigned mask = SkCanvas::kNone_QuadAAFlags;
+  // The "top" is p0 to p1
+  if (IsExteriorEdge(p0Mask, p1Mask))
+    mask |= SkCanvas::kTop_QuadAAFlag;
+  // The "right" is p1 to p2
+  if (IsExteriorEdge(p1Mask, p2Mask))
+    mask |= SkCanvas::kRight_QuadAAFlag;
+  // The "bottom" is p2 to p3
+  if (IsExteriorEdge(p2Mask, p3Mask))
+    mask |= SkCanvas::kBottom_QuadAAFlag;
+  // The "left" is p3 to p0
+  if (IsExteriorEdge(p3Mask, p0Mask))
+    mask |= SkCanvas::kLeft_QuadAAFlag;
+
+  // If the clipped draw_region has adjacent non-AA edges that touch the
+  // exterior edge (which should be AA'ed), move the degenerate vertex to the
+  // appropriate index so that Skia knows to construct a coverage ramp at that
+  // corner. This is not an ideal solution, but is the best hint we can give,
+  // given our limited information post-BSP splitting.
+  if (draw_region->points[2] == draw_region->points[3]) {
+    // The BSP splitting always creates degenerate quads with the duplicate
+    // vertex in the last two indices.
+    if (p0Mask && !(mask & SkCanvas::kLeft_QuadAAFlag) &&
+        !(mask & SkCanvas::kTop_QuadAAFlag)) {
+      // Rewrite draw_region from p0,p1,p2,p2 to p0,p1,p2,p0; top edge stays off
+      // right edge is preserved, bottom edge turns off, left edge turns on
+      draw_region->points[3] = draw_region->points[0];
+      mask = SkCanvas::kLeft_QuadAAFlag | (mask & SkCanvas::kRight_QuadAAFlag);
+    } else if (p1Mask && !(mask & SkCanvas::kTop_QuadAAFlag) &&
+               !(mask & SkCanvas::kRight_QuadAAFlag)) {
+      // Rewrite draw_region to p0,p1,p1,p2; top edge stays off, right edge
+      // turns on, bottom edge turns off, left edge is preserved
+      draw_region->points[2] = draw_region->points[1];
+      mask = SkCanvas::kRight_QuadAAFlag | (mask & SkCanvas::kLeft_QuadAAFlag);
+    }
+    // p2 could follow the same process, but if its adjacent edges are AA
+    // (skipping the degenerate edge to p3), it's actually already in the
+    // desired vertex ordering; and since p3 is in the same location, it's
+    // equivalent to p2 so it doesn't need checking either.
+  }  // Else not degenerate, so can't to correct non-AA corners touching AA edge
+
+  *edge_mask = mask;
+}
+
+bool IsAAForcedOff(const DrawQuad* quad) {
+  switch (quad->material) {
+    case DrawQuad::PICTURE_CONTENT:
+      return PictureDrawQuad::MaterialCast(quad)->force_anti_aliasing_off;
+    case DrawQuad::RENDER_PASS:
+      return RenderPassDrawQuad::MaterialCast(quad)->force_anti_aliasing_off;
+    case DrawQuad::SOLID_COLOR:
+      return SolidColorDrawQuad::MaterialCast(quad)->force_anti_aliasing_off;
+    case DrawQuad::TILED_CONTENT:
+      return TileDrawQuad::MaterialCast(quad)->force_anti_aliasing_off;
+    default:
+      return false;
+  }
+}
+
+}  // namespace
+
 // Parameters needed to draw a RenderPassDrawQuad.
 struct SkiaRenderer::DrawRenderPassDrawQuadParams {
   // The "in" parameters that will be used when apply filters.
@@ -71,26 +280,55 @@ struct SkiaRenderer::DrawRenderPassDrawQuadParams {
   sk_sp<SkColorFilter> color_filter;
 };
 
-namespace {
+// State calculated from a DrawQuad and current renderer state, that is common
+// to all DrawQuad rendering.
+struct SkiaRenderer::DrawQuadParams {
+  DrawQuadParams() = default;
+  DrawQuadParams(const gfx::Transform& cdt,
+                 const gfx::RectF visible_rect,
+                 unsigned aa_flags,
+                 SkBlendMode blend_mode,
+                 float opacity,
+                 const gfx::QuadF* draw_region,
+                 bool enable_scissor_rect);
 
-bool IsTextureResource(DisplayResourceProvider* resource_provider,
-                       ResourceId resource_id) {
-  return !resource_provider->IsResourceSoftwareBacked(resource_id);
+  // window_matrix * projection_matrix * quad_to_target_transform
+  gfx::Transform content_device_transform;
+  // The DrawQuad's visible_rect, possibly explicitly clipped by the scissor
+  gfx::RectF visible_rect;
+  // SkCanvas::QuadAAFlags, already taking into account settings
+  // (but not certain quad type's force_antialias_off bit)
+  unsigned aa_flags;
+  // Final blend mode to use, respecting quad settings + opacity optimizations
+  SkBlendMode blend_mode;
+  // Final opacity of quad
+  float opacity;
+  // Optional restricted draw geometry, will point to a length 4 SkPoint array
+  // with its points in CW order matching Skia's vertex/edge expectations.
+  base::Optional<SkDrawRegion> draw_region;
+  // True if renderer's scissor_rect_ should be used as a clipRect on the
+  // canvas. Is false if is_scissor_enabled_ is false or the scissor was
+  // explicitly applied to the visible geometry already.
+  bool has_scissor_rect;
+};
+
+SkiaRenderer::DrawQuadParams::DrawQuadParams(const gfx::Transform& cdt,
+                                             const gfx::RectF visible_rect,
+                                             unsigned aa_flags,
+                                             SkBlendMode blend_mode,
+                                             float opacity,
+                                             const gfx::QuadF* draw_region,
+                                             bool has_scissor_rect)
+    : content_device_transform(cdt),
+      visible_rect(visible_rect),
+      aa_flags(aa_flags),
+      blend_mode(blend_mode),
+      opacity(opacity),
+      has_scissor_rect(has_scissor_rect) {
+  if (draw_region) {
+    this->draw_region.emplace(*draw_region);
+  }
 }
-
-bool ApplyTransformAndScissorToTileRect(
-    const gfx::Transform& contents_device_transform) {
-  // This is slightly different than
-  // gfx::Transform::IsPositiveScaleAndTranslation in that it also allows zero
-  // scales. This is because in the common orthographic case the z scale is 0.
-  if (!contents_device_transform.IsScaleOrTranslation())
-    return false;
-  return contents_device_transform.matrix().get(0, 0) >= 0.0 &&
-         contents_device_transform.matrix().get(1, 1) >= 0.0 &&
-         contents_device_transform.matrix().get(2, 2) >= 0.0;
-}
-
-}  // namespace
 
 // Scoped helper class for building SkImage from resource id.
 class SkiaRenderer::ScopedSkImageBuilder {
@@ -464,15 +702,207 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
   if (!current_canvas_)
     return;
   TRACE_EVENT0("viz", "SkiaRenderer::DoDrawQuad");
-  if (quad->material == DrawQuad::TILED_CONTENT) {
-    AddTileQuadToBatch(TileDrawQuad::MaterialCast(quad), draw_region);
-    return;
-  }
-  // If the current quad is not tiled content then we must flush any
-  // bufferred tiled content quads.
-  if (!batched_tiles_.empty())
-    DrawBatchedTileQuads();
 
+  DrawQuadParams params = CalculateDrawQuadParams(quad, draw_region);
+  if (MustFlushBatchedQuads(quad, params)) {
+    FlushBatchedQuads();
+  }
+
+  // TODO(michaelludwig): By the end of the Skia API update, this switch will
+  // hold all quad draw types and resemble the old DoDrawSingleQuad.
+  switch (quad->material) {
+    case DrawQuad::TILED_CONTENT:
+      DrawTileDrawQuad(TileDrawQuad::MaterialCast(quad), params);
+      break;
+    default:
+      // If we've reached here, the quad's type hasn't been updated to be
+      // batch aware yet.
+      DoSingleDrawQuad(quad, draw_region);
+      break;
+  }
+}
+
+SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
+    const DrawQuad* quad,
+    const gfx::QuadF* draw_region) {
+  DrawQuadParams params(
+      current_frame()->window_matrix * current_frame()->projection_matrix *
+          quad->shared_quad_state->quad_to_target_transform,
+      gfx::RectF(quad->visible_rect), SkCanvas::kNone_QuadAAFlags,
+      quad->shared_quad_state->blend_mode, quad->shared_quad_state->opacity,
+      draw_region, is_scissor_enabled_);
+
+  params.content_device_transform.FlattenTo2d();
+
+  // Respect per-quad setting overrides as highest priority setting
+  if (!IsAAForcedOff(quad)) {
+    if (settings_->force_antialiasing) {
+      // This setting makes the entire draw AA, so don't bother checking edges
+      params.aa_flags = SkCanvas::kAll_QuadAAFlags;
+    } else if (settings_->allow_antialiasing) {
+      params.aa_flags = GetRectilinearEdgeFlags(quad);
+      if (draw_region && params.aa_flags != SkCanvas::kNone_QuadAAFlags) {
+        // Turn off interior edges' AA from the BSP splitting
+        GetClippedEdgeFlags(quad, &params.aa_flags, &*params.draw_region);
+      }
+    }
+  }
+
+  if (!quad->ShouldDrawWithBlending()) {
+    // The quad layer is src-over with 1.0 opacity and its needs_blending flag
+    // has been set to false. However, even if the layer's opacity is 1.0, the
+    // contents may not be (e.g. png or a color with alpha).
+    if (quad->shared_quad_state->are_contents_opaque) {
+      // Visually, this is the same as kSrc but Skia is faster with SrcOver
+      params.blend_mode = SkBlendMode::kSrcOver;
+    } else {
+      // Replaces dst contents with the new color (e.g. no blending); this is
+      // just as fast as srcover when there's no AA, but is slow when coverage
+      // must be taken into account.
+      params.blend_mode = SkBlendMode::kSrc;
+    }
+    params.opacity = 1.f;
+  }
+
+  // Applying the scissor explicitly means avoiding a clipRect() call and
+  // allows more quads to be batched together in a DrawEdgeAAImageSet call
+  if (is_scissor_enabled_ &&
+      CanExplicitlyScissor(quad, draw_region,
+                           params.content_device_transform)) {
+    ApplyExplicitScissor(quad, scissor_rect_, params.content_device_transform,
+                         &params.aa_flags, &params.visible_rect);
+    params.has_scissor_rect = false;
+  }
+
+  return params;
+}
+
+bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
+                                         const DrawQuadParams& params) {
+  if (batched_quads_.empty())
+    return false;
+
+  // TODO(michaelludwig) - Once other quad types are migrated from
+  // DoDrawQuadLegacy, this check will be widened
+  if (new_quad->material != DrawQuad::TILED_CONTENT)
+    return true;
+
+  if (batched_quad_state_.blend_mode != params.blend_mode)
+    return true;
+
+  bool no_scissor =
+      !batched_quad_state_.has_scissor_rect && !params.has_scissor_rect;
+  bool same_scissor = batched_quad_state_.has_scissor_rect &&
+                      params.has_scissor_rect &&
+                      batched_quad_state_.scissor_rect == scissor_rect_;
+
+  if (!no_scissor && !same_scissor)
+    return true;
+
+  // TODO(michaelludwig) - Would be nice if the batchable tiles could expose
+  // filter quality in a shared parent class
+  if (TileDrawQuad::MaterialCast(new_quad)->nearest_neighbor !=
+      batched_quad_state_.is_nearest_neighbor)
+    return true;
+
+  return false;
+}
+
+void SkiaRenderer::AddQuadToBatch(const DrawQuad* quad,
+                                  const DrawQuadParams& params,
+                                  sk_sp<SkImage> image,
+                                  const gfx::RectF& tex_coords) {
+  // Configure batch state if it's the first
+  if (batched_quads_.empty()) {
+    if (params.has_scissor_rect) {
+      batched_quad_state_.scissor_rect = scissor_rect_;
+      batched_quad_state_.has_scissor_rect = true;
+    } else {
+      batched_quad_state_.has_scissor_rect = false;
+    }
+
+    batched_quad_state_.blend_mode = params.blend_mode;
+    if (quad->material == DrawQuad::TILED_CONTENT) {
+      batched_quad_state_.is_nearest_neighbor =
+          TileDrawQuad::MaterialCast(quad)->nearest_neighbor;
+    } else {
+      // TODO(michaelludwig) Implement this for the batchable quad types that
+      // have filter quality settings
+      batched_quad_state_.is_nearest_neighbor = false;
+    }
+  }
+
+  // Add entry, with optional clip quad and shared transform
+  if (params.draw_region.has_value()) {
+    for (int i = 0; i < 4; ++i) {
+      batched_draw_regions_.push_back(params.draw_region->points[i]);
+    }
+  }
+
+  SkMatrix m;
+  gfx::TransformToFlattenedSkMatrix(params.content_device_transform, &m);
+  std::vector<SkMatrix>& cdts = batched_cdt_matrices_;
+  if (cdts.empty() || cdts[cdts.size() - 1] != m) {
+    cdts.push_back(m);
+  }
+  int matrixIndex = cdts.size() - 1;
+
+  batched_quads_.push_back({std::move(image), gfx::RectFToSkRect(tex_coords),
+                            gfx::RectFToSkRect(params.visible_rect),
+                            matrixIndex, params.opacity, params.aa_flags,
+                            params.draw_region.has_value()});
+}
+
+void SkiaRenderer::FlushBatchedQuads() {
+  TRACE_EVENT0("viz", "SkiaRenderer::FlushBatchedQuads");
+
+  SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
+  // Every batch entry's transform represents the entire transform to device
+  // space, so make sure the canvas isn't doing anything else.
+  current_canvas_->setMatrix(SkMatrix::I());
+
+  if (batched_quad_state_.has_scissor_rect) {
+    current_canvas_->clipRect(
+        gfx::RectToSkRect(batched_quad_state_.scissor_rect));
+  }
+
+  SkFilterQuality filter_quality = batched_quad_state_.is_nearest_neighbor
+                                       ? kNone_SkFilterQuality
+                                       : kLow_SkFilterQuality;
+  SkPaint paint;
+  paint.setFilterQuality(filter_quality);
+  paint.setBlendMode(batched_quad_state_.blend_mode);
+  current_canvas_->experimental_DrawEdgeAAImageSet(
+      &batched_quads_.front(), batched_quads_.size(),
+      &batched_draw_regions_.front(), &batched_cdt_matrices_.front(), &paint,
+      SkCanvas::kFast_SrcRectConstraint);
+
+  batched_quads_.clear();
+  batched_draw_regions_.clear();
+  batched_cdt_matrices_.clear();
+}
+
+void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,
+                                    const DrawQuadParams& params) {
+  DCHECK(!MustFlushBatchedQuads(quad, params));
+
+  // |resource_provider_| can be NULL in resourceless software draws, which
+  // should never produce tile quads in the first place.
+  DCHECK(resource_provider_);
+  ScopedSkImageBuilder builder(
+      this, quad->resource_id(),
+      quad->is_premultiplied ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
+  const SkImage* image = builder.sk_image();
+  if (!image)
+    return;
+
+  gfx::RectF vis_tex_coords = cc::MathUtil::ScaleRectProportional(
+      quad->tex_coord_rect, gfx::RectF(quad->rect), params.visible_rect);
+  AddQuadToBatch(quad, params, sk_ref_sp(image), vis_tex_coords);
+}
+
+void SkiaRenderer::DoSingleDrawQuad(const DrawQuad* quad,
+                                    const gfx::QuadF* draw_region) {
   base::Optional<SkAutoCanvasRestore> auto_canvas_restore;
   const gfx::Rect* scissor_rect =
       is_scissor_enabled_ ? &scissor_rect_ : nullptr;
@@ -546,47 +976,6 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
   }
 
   current_canvas_->resetMatrix();
-}
-
-bool SkiaRenderer::MustDrawBatchedTileQuads(
-    const DrawQuad* new_quad,
-    const gfx::Transform& contents_device_transform,
-    bool apply_transform_and_scissor,
-    const gfx::QuadF* draw_region) {
-  DCHECK(new_quad->material == DrawQuad::TILED_CONTENT);
-  DCHECK(apply_transform_and_scissor ==
-         ApplyTransformAndScissorToTileRect(contents_device_transform));
-
-  if (batched_tiles_.empty())
-    return false;
-
-  bool has_draw_region = draw_region != nullptr;
-
-  if (apply_transform_and_scissor) {
-    if (!batched_tile_state_.contents_device_transform.IsIdentity())
-      return true;
-    DCHECK(!batched_tile_state_.has_scissor_rect);
-  } else {
-    if (batched_tile_state_.contents_device_transform !=
-            contents_device_transform ||
-        batched_tile_state_.has_scissor_rect != is_scissor_enabled_ ||
-        (is_scissor_enabled_ &&
-         batched_tile_state_.scissor_rect != scissor_rect_))
-      return true;
-  }
-
-  if (batched_tile_state_.blend_mode != new_quad->shared_quad_state->blend_mode)
-    return true;
-
-  if (batched_tile_state_.has_draw_region != has_draw_region ||
-      (has_draw_region && batched_tile_state_.draw_region != *draw_region))
-    return true;
-
-  if (TileDrawQuad::MaterialCast(new_quad)->nearest_neighbor !=
-      batched_tile_state_.is_nearest_neighbor)
-    return true;
-
-  return false;
 }
 
 void SkiaRenderer::PrepareCanvasForDrawQuads(
@@ -742,119 +1131,6 @@ void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
   // TODO: figure out how to set correct filter quality.
   paint->setFilterQuality(kLow_SkFilterQuality);
   current_canvas_->drawImageRect(image, sk_uv_rect, quad_rect, paint);
-}
-
-void SkiaRenderer::AddTileQuadToBatch(const TileDrawQuad* quad,
-                                      const gfx::QuadF* draw_region) {
-  gfx::Transform contents_device_transform =
-      current_frame()->window_matrix * current_frame()->projection_matrix *
-      quad->shared_quad_state->quad_to_target_transform;
-  bool apply_transform_and_scissor =
-      ApplyTransformAndScissorToTileRect(contents_device_transform);
-  if (MustDrawBatchedTileQuads(quad, contents_device_transform,
-                               apply_transform_and_scissor, draw_region))
-    DrawBatchedTileQuads();
-
-  if (batched_tiles_.empty()) {
-    if (draw_region) {
-      batched_tile_state_.draw_region = *draw_region;
-    }
-    batched_tile_state_.blend_mode = quad->shared_quad_state->blend_mode;
-    batched_tile_state_.is_nearest_neighbor = quad->nearest_neighbor;
-    batched_tile_state_.has_draw_region = (draw_region != nullptr);
-    if (apply_transform_and_scissor) {
-      batched_tile_state_.contents_device_transform = gfx::Transform();
-      batched_tile_state_.has_scissor_rect = false;
-    } else {
-      batched_tile_state_.contents_device_transform = contents_device_transform;
-      batched_tile_state_.has_scissor_rect = is_scissor_enabled_;
-      batched_tile_state_.scissor_rect = scissor_rect_;
-    }
-  }
-
-  // |resource_provider_| can be NULL in resourceless software draws, which
-  // should never produce tile quads in the first place.
-  DCHECK(resource_provider_);
-  ScopedSkImageBuilder builder(
-      this, quad->resource_id(),
-      quad->is_premultiplied ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
-  const SkImage* image = builder.sk_image();
-  if (!image)
-    return;
-  gfx::RectF visible_tex_coord_rect = cc::MathUtil::ScaleRectProportional(
-      quad->tex_coord_rect, gfx::RectF(quad->rect),
-      gfx::RectF(quad->visible_rect));
-
-  unsigned aa_flags = SkCanvas::kNone_QuadAAFlags;
-  if (settings_->allow_antialiasing || settings_->force_antialiasing) {
-    if (quad->IsLeftEdge())
-      aa_flags |= SkCanvas::kLeft_QuadAAFlag;
-    if (quad->IsTopEdge())
-      aa_flags |= SkCanvas::kTop_QuadAAFlag;
-    if (quad->IsRightEdge())
-      aa_flags |= SkCanvas::kRight_QuadAAFlag;
-    if (quad->IsBottomEdge())
-      aa_flags |= SkCanvas::kBottom_QuadAAFlag;
-  }
-  gfx::RectF quad_rect = gfx::RectF(quad->visible_rect);
-  if (apply_transform_and_scissor) {
-    contents_device_transform.TransformRect(&quad_rect);
-    if (is_scissor_enabled_) {
-      float left_inset = scissor_rect_.x() - quad_rect.x();
-      float top_inset = scissor_rect_.y() - quad_rect.y();
-      float right_inset = quad_rect.right() - scissor_rect_.right();
-      float bottom_inset = quad_rect.bottom() - scissor_rect_.bottom();
-      if (left_inset > 0) {
-        aa_flags &= ~SkCanvas::kLeft_QuadAAFlag;
-      } else {
-        left_inset = 0;
-      }
-      if (top_inset > 0)
-        aa_flags &= ~SkCanvas::kTop_QuadAAFlag;
-      else
-        top_inset = 0;
-      if (right_inset > 0)
-        aa_flags &= ~SkCanvas::kRight_QuadAAFlag;
-      else
-        right_inset = 0;
-      if (bottom_inset > 0)
-        aa_flags &= ~SkCanvas::kBottom_QuadAAFlag;
-      else
-        bottom_inset = 0;
-      float scale_x = visible_tex_coord_rect.width() / quad_rect.width();
-      float scale_y = visible_tex_coord_rect.height() / quad_rect.height();
-      quad_rect.Inset(left_inset, top_inset, right_inset, bottom_inset);
-      visible_tex_coord_rect.Inset(left_inset * scale_x, top_inset * scale_y,
-                                   right_inset * scale_x,
-                                   bottom_inset * scale_y);
-    }
-  }
-  SkRect uv_rect = gfx::RectFToSkRect(visible_tex_coord_rect);
-  batched_tiles_.push_back(SkCanvas::ImageSetEntry{
-      sk_ref_sp(image), uv_rect, gfx::RectFToSkRect(quad_rect),
-      quad->shared_quad_state->opacity, aa_flags});
-}
-
-void SkiaRenderer::DrawBatchedTileQuads() {
-  TRACE_EVENT0("viz", "SkiaRenderer::DrawBatchedTileQuads");
-  const gfx::QuadF* draw_region = batched_tile_state_.has_draw_region
-                                      ? &batched_tile_state_.draw_region
-                                      : nullptr;
-  const gfx::Rect* scissor_rect = batched_tile_state_.has_scissor_rect
-                                      ? &batched_tile_state_.scissor_rect
-                                      : nullptr;
-  base::Optional<SkAutoCanvasRestore> auto_canvas_restore;
-  PrepareCanvasForDrawQuads(batched_tile_state_.contents_device_transform,
-                            draw_region, scissor_rect, &auto_canvas_restore);
-
-  SkFilterQuality filter_quality = batched_tile_state_.is_nearest_neighbor
-                                       ? kNone_SkFilterQuality
-                                       : kLow_SkFilterQuality;
-  current_canvas_->experimental_DrawImageSetV1(
-      &batched_tiles_.front(), batched_tiles_.size(), filter_quality,
-      batched_tile_state_.blend_mode);
-  current_canvas_->resetMatrix();
-  batched_tiles_.clear();
 }
 
 sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
@@ -1190,8 +1466,8 @@ void SkiaRenderer::DidChangeVisibility() {
 }
 
 void SkiaRenderer::FinishDrawingQuadList() {
-  if (!batched_tiles_.empty())
-    DrawBatchedTileQuads();
+  if (!batched_quads_.empty())
+    FlushBatchedQuads();
   switch (draw_mode_) {
     case DrawMode::DDL: {
       // Skia doesn't support releasing the last promise image ref on the DDL
