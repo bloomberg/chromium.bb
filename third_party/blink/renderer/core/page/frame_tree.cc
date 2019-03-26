@@ -181,6 +181,12 @@ Frame* FrameTree::Find(const AtomicString& name) const {
   // Named frame lookup should always be relative to a local frame.
   DCHECK(IsA<LocalFrame>(this_frame_.Get()));
 
+  if (EqualIgnoringASCIICase(name, "_current")) {
+    UseCounter::Count(
+        blink::DynamicTo<blink::LocalFrame>(this_frame_.Get())->GetDocument(),
+        WebFeature::kTargetCurrent);
+  }
+
   if (EqualIgnoringASCIICase(name, "_self") ||
       EqualIgnoringASCIICase(name, "_current") || name.IsEmpty())
     return this_frame_;

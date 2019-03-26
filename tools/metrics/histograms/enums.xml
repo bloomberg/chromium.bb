@@ -22611,6 +22611,7 @@ Called by update_net_error_codes.py.-->
   <int value="2832" label="RefreshHeader"/>
   <int value="2833" label="SearchEventFired"/>
   <int value="2834" label="IdleDetectionStart"/>
+  <int value="2835" label="TargetCurrent"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
