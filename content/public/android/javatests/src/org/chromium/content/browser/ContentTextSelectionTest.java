@@ -606,6 +606,7 @@ public class ContentTextSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextSelection"})
+    @DisabledTest(message = "https://crbug.com/946157")
     public void testSelectActionBarPlainTextSelectAll() throws Exception {
         DOMUtils.longPressNode(mWebContents, "plain_text_1");
         waitForSelectActionBarVisible(true);
