@@ -13,7 +13,6 @@ import android.view.View;
 
 import org.junit.Assert;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
@@ -590,7 +589,7 @@ public class DOMUtils {
 
     private static int getMaybeTopControlsHeight(final WebContents webContents) {
         try {
-            return ThreadUtils.runOnUiThreadBlocking(
+            return TestThreadUtils.runOnUiThreadBlocking(
                     () -> nativeGetTopControlsShrinkBlinkHeight(webContents));
         } catch (ExecutionException e) {
             return 0;

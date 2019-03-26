@@ -26,12 +26,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 import java.lang.reflect.Method;
@@ -221,7 +221,7 @@ public class WebContentsAccessibilityTest {
             }
         });
 
-        int virtualViewId = ThreadUtils.runOnUiThreadBlockingNoException(
+        int virtualViewId = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> findNodeMatching(provider, View.NO_ID, matcher));
         Assert.assertNotEquals(View.NO_ID, virtualViewId);
         return virtualViewId;
@@ -357,7 +357,7 @@ public class WebContentsAccessibilityTest {
 
     private static boolean performActionOnUiThread(AccessibilityNodeProvider provider, int viewId,
             int action, Bundle args) throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> provider.performAction(viewId, action, args));
     }
 

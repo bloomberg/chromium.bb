@@ -4,7 +4,6 @@
 
 package org.chromium.content_public.browser.test.util;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
@@ -28,7 +27,7 @@ public class WebContentsUtils {
      * @param enabled Whether to report all frame submissions.
      */
     public static void reportAllFrameSubmissions(final WebContents webContents, boolean enabled) {
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { nativeReportAllFrameSubmissions(webContents, enabled); });
     }
 
@@ -56,7 +55,7 @@ public class WebContentsUtils {
      *                        (e.g. renderer for the currently selected tab)
      */
     public static void simulateRendererKilled(WebContents webContents, boolean wasOomProtected) {
-        ThreadUtils.runOnUiThreadBlocking(() ->
+        TestThreadUtils.runOnUiThreadBlocking(() ->
             ((WebContentsImpl) webContents).simulateRendererKilledForTesting(wasOomProtected));
     }
 
@@ -66,7 +65,7 @@ public class WebContentsUtils {
      */
     public static ImeAdapter getImeAdapter(WebContents webContents) {
         try {
-            return ThreadUtils.runOnUiThreadBlocking(() -> ImeAdapter.fromWebContents(webContents));
+            return TestThreadUtils.runOnUiThreadBlocking(() -> ImeAdapter.fromWebContents(webContents));
         } catch (ExecutionException e) {
             return null;
         }
@@ -78,7 +77,7 @@ public class WebContentsUtils {
      */
     public static GestureListenerManager getGestureListenerManager(WebContents webContents) {
         try {
-            return ThreadUtils.runOnUiThreadBlocking(
+            return TestThreadUtils.runOnUiThreadBlocking(
                     () -> GestureListenerManager.fromWebContents(webContents));
         } catch (ExecutionException e) {
             return null;
@@ -91,7 +90,7 @@ public class WebContentsUtils {
      */
     public static ViewEventSink getViewEventSink(WebContents webContents) {
         try {
-            return ThreadUtils.runOnUiThreadBlocking(() -> ViewEventSink.from(webContents));
+            return TestThreadUtils.runOnUiThreadBlocking(() -> ViewEventSink.from(webContents));
         } catch (ExecutionException e) {
             return null;
         }
@@ -106,7 +105,7 @@ public class WebContentsUtils {
      */
     public static void evaluateJavaScriptWithUserGesture(WebContents webContents, String script) {
         if (script == null) return;
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> nativeEvaluateJavaScriptWithUserGesture(webContents, script));
     }
 
