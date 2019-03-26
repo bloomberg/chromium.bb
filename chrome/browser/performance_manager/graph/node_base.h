@@ -78,7 +78,27 @@ class NodeBase {
   bool NodeInGraph(const NodeBase* other_node) const;
 
   // Helper function for setting a property, and notifying observers if the
-  // value has changed.
+  // value has changed. This is intended for properties that reflect a state,
+  // where repeated identical values don't represent a state change.
+  template <typename NodeType,
+            typename PropertyType,
+            typename NotifyFunctionPtr>
+  void SetPropertyAndNotifyObserversIfChanged(
+      NotifyFunctionPtr notify_function_ptr,
+      const PropertyType& value,
+      NodeType* node,
+      PropertyType* property) {
+    if (*property == value)
+      return;
+    *property = value;
+    for (auto& observer : observers_)
+      ((observer).*(notify_function_ptr))(node);
+  }
+
+  // Helper for setting a property and notifying observers, even if the
+  // property hasn't changed. This is intended for properties that reflect a
+  // measure that is sampled at a point in time, but which can have repeated
+  // values.
   template <typename NodeType,
             typename PropertyType,
             typename NotifyFunctionPtr>
@@ -86,8 +106,6 @@ class NodeBase {
                                      const PropertyType& value,
                                      NodeType* node,
                                      PropertyType* property) {
-    if (*property == value)
-      return;
     *property = value;
     for (auto& observer : observers_)
       ((observer).*(notify_function_ptr))(node);

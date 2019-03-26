@@ -43,15 +43,13 @@ class MetricsCollector : public GraphObserver {
       PageNodeImpl* page_node,
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
-  void OnProcessPropertyChanged(
-      ProcessNodeImpl* process_node,
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) override;
   void OnFrameEventReceived(FrameNodeImpl* frame_node,
                             resource_coordinator::mojom::Event event) override;
   void OnPageEventReceived(PageNodeImpl* page_node,
                            resource_coordinator::mojom::Event event) override;
   void OnIsVisibleChanged(PageNodeImpl* page_node) override;
+  void OnExpectedTaskQueueingDurationSample(
+      ProcessNodeImpl* process_node) override;
 
  private:
   struct MetricsReportRecord {
@@ -87,7 +85,7 @@ class MetricsCollector : public GraphObserver {
       const resource_coordinator::CoordinationUnitID& page_node_id);
   void RecordExpectedQueueingTimeForUkm(
       const resource_coordinator::CoordinationUnitID& page_node_id,
-      int64_t expected_queueing_time);
+      const base::TimeDelta& expected_queueing_time);
   void UpdateUkmSourceIdForPage(
       const resource_coordinator::CoordinationUnitID& page_node_id,
       ukm::SourceId ukm_source_id);

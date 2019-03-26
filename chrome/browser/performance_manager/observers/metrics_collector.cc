@@ -91,26 +91,6 @@ void MetricsCollector::OnPagePropertyChanged(
   }
 }
 
-void MetricsCollector::OnProcessPropertyChanged(
-    ProcessNodeImpl* process_node,
-    resource_coordinator::mojom::PropertyType property_type,
-    int64_t value) {
-  if (property_type == resource_coordinator::mojom::PropertyType::
-                           kExpectedTaskQueueingDuration) {
-    for (auto* page_node : process_node->GetAssociatedPageCoordinationUnits()) {
-      if (IsCollectingExpectedQueueingTimeForUkm(page_node->id())) {
-        int64_t expected_queueing_time;
-        if (!page_node->GetExpectedTaskQueueingDuration(
-                &expected_queueing_time))
-          continue;
-
-        RecordExpectedQueueingTimeForUkm(page_node->id(),
-                                         expected_queueing_time);
-      }
-    }
-  }
-}
-
 void MetricsCollector::OnFrameEventReceived(
     FrameNodeImpl* frame_node,
     resource_coordinator::mojom::Event event) {
@@ -161,6 +141,22 @@ void MetricsCollector::OnIsVisibleChanged(PageNodeImpl* page_node) {
     ResetMetricsReportRecord(page_node->id());
 }
 
+void MetricsCollector::OnExpectedTaskQueueingDurationSample(
+    ProcessNodeImpl* process_node) {
+  // Report this measurement to all pages that are hosting a main frame in
+  // the process that was sampled.
+  const base::TimeDelta& sample =
+      process_node->expected_task_queueing_duration();
+  for (auto* frame_node : process_node->GetFrameNodes()) {
+    if (!frame_node->IsMainFrame())
+      continue;
+    auto* page_node = frame_node->GetPageNode();
+    if (!IsCollectingExpectedQueueingTimeForUkm(page_node->id()))
+      continue;
+    RecordExpectedQueueingTimeForUkm(page_node->id(), sample);
+  }
+}
+
 bool MetricsCollector::ShouldReportMetrics(const PageNodeImpl* page_node) {
   return page_node->TimeSinceLastNavigation() > kMetricsReportDelayTimeout;
 }
@@ -174,11 +170,11 @@ bool MetricsCollector::IsCollectingExpectedQueueingTimeForUkm(
 
 void MetricsCollector::RecordExpectedQueueingTimeForUkm(
     const resource_coordinator::CoordinationUnitID& page_node_id,
-    int64_t expected_queueing_time) {
+    const base::TimeDelta& expected_queueing_time) {
   UkmCollectionState& state = ukm_collection_state_map_[page_node_id];
   state.num_unreported_eqt_measurements = 0u;
   ukm::builders::ResponsivenessMeasurement(state.ukm_source_id)
-      .SetExpectedTaskQueueingDuration(expected_queueing_time)
+      .SetExpectedTaskQueueingDuration(expected_queueing_time.InMilliseconds())
       .Record(graph().ukm_recorder());
 }
 

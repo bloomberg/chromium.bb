@@ -44,10 +44,6 @@ class PageSignalGeneratorImpl
       PageNodeImpl* page_node,
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
-  void OnProcessPropertyChanged(
-      ProcessNodeImpl* process_node,
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) override;
   void OnFrameEventReceived(FrameNodeImpl* frame_node,
                             resource_coordinator::mojom::Event event) override;
   void OnProcessEventReceived(
@@ -56,6 +52,8 @@ class PageSignalGeneratorImpl
   void OnSystemEventReceived(SystemNodeImpl* system_node,
                              resource_coordinator::mojom::Event event) override;
   void OnPageAlmostIdleChanged(PageNodeImpl* page_node) override;
+  void OnExpectedTaskQueueingDurationSample(
+      ProcessNodeImpl* process_node) override;
 
   void BindToInterface(
       resource_coordinator::mojom::PageSignalGeneratorRequest request,

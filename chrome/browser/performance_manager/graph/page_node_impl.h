@@ -41,9 +41,6 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   std::set<ProcessNodeImpl*> GetAssociatedProcessCoordinationUnits() const;
   double GetCPUUsage() const;
 
-  // Returns false if can't get an expected task queueing duration successfully.
-  bool GetExpectedTaskQueueingDuration(int64_t* duration);
-
   // Returns 0 if no navigation has happened, otherwise returns the time since
   // the last navigation commit.
   base::TimeDelta TimeSinceLastNavigation() const;

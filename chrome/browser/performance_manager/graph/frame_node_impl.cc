@@ -58,9 +58,9 @@ void FrameNodeImpl::RemoveChildFrame(FrameNodeImpl* child_frame_node) {
 }
 
 void FrameNodeImpl::SetNetworkAlmostIdle(bool network_almost_idle) {
-  SetPropertyAndNotifyObservers(&GraphObserver::OnNetworkAlmostIdleChanged,
-                                network_almost_idle, this,
-                                &network_almost_idle_);
+  SetPropertyAndNotifyObserversIfChanged(
+      &GraphObserver::OnNetworkAlmostIdleChanged, network_almost_idle, this,
+      &network_almost_idle_);
 }
 
 void FrameNodeImpl::SetLifecycleState(
