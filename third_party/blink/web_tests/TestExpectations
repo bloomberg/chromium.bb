@@ -6135,6 +6135,8 @@ crbug.com/945832 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-
 
 # Sheriff 2019-03-26
 crbug.com/945774 [ Mac10.13 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
+crbug.com/945845 http/tests/security/inactive-document-with-empty-security-origin.html [ Timeout ]
+crbug.com/945845 virtual/outofblink-cors/http/tests/security/inactive-document-with-empty-security-origin.html [ Timeout ]
 
 # WebGPU tests are only run with --enable-unsafe-webgpu
 Bug(none) webgpu/fence.html [ Skip ]
