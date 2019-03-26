@@ -100,7 +100,7 @@ CocoaScrollBarThumb::CocoaScrollBarThumb(CocoaScrollBar* scroll_bar)
   layer()->SetFillsBoundsOpaquely(false);
 }
 
-CocoaScrollBarThumb::~CocoaScrollBarThumb() {}
+CocoaScrollBarThumb::~CocoaScrollBarThumb() = default;
 
 bool CocoaScrollBarThumb::IsStateHovered() const {
   return GetState() == Button::STATE_HOVERED;

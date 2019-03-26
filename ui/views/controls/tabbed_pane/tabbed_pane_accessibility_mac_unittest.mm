@@ -42,7 +42,7 @@ id GetLegacyA11yAttributeValue(id obj, NSString* attribute) {
 
 class TabbedPaneAccessibilityMacTest : public WidgetTest {
  public:
-  TabbedPaneAccessibilityMacTest() {}
+  TabbedPaneAccessibilityMacTest() = default;
 
   // WidgetTest:
   void SetUp() override {

@@ -9,7 +9,7 @@ namespace internal {
 
 // static
 DisplayChangeListener* DisplayChangeListener::Create(Widget*, MenuRunner*) {
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace internal

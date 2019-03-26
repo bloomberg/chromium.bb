@@ -124,7 +124,7 @@ base::string16 AttributedSubstringForRangeHelper(
   return substring;
 }
 
-}
+}  // namespace
 
 namespace views {
 
@@ -134,7 +134,7 @@ namespace views {
 TextInputHost::TextInputHost(BridgedNativeWidgetHostImpl* host_impl)
     : host_impl_(host_impl), mojo_binding_(this) {}
 
-TextInputHost::~TextInputHost() {}
+TextInputHost::~TextInputHost() = default;
 
 void TextInputHost::BindRequest(
     views_bridge_mac::mojom::TextInputHostAssociatedRequest request) {

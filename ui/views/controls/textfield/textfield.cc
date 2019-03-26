@@ -1093,7 +1093,8 @@ void Textfield::OnFocus() {
 
 #if defined(OS_MACOSX)
   if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
-    password_input_enabler_.reset(new ui::ScopedPasswordInputEnabler());
+    password_input_enabler_ =
+        std::make_unique<ui::ScopedPasswordInputEnabler>();
 #endif  // defined(OS_MACOSX)
 
   GetRenderText()->set_focused(true);

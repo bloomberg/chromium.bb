@@ -252,8 +252,8 @@ class WidgetScrollViewTest : public test::WidgetTest,
   ScrollView* AddScrollViewWithContents(std::unique_ptr<View> contents,
                                         bool commit_layers = true) {
 #if defined(OS_MACOSX)
-    scroller_style_.reset(
-        new ui::test::ScopedPreferredScrollerStyle(use_overlay_scrollers_));
+    scroller_style_ = std::make_unique<ui::test::ScopedPreferredScrollerStyle>(
+        use_overlay_scrollers_);
 #endif
 
     const gfx::Rect default_bounds(50, 50, kDefaultWidth, kDefaultHeight);

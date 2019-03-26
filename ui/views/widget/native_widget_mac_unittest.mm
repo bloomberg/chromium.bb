@@ -156,7 +156,7 @@ class TestWindowNativeWidgetMac : public NativeWidgetMac {
 // which need access to Cocoa APIs.
 class NativeWidgetMacTest : public WidgetTest {
  public:
-  NativeWidgetMacTest() {}
+  NativeWidgetMacTest() = default;
 
   // Make an NSWindow with a close button and a title bar to use as a parent.
   // This NSWindow is backed by a widget that is not exposed to the caller.
@@ -200,7 +200,7 @@ class NativeWidgetMacTest : public WidgetTest {
 
 class WidgetChangeObserver : public TestWidgetObserver {
  public:
-  WidgetChangeObserver(Widget* widget) : TestWidgetObserver(widget) {}
+  explicit WidgetChangeObserver(Widget* widget) : TestWidgetObserver(widget) {}
 
   void WaitForVisibleCounts(int gained, int lost) {
     if (gained_visible_count_ >= gained && lost_visible_count_ >= lost)
@@ -267,8 +267,8 @@ class NativeHostHolder {
 // BubbleDialogDelegateView.
 class SimpleBubbleView : public BubbleDialogDelegateView {
  public:
-  SimpleBubbleView() {}
-  ~SimpleBubbleView() override {}
+  SimpleBubbleView() = default;
+  ~SimpleBubbleView() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SimpleBubbleView);
