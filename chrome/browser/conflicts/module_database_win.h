@@ -20,17 +20,21 @@
 
 class ModuleDatabaseObserver;
 
+namespace base {
+class FilePath;
+class SequencedTaskRunner;
+}  // namespace base
+
 #if defined(GOOGLE_CHROME_BUILD)
 class ModuleLoadAttemptLogListener;
 class PrefChangeRegistrar;
 class PrefRegistrySimple;
 class ThirdPartyConflictsManager;
-#endif
 
 namespace base {
-class FilePath;
-class SequencedTaskRunner;
+struct OnTaskRunnerDeleter;
 }
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
 // A class that keeps track of all modules loaded across Chrome processes.
 //
@@ -54,7 +58,7 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
 
   // Creates the ModuleDatabase. Must be created and set on the sequence
   // returned by GetTaskRunner().
-  ModuleDatabase();
+  explicit ModuleDatabase(bool third_party_blocking_policy_enabled);
   ~ModuleDatabase() override;
 
   // Returns the SequencedTaskRunner on which the ModuleDatabase lives. Can be
@@ -157,11 +161,18 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
   //                 process. See https://crbug.com/892294.
   static void DisableThirdPartyBlocking();
 
+  // Destroys the |third_party_conflicts_manager_| instance. Invoked by
+  // the |pref_change_registrar_| when it detects that the policy was disabled.
+  // Note: This is distinct from OnThirdPartyBlockingDisabled(). When the policy
+  //       is disabled, the |third_party_conflicts_manager_| is destroyed as if
+  //       it was never initialized.
+  void OnThirdPartyBlockingPolicyDisabled();
+
   // Accessor for the third party conflicts manager.
   // Returns null if both the tracking of incompatible applications and the
   // blocking of third-party modules are disabled.
   // Do not hold a pointer to the manager because it can be destroyed if the
-  // ThirdPartyBlocking policy is disabled.
+  // ThirdPartyBlocking policy is later disabled.
   ThirdPartyConflictsManager* third_party_conflicts_manager() {
     return third_party_conflicts_manager_.get();
   }
@@ -220,14 +231,22 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
   void NotifyLoadedModules(ModuleDatabaseObserver* observer);
 
 #if defined(GOOGLE_CHROME_BUILD)
+  // Called by DisableThirdPartyBlocking() to disable the analysis of loaded
+  // modules.
+  // Note: This is distinct from OnThirdPartyBlockingPolicyDisabled() because
+  //       they have a different effect. OnThirdPartyBlockingDisabled() keeps
+  //       the |third_party_conflicts_manager_| instance alive.
+  // TODO(pmonette): Remove this workaround when printing is moved to a utility
+  //                 process. See https://crbug.com/892294.
+  void OnThirdPartyBlockingDisabled();
+
   // Initializes the ThirdPartyConflictsManager, which controls showing warnings
   // for incompatible applications that inject into Chrome and the blocking of
   // third-party modules. The manager is only initialized if either or both of
   // the ThirdPartyModulesBlocking and IncompatibleApplicationsWarning features
   // are enabled.
-  void MaybeInitializeThirdPartyConflictsManager();
-
-  void OnThirdPartyBlockingPolicyChanged();
+  void MaybeInitializeThirdPartyConflictsManager(
+      bool third_party_blocking_policy_enabled);
 #endif
 
   // A map of all known modules.
@@ -247,6 +266,10 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
 #if defined(GOOGLE_CHROME_BUILD)
   std::unique_ptr<ModuleLoadAttemptLogListener>
       module_load_attempt_log_listener_;
+
+  // Observes the ThirdPartyBlockingEnabled group policy on the UI thread.
+  std::unique_ptr<PrefChangeRegistrar, base::OnTaskRunnerDeleter>
+      pref_change_registrar_;
 #endif
 
   // Inspects new modules on a blocking task runner.
@@ -257,8 +280,6 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
 
 #if defined(GOOGLE_CHROME_BUILD)
   std::unique_ptr<ThirdPartyConflictsManager> third_party_conflicts_manager_;
-
-  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 #endif
 
   // Records metrics on third-party modules.

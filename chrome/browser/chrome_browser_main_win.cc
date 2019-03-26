@@ -194,10 +194,11 @@ void DetectFaultTolerantHeap() {
 
 // Initializes the ModuleDatabase on its owning sequence. Also starts the
 // enumeration of registered modules in the Windows Registry.
-void InitializeModuleDatabase() {
+void InitializeModuleDatabase(bool is_third_party_blocking_policy_enabled) {
   DCHECK(ModuleDatabase::GetTaskRunner()->RunsTasksInCurrentSequence());
 
-  ModuleDatabase::SetInstance(std::make_unique<ModuleDatabase>());
+  ModuleDatabase::SetInstance(
+      std::make_unique<ModuleDatabase>(is_third_party_blocking_policy_enabled));
 
   auto* module_database = ModuleDatabase::GetInstance();
   module_database->StartDrainingModuleLoadAttemptsLog();
@@ -401,8 +402,16 @@ void SetupModuleDatabase(std::unique_ptr<ModuleWatcher>* module_watcher) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(module_watcher);
 
+  bool third_party_blocking_policy_enabled =
+#if defined(GOOGLE_CHROME_BUILD)
+      ModuleDatabase::IsThirdPartyBlockingPolicyEnabled();
+#else
+      false;
+#endif
+
   ModuleDatabase::GetTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&InitializeModuleDatabase));
+      FROM_HERE, base::BindOnce(&InitializeModuleDatabase,
+                                third_party_blocking_policy_enabled));
 
   *module_watcher = ModuleWatcher::Create(base::BindRepeating(&OnModuleEvent));
 }
