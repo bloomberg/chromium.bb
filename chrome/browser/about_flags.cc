@@ -1011,26 +1011,6 @@ const FeatureEntry::FeatureVariation kResamplingInputEventsFeatureVariations[] =
      {"kalman", kResamplingInputEventsKalmanEnabled,
       base::size(kResamplingInputEventsKalmanEnabled), nullptr}};
 
-#if !defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kAutofillDropdownLayoutLeadingIcon[] = {
-    {autofill::kAutofillDropdownLayoutParameterName,
-     autofill::kAutofillDropdownLayoutParameterLeadingIcon}};
-const FeatureEntry::FeatureParam kAutofillDropdownLayoutTrailingIcon[] = {
-    {autofill::kAutofillDropdownLayoutParameterName,
-     autofill::kAutofillDropdownLayoutParameterTrailingIcon}};
-const FeatureEntry::FeatureParam kAutofillDropdownLayoutTwoLinesLeadingIcon[] =
-    {{autofill::kAutofillDropdownLayoutParameterName,
-      autofill::kAutofillDropdownLayoutParameterTwoLinesLeadingIcon}};
-
-const FeatureEntry::FeatureVariation kAutofillDropdownLayoutVariations[] = {
-    {"(leading icon)", kAutofillDropdownLayoutLeadingIcon,
-     base::size(kAutofillDropdownLayoutLeadingIcon), nullptr},
-    {"(trailing icon)", kAutofillDropdownLayoutTrailingIcon,
-     base::size(kAutofillDropdownLayoutLeadingIcon), nullptr},
-    {"(two line leading icon)", kAutofillDropdownLayoutTwoLinesLeadingIcon,
-     base::size(kAutofillDropdownLayoutTwoLinesLeadingIcon), nullptr}};
-#endif  // !defined(OS_ANDROID)
-
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kBottomOfflineIndicatorEnabled[] = {
     {"bottom_offline_indicator", "true"}};
@@ -3668,9 +3648,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if !defined(OS_ANDROID)
     {"autofill-dropdown-layout", flag_descriptions::kAutofillDropdownLayoutName,
      flag_descriptions::kAutofillDropdownLayoutDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(autofill::kAutofillDropdownLayoutExperiment,
-                                    kAutofillDropdownLayoutVariations,
-                                    "AutofillDropdownLayout")},
+     FEATURE_VALUE_TYPE(autofill::kAutofillDropdownLayoutExperiment)},
 #endif  // OS_ANDROID
 
 #if defined(OS_CHROMEOS)

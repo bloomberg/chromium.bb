@@ -32,12 +32,7 @@ namespace autofill {
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 const base::Feature kAutofillDropdownLayoutExperiment{
-    "AutofillDropdownLayout", base::FEATURE_DISABLED_BY_DEFAULT};
-const char kAutofillDropdownLayoutParameterName[] = "variant";
-const char kAutofillDropdownLayoutParameterLeadingIcon[] = "leading-icon";
-const char kAutofillDropdownLayoutParameterTrailingIcon[] = "trailing-icon";
-const char kAutofillDropdownLayoutParameterTwoLinesLeadingIcon[] =
-    "two-lines-leading-icon";
+    "AutofillDropdownLayout", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
@@ -180,24 +175,7 @@ ForcedPopupLayoutState GetForcedPopupLayoutState() {
   if (!base::FeatureList::IsEnabled(
           autofill::kAutofillDropdownLayoutExperiment))
     return ForcedPopupLayoutState::kDefault;
-
-  std::string param = base::GetFieldTrialParamValueByFeature(
-      kAutofillDropdownLayoutExperiment, kAutofillDropdownLayoutParameterName);
-
-  if (param == kAutofillDropdownLayoutParameterLeadingIcon) {
-    return ForcedPopupLayoutState::kLeadingIcon;
-  } else if (param == kAutofillDropdownLayoutParameterTrailingIcon) {
-    return ForcedPopupLayoutState::kTrailingIcon;
-  } else if (param ==
-             autofill::kAutofillDropdownLayoutParameterTwoLinesLeadingIcon) {
-    return ForcedPopupLayoutState::kTwoLinesLeadingIcon;
-  } else if (param.empty()) {
-    return ForcedPopupLayoutState::kDefault;
-  }
-
-  // Unknown parameter value.
-  NOTREACHED();
-  return ForcedPopupLayoutState::kDefault;
+  return ForcedPopupLayoutState::kTwoLinesLeadingIcon;
 }
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
