@@ -12252,6 +12252,12 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Migration resumed"/>
 </enum>
 
+<enum name="DirectCompositionVideoPresentationMode">
+  <int value="0" label="Zero copy decode swap chain"/>
+  <int value="1" label="Upload and video processor blit"/>
+  <int value="2" label="Bind and video processor blit"/>
+</enum>
+
 <enum name="DirectIntentType">
   <int value="0" label="Fallback URL activated"/>
   <int value="1" label="Intent URL clicked on SERP"/>
