@@ -25,7 +25,7 @@ class Page;
 // Ownership: A FrameOverlay instance owns a ValidationMessageOverlayDelegate.
 class ValidationMessageOverlayDelegate : public FrameOverlay::Delegate {
  public:
-  ValidationMessageOverlayDelegate(Page&,
+  ValidationMessageOverlayDelegate(Page& main_page,
                                    const Element& anchor,
                                    const String& message,
                                    TextDirection message_dir,
@@ -33,6 +33,7 @@ class ValidationMessageOverlayDelegate : public FrameOverlay::Delegate {
                                    TextDirection sub_message_dir);
   ~ValidationMessageOverlayDelegate() override;
 
+  void CreatePage(const FrameOverlay&);
   void PaintFrameOverlay(const FrameOverlay&,
                          GraphicsContext&,
                          const IntSize& view_size) const override;
@@ -42,7 +43,6 @@ class ValidationMessageOverlayDelegate : public FrameOverlay::Delegate {
  private:
   LocalFrameView& FrameView() const;
   void UpdateFrameViewState(const FrameOverlay&, const IntSize& view_size);
-  void EnsurePage(const FrameOverlay&, const IntSize& view_size);
   void WriteDocument(SharedBuffer*);
   Element& GetElementById(const AtomicString&) const;
   void AdjustBubblePosition(const IntRect& view_rect);

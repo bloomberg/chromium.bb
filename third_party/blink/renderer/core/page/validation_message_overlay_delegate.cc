@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -60,13 +61,13 @@ class ValidationMessageChromeClient : public EmptyChromeClient {
 };
 
 ValidationMessageOverlayDelegate::ValidationMessageOverlayDelegate(
-    Page& page,
+    Page& main_page,
     const Element& anchor,
     const String& message,
     TextDirection message_dir,
     const String& sub_message,
     TextDirection sub_message_dir)
-    : main_page_(page),
+    : main_page_(main_page),
       anchor_(anchor),
       message_(message),
       sub_message_(sub_message),
@@ -74,13 +75,18 @@ ValidationMessageOverlayDelegate::ValidationMessageOverlayDelegate(
       sub_message_dir_(sub_message_dir) {}
 
 ValidationMessageOverlayDelegate::~ValidationMessageOverlayDelegate() {
-  if (page_)
+  if (page_) {
+    // This function can be called in EventDispatchForbiddenScope for the main
+    // document, and the following operations dispatch some events. It's safe
+    // because the page can't listen the events.
+    EventDispatchForbiddenScope::AllowUserAgentEvents allow_events;
     page_->WillBeDestroyed();
+  }
 }
 
 LocalFrameView& ValidationMessageOverlayDelegate::FrameView() const {
   DCHECK(page_)
-      << "Do not call FrameView() before the first call of EnsurePage()";
+      << "Do not call FrameView() before the first call of CreatePage()";
   return *To<LocalFrame>(page_->MainFrame())->View();
 }
 
@@ -112,7 +118,6 @@ void ValidationMessageOverlayDelegate::PaintFrameOverlay(
 void ValidationMessageOverlayDelegate::UpdateFrameViewState(
     const FrameOverlay& overlay,
     const IntSize& view_size) {
-  EnsurePage(overlay, view_size);
   if (FrameView().Size() != view_size) {
     FrameView().Resize(view_size);
     page_->GetVisualViewport().SetSize(view_size);
@@ -129,12 +134,12 @@ void ValidationMessageOverlayDelegate::UpdateFrameViewState(
       DocumentLifecycle::LifecycleUpdateReason::kOther);
 }
 
-void ValidationMessageOverlayDelegate::EnsurePage(const FrameOverlay& overlay,
-                                                  const IntSize& view_size) {
-  if (page_)
-    return;
+void ValidationMessageOverlayDelegate::CreatePage(const FrameOverlay& overlay) {
+  DCHECK(!page_);
+
   // TODO(tkent): Can we share code with WebPagePopupImpl and
   // InspectorOverlayAgent?
+  IntSize view_size = overlay.Size();
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
   chrome_client_ = MakeGarbageCollected<ValidationMessageChromeClient>(
@@ -164,15 +169,18 @@ void ValidationMessageOverlayDelegate::EnsurePage(const FrameOverlay& overlay,
       main_page_->DeviceScaleFactorDeprecated());
   frame->ForceSynchronousDocumentInstall("text/html", data);
 
+  Element& main_message = GetElementById("main-message");
+  main_message.setTextContent(message_);
+  Element& sub_message = GetElementById("sub-message");
+  sub_message.setTextContent(sub_message_);
+
   Element& container = GetElementById("container");
   if (WebTestSupport::IsRunningWebTest()) {
     container.SetInlineStyleProperty(CSSPropertyID::kTransition, "none");
     GetElementById("icon").SetInlineStyleProperty(CSSPropertyID::kTransition,
                                                   "none");
-    GetElementById("main-message")
-        .SetInlineStyleProperty(CSSPropertyID::kTransition, "none");
-    GetElementById("sub-message")
-        .SetInlineStyleProperty(CSSPropertyID::kTransition, "none");
+    main_message.SetInlineStyleProperty(CSSPropertyID::kTransition, "none");
+    sub_message.SetInlineStyleProperty(CSSPropertyID::kTransition, "none");
   }
   // Get the size to decide position later.
   // TODO(schenney): This says get size, so we only need to update to layout.
@@ -207,17 +215,15 @@ void ValidationMessageOverlayDelegate::WriteDocument(SharedBuffer* data) {
       data);
   data->Append(Platform::Current()->GetDataResource("input_alert.svg"));
   PagePopupClient::AddString(message_dir_ == TextDirection::kLtr
-                                 ? "<div dir=ltr id=main-message>"
-                                 : "<div dir=rtl id=main-message>",
+                                 ? "<div dir=ltr id=main-message></div>"
+                                 : "<div dir=rtl id=main-message></div>",
                              data);
-  PagePopupClient::AddHTMLString(message_, data);
   PagePopupClient::AddString(sub_message_dir_ == TextDirection::kLtr
-                                 ? "</div><div dir=ltr id=sub-message>"
-                                 : "</div><div dir=rtl id=sub-message>",
+                                 ? "<div dir=ltr id=sub-message></div>"
+                                 : "<div dir=rtl id=sub-message></div>",
                              data);
-  PagePopupClient::AddHTMLString(sub_message_, data);
   PagePopupClient::AddString(
-      "</div></main>"
+      "</main>"
       "<div id=outer-arrow-bottom></div>"
       "<div id=inner-arrow-bottom></div>"
       "<div id=spacer-bottom></div>"
