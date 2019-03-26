@@ -14,6 +14,7 @@ NOINLINE void CrashMojoResourceExhausted() {
 }
 
 void CrashIfResultNotOk(MojoResult result) {
+  DLOG(WARNING) << "mojo::DataPipe is deprecated; use |CreateDataPipe| instead";
   if (LIKELY(result == MOJO_RESULT_OK))
     return;
 
