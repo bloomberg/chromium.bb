@@ -49222,6 +49222,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="15" label="SERVICE_PRINTERS_REPLY"/>
 </enum>
 
+<enum name="ServiceRequestResultType">
+  <int value="0" label="Failure or response error"/>
+  <int value="1" label="Success with empty suggestions"/>
+  <int value="2" label="Success with suggestions"/>
+</enum>
+
 <enum name="ServicesCustomizationLoadResult">
   <int value="0" label="Manifest loaded successfully"/>
   <int value="1" label="Manifest not found on server"/>
