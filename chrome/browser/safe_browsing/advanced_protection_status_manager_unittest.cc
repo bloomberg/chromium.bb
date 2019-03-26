@@ -369,7 +369,6 @@ TEST_F(AdvancedProtectionStatusManagerTest,
 
   std::string account_id =
       SignIn("test@test.com", /* is_under_advanced_protection = */ true);
-  base::RunLoop().RunUntilIdle();
 
   // Now that we've signed into Advanced Protection, we should have a scheduled
   // refresh.
