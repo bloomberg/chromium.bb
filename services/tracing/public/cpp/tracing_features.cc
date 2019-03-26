@@ -37,12 +37,16 @@ bool TracingUsesPerfettoBackend() {
   // This is checked early at startup, so feature list may not be initialized.
   // So, for startup tracing cases there is no way to control the backend using
   // feature list.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePerfetto)) {
+    return false;
+  }
+
   if (base::FeatureList::GetInstance()) {
     return base::FeatureList::IsEnabled(features::kTracingPerfettoBackend);
   }
 
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisablePerfetto);
+  return true;
 }
 
 }  // namespace tracing
