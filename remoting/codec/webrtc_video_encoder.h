@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/time/time.h"
-#include "third_party/webrtc/common_types.h"
+#include "third_party/webrtc/api/video/video_codec_type.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace webrtc {
