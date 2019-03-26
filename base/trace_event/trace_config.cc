@@ -147,8 +147,7 @@ void TraceConfig::ProcessFilterConfig::Merge(
 void TraceConfig::ProcessFilterConfig::InitializeFromConfigDict(
     const base::DictionaryValue& dict) {
   included_process_ids_.clear();
-  const Value* value =
-      dict.FindKeyOfType(kIncludedProcessesParam, Value::Type::LIST);
+  const Value* value = dict.FindListKey(kIncludedProcessesParam);
   if (!value)
     return;
   for (auto& pid_value : value->GetList()) {
