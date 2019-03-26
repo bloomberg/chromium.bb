@@ -214,8 +214,7 @@ TEST_P(ProxyResolvingClientSocketTest, ConnectToProxy) {
       // ProxyResolvingClientSocket::GetPeerAddress() hides the ip of the
       // proxy, so call private member to make sure address is correct.
       EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, status);
-      status =
-          socket->socket_handle_->socket()->GetPeerAddress(&actual_remote_addr);
+      status = socket->socket_->GetPeerAddress(&actual_remote_addr);
     }
     EXPECT_EQ(net::OK, status);
     EXPECT_EQ(remote_addr.ToString(), actual_remote_addr.ToString());
@@ -317,8 +316,7 @@ TEST_P(ProxyResolvingClientSocketTest, ReadWriteErrors) {
       // ProxyResolvingClientSocket::GetPeerAddress() hides the ip of the
       // proxy, so call private member to make sure address is correct.
       EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, status);
-      status =
-          socket->socket_handle_->socket()->GetPeerAddress(&actual_remote_addr);
+      status = socket->socket_->GetPeerAddress(&actual_remote_addr);
     }
     EXPECT_EQ(net::OK, status);
     EXPECT_EQ(remote_addr.ToString(), actual_remote_addr.ToString());
@@ -411,8 +409,8 @@ TEST_P(ProxyResolvingClientSocketTest, ResetSocketAfterTunnelAuth) {
   int status = socket->Connect(callback.callback());
   EXPECT_THAT(callback.GetResult(status),
               net::test::IsError(net::ERR_PROXY_AUTH_REQUESTED));
-  // Make sure |socket_handle_| is closed appropriately.
-  EXPECT_FALSE(socket->socket_handle_->socket());
+  // Make sure |socket_| is closed appropriately.
+  EXPECT_FALSE(socket->socket_);
 }
 
 TEST_P(ProxyResolvingClientSocketTest, MultiroundAuth) {
