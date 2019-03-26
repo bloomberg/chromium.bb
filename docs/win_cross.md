@@ -8,14 +8,15 @@ What does *not* work:
 
 * 64-bit renderer processes don't use V8 snapshots, slowing down their startup
   ([bug](https://crbug.com/803591))
-* on Mac hosts, building a 32-bit chrome ([bug](https://crbug.com/794838))
+* on Mac hosts, 32-bit builds don't use V8 snapshots either
+  ([bug](https://crbug.com/794838) has more information, but this is unlikely
+  to ever change)
 
 All other targets build fine (including `chrome`, `browser_tests`, ...).
 
-Uses of `.asm` files have been stubbed out.  As a result, some of Skia's
-software rendering fast paths are not present in cross builds, Crashpad cannot
-report crashes, and NaCl defaults to disabled and cannot be enabled in
-cross builds ([.asm bug](https://crbug.com/762167)).
+Uses of `.asm` files have been stubbed out.  As a result, Crashpad cannot
+report crashes, and NaCl defaults to disabled and cannot be enabled in cross
+builds ([.asm bug](https://crbug.com/762167)).
 
 ## .gclient setup
 

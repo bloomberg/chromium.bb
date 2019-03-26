@@ -241,9 +241,6 @@ if (target_os == "android") {
 } else if (target_os == "win") {
   # On Windows we use the same toolchain for host and target by default.
   # Beware, win cross builds have some caveats, see docs/win_cross.md
-  # TODO(thakis): See if we want to make 32-bit builds on mac hosts work.
-  assert(host_os != "mac" || target_cpu == "x64",
-         "Mac hosts can only build 64-bit chrome/win, https://crbug.com/794838")
   if (is_clang) {
     _default_toolchain = "//build/toolchain/win:win_clang_$target_cpu"
   } else {
