@@ -67,8 +67,6 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
       return gfx::kGoogleGrey700;
     case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_PRESSED:
       return gfx::kGoogleGrey600;
-    case ThemeProperties::COLOR_CONTROL_BACKGROUND:
-      return SK_ColorWHITE;
     case ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
       return SkColorSetRGB(0x28, 0x28, 0x28);
     case ThemeProperties::COLOR_NTP_LINK:
@@ -253,8 +251,6 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
     case COLOR_TAB_ALERT_CAPTURING:
     case COLOR_TAB_PIP_PLAYING:
       return gfx::kGoogleBlue600;
-    case COLOR_CONTROL_BACKGROUND:
-      return SK_ColorWHITE;
     case COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
       return SkColorSetRGB(0xB6, 0xB4, 0xB6);
     case COLOR_TOOLBAR_TOP_SEPARATOR:
