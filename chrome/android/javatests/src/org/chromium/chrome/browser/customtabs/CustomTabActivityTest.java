@@ -773,12 +773,10 @@ public class CustomTabActivityTest {
         final ActivityMonitor monitor =
                 InstrumentationRegistry.getInstrumentation().addMonitor(filter, null, false);
         openAppMenuAndAssertMenuShown();
-        final String menuItemTitle = getActivity().getString(R.string.menu_open_in_product_default);
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             MenuItem item = getActivity().getAppMenuHandler().getAppMenu().getMenu().findItem(
                     R.id.open_in_browser_id);
             Assert.assertNotNull(item);
-            Assert.assertEquals(menuItemTitle, item.getTitle().toString());
             getActivity().onMenuOrKeyboardAction(R.id.open_in_browser_id, false);
         });
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
