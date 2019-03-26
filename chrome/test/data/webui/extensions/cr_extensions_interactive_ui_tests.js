@@ -58,6 +58,6 @@ CrExtensionsOptionsPageTest = class extends CrExtensionsInteractiveUITest {
   }
 };
 
-TEST_F('CrExtensionsOptionsPageTest', 'All', function() {
+TEST_F('CrExtensionsOptionsPageTest', 'DISABLED_All', function() {
   mocha.run();
 });
