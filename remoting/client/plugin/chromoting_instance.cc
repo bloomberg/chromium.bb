@@ -323,7 +323,7 @@ void ChromotingInstance::DidChangeView(const pp::View& view) {
   plugin_view_ = view;
   webrtc::DesktopSize size(
       webrtc::DesktopSize(view.GetRect().width(), view.GetRect().height()));
-  mouse_input_filter_.set_input_size(webrtc::DesktopRect::MakeSize(size));
+  mouse_input_filter_.set_input_size(size);
   touch_input_scaler_.set_input_size(size);
 
   if (video_renderer_)
@@ -500,7 +500,7 @@ void ChromotingInstance::SetDesktopSize(const webrtc::DesktopSize& size,
                                         const webrtc::DesktopVector& dpi) {
   DCHECK(!dpi.is_zero());
 
-  mouse_input_filter_.set_output_size(webrtc::DesktopRect::MakeSize(size));
+  mouse_input_filter_.set_output_size(size);
   touch_input_scaler_.set_output_size(size);
 
   std::unique_ptr<base::DictionaryValue> data(new base::DictionaryValue());
@@ -735,7 +735,7 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   if (!plugin_view_.is_null()) {
     webrtc::DesktopSize size(plugin_view_.GetRect().width(),
                              plugin_view_.GetRect().height());
-    mouse_input_filter_.set_input_size(webrtc::DesktopRect::MakeSize(size));
+    mouse_input_filter_.set_input_size(size);
     touch_input_scaler_.set_input_size(size);
   }
 
