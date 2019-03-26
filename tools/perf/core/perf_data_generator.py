@@ -429,9 +429,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'isolate': 'performance_test_suite',
           'num_shards': 26,
           'extra_args': [
-              # Temporarily disable reference builds on
-              # Mac to mitigate crbug.com/940075
-              #'--run-ref-build',
+              '--run-ref-build',
               ('--test-shard-map-filename='
                'mac-10_12_laptop_low_end-perf_map.json'),
               '--assert-gpu-compositing',
@@ -510,9 +508,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         {
           'isolate': 'performance_test_suite',
           'extra_args': [
-            # Temporarily disable reference builds on
-            # Mac to mitigate crbug.com/940075
-            #'--run-ref-build',
+            '--run-ref-build',
             '--test-shard-map-filename=mac-10_13_laptop_high_end-perf_map.json',
               '--assert-gpu-compositing',
           ],
