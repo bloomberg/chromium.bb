@@ -28,6 +28,7 @@ class ImageResourceObserver;
 class ResourceError;
 class ResourceFetcher;
 class ResourceResponse;
+class SecurityContext;
 
 // ImageResourceContent is a container that holds fetch result of
 // an ImageResource in a decoded form.
@@ -178,7 +179,7 @@ class CORE_EXPORT ImageResourceContent final
   // image resource violates any of the image policies in effect on the current
   // page.
   bool IsAcceptableContentType();
-  bool IsAcceptableCompressionRatio();
+  bool IsAcceptableCompressionRatio(const SecurityContext& context);
 
   void LoadDeferredImage(ResourceFetcher* fetcher);
 

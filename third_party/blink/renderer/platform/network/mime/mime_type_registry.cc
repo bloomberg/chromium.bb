@@ -205,4 +205,10 @@ bool MIMETypeRegistry::IsSupportedTextTrackMIMEType(const String& mime_type) {
   return EqualIgnoringASCIICase(mime_type, "text/vtt");
 }
 
+bool MIMETypeRegistry::IsLossyImageMIMEType(const String& mime_type) {
+  return EqualIgnoringASCIICase(mime_type, "image/jpeg") ||
+         EqualIgnoringASCIICase(mime_type, "image/jpg") ||
+         EqualIgnoringASCIICase(mime_type, "image/pjpeg");
+}
+
 }  // namespace blink

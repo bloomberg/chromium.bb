@@ -22647,7 +22647,7 @@ Called by update_net_error_codes.py.-->
   <int value="20" label="Magnetometer"/>
   <int value="21" label="UnsizedMedia"/>
   <int value="22" label="LegacyImageFormats"/>
-  <int value="23" label="UnoptimizedImages"/>
+  <int value="23" label="Deprecated: UnoptimizedImages"/>
   <int value="24" label="Animations"/>
   <int value="25" label="OversizedImages"/>
   <int value="26" label="PictureInPicture"/>
@@ -22669,6 +22669,7 @@ Called by update_net_error_codes.py.-->
   <int value="42" label="Serial"/>
   <int value="43" label="Hid"/>
   <int value="44" label="IdleDetection"/>
+  <int value="45" label="UnoptimizedLossyImages"/>
 </enum>
 
 <enum name="FeedbackSource">
