@@ -45,34 +45,13 @@ TEST_F(PageNodeImplTest, AddFrameBasic) {
   auto child2_frame =
       CreateNode<FrameNodeImpl>(page_node.get(), parent_frame.get());
 
-  page_node->AddFrame(parent_frame.get());
-  page_node->AddFrame(child1_frame.get());
-  page_node->AddFrame(child2_frame.get());
+  // Validate that all frames are tallied to the page.
   EXPECT_EQ(3u, page_node->GetFrameNodes().size());
-}
-
-TEST_F(PageNodeImplTest, AddReduplicativeFrame) {
-  auto page_node = CreateNode<PageNodeImpl>();
-  auto frame1_node = CreateNode<FrameNodeImpl>(page_node.get(), nullptr);
-  auto frame2_node =
-      CreateNode<FrameNodeImpl>(page_node.get(), frame1_node.get());
-
-  // TODO(siggi): This test is ... unpretty.
-  page_node->AddFrame(frame1_node.get());
-  page_node->AddFrame(frame2_node.get());
-  page_node->AddFrame(frame1_node.get());
-  EXPECT_EQ(2u, page_node->GetFrameNodes().size());
 }
 
 TEST_F(PageNodeImplTest, RemoveFrame) {
   auto page_node = CreateNode<PageNodeImpl>();
   auto frame_node = CreateNode<FrameNodeImpl>(page_node.get(), nullptr);
-
-  // Page-frame relationship has not been established yet.
-  EXPECT_EQ(0u, page_node->GetFrameNodes().size());
-  EXPECT_EQ(page_node.get(), frame_node->GetPageNode());
-
-  page_node->AddFrame(frame_node.get());
 
   // Ensure correct page-frame relationship has been established.
   EXPECT_EQ(1u, page_node->GetFrameNodes().size());
@@ -275,7 +254,6 @@ void ExpectInitialInterventionPolicyAggregationWorks(
       TestNodeWrapper<FrameNodeImpl>::Create(mock_graph, page.get(), nullptr);
   // Add a frame and expect the values to be invalidated. Reaggregate and
   // ensure the appropriate value results.
-  page->AddFrame(f0.get());
   f0->SetAllInterventionPoliciesForTesting(f0_policy);
   EXPECT_EQ(1u, page->GetInterventionPolicyFramesReportedForTesting());
   ExpectRawInterventionPolicy(
@@ -286,7 +264,6 @@ void ExpectInitialInterventionPolicyAggregationWorks(
       TestNodeWrapper<FrameNodeImpl>::Create(mock_graph, page.get(), nullptr);
   // Do it again. This time the raw values should be the same as the
   // aggregated values above.
-  page->AddFrame(f1.get());
   f1->SetAllInterventionPoliciesForTesting(f1_policy);
   EXPECT_EQ(2u, page->GetInterventionPolicyFramesReportedForTesting());
   ExpectRawInterventionPolicy(
@@ -410,9 +387,7 @@ TEST_F(PageNodeImplTest, IncrementalInterventionPolicy) {
   TestNodeWrapper<FrameNodeImpl> f1 =
       TestNodeWrapper<FrameNodeImpl>::Create(mock_graph, page.get(), f0.get());
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
-  page->AddFrame(f0.get());
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
-  page->AddFrame(f1.get());
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
 
   // Set the policies on the first frame. This should be observed by the page

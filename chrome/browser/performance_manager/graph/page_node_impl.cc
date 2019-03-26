@@ -45,37 +45,31 @@ void PageNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
   DCHECK_EQ(this, frame_node->GetPageNode());
   DCHECK(NodeInGraph(frame_node));
 
-  // TODO(https://crbug.com/944150): This method is called on navigation
-  //     complete, and as such can fire more than once for a given frame in
-  //     its lifetime. The |frame_nodes_| set is redundant to the frame tree and
-  //     should be removed.
   const bool inserted = frame_nodes_.insert(frame_node).second;
-  if (inserted) {
+  DCHECK(inserted);
 
-    OnNumFrozenFramesStateChange(
-        frame_node->lifecycle_state() ==
-                resource_coordinator::mojom::LifecycleState::kFrozen
-            ? 1
-            : 0);
-    MaybeInvalidateInterventionPolicies(frame_node, true /* adding_frame */);
-  }
+  OnNumFrozenFramesStateChange(
+      frame_node->lifecycle_state() ==
+              resource_coordinator::mojom::LifecycleState::kFrozen
+          ? 1
+          : 0);
+  MaybeInvalidateInterventionPolicies(frame_node, true /* adding_frame */);
 }
 
-void PageNodeImpl::MaybeRemoveFrame(FrameNodeImpl* frame_node) {
+void PageNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(frame_node);
   DCHECK_EQ(this, frame_node->GetPageNode());
   DCHECK(NodeInGraph(frame_node));
 
-  size_t removed = frame_nodes_.erase(frame_node);
-  if (removed) {
-    OnNumFrozenFramesStateChange(
-        frame_node->lifecycle_state() ==
-                resource_coordinator::mojom::LifecycleState::kFrozen
-            ? -1
-            : 0);
-    MaybeInvalidateInterventionPolicies(frame_node, false /* adding_frame */);
-  }
+  const size_t removed = frame_nodes_.erase(frame_node);
+  DCHECK(removed);
+  OnNumFrozenFramesStateChange(
+      frame_node->lifecycle_state() ==
+              resource_coordinator::mojom::LifecycleState::kFrozen
+          ? -1
+          : 0);
+  MaybeInvalidateInterventionPolicies(frame_node, false /* adding_frame */);
 }
 
 void PageNodeImpl::SetIsLoading(bool is_loading) {

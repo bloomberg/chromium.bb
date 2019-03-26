@@ -109,7 +109,6 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
       const {
     return intervention_policy_[static_cast<size_t>(intervention)];
   }
-  void AddFrame(FrameNodeImpl* frame_node);
 
   size_t GetInterventionPolicyFramesReportedForTesting() const {
     return intervention_policy_frames_reported_;
@@ -123,8 +122,8 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   friend class FrameNodeImpl;
   friend class PageAlmostIdleAccess;
 
-  // TODO(siggi): Change this such that a node joins its page at JoinGraph.
-  void MaybeRemoveFrame(FrameNodeImpl* frame_node);
+  void AddFrame(FrameNodeImpl* frame_node);
+  void RemoveFrame(FrameNodeImpl* frame_node);
   void JoinGraph() override;
   void LeaveGraph() override;
 

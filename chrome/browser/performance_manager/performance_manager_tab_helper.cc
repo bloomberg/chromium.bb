@@ -107,12 +107,6 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
   std::unique_ptr<FrameNodeImpl> frame = performance_manager_->CreateFrameNode(
       page_node_.get(), parent_frame_node);
 
-  // TODO(siggi): Do this automatically on FrameNodeImpl::JoinGraph.
-  performance_manager_->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PageNodeImpl::AddFrame,
-                     base::Unretained(page_node_.get()), frame.get()));
-
   RenderProcessUserData* user_data =
       RenderProcessUserData::GetForRenderProcessHost(
           render_frame_host->GetProcess());
