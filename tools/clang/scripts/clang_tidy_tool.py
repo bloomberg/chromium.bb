@@ -38,10 +38,13 @@ def GetBuildDir(out_dir):
   return os.path.join(GetCheckoutDir(out_dir), 'build')
 
 
-def FetchClang(out_dir):
-  """Clone llvm repo into |out_dir| or update if it already exists."""
-  checkout_dir = GetCheckoutDir(out_dir)
+def GetBinaryPath(build_dir, binary):
+  if sys.platform == 'win32':
+    binary += '.exe'
+  return os.path.join(build_dir, 'bin', binary)
 
+def FetchClang(checkout_dir):
+  """Clone llvm repo into |out_dir| or update if it already exists."""
   try:
     # Create parent directories of the checkout directory
     os.makedirs(os.path.dirname(checkout_dir))
@@ -64,10 +67,9 @@ def FetchClang(out_dir):
     subprocess.check_call(args, cwd=checkout_dir)
 
 
-def BuildClang(out_dir):
-  """Build clang from llvm repo at |GetCheckoutDir(out_dir)|."""
+def BuildClang(build_dir):
+  """Build clang from llvm repo at |build_dir|."""
   # Make <checkout>/build directory
-  build_dir = GetBuildDir(out_dir)
   try:
     os.mkdir(build_dir)
   except OSError as e:
@@ -94,8 +96,8 @@ def BuildClang(out_dir):
 
 
 def BuildNinjaTarget(out_dir, ninja_target):
-  args = ['ninja', '-C', out_dir, ninja_target]
-  subprocess.check_call(args)
+  args = ['autoninja', '-C', out_dir, ninja_target]
+  subprocess.check_call(args, shell=sys.platform == 'win32')
 
 
 def GenerateCompDb(out_dir):
@@ -124,15 +126,16 @@ def GenerateCompDb(out_dir):
     comp_db_file.write(comp_db_data)
 
 
-def RunClangTidy(checks, header_filter, auto_fix, out_dir, ninja_target):
+def RunClangTidy(checks, header_filter, auto_fix, clang_src_dir,
+                 clang_build_dir, out_dir, ninja_target):
   """Invoke the |run-clang-tidy.py| script."""
   run_clang_tidy_script = os.path.join(
-      GetCheckoutDir(out_dir), 'clang-tools-extra', 'clang-tidy', 'tool',
+      clang_src_dir, 'clang-tools-extra', 'clang-tidy', 'tool',
       'run-clang-tidy.py')
 
-  clang_tidy_binary = os.path.join(GetBuildDir(out_dir), 'bin', 'clang-tidy')
-  clang_apply_rep_binary = os.path.join(
-      GetBuildDir(out_dir), 'bin', 'clang-apply-replacements')
+  clang_tidy_binary = GetBinaryPath(clang_build_dir, 'clang-tidy')
+  clang_apply_rep_binary = GetBinaryPath(clang_build_dir,
+                                         'clang-apply-replacements')
 
   args = [
       sys.executable,
@@ -159,13 +162,14 @@ def RunClangTidy(checks, header_filter, auto_fix, out_dir, ninja_target):
   subprocess.check_call(args)
 
 
-def RunClangTidyDiff(checks, header_filter, auto_fix, out_dir):
+def RunClangTidyDiff(checks, header_filter, auto_fix, clang_src_dir,
+                     clang_build_dir, out_dir):
   """Invoke the |clang-tidy-diff.py| script over the diff from stdin."""
   clang_tidy_diff_script = os.path.join(
-      GetCheckoutDir(out_dir), 'clang-tools-extra', 'clang-tidy', 'tool',
+      clang_src_dir, 'clang-tools-extra', 'clang-tidy', 'tool',
       'clang-tidy-diff.py')
 
-  clang_tidy_binary = os.path.join(GetBuildDir(out_dir), 'bin', 'clang-tidy')
+  clang_tidy_binary = GetBinaryPath(clang_build_dir, 'clang-tidy')
 
   args = [
       clang_tidy_diff_script,
@@ -205,6 +209,10 @@ def main():
       action='store_true',
       default=False,
       help ='read diff from the stdin and check it')
+  parser.add_argument('--clang-src-dir', type=str,
+                      help='override llvm and clang checkout location')
+  parser.add_argument('--clang-build-dir', type=str,
+                      help='override clang build dir location')
   parser.add_argument('--checks', help='passed to clang-tidy')
   parser.add_argument('--header-filter', help='passed to clang-tidy')
   parser.add_argument(
@@ -217,11 +225,24 @@ def main():
 
   steps = []
 
+  # If the user hasn't provided a clang checkout and build dir, checkout and
+  # build clang-tidy where update.py would.
+  if not args.clang_src_dir:
+    args.clang_src_dir = GetCheckoutDir(args.OUT_DIR)
+  if not args.clang_build_dir:
+    args.clang_build_dir = GetBuildDir(args.OUT_DIR)
+  elif (args.clang_build_dir and not
+        os.path.isfile(GetBinaryPath(args.clang_build_dir, 'clang-tidy'))):
+    sys.exit('clang-tidy binary doesn\'t exist at ' +
+             GetBinaryPath(args.clang_build_dir, 'clang-tidy'))
+
+
   if args.fetch:
-    steps.append(('Fetching clang sources', lambda: FetchClang(args.OUT_DIR)))
+    steps.append(('Fetching clang sources', lambda:
+                  FetchClang(args.clang_src_dir)))
 
   if args.build:
-    steps.append(('Building clang', lambda: BuildClang(args.OUT_DIR)))
+    steps.append(('Building clang', lambda: BuildClang(args.clang_build_dir)))
 
   steps += [
       ('Building ninja target: %s' % args.NINJA_TARGET,
@@ -232,15 +253,17 @@ def main():
     steps += [
         ('Running clang-tidy on diff',
          lambda: RunClangTidyDiff(args.checks, args.header_filter,
-                                  args.auto_fix,
-                                  args.OUT_DIR, args.NINJA_TARGET)),
+                                  args.auto_fix, args.clang_src_dir,
+                                  args.clang_build_dir, args.OUT_DIR,
+                                  args.NINJA_TARGET)),
     ]
   else:
     steps += [
         ('Running clang-tidy',
         lambda: RunClangTidy(args.checks, args.header_filter,
-                             args.auto_fix,
-                             args.OUT_DIR, args.NINJA_TARGET)),
+                             args.auto_fix, args.clang_src_dir,
+                             args.clang_build_dir, args.OUT_DIR,
+                             args.NINJA_TARGET)),
     ]
 
   # Run the steps in sequence.
