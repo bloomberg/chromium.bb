@@ -64,64 +64,7 @@ namespace blink {
 
 unsigned NavigationDisablerForBeforeUnload::navigation_disable_count_ = 0;
 
-class ScheduledURLNavigation : public ScheduledNavigation {
- protected:
-  ScheduledURLNavigation(ClientNavigationReason reason,
-                         double delay,
-                         Document* origin_document,
-                         const KURL& url,
-                         WebFrameLoadType frame_load_type,
-                         base::TimeTicks input_timestamp)
-      : ScheduledNavigation(reason,
-                            delay,
-                            origin_document,
-                            input_timestamp),
-        url_(url),
-        should_check_main_world_content_security_policy_(
-            kCheckContentSecurityPolicy),
-        frame_load_type_(frame_load_type) {
-    if (ContentSecurityPolicy::ShouldBypassMainWorld(origin_document)) {
-      should_check_main_world_content_security_policy_ =
-          kDoNotCheckContentSecurityPolicy;
-    }
-
-    if (origin_document && url.ProtocolIs("blob") &&
-        BlobUtils::MojoBlobURLsEnabled()) {
-      origin_document->GetPublicURLManager().Resolve(
-          url_, MakeRequest(&blob_url_token_));
-    }
-  }
-
-  void Fire(LocalFrame* frame) override {
-    std::unique_ptr<UserGestureIndicator> gesture_indicator =
-        CreateUserGestureIndicator();
-    FrameLoadRequest request(OriginDocument(), ResourceRequest(url_), "_self",
-                             should_check_main_world_content_security_policy_);
-    request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
-    request.SetInputStartTime(InputTimestamp());
-
-    if (blob_url_token_) {
-      mojom::blink::BlobURLTokenPtr token_clone;
-      blob_url_token_->Clone(MakeRequest(&token_clone));
-      request.SetBlobURLToken(std::move(token_clone));
-    }
-
-    frame->Loader().StartNavigation(request, frame_load_type_);
-  }
-
-  KURL Url() const override { return url_; }
-
-  WebFrameLoadType LoadType() const { return frame_load_type_; }
-
- private:
-  KURL url_;
-  mojom::blink::BlobURLTokenPtr blob_url_token_;
-  ContentSecurityPolicyDisposition
-      should_check_main_world_content_security_policy_;
-  WebFrameLoadType frame_load_type_;
-};
-
-class ScheduledRedirect final : public ScheduledURLNavigation {
+class ScheduledRedirect final : public ScheduledNavigation {
  public:
   static ScheduledRedirect* Create(double delay,
                                    Document* origin_document,
@@ -140,12 +83,12 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
                     Document::HttpRefreshType http_refresh_type,
                     WebFrameLoadType frame_load_type,
                     base::TimeTicks input_timestamp)
-      : ScheduledURLNavigation(ToReason(http_refresh_type),
-                               delay,
-                               origin_document,
-                               url,
-                               frame_load_type,
-                               input_timestamp) {
+      : ScheduledNavigation(ToReason(http_refresh_type),
+                            delay,
+                            origin_document,
+                            url,
+                            frame_load_type,
+                            input_timestamp) {
     ClearUserGesture();
   }
 
@@ -185,7 +128,7 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
   }
 };
 
-class ScheduledFrameNavigation final : public ScheduledURLNavigation {
+class ScheduledFrameNavigation final : public ScheduledNavigation {
  public:
   static ScheduledFrameNavigation* Create(Document* origin_document,
                                           const KURL& url,
@@ -199,60 +142,47 @@ class ScheduledFrameNavigation final : public ScheduledURLNavigation {
                            const KURL& url,
                            WebFrameLoadType frame_load_type,
                            base::TimeTicks input_timestamp)
-      : ScheduledURLNavigation(ClientNavigationReason::kFrameNavigation,
-                               0.0,
-                               origin_document,
-                               url,
-                               frame_load_type,
-                               input_timestamp) {}
-};
-
-class ScheduledFormSubmission final : public ScheduledNavigation {
- public:
-  static ScheduledFormSubmission* Create(Document* document,
-                                         FormSubmission* submission,
-                                         WebFrameLoadType frame_load_type,
-                                         base::TimeTicks input_timestamp) {
-    return MakeGarbageCollected<ScheduledFormSubmission>(
-        document, submission, frame_load_type, input_timestamp);
-  }
-
-  ScheduledFormSubmission(Document* document,
-                          FormSubmission* submission,
-                          WebFrameLoadType frame_load_type,
-                          base::TimeTicks input_timestamp)
-      : ScheduledNavigation(submission->Method() == FormSubmission::kGetMethod
-                                ? ClientNavigationReason::kFormSubmissionGet
-                                : ClientNavigationReason::kFormSubmissionPost,
-                            0,
-                            document,
+      : ScheduledNavigation(ClientNavigationReason::kFrameNavigation,
+                            0.0,
+                            origin_document,
+                            url,
+                            frame_load_type,
                             input_timestamp),
-        submission_(submission),
-        frame_load_type_(frame_load_type) {
-    DCHECK_NE(submission->Method(), FormSubmission::kDialogMethod);
-    DCHECK(submission_->Form());
+        should_check_main_world_content_security_policy_(
+            kCheckContentSecurityPolicy) {
+    if (ContentSecurityPolicy::ShouldBypassMainWorld(origin_document)) {
+      should_check_main_world_content_security_policy_ =
+          kDoNotCheckContentSecurityPolicy;
+    }
+
+    if (origin_document && url.ProtocolIs("blob") &&
+        BlobUtils::MojoBlobURLsEnabled()) {
+      origin_document->GetPublicURLManager().Resolve(
+          Url(), MakeRequest(&blob_url_token_));
+    }
   }
 
   void Fire(LocalFrame* frame) override {
     std::unique_ptr<UserGestureIndicator> gesture_indicator =
         CreateUserGestureIndicator();
-    FrameLoadRequest frame_request =
-        submission_->CreateFrameLoadRequest(OriginDocument());
-    frame_request.SetNavigationPolicy(submission_->GetNavigationPolicy());
-    frame_request.SetInputStartTime(InputTimestamp());
-    frame->Loader().StartNavigation(frame_request, frame_load_type_);
-  }
+    FrameLoadRequest request(OriginDocument(), ResourceRequest(Url()), "_self",
+                             should_check_main_world_content_security_policy_);
+    request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
+    request.SetInputStartTime(InputTimestamp());
 
-  KURL Url() const override { return submission_->RequestURL(); }
+    if (blob_url_token_) {
+      mojom::blink::BlobURLTokenPtr token_clone;
+      blob_url_token_->Clone(MakeRequest(&token_clone));
+      request.SetBlobURLToken(std::move(token_clone));
+    }
 
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(submission_);
-    ScheduledNavigation::Trace(visitor);
+    frame->Loader().StartNavigation(request, LoadType());
   }
 
  private:
-  Member<FormSubmission> submission_;
-  WebFrameLoadType frame_load_type_;
+  mojom::blink::BlobURLTokenPtr blob_url_token_;
+  ContentSecurityPolicyDisposition
+      should_check_main_world_content_security_policy_;
 };
 
 NavigationScheduler::NavigationScheduler(LocalFrame* frame) : frame_(frame) {}
@@ -351,22 +281,6 @@ void NavigationScheduler::ScheduleFrameNavigation(
   Schedule(ScheduledFrameNavigation::Create(origin_document, url,
                                             frame_load_type, input_timestamp),
            kCancelParsing);
-}
-
-void NavigationScheduler::ScheduleFormSubmission(Document* document,
-                                                 FormSubmission* submission) {
-  DCHECK(frame_->GetPage());
-  WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
-  if (MustReplaceCurrentItem(frame_))
-    frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-  // Cancel parsing if the form submission is targeted at this frame.
-  CancelParsingPolicy policy =
-      submission->Target().IsEmpty() || submission->Target() == "_self"
-          ? kCancelParsing
-          : kDoNotCancelParsing;
-  Schedule(ScheduledFormSubmission::Create(document, submission,
-                                           frame_load_type, InputTimestamp()),
-           policy);
 }
 
 void NavigationScheduler::NavigateTask() {
