@@ -32,7 +32,7 @@
     Exposed=(Window,Worker,AudioWorklet),
     RaisesException=Constructor
 ] interface MessageEvent : Event {
-    [Custom=Getter] readonly attribute any data;
+    [CachedAttribute=IsDataDirty, CallWith=ScriptState] readonly attribute any data;
     readonly attribute DOMString origin;
     readonly attribute DOMString lastEventId;
     // TODO(bashi): |source| should be of type MessageEventSource.

@@ -70,8 +70,10 @@ MessageEvent::MessageEvent(const AtomicString& type,
     : Event(type, initializer),
       data_type_(kDataTypeScriptValue),
       source_(nullptr) {
-  if (initializer->hasData())
-    data_as_script_value_ = initializer->data();
+  if (initializer->hasData()) {
+    data_as_v8_value_.Set(initializer->data().GetIsolate(),
+                          initializer->data().V8Value());
+  }
   if (initializer->hasOrigin())
     origin_ = initializer->origin();
   if (initializer->hasLastEventId())
@@ -189,7 +191,8 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
   initEvent(type, bubbles, cancelable);
 
   data_type_ = kDataTypeScriptValue;
-  data_as_script_value_ = data;
+  data_as_v8_value_.Set(data.GetIsolate(), data.V8Value());
+  is_data_dirty_ = true;
   origin_ = origin;
   last_event_id_ = last_event_id;
   source_ = source;
@@ -220,6 +223,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
   data_type_ = kDataTypeSerializedScriptValue;
   data_as_serialized_script_value_ =
       SerializedScriptValue::Unpack(std::move(data));
+  is_data_dirty_ = true;
   origin_ = origin;
   last_event_id_ = last_event_id;
   source_ = source;
@@ -244,11 +248,56 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
 
   data_type_ = kDataTypeString;
   data_as_string_ = data;
+  is_data_dirty_ = true;
   origin_ = origin;
   last_event_id_ = last_event_id;
   source_ = source;
   ports_ = ports;
   is_ports_dirty_ = true;
+}
+
+ScriptValue MessageEvent::data(ScriptState* script_state) {
+  is_data_dirty_ = false;
+
+  v8::Isolate* isolate = script_state->GetIsolate();
+  v8::Local<v8::Value> value;
+  switch (data_type_) {
+    case kDataTypeNull:
+      value = v8::Null(isolate);
+      break;
+
+    case kDataTypeScriptValue:
+      if (data_as_v8_value_.IsEmpty())
+        value = v8::Null(isolate);
+      else
+        value = data_as_v8_value_.GetAcrossWorld(script_state);
+      break;
+
+    case MessageEvent::kDataTypeSerializedScriptValue:
+      if (data_as_serialized_script_value_) {
+        MessagePortArray message_ports = ports();
+        SerializedScriptValue::DeserializeOptions options;
+        options.message_ports = &message_ports;
+        value = data_as_serialized_script_value_->Deserialize(isolate, options);
+      } else {
+        value = v8::Null(isolate);
+      }
+      break;
+
+    case MessageEvent::kDataTypeString:
+      value = V8String(isolate, data_as_string_.data());
+      break;
+
+    case MessageEvent::kDataTypeBlob:
+      value = ToV8(data_as_blob_, script_state);
+      break;
+
+    case MessageEvent::kDataTypeArrayBuffer:
+      value = ToV8(data_as_array_buffer_, script_state);
+      break;
+  }
+
+  return ScriptValue(script_state, value);
 }
 
 const AtomicString& MessageEvent::InterfaceName() const {
@@ -270,6 +319,7 @@ void MessageEvent::EntangleMessagePorts(ExecutionContext* context) {
 }
 
 void MessageEvent::Trace(blink::Visitor* visitor) {
+  visitor->Trace(data_as_v8_value_);
   visitor->Trace(data_as_serialized_script_value_);
   visitor->Trace(data_as_blob_);
   visitor->Trace(data_as_array_buffer_);
@@ -285,23 +335,24 @@ v8::Local<v8::Object> MessageEvent::AssociateWithWrapper(
     v8::Local<v8::Object> wrapper) {
   wrapper = Event::AssociateWithWrapper(isolate, wrapper_type, wrapper);
 
-  // Ensures a wrapper is created for the data to return now so that V8 knows
-  // how much memory is used via the wrapper. To keep the wrapper alive, it's
-  // set to the wrapper of the MessageEvent as a private value.
-  switch (GetDataType()) {
-    case MessageEvent::kDataTypeNull:
-    case MessageEvent::kDataTypeScriptValue:
-    case MessageEvent::kDataTypeSerializedScriptValue:
+  // Let V8 know the memory usage of the platform object, especially of |data|
+  // IDL attribute which could consume huge memory, so that V8 can best schedule
+  // GCs.
+  switch (data_type_) {
+    case kDataTypeNull:
+    // V8 is already aware of memory usage of ScriptValue.
+    case kDataTypeScriptValue:
+    case kDataTypeSerializedScriptValue:
       break;
-    case MessageEvent::kDataTypeString:
+    case kDataTypeString:
       V8PrivateProperty::GetMessageEventCachedData(isolate).Set(
-          wrapper, V8String(isolate, DataAsString()));
+          wrapper, V8String(isolate, data_as_string_.data()));
       break;
-    case MessageEvent::kDataTypeBlob:
+    case kDataTypeBlob:
       break;
-    case MessageEvent::kDataTypeArrayBuffer:
+    case kDataTypeArrayBuffer:
       V8PrivateProperty::GetMessageEventCachedData(isolate).Set(
-          wrapper, ToV8(DataAsArrayBuffer(), wrapper, isolate));
+          wrapper, ToV8(data_as_array_buffer_, wrapper, isolate));
       break;
   }
 
