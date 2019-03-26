@@ -19,7 +19,6 @@ public_deps = [
 ]
 deps = [
   "//ui/gfx/range",
-  "//ui/gfx/range/mojo:struct_traits",
 ]
 
 type_mappings = [
