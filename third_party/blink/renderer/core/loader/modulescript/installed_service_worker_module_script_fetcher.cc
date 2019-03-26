@@ -33,7 +33,8 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
   if (!script) {
     HeapVector<Member<ConsoleMessage>> error_messages;
     error_messages.push_back(ConsoleMessage::CreateForRequest(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kError,
         "Failed to load the script unexpectedly",
         fetch_params.Url().GetString(), nullptr, 0));
     client->NotifyFetchFinished(base::nullopt, error_messages);

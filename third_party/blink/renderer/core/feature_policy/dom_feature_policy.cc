@@ -38,7 +38,8 @@ bool DOMFeaturePolicy::allowsFeature(ScriptState* script_state,
       SecurityOrigin::CreateFromString(url);
   if (!origin || origin->IsOpaque()) {
     GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-        kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        mojom::ConsoleMessageSource::kOther,
+        mojom::ConsoleMessageLevel::kWarning,
         "Invalid origin url for feature '" + feature + "': " + url + "."));
     return false;
   }
@@ -111,7 +112,7 @@ Vector<String> DOMFeaturePolicy::getAllowlistForFeature(
 void DOMFeaturePolicy::AddWarningForUnrecognizedFeature(
     const String& feature) const {
   GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-      kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
+      mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kWarning,
       "Unrecognized feature: '" + feature + "'."));
 }
 

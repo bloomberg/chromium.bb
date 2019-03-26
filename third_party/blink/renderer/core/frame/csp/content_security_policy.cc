@@ -1323,7 +1323,8 @@ void ContentSecurityPolicy::ReportMissingReportURI(const String& policy) {
 
 void ContentSecurityPolicy::LogToConsole(const String& message,
                                          mojom::ConsoleMessageLevel level) {
-  LogToConsole(ConsoleMessage::Create(kSecurityMessageSource, level, message));
+  LogToConsole(ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
+                                      level, message));
 }
 
 void ContentSecurityPolicy::LogToConsole(ConsoleMessage* console_message,

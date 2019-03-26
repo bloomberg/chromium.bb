@@ -1380,7 +1380,8 @@ Node* Document::adoptNode(Node* source, ExceptionState& exception_state) {
         // The above removeChild() can execute arbitrary JavaScript code.
         if (source->parentNode()) {
           AddConsoleMessage(ConsoleMessage::Create(
-              kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+              mojom::ConsoleMessageSource::kJavaScript,
+              mojom::ConsoleMessageLevel::kWarning,
               ExceptionMessages::FailedToExecute("adoptNode", "Document",
                                                  "Unable to remove the "
                                                  "specified node from the "
@@ -3799,7 +3800,8 @@ void Document::write(const String& text,
   if (!has_insertion_point) {
     if (ignore_destructive_write_count_) {
       AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning,
           ExceptionMessages::FailedToExecute(
               "write", "Document",
               "It isn't possible to write into a document "
@@ -4039,7 +4041,8 @@ void Document::ProcessBaseElement() {
         base_element_url.ProtocolIsJavaScript()) {
       UseCounter::Count(*this, WebFeature::kBaseWithDataHref);
       AddConsoleMessage(ConsoleMessage::Create(
-          kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
+          mojom::ConsoleMessageSource::kSecurity,
+          mojom::ConsoleMessageLevel::kError,
           "'" + base_element_url.Protocol() +
               "' URLs may not be used as base URLs for a document."));
     }
@@ -4152,8 +4155,9 @@ void Document::MaybeHandleHttpRefresh(const String& content,
   if (refresh_url.ProtocolIsJavaScript()) {
     String message =
         "Refused to refresh " + url_.ElidedString() + " to a javascript: URL";
-    AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError, message));
+    AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
+                               mojom::ConsoleMessageLevel::kError, message));
     return;
   }
 
@@ -4163,8 +4167,9 @@ void Document::MaybeHandleHttpRefresh(const String& content,
         "Refused to execute the redirect specified via '<meta "
         "http-equiv='refresh' content='...'>'. The document is sandboxed, and "
         "the 'allow-scripts' keyword is not set.";
-    AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError, message));
+    AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
+                               mojom::ConsoleMessageLevel::kError, message));
     return;
   }
   if (http_refresh_type == kHttpRefreshFromHeader) {
@@ -6185,9 +6190,10 @@ void Document::ApplyFeaturePolicyFromHeader(
   auto declared_policy = ParseFeaturePolicyHeader(
       feature_policy_header, GetSecurityOrigin(), &messages, this);
   for (auto& message : messages) {
-    AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
-        "Error with Feature-Policy header: " + message));
+    AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
+                               mojom::ConsoleMessageLevel::kError,
+                               "Error with Feature-Policy header: " + message));
   }
   if (GetSandboxFlags() != kSandboxNone &&
       RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
@@ -6253,7 +6259,8 @@ void Document::ApplyReportOnlyFeaturePolicyFromHeader(
   // later. In that case, any subsequent violations will be correctly reported.
   if (!origin_trials::FeaturePolicyReportingEnabled(this)) {
     AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kWarning,
         "Feature-Policy-Report-Only header will have no effect unless Feature "
         "Policy reporting is enabled with an Origin Trial. Sign up at "
         "https://developers.chrome.com/origintrials/"));
@@ -6265,7 +6272,8 @@ void Document::ApplyReportOnlyFeaturePolicyFromHeader(
       feature_policy_report_only_header, GetSecurityOrigin(), &messages, this);
   for (auto& message : messages) {
     AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError,
         "Error with Feature-Policy-Report-Only header: " + message));
   }
 
@@ -6555,7 +6563,8 @@ bool Document::CanExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
     if (reason == kAboutToExecuteScript) {
       AddConsoleMessage(ConsoleMessage::Create(
-          kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
+          mojom::ConsoleMessageSource::kSecurity,
+          mojom::ConsoleMessageLevel::kError,
           "Blocked script execution in '" + Url().ElidedString() +
               "' because the document's frame is sandboxed and the "
               "'allow-scripts' permission is not set."));
@@ -6712,7 +6721,7 @@ ResizeObserverController& Document::EnsureResizeObserverController() {
   return *resize_observer_controller_;
 }
 
-static void RunAddConsoleMessageTask(MessageSource source,
+static void RunAddConsoleMessageTask(mojom::ConsoleMessageSource source,
                                      mojom::ConsoleMessageLevel level,
                                      const String& message,
                                      ExecutionContext* context) {
@@ -7743,7 +7752,8 @@ void Document::ReportFeaturePolicyViolation(
   // TODO(iclelland): Report something different in report-only mode
   if (disposition == mojom::FeaturePolicyDisposition::kEnforce) {
     frame->Console().AddMessage(ConsoleMessage::Create(
-        kViolationMessageSource, mojom::ConsoleMessageLevel::kError,
+        mojom::ConsoleMessageSource::kViolation,
+        mojom::ConsoleMessageLevel::kError,
         (message.IsEmpty() ? ("Feature policy violation: " + feature_name +
                               " is not allowed in this document.")
                            : message)));
@@ -7844,9 +7854,9 @@ void Document::SendViolationReport(
   for (const WebString& end_point : violation_params->report_endpoints)
     report_endpoints.push_back(end_point);
 
-  AddConsoleMessage(ConsoleMessage::Create(kSecurityMessageSource,
-                                           mojom::ConsoleMessageLevel::kError,
-                                           violation_params->console_message));
+  AddConsoleMessage(ConsoleMessage::Create(
+      mojom::ConsoleMessageSource::kSecurity,
+      mojom::ConsoleMessageLevel::kError, violation_params->console_message));
   GetContentSecurityPolicy()->ReportViolation(
       violation_params->directive,
       ContentSecurityPolicy::GetDirectiveType(

@@ -164,8 +164,9 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
   if (!LocalFrame::HasTransientUserActivation(document.GetFrame())) {
     String message =
         "File chooser dialog can only be shown with a user activation.";
-    document.AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
+    document.AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning, message));
     return;
   }
 

@@ -311,7 +311,8 @@ void HTMLImageElement::ParseAttribute(
             &is_default_overridden_intrinsic_size_, &message);
     if (!message.IsEmpty()) {
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-          kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
+          mojom::ConsoleMessageSource::kOther,
+          mojom::ConsoleMessageLevel::kWarning, message));
     }
 
     if (intrinsic_size_changed && GetLayoutObject() &&

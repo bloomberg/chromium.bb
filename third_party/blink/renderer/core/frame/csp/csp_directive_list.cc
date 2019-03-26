@@ -183,8 +183,9 @@ void CSPDirectiveList::ReportViolation(
     ContentSecurityPolicy::ViolationType violation_type) const {
   String message =
       IsReportOnly() ? "[Report Only] " + console_message : console_message;
-  policy_->LogToConsole(ConsoleMessage::Create(
-      kSecurityMessageSource, mojom::ConsoleMessageLevel::kError, message));
+  policy_->LogToConsole(
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
+                             mojom::ConsoleMessageLevel::kError, message));
   policy_->ReportViolation(directive_text, effective_type, message, blocked_url,
                            report_endpoints_, use_reporting_api_, header_,
                            header_type_, violation_type,
@@ -202,7 +203,7 @@ void CSPDirectiveList::ReportViolationWithFrame(
   String message =
       IsReportOnly() ? "[Report Only] " + console_message : console_message;
   policy_->LogToConsole(
-      ConsoleMessage::Create(kSecurityMessageSource,
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
                              mojom::ConsoleMessageLevel::kError, message),
       frame);
   policy_->ReportViolation(directive_text, effective_type, message, blocked_url,
@@ -225,8 +226,8 @@ void CSPDirectiveList::ReportViolationWithLocation(
   std::unique_ptr<SourceLocation> source_location =
       SourceLocation::Capture(context_url, context_line.OneBasedInt(), 0);
   policy_->LogToConsole(ConsoleMessage::Create(
-      kSecurityMessageSource, mojom::ConsoleMessageLevel::kError, message,
-      source_location->Clone()));
+      mojom::ConsoleMessageSource::kSecurity,
+      mojom::ConsoleMessageLevel::kError, message, source_location->Clone()));
   policy_->ReportViolation(directive_text, effective_type, message, blocked_url,
                            report_endpoints_, use_reporting_api_, header_,
                            header_type_,
@@ -251,8 +252,8 @@ void CSPDirectiveList::ReportEvalViolation(
   if (IsReportOnly() ||
       exception_status == ContentSecurityPolicy::kWillNotThrowException) {
     ConsoleMessage* console_message = ConsoleMessage::Create(
-        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
-        report_message);
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError, report_message);
     policy_->LogToConsole(console_message);
   }
   policy_->ReportViolation(directive_text, effective_type, message, blocked_url,

@@ -239,8 +239,9 @@ bool AllowedToRequestFullscreen(Document& document) {
   String message = ExceptionMessages::FailedToExecute(
       "requestFullscreen", "Element",
       "API can only be initiated by a user gesture.");
-  document.AddConsoleMessage(ConsoleMessage::Create(
-      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
+  document.AddConsoleMessage(
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                             mojom::ConsoleMessageLevel::kWarning, message));
 
   return false;
 }

@@ -166,7 +166,8 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_MACOSX) && \
     !defined(OS_WIN)
   context->AddConsoleMessage(ConsoleMessage::Create(
-      kJSMessageSource, mojom::ConsoleMessageLevel::kInfo,
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kInfo,
       "Web Bluetooth is experimental on this platform. See "
       "https://github.com/WebBluetoothCG/web-bluetooth/blob/gh-pages/"
       "implementation-status.md"));
@@ -286,7 +287,8 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
   // Remind developers when they are using Web Bluetooth on unsupported
   // platforms.
   context->AddConsoleMessage(ConsoleMessage::Create(
-      kJSMessageSource, mojom::ConsoleMessageLevel::kInfo,
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kInfo,
       "Web Bluetooth Scanning is experimental on this platform. See "
       "https://github.com/WebBluetoothCG/web-bluetooth/blob/gh-pages/"
       "implementation-status.md"));

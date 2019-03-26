@@ -418,7 +418,8 @@ static void ParseOldStyleNames(
       // TODO(crbug.com/856176): Remove the kGoogBeamforming and
       // kGoogArrayGeometry special cases.
       context->AddConsoleMessage(ConsoleMessage::Create(
-          kDeprecationMessageSource, mojom::ConsoleMessageLevel::kWarning,
+          mojom::ConsoleMessageSource::kDeprecation,
+          mojom::ConsoleMessageLevel::kWarning,
           "Obsolete constraint named " + String(constraint.name_) +
               " is ignored. Please stop using it."));
     } else if (constraint.name_.Equals(kVideoKind)) {
@@ -441,10 +442,11 @@ static void ParseOldStyleNames(
       if (report_unknown_names) {
         // TODO(hta): UMA stats for unknown constraints passed.
         // https://crbug.com/576613
-        context->AddConsoleMessage(ConsoleMessage::Create(
-            kDeprecationMessageSource, mojom::ConsoleMessageLevel::kWarning,
-            "Unknown constraint named " + String(constraint.name_) +
-                " rejected"));
+        context->AddConsoleMessage(
+            ConsoleMessage::Create(mojom::ConsoleMessageSource::kDeprecation,
+                                   mojom::ConsoleMessageLevel::kWarning,
+                                   "Unknown constraint named " +
+                                       String(constraint.name_) + " rejected"));
         // TODO(crbug.com/856176): Don't throw an error.
         error_state.ThrowConstraintError("Unknown name of constraint detected",
                                          constraint.name_);

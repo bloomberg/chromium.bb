@@ -69,8 +69,9 @@ bool DocumentModuleScriptFetcher::FetchIfLayeredAPI(
   if (source_text.IsNull()) {
     HeapVector<Member<ConsoleMessage>> error_messages;
     error_messages.push_back(ConsoleMessage::CreateForRequest(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kError,
-        "Unexpected data error", fetch_params.Url().GetString(), nullptr, 0));
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kError, "Unexpected data error",
+        fetch_params.Url().GetString(), nullptr, 0));
     client_->NotifyFetchFinished(base::nullopt, error_messages);
     return true;
   }

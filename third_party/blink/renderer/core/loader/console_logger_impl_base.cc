@@ -33,17 +33,18 @@ void ConsoleLoggerImplBase::AddErrorMessage(Source source,
                                            message));
 }
 
-MessageSource ConsoleLoggerImplBase::GetMessageSourceFromSource(Source source) {
+mojom::ConsoleMessageSource ConsoleLoggerImplBase::GetMessageSourceFromSource(
+    Source source) {
   switch (source) {
     case Source::kScript:
-      return kJSMessageSource;
+      return mojom::ConsoleMessageSource::kJavaScript;
     case Source::kSecurity:
-      return kSecurityMessageSource;
+      return mojom::ConsoleMessageSource::kSecurity;
     case Source::kOther:
-      return kOtherMessageSource;
+      return mojom::ConsoleMessageSource::kOther;
   }
   NOTREACHED();
-  return kOtherMessageSource;
+  return mojom::ConsoleMessageSource::kOther;
 }
 
 }  // namespace blink

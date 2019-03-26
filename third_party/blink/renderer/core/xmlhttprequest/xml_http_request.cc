@@ -193,8 +193,9 @@ void LogConsoleError(ExecutionContext* context, const String& message) {
   // FIXME: It's not good to report the bad usage without indicating what source
   // line it came from.  We should pass additional parameters so we can tell the
   // console where the mistake occurred.
-  ConsoleMessage* console_message = ConsoleMessage::Create(
-      kJSMessageSource, mojom::ConsoleMessageLevel::kError, message);
+  ConsoleMessage* console_message =
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                             mojom::ConsoleMessageLevel::kError, message);
   context->AddConsoleMessage(console_message);
 }
 

@@ -333,7 +333,8 @@ void DOMWindow::Close(LocalDOMWindow* incumbent_window) {
       !allow_scripts_to_close_windows) {
     active_document->domWindow()->GetFrameConsole()->AddMessage(
         ConsoleMessage::Create(
-            kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
             "Scripts may close only the windows that were opened by it."));
     return;
   }

@@ -1195,7 +1195,8 @@ base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(
       frame_or_imported_document_->GetDocument().IsFreezingInProgress() &&
       !resource_request.GetKeepalive()) {
     AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kError,
         "Only fetch keepalive is allowed during onfreeze: " + url.GetString()));
     return ResourceRequestBlockedReason::kOther;
   }

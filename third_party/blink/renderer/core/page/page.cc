@@ -866,7 +866,8 @@ bool Page::IsOrdinary() const {
 void Page::ReportIntervention(const String& text) {
   if (LocalFrame* local_frame = DeprecatedLocalMainFrame()) {
     ConsoleMessage* message = ConsoleMessage::Create(
-        kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning, text,
+        mojom::ConsoleMessageSource::kOther,
+        mojom::ConsoleMessageLevel::kWarning, text,
         std::make_unique<SourceLocation>(String(), 0, 0, nullptr));
     local_frame->GetDocument()->AddConsoleMessage(message);
   }

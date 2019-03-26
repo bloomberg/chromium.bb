@@ -532,7 +532,8 @@ void TidyUpHTMLStructure(Document& document) {
   // non-<html> root elements under <body>, and the <body> works as
   // rootEditableElement.
   document.AddConsoleMessage(ConsoleMessage::Create(
-      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kWarning,
       "document.execCommand() doesn't work with an invalid HTML structure. It "
       "is corrected automatically."));
   UseCounter::Count(document, WebFeature::kExecCommandAltersHTMLStructure);

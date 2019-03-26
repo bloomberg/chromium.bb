@@ -119,7 +119,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
     return false;
   }
   void AddMessageToConsole(LocalFrame*,
-                           MessageSource,
+                           mojom::ConsoleMessageSource,
                            mojom::ConsoleMessageLevel,
                            const String&,
                            unsigned,

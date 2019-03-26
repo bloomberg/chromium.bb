@@ -498,8 +498,9 @@ bool ServiceWorkerGlobalScope::AddEventListenerInternal(
         "Event handler of '%s' event must be added on the initial evaluation "
         "of worker script.",
         event_type.Utf8().data());
-    AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
+    AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning, message));
   }
   return WorkerGlobalScope::AddEventListenerInternal(event_type, listener,
                                                      options);

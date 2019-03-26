@@ -276,7 +276,8 @@ static void TestEnumAttributeAttributeSetter(
     if (!IsValidEnum(cpp_value, kValidValues, base::size(kValidValues),
                      "TestEnum", dummy_exception_state)) {
       ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
-          ConsoleMessage::Create(kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+          ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                                 mojom::ConsoleMessageLevel::kWarning,
                                  dummy_exception_state.Message()));
       return;
     }
@@ -324,7 +325,8 @@ static void TestEnumOrNullAttributeAttributeSetter(
     if (!IsValidEnum(cpp_value, kValidValues, base::size(kValidValues),
                      "TestEnum", dummy_exception_state)) {
       ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
-          ConsoleMessage::Create(kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+          ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                                 mojom::ConsoleMessageLevel::kWarning,
                                  dummy_exception_state.Message()));
       return;
     }
@@ -1272,7 +1274,8 @@ static void PartialPartialEnumTypeAttributeAttributeSetter(
     if (!IsValidEnum(cpp_value, kValidValues, base::size(kValidValues),
                      "PartialEnumType", dummy_exception_state)) {
       ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
-          ConsoleMessage::Create(kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+          ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                                 mojom::ConsoleMessageLevel::kWarning,
                                  dummy_exception_state.Message()));
       return;
     }

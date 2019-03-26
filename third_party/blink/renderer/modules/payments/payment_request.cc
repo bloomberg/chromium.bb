@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -34,7 +35,6 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
 #include "third_party/blink/renderer/modules/payments/address_errors.h"
@@ -259,7 +259,8 @@ void ValidateShippingOptionOrPaymentItem(const T* item,
 
   if (item->label().IsEmpty()) {
     execution_context.AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kError,
         "Empty " + item_name + " label may be confusing the user"));
     return;
   }
@@ -317,7 +318,8 @@ void ValidateAndConvertShippingOptions(
 
     if (option->id().IsEmpty()) {
       execution_context.AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning,
           "Empty shipping option ID may be hard to debug"));
       return;
     }
@@ -759,8 +761,9 @@ void WarnIgnoringQueryQuotaForCanMakePayment(
       "reject the promise, but allowing continued usage on localhost and "
       "file:// scheme origins.",
       method_name);
-  execution_context.AddConsoleMessage(ConsoleMessage::Create(
-      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, error));
+  execution_context.AddConsoleMessage(
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                             mojom::ConsoleMessageLevel::kWarning, error));
 }
 
 }  // namespace
@@ -942,33 +945,37 @@ ScriptPromise PaymentRequest::Retry(ScriptState* script_state,
 
   if (!options_->requestPayerName() && errors->hasPayer() &&
       errors->payer()->hasName()) {
-    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
-        "The payer.name passed to retry() may not be "
-        "shown because requestPayerName is false"));
+    GetExecutionContext()->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning,
+                               "The payer.name passed to retry() may not be "
+                               "shown because requestPayerName is false"));
   }
 
   if (!options_->requestPayerEmail() && errors->hasPayer() &&
       errors->payer()->hasEmail()) {
-    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
-        "The payer.email passed to retry() may not be "
-        "shown because requestPayerEmail is false"));
+    GetExecutionContext()->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning,
+                               "The payer.email passed to retry() may not be "
+                               "shown because requestPayerEmail is false"));
   }
 
   if (!options_->requestPayerPhone() && errors->hasPayer() &&
       errors->payer()->hasPhone()) {
-    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
-        "The payer.phone passed to retry() may not be "
-        "shown because requestPayerPhone is false"));
+    GetExecutionContext()->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning,
+                               "The payer.phone passed to retry() may not be "
+                               "shown because requestPayerPhone is false"));
   }
 
   if (!options_->requestShipping() && errors->hasShippingAddress()) {
-    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
-        "The shippingAddress passed to retry() may not "
-        "be shown because requestShipping is false"));
+    GetExecutionContext()->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning,
+                               "The shippingAddress passed to retry() may not "
+                               "be shown because requestShipping is false"));
   }
 
   complete_timer_.Stop();
@@ -1216,7 +1223,8 @@ void PaymentRequest::OnPaymentMethodChange(const String& method_name,
     // handler. Calling this method is optional. If the method is not called,
     // the renderer sends a message to the browser to re-enable UI interactions.
     GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning,
         "No updateWith() call in 'paymentmethodchange' event handler. User "
         "may see outdated line items and total."));
     payment_provider_->NoUpdatedPaymentDetails();
@@ -1248,7 +1256,8 @@ void PaymentRequest::OnShippingAddressChange(PaymentAddressPtr address) {
     // handler. Calling this method is optional. If the method is not called,
     // the renderer sends a message to the browser to re-enable UI interactions.
     GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning,
         "No updateWith() call in 'shippingaddresschange' event handler. User "
         "may see outdated line items and total."));
     payment_provider_->NoUpdatedPaymentDetails();
@@ -1271,7 +1280,8 @@ void PaymentRequest::OnShippingOptionChange(const String& shipping_option_id) {
     // handler. Calling this method is optional. If the method is not called,
     // the renderer sends a message to the browser to re-enable UI interactions.
     GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning,
         "No updateWith() call in 'shippingoptionchange' event handler. User "
         "may see outdated line items and total."));
     payment_provider_->NoUpdatedPaymentDetails();
@@ -1536,15 +1546,17 @@ void PaymentRequest::OnHasEnrolledInstrument(
 }
 
 void PaymentRequest::WarnNoFavicon() {
-  GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
-      "Favicon not found for PaymentRequest UI. User "
-      "may not recognize the website."));
+  GetExecutionContext()->AddConsoleMessage(
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                             mojom::ConsoleMessageLevel::kWarning,
+                             "Favicon not found for PaymentRequest UI. User "
+                             "may not recognize the website."));
 }
 
 void PaymentRequest::OnCompleteTimeout(TimerBase*) {
   GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-      kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kError,
       "Timed out waiting for a PaymentResponse.complete() call."));
   payment_provider_->Complete(payments::mojom::blink::PaymentComplete(kFail));
   ClearResolversAndCloseMojoConnection();

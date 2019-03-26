@@ -26,7 +26,8 @@ bool Scheduling::isInputPending(ScriptState* script_state,
     // a process are part of the same site to avoid leaking cross-site inputs.
     ExecutionContext::From(script_state)
         ->AddConsoleMessage(ConsoleMessage::Create(
-            kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
             "isInputPending requires site-per-process (crbug.com/910421)."));
     return false;
   }
@@ -50,8 +51,8 @@ bool Scheduling::isInputPending(ScriptState* script_state,
       message.Append("\". Skipping.");
       ExecutionContext::From(script_state)
           ->AddConsoleMessage(ConsoleMessage::Create(
-              kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
-              message.ToString()));
+              mojom::ConsoleMessageSource::kJavaScript,
+              mojom::ConsoleMessageLevel::kWarning, message.ToString()));
     }
 
     if (!has_pending_input)

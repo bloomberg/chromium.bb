@@ -26,7 +26,7 @@ struct ConsoleMessage {
         source_url(source_url) {}
 
   // The type of source this came from. In practice, this maps to
-  // blink::MessageSource.
+  // blink::mojom::ConsoleMessageSource.
   const int source_identifier;
   // The severity of the console message.
   const blink::mojom::ConsoleMessageLevel message_level;

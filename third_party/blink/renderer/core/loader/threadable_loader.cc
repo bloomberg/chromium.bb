@@ -622,7 +622,8 @@ bool ThreadableLoader::RedirectReceived(
       ThreadableLoaderClient* client = client_;
       Clear();
       ConsoleMessage* message = ConsoleMessage::Create(
-          kNetworkMessageSource, mojom::ConsoleMessageLevel::kError,
+          mojom::ConsoleMessageSource::kNetwork,
+          mojom::ConsoleMessageLevel::kError,
           "Failed to load resource: net::ERR_TOO_MANY_REDIRECTS",
           SourceLocation::Capture(original_url, 0, 0));
       execution_context_->AddConsoleMessage(message);
@@ -1024,8 +1025,8 @@ void ThreadableLoader::DispatchDidFail(const ResourceError& error) {
         *GetSecurityOrigin(), ResourceType::kRaw,
         resource_loader_options_.initiator_info.name);
     execution_context_->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kError,
-        std::move(message)));
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kError, std::move(message)));
   }
   Resource* resource = GetResource();
   if (resource)

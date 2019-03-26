@@ -102,7 +102,8 @@ void SetKeyframeValue(Element* element,
     if (!set_result.did_parse && execution_context) {
       if (document.GetFrame()) {
         document.GetFrame()->Console().AddMessage(ConsoleMessage::Create(
-            kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
             "Invalid keyframe value for property " + property + ": " + value));
       }
     }

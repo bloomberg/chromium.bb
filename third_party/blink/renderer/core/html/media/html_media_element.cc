@@ -1464,7 +1464,8 @@ bool HTMLMediaElement::IsSafeToLoadURL(const KURL& url,
   if (!frame || !GetDocument().GetSecurityOrigin()->CanDisplay(url)) {
     if (action_if_invalid == kComplain) {
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-          kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
+          mojom::ConsoleMessageSource::kSecurity,
+          mojom::ConsoleMessageLevel::kError,
           "Not allowed to load local resource: " + url.ElidedString()));
     }
     DVLOG(3) << "isSafeToLoadURL(" << (void*)this << ", "

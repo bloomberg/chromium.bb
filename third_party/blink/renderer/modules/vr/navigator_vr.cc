@@ -85,7 +85,8 @@ XR* NavigatorVR::xr() {
     if (controller_) {
       if (frame->GetDocument()) {
         frame->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-            kOtherMessageSource, mojom::ConsoleMessageLevel::kError,
+            mojom::ConsoleMessageSource::kOther,
+            mojom::ConsoleMessageLevel::kError,
             "Cannot use navigator.xr if the legacy VR API is already in use."));
       }
       return nullptr;

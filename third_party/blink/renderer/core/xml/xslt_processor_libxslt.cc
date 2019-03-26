@@ -81,7 +81,7 @@ void XSLTProcessor::ParseErrorFunc(void* user_data, xmlError* error) {
   }
 
   console->AddMessage(ConsoleMessage::Create(
-      kXMLMessageSource, level, error->message,
+      mojom::ConsoleMessageSource::kXml, level, error->message,
       std::make_unique<SourceLocation>(error->file, error->line, 0, nullptr)));
 }
 
