@@ -170,6 +170,12 @@ jumbo_source_set("internal") {
     "//url",
   ]
 
+  allow_circular_includes_from = [
+    # Generated files use policy_details.h and policy_map.h from this target.
+    # TODO(https://crbug.com/945868) - refactor so we don't have dep cycles.
+    "//components/policy:generated",
+  ]
+
   if (is_win) {
     libs = [
       "netapi32.lib",

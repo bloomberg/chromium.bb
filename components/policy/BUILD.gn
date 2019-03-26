@@ -335,6 +335,7 @@ static_library("generated") {
     ":cloud_policy_code_generate",
     ":cloud_policy_proto_generated_compile",
     "//base",
+    "//components/policy/core/common:common_constants",
     "//third_party/protobuf:protobuf_lite",
   ]
 }
