@@ -184,12 +184,12 @@ InterpolationValue filter_interpolation_functions::MaybeConvertFilter(
 
     case FilterOperation::BLUR:
       result = LengthInterpolationFunctions::MaybeConvertLength(
-          ToBlurFilterOperation(filter).StdDeviation(), zoom);
+          To<BlurFilterOperation>(filter).StdDeviation(), zoom);
       break;
 
     case FilterOperation::DROP_SHADOW: {
       result = ShadowInterpolationFunctions::ConvertShadowData(
-          ToDropShadowFilterOperation(filter).Shadow(), zoom);
+          To<DropShadowFilterOperation>(filter).Shadow(), zoom);
       break;
     }
 

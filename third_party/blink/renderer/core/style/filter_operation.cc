@@ -74,7 +74,7 @@ void ReferenceFilterOperation::RemoveClient(SVGResourceClient& client) {
 bool ReferenceFilterOperation::operator==(const FilterOperation& o) const {
   if (!IsSameType(o))
     return false;
-  const ReferenceFilterOperation& other = ToReferenceFilterOperation(o);
+  const auto& other = To<ReferenceFilterOperation>(o);
   return url_ == other.url_ && resource_ == other.resource_;
 }
 
@@ -170,7 +170,7 @@ FilterOperation* BlurFilterOperation::Blend(const FilterOperation* from,
     return BlurFilterOperation::Create(std_deviation_.Blend(
         Length(length_type), progress, kValueRangeNonNegative));
 
-  const BlurFilterOperation* from_op = ToBlurFilterOperation(from);
+  const auto* from_op = To<BlurFilterOperation>(from);
   return BlurFilterOperation::Create(std_deviation_.Blend(
       from_op->std_deviation_, progress, kValueRangeNonNegative));
 }
@@ -188,7 +188,7 @@ FilterOperation* DropShadowFilterOperation::Blend(const FilterOperation* from,
                                 Color::kTransparent));
   }
 
-  const auto& from_op = ToDropShadowFilterOperation(*from);
+  const auto& from_op = To<DropShadowFilterOperation>(*from);
   return Create(shadow_.Blend(from_op.shadow_, progress, Color::kTransparent));
 }
 

@@ -142,8 +142,8 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
     FilterEffect* effect = nullptr;
     switch (filter_operation->GetType()) {
       case FilterOperation::REFERENCE: {
-        ReferenceFilterOperation& reference_operation =
-            ToReferenceFilterOperation(*filter_operation);
+        auto& reference_operation =
+            To<ReferenceFilterOperation>(*filter_operation);
         Filter* reference_filter =
             BuildReferenceFilter(reference_operation, previous_effect);
         if (reference_filter) {
@@ -252,14 +252,14 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
       }
       case FilterOperation::BLUR: {
         float std_deviation = FloatValueForLength(
-            ToBlurFilterOperation(filter_operation)->StdDeviation(), 0);
+            To<BlurFilterOperation>(filter_operation)->StdDeviation(), 0);
         effect =
             FEGaussianBlur::Create(parent_filter, std_deviation, std_deviation);
         break;
       }
       case FilterOperation::DROP_SHADOW: {
         const ShadowData& shadow =
-            ToDropShadowFilterOperation(*filter_operation).Shadow();
+            To<DropShadowFilterOperation>(*filter_operation).Shadow();
         effect = FEDropShadow::Create(parent_filter, shadow.Blur(),
                                       shadow.Blur(), shadow.X(), shadow.Y(),
                                       shadow.GetColor().GetColor(), 1);
@@ -267,7 +267,7 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
       }
       case FilterOperation::BOX_REFLECT: {
         BoxReflectFilterOperation* box_reflect_operation =
-            ToBoxReflectFilterOperation(filter_operation);
+            To<BoxReflectFilterOperation>(filter_operation);
         effect = FEBoxReflect::Create(parent_filter,
                                       box_reflect_operation->Reflection());
         break;
@@ -300,8 +300,7 @@ CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
   for (FilterOperation* op : operations.Operations()) {
     switch (op->GetType()) {
       case FilterOperation::REFERENCE: {
-        ReferenceFilterOperation& reference_operation =
-            ToReferenceFilterOperation(*op);
+        auto& reference_operation = To<ReferenceFilterOperation>(*op);
         Filter* reference_filter =
             BuildReferenceFilter(reference_operation, nullptr);
         if (reference_filter && reference_filter->LastEffect()) {
@@ -369,12 +368,12 @@ CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
       }
       case FilterOperation::BLUR: {
         float pixel_radius =
-            ToBlurFilterOperation(*op).StdDeviation().GetFloatValue();
+            To<BlurFilterOperation>(*op).StdDeviation().GetFloatValue();
         filters.AppendBlurFilter(pixel_radius);
         break;
       }
       case FilterOperation::DROP_SHADOW: {
-        const ShadowData& shadow = ToDropShadowFilterOperation(*op).Shadow();
+        const ShadowData& shadow = To<DropShadowFilterOperation>(*op).Shadow();
         filters.AppendDropShadowFilter(FlooredIntPoint(shadow.Location()),
                                        shadow.Blur(),
                                        shadow.GetColor().GetColor());
@@ -383,7 +382,8 @@ CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
       case FilterOperation::BOX_REFLECT: {
         // TODO(jbroman): Consider explaining box reflect to the compositor,
         // instead of calling this a "reference filter".
-        const auto& reflection = ToBoxReflectFilterOperation(*op).Reflection();
+        const auto& reflection =
+            To<BoxReflectFilterOperation>(*op).Reflection();
         filters.AppendReferenceFilter(
             paint_filter_builder::BuildBoxReflectFilter(reflection, nullptr));
         break;

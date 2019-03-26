@@ -750,7 +750,7 @@ void WriteResources(WTF::TextStream& ts,
     const FilterOperation& filter_operation = *style.Filter().at(0);
     DCHECK_EQ(filter_operation.GetType(), FilterOperation::REFERENCE);
     const auto& reference_filter_operation =
-        ToReferenceFilterOperation(filter_operation);
+        To<ReferenceFilterOperation>(filter_operation);
     AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
         reference_filter_operation.Url(), tree_scope);
     WriteIndent(ts, indent);

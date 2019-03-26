@@ -183,12 +183,11 @@ std::unique_ptr<SVGResources> SVGResources::BuildResources(
       const FilterOperations& filter_operations = computed_style.Filter();
       if (filter_operations.size() == 1) {
         const FilterOperation& filter_operation = *filter_operations.at(0);
-        if (filter_operation.GetType() == FilterOperation::REFERENCE) {
-          const auto& reference_filter_operation =
-              ToReferenceFilterOperation(filter_operation);
+        if (const auto* reference_filter_operation =
+                DynamicTo<ReferenceFilterOperation>(filter_operation)) {
           EnsureResources(resources).SetFilter(
               CastResource<LayoutSVGResourceFilter>(
-                  reference_filter_operation.Resource()));
+                  reference_filter_operation->Resource()));
         }
       }
     }

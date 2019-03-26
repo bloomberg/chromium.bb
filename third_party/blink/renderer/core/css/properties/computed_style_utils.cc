@@ -1972,7 +1972,7 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
       case FilterOperation::REFERENCE:
         filter_value = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kUrl);
         filter_value->Append(*MakeGarbageCollected<CSSStringValue>(
-            ToReferenceFilterOperation(filter_operation)->Url()));
+            To<ReferenceFilterOperation>(filter_operation)->Url()));
         break;
       case FilterOperation::GRAYSCALE:
         filter_value =
@@ -2038,12 +2038,12 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kBlur);
         filter_value->Append(*ZoomAdjustedPixelValue(
-            ToBlurFilterOperation(filter_operation)->StdDeviation().Value(),
+            To<BlurFilterOperation>(filter_operation)->StdDeviation().Value(),
             style));
         break;
       case FilterOperation::DROP_SHADOW: {
         const auto& drop_shadow_operation =
-            ToDropShadowFilterOperation(*filter_operation);
+            To<DropShadowFilterOperation>(*filter_operation);
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kDropShadow);
         // We want our computed style to look like that of a text shadow (has
