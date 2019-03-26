@@ -376,6 +376,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
                              int offset,
                              ax::mojom::TextAffinity affinity) const override;
 
+  const std::vector<gfx::NativeViewAccessible> GetDescendants() const override;
+
   bool IsTable() const override;
   int32_t GetTableColCount() const override;
   int32_t GetTableRowCount() const override;

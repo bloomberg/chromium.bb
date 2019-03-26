@@ -38,7 +38,8 @@ namespace ui {
 
 #define EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(safearray, expected_property_values) \
   {                                                                         \
-    EXPECT_EQ(8U, ::SafeArrayGetElemsize(safearray));                       \
+    EXPECT_EQ(sizeof(V_R8(LPVARIANT(NULL))),                                \
+              ::SafeArrayGetElemsize(safearray));                           \
     ASSERT_EQ(1u, SafeArrayGetDim(safearray));                              \
     LONG array_lower_bound;                                                 \
     ASSERT_HRESULT_SUCCEEDED(                                               \
@@ -55,6 +56,29 @@ namespace ui {
       EXPECT_EQ(array_data[i], expected_property_values[i]);                \
     }                                                                       \
     ASSERT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(safearray));           \
+  }
+
+#define EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(safearray,                    \
+                                           expected_property_values)     \
+  {                                                                      \
+    EXPECT_EQ(sizeof(V_UNKNOWN(LPVARIANT(NULL))),                        \
+              ::SafeArrayGetElemsize(safearray));                        \
+    EXPECT_EQ(1u, SafeArrayGetDim(safearray));                           \
+    LONG array_lower_bound;                                              \
+    EXPECT_HRESULT_SUCCEEDED(                                            \
+        SafeArrayGetLBound(safearray, 1, &array_lower_bound));           \
+    LONG array_upper_bound;                                              \
+    EXPECT_HRESULT_SUCCEEDED(                                            \
+        SafeArrayGetUBound(safearray, 1, &array_upper_bound));           \
+    ComPtr<IRawElementProviderSimple>* array_data;                       \
+    EXPECT_HRESULT_SUCCEEDED(::SafeArrayAccessData(                      \
+        safearray, reinterpret_cast<void**>(&array_data)));              \
+    size_t count = array_upper_bound - array_lower_bound + 1;            \
+    EXPECT_EQ(expected_property_values.size(), count);                   \
+    for (size_t i = 0; i < count; ++i) {                                 \
+      EXPECT_EQ(array_data[i].Get(), expected_property_values[i].Get()); \
+    }                                                                    \
+    EXPECT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(safearray));        \
   }
 
 class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
@@ -1053,6 +1077,133 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   more_text_range_provider->QueryInterface(IID_PPV_ARGS(&more_text_range));
   EXPECT_EQ(*GetStart(text_range.Get()), *GetEnd(more_text_range.Get()));
   EXPECT_EQ(*GetEnd(text_range.Get()), *GetEnd(more_text_range.Get()));
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetChildren) {
+  // Set up ax tree with the following structure:
+  //
+  // root______________________
+  // |                         |
+  // text_node1___             text_node2
+  // |            |
+  // text_node3   text_node4
+  ui::AXNodeData root_data;
+  root_data.id = 0;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+
+  ui::AXNodeData text_node1;
+  text_node1.id = 1;
+  text_node1.role = ax::mojom::Role::kStaticText;
+  root_data.child_ids.push_back(1);
+
+  ui::AXNodeData text_node2;
+  text_node2.id = 2;
+  text_node2.role = ax::mojom::Role::kStaticText;
+  root_data.child_ids.push_back(2);
+
+  ui::AXNodeData text_node3;
+  text_node3.id = 3;
+  text_node3.role = ax::mojom::Role::kStaticText;
+  text_node1.child_ids.push_back(3);
+
+  ui::AXNodeData text_node4;
+  text_node4.id = 4;
+  text_node4.role = ax::mojom::Role::kStaticText;
+  text_node1.child_ids.push_back(4);
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes.push_back(root_data);
+  update.nodes.push_back(text_node1);
+  update.nodes.push_back(text_node2);
+  update.nodes.push_back(text_node3);
+  update.nodes.push_back(text_node4);
+
+  Init(update);
+
+  // Set up variables from the tree for testing.
+  AXNode* rootnode = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNode* node1 = rootnode->children()[0];
+  AXNode* node2 = rootnode->children()[1];
+  AXNode* node3 = node1->children()[0];
+  AXNode* node4 = node1->children()[1];
+
+  ComPtr<IRawElementProviderSimple> root_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(rootnode);
+  ComPtr<IRawElementProviderSimple> text_node_raw1 =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(node1);
+  ComPtr<IRawElementProviderSimple> text_node_raw2 =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(node2);
+  ComPtr<IRawElementProviderSimple> text_node_raw3 =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(node3);
+  ComPtr<IRawElementProviderSimple> text_node_raw4 =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(node4);
+
+  // Test text_node3 - leaf nodes should have no children.
+  ComPtr<ITextProvider> text_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_node_raw3->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+
+  base::win::ScopedSafearray children;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->GetChildren(children.Receive()));
+
+  std::vector<ComPtr<IRawElementProviderSimple>> expected_values = {};
+
+  EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+
+  // Test text_node2 - leaf nodes should have no children.
+  EXPECT_HRESULT_SUCCEEDED(
+      text_node_raw2->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->GetChildren(children.Receive()));
+
+  EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+
+  // Test text_node1 - children should include text_node3 and text_node4.
+  EXPECT_HRESULT_SUCCEEDED(
+      text_node_raw1->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->GetChildren(children.Receive()));
+
+  expected_values = {text_node_raw3, text_node_raw4};
+
+  EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+
+  // Test root_node - children should include the entire left subtree and
+  // the entire right subtree.
+  EXPECT_HRESULT_SUCCEEDED(
+      root_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->GetChildren(children.Receive()));
+
+  expected_values = {text_node_raw1, text_node_raw3, text_node_raw4,
+                     text_node_raw2};
+
+  EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+
+  AXNodePosition::SetTreeForTesting(nullptr);
 }
 
 }  // namespace ui

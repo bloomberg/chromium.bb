@@ -305,7 +305,43 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ScrollIntoView(
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetChildren(
     SAFEARRAY** children) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETCHILDREN);
-  return E_NOTIMPL;
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+
+  std::vector<gfx::NativeViewAccessible> descendants;
+
+  AXPositionInstance common_ancestor =
+      start_->LowestCommonAncestor(*end_.get());
+
+  if (common_ancestor->GetAnchor()->child_count() > 0) {
+    descendants = owner()
+                      ->GetDelegate()
+                      ->GetFromNodeID(common_ancestor->anchor_id())
+                      ->GetDelegate()
+                      ->GetDescendants();
+  }
+
+  SAFEARRAY* safe_array =
+      SafeArrayCreateVector(VT_UNKNOWN, 0, descendants.size());
+
+  if (!safe_array)
+    return E_OUTOFMEMORY;
+
+  if (safe_array->rgsabound->cElements != descendants.size()) {
+    DCHECK(safe_array);
+    SafeArrayDestroy(safe_array);
+    return E_OUTOFMEMORY;
+  }
+
+  LONG i = 0;
+  for (const gfx::NativeViewAccessible& descendant : descendants) {
+    IRawElementProviderSimple* raw_provider;
+    descendant->QueryInterface(IID_PPV_ARGS(&raw_provider));
+    SafeArrayPutElement(safe_array, &i, raw_provider);
+    ++i;
+  }
+
+  *children = safe_array;
+  return S_OK;
 }
 
 base::string16 AXPlatformNodeTextRangeProviderWin::GetString() {

@@ -296,6 +296,11 @@ AXPlatformNodeDelegateBase::FindTextBoundariesAtOffset(
   return base::nullopt;
 }
 
+const std::vector<gfx::NativeViewAccessible>
+AXPlatformNodeDelegateBase::GetDescendants() const {
+  return {};
+}
+
 bool AXPlatformNodeDelegateBase::IsOrderedSetItem() const {
   return false;
 }
