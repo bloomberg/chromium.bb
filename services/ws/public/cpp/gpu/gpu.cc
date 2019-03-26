@@ -276,7 +276,7 @@ std::unique_ptr<Gpu> Gpu::Create(
   return base::WrapUnique(new Gpu(std::move(gpu_ptr), std::move(task_runner)));
 }
 
-scoped_refptr<viz::ContextProvider> Gpu::CreateContextProvider(
+scoped_refptr<ws::ContextProviderCommandBuffer> Gpu::CreateContextProvider(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel) {
   int32_t stream_id = 0;
   gpu::SchedulingPriority stream_priority = gpu::SchedulingPriority::kNormal;
@@ -293,6 +293,7 @@ scoped_refptr<viz::ContextProvider> Gpu::CreateContextProvider(
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
   attributes.lose_context_when_out_of_memory = true;
+  attributes.enable_raster_interface = true;
   return base::MakeRefCounted<ContextProviderCommandBuffer>(
       std::move(gpu_channel), GetGpuMemoryBufferManager(), stream_id,
       stream_priority, gpu::kNullSurfaceHandle,
