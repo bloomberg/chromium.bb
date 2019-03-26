@@ -76,7 +76,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_resource_container.h"
 #include "third_party/blink/renderer/core/inspector/inspector_resource_content_loader.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
-#include "third_party/blink/renderer/core/inspector/inspector_testing_agent.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -294,9 +293,6 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
   // we have to store the frame which will become the main frame later.
   session->Append(MakeGarbageCollected<InspectorEmulationAgent>(
       web_local_frame_impl_.Get()));
-
-  session->Append(
-      MakeGarbageCollected<InspectorTestingAgent>(inspected_frames));
 
   // Call session init callbacks registered from higher layers.
   CoreInitializer::GetInstance().InitInspectorAgentSession(
