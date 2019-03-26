@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/md5.h"
+#include "base/hash/md5.h"
 
 #include <string.h>
 
@@ -16,12 +16,8 @@ namespace base {
 TEST(MD5, DigestToBase16) {
   MD5Digest digest;
 
-  int data[] = {
-    0xd4, 0x1d, 0x8c, 0xd9,
-    0x8f, 0x00, 0xb2, 0x04,
-    0xe9, 0x80, 0x09, 0x98,
-    0xec, 0xf8, 0x42, 0x7e
-  };
+  int data[] = {0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04,
+                0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e};
 
   for (int i = 0; i < 16; ++i)
     digest.a[i] = data[i] & 0xff;
@@ -38,12 +34,8 @@ TEST(MD5, MD5SumEmtpyData) {
 
   MD5Sum(data, strlen(data), &digest);
 
-  int expected[] = {
-    0xd4, 0x1d, 0x8c, 0xd9,
-    0x8f, 0x00, 0xb2, 0x04,
-    0xe9, 0x80, 0x09, 0x98,
-    0xec, 0xf8, 0x42, 0x7e
-  };
+  int expected[] = {0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04,
+                    0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e};
 
   for (int i = 0; i < 16; ++i)
     EXPECT_EQ(expected[i], digest.a[i] & 0xFF);
@@ -55,12 +47,8 @@ TEST(MD5, MD5SumOneByteData) {
 
   MD5Sum(data, strlen(data), &digest);
 
-  int expected[] = {
-    0x0c, 0xc1, 0x75, 0xb9,
-    0xc0, 0xf1, 0xb6, 0xa8,
-    0x31, 0xc3, 0x99, 0xe2,
-    0x69, 0x77, 0x26, 0x61
-  };
+  int expected[] = {0x0c, 0xc1, 0x75, 0xb9, 0xc0, 0xf1, 0xb6, 0xa8,
+                    0x31, 0xc3, 0x99, 0xe2, 0x69, 0x77, 0x26, 0x61};
 
   for (int i = 0; i < 16; ++i)
     EXPECT_EQ(expected[i], digest.a[i] & 0xFF);
@@ -76,12 +64,8 @@ TEST(MD5, MD5SumLongData) {
   MD5Digest digest;
   MD5Sum(data.get(), length, &digest);
 
-  int expected[] = {
-    0x90, 0xbd, 0x6a, 0xd9,
-    0x0a, 0xce, 0xf5, 0xad,
-    0xaa, 0x92, 0x20, 0x3e,
-    0x21, 0xc7, 0xa1, 0x3e
-  };
+  int expected[] = {0x90, 0xbd, 0x6a, 0xd9, 0x0a, 0xce, 0xf5, 0xad,
+                    0xaa, 0x92, 0x20, 0x3e, 0x21, 0xc7, 0xa1, 0x3e};
 
   for (int i = 0; i < 16; ++i)
     EXPECT_EQ(expected[i], digest.a[i] & 0xFF);
@@ -94,12 +78,8 @@ TEST(MD5, ContextWithEmptyData) {
   MD5Digest digest;
   MD5Final(&digest, &ctx);
 
-  int expected[] = {
-    0xd4, 0x1d, 0x8c, 0xd9,
-    0x8f, 0x00, 0xb2, 0x04,
-    0xe9, 0x80, 0x09, 0x98,
-    0xec, 0xf8, 0x42, 0x7e
-  };
+  int expected[] = {0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04,
+                    0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e};
 
   for (int i = 0; i < 16; ++i)
     EXPECT_EQ(expected[i], digest.a[i] & 0xFF);
@@ -131,12 +111,8 @@ TEST(MD5, ContextWithLongData) {
   MD5Digest digest;
   MD5Final(&digest, &ctx);
 
-  int expected[] = {
-    0x90, 0xbd, 0x6a, 0xd9,
-    0x0a, 0xce, 0xf5, 0xad,
-    0xaa, 0x92, 0x20, 0x3e,
-    0x21, 0xc7, 0xa1, 0x3e
-  };
+  int expected[] = {0x90, 0xbd, 0x6a, 0xd9, 0x0a, 0xce, 0xf5, 0xad,
+                    0xaa, 0x92, 0x20, 0x3e, 0x21, 0xc7, 0xa1, 0x3e};
 
   for (int i = 0; i < 16; ++i)
     EXPECT_EQ(expected[i], digest.a[i] & 0xFF);
@@ -174,18 +150,20 @@ TEST(MD5, MD5StringTestSuite5) {
 }
 
 TEST(MD5, MD5StringTestSuite6) {
-  std::string actual = MD5String("ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                 "abcdefghijklmnopqrstuvwxyz"
-                                 "0123456789");
+  std::string actual = MD5String(
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      "abcdefghijklmnopqrstuvwxyz"
+      "0123456789");
   std::string expected = "d174ab98d277d9f5a5611c2c9f419d9f";
   EXPECT_EQ(expected, actual);
 }
 
 TEST(MD5, MD5StringTestSuite7) {
-  std::string actual = MD5String("12345678901234567890"
-                                 "12345678901234567890"
-                                 "12345678901234567890"
-                                 "12345678901234567890");
+  std::string actual = MD5String(
+      "12345678901234567890"
+      "12345678901234567890"
+      "12345678901234567890"
+      "12345678901234567890");
   std::string expected = "57edf4a22be3c955ac49da2e2107b67a";
   EXPECT_EQ(expected, actual);
 }
@@ -244,8 +222,8 @@ TEST(MD5, IntermediateFinal) {
 
   // The header and full digest pairs are the same, and they aren't the same as
   // each other.
-  EXPECT_TRUE(!memcmp(&header_digest, &check_header_digest,
-                      sizeof(header_digest)));
+  EXPECT_TRUE(
+      !memcmp(&header_digest, &check_header_digest, sizeof(header_digest)));
   EXPECT_TRUE(!memcmp(&digest, &check_full_digest, sizeof(digest)));
   EXPECT_TRUE(memcmp(&digest, &header_digest, sizeof(digest)));
 }

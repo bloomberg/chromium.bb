@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/sha1.h"
+#include "base/hash/sha1.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -76,7 +76,7 @@ static inline uint32_t f(uint32_t t, uint32_t B, uint32_t C, uint32_t D) {
 }
 
 static inline uint32_t S(uint32_t n, uint32_t X) {
-  return (X << n) | (X >> (32-n));
+  return (X << n) | (X >> (32 - n));
 }
 
 static inline uint32_t K(uint32_t t) {
@@ -127,7 +127,7 @@ void SecureHashAlgorithm::Update(const void* data, size_t nbytes) {
 void SecureHashAlgorithm::Pad() {
   M[cursor++] = 0x80;
 
-  if (cursor > 64-8) {
+  if (cursor > 64 - 8) {
     // pad out to next block
     while (cursor < 64)
       M[cursor++] = 0;
@@ -135,7 +135,7 @@ void SecureHashAlgorithm::Pad() {
     Process();
   }
 
-  while (cursor < 64-8)
+  while (cursor < 64 - 8)
     M[cursor++] = 0;
 
   M[cursor++] = (l >> 56) & 0xff;
@@ -198,8 +198,7 @@ std::string SHA1HashString(const std::string& str) {
   return std::string(hash, SecureHashAlgorithm::kDigestSizeBytes);
 }
 
-void SHA1HashBytes(const unsigned char* data, size_t len,
-                   unsigned char* hash) {
+void SHA1HashBytes(const unsigned char* data, size_t len, unsigned char* hash) {
   SecureHashAlgorithm sha;
   sha.Update(data, len);
   sha.Final();
