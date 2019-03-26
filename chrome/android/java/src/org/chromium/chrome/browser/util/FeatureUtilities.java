@@ -426,16 +426,18 @@ public class FeatureUtilities {
     }
 
     /**
+     * @param activityContext The context for the containing {@link android.app.Activity}.
      * @return Whether or not the adaptive toolbar is enabled.
      */
-    public static boolean isAdaptiveToolbarEnabled() {
+    public static boolean isAdaptiveToolbarEnabled(Context activityContext) {
         if (sIsAdaptiveToolbarEnabled == null) {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
             sIsAdaptiveToolbarEnabled = prefManager.readBoolean(
                     ChromePreferenceManager.ADAPTIVE_TOOLBAR_ENABLED_KEY, true);
         }
-        return sIsAdaptiveToolbarEnabled;
+        return sIsAdaptiveToolbarEnabled && isBottomToolbarEnabled()
+                && !isGridTabSwitcherEnabled(activityContext);
     }
 
     /**
