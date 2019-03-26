@@ -26,6 +26,8 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "ipc/ipc_message.h"
 
+class TabGroupData;
+
 namespace chrome {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -44,8 +46,9 @@ BrowserTabStripModelDelegate::~BrowserTabStripModelDelegate() {
 
 void BrowserTabStripModelDelegate::AddTabAt(const GURL& url,
                                             int index,
-                                            bool foreground) {
-  chrome::AddTabAt(browser_, url, index, foreground);
+                                            bool foreground,
+                                            const TabGroupData* group) {
+  chrome::AddTabAt(browser_, url, index, foreground, group);
 }
 
 Browser* BrowserTabStripModelDelegate::CreateNewStripWithContents(

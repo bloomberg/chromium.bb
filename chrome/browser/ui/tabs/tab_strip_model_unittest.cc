@@ -3228,3 +3228,75 @@ TEST_F(TabStripModelTest, AddToExistingGroupDeletesGroup) {
   strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
+
+// When inserting a WebContents, if a group is not specified, the new tab
+// should be left ungrouped.
+TEST_F(TabStripModelTest, InsertWebContentsAtDoesNotGroupByDefault) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  std::vector<WebContents*> orig = {strip.GetWebContentsAt(0),
+                                    strip.GetWebContentsAt(1)};
+  strip.AddToNewGroup({0, 1});
+
+  strip.InsertWebContentsAt(1, CreateWebContents(), TabStripModel::ADD_NONE);
+
+  // The newly added tab should not be in the group. The group should be split.
+  EXPECT_NE(strip.GetTabGroupForTab(0), nullptr);
+  EXPECT_EQ(strip.GetTabGroupForTab(1), nullptr);
+  EXPECT_NE(strip.GetTabGroupForTab(2), nullptr);
+
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
+  strip.CloseAllTabs();
+}
+
+// When inserting a WebContents, if a group is specified, the new tab should be
+// added to that group.
+TEST_F(TabStripModelTest, InsertWebContentsAtWithGroupGroups) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  std::vector<WebContents*> orig = {strip.GetWebContentsAt(0),
+                                    strip.GetWebContentsAt(1)};
+  strip.AddToNewGroup({0, 1});
+  const TabGroupData* group = strip.GetTabGroupForTab(0);
+
+  strip.InsertWebContentsAt(1, CreateWebContents(), TabStripModel::ADD_NONE,
+                            group);
+
+  EXPECT_EQ(strip.GetTabGroupForTab(0), group);
+  EXPECT_EQ(strip.GetTabGroupForTab(1), group);
+  EXPECT_EQ(strip.GetTabGroupForTab(2), group);
+  EXPECT_EQ(strip.GetWebContentsAt(0), orig[0]);
+  EXPECT_EQ(strip.GetWebContentsAt(2), orig[1]);
+
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
+  strip.CloseAllTabs();
+}
+
+// When inserting a WebContents, if a group is specified and the tabs in that
+// group are pinned, the new tab should be pinned also.
+TEST_F(TabStripModelTest, InsertWebContentsAtWithPinnedGroupPins) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.SetTabPinned(0, true);
+  strip.SetTabPinned(1, true);
+  std::vector<WebContents*> orig = {strip.GetWebContentsAt(0),
+                                    strip.GetWebContentsAt(1)};
+  strip.AddToNewGroup({0, 1});
+  const TabGroupData* group = strip.GetTabGroupForTab(0);
+
+  strip.InsertWebContentsAt(1, CreateWebContents(), TabStripModel::ADD_NONE,
+                            group);
+
+  EXPECT_TRUE(strip.IsTabPinned(1));
+  EXPECT_EQ(strip.GetWebContentsAt(0), orig[0]);
+  EXPECT_EQ(strip.GetWebContentsAt(2), orig[1]);
+
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
+  strip.CloseAllTabs();
+}

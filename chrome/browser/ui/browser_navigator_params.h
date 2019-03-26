@@ -171,6 +171,9 @@ struct NavigateParams {
   // accordance with |add_types|. The default allows the TabHandler to decide.
   int tabstrip_index = -1;
 
+  // The group the caller would like the tab to be added to.
+  const TabGroupData* group = nullptr;
+
   // A bitmask of values defined in TabStripModel::AddTabTypes. Helps
   // determine where to insert a new tab and whether or not it should be
   // selected, among other properties.

@@ -666,7 +666,7 @@ void Navigate(NavigateParams* params) {
     // The navigation should insert a new tab into the target Browser.
     params->browser->tab_strip_model()->AddWebContents(
         std::move(contents_to_insert), params->tabstrip_index,
-        params->transition, params->tabstrip_add_types);
+        params->transition, params->tabstrip_add_types, params->group);
   }
 
   if (singleton_index >= 0) {

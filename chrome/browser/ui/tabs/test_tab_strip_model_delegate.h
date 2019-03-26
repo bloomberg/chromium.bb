@@ -9,6 +9,8 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 
+class TabGroupData;
+
 // Mock TabStripModelDelegate.
 class TestTabStripModelDelegate : public TabStripModelDelegate {
  public:
@@ -16,7 +18,10 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   ~TestTabStripModelDelegate() override;
 
   // Overridden from TabStripModelDelegate:
-  void AddTabAt(const GURL& url, int index, bool foregroud) override;
+  void AddTabAt(const GURL& url,
+                int index,
+                bool foregroud,
+                const TabGroupData* group) override;
   Browser* CreateNewStripWithContents(std::vector<NewStripContents> contentses,
                                       const gfx::Rect& window_bounds,
                                       bool maximize) override;
