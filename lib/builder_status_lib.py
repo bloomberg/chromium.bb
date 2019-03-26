@@ -27,7 +27,7 @@ NUM_RETRIES = 20
 # Namedtupe to store CIDB status info.
 CIDBStatusInfo = collections.namedtuple(
     'CIDBStatusInfo',
-    ['build_id', 'status', 'buildbucket_id'])
+    ['buildbucket_id', 'status'])
 
 
 def CancelBuilds(buildbucket_ids, buildbucket_client,
@@ -547,7 +547,7 @@ class SlaveBuilderStatus(object):
         slave_statuses = buildstore.GetSlaveStatuses(master_build_identifier)
 
       all_cidb_status_dict = {s['build_config']: CIDBStatusInfo(
-          s['id'], s['status'], s['buildbucket_id']) for s in slave_statuses}
+          s['buildbucket_id'], s['status']) for s in slave_statuses}
 
     return all_cidb_status_dict
 

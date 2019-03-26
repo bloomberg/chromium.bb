@@ -118,69 +118,60 @@ class CIDBStatusInfos(object):
   """Helper methods to build CIDBStatusInfo."""
 
   @staticmethod
-  def GetInflightBuild(build_id=1, buildbucket_id=1):
+  def GetInflightBuild(buildbucket_id=1):
     return builder_status_lib.CIDBStatusInfo(
-        build_id=build_id,
         status=constants.BUILDER_STATUS_INFLIGHT,
         buildbucket_id=buildbucket_id)
 
   @staticmethod
-  def GetPassedBuild(build_id=2, buildbucket_id=2):
+  def GetPassedBuild(buildbucket_id=2):
     return builder_status_lib.CIDBStatusInfo(
-        build_id=build_id,
         status=constants.BUILDER_STATUS_PASSED,
         buildbucket_id=buildbucket_id)
 
   @staticmethod
-  def GetFailedBuild(build_id=3, buildbucket_id=3):
+  def GetFailedBuild(buildbucket_id=3):
     return builder_status_lib.CIDBStatusInfo(
-        build_id=build_id,
         status=constants.BUILDER_STATUS_FAILED,
         buildbucket_id=buildbucket_id)
 
   @staticmethod
-  def GetPlannedBuild(build_id=4, buildbucket_id=4):
+  def GetPlannedBuild(buildbucket_id=4):
     return builder_status_lib.CIDBStatusInfo(
-        build_id=build_id,
         status=constants.BUILDER_STATUS_PLANNED,
         buildbucket_id=buildbucket_id)
 
   @staticmethod
-  def GetForgivenBuild(build_id=5, buildbucket_id=5):
+  def GetForgivenBuild(buildbucket_id=5):
     return builder_status_lib.CIDBStatusInfo(
-        build_id=build_id,
         status=constants.BUILDER_STATUS_FORGIVEN,
         buildbucket_id=buildbucket_id)
 
   @staticmethod
-  def GetAbortedBuild(build_id=6, buildbucket_id=6):
+  def GetAbortedBuild(buildbucket_id=6):
     return builder_status_lib.CIDBStatusInfo(
-        build_id=build_id,
         status=constants.BUILDER_STATUS_ABORTED,
         buildbucket_id=buildbucket_id)
 
   @staticmethod
-  def GetMissingBuild(build_id=7, buildbucket_id=7):
+  def GetMissingBuild(buildbucket_id=7):
     return builder_status_lib.CIDBStatusInfo(
-        build_id=build_id,
         status=constants.BUILDER_STATUS_MISSING,
         buildbucket_id=buildbucket_id)
 
   @staticmethod
-  def GetSkippedBuild(build_id=8, buildbucket_id=8):
+  def GetSkippedBuild(buildbucket_id=8):
     return builder_status_lib.CIDBStatusInfo(
-        build_id=build_id,
         status=constants.BUILDER_STATUS_SKIPPED,
         buildbucket_id=buildbucket_id)
 
   @staticmethod
   def GetFullCIDBStatusInfo(exclude_builds=None):
     cidb_status = {
-        'started': CIDBStatusInfos.GetInflightBuild(build_id=1),
-        'completed_success': CIDBStatusInfos.GetPassedBuild(build_id=2),
-        'completed_failure': CIDBStatusInfos.GetFailedBuild(build_id=3),
-        'completed_canceled': CIDBStatusInfos.GetInflightBuild(build_id=4,
-                                                               buildbucket_id=4)
+        'started': CIDBStatusInfos.GetInflightBuild(buildbucket_id=1),
+        'completed_success': CIDBStatusInfos.GetPassedBuild(buildbucket_id=2),
+        'completed_failure': CIDBStatusInfos.GetFailedBuild(buildbucket_id=3),
+        'completed_canceled': CIDBStatusInfos.GetInflightBuild(buildbucket_id=4)
     }
 
     if exclude_builds:
@@ -1428,20 +1419,20 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     """
     slave_ids = ['build1', 'build2', 'build3', 'build4']
     cidb_status = [
-        {'id': 'build1', 'build_config': 'build1', 'buildbucket_id': 1,
+        {'build_config': 'build1', 'buildbucket_id': 1,
          'status': constants.BUILDER_STATUS_FAILED},
-        {'id': 'build2', 'build_config': 'build2', 'buildbucket_id': 2,
+        {'build_config': 'build2', 'buildbucket_id': 2,
          'status': constants.BUILDER_STATUS_PASSED},
-        {'id': 'build3', 'build_config': 'build3', 'buildbucket_id': 3,
+        {'build_config': 'build3', 'buildbucket_id': 3,
          'status': constants.BUILDER_STATUS_INFLIGHT},
-        {'id': 'build4', 'build_config': 'build4', 'buildbucket_id': 4,
+        {'build_config': 'build4', 'buildbucket_id': 4,
          'status': constants.BUILDER_STATUS_INFLIGHT},
     ]
     cidb_statuses = {
-        'build1': CIDBStatusInfos.GetFailedBuild(build_id=1),
-        'build2': CIDBStatusInfos.GetPassedBuild(build_id=2),
-        'build3': CIDBStatusInfos.GetInflightBuild(build_id=3),
-        'build4': CIDBStatusInfos.GetInflightBuild(build_id=4)
+        'build1': CIDBStatusInfos.GetFailedBuild(buildbucket_id=1),
+        'build2': CIDBStatusInfos.GetPassedBuild(buildbucket_id=2),
+        'build3': CIDBStatusInfos.GetInflightBuild(buildbucket_id=3),
+        'build4': CIDBStatusInfos.GetInflightBuild(buildbucket_id=4)
     }
     experimental_builds = [
         ('build1', 'build1', 0),

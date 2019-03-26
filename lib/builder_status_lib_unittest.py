@@ -258,11 +258,11 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
 
   def testGetAllSlaveCIDBStatusInfo(self):
     """GetAllSlaveCIDBStatusInfo without Buildbucket info."""
-    _, slave1_id, slave2_id = self._InsertMasterSlaveBuildsToCIDB()
+    _, _, _ = self._InsertMasterSlaveBuildsToCIDB()
 
     expected_status = {
-        'slave1': builder_status_lib.CIDBStatusInfo(slave1_id, 'fail', 'id_1'),
-        'slave2': builder_status_lib.CIDBStatusInfo(slave2_id, 'fail', 'id_2')
+        'slave1': builder_status_lib.CIDBStatusInfo('id_1', 'fail'),
+        'slave2': builder_status_lib.CIDBStatusInfo('id_2', 'fail')
     }
 
     cidb_status = (
@@ -277,7 +277,7 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
 
   def testGetAllSlaveCIDBStatusInfoWithBuildbucket(self):
     """GetAllSlaveCIDBStatusInfo with Buildbucket info."""
-    _, slave1_id, slave2_id = self._InsertMasterSlaveBuildsToCIDB()
+    _, _, _ = self._InsertMasterSlaveBuildsToCIDB()
 
     buildbucket_info_dict = {
         'slave1': build_status_unittest.BuildbucketInfos.GetStartedBuild(
@@ -287,8 +287,8 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     }
 
     expected_status = {
-        'slave1': builder_status_lib.CIDBStatusInfo(slave1_id, 'fail', 'id_1'),
-        'slave2': builder_status_lib.CIDBStatusInfo(slave2_id, 'fail', 'id_2')
+        'slave1': builder_status_lib.CIDBStatusInfo('id_1', 'fail'),
+        'slave2': builder_status_lib.CIDBStatusInfo('id_2', 'fail'),
     }
 
     cidb_status = (
@@ -441,7 +441,7 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     self.PatchObject(builder_status_lib.SlaveBuilderStatus, '_InitSlaveInfo')
     manager = self.ConstructBuilderStatusManager()
     cidb_info_dict = {
-        self.slave_1: cidb_infos.GetPassedBuild(build_id=1, buildbucket_id=100)}
+        self.slave_1: cidb_infos.GetPassedBuild(buildbucket_id=100)}
     buildbucket_info_dict = {
         self.slave_1: bb_infos.GetSuccessBuild(url='http://buildbucket_url'),
         self.slave_2:  bb_infos.GetSuccessBuild(url='http://buildbucket_url'),
@@ -654,11 +654,11 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
     """Test _FetchSlaveBuilderStatuses with a slave list."""
     status_dict = {
         'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1),
+            buildbucket_id=1),
         'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
-            build_id=2),
+            buildbucket_id=2),
         'build3': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=3)
+            buildbucket_id=3)
     }
     self._PatchesForGetSlaveBuilderStatus(status_dict)
     fetcher = self.CreateBuilderStatusesFetcher(
@@ -682,11 +682,11 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
     """Test GetBuilderStatuses on masters."""
     status_dict = {
         'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1),
+            buildbucket_id=1),
         'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
-            build_id=2),
+            buildbucket_id=2),
         'build3': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=3)
+            buildbucket_id=3)
     }
     self._PatchesForGetSlaveBuilderStatus(status_dict)
     fetcher = self.CreateBuilderStatusesFetcher(
