@@ -537,7 +537,8 @@ TEST_F(IndexedDBDispatcherHostTest, PutWithInvalidBlob) {
   loop3.Run();
 }
 
-TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWithConnection) {
+// Disabled for crbug.com/945627.
+TEST_F(IndexedDBDispatcherHostTest, DISABLED_CompactDatabaseWithConnection) {
   const int64_t kDBVersion = 1;
   const int64_t kTransactionId = 1;
   std::unique_ptr<TestDatabaseConnection> connection;
