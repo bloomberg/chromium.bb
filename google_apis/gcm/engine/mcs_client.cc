@@ -172,15 +172,14 @@ MCSClient::MCSClient(const std::string& version_string,
       android_id_(0),
       security_token_(0),
       connection_factory_(connection_factory),
-      connection_handler_(NULL),
+      connection_handler_(nullptr),
       last_device_to_server_stream_id_received_(0),
       last_server_to_device_stream_id_received_(0),
       stream_id_out_(0),
       stream_id_in_(0),
       gcm_store_(gcm_store),
       recorder_(recorder),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 MCSClient::~MCSClient() {
 }

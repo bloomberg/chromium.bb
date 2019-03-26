@@ -135,8 +135,8 @@ google_apis::DriveApiErrorCode MapJsonError(
   const char kErrorReasonResponseTooLarge[] = "responseTooLarge";
 
   std::unique_ptr<const base::Value> value(google_apis::ParseJson(error_body));
-  const base::DictionaryValue* dictionary = NULL;
-  const base::DictionaryValue* error = NULL;
+  const base::DictionaryValue* dictionary = nullptr;
+  const base::DictionaryValue* error = nullptr;
   if (value &&
       value->GetAsDictionary(&dictionary) &&
       dictionary->GetDictionaryWithoutPathExpansion(kErrorKey, &error)) {
@@ -146,8 +146,8 @@ google_apis::DriveApiErrorCode MapJsonError(
     DLOG(ERROR) << "code: " << code << ", message: " << message;
 
     // Override the error code based on the reason of the first error.
-    const base::ListValue* errors = NULL;
-    const base::DictionaryValue* first_error = NULL;
+    const base::ListValue* errors = nullptr;
+    const base::DictionaryValue* first_error = nullptr;
     if (error->GetListWithoutPathExpansion(kErrorErrorsKey, &errors) &&
         errors->GetDictionary(0, &first_error)) {
       std::string reason;

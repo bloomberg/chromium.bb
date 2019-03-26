@@ -412,7 +412,7 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
     }
   } else {
     // Copy any data in the input stream onto the end of the buffer.
-    const void* data_ptr = NULL;
+    const void* data_ptr = nullptr;
     int size = 0;
     input_stream_->Next(&data_ptr, &size);
     payload_input_buffer_.insert(payload_input_buffer_.end(),

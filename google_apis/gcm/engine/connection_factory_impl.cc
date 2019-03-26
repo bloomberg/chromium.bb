@@ -67,7 +67,7 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
       handshake_in_progress_(false),
       recorder_(recorder),
       network_connection_tracker_(network_connection_tracker),
-      listener_(NULL),
+      listener_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK_GE(mcs_endpoints_.size(), 1U);
 }
