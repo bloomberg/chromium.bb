@@ -89,8 +89,8 @@ class SigninManagerTest : public testing::Test {
     }
     token_service_.Shutdown();
     test_signin_client_.Shutdown();
-    account_tracker_.Shutdown();
     cookie_manager_service_.Shutdown();
+    account_tracker_.Shutdown();
     account_fetcher_.Shutdown();
   }
 

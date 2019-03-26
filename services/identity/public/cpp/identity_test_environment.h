@@ -13,11 +13,9 @@
 class AccountFetcherService;
 class AccountTrackerService;
 class FakeProfileOAuth2TokenService;
-class GaiaCookieManagerService;
 class IdentityTestEnvironmentChromeBrowserStateAdaptor;
 class IdentityTestEnvironmentProfileAdaptor;
 class PrefService;
-class SigninManager;
 class TestSigninClient;
 
 namespace sync_preferences {
@@ -57,9 +55,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   //
   // This constructor also takes an optional PrefService instance as parameter,
   // which allows tests to move away from referencing IdentityManager's
-  // dependencies directly (namely AccountTrackerService, PO2TS, SigninManager
-  // and GaiaCookieManagerService), but still be able to tweak preferences on
-  // demand.
+  // dependencies directly (namely AccountTrackerService, PO2TS), but still be
+  // able to tweak preferences on demand.
   //
   // Last, this constructor can take an optional parameter |account_consistency|
   // as parameter, to specify the account consistency policy that will be used.
@@ -309,7 +306,6 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       AccountTrackerService* account_tracker_service,
       AccountFetcherService* account_fetcher_service,
       FakeProfileOAuth2TokenService* token_service,
-      GaiaCookieManagerService* gaia_cookie_manager_service,
       IdentityManager* identity_manager,
       network::TestURLLoaderFactory* test_url_loader_factory = nullptr,
       signin::AccountConsistencyMethod account_consistency =
@@ -331,7 +327,6 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       AccountTrackerService* account_tracker_service,
       AccountFetcherService* account_fetcher_service,
       FakeProfileOAuth2TokenService* token_service,
-      GaiaCookieManagerService* gaia_cookie_manager_service,
       network::TestURLLoaderFactory* test_url_loader_factory,
       signin::AccountConsistencyMethod account_consistency,
       std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner,
@@ -377,10 +372,6 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // This will be null if a FakeProfileOAuth2TokenService was provided to
   // IdentityTestEnvironment's constructor.
   std::unique_ptr<FakeProfileOAuth2TokenService> owned_token_service_;
-
-  // This will be null if a GaiaCookieManagerService was provided to
-  // IdentityTestEnvironment's constructor.
-  std::unique_ptr<GaiaCookieManagerService> owned_gaia_cookie_manager_service_;
 
   // Depending on which constructor is used, exactly one of these will be
   // non-null. See the documentation on the constructor wherein IdentityManager

@@ -255,17 +255,7 @@ class TestIdentityManagerDiagnosticsObserver
 class IdentityManagerTest : public testing::Test {
  protected:
   IdentityManagerTest()
-      : signin_client_(&pref_service_),
-        token_service_(&pref_service_),
-        gaia_cookie_manager_service_(
-            &token_service_,
-            &signin_client_,
-            base::BindRepeating(
-                [](network::TestURLLoaderFactory* test_url_loader_factory)
-                    -> scoped_refptr<network::SharedURLLoaderFactory> {
-                  return test_url_loader_factory->GetSafeWeakWrapper();
-                },
-                test_url_loader_factory())) {
+      : signin_client_(&pref_service_), token_service_(&pref_service_) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     AccountFetcherService::RegisterPrefs(pref_service_.registry());
     ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
@@ -284,7 +274,6 @@ class IdentityManagerTest : public testing::Test {
   ~IdentityManagerTest() override {
     signin_client_.Shutdown();
     token_service_.Shutdown();
-    gaia_cookie_manager_service_.Shutdown();
     account_tracker_.Shutdown();
     account_fetcher_.Shutdown();
   }
@@ -295,20 +284,21 @@ class IdentityManagerTest : public testing::Test {
   }
 
   IdentityManager* identity_manager() { return identity_manager_.get(); }
+
   TestIdentityManagerObserver* identity_manager_observer() {
     return identity_manager_observer_.get();
   }
+
   TestIdentityManagerDiagnosticsObserver*
   identity_manager_diagnostics_observer() {
     return identity_manager_diagnostics_observer_.get();
   }
+
   AccountTrackerService* account_tracker() { return &account_tracker_; }
+
   AccountFetcherService* account_fetcher() { return &account_fetcher_; }
   CustomFakeProfileOAuth2TokenService* token_service() {
     return &token_service_;
-  }
-  GaiaCookieManagerService* gaia_cookie_manager_service() {
-    return &gaia_cookie_manager_service_;
   }
 
   // See RecreateIdentityManager.
@@ -338,6 +328,16 @@ class IdentityManagerTest : public testing::Test {
     identity_manager_diagnostics_observer_.reset();
     identity_manager_.reset();
 
+    auto gaia_cookie_manager_service =
+        std::make_unique<GaiaCookieManagerService>(
+            &token_service_, &signin_client_,
+            base::BindRepeating(
+                [](network::TestURLLoaderFactory* test_url_loader_factory)
+                    -> scoped_refptr<network::SharedURLLoaderFactory> {
+                  return test_url_loader_factory->GetSafeWeakWrapper();
+                },
+                test_url_loader_factory()));
+
 #if defined(OS_CHROMEOS)
     DCHECK_EQ(account_consistency, signin::AccountConsistencyMethod::kDisabled)
         << "AccountConsistency is not used by SigninManagerBase";
@@ -346,7 +346,7 @@ class IdentityManagerTest : public testing::Test {
 #else
     auto signin_manager = std::make_unique<SigninManager>(
         &signin_client_, &token_service_, &account_tracker_,
-        &gaia_cookie_manager_service_, account_consistency);
+        gaia_cookie_manager_service.get(), account_consistency);
 #endif
 
     // Passing this switch ensures that the new SigninManager starts with a
@@ -361,13 +361,16 @@ class IdentityManagerTest : public testing::Test {
       signin_manager->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
     }
 
+    auto accounts_cookie_mutator = std::make_unique<AccountsCookieMutatorImpl>(
+        gaia_cookie_manager_service.get());
+
+    auto diagnostics_provider = std::make_unique<DiagnosticsProviderImpl>(
+        &token_service_, gaia_cookie_manager_service.get());
+
     identity_manager_.reset(new IdentityManager(
-        std::move(signin_manager), &token_service_, &account_fetcher_,
-        &account_tracker_, &gaia_cookie_manager_service_, nullptr, nullptr,
-        std::make_unique<AccountsCookieMutatorImpl>(
-            &gaia_cookie_manager_service_),
-        std::make_unique<DiagnosticsProviderImpl>(
-            &token_service_, &gaia_cookie_manager_service_)));
+        std::move(gaia_cookie_manager_service), std::move(signin_manager),
+        &token_service_, &account_fetcher_, &account_tracker_, nullptr, nullptr,
+        std::move(accounts_cookie_mutator), std::move(diagnostics_provider)));
     identity_manager_observer_.reset(
         new TestIdentityManagerObserver(identity_manager_.get()));
     identity_manager_diagnostics_observer_.reset(
@@ -413,7 +416,6 @@ class IdentityManagerTest : public testing::Test {
   TestSigninClient signin_client_;
   CustomFakeProfileOAuth2TokenService token_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  GaiaCookieManagerService gaia_cookie_manager_service_;
   std::unique_ptr<IdentityManager> identity_manager_;
   std::unique_ptr<TestIdentityManagerObserver> identity_manager_observer_;
   std::unique_ptr<TestIdentityManagerDiagnosticsObserver>
@@ -1617,7 +1619,7 @@ TEST_F(IdentityManagerTest,
       run_loop.QuitClosure());
 
   signin::SetListAccountsResponseNoAccounts(test_url_loader_factory());
-  gaia_cookie_manager_service()->TriggerListAccounts();
+  identity_manager()->GetGaiaCookieManagerService()->TriggerListAccounts();
   run_loop.Run();
 
   const AccountsInCookieJarInfo& accounts_in_cookie_jar_info =
@@ -1635,7 +1637,7 @@ TEST_F(IdentityManagerTest,
 
   signin::SetListAccountsResponseOneAccount(kTestEmail, kTestGaiaId,
                                             test_url_loader_factory());
-  gaia_cookie_manager_service()->TriggerListAccounts();
+  identity_manager()->GetGaiaCookieManagerService()->TriggerListAccounts();
   run_loop.Run();
 
   const AccountsInCookieJarInfo& accounts_in_cookie_jar_info =
@@ -1663,7 +1665,7 @@ TEST_F(IdentityManagerTest,
   signin::SetListAccountsResponseTwoAccounts(kTestEmail, kTestGaiaId,
                                              kTestEmail2, kTestGaiaId2,
                                              test_url_loader_factory());
-  gaia_cookie_manager_service()->TriggerListAccounts();
+  identity_manager()->GetGaiaCookieManagerService()->TriggerListAccounts();
   run_loop.Run();
 
   const AccountsInCookieJarInfo& accounts_in_cookie_jar_info =
@@ -1710,7 +1712,7 @@ TEST_F(IdentityManagerTest, CallbackSentOnUpdateToSignOutAccountsInCookie) {
           signed_out_status.account_2 /* signed_out */, true /* verified */}},
         test_url_loader_factory());
 
-    gaia_cookie_manager_service()->TriggerListAccounts();
+    identity_manager()->GetGaiaCookieManagerService()->TriggerListAccounts();
     run_loop.Run();
 
     unsigned int accounts_signed_out =
@@ -1762,7 +1764,7 @@ TEST_F(IdentityManagerTest,
 
   // Configure list accounts to return a permanent Gaia auth error.
   signin::SetListAccountsResponseWebLoginRequired(test_url_loader_factory());
-  gaia_cookie_manager_service()->TriggerListAccounts();
+  identity_manager()->GetGaiaCookieManagerService()->TriggerListAccounts();
   run_loop.Run();
 
   const AccountsInCookieJarInfo& accounts_in_cookie_jar_info =
@@ -1897,11 +1899,11 @@ TEST_F(IdentityManagerTest, CallbackSentOnSuccessfulAdditionOfAccountToCookie) {
         error_from_add_account_to_cookie_completed_callback = error;
       });
 
-  gaia_cookie_manager_service()->AddAccountToCookie(
+  identity_manager()->GetGaiaCookieManagerService()->AddAccountToCookie(
       kTestAccountId, gaia::GaiaSource::kChrome,
       std::move(completion_callback));
-  SimulateAdditionOfAccountToCookieSuccess(gaia_cookie_manager_service(),
-                                           "token");
+  SimulateAdditionOfAccountToCookieSuccess(
+      identity_manager()->GetGaiaCookieManagerService(), "token");
   EXPECT_EQ(account_from_add_account_to_cookie_completed_callback,
             kTestAccountId);
   EXPECT_EQ(error_from_add_account_to_cookie_completed_callback,
@@ -1919,13 +1921,13 @@ TEST_F(IdentityManagerTest, CallbackSentOnFailureAdditionOfAccountToCookie) {
         error_from_add_account_to_cookie_completed_callback = error;
       });
 
-  gaia_cookie_manager_service()->AddAccountToCookie(
+  identity_manager()->GetGaiaCookieManagerService()->AddAccountToCookie(
       kTestAccountId, gaia::GaiaSource::kChrome,
       std::move(completion_callback));
 
   GoogleServiceAuthError error(GoogleServiceAuthError::SERVICE_ERROR);
-  SimulateAdditionOfAccountToCookieSuccessFailure(gaia_cookie_manager_service(),
-                                                  error);
+  SimulateAdditionOfAccountToCookieSuccessFailure(
+      identity_manager()->GetGaiaCookieManagerService(), error);
 
   EXPECT_EQ(account_from_add_account_to_cookie_completed_callback,
             kTestAccountId);
@@ -1947,7 +1949,7 @@ TEST_F(IdentityManagerTest,
       });
 
   // Needed to insert request in the queue.
-  gaia_cookie_manager_service()->SetAccountsInCookie(
+  identity_manager()->GetGaiaCookieManagerService()->SetAccountsInCookie(
       account_ids, gaia::GaiaSource::kChrome, std::move(completion_callback));
 
   // Sample success cookie response.
@@ -1971,7 +1973,8 @@ TEST_F(IdentityManagerTest,
     )";
   OAuthMultiloginResult result(data);
 
-  SimulateOAuthMultiloginFinished(gaia_cookie_manager_service(), result);
+  SimulateOAuthMultiloginFinished(
+      identity_manager()->GetGaiaCookieManagerService(), result);
 
   EXPECT_EQ(error_from_set_accounts_in_cookie_completed_callback,
             GoogleServiceAuthError::AuthErrorNone());
@@ -1992,14 +1995,15 @@ TEST_F(IdentityManagerTest,
       });
 
   // Needed to insert request in the queue.
-  gaia_cookie_manager_service()->SetAccountsInCookie(
+  identity_manager()->GetGaiaCookieManagerService()->SetAccountsInCookie(
       account_ids, gaia::GaiaSource::kChrome, std::move(completion_callback));
 
   // Sample an erroneous response.
   GoogleServiceAuthError error(GoogleServiceAuthError::SERVICE_ERROR);
   OAuthMultiloginResult result(error);
 
-  SimulateOAuthMultiloginFinished(gaia_cookie_manager_service(), result);
+  SimulateOAuthMultiloginFinished(
+      identity_manager()->GetGaiaCookieManagerService(), result);
 
   EXPECT_EQ(error_from_set_accounts_in_cookie_completed_callback, error);
 }
@@ -2011,7 +2015,7 @@ TEST_F(IdentityManagerTest, CallbackSentOnAccountsCookieDeletedByUserAction) {
                                                 kTestAccountId2};
 
   // Needed to insert request in the queue.
-  gaia_cookie_manager_service()->SetAccountsInCookie(
+  identity_manager()->GetGaiaCookieManagerService()->SetAccountsInCookie(
       account_ids, gaia::GaiaSource::kChrome,
       GaiaCookieManagerService::SetAccountsInCookieCompletedCallback());
 
@@ -2036,7 +2040,8 @@ TEST_F(IdentityManagerTest, CallbackSentOnAccountsCookieDeletedByUserAction) {
     )";
   OAuthMultiloginResult result(data);
 
-  SimulateOAuthMultiloginFinished(gaia_cookie_manager_service(), result);
+  SimulateOAuthMultiloginFinished(
+      identity_manager()->GetGaiaCookieManagerService(), result);
   base::RunLoop().RunUntilIdle();
 
   base::RunLoop run_loop;
@@ -2044,7 +2049,8 @@ TEST_F(IdentityManagerTest, CallbackSentOnAccountsCookieDeletedByUserAction) {
       run_loop.QuitClosure());
 
   const std::vector<net::CanonicalCookie>& cookies = result.cookies();
-  SimulateCookieDeletedByUser(gaia_cookie_manager_service(), cookies[0]);
+  SimulateCookieDeletedByUser(identity_manager()->GetGaiaCookieManagerService(),
+                              cookies[0]);
   run_loop.Run();
 }
 
@@ -2062,7 +2068,7 @@ TEST_F(IdentityManagerTest, OnNetworkInitialized) {
   identity_manager()->OnNetworkInitialized();
 
   // Needed to insert request in the queue.
-  gaia_cookie_manager_service()->SetAccountsInCookie(
+  identity_manager()->GetGaiaCookieManagerService()->SetAccountsInCookie(
       account_ids, gaia::GaiaSource::kChrome,
       GaiaCookieManagerService::SetAccountsInCookieCompletedCallback());
 
@@ -2087,7 +2093,8 @@ TEST_F(IdentityManagerTest, OnNetworkInitialized) {
     )";
   OAuthMultiloginResult result(data);
 
-  SimulateOAuthMultiloginFinished(gaia_cookie_manager_service(), result);
+  SimulateOAuthMultiloginFinished(
+      identity_manager()->GetGaiaCookieManagerService(), result);
   base::RunLoop().RunUntilIdle();
 
   base::RunLoop run_loop;
