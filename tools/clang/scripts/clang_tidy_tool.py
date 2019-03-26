@@ -101,9 +101,27 @@ def BuildNinjaTarget(out_dir, ninja_target):
 def GenerateCompDb(out_dir):
   gen_compdb_script = os.path.join(
       os.path.dirname(__file__), 'generate_compdb.py')
-  comp_db_file = os.path.join(out_dir, 'compile_commands.json')
-  args = [sys.executable, gen_compdb_script, '-p', out_dir, '-o', comp_db_file]
+  comp_db_file_path = os.path.join(out_dir, 'compile_commands.json')
+  args = [
+      sys.executable,
+      gen_compdb_script,
+      '-p',
+      out_dir,
+      '-o',
+      comp_db_file_path,
+  ]
   subprocess.check_call(args)
+
+  # The resulting CompDb file includes /showIncludes which causes clang-tidy to
+  # output a lot of unnecessary text to the console.
+  with open(comp_db_file_path, 'r') as comp_db_file:
+    comp_db_data = comp_db_file.read();
+
+  # The trailing space on /showIncludes helps keep single-spaced flags.
+  comp_db_data = comp_db_data.replace('/showIncludes ', '')
+
+  with open(comp_db_file_path, 'w') as comp_db_file:
+    comp_db_file.write(comp_db_data)
 
 
 def RunClangTidy(checks, header_filter, auto_fix, out_dir, ninja_target):
