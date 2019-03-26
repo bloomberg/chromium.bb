@@ -550,44 +550,61 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestAuthRequired) {
-  CancelLoginDialog login_dialog_helper;
+enum class ProfileMode {
+  kUserProfile,
+  kIncognito,
+};
 
-  ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_auth_required.html")) <<
-      message_;
-}
+class ExtensionWebRequestApiAuthRequiredTest
+    : public ExtensionWebRequestApiTest,
+      public testing::WithParamInterface<ProfileMode> {
+ public:
+  int GetFlags() {
+    switch (GetParam()) {
+      case ProfileMode::kUserProfile:
+        return kFlagEnableFileAccess;
+      case ProfileMode::kIncognito:
+        return kFlagEnableIncognito | kFlagUseIncognito | kFlagEnableFileAccess;
+    }
+  }
+};
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
-                       WebRequestAuthRequiredAsync) {
-  CancelLoginDialog login_dialog_helper;
-
-  ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(
-      RunExtensionSubtest("webrequest", "test_auth_required_async.html"))
-      << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
-                       WebRequestAuthRequiredParallel) {
-  CancelLoginDialog login_dialog_helper;
-
-  ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(
-      RunExtensionSubtest("webrequest", "test_auth_required_parallel.html"))
-      << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
-                       WebRequestAuthRequiredIncognito) {
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
+                       WebRequestAuthRequired) {
   CancelLoginDialog login_dialog_helper;
 
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtestWithArgAndFlags(
-      "webrequest", "test_auth_required.html", nullptr,
-      kFlagEnableIncognito | kFlagUseIncognito | kFlagEnableFileAccess))
+      "webrequest", "test_auth_required.html", nullptr, GetFlags()))
       << message_;
 }
+
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
+                       WebRequestAuthRequiredAsync) {
+  CancelLoginDialog login_dialog_helper;
+
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionSubtestWithArgAndFlags(
+      "webrequest", "test_auth_required_async.html", nullptr, GetFlags()))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
+                       WebRequestAuthRequiredParallel) {
+  CancelLoginDialog login_dialog_helper;
+
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionSubtestWithArgAndFlags(
+      "webrequest", "test_auth_required_parallel.html", nullptr, GetFlags()))
+      << message_;
+}
+
+INSTANTIATE_TEST_SUITE_P(UserProfile,
+                         ExtensionWebRequestApiAuthRequiredTest,
+                         ::testing::Values(ProfileMode::kUserProfile));
+INSTANTIATE_TEST_SUITE_P(Incognito,
+                         ExtensionWebRequestApiAuthRequiredTest,
+                         ::testing::Values(ProfileMode::kIncognito));
 
 // This test times out regularly on win_rel trybots. See http://crbug.com/122178
 // Also on Linux/ChromiumOS debug, ASAN and MSAN builds.
