@@ -448,6 +448,26 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
+      r'/\bstd::to_string\b',
+      (
+        'std::to_string is locale dependent and slower than alternatives.',
+        'For locale-independent strings, e.g. writing numbers to and from',
+        'disk profiles, use base::NumberToString().',
+        'For user-visible strings, use base::FormatNumber() and',
+        'the related functions in base/i18n/number_formatting.h.',
+      ),
+      False,  # Only a warning for now since it is already used,
+      (r'third_party/'),  # Don't warn in third_party folders.
+    ),
+    (
+      r'/\bstd::shared_ptr\b',
+      (
+        'std::shared_ptr should not be used. Use scoped_refptr instead.',
+      ),
+      True,
+      (r'third_party/'),  # Not an error in third_party folders.
+    ),
+    (
       (r'/base::ThreadRestrictions::(ScopedAllowIO|AssertIOAllowed|'
        r'DisallowWaiting|AssertWaitAllowed|SetWaitAllowed|ScopedAllowWait)'),
       (
