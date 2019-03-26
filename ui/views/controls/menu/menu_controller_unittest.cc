@@ -1374,7 +1374,7 @@ TEST_F(MenuControllerTest, PreserveGestureForOwner) {
   MenuController* controller = menu_controller();
   MenuItemView* item = menu_item();
   controller->Run(owner(), nullptr, item, gfx::Rect(),
-                  MenuAnchorPosition::kFixedBottomCenter, false, false);
+                  MenuAnchorPosition::kBottomCenter, false, false);
   SubmenuView* sub_menu = item->GetSubmenu();
   sub_menu->ShowAt(owner(), gfx::Rect(0, 0, 100, 100), true);
 
@@ -1727,41 +1727,6 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsAnchorTest) {
       options.anchor_bounds.y() + kTouchYPadding, options.menu_size.width(),
       options.menu_size.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
-
-  // Assumes anchor bounds is at the bottom of screen.
-  options.menu_anchor = MenuAnchorPosition::kFixedBottomCenter;
-  options.anchor_bounds =
-      gfx::Rect(options.menu_size.width(), options.menu_size.height(), 0, 0);
-  options.monitor_bounds = gfx::Rect(0, 0, options.menu_size.width() * 2,
-                                     options.menu_size.height());
-  expected = gfx::Rect(
-      options.anchor_bounds.x() +
-          (options.anchor_bounds.width() - options.menu_size.width()) / 2,
-      options.anchor_bounds.y() - options.menu_size.height(),
-      options.menu_size.width(), options.menu_size.height());
-  EXPECT_EQ(expected, CalculateMenuBounds(options));
-
-  // Assumes anchor bounds is on left/right edge of screen.
-  options.menu_anchor = MenuAnchorPosition::kSideCenter;
-  options.monitor_bounds = gfx::Rect(0, 0, options.menu_size.width(),
-                                     options.menu_size.height() * 2);
-  options.anchor_bounds =
-      gfx::Rect(options.monitor_bounds.x(), options.menu_size.height(), 0, 0);
-  expected = gfx::Rect(
-      options.anchor_bounds.x(),
-      options.anchor_bounds.y() +
-          (options.anchor_bounds.height() - options.menu_size.height()) / 2,
-      options.menu_size.width(), options.menu_size.height());
-  EXPECT_EQ(expected, CalculateMenuBounds(options));
-
-  options.anchor_bounds = gfx::Rect(options.monitor_bounds.right(),
-                                    options.menu_size.height(), 0, 0);
-  expected = gfx::Rect(
-      options.anchor_bounds.right() - options.menu_size.width(),
-      options.anchor_bounds.y() +
-          (options.anchor_bounds.height() - options.menu_size.height()) / 2,
-      options.menu_size.width(), options.menu_size.height());
-  EXPECT_EQ(expected, CalculateMenuBounds(options));
 }
 
 TEST_F(MenuControllerTest, CalculateMenuBoundsMonitorFitTest) {
@@ -1794,16 +1759,16 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsMonitorFitTest) {
 
 // Test that menus show up on screen with non-zero sized anchors.
 TEST_F(MenuControllerTest, TestMenuFitsOnScreen) {
-  TestMenuFitsOnScreen(MenuAnchorPosition::kBubbleTouchableAbove);
-  TestMenuFitsOnScreen(MenuAnchorPosition::kBubbleTouchableLeft);
-  TestMenuFitsOnScreen(MenuAnchorPosition::kBubbleTouchableRight);
+  TestMenuFitsOnScreen(MenuAnchorPosition::kBubbleAbove);
+  TestMenuFitsOnScreen(MenuAnchorPosition::kBubbleLeft);
+  TestMenuFitsOnScreen(MenuAnchorPosition::kBubbleRight);
 }
 
 // Test that menus show up on screen with zero sized anchors.
 TEST_F(MenuControllerTest, TestMenuFitsOnScreenSmallAnchor) {
-  TestMenuFitsOnScreenSmallAnchor(MenuAnchorPosition::kBubbleTouchableAbove);
-  TestMenuFitsOnScreenSmallAnchor(MenuAnchorPosition::kBubbleTouchableLeft);
-  TestMenuFitsOnScreenSmallAnchor(MenuAnchorPosition::kBubbleTouchableRight);
+  TestMenuFitsOnScreenSmallAnchor(MenuAnchorPosition::kBubbleAbove);
+  TestMenuFitsOnScreenSmallAnchor(MenuAnchorPosition::kBubbleLeft);
+  TestMenuFitsOnScreenSmallAnchor(MenuAnchorPosition::kBubbleRight);
 }
 
 // Test that a menu that was originally drawn below the anchor does not get

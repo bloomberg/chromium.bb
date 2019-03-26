@@ -475,8 +475,8 @@ void AppListItemView::OnContextMenuModelReceived(
       base::BindOnce(&AppListItemView::OnMenuClosed,
                      weak_ptr_factory_.GetWeakPtr()));
   context_menu_->Build(std::move(menu));
-  context_menu_->Run(
-      anchor_rect, views::MenuAnchorPosition::kBubbleTouchableRight, run_types);
+  context_menu_->Run(anchor_rect, views::MenuAnchorPosition::kBubbleRight,
+                     run_types);
   apps_grid_view_->SetSelectedView(this);
 }
 

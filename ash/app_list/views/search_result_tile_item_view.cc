@@ -369,11 +369,11 @@ void SearchResultTileItemView::OnGetContextMenuModel(
       base::BindOnce(&SearchResultTileItemView::OnMenuClosed,
                      weak_ptr_factory_.GetWeakPtr()));
   context_menu_->Build(std::move(menu));
-  context_menu_->Run(
-      anchor_rect, views::MenuAnchorPosition::kBubbleTouchableRight,
-      views::MenuRunner::HAS_MNEMONICS |
-          views::MenuRunner::USE_TOUCHABLE_LAYOUT |
-          views::MenuRunner::CONTEXT_MENU | views::MenuRunner::FIXED_ANCHOR);
+  context_menu_->Run(anchor_rect, views::MenuAnchorPosition::kBubbleRight,
+                     views::MenuRunner::HAS_MNEMONICS |
+                         views::MenuRunner::USE_TOUCHABLE_LAYOUT |
+                         views::MenuRunner::CONTEXT_MENU |
+                         views::MenuRunner::FIXED_ANCHOR);
   source->RequestFocus();
 }
 
