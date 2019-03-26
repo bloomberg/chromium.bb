@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -96,14 +97,6 @@ class NonResumingBackgroundTabNavigationThrottle
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NonResumingBackgroundTabNavigationThrottle);
-};
-
-class TabStripModelSimpleDelegate : public TestTabStripModelDelegate {
- public:
-  TabStripModelSimpleDelegate() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TabStripModelSimpleDelegate);
 };
 
 enum TestIndicies {
