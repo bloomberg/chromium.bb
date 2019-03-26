@@ -12,7 +12,7 @@ export class GPUTest extends Fixture {
   public static async create(log: CaseRecorder, params: IParamsAny) {
     const gpu = await getGPU();
     const adapter = await gpu.requestAdapter();
-    const device = adapter.createDevice({}); // TODO: await adapter.requestDevice()
+    const device = await adapter.requestDevice({});
     return new GPUTest(log, params, device);
   }
   //public device: GPUDevice;

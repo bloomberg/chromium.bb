@@ -77,7 +77,7 @@ group.testf("fullscreen-quad", GPUTest, async (t) => {
     ],
     vertexInput: {
       indexFormat: "uint16",
-      vertexBuffers: {},
+      vertexBuffers: [],
     },
   });
 
