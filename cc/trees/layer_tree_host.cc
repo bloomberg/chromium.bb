@@ -71,6 +71,19 @@ static base::AtomicSequenceNumber s_image_decode_sequence_number;
 }
 
 namespace cc {
+namespace {
+
+bool AreEmbedTokensEqual(const viz::LocalSurfaceId& lsi1,
+                         const viz::LocalSurfaceId& lsi2) {
+  return lsi1.embed_token() == lsi2.embed_token();
+}
+
+bool AreParentSequencesEqual(const viz::LocalSurfaceId& lsi1,
+                             const viz::LocalSurfaceId& lsi2) {
+  return lsi1.parent_sequence_number() == lsi2.parent_sequence_number();
+}
+
+}  // namespace
 
 LayerTreeHost::InitParams::InitParams() = default;
 LayerTreeHost::InitParams::~InitParams() = default;
@@ -1377,8 +1390,10 @@ void LayerTreeHost::SetLocalSurfaceIdAllocationFromParent(
   //
   // If |generated_child_surface_sequence_number_| is set, it means a child
   // sequence number was generated and needs to be compared against.
-  if (current_local_surface_id_from_parent.parent_component() ==
-          local_surface_id_from_parent.parent_component() &&
+  if (AreEmbedTokensEqual(current_local_surface_id_from_parent,
+                          local_surface_id_from_parent) &&
+      AreParentSequencesEqual(current_local_surface_id_from_parent,
+                              local_surface_id_from_parent) &&
       (!generated_child_surface_sequence_number_ ||
        local_surface_id_from_parent.child_sequence_number() <
            *generated_child_surface_sequence_number_)) {

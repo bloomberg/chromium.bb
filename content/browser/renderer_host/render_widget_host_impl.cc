@@ -953,8 +953,10 @@ bool RenderWidgetHostImpl::GetVisualProperties(
 
   const bool parent_local_surface_id_changed =
       !old_visual_properties_ ||
-      old_parent_local_surface_id.parent_component() !=
-          new_parent_local_surface_id.parent_component();
+      old_parent_local_surface_id.parent_sequence_number() !=
+          new_parent_local_surface_id.parent_sequence_number() ||
+      old_parent_local_surface_id.embed_token() !=
+          new_parent_local_surface_id.embed_token();
 
   const bool zoom_changed =
       !old_visual_properties_ ||

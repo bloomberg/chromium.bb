@@ -302,7 +302,6 @@ void Surface::NotifySurfaceIdAvailable(const SurfaceId& surface_id) {
   if (it == frame_sink_id_dependencies_.end())
     return;
 
-  // TODO(samans): Take into account the embed token.
   if (surface_id.local_surface_id().parent_sequence_number() >
           it->second.parent_sequence_number ||
       surface_id.local_surface_id().child_sequence_number() >
@@ -556,7 +555,6 @@ void Surface::UpdateActivationDependencies(
 
       // Record the latest |parent_sequence_number| this surface is interested
       // in observing for the provided FrameSinkId.
-      // TODO(samans): This should also take into account the embed token.
       uint32_t& parent_sequence_number =
           new_frame_sink_id_dependencies[surface_id.frame_sink_id()]
               .parent_sequence_number;

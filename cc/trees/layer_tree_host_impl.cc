@@ -5734,7 +5734,12 @@ void LayerTreeHostImpl::OnLayerTreeLocalSurfaceIdAllocationChanged() {
       active_tree()
           ->local_surface_id_allocation_from_parent()
           .local_surface_id();
-  if (!current_id.IsNewerThan(new_id)) {
+  if ((current_id.embed_token() != new_id.embed_token()) ||
+      (new_id.parent_sequence_number() > current_id.parent_sequence_number()) ||
+      ((new_id.parent_sequence_number() ==
+        current_id.parent_sequence_number()) &&
+       (new_id.child_sequence_number() >=
+        current_id.child_sequence_number()))) {
     waiting_for_local_surface_id_ = false;
     client_->OnCanDrawStateChanged(CanDraw());
   }
