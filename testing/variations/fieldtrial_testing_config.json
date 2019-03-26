@@ -1250,6 +1250,22 @@
             ]
         }
     ],
+    "CertDualVerificationTrial": [
+        {
+            "platforms": [
+                "linux",
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CertDualVerificationTrial"
+                    ]
+                }
+            ]
+        }
+    ],
     "CertificateTransparencyLogAuditing": [
         {
             "platforms": [
