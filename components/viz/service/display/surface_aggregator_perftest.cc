@@ -26,8 +26,6 @@ constexpr bool kIsRoot = true;
 constexpr bool kIsChildRoot = false;
 constexpr bool kNeedsSyncPoints = true;
 
-const base::UnguessableToken kArbitraryToken = base::UnguessableToken::Create();
-
 class SurfaceAggregatorPerfTest : public testing::Test {
  public:
   SurfaceAggregatorPerfTest() : manager_(&shared_bitmap_manager_) {
@@ -47,15 +45,17 @@ class SurfaceAggregatorPerfTest : public testing::Test {
                const std::string& name) {
     std::vector<std::unique_ptr<CompositorFrameSinkSupport>> child_supports(
         num_surfaces);
+    std::vector<base::UnguessableToken> child_tokens(num_surfaces);
     for (int i = 0; i < num_surfaces; i++) {
       child_supports[i] = std::make_unique<CompositorFrameSinkSupport>(
           nullptr, &manager_, FrameSinkId(1, i + 1), kIsChildRoot,
           kNeedsSyncPoints);
+      child_tokens[i] = base::UnguessableToken::Create();
     }
     aggregator_ = std::make_unique<SurfaceAggregator>(
         manager_.surface_manager(), resource_provider_.get(), optimize_damage);
     for (int i = 0; i < num_surfaces; i++) {
-      LocalSurfaceId local_surface_id(i + 1, kArbitraryToken);
+      LocalSurfaceId local_surface_id(i + 1, child_tokens[i]);
 
       auto pass = RenderPass::Create();
       pass->output_rect = gfx::Rect(0, 0, 1, 2);
@@ -94,9 +94,10 @@ class SurfaceAggregatorPerfTest : public testing::Test {
         auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
         surface_quad->SetNew(
             sqs, gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1),
+            // Surface at index i embeds surface at index i - 1.
             SurfaceRange(base::nullopt,
                          SurfaceId(FrameSinkId(1, i),
-                                   LocalSurfaceId(i, kArbitraryToken))),
+                                   LocalSurfaceId(i, child_tokens[i - 1]))),
             SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false,
             /*ignores_input_event=*/false);
       }
@@ -109,6 +110,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
     auto root_support = std::make_unique<CompositorFrameSinkSupport>(
         nullptr, &manager_, FrameSinkId(1, num_surfaces + 1), kIsRoot,
         kNeedsSyncPoints);
+    auto root_token = base::UnguessableToken::Create();
     base::TimeTicks next_fake_display_time =
         base::TimeTicks() + base::TimeDelta::FromSeconds(1);
     timer_.Reset();
@@ -121,8 +123,10 @@ class SurfaceAggregatorPerfTest : public testing::Test {
           sqs, gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 100, 100),
           SurfaceRange(
               base::nullopt,
+              // Root surface embeds surface at index num_surfaces - 1.
               SurfaceId(FrameSinkId(1, num_surfaces),
-                        LocalSurfaceId(num_surfaces, kArbitraryToken))),
+                        LocalSurfaceId(num_surfaces,
+                                       child_tokens[num_surfaces - 1]))),
           SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false,
           /*ignores_input_event=*/false);
 
@@ -137,11 +141,11 @@ class SurfaceAggregatorPerfTest : public testing::Test {
           CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
 
       root_support->SubmitCompositorFrame(
-          LocalSurfaceId(num_surfaces + 1, kArbitraryToken), std::move(frame));
+          LocalSurfaceId(num_surfaces + 1, root_token), std::move(frame));
 
       CompositorFrame aggregated = aggregator_->Aggregate(
           SurfaceId(FrameSinkId(1, num_surfaces + 1),
-                    LocalSurfaceId(num_surfaces + 1, kArbitraryToken)),
+                    LocalSurfaceId(num_surfaces + 1, root_token)),
           next_fake_display_time);
       next_fake_display_time += BeginFrameArgs::DefaultInterval();
       timer_.NextLap();
