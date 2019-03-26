@@ -23,6 +23,7 @@ group("all") {
     ":system_api-power_manager-protos",
     ":system_api-protos",
     ":system_api-runtime_probe-protos",
+    ":system_api-seneschal-goprotos",
     ":system_api-seneschal-protos",
     ":system_api-smbprovider-protos",
     ":system_api-u2f-protos",
@@ -233,6 +234,14 @@ proto_library("system_api-seneschal-protos") {
     "${proto_in_dir}/seneschal_service.proto",
   ]
   standalone = true
+}
+
+goproto_library("system_api-seneschal-goprotos") {
+  proto_in_dir = "dbus/seneschal"
+  proto_out_dir = "go/src/chromiumos/system_api/seneschal_proto"
+  sources = [
+    "${proto_in_dir}/seneschal_service.proto",
+  ]
 }
 
 proto_library("system_api-oobe_config-protos") {
