@@ -2122,10 +2122,6 @@ void RenderWebView::OnTextInputStateChanged(
         d_inputMethod->OnTextInputTypeChanged(this);
     }
 
-    if (d_textInputState.show_ime_if_needed) {
-        d_inputMethod->ShowVirtualKeyboardIfEnabled();
-    }
-
     if (d_textInputState.type != ui::TEXT_INPUT_TYPE_NONE) {
         d_widgetInputHandler->
             RequestCompositionUpdates(
