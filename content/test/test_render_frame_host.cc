@@ -97,6 +97,10 @@ void TestRenderFrameHost::AddMessageToConsole(
   RenderFrameHostImpl::AddMessageToConsole(level, message);
 }
 
+bool TestRenderFrameHost::IsTestRenderFrameHost() const {
+  return true;
+}
+
 void TestRenderFrameHost::InitializeRenderFrameIfNeeded() {
   if (!render_view_host()->IsRenderViewLive()) {
     render_view_host()->GetProcess()->Init();
