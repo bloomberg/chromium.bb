@@ -299,9 +299,9 @@ extern const char kIgnoresViewportScaleLimitsDescription[];
 extern const char kSearchIconToggleName[];
 extern const char kSearchIconToggleDescription[];
 
-// Title and description for the flag to send UMA data over cellular.
-extern const char kSendUmaOverCellularName[];
-extern const char kSendUmaOverCellularDescription[];
+// Title and description for the flag to send UMA data over any network.
+extern const char kSendUmaOverAnyNetwork[];
+extern const char kSendUmaOverAnyNetworkDescription[];
 
 // Title and description for the flag to toggle the flag for the settings UI
 // Refresh.
