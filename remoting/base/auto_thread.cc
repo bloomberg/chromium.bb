@@ -127,6 +127,8 @@ AutoThread::~AutoThread() {
 
   // Wait for the thread to exit.
   if (!thread_.is_null()) {
+    // TODO(https://crbug.com/id=944316).
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
     base::PlatformThread::Join(thread_);
   }
 }
@@ -152,7 +154,8 @@ scoped_refptr<AutoThreadTaskRunner> AutoThread::StartWithType(
   // the thread lifetime is controlled by the AutoThreadTaskRunner, we would
   // ideally return the AutoThreadTaskRunner to the caller without waiting for
   // the thread to signal us.
-  base::ScopedAllowBaseSyncPrimitives allow_wait;
+  // TODO(https://crbug.com/id=944316).
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   startup_data.event.Wait();
 
   // set it to NULL so we don't keep a pointer to some object on the stack.
