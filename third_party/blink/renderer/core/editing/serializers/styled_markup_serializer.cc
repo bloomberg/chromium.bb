@@ -270,13 +270,14 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
           if (!PropertyMissingOrEqualToNone(fully_selected_root_style->Style(),
                                             CSSPropertyID::kTextDecoration)) {
             fully_selected_root_style->Style()->SetProperty(
-                CSSPropertyID::kTextDecoration, CSSValueNone);
+                CSSPropertyID::kTextDecoration, CSSValueID::kNone);
           }
           if (!PropertyMissingOrEqualToNone(
                   fully_selected_root_style->Style(),
                   CSSPropertyID::kWebkitTextDecorationsInEffect)) {
             fully_selected_root_style->Style()->SetProperty(
-                CSSPropertyID::kWebkitTextDecorationsInEffect, CSSValueNone);
+                CSSPropertyID::kWebkitTextDecorationsInEffect,
+                CSSValueID::kNone);
           }
           markup_accumulator.WrapWithStyleNode(
               fully_selected_root_style->Style());
@@ -508,7 +509,8 @@ void StyledMarkupTraverser<Strategy>::AppendStartMarkup(Node& node) {
         // block }.
         inline_style->ForceInline();
         // FIXME: Should this be included in forceInline?
-        inline_style->Style()->SetProperty(CSSPropertyID::kFloat, CSSValueNone);
+        inline_style->Style()->SetProperty(CSSPropertyID::kFloat,
+                                           CSSValueID::kNone);
       }
       accumulator_->AppendTextWithInlineStyle(text, inline_style);
       break;

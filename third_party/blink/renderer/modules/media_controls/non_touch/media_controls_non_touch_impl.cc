@@ -109,7 +109,7 @@ void MediaControlsNonTouchImpl::MaybeShow() {
 }
 
 void MediaControlsNonTouchImpl::Hide() {
-  SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
+  SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
 }
 
 MediaControlsNonTouchMediaEventListener&

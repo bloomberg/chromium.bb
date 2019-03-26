@@ -172,13 +172,13 @@ EditingStyle* EditingStyleUtilities::CreateStyleAtSelectionStart(
   // the style. See bug http://crbug.com/582225.
   CSSValueID value_id =
       GetIdentifierValue(style_to_check, CSSPropertyID::kVerticalAlign);
-  if (value_id == CSSValueSub || value_id == CSSValueSuper) {
+  if (value_id == CSSValueID::kSub || value_id == CSSValueID::kSuper) {
     auto* element_style =
         MakeGarbageCollected<CSSComputedStyleDeclaration>(element);
-    // Find the ancestor that has CSSValueSub or CSSValueSuper as the value of
-    // CSS vertical-align property.
+    // Find the ancestor that has CSSValueID::kSub or CSSValueID::kSuper as the
+    // value of CSS vertical-align property.
     if (GetIdentifierValue(element_style, CSSPropertyID::kVerticalAlign) ==
-            CSSValueBaseline &&
+            CSSValueID::kBaseline &&
         HasAncestorVerticalAlignStyle(*element, value_id))
       style->Style()->SetProperty(CSSPropertyID::kVerticalAlign, value_id);
   }
@@ -207,7 +207,7 @@ bool EditingStyleUtilities::IsTransparentColorValue(const CSSValue* css_value) {
   if (auto* color_value = DynamicTo<CSSColorValue>(css_value))
     return !color_value->Value().Alpha();
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(css_value))
-    return identifier_value->GetValueID() == CSSValueTransparent;
+    return identifier_value->GetValueID() == CSSValueID::kTransparent;
   return false;
 }
 

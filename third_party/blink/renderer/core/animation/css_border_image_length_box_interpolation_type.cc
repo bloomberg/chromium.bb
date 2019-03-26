@@ -44,7 +44,7 @@ SideType GetSideType(const CSSValue& side) {
   }
   auto* side_identifier_value = DynamicTo<CSSIdentifierValue>(side);
   if (side_identifier_value &&
-      side_identifier_value->GetValueID() == CSSValueAuto) {
+      side_identifier_value->GetValueID() == CSSValueID::kAuto) {
     return SideType::kAuto;
   }
   return SideType::kLength;
@@ -305,7 +305,7 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::MaybeConvertValue(
 
     auto* side_identifier_value = DynamicTo<CSSIdentifierValue>(side);
     if (side_identifier_value &&
-        side_identifier_value->GetValueID() == CSSValueAuto) {
+        side_identifier_value->GetValueID() == CSSValueID::kAuto) {
       list->Set(i, std::make_unique<InterpolableList>(0));
       continue;
     }

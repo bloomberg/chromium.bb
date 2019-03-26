@@ -181,8 +181,8 @@ InterpolationValue CSSTransformInterpolationType::MaybeConvertValue(
     CSSLengthArray length_array;
     for (const CSSValue* item : *list_value) {
       const auto& transform_function = To<CSSFunctionValue>(*item);
-      if (transform_function.FunctionType() == CSSValueMatrix ||
-          transform_function.FunctionType() == CSSValueMatrix3d) {
+      if (transform_function.FunctionType() == CSSValueID::kMatrix ||
+          transform_function.FunctionType() == CSSValueID::kMatrix3d) {
         length_array.type_flags.Set(CSSPrimitiveValue::kUnitTypePixels);
         continue;
       }

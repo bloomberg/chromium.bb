@@ -71,21 +71,21 @@ InterpolationValue CSSFontWeightInterpolationType::MaybeConvertValue(
   CSSValueID keyword = identifier_value.GetValueID();
 
   switch (keyword) {
-    case CSSValueInvalid:
+    case CSSValueID::kInvalid:
       return nullptr;
-    case CSSValueNormal:
+    case CSSValueID::kNormal:
       return CreateFontWeightValue(NormalWeightValue());
-    case CSSValueBold:
+    case CSSValueID::kBold:
       return CreateFontWeightValue(BoldWeightValue());
 
-    case CSSValueBolder:
-    case CSSValueLighter: {
+    case CSSValueID::kBolder:
+    case CSSValueID::kLighter: {
       DCHECK(state);
       FontSelectionValue inherited_font_weight =
           state->ParentStyle()->GetFontWeight();
       conversion_checkers.push_back(
           std::make_unique<InheritedFontWeightChecker>(inherited_font_weight));
-      if (keyword == CSSValueBolder) {
+      if (keyword == CSSValueID::kBolder) {
         return CreateFontWeightValue(
             FontDescription::BolderWeight(inherited_font_weight));
       }

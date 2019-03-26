@@ -171,8 +171,8 @@ bool StyleCommands::ExecuteMakeTextWritingDirectionLeftToRight(
     const String&) {
   MutableCSSPropertyValueSet* const style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
-  style->SetProperty(CSSPropertyID::kUnicodeBidi, CSSValueIsolate);
-  style->SetProperty(CSSPropertyID::kDirection, CSSValueLtr);
+  style->SetProperty(CSSPropertyID::kUnicodeBidi, CSSValueID::kIsolate);
+  style->SetProperty(CSSPropertyID::kDirection, CSSValueID::kLtr);
   ApplyStyle(frame, style, InputEvent::InputType::kFormatSetBlockTextDirection);
   return true;
 }
@@ -183,7 +183,7 @@ bool StyleCommands::ExecuteMakeTextWritingDirectionNatural(LocalFrame& frame,
                                                            const String&) {
   MutableCSSPropertyValueSet* const style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
-  style->SetProperty(CSSPropertyID::kUnicodeBidi, CSSValueNormal);
+  style->SetProperty(CSSPropertyID::kUnicodeBidi, CSSValueID::kNormal);
   ApplyStyle(frame, style, InputEvent::InputType::kFormatSetBlockTextDirection);
   return true;
 }
@@ -195,8 +195,8 @@ bool StyleCommands::ExecuteMakeTextWritingDirectionRightToLeft(
     const String&) {
   MutableCSSPropertyValueSet* const style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
-  style->SetProperty(CSSPropertyID::kUnicodeBidi, CSSValueIsolate);
-  style->SetProperty(CSSPropertyID::kDirection, CSSValueRtl);
+  style->SetProperty(CSSPropertyID::kUnicodeBidi, CSSValueID::kIsolate);
+  style->SetProperty(CSSPropertyID::kDirection, CSSValueID::kRtl);
   ApplyStyle(frame, style, InputEvent::InputType::kFormatSetBlockTextDirection);
   return true;
 }
@@ -327,7 +327,7 @@ bool StyleCommands::ExecuteStrikethrough(LocalFrame& frame,
                                          EditorCommandSource source,
                                          const String&) {
   const CSSIdentifierValue& line_through =
-      *CSSIdentifierValue::Create(CSSValueLineThrough);
+      *CSSIdentifierValue::Create(CSSValueID::kLineThrough);
   return ExecuteToggleStyleInList(
       frame, source, InputEvent::InputType::kFormatStrikeThrough,
       CSSPropertyID::kWebkitTextDecorationsInEffect, line_through);
@@ -338,7 +338,7 @@ bool StyleCommands::ExecuteUnderline(LocalFrame& frame,
                                      EditorCommandSource source,
                                      const String&) {
   const CSSIdentifierValue& underline =
-      *CSSIdentifierValue::Create(CSSValueUnderline);
+      *CSSIdentifierValue::Create(CSSValueID::kUnderline);
   return ExecuteToggleStyleInList(
       frame, source, InputEvent::InputType::kFormatUnderline,
       CSSPropertyID::kWebkitTextDecorationsInEffect, underline);
@@ -403,11 +403,14 @@ EditingTriState StyleCommands::StateSuperscript(LocalFrame& frame, Event*) {
 
 bool StyleCommands::IsUnicodeBidiNestedOrMultipleEmbeddings(
     CSSValueID value_id) {
-  return value_id == CSSValueEmbed || value_id == CSSValueBidiOverride ||
-         value_id == CSSValueWebkitIsolate ||
-         value_id == CSSValueWebkitIsolateOverride ||
-         value_id == CSSValueWebkitPlaintext || value_id == CSSValueIsolate ||
-         value_id == CSSValueIsolateOverride || value_id == CSSValuePlaintext;
+  return value_id == CSSValueID::kEmbed ||
+         value_id == CSSValueID::kBidiOverride ||
+         value_id == CSSValueID::kWebkitIsolate ||
+         value_id == CSSValueID::kWebkitIsolateOverride ||
+         value_id == CSSValueID::kWebkitPlaintext ||
+         value_id == CSSValueID::kIsolate ||
+         value_id == CSSValueID::kIsolateOverride ||
+         value_id == CSSValueID::kPlaintext;
 }
 
 WritingDirection StyleCommands::TextDirectionForSelection(
@@ -485,10 +488,10 @@ WritingDirection StyleCommands::TextDirectionForSelection(
 
     const CSSValueID unicode_bidi_value =
         unicode_bidi_identifier_value->GetValueID();
-    if (unicode_bidi_value == CSSValueNormal)
+    if (unicode_bidi_value == CSSValueID::kNormal)
       continue;
 
-    if (unicode_bidi_value == CSSValueBidiOverride)
+    if (unicode_bidi_value == CSSValueID::kBidiOverride)
       return WritingDirection::kNatural;
 
     DCHECK(EditingStyleUtilities::IsEmbedOrIsolate(unicode_bidi_value))
@@ -500,7 +503,8 @@ WritingDirection StyleCommands::TextDirectionForSelection(
       continue;
 
     const CSSValueID direction_value = direction_identifier_value->GetValueID();
-    if (direction_value != CSSValueLtr && direction_value != CSSValueRtl)
+    if (direction_value != CSSValueID::kLtr &&
+        direction_value != CSSValueID::kRtl)
       continue;
 
     if (found_direction != WritingDirection::kNatural)
@@ -511,7 +515,7 @@ WritingDirection StyleCommands::TextDirectionForSelection(
     if (selection.IsRange() && !end.AnchorNode()->IsDescendantOf(element))
       return WritingDirection::kNatural;
 
-    found_direction = direction_value == CSSValueLtr
+    found_direction = direction_value == CSSValueID::kLtr
                           ? WritingDirection::kLeftToRight
                           : WritingDirection::kRightToLeft;
   }

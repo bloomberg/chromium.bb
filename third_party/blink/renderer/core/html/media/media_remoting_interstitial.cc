@@ -109,25 +109,26 @@ void MediaRemotingInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
     cast_icon_->RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
     cast_text_message_->RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
     toast_message_->SetInlineStyleProperty(CSSPropertyID::kDisplay,
-                                           CSSValueNone);
-    SetInlineStyleProperty(CSSPropertyID::kBackgroundColor, CSSValueBlack);
+                                           CSSValueID::kNone);
+    SetInlineStyleProperty(CSSPropertyID::kBackgroundColor, CSSValueID::kBlack);
     SetInlineStyleProperty(CSSPropertyID::kOpacity, 1,
                            CSSPrimitiveValue::UnitType::kNumber);
   } else if (state_ == HIDDEN) {
-    SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
+    SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
     toast_message_->setInnerText(WebString(), ASSERT_NO_EXCEPTION);
   } else {
     // Show |toast_message_| only.
     toast_message_->RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
     SetInlineStyleProperty(CSSPropertyID::kBackgroundColor,
-                           CSSValueTransparent);
+                           CSSValueID::kTransparent);
     SetInlineStyleProperty(CSSPropertyID::kOpacity, 1,
                            CSSPrimitiveValue::UnitType::kNumber);
     background_image_->SetInlineStyleProperty(CSSPropertyID::kDisplay,
-                                              CSSValueNone);
-    cast_icon_->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
+                                              CSSValueID::kNone);
+    cast_icon_->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                       CSSValueID::kNone);
     cast_text_message_->SetInlineStyleProperty(CSSPropertyID::kDisplay,
-                                               CSSValueNone);
+                                               CSSValueID::kNone);
     toast_message_->SetInlineStyleProperty(
         CSSPropertyID::kOpacity, 1, CSSPrimitiveValue::UnitType::kNumber);
     state_ = HIDDEN;

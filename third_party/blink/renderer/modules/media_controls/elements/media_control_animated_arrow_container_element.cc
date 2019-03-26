@@ -19,7 +19,8 @@ MediaControlAnimatedArrowContainerElement::AnimatedArrow::AnimatedArrow(
 
 void MediaControlAnimatedArrowContainerElement::AnimatedArrow::HideInternal() {
   DCHECK(!hidden_);
-  svg_container_->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
+  svg_container_->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                         CSSValueID::kNone);
   hidden_ = true;
 }
 

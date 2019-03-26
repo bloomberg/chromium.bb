@@ -809,7 +809,7 @@ TEST_P(LayoutSelectionTest, ClearByRemoveLayoutObject) {
       DumpSelectionInfo());
 
   Element* span_baz = ToElement(GetDocument().body()->lastChild());
-  span_baz->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
+  span_baz->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
   GetDocument().UpdateStyleAndLayout();
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(

@@ -55,7 +55,7 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
     return nullptr;
 
   // We don't want the button visible within the overflow menu.
-  button->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
+  button->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
 
   overflow_menu_text_ = HTMLSpanElement::Create(GetDocument());
   overflow_menu_text_->setInnerText(button->GetOverflowMenuString(),
@@ -93,7 +93,7 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   // addition of calling ShouldShowButtonInOverflowMenu() to guarantee that the
   // internal state matches the CSS state.
   overflow_label_element_->SetInlineStyleProperty(CSSPropertyID::kDisplay,
-                                                  CSSValueNone);
+                                                  CSSValueID::kNone);
   SetOverflowElementIsWanted(false);
 
   return overflow_label_element_;
@@ -201,10 +201,12 @@ void MediaControlInputElement::UpdateShownState() {
     DCHECK(parent);
     DCHECK(IsHTMLLabelElement(parent));
 
-    if (IsWanted() && DoesFit())
+    if (IsWanted() && DoesFit()) {
       parent->RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
-    else
-      parent->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
+    } else {
+      parent->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                     CSSValueID::kNone);
+    }
 
     // Don't update the shown state of the element if we want to hide
     // icons on the overflow menu.

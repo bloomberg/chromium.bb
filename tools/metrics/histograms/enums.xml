@@ -21525,7 +21525,7 @@ Called by update_net_error_codes.py.-->
   <int value="1799" label="CSSValueUserModifyReadWrite"/>
   <int value="1800" label="CSSValueUserModifyReadWritePlaintextOnly"/>
   <int value="1801" label="V8TextDetector_Detect_Method"/>
-  <int value="1802" label="CSSValueOnDemand"/>
+  <int value="1802" label="CSSValueID::kOnDemand"/>
   <int value="1803" label="ServiceWorkerNavigationPreload"/>
   <int value="1804" label="FullscreenRequestWithPendingElement"/>
   <int value="1805"

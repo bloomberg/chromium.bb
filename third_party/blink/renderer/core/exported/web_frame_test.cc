@@ -12123,13 +12123,13 @@ TEST_F(WebFrameSimTest, DisplayNoneIFrameHasNoLayoutObjects) {
 
   // Changing the display from 'none' -> 'block' should cause layout objects to
   // appear.
-  element->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueBlock);
+  element->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kBlock);
   Compositor().BeginFrame();
   EXPECT_TRUE(iframe_doc->documentElement()->GetLayoutObject());
 
   // Changing the display from 'block' -> 'none' should cause layout objects to
   // disappear.
-  element->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
+  element->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
 
   Compositor().BeginFrame();
   EXPECT_FALSE(iframe_doc->documentElement()->GetLayoutObject());
@@ -12183,7 +12183,7 @@ TEST_F(WebFrameSimTest, NormalIFrameHasLayoutObjects) {
 
   // Changing the display from 'block' -> 'none' should cause layout objects to
   // disappear.
-  element->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
+  element->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
   Compositor().BeginFrame();
   EXPECT_FALSE(iframe_doc->documentElement()->GetLayoutObject());
 }

@@ -57,18 +57,18 @@ void HTMLHRElement::CollectStyleForPresentationAttribute(
           style, CSSPropertyID::kMarginLeft, 0,
           CSSPrimitiveValue::UnitType::kPixels);
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kMarginRight, CSSValueAuto);
+          style, CSSPropertyID::kMarginRight, CSSValueID::kAuto);
     } else if (DeprecatedEqualIgnoringCase(value, "right")) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kMarginLeft,
-                                              CSSValueAuto);
+                                              CSSValueID::kAuto);
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kMarginRight, 0,
           CSSPrimitiveValue::UnitType::kPixels);
     } else {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kMarginLeft,
-                                              CSSValueAuto);
+                                              CSSValueID::kAuto);
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kMarginRight, CSSValueAuto);
+          style, CSSPropertyID::kMarginRight, CSSValueID::kAuto);
     }
   } else if (name == kWidthAttr) {
     bool ok;
@@ -82,13 +82,13 @@ void HTMLHRElement::CollectStyleForPresentationAttribute(
     }
   } else if (name == kColorAttr) {
     AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kBorderStyle,
-                                            CSSValueSolid);
+                                            CSSValueID::kSolid);
     AddHTMLColorToStyle(style, CSSPropertyID::kBorderColor, value);
     AddHTMLColorToStyle(style, CSSPropertyID::kBackgroundColor, value);
   } else if (name == kNoshadeAttr) {
     if (!hasAttribute(kColorAttr)) {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kBorderStyle, CSSValueSolid);
+          style, CSSPropertyID::kBorderStyle, CSSValueID::kSolid);
 
       const CSSColorValue& dark_gray_value =
           *CSSColorValue::Create(Color::kDarkGray);

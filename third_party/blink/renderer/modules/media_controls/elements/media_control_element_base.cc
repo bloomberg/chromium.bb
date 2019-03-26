@@ -49,10 +49,12 @@ MediaControlElementBase::MediaControlElementBase(
       does_fit_(true) {}
 
 void MediaControlElementBase::UpdateShownState() {
-  if (is_wanted_ && does_fit_)
+  if (is_wanted_ && does_fit_) {
     element_->RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
-  else
-    element_->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
+  } else {
+    element_->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                     CSSValueID::kNone);
+  }
 }
 
 MediaControlsImpl& MediaControlElementBase::GetMediaControls() const {

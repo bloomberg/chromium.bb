@@ -53,7 +53,7 @@ bool LengthPropertyFunctions::GetPixelsForKeyword(const CSSProperty& property,
                                                   double& result) {
   switch (property.PropertyID()) {
     case CSSPropertyID::kBaselineShift:
-      if (value_id == CSSValueBaseline) {
+      if (value_id == CSSValueID::kBaseline) {
         result = 0;
         return true;
       }
@@ -64,22 +64,22 @@ bool LengthPropertyFunctions::GetPixelsForKeyword(const CSSProperty& property,
     case CSSPropertyID::kBorderTopWidth:
     case CSSPropertyID::kColumnRuleWidth:
     case CSSPropertyID::kOutlineWidth:
-      if (value_id == CSSValueThin) {
+      if (value_id == CSSValueID::kThin) {
         result = 1;
         return true;
       }
-      if (value_id == CSSValueMedium) {
+      if (value_id == CSSValueID::kMedium) {
         result = 3;
         return true;
       }
-      if (value_id == CSSValueThick) {
+      if (value_id == CSSValueID::kThick) {
         result = 5;
         return true;
       }
       return false;
     case CSSPropertyID::kLetterSpacing:
     case CSSPropertyID::kWordSpacing:
-      if (value_id == CSSValueNormal) {
+      if (value_id == CSSValueID::kNormal) {
         result = 0;
         return true;
       }

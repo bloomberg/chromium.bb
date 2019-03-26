@@ -41,18 +41,19 @@ void HTMLDivElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   if (name == kAlignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "middle") ||
-        DeprecatedEqualIgnoringCase(value, "center"))
+        DeprecatedEqualIgnoringCase(value, "center")) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
-                                              CSSValueWebkitCenter);
-    else if (DeprecatedEqualIgnoringCase(value, "left"))
+                                              CSSValueID::kWebkitCenter);
+    } else if (DeprecatedEqualIgnoringCase(value, "left")) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
-                                              CSSValueWebkitLeft);
-    else if (DeprecatedEqualIgnoringCase(value, "right"))
+                                              CSSValueID::kWebkitLeft);
+    } else if (DeprecatedEqualIgnoringCase(value, "right")) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
-                                              CSSValueWebkitRight);
-    else
+                                              CSSValueID::kWebkitRight);
+    } else {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
                                               value);
+    }
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }

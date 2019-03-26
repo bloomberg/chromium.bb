@@ -66,14 +66,14 @@ InterpolationValue MaybeConvertKeyword(
         FontSizeFunctions::KeywordSize(value_id), is_monospace));
   }
 
-  if (value_id != CSSValueSmaller && value_id != CSSValueLarger)
+  if (value_id != CSSValueID::kSmaller && value_id != CSSValueID::kLarger)
     return nullptr;
 
   const FontDescription::Size& inherited_font_size =
       state.ParentFontDescription().GetSize();
   conversion_checkers.push_back(
       std::make_unique<InheritedFontSizeChecker>(inherited_font_size));
-  if (value_id == CSSValueSmaller)
+  if (value_id == CSSValueID::kSmaller)
     return ConvertFontSize(
         FontDescription::SmallerSize(inherited_font_size).value);
   return ConvertFontSize(

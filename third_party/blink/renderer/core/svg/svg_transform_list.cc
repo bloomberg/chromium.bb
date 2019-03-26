@@ -66,22 +66,22 @@ namespace {
 CSSValueID MapTransformFunction(const SVGTransform& transform) {
   switch (transform.TransformType()) {
     case SVGTransformType::kMatrix:
-      return CSSValueMatrix;
+      return CSSValueID::kMatrix;
     case SVGTransformType::kTranslate:
-      return CSSValueTranslate;
+      return CSSValueID::kTranslate;
     case SVGTransformType::kScale:
-      return CSSValueScale;
+      return CSSValueID::kScale;
     case SVGTransformType::kRotate:
-      return CSSValueRotate;
+      return CSSValueID::kRotate;
     case SVGTransformType::kSkewx:
-      return CSSValueSkewX;
+      return CSSValueID::kSkewX;
     case SVGTransformType::kSkewy:
-      return CSSValueSkewY;
+      return CSSValueID::kSkewY;
     case SVGTransformType::kUnknown:
     default:
       NOTREACHED();
   }
-  return CSSValueInvalid;
+  return CSSValueID::kInvalid;
 }
 
 CSSValue* CreateTransformCSSValue(const SVGTransform& transform) {
@@ -89,7 +89,7 @@ CSSValue* CreateTransformCSSValue(const SVGTransform& transform) {
   CSSFunctionValue* transform_value =
       MakeGarbageCollected<CSSFunctionValue>(function_id);
   switch (function_id) {
-    case CSSValueRotate: {
+    case CSSValueID::kRotate: {
       transform_value->Append(*CSSPrimitiveValue::Create(
           transform.Angle(), CSSPrimitiveValue::UnitType::kDegrees));
       FloatPoint rotation_origin = transform.RotationCenter();
@@ -101,12 +101,12 @@ CSSValue* CreateTransformCSSValue(const SVGTransform& transform) {
       }
       break;
     }
-    case CSSValueSkewX:
-    case CSSValueSkewY:
+    case CSSValueID::kSkewX:
+    case CSSValueID::kSkewY:
       transform_value->Append(*CSSPrimitiveValue::Create(
           transform.Angle(), CSSPrimitiveValue::UnitType::kDegrees));
       break;
-    case CSSValueMatrix:
+    case CSSValueID::kMatrix:
       transform_value->Append(*CSSPrimitiveValue::Create(
           transform.Matrix().A(), CSSPrimitiveValue::UnitType::kUserUnits));
       transform_value->Append(*CSSPrimitiveValue::Create(
@@ -120,13 +120,13 @@ CSSValue* CreateTransformCSSValue(const SVGTransform& transform) {
       transform_value->Append(*CSSPrimitiveValue::Create(
           transform.Matrix().F(), CSSPrimitiveValue::UnitType::kUserUnits));
       break;
-    case CSSValueScale:
+    case CSSValueID::kScale:
       transform_value->Append(*CSSPrimitiveValue::Create(
           transform.Matrix().A(), CSSPrimitiveValue::UnitType::kUserUnits));
       transform_value->Append(*CSSPrimitiveValue::Create(
           transform.Matrix().D(), CSSPrimitiveValue::UnitType::kUserUnits));
       break;
-    case CSSValueTranslate:
+    case CSSValueID::kTranslate:
       transform_value->Append(*CSSPrimitiveValue::Create(
           transform.Matrix().E(), CSSPrimitiveValue::UnitType::kUserUnits));
       transform_value->Append(*CSSPrimitiveValue::Create(
@@ -148,7 +148,7 @@ const CSSValue* SVGTransformList::CssValue() const {
   // that complicates things.
   size_t length = this->length();
   if (!length)
-    return CSSIdentifierValue::Create(CSSValueNone);
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (length == 1) {
     list->Append(*CreateTransformCSSValue(*at(0)));

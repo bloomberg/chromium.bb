@@ -47,24 +47,24 @@ bool HTMLLIElement::IsPresentationAttribute(const QualifiedName& name) const {
 
 CSSValueID ListTypeToCSSValueID(const AtomicString& value) {
   if (value == "a")
-    return CSSValueLowerAlpha;
+    return CSSValueID::kLowerAlpha;
   if (value == "A")
-    return CSSValueUpperAlpha;
+    return CSSValueID::kUpperAlpha;
   if (value == "i")
-    return CSSValueLowerRoman;
+    return CSSValueID::kLowerRoman;
   if (value == "I")
-    return CSSValueUpperRoman;
+    return CSSValueID::kUpperRoman;
   if (value == "1")
-    return CSSValueDecimal;
+    return CSSValueID::kDecimal;
   if (DeprecatedEqualIgnoringCase(value, "disc"))
-    return CSSValueDisc;
+    return CSSValueID::kDisc;
   if (DeprecatedEqualIgnoringCase(value, "circle"))
-    return CSSValueCircle;
+    return CSSValueID::kCircle;
   if (DeprecatedEqualIgnoringCase(value, "square"))
-    return CSSValueSquare;
+    return CSSValueID::kSquare;
   if (DeprecatedEqualIgnoringCase(value, "none"))
-    return CSSValueNone;
-  return CSSValueInvalid;
+    return CSSValueID::kNone;
+  return CSSValueID::kInvalid;
 }
 
 void HTMLLIElement::CollectStyleForPresentationAttribute(

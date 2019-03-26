@@ -595,7 +595,7 @@ HTMLElement* ApplyStyleCommand::SplitAncestorsWithUnicodeBidi(
 
   WritingDirection highest_ancestor_direction;
   if (allowed_direction != WritingDirection::kNatural &&
-      highest_ancestor_unicode_bidi != CSSValueBidiOverride &&
+      highest_ancestor_unicode_bidi != CSSValueID::kBidiOverride &&
       highest_ancestor_with_unicode_bidi->IsHTMLElement() &&
       EditingStyle::Create(highest_ancestor_with_unicode_bidi,
                            EditingStyle::kAllProperties)
@@ -656,7 +656,8 @@ void ApplyStyleCommand::RemoveEmbeddingUpToEnclosingBlock(
     } else {
       MutableCSSPropertyValueSet* inline_style =
           CopyStyleOrCreateEmpty(element->InlineStyle());
-      inline_style->SetProperty(CSSPropertyID::kUnicodeBidi, CSSValueNormal);
+      inline_style->SetProperty(CSSPropertyID::kUnicodeBidi,
+                                CSSValueID::kNormal);
       inline_style->RemoveProperty(CSSPropertyID::kDirection);
       SetNodeAttribute(element, kStyleAttr,
                        AtomicString(inline_style->AsText()));

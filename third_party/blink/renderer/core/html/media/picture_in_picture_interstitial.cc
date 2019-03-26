@@ -147,11 +147,11 @@ void PictureInPictureInterstitial::NotifyElementSizeChanged(
 void PictureInPictureInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
   interstitial_timer_.Stop();
   if (should_be_visible_) {
-    SetInlineStyleProperty(CSSPropertyID::kBackgroundColor, CSSValueBlack);
+    SetInlineStyleProperty(CSSPropertyID::kBackgroundColor, CSSValueID::kBlack);
     SetInlineStyleProperty(CSSPropertyID::kOpacity, 1,
                            CSSPrimitiveValue::UnitType::kNumber);
   } else {
-    SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
+    SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
   }
 }
 

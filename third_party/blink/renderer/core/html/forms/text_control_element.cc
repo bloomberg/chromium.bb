@@ -190,8 +190,8 @@ void TextControlElement::UpdatePlaceholderVisibility() {
 
   placeholder->SetInlineStyleProperty(
       CSSPropertyID::kDisplay,
-      IsPlaceholderVisible() || !SuggestedValue().IsEmpty() ? CSSValueBlock
-                                                            : CSSValueNone,
+      IsPlaceholderVisible() || !SuggestedValue().IsEmpty() ? CSSValueID::kBlock
+                                                            : CSSValueID::kNone,
       true);
 
   // If there was a visibility change not caused by the suggested value, set

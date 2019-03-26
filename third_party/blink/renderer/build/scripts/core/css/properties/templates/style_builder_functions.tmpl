@@ -144,7 +144,7 @@ To<Longhand>(resolved_property).{{apply_call}};
     {% endcall %}
     {% call(property) apply_value(property, header) %}
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-  if (identifier_value && identifier_value->GetValueID() == CSSValueAuto)
+  if (identifier_value && identifier_value->GetValueID() == CSSValueID::kAuto)
     state.Style()->{{auto_setter}}();
   else
     {{convert_and_set_value(property)}}
@@ -396,7 +396,7 @@ To<Longhand>(resolved_property).{{apply_call}};
 
   const auto* list = DynamicTo<CSSValueList>(value);
   if (!list) {
-    DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueNone);
+    DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueID::kNone);
     return;
   }
 

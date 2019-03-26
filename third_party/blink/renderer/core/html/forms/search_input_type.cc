@@ -158,7 +158,8 @@ void SearchInputType::UpdateCancelButtonVisibility() {
   if (GetElement().value().IsEmpty()) {
     button->SetInlineStyleProperty(CSSPropertyID::kOpacity, 0.0,
                                    CSSPrimitiveValue::UnitType::kNumber);
-    button->SetInlineStyleProperty(CSSPropertyID::kPointerEvents, CSSValueNone);
+    button->SetInlineStyleProperty(CSSPropertyID::kPointerEvents,
+                                   CSSValueID::kNone);
   } else {
     button->RemoveInlineStyleProperty(CSSPropertyID::kOpacity);
     button->RemoveInlineStyleProperty(CSSPropertyID::kPointerEvents);
