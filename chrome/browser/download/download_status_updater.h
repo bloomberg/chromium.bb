@@ -31,13 +31,14 @@ class DownloadStatusUpdater
   // The manager must not have previously been added to this updater.
   // The updater will automatically disassociate itself from the
   // manager when the manager is shutdown.
-  void AddManager(content::DownloadManager* manager);
+  void AddManager(download::AllDownloadItemNotifier* notifier);
 
   // AllDownloadItemNotifier::Observer
   void OnDownloadCreated(content::DownloadManager* manager,
                          download::DownloadItem* item) override;
   void OnDownloadUpdated(content::DownloadManager* manager,
                          download::DownloadItem* item) override;
+  void OnManagerGoingDown(content::DownloadManager* manager) override;
 
  protected:
   // Platform-specific function to update the platform UI for download progress.
@@ -47,7 +48,7 @@ class DownloadStatusUpdater
   virtual void UpdateAppIconDownloadProgress(download::DownloadItem* download);
 
  private:
-  std::vector<std::unique_ptr<download::AllDownloadItemNotifier>> notifiers_;
+  std::set<download::AllDownloadItemNotifier*> notifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadStatusUpdater);
 };

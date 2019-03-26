@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/download/content/factory/all_download_item_notifier_factory.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
@@ -82,16 +83,22 @@ std::string TimeFormatLongDate(const base::Time& time) {
 
 }  // namespace
 
-DownloadsListTracker::DownloadsListTracker(DownloadManager* download_manager,
-                                           downloads::mojom::PagePtr page)
-    : main_notifier_(download_manager, this),
+DownloadsListTracker::DownloadsListTracker(
+    download::AllDownloadItemNotifier* download_notifier,
+    downloads::mojom::PagePtr page)
+    : main_notifier_(download_notifier),
       page_(std::move(page)),
       should_show_(base::BindRepeating(&DownloadsListTracker::ShouldShow,
                                        base::Unretained(this))) {
+  main_notifier_->AddObserver(this);
   Init();
 }
 
-DownloadsListTracker::~DownloadsListTracker() {}
+DownloadsListTracker::~DownloadsListTracker() {
+  main_notifier_->RemoveObserver(this);
+  if (original_notifier_)
+    original_notifier_->RemoveObserver(this);
+}
 
 void DownloadsListTracker::Reset() {
   if (sending_updates_)
@@ -140,7 +147,7 @@ void DownloadsListTracker::Stop() {
 }
 
 DownloadManager* DownloadsListTracker::GetMainNotifierManager() const {
-  return main_notifier_.GetManager();
+  return main_notifier_->GetManager();
 }
 
 DownloadManager* DownloadsListTracker::GetOriginalNotifierManager() const {
@@ -176,13 +183,14 @@ void DownloadsListTracker::OnDownloadRemoved(DownloadManager* manager,
 }
 
 DownloadsListTracker::DownloadsListTracker(
-    DownloadManager* download_manager,
+    download::AllDownloadItemNotifier* download_notifier,
     downloads::mojom::PagePtr page,
     base::Callback<bool(const DownloadItem&)> should_show)
-    : main_notifier_(download_manager, this),
+    : main_notifier_(download_notifier),
       page_(std::move(page)),
       should_show_(should_show) {
   DCHECK(page_);
+  main_notifier_->AddObserver(this);
   Init();
 }
 
@@ -352,8 +360,10 @@ void DownloadsListTracker::Init() {
       GetMainNotifierManager()->GetBrowserContext());
   if (profile->IsOffTheRecord()) {
     Profile* original_profile = profile->GetOriginalProfile();
-    original_notifier_.reset(new download::AllDownloadItemNotifier(
-        BrowserContext::GetDownloadManager(original_profile), this));
+    original_notifier_ =
+        download::AllDownloadItemNotifierFactory::GetForBrowserContext(
+            original_profile);
+    original_notifier_->AddObserver(this);
   }
 
   RebuildSortedItems();

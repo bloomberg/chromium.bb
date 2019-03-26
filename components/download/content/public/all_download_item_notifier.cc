@@ -9,10 +9,8 @@
 namespace download {
 
 AllDownloadItemNotifier::AllDownloadItemNotifier(
-    content::DownloadManager* manager,
-    AllDownloadItemNotifier::Observer* observer)
-    : manager_(manager), observer_(observer) {
-  DCHECK(observer_);
+    content::DownloadManager* manager)
+    : manager_(manager) {
   manager_->AddObserver(this);
   content::DownloadManager::DownloadVector items;
   manager_->GetAllDownloads(&items);
@@ -22,9 +20,6 @@ AllDownloadItemNotifier::AllDownloadItemNotifier(
     (*it)->AddObserver(this);
     observing_.insert(*it);
   }
-
-  if (manager_->IsManagerInitialized())
-    observer_->OnManagerInitialized(manager_);
 }
 
 AllDownloadItemNotifier::~AllDownloadItemNotifier() {
@@ -40,14 +35,31 @@ size_t AllDownloadItemNotifier::EstimateMemoryUsage() const {
   return base::trace_event::EstimateMemoryUsage(observing_);
 }
 
+void AllDownloadItemNotifier::AddObserver(Observer* observer) {
+  DCHECK(observer);
+  if (observers_.HasObserver(observer))
+    return;
+
+  observers_.AddObserver(observer);
+  if (manager_->IsManagerInitialized())
+    observer->OnManagerInitialized(manager_);
+}
+
+void AllDownloadItemNotifier::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void AllDownloadItemNotifier::OnManagerInitialized() {
-  observer_->OnManagerInitialized(manager_);
+  for (auto& observer : observers_)
+    observer.OnManagerInitialized(manager_);
 }
 
 void AllDownloadItemNotifier::ManagerGoingDown(
     content::DownloadManager* manager) {
   DCHECK_EQ(manager_, manager);
-  observer_->OnManagerGoingDown(manager);
+  for (auto& observer : observers_)
+    observer.OnManagerGoingDown(manager);
+
   manager_->RemoveObserver(this);
   manager_ = nullptr;
 }
@@ -57,19 +69,23 @@ void AllDownloadItemNotifier::OnDownloadCreated(
     DownloadItem* item) {
   item->AddObserver(this);
   observing_.insert(item);
-  observer_->OnDownloadCreated(manager, item);
+  for (auto& observer : observers_)
+    observer.OnDownloadCreated(manager, item);
 }
 
 void AllDownloadItemNotifier::OnDownloadUpdated(DownloadItem* item) {
-  observer_->OnDownloadUpdated(manager_, item);
+  for (auto& observer : observers_)
+    observer.OnDownloadUpdated(manager_, item);
 }
 
 void AllDownloadItemNotifier::OnDownloadOpened(DownloadItem* item) {
-  observer_->OnDownloadOpened(manager_, item);
+  for (auto& observer : observers_)
+    observer.OnDownloadOpened(manager_, item);
 }
 
 void AllDownloadItemNotifier::OnDownloadRemoved(DownloadItem* item) {
-  observer_->OnDownloadRemoved(manager_, item);
+  for (auto& observer : observers_)
+    observer.OnDownloadRemoved(manager_, item);
 }
 
 void AllDownloadItemNotifier::OnDownloadDestroyed(DownloadItem* item) {

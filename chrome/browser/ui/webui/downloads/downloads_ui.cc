@@ -28,6 +28,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/download/content/factory/all_download_item_notifier_factory.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/url_data_source.h"
@@ -195,8 +196,9 @@ void DownloadsUI::CreatePageHandler(
     downloads::mojom::PageHandlerRequest request) {
   DCHECK(page);
   Profile* profile = Profile::FromWebUI(web_ui());
-  DownloadManager* dlm = BrowserContext::GetDownloadManager(profile);
+  auto* download_notifier =
+      download::AllDownloadItemNotifierFactory::GetForBrowserContext(profile);
 
-  page_handler_.reset(new DownloadsDOMHandler(std::move(request),
-                                              std::move(page), dlm, web_ui()));
+  page_handler_.reset(new DownloadsDOMHandler(
+      std::move(request), std::move(page), download_notifier, web_ui()));
 }

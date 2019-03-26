@@ -66,7 +66,7 @@ bool DownloadStatusUpdater::GetProgress(float* progress,
   int64_t received_bytes = 0;
   int64_t total_bytes = 0;
 
-  for (const auto& notifier : notifiers_) {
+  for (const auto* notifier : notifiers_) {
     if (notifier->GetManager()) {
       content::DownloadManager::DownloadVector items;
       notifier->GetManager()->GetAllDownloads(&items);
@@ -90,9 +90,12 @@ bool DownloadStatusUpdater::GetProgress(float* progress,
   return progress_certain;
 }
 
-void DownloadStatusUpdater::AddManager(content::DownloadManager* manager) {
-  notifiers_.push_back(
-      std::make_unique<download::AllDownloadItemNotifier>(manager, this));
+void DownloadStatusUpdater::AddManager(
+    download::AllDownloadItemNotifier* notifier) {
+  notifier->AddObserver(this);
+  notifiers_.insert(notifier);
+
+  auto* manager = notifier->GetManager();
   content::DownloadManager::DownloadVector items;
   manager->GetAllDownloads(&items);
   for (auto* item : items)
@@ -131,6 +134,16 @@ void DownloadStatusUpdater::OnDownloadUpdated(content::DownloadManager* manager,
     WasInProgressData::Clear(item);
   }
   UpdateAppIconDownloadProgress(item);
+}
+
+void DownloadStatusUpdater::OnManagerGoingDown(
+    content::DownloadManager* manager) {
+  for (auto* notifier : notifiers_) {
+    if (notifier->GetManager() == manager) {
+      notifiers_.erase(notifier);
+      break;
+    }
+  }
 }
 
 #if defined(OS_ANDROID) || (defined(USE_AURA) && !defined(OS_WIN))
