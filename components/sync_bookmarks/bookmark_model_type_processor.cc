@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -32,6 +33,15 @@
 namespace sync_bookmarks {
 
 namespace {
+
+// Enables scheduling bookmark model saving only upon changes in entity sync
+// metadata. This would stop persisting changes to the model type state that
+// doesn't involve changes to the entity metadata as well.
+// TODO(crbug.com/945820): This should be removed in M80 if not issues are
+// observed.
+const base::Feature kSyncScheduleForEntityMetadataChangesOnly{
+    "SyncScheduleForEntityMetadataChangesOnly",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 class ScopedRemoteUpdateBookmarks {
  public:
@@ -210,8 +220,14 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
   bookmark_tracker_->set_model_type_state(
       std::make_unique<sync_pb::ModelTypeState>(model_type_state));
   updates_handler.Process(updates, got_new_encryption_requirements);
-  // Schedule save just in case one is needed.
-  schedule_save_closure_.Run();
+  // There are cases when we receive non-empty updates that don't result in
+  // model changes (e.g. reflections). In that case, issue a write to persit the
+  // progress marker in order to avoid downloading those updates again.
+  if (!updates.empty() || !base::FeatureList::IsEnabled(
+                              kSyncScheduleForEntityMetadataChangesOnly)) {
+    // Schedule save just in case one is needed.
+    schedule_save_closure_.Run();
+  }
 }
 
 const SyncedBookmarkTracker* BookmarkModelTypeProcessor::GetTrackerForTest()
