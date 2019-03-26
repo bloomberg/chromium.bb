@@ -176,26 +176,19 @@ TEST_F(
       mocha.run();
     });
 
-// Disabling on Windows Debug due to flaky timeout on Win7 Tests (dbg)(1).
-// https://crbug.com/832947
-GEN('#if defined(OS_WIN) && !defined(NDEBUG)');
-GEN('#define MAYBE_MediaRouterContainerFilterPart1 \\');
-GEN('    DISABLED_MediaRouterContainerFilterPart1');
-GEN('#else');
-GEN('#define MAYBE_MediaRouterContainerFilterPart1 \\');
-GEN('    MediaRouterContainerFilterPart1');
-GEN('#endif');
 
+// crbug.com/945581
 TEST_F(
-    'MediaRouterElementsBrowserTest', 'MAYBE_MediaRouterContainerFilterPart1',
-    function() {
+    'MediaRouterElementsBrowserTest',
+    'DISABLED_MediaRouterContainerFilterPart1', function() {
       media_router_container_filter.registerTestsPart1();
       mocha.run();
     });
 
+// crbug.com/945581
 TEST_F(
-    'MediaRouterElementsBrowserTest', 'MediaRouterContainerFilterPart2',
-    function() {
+    'MediaRouterElementsBrowserTest',
+    'DISABLED_MediaRouterContainerFilterPart2', function() {
       media_router_container_filter.registerTestsPart2();
       mocha.run();
     });
