@@ -65,7 +65,7 @@ class UnifiedConsentServiceTest : public testing::Test {
 
     consent_service_ = std::make_unique<UnifiedConsentService>(
         &pref_service_, identity_test_environment_.identity_manager(),
-        &sync_service_);
+        &sync_service_, std::vector<std::string>());
 
     sync_service_.FireStateChanged();
     // Run until idle so the migration can finish.

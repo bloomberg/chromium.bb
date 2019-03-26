@@ -10,6 +10,12 @@
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="privacy_page_browser_proxy.html">
 
+<!--
+ * Note: If a synced pref is added/removed from this file, the method
+ * |GetSyncedServicePrefNames| in
+ * chrome/browser/unified_consent/unified_consent_service_factory.cc has to be
+ * updated accordingly.
+-->
 <dom-module id="settings-personalization-options">
   <template>
     <style include="settings-shared">

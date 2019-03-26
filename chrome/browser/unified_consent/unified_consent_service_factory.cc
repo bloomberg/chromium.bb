@@ -4,19 +4,37 @@
 
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/spellcheck/browser/pref_names.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/unified_consent_metrics.h"
 #include "components/unified_consent/unified_consent_service.h"
 
 using unified_consent::UnifiedConsentService;
 using unified_consent::metrics::RecordSettingsHistogram;
+
+namespace {
+
+// Returns the synced pref names of the services on the "Sync and Google
+// services" settings page.
+// Note: The synced prefs returned by this method have to match the prefs
+// shown in personalization_options.html.
+std::vector<std::string> GetSyncedServicePrefNames() {
+  return {prefs::kSearchSuggestEnabled, prefs::kAlternateErrorPagesEnabled,
+          prefs::kSafeBrowsingEnabled,
+          prefs::kSafeBrowsingScoutReportingEnabled,
+          spellcheck::prefs::kSpellCheckUseSpellingService};
+}
+
+}  // namespace
 
 UnifiedConsentServiceFactory::UnifiedConsentServiceFactory()
     : BrowserContextKeyedServiceFactory(
@@ -48,7 +66,8 @@ void UnifiedConsentServiceFactory::RegisterProfilePrefs(
 KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  PrefService* pref_service = profile->GetPrefs();
+  sync_preferences::PrefServiceSyncable* pref_service =
+      PrefServiceSyncableFromProfile(profile);
   // Record settings for pre- and post-UnifiedConsent users.
   RecordSettingsHistogram(pref_service);
 
@@ -64,7 +83,7 @@ KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
 
   return new UnifiedConsentService(
       pref_service, IdentityManagerFactory::GetForProfile(profile),
-      sync_service);
+      sync_service, GetSyncedServicePrefNames());
 }
 
 bool UnifiedConsentServiceFactory::ServiceIsNULLWhileTesting() const {
