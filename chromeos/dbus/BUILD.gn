@@ -35,6 +35,10 @@ component("dbus") {
     # extracted. https://crbug.com/647367.
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:cryptohome_proto",
+
+    # TODO(stevenjb): Remove once upstart gets its own BUILD.gn file.
+    # https://crbug.com/647367.
+    "//chromeos/dbus/kerberos",
     "//components/account_id",
     "//components/device_event_log",
     "//components/policy:cloud_policy_proto_generated_compile",
