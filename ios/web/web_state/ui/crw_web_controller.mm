@@ -2554,6 +2554,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     [self removeWebView];
     [self presentNativeContentForNavigationItem:self.currentNavItem];
     [self didLoadNativeContentForNavigationItem:self.currentNavItem
+                             placeholderContext:nullptr
                               rendererInitiated:rendererInitiated];
   } else {
     // Just present the native view now. Leave the rest of native content load
@@ -2592,7 +2593,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 // Notifies WebStateObservers the completion of this navigation.
 - (void)didLoadNativeContentForNavigationItem:(web::NavigationItemImpl*)item
+                           placeholderContext:
+                               (web::NavigationContextImpl*)placeholderContext
                             rendererInitiated:(BOOL)rendererInitiated {
+  DCHECK(!placeholderContext || placeholderContext->IsPlaceholderNavigation());
   const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
   const web::Referrer referrer;
   std::unique_ptr<web::NavigationContextImpl> context =
@@ -2606,7 +2610,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   self.webStateImpl->OnNavigationStarted(context.get());
   [self didStartLoading];
-  self.navigationManagerImpl->CommitPendingItem();
+  if (placeholderContext && placeholderContext->GetItem()) {
+    DCHECK_EQ(placeholderContext->GetItem(), item);
+    self.navigationManagerImpl->CommitPendingItem(
+        placeholderContext->ReleaseItem());
+  } else {
+    self.navigationManagerImpl->CommitPendingItem();
+  }
   context->SetHasCommitted(true);
   self.webStateImpl->OnNavigationFinished(context.get());
 
@@ -4880,6 +4890,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         }
         bool rendererInitiated = context->IsRendererInitiated();
         [self didLoadNativeContentForNavigationItem:item
+                                 placeholderContext:context
                                   rendererInitiated:rendererInitiated];
       } else if (_webUIManager) {
         [_webUIManager loadWebUIForURL:item->GetURL()];
