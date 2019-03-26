@@ -75,6 +75,11 @@ class RemoteTest(object):
     self._retries = 0
     self._timeout = None
 
+    # The location on disk of a shell script that can be optionally used to
+    # invoke the test on the device. If it's not set, we assume self._test_cmd
+    # contains the test invocation.
+    self._on_device_script = None
+
     self._test_cmd = [
         CROS_RUN_TEST_PATH,
         '--board', args.board,
@@ -122,6 +127,15 @@ class RemoteTest(object):
   @property
   def test_cmd(self):
     return self._test_cmd
+
+  def write_test_script_to_disk(self, script_contents):
+    logging.info('Running the following command on the device:')
+    logging.info('\n' + '\n'.join(script_contents))
+    fd, tmp_path = tempfile.mkstemp(suffix='.sh', dir=self._path_to_outdir)
+    os.fchmod(fd, 0755)
+    with os.fdopen(fd, 'wb') as f:
+      f.write('\n'.join(script_contents))
+    return tmp_path
 
   def run_test(self):
     # Traps SIGTERM and kills all child processes of cros_run_test when it's
@@ -171,6 +185,8 @@ class RemoteTest(object):
     return test_proc.returncode
 
   def post_run(self, return_code):
+    if self._on_device_script:
+      os.remove(self._on_device_script)
     # Create a simple json results file for a test run. The results will contain
     # only one test (suite_name), and will either be a PASS or FAIL depending on
     # return_code.
@@ -327,13 +343,8 @@ class GTestTest(RemoteTest):
       test_invocation += ' %s' % ' '.join(self._additional_args)
     device_test_script_contents.append(test_invocation)
 
-    logging.info('Running the following command on the device:')
-    logging.info('\n' + '\n'.join(device_test_script_contents))
-    fd, tmp_path = tempfile.mkstemp(suffix='.sh', dir=self._path_to_outdir)
-    os.fchmod(fd, 0755)
-    with os.fdopen(fd, 'wb') as f:
-      f.write('\n'.join(device_test_script_contents))
-    self._on_device_script = tmp_path
+    self._on_device_script = self.write_test_script_to_disk(
+        device_test_script_contents)
 
     runtime_files = [os.path.relpath(self._on_device_script)]
     runtime_files += self._read_runtime_files()
