@@ -37,7 +37,7 @@
         <item name="android:paddingStart">24dp</item>
         <item name="android:paddingEnd">24dp</item>
         <item name="android:textAppearance">@style/TextAppearance.WhiteButtonText</item>
-        <item name="buttonColor">@color/blue_when_enabled</item>
+        <item name="buttonColor">@color/filled_button_bg</item>
         <item name="rippleColor">@color/filled_button_ripple_color</item>
         <item name="buttonRaised">true</item>
     </style>
