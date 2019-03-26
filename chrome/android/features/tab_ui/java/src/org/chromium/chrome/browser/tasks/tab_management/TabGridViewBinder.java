@@ -82,6 +82,8 @@ class TabGridViewBinder {
             }
             holder.createGroupButton.setVisibility(View.VISIBLE);
             holder.createGroupButton.setOnClickListener(view -> listener.run(holder.getTabId()));
+        } else if (TabProperties.ALPHA == propertyKey) {
+            holder.itemView.setAlpha(item.get(TabProperties.ALPHA));
         }
     }
 
