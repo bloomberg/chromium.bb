@@ -10,14 +10,18 @@
     android:orientation="vertical"
     android:gravity="center">
 
-  <org.chromium.ui.widget.ButtonCompat android:id="@+id/last_tab_button"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      style="@style/TextButton" />
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/touchless_new_tab_view_top_margin"/>
 
-  <ViewStub android:id="@+id/most_likely_stub"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout="@layout/most_likely_touchless" />
+    <org.chromium.chrome.browser.touchless.OpenLastTabView
+        android:id="@+id/open_last_tab_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <ViewStub android:id="@+id/most_likely_stub"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout="@layout/most_likely_touchless" />
 
 </org.chromium.chrome.browser.touchless.TouchlessNewTabPageTopLayout>

@@ -2,8 +2,10 @@
 <!-- Copyright 2019 The Chromium Authors. All rights reserved.
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
+    <dimen name="touchless_new_tab_view_top_margin">12dp</dimen>
     <dimen name="touchless_new_tab_view_padding_horizontal">12dp</dimen>
+
     <dimen name="notouch_tooltip_padding">8dp</dimen>
     <dimen name="notouch_tooltip_margin_bottom">16dp</dimen>
     <dimen name="notouch_key_functions_tooltip_item_width">40dp</dimen>
@@ -11,4 +13,18 @@
     <dimen name="notouch_key_functions_tooltip_item_padding">4dp</dimen>
     <dimen name="notouch_key_functions_tooltip_item_image_vertical_padding">5dp</dimen>
     <dimen name="notouch_key_functions_tooltip_item_horizontal_margin">4dp</dimen>
+
+
+    <!-- Open last tab placeholder dimensions. -->
+    <dimen name="open_last_tab_placeholder_image_size">24dp</dimen>
+    <dimen name="open_last_tab_placeholder_image_margin_bottom">13dp</dimen>
+
+    <!-- Open last tab button dimensions. -->
+    <dimen name="open_last_tab_button_horizontal_margin">8dp</dimen>
+    <dimen name="open_last_tab_button_padding_horizontal">12dp</dimen>
+    <dimen name="open_last_tab_button_padding_vertical">8dp</dimen>
+    <dimen name="open_last_tab_icon_size">16dp</dimen>
+    <dimen name="open_last_tab_primary_text_margin_left">8dp</dimen>
+    <dimen name="open_last_tab_timestamp_min_width">105dp</dimen>
+
 </resources>

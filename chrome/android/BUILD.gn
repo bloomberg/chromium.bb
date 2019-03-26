@@ -143,6 +143,7 @@ if (notouch_build) {
     resource_dirs = [ "//chrome/android/touchless/java/res" ]
     deps = [
       ":chrome_app_java_resources",
+      "//chrome/android/touchless:touchless_strings_grd",
     ]
     custom_package = "org.chromium.chrome.touchless"
   }
