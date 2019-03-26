@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "net/base/load_flags.h"
 #include "services/network/cors/cors_url_loader.h"
+#include "services/network/cors/preflight_controller.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
@@ -50,26 +51,6 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
   bindings_.AddBinding(this, std::move(request));
   bindings_.set_connection_error_handler(base::BindRepeating(
       &CorsURLLoaderFactory::DeleteIfNeeded, base::Unretained(this)));
-  preflight_controller_ = context_->cors_preflight_controller();
-}
-
-CorsURLLoaderFactory::CorsURLLoaderFactory(
-    bool disable_web_security,
-    std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory,
-    const base::RepeatingCallback<void(int)>& preflight_finalizer,
-    const OriginAccessList* origin_access_list,
-    uint32_t process_id)
-    : disable_web_security_(disable_web_security),
-      process_id_(process_id),
-      network_loader_factory_(std::move(network_loader_factory)),
-      preflight_finalizer_(preflight_finalizer),
-      origin_access_list_(origin_access_list) {
-  DCHECK(origin_access_list_);
-  factory_bound_origin_access_list_ = std::make_unique<OriginAccessList>();
-  // Ideally this should be per-profile, but per-factory would be enough for
-  // this code path that is eventually removed.
-  owned_preflight_controller_ = std::make_unique<PreflightController>();
-  preflight_controller_ = owned_preflight_controller_.get();
 }
 
 CorsURLLoaderFactory::~CorsURLLoaderFactory() = default;
@@ -110,9 +91,9 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
         base::BindOnce(&CorsURLLoaderFactory::DestroyURLLoader,
                        base::Unretained(this)),
         resource_request, std::move(client), traffic_annotation,
-        network_loader_factory_.get(), preflight_finalizer_,
-        origin_access_list_, factory_bound_origin_access_list_.get(),
-        preflight_controller_);
+        network_loader_factory_.get(), origin_access_list_,
+        factory_bound_origin_access_list_.get(),
+        context_->cors_preflight_controller());
     auto* raw_loader = loader.get();
     OnLoaderCreated(std::move(loader));
     raw_loader->Start();

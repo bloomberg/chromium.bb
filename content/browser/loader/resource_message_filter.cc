@@ -19,9 +19,7 @@
 #include "content/common/resource_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/common/content_switches.h"
-#include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -47,7 +45,6 @@ ResourceMessageFilter::ResourceMessageFilter(
     storage::FileSystemContext* file_system_context,
     ServiceWorkerContextWrapper* service_worker_context,
     PrefetchURLLoaderService* prefetch_url_loader_service,
-    const SharedCorsOriginAccessList* shared_cors_origin_access_list,
     const GetContextsCallback& get_contexts_callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner)
     : BrowserMessageFilter(ResourceMsgStart),
@@ -61,7 +58,6 @@ ResourceMessageFilter::ResourceMessageFilter(
                                                    service_worker_context,
                                                    get_contexts_callback)),
       prefetch_url_loader_service_(prefetch_url_loader_service),
-      shared_cors_origin_access_list_(shared_cors_origin_access_list),
       io_thread_task_runner_(io_thread_runner),
       weak_ptr_factory_(this) {}
 
@@ -183,23 +179,7 @@ void ResourceMessageFilter::InitializeOnIOThread() {
   // The WeakPtr of the filter must be created on the IO thread. So sets the
   // WeakPtr of |requester_info_| now.
   requester_info_->set_filter(GetWeakPtr());
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // ResourceMessageFilter should not be used if NetworkService is enabled,
-    // but still some tests rely on it.
-    url_loader_factory_ =
-        std::make_unique<URLLoaderFactoryImpl>(requester_info_);
-  } else {
-    url_loader_factory_ = std::make_unique<network::cors::CorsURLLoaderFactory>(
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableWebSecurity),
-        std::make_unique<URLLoaderFactoryImpl>(requester_info_),
-        base::BindRepeating(&ResourceDispatcherHostImpl::CancelRequest,
-                            base::Unretained(ResourceDispatcherHostImpl::Get()),
-                            requester_info_->child_id()),
-        &shared_cors_origin_access_list_->GetOriginAccessList(),
-        requester_info_->child_id() == -1 ? 0 : requester_info_->child_id());
-  }
-
+  url_loader_factory_ = std::make_unique<URLLoaderFactoryImpl>(requester_info_);
   std::vector<network::mojom::URLLoaderFactoryRequest> requests =
       std::move(queued_clone_requests_);
   for (auto& request : requests)
