@@ -4892,6 +4892,25 @@
             ]
         }
     ],
+    "SyncUssPasswords'": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncUSSPasswords"
+                    ]
+                }
+            ]
+        }
+    ],
     "TabRanker": [
         {
             "platforms": [
