@@ -354,6 +354,27 @@ const std::string* Value::FindStringKey(StringPiece key) const {
   return result ? &result->string_value_ : nullptr;
 }
 
+const Value::BlobStorage* Value::FindBlobKey(StringPiece key) const {
+  const Value* value = FindKeyOfType(key, Type::BINARY);
+  return value ? &value->binary_value_ : nullptr;
+}
+
+const Value* Value::FindDictKey(StringPiece key) const {
+  return FindKeyOfType(key, Type::DICTIONARY);
+}
+
+Value* Value::FindDictKey(StringPiece key) {
+  return FindKeyOfType(key, Type::DICTIONARY);
+}
+
+const Value* Value::FindListKey(StringPiece key) const {
+  return FindKeyOfType(key, Type::LIST);
+}
+
+Value* Value::FindListKey(StringPiece key) {
+  return FindKeyOfType(key, Type::LIST);
+}
+
 bool Value::RemoveKey(StringPiece key) {
   CHECK(is_dict());
   // NOTE: Can't directly return dict_->erase(key) due to MSVC warning C4800.

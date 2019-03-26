@@ -366,8 +366,7 @@ TEST_P(StatisticsRecorderTest, ToJSON) {
   // No query should be set.
   ASSERT_FALSE(root->FindKey("query"));
 
-  const Value* histogram_list =
-      root->FindKeyOfType("histograms", base::Value::Type::LIST);
+  const Value* histogram_list = root->FindListKey("histograms");
 
   ASSERT_TRUE(histogram_list);
   ASSERT_EQ(2u, histogram_list->GetList().size());
@@ -380,8 +379,7 @@ TEST_P(StatisticsRecorderTest, ToJSON) {
   ASSERT_TRUE(sample_count);
   EXPECT_EQ(2, *sample_count);
 
-  const Value* buckets_list =
-      histogram_dict.FindKeyOfType("buckets", base::Value::Type::LIST);
+  const Value* buckets_list = histogram_dict.FindListKey("buckets");
   ASSERT_TRUE(buckets_list);
   EXPECT_EQ(2u, buckets_list->GetList().size());
 
@@ -390,7 +388,7 @@ TEST_P(StatisticsRecorderTest, ToJSON) {
   root = JSONReader::Read(json);
   ASSERT_TRUE(root);
   ASSERT_TRUE(root->is_dict());
-  histogram_list = root->FindKeyOfType("histograms", base::Value::Type::LIST);
+  histogram_list = root->FindListKey("histograms");
   ASSERT_TRUE(histogram_list);
   ASSERT_EQ(2u, histogram_list->GetList().size());
   const Value& histogram_dict2 = histogram_list->GetList()[0];
@@ -398,8 +396,7 @@ TEST_P(StatisticsRecorderTest, ToJSON) {
   sample_count = histogram_dict2.FindIntKey("count");
   ASSERT_TRUE(sample_count);
   EXPECT_EQ(2, *sample_count);
-  buckets_list =
-      histogram_dict2.FindKeyOfType("buckets", base::Value::Type::LIST);
+  buckets_list = histogram_dict2.FindListKey("buckets");
   // Bucket information should be omitted.
   ASSERT_FALSE(buckets_list);
 }

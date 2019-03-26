@@ -207,6 +207,17 @@ class BASE_EXPORT Value {
   // |FindStringKey| returns |nullptr| if value is not found or not a string.
   const std::string* FindStringKey(StringPiece key) const;
 
+  // Returns nullptr is value is not found or not a binary.
+  const BlobStorage* FindBlobKey(StringPiece key) const;
+
+  // Returns nullptr if value is not found or not a dictionary.
+  const Value* FindDictKey(StringPiece key) const;
+  Value* FindDictKey(StringPiece key);
+
+  // Returns nullptr if value is not found or not a list.
+  const Value* FindListKey(StringPiece key) const;
+  Value* FindListKey(StringPiece key);
+
   // |SetKey| looks up |key| in the underlying dictionary and sets the mapped
   // value to |value|. If |key| could not be found, a new element is inserted.
   // A pointer to the modified item is returned.
