@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/process/process.h"
+#include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
@@ -22,6 +24,12 @@ using CookieDeletionInfo = net::CookieDeletionInfo;
 using CookieDeleteSessionControl = net::CookieDeletionInfo::SessionControl;
 
 namespace network {
+
+namespace {
+
+bool g_crash_on_get_cookie_list = false;
+
+}  // namespace
 
 CookieManager::ListenerRegistration::ListenerRegistration() {}
 
@@ -71,6 +79,11 @@ void CookieManager::GetAllCookies(GetAllCookiesCallback callback) {
 void CookieManager::GetCookieList(const GURL& url,
                                   const net::CookieOptions& cookie_options,
                                   GetCookieListCallback callback) {
+#if !defined(OS_IOS)
+  if (g_crash_on_get_cookie_list)
+    base::Process::TerminateCurrentProcessImmediately(1);
+#endif
+
   cookie_store_->GetCookieListWithOptionsAsync(
       url, cookie_options,
       net::cookie_util::IgnoreCookieStatusList(std::move(callback)));
@@ -201,6 +214,10 @@ void CookieManager::SetForceKeepSessionState() {
 
 void CookieManager::BlockThirdPartyCookies(bool block) {
   cookie_settings_.set_block_third_party_cookies(block);
+}
+
+void CookieManager::CrashOnGetCookieList() {
+  g_crash_on_get_cookie_list = true;
 }
 
 CookieDeletionInfo DeletionFilterToInfo(mojom::CookieDeletionFilterPtr filter) {
