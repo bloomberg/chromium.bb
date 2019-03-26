@@ -99,6 +99,8 @@ inspector_protocol_generate("protocol_sources") {
     "protocol/memory.h",
     "protocol/network.cc",
     "protocol/network.h",
+    "protocol/overlay.cc",
+    "protocol/overlay.h",
     "protocol/page.cc",
     "protocol/page.h",
     "protocol/protocol.cc",
