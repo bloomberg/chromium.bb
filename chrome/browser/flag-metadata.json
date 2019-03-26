@@ -1462,7 +1462,7 @@
   },
   {
     "name": "enable-offer-store-unmasked-wallet-cards",
-    // "owners": [ "your-team" ],
+    "owners": [ "jsaul" ],
     "expiry_milestone": 76
   },
   {
