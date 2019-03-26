@@ -71,8 +71,8 @@ class ArcSessionRunnerTest : public testing::Test,
     restarting_called_ = false;
 
     // We inject FakeArcSession here so we do not need task_runner.
-    arc_session_runner_ =
-        std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create));
+    arc_session_runner_ = std::make_unique<ArcSessionRunner>(
+        base::BindRepeating(FakeArcSession::Create));
     arc_session_runner_->AddObserver(this);
   }
 
@@ -189,7 +189,7 @@ TEST_F(ArcSessionRunnerTest, Basic) {
 // stop it, even mid-startup.
 TEST_F(ArcSessionRunnerTest, StopMidStartup) {
   ResetArcSessionFactory(
-      base::Bind(&ArcSessionRunnerTest::CreateSuspendedArcSession));
+      base::BindRepeating(&ArcSessionRunnerTest::CreateSuspendedArcSession));
   EXPECT_FALSE(arc_session());
 
   arc_session_runner()->RequestUpgrade(DefaultUpgradeParams());
@@ -204,7 +204,7 @@ TEST_F(ArcSessionRunnerTest, StopMidStartup) {
 // Does the same for mini instance.
 TEST_F(ArcSessionRunnerTest, StopMidStartup_MiniInstance) {
   ResetArcSessionFactory(
-      base::Bind(&ArcSessionRunnerTest::CreateSuspendedArcSession));
+      base::BindRepeating(&ArcSessionRunnerTest::CreateSuspendedArcSession));
   EXPECT_FALSE(arc_session());
 
   arc_session_runner()->RequestStartMiniInstance();
@@ -219,8 +219,8 @@ TEST_F(ArcSessionRunnerTest, StopMidStartup_MiniInstance) {
 // triggered.
 TEST_F(ArcSessionRunnerTest, BootFailure) {
   ResetArcSessionFactory(
-      base::Bind(&ArcSessionRunnerTest::CreateBootFailureArcSession,
-                 ArcStopReason::GENERIC_BOOT_FAILURE));
+      base::BindRepeating(&ArcSessionRunnerTest::CreateBootFailureArcSession,
+                          ArcStopReason::GENERIC_BOOT_FAILURE));
   EXPECT_FALSE(arc_session());
 
   arc_session_runner()->RequestUpgrade(DefaultUpgradeParams());
@@ -232,8 +232,8 @@ TEST_F(ArcSessionRunnerTest, BootFailure) {
 // Does the same with the mini instance.
 TEST_F(ArcSessionRunnerTest, BootFailure_MiniInstance) {
   ResetArcSessionFactory(
-      base::Bind(&ArcSessionRunnerTest::CreateBootFailureArcSession,
-                 ArcStopReason::GENERIC_BOOT_FAILURE));
+      base::BindRepeating(&ArcSessionRunnerTest::CreateBootFailureArcSession,
+                          ArcStopReason::GENERIC_BOOT_FAILURE));
   EXPECT_FALSE(arc_session());
 
   // If starting the mini instance fails, arc_session_runner()'s state goes back
@@ -245,7 +245,7 @@ TEST_F(ArcSessionRunnerTest, BootFailure_MiniInstance) {
 
   // Also make sure that RequestUpgrade() works just fine after the boot
   // failure.
-  ResetArcSessionFactory(base::Bind(FakeArcSession::Create));
+  ResetArcSessionFactory(base::BindRepeating(FakeArcSession::Create));
   arc_session_runner()->RequestUpgrade(DefaultUpgradeParams());
   ASSERT_TRUE(arc_session());
   EXPECT_TRUE(arc_session()->is_running());
@@ -255,8 +255,8 @@ TEST_F(ArcSessionRunnerTest, BootFailure_MiniInstance) {
 // in mini instance, Mojo connection should not be established.
 TEST_F(ArcSessionRunnerTest, Crash_MiniInstance) {
   ResetArcSessionFactory(
-      base::Bind(&ArcSessionRunnerTest::CreateBootFailureArcSession,
-                 ArcStopReason::CRASH));
+      base::BindRepeating(&ArcSessionRunnerTest::CreateBootFailureArcSession,
+                          ArcStopReason::CRASH));
   EXPECT_FALSE(arc_session());
 
   // If starting the mini instance fails, arc_session_runner()'s state goes back
