@@ -16,11 +16,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
-using Frame = base::StackSamplingProfiler::Frame;
-
 namespace metrics {
 
 namespace {
+
+using Frame = base::ProfileBuilder::Frame;
 
 // Stub module for testing.
 class TestModule : public base::ModuleCache::Module {
