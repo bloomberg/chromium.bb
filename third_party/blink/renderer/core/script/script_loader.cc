@@ -170,7 +170,8 @@ enum class ShouldFireErrorEvent {
   kShouldFire,
 };
 
-ShouldFireErrorEvent ParseAndRegisterImportMap(ScriptElementBase& element) {
+ShouldFireErrorEvent ParseAndRegisterImportMap(ScriptElementBase& element,
+                                               const TextPosition& position) {
   Document& element_document = element.GetDocument();
   Document* context_document = element_document.ContextDocument();
   DCHECK(context_document);
@@ -199,11 +200,19 @@ ShouldFireErrorEvent ParseAndRegisterImportMap(ScriptElementBase& element) {
   }
 
   KURL base_url = element_document.BaseURL();
-  ImportMap* import_map = ImportMap::Create(
-      *modulator, element.TextFromChildren(), base_url, element_document);
+  const String import_map_text = element.TextFromChildren();
+  ImportMap* import_map = ImportMap::Create(*modulator, import_map_text,
+                                            base_url, element_document);
 
   if (!import_map)
     return ShouldFireErrorEvent::kShouldFire;
+
+  // https://github.com/WICG/import-maps/issues/105
+  if (!ContentSecurityPolicy::ShouldBypassMainWorld(&element_document) &&
+      !element.AllowInlineScriptForCSP(element.GetNonceForElement(),
+                                       position.line_, import_map_text)) {
+    return ShouldFireErrorEvent::kShouldFire;
+  }
 
   modulator->RegisterImportMap(import_map);
   return ShouldFireErrorEvent::kDoNotFire;
@@ -388,13 +397,26 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   if (BlockForNoModule(script_type_, element_->NomoduleAttributeValue()))
     return false;
 
+  // TODO(csharrison): This logic only works if the tokenizer/parser was not
+  // blocked waiting for scripts when the element was inserted. This usually
+  // fails for instance, on second document.write if a script writes twice
+  // in a row. To fix this, the parser might have to keep track of raw
+  // string position.
+  //
+  // Also PendingScript's contructor has the same code.
+  const bool is_in_document_write = element_document.IsInDocumentWrite();
+
+  // Reset line numbering for nested writes.
+  TextPosition position =
+      is_in_document_write ? TextPosition() : script_start_position;
+
   // 13.
   if (!IsScriptForEventSupported())
     return false;
 
   // Process the import map.
   if (is_import_map) {
-    if (ParseAndRegisterImportMap(*element_) ==
+    if (ParseAndRegisterImportMap(*element_, position) ==
         ShouldFireErrorEvent::kShouldFire) {
       element_document.GetTaskRunner(TaskType::kDOMManipulation)
           ->PostTask(FROM_HERE,
@@ -472,19 +494,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     UseCounter::Count(*context_document, WebFeature::kPrepareModuleScript);
 
   DCHECK(!prepared_pending_script_);
-
-  // TODO(csharrison): This logic only works if the tokenizer/parser was not
-  // blocked waiting for scripts when the element was inserted. This usually
-  // fails for instance, on second document.write if a script writes twice
-  // in a row. To fix this, the parser might have to keep track of raw
-  // string position.
-  //
-  // Also PendingScript's contructor has the same code.
-  const bool is_in_document_write = element_document.IsInDocumentWrite();
-
-  // Reset line numbering for nested writes.
-  TextPosition position =
-      is_in_document_write ? TextPosition() : script_start_position;
 
   // <spec step="22">Let options be a script fetch options whose cryptographic
   // nonce is cryptographic nonce, integrity metadata is integrity metadata,
