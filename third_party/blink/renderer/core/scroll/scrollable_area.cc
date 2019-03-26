@@ -255,7 +255,7 @@ void ScrollableArea::ProgrammaticScrollHelper(const ScrollOffset& offset,
                                               bool is_sequenced_scroll) {
   CancelScrollAnimation();
 
-  if (scroll_behavior == kScrollBehaviorSmooth && ScrollAnimatorEnabled()) {
+  if (scroll_behavior == kScrollBehaviorSmooth) {
     GetProgrammaticScrollAnimator().AnimateToOffset(offset,
                                                     is_sequenced_scroll);
   } else {
