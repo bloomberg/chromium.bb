@@ -978,7 +978,7 @@ void CreditCardSaveManager::SendUploadCardRequest() {
 
 void CreditCardSaveManager::OnUserDidIgnoreOrDeclineSave(
     const base::string16& card_last_four_digits) {
-  if (show_save_prompt_.value()) {
+  if (show_save_prompt_ != base::nullopt && show_save_prompt_.value()) {
     if (base::FeatureList::IsEnabled(
             features::kAutofillSaveCreditCardUsesStrikeSystemV2)) {
       // If the user rejected or ignored save and the offer-to-save bubble or
