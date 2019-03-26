@@ -382,9 +382,9 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
 
   // Pass string constants dictionary.
   auto dictionary = GetSettingsUiStrings(settings_ui, activity_control_needed_);
-  dictionary.SetKey("voiceMatchFeatureEnabled",
-                    base::Value(base::FeatureList::IsEnabled(
-                        assistant::features::kAssistantVoiceMatch)));
+  dictionary.SetKey("voiceMatchEnabled",
+                    base::Value(IsVoiceMatchEnabled(
+                        ProfileManager::GetActiveUserProfile()->GetPrefs())));
   ReloadContent(dictionary);
 }
 
@@ -450,11 +450,10 @@ void AssistantOptInFlowScreenHandler::HandleThirdPartyScreenUserAction(
 
 void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
     const std::string& action) {
-  if (!base::FeatureList::IsEnabled(
-          assistant::features::kAssistantVoiceMatch)) {
-    return;
-  }
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+
+  if (!IsVoiceMatchEnabled(prefs))
+    return;
 
   if (action == kVoiceMatchDone) {
     RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_DONE);

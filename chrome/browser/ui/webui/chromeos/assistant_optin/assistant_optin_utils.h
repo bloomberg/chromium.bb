@@ -14,7 +14,7 @@ class Profile;
 
 namespace base {
 class Value;
-}
+}  // namespace base
 
 namespace chromeos {
 
@@ -75,6 +75,8 @@ void RecordActivityControlConsent(Profile* profile,
                                   bool opted_in);
 
 bool IsHotwordDspAvailable();
+
+bool IsVoiceMatchEnabled(const PrefService* prefs);
 
 }  // namespace chromeos
 
