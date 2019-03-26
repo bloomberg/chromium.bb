@@ -54,6 +54,7 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
+#include "storage/browser/quota/padding_key.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/blob_storage/blob_handle.h"
 #include "storage/common/storage_histograms.h"
@@ -74,10 +75,6 @@ const size_t kMaxQueryCacheResultBytes =
     1024 * 1024 * 10;  // 10MB query cache limit
 
 const char kRecordBytesLabel[] = "DiskCache.CacheStorage";
-
-// The range of the padding added to response sizes for opaque resources.
-// Increment padding version if changed.
-const uint64_t kPaddingRange = 14431 * 1024;
 
 // If the way that a cache's padding is calculated changes increment this
 // version.
@@ -393,36 +390,13 @@ bool ShouldPadResourceSize(const blink::mojom::FetchAPIResponse& response) {
 }
 
 int64_t CalculateResponsePaddingInternal(
-    const std::string& response_url,
-    const crypto::SymmetricKey* padding_key,
-    int side_data_size) {
-  DCHECK(!response_url.empty());
-
-  crypto::HMAC hmac(crypto::HMAC::SHA256);
-  if (!hmac.Init(padding_key))
-    LOG(FATAL) << "Failed to init HMAC.";
-
-  std::vector<uint8_t> digest(hmac.DigestLength());
-  bool success;
-  if (side_data_size)
-    success = hmac.Sign(response_url + "METADATA", &digest[0], digest.size());
-  else
-    success = hmac.Sign(response_url, &digest[0], digest.size());
-  if (!success)
-    LOG(FATAL) << "Failed to sign URL.";
-
-  DCHECK_GE(digest.size(), sizeof(uint64_t));
-  uint64_t val = *(reinterpret_cast<uint64_t*>(&digest[0]));
-  return val % kPaddingRange;
-}
-
-int64_t CalculateResponsePaddingInternal(
     const ::content::proto::CacheResponse* response,
     const crypto::SymmetricKey* padding_key,
     int side_data_size) {
   DCHECK(ShouldPadResourceSize(response));
+  DCHECK_GE(side_data_size, 0);
   const std::string& url = response->url_list(response->url_list_size() - 1);
-  return CalculateResponsePaddingInternal(url, padding_key, side_data_size);
+  return storage::ComputeResponsePadding(url, padding_key, side_data_size > 0);
 }
 
 }  // namespace
@@ -1247,10 +1221,11 @@ int64_t CacheStorageCache::CalculateResponsePadding(
     const blink::mojom::FetchAPIResponse& response,
     const crypto::SymmetricKey* padding_key,
     int side_data_size) {
+  DCHECK_GE(side_data_size, 0);
   if (!ShouldPadResourceSize(response))
     return 0;
-  return CalculateResponsePaddingInternal(response.url_list.back().spec(),
-                                          padding_key, side_data_size);
+  return storage::ComputeResponsePadding(response.url_list.back().spec(),
+                                         padding_key, side_data_size > 0);
 }
 
 // static
