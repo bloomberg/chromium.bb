@@ -44,7 +44,6 @@ namespace chromeos {
 
 OobeBaseTest::OobeBaseTest() {
   set_exit_when_last_browser_closes(false);
-  set_chromeos_user_ = false;
 }
 
 OobeBaseTest::~OobeBaseTest() {}
@@ -52,8 +51,6 @@ OobeBaseTest::~OobeBaseTest() {}
 void OobeBaseTest::RegisterAdditionalRequestHandlers() {}
 
 void OobeBaseTest::SetUp() {
-  mixin_host_.SetUp();
-
   base::FilePath test_data_dir;
   base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
@@ -65,12 +62,10 @@ void OobeBaseTest::SetUp() {
   // spawning sandbox host process. See crbug.com/322732.
   ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
 
-  extensions::ExtensionApiTest::SetUp();
+  MixinBasedInProcessBrowserTest::SetUp();
 }
 
 void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
-  extensions::ExtensionApiTest::SetUpCommandLine(command_line);
-
   if (ShouldForceWebUiLogin())
     command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
@@ -79,12 +74,7 @@ void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
     command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
   command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
 
-  mixin_host_.SetUpCommandLine(command_line);
-}
-
-void OobeBaseTest::SetUpDefaultCommandLine(base::CommandLine* command_line) {
-  mixin_host_.SetUpDefaultCommandLine(command_line);
-  extensions::ExtensionApiTest::SetUpDefaultCommandLine(command_line);
+  MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
 }
 
 void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
@@ -93,8 +83,7 @@ void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
   network_portal_detector_->SetDefaultNetworkForTesting(
       FakeShillManagerClient::kFakeEthernetNetworkGuid);
 
-  mixin_host_.SetUpInProcessBrowserTestFixture();
-  extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+  MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 }
 
 void OobeBaseTest::SetUpOnMainThread() {
@@ -117,25 +106,13 @@ void OobeBaseTest::SetUpOnMainThread() {
     WaitForOobeUI();
   }
 
-  mixin_host_.SetUpOnMainThread();
-  extensions::ExtensionApiTest::SetUpOnMainThread();
+  MixinBasedInProcessBrowserTest::SetUpOnMainThread();
 }
 
 void OobeBaseTest::TearDownOnMainThread() {
-  mixin_host_.TearDownOnMainThread();
+  MixinBasedInProcessBrowserTest::TearDownOnMainThread();
   // Embedded test server should always be shutdown after any https forwarders.
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
-  extensions::ExtensionApiTest::TearDownOnMainThread();
-}
-
-void OobeBaseTest::TearDownInProcessBrowserTestFixture() {
-  mixin_host_.TearDownInProcessBrowserTestFixture();
-  extensions::ExtensionApiTest::TearDownInProcessBrowserTestFixture();
-}
-
-void OobeBaseTest::TearDown() {
-  mixin_host_.TearDown();
-  extensions::ExtensionApiTest::TearDown();
 }
 
 bool OobeBaseTest::ShouldForceWebUiLogin() {
