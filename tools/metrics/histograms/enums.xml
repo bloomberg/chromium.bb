@@ -32055,6 +32055,7 @@ from previous Chrome versions.
   <int value="-1868978829" label="spurious-power-button-accel-count"/>
   <int value="-1868957045" label="SyncUSSAutofillWalletMetadata:enabled"/>
   <int value="-1868284723" label="DirectManipulationStylus:disabled"/>
+  <int value="-1867563782" label="NewPrintPreviewLayout:disabled"/>
   <int value="-1867382602" label="WebRTC-H264WithOpenH264FFmpeg:enabled"/>
   <int value="-1867342522" label="MaterialDesignHistory:enabled"/>
   <int value="-1865155026" label="AutoFetchOnNetErrorPage:enabled"/>
@@ -33850,6 +33851,7 @@ from previous Chrome versions.
   <int value="1071520357" label="WebAuthenticationTouchId:enabled"/>
   <int value="1072010558" label="NTPModernLayout:disabled"/>
   <int value="1074359194" label="UseSuggestionsEvenIfFew:enabled"/>
+  <int value="1074427701" label="NewPrintPreviewLayout:enabled"/>
   <int value="1075637651" label="disable-tablet-splitview"/>
   <int value="1079032226" label="ParallelDownloading:enabled"/>
   <int value="1081546525" label="ash-enable-docked-windows"/>
