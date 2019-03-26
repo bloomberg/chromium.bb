@@ -311,10 +311,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/multisample.html',
         ['win', ('amd', 0x6613)], bug=687374)
 
-    # Win / Intel
-    self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
-        ['win', 'intel', 'd3d11'], bug=782317)
-
     self.Flaky('deqp/functional/gles3/lifetime.html',
         ['win', 'intel', 'd3d11'], bug=620379)
     self.Flaky('deqp/functional/gles3/textureformat/unsized_3d.html',
@@ -377,29 +373,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'depth-renderbuffer-initialization.html',
         ['win', 'passthrough', 'opengl'], bug=835364)
 
-    # Passthrough command decoder / OpenGL / Intel
-    self.Fail('conformance2/textures/video/tex-2d-rgb32f-rgb-float.html',
-        ['passthrough', 'opengl', 'intel'], bug=602688)
-    self.Fail('conformance2/textures/video/' +
-        'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
-        ['win', 'linux', 'passthrough', 'opengl', 'intel'], bug=602688)
-    self.Fail('conformance/misc/uninitialized-test.html',
-        ['passthrough', 'opengl', 'intel'], bug=602688)
-    self.Fail('conformance/textures/image_bitmap_from_video/' +
-        'tex-2d-luminance-luminance-unsigned_byte.html',
-        ['passthrough', 'opengl', 'intel'], bug=602688)
-    self.Fail('conformance/textures/image_bitmap_from_video/' +
-        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-        ['passthrough', 'opengl', 'intel'], bug=602688)
-    self.Fail('conformance/textures/misc/texture-attachment-formats.html',
-        ['passthrough', 'opengl', 'intel'], bug=602688)
-    self.Fail('conformance/renderbuffers/framebuffer-state-restoration.html',
-        ['passthrough', 'opengl', 'intel'], bug=602688)
-
     # Passthrough command decoder / Windows / OpenGL / Intel
     # This case causes no-over-optimization-on-uniform-array fail.
-    self.Skip('conformance/ogles/GL/gl_FragCoord/gl_FragCoord_001_to_003.html',
-        ['win', 'passthrough', 'opengl', 'intel'], bug=884210)
     self.Flaky('conformance/glsl/variables/gl-pointcoord.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=854100)
     self.Fail('conformance2/renderbuffers/' +
@@ -408,17 +383,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/rendering/' +
         'out-of-bounds-index-buffers-after-copying.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=912579)
-    self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
-        ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
-    self.Fail('conformance2/textures/misc/texture-npot.html',
-        ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
-    self.Fail('conformance2/textures/misc/npot-video-sizing.html',
-        ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
-    self.Fail('conformance2/glsl3/' +
-        'vector-dynamic-indexing-swizzled-lvalue.html',
-        ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
-    self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
-        ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
     self.Fail('deqp/functional/gles3/shaderbuiltinvar.html', # ANGLE bug
         ['win', 'passthrough', 'opengl', 'intel'], bug=2880)
 
