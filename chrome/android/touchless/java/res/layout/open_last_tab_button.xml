@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- The Chrome Explore header displayed when the user has no history. -->
+    <include layout="@layout/open_last_tab_fallback_view"/>
+
+    <org.chromium.ui.widget.ChipView
+        android:id="@+id/last_tab_chip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginHorizontal="@dimen/open_last_tab_button_horizontal_margin"
+        android:paddingHorizontal="@dimen/open_last_tab_button_padding_horizontal"
+        android:paddingVertical="@dimen/open_last_tab_button_padding_vertical"
+        app:iconWidth="@dimen/open_last_tab_icon_size"
+        app:iconHeight="@dimen/open_last_tab_icon_size"
+        android:visibility="gone" />
+
+</merge>

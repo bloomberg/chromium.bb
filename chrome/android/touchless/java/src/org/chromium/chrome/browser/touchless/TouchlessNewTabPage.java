@@ -48,6 +48,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
     private int mBackgroundColor;
 
     private TouchlessNewTabPageMediator mMediator;
+    private OpenLastTabCoordinator mOpenLastTabCoordinator;
 
     private FrameLayout mView;
     private TouchlessNewTabPageTopLayout mRecyclerTopmostView;
@@ -63,6 +64,9 @@ public class TouchlessNewTabPage extends BasicNativePage {
     @Override
     protected void initialize(ChromeActivity activity, NativePageHost nativePageHost) {
         TraceEvent.begin(TAG);
+
+        mTab = activity.getActivityTab();
+        Profile profile = mTab.getProfile();
 
         mTitle = activity.getResources().getString(R.string.button_new_tab);
         mBackgroundColor = ApiCompatibilityUtils.getColor(
@@ -80,7 +84,12 @@ public class TouchlessNewTabPage extends BasicNativePage {
         mRecyclerTopmostView = (TouchlessNewTabPageTopLayout) LayoutInflater.from(activity).inflate(
                 R.layout.new_tab_page_touchless, mRecyclerView, false);
 
-        // TODO(dewittj): Initialize the recent tab coordinator here.
+        OpenLastTabView openLastTabButton =
+                mRecyclerTopmostView.findViewById(R.id.open_last_tab_button);
+        mOpenLastTabCoordinator =
+                new OpenLastTabCoordinator(activity, profile, nativePageHost, openLastTabButton);
+
+        // TODO(dewittj): Initialize the tile suggestions coordinator here.
 
         initializeContentSuggestions(activity, nativePageHost, model);
 
@@ -99,7 +108,6 @@ public class TouchlessNewTabPage extends BasicNativePage {
 
         NewTabPageUma.trackTimeToFirstDraw(mRecyclerView, constructedTimeNs);
 
-        mTab = activity.getActivityTab();
         Profile profile = mTab.getProfile();
         SuggestionsDependencyFactory depsFactory = SuggestionsDependencyFactory.getInstance();
         SuggestionsSource suggestionsSource = depsFactory.createSuggestionSource(profile);
@@ -172,6 +180,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
         mMediator.destroy();
         mTab.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
         mSiteSuggestionsCoordinator.destroy();
+        mOpenLastTabCoordinator.destroy();
 
         super.destroy();
     }

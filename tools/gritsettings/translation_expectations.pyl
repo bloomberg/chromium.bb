@@ -28,6 +28,7 @@
       "chrome/android/features/vr/java/strings/android_chrome_vr_strings.grd",
       "chrome/android/features/media_router/java/strings/android_chrome_media_router_strings.grd",
       "chrome/android/features/autofill_assistant/java/strings/android_chrome_autofill_assistant_strings.grd",
+      "chrome/android/touchless/java/strings/touchless_strings.grd",
       "chrome/android/webapk/strings/android_webapk_strings.grd",
       "chrome/app/chromium_strings.grd",
       "chrome/app/generated_resources.grd",
