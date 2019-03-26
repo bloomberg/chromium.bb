@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/unpacked_serialized_script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/world_safe_v8_reference.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -156,6 +157,8 @@ class CORE_EXPORT MessageEvent final : public Event {
                         EventTarget* source,
                         MessagePortArray*);
 
+  ScriptValue data(ScriptState*);
+  bool IsDataDirty() const { return is_data_dirty_; }
   const String& origin() const { return origin_; }
   const String& lastEventId() const { return last_event_id_; }
   EventTarget* source() const { return source_.Get(); }
@@ -168,40 +171,11 @@ class CORE_EXPORT MessageEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  enum DataType {
-    kDataTypeNull,  // For "messageerror" events.
-    kDataTypeScriptValue,
-    kDataTypeSerializedScriptValue,
-    kDataTypeString,
-    kDataTypeBlob,
-    kDataTypeArrayBuffer
-  };
-  DataType GetDataType() const { return data_type_; }
-  ScriptValue DataAsScriptValue() const {
-    DCHECK_EQ(data_type_, kDataTypeScriptValue);
-    return data_as_script_value_;
-  }
   // Use with caution. Since the data has already been unpacked, the underlying
   // SerializedScriptValue will no longer contain transferred contents.
   SerializedScriptValue* DataAsSerializedScriptValue() const {
     DCHECK_EQ(data_type_, kDataTypeSerializedScriptValue);
     return data_as_serialized_script_value_->Value();
-  }
-  UnpackedSerializedScriptValue* DataAsUnpackedSerializedScriptValue() const {
-    DCHECK_EQ(data_type_, kDataTypeSerializedScriptValue);
-    return data_as_serialized_script_value_.Get();
-  }
-  const String& DataAsString() const {
-    DCHECK_EQ(data_type_, kDataTypeString);
-    return data_as_string_.data();
-  }
-  Blob* DataAsBlob() const {
-    DCHECK_EQ(data_type_, kDataTypeBlob);
-    return data_as_blob_.Get();
-  }
-  DOMArrayBuffer* DataAsArrayBuffer() const {
-    DCHECK_EQ(data_type_, kDataTypeArrayBuffer);
-    return data_as_array_buffer_.Get();
   }
 
   void EntangleMessagePorts(ExecutionContext*);
@@ -214,6 +188,15 @@ class CORE_EXPORT MessageEvent final : public Event {
       v8::Local<v8::Object> wrapper) override;
 
  private:
+  enum DataType {
+    kDataTypeNull,  // For "messageerror" events.
+    kDataTypeScriptValue,
+    kDataTypeSerializedScriptValue,
+    kDataTypeString,
+    kDataTypeBlob,
+    kDataTypeArrayBuffer
+  };
+
   class V8GCAwareString final {
     DISALLOW_NEW();
 
@@ -232,11 +215,12 @@ class CORE_EXPORT MessageEvent final : public Event {
   };
 
   DataType data_type_;
-  ScriptValue data_as_script_value_;
+  WorldSafeV8Reference<v8::Value> data_as_v8_value_;
   Member<UnpackedSerializedScriptValue> data_as_serialized_script_value_;
   V8GCAwareString data_as_string_;
   Member<Blob> data_as_blob_;
   Member<DOMArrayBuffer> data_as_array_buffer_;
+  bool is_data_dirty_ = true;
   String origin_;
   String last_event_id_;
   Member<EventTarget> source_;
