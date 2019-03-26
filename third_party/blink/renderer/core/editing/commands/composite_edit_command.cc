@@ -210,9 +210,9 @@ void CompositeEditCommand::ApplyCommandToComposite(
     command->SetParent(nullptr);
     return;
   }
-  if (command->IsSimpleEditCommand()) {
+  if (auto* simple_edit_command = DynamicTo<SimpleEditCommand>(command)) {
     command->SetParent(nullptr);
-    EnsureUndoStep()->Append(ToSimpleEditCommand(command));
+    EnsureUndoStep()->Append(simple_edit_command);
   }
   commands_.push_back(command);
 }
