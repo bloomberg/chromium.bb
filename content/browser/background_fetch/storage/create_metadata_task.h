@@ -17,7 +17,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
-
 namespace background_fetch {
 
 // Checks if the registration can be created, then writes the Background
@@ -87,7 +86,6 @@ class CreateMetadataTask : public DatabaseTask {
 };
 
 }  // namespace background_fetch
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_CREATE_METADATA_TASK_H_

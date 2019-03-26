@@ -16,7 +16,6 @@
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 
 namespace content {
-
 namespace background_fetch {
 
 namespace {
@@ -162,5 +161,4 @@ std::string DeleteRegistrationTask::HistogramName() const {
 }
 
 }  // namespace background_fetch
-
 }  // namespace content

@@ -9,16 +9,12 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/origin.h"
 
 namespace content {
-
-namespace proto {
-class BackgroundFetchMetadata;
-}
-
 namespace background_fetch {
 
 // Gets an active Background Fetch metadata entry from the database.
@@ -62,7 +58,6 @@ class GetRegistrationTask : public DatabaseTask {
 };
 
 }  // namespace background_fetch
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_GET_REGISTRATION_TASK_H_

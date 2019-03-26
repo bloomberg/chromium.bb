@@ -16,7 +16,6 @@
 #include "url/origin.h"
 
 namespace content {
-
 namespace background_fetch {
 
 // Gets the developer ids for all active registrations - registrations that have
@@ -55,7 +54,6 @@ class GetDeveloperIdsTask : public DatabaseTask {
 };
 
 }  // namespace background_fetch
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_GET_DEVELOPER_IDS_TASK_H_

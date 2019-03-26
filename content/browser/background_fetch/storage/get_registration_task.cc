@@ -5,12 +5,10 @@
 #include "content/browser/background_fetch/storage/get_registration_task.h"
 
 #include "base/bind.h"
-#include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/background_fetch/storage/get_metadata_task.h"
 
 namespace content {
-
 namespace background_fetch {
 
 GetRegistrationTask::GetRegistrationTask(DatabaseTaskHost* host,
@@ -71,5 +69,4 @@ std::string GetRegistrationTask::HistogramName() const {
 }
 
 }  // namespace background_fetch
-
 }  // namespace content

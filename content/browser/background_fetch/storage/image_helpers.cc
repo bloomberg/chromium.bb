@@ -11,7 +11,6 @@
 #include "ui/gfx/image/image.h"
 
 namespace content {
-
 namespace background_fetch {
 
 namespace {
@@ -69,5 +68,4 @@ void DeserializeIcon(std::unique_ptr<std::string> serialized_icon,
 }
 
 }  // namespace background_fetch
-
 }  // namespace content

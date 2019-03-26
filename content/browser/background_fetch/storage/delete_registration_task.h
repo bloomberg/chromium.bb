@@ -14,7 +14,6 @@
 #include "url/origin.h"
 
 namespace content {
-
 namespace background_fetch {
 
 // Deletes Background Fetch registration entries from the database.
@@ -57,7 +56,6 @@ class DeleteRegistrationTask : public background_fetch::DatabaseTask {
 };
 
 }  // namespace background_fetch
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_DELETE_REGISTRATION_TASK_H_
