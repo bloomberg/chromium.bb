@@ -17,6 +17,14 @@
 namespace views {
 namespace examples {
 
+namespace {
+
+const char* BoolToOnOff(bool value) {
+  return value ? "on" : "off";
+}
+
+}  // namespace
+
 RadioButtonExample::RadioButtonExample() : ExampleBase("Radio Button") {}
 
 RadioButtonExample::~RadioButtonExample() = default;
