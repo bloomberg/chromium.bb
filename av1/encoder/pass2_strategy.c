@@ -651,8 +651,7 @@ static void allocate_gf_group_bits(
       gf_group->bit_allocation[arf_pos] = target_frame_size;
       // Note: Boost, if needed, is added in the next loop.
     } else {
-      assert(gf_group->update_type[frame_index] == LF_UPDATE ||
-             gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE);
+      assert(gf_group->update_type[frame_index] == LF_UPDATE);
       gf_group->bit_allocation[frame_index] = target_frame_size;
       if (cpi->num_extra_arfs > 0) {
         const int this_budget_reduction =
