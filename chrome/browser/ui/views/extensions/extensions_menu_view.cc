@@ -8,79 +8,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/hover_button.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace {
 ExtensionsMenuView* g_extensions_dialog = nullptr;
-
-class ExtensionsMenuButton : public HoverButton,
-                             public views::ButtonListener,
-                             public ToolbarActionViewDelegateViews,
-                             public views::ContextMenuController {
- public:
-  ExtensionsMenuButton(Browser* browser,
-                       std::unique_ptr<ToolbarActionViewController> controller)
-      : HoverButton(this, controller->GetActionName()),
-        browser_(browser),
-        controller_(std::move(controller)) {
-    set_context_menu_controller(this);
-    controller_->SetDelegate(this);
-    UpdateState();
-  }
-
- private:
-  // views::ButtonListener:
-  void ButtonPressed(Button* sender, const ui::Event& event) override {
-    controller_->ExecuteAction(true);
-  }
-
-  // ToolbarActionViewDelegateViews:
-  views::View* GetAsView() override { return this; }
-
-  views::FocusManager* GetFocusManagerForAccelerator() override {
-    return GetFocusManager();
-  }
-
-  views::View* GetReferenceViewForPopup() override {
-    return BrowserView::GetBrowserViewForBrowser(browser_)
-        ->toolbar()
-        ->extensions_button();
-  }
-
-  content::WebContents* GetCurrentWebContents() const override {
-    return browser_->tab_strip_model()->GetActiveWebContents();
-  }
-
-  void UpdateState() override {
-    // TODO(pbos): Repopulate button.
-  }
-
-  bool IsMenuRunning() const override {
-    // TODO(pbos): Implement when able to show context menus inside this bubble.
-    return false;
-  }
-
-  // views::ContextMenuController:
-  void ShowContextMenuForViewImpl(views::View* source,
-                                  const gfx::Point& point,
-                                  ui::MenuSourceType source_type) override {
-    // TODO(pbos): Implement this. This is a no-op implementation as it prevents
-    // crashing actions that don't have a popup action.
-  }
-
-  Browser* const browser_;
-  const std::unique_ptr<ToolbarActionViewController> controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuButton);
-};
-
 }  // namespace
 
 ExtensionsMenuView::ExtensionsMenuView(views::View* anchor_view,
@@ -165,4 +99,8 @@ bool ExtensionsMenuView::IsShowing() {
 void ExtensionsMenuView::Hide() {
   if (IsShowing())
     g_extensions_dialog->GetWidget()->Close();
+}
+
+ExtensionsMenuView* ExtensionsMenuView::GetExtensionsMenuViewForTesting() {
+  return g_extensions_dialog;
 }

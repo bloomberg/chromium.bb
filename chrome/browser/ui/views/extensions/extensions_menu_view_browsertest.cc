@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -16,12 +17,12 @@
 
 class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
  protected:
-  void LoadTestExtension() {
+  void LoadTestExtension(const std::string& extension) {
     extensions::ChromeTestExtensionLoader loader(browser()->profile());
     base::FilePath test_data_dir;
     base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-    extension_ = loader.LoadExtension(
-        test_data_dir.AppendASCII("extensions/uitest/long_name"));
+    extensions_.push_back(
+        loader.LoadExtension(test_data_dir.AppendASCII(extension)));
   }
 
  private:
@@ -31,6 +32,11 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
   }
 
   void ShowUi(const std::string& name) override {
+    if (name == "default") {
+      LoadTestExtension("extensions/uitest/long_name");
+      LoadTestExtension("extensions/uitest/window_open");
+    }
+
     ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                                base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
     BrowserView::GetBrowserViewForBrowser(browser())
@@ -39,12 +45,34 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
         ->OnMousePressed(click_event);
   }
 
+  bool VerifyUi() override {
+    if (!DialogBrowserTest::VerifyUi())
+      return false;
+
+    std::vector<ExtensionsMenuButton*> menu_buttons = GetExtensionMenuButtons();
+    if (extensions_.size() != menu_buttons.size())
+      return false;
+
+    // TODO(pbos): Sort and compare titles of buttons / extensions.
+
+    return true;
+  }
+
+  static std::vector<ExtensionsMenuButton*> GetExtensionMenuButtons() {
+    std::vector<ExtensionsMenuButton*> buttons;
+    for (auto* view : ExtensionsMenuView::GetExtensionsMenuViewForTesting()
+                          ->GetChildrenInZOrder()) {
+      if (view->GetClassName() == ExtensionsMenuButton::kClassName)
+        buttons.push_back(static_cast<ExtensionsMenuButton*>(view));
+    }
+    return buttons;
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_refptr<const extensions::Extension> extension_;
+  std::vector<scoped_refptr<const extensions::Extension>> extensions_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, InvokeUi_default) {
-  LoadTestExtension();
   ShowAndVerifyUi();
 }
 
