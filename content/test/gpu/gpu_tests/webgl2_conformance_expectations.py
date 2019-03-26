@@ -1343,6 +1343,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['android', 'qualcomm'], bug=906740)
     self.Fail('deqp/functional/gles3/shaderderivate_dfdy.html',
         ['android', 'qualcomm'], bug=906745)
+    self.Flaky('deqp/functional/gles3/shaderbuiltinvar.html',
+        ['android', 'qualcomm'], bug=946177)
 
     # Nvidia (Shield TV) failures
     self.Fail('conformance2/glsl3/array-complex-indexing.html',
