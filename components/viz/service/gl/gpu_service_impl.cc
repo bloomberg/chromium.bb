@@ -43,8 +43,8 @@
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
-#include "media/mojo/services/mojo_jpeg_decode_accelerator_service.h"
 #include "media/mojo/services/mojo_jpeg_encode_accelerator_service.h"
+#include "media/mojo/services/mojo_mjpeg_decode_accelerator_service.h"
 #include "media/mojo/services/mojo_video_encode_accelerator_provider.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -417,7 +417,7 @@ void GpuServiceImpl::CreateArcProtectedBufferManagerOnMainThread(
 void GpuServiceImpl::CreateJpegDecodeAccelerator(
     media::mojom::MjpegDecodeAcceleratorRequest jda_request) {
   DCHECK(io_runner_->BelongsToCurrentThread());
-  media::MojoJpegDecodeAcceleratorService::Create(std::move(jda_request));
+  media::MojoMjpegDecodeAcceleratorService::Create(std::move(jda_request));
 }
 
 void GpuServiceImpl::CreateJpegEncodeAccelerator(

@@ -15,7 +15,7 @@
 
 namespace media {
 
-using MojoJpegDecodeAcceleratorFactoryCB =
+using MojoMjpegDecodeAcceleratorFactoryCB =
     base::RepeatingCallback<void(media::mojom::MjpegDecodeAcceleratorRequest)>;
 using MojoJpegEncodeAcceleratorFactoryCB =
     base::RepeatingCallback<void(media::mojom::JpegEncodeAcceleratorRequest)>;
