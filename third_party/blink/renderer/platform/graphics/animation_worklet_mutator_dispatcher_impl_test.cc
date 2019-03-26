@@ -401,6 +401,12 @@ class AnimationWorkletMutatorDispatcherImplAsyncTest
   // of times.
   MOCK_METHOD0(IntermediateResultCallbackRef, void());
 
+  static const MutateQueuingStrategy kNormalPriority =
+      MutateQueuingStrategy::kQueueAndReplaceNormalPriority;
+
+  static const MutateQueuingStrategy kHighPriority =
+      MutateQueuingStrategy::kQueueHighPriority;
+
  private:
   base::RunLoop run_loop_;
 };
@@ -423,9 +429,8 @@ TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
       .WillOnce(Return(new AnimationWorkletOutput()));
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(1);
 
-  EXPECT_TRUE(mutator_->MutateAsynchronously(CreateTestMutatorInput(),
-                                             MutateQueuingStrategy::kDrop,
-                                             CreateTestCompleteCallback()));
+  EXPECT_TRUE(mutator_->MutateAsynchronously(
+      CreateTestMutatorInput(), kNormalPriority, CreateTestCompleteCallback()));
 
   WaitForTestCompletion();
 }
@@ -450,8 +455,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
       .Times(AtLeast(1))
       .WillRepeatedly(Return(11));
 
-  EXPECT_FALSE(mutator_->MutateAsynchronously(std::move(input),
-                                              MutateQueuingStrategy::kDrop,
+  EXPECT_FALSE(mutator_->MutateAsynchronously(std::move(input), kNormalPriority,
                                               CreateNotReachedCallback()));
 }
 
@@ -460,8 +464,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(0);
   std::unique_ptr<AnimationWorkletDispatcherInput> input =
       std::make_unique<AnimationWorkletDispatcherInput>();
-  EXPECT_FALSE(mutator_->MutateAsynchronously(std::move(input),
-                                              MutateQueuingStrategy::kDrop,
+  EXPECT_FALSE(mutator_->MutateAsynchronously(std::move(input), kNormalPriority,
                                               CreateNotReachedCallback()));
 }
 
@@ -483,7 +486,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(0);
 
   EXPECT_TRUE(mutator_->MutateAsynchronously(
-      CreateTestMutatorInput(), MutateQueuingStrategy::kDrop,
+      CreateTestMutatorInput(), kNormalPriority,
       CreateTestCompleteCallback(MutateStatus::kCompletedNoUpdate)));
 
   WaitForTestCompletion();
@@ -508,9 +511,8 @@ TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
       .WillOnce(Return(new AnimationWorkletOutput()));
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(1);
 
-  EXPECT_TRUE(mutator_->MutateAsynchronously(CreateTestMutatorInput(),
-                                             MutateQueuingStrategy::kDrop,
-                                             CreateTestCompleteCallback()));
+  EXPECT_TRUE(mutator_->MutateAsynchronously(
+      CreateTestMutatorInput(), kNormalPriority, CreateTestCompleteCallback()));
 
   WaitForTestCompletion();
 
@@ -519,9 +521,8 @@ TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
 
   // Ensure mutator is not invoked after unregistration.
   mutator_->UnregisterAnimationWorkletMutator(first_mutator);
-  EXPECT_FALSE(mutator_->MutateAsynchronously(CreateTestMutatorInput(),
-                                              MutateQueuingStrategy::kDrop,
-                                              CreateNotReachedCallback()));
+  EXPECT_FALSE(mutator_->MutateAsynchronously(
+      CreateTestMutatorInput(), kNormalPriority, CreateNotReachedCallback()));
 
   Mock::VerifyAndClearExpectations(client_.get());
 }
@@ -555,9 +556,8 @@ TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
       .WillOnce(Return(new AnimationWorkletOutput()));
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(2);
 
-  EXPECT_TRUE(mutator_->MutateAsynchronously(CreateTestMutatorInput(),
-                                             MutateQueuingStrategy::kDrop,
-                                             CreateTestCompleteCallback()));
+  EXPECT_TRUE(mutator_->MutateAsynchronously(
+      CreateTestMutatorInput(), kNormalPriority, CreateTestCompleteCallback()));
 
   WaitForTestCompletion();
 }
@@ -594,9 +594,8 @@ TEST_F(
       .WillOnce(Return(new AnimationWorkletOutput()));
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(2);
 
-  EXPECT_TRUE(mutator_->MutateAsynchronously(CreateTestMutatorInput(),
-                                             MutateQueuingStrategy::kDrop,
-                                             CreateTestCompleteCallback()));
+  EXPECT_TRUE(mutator_->MutateAsynchronously(
+      CreateTestMutatorInput(), kNormalPriority, CreateTestCompleteCallback()));
 
   WaitForTestCompletion();
 }
@@ -622,9 +621,8 @@ TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
   first_mutator->BlockWorkletThread();
   // Response for first mutator call is blocked until after the second
   // call is sent.
-  EXPECT_TRUE(mutator_->MutateAsynchronously(CreateTestMutatorInput(),
-                                             MutateQueuingStrategy::kDrop,
-                                             CreateTestCompleteCallback()));
+  EXPECT_TRUE(mutator_->MutateAsynchronously(
+      CreateTestMutatorInput(), kNormalPriority, CreateTestCompleteCallback()));
   // Second request dropped since busy processing first.
   EXPECT_FALSE(mutator_->MutateAsynchronously(CreateTestMutatorInput(),
                                               MutateQueuingStrategy::kDrop,
@@ -660,12 +658,95 @@ TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
   // Response for first mutator call is blocked until after the second
   // call is sent.
   EXPECT_TRUE(mutator_->MutateAsynchronously(
-      CreateTestMutatorInput(), MutateQueuingStrategy::kDrop,
+      CreateTestMutatorInput(), kNormalPriority,
       CreateIntermediateResultCallback(MutateStatus::kCompletedWithUpdate)));
   // First request still processing, queue request.
   EXPECT_TRUE(mutator_->MutateAsynchronously(
-      CreateTestMutatorInput(), MutateQueuingStrategy::kQueueAndReplace,
-      CreateTestCompleteCallback()));
+      CreateTestMutatorInput(), kNormalPriority, CreateTestCompleteCallback()));
+  // Unblock first request.
+  first_mutator->UnblockWorkletThread();
+
+  WaitForTestCompletion();
+}
+
+TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
+       MutationUpdateQueueWithReplacementWhenBusy) {
+  std::unique_ptr<Thread> first_thread = CreateThread("FirstThread");
+
+  MockAnimationWorkletMutator* first_mutator =
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
+          first_thread->GetTaskRunner());
+  mutator_->RegisterAnimationWorkletMutator(first_mutator,
+                                            first_thread->GetTaskRunner());
+
+  EXPECT_CALL(*first_mutator, GetWorkletId())
+      .Times(AtLeast(2))
+      .WillRepeatedly(Return(11));
+  EXPECT_CALL(*first_mutator, MutateRef(_))
+      .Times(2)
+      .WillOnce(Return(new AnimationWorkletOutput()))
+      .WillOnce(Return(new AnimationWorkletOutput()));
+  EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(2);
+  EXPECT_CALL(*this, IntermediateResultCallbackRef()).Times(2);
+
+  // Block Responses until all requests have been queued.
+  first_mutator->BlockWorkletThread();
+  // Response for first mutator call is blocked until after the second
+  // call is sent.
+  EXPECT_TRUE(mutator_->MutateAsynchronously(
+      CreateTestMutatorInput(), kNormalPriority,
+      CreateIntermediateResultCallback(MutateStatus::kCompletedWithUpdate)));
+  // First request still processing, queue a second request, which will get
+  // canceled by a third request.
+  EXPECT_TRUE(mutator_->MutateAsynchronously(
+      CreateTestMutatorInput(), kNormalPriority,
+      CreateIntermediateResultCallback(MutateStatus::kCanceled)));
+  // First request still processing, clobber second request in queue.
+  EXPECT_TRUE(mutator_->MutateAsynchronously(
+      CreateTestMutatorInput(), kNormalPriority, CreateTestCompleteCallback()));
+  // Unblock first request.
+  first_mutator->UnblockWorkletThread();
+
+  WaitForTestCompletion();
+}
+
+TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
+       MutationUpdateMultipleQueuesWhenBusy) {
+  std::unique_ptr<Thread> first_thread = CreateThread("FirstThread");
+
+  MockAnimationWorkletMutator* first_mutator =
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
+          first_thread->GetTaskRunner());
+  mutator_->RegisterAnimationWorkletMutator(first_mutator,
+                                            first_thread->GetTaskRunner());
+
+  EXPECT_CALL(*first_mutator, GetWorkletId())
+      .Times(AtLeast(3))
+      .WillRepeatedly(Return(11));
+  EXPECT_CALL(*first_mutator, MutateRef(_))
+      .Times(3)
+      .WillOnce(Return(new AnimationWorkletOutput()))
+      .WillOnce(Return(new AnimationWorkletOutput()))
+      .WillOnce(Return(new AnimationWorkletOutput()));
+  EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(3);
+  EXPECT_CALL(*this, IntermediateResultCallbackRef()).Times(2);
+
+  // Block Responses until all requests have been queued.
+  first_mutator->BlockWorkletThread();
+  // Response for first mutator call is blocked until after the second
+  // call is sent.
+  EXPECT_TRUE(mutator_->MutateAsynchronously(
+      CreateTestMutatorInput(), kNormalPriority,
+      CreateIntermediateResultCallback(MutateStatus::kCompletedWithUpdate)));
+  // First request still processing, queue a second request.
+  EXPECT_TRUE(mutator_->MutateAsynchronously(
+      CreateTestMutatorInput(), kNormalPriority, CreateTestCompleteCallback()));
+  // First request still processing. This request uses a separate queue from the
+  // second request. It should not replace the second request but should be
+  // dispatched ahead of the second request.
+  EXPECT_TRUE(mutator_->MutateAsynchronously(
+      CreateTestMutatorInput(), kHighPriority,
+      CreateIntermediateResultCallback(MutateStatus::kCompletedWithUpdate)));
   // Unblock first request.
   first_mutator->UnblockWorkletThread();
 
