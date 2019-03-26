@@ -177,9 +177,7 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
 
  protected:
   // FormFetcher::Consumer:
-  void ProcessMatches(
-      const std::vector<const autofill::PasswordForm*>& non_federated,
-      size_t filtered_count) override;
+  void OnFetchCompleted() override;
 
  private:
   // Delegating constructor.

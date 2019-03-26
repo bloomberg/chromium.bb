@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 
 #include <algorithm>
+#include <iterator>
 #include <memory>
 #include <utility>
 
@@ -28,23 +29,37 @@ namespace password_manager {
 
 namespace {
 
-// Splits |store_results| into a vector of non-federated and federated matches.
-// Returns the federated matches and keeps the non-federated in |store_results|.
-std::vector<std::unique_ptr<PasswordForm>> SplitFederatedMatches(
-    std::vector<std::unique_ptr<PasswordForm>>* store_results) {
-  const auto first_federated = std::partition(
-      store_results->begin(), store_results->end(),
-      [](const std::unique_ptr<PasswordForm>& form) {
+struct SplitMatches {
+  std::vector<std::unique_ptr<PasswordForm>> non_federated;
+  std::vector<std::unique_ptr<PasswordForm>> federated;
+  std::vector<std::unique_ptr<PasswordForm>> blacklisted;
+};
+
+// Partitions |results| into |-- non federated -|- federated -|- blacklisted --|
+// and returns result.
+SplitMatches SplitResults(std::vector<std::unique_ptr<PasswordForm>> results) {
+  const auto first_blacklisted = std::partition(
+      results.begin(), results.end(),
+      [](const auto& form) { return !form->blacklisted_by_user; });
+
+  const auto first_federated =
+      std::partition(results.begin(), first_blacklisted, [](const auto& form) {
         return form->federation_origin.opaque();  // False means federated.
       });
 
-  // Move out federated matches.
-  std::vector<std::unique_ptr<PasswordForm>> federated_matches;
-  federated_matches.resize(store_results->end() - first_federated);
-  std::move(first_federated, store_results->end(), federated_matches.begin());
+  // Ignore PSL matches for blacklisted entries.
+  const auto first_blacklisted_psl = std::partition(
+      first_blacklisted, results.end(),
+      [](const auto& form) { return !form->is_public_suffix_match; });
 
-  store_results->erase(first_federated, store_results->end());
-  return federated_matches;
+  SplitMatches matches;
+  matches.non_federated.assign(std::make_move_iterator(results.begin()),
+                               std::make_move_iterator(first_federated));
+  matches.federated.assign(std::make_move_iterator(first_federated),
+                           std::make_move_iterator(first_blacklisted));
+  matches.blacklisted.assign(std::make_move_iterator(first_blacklisted),
+                             std::make_move_iterator(first_blacklisted_psl));
+  return matches;
 }
 
 void SplitSuppressedFormsAndAssignTo(
@@ -124,7 +139,7 @@ void FormFetcherImpl::AddConsumer(FormFetcher::Consumer* consumer) {
   DCHECK(consumer);
   consumers_.insert(consumer);
   if (state_ == State::NOT_WAITING)
-    consumer->ProcessMatches(weak_non_federated_, filtered_count_);
+    consumer->OnFetchCompleted();
 }
 
 void FormFetcherImpl::RemoveConsumer(FormFetcher::Consumer* consumer) {
@@ -149,6 +164,11 @@ FormFetcherImpl::GetNonFederatedMatches() const {
 const std::vector<const PasswordForm*>& FormFetcherImpl::GetFederatedMatches()
     const {
   return weak_federated_;
+}
+
+const std::vector<const PasswordForm*>& FormFetcherImpl::GetBlacklistedMatches()
+    const {
+  return weak_blacklisted_;
 }
 
 const std::vector<const PasswordForm*>&
@@ -287,6 +307,7 @@ std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {
 
   result->non_federated_ = MakeCopies(this->non_federated_);
   result->federated_ = MakeCopies(this->federated_);
+  result->blacklisted_ = MakeCopies(this->blacklisted_);
   result->interactions_stats_ = this->interactions_stats_;
   result->suppressed_same_origin_https_forms_ =
       MakeCopies(this->suppressed_same_origin_https_forms_);
@@ -297,6 +318,7 @@ std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {
 
   result->weak_non_federated_ = MakeWeakCopies(result->non_federated_);
   result->weak_federated_ = MakeWeakCopies(result->federated_);
+  result->weak_blacklisted_ = MakeWeakCopies(result->blacklisted_);
   result->weak_suppressed_same_origin_https_forms_ =
       MakeWeakCopies(result->suppressed_same_origin_https_forms_);
   result->weak_suppressed_psl_matching_forms_ =
@@ -304,7 +326,6 @@ std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {
   result->weak_suppressed_same_organization_name_forms_ =
       MakeWeakCopies(result->suppressed_same_organization_name_forms_);
 
-  result->filtered_count_ = this->filtered_count_;
   result->state_ = this->state_;
   result->need_to_refetch_ = this->need_to_refetch_;
 
@@ -315,18 +336,17 @@ void FormFetcherImpl::ProcessPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   DCHECK_EQ(State::WAITING, state_);
   state_ = State::NOT_WAITING;
-  federated_ = SplitFederatedMatches(&results);
-  non_federated_ = std::move(results);
-
-  const size_t original_count = non_federated_.size();
-
-  filtered_count_ = original_count - non_federated_.size();
+  SplitMatches matches = SplitResults(std::move(results));
+  federated_ = std::move(matches.federated);
+  non_federated_ = std::move(matches.non_federated);
+  blacklisted_ = std::move(matches.blacklisted);
 
   weak_non_federated_ = MakeWeakCopies(non_federated_);
   weak_federated_ = MakeWeakCopies(federated_);
+  weak_blacklisted_ = MakeWeakCopies(blacklisted_);
 
-  for (FormFetcher::Consumer* consumer : consumers_)
-    consumer->ProcessMatches(weak_non_federated_, filtered_count_);
+  for (auto* consumer : consumers_)
+    consumer->OnFetchCompleted();
 }
 
 }  // namespace password_manager

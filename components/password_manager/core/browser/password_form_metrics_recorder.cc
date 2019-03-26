@@ -493,18 +493,9 @@ void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
     const FormData& submitted_form,
     const std::set<base::string16>& saved_usernames,
     const std::set<base::string16>& saved_passwords,
+    bool is_blacklisted,
     const std::vector<InteractionsStats>& interactions_stats) {
-  // If the user asked to never save credentials on a domain, an entry with
-  // empty password exists for that domain.
-  bool blacklisted =
-      saved_passwords.find(base::string16()) != saved_passwords.end();
-  if (blacklisted && saved_passwords.size() == 1u) {
-    // Note that we miss a nuance here:
-    //
-    // It is possible that the user logs in to a.example.com but b.example.com
-    // is blacklisted. We would still report kNoStoredCredentialsAndBlacklisted
-    // even though the user has not blacklisted a.example.com and is asked
-    // whether they want to save the credentials.
+  if (saved_passwords.empty() && is_blacklisted) {
     filling_assistance_ = FillingAssistance::kNoSavedCredentialsAndBlacklisted;
     return;
   }

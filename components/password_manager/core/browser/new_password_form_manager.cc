@@ -522,8 +522,9 @@ std::unique_ptr<NewPasswordFormManager> NewPasswordFormManager::Clone() {
   //       calling Clone().
   //   (2) They are potentially used in the clone as the clone is used in the UI
   //       code.
-  //   (3) They are not changed during ProcessMatches, triggered at some point
-  //       by the cloned FormFetcher.
+  //   (3) They are not changed during OnFetchCompleted, triggered at some point
+  //   by the
+  //       cloned FormFetcher.
   result->generated_password_ = generated_password_;
   result->votes_uploader_ = votes_uploader_;
   if (parser_.predictions())
@@ -543,32 +544,23 @@ std::unique_ptr<NewPasswordFormManager> NewPasswordFormManager::Clone() {
   return result;
 }
 
-void NewPasswordFormManager::ProcessMatches(
-    const std::vector<const PasswordForm*>& non_federated,
-    size_t filtered_count) {
+void NewPasswordFormManager::OnFetchCompleted() {
   received_stored_credentials_time_ = TimeTicks::Now();
   std::vector<const PasswordForm*> matches;
   PasswordForm::Scheme observed_form_scheme =
       observed_http_auth_digest_ ? observed_http_auth_digest_->scheme
                                  : PasswordForm::SCHEME_HTML;
-  std::copy_if(non_federated.begin(), non_federated.end(),
-               std::back_inserter(matches),
-               [observed_form_scheme](const PasswordForm* form) {
-                 return !form->blacklisted_by_user &&
-                        form->scheme == observed_form_scheme;
-               });
+  for (const auto* match : form_fetcher_->GetNonFederatedMatches()) {
+    if (match->scheme == observed_form_scheme)
+      matches.push_back(match);
+  }
 
   password_manager_util::FindBestMatches(matches, &best_matches_,
                                          &not_best_matches_, &preferred_match_);
 
   // Copy out blacklisted matches.
-  blacklisted_matches_.clear();
   new_blacklisted_.reset();
-  std::copy_if(
-      non_federated.begin(), non_federated.end(),
-      std::back_inserter(blacklisted_matches_), [](const PasswordForm* form) {
-        return form->blacklisted_by_user && !form->is_public_suffix_match;
-      });
+  blacklisted_matches_ = form_fetcher_->GetBlacklistedMatches();
 
   autofills_left_ = kMaxTimesAutofill;
 
@@ -1150,10 +1142,7 @@ void NewPasswordFormManager::CalculateFillingAssistanceMetric(
   std::set<base::string16> saved_usernames;
   std::set<base::string16> saved_passwords;
 
-  const std::vector<const PasswordForm*>& saved_forms =
-      form_fetcher_->GetNonFederatedMatches();
-
-  for (auto* saved_form : saved_forms) {
+  for (auto* saved_form : form_fetcher_->GetNonFederatedMatches()) {
     saved_usernames.insert(saved_form->username_value);
     saved_passwords.insert(saved_form->password_value);
   }
@@ -1163,7 +1152,7 @@ void NewPasswordFormManager::CalculateFillingAssistanceMetric(
   saved_usernames.erase(base::string16());
 
   metrics_recorder_->CalculateFillingAssistanceMetric(
-      submitted_form, saved_usernames, saved_passwords,
+      submitted_form, saved_usernames, saved_passwords, IsBlacklisted(),
       form_fetcher_->GetInteractionsStats());
 #endif
 }

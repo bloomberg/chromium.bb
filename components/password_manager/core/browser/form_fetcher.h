@@ -37,14 +37,9 @@ class FormFetcher {
     virtual ~Consumer() = default;
 
     // FormFetcher calls this method every time the state changes from WAITING
-    // to UP_TO_DATE. It fills |non_federated| with pointers to non-federated
-    // matches (pointees stay owned by FormFetcher). To access the federated
-    // matches, the consumer can simply call GetFederatedMatches().
-    // |filtered_count| is the number of non-federated forms which were
-    // filtered out by CredentialsFilter and not included in |non_federated|.
-    virtual void ProcessMatches(
-        const std::vector<const autofill::PasswordForm*>& non_federated,
-        size_t filtered_count) = 0;
+    // to NOT_WAITING. It is now safe for consumers to call the accessor
+    // functions for matches.
+    virtual void OnFetchCompleted() = 0;
   };
 
   FormFetcher() = default;
@@ -52,8 +47,8 @@ class FormFetcher {
   virtual ~FormFetcher() = default;
 
   // Adds |consumer|, which must not be null. If the current state is
-  // UP_TO_DATE, calls ProcessMatches on the consumer immediately. Assumes that
-  // |consumer| outlives |this|.
+  // NOT_WAITING, calls OnFetchCompleted on the consumer immediately. Assumes
+  // that |consumer| outlives |this|.
   virtual void AddConsumer(Consumer* consumer) = 0;
 
   // Call this to stop |consumer| from receiving updates from |this|.
@@ -76,6 +71,11 @@ class FormFetcher {
   virtual const std::vector<const autofill::PasswordForm*>&
   GetFederatedMatches() const = 0;
 
+  // Blacklisted matches obtained from the backend. Valid only if GetState()
+  // returns NOT_WAITING.
+  virtual const std::vector<const autofill::PasswordForm*>&
+  GetBlacklistedMatches() const = 0;
+
   // The following accessors return various kinds of `suppressed` credentials.
   // These are stored credentials that are not (auto-)filled, because they are
   // for an origin that is similar to, but not exactly matching the origin that
@@ -89,7 +89,7 @@ class FormFetcher {
   //  3.) Same-organization name credentials, not filled.
   //
   // Results below are queried on a best-effort basis, might be somewhat stale,
-  // and are available shortly after the Consumer::ProcessMatches callback.
+  // and are available shortly after the Consumer::OnFetchCompleted callback.
 
   // When this instance fetches forms for an HTTP origin: Returns saved
   // credentials, if any, found for the HTTPS version of that origin. Empty
