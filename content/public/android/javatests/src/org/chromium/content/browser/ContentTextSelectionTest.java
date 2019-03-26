@@ -20,7 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
@@ -36,6 +35,7 @@ import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 import java.util.concurrent.Callable;
@@ -428,12 +428,7 @@ public class ContentTextSelectionTest {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(mWebContents, "empty_input_text");
         waitForPastePopupStatus(true);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mWebContents.destroy();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mWebContents.destroy(); });
         waitForPastePopupStatus(false);
     }
 
@@ -804,66 +799,32 @@ public class ContentTextSelectionTest {
     }
 
     private void selectActionBarPaste() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSelectionPopupController.paste();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mSelectionPopupController.paste(); });
     }
 
     private void selectActionBarSelectAll() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSelectionPopupController.selectAll();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mSelectionPopupController.selectAll(); });
     }
 
     private void selectActionBarCut() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSelectionPopupController.cut();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mSelectionPopupController.cut(); });
     }
 
     private void selectActionBarCopy() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSelectionPopupController.copy();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mSelectionPopupController.copy(); });
     }
 
     private void selectActionBarSearch() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSelectionPopupController.search();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mSelectionPopupController.search(); });
     }
 
     private void selectActionBarShare() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSelectionPopupController.share();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mSelectionPopupController.share(); });
     }
 
     private void hideSelectActionMode() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSelectionPopupController.destroySelectActionMode();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mSelectionPopupController.destroySelectActionMode(); });
     }
 
     private void waitForClipboardContents(final String expectedContents) {
@@ -891,41 +852,32 @@ public class ContentTextSelectionTest {
 
     private void setVisibileOnUiThread(final boolean show) {
         final WebContents webContents = mActivityTestRule.getWebContents();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                if (show) {
-                    webContents.onShow();
-                } else {
-                    webContents.onHide();
-                }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            if (show) {
+                webContents.onShow();
+            } else {
+                webContents.onHide();
             }
         });
     }
 
     private void setAttachedOnUiThread(final boolean attached) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ViewEventSinkImpl viewEventSink =
-                        ViewEventSinkImpl.from(mActivityTestRule.getWebContents());
-                if (attached) {
-                    viewEventSink.onAttachedToWindow();
-                } else {
-                    viewEventSink.onDetachedFromWindow();
-                }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ViewEventSinkImpl viewEventSink =
+                    ViewEventSinkImpl.from(mActivityTestRule.getWebContents());
+            if (attached) {
+                viewEventSink.onAttachedToWindow();
+            } else {
+                viewEventSink.onDetachedFromWindow();
             }
         });
     }
 
     private void requestFocusOnUiThread(final boolean gainFocus) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ViewEventSinkImpl viewEventSink =
-                        ViewEventSinkImpl.from(mActivityTestRule.getWebContents());
-                viewEventSink.onViewFocusChanged(gainFocus);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ViewEventSinkImpl viewEventSink =
+                    ViewEventSinkImpl.from(mActivityTestRule.getWebContents());
+            viewEventSink.onViewFocusChanged(gainFocus);
         });
     }
 

@@ -15,7 +15,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
@@ -26,6 +25,7 @@ import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell_apk.ChildProcessLauncherTestUtils;
 import org.chromium.content_shell_apk.ContentShellActivity;
@@ -393,13 +393,13 @@ public class WebContentsTest {
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
         final WebContents webContents = activity.getActiveWebContents();
         // Make sure visibility do not affect bindings.
-        ThreadUtils.runOnUiThreadBlocking(() -> webContents.onHide());
+        TestThreadUtils.runOnUiThreadBlocking(() -> webContents.onHide());
 
         final ChildProcessConnection connection = getSandboxedChildProcessConnection();
         ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(
                 () -> Assert.assertFalse(connection.isModerateBindingBound()));
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> webContents.setImportance(ChildProcessImportance.MODERATE));
         ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(
                 () -> Assert.assertTrue(connection.isModerateBindingBound()));
@@ -417,17 +417,17 @@ public class WebContentsTest {
         ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(
                 () -> Assert.assertTrue(connection.isStrongBindingBound()));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> webContents.onHide());
+        TestThreadUtils.runOnUiThreadBlocking(() -> webContents.onHide());
         ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(
                 () -> Assert.assertFalse(connection.isStrongBindingBound()));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> webContents.onShow());
+        TestThreadUtils.runOnUiThreadBlocking(() -> webContents.onShow());
         ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(
                 () -> Assert.assertTrue(connection.isStrongBindingBound()));
     }
 
     private boolean isWebContentsDestroyed(final WebContents webContents) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return webContents.isDestroyed();
