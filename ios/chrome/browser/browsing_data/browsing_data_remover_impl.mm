@@ -474,9 +474,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
     ClearHttpCache(context_getter_,
                    base::CreateSingleThreadTaskRunnerWithTraits(task_traits),
                    delete_begin, delete_end,
-                   AdaptCallbackForRepeating(
-                       base::BindOnce(&NetCompletionCallbackAdapter,
-                                      CreatePendingTaskCompletionClosure())));
+                   base::BindOnce(&NetCompletionCallbackAdapter,
+                                  CreatePendingTaskCompletionClosure()));
   }
 
   // Remove omnibox zero-suggest cache results.
