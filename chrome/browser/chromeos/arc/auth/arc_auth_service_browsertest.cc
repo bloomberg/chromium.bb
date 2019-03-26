@@ -30,7 +30,6 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
@@ -234,6 +233,11 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
   chromeos::FakeChromeUserManager* GetFakeUserManager() const {
     return static_cast<chromeos::FakeChromeUserManager*>(
         user_manager::UserManager::Get());
+  }
+
+  void EnableRemovalOfExtendedAccountInfo() {
+    identity_test_environment_adaptor_->identity_test_env()
+        ->EnableRemovalOfExtendedAccountInfo();
   }
 
   void SetAccountAndProfile(const user_manager::UserType user_type) {
@@ -598,11 +602,10 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
           kSecondaryAccountEmail);
   ASSERT_TRUE(maybe_account_info.has_value());
 
-  AccountFetcherService* account_fetcher_service =
-      AccountFetcherServiceFactory::GetForProfile(profile());
   // Necessary to ensure that the OnExtendedAccountInfoRemoved() observer will
   // be sent.
-  account_fetcher_service->EnableAccountRemovalForTest();
+  EnableRemovalOfExtendedAccountInfo();
+
   identity_manager->GetAccountsMutator()->RemoveAccount(
       maybe_account_info.value().account_id,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
