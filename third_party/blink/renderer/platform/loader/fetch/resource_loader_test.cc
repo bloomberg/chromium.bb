@@ -60,8 +60,8 @@ class ResourceLoaderTest : public testing::Test {
     std::unique_ptr<WebURLLoader> CreateURLLoader(
         const ResourceRequest& request,
         const ResourceLoaderOptions& options,
-        scoped_refptr<base::SingleThreadTaskRunner>) override {
-      return std::make_unique<NoopWebURLLoader>();
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
+      return std::make_unique<NoopWebURLLoader>(std::move(task_runner));
     }
     std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() override {
       return Platform::Current()->CreateCodeCacheLoader();
@@ -75,6 +75,8 @@ class ResourceLoaderTest : public testing::Test {
  private:
   class NoopWebURLLoader final : public WebURLLoader {
    public:
+    NoopWebURLLoader(scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+        : task_runner_(task_runner) {}
     ~NoopWebURLLoader() override = default;
     void LoadSynchronously(const WebURLRequest&,
                            WebURLLoaderClient*,
@@ -94,6 +96,12 @@ class ResourceLoaderTest : public testing::Test {
     void DidChangePriority(WebURLRequest::Priority, int) override {
       NOTREACHED();
     }
+    scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override {
+      return task_runner_;
+    }
+
+   private:
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   };
 };
 

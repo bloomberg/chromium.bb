@@ -83,6 +83,9 @@ class WebURLLoader {
   // priority, but may increase when the resource is needed for rendering.
   virtual void DidChangePriority(WebURLRequest::Priority new_priority,
                                  int intra_priority_value) = 0;
+
+  // Returns the task runner for this request.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() = 0;
 };
 
 }  // namespace blink

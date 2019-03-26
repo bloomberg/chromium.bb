@@ -415,6 +415,7 @@ void ResourceLoader::Start() {
   const ResourceRequest& request = resource_->GetResourceRequest();
   ActivateCacheAwareLoadingIfNeeded(request);
   loader_ = fetcher_->CreateURLLoader(request, resource_->Options());
+  task_runner_for_body_loader_ = loader_->GetTaskRunner();
   DCHECK_EQ(ResourceLoadScheduler::kInvalidClientId, scheduler_client_id_);
   auto throttle_option = ResourceLoadScheduler::ThrottleOption::kThrottleable;
 
@@ -462,7 +463,8 @@ void ResourceLoader::DidStartLoadingResponseBodyInternal(
   DCHECK(!response_body_loader_);
   ResponseBodyLoaderClient& response_body_loader_client = *this;
   response_body_loader_ = MakeGarbageCollected<ResponseBodyLoader>(
-      bytes_consumer, response_body_loader_client, GetLoadingTaskRunner());
+      bytes_consumer, response_body_loader_client,
+      task_runner_for_body_loader_);
   resource_->ResponseBodyReceived(*response_body_loader_);
   if (response_body_loader_->IsDrained()) {
     // When streaming, unpause virtual time early to prevent deadlocking
@@ -555,6 +557,7 @@ void ResourceLoader::Release(
 void ResourceLoader::Restart(const ResourceRequest& request) {
   CHECK_EQ(resource_->Options().synchronous_policy, kRequestAsynchronously);
   loader_ = fetcher_->CreateURLLoader(request, resource_->Options());
+  task_runner_for_body_loader_ = loader_->GetTaskRunner();
   StartWith(request);
 }
 

@@ -90,6 +90,8 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
   void SetDefersLoading(bool value) override;
   void DidChangePriority(blink::WebURLRequest::Priority new_priority,
                          int intra_priority_value) override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
+
  private:
   class Context;
   class RequestPeerImpl;

@@ -249,6 +249,7 @@ class PLATFORM_EXPORT ResourceLoader final
     std::vector<network::cors::PreflightTimingInfo> cors_preflight_timing_info;
   };
   base::Optional<DeferredFinishLoadingInfo> deferred_finish_loading_info_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_body_loader_;
 
   // True if loading is deferred.
   bool defers_ = false;
