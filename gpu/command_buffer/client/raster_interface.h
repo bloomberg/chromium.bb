@@ -55,6 +55,8 @@ class RasterInterface {
                                    GLboolean can_use_lcd_text,
                                    const gfx::ColorSpace& color_space,
                                    const GLbyte* mailbox) = 0;
+
+  static constexpr size_t kDefaultMaxOpSizeHint = 512 * 1024;
   virtual void RasterCHROMIUM(const cc::DisplayItemList* list,
                               cc::ImageProvider* provider,
                               const gfx::Size& content_size,
@@ -62,7 +64,8 @@ class RasterInterface {
                               const gfx::Rect& playback_rect,
                               const gfx::Vector2dF& post_translate,
                               GLfloat post_scale,
-                              bool requires_clear) = 0;
+                              bool requires_clear,
+                              size_t* max_op_size_hint) = 0;
 
   // Schedules a hardware-accelerated image decode and a sync token that's
   // released when the image decode is complete. If the decode could not be
