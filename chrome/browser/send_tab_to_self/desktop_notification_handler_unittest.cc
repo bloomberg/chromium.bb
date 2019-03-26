@@ -16,8 +16,8 @@
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/send_tab_to_self/send_tab_to_self_entry.h"
-#include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
+#include "components/send_tab_to_self/test_send_tab_to_self_model.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
@@ -38,38 +38,24 @@ const char kDesktopNotificationDeviceInfo[] = "device_info";
 const char kDesktopNotificationDeviceInfoWithPrefix[] =
     "Shared from device_info";
 
-class SendTabToSelfModelMock : public SendTabToSelfModel {
+class SendTabToSelfModelMock : public TestSendTabToSelfModel {
  public:
   SendTabToSelfModelMock() = default;
   ~SendTabToSelfModelMock() override = default;
 
-  MOCK_METHOD3(AddEntry,
-               const SendTabToSelfEntry*(const GURL&,
-                                         const std::string&,
-                                         base::Time navigation_time));
   MOCK_METHOD1(DeleteEntry, void(const std::string&));
   MOCK_METHOD1(DismissEntry, void(const std::string&));
-
-  MOCK_CONST_METHOD0(GetAllGuids, std::vector<std::string>());
-  MOCK_METHOD0(DeleteAllEntries, void());
-  MOCK_CONST_METHOD1(GetEntryByGUID, SendTabToSelfEntry*(const std::string&));
-
-  void AddObserver(SendTabToSelfModelObserver* observer) {}
-  void RemoveObserver(SendTabToSelfModelObserver* observer) {}
 };
 
-// Mock a SendTabToSelfSyncService to get SendTabToSelfModelMock
-class SendTabToSelfSyncServiceMock : public SendTabToSelfSyncService {
+class TestSendTabToSelfSyncService : public SendTabToSelfSyncService {
  public:
-  SendTabToSelfSyncServiceMock() = default;
-  ~SendTabToSelfSyncServiceMock() override = default;
+  TestSendTabToSelfSyncService() = default;
+  ~TestSendTabToSelfSyncService() override = default;
 
-  SendTabToSelfModel* GetSendTabToSelfModel() override {
-    return &send_tab_to_self_model_mock_;
-  }
+  SendTabToSelfModel* GetSendTabToSelfModel() override { return &model_mock_; }
 
  protected:
-  SendTabToSelfModelMock send_tab_to_self_model_mock_;
+  SendTabToSelfModelMock model_mock_;
 };
 
 // Matcher to compare Notification object
@@ -81,7 +67,7 @@ MATCHER_P(EqualNotification, e, "") {
 
 std::unique_ptr<KeyedService> BuildTestSendTabToSelfSyncService(
     content::BrowserContext* context) {
-  return std::make_unique<SendTabToSelfSyncServiceMock>();
+  return std::make_unique<TestSendTabToSelfSyncService>();
 }
 
 class NotificationDisplayServiceMock : public NotificationDisplayService {

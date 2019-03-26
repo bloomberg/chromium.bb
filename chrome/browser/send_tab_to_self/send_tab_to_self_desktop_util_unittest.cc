@@ -14,8 +14,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
+#include "components/send_tab_to_self/test_send_tab_to_self_model.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "content/public/browser/navigation_entry.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -26,7 +26,7 @@ namespace send_tab_to_self {
 
 namespace {
 
-class SendTabToSelfModelMock : public SendTabToSelfModel {
+class SendTabToSelfModelMock : public TestSendTabToSelfModel {
  public:
   SendTabToSelfModelMock() = default;
   ~SendTabToSelfModelMock() override = default;
@@ -35,21 +35,12 @@ class SendTabToSelfModelMock : public SendTabToSelfModel {
                const SendTabToSelfEntry*(const GURL&,
                                          const std::string&,
                                          base::Time));
-  MOCK_METHOD1(DeleteEntry, void(const std::string&));
-  MOCK_METHOD1(DismissEntry, void(const std::string&));
-
-  MOCK_CONST_METHOD0(GetAllGuids, std::vector<std::string>());
-  MOCK_METHOD0(DeleteAllEntries, void());
-  MOCK_CONST_METHOD1(GetEntryByGUID, SendTabToSelfEntry*(const std::string&));
-
-  void AddObserver(SendTabToSelfModelObserver* observer) {}
-  void RemoveObserver(SendTabToSelfModelObserver* observer) {}
 };
 
-class SendTabToSelfSyncServiceMock : public SendTabToSelfSyncService {
+class TestSendTabToSelfSyncService : public SendTabToSelfSyncService {
  public:
-  SendTabToSelfSyncServiceMock() = default;
-  ~SendTabToSelfSyncServiceMock() override = default;
+  TestSendTabToSelfSyncService() = default;
+  ~TestSendTabToSelfSyncService() override = default;
 
   SendTabToSelfModel* GetSendTabToSelfModel() override {
     return &send_tab_to_self_model_mock_;
@@ -61,7 +52,7 @@ class SendTabToSelfSyncServiceMock : public SendTabToSelfSyncService {
 
 std::unique_ptr<KeyedService> BuildTestSendTabToSelfSyncService(
     content::BrowserContext* context) {
-  return std::make_unique<SendTabToSelfSyncServiceMock>();
+  return std::make_unique<TestSendTabToSelfSyncService>();
 }
 
 class SendTabToSelfDesktopUtilTest : public BrowserWithTestWindowTest {

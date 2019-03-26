@@ -30,6 +30,18 @@ static_library("send_tab_to_self") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test_send_tab_to_self_model.cc",
+    "test_send_tab_to_self_model.h",
+  ]
+  deps = [
+    ":send_tab_to_self",
+    "//base",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
