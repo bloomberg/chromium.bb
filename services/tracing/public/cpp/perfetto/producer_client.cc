@@ -178,6 +178,7 @@ void ProducerClient::AddDataSourceOnSequence(DataSourceBase* data_source) {
 void ProducerClient::RegisterDataSourceWithHost(DataSourceBase* data_source) {
   perfetto::DataSourceDescriptor new_registration;
   new_registration.set_name(data_source->name());
+  new_registration.set_will_notify_on_start(true);
   new_registration.set_will_notify_on_stop(true);
   producer_host_->RegisterDataSource(std::move(new_registration));
 }
@@ -204,13 +205,16 @@ void ProducerClient::OnTracingStart(
 
 void ProducerClient::StartDataSource(
     uint64_t id,
-    const perfetto::DataSourceConfig& data_source_config) {
+    const perfetto::DataSourceConfig& data_source_config,
+    StartDataSourceCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(oysteine): Support concurrent tracing sessions.
   for (auto* data_source : data_sources_) {
     if (data_source->name() == data_source_config.name()) {
       data_source->StartTracingWithID(id, this, data_source_config);
+      // TODO(eseckler): Consider plumbing this callback through |data_source|.
+      std::move(callback).Run();
       return;
     }
   }

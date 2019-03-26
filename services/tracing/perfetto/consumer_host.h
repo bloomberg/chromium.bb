@@ -36,7 +36,7 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
 
   // The owner of ConsumerHost should make sure to destroy
   // |service| after destroying this.
-  explicit ConsumerHost(perfetto::TracingService* service);
+  explicit ConsumerHost(PerfettoService* service);
   ~ConsumerHost() override;
 
   // mojom::ConsumerHost implementation.
@@ -49,7 +49,7 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
   void Flush(uint32_t timeout, base::OnceCallback<void(bool)> callback);
   void FreeBuffers();
 
-  // perfetto::ConsumerHost implementation.
+  // perfetto::Consumer implementation.
   // This gets called by the Perfetto service as control signals,
   // and to send finished protobufs over.
   void OnConnect() override;
@@ -57,20 +57,32 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
   void OnTracingDisabled() override;
   void OnTraceData(std::vector<perfetto::TracePacket> packets,
                    bool has_more) override;
+  void OnObservableEvents(const perfetto::ObservableEvents&) override;
 
   // Unused in Chrome.
   void OnDetach(bool success) override {}
   void OnAttach(bool success, const perfetto::TraceConfig&) override {}
   void OnTraceStats(bool success, const perfetto::TraceStats&) override {}
-  void OnObservableEvents(const perfetto::ObservableEvents&) override {}
+
+  // Called by TracingService.
+  void OnActiveServicePidAdded(base::ProcessId pid);
+  void OnActiveServicePidRemoved(base::ProcessId pid);
+  void OnActiveServicePidsInitialized();
 
  private:
+  void MaybeSendEnableTracingAck();
+  bool IsExpectedPid(base::ProcessId pid) const;
   void WriteToStream(const void* start, size_t size);
 
+  PerfettoService* const service_;
   mojo::ScopedDataPipeProducerHandle read_buffers_stream_;
   ReadBuffersCallback read_buffers_callback_;
   base::OnceCallback<void(bool)> flush_callback_;
   mojom::TracingSessionPtr tracing_session_;
+  std::set<base::ProcessId> filtered_pids_;
+  // If set, we didn't issue OnTracingEnabled() on the session yet. If set and
+  // empty, no more pids are pending and we should issue OnTracingEnabled().
+  base::Optional<std::set<base::ProcessId>> pending_enable_tracing_ack_pids_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

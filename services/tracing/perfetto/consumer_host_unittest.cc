@@ -14,6 +14,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -29,6 +31,8 @@
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pb.h"
 
 namespace tracing {
+
+constexpr base::ProcessId kProducerPid = 1234;
 
 // This is here so we can properly simulate this running on three
 // different sequences (ProducerClient side, Service side, and
@@ -78,6 +82,12 @@ class ThreadedPerfettoService : public mojom::TracingSession {
     }
   }
 
+  // mojom::TracingSession implementation:
+  void OnTracingEnabled() override {
+    EXPECT_FALSE(tracing_enabled_);
+    tracing_enabled_ = true;
+  }
+
   void CreateProducer(const std::string& data_source_name,
                       size_t num_packets,
                       base::OnceClosure on_tracing_started) {
@@ -92,7 +102,7 @@ class ThreadedPerfettoService : public mojom::TracingSession {
   }
 
   void CreateConsumerOnSequence() {
-    consumer_ = std::make_unique<ConsumerHost>(perfetto_service_->GetService());
+    consumer_ = std::make_unique<ConsumerHost>(perfetto_service_.get());
   }
 
   void CreateProducerOnSequence(const std::string& data_source_name,
@@ -100,6 +110,8 @@ class ThreadedPerfettoService : public mojom::TracingSession {
                                 base::OnceClosure on_tracing_started,
                                 size_t num_packets) {
     producer_ = std::make_unique<MockProducer>(
+        base::StrCat({mojom::kPerfettoProducerNamePrefix,
+                      base::IntToString(kProducerPid)}),
         data_source_name, perfetto_service_->GetService(),
         std::move(on_datasource_registered), std::move(on_tracing_started),
         num_packets);
@@ -174,12 +186,59 @@ class ThreadedPerfettoService : public mojom::TracingSession {
                            std::move(on_flush_complete))));
   }
 
+  void ExpectPid(base::ProcessId pid) {
+    base::RunLoop wait_for_call;
+    task_runner_->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(&PerfettoService::AddActiveServicePid,
+                       base::Unretained(perfetto_service_.get()), pid),
+        wait_for_call.QuitClosure());
+    wait_for_call.Run();
+  }
+
+  void SetPidsInitialized() {
+    base::RunLoop wait_for_call;
+    task_runner_->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(&PerfettoService::SetActiveServicePidsInitialized,
+                       base::Unretained(perfetto_service_.get())),
+        wait_for_call.QuitClosure());
+    wait_for_call.Run();
+  }
+
+  void RemovePid(base::ProcessId pid) {
+    base::RunLoop wait_for_call;
+    task_runner_->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(&PerfettoService::RemoveActiveServicePid,
+                       base::Unretained(perfetto_service_.get()), pid),
+        wait_for_call.QuitClosure());
+    wait_for_call.Run();
+  }
+
+  bool IsTracingEnabled() const {
+    bool tracing_enabled;
+    base::RunLoop wait_for_call;
+    task_runner_->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(&ThreadedPerfettoService::GetTracingEnabledOnSequence,
+                       base::Unretained(this), &tracing_enabled),
+        wait_for_call.QuitClosure());
+    wait_for_call.Run();
+    return tracing_enabled;
+  }
+
+  void GetTracingEnabledOnSequence(bool* tracing_enabled) const {
+    *tracing_enabled = tracing_enabled_;
+  }
+
  private:
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<PerfettoService> perfetto_service_;
   std::unique_ptr<ConsumerHost> consumer_;
   std::unique_ptr<MockProducer> producer_;
   std::unique_ptr<mojo::Binding<mojom::TracingSession>> binding_;
+  bool tracing_enabled_ = false;
 };
 
 class TracingConsumerTest : public testing::Test,
@@ -251,6 +310,14 @@ class TracingConsumerTest : public testing::Test,
   void EnableTracingWithDataSourceName(const std::string& data_source_name) {
     threaded_service_->EnableTracingWithConfig(
         GetDefaultTraceConfig(data_source_name));
+  }
+
+  bool IsTracingEnabled() {
+    // Flush any other pending tasks on the perfetto task runner to ensure that
+    // any pending data source start callbacks have propagated.
+    scoped_task_environment_.RunUntilIdle();
+
+    return threaded_service_->IsTracingEnabled();
   }
 
   size_t matching_packet_count() const { return matching_packet_count_; }
@@ -351,6 +418,96 @@ TEST_F(TracingConsumerTest, LargeDataSize) {
   no_more_data.Run();
 
   EXPECT_GE(total_bytes_received(), kLargeMessageSize);
+}
+
+TEST_F(TracingConsumerTest, NotifiesOnTracingEnabled) {
+  threaded_perfetto_service()->SetPidsInitialized();
+
+  EnableTracingWithDataSourceName(mojom::kTraceEventDataSourceName);
+  EXPECT_TRUE(IsTracingEnabled());
+}
+
+TEST_F(TracingConsumerTest, NotifiesOnTracingEnabledWaitsForProducer) {
+  threaded_perfetto_service()->ExpectPid(kProducerPid);
+  threaded_perfetto_service()->SetPidsInitialized();
+
+  EnableTracingWithDataSourceName(mojom::kTraceEventDataSourceName);
+
+  // Tracing is only marked as enabled once the expected producer has acked that
+  // its data source has started.
+  EXPECT_FALSE(IsTracingEnabled());
+
+  base::RunLoop wait_for_tracing_start;
+  threaded_perfetto_service()->CreateProducer(
+      mojom::kTraceEventDataSourceName, 0u,
+      wait_for_tracing_start.QuitClosure());
+  wait_for_tracing_start.Run();
+
+  EXPECT_TRUE(IsTracingEnabled());
+}
+
+TEST_F(TracingConsumerTest, NotifiesOnTracingEnabledWaitsForFilteredProducer) {
+  threaded_perfetto_service()->ExpectPid(kProducerPid);
+  threaded_perfetto_service()->SetPidsInitialized();
+
+  // Filter for the expected producer.
+  auto config = GetDefaultTraceConfig(mojom::kTraceEventDataSourceName);
+  *config.mutable_data_sources()->front().add_producer_name_filter() =
+      base::StrCat({mojom::kPerfettoProducerNamePrefix,
+                    base::IntToString(kProducerPid)});
+  threaded_perfetto_service()->EnableTracingWithConfig(config);
+
+  // Tracing is only marked as enabled once the expected producer has acked that
+  // its data source has started.
+  EXPECT_FALSE(IsTracingEnabled());
+
+  base::RunLoop wait_for_tracing_start;
+  threaded_perfetto_service()->CreateProducer(
+      mojom::kTraceEventDataSourceName, 0u,
+      wait_for_tracing_start.QuitClosure());
+  wait_for_tracing_start.Run();
+
+  EXPECT_TRUE(IsTracingEnabled());
+}
+
+TEST_F(TracingConsumerTest,
+       NotifiesOnTracingEnabledDoesNotWaitForUnfilteredProducer) {
+  threaded_perfetto_service()->ExpectPid(kProducerPid);
+  threaded_perfetto_service()->SetPidsInitialized();
+
+  // Filter for an unexpected producer whose PID is not active.
+  auto config = GetDefaultTraceConfig(mojom::kTraceEventDataSourceName);
+  *config.mutable_data_sources()->front().add_producer_name_filter() =
+      base::StrCat({mojom::kPerfettoProducerNamePrefix,
+                    base::IntToString(kProducerPid + 1)});
+  threaded_perfetto_service()->EnableTracingWithConfig(config);
+
+  // Tracing should already have been enabled even though the host was told
+  // about a service with kProducerPid. Since kProducerPid is not included in
+  // the producer_name_filter, the host should not wait for it.
+  EXPECT_TRUE(IsTracingEnabled());
+}
+
+TEST_F(TracingConsumerTest,
+       NotifiesOnTracingEnabledWaitsForProducerAndInitializedPids) {
+  threaded_perfetto_service()->ExpectPid(kProducerPid);
+
+  EnableTracingWithDataSourceName(mojom::kTraceEventDataSourceName);
+
+  // Tracing is only marked as enabled once the expected producer has acked that
+  // its data source has started and once the PIDs are initialized.
+  EXPECT_FALSE(IsTracingEnabled());
+
+  base::RunLoop wait_for_tracing_start;
+  threaded_perfetto_service()->CreateProducer(
+      mojom::kTraceEventDataSourceName, 0u,
+      wait_for_tracing_start.QuitClosure());
+  wait_for_tracing_start.Run();
+
+  EXPECT_FALSE(IsTracingEnabled());
+
+  threaded_perfetto_service()->SetPidsInitialized();
+  EXPECT_TRUE(IsTracingEnabled());
 }
 
 }  // namespace tracing

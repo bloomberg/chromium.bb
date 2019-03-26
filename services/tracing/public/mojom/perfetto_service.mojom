@@ -4,7 +4,7 @@
 
 module tracing.mojom;
 
-const string kPerfettoProducerName = "org.chromium.perfetto_producer";
+const string kPerfettoProducerNamePrefix = "org.chromium.perfetto_producer.";
 const string kTraceEventDataSourceName = "org.chromium.trace_event";
 const string kMetaDataSourceName = "org.chromium.trace_metadata";
 const string kSystemTraceDataSourceName = "org.chromium.trace_system";
@@ -84,6 +84,7 @@ struct DataSourceConfig {
 
 struct DataSourceRegistration {
   string name;
+  bool will_notify_on_start;
   bool will_notify_on_stop;
 };
 
@@ -116,15 +117,15 @@ interface ProducerHost {
 // this interface and use the PerfettoService interface within the tracing
 // service to register itself.
 interface ProducerClient {
-    OnTracingStart(handle<shared_buffer> shared_memory);
+  OnTracingStart(handle<shared_buffer> shared_memory);
 
-    // Called by Perfetto (via ProducerHost) to request a data source to start
-    // logging.
-    StartDataSource(uint64 id, DataSourceConfig data_source_config);
-    // Requesting a data source to stop logging again, with the id previously
-    // sent in the StartDataSource call.
-    StopDataSource(uint64 id) => ();
-    Flush(uint64 flush_request_id, array<uint64> data_source_ids);
+  // Called by Perfetto (via ProducerHost) to request a data source to start
+  // logging.
+  StartDataSource(uint64 id, DataSourceConfig data_source_config) => ();
+  // Requesting a data source to stop logging again, with the id previously
+  // sent in the StartDataSource call.
+  StopDataSource(uint64 id) => ();
+  Flush(uint64 flush_request_id, array<uint64> data_source_ids);
 };
 
 // This is implemented by the tracing service, and is essentially a singleton
@@ -179,4 +180,6 @@ interface ConsumerHost {
 // data from the session (in addition to any calls it may have
 // made while the session is active, to stream out data).
 interface TracingSession {
+  // Called when all processes have begun tracing.
+  OnTracingEnabled();
 };
