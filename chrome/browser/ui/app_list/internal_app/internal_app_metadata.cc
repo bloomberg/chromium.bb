@@ -188,20 +188,26 @@ void ShowWebStore(Profile* profile,
 void OnGetMigrationProperty(Profile* profile,
                             int event_flags,
                             const base::Optional<std::string>& result) {
-  const char* app_id = arc::kCameraAppId;
+  AppListClientImpl* const controller = AppListClientImpl::GetInstance();
   if (!result.has_value() || result.value() != "true") {
     VLOG(1) << "GCA migration is not finished. Launch migration app.";
-    app_id = arc::kCameraMigrationAppId;
+    if (arc::LaunchApp(profile, arc::kCameraMigrationAppId, event_flags,
+                       arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER,
+                       controller->GetAppListDisplayId())) {
+      VLOG(1) << "Launched GCA migration.";
+      return;
+    }
+    LOG(ERROR) << "Failed to launch GCA migration. "
+               << "Launching camera without migration";
   }
 
-  AppListClientImpl* controller = AppListClientImpl::GetInstance();
-  if (arc::LaunchApp(profile, app_id, event_flags,
+  if (arc::LaunchApp(profile, arc::kCameraAppId, event_flags,
                      arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER,
                      controller->GetAppListDisplayId())) {
-    VLOG(1) << "Launched "
-            << (app_id == arc::kCameraAppId ? " GCA." : "GCA migration.");
+    VLOG(1) << "Launched GCA.";
     return;
   }
+
   if (arc::LaunchApp(profile, arc::kLegacyCameraAppId, event_flags,
                      arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER,
                      controller->GetAppListDisplayId())) {
@@ -245,7 +251,8 @@ void OnArcFeaturesRead(Profile* profile,
   bool arc_enabled = arc::IsArcPlayStoreEnabledForProfile(profile);
   bool is_android_camera_app_registered =
       arc_enabled &&
-      ArcAppListPrefs::Get(profile)->IsRegistered(arc::kCameraAppId);
+      (ArcAppListPrefs::Get(profile)->IsRegistered(arc::kCameraAppId) ||
+       ArcAppListPrefs::Get(profile)->IsRegistered(arc::kLegacyCameraAppId));
   bool chrome_camera_migrated =
       profile->GetPrefs()->GetBoolean(prefs::kCameraMediaConsolidated);
 
