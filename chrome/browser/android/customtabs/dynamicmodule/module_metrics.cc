@@ -9,7 +9,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/process/process_handle.h"
 #include "jni/ModuleMetrics_jni.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
@@ -74,28 +74,30 @@ void GetCodeMemoryFootprint(const std::string& package_name,
   *resident_set_size_kb /= 1024;
 }
 
-void RecordCodeMemoryFootprint(const std::string& package_name) {
+void RecordCodeMemoryFootprint(const std::string& package_name,
+                               const std::string& suffix) {
   uint64_t proportional_set_size_kb = 0;
   uint64_t resident_set_size_kb = 0;
 
   GetCodeMemoryFootprint(package_name, &proportional_set_size_kb,
                          &resident_set_size_kb);
 
-  UMA_HISTOGRAM_COUNTS_100000(
-      "CustomTabs.DynamicModule.ProportionalSet.OnModuleLoad",
-      proportional_set_size_kb);
-  UMA_HISTOGRAM_COUNTS_100000(
-      "CustomTabs.DynamicModule.ResidentSet.OnModuleLoad",
-      resident_set_size_kb);
+  // Not using macros since we don't need caching.
+  std::string name = "CustomTabs.DynamicModule.ProportionalSet." + suffix;
+  base::UmaHistogramCounts100000(name, proportional_set_size_kb);
+  name = "CustomTabs.DynamicModule.ResidentSet." + suffix;
+  base::UmaHistogramCounts100000(name, resident_set_size_kb);
 }
 
 static void JNI_ModuleMetrics_RecordCodeMemoryFootprint(
     JNIEnv* env,
-    const base::android::JavaParamRef<jstring>& jpackage_name) {
+    const base::android::JavaParamRef<jstring>& jpackage_name,
+    const base::android::JavaParamRef<jstring>& jsuffix) {
   std::string package_name =
       base::android::ConvertJavaStringToUTF8(env, jpackage_name);
+  std::string suffix = base::android::ConvertJavaStringToUTF8(env, jsuffix);
 
-  RecordCodeMemoryFootprint(package_name);
+  RecordCodeMemoryFootprint(package_name, suffix);
 }
 
 }  // namespace customtabs
