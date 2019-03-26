@@ -232,11 +232,23 @@ const base::Feature kBuiltInModuleInfra{"BuiltInModuleInfra",
 const base::Feature kLazyFrameLoading{"LazyFrameLoading",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kLazyFrameVisibleLoadTimeMetrics{
-    "LazyFrameVisibleLoadTimeMetrics", base::FEATURE_DISABLED_BY_DEFAULT};
+  "LazyFrameVisibleLoadTimeMetrics",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 const base::Feature kLazyImageLoading{"LazyImageLoading",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kLazyImageVisibleLoadTimeMetrics{
-    "LazyImageVisibleLoadTimeMetrics", base::FEATURE_DISABLED_BY_DEFAULT};
+  "LazyImageVisibleLoadTimeMetrics",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enable lazy initialization of the media controls.
 const base::Feature kLazyInitializeMediaControls{
