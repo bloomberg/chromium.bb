@@ -364,6 +364,50 @@ static void get_tile_stats(const AV1_COMP *const cpi, int *max_tile_size,
   }
 }
 
+static int store_frame_record(int64_t ts_start, int64_t ts_end, int pic_size,
+                              int frame_header_count, int show_frame,
+                              int show_existing_frame,
+                              FrameWindowBuffer *const buffer) {
+  if (buffer->num < FRAME_WINDOW_SIZE) {
+    ++buffer->num;
+  } else {
+    buffer->start = (buffer->start + 1) % FRAME_WINDOW_SIZE;
+  }
+  const int new_idx = (buffer->start + buffer->num - 1) % FRAME_WINDOW_SIZE;
+  FrameRecord *const record = &buffer->buf[new_idx];
+  record->ts_start = ts_start;
+  record->ts_end = ts_end;
+  record->pic_size = pic_size;
+  record->frame_header_count = frame_header_count;
+  record->show_frame = show_frame;
+  record->show_existing_frame = show_existing_frame;
+
+  return new_idx;
+}
+
+// Count the number of frames encoded in the last "duration" ticks, in display
+// time.
+static int count_frames(const FrameWindowBuffer *const buffer,
+                        int64_t duration) {
+  const int current_idx = (buffer->start + buffer->num - 1) % FRAME_WINDOW_SIZE;
+  // Assume current frame is shown frame.
+  assert(buffer->buf[current_idx].show_frame);
+
+  const int64_t current_time = buffer->buf[current_idx].ts_end;
+  const int64_t time_limit = AOMMAX(current_time - duration, 0);
+  int num_frames = 1;
+  int index = current_idx - 1;
+  for (int i = buffer->num - 2; i >= 0; --i, --index, ++num_frames) {
+    if (index < 0) index = FRAME_WINDOW_SIZE - 1;
+    const FrameRecord *const record = &buffer->buf[index];
+    if (!record->show_frame) continue;
+    const int64_t ts_start = record->ts_start;
+    if (ts_start < time_limit) break;
+  }
+
+  return num_frames;
+}
+
 void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
                            int64_t ts_end) {
   const AV1_COMMON *const cm = &cpi->common;
@@ -373,6 +417,20 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
   const int tile_rows = cm->tile_rows;
   const int tiles = tile_cols * tile_rows;
   const int luma_pic_size = upscaled_width * height;
+  const int frame_header_count = cpi->frame_header_count;
+  const int show_frame = cm->show_frame;
+  const int show_existing_frame = cm->show_existing_frame;
+
+  // Store info. of current frame into FrameWindowBuffer.
+  FrameWindowBuffer *const buffer = &cpi->frame_window_buffer;
+  store_frame_record(ts_start, ts_end, luma_pic_size, frame_header_count,
+                     show_frame, show_existing_frame, buffer);
+  // Count the number of frames encoded in the past 1 second.
+  const int encoded_frames_in_last_second =
+      show_frame ? count_frames(buffer, TICKS_PER_SEC) : 0;
+  // TODO(huisu@): calculate stats using the info. of the
+  // encoded_frames_in_last_sescond frames in frame_window_buffer.
+  (void)encoded_frames_in_last_second;
 
   int max_tile_size;
   int min_cropped_tile_width;
@@ -399,7 +457,6 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
   const SequenceHeader *const seq = &cm->seq_params;
   const int temporal_layer_id = cm->temporal_layer_id;
   const int spatial_layer_id = cm->spatial_layer_id;
-
   // update level_stats
   // TODO(kyslov@) fix the implementation according to buffer model
   for (int i = 0; i < seq->operating_points_cnt_minus_1 + 1; ++i) {
@@ -412,7 +469,7 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
     AV1LevelStats *const level_stats = &level_info->level_stats;
 
     level_stats->total_compressed_size += frame_compressed_size;
-    if (cm->show_frame) level_stats->total_time_encoded = total_time_encoded;
+    if (show_frame) level_stats->total_time_encoded = total_time_encoded;
 
     // update level_spec
     // TODO(kyslov@) update all spec fields

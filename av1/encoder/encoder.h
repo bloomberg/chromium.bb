@@ -989,12 +989,14 @@ typedef struct AV1_COMP {
   // frame_component_time[] are initialized to zero at beginning of each frame.
   uint64_t frame_component_time[kTimingComponents];
 #endif
-  // level info and flags
+
+  // The following data are for AV1 bitstream levels.
   AV1_LEVEL target_seq_level_idx[MAX_NUM_OPERATING_POINTS];
   int keep_level_stats;
   AV1LevelInfo level_info[MAX_NUM_OPERATING_POINTS];
   // Count the number of OBU_FRAME and OBU_FRAME_HEADER for level calculation.
   int frame_header_count;
+  FrameWindowBuffer frame_window_buffer;
 } AV1_COMP;
 
 typedef struct {

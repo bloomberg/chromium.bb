@@ -37,6 +37,23 @@ typedef struct {
   double high_cr;
 } AV1LevelSpec;
 
+typedef struct {
+  int64_t ts_start;
+  int64_t ts_end;
+  int pic_size;
+  int frame_header_count;
+  int show_frame;
+  int show_existing_frame;
+} FrameRecord;
+
+// Record frame info. in a rolling window.
+#define FRAME_WINDOW_SIZE 256
+typedef struct {
+  FrameRecord buf[FRAME_WINDOW_SIZE];
+  int num;    // Number of FrameRecord stored in the buffer.
+  int start;  // Buffer index of the first FrameRecord.
+} FrameWindowBuffer;
+
 // Used to keep track of AV1 Level Stats. Currently unimplemented.
 typedef struct {
   uint64_t total_compressed_size;
