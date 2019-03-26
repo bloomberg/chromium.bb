@@ -9,6 +9,8 @@
 #include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_media_analytics_client.h"
+#include "chromeos/dbus/kerberos/fake_kerberos_client.h"
+#include "chromeos/dbus/kerberos/kerberos_client.h"
 
 namespace chromeos {
 
@@ -53,6 +55,12 @@ void FakeUpstartClient::RestartAuthPolicyService() {
   DLOG_IF(WARNING, !FakeAuthPolicyClient::Get()->started())
       << "Trying to restart authpolicyd which is not started";
   FakeAuthPolicyClient::Get()->SetStarted(true);
+}
+
+void FakeUpstartClient::StartKerberosService(VoidDBusMethodCallback callback) {
+  KerberosClient::Get()->GetTestInterface()->set_started(true);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 void FakeUpstartClient::StartMediaAnalytics(

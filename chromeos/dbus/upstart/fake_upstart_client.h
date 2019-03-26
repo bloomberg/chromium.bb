@@ -27,6 +27,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeUpstartClient : public UpstartClient {
                VoidDBusMethodCallback callback) override;
   void StartAuthPolicyService() override;
   void RestartAuthPolicyService() override;
+  void StartKerberosService(VoidDBusMethodCallback callback) override;
   void StartMediaAnalytics(const std::vector<std::string>& upstart_env,
                            VoidDBusMethodCallback callback) override;
   void RestartMediaAnalytics(VoidDBusMethodCallback callback) override;

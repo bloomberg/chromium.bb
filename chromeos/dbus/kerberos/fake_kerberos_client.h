@@ -59,6 +59,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
   using AccountsMap = std::unordered_map<std::string, AccountData>;
   AccountsMap accounts_;
 
+  // Whether the service has started by UpstartClient.
   bool started_ = false;
 
   KerberosFilesChangedCallback kerberos_files_changed_callback_;
