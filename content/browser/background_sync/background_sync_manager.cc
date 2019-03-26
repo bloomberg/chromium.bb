@@ -811,7 +811,7 @@ void BackgroundSyncManager::AddActiveRegistration(
       sync_type == blink::mojom::BackgroundSyncType::ONE_SHOT) {
     devtools_context_->LogBackgroundServiceEvent(
         sw_registration_id, origin, devtools::proto::BACKGROUND_SYNC,
-        /* event_name= */ "Registered Sync",
+        /* event_name= */ "registered sync",
         /* instance_id= */ sync_registration.options()->tag,
         /* event_metadata= */ {});
   }
@@ -875,10 +875,10 @@ void BackgroundSyncManager::DispatchSyncEvent(
     devtools_context_->LogBackgroundServiceEvent(
         active_version->registration_id(), active_version->script_origin(),
         devtools::proto::BACKGROUND_SYNC,
-        /* event_name= */ "Dispatched Sync Event",
+        /* event_name= */ "dispatched sync event",
         /* instance_id= */ tag,
         /* event_metadata= */
-        {{"Last Chance", last_chance ? "Yes" : "No"}});
+        {{"last chance", last_chance ? "yes" : "no"}});
   }
 }
 
@@ -1262,10 +1262,10 @@ void BackgroundSyncManager::EventCompleteImpl(
             blink::mojom::BackgroundSyncType::ONE_SHOT) {
       devtools_context_->LogBackgroundServiceEvent(
           sw_registration->id(), origin, devtools::proto::BACKGROUND_SYNC,
-          /* event_name= */ "Sync Event Failed",
+          /* event_name= */ "sync event failed",
           /* instance_id= */ registration_info->tag,
           /* event_metadata= */
-          {{"Next Attempt Delay (ms)",
+          {{"next attempt delay (ms)",
             base::NumberToString(delay.InMilliseconds())}});
     }
   }
@@ -1279,10 +1279,10 @@ void BackgroundSyncManager::EventCompleteImpl(
       bool succeded = status_code == blink::ServiceWorkerStatusCode::kOk;
       devtools_context_->LogBackgroundServiceEvent(
           sw_registration->id(), origin, devtools::proto::BACKGROUND_SYNC,
-          /* event_name= */ "Sync Complete",
+          /* event_name= */ "sync complete",
           /* instance_id= */ registration_info->tag,
           /* event_metadata= */
-          {{"Succeeded", succeded ? "Yes" : "No"}});
+          {{"succeeded", succeded ? "yes" : "no"}});
     }
   }
 

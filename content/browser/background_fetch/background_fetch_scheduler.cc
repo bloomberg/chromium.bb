@@ -345,8 +345,8 @@ void BackgroundFetchScheduler::OnRegistrationCreated(
   LogBackgroundFetchEventForDevTools(
       Event::kFetchRegistered, registration_id,
       /* request_info= */ nullptr,
-      {{"Total Requests", base::NumberToString(num_requests)},
-       {"Start Paused", start_paused ? "Yes" : "No"}});
+      {{"total requests", base::NumberToString(num_requests)},
+       {"start paused", start_paused ? "yes" : "no"}});
 
   registration_notifier_->NoteTotalRequests(registration_id.unique_id(),
                                             num_requests);
@@ -381,8 +381,8 @@ void BackgroundFetchScheduler::OnRegistrationLoadedAtStartup(
   LogBackgroundFetchEventForDevTools(
       Event::kFetchResumedOnStartup, registration_id,
       /* request_info= */ nullptr,
-      {{"Completed Requests", base::NumberToString(num_completed_requests)},
-       {"Active Requests",
+      {{"completed requests", base::NumberToString(num_completed_requests)},
+       {"active requests",
         base::NumberToString(active_fetch_requests.size())}});
 
   auto controller = CreateInitializedController(
@@ -515,24 +515,24 @@ void BackgroundFetchScheduler::LogBackgroundFetchEventForDevTools(
   // any additional data to |metadata|.
   switch (event) {
     case Event::kFetchRegistered:
-      event_name = "Background Fetch registered";
+      event_name = "background fetch registered";
       break;
     case Event::kFetchResumedOnStartup:
-      event_name = "Background Fetch resuming after browser restart";
+      event_name = "background fetch resuming after browser restart";
       break;
     case Event::kFetchScheduled:
-      event_name = "Background Fetch started";
+      event_name = "background fetch started";
       break;
     case Event::kRequestStarted:
-      event_name = "Request processing started";
+      event_name = "request processing started";
       DCHECK(request_info);
       break;
     case Event::kRequestCompleted:
-      event_name = "Request processing completed";
+      event_name = "request processing completed";
       DCHECK(request_info);
-      metadata["Response Status"] =
+      metadata["response status"] =
           base::NumberToString(request_info->GetResponseCode());
-      metadata["Response Size (Bytes)"] =
+      metadata["response size (bytes)"] =
           base::NumberToString(request_info->GetResponseSize());
       break;
   }
@@ -541,10 +541,10 @@ void BackgroundFetchScheduler::LogBackgroundFetchEventForDevTools(
 
   // Include common request metadata.
   if (request_info) {
-    metadata["URL"] = request_info->fetch_request()->url.spec();
-    metadata["Request Index"] = request_info->request_index();
+    metadata["url"] = request_info->fetch_request()->url.spec();
+    metadata["request index"] = request_info->request_index();
     if (request_info->request_body_size())
-      metadata["Upload Bytes"] = request_info->request_body_size();
+      metadata["upload size (bytes)"] = request_info->request_body_size();
   }
 
   devtools_context_->LogBackgroundServiceEvent(

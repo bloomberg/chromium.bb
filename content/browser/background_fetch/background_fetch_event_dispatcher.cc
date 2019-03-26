@@ -324,17 +324,17 @@ void BackgroundFetchEventDispatcher::LogBackgroundFetchCompletionForDevTools(
     return;
 
   std::map<std::string, std::string> metadata = {
-      {"Event Type", EventTypeToString(event_type)}};
+      {"event type", EventTypeToString(event_type)}};
   if (failure_reason != blink::mojom::BackgroundFetchFailureReason::NONE) {
     std::stringstream stream;
     stream << failure_reason;
-    metadata["Failure Reason"] = stream.str();
+    metadata["failure reason"] = stream.str();
   }
 
   devtools_context_->LogBackgroundServiceEvent(
       registration_id.service_worker_registration_id(),
       registration_id.origin(), devtools::proto::BACKGROUND_FETCH,
-      /* event_name= */ "Background Fetch Completed",
+      /* event_name= */ "background fetch completed",
       /* instance_id= */ registration_id.developer_id(), metadata);
 }
 
