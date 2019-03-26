@@ -355,11 +355,6 @@ const char kDisablePushStateThrottleDescription[] =
     "calls. This flag is deprecated and will be removed in Chrome 76. Use the "
     "switch --disable-ipc-flooding-protection instead.";
 
-const char kDisableTabForDesktopShareName[] =
-    "Disable Desktop Share with tab source";
-const char kDisableTabForDesktopShareDescription[] =
-    "This flag controls whether users can choose a tab for desktop share.";
-
 const char kDisallowDocWrittenScriptsUiName[] =
     "Block scripts loaded via document.write";
 const char kDisallowDocWrittenScriptsUiDescription[] =
