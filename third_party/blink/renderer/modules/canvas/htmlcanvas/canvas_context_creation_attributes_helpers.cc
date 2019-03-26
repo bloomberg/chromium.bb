@@ -19,7 +19,7 @@ CanvasContextCreationAttributesCore ToCanvasContextCreationAttributes(
   result.fail_if_major_performance_caveat =
       attrs->failIfMajorPerformanceCaveat();
 #if defined(OS_MACOSX)
-  // TODO(crbug.com/922218): enable desynchronized on Mac.
+  // TODO(crbug.com/945835): enable desynchronized on Mac.
   result.desynchronized = false;
 #else
   result.desynchronized = attrs->desynchronized();
