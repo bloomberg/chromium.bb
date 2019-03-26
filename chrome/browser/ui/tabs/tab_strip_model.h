@@ -171,7 +171,8 @@ class TabStripModel {
   // See also AddWebContents.
   void InsertWebContentsAt(int index,
                            std::unique_ptr<content::WebContents> contents,
-                           int add_types);
+                           int add_types,
+                           const TabGroupData* group = nullptr);
 
   // Closes the WebContents at the specified index. This causes the
   // WebContents to be destroyed, but it may not happen immediately.
@@ -314,6 +315,9 @@ class TabStripModel {
   // Returns the list of tabs affiliated with |group|.
   std::vector<int> ListTabsInGroup(const TabGroupData* group) const;
 
+  // Returns true if the tabs in |group| are pinned.
+  bool IsGroupPinned(const TabGroupData* group) const;
+
   // Returns the index of the first tab that is not a pinned tab. This returns
   // |count()| if all of the tabs are pinned tabs, and 0 if none of the tabs are
   // pinned tabs.
@@ -348,7 +352,8 @@ class TabStripModel {
   void AddWebContents(std::unique_ptr<content::WebContents> contents,
                       int index,
                       ui::PageTransition transition,
-                      int add_types);
+                      int add_types,
+                      const TabGroupData* group = nullptr);
 
   // Closes the selected tabs.
   void CloseSelectedTabs();

@@ -331,7 +331,8 @@ void TabStripModel::AppendWebContents(std::unique_ptr<WebContents> contents,
 
 void TabStripModel::InsertWebContentsAt(int index,
                                         std::unique_ptr<WebContents> contents,
-                                        int add_types) {
+                                        int add_types,
+                                        const TabGroupData* group) {
   // TODO(erikchne): Change this to a CHECK. https://crbug.com/851400.
   DCHECK(!reentrancy_guard_);
   base::AutoReset<bool> resetter(&reentrancy_guard_, true);
@@ -340,6 +341,8 @@ void TabStripModel::InsertWebContentsAt(int index,
 
   bool active = (add_types & ADD_ACTIVE) != 0;
   bool pin = (add_types & ADD_PINNED) != 0;
+  if (group)
+    pin = IsGroupPinned(group);
   index = ConstrainInsertionIndex(index, pin);
 
   // Have to get the active contents before we monkey with the contents
@@ -380,6 +383,9 @@ void TabStripModel::InsertWebContentsAt(int index,
                              TabStripModelObserver::CHANGE_REASON_NONE,
                              /*triggered_by_other_operation=*/true);
   }
+
+  if (group)
+    contents_data_[index]->set_group(group);
 
   TabStripModelChange change(
       TabStripModelChange::kInserted,
@@ -791,9 +797,8 @@ const TabGroupData* TabStripModel::GetTabGroupForTab(int index) const {
 
 std::vector<TabGroupData*> TabStripModel::ListTabGroups() const {
   std::vector<TabGroupData*> groups;
-  for (std::unique_ptr<TabGroupData> const& group : group_data_) {
+  for (std::unique_ptr<TabGroupData> const& group : group_data_)
     groups.push_back(group.get());
-  }
 
   return groups;
 }
@@ -807,6 +812,17 @@ std::vector<int> TabStripModel::ListTabsInGroup(
       result.push_back(i);
   }
   return result;
+}
+
+bool TabStripModel::IsGroupPinned(const TabGroupData* group) const {
+  DCHECK_NE(nullptr, group);
+  for (auto& contents_datum : contents_data_) {
+    if (contents_datum->group() == group)
+      return contents_datum->pinned();
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 int TabStripModel::IndexOfFirstNonPinnedTab() const {
@@ -874,7 +890,8 @@ const ui::ListSelectionModel& TabStripModel::selection_model() const {
 void TabStripModel::AddWebContents(std::unique_ptr<WebContents> contents,
                                    int index,
                                    ui::PageTransition transition,
-                                   int add_types) {
+                                   int add_types,
+                                   const TabGroupData* group) {
   // If the newly-opened tab is part of the same task as the parent tab, we want
   // to inherit the parent's opener attribute, so that if this tab is then
   // closed we'll jump back to the parent tab.
@@ -911,7 +928,8 @@ void TabStripModel::AddWebContents(std::unique_ptr<WebContents> contents,
   }
   WebContents* raw_contents = contents.get();
   InsertWebContentsAt(index, std::move(contents),
-                      add_types | (inherit_opener ? ADD_INHERIT_OPENER : 0));
+                      add_types | (inherit_opener ? ADD_INHERIT_OPENER : 0),
+                      group);
   // Reset the index, just in case insert ended up moving it on us.
   index = GetIndexOfWebContents(raw_contents);
 
@@ -1009,10 +1027,9 @@ void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
 
   // Ignore indices that are already in the group.
   std::vector<int> new_indices;
-  for (size_t i = 0; i < indices.size(); i++) {
-    if (GetTabGroupForTab(indices[i]) != group) {
-      new_indices.push_back(indices[i]);
-    }
+  for (int candidate_index : indices) {
+    if (GetTabGroupForTab(candidate_index) != group)
+      new_indices.push_back(candidate_index);
   }
   new_indices = SetTabsPinned(new_indices, pin);
 
@@ -1031,9 +1048,8 @@ void TabStripModel::RemoveFromGroup(const std::vector<int>& indices) {
     // Move the tab until it's the rightmost tab in its group
     int new_index = index;
     while (ContainsIndex(new_index + 1) &&
-           GetTabGroupForTab(new_index + 1) == old_group) {
+           GetTabGroupForTab(new_index + 1) == old_group)
       new_index++;
-    }
     MoveAndSetGroup(index, new_index, nullptr);
   }
 }
@@ -1124,7 +1140,8 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
       UMA_HISTOGRAM_ENUMERATION("Tab.NewTab",
                                 TabStripModel::NEW_TAB_CONTEXT_MENU,
                                 TabStripModel::NEW_TAB_ENUM_COUNT);
-      delegate()->AddTabAt(GURL(), context_index + 1, true);
+      delegate()->AddTabAt(GURL(), context_index + 1, true,
+                           GetTabGroupForTab(context_index));
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
       auto* new_tab_tracker =
           feature_engagement::NewTabTrackerFactory::GetInstance()
