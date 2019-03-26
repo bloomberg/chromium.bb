@@ -28,7 +28,7 @@ import org.chromium.components.dom_distiller.core.FontFamily;
 import org.chromium.components.dom_distiller.core.Theme;
 
 import java.text.NumberFormat;
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -45,7 +45,7 @@ public class DistilledPagePrefsView extends LinearLayout
     private RadioGroup mRadioGroup;
 
     // Buttons for color mode.
-    private final Map<Theme, RadioButton> mColorModeButtons;
+    private final Map<Integer /* Theme */, RadioButton> mColorModeButtons;
 
     private final DistilledPagePrefs mDistilledPagePrefs;
 
@@ -70,7 +70,7 @@ public class DistilledPagePrefsView extends LinearLayout
         super(context, attrs);
         mDistilledPagePrefs = DomDistillerServiceFactory.getForProfile(
                 Profile.getLastUsedProfile()).getDistilledPagePrefs();
-        mColorModeButtons = new EnumMap<Theme, RadioButton>(Theme.class);
+        mColorModeButtons = new HashMap<Integer /* Theme */, RadioButton>();
         mPercentageFormatter = NumberFormat.getPercentInstance(Locale.getDefault());
     }
 
@@ -131,10 +131,9 @@ public class DistilledPagePrefsView extends LinearLayout
                 return overrideTypeFace(view, position);
             }
 
-            private View overrideTypeFace(View view, int position) {
+            private View overrideTypeFace(View view, @FontFamily int family) {
                 if (view instanceof TextView) {
                     TextView textView = (TextView) view;
-                    FontFamily family = FontFamily.values()[position];
                     if (family == FontFamily.MONOSPACE) {
                         textView.setTypeface(Typeface.MONOSPACE);
                     } else if (family == FontFamily.SANS_SERIF) {
@@ -149,12 +148,11 @@ public class DistilledPagePrefsView extends LinearLayout
 
         adapter.setDropDownViewResource(R.layout.distilled_page_font_family_spinner);
         mFontFamilySpinner.setAdapter(adapter);
-        mFontFamilySpinner.setSelection(mDistilledPagePrefs.getFontFamily().ordinal());
+        mFontFamilySpinner.setSelection(mDistilledPagePrefs.getFontFamily());
         mFontFamilySpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                FontFamily family = FontFamily.getFontFamilyForValue(position);
-                if (family != null) {
+            public void onItemSelected(AdapterView<?> parent, View view, int family, long id) {
+                if (family >= 0 && family < FontFamily.NUM_ENTRIES) {
                     mDistilledPagePrefs.setFontFamily(family);
                 }
             }
@@ -208,15 +206,15 @@ public class DistilledPagePrefsView extends LinearLayout
     // DistilledPagePrefs.Observer
 
     @Override
-    public void onChangeFontFamily(FontFamily fontFamily) {
-        mFontFamilySpinner.setSelection(fontFamily.ordinal());
+    public void onChangeFontFamily(@FontFamily int fontFamily) {
+        mFontFamilySpinner.setSelection(fontFamily);
     }
 
     /**
      * Changes which button is selected if the theme is changed in another tab.
      */
     @Override
-    public void onChangeTheme(Theme theme) {
+    public void onChangeTheme(@Theme int theme) {
         mColorModeButtons.get(theme).setChecked(true);
     }
 
@@ -249,7 +247,7 @@ public class DistilledPagePrefsView extends LinearLayout
      * Initiatializes a Button and selects it if it corresponds to the current
      * theme.
      */
-    private RadioButton initializeAndGetButton(int id, final Theme theme) {
+    private RadioButton initializeAndGetButton(int id, final @Theme int theme) {
         final RadioButton button = (RadioButton) findViewById(id);
         button.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -251,27 +251,27 @@ public class DistilledPagePrefsTest {
     }
 
     private static class TestingObserver implements DistilledPagePrefs.Observer {
-        private FontFamily mFontFamily;
-        private Theme mTheme;
+        private @FontFamily int mFontFamily;
+        private @Theme int mTheme;
         private float mFontScaling;
 
         public TestingObserver() {}
 
-        public FontFamily getFontFamily() {
+        public @FontFamily int getFontFamily() {
             return mFontFamily;
         }
 
         @Override
-        public void onChangeFontFamily(FontFamily font) {
+        public void onChangeFontFamily(@FontFamily int font) {
             mFontFamily = font;
         }
 
-        public Theme getTheme() {
+        public @Theme int getTheme() {
             return mTheme;
         }
 
         @Override
-        public void onChangeTheme(Theme theme) {
+        public void onChangeTheme(@Theme int theme) {
             mTheme = theme;
         }
 
@@ -285,11 +285,11 @@ public class DistilledPagePrefsTest {
         }
     }
 
-    private void setFontFamily(final FontFamily font) {
+    private void setFontFamily(final @FontFamily int font) {
         TestThreadUtils.runOnUiThreadBlocking(() -> mDistilledPagePrefs.setFontFamily(font));
     }
 
-    private void setTheme(final Theme theme) {
+    private void setTheme(final @Theme int theme) {
         TestThreadUtils.runOnUiThreadBlocking(() -> mDistilledPagePrefs.setTheme(theme));
     }
 
