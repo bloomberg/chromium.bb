@@ -252,8 +252,16 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
   EXPECT_EQ(picture_url_with_size.spec(), passed_picture_url);
 }
 
+// crbug.com/945848
+#if defined(THREAD_SANITIZER)
+#define MAYBE_TestSetImageIfPrimaryAccountReady_UnifiedConsent \
+  DISABLED_TestSetImageIfPrimaryAccountReady_UnifiedConsent
+#else
+#define MAYBE_TestSetImageIfPrimaryAccountReady_UnifiedConsent \
+  TestSetImageIfPrimaryAccountReady_UnifiedConsent
+#endif  // defined(THREAD_SANITIZER)
 TEST_F(SyncConfirmationHandlerTest,
-       TestSetImageIfPrimaryAccountReady_UnifiedConsent) {
+       MAYBE_TestSetImageIfPrimaryAccountReady_UnifiedConsent) {
   unified_consent::ScopedUnifiedConsent scoped_unified_consent(
       unified_consent::UnifiedConsentFeatureState::kEnabled);
 
