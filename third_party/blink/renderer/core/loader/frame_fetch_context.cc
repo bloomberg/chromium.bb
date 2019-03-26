@@ -589,15 +589,6 @@ void FrameFetchContext::DispatchDidFail(const KURL& url,
   if (GetResourceFetcherProperties().IsDetached())
     return;
 
-  if (DocumentLoader* loader = MasterDocumentLoader()) {
-    if (network_utils::IsCertificateTransparencyRequiredError(
-            error.ErrorCode())) {
-      loader->GetUseCounter().Count(
-          WebFeature::kCertificateTransparencyRequiredErrorOnResourceLoad,
-          GetFrame());
-    }
-  }
-
   GetFrame()->Loader().Progress().CompleteProgress(identifier);
   probe::DidFailLoading(Probe(), identifier, MasterDocumentLoader(), error);
 
