@@ -286,6 +286,7 @@ TEST_F(OmniboxEditModelTest, CurrentMatch) {
   location_bar_model()->set_url(GURL("http://localhost/"));
   location_bar_model()->set_url_for_display(base::ASCIIToUTF16("localhost"));
   model()->ResetDisplayTexts();
+  model()->Revert();
 
   // Tests that we use the formatted full URL instead of the elided URL to
   // generate matches.
@@ -299,6 +300,7 @@ TEST_F(OmniboxEditModelTest, CurrentMatch) {
   // query, instead of the full formatted URL.
   location_bar_model()->set_display_search_terms(base::ASCIIToUTF16("foobar"));
   model()->ResetDisplayTexts();
+  model()->Revert();
 
   {
     AutocompleteMatch match = model()->CurrentMatch(nullptr);
