@@ -33,6 +33,7 @@
 #include "services/ws/window_service_observer.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
+#include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/os_exchange_data_provider_mus.h"
 #include "ui/aura/mus/property_converter.h"
@@ -1003,6 +1004,19 @@ bool WindowTree::AddTransientWindowImpl(const ClientWindowId& parent_id,
   }
 
   ::wm::AddTransientChild(parent, transient);
+
+  // Transients are placed in a container by way of the WindowParentingClient.
+  // This code is simular to NativeWidgetAura, where it calls to
+  // ParentWindowWithContext().
+  if (IsTopLevel(parent) && parent->GetRootWindow() && IsTopLevel(transient) &&
+      transient->GetRootWindow()) {
+    aura::client::WindowParentingClient* client =
+        aura::client::GetWindowParentingClient(parent);
+    aura::Window* default_parent =
+        client->GetDefaultParent(transient, transient->GetBoundsInScreen());
+    if (default_parent && transient->parent() != default_parent)
+      default_parent->AddChild(transient);
+  }
   return true;
 }
 

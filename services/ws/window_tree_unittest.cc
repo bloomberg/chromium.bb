@@ -34,6 +34,7 @@
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/test/test_window_parenting_client.h"
 #include "ui/aura/test/window_occlusion_tracker_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
@@ -2595,6 +2596,32 @@ TEST(WindowTreeTest, SetWindowTransform) {
   EXPECT_TRUE(
       setup.window_tree_test_helper()->SetTransform(child_window, scaled));
   EXPECT_EQ(scaled, child_window->transform());
+}
+
+TEST(WindowTreeTest, AddingTransientGoesThroughParentingClient) {
+  WindowServiceTestSetup setup;
+  aura::test::TestWindowParentingClient test_window_parenting_client(
+      setup.aura_test_helper()->root_window());
+  WindowTreeTestHelper* helper = setup.window_tree_test_helper();
+  aura::Window* top_level = helper->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  aura::Window* transient = helper->NewTopLevelWindow();
+  ASSERT_TRUE(transient);
+
+  // Put |top_level| in |container|.
+  aura::Window container(nullptr);
+  container.Init(ui::LAYER_NOT_DRAWN);
+  top_level->parent()->AddChild(&container);
+  container.AddChild(top_level);
+  test_window_parenting_client.set_default_parent(&container);
+  EXPECT_NE(&container, transient->parent());
+
+  // AddTransientWindow() should trigger calling into the WindowParentingClient,
+  // which will result in adding |transient| as a child of |container|.
+  helper->window_tree()->AddTransientWindow(
+      10, helper->TransportIdForWindow(top_level),
+      helper->TransportIdForWindow(transient));
+  EXPECT_EQ(&container, transient->parent());
 }
 
 }  // namespace
