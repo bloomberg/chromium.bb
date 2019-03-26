@@ -406,21 +406,24 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
   // If |pending_draw_| is non-null, we called DrawVk twice without PostDrawVk.
   DCHECK(!pending_draw_);
 
+  // Use a temporary to automatically clean up if we hit a failure case.
+  std::unique_ptr<InFlightDraw> pending_draw;
+
   // If we've exhausted our buffers, re-use an existing one.
   // TODO(ericrk): Benchmark using more than 1 buffer.
   if (in_flight_draws_.size() >= 1 /* single buffering */) {
-    pending_draw_ = TakeInFlightDrawForReUse();
+    pending_draw = TakeInFlightDrawForReUse();
   }
 
   // If prev buffer is wrong size, just re-allocate.
-  if (pending_draw_ && pending_draw_->ahb_image->GetSize() !=
-                           gfx::Size(params->width, params->height)) {
-    pending_draw_ = nullptr;
+  if (pending_draw && pending_draw->ahb_image->GetSize() !=
+                          gfx::Size(params->width, params->height)) {
+    pending_draw.reset();
   }
 
   // If we weren't able to re-use a previous draw, create one.
-  if (!pending_draw_) {
-    pending_draw_ = std::make_unique<InFlightDraw>(vk_state_.get());
+  if (!pending_draw) {
+    pending_draw = std::make_unique<InFlightDraw>(vk_state_.get());
 
     AHardwareBuffer_Desc desc = {};
     desc.width = params->width;
@@ -441,26 +444,26 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
     auto scoped_buffer =
         base::android::ScopedHardwareBufferHandle::Adopt(buffer);
 
-    pending_draw_->ahb_image = base::MakeRefCounted<gl::GLImageAHardwareBuffer>(
+    pending_draw->ahb_image = base::MakeRefCounted<gl::GLImageAHardwareBuffer>(
         gfx::Size(params->width, params->height));
-    if (!pending_draw_->ahb_image->Initialize(scoped_buffer.get(),
-                                              false /* preserved */)) {
+    if (!pending_draw->ahb_image->Initialize(scoped_buffer.get(),
+                                             false /* preserved */)) {
       LOG(ERROR) << "Failed to initialize GLImage for AHardwareBuffer.";
       return;
     }
 
-    glGenTextures(1, static_cast<GLuint*>(&pending_draw_->texture_id));
+    glGenTextures(1, static_cast<GLuint*>(&pending_draw->texture_id));
     GLenum target = GL_TEXTURE_2D;
-    glBindTexture(target, pending_draw_->texture_id);
-    if (!pending_draw_->ahb_image->BindTexImage(target)) {
+    glBindTexture(target, pending_draw->texture_id);
+    if (!pending_draw->ahb_image->BindTexImage(target)) {
       LOG(ERROR) << "Failed to bind GLImage for AHardwareBuffer.";
       return;
     }
     glBindTexture(target, 0);
-    glGenFramebuffersEXT(1, &pending_draw_->framebuffer_id);
-    glBindFramebufferEXT(GL_FRAMEBUFFER, pending_draw_->framebuffer_id);
+    glGenFramebuffersEXT(1, &pending_draw->framebuffer_id);
+    glBindFramebufferEXT(GL_FRAMEBUFFER, pending_draw->framebuffer_id);
     glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                              GL_TEXTURE_2D, pending_draw_->texture_id, 0);
+                              GL_TEXTURE_2D, pending_draw->texture_id, 0);
     if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) !=
         GL_FRAMEBUFFER_COMPLETE) {
       LOG(ERROR) << "Failed to set up framebuffer for WebView GL drawing.";
@@ -469,7 +472,7 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
   }
 
   // Ask GL to wait on any Vk sync_fd before writing.
-  gpu::InsertEglFenceAndWait(std::move(pending_draw_->sync_fd));
+  gpu::InsertEglFenceAndWait(std::move(pending_draw->sync_fd));
 
   // Calculate color space.
   skcms_TransferFunction transfer_fn{
@@ -492,7 +495,7 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
   // Bind buffer and render with GL.
   base::ScopedFD gl_done_fd;
   {
-    glBindFramebufferEXT(GL_FRAMEBUFFER, pending_draw_->framebuffer_id);
+    glBindFramebufferEXT(GL_FRAMEBUFFER, pending_draw->framebuffer_id);
     glViewport(0, 0, params->width, params->height);
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_SCISSOR_TEST);
@@ -532,7 +535,7 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
       .fDrawBounds = &draw_bounds,
   };
   SkSurfaceProps props(0, kUnknown_SkPixelGeometry);
-  pending_draw_->draw_context = GrVkSecondaryCBDrawContext::Make(
+  pending_draw->draw_context = GrVkSecondaryCBDrawContext::Make(
       vk_state_->gr_context(), info, drawable_info, &props);
 
   // If we have a |gl_done_fd|, create a Skia GrBackendSemaphore from
@@ -546,7 +549,7 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
     }
     GrBackendSemaphore gr_semaphore;
     gr_semaphore.initVulkan(gl_done_semaphore);
-    if (!pending_draw_->draw_context->wait(1, &gr_semaphore)) {
+    if (!pending_draw->draw_context->wait(1, &gr_semaphore)) {
       // If wait returns false, we must clean up the |gl_done_semaphore|.
       vkDestroySemaphore(vk_state_->device(), gl_done_semaphore, nullptr);
       LOG(ERROR) << "Could not wait on GL completion semaphore.";
@@ -555,7 +558,7 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
   }
 
   // Create a VkImage and import AHB.
-  if (!pending_draw_->image_info.fImage) {
+  if (!pending_draw->image_info.fImage) {
     VkImage vk_image;
     VkImageCreateInfo vk_image_info;
     VkDeviceMemory vk_device_memory;
@@ -564,7 +567,7 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
             vk_state_->device(), vk_state_->physical_device(),
             gfx::Size(params->width, params->height),
             base::android::ScopedHardwareBufferHandle::Create(
-                pending_draw_->ahb_image->GetAHardwareBuffer()->buffer()),
+                pending_draw->ahb_image->GetAHardwareBuffer()->buffer()),
             &vk_image, &vk_image_info, &vk_device_memory,
             &mem_allocation_size)) {
       LOG(ERROR) << "Could not create VkImage from AHB.";
@@ -573,21 +576,22 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
 
     // Create backend texture from the VkImage.
     GrVkAlloc alloc = {vk_device_memory, 0, mem_allocation_size, 0};
-    pending_draw_->image_info = {vk_image,
-                                 alloc,
-                                 vk_image_info.tiling,
-                                 vk_image_info.initialLayout,
-                                 vk_image_info.format,
-                                 vk_image_info.mipLevels};
+    pending_draw->image_info = {vk_image,
+                                alloc,
+                                vk_image_info.tiling,
+                                vk_image_info.initialLayout,
+                                vk_image_info.format,
+                                vk_image_info.mipLevels,
+                                VK_QUEUE_FAMILY_EXTERNAL};
   }
 
   // Create an SkImage from AHB.
   GrBackendTexture backend_texture(params->width, params->height,
-                                   pending_draw_->image_info);
-  pending_draw_->ahb_skimage = SkImage::MakeFromTexture(
+                                   pending_draw->image_info);
+  pending_draw->ahb_skimage = SkImage::MakeFromTexture(
       vk_state_->gr_context(), backend_texture, kBottomLeft_GrSurfaceOrigin,
       kRGBA_8888_SkColorType, kPremul_SkAlphaType, color_space);
-  if (!pending_draw_->ahb_skimage) {
+  if (!pending_draw->ahb_skimage) {
     LOG(ERROR) << "Could not create SkImage from VkImage.";
     return;
   }
@@ -595,17 +599,25 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
   // Draw the SkImage.
   SkPaint paint;
   paint.setBlendMode(SkBlendMode::kSrcOver);
-  pending_draw_->draw_context->getCanvas()->drawImage(
-      pending_draw_->ahb_skimage, 0, 0, &paint);
-  pending_draw_->draw_context->flush();
+  pending_draw->draw_context->getCanvas()->drawImage(pending_draw->ahb_skimage,
+                                                     0, 0, &paint);
+  pending_draw->draw_context->flush();
+
+  // Transfer |pending_draw| to |pending_draw_| for handling in
+  // PostDrawVkInterop.
+  pending_draw_ = std::move(pending_draw);
 }
 
 void AwDrawFnImpl::PostDrawVk(AwDrawFn_PostDrawVkParams* params) {
-  if (!vk_state_ || !gl_context_)
+  // Use a temporary to automatically clean up if we hit a failure case.
+  std::unique_ptr<InFlightDraw> pending_draw = std::move(pending_draw_);
+
+  if (!vk_state_ || !gl_context_ || !pending_draw)
     return;
 
-  // Release the SkImage so that Skia transitions it back to EXTERNAL.
-  pending_draw_->ahb_skimage.reset();
+  // Release the SkImage so that Skia transitions it back to
+  // VK_QUEUE_FAMILY_EXTERNAL.
+  pending_draw->ahb_skimage.reset();
 
   // Create a semaphore to track the image's transition back to external.
   VkExportSemaphoreCreateInfo export_info;
@@ -617,13 +629,13 @@ void AwDrawFnImpl::PostDrawVk(AwDrawFn_PostDrawVkParams* params) {
   sem_info.pNext = &export_info;
   sem_info.flags = 0;
   VkResult result = vkCreateSemaphore(vk_state_->device(), &sem_info, nullptr,
-                                      &pending_draw_->post_draw_semaphore);
+                                      &pending_draw->post_draw_semaphore);
   if (result != VK_SUCCESS) {
     LOG(ERROR) << "Could not create VkSemaphore.";
     return;
   }
   GrBackendSemaphore gr_post_draw_semaphore;
-  gr_post_draw_semaphore.initVulkan(pending_draw_->post_draw_semaphore);
+  gr_post_draw_semaphore.initVulkan(pending_draw->post_draw_semaphore);
 
   // Flush so that we know the image's transition has been submitted and that
   // the |post_draw_semaphore| is pending.
@@ -635,8 +647,8 @@ void AwDrawFnImpl::PostDrawVk(AwDrawFn_PostDrawVkParams* params) {
     return;
   }
   if (!vk_state_->implementation()->GetSemaphoreFdKHR(
-          vk_state_->device(), pending_draw_->post_draw_semaphore,
-          &pending_draw_->sync_fd)) {
+          vk_state_->device(), pending_draw->post_draw_semaphore,
+          &pending_draw->sync_fd)) {
     LOG(ERROR) << "Could not retrieve SyncFD from |post_draw_semaphore|.";
     return;
   }
@@ -647,29 +659,30 @@ void AwDrawFnImpl::PostDrawVk(AwDrawFn_PostDrawVkParams* params) {
       .pNext = nullptr,
       .flags = 0,
   };
-  DCHECK(VK_NULL_HANDLE == pending_draw_->post_draw_fence);
+  DCHECK(VK_NULL_HANDLE == pending_draw->post_draw_fence);
   result = vkCreateFence(vk_state_->device(), &create_info, nullptr,
-                         &pending_draw_->post_draw_fence);
+                         &pending_draw->post_draw_fence);
   if (result != VK_SUCCESS) {
     LOG(ERROR) << "Could not create VkFence.";
     return;
   }
   result = vkQueueSubmit(vk_state_->queue(), 0, nullptr,
-                         pending_draw_->post_draw_fence);
+                         pending_draw->post_draw_fence);
   if (result != VK_SUCCESS) {
     LOG(ERROR) << "Could not submit fence to queue.";
     return;
   }
 
-  // Add the |pending_draw_| to |in_flight_draws_|.
-  in_flight_draws_.push_back(std::move(pending_draw_));
+  // Add the |pending_draw| to |in_flight_draws_|.
+  in_flight_draws_.push_back(std::move(pending_draw));
 }
 
 std::unique_ptr<AwDrawFnImpl::InFlightDraw>
 AwDrawFnImpl::TakeInFlightDrawForReUse() {
   DCHECK(vk_state_);
   DCHECK(!in_flight_draws_.empty());
-  std::unique_ptr<InFlightDraw>& draw = in_flight_draws_.front();
+  std::unique_ptr<InFlightDraw> draw = std::move(in_flight_draws_.front());
+  in_flight_draws_.pop_front();
 
   // Wait for our draw's |post_draw_fence| to pass.
   DCHECK(draw->post_draw_fence != VK_NULL_HANDLE);
@@ -687,10 +700,7 @@ AwDrawFnImpl::TakeInFlightDrawForReUse() {
   draw->post_draw_fence = VK_NULL_HANDLE;
   vkDestroySemaphore(vk_state_->device(), draw->post_draw_semaphore, nullptr);
   draw->post_draw_semaphore = VK_NULL_HANDLE;
-
-  std::unique_ptr<InFlightDraw> draw_to_return = std::move(draw);
-  in_flight_draws_.pop_front();
-  return draw_to_return;
+  return draw;
 }
 
 AwDrawFnImpl::InFlightDraw::InFlightDraw(VulkanState* vk_state)
