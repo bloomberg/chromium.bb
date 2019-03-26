@@ -1818,16 +1818,6 @@ crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move_
 crbug.com/840238 http/tests/devtools/elements/shadow/shadow-distribution.js [ Failure ]
 crbug.com/840238 virtual/binary-for-devtools/http/tests/devtools/elements/shadow/shadow-distribution.js [ Failure ]
 
-crbug.com/667560 [ Debug ] http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
-crbug.com/667560 [ Debug ] virtual/binary-for-devtools/http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
-crbug.com/778515 http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure ]
-crbug.com/778515 virtual/binary-for-devtools/http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure ]
-
-crbug.com/778391 http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Pass Failure ]
-crbug.com/778391 virtual/binary-for-devtools/http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Pass Failure ]
-crbug.com/778391 http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Pass Failure ]
-crbug.com/778391 virtual/binary-for-devtools/http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Pass Failure ]
-
 crbug.com/767269 [ Win ] inspector-protocol/layout-fonts/cjk-ideograph-fallback-by-lang.js [ Pass Failure ]
 
 crbug.com/788110 [ Linux ] inspector-protocol/layout-fonts/unicode-range-combining-chars-fallback.js [ Pass Failure ]
@@ -5042,9 +5032,6 @@ crbug.com/806645 [ Win7 ] virtual/binary-for-devtools/http/tests/devtools/elemen
 crbug.com/806645 [ Mac ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
 crbug.com/806645 [ Mac ] virtual/binary-for-devtools/http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
 
-crbug.com/813216 [ Win7 ] http/tests/devtools/elements/styles-3/style-rule-from-imported-stylesheet.js  [ Failure Pass ]
-crbug.com/813216 [ Win7 ] virtual/binary-for-devtools/http/tests/devtools/elements/styles-3/style-rule-from-imported-stylesheet.js  [ Failure Pass ]
-
 # MHT works only when loaded from local FS (file://..).
 crbug.com/778467 [ Fuchsia ] mhtml/mhtml_in_iframe.html [ Failure ]
 
@@ -6073,8 +6060,6 @@ crbug.com/938780 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet
 
 # Sheriff 2019-03-06
 crbug.com/938591 [ Linux ] fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Failure Pass ]
-crbug.com/938884 [ Win7 Mac ] http/tests/devtools/elements/styles-3/styles-add-blank-property.js [ Pass Timeout ]
-crbug.com/938884 [ Win7 Mac ] virtual/binary-for-devtools/http/tests/devtools/elements/styles-3/styles-add-blank-property.js [ Pass Timeout ]
 
 # Caused a revert of a good change.
 crbug.com/931533 media/video-played-collapse.html [ Pass Failure ]
@@ -6120,8 +6105,19 @@ crbug.com/943969 [ Win ] inspector-protocol/css/css-get-media-queries.js [ Pass 
 crbug.com/943969 [ Mac10.10 Mac10.11 ] inspector-protocol/css/css-get-media-queries.js [ Pass Failure ]
 
 crbug.com/945085 [ Mac10.13 ] printing/composited-thead-tfoot-repeat.html [ Failure Pass ]
- 
+
  # Sheriff 2019-03-25
 crbug.com/943940 http/tests/security/mixedContent/empty-url-plugin-in-frame.html [ Pass Failure ]
 crbug.com/943940 virtual/outofblink-cors/http/tests/security/mixedContent/empty-url-plugin-in-frame.html [ Pass Failure ]
 crbug.com/944025 http/tests/preload/meta-viewport-device-width-link-headers.html [ Pass Failure ]
+
+crbug.com/945665 http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Pass Failure ]
+crbug.com/945665 virtual/binary-for-devtools/http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Pass Failure ]
+crbug.com/945665 http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure ]
+crbug.com/945665 virtual/binary-for-devtools/http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure ]
+crbug.com/945665 http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Pass Failure ]
+crbug.com/945665 virtual/binary-for-devtools/http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Pass Failure ]
+crbug.com/945665 [ Win7 ] http/tests/devtools/elements/styles-3/style-rule-from-imported-stylesheet.js  [ Failure Pass ]
+crbug.com/945665 [ Win7 ] virtual/binary-for-devtools/http/tests/devtools/elements/styles-3/style-rule-from-imported-stylesheet.js  [ Failure Pass ]
+crbug.com/945665 http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
+crbug.com/945665 virtual/binary-for-devtools/http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
