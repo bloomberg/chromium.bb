@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.net.MimeTypeFilter;
@@ -90,20 +91,26 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
         final String[] selectColumns = {MediaStore.Images.Media._ID,
                 MediaStore.Images.Media.DATE_TAKEN, MediaStore.Images.Media.DATA};
 
-        final String whereClause = "(" + MediaStore.Images.Media.DATA + " LIKE ? OR "
-                + MediaStore.Images.Media.DATA + " LIKE ? OR " + MediaStore.Images.Media.DATA
-                + " LIKE ?) AND " + MediaStore.Images.Media.DATA + " NOT LIKE ?";
+        String whereClause = null;
+        String[] whereArgs = null;
+        // Looks like we loose access to the filter, starting with the Q SDK.
+        if (!BuildInfo.isAtLeastQ()) {
+            whereClause = "(" + MediaStore.Images.Media.DATA + " LIKE ? OR "
+                    + MediaStore.Images.Media.DATA + " LIKE ? OR " + MediaStore.Images.Media.DATA
+                    + " LIKE ?) AND " + MediaStore.Images.Media.DATA + " NOT LIKE ?";
 
-        final String[] whereArgs = {// Include:
-                getCameraDirectory().toString() + "%",
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "%",
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                        + "%",
-                // Exclude low-quality sources, such as the screenshots directory:
-                // TODO(finnur): As of the Q SDK this can be converted to DIRECTORY_SCREENSHOTS.
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                        + "/Screenshots/"
-                        + "%"};
+            whereArgs = new String[] {
+                    // Include:
+                    getCameraDirectory().toString() + "%",
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                            + "%",
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                            + "%",
+                    // Exclude low-quality sources, such as the screenshots directory:
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                            + "/Screenshots/"
+                            + "%"};
+        }
 
         final String orderBy = MediaStore.Images.Media.DATE_TAKEN + " DESC";
 
