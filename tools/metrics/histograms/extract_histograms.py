@@ -244,13 +244,26 @@ def _ExtractEnumsFromXmlTree(tree):
 
 
 def _ExtractOwners(xml_node):
-  """Extract all owners into a list from owner tag under |xml_node|."""
+  """Extract owners information from owner tag under |xml_node|.
+
+  Args:
+    xml_node: The histogram node in histograms.xml.
+
+  Returns:
+    A tuple of owners information where the first element is a list of owners
+    extract from |xml_node| excluding the owner placeholder string, and the
+    second element is whether the owner tag is presented in |xml_node|
+    including the owner placeholder string.
+  """
   owners = []
+  hasOwner = False
   for owner_node in xml_node.getElementsByTagName('owner'):
     owner_entry = _NormalizeString(_JoinChildNodes(owner_node))
+    hasOwner = True
     if OWNER_FIELD_PLACEHOLDER not in owner_entry:
       owners.append(owner_entry)
-  return owners
+  return owners, hasOwner
+
 
 
 def _ValidateDateString(date_str):
@@ -314,7 +327,7 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
         have_errors = True
 
     # Find <owner> tag.
-    owners = _ExtractOwners(histogram)
+    owners, hasOwner = _ExtractOwners(histogram)
     if owners:
       histogram_entry['owners'] = owners
 
@@ -331,6 +344,16 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
     if obsolete_nodes:
       reason = _JoinChildNodes(obsolete_nodes[0])
       histogram_entry['obsolete'] = reason
+
+    # Non-obsolete histograms should provide a <summary>.
+    if not obsolete_nodes and not summary_nodes:
+      logging.error('histogram %s should provide a <summary>', name)
+      have_errors = True
+
+    # Non-obsolete histograms should specify <owner>s.
+    if not obsolete_nodes and not hasOwner:
+      logging.error('histogram %s should specify <owner>s', name)
+      have_errors = True
 
     # Handle units.
     if histogram.hasAttribute('units'):
@@ -441,7 +464,7 @@ def _UpdateHistogramsWithSuffixes(tree, histograms):
     for suffix in suffix_nodes:
       suffix_labels[suffix.getAttribute('name')] = suffix.getAttribute('label')
     # Find owners list under current histogram_suffixes tag.
-    owners = _ExtractOwners(histogram_suffixes)
+    owners, _ = _ExtractOwners(histogram_suffixes)
 
     last_histogram_name = None
     for affected_histogram in affected_histograms:
