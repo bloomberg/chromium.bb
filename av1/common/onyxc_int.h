@@ -502,7 +502,7 @@ typedef struct AV1Common {
   int tile_col_start_sb[MAX_TILE_COLS + 1];  // valid for 0 <= i <= tile_cols
   int tile_row_start_sb[MAX_TILE_ROWS + 1];  // valid for 0 <= i <= tile_rows
   int tile_width, tile_height;               // In MI units
-  int min_tile_width;                        // minimum tile width
+  int min_inner_tile_width;                  // min width of non-rightmost tile
 
   unsigned int large_scale_tile;
   unsigned int single_tile_decoding;
