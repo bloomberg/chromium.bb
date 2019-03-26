@@ -535,9 +535,10 @@ void LocalFrame::Reload(WebFrameLoadType load_type) {
     request.SetInputStartTime(input_event->TimeStamp());
   probe::FrameScheduledNavigation(this, request.GetResourceRequest().Url(), 0.0,
                                   ClientNavigationReason::kReload);
-  probe::FrameClearedScheduledNavigation(this);
-
+  probe::FrameRequestedNavigation(this, request.GetResourceRequest().Url(),
+                                  ClientNavigationReason::kReload);
   loader_.StartNavigation(request, load_type);
+  probe::FrameClearedScheduledNavigation(this);
 }
 
 LocalWindowProxy* LocalFrame::WindowProxy(DOMWrapperWorld& world) {
