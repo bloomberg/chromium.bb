@@ -74,8 +74,9 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
     identity_test_env_profile_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_.get());
 
-    arc_session_manager_ = std::make_unique<ArcSessionManager>(
-        std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
+    arc_session_manager_ =
+        std::make_unique<ArcSessionManager>(std::make_unique<ArcSessionRunner>(
+            base::BindRepeating(FakeArcSession::Create)));
     preference_handler_ =
         std::make_unique<ArcPlayStoreEnabledPreferenceHandler>(
             profile_.get(), arc_session_manager_.get());

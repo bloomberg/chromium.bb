@@ -101,7 +101,7 @@ void ArcAppTest::SetUp(Profile* profile) {
   arc_service_manager_ = std::make_unique<arc::ArcServiceManager>();
   arc_session_manager_ = std::make_unique<arc::ArcSessionManager>(
       std::make_unique<arc::ArcSessionRunner>(
-          base::Bind(arc::FakeArcSession::Create)));
+          base::BindRepeating(arc::FakeArcSession::Create)));
   DCHECK(arc::ArcSessionManager::Get());
   arc::ArcSessionManager::SetUiEnabledForTesting(false);
   arc_session_manager_->SetProfile(profile_);

@@ -35,7 +35,7 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
         arc_service_manager_(std::make_unique<ArcServiceManager>()),
         arc_session_manager_(std::make_unique<ArcSessionManager>(
             std::make_unique<ArcSessionRunner>(
-                base::Bind(FakeArcSession::Create)))),
+                base::BindRepeating(FakeArcSession::Create)))),
         testing_profile_(std::make_unique<TestingProfile>()),
         disable_cpu_restriction_counter_(0),
         record_uma_counter_(0) {

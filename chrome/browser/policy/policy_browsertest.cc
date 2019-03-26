@@ -5755,7 +5755,7 @@ class ArcPolicyTest : public PolicyTest {
     arc::ArcSessionManager::SetUiEnabledForTesting(false);
     arc::ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
         std::make_unique<arc::ArcSessionRunner>(
-            base::Bind(arc::FakeArcSession::Create)));
+            base::BindRepeating(arc::FakeArcSession::Create)));
 
     browser()->profile()->GetPrefs()->SetBoolean(arc::prefs::kArcSignedIn,
                                                  true);
