@@ -25,37 +25,18 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
         loader.LoadExtension(test_data_dir.AppendASCII(extension)));
   }
 
- private:
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kExtensionsToolbarMenu);
     DialogBrowserTest::SetUp();
   }
 
   void ShowUi(const std::string& name) override {
-    if (name == "default") {
-      LoadTestExtension("extensions/uitest/long_name");
-      LoadTestExtension("extensions/uitest/window_open");
-    }
-
     ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                                base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
     BrowserView::GetBrowserViewForBrowser(browser())
         ->toolbar()
         ->extensions_button()
         ->OnMousePressed(click_event);
-  }
-
-  bool VerifyUi() override {
-    if (!DialogBrowserTest::VerifyUi())
-      return false;
-
-    std::vector<ExtensionsMenuButton*> menu_buttons = GetExtensionMenuButtons();
-    if (extensions_.size() != menu_buttons.size())
-      return false;
-
-    // TODO(pbos): Sort and compare titles of buttons / extensions.
-
-    return true;
   }
 
   static std::vector<ExtensionsMenuButton*> GetExtensionMenuButtons() {
@@ -73,9 +54,23 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, InvokeUi_default) {
+  LoadTestExtension("extensions/uitest/long_name");
+  LoadTestExtension("extensions/uitest/window_open");
+
   ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, InvokeUi_NoExtensions) {
   ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
+                       CreatesOneButtonPerExtension) {
+  LoadTestExtension("extensions/uitest/long_name");
+  LoadTestExtension("extensions/uitest/window_open");
+  ShowUi("");
+  VerifyUi();
+  EXPECT_EQ(2u, extensions_.size());
+  EXPECT_EQ(extensions_.size(), GetExtensionMenuButtons().size());
+  DismissUi();
 }
