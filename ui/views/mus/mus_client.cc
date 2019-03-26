@@ -330,7 +330,10 @@ void MusClient::OnEmbed(
   NOTREACHED();
 }
 
-void MusClient::OnLostConnection(aura::WindowTreeClient* client) {}
+void MusClient::OnLostConnection(aura::WindowTreeClient* client) {
+  // Better to crash than to be left in a broken state.
+  IMMEDIATE_CRASH();
+}
 
 void MusClient::OnEmbedRootDestroyed(
     aura::WindowTreeHostMus* window_tree_host) {
