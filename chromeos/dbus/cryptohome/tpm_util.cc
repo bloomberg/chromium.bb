@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/util/tpm_util.h"
+#include "chromeos/dbus/cryptohome/tpm_util.h"
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 
 namespace chromeos {
@@ -35,6 +37,16 @@ bool TpmIsBeingOwned() {
   bool result = false;
   CryptohomeClient::Get()->CallTpmIsBeingOwnedAndBlock(&result);
   return result;
+}
+
+void GetTpmVersion(GetTpmVersionCallback callback) {
+  CryptohomeClient::Get()->TpmGetVersion(base::BindOnce(
+      [](GetTpmVersionCallback callback,
+         base::Optional<CryptohomeClient::TpmVersionInfo> tpm_version_info) {
+        std::move(callback).Run(
+            tpm_version_info.value_or(CryptohomeClient::TpmVersionInfo()));
+      },
+      std::move(callback)));
 }
 
 bool InstallAttributesGet(const std::string& name, std::string* value) {

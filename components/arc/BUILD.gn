@@ -87,6 +87,7 @@ static_library("arc") {
     "//chromeos/dbus",
     "//chromeos/dbus:login_manager_proto",
     "//chromeos/dbus:power_manager_proto",
+    "//chromeos/dbus/cryptohome",
     "//chromeos/disks",
     "//chromeos/login/login_state",
     "//chromeos/network",

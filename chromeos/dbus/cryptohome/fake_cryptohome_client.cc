@@ -20,9 +20,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/attestation/attestation.pb.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
+#include "chromeos/dbus/cryptohome/account_identifier_operators.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/util/account_identifier_operators.h"
 #include "components/policy/proto/install_attributes.pb.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

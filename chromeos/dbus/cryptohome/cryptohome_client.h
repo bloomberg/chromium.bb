@@ -52,7 +52,7 @@ namespace chromeos {
 // CryptohomeClient is used to communicate with the Cryptohome service.
 // All method should be called from the origin thread (UI thread) which
 // initializes the DBusThreadManager instance.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) CryptohomeClient {
+class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) CryptohomeClient {
  public:
   class Observer {
    public:
