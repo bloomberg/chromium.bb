@@ -180,6 +180,31 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   EXPECT_EQ(
       PowerPolicyController::GetPolicyDebugString(expected_policy),
       PowerPolicyController::GetPolicyDebugString(power_manager()->policy()));
+
+  // Set PeakShift prefs.
+  prefs.peak_shift_enabled = true;
+  prefs.peak_shift_battery_threshold = 20;
+
+  constexpr PowerPolicyController::PeakShiftDayConfiguration
+      kPeakShiftDayConfig = {
+          PowerPolicyController::WEEK_DAY_TUESDAY, {10, 0}, {20, 15}, {23, 45}};
+  prefs.peak_shift_day_configurations.push_back(kPeakShiftDayConfig);
+  policy_controller_->ApplyPrefs(prefs);
+
+  expected_policy.set_peak_shift_battery_percent_threshold(20);
+  auto* proto_config = expected_policy.add_peak_shift_day_configs();
+  proto_config->set_day(
+      power_manager::PowerManagementPolicy::PeakShiftDayConfig::TUESDAY);
+  proto_config->mutable_start_time()->set_hour(10);
+  proto_config->mutable_start_time()->set_minute(0);
+  proto_config->mutable_end_time()->set_hour(20);
+  proto_config->mutable_end_time()->set_minute(15);
+  proto_config->mutable_charge_start_time()->set_hour(23);
+  proto_config->mutable_charge_start_time()->set_minute(45);
+
+  EXPECT_EQ(
+      PowerPolicyController::GetPolicyDebugString(expected_policy),
+      PowerPolicyController::GetPolicyDebugString(power_manager()->policy()));
 }
 
 TEST_F(PowerPolicyControllerTest, SystemWakeLock) {
