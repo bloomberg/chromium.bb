@@ -106,12 +106,6 @@ class ASH_EXPORT ShelfLayoutManager
   // Returns how the shelf background should be painted.
   ShelfBackgroundType GetShelfBackgroundType() const;
 
-
-  // Set the height of the Docked Magnifier viewport at the top of the screen,
-  // which will reduce the available screen work area similarly to the ChromeVox
-  // panel height. The Docked Magnifier appears above the ChromeVox panel.
-  void SetDockedMagnifierHeight(int height);
-
   // Updates the background of the shelf if it has changed.
   void MaybeUpdateShelfBackground(AnimationChangeType change_type);
 
@@ -127,7 +121,7 @@ class ASH_EXPORT ShelfLayoutManager
 
   // ShellObserver:
   void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) override;
-  void OnAccessibilityPanelBoundsChanged(aura::Window* root_window) override;
+  void OnAccessibilityInsetsChanged(aura::Window* root_window) override;
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
   void OnSplitViewModeStarted() override;
   void OnSplitViewModeEnded() override;
@@ -190,7 +184,6 @@ class ASH_EXPORT ShelfLayoutManager
   }
   bool updating_bounds() const { return updating_bounds_; }
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
-  int docked_magnifier_height() const { return docked_magnifier_height_; }
 
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
   // A helper function for choosing values specific to a shelf alignment.
@@ -459,10 +452,6 @@ class ASH_EXPORT ShelfLayoutManager
   // The bounds within the root window not occupied by the shelf nor the virtual
   // keyboard.
   gfx::Rect user_work_area_bounds_;
-
-  // The height of the Docked Magnifier viewport at the top of the screen, which
-  // needs to be removed from the available work area.
-  int docked_magnifier_height_ = 0;
 
   // Whether background blur is enabled.
   const bool is_background_blur_enabled_;

@@ -518,6 +518,15 @@ int RootWindowController::GetAccessibilityPanelHeight() const {
   return layout_manager ? layout_manager->GetPanelHeight() : 0;
 }
 
+int RootWindowController::GetDockedMagnifierHeight() const {
+  return docked_magnifier_height_;
+}
+
+void RootWindowController::SetDockedMagnifierHeight(int height) {
+  docked_magnifier_height_ = height;
+  Shell::Get()->NotifyAccessibilityInsetsChanged(GetRootWindow());
+}
+
 aura::Window* RootWindowController::GetContainer(int container_id) {
   return GetRootWindow()->GetChildById(container_id);
 }

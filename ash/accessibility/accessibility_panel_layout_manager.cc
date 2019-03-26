@@ -5,7 +5,6 @@
 #include "ash/accessibility/accessibility_panel_layout_manager.h"
 
 #include "ash/root_window_controller.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "ui/gfx/geometry/rect.h"
@@ -45,7 +44,7 @@ void AccessibilityPanelLayoutManager::SetPanelBounds(
   UpdateWindowBounds();
   // TODO(agawronska): Consider routing this through RootWindowController
   // (public method or repeating callback).
-  Shell::Get()->NotifyAccessibilityPanelBoundsChanged(
+  Shell::Get()->NotifyAccessibilityInsetsChanged(
       panel_window_->GetRootWindow());
 }
 
@@ -65,7 +64,7 @@ void AccessibilityPanelLayoutManager::OnWindowRemovedFromLayout(
   if (child == panel_window_)
     panel_window_ = nullptr;
 
-  Shell::Get()->NotifyAccessibilityPanelBoundsChanged(root_window);
+  Shell::Get()->NotifyAccessibilityInsetsChanged(root_window);
 }
 
 void AccessibilityPanelLayoutManager::OnChildWindowVisibilityChanged(
@@ -73,7 +72,7 @@ void AccessibilityPanelLayoutManager::OnChildWindowVisibilityChanged(
     bool visible) {
   if (child == panel_window_ && visible) {
     UpdateWindowBounds();
-    Shell::Get()->NotifyAccessibilityPanelBoundsChanged(
+    Shell::Get()->NotifyAccessibilityInsetsChanged(
         panel_window_->GetRootWindow());
   }
 }
@@ -130,10 +129,9 @@ void AccessibilityPanelLayoutManager::UpdateWindowBounds() {
 
   // Make sure the accessibility panel is always below the Docked Magnifier
   // viewport so it shows up and gets magnified.
-  int magnifier_height = root_controller->shelf()->GetDockedMagnifierHeight();
+  int magnifier_height = root_controller->GetDockedMagnifierHeight();
   if (bounds.y() < magnifier_height)
     bounds.Offset(0, magnifier_height);
-
   // Make sure the accessibility panel doesn't go offscreen when the Docked
   // Magnifier is on.
   int screen_height = root_window->bounds().height();
