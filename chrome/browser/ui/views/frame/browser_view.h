@@ -400,7 +400,7 @@ class BrowserView : public BrowserWindow,
       Browser::DownloadClosePreventionType dialog_type,
       bool app_modal,
       const base::Callback<void(bool)>& callback) override;
-  void UserChangedTheme() override;
+  void UserChangedTheme(BrowserThemeChangeType theme_change_type) override;
   void ShowAppMenu() override;
   content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) override;
@@ -784,6 +784,9 @@ class BrowserView : public BrowserWindow,
   // True if we're currently handling a theme change (i.e. inside
   // OnThemeChanged()).
   bool handling_theme_changed_ = false;
+
+  // True if (as of the last time it was checked) the frame type is native.
+  bool using_native_frame_ = true;
 
   // True when in ProcessFullscreen(). The flag is used to avoid reentrance and
   // to ignore requests to layout while in ProcessFullscreen() to reduce
