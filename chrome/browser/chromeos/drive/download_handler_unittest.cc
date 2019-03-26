@@ -86,12 +86,24 @@ class DownloadHandlerTestDownloadItem : public download::MockDownloadItem {
   int64_t received_bytes_ = 0;
 };
 
+class TestDownloadHandler : public DownloadHandler {
+ public:
+  explicit TestDownloadHandler(FileSystemInterface* file_system)
+      : DownloadHandler(file_system) {}
+
+  MOCK_METHOD1(GetDownloadNotifier,
+               download::AllDownloadItemNotifier*(
+                   content::DownloadManager* download_manager));
+};
+
 }  // namespace
 
 class DownloadHandlerTest : public testing::Test {
  public:
   DownloadHandlerTest()
-      : download_manager_(new DownloadHandlerTestDownloadManager) {}
+      : download_manager_(new DownloadHandlerTestDownloadManager),
+        notifier_(
+            new download::AllDownloadItemNotifier(download_manager_.get())) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -100,7 +112,12 @@ class DownloadHandlerTest : public testing::Test {
     EXPECT_CALL(download_item_, GetState())
         .WillRepeatedly(testing::Return(download::DownloadItem::IN_PROGRESS));
 
-    download_handler_ = std::make_unique<DownloadHandler>(&test_file_system_);
+    download_handler_ =
+        std::make_unique<TestDownloadHandler>(&test_file_system_);
+    EXPECT_CALL(*download_handler_.get(),
+                GetDownloadNotifier(download_manager_.get()))
+        .WillRepeatedly(testing::Return(notifier_.get()));
+
     download_handler_->Initialize(download_manager_.get(), temp_dir_.GetPath());
     download_handler_->SetFreeDiskSpaceDelayForTesting(
         base::TimeDelta::FromMilliseconds(0));
@@ -113,8 +130,10 @@ class DownloadHandlerTest : public testing::Test {
   std::unique_ptr<DownloadHandlerTestDownloadManager> download_manager_;
   std::unique_ptr<DownloadHandlerTestDownloadManager>
       incognito_download_manager_;
+  std::unique_ptr<download::AllDownloadItemNotifier> notifier_;
+  std::unique_ptr<download::AllDownloadItemNotifier> incognito_notifier_;
   DownloadHandlerTestFileSystem test_file_system_;
-  std::unique_ptr<DownloadHandler> download_handler_;
+  std::unique_ptr<TestDownloadHandler> download_handler_;
   download::MockDownloadItem download_item_;
 };
 
@@ -273,6 +292,13 @@ TEST_F(DownloadHandlerTest, FreeDiskSpace) {
   // FreeDiskSpace should be called with considering both download items.
   incognito_download_manager_ =
       std::make_unique<DownloadHandlerTestDownloadManager>();
+
+  incognito_notifier_.reset(
+      new download::AllDownloadItemNotifier(incognito_download_manager_.get()));
+  EXPECT_CALL(*download_handler_.get(),
+              GetDownloadNotifier(incognito_download_manager_.get()))
+      .WillRepeatedly(testing::Return(incognito_notifier_.get()));
+
   download_handler_->ObserveIncognitoDownloadManager(
       incognito_download_manager_.get());
 

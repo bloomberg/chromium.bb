@@ -28,7 +28,7 @@ class DownloadManager;
 class DownloadsListTracker
     : public download::AllDownloadItemNotifier::Observer {
  public:
-  DownloadsListTracker(content::DownloadManager* download_manager,
+  DownloadsListTracker(download::AllDownloadItemNotifier* download_notifier,
                        downloads::mojom::PagePtr page);
   ~DownloadsListTracker() override;
 
@@ -61,7 +61,7 @@ class DownloadsListTracker
 
  protected:
   // Testing constructor.
-  DownloadsListTracker(content::DownloadManager* download_manager,
+  DownloadsListTracker(download::AllDownloadItemNotifier* download_notifier,
                        downloads::mojom::PagePtr page,
                        base::Callback<bool(const download::DownloadItem&)>);
 
@@ -105,8 +105,8 @@ class DownloadsListTracker
   // if sending updates.
   void RemoveItem(const SortedSet::iterator& remove);
 
-  download::AllDownloadItemNotifier main_notifier_;
-  std::unique_ptr<download::AllDownloadItemNotifier> original_notifier_;
+  download::AllDownloadItemNotifier* main_notifier_ = nullptr;
+  download::AllDownloadItemNotifier* original_notifier_ = nullptr;
 
   downloads::mojom::PagePtr page_;
 

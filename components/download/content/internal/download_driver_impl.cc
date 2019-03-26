@@ -111,12 +111,18 @@ DriverEntry DownloadDriverImpl::CreateDriverEntry(
   return entry;
 }
 
-DownloadDriverImpl::DownloadDriverImpl(content::DownloadManager* manager)
-    : download_manager_(manager), client_(nullptr), weak_ptr_factory_(this) {
+DownloadDriverImpl::DownloadDriverImpl(content::DownloadManager* manager,
+                                       AllDownloadItemNotifier* notifier)
+    : download_manager_(manager),
+      notifier_(notifier),
+      client_(nullptr),
+      weak_ptr_factory_(this) {
   DCHECK(download_manager_);
 }
 
-DownloadDriverImpl::~DownloadDriverImpl() = default;
+DownloadDriverImpl::~DownloadDriverImpl() {
+  notifier_->RemoveObserver(this);
+}
 
 void DownloadDriverImpl::Initialize(DownloadDriver::Client* client) {
   DCHECK(!client_);
@@ -129,8 +135,7 @@ void DownloadDriverImpl::Initialize(DownloadDriver::Client* client) {
     return;
   }
 
-  notifier_ =
-      std::make_unique<AllDownloadItemNotifier>(download_manager_, this);
+  notifier_->AddObserver(this);
 }
 
 void DownloadDriverImpl::HardRecover() {
