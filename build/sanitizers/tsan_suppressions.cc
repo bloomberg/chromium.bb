@@ -152,11 +152,6 @@ char kTSanDefaultSuppressions[] =
     "race:CommandLine::current_process_commandline_\n"
     "race:CommandLine::GetSwitchValueASCII\n"
 
-    // http://crbug.com/338675
-    "race:blink::s_platform\n"
-    "race:content::"
-    "RendererWebKitPlatformSupportImpl::~RendererWebKitPlatformSupportImpl\n"
-
     // http://crbug.com/347534
     "race:v8::internal::V8::TearDown\n"
 
