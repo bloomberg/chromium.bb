@@ -6123,3 +6123,6 @@ crbug.com/945507 [ Win ] fast/url/standard-url.html [ Pass Failure ]
 
 crbug.com/945629 http/tests/devtools/network/network-filters.js [ Pass Failure Timeout ]
 crbug.com/945629 virtual/binary-for-devtools/http/tests/devtools/network/network-filters.js [ Pass Failure Timeout ]
+
+crbug.com/945666 [ Win ] paint/invalidation/window-resize/window-resize-percent-width-height.html [ Pass Failure ]
+crbug.com/945666 [ Win ] paint/invalidation/window-resize/window-resize-child-background-image-fixed-centered.html [ Pass Failure ]
