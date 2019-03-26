@@ -58,6 +58,22 @@ cca.views.camera.Layout = function() {
   this.topStripe_ = cca.views.camera.Layout.cssStyle_(
       'body.shift-top-stripe .top-stripe');
 
+  /**
+   * CSS style of the viewport in square mode.
+   * @type {CSSStyleDeclaration}
+   * @private
+   */
+  this.squareViewport_ = cca.views.camera.Layout.cssStyle_(
+      'body:not(.mode-switching).square-mode #preview-wrapper');
+
+  /**
+   * CSS style of the video in square mode.
+   * @type {CSSStyleDeclaration}
+   * @private
+   */
+  this.squareVideo_ = cca.views.camera.Layout.cssStyle_(
+      'body:not(.mode-switching).square-mode #preview-video');
+
   // End of properties, seal the object.
   Object.seal(this);
 };
@@ -100,7 +116,15 @@ cca.views.camera.Layout.prototype.updatePreviewSize_ = function(fullWindow) {
     video.width = scale * video.videoWidth;
     video.height = scale * video.videoHeight;
   }
-  return [window.innerWidth - video.width, window.innerHeight - video.height];
+  var [viewportW, viewportH] = [video.width, video.height];
+  if (cca.state.get('square-mode')) {
+    viewportW = viewportH = Math.min(video.width, video.height);
+    this.squareVideo_.setProperty('left', `${(viewportW - video.width) / 2}px`);
+    this.squareVideo_.setProperty('top', `${(viewportH - video.height) / 2}px`);
+    this.squareViewport_.setProperty('width', `${viewportW}px`);
+    this.squareViewport_.setProperty('height', `${viewportH}px`);
+  }
+  return [window.innerWidth - viewportW, window.innerHeight - viewportH];
 };
 
 /**

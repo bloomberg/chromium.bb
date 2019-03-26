@@ -155,6 +155,10 @@
     "message": "Switch to take photo",
     "description": "Label for the button to switch to take photo mode."
   },
+  "SWITCH_TAKE_SQUARE_PHOTO_BUTTON": {
+    "message": "Switch to take square photo",
+    "description": "Label for the button to switch to take square photo mode."
+  },
   "TOGGLE_TIMER_BUTTON": {
     "message": "Timer",
     "description": "Label for the checkbox to toggle the countdown timer."

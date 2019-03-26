@@ -326,9 +326,6 @@ cca.views.camera.Photo = function(stream, doSavePicture) {
    * @private
    */
   this.imageCapture_ = null;
-
-  // End of properties, seal the object.
-  Object.seal(this);
 };
 
 cca.views.camera.Photo.prototype = {
@@ -374,4 +371,63 @@ cca.views.camera.Photo.prototype.createPhotoBlob_ = async function() {
     imageHeight: photoCapabilities.imageHeight.max,
   };
   return await this.imageCapture_.takePhoto(photoSettings);
+};
+
+/**
+ * Square mode capture controller.
+ * @param {MediaStream} stream
+ * @param {function(?Blob, boolean): Promise} doSavePicture
+ * @constructor
+ */
+cca.views.camera.Square = function(stream, doSavePicture) {
+  cca.views.camera.Photo.call(this, stream, doSavePicture);
+
+  /**
+   * Picture saving callback from parent.
+   * @type {function(?Blob, boolean): Promise}
+   * @private
+   */
+  this.doAscentSave_ = this.doSavePicture_;
+
+  // End of properties, seal the object.
+  Object.seal(this);
+
+  this.doSavePicture_ = async (blob, ...args) => {
+    if (blob) {
+      blob = await this.cropSquare(blob);
+    }
+    await this.doAscentSave_(blob, ...args);
+  };
+};
+
+cca.views.camera.Square.prototype = {
+  __proto__: cca.views.camera.Photo.prototype,
+};
+
+/**
+ * Crops out maximum possible centered square from the image blob.
+ * @param {Blob} blob
+ * @return {Promise<Blob>} Promise with result cropped square image.
+ */
+cca.views.camera.Square.prototype.cropSquare = function(blob) {
+  return new Promise((resolve, reject) => {
+    var img = new Image();
+    img.onload = () => {
+      let side = Math.min(img.width, img.height);
+      let canvas = document.createElement('canvas');
+      canvas.width = side;
+      canvas.height = side;
+      let ctx = canvas.getContext('2d');
+      ctx.drawImage(
+          img, Math.floor((img.width - side) / 2),
+          Math.floor((img.height - side) / 2), side, side, 0, 0, side, side);
+      try {
+        canvas.toBlob(resolve, 'image/jpeg');
+      } catch (e) {
+        reject(e);
+      }
+    };
+    img.onerror = () => reject(new Error('Failed to load unprocessed image'));
+    img.src = URL.createObjectURL(blob);
+  });
 };

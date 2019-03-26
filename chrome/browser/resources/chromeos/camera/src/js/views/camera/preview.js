@@ -219,7 +219,9 @@ cca.views.camera.Preview.prototype.onWindowResize_ = function(aspectRatio) {
     // TODO(yuli): Update min-width for resizing at portrait orientation.
     var inner = chrome.app.window.current().innerBounds;
     var innerW = inner.minWidth;
-    var innerH = Math.round(innerW / this.aspectRatio_);
+    var innerH = cca.state.get('square-mode') ?
+        Math.round(innerW / (4 / 3)) :
+        Math.round(innerW / this.aspectRatio_);
 
     // Limit window resizing capability by setting min-height. Don't limit
     // max-height here as it may disable maximize/fullscreen capabilities.
@@ -250,9 +252,9 @@ cca.views.camera.Preview.prototype.onFocusClicked_ = function(event) {
   this.cancelFocus_();
 
   // Normalize to square space coordinates by W3C spec.
-  var x = event.offsetX / this.video_.width;
-  var y = event.offsetY / this.video_.height;
-  var constraints = {advanced: [{pointsOfInterest: [{x, y}]}]};
+  var px = (event.offsetX - this.video_.offsetLeft) / this.video_.width;
+  var py = (event.offsetY - this.video_.offsetTop) / this.video_.height;
+  var constraints = {advanced: [{pointsOfInterest: [{px, py}]}]};
   var track = this.video_.srcObject.getVideoTracks()[0];
   var focus = track.applyConstraints(constraints).then(() => {
     if (focus != this.focus_) {
@@ -260,8 +262,8 @@ cca.views.camera.Preview.prototype.onFocusClicked_ = function(event) {
     }
     var aim = document.querySelector('#preview-focus-aim');
     var clone = aim.cloneNode(true);
-    clone.style.left = `${x * 100}%`;
-    clone.style.top = `${y * 100}%`;
+    clone.style.left = `${event.offsetX}px`;
+    clone.style.top = `${event.offsetY}px`;
     clone.hidden = false;
     aim.parentElement.replaceChild(clone, aim);
   }).catch(console.error);

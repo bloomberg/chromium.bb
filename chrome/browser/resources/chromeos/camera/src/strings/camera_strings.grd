@@ -252,6 +252,9 @@
       <message desc="Label for the back button." name="IDS_BACK_BUTTON">
         Go back
       </message>
+      <message desc="Label for the button to switch to take square photo mode." name="IDS_SWITCH_TAKE_SQUARE_PHOTO_BUTTON">
+        Square
+      </message>
     </messages>
   </release>
 </grit>
