@@ -460,7 +460,7 @@ void ScriptResource::SetClientIsWaitingForFinished() {
   not_streaming_reason_ = ScriptStreamer::kStreamingDisabled;
   // Trigger the finished notification if needed.
   if (IsLoaded()) {
-    CHECK(!watcher_ || !watcher_->IsWatching());
+    watcher_.reset();
     data_pipe_.reset();
     AdvanceStreamingState(StreamingState::kFinishedNotificationSent);
     TextResource::NotifyFinished();
