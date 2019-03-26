@@ -40,7 +40,8 @@ const CSSValue* WillChange::ParseSingleValue(
       if (unresolved_property == CSSPropertyID::kWillChange ||
           unresolved_property == CSSPropertyID::kAll)
         return nullptr;
-      values->Append(*CSSCustomIdentValue::Create(unresolved_property));
+      values->Append(
+          *MakeGarbageCollected<CSSCustomIdentValue>(unresolved_property));
       range.ConsumeIncludingWhitespace();
     } else {
       switch (range.Peek().Id()) {

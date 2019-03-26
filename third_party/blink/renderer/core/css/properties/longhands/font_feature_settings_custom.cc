@@ -31,8 +31,8 @@ const CSSValue* FontFeatureSettings::CSSValueFromComputedStyleInternal(
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   for (wtf_size_t i = 0; i < feature_settings->size(); ++i) {
     const FontFeature& feature = feature_settings->at(i);
-    cssvalue::CSSFontFeatureValue* feature_value =
-        cssvalue::CSSFontFeatureValue::Create(feature.Tag(), feature.Value());
+    auto* feature_value = MakeGarbageCollected<cssvalue::CSSFontFeatureValue>(
+        feature.Tag(), feature.Value());
     list->Append(*feature_value);
   }
   return list;

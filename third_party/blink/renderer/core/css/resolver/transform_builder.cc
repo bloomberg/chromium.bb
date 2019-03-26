@@ -103,7 +103,7 @@ static TransformOperation::OperationType GetTransformOperationType(
 
 bool TransformBuilder::HasRelativeLengths(const CSSValueList& value_list) {
   for (auto& value : value_list) {
-    const CSSFunctionValue* transform_value = To<CSSFunctionValue>(value.Get());
+    const auto* transform_value = To<CSSFunctionValue>(value.Get());
 
     for (const CSSValue* item : *transform_value) {
       const auto& primitive_value = To<CSSPrimitiveValue>(*item);

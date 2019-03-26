@@ -89,7 +89,7 @@ CSSFunctionValue* ConsumeFilterFunction(CSSParserTokenRange& range,
     return nullptr;
   CSSParserTokenRange args =
       css_property_parser_helpers::ConsumeFunction(range);
-  CSSFunctionValue* filter_value = CSSFunctionValue::Create(filter_type);
+  auto* filter_value = MakeGarbageCollected<CSSFunctionValue>(filter_type);
   CSSValue* parsed_value = nullptr;
 
   if (filter_type == CSSValueID::kDropShadow) {
@@ -588,7 +588,8 @@ CSSCustomIdentValue* ConsumeCustomIdentWithToken(
   if (EqualIgnoringASCIICase(token.Value(), "default"))
     context.Count(WebFeature::kDefaultInCustomIdent);
 
-  return CSSCustomIdentValue::Create(token.Value().ToAtomicString());
+  return MakeGarbageCollected<CSSCustomIdentValue>(
+      token.Value().ToAtomicString());
 }
 
 CSSCustomIdentValue* ConsumeCustomIdent(CSSParserTokenRange& range,

@@ -533,7 +533,8 @@ CSSValue* ConsumeAnimationName(CSSParserTokenRange& range,
     const CSSParserToken& token = range.ConsumeIncludingWhitespace();
     if (EqualIgnoringASCIICase(token.Value(), "none"))
       return CSSIdentifierValue::Create(CSSValueID::kNone);
-    return CSSCustomIdentValue::Create(token.Value().ToAtomicString());
+    return MakeGarbageCollected<CSSCustomIdentValue>(
+        token.Value().ToAtomicString());
   }
 
   return css_property_parser_helpers::ConsumeCustomIdent(range, context);
@@ -1410,7 +1411,8 @@ CSSValue* ConsumeFontStyle(CSSParserTokenRange& range,
   if (parser_mode != kCSSFontFaceRuleMode || range.AtEnd()) {
     CSSValueList* value_list = CSSValueList::CreateSpaceSeparated();
     value_list->Append(*start_angle);
-    return CSSFontStyleRangeValue::Create(*oblique_identifier, *value_list);
+    return MakeGarbageCollected<CSSFontStyleRangeValue>(*oblique_identifier,
+                                                        *value_list);
   }
 
   CSSPrimitiveValue* end_angle = css_property_parser_helpers::ConsumeAngle(
@@ -1421,7 +1423,8 @@ CSSValue* ConsumeFontStyle(CSSParserTokenRange& range,
   CSSValueList* range_list = CombineToRangeListOrNull(start_angle, end_angle);
   if (!range_list)
     return nullptr;
-  return CSSFontStyleRangeValue::Create(*oblique_identifier, *range_list);
+  return MakeGarbageCollected<CSSFontStyleRangeValue>(*oblique_identifier,
+                                                      *range_list);
 }
 
 CSSIdentifierValue* ConsumeFontStretchKeywordOnly(CSSParserTokenRange& range) {
@@ -1536,7 +1539,7 @@ CSSFontFeatureValue* ConsumeFontFeatureTag(CSSParserTokenRange& range) {
              range.Peek().Id() == CSSValueID::kOff) {
     tag_value = range.ConsumeIncludingWhitespace().Id() == CSSValueID::kOn;
   }
-  return CSSFontFeatureValue::Create(tag, tag_value);
+  return MakeGarbageCollected<CSSFontFeatureValue>(tag, tag_value);
 }
 
 CSSIdentifierValue* ConsumeFontVariantCSS21(CSSParserTokenRange& range) {
@@ -1618,7 +1621,8 @@ CSSValue* ConsumeFitContent(CSSParserTokenRange& range,
   if (!length || !args.AtEnd())
     return nullptr;
   range = range_copy;
-  CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueID::kFitContent);
+  auto* result =
+      MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kFitContent);
   result->Append(*length);
   return result;
 }
@@ -1674,7 +1678,7 @@ CSSValue* ConsumeGridTrackSize(CSSParserTokenRange& range,
     if (!max_track_breadth || !args.AtEnd())
       return nullptr;
     range = range_copy;
-    CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueID::kMinmax);
+    auto* result = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMinmax);
     result->Append(*min_track_breadth);
     result->Append(*max_track_breadth);
     return result;
@@ -2413,7 +2417,7 @@ CSSValue* ConsumeTransformValue(CSSParserTokenRange& range,
       css_property_parser_helpers::ConsumeFunction(range);
   if (args.AtEnd())
     return nullptr;
-  CSSFunctionValue* transform_value = CSSFunctionValue::Create(function_id);
+  auto* transform_value = MakeGarbageCollected<CSSFunctionValue>(function_id);
   CSSValue* parsed_value = nullptr;
   switch (function_id) {
     case CSSValueID::kRotate:
@@ -2547,7 +2551,7 @@ CSSValue* ConsumeTransitionProperty(CSSParserTokenRange& range,
                .IsEnabled());
 #endif
     range.ConsumeIncludingWhitespace();
-    return CSSCustomIdentValue::Create(unresolved_property);
+    return MakeGarbageCollected<CSSCustomIdentValue>(unresolved_property);
   }
   return css_property_parser_helpers::ConsumeCustomIdent(range, context);
 }

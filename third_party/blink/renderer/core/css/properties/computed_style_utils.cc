@@ -772,7 +772,7 @@ CSSValue* ComputedStyleUtils::ValueForFontStyle(const ComputedStyle& style) {
   CSSValueList* oblique_values = CSSValueList::CreateSpaceSeparated();
   oblique_values->Append(
       *CSSPrimitiveValue::Create(angle, CSSPrimitiveValue::UnitType::kDegrees));
-  return CSSFontStyleRangeValue::Create(
+  return MakeGarbageCollected<CSSFontStyleRangeValue>(
       *CSSIdentifierValue::Create(CSSValueID::kOblique), *oblique_values);
 }
 
@@ -1051,7 +1051,7 @@ CSSValue* ComputedStyleUtils::SpecifiedValueForGridTrackSize(
       }
 
       auto* min_max_track_breadths =
-          CSSFunctionValue::Create(CSSValueID::kMinmax);
+          MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMinmax);
       min_max_track_breadths->Append(*SpecifiedValueForGridTrackBreadth(
           track_size.MinTrackBreadth(), style));
       min_max_track_breadths->Append(*SpecifiedValueForGridTrackBreadth(
@@ -1060,7 +1060,7 @@ CSSValue* ComputedStyleUtils::SpecifiedValueForGridTrackSize(
     }
     case kFitContentTrackSizing: {
       auto* fit_content_track_breadth =
-          CSSFunctionValue::Create(CSSValueID::kFitContent);
+          MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kFitContent);
       fit_content_track_breadth->Append(*SpecifiedValueForGridTrackBreadth(
           track_size.FitContentTrackBreadth(), style));
       return fit_content_track_breadth;
@@ -1125,7 +1125,7 @@ void OrderedNamedLinesCollector::AppendLines(
 
   for (auto line_name : iter->value) {
     line_names_value.Append(
-        *CSSCustomIdentValue::Create(AtomicString(line_name)));
+        *MakeGarbageCollected<CSSCustomIdentValue>(AtomicString(line_name)));
   }
 }
 
@@ -1260,7 +1260,7 @@ CSSValue* ComputedStyleUtils::ValueForGridPosition(
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
 
   if (position.IsNamedGridArea())
-    return CSSCustomIdentValue::Create(position.NamedGridLine());
+    return MakeGarbageCollected<CSSCustomIdentValue>(position.NamedGridLine());
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (position.IsSpan()) {
@@ -1272,8 +1272,10 @@ CSSValue* ComputedStyleUtils::ValueForGridPosition(
         position.IntegerPosition(), CSSPrimitiveValue::UnitType::kNumber));
   }
 
-  if (!position.NamedGridLine().IsNull())
-    list->Append(*CSSCustomIdentValue::Create(position.NamedGridLine()));
+  if (!position.NamedGridLine().IsNull()) {
+    list->Append(
+        *MakeGarbageCollected<CSSCustomIdentValue>(position.NamedGridLine()));
+  }
   return list;
 }
 
@@ -1386,8 +1388,10 @@ CSSValue* ComputedStyleUtils::ValueForWillChange(
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kContents));
   if (will_change_scroll_position)
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kScrollPosition));
-  for (wtf_size_t i = 0; i < will_change_properties.size(); ++i)
-    list->Append(*CSSCustomIdentValue::Create(will_change_properties[i]));
+  for (wtf_size_t i = 0; i < will_change_properties.size(); ++i) {
+    list->Append(
+        *MakeGarbageCollected<CSSCustomIdentValue>(will_change_properties[i]));
+  }
   if (!list->length())
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kAuto));
   return list;
@@ -1589,7 +1593,8 @@ CSSFunctionValue* ValueForMatrixTransform(
   CSSFunctionValue* transform_value = nullptr;
   transform.Zoom(1 / style.EffectiveZoom());
   if (transform.IsAffine()) {
-    transform_value = CSSFunctionValue::Create(CSSValueID::kMatrix);
+    transform_value =
+        MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMatrix);
 
     transform_value->Append(*CSSPrimitiveValue::Create(
         transform.A(), CSSPrimitiveValue::UnitType::kNumber));
@@ -1604,7 +1609,8 @@ CSSFunctionValue* ValueForMatrixTransform(
     transform_value->Append(*CSSPrimitiveValue::Create(
         transform.F(), CSSPrimitiveValue::UnitType::kNumber));
   } else {
-    transform_value = CSSFunctionValue::Create(CSSValueID::kMatrix3d);
+    transform_value =
+        MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMatrix3d);
 
     transform_value->Append(*CSSPrimitiveValue::Create(
         transform.M11(), CSSPrimitiveValue::UnitType::kNumber));
@@ -1687,10 +1693,10 @@ CSSValue* ComputedStyleUtils::CreateTransitionPropertyValue(
   if (property.property_type == CSSTransitionData::kTransitionNone)
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   if (property.property_type == CSSTransitionData::kTransitionUnknownProperty)
-    return CSSCustomIdentValue::Create(property.property_string);
+    return MakeGarbageCollected<CSSCustomIdentValue>(property.property_string);
   DCHECK_EQ(property.property_type,
             CSSTransitionData::kTransitionKnownProperty);
-  return CSSCustomIdentValue::Create(
+  return MakeGarbageCollected<CSSCustomIdentValue>(
       CSSUnresolvedProperty::Get(property.unresolved_property)
           .GetPropertyNameAtomicString());
 }
@@ -1732,8 +1738,8 @@ CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style) {
       const CounterContent* counter =
           To<CounterContentData>(content_data)->Counter();
       DCHECK(counter);
-      CSSCustomIdentValue* identifier =
-          CSSCustomIdentValue::Create(counter->Identifier());
+      auto* identifier =
+          MakeGarbageCollected<CSSCustomIdentValue>(counter->Identifier());
       CSSStringValue* separator = CSSStringValue::Create(counter->Separator());
       CSSValueID list_style_ident = CSSValueID::kNone;
       if (counter->ListStyle() != EListStyleType::kNone) {
@@ -1783,7 +1789,7 @@ CSSValue* ComputedStyleUtils::ValueForCounterDirectives(
     if (!is_valid_counter_value)
       continue;
 
-    list->Append(*CSSCustomIdentValue::Create(item.key));
+    list->Append(*MakeGarbageCollected<CSSCustomIdentValue>(item.key));
     int32_t number =
         is_increment ? item.value.IncrementValue() : item.value.ResetValue();
     list->Append(*CSSPrimitiveValue::Create(
@@ -1962,64 +1968,73 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
     FilterOperation* filter_operation = operation.Get();
     switch (filter_operation->GetType()) {
       case FilterOperation::REFERENCE:
-        filter_value = CSSFunctionValue::Create(CSSValueID::kUrl);
+        filter_value = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kUrl);
         filter_value->Append(*CSSStringValue::Create(
             ToReferenceFilterOperation(filter_operation)->Url()));
         break;
       case FilterOperation::GRAYSCALE:
-        filter_value = CSSFunctionValue::Create(CSSValueID::kGrayscale);
+        filter_value =
+            MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kGrayscale);
         filter_value->Append(*CSSPrimitiveValue::Create(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::SEPIA:
-        filter_value = CSSFunctionValue::Create(CSSValueID::kSepia);
+        filter_value =
+            MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSepia);
         filter_value->Append(*CSSPrimitiveValue::Create(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::SATURATE:
-        filter_value = CSSFunctionValue::Create(CSSValueID::kSaturate);
+        filter_value =
+            MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSaturate);
         filter_value->Append(*CSSPrimitiveValue::Create(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::HUE_ROTATE:
-        filter_value = CSSFunctionValue::Create(CSSValueID::kHueRotate);
+        filter_value =
+            MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kHueRotate);
         filter_value->Append(*CSSPrimitiveValue::Create(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kDegrees));
         break;
       case FilterOperation::INVERT:
-        filter_value = CSSFunctionValue::Create(CSSValueID::kInvert);
+        filter_value =
+            MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kInvert);
         filter_value->Append(*CSSPrimitiveValue::Create(
             To<BasicComponentTransferFilterOperation>(filter_operation)
                 ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::OPACITY:
-        filter_value = CSSFunctionValue::Create(CSSValueID::kOpacity);
+        filter_value =
+            MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kOpacity);
         filter_value->Append(*CSSPrimitiveValue::Create(
             To<BasicComponentTransferFilterOperation>(filter_operation)
                 ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::BRIGHTNESS:
-        filter_value = CSSFunctionValue::Create(CSSValueID::kBrightness);
+        filter_value =
+            MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kBrightness);
         filter_value->Append(*CSSPrimitiveValue::Create(
             To<BasicComponentTransferFilterOperation>(filter_operation)
                 ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::CONTRAST:
-        filter_value = CSSFunctionValue::Create(CSSValueID::kContrast);
+        filter_value =
+            MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kContrast);
         filter_value->Append(*CSSPrimitiveValue::Create(
             To<BasicComponentTransferFilterOperation>(filter_operation)
                 ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::BLUR:
-        filter_value = CSSFunctionValue::Create(CSSValueID::kBlur);
+        filter_value =
+            MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kBlur);
         filter_value->Append(*ZoomAdjustedPixelValue(
             ToBlurFilterOperation(filter_operation)->StdDeviation().Value(),
             style));
@@ -2027,7 +2042,8 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
       case FilterOperation::DROP_SHADOW: {
         const auto& drop_shadow_operation =
             ToDropShadowFilterOperation(*filter_operation);
-        filter_value = CSSFunctionValue::Create(CSSValueID::kDropShadow);
+        filter_value =
+            MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kDropShadow);
         // We want our computed style to look like that of a text shadow (has
         // neither spread nor inset style).
         filter_value->Append(

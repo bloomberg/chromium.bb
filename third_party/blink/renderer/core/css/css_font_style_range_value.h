@@ -35,17 +35,6 @@ namespace cssvalue {
 
 class CSSFontStyleRangeValue final : public CSSValue {
  public:
-  static CSSFontStyleRangeValue* Create(
-      const CSSIdentifierValue& font_style_value) {
-    return MakeGarbageCollected<CSSFontStyleRangeValue>(font_style_value);
-  }
-  static CSSFontStyleRangeValue* Create(
-      const CSSIdentifierValue& font_style_value,
-      const CSSValueList& oblique_values) {
-    return MakeGarbageCollected<CSSFontStyleRangeValue>(font_style_value,
-                                                        oblique_values);
-  }
-
   CSSFontStyleRangeValue(const CSSIdentifierValue& font_style_value,
                          const CSSValueList& oblique_values)
       : CSSValue(kFontStyleRangeClass),

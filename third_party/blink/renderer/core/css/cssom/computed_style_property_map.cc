@@ -33,7 +33,7 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
     case TransformOperation::kScale:
     case TransformOperation::kScale3D: {
       const auto& scale = ToScaleTransformOperation(operation);
-      CSSFunctionValue* result = CSSFunctionValue::Create(
+      auto* result = MakeGarbageCollected<CSSFunctionValue>(
           operation.Is3DOperation() ? CSSValueID::kScale3d
                                     : CSSValueID::kScale);
       result->Append(*CSSPrimitiveValue::Create(
@@ -52,7 +52,7 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
     case TransformOperation::kTranslate:
     case TransformOperation::kTranslate3D: {
       const auto& translate = ToTranslateTransformOperation(operation);
-      CSSFunctionValue* result = CSSFunctionValue::Create(
+      auto* result = MakeGarbageCollected<CSSFunctionValue>(
           operation.Is3DOperation() ? CSSValueID::kTranslate3d
                                     : CSSValueID::kTranslate);
       result->Append(*CSSPrimitiveValue::Create(translate.X(), zoom));
@@ -67,8 +67,8 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
     case TransformOperation::kRotateY:
     case TransformOperation::kRotate3D: {
       const auto& rotate = ToRotateTransformOperation(operation);
-      CSSFunctionValue* result =
-          CSSFunctionValue::Create(CSSValueID::kRotate3d);
+      auto* result =
+          MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kRotate3d);
       result->Append(*CSSPrimitiveValue::Create(
           rotate.X(), CSSPrimitiveValue::UnitType::kNumber));
       result->Append(*CSSPrimitiveValue::Create(
@@ -81,28 +81,29 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
     }
     case TransformOperation::kRotate: {
       const auto& rotate = ToRotateTransformOperation(operation);
-      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueID::kRotate);
+      auto* result =
+          MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kRotate);
       result->Append(*CSSPrimitiveValue::Create(
           rotate.Angle(), CSSPrimitiveValue::UnitType::kDegrees));
       return result;
     }
     case TransformOperation::kSkewX: {
       const auto& skew = ToSkewTransformOperation(operation);
-      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueID::kSkewX);
+      auto* result = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSkewX);
       result->Append(*CSSPrimitiveValue::Create(
           skew.AngleX(), CSSPrimitiveValue::UnitType::kDegrees));
       return result;
     }
     case TransformOperation::kSkewY: {
       const auto& skew = ToSkewTransformOperation(operation);
-      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueID::kSkewY);
+      auto* result = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSkewY);
       result->Append(*CSSPrimitiveValue::Create(
           skew.AngleY(), CSSPrimitiveValue::UnitType::kDegrees));
       return result;
     }
     case TransformOperation::kSkew: {
       const auto& skew = ToSkewTransformOperation(operation);
-      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueID::kSkew);
+      auto* result = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSkew);
       result->Append(*CSSPrimitiveValue::Create(
           skew.AngleX(), CSSPrimitiveValue::UnitType::kDegrees));
       result->Append(*CSSPrimitiveValue::Create(
@@ -111,15 +112,16 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
     }
     case TransformOperation::kPerspective: {
       const auto& perspective = ToPerspectiveTransformOperation(operation);
-      CSSFunctionValue* result =
-          CSSFunctionValue::Create(CSSValueID::kPerspective);
+      auto* result =
+          MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kPerspective);
       result->Append(*CSSPrimitiveValue::Create(
           perspective.Perspective(), CSSPrimitiveValue::UnitType::kPixels));
       return result;
     }
     case TransformOperation::kMatrix: {
       const auto& matrix = ToMatrixTransformOperation(operation).Matrix();
-      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueID::kMatrix);
+      auto* result =
+          MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMatrix);
       double values[6] = {matrix.A(), matrix.B(), matrix.C(),
                           matrix.D(), matrix.E(), matrix.F()};
       for (double value : values) {
@@ -130,8 +132,8 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
     }
     case TransformOperation::kMatrix3D: {
       const auto& matrix = ToMatrix3DTransformOperation(operation).Matrix();
-      CSSFunctionValue* result =
-          CSSFunctionValue::Create(CSSValueID::kMatrix3d);
+      auto* result =
+          MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMatrix3d);
       double values[16] = {
           matrix.M11(), matrix.M12(), matrix.M13(), matrix.M14(),
           matrix.M21(), matrix.M22(), matrix.M23(), matrix.M24(),

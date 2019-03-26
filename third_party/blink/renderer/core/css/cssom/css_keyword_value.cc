@@ -87,7 +87,8 @@ const CSSValue* CSSKeywordValue::ToCSSValue() const {
     case (CSSValueID::kUnset):
       return cssvalue::CSSUnsetValue::Create();
     case (CSSValueID::kInvalid):
-      return CSSCustomIdentValue::Create(AtomicString(keyword_value_));
+      return MakeGarbageCollected<CSSCustomIdentValue>(
+          AtomicString(keyword_value_));
     default:
       return CSSIdentifierValue::Create(keyword_id);
   }

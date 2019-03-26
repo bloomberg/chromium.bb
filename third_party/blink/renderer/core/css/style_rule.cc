@@ -184,7 +184,8 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSStyleSheet* parent_sheet,
       rule = CSSPageRule::Create(To<StyleRulePage>(self), parent_sheet);
       break;
     case kFontFace:
-      rule = CSSFontFaceRule::Create(To<StyleRuleFontFace>(self), parent_sheet);
+      rule = MakeGarbageCollected<CSSFontFaceRule>(To<StyleRuleFontFace>(self),
+                                                   parent_sheet);
       break;
     case kMedia:
       rule = CSSMediaRule::Create(To<StyleRuleMedia>(self), parent_sheet);
@@ -207,7 +208,7 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSStyleSheet* parent_sheet,
       rule = CSSViewportRule::Create(To<StyleRuleViewport>(self), parent_sheet);
       break;
     case kFontFeatureValues:
-      rule = CSSFontFeatureValuesRule::Create(
+      rule = MakeGarbageCollected<CSSFontFeatureValuesRule>(
           To<StyleRuleFontFeatureValues>(self), parent_sheet);
       break;
     case kKeyframe:

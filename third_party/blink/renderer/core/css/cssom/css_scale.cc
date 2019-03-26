@@ -168,7 +168,7 @@ const CSSFunctionValue* CSSScale::ToCSSValue() const {
   if (!x || !y)
     return nullptr;
 
-  CSSFunctionValue* result = CSSFunctionValue::Create(
+  auto* result = MakeGarbageCollected<CSSFunctionValue>(
       is2D() ? CSSValueID::kScale : CSSValueID::kScale3d);
   result->Append(*x);
   result->Append(*y);

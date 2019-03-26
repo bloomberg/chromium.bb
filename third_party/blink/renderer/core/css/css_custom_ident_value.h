@@ -14,16 +14,6 @@ namespace blink {
 
 class CORE_EXPORT CSSCustomIdentValue : public CSSValue {
  public:
-  static CSSCustomIdentValue* Create(const AtomicString& str) {
-    return MakeGarbageCollected<CSSCustomIdentValue>(str);
-  }
-
-  // TODO(sashab, timloh): Remove this and lazily parse the CSSPropertyID in
-  // isKnownPropertyID().
-  static CSSCustomIdentValue* Create(CSSPropertyID id) {
-    return MakeGarbageCollected<CSSCustomIdentValue>(id);
-  }
-
   explicit CSSCustomIdentValue(const AtomicString&);
   explicit CSSCustomIdentValue(CSSPropertyID);
 
