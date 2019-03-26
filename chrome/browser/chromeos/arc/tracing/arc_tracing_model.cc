@@ -124,7 +124,7 @@ bool ArcTracingModel::Build(const std::string& data) {
   }
 
   if (!ProcessEvent(events)) {
-    LOG(ERROR) << "No trace events";
+    LOG(ERROR) << "Failed to process events";
     return false;
   }
 
@@ -166,12 +166,10 @@ ArcTracingModel::TracingEventPtrs ArcTracingModel::Select(
 }
 
 bool ArcTracingModel::ProcessEvent(base::ListValue* events) {
-  base::ListValue::iterator it = events->begin();
-  while (it != events->end()) {
-    std::unique_ptr<base::Value> event_data;
-    // Take ownership.
-    it = events->Erase(it, &event_data);
-    if (!event_data->is_dict()) {
+  std::vector<std::unique_ptr<ArcTracingEvent>> parsed_events;
+  for (auto& it : events->GetList()) {
+    base::Value event_data = std::move(it);
+    if (!event_data.is_dict()) {
       LOG(ERROR) << "Event is not a dictionary";
       return false;
     }
@@ -200,6 +198,21 @@ bool ArcTracingModel::ProcessEvent(base::ListValue* events) {
       return false;
     }
 
+    parsed_events.emplace_back(std::move(event));
+  }
+
+  // Events may come by closure that means event started earlier as a root event
+  // for others may appear after children. Sort by ts time.
+  std::sort(parsed_events.begin(), parsed_events.end(),
+            [](const auto& lhs, const auto& rhs) {
+              const int64_t lhs_timestamp = lhs->GetTimestamp();
+              const int64_t rhs_timestamp = rhs->GetTimestamp();
+              if (lhs_timestamp != rhs_timestamp)
+                return lhs_timestamp < rhs->GetTimestamp();
+              return lhs->GetDuration() > rhs->GetDuration();
+            });
+
+  for (auto& event : parsed_events) {
     switch (event->GetPhase()) {
       case TRACE_EVENT_PHASE_METADATA:
         metadata_events_.push_back(std::move(event));
@@ -212,7 +225,7 @@ bool ArcTracingModel::ProcessEvent(base::ListValue* events) {
       case TRACE_EVENT_PHASE_COMPLETE:
       case TRACE_EVENT_PHASE_COUNTER:
         if (!AddToThread(std::move(event))) {
-          LOG(ERROR) << "Cannot add event to threads " << event->ToString();
+          LOG(ERROR) << "Cannot add event to threads";
           return false;
         }
         break;
@@ -220,16 +233,6 @@ bool ArcTracingModel::ProcessEvent(base::ListValue* events) {
         NOTREACHED();
         return false;
     }
-  }
-
-  // Sort group events based on timestamp. They are asynchronous and may come in
-  // random order.
-  for (auto& gr : group_events_) {
-    std::sort(gr.second.begin(), gr.second.end(),
-              [](std::unique_ptr<ArcTracingEvent>& a,
-                 std::unique_ptr<ArcTracingEvent>& b) {
-                return a->GetTimestamp() < b->GetTimestamp();
-              });
   }
 
   return true;
@@ -324,8 +327,7 @@ bool ArcTracingModel::ConvertSysTraces(const std::string& sys_traces) {
         }
         const std::string name = line.substr(name_pos + 1);
         std::unique_ptr<ArcTracingEvent> event =
-            std::make_unique<ArcTracingEvent>(
-                std::make_unique<base::DictionaryValue>());
+            std::make_unique<ArcTracingEvent>(base::DictionaryValue());
         event->SetPid(pid);
         event->SetTid(tid);
         event->SetTimestamp(timestamp);
@@ -373,8 +375,7 @@ bool ArcTracingModel::ConvertSysTraces(const std::string& sys_traces) {
   // Now put events to the thread models.
   for (auto& converted_event : converted_events) {
     if (!AddToThread(std::move(converted_event))) {
-      LOG(ERROR) << "Cannot add systrace event to threads "
-                 << converted_event->ToString();
+      LOG(ERROR) << "Cannot add systrace event to threads";
       return false;
     }
   }
@@ -390,7 +391,7 @@ bool ArcTracingModel::AddToThread(std::unique_ptr<ArcTracingEvent> event) {
                                   ArcTracingEvent::Position::kAfter) {
     // First event for the thread or event is after already existing last root
     // event. Add as a new root.
-    thread_roots.push_back(std::move(event));
+    thread_roots.emplace_back(std::move(event));
     return true;
   }
 
