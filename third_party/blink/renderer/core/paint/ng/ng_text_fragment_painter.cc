@@ -35,22 +35,16 @@ namespace blink {
 
 namespace {
 
-inline bool ShouldPaintTextFragment(const NGPhysicalTextFragment& text_fragment,
+inline bool ShouldPaintTextFragment(const NGPaintFragment& fragment,
+                                    const NGPhysicalTextFragment& text_fragment,
                                     const ComputedStyle& style) {
-  if (style.Visibility() != EVisibility::kVisible)
+  // We can skip painting if the fragment (including selection) is invisible.
+  if (!text_fragment.Length() || fragment.VisualRect().IsEmpty())
     return false;
 
-  // When painting selection, we want to include a highlight when the
-  // selection spans line breaks. In other cases such as invisible elements
-  // or those with no text that are not line breaks, we can skip painting
-  // wholesale.
-  // TODO(wkorman): Constrain line break painting to appropriate paint phase.
-  // This code path is only called in PaintPhaseForeground whereas we would
-  // expect PaintPhaseSelection. The existing haveSelection logic in paint()
-  // tests for != PaintPhaseTextClip.
-  if (text_fragment.IsLineBreak())
-    return true;
-  if (!text_fragment.Length() || !text_fragment.TextShapeResult())
+  if (!text_fragment.TextShapeResult() &&
+      // A line break's selection tint is still visible.
+      !text_fragment.IsLineBreak())
     return false;
 
   return true;
@@ -288,11 +282,11 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   const auto& text_fragment =
       To<NGPhysicalTextFragment>(fragment_.PhysicalFragment());
   const ComputedStyle& style = fragment_.Style();
-  const Document& document = fragment_.GetLayoutObject()->GetDocument();
 
-  if (!ShouldPaintTextFragment(text_fragment, style))
+  if (!ShouldPaintTextFragment(fragment_, text_fragment, style))
     return;
 
+  const Document& document = fragment_.GetLayoutObject()->GetDocument();
   bool is_printing = paint_info.IsPrinting();
 
   // Determine whether or not we're selected.

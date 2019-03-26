@@ -2136,6 +2136,7 @@ jumbo_source_set("unit_tests") {
     "paint/html_canvas_painter_test.cc",
     "paint/image_element_timing_test.cc",
     "paint/image_paint_timing_detector_test.cc",
+    "paint/inline_text_box_painter_test.cc",
     "paint/link_highlight_impl_test.cc",
     "paint/ng/ng_paint_fragment_test.cc",
     "paint/ng/ng_paint_fragment_traversal_test.cc",
