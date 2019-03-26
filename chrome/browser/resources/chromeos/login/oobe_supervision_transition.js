@@ -31,6 +31,13 @@ Polymer({
   },
 
   /** @private */
+  getDialogA11yTitle_: function(isRemovingSupervision, locale) {
+    return isRemovingSupervision ?
+        this.i18nDynamic(locale, 'removingSupervisionTitle') :
+        this.i18nDynamic(locale, 'addingSupervisionTitle');
+  },
+
+  /** @private */
   showSupervisionTransitionFailedScreen_: function() {
     this.$.supervisionTransitionDialog.hidden = true;
     this.$.supervisionTransitionErrorDialog.hidden = false;
