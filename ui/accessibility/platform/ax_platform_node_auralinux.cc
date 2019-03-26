@@ -1232,6 +1232,62 @@ bool AXPlatformNodeAuraLinux::SetCaretOffset(int offset) {
   return true;
 }
 
+bool AXPlatformNodeAuraLinux::HasSelection() {
+  int selection_start, selection_end;
+  GetSelectionOffsets(&selection_start, &selection_end);
+  return selection_start >= 0 && selection_end >= 0 &&
+         selection_start != selection_end;
+}
+
+gchar* AXPlatformNodeAuraLinux::GetSelection(int* start_offset,
+                                             int* end_offset) {
+  if (start_offset)
+    *start_offset = 0;
+  if (end_offset)
+    *end_offset = 0;
+
+  int selection_start, selection_end;
+  GetSelectionOffsets(&selection_start, &selection_end);
+  if (selection_start < 0 || selection_end < 0 ||
+      selection_start == selection_end)
+    return nullptr;
+
+  // We should ignore the direction of the selection when exposing start and
+  // end offsets. According to the ATK documentation the end offset is always
+  // the offset immediately past the end of the selection. This wouldn't make
+  // sense if end < start.
+  if (selection_end < selection_start)
+    std::swap(selection_start, selection_end);
+
+  selection_start = UTF16ToUnicodeOffsetInText(selection_start);
+  selection_end = UTF16ToUnicodeOffsetInText(selection_end);
+
+  if (start_offset)
+    *start_offset = selection_start;
+  if (end_offset)
+    *end_offset = selection_end;
+
+  return AXPlatformNodeAuraLinuxGetText(ATK_TEXT(atk_object_), selection_start,
+                                        selection_end);
+}
+
+bool AXPlatformNodeAuraLinux::SetTextSelectionForAtkText(int start_offset,
+                                                         int end_offset) {
+  start_offset = UnicodeToUTF16OffsetInText(start_offset);
+  end_offset = UnicodeToUTF16OffsetInText(end_offset);
+
+  base::string16 text = GetText();
+  if (start_offset < 0 || start_offset > static_cast<int>(text.length()))
+    return false;
+  if (end_offset < 0 || end_offset > static_cast<int>(text.length()))
+    return false;
+
+  bool result = SetTextSelection(start_offset, end_offset);
+  if (result)
+    OnTextSelectionChanged();
+  return result;
+}
+
 static gint AXPlatformNodeAuraLinuxGetCaretOffset(AtkText* atk_text) {
   AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
@@ -1247,6 +1303,72 @@ static gboolean AXPlatformNodeAuraLinuxSetCaretOffset(AtkText* atk_text,
   if (!obj)
     return FALSE;
   return obj->SetCaretOffset(offset);
+}
+
+int AXPlatformNodeAuraLinuxGetNSelections(AtkText* atk_text) {
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
+  if (!obj)
+    return 0;
+
+  // We only support a single selection.
+  return obj->HasSelection() ? 1 : 0;
+}
+
+// Since this method doesn't return a static gchar*, we expect the caller of
+// atk_text_get_selection to free the return value.
+gchar* AXPlatformNodeAuraLinuxGetSelection(AtkText* atk_text,
+                                           int selection_num,
+                                           int* start_offset,
+                                           int* end_offset) {
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
+  if (!obj)
+    return nullptr;
+  if (selection_num != 0)
+    return nullptr;
+
+  return obj->GetSelection(start_offset, end_offset);
+}
+
+gboolean AXPlatformNodeAuraLinuxRemoveTextSelection(AtkText* atk_text,
+                                                    int selection_num) {
+  if (selection_num != 0)
+    return FALSE;
+
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
+  if (!obj)
+    return FALSE;
+
+  // Simply collapse the selection to the position of the caret if a caret is
+  // visible, otherwise set the selection to 0.
+  int selection_end = obj->UTF16ToUnicodeOffsetInText(
+      obj->GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd));
+  return AXPlatformNodeAuraLinuxSetCaretOffset(atk_text, selection_end);
+}
+
+gboolean AXPlatformNodeAuraLinuxSetSelection(AtkText* atk_text,
+                                             int selection_num,
+                                             int start_offset,
+                                             int end_offset) {
+  if (selection_num != 0)
+    return FALSE;
+
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
+  if (!obj)
+    return FALSE;
+
+  return obj->SetTextSelectionForAtkText(start_offset, end_offset);
+}
+
+gboolean AXPlatformNodeAuraLinuxAddTextSelection(AtkText* atk_text,
+                                                 int start_offset,
+                                                 int end_offset) {
+  // We only support one selection.
+  return AXPlatformNodeAuraLinuxSetSelection(atk_text, 0, start_offset,
+                                             end_offset);
 }
 
 #if ATK_CHECK_VERSION(2, 10, 0)
@@ -1340,6 +1462,11 @@ static void AXTextInterfaceBaseInit(AtkTextIface* iface) {
   iface->set_caret_offset = AXPlatformNodeAuraLinuxSetCaretOffset;
   iface->get_character_extents = AXPlatformNodeAuraLinuxGetCharacterExtents;
   iface->get_range_extents = AXPlatformNodeAuraLinuxGetRangeExtents;
+  iface->get_n_selections = AXPlatformNodeAuraLinuxGetNSelections;
+  iface->get_selection = AXPlatformNodeAuraLinuxGetSelection;
+  iface->add_selection = AXPlatformNodeAuraLinuxAddTextSelection;
+  iface->remove_selection = AXPlatformNodeAuraLinuxRemoveTextSelection;
+  iface->set_selection = AXPlatformNodeAuraLinuxSetSelection;
 
 #if ATK_CHECK_VERSION(2, 10, 0)
   iface->get_string_at_offset = AXPlatformNodeAuraLinuxGetStringAtOffset;
@@ -3111,6 +3238,7 @@ void AXPlatformNodeAuraLinux::OnTextSelectionChanged() {
     g_signal_emit_by_name(atk_object_, "text-caret-moved",
                           atk_text_get_caret_offset(ATK_TEXT(atk_object_)));
   }
+  g_signal_emit_by_name(atk_object_, "text-selection-changed");
 }
 
 bool AXPlatformNodeAuraLinux::SupportsSelectionWithAtkSelection() {
