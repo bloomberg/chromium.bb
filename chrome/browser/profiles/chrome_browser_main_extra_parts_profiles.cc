@@ -99,6 +99,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/explore_sites/explore_sites_service_factory.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
+#include "chrome/browser/media/android/cdm/media_drm_origin_id_manager_factory.h"
 #else
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_profile_session_durations_service_factory.h"
@@ -323,6 +324,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   media_router::MediaRouterFactory::GetInstance();
 #if !defined(OS_ANDROID)
   media_router::MediaRouterUIServiceFactory::GetInstance();
+#endif
+#if defined(OS_ANDROID)
+  MediaDrmOriginIdManagerFactory::GetInstance();
 #endif
 #if !defined(OS_ANDROID)
   MediaGalleriesPreferencesFactory::GetInstance();

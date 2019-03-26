@@ -57,6 +57,9 @@ constexpr int kMaxPreProvisionedOriginIds = 2;
 // "expirable_token" is only good for 24 hours.
 constexpr base::TimeDelta kExpirationDelta = base::TimeDelta::FromHours(24);
 
+// Time to wait before attempting pre-provisioning at startup (if enabled).
+constexpr base::TimeDelta kStartupDelay = base::TimeDelta::FromMinutes(1);
+
 // When unable to get an origin ID, only attempt to pre-provision more if
 // pre-provision is called within |kExpirationDelta| of the time of this
 // failure.
@@ -327,8 +330,15 @@ MediaDrmOriginIdManager::MediaDrmOriginIdManager(PrefService* pref_service)
   // is most likely going to call GetOriginId(), so let it pre-provision origin
   // IDs if necessary. This flag is also used by testing so that it can check
   // pre-provisioning directly.
-  if (base::FeatureList::IsEnabled(media::kMediaDrmPreprovisioningAtStartup))
-    PreProvisionIfNecessary();
+  if (base::FeatureList::IsEnabled(media::kMediaDrmPreprovisioningAtStartup)) {
+    // Running this after a delay of |kStartupDelay| in order to not do too much
+    // extra work when the profile is loaded.
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&MediaDrmOriginIdManager::PreProvisionIfNecessary,
+                       weak_factory_.GetWeakPtr()),
+        kStartupDelay);
+  }
 }
 
 MediaDrmOriginIdManager::~MediaDrmOriginIdManager() {
@@ -359,8 +369,11 @@ void MediaDrmOriginIdManager::PreProvisionIfNecessary() {
 
   // No need to pre-provision if there are already enough existing
   // pre-provisioned origin IDs.
-  if (CountAvailableOriginIds(update.Get()) >= kMaxPreProvisionedOriginIds)
+  if (CountAvailableOriginIds(update.Get()) >= kMaxPreProvisionedOriginIds) {
+    // Disable any network monitoring, if it exists.
+    network_observer_.reset();
     return;
+  }
 
   // Attempt to pre-provision more origin IDs in the near future.
   is_provisioning_ = true;
