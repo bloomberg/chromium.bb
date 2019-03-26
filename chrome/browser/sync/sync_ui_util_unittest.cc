@@ -163,7 +163,8 @@ std::unique_ptr<TestingProfile> BuildSignedInTestingProfile() {
 
 // This test ensures that each distinctive SyncService status will return a
 // unique combination of status and link messages from GetStatusLabels().
-TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
+// TODO(crbug.com/945628): Disabled due to flakiness.
+TEST_F(SyncUIUtilTest, DISABLED_DistinctCasesReportUniqueMessageSets) {
   std::set<base::string16> messages;
   for (int idx = 0; idx != NUMBER_OF_STATUS_CASES; idx++) {
     std::unique_ptr<Profile> profile = BuildTestingProfile();
