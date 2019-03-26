@@ -76,6 +76,31 @@ using views::View;
 
 namespace ash {
 
+namespace {
+
+// The margin between app icons and the overflow button. This is bigger than
+// between app icons because the overflow button is a little smaller.
+constexpr int kMarginBetweenAppsAndOverflow = 16;
+
+// Returns the size occupied by |count| app icons. If |with_overflow| is
+// true, returns the size of |count| app icons followed by an overflow
+// button.
+int GetSizeOfAppIcons(int count, bool with_overflow) {
+  if (count == 0)
+    return with_overflow ? kShelfControlSize : 0;
+
+  const int app_size = count * kShelfButtonSize;
+  int overflow_size = 0;
+  int total_padding = ShelfConstants::button_spacing() * (count - 1);
+  if (with_overflow) {
+    overflow_size += kShelfControlSize;
+    total_padding += kMarginBetweenAppsAndOverflow;
+  }
+  return app_size + total_padding + overflow_size;
+}
+
+}  // namespace
+
 // Indices of the start-aligned system buttons (the "back" button in tablet
 // mode, and the "app list" button).
 constexpr int kBackButtonIndex = 0;
@@ -90,7 +115,8 @@ constexpr int kRipOffDistance = 48;
 constexpr int kSeparatorSize = 20;
 constexpr int kSeparatorThickness = 1;
 
-// The margin on either side of the group of app icons.
+// The margin on either side of the group of app icons (including the overflow
+// button).
 constexpr int kAppIconGroupMargin = 16;
 
 // White with ~20% opacity.
@@ -1082,27 +1108,6 @@ int ShelfView::GetSeparatorIndex() const {
   return -1;
 }
 
-int ShelfView::GetDimensionOfAppIcons(int max_size) const {
-  int size = 0;
-  for (int i = kAppListButtonIndex + 1; i < view_model_->view_size(); ++i) {
-    int new_size = size;
-    new_size += ShelfConstants::button_size();
-    if (i > kAppListButtonIndex + 1) {
-      // TODO(manucornet): If one of the displayed items is the overflow
-      // button, we are overestimating the dimension a tiny bit because
-      // control buttons are smaller than app buttons. But taking this into
-      // account is a little tricky because at this stage we don't know whether
-      // we are overflowing. Fix this and add tests to check for perfect
-      // centering when the overflow button is shown.
-      new_size += ShelfConstants::button_spacing();
-    }
-    if (new_size > max_size)
-      return size;
-    size = new_size;
-  }
-  return size;
-}
-
 void ShelfView::OnTabletModeChanged() {
   OnBoundsChanged(GetBoundsInScreen());
 }
@@ -1144,18 +1149,80 @@ void ShelfView::LayoutAppListAndBackButtonHighlight() const {
                                back_and_app_list_background_size));
 }
 
+int ShelfView::GetAvailableSpaceForAppIcons() const {
+  // Subtract space already allocated to the app list button, and the back
+  // button if applicable.
+  return shelf_->PrimaryAxisValue(width(), height()) - kShelfButtonSpacing -
+         (IsTabletModeEnabled() ? 2 : 1) * kShelfControlSize -
+         2 * kAppIconGroupMargin;
+}
+
+ShelfView::AppCenteringStrategy ShelfView::CalculateAppCenteringStrategy()
+    const {
+  // There are two possibilities. Either all the apps fit when centered
+  // on the whole screen width, in which case we do that. Or, when space
+  // becomes a little tight (which happens especially when the status area
+  // is wider because of extra panels), we center apps on the available space.
+
+  AppCenteringStrategy strategy;
+  // This is only relevant for the main shelf.
+  if (is_overflow_mode())
+    return strategy;
+
+  const int total_available_size = shelf_->PrimaryAxisValue(width(), height());
+  StatusAreaWidget* status_widget = shelf_widget_->status_area_widget();
+  const int status_widget_size =
+      status_widget ? shelf_->PrimaryAxisValue(
+                          status_widget->GetWindowBoundsInScreen().width(),
+                          status_widget->GetWindowBoundsInScreen().height())
+                    : 0;
+  const int screen_size = total_available_size + status_widget_size;
+
+  // An easy way to check whether the apps fit at the exact center of the
+  // screen is to imagine that we have another status widget on the other
+  // side (the status widget is always bigger than the app list button plus
+  // the back button if applicable) and see if the apps can fit in the middle.
+  int available_space_for_screen_centering =
+      screen_size - 2 * (status_widget_size + kAppIconGroupMargin);
+
+  // Views at index 0 and 1 are the back button and app list button.
+  if (GetSizeOfAppIcons(view_model_->view_size() - 2, false) <
+      available_space_for_screen_centering) {
+    // Everything fits in the center of the screen.
+    last_visible_index_ = view_model_->view_size() - 1;
+    strategy.center_on_screen = true;
+    return strategy;
+  }
+
+  const int available_size_for_app_icons = GetAvailableSpaceForAppIcons();
+  last_visible_index_ = 1;
+  // We know that replacing the last app that fits with the overflow button
+  // will not change the outcome, so we ignore that case for now.
+  while (last_visible_index_ < view_model_->view_size() - 1) {
+    if (GetSizeOfAppIcons(last_visible_index_, false) <=
+        available_size_for_app_icons) {
+      ++last_visible_index_;
+    } else {
+      strategy.overflow = true;
+      // Make space for the overflow button by showing one fewer app icon.
+      --last_visible_index_;
+      break;
+    }
+  }
+  return strategy;
+}
+
 void ShelfView::CalculateIdealBounds() const {
   DCHECK(model_->item_count() == view_model_->view_size());
 
   const int button_spacing = ShelfConstants::button_spacing();
   const int available_size = shelf_->PrimaryAxisValue(width(), height());
-  // Size occupied by the app list button and back button plus all appropriate
-  // margins is not available for actual app icons.
-  const int available_size_for_app_icons =
-      available_size - kShelfButtonSpacing -
-      (IsTabletModeEnabled() ? 2 : 1) * kShelfControlSize -
-      2 * kAppIconGroupMargin;
+
   const int separator_index = GetSeparatorIndex();
+  const AppCenteringStrategy app_centering_strategy =
+      CalculateAppCenteringStrategy();
+
+  // At this point we know that |last_visible_index_| is up to date.
   const bool virtual_keyboard_visible =
       Shell::Get()->system_tray_model()->virtual_keyboard()->visible();
   // Don't show the separator if it isn't needed, or would appear after all
@@ -1183,14 +1250,7 @@ void ShelfView::CalculateIdealBounds() const {
     }
     if (i == kAppListButtonIndex + 1) {
       // Start centering after we've laid out the app list button.
-      // Now there are two possibilities. Either all the apps fit when centered
-      // on the whole screen width, in which case we do that. Or, when space
-      // becomes a little tight (which happens especially when the status area
-      // is wider because of extra panels), we center apps according to the
-      // available space on the shelf (subtracting what's already allocated to
-      // the app list button).
 
-      int app_icons_size = GetDimensionOfAppIcons(available_size_for_app_icons);
       StatusAreaWidget* status_widget = shelf_widget_->status_area_widget();
       const int status_widget_size =
           status_widget ? shelf_->PrimaryAxisValue(
@@ -1199,21 +1259,19 @@ void ShelfView::CalculateIdealBounds() const {
                         : 0;
       const int screen_size = available_size + status_widget_size;
 
+      const int available_size_for_app_icons = GetAvailableSpaceForAppIcons();
+      const int icons_size = GetSizeOfAppIcons(number_of_visible_apps(),
+                                               app_centering_strategy.overflow);
       int padding_for_centering = 0;
-      // An easy way to check whether the apps fit at the exact center of the
-      // screen is to imagine that we have another status widget on the
-      // other side (the status widget is always bigger than the app list
-      // button plus the back button if applicable) and see if the apps
-      // can fit in the middle.
-      if (app_icons_size + 2 * status_widget_size + 2 * kAppIconGroupMargin <
-          screen_size) {
-        padding_for_centering = (screen_size - app_icons_size) / 2;
+
+      if (app_centering_strategy.center_on_screen) {
+        padding_for_centering = (screen_size - icons_size) / 2;
       } else {
         padding_for_centering =
             kShelfButtonSpacing +
             (IsTabletModeEnabled() ? 2 : 1) * kShelfControlSize +
             kAppIconGroupMargin +
-            (available_size_for_app_icons - app_icons_size) / 2;
+            (available_size_for_app_icons - icons_size) / 2;
       }
 
       if (padding_for_centering >
@@ -1269,9 +1327,6 @@ void ShelfView::CalculateIdealBounds() const {
     const_cast<ShelfView*>(this)->UpdateAllButtonsVisibilityInOverflowMode();
     return;
   }
-  last_visible_index_ =
-      IndexOfLastItemThatFitsSize(available_size - kAppIconGroupMargin);
-  bool show_overflow = last_visible_index_ < model_->item_count() - 1;
 
   // In the main shelf, the first visible index is either the back button (in
   // tablet mode) or the launcher button (otherwise).
@@ -1279,11 +1334,6 @@ void ShelfView::CalculateIdealBounds() const {
     first_visible_index_ =
         IsTabletModeEnabled() ? kBackButtonIndex : kAppListButtonIndex;
   }
-
-  // Create space for the overflow button and place it in the last visible
-  // position.
-  if (show_overflow && last_visible_index_ > 0)
-    --last_visible_index_;
 
   for (int i = 0; i < view_model_->view_size(); ++i) {
     // To receive drag event continuously from |drag_view_| during the dragging
@@ -1301,8 +1351,8 @@ void ShelfView::CalculateIdealBounds() const {
                                         is_visible_item);
   }
 
-  overflow_button_->SetVisible(show_overflow);
-  if (show_overflow) {
+  overflow_button_->SetVisible(app_centering_strategy.overflow);
+  if (app_centering_strategy.overflow) {
     if (overflow_bubble_.get() && overflow_bubble_->IsShowing())
       UpdateOverflowRange(overflow_bubble_->bubble_view()->shelf_view());
   } else {
@@ -1325,26 +1375,17 @@ void ShelfView::LayoutOverflowButton() const {
         offset + view_model_->ideal_bounds(last_visible_index_).bottom());
   }
 
+  const int extra_space_before_overflow =
+      kMarginBetweenAppsAndOverflow - ShelfConstants::button_spacing();
   if (last_visible_index_ >= 0) {
     // Add more space between last visible item and overflow button.
     // Without this, two buttons look too close compared with other items.
-    x = shelf_->PrimaryAxisValue(x + ShelfConstants::button_spacing(), x);
-    y = shelf_->PrimaryAxisValue(y, y + ShelfConstants::button_spacing());
+    x = shelf_->PrimaryAxisValue(x + extra_space_before_overflow, x);
+    y = shelf_->PrimaryAxisValue(y, y + extra_space_before_overflow);
   }
 
   overflow_button_->SetBoundsRect(
       gfx::Rect(x, y, kShelfControlSize, kShelfControlSize));
-}
-
-int ShelfView::IndexOfLastItemThatFitsSize(int max_value) const {
-  int index = model_->item_count() - 1;
-  while (index >= 0 &&
-         shelf_->PrimaryAxisValue(view_model_->ideal_bounds(index).right(),
-                                  view_model_->ideal_bounds(index).bottom()) >
-             max_value) {
-    index--;
-  }
-  return index;
 }
 
 void ShelfView::AnimateToIdealBounds() {
