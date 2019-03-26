@@ -18,10 +18,20 @@
 
 namespace cc {
 
+// TOOD(kevers): Remove kDrop once confirmed that it is no longer needed under
+// any circumstances.
 enum class MutateQueuingStrategy {
-  kDrop,            // Discard request if busy.
-  kQueueAndReplace  // Queue request if busy replacing previously queued
-                    // request.
+  kDrop,                           // Discard request if busy.
+  kQueueHighPriority,              // Queues request if busy. This request is
+                                   // is next to run in the queue. Only one
+                                   // high priority request can be in-flight
+                                   // at any point in time.
+  kQueueAndReplaceNormalPriority,  // Queues request if busy. This request
+                                   // replaces an existing normal priority
+                                   // request. In the case of mutations cycles
+                                   // that cannot keep up with the frame rate,
+                                   // replaced mutation requests are dropped
+                                   // from the queue.
 };
 
 enum class MutateStatus {

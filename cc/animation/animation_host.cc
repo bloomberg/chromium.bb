@@ -334,8 +334,8 @@ void AnimationHost::TickMutator(base::TimeTicks monotonic_time,
       weak_factory_.GetWeakPtr(), tree_type);
 
   MutateQueuingStrategy queuing_strategy =
-      is_active_tree ? MutateQueuingStrategy::kDrop
-                     : MutateQueuingStrategy::kQueueAndReplace;
+      is_active_tree ? MutateQueuingStrategy::kQueueAndReplaceNormalPriority
+                     : MutateQueuingStrategy::kQueueHighPriority;
   if (mutator_->Mutate(std::move(state), queuing_strategy,
                        std::move(on_done))) {
     mutator_host_client_->NotifyAnimationWorkletStateChange(
