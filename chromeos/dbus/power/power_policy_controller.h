@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/component_export.h"
 #include "base/macros.h"
@@ -50,9 +51,32 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerPolicyController
     ACTION_DO_NOTHING = 3,
   };
 
+  enum WeekDay {
+    WEEK_DAY_MONDAY = 0,
+    WEEK_DAY_TUESDAY = 1,
+    WEEK_DAY_WEDNESDAY = 2,
+    WEEK_DAY_THURSDAY = 3,
+    WEEK_DAY_FRIDAY = 4,
+    WEEK_DAY_SATURDAY = 5,
+    WEEK_DAY_SUNDAY = 6,
+  };
+
+  struct DayTime {
+    int hour = 0;
+    int minute = 0;
+  };
+
+  struct PeakShiftDayConfiguration {
+    WeekDay day = WeekDay::WEEK_DAY_MONDAY;
+    DayTime start_time;
+    DayTime end_time;
+    DayTime charge_start_time;
+  };
+
   // Values of various power-management-related preferences.
   struct PrefValues {
     PrefValues();
+    ~PrefValues();
 
     int ac_screen_dim_delay_ms;
     int ac_screen_off_delay_ms;
@@ -78,10 +102,18 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerPolicyController
     double user_activity_screen_dim_delay_factor;
     bool wait_for_initial_user_activity;
     bool force_nonzero_brightness_for_user_activity;
+    bool peak_shift_enabled;
+    int peak_shift_battery_threshold;
+    std::vector<PeakShiftDayConfiguration> peak_shift_day_configurations;
   };
 
   // Returns a string describing |policy|.  Useful for tests.
   static std::string GetPolicyDebugString(
+      const power_manager::PowerManagementPolicy& policy);
+
+  // Returns a string describing |PeakShift| part of |policy|.  Useful for
+  // tests.
+  static std::string GetPeakShiftPolicyDebugString(
       const power_manager::PowerManagementPolicy& policy);
 
   // Delay in milliseconds between the screen being turned off and the screen

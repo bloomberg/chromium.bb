@@ -15,12 +15,17 @@
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
+#include "components/prefs/pref_notifier_impl.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
+#include "components/prefs/testing_pref_store.h"
 
 using session_manager::SessionState;
 
@@ -116,6 +121,15 @@ bool GetExpectedAllowScreenWakeLocksForPrefs(PrefService* prefs) {
   return prefs->GetBoolean(prefs::kPowerAllowScreenWakeLocks);
 }
 
+void DecodeJsonStringAndNormalize(const std::string& json_string,
+                                  base::Value* value) {
+  base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
+  base::Optional<base::Value> read_value = reader.ReadToValue(json_string);
+  ASSERT_EQ(reader.GetErrorMessage(), "");
+  ASSERT_TRUE(read_value.has_value());
+  *value = std::move(read_value.value());
+}
+
 }  // namespace
 
 class PowerPrefsTest : public NoSessionAshTestBase {
@@ -136,10 +150,42 @@ class PowerPrefsTest : public NoSessionAshTestBase {
 
     // Get to Login screen.
     GetSessionControllerClient()->SetSessionState(SessionState::LOGIN_PRIMARY);
+
+    SetUpLocalState();
+  }
+
+  void TearDown() override {
+    static_cast<ShellObserver*>(power_prefs_)
+        ->OnLocalStatePrefServiceInitialized(nullptr);
+
+    NoSessionAshTestBase::TearDown();
+  }
+
+  void SetUpLocalState() {
+    auto pref_notifier = std::make_unique<PrefNotifierImpl>();
+    auto pref_value_store = std::make_unique<PrefValueStore>(
+        managed_pref_store_.get() /* managed_prefs */,
+        nullptr /* supervised_user_prefs */, nullptr /* extension_prefs */,
+        nullptr /* command_line_prefs */, user_pref_store_.get(),
+        nullptr /* recommended_prefs */, pref_registry_->defaults().get(),
+        pref_notifier.get());
+    local_state_ = std::make_unique<PrefService>(
+        std::move(pref_notifier), std::move(pref_value_store), user_pref_store_,
+        pref_registry_, base::DoNothing(), false);
+
+    PowerPrefs::RegisterLocalStatePrefs(pref_registry_.get());
+
+    static_cast<ShellObserver*>(power_prefs_)
+        ->OnLocalStatePrefServiceInitialized(local_state_.get());
   }
 
   std::string GetCurrentPowerPolicy() const {
     return chromeos::PowerPolicyController::GetPolicyDebugString(
+        power_manager_client()->policy());
+  }
+
+  std::string GetCurrentPowerPeakShiftPolicy() const {
+    return chromeos::PowerPolicyController::GetPeakShiftPolicyDebugString(
         power_manager_client()->policy());
   }
 
@@ -170,6 +216,15 @@ class PowerPrefsTest : public NoSessionAshTestBase {
       nullptr;                         // Not owned.
   PowerPrefs* power_prefs_ = nullptr;  // Not owned.
   base::SimpleTestTickClock tick_clock_;
+
+  scoped_refptr<TestingPrefStore> user_pref_store_ =
+      base::MakeRefCounted<TestingPrefStore>();
+  scoped_refptr<TestingPrefStore> managed_pref_store_ =
+      base::MakeRefCounted<TestingPrefStore>();
+  scoped_refptr<PrefRegistrySimple> pref_registry_ =
+      base::MakeRefCounted<PrefRegistrySimple>();
+
+  std::unique_ptr<PrefService> local_state_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PowerPrefsTest);
@@ -301,6 +356,60 @@ TEST_F(PowerPrefsTest, SmartDimEnabled) {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetActivePrefService();
   EXPECT_TRUE(prefs->GetBoolean(prefs::kPowerSmartDimEnabled));
+}
+
+TEST_F(PowerPrefsTest, PeakShift) {
+  constexpr char kDayConfigsJson[] =
+      R"({
+        "entries": [
+          {
+            "charge_start_time": {
+               "hour": 20,
+               "minute": 0
+            },
+            "day": "MONDAY",
+            "end_time": {
+               "hour": 10,
+               "minute": 15
+            },
+            "start_time": {
+               "hour": 7,
+               "minute": 30
+            }
+          },
+          {
+            "charge_start_time": {
+               "hour": 22,
+               "minute": 30
+            },
+            "day": "FRIDAY",
+            "end_time": {
+               "hour": 9,
+               "minute": 45
+            },
+            "start_time": {
+               "hour": 4,
+               "minute": 0
+            }
+          }
+        ]
+      })";
+  base::Value day_configs;
+  DecodeJsonStringAndNormalize(kDayConfigsJson, &day_configs);
+
+  managed_pref_store_->SetBoolean(prefs::kDevicePowerPeakShiftEnabled, true);
+  managed_pref_store_->SetInteger(prefs::kDevicePowerPeakShiftBatteryThreshold,
+                                  50);
+  managed_pref_store_->SetValue(
+      prefs::kDevicePowerPeakShiftDayConfig,
+      std::make_unique<base::Value>(std::move(day_configs)), 0);
+
+  constexpr char kExpectedPeakShiftPolicy[] =
+      "peak_shift_battery_threshold=50 "
+      "peak_shift_day_configuration=["
+      "{day=0 start_time=7:30 end_time=10:15 charge_start_time=20:00} "
+      "{day=4 start_time=4:00 end_time=9:45 charge_start_time=22:30} ]";
+  EXPECT_EQ(GetCurrentPowerPeakShiftPolicy(), kExpectedPeakShiftPolicy);
 }
 
 }  // namespace ash

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/format_macros.h"
@@ -79,6 +80,37 @@ bool IsWakeLockReasonHonored(PowerPolicyController::WakeLockReason reason,
   return true;
 }
 
+power_manager::PowerManagementPolicy::PeakShiftDayConfig::WeekDay
+GetProtoWeekDay(PowerPolicyController::WeekDay week_day) {
+  switch (week_day) {
+    case PowerPolicyController::WeekDay::WEEK_DAY_MONDAY:
+      return power_manager::PowerManagementPolicy::PeakShiftDayConfig::MONDAY;
+    case PowerPolicyController::WeekDay::WEEK_DAY_TUESDAY:
+      return power_manager::PowerManagementPolicy::PeakShiftDayConfig::TUESDAY;
+    case PowerPolicyController::WeekDay::WEEK_DAY_WEDNESDAY:
+      return power_manager::PowerManagementPolicy::PeakShiftDayConfig::
+          WEDNESDAY;
+    case PowerPolicyController::WeekDay::WEEK_DAY_THURSDAY:
+      return power_manager::PowerManagementPolicy::PeakShiftDayConfig::THURSDAY;
+    case PowerPolicyController::WeekDay::WEEK_DAY_FRIDAY:
+      return power_manager::PowerManagementPolicy::PeakShiftDayConfig::FRIDAY;
+    case PowerPolicyController::WeekDay::WEEK_DAY_SATURDAY:
+      return power_manager::PowerManagementPolicy::PeakShiftDayConfig::SATURDAY;
+    case PowerPolicyController::WeekDay::WEEK_DAY_SUNDAY:
+      return power_manager::PowerManagementPolicy::PeakShiftDayConfig::SUNDAY;
+  }
+}
+
+std::unique_ptr<
+    power_manager::PowerManagementPolicy::PeakShiftDayConfig::DayTime>
+GetProtoDayTime(const PowerPolicyController::DayTime& day_time) {
+  auto proto = std::make_unique<
+      power_manager::PowerManagementPolicy::PeakShiftDayConfig::DayTime>();
+  proto->set_hour(day_time.hour);
+  proto->set_minute(day_time.minute);
+  return proto;
+}
+
 }  // namespace
 
 const int PowerPolicyController::kScreenLockAfterOffDelayMs = 10000;  // 10 sec.
@@ -113,7 +145,11 @@ PowerPolicyController::PrefValues::PrefValues()
       presentation_screen_dim_delay_factor(1.0),
       user_activity_screen_dim_delay_factor(1.0),
       wait_for_initial_user_activity(false),
-      force_nonzero_brightness_for_user_activity(true) {}
+      force_nonzero_brightness_for_user_activity(true),
+      peak_shift_enabled(false),
+      peak_shift_battery_threshold(-1) {}
+
+PowerPolicyController::PrefValues::~PrefValues() = default;
 
 // static
 std::string PowerPolicyController::GetPolicyDebugString(
@@ -162,9 +198,37 @@ std::string PowerPolicyController::GetPolicyDebugString(
     StringAppendF(&str, "force_nonzero_brightness_for_user_activity=%d ",
                   policy.force_nonzero_brightness_for_user_activity());
   }
+
+  str += GetPeakShiftPolicyDebugString(policy);
+
   if (policy.has_reason())
     StringAppendF(&str, "reason=\"%s\" ", policy.reason().c_str());
   base::TrimWhitespaceASCII(str, base::TRIM_TRAILING, &str);
+  return str;
+}
+
+// static
+std::string PowerPolicyController::GetPeakShiftPolicyDebugString(
+    const power_manager::PowerManagementPolicy& policy) {
+  std::string str;
+  if (policy.has_peak_shift_battery_percent_threshold()) {
+    StringAppendF(&str, "peak_shift_battery_threshold=%d ",
+                  policy.peak_shift_battery_percent_threshold());
+  }
+  if (policy.peak_shift_day_configs_size()) {
+    StringAppendF(&str, "peak_shift_day_configuration=[");
+    for (auto config : policy.peak_shift_day_configs()) {
+      StringAppendF(&str,
+                    "{day=%d start_time=%d:%02d end_time=%d:%02d "
+                    "charge_start_time=%d:%02d} ",
+                    config.day(), config.start_time().hour(),
+                    config.start_time().minute(), config.end_time().hour(),
+                    config.end_time().minute(),
+                    config.charge_start_time().hour(),
+                    config.charge_start_time().minute());
+    }
+    StringAppendF(&str, "]");
+  }
   return str;
 }
 
@@ -256,6 +320,23 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
   honor_wake_locks_ = values.allow_wake_locks;
   honor_screen_wake_locks_ =
       honor_wake_locks_ && values.allow_screen_wake_locks;
+
+  if (values.peak_shift_enabled) {
+    prefs_policy_.set_peak_shift_battery_percent_threshold(
+        values.peak_shift_battery_threshold);
+    for (const PeakShiftDayConfiguration& values_config :
+         values.peak_shift_day_configurations) {
+      power_manager::PowerManagementPolicy::PeakShiftDayConfig* proto_config =
+          prefs_policy_.add_peak_shift_day_configs();
+      proto_config->set_day(GetProtoWeekDay(values_config.day));
+      proto_config->set_allocated_start_time(
+          GetProtoDayTime(values_config.start_time).release());
+      proto_config->set_allocated_end_time(
+          GetProtoDayTime(values_config.end_time).release());
+      proto_config->set_allocated_charge_start_time(
+          GetProtoDayTime(values_config.charge_start_time).release());
+    }
+  }
 
   prefs_were_set_ = true;
   SendCurrentPolicy();

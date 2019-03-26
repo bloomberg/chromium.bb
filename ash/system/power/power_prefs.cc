@@ -5,6 +5,7 @@
 #include "ash/system/power/power_prefs.h"
 
 #include <string>
+#include <vector>
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
@@ -23,6 +24,9 @@
 namespace ash {
 
 namespace {
+
+using PeakShiftDayConfiguration =
+    chromeos::PowerPolicyController::PeakShiftDayConfiguration;
 
 chromeos::PowerPolicyController::Action GetPowerPolicyAction(
     const PrefService* prefs,
@@ -126,6 +130,85 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   }
 }
 
+// Saves appropriate value to |week_day| and returns true if there is mapping
+// between week day string and enum value.
+bool GetWeekDayFromString(const std::string& week_day_str,
+                          chromeos::PowerPolicyController::WeekDay* week_day) {
+  DCHECK(week_day);
+  if (week_day_str == "MONDAY") {
+    *week_day = chromeos::PowerPolicyController::WeekDay::WEEK_DAY_MONDAY;
+  } else if (week_day_str == "TUESDAY") {
+    *week_day = chromeos::PowerPolicyController::WeekDay::WEEK_DAY_TUESDAY;
+  } else if (week_day_str == "WEDNESDAY") {
+    *week_day = chromeos::PowerPolicyController::WeekDay::WEEK_DAY_WEDNESDAY;
+  } else if (week_day_str == "THURSDAY") {
+    *week_day = chromeos::PowerPolicyController::WeekDay::WEEK_DAY_THURSDAY;
+  } else if (week_day_str == "FRIDAY") {
+    *week_day = chromeos::PowerPolicyController::WeekDay::WEEK_DAY_FRIDAY;
+  } else if (week_day_str == "SATURDAY") {
+    *week_day = chromeos::PowerPolicyController::WeekDay::WEEK_DAY_SATURDAY;
+  } else if (week_day_str == "SUNDAY") {
+    *week_day = chromeos::PowerPolicyController::WeekDay::WEEK_DAY_SUNDAY;
+  } else {
+    return false;
+  }
+  return true;
+}
+
+// Converts |base::Value| to |std::vector<PeakShiftDayConfiguration>| and
+// returns true if there are no missing fields and errors.
+bool GetPeakShiftDayConfigurations(
+    const base::DictionaryValue& value,
+    std::vector<PeakShiftDayConfiguration>* configs_out) {
+  DCHECK(configs_out);
+  configs_out->clear();
+
+  const base::Value* entries =
+      value.FindKeyOfType({"entries"}, base::Value::Type::LIST);
+  if (!entries) {
+    return false;
+  }
+
+  for (const base::Value& item : entries->GetList()) {
+    const base::Value* week_day_value =
+        item.FindKeyOfType({"day"}, base::Value::Type::STRING);
+    const base::Value* start_time_hour =
+        item.FindPathOfType({"start_time", "hour"}, base::Value::Type::INTEGER);
+    const base::Value* start_time_minute = item.FindPathOfType(
+        {"start_time", "minute"}, base::Value::Type::INTEGER);
+    const base::Value* end_time_hour =
+        item.FindPathOfType({"end_time", "hour"}, base::Value::Type::INTEGER);
+    const base::Value* end_time_minute =
+        item.FindPathOfType({"end_time", "minute"}, base::Value::Type::INTEGER);
+    const base::Value* charge_start_time_hour = item.FindPathOfType(
+        {"charge_start_time", "hour"}, base::Value::Type::INTEGER);
+    const base::Value* charge_start_time_minute = item.FindPathOfType(
+        {"charge_start_time", "minute"}, base::Value::Type::INTEGER);
+
+    chromeos::PowerPolicyController::WeekDay week_day_enum;
+    if (!week_day_value ||
+        !GetWeekDayFromString(week_day_value->GetString(), &week_day_enum) ||
+        !start_time_hour || !start_time_minute || !end_time_hour ||
+        !end_time_minute || !charge_start_time_hour ||
+        !charge_start_time_minute) {
+      return false;
+    }
+
+    PeakShiftDayConfiguration config;
+    config.day = week_day_enum;
+    config.start_time.hour = start_time_hour->GetInt();
+    config.start_time.minute = start_time_minute->GetInt();
+    config.end_time.hour = end_time_hour->GetInt();
+    config.end_time.minute = end_time_minute->GetInt();
+    config.charge_start_time.hour = charge_start_time_hour->GetInt();
+    config.charge_start_time.minute = charge_start_time_minute->GetInt();
+
+    configs_out->push_back(std::move(config));
+  }
+
+  return true;
+}
+
 }  // namespace
 
 PowerPrefs::PowerPrefs(chromeos::PowerPolicyController* power_policy_controller,
@@ -137,11 +220,14 @@ PowerPrefs::PowerPrefs(chromeos::PowerPolicyController* power_policy_controller,
   DCHECK(power_policy_controller_);
   DCHECK(tick_clock_);
 
+  Shell::Get()->AddShellObserver(this);
+
   power_manager_client_observer_.Add(power_manager_client);
   Shell::Get()->session_controller()->AddObserver(this);
 }
 
 PowerPrefs::~PowerPrefs() {
+  Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
@@ -215,9 +301,20 @@ void PowerPrefs::OnActiveUserPrefServiceChanged(PrefService* prefs) {
   ObservePrefs(prefs);
 }
 
+void PowerPrefs::OnLocalStatePrefServiceInitialized(PrefService* prefs) {
+  local_state_ = prefs;
+
+  // Pass |nullptr| in tests, because lifetime of local state prefs is shorter
+  // than lifetime of PowerPrefs.
+  if (local_state_) {
+    ObserveLocalStatePrefs(prefs);
+  }
+}
+
 void PowerPrefs::UpdatePowerPolicyFromPrefs() {
   PrefService* prefs = GetPrefService();
-  DCHECK(prefs);
+  if (!prefs || !local_state_)
+    return;
 
   // It's possible to end up in a situation where a shortened lock-screen idle
   // delay would cause the system to suspend immediately as soon as the screen
@@ -230,6 +327,7 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
                           screen_idle_off_time_ > screen_lock_time_);
 
   chromeos::PowerPolicyController::PrefValues values;
+
   values.ac_brightness_percent =
       prefs->GetInteger(prefs::kPowerAcScreenBrightnessPercent);
   values.ac_screen_dim_delay_ms =
@@ -291,59 +389,92 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
   values.force_nonzero_brightness_for_user_activity =
       prefs->GetBoolean(prefs::kPowerForceNonzeroBrightnessForUserActivity);
 
+  if (local_state_->GetBoolean(prefs::kDevicePowerPeakShiftEnabled) &&
+      local_state_->IsManagedPreference(prefs::kDevicePowerPeakShiftEnabled) &&
+      local_state_->IsManagedPreference(
+          prefs::kDevicePowerPeakShiftBatteryThreshold) &&
+      local_state_->IsManagedPreference(
+          prefs::kDevicePowerPeakShiftDayConfig)) {
+    const base::DictionaryValue* configs_value =
+        local_state_->GetDictionary(prefs::kDevicePowerPeakShiftDayConfig);
+    DCHECK(configs_value);
+    std::vector<PeakShiftDayConfiguration> configs;
+    if (GetPeakShiftDayConfigurations(*configs_value, &configs)) {
+      values.peak_shift_enabled = true;
+      values.peak_shift_battery_threshold = local_state_->GetInteger(
+          prefs::kDevicePowerPeakShiftBatteryThreshold);
+      values.peak_shift_day_configurations = std::move(configs);
+    } else {
+      LOG(WARNING) << "Invalid Peak Shift day configs format: "
+                   << *configs_value;
+    }
+  }
+
   power_policy_controller_->ApplyPrefs(values);
 }
 
 void PowerPrefs::ObservePrefs(PrefService* prefs) {
+  // Observe pref updates from policy.
+  base::RepeatingClosure update_callback(base::BindRepeating(
+      &PowerPrefs::UpdatePowerPolicyFromPrefs, base::Unretained(this)));
+
+  profile_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  profile_registrar_->Init(prefs);
+  profile_registrar_->Add(prefs::kPowerAcScreenBrightnessPercent,
+                          update_callback);
+  profile_registrar_->Add(prefs::kPowerAcScreenDimDelayMs, update_callback);
+  profile_registrar_->Add(prefs::kPowerAcScreenOffDelayMs, update_callback);
+  profile_registrar_->Add(prefs::kPowerAcScreenLockDelayMs, update_callback);
+  profile_registrar_->Add(prefs::kPowerAcIdleWarningDelayMs, update_callback);
+  profile_registrar_->Add(prefs::kPowerAcIdleDelayMs, update_callback);
+  profile_registrar_->Add(prefs::kPowerBatteryScreenBrightnessPercent,
+                          update_callback);
+  profile_registrar_->Add(prefs::kPowerBatteryScreenDimDelayMs,
+                          update_callback);
+  profile_registrar_->Add(prefs::kPowerBatteryScreenOffDelayMs,
+                          update_callback);
+  profile_registrar_->Add(prefs::kPowerBatteryScreenLockDelayMs,
+                          update_callback);
+  profile_registrar_->Add(prefs::kPowerBatteryIdleWarningDelayMs,
+                          update_callback);
+  profile_registrar_->Add(prefs::kPowerBatteryIdleDelayMs, update_callback);
+  profile_registrar_->Add(prefs::kPowerLockScreenDimDelayMs, update_callback);
+  profile_registrar_->Add(prefs::kPowerLockScreenOffDelayMs, update_callback);
+  profile_registrar_->Add(prefs::kPowerAcIdleAction, update_callback);
+  profile_registrar_->Add(prefs::kPowerBatteryIdleAction, update_callback);
+  profile_registrar_->Add(prefs::kPowerLidClosedAction, update_callback);
+  profile_registrar_->Add(prefs::kPowerUseAudioActivity, update_callback);
+  profile_registrar_->Add(prefs::kPowerUseVideoActivity, update_callback);
+  profile_registrar_->Add(prefs::kPowerAllowWakeLocks, update_callback);
+  profile_registrar_->Add(prefs::kPowerAllowScreenWakeLocks, update_callback);
+  profile_registrar_->Add(prefs::kEnableAutoScreenLock, update_callback);
+  profile_registrar_->Add(prefs::kPowerPresentationScreenDimDelayFactor,
+                          update_callback);
+  profile_registrar_->Add(prefs::kPowerUserActivityScreenDimDelayFactor,
+                          update_callback);
+  profile_registrar_->Add(prefs::kPowerWaitForInitialUserActivity,
+                          update_callback);
+  profile_registrar_->Add(prefs::kPowerForceNonzeroBrightnessForUserActivity,
+                          update_callback);
+  profile_registrar_->Add(prefs::kAllowScreenLock, update_callback);
+  profile_registrar_->Add(prefs::kPowerSmartDimEnabled, update_callback);
+
+  UpdatePowerPolicyFromPrefs();
+}
+
+void PowerPrefs::ObserveLocalStatePrefs(PrefService* prefs) {
   // Observe pref updates from locked state change and policy.
   base::RepeatingClosure update_callback(base::BindRepeating(
       &PowerPrefs::UpdatePowerPolicyFromPrefs, base::Unretained(this)));
 
-  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
-  pref_change_registrar_->Init(prefs);
-  pref_change_registrar_->Add(prefs::kPowerAcScreenBrightnessPercent,
+  local_state_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  local_state_registrar_->Init(prefs);
+  local_state_registrar_->Add(prefs::kDevicePowerPeakShiftEnabled,
                               update_callback);
-  pref_change_registrar_->Add(prefs::kPowerAcScreenDimDelayMs, update_callback);
-  pref_change_registrar_->Add(prefs::kPowerAcScreenOffDelayMs, update_callback);
-  pref_change_registrar_->Add(prefs::kPowerAcScreenLockDelayMs,
+  local_state_registrar_->Add(prefs::kDevicePowerPeakShiftBatteryThreshold,
                               update_callback);
-  pref_change_registrar_->Add(prefs::kPowerAcIdleWarningDelayMs,
+  local_state_registrar_->Add(prefs::kDevicePowerPeakShiftDayConfig,
                               update_callback);
-  pref_change_registrar_->Add(prefs::kPowerAcIdleDelayMs, update_callback);
-  pref_change_registrar_->Add(prefs::kPowerBatteryScreenBrightnessPercent,
-                              update_callback);
-  pref_change_registrar_->Add(prefs::kPowerBatteryScreenDimDelayMs,
-                              update_callback);
-  pref_change_registrar_->Add(prefs::kPowerBatteryScreenOffDelayMs,
-                              update_callback);
-  pref_change_registrar_->Add(prefs::kPowerBatteryScreenLockDelayMs,
-                              update_callback);
-  pref_change_registrar_->Add(prefs::kPowerBatteryIdleWarningDelayMs,
-                              update_callback);
-  pref_change_registrar_->Add(prefs::kPowerBatteryIdleDelayMs, update_callback);
-  pref_change_registrar_->Add(prefs::kPowerLockScreenDimDelayMs,
-                              update_callback);
-  pref_change_registrar_->Add(prefs::kPowerLockScreenOffDelayMs,
-                              update_callback);
-  pref_change_registrar_->Add(prefs::kPowerAcIdleAction, update_callback);
-  pref_change_registrar_->Add(prefs::kPowerBatteryIdleAction, update_callback);
-  pref_change_registrar_->Add(prefs::kPowerLidClosedAction, update_callback);
-  pref_change_registrar_->Add(prefs::kPowerUseAudioActivity, update_callback);
-  pref_change_registrar_->Add(prefs::kPowerUseVideoActivity, update_callback);
-  pref_change_registrar_->Add(prefs::kPowerAllowWakeLocks, update_callback);
-  pref_change_registrar_->Add(prefs::kPowerAllowScreenWakeLocks,
-                              update_callback);
-  pref_change_registrar_->Add(prefs::kEnableAutoScreenLock, update_callback);
-  pref_change_registrar_->Add(prefs::kPowerPresentationScreenDimDelayFactor,
-                              update_callback);
-  pref_change_registrar_->Add(prefs::kPowerUserActivityScreenDimDelayFactor,
-                              update_callback);
-  pref_change_registrar_->Add(prefs::kPowerWaitForInitialUserActivity,
-                              update_callback);
-  pref_change_registrar_->Add(
-      prefs::kPowerForceNonzeroBrightnessForUserActivity, update_callback);
-  pref_change_registrar_->Add(prefs::kAllowScreenLock, update_callback);
-  pref_change_registrar_->Add(prefs::kPowerSmartDimEnabled, update_callback);
 
   UpdatePowerPolicyFromPrefs();
 }
