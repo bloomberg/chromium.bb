@@ -399,7 +399,8 @@ class Port(object):
                     _log.error('httpd seems broken. Cannot run http tests.')
                     return False
                 return True
-            except OSError:
+            except OSError as e:
+                _log.error('httpd launch error: ' + repr(e))
                 pass
         _log.error('No httpd found. Cannot run http tests.')
         return False
@@ -1209,6 +1210,7 @@ class Port(object):
         cmd = [httpd_path,
                '-t',
                '-f', self.path_to_apache_config_file(),
+               '-C', 'ServerRoot "%s"' % self.apache_server_root(),
                '-C', 'HttpProtocolOptions Unsafe',
                '-C', intentional_syntax_error]
         env = self.setup_environ_for_server()
@@ -1418,6 +1420,14 @@ class Port(object):
         This is needed only by ports that use the apache_http_server module.
         """
         raise NotImplementedError('Port.path_to_apache')
+
+    def apache_server_root(self):
+        """Returns the root that the apache binary is installed to.
+
+        This is used for the ServerRoot directive.
+        """
+        executable = self.path_to_apache()
+        return self._filesystem.dirname(self._filesystem.dirname(executable))
 
     def path_to_apache_config_file(self):
         """Returns the full path to the apache configuration file.
