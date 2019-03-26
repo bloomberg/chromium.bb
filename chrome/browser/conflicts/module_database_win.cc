@@ -48,6 +48,7 @@ ModuleDatabase* g_module_database = nullptr;
 // ThirdPartyModulesBlocking features are enabled via the "enable-features"
 // command-line switch.
 bool AreThirdPartyFeaturesEnabledViaCommandLine() {
+  // The FeatureList API is thread-safe.
   base::FeatureList* feature_list_instance = base::FeatureList::GetInstance();
 
   return feature_list_instance->IsFeatureOverriddenFromCommandLine(
@@ -57,6 +58,38 @@ bool AreThirdPartyFeaturesEnabledViaCommandLine() {
              features::kThirdPartyModulesBlocking.name,
              base::FeatureList::OVERRIDE_ENABLE_FEATURE);
 }
+
+// Callback for the pref change registrar. Is invoked when the
+// ThirdPartyBlockingEnabled policy is modified. Notifies the ModuleDatabase if
+// the policy was disabled.
+void OnThirdPartyBlockingPolicyChanged(
+    PrefChangeRegistrar* pref_change_registrar) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (ModuleDatabase::IsThirdPartyBlockingPolicyEnabled())
+    return;
+
+  // Stop listening to policy changes and notify the ModuleDatabase.
+  pref_change_registrar->Remove(prefs::kThirdPartyBlockingEnabled);
+  ModuleDatabase::GetTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce([]() {
+        ModuleDatabase::GetInstance()->OnThirdPartyBlockingPolicyDisabled();
+      }));
+}
+
+// Initializes the |pref_change_registrar| on the UI thread, where preferences
+// live.
+void InitPrefChangeRegistrarOnUIThread(
+    PrefChangeRegistrar* pref_change_registrar) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  pref_change_registrar->Init(g_browser_process->local_state());
+  // It is safe to pass the pointer to the registrar because the callback will
+  // only be invoked if it is still alive.
+  pref_change_registrar->Add(
+      prefs::kThirdPartyBlockingEnabled,
+      base::Bind(&OnThirdPartyBlockingPolicyChanged, pref_change_registrar));
+}
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
 }  // namespace
@@ -64,7 +97,7 @@ bool AreThirdPartyFeaturesEnabledViaCommandLine() {
 // static
 constexpr base::TimeDelta ModuleDatabase::kIdleTimeout;
 
-ModuleDatabase::ModuleDatabase()
+ModuleDatabase::ModuleDatabase(bool third_party_blocking_policy_enabled)
     : idle_timer_(
           FROM_HERE,
           kIdleTimeout,
@@ -72,6 +105,9 @@ ModuleDatabase::ModuleDatabase()
       has_started_processing_(false),
       shell_extensions_enumerated_(false),
       ime_enumerated_(false),
+#if defined(GOOGLE_CHROME_BUILD)
+      pref_change_registrar_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
+#endif
       // ModuleDatabase owns |module_inspector_|, so it is safe to use
       // base::Unretained().
       module_inspector_(base::Bind(&ModuleDatabase::OnModuleInspected,
@@ -80,7 +116,8 @@ ModuleDatabase::ModuleDatabase()
   AddObserver(&third_party_metrics_);
 
 #if defined(GOOGLE_CHROME_BUILD)
-  MaybeInitializeThirdPartyConflictsManager();
+  MaybeInitializeThirdPartyConflictsManager(
+      third_party_blocking_policy_enabled);
 #endif
 }
 
@@ -298,19 +335,21 @@ void ModuleDatabase::DisableThirdPartyBlocking() {
   // Immediately disable the hook. DisableHook() can be called concurrently.
   DisableHook();
 
-  // Stop analyzing those modules.
-  ThirdPartyConflictsManager* third_party_conflicts_manager =
-      ModuleDatabase::GetInstance()->third_party_conflicts_manager_.get();
-  if (third_party_conflicts_manager)
-    third_party_conflicts_manager->DisableModuleAnalysis();
+  // Notify the ModuleDatabase instance.
+  GetTaskRunner()->PostTask(FROM_HERE, base::BindOnce([]() {
+                              GetInstance()->OnThirdPartyBlockingDisabled();
+                            }));
+}
 
-  // Notify the ThirdPartyMetricsRecorder instance that the hook is disabled.
-  // Since this is meant for a heartbeat metric, the small latency introduced
-  // with the thread-hopping is perfectly acceptable.
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI}, base::BindOnce([]() {
-        ModuleDatabase::GetInstance()->third_party_metrics_.SetHookDisabled();
-      }));
+void ModuleDatabase::OnThirdPartyBlockingPolicyDisabled() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(third_party_conflicts_manager_);
+
+  ThirdPartyConflictsManager::ShutdownAndDestroy(
+      std::move(third_party_conflicts_manager_));
+  // The registrar is no longer observing the local state prefs, so there's no
+  // point in keeping it around.
+  pref_change_registrar_ = nullptr;
 }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
@@ -404,7 +443,15 @@ void ModuleDatabase::NotifyLoadedModules(ModuleDatabaseObserver* observer) {
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
-void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager() {
+void ModuleDatabase::OnThirdPartyBlockingDisabled() {
+  third_party_metrics_.SetHookDisabled();
+
+  if (third_party_conflicts_manager_)
+    third_party_conflicts_manager_->DisableModuleAnalysis();
+}
+
+void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager(
+    bool third_party_blocking_policy_enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Temporarily disable this class on domain-joined machines because enterprise
@@ -419,7 +466,7 @@ void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager() {
     return;
   }
 
-  if (!IsThirdPartyBlockingPolicyEnabled())
+  if (!third_party_blocking_policy_enabled)
     return;
 
   if (IncompatibleApplicationsUpdater::IsWarningEnabled() ||
@@ -427,23 +474,20 @@ void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager() {
     third_party_conflicts_manager_ =
         std::make_unique<ThirdPartyConflictsManager>(this);
 
-    pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
-    pref_change_registrar_->Init(g_browser_process->local_state());
-    pref_change_registrar_->Add(
-        prefs::kThirdPartyBlockingEnabled,
-        base::Bind(&ModuleDatabase::OnThirdPartyBlockingPolicyChanged,
-                   base::Unretained(this)));
-  }
-}
-
-void ModuleDatabase::OnThirdPartyBlockingPolicyChanged() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!IsThirdPartyBlockingPolicyEnabled()) {
-    DCHECK(third_party_conflicts_manager_);
-    ThirdPartyConflictsManager::ShutdownAndDestroy(
-        std::move(third_party_conflicts_manager_));
-    pref_change_registrar_ = nullptr;
+    // If Chrome detects that the group policy for third-party blocking gets
+    // disabled at run-time, the |third_party_conflicts_manager_| instance must
+    // be destroyed. Since prefs can only be read on the UI thread, the
+    // registrar is initialized there.
+    auto ui_task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
+        {content::BrowserThread::UI});
+    pref_change_registrar_ =
+        std::unique_ptr<PrefChangeRegistrar, base::OnTaskRunnerDeleter>(
+            new PrefChangeRegistrar(),
+            base::OnTaskRunnerDeleter(ui_task_runner));
+    ui_task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&InitPrefChangeRegistrarOnUIThread,
+                       base::Unretained(pref_change_registrar_.get())));
   }
 }
 #endif
