@@ -6,6 +6,7 @@
 
 #include "base/time/default_tick_clock.h"
 #include "cc/paint/paint_flags.h"
+#include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
@@ -343,9 +344,8 @@ void TabIcon::MaybePaintFavicon(gfx::Canvas* canvas,
 }
 
 bool TabIcon::HasNonDefaultFavicon() const {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return !favicon_.isNull() && !favicon_.BackedBySameObjectAs(
-                                   *rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON));
+                                   favicon::GetDefaultFavicon().AsImageSkia());
 }
 
 void TabIcon::SetIcon(const GURL& url, const gfx::ImageSkia& icon) {
