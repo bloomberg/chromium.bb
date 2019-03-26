@@ -973,6 +973,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
           state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
               object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
         }
+
+        // TODO(crbug.com/900241): Remove these setters when we can use
+        // state.direct_compositing_reasons to check for active animations.
+        state.has_active_opacity_animation = style.HasCurrentOpacityAnimation();
+        state.has_active_backdrop_filter_animation =
+            style.HasCurrentBackdropFilterAnimation();
       }
 
       EffectPaintPropertyNode::AnimationState animation_state;
@@ -1136,6 +1142,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
             CompositingReason::kDirectReasonsForFilterProperty;
         state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
             object_.UniqueId(), CompositorElementIdNamespace::kEffectFilter);
+
+        // TODO(crbug.com/900241): Remove the setter when we can use
+        // state.direct_compositing_reasons to check for active animations.
+        state.has_active_filter_animation =
+            object_.StyleRef().HasCurrentFilterAnimation();
       }
 
       EffectPaintPropertyNode::AnimationState animation_state;
@@ -1754,6 +1765,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
         effect_state.local_transform_space = context_.current.transform;
         effect_state.direct_compositing_reasons =
             CompositingReason::kActiveOpacityAnimation;
+        effect_state.has_active_opacity_animation = true;
         effect_state.compositor_element_id =
             scrollable_area->GetScrollbarElementId(
                 ScrollbarOrientation::kVerticalScrollbar);
@@ -1769,6 +1781,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
         effect_state.local_transform_space = context_.current.transform;
         effect_state.direct_compositing_reasons =
             CompositingReason::kActiveOpacityAnimation;
+        effect_state.has_active_opacity_animation = true;
         effect_state.compositor_element_id =
             scrollable_area->GetScrollbarElementId(
                 ScrollbarOrientation::kHorizontalScrollbar);

@@ -58,6 +58,11 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     // === End of effects ===
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
+    // TODO(crbug.com/900241): Use direct_compositing_reasons to check for
+    // active animations when we can track animations for each property type.
+    bool has_active_opacity_animation = false;
+    bool has_active_filter_animation = false;
+    bool has_active_backdrop_filter_animation = false;
     // The offset of the origin of filters in local_transform_space.
     FloatPoint filters_origin;
 
@@ -205,16 +210,25 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
            CompositingReason::kComboActiveAnimation;
   }
   bool HasActiveOpacityAnimation() const {
-    return DirectCompositingReasons() &
-           CompositingReason::kActiveOpacityAnimation;
+    return state_.has_active_opacity_animation;
+    // TODO(crbug.com/900241): Use the following code when we can track
+    // animations for each property type.
+    // return DirectCompositingReasons() &
+    //        CompositingReason::kActiveOpacityAnimation;
   }
   bool HasActiveFilterAnimation() const {
-    return DirectCompositingReasons() &
-           CompositingReason::kActiveFilterAnimation;
+    return state_.has_active_filter_animation;
+    // TODO(crbug.com/900241): Use the following code when we can track
+    // animations for each property type.
+    // return DirectCompositingReasons() &
+    //        CompositingReason::kActiveFilterAnimation;
   }
   bool HasActiveBackdropFilterAnimation() const {
-    return DirectCompositingReasons() &
-           CompositingReason::kActiveBackdropFilterAnimation;
+    return state_.has_active_backdrop_filter_animation;
+    // TODO(crbug.com/900241): Use the following code when we can track
+    // animations for each property type.
+    // return DirectCompositingReasons() &
+    //        CompositingReason::kActiveBackdropFilterAnimation;
   }
 
   const CompositorElementId& GetCompositorElementId() const {

@@ -57,6 +57,7 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateAnimatingOpacityEffect(
   state.output_clip = output_clip;
   state.opacity = opacity;
   state.direct_compositing_reasons = CompositingReason::kActiveOpacityAnimation;
+  state.has_active_opacity_animation = true;
   state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
       NewUniqueObjectId(), CompositorElementIdNamespace::kPrimaryEffect);
   return EffectPaintPropertyNode::Create(parent, std::move(state));
@@ -99,6 +100,7 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateAnimatingFilterEffect(
   state.output_clip = output_clip;
   state.filter = std::move(filter);
   state.direct_compositing_reasons = CompositingReason::kActiveFilterAnimation;
+  state.has_active_filter_animation = true;
   state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
       NewUniqueObjectId(), CompositorElementIdNamespace::kEffectFilter);
   return EffectPaintPropertyNode::Create(parent, std::move(state));
@@ -144,6 +146,7 @@ CreateAnimatingBackdropFilterEffect(
   state.backdrop_filter = std::move(backdrop_filter);
   state.direct_compositing_reasons =
       CompositingReason::kActiveBackdropFilterAnimation;
+  state.has_active_backdrop_filter_animation = true;
   state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
       NewUniqueObjectId(), CompositorElementIdNamespace::kPrimaryEffect);
   return EffectPaintPropertyNode::Create(parent, std::move(state));
