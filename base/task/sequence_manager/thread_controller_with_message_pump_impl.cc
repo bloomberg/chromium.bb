@@ -336,9 +336,6 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
       // Trace events should finish before we call DidRunTask to ensure that
       // SequenceManager trace events do not interfere with them.
       TRACE_TASK_EXECUTION("ThreadController::Task", *task);
-      // Trace-parsing tools (DevTools, Lighthouse, etc) consume this event
-      // to determine long tasks.
-      // See https://crbug.com/681863 and https://crbug.com/874982
       task_annotator_.RunTask("ThreadController::Task", &*task);
     }
 
@@ -364,6 +361,7 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
 }
 
 bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
+  TRACE_EVENT0("sequence_manager", "SequenceManager::DoIdleWork");
   work_id_provider_->IncrementWorkId();
 #if defined(OS_WIN)
   bool need_high_res_mode =
