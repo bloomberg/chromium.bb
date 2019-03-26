@@ -23,6 +23,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskPriority;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -262,6 +263,7 @@ public class ModuleLoader {
     public void destroyModule(@DestructionReason int reason) {
         if (mModuleEntryPoint == null) return;
 
+        ModuleMetrics.recordCodeMemoryFootprint(mComponentName.getPackageName(), "OnModuleDestroy");
         ModuleMetrics.recordDestruction(reason);
         mModuleEntryPoint.onDestroy();
         CrashKeys.getInstance().set(CrashKeyIndex.ACTIVE_DYNAMIC_MODULE, null);
@@ -485,7 +487,12 @@ public class ModuleLoader {
                 runAndClearCallbacks();
                 sendAllBundles();
 
-                ModuleMetrics.recordCodeMemoryFootprint(mComponentName.getPackageName());
+                // Recording the metric may take some time, and this runs on the UI thread, don't
+                // block the UI thread on it.
+                PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+                    ModuleMetrics.recordCodeMemoryFootprint(
+                            mComponentName.getPackageName(), "OnModuleLoad");
+                });
                 return;
             } catch (Exception e) {
                 // No multi-catch below API level 19 for reflection exceptions.

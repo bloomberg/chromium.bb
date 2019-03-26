@@ -54,7 +54,7 @@ public class ModuleMetricsTest {
                                   .getTargetContext()
                                   .getApplicationContext();
 
-        ModuleMetrics.recordCodeMemoryFootprint(context.getPackageName());
+        ModuleMetrics.recordCodeMemoryFootprint(context.getPackageName(), "OnModuleLoad");
 
         Assert.assertEquals(samplesRecordedForProportionalSet + 1,
                 RecordHistogram.getHistogramTotalCountForTesting(PROPORTIONAL_SET_HISTOGRAM_NAME));
