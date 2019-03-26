@@ -37,7 +37,7 @@ HistoryFocusTest.prototype = {
   },
 };
 
-TEST_F('HistoryFocusTest', 'All', function() {
+TEST_F('HistoryFocusTest', 'DISABLED_All', function() {
   suite('<history-toolbar>', function() {
     let app;
     let toolbar;
