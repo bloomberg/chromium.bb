@@ -234,7 +234,8 @@ std::unique_ptr<base::DictionaryValue> CreateDictionaryFrom(
   return dict;
 }
 
-Status GetVisibleCookies(WebView* web_view,
+Status GetVisibleCookies(Session* session,
+                         WebView* web_view,
                          std::list<Cookie>* cookies) {
   std::string current_page_url;
   Status status = GetUrl(web_view, std::string(), &current_page_url);
@@ -256,6 +257,12 @@ Status GetVisibleCookies(WebView* web_view,
     cookie_dict->GetString("value", &value);
     std::string domain;
     cookie_dict->GetString("domain", &domain);
+    if (session->w3c_compliant) {
+      if (domain[0] == '.')
+        domain.erase(0, 1);
+      else
+        domain.clear();
+    }
     std::string path;
     cookie_dict->GetString("path", &path);
     double expiry = 0;
@@ -1785,7 +1792,7 @@ Status ExecuteGetCookies(Session* session,
                          std::unique_ptr<base::Value>* value,
                          Timeout* timeout) {
   std::list<Cookie> cookies;
-  Status status = GetVisibleCookies(web_view, &cookies);
+  Status status = GetVisibleCookies(session, web_view, &cookies);
   if (status.IsError())
     return status;
   std::unique_ptr<base::ListValue> cookie_list(new base::ListValue());
@@ -1807,7 +1814,7 @@ Status ExecuteGetNamedCookie(Session* session,
     return Status(kInvalidArgument, "missing 'cookie name'");
 
   std::list<Cookie> cookies;
-  Status status = GetVisibleCookies(web_view, &cookies);
+  Status status = GetVisibleCookies(session, web_view, &cookies);
   if (status.IsError())
     return status;
 
@@ -1842,6 +1849,9 @@ Status ExecuteAddCookie(Session* session,
   std::string domain;
   if (!GetOptionalString(cookie, "domain", &domain))
     return Status(kInvalidArgument, "invalid 'domain'");
+  if (session->w3c_compliant)
+    if (!domain.empty() && domain[0] != '.')
+      domain.insert(0, 1, '.');
   std::string path("/");
   if (!GetOptionalString(cookie, "path", &path))
     return Status(kInvalidArgument, "invalid 'path'");
@@ -1891,7 +1901,7 @@ Status ExecuteDeleteCookie(Session* session,
     return status;
 
   std::list<Cookie> cookies;
-  status = GetVisibleCookies(web_view, &cookies);
+  status = GetVisibleCookies(session, web_view, &cookies);
   if (status.IsError())
     return status;
 
@@ -1912,7 +1922,7 @@ Status ExecuteDeleteAllCookies(Session* session,
                                std::unique_ptr<base::Value>* value,
                                Timeout* timeout) {
   std::list<Cookie> cookies;
-  Status status = GetVisibleCookies(web_view, &cookies);
+  Status status = GetVisibleCookies(session, web_view, &cookies);
   if (status.IsError())
     return status;
 
