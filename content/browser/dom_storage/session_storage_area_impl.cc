@@ -133,7 +133,9 @@ void SessionStorageAreaImpl::OnConnectionError() {
 void SessionStorageAreaImpl::CreateNewMap(
     NewMapType map_type,
     const base::Optional<std::string>& delete_all_source) {
-  shared_data_map_->RemoveBindingReference();
+  bool bound = IsBound();
+  if (bound)
+    shared_data_map_->RemoveBindingReference();
   switch (map_type) {
     case NewMapType::FORKED:
       shared_data_map_ = SessionStorageDataMap::CreateClone(
@@ -152,7 +154,8 @@ void SessionStorageAreaImpl::CreateNewMap(
       break;
     }
   }
-  shared_data_map_->AddBindingReference();
+  if (bound)
+    shared_data_map_->AddBindingReference();
 }
 
 }  // namespace content

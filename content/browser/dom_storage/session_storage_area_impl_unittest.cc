@@ -413,4 +413,53 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllWithoutBinding) {
   ss_leveldb_impl1 = nullptr;
 }
 
+TEST_F(SessionStorageAreaImplTest, DeleteAllWithoutBindingOnShared) {
+  EXPECT_CALL(listener_,
+              OnDataMapCreation(StdStringToUint8Vector("0"), testing::_))
+      .Times(1);
+
+  auto ss_leveldb_impl1 = std::make_unique<SessionStorageAreaImpl>(
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
+      SessionStorageDataMap::CreateFromDisk(
+          &listener_,
+          metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_)
+              ->second[test_origin1_],
+          leveldb_database_.get()),
+      GetRegisterNewAreaMapCallback());
+
+  // Perform a shallow clone.
+  std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+  metadata_.RegisterShallowClonedNamespace(
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_),
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_),
+      &save_operations);
+  leveldb_database_->Write(std::move(save_operations), base::DoNothing());
+  auto ss_leveldb_impl2 = ss_leveldb_impl1->Clone(
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_));
+
+  // Same maps are used.
+  EXPECT_EQ(ss_leveldb_impl1->data_map(), ss_leveldb_impl2->data_map());
+
+  // The |DeleteAll| call will fork the maps, and the observer should see a
+  // DeleteAll.
+  EXPECT_CALL(listener_,
+              OnDataMapCreation(StdStringToUint8Vector("1"), testing::_))
+      .Times(1);
+  // There should be no commits, as we don't actually have to change any data.
+  // |ss_leveldb_impl1| should just switch to a new, empty map.
+  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(0);
+  EXPECT_TRUE(test::DeleteAllSync(ss_leveldb_impl1.get(), "source"));
+
+  // The maps were forked on the above call.
+  EXPECT_NE(ss_leveldb_impl1->data_map(), ss_leveldb_impl2->data_map());
+
+  EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("0")))
+      .Times(1);
+  EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("1")))
+      .Times(1);
+
+  ss_leveldb_impl1 = nullptr;
+  ss_leveldb_impl2 = nullptr;
+}
+
 }  // namespace content
