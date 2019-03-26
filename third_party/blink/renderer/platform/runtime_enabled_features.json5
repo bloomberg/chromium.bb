@@ -607,6 +607,9 @@
       status: "stable",
     },
     {
+      name: "HeapConcurrentMarking",
+    },
+    {
       name: "HeapIncrementalMarking",
       status: "stable",
     },
