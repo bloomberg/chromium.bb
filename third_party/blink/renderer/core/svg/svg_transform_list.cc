@@ -86,7 +86,8 @@ CSSValueID MapTransformFunction(const SVGTransform& transform) {
 
 CSSValue* CreateTransformCSSValue(const SVGTransform& transform) {
   CSSValueID function_id = MapTransformFunction(transform);
-  auto* transform_value = MakeGarbageCollected<CSSFunctionValue>(function_id);
+  CSSFunctionValue* transform_value =
+      MakeGarbageCollected<CSSFunctionValue>(function_id);
   switch (function_id) {
     case CSSValueRotate: {
       transform_value->Append(*CSSPrimitiveValue::Create(

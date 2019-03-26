@@ -83,7 +83,8 @@ const CSSFunctionValue* CSSSkew::ToCSSValue() const {
   if (!ax || !ay)
     return nullptr;
 
-  auto* result = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSkew);
+  CSSFunctionValue* result =
+      MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSkew);
   result->Append(*ax);
   if (!ay_->IsUnitValue() || To<CSSUnitValue>(ay_.Get())->value() != 0)
     result->Append(*ay);

@@ -34,16 +34,6 @@ class CSSPrimitiveValue;
 // Used for text-shadow and box-shadow
 class CORE_EXPORT CSSShadowValue : public CSSValue {
  public:
-  static CSSShadowValue* Create(CSSPrimitiveValue* x,
-                                CSSPrimitiveValue* y,
-                                CSSPrimitiveValue* blur,
-                                CSSPrimitiveValue* spread,
-                                CSSIdentifierValue* style,
-                                CSSValue* color) {
-    return MakeGarbageCollected<CSSShadowValue>(x, y, blur, spread, style,
-                                                color);
-  }
-
   CSSShadowValue(CSSPrimitiveValue* x,
                  CSSPrimitiveValue* y,
                  CSSPrimitiveValue* blur,

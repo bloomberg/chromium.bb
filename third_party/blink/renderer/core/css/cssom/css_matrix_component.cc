@@ -51,7 +51,7 @@ CSSMatrixComponent* CSSMatrixComponent::FromCSSValue(
 }
 
 const CSSFunctionValue* CSSMatrixComponent::ToCSSValue() const {
-  auto* result = MakeGarbageCollected<CSSFunctionValue>(
+  CSSFunctionValue* result = MakeGarbageCollected<CSSFunctionValue>(
       is2D() ? CSSValueID::kMatrix : CSSValueID::kMatrix3d);
 
   if (is2D()) {

@@ -55,8 +55,8 @@ const CSSValue* Clip::ParseSingleValue(CSSParserTokenRange& range,
   CSSValue* left = ConsumeClipComponent(args, context.Mode());
   if (!left || !args.AtEnd())
     return nullptr;
-  return CSSQuadValue::Create(top, right, bottom, left,
-                              CSSQuadValue::kSerializeAsRect);
+  return MakeGarbageCollected<CSSQuadValue>(top, right, bottom, left,
+                                            CSSQuadValue::kSerializeAsRect);
 }
 
 const CSSValue* Clip::CSSValueFromComputedStyleInternal(
@@ -75,8 +75,8 @@ const CSSValue* Clip::CSSValueFromComputedStyleInternal(
       style.Clip().Bottom(), style);
   CSSValue* left = ComputedStyleUtils::ZoomAdjustedPixelValueOrAuto(
       style.Clip().Left(), style);
-  return CSSQuadValue::Create(top, right, bottom, left,
-                              CSSQuadValue::kSerializeAsRect);
+  return MakeGarbageCollected<CSSQuadValue>(top, right, bottom, left,
+                                            CSSQuadValue::kSerializeAsRect);
 }
 
 }  // namespace css_longhand

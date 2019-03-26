@@ -33,7 +33,7 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
     case TransformOperation::kScale:
     case TransformOperation::kScale3D: {
       const auto& scale = ToScaleTransformOperation(operation);
-      auto* result = MakeGarbageCollected<CSSFunctionValue>(
+      CSSFunctionValue* result = MakeGarbageCollected<CSSFunctionValue>(
           operation.Is3DOperation() ? CSSValueID::kScale3d
                                     : CSSValueID::kScale);
       result->Append(*CSSPrimitiveValue::Create(
@@ -52,7 +52,7 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
     case TransformOperation::kTranslate:
     case TransformOperation::kTranslate3D: {
       const auto& translate = ToTranslateTransformOperation(operation);
-      auto* result = MakeGarbageCollected<CSSFunctionValue>(
+      CSSFunctionValue* result = MakeGarbageCollected<CSSFunctionValue>(
           operation.Is3DOperation() ? CSSValueID::kTranslate3d
                                     : CSSValueID::kTranslate);
       result->Append(*CSSPrimitiveValue::Create(translate.X(), zoom));
@@ -67,7 +67,7 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
     case TransformOperation::kRotateY:
     case TransformOperation::kRotate3D: {
       const auto& rotate = ToRotateTransformOperation(operation);
-      auto* result =
+      CSSFunctionValue* result =
           MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kRotate3d);
       result->Append(*CSSPrimitiveValue::Create(
           rotate.X(), CSSPrimitiveValue::UnitType::kNumber));
@@ -132,7 +132,7 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
     }
     case TransformOperation::kMatrix3D: {
       const auto& matrix = ToMatrix3DTransformOperation(operation).Matrix();
-      auto* result =
+      CSSFunctionValue* result =
           MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMatrix3d);
       double values[16] = {
           matrix.M11(), matrix.M12(), matrix.M13(), matrix.M14(),

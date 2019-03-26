@@ -30,7 +30,8 @@ CSSValue* ConsumeAttr(CSSParserTokenRange args,
   if (context.IsHTMLDocument())
     attr_name = attr_name.LowerASCII();
 
-  auto* attr_value = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kAttr);
+  CSSFunctionValue* attr_value =
+      MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kAttr);
   attr_value->Append(*MakeGarbageCollected<CSSCustomIdentValue>(attr_name));
   return attr_value;
 }
@@ -45,12 +46,12 @@ CSSValue* ConsumeCounterContent(CSSParserTokenRange args,
 
   CSSStringValue* separator = nullptr;
   if (!counters) {
-    separator = CSSStringValue::Create(String());
+    separator = MakeGarbageCollected<CSSStringValue>(String());
   } else {
     if (!css_property_parser_helpers::ConsumeCommaIncludingWhitespace(args) ||
         args.Peek().GetType() != kStringToken)
       return nullptr;
-    separator = CSSStringValue::Create(
+    separator = MakeGarbageCollected<CSSStringValue>(
         args.ConsumeIncludingWhitespace().Value().ToString());
   }
 

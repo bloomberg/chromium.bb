@@ -1652,7 +1652,7 @@ static const CSSValue& ComputeRegisteredPropertyValue(
     const CSSValue& value) {
   // TODO(timloh): Images values can also contain lengths.
   if (const auto* function_value = DynamicTo<CSSFunctionValue>(value)) {
-    auto* new_function =
+    CSSFunctionValue* new_function =
         MakeGarbageCollected<CSSFunctionValue>(function_value->FunctionType());
     for (const CSSValue* inner_value : To<CSSValueList>(value)) {
       new_function->Append(ComputeRegisteredPropertyValue(

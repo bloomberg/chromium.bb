@@ -28,7 +28,7 @@ const CSSValue* WebkitHighlight::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (style.Highlight() == g_null_atom)
     return CSSIdentifierValue::Create(CSSValueID::kNone);
-  return CSSStringValue::Create(style.Highlight());
+  return MakeGarbageCollected<CSSStringValue>(style.Highlight());
 }
 
 }  // namespace css_longhand

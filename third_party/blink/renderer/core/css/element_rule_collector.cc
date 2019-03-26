@@ -90,7 +90,7 @@ inline StyleRuleList* ElementRuleCollector::EnsureStyleRuleList() {
 
 inline StaticCSSRuleList* ElementRuleCollector::EnsureRuleList() {
   if (!css_rule_list_)
-    css_rule_list_ = StaticCSSRuleList::Create();
+    css_rule_list_ = MakeGarbageCollected<StaticCSSRuleList>();
   return css_rule_list_.Get();
 }
 

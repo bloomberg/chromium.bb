@@ -178,7 +178,8 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSStyleSheet* parent_sheet,
   StyleRuleBase* self = const_cast<StyleRuleBase*>(this);
   switch (GetType()) {
     case kStyle:
-      rule = CSSStyleRule::Create(To<StyleRule>(self), parent_sheet);
+      rule =
+          MakeGarbageCollected<CSSStyleRule>(To<StyleRule>(self), parent_sheet);
       break;
     case kPage:
       rule = MakeGarbageCollected<CSSPageRule>(To<StyleRulePage>(self),

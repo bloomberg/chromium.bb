@@ -58,7 +58,8 @@ const CSSValue* WebkitTextEmphasisStyle::CSSValueFromComputedStyleInternal(
     case TextEmphasisMark::kNone:
       return CSSIdentifierValue::Create(CSSValueID::kNone);
     case TextEmphasisMark::kCustom:
-      return CSSStringValue::Create(style.TextEmphasisCustomMark());
+      return MakeGarbageCollected<CSSStringValue>(
+          style.TextEmphasisCustomMark());
     case TextEmphasisMark::kAuto:
       NOTREACHED();
       FALLTHROUGH;

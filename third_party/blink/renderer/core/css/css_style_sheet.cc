@@ -54,10 +54,6 @@ using namespace html_names;
 
 class StyleSheetCSSRuleList final : public CSSRuleList {
  public:
-  static StyleSheetCSSRuleList* Create(CSSStyleSheet* sheet) {
-    return MakeGarbageCollected<StyleSheetCSSRuleList>(sheet);
-  }
-
   StyleSheetCSSRuleList(CSSStyleSheet* sheet) : style_sheet_(sheet) {}
 
   void Trace(blink::Visitor* visitor) override {
@@ -507,8 +503,10 @@ CSSRuleList* CSSStyleSheet::cssRules(ExceptionState& exception_state) {
     exception_state.ThrowSecurityError("Cannot access rules");
     return nullptr;
   }
-  if (!rule_list_cssom_wrapper_)
-    rule_list_cssom_wrapper_ = StyleSheetCSSRuleList::Create(this);
+  if (!rule_list_cssom_wrapper_) {
+    rule_list_cssom_wrapper_ =
+        MakeGarbageCollected<StyleSheetCSSRuleList>(this);
+  }
   return rule_list_cssom_wrapper_.Get();
 }
 

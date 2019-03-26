@@ -40,7 +40,8 @@ CSSValue* ConsumeReflect(CSSParserTokenRange& range,
     if (!mask)
       return nullptr;
   }
-  return cssvalue::CSSReflectValue::Create(direction, offset, mask);
+  return MakeGarbageCollected<cssvalue::CSSReflectValue>(direction, offset,
+                                                         mask);
 }
 
 }  // namespace
