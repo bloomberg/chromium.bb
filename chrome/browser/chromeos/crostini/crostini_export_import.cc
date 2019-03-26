@@ -109,10 +109,11 @@ void CrostiniExportImport::OpenFileDialog(ExportImportType type,
       title = IDS_SETTINGS_CROSTINI_EXPORT;
       base::Time::Exploded exploded;
       base::Time::Now().LocalExplode(&exploded);
-      default_path = pref_service->GetFilePath(prefs::kDownloadDefaultDirectory)
-                         .Append(base::StringPrintf(
-                             "crostini-%04d-%02d-%02d.tar.gz", exploded.year,
-                             exploded.month, exploded.day_of_month));
+      default_path =
+          pref_service->GetFilePath(prefs::kDownloadDefaultDirectory)
+              .Append(base::StringPrintf("chromeos-linux-%04d-%02d-%02d.tar.gz",
+                                         exploded.year, exploded.month,
+                                         exploded.day_of_month));
       break;
     case ExportImportType::IMPORT:
       file_selector_mode = ui::SelectFileDialog::SELECT_OPEN_FILE,
