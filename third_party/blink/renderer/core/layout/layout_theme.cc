@@ -647,25 +647,25 @@ static FontDescription& GetCachedFontDescription(CSSValueID system_font_id) {
   DEFINE_STATIC_LOCAL(FontDescription, webkit_control, ());
   DEFINE_STATIC_LOCAL(FontDescription, default_description, ());
   switch (system_font_id) {
-    case CSSValueCaption:
+    case CSSValueID::kCaption:
       return caption;
-    case CSSValueIcon:
+    case CSSValueID::kIcon:
       return icon;
-    case CSSValueMenu:
+    case CSSValueID::kMenu:
       return menu;
-    case CSSValueMessageBox:
+    case CSSValueID::kMessageBox:
       return message_box;
-    case CSSValueSmallCaption:
+    case CSSValueID::kSmallCaption:
       return small_caption;
-    case CSSValueStatusBar:
+    case CSSValueID::kStatusBar:
       return status_bar;
-    case CSSValueWebkitMiniControl:
+    case CSSValueID::kWebkitMiniControl:
       return webkit_mini_control;
-    case CSSValueWebkitSmallControl:
+    case CSSValueID::kWebkitSmallControl:
       return webkit_small_control;
-    case CSSValueWebkitControl:
+    case CSSValueID::kWebkitControl:
       return webkit_control;
-    case CSSValueNone:
+    case CSSValueID::kNone:
       return default_description;
     default:
       NOTREACHED();
@@ -694,71 +694,71 @@ void LayoutTheme::SystemFont(CSSValueID system_font_id,
 
 Color LayoutTheme::SystemColor(CSSValueID css_value_id) const {
   switch (css_value_id) {
-    case CSSValueActiveborder:
+    case CSSValueID::kActiveborder:
       return 0xFFFFFFFF;
-    case CSSValueActivecaption:
+    case CSSValueID::kActivecaption:
       return 0xFFCCCCCC;
-    case CSSValueAppworkspace:
+    case CSSValueID::kAppworkspace:
       return 0xFFFFFFFF;
-    case CSSValueBackground:
+    case CSSValueID::kBackground:
       return 0xFF6363CE;
-    case CSSValueButtonface:
+    case CSSValueID::kButtonface:
       return 0xFFC0C0C0;
-    case CSSValueButtonhighlight:
+    case CSSValueID::kButtonhighlight:
       return 0xFFDDDDDD;
-    case CSSValueButtonshadow:
+    case CSSValueID::kButtonshadow:
       return 0xFF888888;
-    case CSSValueButtontext:
+    case CSSValueID::kButtontext:
       return 0xFF000000;
-    case CSSValueCaptiontext:
+    case CSSValueID::kCaptiontext:
       return 0xFF000000;
-    case CSSValueGraytext:
+    case CSSValueID::kGraytext:
       return 0xFF808080;
-    case CSSValueHighlight:
+    case CSSValueID::kHighlight:
       return 0xFFB5D5FF;
-    case CSSValueHighlighttext:
+    case CSSValueID::kHighlighttext:
       return 0xFF000000;
-    case CSSValueInactiveborder:
+    case CSSValueID::kInactiveborder:
       return 0xFFFFFFFF;
-    case CSSValueInactivecaption:
+    case CSSValueID::kInactivecaption:
       return 0xFFFFFFFF;
-    case CSSValueInactivecaptiontext:
+    case CSSValueID::kInactivecaptiontext:
       return 0xFF7F7F7F;
-    case CSSValueInfobackground:
+    case CSSValueID::kInfobackground:
       return 0xFFFBFCC5;
-    case CSSValueInfotext:
+    case CSSValueID::kInfotext:
       return 0xFF000000;
-    case CSSValueMenu:
+    case CSSValueID::kMenu:
       return 0xFFC0C0C0;
-    case CSSValueMenutext:
+    case CSSValueID::kMenutext:
       return 0xFF000000;
-    case CSSValueScrollbar:
+    case CSSValueID::kScrollbar:
       return 0xFFFFFFFF;
-    case CSSValueText:
+    case CSSValueID::kText:
       return 0xFF000000;
-    case CSSValueThreeddarkshadow:
+    case CSSValueID::kThreeddarkshadow:
       return 0xFF666666;
-    case CSSValueThreedface:
+    case CSSValueID::kThreedface:
       return 0xFFC0C0C0;
-    case CSSValueThreedhighlight:
+    case CSSValueID::kThreedhighlight:
       return 0xFFDDDDDD;
-    case CSSValueThreedlightshadow:
+    case CSSValueID::kThreedlightshadow:
       return 0xFFC0C0C0;
-    case CSSValueThreedshadow:
+    case CSSValueID::kThreedshadow:
       return 0xFF888888;
-    case CSSValueWindow:
+    case CSSValueID::kWindow:
       return 0xFFFFFFFF;
-    case CSSValueWindowframe:
+    case CSSValueID::kWindowframe:
       return 0xFFCCCCCC;
-    case CSSValueWindowtext:
+    case CSSValueID::kWindowtext:
       return 0xFF000000;
-    case CSSValueInternalActiveListBoxSelection:
+    case CSSValueID::kInternalActiveListBoxSelection:
       return ActiveListBoxSelectionBackgroundColor();
-    case CSSValueInternalActiveListBoxSelectionText:
+    case CSSValueID::kInternalActiveListBoxSelectionText:
       return ActiveListBoxSelectionForegroundColor();
-    case CSSValueInternalInactiveListBoxSelection:
+    case CSSValueID::kInternalInactiveListBoxSelection:
       return InactiveListBoxSelectionBackgroundColor();
-    case CSSValueInternalInactiveListBoxSelectionText:
+    case CSSValueID::kInternalInactiveListBoxSelectionText:
       return InactiveListBoxSelectionForegroundColor();
     default:
       break;

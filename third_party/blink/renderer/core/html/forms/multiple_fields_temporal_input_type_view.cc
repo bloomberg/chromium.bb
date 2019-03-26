@@ -601,7 +601,7 @@ void MultipleFieldsTemporalInputTypeView::HidePickerIndicator() {
   picker_indicator_is_visible_ = false;
   DCHECK(GetPickerIndicatorElement());
   GetPickerIndicatorElement()->SetInlineStyleProperty(CSSPropertyID::kDisplay,
-                                                      CSSValueNone);
+                                                      CSSValueID::kNone);
 }
 
 void MultipleFieldsTemporalInputTypeView::ShowPickerIndicator() {
@@ -638,7 +638,7 @@ void MultipleFieldsTemporalInputTypeView::UpdateClearButtonVisibility() {
     clear_button->SetInlineStyleProperty(CSSPropertyID::kOpacity, 0.0,
                                          CSSPrimitiveValue::UnitType::kNumber);
     clear_button->SetInlineStyleProperty(CSSPropertyID::kPointerEvents,
-                                         CSSValueNone);
+                                         CSSValueID::kNone);
   } else {
     clear_button->RemoveInlineStyleProperty(CSSPropertyID::kOpacity);
     clear_button->RemoveInlineStyleProperty(CSSPropertyID::kPointerEvents);

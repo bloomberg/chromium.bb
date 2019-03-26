@@ -142,26 +142,27 @@ bool HTMLFontElement::CssValueFromFontSizeNumber(const String& s,
 
   switch (num) {
     case 1:
-      // FIXME: The spec says that we're supposed to use CSSValueXxSmall here.
-      size = CSSValueXSmall;
+      // FIXME: The spec says that we're supposed to use CSSValueID::kXxSmall
+      // here.
+      size = CSSValueID::kXSmall;
       break;
     case 2:
-      size = CSSValueSmall;
+      size = CSSValueID::kSmall;
       break;
     case 3:
-      size = CSSValueMedium;
+      size = CSSValueID::kMedium;
       break;
     case 4:
-      size = CSSValueLarge;
+      size = CSSValueID::kLarge;
       break;
     case 5:
-      size = CSSValueXLarge;
+      size = CSSValueID::kXLarge;
       break;
     case 6:
-      size = CSSValueXxLarge;
+      size = CSSValueID::kXxLarge;
       break;
     case 7:
-      size = CSSValueWebkitXxxLarge;
+      size = CSSValueID::kWebkitXxxLarge;
       break;
     default:
       NOTREACHED();
@@ -180,7 +181,7 @@ void HTMLFontElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kSizeAttr) {
-    CSSValueID size = CSSValueInvalid;
+    CSSValueID size = CSSValueID::kInvalid;
     if (CssValueFromFontSizeNumber(value, size)) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kFontSize,
                                               size);

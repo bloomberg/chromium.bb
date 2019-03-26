@@ -227,7 +227,7 @@ bool HTMLElementEquivalent::ValueIsPresentInStyle(
   // TODO: Does this work on style or computed style? The code here, but we
   // might need to do something here to match CSSPrimitiveValues. if
   // (property_id_ == CSSPropertyID::kFontWeight &&
-  //     identifier_value_->GetValueID() == CSSValueBold) {
+  //     identifier_value_->GetValueID() == CSSValueID::kBold) {
   //   auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
   //   if (primitive_value &&
   //       primitive_value->GetFloatValue() >= BoldThreshold()) {
@@ -486,21 +486,23 @@ static inline Color BackgroundColorInEffect(Node* node) {
 static CSSValueID TextAlignResolvingStartAndEnd(CSSValueID text_align,
                                                 CSSValueID direction) {
   switch (text_align) {
-    case CSSValueCenter:
-    case CSSValueWebkitCenter:
-      return CSSValueCenter;
-    case CSSValueJustify:
-      return CSSValueJustify;
-    case CSSValueLeft:
-    case CSSValueWebkitLeft:
-      return CSSValueLeft;
-    case CSSValueRight:
-    case CSSValueWebkitRight:
-      return CSSValueRight;
-    case CSSValueStart:
-      return direction != CSSValueRtl ? CSSValueLeft : CSSValueRight;
-    case CSSValueEnd:
-      return direction == CSSValueRtl ? CSSValueRight : CSSValueLeft;
+    case CSSValueID::kCenter:
+    case CSSValueID::kWebkitCenter:
+      return CSSValueID::kCenter;
+    case CSSValueID::kJustify:
+      return CSSValueID::kJustify;
+    case CSSValueID::kLeft:
+    case CSSValueID::kWebkitLeft:
+      return CSSValueID::kLeft;
+    case CSSValueID::kRight:
+    case CSSValueID::kWebkitRight:
+      return CSSValueID::kRight;
+    case CSSValueID::kStart:
+      return direction != CSSValueID::kRtl ? CSSValueID::kLeft
+                                           : CSSValueID::kRight;
+    case CSSValueID::kEnd:
+      return direction == CSSValueID::kRtl ? CSSValueID::kRight
+                                           : CSSValueID::kLeft;
     default:
       return CSSValueID::kInvalid;
   }
@@ -659,14 +661,15 @@ bool EditingStyle::GetTextDirection(WritingDirection& writing_direction) const {
     if (!direction_identifier_value)
       return false;
 
-    writing_direction = direction_identifier_value->GetValueID() == CSSValueLtr
-                            ? WritingDirection::kLeftToRight
-                            : WritingDirection::kRightToLeft;
+    writing_direction =
+        direction_identifier_value->GetValueID() == CSSValueID::kLtr
+            ? WritingDirection::kLeftToRight
+            : WritingDirection::kRightToLeft;
 
     return true;
   }
 
-  if (unicode_bidi_value == CSSValueNormal) {
+  if (unicode_bidi_value == CSSValueID::kNormal) {
     writing_direction = WritingDirection::kNatural;
     return true;
   }
@@ -742,7 +745,7 @@ EditingStyle* EditingStyle::ExtractAndRemoveTextDirection(
   text_direction->mutable_style_ =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   text_direction->mutable_style_->SetProperty(
-      CSSPropertyID::kUnicodeBidi, CSSValueIsolate,
+      CSSPropertyID::kUnicodeBidi, CSSValueID::kIsolate,
       mutable_style_->PropertyIsImportant(CSSPropertyID::kUnicodeBidi));
 
   text_direction->mutable_style_->SetProperty(
@@ -884,7 +887,7 @@ EditingTriState EditingStyle::TriStateOfStyle(
         // http://crbug.com/582225.
         if (is_vertical_align_ &&
             GetIdentifierValue(node_style, CSSPropertyID::kVerticalAlign) ==
-                CSSValueBaseline) {
+                CSSValueID::kBaseline) {
           const auto* vertical_align =
               To<CSSIdentifierValue>(mutable_style_->GetPropertyCSSValue(
                   CSSPropertyID::kVerticalAlign));
@@ -996,24 +999,25 @@ HtmlElementEquivalents() {
       (MakeGarbageCollected<HeapVector<Member<HTMLElementEquivalent>>>()));
   if (!html_element_equivalents->size()) {
     html_element_equivalents->push_back(HTMLElementEquivalent::Create(
-        CSSPropertyID::kFontWeight, CSSValueBold, html_names::kBTag));
+        CSSPropertyID::kFontWeight, CSSValueID::kBold, html_names::kBTag));
     html_element_equivalents->push_back(HTMLElementEquivalent::Create(
-        CSSPropertyID::kFontWeight, CSSValueBold, html_names::kStrongTag));
+        CSSPropertyID::kFontWeight, CSSValueID::kBold, html_names::kStrongTag));
     html_element_equivalents->push_back(HTMLElementEquivalent::Create(
-        CSSPropertyID::kVerticalAlign, CSSValueSub, html_names::kSubTag));
+        CSSPropertyID::kVerticalAlign, CSSValueID::kSub, html_names::kSubTag));
+    html_element_equivalents->push_back(
+        HTMLElementEquivalent::Create(CSSPropertyID::kVerticalAlign,
+                                      CSSValueID::kSuper, html_names::kSupTag));
     html_element_equivalents->push_back(HTMLElementEquivalent::Create(
-        CSSPropertyID::kVerticalAlign, CSSValueSuper, html_names::kSupTag));
+        CSSPropertyID::kFontStyle, CSSValueID::kItalic, html_names::kITag));
     html_element_equivalents->push_back(HTMLElementEquivalent::Create(
-        CSSPropertyID::kFontStyle, CSSValueItalic, html_names::kITag));
-    html_element_equivalents->push_back(HTMLElementEquivalent::Create(
-        CSSPropertyID::kFontStyle, CSSValueItalic, html_names::kEmTag));
+        CSSPropertyID::kFontStyle, CSSValueID::kItalic, html_names::kEmTag));
 
     html_element_equivalents->push_back(HTMLTextDecorationEquivalent::Create(
-        CSSValueUnderline, html_names::kUTag));
+        CSSValueID::kUnderline, html_names::kUTag));
     html_element_equivalents->push_back(HTMLTextDecorationEquivalent::Create(
-        CSSValueLineThrough, html_names::kSTag));
+        CSSValueID::kLineThrough, html_names::kSTag));
     html_element_equivalents->push_back(HTMLTextDecorationEquivalent::Create(
-        CSSValueLineThrough, html_names::kStrikeTag));
+        CSSValueID::kLineThrough, html_names::kStrikeTag));
   }
 
   return *html_element_equivalents;
@@ -1344,9 +1348,9 @@ static const CSSValueList& MergeTextDecorationValues(
     const CSSValueList& merged_value,
     const CSSValueList& value_to_merge) {
   DEFINE_STATIC_LOCAL(Persistent<CSSIdentifierValue>, underline,
-                      (CSSIdentifierValue::Create(CSSValueUnderline)));
+                      (CSSIdentifierValue::Create(CSSValueID::kUnderline)));
   DEFINE_STATIC_LOCAL(Persistent<CSSIdentifierValue>, line_through,
-                      (CSSIdentifierValue::Create(CSSValueLineThrough)));
+                      (CSSIdentifierValue::Create(CSSValueID::kLineThrough)));
   CSSValueList& result = *merged_value.Copy();
   if (value_to_merge.HasValue(*underline) && !merged_value.HasValue(*underline))
     result.Append(*underline);
@@ -1504,7 +1508,7 @@ void EditingStyle::RemoveStyleFromRulesAndContext(Element* element,
     if (!computed_style->mutable_style_->GetPropertyCSSValue(
             CSSPropertyID::kBackgroundColor)) {
       computed_style->mutable_style_->SetProperty(
-          CSSPropertyID::kBackgroundColor, CSSValueTransparent);
+          CSSPropertyID::kBackgroundColor, CSSValueID::kTransparent);
     }
 
     RemovePropertiesInStyle(computed_style->mutable_style_.Get(),
@@ -1522,11 +1526,11 @@ void EditingStyle::RemoveStyleFromRulesAndContext(Element* element,
     if (!style_from_matched_rules->GetPropertyCSSValue(
             CSSPropertyID::kDisplay) &&
         GetIdentifierValue(mutable_style_.Get(), CSSPropertyID::kDisplay) ==
-            CSSValueInline)
+            CSSValueID::kInline)
       mutable_style_->RemoveProperty(CSSPropertyID::kDisplay);
     if (!style_from_matched_rules->GetPropertyCSSValue(CSSPropertyID::kFloat) &&
         GetIdentifierValue(mutable_style_.Get(), CSSPropertyID::kFloat) ==
-            CSSValueNone)
+            CSSValueID::kNone)
       mutable_style_->RemoveProperty(CSSPropertyID::kFloat);
   }
 }
@@ -1545,7 +1549,7 @@ void EditingStyle::ForceInline() {
   if (!mutable_style_)
     mutable_style_ = MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   const bool kPropertyIsImportant = true;
-  mutable_style_->SetProperty(CSSPropertyID::kDisplay, CSSValueInline,
+  mutable_style_->SetProperty(CSSPropertyID::kDisplay, CSSValueID::kInline,
                               kPropertyIsImportant);
 }
 
@@ -1667,14 +1671,15 @@ void StyleChange::ExtractTextStyles(Document* document,
   float weight = 0;
   bool is_number =
       GetPrimitiveValueNumber(style, CSSPropertyID::kFontWeight, weight);
-  if (GetIdentifierValue(style, CSSPropertyID::kFontWeight) == CSSValueBold ||
+  if (GetIdentifierValue(style, CSSPropertyID::kFontWeight) ==
+          CSSValueID::kBold ||
       (is_number && weight >= BoldThreshold())) {
     style->RemoveProperty(CSSPropertyID::kFontWeight);
     apply_bold_ = true;
   }
 
   CSSValueID font_style = GetIdentifierValue(style, CSSPropertyID::kFontStyle);
-  if (font_style == CSSValueItalic || font_style == CSSValueOblique) {
+  if (font_style == CSSValueID::kItalic || font_style == CSSValueID::kOblique) {
     style->RemoveProperty(CSSPropertyID::kFontStyle);
     apply_italic_ = true;
   }
@@ -1688,9 +1693,9 @@ void StyleChange::ExtractTextStyles(Document* document,
   if (const auto* text_decoration_value_list =
           DynamicTo<CSSValueList>(text_decoration)) {
     DEFINE_STATIC_LOCAL(Persistent<CSSIdentifierValue>, underline,
-                        (CSSIdentifierValue::Create(CSSValueUnderline)));
+                        (CSSIdentifierValue::Create(CSSValueID::kUnderline)));
     DEFINE_STATIC_LOCAL(Persistent<CSSIdentifierValue>, line_through,
-                        (CSSIdentifierValue::Create(CSSValueLineThrough)));
+                        (CSSIdentifierValue::Create(CSSValueID::kLineThrough)));
     CSSValueList* new_text_decoration = text_decoration_value_list->Copy();
     if (new_text_decoration->RemoveAll(*underline))
       apply_underline_ = true;
@@ -1706,11 +1711,11 @@ void StyleChange::ExtractTextStyles(Document* document,
   CSSValueID vertical_align =
       GetIdentifierValue(style, CSSPropertyID::kVerticalAlign);
   switch (vertical_align) {
-    case CSSValueSub:
+    case CSSValueID::kSub:
       style->RemoveProperty(CSSPropertyID::kVerticalAlign);
       apply_subscript_ = true;
       break;
-    case CSSValueSuper:
+    case CSSValueID::kSuper:
       style->RemoveProperty(CSSPropertyID::kVerticalAlign);
       apply_superscript_ = true;
       break;
@@ -1772,9 +1777,9 @@ static bool FontWeightIsBold(const CSSValue* font_weight) {
     // two states for editing purposes.
 
     switch (font_weight_identifier_value->GetValueID()) {
-      case CSSValueNormal:
+      case CSSValueID::kNormal:
         return false;
-      case CSSValueBold:
+      case CSSValueID::kBold:
         return true;
       default:
         break;
@@ -1793,7 +1798,7 @@ static bool FontWeightNeedsResolving(const CSSValue* font_weight) {
   if (!font_weight_identifier_value)
     return true;
   const CSSValueID value = font_weight_identifier_value->GetValueID();
-  return value == CSSValueLighter || value == CSSValueBolder;
+  return value == CSSValueID::kLighter || value == CSSValueID::kBolder;
 }
 
 MutableCSSPropertyValueSet* GetPropertiesNotIn(
@@ -1846,22 +1851,22 @@ MutableCSSPropertyValueSet* GetPropertiesNotIn(
 CSSValueID GetIdentifierValue(CSSPropertyValueSet* style,
                               CSSPropertyID property_id) {
   if (!style)
-    return CSSValueInvalid;
+    return CSSValueID::kInvalid;
   const CSSValue* value = style->GetPropertyCSSValue(property_id);
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (!identifier_value)
-    return CSSValueInvalid;
+    return CSSValueID::kInvalid;
   return identifier_value->GetValueID();
 }
 
 CSSValueID GetIdentifierValue(CSSStyleDeclaration* style,
                               CSSPropertyID property_id) {
   if (!style)
-    return CSSValueInvalid;
+    return CSSValueID::kInvalid;
   const CSSValue* value = style->GetPropertyCSSValueInternal(property_id);
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (!identifier_value)
-    return CSSValueInvalid;
+    return CSSValueID::kInvalid;
   return identifier_value->GetValueID();
 }
 
@@ -1893,7 +1898,7 @@ int LegacyFontSizeFromCSSValue(Document* document,
   }
 
   if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    if (CSSValueXSmall <= identifier_value->GetValueID() &&
+    if (CSSValueID::kXSmall <= identifier_value->GetValueID() &&
         identifier_value->GetValueID() <= CSSValueID::kWebkitXxxLarge) {
       return static_cast<int>(identifier_value->GetValueID()) -
              static_cast<int>(CSSValueID::kXSmall) + 1;

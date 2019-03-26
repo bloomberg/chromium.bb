@@ -477,10 +477,11 @@ void TextFieldInputType::UpdatePlaceholderText() {
         HTMLDivElement::Create(GetElement().GetDocument());
     placeholder = new_element;
     placeholder->SetShadowPseudoId(AtomicString("-webkit-input-placeholder"));
-    placeholder->SetInlineStyleProperty(
-        CSSPropertyID::kDisplay,
-        GetElement().IsPlaceholderVisible() ? CSSValueBlock : CSSValueNone,
-        true);
+    placeholder->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                        GetElement().IsPlaceholderVisible()
+                                            ? CSSValueID::kBlock
+                                            : CSSValueID::kNone,
+                                        true);
     placeholder->setAttribute(kIdAttr, shadow_element_names::Placeholder());
     Element* container = ContainerElement();
     Node* previous = container ? container : GetElement().InnerEditorElement();

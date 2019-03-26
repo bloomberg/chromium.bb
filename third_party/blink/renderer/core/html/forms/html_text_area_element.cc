@@ -131,14 +131,14 @@ void HTMLTextAreaElement::CollectStyleForPresentationAttribute(
   if (name == kWrapAttr) {
     if (ShouldWrapText()) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWhiteSpace,
-                                              CSSValuePreWrap);
+                                              CSSValueID::kPreWrap);
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kOverflowWrap, CSSValueBreakWord);
+          style, CSSPropertyID::kOverflowWrap, CSSValueID::kBreakWord);
     } else {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWhiteSpace,
-                                              CSSValuePre);
+                                              CSSValueID::kPre);
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kOverflowWrap, CSSValueNormal);
+          style, CSSPropertyID::kOverflowWrap, CSSValueID::kNormal);
     }
   } else {
     TextControlElement::CollectStyleForPresentationAttribute(name, value,
@@ -590,7 +590,7 @@ void HTMLTextAreaElement::UpdatePlaceholderText() {
     placeholder->setAttribute(kIdAttr, shadow_element_names::Placeholder());
     placeholder->SetInlineStyleProperty(
         CSSPropertyID::kDisplay,
-        IsPlaceholderVisible() ? CSSValueBlock : CSSValueNone, true);
+        IsPlaceholderVisible() ? CSSValueID::kBlock : CSSValueID::kNone, true);
     UserAgentShadowRoot()->InsertBefore(placeholder, InnerEditorElement());
   }
   placeholder->setTextContent(placeholder_text);

@@ -132,9 +132,11 @@ class InternalPopupMenu::ItemIterationContext {
     // <select> background color. On Linux, that makes the <option>
     // background color very dark, so by default, try to use a lighter
     // background color for <option>s.
-    if (LayoutTheme::GetTheme().SystemColor(CSSValueButtonface) ==
-        background_color_)
-      background_color_ = LayoutTheme::GetTheme().SystemColor(CSSValueMenu);
+    if (LayoutTheme::GetTheme().SystemColor(CSSValueID::kButtonface) ==
+        background_color_) {
+      background_color_ =
+          LayoutTheme::GetTheme().SystemColor(CSSValueID::kMenu);
+    }
 #endif
   }
 

@@ -99,7 +99,7 @@ InterpolationValue ShadowInterpolationFunctions::MaybeConvertCSSValue(
 
   ShadowStyle style = kNormal;
   if (shadow->style) {
-    if (shadow->style->GetValueID() == CSSValueInset)
+    if (shadow->style->GetValueID() == CSSValueID::kInset)
       style = kInset;
     else
       return nullptr;

@@ -1046,7 +1046,8 @@ TEST_P(PaintLayerScrollableAreaTest, IgnoreDelayedScrollOnDestroyedLayer) {
     PaintLayerScrollableArea::DelayScrollOffsetClampScope scope;
     PaintLayerScrollableArea::DelayScrollOffsetClampScope::SetNeedsClamp(
         scroller->GetLayoutBox()->GetScrollableArea());
-    scroller->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
+    scroller->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                     CSSValueID::kNone);
     UpdateAllLifecyclePhasesForTest();
   }
 }

@@ -349,9 +349,9 @@ void HTMLTableElement::CollectStyleForPresentationAttribute(
     if (!value.IsEmpty()) {
       if (DeprecatedEqualIgnoringCase(value, "center")) {
         AddPropertyToPresentationAttributeStyle(
-            style, CSSPropertyID::kMarginInlineStart, CSSValueAuto);
+            style, CSSPropertyID::kMarginInlineStart, CSSValueID::kAuto);
         AddPropertyToPresentationAttributeStyle(
-            style, CSSPropertyID::kMarginInlineEnd, CSSValueAuto);
+            style, CSSPropertyID::kMarginInlineEnd, CSSValueID::kAuto);
       } else {
         AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kFloat,
                                                 value);
@@ -362,7 +362,7 @@ void HTMLTableElement::CollectStyleForPresentationAttribute(
     // enabled.
     if (rules_attr_ != kUnsetRules) {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kBorderCollapse, CSSValueCollapse);
+          style, CSSPropertyID::kBorderCollapse, CSSValueID::kCollapse);
     }
   } else if (name == kFrameAttr) {
     bool border_top;
@@ -372,19 +372,19 @@ void HTMLTableElement::CollectStyleForPresentationAttribute(
     if (GetBordersFromFrameAttributeValue(value, border_top, border_right,
                                           border_bottom, border_left)) {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kBorderWidth, CSSValueThin);
+          style, CSSPropertyID::kBorderWidth, CSSValueID::kThin);
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kBorderTopStyle,
-          border_top ? CSSValueSolid : CSSValueHidden);
+          border_top ? CSSValueID::kSolid : CSSValueID::kHidden);
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kBorderBottomStyle,
-          border_bottom ? CSSValueSolid : CSSValueHidden);
+          border_bottom ? CSSValueID::kSolid : CSSValueID::kHidden);
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kBorderLeftStyle,
-          border_left ? CSSValueSolid : CSSValueHidden);
+          border_left ? CSSValueID::kSolid : CSSValueID::kHidden);
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kBorderRightStyle,
-          border_right ? CSSValueSolid : CSSValueHidden);
+          border_right ? CSSValueID::kSolid : CSSValueID::kHidden);
     }
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
@@ -473,7 +473,7 @@ HTMLTableElement::AdditionalPresentationAttributeStyle() {
     // set on the table's cells during border-conflict resolution.
     if (rules_attr_ != kUnsetRules) {
       DEFINE_STATIC_LOCAL(Persistent<CSSPropertyValueSet>, solid_border_style,
-                          (CreateBorderStyle(CSSValueHidden)));
+                          (CreateBorderStyle(CSSValueID::kHidden)));
       return solid_border_style;
     }
     return nullptr;
@@ -481,11 +481,11 @@ HTMLTableElement::AdditionalPresentationAttributeStyle() {
 
   if (border_color_attr_) {
     DEFINE_STATIC_LOCAL(Persistent<CSSPropertyValueSet>, solid_border_style,
-                        (CreateBorderStyle(CSSValueSolid)));
+                        (CreateBorderStyle(CSSValueID::kSolid)));
     return solid_border_style;
   }
   DEFINE_STATIC_LOCAL(Persistent<CSSPropertyValueSet>, outset_border_style,
-                      (CreateBorderStyle(CSSValueOutset)));
+                      (CreateBorderStyle(CSSValueID::kOutset)));
   return outset_border_style;
 }
 
@@ -517,18 +517,18 @@ CSSPropertyValueSet* HTMLTableElement::CreateSharedCellStyle() {
 
   switch (GetCellBorders()) {
     case kSolidBordersColsOnly:
-      style->SetProperty(CSSPropertyID::kBorderLeftWidth, CSSValueThin);
-      style->SetProperty(CSSPropertyID::kBorderRightWidth, CSSValueThin);
-      style->SetProperty(CSSPropertyID::kBorderLeftStyle, CSSValueSolid);
-      style->SetProperty(CSSPropertyID::kBorderRightStyle, CSSValueSolid);
+      style->SetProperty(CSSPropertyID::kBorderLeftWidth, CSSValueID::kThin);
+      style->SetProperty(CSSPropertyID::kBorderRightWidth, CSSValueID::kThin);
+      style->SetProperty(CSSPropertyID::kBorderLeftStyle, CSSValueID::kSolid);
+      style->SetProperty(CSSPropertyID::kBorderRightStyle, CSSValueID::kSolid);
       style->SetProperty(CSSPropertyID::kBorderColor,
                          *CSSInheritedValue::Create());
       break;
     case kSolidBordersRowsOnly:
-      style->SetProperty(CSSPropertyID::kBorderTopWidth, CSSValueThin);
-      style->SetProperty(CSSPropertyID::kBorderBottomWidth, CSSValueThin);
-      style->SetProperty(CSSPropertyID::kBorderTopStyle, CSSValueSolid);
-      style->SetProperty(CSSPropertyID::kBorderBottomStyle, CSSValueSolid);
+      style->SetProperty(CSSPropertyID::kBorderTopWidth, CSSValueID::kThin);
+      style->SetProperty(CSSPropertyID::kBorderBottomWidth, CSSValueID::kThin);
+      style->SetProperty(CSSPropertyID::kBorderTopStyle, CSSValueID::kSolid);
+      style->SetProperty(CSSPropertyID::kBorderBottomStyle, CSSValueID::kSolid);
       style->SetProperty(CSSPropertyID::kBorderColor,
                          *CSSInheritedValue::Create());
       break;
@@ -537,7 +537,7 @@ CSSPropertyValueSet* HTMLTableElement::CreateSharedCellStyle() {
           CSSPropertyID::kBorderWidth,
           *CSSPrimitiveValue::Create(1, CSSPrimitiveValue::UnitType::kPixels));
       style->SetProperty(CSSPropertyID::kBorderStyle,
-                         *CSSIdentifierValue::Create(CSSValueSolid));
+                         *CSSIdentifierValue::Create(CSSValueID::kSolid));
       style->SetProperty(CSSPropertyID::kBorderColor,
                          *CSSInheritedValue::Create());
       break;
@@ -546,7 +546,7 @@ CSSPropertyValueSet* HTMLTableElement::CreateSharedCellStyle() {
           CSSPropertyID::kBorderWidth,
           *CSSPrimitiveValue::Create(1, CSSPrimitiveValue::UnitType::kPixels));
       style->SetProperty(CSSPropertyID::kBorderStyle,
-                         *CSSIdentifierValue::Create(CSSValueInset));
+                         *CSSIdentifierValue::Create(CSSValueID::kInset));
       style->SetProperty(CSSPropertyID::kBorderColor,
                          *CSSInheritedValue::Create());
       break;
@@ -574,15 +574,15 @@ static CSSPropertyValueSet* CreateGroupBorderStyle(int rows) {
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   if (rows) {
-    style->SetProperty(CSSPropertyID::kBorderTopWidth, CSSValueThin);
-    style->SetProperty(CSSPropertyID::kBorderBottomWidth, CSSValueThin);
-    style->SetProperty(CSSPropertyID::kBorderTopStyle, CSSValueSolid);
-    style->SetProperty(CSSPropertyID::kBorderBottomStyle, CSSValueSolid);
+    style->SetProperty(CSSPropertyID::kBorderTopWidth, CSSValueID::kThin);
+    style->SetProperty(CSSPropertyID::kBorderBottomWidth, CSSValueID::kThin);
+    style->SetProperty(CSSPropertyID::kBorderTopStyle, CSSValueID::kSolid);
+    style->SetProperty(CSSPropertyID::kBorderBottomStyle, CSSValueID::kSolid);
   } else {
-    style->SetProperty(CSSPropertyID::kBorderLeftWidth, CSSValueThin);
-    style->SetProperty(CSSPropertyID::kBorderRightWidth, CSSValueThin);
-    style->SetProperty(CSSPropertyID::kBorderLeftStyle, CSSValueSolid);
-    style->SetProperty(CSSPropertyID::kBorderRightStyle, CSSValueSolid);
+    style->SetProperty(CSSPropertyID::kBorderLeftWidth, CSSValueID::kThin);
+    style->SetProperty(CSSPropertyID::kBorderRightWidth, CSSValueID::kThin);
+    style->SetProperty(CSSPropertyID::kBorderLeftStyle, CSSValueID::kSolid);
+    style->SetProperty(CSSPropertyID::kBorderRightStyle, CSSValueID::kSolid);
   }
   return style;
 }

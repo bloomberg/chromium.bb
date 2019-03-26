@@ -154,7 +154,7 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertValue(
     const StyleResolverState*,
     ConversionCheckers&) const {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-  if (identifier_value && identifier_value->GetValueID() == CSSValueNone)
+  if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNone)
     return InterpolationValue(std::make_unique<InterpolableList>(0),
                               NonInterpolableList::Create());
 

@@ -59,15 +59,15 @@ CSSColorInterpolationType::CreateInterpolableColor(const Color& color) {
 std::unique_ptr<InterpolableValue>
 CSSColorInterpolationType::CreateInterpolableColor(CSSValueID keyword) {
   switch (keyword) {
-    case CSSValueCurrentcolor:
+    case CSSValueID::kCurrentcolor:
       return CreateInterpolableColorForIndex(kCurrentcolor);
-    case CSSValueWebkitActivelink:
+    case CSSValueID::kWebkitActivelink:
       return CreateInterpolableColorForIndex(kWebkitActivelink);
-    case CSSValueWebkitLink:
+    case CSSValueID::kWebkitLink:
       return CreateInterpolableColorForIndex(kWebkitLink);
-    case CSSValueInternalQuirkInherit:
+    case CSSValueID::kInternalQuirkInherit:
       return CreateInterpolableColorForIndex(kQuirkInherit);
-    case CSSValueWebkitFocusRingColor:
+    case CSSValueID::kWebkitFocusRingColor:
       return CreateInterpolableColor(LayoutTheme::GetTheme().FocusRingColor());
     default:
       DCHECK(StyleColor::IsColorKeyword(keyword));
@@ -229,7 +229,7 @@ InterpolationValue CSSColorInterpolationType::MaybeConvertValue(
   if (CssProperty().PropertyID() == CSSPropertyID::kColor) {
     auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
     if (identifier_value &&
-        identifier_value->GetValueID() == CSSValueCurrentcolor) {
+        identifier_value->GetValueID() == CSSValueID::kCurrentcolor) {
       DCHECK(state);
       return MaybeConvertInherit(*state, conversion_checkers);
     }

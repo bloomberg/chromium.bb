@@ -195,7 +195,7 @@ Color LayoutThemeMac::PlatformFocusRingColor() const {
   if (UsesTestModeFocusRingColor())
     return kOldAquaFocusRingColor;
 
-  return SystemColor(CSSValueWebkitFocusRingColor);
+  return SystemColor(CSSValueID::kWebkitFocusRingColor);
 }
 
 Color LayoutThemeMac::PlatformInactiveListBoxSelectionBackgroundColor() const {
@@ -221,20 +221,20 @@ static FontSelectionValue ToFontWeight(NSInteger app_kit_font_weight) {
 
 static inline NSFont* SystemNSFont(CSSValueID system_font_id) {
   switch (system_font_id) {
-    case CSSValueSmallCaption:
+    case CSSValueID::kSmallCaption:
       return [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
-    case CSSValueMenu:
+    case CSSValueID::kMenu:
       return [NSFont menuFontOfSize:[NSFont systemFontSize]];
-    case CSSValueStatusBar:
+    case CSSValueID::kStatusBar:
       return [NSFont labelFontOfSize:[NSFont labelFontSize]];
-    case CSSValueWebkitMiniControl:
+    case CSSValueID::kWebkitMiniControl:
       return [NSFont
           systemFontOfSize:[NSFont
                                systemFontSizeForControlSize:NSMiniControlSize]];
-    case CSSValueWebkitSmallControl:
+    case CSSValueID::kWebkitSmallControl:
       return [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:
                                                   NSSmallControlSize]];
-    case CSSValueWebkitControl:
+    case CSSValueID::kWebkitControl:
       return [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:
                                                   NSRegularControlSize]];
     default:
@@ -276,100 +276,100 @@ Color LayoutThemeMac::SystemColor(CSSValueID css_value_id) const {
   Color color;
   bool needs_fallback = false;
   switch (css_value_id) {
-    case CSSValueActiveborder:
+    case CSSValueID::kActiveborder:
       color = GetSystemColor(MacSystemColorID::kKeyboardFocusIndicator);
       break;
-    case CSSValueActivecaption:
+    case CSSValueID::kActivecaption:
       color = GetSystemColor(MacSystemColorID::kWindowFrameText);
       break;
-    case CSSValueAppworkspace:
+    case CSSValueID::kAppworkspace:
       color = GetSystemColor(MacSystemColorID::kHeader);
       break;
-    case CSSValueBackground:
+    case CSSValueID::kBackground:
       // Use theme independent default
       needs_fallback = true;
       break;
-    case CSSValueButtonface:
+    case CSSValueID::kButtonface:
       color = GetSystemColor(MacSystemColorID::kControlBackground);
       break;
-    case CSSValueButtonhighlight:
+    case CSSValueID::kButtonhighlight:
       color = GetSystemColor(MacSystemColorID::kControlHighlight);
       break;
-    case CSSValueButtonshadow:
+    case CSSValueID::kButtonshadow:
       color = GetSystemColor(MacSystemColorID::kControlShadow);
       break;
-    case CSSValueButtontext:
+    case CSSValueID::kButtontext:
       color = GetSystemColor(MacSystemColorID::kControlText);
       break;
-    case CSSValueCaptiontext:
+    case CSSValueID::kCaptiontext:
       color = GetSystemColor(MacSystemColorID::kText);
       break;
-    case CSSValueGraytext:
+    case CSSValueID::kGraytext:
       color = GetSystemColor(MacSystemColorID::kDisabledControlText);
       break;
-    case CSSValueHighlight:
+    case CSSValueID::kHighlight:
       color = GetSystemColor(MacSystemColorID::kSelectedTextBackground);
       break;
-    case CSSValueHighlighttext:
+    case CSSValueID::kHighlighttext:
       color = GetSystemColor(MacSystemColorID::kSelectedText);
       break;
-    case CSSValueInactiveborder:
+    case CSSValueID::kInactiveborder:
       color = GetSystemColor(MacSystemColorID::kControlBackground);
       break;
-    case CSSValueInactivecaption:
+    case CSSValueID::kInactivecaption:
       color = GetSystemColor(MacSystemColorID::kControlBackground);
       break;
-    case CSSValueInactivecaptiontext:
+    case CSSValueID::kInactivecaptiontext:
       color = GetSystemColor(MacSystemColorID::kText);
       break;
-    case CSSValueInfobackground:
+    case CSSValueID::kInfobackground:
       // There is no corresponding NSColor for this so we use a hard coded
       // value.
       color = 0xFFFBFCC5;
       break;
-    case CSSValueInfotext:
+    case CSSValueID::kInfotext:
       color = GetSystemColor(MacSystemColorID::kText);
       break;
-    case CSSValueMenu:
+    case CSSValueID::kMenu:
       color = GetSystemColor(MacSystemColorID::kMenuBackground);
       break;
-    case CSSValueMenutext:
+    case CSSValueID::kMenutext:
       color = GetSystemColor(MacSystemColorID::kSelectedMenuItemText);
       break;
-    case CSSValueScrollbar:
+    case CSSValueID::kScrollbar:
       color = GetSystemColor(MacSystemColorID::kScrollBar);
       break;
-    case CSSValueText:
+    case CSSValueID::kText:
       color = GetSystemColor(MacSystemColorID::kText);
       break;
-    case CSSValueThreeddarkshadow:
+    case CSSValueID::kThreeddarkshadow:
       color = GetSystemColor(MacSystemColorID::kControlDarkShadow);
       break;
-    case CSSValueThreedshadow:
+    case CSSValueID::kThreedshadow:
       color = GetSystemColor(MacSystemColorID::kShadow);
       break;
-    case CSSValueThreedface:
+    case CSSValueID::kThreedface:
       // We use this value instead of NSColor's controlColor to avoid website
       // incompatibilities. We may want to change this to use the NSColor in
       // future.
       color = 0xFFC0C0C0;
       break;
-    case CSSValueThreedhighlight:
+    case CSSValueID::kThreedhighlight:
       color = GetSystemColor(MacSystemColorID::kHighlight);
       break;
-    case CSSValueThreedlightshadow:
+    case CSSValueID::kThreedlightshadow:
       color = GetSystemColor(MacSystemColorID::kControlLightHighlight);
       break;
-    case CSSValueWebkitFocusRingColor:
+    case CSSValueID::kWebkitFocusRingColor:
       color = GetSystemColor(MacSystemColorID::kKeyboardFocusIndicator);
       break;
-    case CSSValueWindow:
+    case CSSValueID::kWindow:
       color = GetSystemColor(MacSystemColorID::kWindowBackground);
       break;
-    case CSSValueWindowframe:
+    case CSSValueID::kWindowframe:
       color = GetSystemColor(MacSystemColorID::kWindowFrame);
       break;
-    case CSSValueWindowtext:
+    case CSSValueID::kWindowtext:
       color = GetSystemColor(MacSystemColorID::kWindowFrameText);
       break;
     default:

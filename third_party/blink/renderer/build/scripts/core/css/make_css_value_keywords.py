@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import subprocess
-from name_utilities import enum_key_for_css_keyword, id_for_css_keyword
+from name_utilities import enum_key_for_css_keyword
 import json5_generator
 
 import template_expander
@@ -22,7 +22,6 @@ class CSSValueKeywordsWriter(json5_generator.Writer):
         first_keyword_id = 1
         for offset, keyword in enumerate(self._value_keywords):
             keyword['lower_name'] = keyword['name'].original.lower()
-            keyword['id'] = id_for_css_keyword(keyword['name'])
             keyword['enum_name'] = enum_key_for_css_keyword(keyword['name'])
             keyword['enum_value'] = first_keyword_id + offset
             if keyword['name'].original.startswith('-internal-'):

@@ -19,11 +19,6 @@ enum class CSSValueID {
 {% endfor %}
 };
 
-constexpr CSSValueID CSSValueInvalid = CSSValueID::kInvalid;
-{% for keyword in value_keywords %}
-constexpr CSSValueID {{keyword.id}} = CSSValueID::{{keyword.enum_name}};
-{% endfor %}
-
 const int numCSSValueKeywords = {{value_keywords_count}};
 const size_t maxCSSValueKeywordLength = {{max_value_keyword_length}};
 

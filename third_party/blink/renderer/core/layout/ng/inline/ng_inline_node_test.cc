@@ -972,7 +972,7 @@ TEST_F(NGInlineNodeTest, RemoveInlineNodeDataIfBlockObtainsBlockChild) {
   ASSERT_TRUE(layout_block_flow_->HasNGInlineNodeData());
 
   GetElementById("blockify")
-      ->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueBlock);
+      ->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kBlock);
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(layout_block_flow_->HasNGInlineNodeData());

@@ -58,19 +58,19 @@ void HTMLOListElement::CollectStyleForPresentationAttribute(
   if (name == kTypeAttr) {
     if (value == "a") {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kListStyleType, CSSValueLowerAlpha);
+          style, CSSPropertyID::kListStyleType, CSSValueID::kLowerAlpha);
     } else if (value == "A") {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kListStyleType, CSSValueUpperAlpha);
+          style, CSSPropertyID::kListStyleType, CSSValueID::kUpperAlpha);
     } else if (value == "i") {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kListStyleType, CSSValueLowerRoman);
+          style, CSSPropertyID::kListStyleType, CSSValueID::kLowerRoman);
     } else if (value == "I") {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kListStyleType, CSSValueUpperRoman);
+          style, CSSPropertyID::kListStyleType, CSSValueID::kUpperRoman);
     } else if (value == "1") {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kListStyleType, CSSValueDecimal);
+          style, CSSPropertyID::kListStyleType, CSSValueID::kDecimal);
     }
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);

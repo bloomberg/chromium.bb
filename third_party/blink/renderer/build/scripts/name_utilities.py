@@ -55,9 +55,6 @@ def enum_key_for_css_property_alias(property_name):
     return 'kAlias' + property_name.to_upper_camel_case()
 
 
-def id_for_css_keyword(keyword):
-    return 'CSSValue' + _upper_camel_case(keyword)
-
 # This id is used to build function names returning CSS properties (e.g.
 # GetCSSPropertyX(), GetCSSPropertyXInternal(), etc.)
 def id_for_css_property(property_name):

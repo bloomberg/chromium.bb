@@ -19,7 +19,7 @@ CSSPositionAxisListInterpolationType::ConvertPositionAxisCSSValue(
     InterpolationValue result =
         LengthInterpolationFunctions::MaybeConvertCSSValue(pair->Second());
     CSSValueID side = To<CSSIdentifierValue>(pair->First()).GetValueID();
-    if (side == CSSValueRight || side == CSSValueBottom)
+    if (side == CSSValueID::kRight || side == CSSValueID::kBottom)
       LengthInterpolationFunctions::SubtractFromOneHundredPercent(result);
     return result;
   }
@@ -32,13 +32,13 @@ CSSPositionAxisListInterpolationType::ConvertPositionAxisCSSValue(
     return nullptr;
 
   switch (ident->GetValueID()) {
-    case CSSValueLeft:
-    case CSSValueTop:
+    case CSSValueID::kLeft:
+    case CSSValueID::kTop:
       return LengthInterpolationFunctions::CreateInterpolablePercent(0);
-    case CSSValueRight:
-    case CSSValueBottom:
+    case CSSValueID::kRight:
+    case CSSValueID::kBottom:
       return LengthInterpolationFunctions::CreateInterpolablePercent(100);
-    case CSSValueCenter:
+    case CSSValueID::kCenter:
       return LengthInterpolationFunctions::CreateInterpolablePercent(50);
     default:
       NOTREACHED();

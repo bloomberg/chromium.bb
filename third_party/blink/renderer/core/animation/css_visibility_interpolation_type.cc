@@ -137,9 +137,9 @@ InterpolationValue CSSVisibilityInterpolationType::MaybeConvertValue(
   CSSValueID keyword = identifier_value->GetValueID();
 
   switch (keyword) {
-    case CSSValueHidden:
-    case CSSValueVisible:
-    case CSSValueCollapse:
+    case CSSValueID::kHidden:
+    case CSSValueID::kVisible:
+    case CSSValueID::kCollapse:
       return CreateVisibilityValue(identifier_value->ConvertTo<EVisibility>());
     default:
       return nullptr;
