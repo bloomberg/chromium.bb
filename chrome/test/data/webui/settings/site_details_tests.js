@@ -138,6 +138,9 @@ suite('SiteDetails', function() {
     optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
                                                 .PAYMENT_HANDLER] =
         'enablePaymentHandlerContentSetting';
+    optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
+                                                .SERIAL_PORTS] =
+        'enableExperimentalWebPlatformFeatures';
     browserProxy.setPrefs(prefs);
 
     // First, explicitly set all the optional settings to false.

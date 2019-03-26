@@ -29,6 +29,8 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/serial/serial_chooser_context.h"
+#include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
@@ -1370,6 +1372,10 @@ void SiteSettingsHandler::ObserveSourcesForProfile(Profile* profile) {
   auto* usb_context = UsbChooserContextFactory::GetForProfile(profile);
   if (!chooser_observer_.IsObserving(usb_context))
     chooser_observer_.Add(usb_context);
+
+  auto* serial_context = SerialChooserContextFactory::GetForProfile(profile);
+  if (!chooser_observer_.IsObserving(serial_context))
+    chooser_observer_.Add(serial_context);
 }
 
 void SiteSettingsHandler::StopObservingSourcesForProfile(Profile* profile) {
@@ -1380,6 +1386,10 @@ void SiteSettingsHandler::StopObservingSourcesForProfile(Profile* profile) {
   auto* usb_context = UsbChooserContextFactory::GetForProfile(profile);
   if (chooser_observer_.IsObserving(usb_context))
     chooser_observer_.Remove(usb_context);
+
+  auto* serial_context = SerialChooserContextFactory::GetForProfile(profile);
+  if (chooser_observer_.IsObserving(serial_context))
+    chooser_observer_.Remove(serial_context);
 }
 
 void SiteSettingsHandler::TreeNodesAdded(ui::TreeModel* model,

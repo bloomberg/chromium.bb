@@ -97,6 +97,7 @@
  *   SITE_SETTINGS_SITE_DETAILS: (undefined|!settings.Route),
  *   SITE_SETTINGS_UNSANDBOXED_PLUGINS: (undefined|!settings.Route),
  *   SITE_SETTINGS_USB_DEVICES: (undefined|!settings.Route),
+ *   SITE_SETTINGS_SERIAL_PORTS: (undefined|!settings.Route),
  *   SITE_SETTINGS_ZOOM_LEVELS: (undefined|!settings.Route),
  *   SMART_LOCK: (undefined|!settings.Route),
  *   SMB_SHARES: (undefined|!settings.Route),
@@ -371,6 +372,10 @@ cr.define('settings', function() {
           r.SITE_SETTINGS.createChild('unsandboxedPlugins');
       r.SITE_SETTINGS_MIDI_DEVICES = r.SITE_SETTINGS.createChild('midiDevices');
       r.SITE_SETTINGS_USB_DEVICES = r.SITE_SETTINGS.createChild('usbDevices');
+      if (loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures')) {
+        r.SITE_SETTINGS_SERIAL_PORTS =
+            r.SITE_SETTINGS.createChild('serialPorts');
+      }
       r.SITE_SETTINGS_ZOOM_LEVELS = r.SITE_SETTINGS.createChild('zoomLevels');
       r.SITE_SETTINGS_PDF_DOCUMENTS =
           r.SITE_SETTINGS.createChild('pdfDocuments');

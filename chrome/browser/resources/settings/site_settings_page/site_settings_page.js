@@ -69,6 +69,14 @@ Polymer({
     },
 
     /** @private */
+    enableExperimentalWebPlatformFeatures_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures');
+      },
+    },
+
+    /** @private */
     enablePaymentHandlerContentSetting_: {
       type: Boolean,
       value: function() {
@@ -124,6 +132,10 @@ Polymer({
 
     if (this.enablePaymentHandlerContentSetting_) {
       pairs.push([R.SITE_SETTINGS_PAYMENT_HANDLER, 'paymentHandler']);
+    }
+
+    if (this.enableExperimentalWebPlatformFeatures_) {
+      pairs.push([R.SITE_SETTINGS_SERIAL_PORTS, 'serial-ports']);
     }
 
     pairs.forEach(([route, id]) => {

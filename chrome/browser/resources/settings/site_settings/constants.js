@@ -29,6 +29,7 @@ settings.ContentSettingsTypes = {
   BACKGROUND_SYNC: 'background-sync',
   MIDI_DEVICES: 'midi-sysex',
   USB_DEVICES: 'usb-devices',
+  SERIAL_PORTS: 'serial-ports',
   ZOOM_LEVELS: 'zoom-levels',
   PROTECTED_CONTENT: 'protected-content',
   ADS: 'ads',
@@ -61,6 +62,7 @@ settings.ContentSetting = {
 settings.ChooserType = {
   NONE: '',
   USB_DEVICES: 'usb-devices-data',
+  SERIAL_PORTS: 'serial-ports-data',
 };
 
 /**
