@@ -788,8 +788,10 @@ const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
     const NGPhysicalFragment& fragment;
     NGLogicalOffset offset;
   };
+  // Avoid calling |ReserveInitialCapacity()| because
+  // |lineboxes->Children().size()| is O(n), not linear, but it's critical to
+  // have enough capacity.
   Vector<FragmentWithLogicalOffset, 64> fragments;
-  fragments.ReserveInitialCapacity(lineboxes->Children().size());
   for (const NGPaintFragment* child : lineboxes->Children()) {
     if (child->IsDirty())
       break;
