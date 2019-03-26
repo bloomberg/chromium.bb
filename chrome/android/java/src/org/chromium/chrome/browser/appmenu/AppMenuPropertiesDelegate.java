@@ -121,7 +121,7 @@ public class AppMenuPropertiesDelegate {
                                       mActivity.getWindowAndroid().getDisplay());
 
             final boolean bottomToolbarVisible = mActivity.getToolbarManager() != null
-                    && mActivity.getToolbarManager().isMenuButtonInBottomToolbar();
+                    && mActivity.getToolbarManager().isBottomToolbarVisible();
             shouldShowIconRow &= !bottomToolbarVisible;
 
             // Update the icon row items (shown in narrow form factors).
