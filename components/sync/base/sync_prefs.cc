@@ -253,6 +253,16 @@ void SyncPrefs::SetSyncRequested(bool is_requested) {
   pref_service_->SetBoolean(prefs::kSyncSuppressStart, !is_requested);
 }
 
+void SyncPrefs::SetSyncRequestedIfNotSetExplicitly() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // GetUserPrefValue() returns nullptr if there is no user-set value for this
+  // pref (there might still be a non-default value, e.g. from a policy, but we
+  // explicitly don't care about that here).
+  if (!pref_service_->GetUserPrefValue(prefs::kSyncSuppressStart)) {
+    pref_service_->SetBoolean(prefs::kSyncSuppressStart, false);
+  }
+}
+
 base::Time SyncPrefs::GetLastSyncedTime() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return base::Time::FromInternalValue(

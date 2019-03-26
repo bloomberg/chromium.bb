@@ -49,6 +49,34 @@ class SingleClientStandaloneTransportSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientStandaloneTransportSyncTest);
 };
 
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
+                       StartsSyncFeatureOnSignin) {
+  // On platforms where Sync starts automatically (in practice, Android and
+  // ChromeOS), IsFirstSetupComplete gets set automatically, and so the full
+  // Sync feature will start upon sign-in to a primary account.
+  ASSERT_TRUE(browser_defaults::kSyncAutoStarts);
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Signing in (without explicitly setting up Sync) should trigger starting the
+  // Sync machinery. Because IsFirstSetupComplete gets set automatically, this
+  // will actually start the full Sync feature, not just the transport.
+  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
+  EXPECT_EQ(syncer::SyncService::TransportState::INITIALIZING,
+            GetSyncService(0)->GetTransportState());
+
+  EXPECT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+
+  EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+
+  ASSERT_TRUE(GetSyncService(0)->GetUserSettings()->IsFirstSetupComplete());
+
+  EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
+  EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+}
+#else
 IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
                        StartsSyncTransportOnSignin) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
@@ -64,12 +92,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
 
-  // IsFirstSetupComplete gets set automatically on some platforms, but
-  // IsSyncRequested remains false (it gets set by the Sync confirmation dialog,
-  // or by the settings page if going through the advanced settings flow).
-  ASSERT_EQ(browser_defaults::kSyncAutoStarts,
-            GetSyncService(0)->GetUserSettings()->IsFirstSetupComplete());
-  ASSERT_FALSE(GetSyncService(0)->GetUserSettings()->IsSyncRequested());
+  // Both IsSyncRequested and IsFirstSetupComplete should remain false (i.e.
+  // at their default values). They only get set during the Sync setup flow,
+  // either by the Sync confirmation dialog or by the settings page if going
+  // through the advanced settings flow.
+  EXPECT_FALSE(GetSyncService(0)->GetUserSettings()->IsFirstSetupComplete());
+  EXPECT_FALSE(GetSyncService(0)->GetUserSettings()->IsSyncRequested());
 
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
@@ -82,6 +110,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
                          AllowedTypesInStandaloneTransportMode());
   EXPECT_TRUE(bad_types.Empty()) << syncer::ModelTypeSetToString(bad_types);
 }
+#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
                        SwitchesBetweenTransportAndFeature) {
