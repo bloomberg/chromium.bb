@@ -48,10 +48,75 @@ class SyncSetupInProgressHandle {
   base::Closure on_destroy_;
 };
 
+// SyncService is the layer between browser subsystems like bookmarks and the
+// sync engine. Each subsystem is logically thought of as being a sync datatype.
+// Individual datatypes can, at any point, be in a variety of stages of being
+// "enabled". Here are some specific terms for concepts used in this class:
+//
+//   'Registered' (feature suppression for a datatype)
+//
+//      When a datatype is registered, the user has the option of syncing it.
+//      The sync opt-in UI will show only registered types; a checkbox should
+//      never be shown for an unregistered type, nor can it ever be synced.
+//
+//   'Preferred' (user preferences and opt-out for a datatype)
+//
+//      This means the user's opt-in or opt-out preference on a per-datatype
+//      basis. The sync service will try to make active exactly these types.
+//      If a user has opted out of syncing a particular datatype, it will
+//      be registered, but not preferred. Also note that not all datatypes can
+//      be directly chosen by the user: e.g. AUTOFILL_PROFILE is implied by
+//      AUTOFILL but can't be selected separately. If AUTOFILL is chosen by the
+//      user, then AUTOFILL_PROFILE will also be considered preferred. See
+//      SyncPrefs::ResolvePrefGroups.
+//
+//      This state is controlled by SyncUserSettings::SetChosenDataTypes. They
+//      are stored in the preferences system and persist; though if a datatype
+//      is not registered, it cannot be a preferred datatype.
+//
+//   'Active' (run-time initialization of sync system for a datatype)
+//
+//      An active datatype is a preferred datatype that is actively being
+//      synchronized: the syncer has been instructed to querying the server
+//      for this datatype, first-time merges have finished, and there is an
+//      actively installed ChangeProcessor that listens for changes to this
+//      datatype, propagating such changes into and out of the sync engine
+//      as necessary.
+//
+//      When a datatype is in the process of becoming active, it may be
+//      in some intermediate state. Those finer-grained intermediate states
+//      are differentiated by the DataTypeController state, but not exposed.
+//
+// Sync Configuration:
+//
+//   Sync configuration is accomplished via SyncUserSettings, in particular:
+//    * SetChosenDataTypes(): Set the data types the user wants to sync.
+//    * SetDecryptionPassphrase(): Attempt to decrypt the user's encrypted data
+//        using the passed passphrase.
+//    * SetEncryptionPassphrase(): Re-encrypt the user's data using the passed
+//        passphrase.
+//
+// Initial sync setup:
+//
+//   For privacy reasons, it is usually desirable to avoid syncing any data
+//   types until the user has finished setting up sync. There are two APIs
+//   that control the initial sync download:
+//
+//    * SyncUserSettings::SetFirstSetupComplete()
+//    * GetSetupInProgressHandle()
+//
+//   SetFirstSetupComplete() should be called once the user has finished setting
+//   up sync at least once on their account. GetSetupInProgressHandle() should
+//   be called while the user is actively configuring their account. The handle
+//   should be deleted once configuration is complete.
+//
+//   Once first setup has completed and there are no outstanding
+//   setup-in-progress handles, datatype configuration will begin.
 class SyncService : public KeyedService {
  public:
-  // The set of reasons due to which Sync can be disabled. Meant to be used as a
-  // bitmask.
+  // The set of reasons due to which Sync-the-feature can be disabled. Note that
+  // Sync-the-transport might still start up even in the presence of (some)
+  // disable reasons. Meant to be used as a bitmask.
   enum DisableReason {
     DISABLE_REASON_NONE = 0,
     // Sync is disabled via platform-level override (e.g. Android's "MasterSync"
@@ -80,7 +145,9 @@ class SyncService : public KeyedService {
     DISABLE_REASON_PAUSED = 1 << 5,
   };
 
-  // The overall state of the SyncService, in ascending order of "activeness".
+  // The overall state of Sync-the-transport, in ascending order of
+  // "activeness". Note that this refers to the transport layer, which may be
+  // active even if Sync-the-feature is turned off.
   enum class TransportState {
     // Sync is inactive, e.g. due to enterprise policy, or simply because there
     // is no authenticated user.
@@ -109,6 +176,12 @@ class SyncService : public KeyedService {
 
   ~SyncService() override {}
 
+  //////////////////////////////////////////////////////////////////////////////
+  // USER SETTINGS
+  //////////////////////////////////////////////////////////////////////////////
+
+  // Returns the SyncUserSettings, which encapsulate all the user-configurable
+  // bits for Sync.
   virtual SyncUserSettings* GetUserSettings() = 0;
   virtual const SyncUserSettings* GetUserSettings() const = 0;
 
@@ -200,9 +273,9 @@ class SyncService : public KeyedService {
   //////////////////////////////////////////////////////////////////////////////
 
   // Returns true if initial sync setup is in progress (does not return true
-  // if the user is customizing sync after already completing setup once).
-  // SyncService uses this to determine if it's OK to start syncing, or if the
-  // user is still setting up the initial sync configuration.
+  // if the user is customizing sync after already completing setup once). This
+  // is equivalent to
+  // IsSetupInProgress() && !GetUserSettings()->IsFirstSetupComplete().
   // Note: This refers to Sync-the-feature. Sync-the-transport may be active
   // independent of first-setup state.
   bool IsFirstSetupInProgress() const;
@@ -211,13 +284,12 @@ class SyncService : public KeyedService {
   // SETUP-IN-PROGRESS HANDLING
   //////////////////////////////////////////////////////////////////////////////
 
-  // Called by the UI to notify the SyncService that UI is visible so it will
-  // not start syncing. This tells sync whether it's safe to start downloading
-  // data types yet (we don't start syncing until after sync setup is complete).
+  // Called by the UI to notify the SyncService that UI is visible, so any
+  // changes to Sync settings should *not* take effect immediately (e.g. if the
+  // user accidentally enabled a data type, we should give them a chance to undo
+  // the change before local and remote data are irrevocably merged).
   // The UI calls this and holds onto the instance for as long as any part of
-  // the signin wizard is displayed (even just the login UI).
-  // When the last outstanding handle is deleted, this kicks off the sync engine
-  // to ensure that data download starts.
+  // the Sync setup/configuration UI is visible.
   virtual std::unique_ptr<SyncSetupInProgressHandle>
   GetSetupInProgressHandle() = 0;
 
@@ -242,11 +314,10 @@ class SyncService : public KeyedService {
   // any forced types.
   virtual ModelTypeSet GetPreferredDataTypes() const = 0;
 
-  // Get the set of current active data types (those chosen or configured by
-  // the user which have not also encountered a runtime error).
-  // Note that if the Sync engine is in the middle of a configuration, this
-  // will the the empty set. Once the configuration completes the set will
-  // be updated.
+  // Returns the set of currently active data types (those chosen or configured
+  // by the user which have not also encountered a runtime error).
+  // Note that if the Sync engine is in the middle of a configuration, this will
+  // be the empty set. Once the configuration completes the set will be updated.
   virtual ModelTypeSet GetActiveDataTypes() const = 0;
 
   //////////////////////////////////////////////////////////////////////////////
@@ -281,11 +352,11 @@ class SyncService : public KeyedService {
   virtual void ReadyForStartChanged(ModelType type) = 0;
 
   // Enables/disables invalidations for session sync related datatypes.
-  // The session sync generates a lot of changes, which results into many
-  // invalidations. This can negatively affect the
-  // battery life on Android. For that reason, on Android, the invalidations for
-  // the Sessions should be received only when user is interested in session
-  // sync data, e.g. the history sync page is opened.
+  // The session sync generates a lot of changes, which results in many
+  // invalidations. This can negatively affect the battery life on Android. For
+  // that reason, on Android, the invalidations for sessions should be received
+  // only when user is interested in session sync data, e.g. the history sync
+  // page is opened.
   virtual void SetInvalidationsForSessionsEnabled(bool enabled) = 0;
 
   //////////////////////////////////////////////////////////////////////////////
@@ -329,6 +400,8 @@ class SyncService : public KeyedService {
   // DETAILED STATE FOR DEBUG UI
   //////////////////////////////////////////////////////////////////////////////
 
+  // Returns the state of the access token and token request, for display in
+  // internals UI.
   virtual SyncTokenStatus GetSyncTokenStatus() const = 0;
 
   // Initializes a struct of status indicators with data from the engine.
@@ -339,6 +412,7 @@ class SyncService : public KeyedService {
 
   virtual base::Time GetLastSyncedTime() const = 0;
 
+  // Returns some statistics on the most-recently completed sync cycle.
   virtual SyncCycleSnapshot GetLastCycleSnapshot() const = 0;
 
   // Returns a ListValue indicating the status of all registered types.
@@ -365,7 +439,6 @@ class SyncService : public KeyedService {
   virtual void AddTypeDebugInfoObserver(TypeDebugInfoObserver* observer) = 0;
   virtual void RemoveTypeDebugInfoObserver(TypeDebugInfoObserver* observer) = 0;
 
-  // Returns a weak pointer to the service's JsController.
   virtual base::WeakPtr<JsController> GetJsController() = 0;
 
   // Asynchronously fetches base::Value representations of all sync nodes and
