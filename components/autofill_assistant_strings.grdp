@@ -7,7 +7,7 @@
     <message name="IDS_AUTOFILL_ASSISTANT_GIVE_UP"
              desc="Text label that is shown when autofill assistant cannot help anymore, because of a user action."
              internal_comment="TODO(wnwen): Remove duplication in chrome/android/features/autofill_assistant/strings/android_chrome_autofill_assistant_strings.grd">
-      Looks like you navigated off on your own, I’ll leave you to it. Have a nice day :)
+      Sorry I'm not able to help, please continue on your own.
     </message>
     <message name="IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP" desc="Text label shown next to an UNDO button when user action indicate they want to continue on their own.">
       Continue manually?
