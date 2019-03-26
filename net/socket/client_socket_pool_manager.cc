@@ -363,57 +363,31 @@ int InitSocketHandleForWebSocketRequest(
       resolution_callback, std::move(callback), proxy_auth_callback);
 }
 
-int InitSocketHandleForRawConnect(
+NET_EXPORT std::unique_ptr<ConnectJob> CreateConnectJobForRawConnect(
     const HostPortPair& host_port_pair,
-    HttpNetworkSession* session,
-    int request_load_flags,
+    bool use_tls,
+    const CommonConnectJobParams* common_connect_job_params,
     RequestPriority request_priority,
     const ProxyInfo& proxy_info,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
-    PrivacyMode privacy_mode,
     const NetLogWithSource& net_log,
-    ClientSocketHandle* socket_handle,
-    CompletionOnceCallback callback,
-    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback) {
-  DCHECK(socket_handle);
-
+    ConnectJob::Delegate* connect_job_delegate) {
   // QUIC proxies are currently not supported through this method.
   DCHECK(!proxy_info.is_quic());
 
-  return InitSocketPoolHelper(
-      ClientSocketPoolManager::NORMAL_GROUP, host_port_pair, request_load_flags,
-      request_priority, session, proxy_info, ssl_config_for_origin,
-      ssl_config_for_proxy, /*force_tunnel=*/true, privacy_mode, SocketTag(),
-      net_log, 0, socket_handle, HttpNetworkSession::NORMAL_SOCKET_POOL,
-      OnHostResolutionCallback(), std::move(callback), proxy_auth_callback);
-}
-
-int InitSocketHandleForTlsConnect(
-    const HostPortPair& endpoint,
-    HttpNetworkSession* session,
-    int request_load_flags,
-    RequestPriority request_priority,
-    const ProxyInfo& proxy_info,
-    const SSLConfig& ssl_config_for_origin,
-    const SSLConfig& ssl_config_for_proxy,
-    PrivacyMode privacy_mode,
-    const NetLogWithSource& net_log,
-    ClientSocketHandle* socket_handle,
-    CompletionOnceCallback callback,
-    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback) {
-  DCHECK(socket_handle);
-
-  // QUIC proxies are currently not supported through this method.
-  DCHECK(!proxy_info.is_quic());
-
-  return InitSocketPoolHelper(
-      ClientSocketPoolManager::SSL_GROUP, endpoint, request_load_flags,
-      request_priority, session, proxy_info, ssl_config_for_origin,
-      ssl_config_for_proxy,
-      /*force_tunnel=*/true, privacy_mode, SocketTag(), net_log, 0,
-      socket_handle, HttpNetworkSession::NORMAL_SOCKET_POOL,
-      OnHostResolutionCallback(), std::move(callback), proxy_auth_callback);
+  ClientSocketPool::GroupId unused_connection_group;
+  scoped_refptr<TransportClientSocketPool::SocketParams> socket_params =
+      CreateSocketParamsAndGetGroupId(
+          use_tls ? ClientSocketPoolManager::SSL_GROUP
+                  : ClientSocketPoolManager::NORMAL_GROUP,
+          host_port_pair, proxy_info, ssl_config_for_origin,
+          ssl_config_for_proxy, true /* force_tunnel */,
+          net::PRIVACY_MODE_DISABLED, OnHostResolutionCallback(),
+          &unused_connection_group);
+  return socket_params->create_connect_job_callback().Run(
+      request_priority, SocketTag(), common_connect_job_params,
+      connect_job_delegate);
 }
 
 int PreconnectSocketsForHttpRequest(

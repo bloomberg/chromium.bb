@@ -145,42 +145,22 @@ int InitSocketHandleForWebSocketRequest(
     const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback);
 
 // Deprecated: Please do not use this outside of //net and //services/network.
-// A helper method that uses the passed in proxy information to initialize a
-// ClientSocketHandle with the relevant socket pool. Use this method for
-// a raw socket connection to a host-port pair (that needs to tunnel through
-// the proxies).
-NET_EXPORT int InitSocketHandleForRawConnect(
+// A helper method that uses the passed in proxy to initialize a ConnectJob that
+// does not use a SocketPool, but does use the passed in
+// CommonConnectJobParams's SpdySessionPool. Use this method for a raw socket
+// connection to a host-port pair (that needs to tunnel through the proxies). If
+// |use_tls| is true, will establish a TLS connection on top of the established
+// connection.
+NET_EXPORT std::unique_ptr<ConnectJob> CreateConnectJobForRawConnect(
     const HostPortPair& host_port_pair,
-    HttpNetworkSession* session,
-    int request_load_flags,
+    bool use_tls,
+    const CommonConnectJobParams* common_connect_job_params,
     RequestPriority request_priority,
     const ProxyInfo& proxy_info,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
-    PrivacyMode privacy_mode,
     const NetLogWithSource& net_log,
-    ClientSocketHandle* socket_handle,
-    CompletionOnceCallback callback,
-    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback);
-
-// Deprecated: Please do not use this outside of //net and //services/network.
-// A helper method that uses the passed in proxy information to initialize a
-// ClientSocketHandle with the relevant socket pool. Use this method for
-// a raw socket connection with TLS negotiation to a host-port pair (that needs
-// to tunnel through the proxies).
-NET_EXPORT int InitSocketHandleForTlsConnect(
-    const HostPortPair& host_port_pair,
-    HttpNetworkSession* session,
-    int request_load_flags,
-    RequestPriority request_priority,
-    const ProxyInfo& proxy_info,
-    const SSLConfig& ssl_config_for_origin,
-    const SSLConfig& ssl_config_for_proxy,
-    PrivacyMode privacy_mode,
-    const NetLogWithSource& net_log,
-    ClientSocketHandle* socket_handle,
-    CompletionOnceCallback callback,
-    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback);
+    ConnectJob::Delegate* connect_job_delegate);
 
 // Similar to InitSocketHandleForHttpRequest except that it initiates the
 // desired number of preconnect streams from the relevant socket pool.
