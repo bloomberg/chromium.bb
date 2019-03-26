@@ -669,8 +669,7 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                  base::TimeTicks::Now()));
   menu_runner_->RunMenuAt(wallpaper_widget_controller()->GetWidget(), nullptr,
                           gfx::Rect(location_in_screen, gfx::Size()),
-                          views::MenuAnchorPosition::kBubbleTouchableRight,
-                          source_type);
+                          views::MenuAnchorPosition::kBubbleRight, source_type);
 }
 
 void RootWindowController::HideContextMenu() {

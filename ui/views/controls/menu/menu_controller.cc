@@ -2196,10 +2196,6 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     menu_bounds.set_y(anchor_bounds.bottom());
 
     const int above_anchor = anchor_bounds.y() - menu_bounds.height();
-    const int horizontally_centered =
-        anchor_bounds.x() + (anchor_bounds.width() - menu_bounds.width()) / 2;
-    const int vertically_centered =
-        anchor_bounds.y() + (anchor_bounds.height() - menu_bounds.height()) / 2;
 
     if (state_.anchor == MenuAnchorPosition::kTopRight) {
       // Move the menu so that its right edge is aligned with the anchor
@@ -2208,14 +2204,12 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     } else if (state_.anchor == MenuAnchorPosition::kBottomCenter) {
       // Try to fit the menu above the anchor bounds. If it doesn't fit, place
       // it below.
+      const int horizontally_centered =
+          anchor_bounds.x() + (anchor_bounds.width() - menu_bounds.width()) / 2;
       menu_bounds.set_x(horizontally_centered);
       menu_bounds.set_y(above_anchor - kTouchYPadding);
       if (menu_bounds.y() < monitor_bounds.y())
         menu_bounds.set_y(anchor_bounds.y() + kTouchYPadding);
-    } else if (state_.anchor == MenuAnchorPosition::kFixedBottomCenter) {
-      menu_bounds.set_x(horizontally_centered);
-    } else if (state_.anchor == MenuAnchorPosition::kSideCenter) {
-      menu_bounds.set_y(vertically_centered);
     }
 
     if (item->actual_menu_position() == MenuItemView::POSITION_ABOVE_BOUNDS) {
@@ -2321,19 +2315,7 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
       int max_height = monitor_bounds.height();
       // In case of bubbles, the maximum width is limited by the space
       // between the display corner and the target area + the tip size.
-      if (state_.anchor == MenuAnchorPosition::kBubbleLeft) {
-        max_width =
-            anchor_bounds.x() - monitor_bounds.x() + kBubbleTipSizeLeftRight;
-      } else if (state_.anchor == MenuAnchorPosition::kBubbleRight) {
-        max_width = monitor_bounds.right() - anchor_bounds.right() +
-                    kBubbleTipSizeLeftRight;
-      } else if (state_.anchor == MenuAnchorPosition::kBubbleAbove) {
-        max_height =
-            anchor_bounds.y() - monitor_bounds.y() + kBubbleTipSizeTopBottom;
-      } else if (state_.anchor == MenuAnchorPosition::kBubbleBelow) {
-        max_height = monitor_bounds.bottom() - anchor_bounds.bottom() +
-                     kBubbleTipSizeTopBottom;
-      } else if (state_.anchor == MenuAnchorPosition::kBubbleTouchableAbove) {
+      if (state_.anchor == MenuAnchorPosition::kBubbleAbove) {
         // Don't consider |border_and_shadow_insets| because when the max size
         // is enforced, the scroll view is shown and the md shadows are not
         // applied.
@@ -2351,33 +2333,7 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
     menu_size.set_width(std::min(
         menu_size.width(), item->GetDelegate()->GetMaxWidthForMenu(item)));
 
-    if (state_.anchor == MenuAnchorPosition::kBubbleAbove ||
-        state_.anchor == MenuAnchorPosition::kBubbleBelow) {
-      if (state_.anchor == MenuAnchorPosition::kBubbleAbove)
-        y = anchor_bounds.y() - menu_size.height() + kBubbleTipSizeTopBottom;
-      else
-        y = anchor_bounds.bottom() - kBubbleTipSizeTopBottom;
-
-      x = anchor_bounds.CenterPoint().x() - menu_size.width() / 2;
-      int x_old = x;
-      x = base::ClampToRange(x, monitor_bounds.x(),
-                             monitor_bounds.right() - menu_size.width());
-      submenu->GetScrollViewContainer()->SetBubbleArrowOffset(
-          menu_size.width() / 2 - x + x_old);
-    } else if (state_.anchor == MenuAnchorPosition::kBubbleLeft ||
-               state_.anchor == MenuAnchorPosition::kBubbleRight) {
-      if (state_.anchor == MenuAnchorPosition::kBubbleRight)
-        x = anchor_bounds.right() - kBubbleTipSizeLeftRight;
-      else
-        x = anchor_bounds.x() - menu_size.width() + kBubbleTipSizeLeftRight;
-
-      y = anchor_bounds.CenterPoint().y() - menu_size.height() / 2;
-      int y_old = y;
-      y = base::ClampToRange(y, monitor_bounds.y(),
-                             monitor_bounds.bottom() - menu_size.height());
-      submenu->GetScrollViewContainer()->SetBubbleArrowOffset(
-          menu_size.height() / 2 - y + y_old);
-    } else if (state_.anchor == MenuAnchorPosition::kBubbleTouchableAbove) {
+    if (state_.anchor == MenuAnchorPosition::kBubbleAbove) {
       // Align the left edges of the menu and anchor, and the bottom of the menu
       // with the top of the anchor.
       x = std::max(monitor_bounds.x(),
@@ -2396,7 +2352,7 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
         y = anchor_bounds.bottom() - border_and_shadow_insets.top() +
             menu_config.touchable_anchor_offset;
       }
-    } else if (state_.anchor == MenuAnchorPosition::kBubbleTouchableLeft) {
+    } else if (state_.anchor == MenuAnchorPosition::kBubbleLeft) {
       // Align the right of the menu with the left of the anchor, and the top of
       // the menu with the top of the anchor.
       x = anchor_bounds.x() - menu_size.width() +
@@ -2416,7 +2372,7 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
         if (y < monitor_bounds.y())
           y = monitor_bounds.y();
       }
-    } else if (state_.anchor == MenuAnchorPosition::kBubbleTouchableRight) {
+    } else if (state_.anchor == MenuAnchorPosition::kBubbleRight) {
       // Align the left of the menu with the right of the anchor, and the top of
       // the menu with the top of the anchor.
       x = anchor_bounds.right() - border_and_shadow_insets.left() +

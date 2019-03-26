@@ -357,17 +357,9 @@ void MenuScrollViewContainer::CreateBubbleBorder() {
 BubbleBorder::Arrow MenuScrollViewContainer::BubbleBorderTypeFromAnchor(
     MenuAnchorPosition anchor) {
   switch (anchor) {
-    case MenuAnchorPosition::kBubbleLeft:
-      return BubbleBorder::RIGHT_CENTER;
-    case MenuAnchorPosition::kBubbleRight:
-      return BubbleBorder::LEFT_CENTER;
     case MenuAnchorPosition::kBubbleAbove:
-      return BubbleBorder::BOTTOM_CENTER;
-    case MenuAnchorPosition::kBubbleBelow:
-      return BubbleBorder::TOP_CENTER;
-    case MenuAnchorPosition::kBubbleTouchableAbove:
-    case MenuAnchorPosition::kBubbleTouchableLeft:
-    case MenuAnchorPosition::kBubbleTouchableRight:
+    case MenuAnchorPosition::kBubbleLeft:
+    case MenuAnchorPosition::kBubbleRight:
       return BubbleBorder::FLOAT;
     default:
       return BubbleBorder::NONE;
