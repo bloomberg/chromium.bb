@@ -121,7 +121,8 @@ class ArcSessionManagerTest : public chromeos::MixinBasedInProcessBrowserTest {
     ArcSessionManager::SetUiEnabledForTesting(false);
     ArcSessionManager::EnableCheckAndroidManagementForTesting(true);
     ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
-        std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
+        std::make_unique<ArcSessionRunner>(
+            base::BindRepeating(FakeArcSession::Create)));
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 

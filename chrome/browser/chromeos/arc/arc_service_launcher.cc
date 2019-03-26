@@ -86,9 +86,9 @@ ArcServiceLauncher::ArcServiceLauncher()
     : arc_service_manager_(std::make_unique<ArcServiceManager>()),
       arc_session_manager_(std::make_unique<ArcSessionManager>(
           std::make_unique<ArcSessionRunner>(
-              base::Bind(ArcSession::Create,
-                         arc_service_manager_->arc_bridge_service(),
-                         &default_scale_factor_retriever_)))) {
+              base::BindRepeating(ArcSession::Create,
+                                  arc_service_manager_->arc_bridge_service(),
+                                  &default_scale_factor_retriever_)))) {
   DCHECK(g_arc_service_launcher == nullptr);
   g_arc_service_launcher = this;
 
@@ -222,7 +222,7 @@ void ArcServiceLauncher::ResetForTesting() {
   // may be referred from existing KeyedService, so destoying it would cause
   // unexpected behavior, specifically on test teardown.
   arc_session_manager_ = std::make_unique<ArcSessionManager>(
-      std::make_unique<ArcSessionRunner>(base::Bind(
+      std::make_unique<ArcSessionRunner>(base::BindRepeating(
           ArcSession::Create, arc_service_manager_->arc_bridge_service(),
           &default_scale_factor_retriever_)));
 }

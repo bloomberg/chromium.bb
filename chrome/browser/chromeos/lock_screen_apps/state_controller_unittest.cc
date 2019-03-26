@@ -395,7 +395,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     // Initialize arc session manager - NoteTakingHelper expects it to be set.
     arc_session_manager_ = std::make_unique<arc::ArcSessionManager>(
         std::make_unique<arc::ArcSessionRunner>(
-            base::Bind(&ArcSessionFactory)));
+            base::BindRepeating(&ArcSessionFactory)));
 
     chromeos::NoteTakingHelper::Initialize();
 
