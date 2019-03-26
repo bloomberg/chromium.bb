@@ -115,7 +115,7 @@ constexpr char TestWidgetDelegate::kAccessibleWindowTitle[];
 // Widgets.
 class AXNativeWidgetMacTest : public test::WidgetTest {
  public:
-  AXNativeWidgetMacTest() {}
+  AXNativeWidgetMacTest() = default;
 
   void SetUp() override {
     test::WidgetTest::SetUp();

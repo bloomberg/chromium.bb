@@ -29,7 +29,7 @@ namespace {
 // is not user-sizable.
 class ResizableDelegateView : public WidgetDelegateView {
  public:
-  ResizableDelegateView() {}
+  ResizableDelegateView() = default;
 
   // WidgetDelgate:
   bool CanResize() const override { return true; }

@@ -506,7 +506,8 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase,
 
   HandleKeyEventCallback handle_key_event_callback_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetTest);
@@ -529,12 +530,9 @@ class EnterAcceleratorView : public View {
   int count_ = 0;
 };
 
-BridgedNativeWidgetTest::BridgedNativeWidgetTest()
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+BridgedNativeWidgetTest::BridgedNativeWidgetTest() = default;
 
-BridgedNativeWidgetTest::~BridgedNativeWidgetTest() {
-}
+BridgedNativeWidgetTest::~BridgedNativeWidgetTest() = default;
 
 Textfield* BridgedNativeWidgetTest::InstallTextField(
     const base::string16& text,

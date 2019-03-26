@@ -51,8 +51,8 @@ namespace {
 class BridgedNativeWidgetHostDummy
     : public views_bridge_mac::mojom::BridgedNativeWidgetHost {
  public:
-  BridgedNativeWidgetHostDummy() {}
-  ~BridgedNativeWidgetHostDummy() override {}
+  BridgedNativeWidgetHostDummy() = default;
+  ~BridgedNativeWidgetHostDummy() override = default;
 
  private:
   void OnVisibilityChanged(bool visible) override {}

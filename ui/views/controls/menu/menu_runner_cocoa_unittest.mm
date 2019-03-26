@@ -91,8 +91,8 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
     kWindowOffset = 100,
   };
 
-  MenuRunnerCocoaTest() {}
-  ~MenuRunnerCocoaTest() override {}
+  MenuRunnerCocoaTest() = default;
+  ~MenuRunnerCocoaTest() override = default;
 
   void SetUp() override {
     const int kWindowWidth = 300;

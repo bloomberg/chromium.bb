@@ -54,7 +54,7 @@ namespace views {
 
 class NativeViewHostMacTest : public test::NativeViewHostTestBase {
  public:
-  NativeViewHostMacTest() {}
+  NativeViewHostMacTest() = default;
 
   // testing::Test:
   void TearDown() override {
