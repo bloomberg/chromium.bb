@@ -279,7 +279,14 @@ void ProfileSyncService::Initialize() {
                          user_settings_->IsFirstSetupComplete());
 
   // Auto-start means the first time the profile starts up, sync should start up
-  // immediately.
+  // immediately. Since IsSyncRequested() is false by default and nobody else
+  // will set it, we need to set it here.
+  // Local Sync bypasses the IsSyncRequested() check, so no need to set it in
+  // that case.
+  // TODO(crbug.com/920158): Get rid of AUTO_START and remove this workaround.
+  if (start_behavior_ == AUTO_START && !IsLocalSyncEnabled()) {
+    user_settings_->SetSyncRequestedIfNotSetExplicitly();
+  }
   bool force_immediate = (start_behavior_ == AUTO_START &&
                           !HasDisableReason(DISABLE_REASON_USER_CHOICE) &&
                           !user_settings_->IsFirstSetupComplete());

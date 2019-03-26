@@ -54,6 +54,8 @@ class SyncUserSettingsImpl : public SyncUserSettings {
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
 
+  void SetSyncRequestedIfNotSetExplicitly();
+
   ModelTypeSet GetPreferredDataTypes() const;
   bool IsEncryptedDatatypeEnabled() const;
   bool IsEncryptionPending() const;

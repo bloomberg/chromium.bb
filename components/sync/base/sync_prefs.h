@@ -91,6 +91,7 @@ class SyncPrefs : public CryptoSyncPrefs,
 
   bool IsSyncRequested() const;
   void SetSyncRequested(bool is_requested);
+  void SetSyncRequestedIfNotSetExplicitly();
 
   base::Time GetLastSyncedTime() const;
   void SetLastSyncedTime(base::Time time);

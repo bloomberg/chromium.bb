@@ -130,6 +130,10 @@ bool SyncUserSettingsImpl::SetDecryptionPassphrase(
   return result;
 }
 
+void SyncUserSettingsImpl::SetSyncRequestedIfNotSetExplicitly() {
+  prefs_->SetSyncRequestedIfNotSetExplicitly();
+}
+
 ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
   ModelTypeSet types =
       Union(prefs_->GetPreferredDataTypes(registered_types_), ControlTypes());
