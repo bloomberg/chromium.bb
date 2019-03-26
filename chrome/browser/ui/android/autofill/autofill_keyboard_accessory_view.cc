@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/android/autofill/autofill_keyboard_accessory_view.h"
 
+#include <numeric>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/android/resource_mapper.h"
@@ -23,27 +25,6 @@ using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace autofill {
-
-namespace {
-
-void AddToJavaArray(const Suggestion& suggestion,
-                    int icon_id,
-                    JNIEnv* env,
-                    const JavaRef<jobjectArray>& data_array,
-                    size_t position,
-                    bool deletable) {
-  int android_icon_id = 0;
-  if (!suggestion.icon.empty())
-    android_icon_id = ResourceMapper::MapFromChromiumId(icon_id);
-
-  Java_AutofillKeyboardAccessoryBridge_addToAutofillSuggestionArray(
-      env, data_array, position,
-      base::android::ConvertUTF16ToJavaString(env, suggestion.value),
-      base::android::ConvertUTF16ToJavaString(env, suggestion.label),
-      android_icon_id, suggestion.frontend_id, deletable);
-}
-
-}  // namespace
 
 AutofillKeyboardAccessoryView::AutofillKeyboardAccessoryView(
     AutofillPopupController* controller,
@@ -91,37 +72,43 @@ void AutofillKeyboardAccessoryView::OnSuggestionsChanged() {
   ScopedJavaLocalRef<jobjectArray> data_array =
       Java_AutofillKeyboardAccessoryBridge_createAutofillSuggestionArray(env,
                                                                          count);
+  auto is_front_item = [controller = controller_](int i) {
+    const Suggestion& suggestion = controller->GetSuggestionAt(i);
+    return suggestion.frontend_id == POPUP_ITEM_ID_CLEAR_FORM ||
+           suggestion.frontend_id == POPUP_ITEM_ID_CREATE_HINT;
+  };
+
   positions_.resize(count);
-  size_t position = 0;
+  std::iota(positions_.begin(), positions_.end(), 0);
+  // Only one front item may exist!
+  DCHECK_LT(std::count_if(positions_.begin(), positions_.end(), is_front_item),
+            2);
 
-  // Place "CLEAR FORM" and "CREATE HINT" items first in the list.
-  // Both "CLEAR FORM" and "CREATE HINT" cannot be present in the list.
-  for (size_t i = 0; i < count; ++i) {
-    const Suggestion& suggestion = controller_->GetSuggestionAt(i);
-    if (suggestion.frontend_id == POPUP_ITEM_ID_CLEAR_FORM ||
-        suggestion.frontend_id == POPUP_ITEM_ID_CREATE_HINT) {
-      AddToJavaArray(
-          suggestion,
-          controller_->layout_model().GetIconResourceID(suggestion.icon), env,
-          data_array, position, false);
-      positions_[position++] = i;
+  // Place the "CLEAR FORM" or "CREATE HINT" item first in the list.
+  auto item = std::find_if(positions_.begin(), positions_.end(), is_front_item);
+  if (item != positions_.end())
+    std::rotate(positions_.begin(), item, item + 1);
+
+  for (size_t i = 0; i < positions_.size(); ++i) {
+    const Suggestion& suggestion = controller_->GetSuggestionAt(positions_[i]);
+
+    base::string16 label = controller_->GetElidedLabelAt(i);
+    if (label.empty())
+      label = suggestion.additional_label;
+
+    int android_icon_id = 0;
+    if (!suggestion.icon.empty()) {
+      android_icon_id = ResourceMapper::MapFromChromiumId(
+          controller_->layout_model().GetIconResourceID(suggestion.icon));
     }
-  }
 
-  DCHECK_LT(position, 2U);
-
-  for (size_t i = 0; i < count; ++i) {
-    const Suggestion& suggestion = controller_->GetSuggestionAt(i);
-    if (suggestion.frontend_id != POPUP_ITEM_ID_CLEAR_FORM &&
-        suggestion.frontend_id != POPUP_ITEM_ID_CREATE_HINT) {
-      bool deletable =
-          controller_->GetRemovalConfirmationText(i, nullptr, nullptr);
-      AddToJavaArray(
-          suggestion,
-          controller_->layout_model().GetIconResourceID(suggestion.icon), env,
-          data_array, position, deletable);
-      positions_[position++] = i;
-    }
+    Java_AutofillKeyboardAccessoryBridge_addToAutofillSuggestionArray(
+        env, data_array, i,
+        base::android::ConvertUTF16ToJavaString(env, suggestion.value),
+        base::android::ConvertUTF16ToJavaString(env, label), android_icon_id,
+        suggestion.frontend_id,
+        controller_->GetRemovalConfirmationText(positions_[i], nullptr,
+                                                nullptr));
   }
 
   Java_AutofillKeyboardAccessoryBridge_show(env, java_object_, data_array,
