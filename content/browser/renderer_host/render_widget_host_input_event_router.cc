@@ -467,7 +467,12 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
   bool needs_transform_point = true;
   bool latched_target = true;
   bool should_verify_result = false;
-  if (root_view->IsMouseLocked()) {
+  // Allow devtools to route events into the root view based on the
+  // browser-side inspector overlay state.
+  if (route_to_root_for_devtools_)
+    target = root_view;
+
+  if (!target && root_view->IsMouseLocked()) {
     target = root_view->host()->delegate()->GetMouseLockWidget()->GetView();
   }
 
