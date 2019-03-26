@@ -27,7 +27,6 @@
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
-#include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/vulkan/buildflags.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "ui/gfx/skia_util.h"
@@ -276,7 +275,6 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
     SyntheticBeginFrameSource* synthetic_begin_frame_source,
     const RendererSettings& renderer_settings)
     : gpu_service_(gpu_service),
-      task_executor_(nullptr),
       is_using_vulkan_(gpu_service->is_using_vulkan()),
       surface_handle_(surface_handle),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),
@@ -284,19 +282,6 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
-
-SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
-    gpu::CommandBufferTaskExecutor* task_executor,
-    scoped_refptr<gl::GLSurface> gl_surface,
-    scoped_refptr<gpu::SharedContextState> shared_context_state)
-    : gpu_service_(nullptr),
-      task_executor_(task_executor),
-      gl_surface_(std::move(gl_surface)),
-      shared_context_state_(std::move(shared_context_state)),
-      is_using_vulkan_(false),
-      surface_handle_(gpu::kNullSurfaceHandle),
-      synthetic_begin_frame_source_(nullptr),
-      weak_ptr_factory_(this) {}
 
 SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -318,12 +303,7 @@ void SkiaOutputSurfaceImpl::BindToClient(OutputSurfaceClient* client) {
 
   client_ = client;
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
-  if (task_executor_) {
-    DCHECK(!sequence_);
-    sequence_ = task_executor_->CreateSequence();
-  } else {
-    client_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  }
+  client_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   auto callback = base::BindOnce(&SkiaOutputSurfaceImpl::InitializeOnGpuThread,
@@ -361,12 +341,6 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
                                     bool has_alpha,
                                     bool use_stencil) {
-  reshape_surface_size_ = size;
-  reshape_device_scale_factor_ = device_scale_factor;
-  reshape_color_space_ = color_space;
-  reshape_has_alpha_ = has_alpha;
-  reshape_use_stencil_ = use_stencil;
-
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (initialize_waitable_event_) {
     initialize_waitable_event_->Wait();
@@ -374,23 +348,15 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
   }
 
   SkSurfaceCharacterization* characterization = nullptr;
-  // If the render target is changed between GL fbo zero and non-zero, we cannot
-  // recreate SkSurface characterization from the existing characterization. So
-  // we have to request a new SkSurface characterization from
-  // SkiaOutputSurfaceImplOnGpu.
-  backing_framebuffer_object_ =
-      gl_surface_ ? gl_surface_->GetBackingFramebufferObject() : 0;
-  if (!characterization_.isValid() ||
-      (!is_using_vulkan_ &&
-       characterization_.usesGLFBO0() != (backing_framebuffer_object_ == 0))) {
+  if (characterization_.isValid()) {
+    // TODO(weiliang): support color space. https://crbug.com/795132
+    characterization_ =
+        characterization_.createResized(size.width(), size.height());
+  } else {
     characterization = &characterization_;
     initialize_waitable_event_ = std::make_unique<base::WaitableEvent>(
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
-  } else {
-    // TODO(weiliang): support color space. https://crbug.com/795132
-    characterization_ =
-        characterization_.createResized(size.width(), size.height());
   }
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
@@ -464,15 +430,6 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
   }
 
   DCHECK(characterization_.isValid());
-  // The fbo is changed, in that case we need notify SkiaOutputSurfaceImplOnGpu,
-  // so it can recreate SkSurface from the new fbo, and return a updated
-  // SkSurfaceCharacterization if necessary.
-  if (gl_surface_ && backing_framebuffer_object_ !=
-                         gl_surface_->GetBackingFramebufferObject()) {
-    Reshape(reshape_surface_size_, reshape_device_scale_factor_,
-            reshape_color_space_, reshape_has_alpha_, reshape_use_stencil_);
-  }
-
   recorder_.emplace(characterization_);
   if (!renderer_settings_.show_overdraw_feedback)
     return recorder_->getCanvas();
@@ -676,35 +633,22 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event) {
         base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(event)));
   }
 
-  if (task_executor_) {
-    // When |task_executor_| is not nullptr, DidSwapBuffersComplete(),
-    // BufferPresented(), ContextList() are not expected to be called by this
-    // class. The SurfacesInstance will do it.
-    impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
-        task_executor_, gl_surface_, std::move(shared_context_state_),
-        sequence_->GetSequenceId(), renderer_settings_,
-        base::DoNothing::Repeatedly<gpu::SwapBuffersCompleteParams,
-                                    const gfx::Size&>(),
-        base::DoNothing::Repeatedly<const gfx::PresentationFeedback&>(),
-        base::DoNothing::Repeatedly<>());
-  } else {
-    auto did_swap_buffer_complete_callback = base::BindRepeating(
-        &SkiaOutputSurfaceImpl::DidSwapBuffersComplete, weak_ptr_);
-    did_swap_buffer_complete_callback = CreateSafeCallback(
-        client_thread_task_runner_, did_swap_buffer_complete_callback);
-    auto buffer_presented_callback =
-        base::BindRepeating(&SkiaOutputSurfaceImpl::BufferPresented, weak_ptr_);
-    buffer_presented_callback = CreateSafeCallback(client_thread_task_runner_,
-                                                   buffer_presented_callback);
-    auto context_lost_callback =
-        base::BindRepeating(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_);
-    context_lost_callback =
-        CreateSafeCallback(client_thread_task_runner_, context_lost_callback);
-    impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
-        gpu_service_, surface_handle_, renderer_settings_,
-        did_swap_buffer_complete_callback, buffer_presented_callback,
-        context_lost_callback);
-  }
+  auto did_swap_buffer_complete_callback = base::BindRepeating(
+      &SkiaOutputSurfaceImpl::DidSwapBuffersComplete, weak_ptr_);
+  did_swap_buffer_complete_callback = CreateSafeCallback(
+      client_thread_task_runner_, did_swap_buffer_complete_callback);
+  auto buffer_presented_callback =
+      base::BindRepeating(&SkiaOutputSurfaceImpl::BufferPresented, weak_ptr_);
+  buffer_presented_callback =
+      CreateSafeCallback(client_thread_task_runner_, buffer_presented_callback);
+  auto context_lost_callback =
+      base::BindRepeating(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_);
+  context_lost_callback =
+      CreateSafeCallback(client_thread_task_runner_, context_lost_callback);
+  impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
+      gpu_service_, surface_handle_, renderer_settings_,
+      did_swap_buffer_complete_callback, buffer_presented_callback,
+      context_lost_callback);
   capabilities_ = impl_on_gpu_->capabilities();
 }
 
@@ -788,13 +732,9 @@ void SkiaOutputSurfaceImpl::ContextLost() {
 void SkiaOutputSurfaceImpl::ScheduleGpuTask(
     base::OnceClosure callback,
     std::vector<gpu::SyncToken> sync_tokens) {
-  if (gpu_service_) {
-    auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
-    gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
-        sequence_id, std::move(callback), std::move(sync_tokens)));
-  } else {
-    sequence_->ScheduleTask(std::move(callback), std::move(sync_tokens));
-  }
+  auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
+  gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
+      sequence_id, std::move(callback), std::move(sync_tokens)));
 }
 
 GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(

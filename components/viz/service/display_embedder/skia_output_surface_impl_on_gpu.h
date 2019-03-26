@@ -44,7 +44,6 @@ class GLSurface;
 }
 
 namespace gpu {
-class CommandBufferTaskExecutor;
 class SyncPointClientState;
 class SharedImageRepresentationSkia;
 }
@@ -94,15 +93,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   SkiaOutputSurfaceImplOnGpu(
       GpuServiceImpl* gpu_service,
       gpu::SurfaceHandle surface_handle,
-      const RendererSettings& renderer_settings_,
-      const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-      const BufferPresentedCallback& buffer_presented_callback,
-      const ContextLostCallback& context_lost_callback);
-  SkiaOutputSurfaceImplOnGpu(
-      gpu::CommandBufferTaskExecutor* task_executor,
-      scoped_refptr<gl::GLSurface> gl_surface,
-      scoped_refptr<gpu::SharedContextState> shared_context_state,
-      gpu::SequenceId sequence_id,
       const RendererSettings& renderer_settings_,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
       const BufferPresentedCallback& buffer_presented_callback,

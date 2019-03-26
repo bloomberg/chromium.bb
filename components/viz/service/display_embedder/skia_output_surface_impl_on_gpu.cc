@@ -33,7 +33,6 @@
 #include "gpu/command_buffer/service/texture_base.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/config/gpu_preferences.h"
-#include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "gpu/ipc/service/image_transport_surface.h"
@@ -117,14 +116,6 @@ scoped_refptr<gpu::gles2::FeatureInfo> CreateFeatureInfo(
       channel_manager->gpu_feature_info());
 }
 
-scoped_refptr<gpu::gles2::FeatureInfo> CreateFeatureInfo(
-    gpu::CommandBufferTaskExecutor* task_executor) {
-  return base::MakeRefCounted<gpu::gles2::FeatureInfo>(
-      gpu::GpuDriverBugWorkarounds(
-          task_executor->gpu_feature_info().enabled_gpu_driver_bug_workarounds),
-      task_executor->gpu_feature_info());
-}
-
 scoped_refptr<gpu::SyncPointClientState> CreateSyncPointClientState(
     GpuServiceImpl* gpu_service) {
   auto command_buffer_id = gpu::CommandBufferId::FromUnsafeValue(
@@ -134,29 +125,11 @@ scoped_refptr<gpu::SyncPointClientState> CreateSyncPointClientState(
       gpu_service->skia_output_surface_sequence_id());
 }
 
-scoped_refptr<gpu::SyncPointClientState> CreateSyncPointClientState(
-    gpu::CommandBufferTaskExecutor* task_executor,
-    gpu::SequenceId sequence_id) {
-  auto command_buffer_id = gpu::CommandBufferId::FromUnsafeValue(
-      g_next_command_buffer_id.GetNext() + 1);
-  return task_executor->sync_point_manager()->CreateSyncPointClientState(
-      gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE, command_buffer_id,
-      sequence_id);
-}
-
 std::unique_ptr<gpu::SharedImageRepresentationFactory>
 CreateSharedImageRepresentationFactory(GpuServiceImpl* gpu_service) {
   // TODO(https://crbug.com/899905): Use a real MemoryTracker, not nullptr.
   return std::make_unique<gpu::SharedImageRepresentationFactory>(
       gpu_service->shared_image_manager(), nullptr);
-}
-
-std::unique_ptr<gpu::SharedImageRepresentationFactory>
-CreateSharedImageRepresentationFactory(
-    gpu::CommandBufferTaskExecutor* task_executor) {
-  // TODO(https://crbug.com/899905): Use a real MemoryTracker, not nullptr.
-  return std::make_unique<gpu::SharedImageRepresentationFactory>(
-      task_executor->shared_image_manager(), nullptr);
 }
 
 class ScopedSurfaceToTexture {
@@ -348,33 +321,6 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     InitializeForVulkan(gpu_service);
   else
     InitializeForGLWithGpuService(gpu_service);
-}
-
-SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
-    gpu::CommandBufferTaskExecutor* task_executor,
-    scoped_refptr<gl::GLSurface> gl_surface,
-    scoped_refptr<gpu::SharedContextState> shared_context_state,
-    gpu::SequenceId sequence_id,
-    const RendererSettings& renderer_settings,
-    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-    const BufferPresentedCallback& buffer_presented_callback,
-    const ContextLostCallback& context_lost_callback)
-    : SkiaOutputSurfaceImplOnGpu(
-          gpu::kNullSurfaceHandle,
-          CreateFeatureInfo(task_executor),
-          task_executor->mailbox_manager(),
-          CreateSyncPointClientState(task_executor, sequence_id),
-          CreateSharedImageRepresentationFactory(task_executor),
-          nullptr /* gr_shader_cache */,
-          nullptr /* vulkan_context_provider */,
-          renderer_settings,
-          did_swap_buffer_complete_callback,
-          buffer_presented_callback,
-          context_lost_callback) {
-  DCHECK(!is_using_vulkan());
-  gl_surface_ = std::move(gl_surface);
-  context_state_ = std::move(shared_context_state);
-  InitializeForGL();
 }
 
 SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
