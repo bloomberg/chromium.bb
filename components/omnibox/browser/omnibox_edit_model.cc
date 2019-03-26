@@ -342,14 +342,17 @@ void OmniboxEditModel::GetDataForURLExport(GURL* url,
 }
 
 bool OmniboxEditModel::CurrentTextIsURL() const {
-  // If !user_input_in_progress_ and we are not showing a Query in Omnibox,
-  // then the URL is showing as the permanent display text, and no further
-  // checking is needed.  By avoiding checking in this case, we avoid calling
-  // into the autocomplete providers, and thus initializing the history system,
-  // as long as possible, which speeds startup.
-  LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
-  if (!user_input_in_progress_ &&
-      !location_bar_model->GetDisplaySearchTerms(nullptr)) {
+  // If !user_input_in_progress_, we can determine if the text is a URL without
+  // starting the autocomplete system. This speeds browser startup.
+  if (!user_input_in_progress_) {
+    // If we are displaying Query in Omnibox, and the user has not clicked
+    // "Show URL", then the text must be search terms, and not a URL.
+    if (controller()->GetLocationBarModel()->GetDisplaySearchTerms(nullptr) &&
+        view_->GetText() == display_text_) {
+      return false;
+    }
+
+    // In all other cases, the text must be a URL.
     return true;
   }
 
