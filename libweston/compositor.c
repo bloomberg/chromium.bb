@@ -479,6 +479,8 @@ weston_surface_state_init(struct weston_surface_state *state)
 	state->buffer_viewport.changed = 0;
 
 	state->acquire_fence_fd = -1;
+
+	state->desired_protection = WESTON_HDCP_DISABLE;
 }
 
 static void
@@ -560,6 +562,8 @@ weston_surface_create(struct weston_compositor *compositor)
 	wl_list_init(&surface->pointer_constraints);
 
 	surface->acquire_fence_fd = -1;
+
+	surface->desired_protection = WESTON_HDCP_DISABLE;
 
 	return surface;
 }
@@ -2528,6 +2532,7 @@ weston_output_repaint(struct weston_output *output, void *repaint_data)
 	pixman_region32_t output_damage;
 	int r;
 	uint32_t frame_time_msec;
+	enum weston_hdcp_protection highest_requested = WESTON_HDCP_DISABLE;
 
 	if (output->destroying)
 		return 0;
@@ -2536,6 +2541,23 @@ weston_output_repaint(struct weston_output *output, void *repaint_data)
 
 	/* Rebuild the surface list and update surface transforms up front. */
 	weston_compositor_build_view_list(ec);
+
+	/* Find the highest protection desired for an output */
+	wl_list_for_each(ev, &ec->view_list, link) {
+		if (ev->surface->output_mask & (1u << output->id)) {
+			/*
+			 * The desired_protection of the output should be the
+			 * maximum of the desired_protection of the surfaces,
+			 * that are displayed on that output, to avoid
+			 * reducing the protection for existing surfaces.
+			 */
+			if (ev->surface->desired_protection > highest_requested)
+				highest_requested =
+						ev->surface->desired_protection;
+		}
+	}
+
+	output->desired_protection = highest_requested;
 
 	if (output->assign_planes && !output->disable_planes) {
 		output->assign_planes(output, repaint_data);
@@ -3329,6 +3351,16 @@ apply_damage_buffer(pixman_region32_t *dest,
 }
 
 static void
+weston_surface_set_desired_protection(struct weston_surface *surface,
+				      enum weston_hdcp_protection protection)
+{
+	if (surface->desired_protection == protection)
+		return;
+	surface->desired_protection = protection;
+	weston_surface_damage(surface);
+}
+
+static void
 weston_surface_commit_state(struct weston_surface *surface,
 			    struct weston_surface_state *state)
 {
@@ -3349,7 +3381,6 @@ weston_surface_commit_state(struct weston_surface *surface,
 		/* zwp_surface_synchronization_v1.get_release */
 		weston_buffer_release_move(&surface->buffer_release_ref,
 					   &state->buffer_release_ref);
-
 		weston_surface_attach(surface, state->buffer);
 	}
 	weston_surface_state_set_buffer(state, NULL);
@@ -3418,6 +3449,9 @@ weston_surface_commit_state(struct weston_surface *surface,
 	wl_list_insert_list(&surface->feedback_list,
 			    &state->feedback_list);
 	wl_list_init(&state->feedback_list);
+
+	/* weston_protected_surface.set_type */
+	weston_surface_set_desired_protection(surface, state->desired_protection);
 
 	wl_signal_emit(&surface->commit_signal, surface);
 }
@@ -3718,6 +3752,7 @@ weston_subsurface_commit_to_cache(struct weston_subsurface *sub)
 		weston_buffer_release_move(&sub->cached.buffer_release_ref,
 					   &surface->pending.buffer_release_ref);
 	}
+	sub->cached.desired_protection = surface->pending.desired_protection;
 	assert(surface->pending.acquire_fence_fd == -1);
 	assert(surface->pending.buffer_release_ref.buffer_release == NULL);
 	sub->cached.sx += surface->pending.sx;
