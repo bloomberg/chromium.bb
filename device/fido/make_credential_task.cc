@@ -58,6 +58,44 @@ MakeCredentialTask::MakeCredentialTask(
 
 MakeCredentialTask::~MakeCredentialTask() = default;
 
+// static
+CtapMakeCredentialRequest MakeCredentialTask::GetTouchRequest(
+    const FidoDevice* device) {
+  // We want to flash and wait for a touch. Newer versions of the CTAP2 spec
+  // include a provision for blocking for a touch when an empty pinAuth is
+  // specified, but devices exist that predate this part of the spec and also
+  // the spec says that devices need only do that if they implement PIN support.
+  // Therefore, in order to portably wait for a touch, a dummy credential is
+  // created. This does assume that the device supports ECDSA P-256, however.
+  PublicKeyCredentialUserEntity user({1} /* user ID */);
+  // The user name is incorrectly marked as optional in the CTAP2 spec.
+  user.SetUserName("dummy");
+  CtapMakeCredentialRequest req(
+      "" /* client_data_json */, PublicKeyCredentialRpEntity(".dummy"),
+      std::move(user),
+      PublicKeyCredentialParams(
+          {{CredentialType::kPublicKey,
+            base::strict_cast<int>(CoseAlgorithmIdentifier::kCoseEs256)}}));
+  req.SetExcludeList({});
+
+  // If a device supports CTAP2 and has PIN support then setting an empty
+  // pinAuth should trigger just a touch[1]. Our U2F code also understands
+  // this convention.
+  // [1]
+  // https://fidoalliance.org/specs/fido-v2.0-ps-20190130/fido-client-to-authenticator-protocol-v2.0-ps-20190130.html#using-pinToken-in-authenticatorGetAssertion
+  if (device->supported_protocol() == ProtocolVersion::kU2f ||
+      (device->device_info() &&
+       device->device_info()->options().client_pin_availability !=
+           AuthenticatorSupportedOptions::ClientPinAvailability::
+               kNotSupported)) {
+    req.SetPinAuth({});
+  }
+
+  DCHECK(IsConvertibleToU2fRegisterCommand(req));
+
+  return req;
+}
+
 void MakeCredentialTask::StartTask() {
   if (device()->supported_protocol() == ProtocolVersion::kCtap &&
       !request_parameter_.is_u2f_only() &&

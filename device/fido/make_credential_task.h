@@ -39,6 +39,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialTask : public FidoTask {
                      MakeCredentialTaskCallback callback);
   ~MakeCredentialTask() override;
 
+  // GetTouchRequest returns a request that will cause a device to flash and
+  // wait for a touch.
+  static CtapMakeCredentialRequest GetTouchRequest(const FidoDevice* device);
+
  private:
   // FidoTask:
   void StartTask() final;
