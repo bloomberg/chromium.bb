@@ -574,13 +574,13 @@ STDMETHODIMP TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   // TextInputClient::InsertText() or TextInputClient::SetCompositionText().
   const size_t new_composition_start = composition_start_;
 
-  // If new_composition_start is not equal to last_composition_start,
+  // If new_composition_start is greater than last_composition_start,
   // then we know that there are some committed text. we need to call
   // TextInputClient::InsertText to complete the current composition. When there
   // are some committed text, it is not necessarily true that composition_string
   // is empty. We need to complete current composition with committed text and
   // start new composition with composition_string.
-  if ((new_composition_start != last_composition_start) && text_input_client_) {
+  if ((new_composition_start > last_composition_start) && text_input_client_) {
     CommitTextAndEndCompositionIfAny(last_composition_start,
                                      new_composition_start);
   }
@@ -1086,7 +1086,7 @@ bool TSFTextStore::CancelComposition() {
   // of potential compatibility issues.
 
   previous_composition_string_.clear();
-  const size_t previous_buffer_size = string_pending_insertion_.size();
+  const size_t previous_buffer_size = string_buffer_document_.size();
   string_pending_insertion_.clear();
   composition_start_ = selection_.start();
   if (text_store_acp_sink_mask_ & TS_AS_SEL_CHANGE)
@@ -1118,13 +1118,8 @@ bool TSFTextStore::ConfirmComposition() {
   // This logic is based on the observation about how to emulate
   // ImmNotifyIME(NI_COMPOSITIONSTR, CPS_COMPLETE, 0) by CUAS.
 
-  const base::string16& composition_text =
-      string_buffer_document_.substr(composition_start_);
-  if (!composition_text.empty())
-    text_input_client_->InsertText(composition_text);
-
   previous_composition_string_.clear();
-  const size_t previous_buffer_size = string_pending_insertion_.size();
+  const size_t previous_buffer_size = string_buffer_document_.size();
   string_pending_insertion_.clear();
   composition_start_ = selection_.start();
   if (text_store_acp_sink_mask_ & TS_AS_SEL_CHANGE)
