@@ -1785,6 +1785,12 @@ if (public_android_sdk) {
     apk_name = "TrichromeLibrary"
     android_manifest = trichrome_library_android_manifest
     android_manifest_dep = ":trichrome_library_android_manifest"
+    if (trichrome_synchronized_proguard) {
+      static_library_dependent_targets = [
+        ":trichrome_chrome_apk",
+        "//android_webview:trichrome_webview_apk",
+      ]
+    }
   }
 }
 
