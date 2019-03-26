@@ -179,6 +179,9 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
 
   static ProfileSyncServiceAndroid* GetProfileSyncServiceAndroid();
 
+  void TriggerRefresh(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj);
+
  private:
   // Returns whether sync is allowed by Android.
   bool IsSyncAllowedByAndroid() const;

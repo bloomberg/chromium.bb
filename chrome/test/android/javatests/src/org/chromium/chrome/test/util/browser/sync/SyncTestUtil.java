@@ -15,8 +15,6 @@ import org.json.JSONObject;
 import org.junit.Assert;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.invalidation.InvalidationServiceFactory;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -108,8 +106,7 @@ public final class SyncTestUtil {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                InvalidationServiceFactory.getForProfile(Profile.getLastUsedProfile())
-                        .requestSyncFromNativeChromeForAllTypes();
+                ProfileSyncService.get().triggerSync();
             }
         });
     }

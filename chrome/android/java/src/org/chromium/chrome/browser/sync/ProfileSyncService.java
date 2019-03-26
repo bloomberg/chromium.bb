@@ -374,6 +374,10 @@ public class ProfileSyncService {
                 syncEverything ? ALL_SELECTABLE_TYPES : modelTypeSetToArray(enabledTypes));
     }
 
+    public void triggerSync() {
+        nativeTriggerRefresh(mNativeProfileSyncServiceAndroid);
+    }
+
     public void setFirstSetupComplete() {
         nativeSetFirstSetupComplete(mNativeProfileSyncServiceAndroid);
     }
@@ -638,6 +642,7 @@ public class ProfileSyncService {
     private native int[] nativeGetPreferredDataTypes(long nativeProfileSyncServiceAndroid);
     private native void nativeSetChosenDataTypes(
             long nativeProfileSyncServiceAndroid, boolean syncEverything, int[] modelTypeArray);
+    private native void nativeTriggerRefresh(long nativeProfileSyncServiceAndroid);
     private native void nativeSetSetupInProgress(
             long nativeProfileSyncServiceAndroid, boolean inProgress);
     private native void nativeSetFirstSetupComplete(long nativeProfileSyncServiceAndroid);
