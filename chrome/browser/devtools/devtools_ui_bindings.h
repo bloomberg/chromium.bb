@@ -150,6 +150,8 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   void RecordEnumeratedHistogram(const std::string& name,
                                  int sample,
                                  int boundary_value) override;
+  void RecordPerformanceHistogram(const std::string& name,
+                                  double duration) override;
   void SendJsonRequest(const DispatchCallback& callback,
                        const std::string& browser_id,
                        const std::string& url) override;

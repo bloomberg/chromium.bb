@@ -17,6 +17,7 @@
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -168,7 +169,6 @@ class DefaultBindingsDelegate : public DevToolsUIBindings::Delegate {
   InfoBarService* GetInfoBarService() override;
   void RenderProcessGone(bool crashed) override {}
   void ShowCertificateViewer(const std::string& cert_chain) override {}
-
   content::WebContents* web_contents_;
   DISALLOW_COPY_AND_ASSIGN(DefaultBindingsDelegate);
 };
@@ -1107,6 +1107,19 @@ void DevToolsUIBindings::RecordEnumeratedHistogram(const std::string& name,
     UMA_HISTOGRAM_EXACT_LINEAR(name, sample, boundary_value);
   else
     frontend_host_->BadMessageRecieved();
+}
+
+void DevToolsUIBindings::RecordPerformanceHistogram(const std::string& name,
+                                                    double duration) {
+  if (!frontend_host_)
+    return;
+  if (duration < 0) {
+    return;
+  }
+  // Use histogram_functions.h instead of macros as the name comes from the
+  // DevTools frontend javascript and so will always have the same call site.
+  base::TimeDelta delta = base::TimeDelta::FromMilliseconds(duration);
+  base::UmaHistogramTimes(name, delta);
 }
 
 void DevToolsUIBindings::SendJsonRequest(const DispatchCallback& callback,
