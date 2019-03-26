@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_SERVICES_MOJO_JPEG_DECODE_ACCELERATOR_SERVICE_H_
-#define MEDIA_MOJO_SERVICES_MOJO_JPEG_DECODE_ACCELERATOR_SERVICE_H_
+#ifndef MEDIA_MOJO_SERVICES_MOJO_MJPEG_DECODE_ACCELERATOR_SERVICE_H_
+#define MEDIA_MOJO_SERVICES_MOJO_MJPEG_DECODE_ACCELERATOR_SERVICE_H_
 
 #include <stdint.h>
 
@@ -21,13 +21,13 @@ namespace media {
 
 // Implementation of a mojom::MjpegDecodeAccelerator which runs in the GPU
 // process, and wraps a JpegDecodeAccelerator.
-class MEDIA_MOJO_EXPORT MojoJpegDecodeAcceleratorService
+class MEDIA_MOJO_EXPORT MojoMjpegDecodeAcceleratorService
     : public mojom::MjpegDecodeAccelerator,
       public MjpegDecodeAccelerator::Client {
  public:
   static void Create(mojom::MjpegDecodeAcceleratorRequest request);
 
-  ~MojoJpegDecodeAcceleratorService() override;
+  ~MojoMjpegDecodeAcceleratorService() override;
 
   // MjpegDecodeAccelerator::Client implementation.
   void VideoFrameReady(int32_t buffer_id) override;
@@ -40,7 +40,7 @@ class MEDIA_MOJO_EXPORT MojoJpegDecodeAcceleratorService
   // This constructor internally calls
   // GpuJpegDecodeAcceleratorFactory::GetAcceleratorFactories() to
   // fill |accelerator_factory_functions_|.
-  MojoJpegDecodeAcceleratorService();
+  MojoMjpegDecodeAcceleratorService();
 
   // mojom::MjpegDecodeAccelerator implementation.
   void Initialize(InitializeCallback callback) override;
@@ -72,9 +72,9 @@ class MEDIA_MOJO_EXPORT MojoJpegDecodeAcceleratorService
 
   THREAD_CHECKER(thread_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(MojoJpegDecodeAcceleratorService);
+  DISALLOW_COPY_AND_ASSIGN(MojoMjpegDecodeAcceleratorService);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_SERVICES_MOJO_JPEG_DECODE_ACCELERATOR_SERVICE_H_
+#endif  // MEDIA_MOJO_SERVICES_MOJO_MJPEG_DECODE_ACCELERATOR_SERVICE_H_

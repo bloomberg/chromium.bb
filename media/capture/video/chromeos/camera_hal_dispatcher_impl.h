@@ -50,7 +50,7 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
  public:
   static CameraHalDispatcherImpl* GetInstance();
 
-  bool Start(MojoJpegDecodeAcceleratorFactoryCB jda_factory,
+  bool Start(MojoMjpegDecodeAcceleratorFactoryCB jda_factory,
              MojoJpegEncodeAcceleratorFactoryCB jea_factory);
 
   void AddClientObserver(std::unique_ptr<CameraClientObserver> observer);
@@ -119,7 +119,7 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   std::set<std::unique_ptr<CameraClientObserver>, base::UniquePtrComparator>
       client_observers_;
 
-  MojoJpegDecodeAcceleratorFactoryCB jda_factory_;
+  MojoMjpegDecodeAcceleratorFactoryCB jda_factory_;
 
   MojoJpegEncodeAcceleratorFactoryCB jea_factory_;
 

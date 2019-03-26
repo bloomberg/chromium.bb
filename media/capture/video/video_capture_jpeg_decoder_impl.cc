@@ -11,7 +11,7 @@
 namespace media {
 
 VideoCaptureJpegDecoderImpl::VideoCaptureJpegDecoderImpl(
-    MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory,
+    MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory,
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
     DecodeDoneCB decode_done_cb,
     base::RepeatingCallback<void(const std::string&)> send_log_message_cb)
@@ -198,7 +198,7 @@ void VideoCaptureJpegDecoderImpl::FinishInitialization() {
   jpeg_decoder_factory_.Run(mojo::MakeRequest(&remote_decoder));
 
   base::AutoLock lock(lock_);
-  decoder_ = std::make_unique<media::MojoJpegDecodeAccelerator>(
+  decoder_ = std::make_unique<media::MojoMjpegDecodeAccelerator>(
       decoder_task_runner_, remote_decoder.PassInterface());
 
   decoder_->InitializeAsync(

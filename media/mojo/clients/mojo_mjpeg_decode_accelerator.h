@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_CLIENTS_MOJO_JPEG_DECODE_ACCELERATOR_H_
-#define MEDIA_MOJO_CLIENTS_MOJO_JPEG_DECODE_ACCELERATOR_H_
+#ifndef MEDIA_MOJO_CLIENTS_MOJO_MJPEG_DECODE_ACCELERATOR_H_
+#define MEDIA_MOJO_CLIENTS_MOJO_MJPEG_DECODE_ACCELERATOR_H_
 
 #include <stdint.h>
 
@@ -22,16 +22,16 @@ namespace media {
 // A MjpegDecodeAccelerator, for use in the browser process, that proxies to a
 // mojom::MjpegDecodeAccelerator. Created on the owner's thread, otherwise
 // operating and deleted on |io_task_runner|.
-class MojoJpegDecodeAccelerator : public MjpegDecodeAccelerator {
+class MojoMjpegDecodeAccelerator : public MjpegDecodeAccelerator {
  public:
-  MojoJpegDecodeAccelerator(
+  MojoMjpegDecodeAccelerator(
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       mojom::MjpegDecodeAcceleratorPtrInfo jpeg_decoder);
-  ~MojoJpegDecodeAccelerator() override;
+  ~MojoMjpegDecodeAccelerator() override;
 
   // MjpegDecodeAccelerator implementation.
   // |client| is called on the IO thread, but is never called into after the
-  // MojoJpegDecodeAccelerator is destroyed.
+  // MojoMjpegDecodeAccelerator is destroyed.
   bool Initialize(Client* client) override;
   void InitializeAsync(Client* client, InitCB init_cb) override;
   void Decode(const BitstreamBuffer& bitstream_buffer,
@@ -57,9 +57,9 @@ class MojoJpegDecodeAccelerator : public MjpegDecodeAccelerator {
 
   mojom::MjpegDecodeAcceleratorPtr jpeg_decoder_;
 
-  DISALLOW_COPY_AND_ASSIGN(MojoJpegDecodeAccelerator);
+  DISALLOW_COPY_AND_ASSIGN(MojoMjpegDecodeAccelerator);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_CLIENTS_MOJO_JPEG_DECODE_ACCELERATOR_H_
+#endif  // MEDIA_MOJO_CLIENTS_MOJO_MJPEG_DECODE_ACCELERATOR_H_

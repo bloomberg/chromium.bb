@@ -19,7 +19,7 @@
 #include "media/capture/capture_export.h"
 #include "media/capture/video/video_capture_device_factory.h"
 #include "media/capture/video/video_capture_jpeg_decoder.h"
-#include "media/mojo/clients/mojo_jpeg_decode_accelerator.h"
+#include "media/mojo/clients/mojo_mjpeg_decode_accelerator.h"
 
 namespace media {
 
@@ -37,7 +37,7 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
       public MjpegDecodeAccelerator::Client {
  public:
   VideoCaptureJpegDecoderImpl(
-      MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory,
+      MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory,
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
       DecodeDoneCB decode_done_cb,
       base::RepeatingCallback<void(const std::string&)> send_log_message_cb);
@@ -72,7 +72,7 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
 
   void DestroyDecoderOnIOThread(base::WaitableEvent* event);
 
-  MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_;
+  MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_;
   scoped_refptr<base::SequencedTaskRunner> decoder_task_runner_;
 
   // The underlying JPEG decode accelerator.

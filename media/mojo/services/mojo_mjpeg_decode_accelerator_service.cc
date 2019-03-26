@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/mojo_jpeg_decode_accelerator_service.h"
+#include "media/mojo/services/mojo_mjpeg_decode_accelerator_service.h"
 
 #include <stdint.h>
 
@@ -59,35 +59,36 @@ bool VerifyDecodeParams(const gfx::Size& coded_size,
 namespace media {
 
 // static
-void MojoJpegDecodeAcceleratorService::Create(
+void MojoMjpegDecodeAcceleratorService::Create(
     mojom::MjpegDecodeAcceleratorRequest request) {
-  auto* jpeg_decoder = new MojoJpegDecodeAcceleratorService();
+  auto* jpeg_decoder = new MojoMjpegDecodeAcceleratorService();
   mojo::MakeStrongBinding(base::WrapUnique(jpeg_decoder), std::move(request));
 }
 
-MojoJpegDecodeAcceleratorService::MojoJpegDecodeAcceleratorService()
+MojoMjpegDecodeAcceleratorService::MojoMjpegDecodeAcceleratorService()
     : accelerator_factory_functions_(
           GpuJpegDecodeAcceleratorFactory::GetAcceleratorFactories()) {}
 
-MojoJpegDecodeAcceleratorService::~MojoJpegDecodeAcceleratorService() {
+MojoMjpegDecodeAcceleratorService::~MojoMjpegDecodeAcceleratorService() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-void MojoJpegDecodeAcceleratorService::VideoFrameReady(
+void MojoMjpegDecodeAcceleratorService::VideoFrameReady(
     int32_t bitstream_buffer_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NotifyDecodeStatus(bitstream_buffer_id,
                      ::media::MjpegDecodeAccelerator::Error::NO_ERRORS);
 }
 
-void MojoJpegDecodeAcceleratorService::NotifyError(
+void MojoMjpegDecodeAcceleratorService::NotifyError(
     int32_t bitstream_buffer_id,
     ::media::MjpegDecodeAccelerator::Error error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NotifyDecodeStatus(bitstream_buffer_id, error);
 }
 
-void MojoJpegDecodeAcceleratorService::Initialize(InitializeCallback callback) {
+void MojoMjpegDecodeAcceleratorService::Initialize(
+    InitializeCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // When adding non-chromeos platforms, VideoCaptureGpuJpegDecoder::Initialize
@@ -113,14 +114,14 @@ void MojoJpegDecodeAcceleratorService::Initialize(InitializeCallback callback) {
   std::move(callback).Run(true);
 }
 
-void MojoJpegDecodeAcceleratorService::Decode(
+void MojoMjpegDecodeAcceleratorService::Decode(
     const BitstreamBuffer& input_buffer,
     const gfx::Size& coded_size,
     mojo::ScopedSharedBufferHandle output_handle,
     uint32_t output_buffer_size,
     DecodeCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  TRACE_EVENT0("jpeg", "MojoJpegDecodeAcceleratorService::Decode");
+  TRACE_EVENT0("jpeg", "MojoMjpegDecodeAcceleratorService::Decode");
 
   DCHECK_EQ(decode_cb_map_.count(input_buffer.id()), 0u);
   decode_cb_map_[input_buffer.id()] = std::move(callback);
@@ -174,7 +175,7 @@ void MojoJpegDecodeAcceleratorService::Decode(
   accelerator_->Decode(input_buffer, frame);
 }
 
-void MojoJpegDecodeAcceleratorService::DecodeWithFD(
+void MojoMjpegDecodeAcceleratorService::DecodeWithFD(
     int32_t buffer_id,
     mojo::ScopedHandle input_handle,
     uint32_t input_buffer_size,
@@ -225,12 +226,12 @@ void MojoJpegDecodeAcceleratorService::DecodeWithFD(
 #endif
 }
 
-void MojoJpegDecodeAcceleratorService::Uninitialize() {
+void MojoMjpegDecodeAcceleratorService::Uninitialize() {
   // TODO(c.padhi): see http://crbug.com/699255.
   NOTIMPLEMENTED();
 }
 
-void MojoJpegDecodeAcceleratorService::NotifyDecodeStatus(
+void MojoMjpegDecodeAcceleratorService::NotifyDecodeStatus(
     int32_t bitstream_buffer_id,
     ::media::MjpegDecodeAccelerator::Error error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
