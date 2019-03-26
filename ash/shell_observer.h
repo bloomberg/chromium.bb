@@ -28,8 +28,9 @@ class ASH_EXPORT ShellObserver {
   // Invoked when the shelf alignment in |root_window| is changed.
   virtual void OnShelfAlignmentChanged(aura::Window* root_window) {}
 
-  // Invoked when accessibility panel bounds  in |root_window| is changed.
-  virtual void OnAccessibilityPanelBoundsChanged(aura::Window* root_window) {}
+  // Invoked when accessibility related insets (accessibility panel, docked
+  // magnifier) in |root_window| changed.
+  virtual void OnAccessibilityInsetsChanged(aura::Window* root_window) {}
 
   // Invoked when the shelf auto-hide behavior in |root_window| is changed.
   virtual void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) {}

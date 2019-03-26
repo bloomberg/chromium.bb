@@ -239,12 +239,6 @@ ShelfVisibilityState Shelf::GetVisibilityState() const {
                                : SHELF_HIDDEN;
 }
 
-int Shelf::GetDockedMagnifierHeight() const {
-  return shelf_layout_manager_
-             ? shelf_layout_manager_->docked_magnifier_height()
-             : 0;
-}
-
 gfx::Rect Shelf::GetIdealBounds() const {
   return shelf_layout_manager_->GetIdealBounds();
 }

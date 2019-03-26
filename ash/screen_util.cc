@@ -10,7 +10,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -41,18 +40,12 @@ gfx::Rect GetDisplayBoundsInParent(aura::Window* window) {
 
 gfx::Rect GetFullscreenWindowBoundsInParent(aura::Window* window) {
   gfx::Rect result = GetDisplayBoundsInParent(window);
-
-  Shelf* shelf = Shelf::ForWindow(window);
-  ShelfLayoutManager* shelf_layout_manager =
-      shelf ? shelf->shelf_layout_manager() : nullptr;
-  if (shelf_layout_manager) {
-    result.Inset(0,
-                 RootWindowController::ForWindow(window->GetRootWindow())
-                         ->GetAccessibilityPanelHeight() +
-                     shelf_layout_manager->docked_magnifier_height(),
-                 0, 0);
-  }
-
+  const RootWindowController* const root_window_controller =
+      RootWindowController::ForWindow(window->GetRootWindow());
+  result.Inset(0,
+               root_window_controller->GetAccessibilityPanelHeight() +
+                   root_window_controller->GetDockedMagnifierHeight(),
+               0, 0);
   return result;
 }
 

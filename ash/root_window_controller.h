@@ -160,6 +160,13 @@ class ASH_EXPORT RootWindowController {
   // Returns height of the accessibility panel for this root window.
   int GetAccessibilityPanelHeight() const;
 
+  // Returns height of the docked magnifier for this root window.
+  int GetDockedMagnifierHeight() const;
+
+  // Sets height of the docked magnifier for this root window. Notifies shell
+  // observers that work area changed.
+  void SetDockedMagnifierHeight(int height);
+
   aura::Window* GetContainer(int container_id);
   const aura::Window* GetContainer(int container_id) const;
 
@@ -302,6 +309,8 @@ class ASH_EXPORT RootWindowController {
   // Whether child windows have been closed during shutdown. Exists to avoid
   // calling related cleanup code more than once.
   bool did_close_child_windows_ = false;
+
+  int docked_magnifier_height_ = 0;
 
   static std::vector<RootWindowController*>* root_window_controllers_;
 

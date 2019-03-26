@@ -13,8 +13,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -64,11 +62,8 @@ inline gfx::Point GetCursorScreenPoint() {
 // given magnifier viewport |height| is allocated at the top of the screen.
 void SetViewportHeightInWorkArea(aura::Window* window, int height) {
   DCHECK(window);
-  ash::Shelf* shelf = ash::Shelf::ForWindow(window);
-  ash::ShelfLayoutManager* shelf_layout_manager =
-      shelf ? shelf->shelf_layout_manager() : nullptr;
-  if (shelf_layout_manager)
-    shelf_layout_manager->SetDockedMagnifierHeight(height);
+  RootWindowController::ForWindow(window->GetRootWindow())
+      ->SetDockedMagnifierHeight(height);
 }
 
 // Gets the bounds of the Docked Magnifier viewport widget when placed in the
