@@ -9,6 +9,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
@@ -111,7 +112,7 @@
             <div class="column">
               <div id="label">$i18n{dateLabel}</div>
               <input id="dateInput" type="date" aria-label="$i18n{dateLabel}"
-                  on-blur="onTimeBlur_">
+                  min="[[minDate_]]" max="[[maxDate_]]" on-blur="onTimeBlur_">
             </div>
             <div class="column" id="timeColumn">
               <div id="label">$i18n{timeLabel}</div>
@@ -120,12 +121,17 @@
             </div>
           </div>
 
-          <div id="timezone" class="row" hidden>
+          <div id="timezone" class="row" hidden$="[[!isTimezoneVisible_]]">
             <div id="label">$i18n{timezoneLabel}</div>
             <select id="timezoneSelect"
                 class="md-select"
                 aria-label="$i18n{timezoneLabel}"
                 on-change="onTimezoneChange_">
+              <template is="dom-repeat" items="[[timezoneItems_]]" as="tz">
+                <option value="[[tz.id]]" selected="[[tz.selected]]">
+                  [[tz.name]]
+                </option>
+              </template>
             </select>
           </div>
         </div>

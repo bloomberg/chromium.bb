@@ -72,6 +72,7 @@ TEST_F('MdSetTimeBrowserTest', 'All', function() {
       PolymerTest.clearBody();
       setTimeElement = document.createElement('set-time');
       document.body.appendChild(setTimeElement);
+      Polymer.dom.flush();
     });
 
     teardown(function() {
@@ -81,6 +82,19 @@ TEST_F('MdSetTimeBrowserTest', 'All', function() {
     test('PageReady', () => {
       // Verify the page sends the ready message.
       assertEquals(1, testBrowserProxy.getCallCount('sendPageReady'));
+    });
+
+    test('DateRangeContainsNow', () => {
+      const dateInput = setTimeElement.$$('#dateInput');
+
+      // Input element attributes min and max are strings like '2019-03-01'.
+      const minDate = new Date(dateInput.min);
+      const maxDate = new Date(dateInput.max);
+      const now = new Date();
+
+      // Verify min <= now <= max.
+      assertLE(minDate, now);
+      assertLE(now, maxDate);
     });
 
     test('SetDate', () => {
