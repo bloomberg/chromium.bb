@@ -110,20 +110,15 @@ def _ParseOptions(args):
 
 
 def _VerifyExpectedConfigs(expected_path, actual_path, fail_on_exit):
-  diff = diff_utils.DiffFileContents(expected_path, actual_path)
-  if not diff:
+  msg = diff_utils.DiffFileContents(expected_path, actual_path)
+  if not msg:
     return
 
-  print """
-{}
-
-Detected Proguard flags change. Please update by running:
-
-cp {} {}
-
-See https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
-for more info.
-""".format(diff, os.path.abspath(actual_path), os.path.abspath(expected_path))
+  sys.stderr.write("""\
+Proguard flag expectations file needs updating. For details see:
+https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
+""")
+  sys.stderr.write(msg)
   if fail_on_exit:
     sys.exit(1)
 
@@ -211,6 +206,8 @@ def main(args):
       proguard_util.WriteFlagsFile(
           options.proguard_configs, f, exclude_generated=True)
       merged_configs = f.getvalue()
+      # Fix up line endings (third_party configs can have windows endings)
+      merged_configs = merged_configs.replace('\r', '')
       f.close()
       print_stdout = '-whyareyoukeeping' in merged_configs
 
