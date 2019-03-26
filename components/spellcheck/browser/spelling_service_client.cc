@@ -14,6 +14,8 @@
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -165,7 +167,8 @@ bool SpellingServiceClient::RequestTextCheck(
   loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory.get(),
       base::BindOnce(&SpellingServiceClient::OnSimpleLoaderComplete,
-                     base::Unretained(this), std::move(it)));
+                     base::Unretained(this), std::move(it),
+                     base::TimeTicks::Now()));
   return true;
 }
 
@@ -306,13 +309,37 @@ SpellingServiceClient::TextCheckCallbackData::~TextCheckCallbackData() {}
 
 void SpellingServiceClient::OnSimpleLoaderComplete(
     SpellCheckLoaderList::iterator it,
+    base::TimeTicks request_start,
     std::unique_ptr<std::string> response_body) {
+  UMA_HISTOGRAM_TIMES("SpellCheck.SpellingService.RequestDuration",
+                      base::TimeTicks::Now() - request_start);
+
   TextCheckCompleteCallback callback = std::move(it->get()->callback);
   base::string16 text = it->get()->text;
   bool success = false;
   std::vector<SpellCheckResult> results;
   if (response_body)
     success = ParseResponse(*response_body, &results);
+
+  int response_code = net::ERR_FAILED;
+  auto* resp_info = it->get()->simple_url_loader->ResponseInfo();
+  if (resp_info && resp_info->headers) {
+    response_code = resp_info->headers->response_code();
+  }
+
+  ServiceRequestResultType result_type =
+      ServiceRequestResultType::kRequestFailure;
+  if (success) {
+    result_type = results.empty()
+                      ? ServiceRequestResultType::kSuccessEmpty
+                      : ServiceRequestResultType::kSuccessWithSuggestions;
+  }
+
+  base::UmaHistogramSparse("SpellCheck.SpellingService.RequestHttpResponseCode",
+                           response_code);
+  UMA_HISTOGRAM_ENUMERATION("SpellCheck.SpellingService.RequestResultType",
+                            result_type);
+
   spellcheck_loaders_.erase(it);
   std::move(callback).Run(success, text, results);
 }
