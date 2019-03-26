@@ -22,6 +22,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
+class SkBitmap;
+
 namespace content {
 
 class BrowserContext;

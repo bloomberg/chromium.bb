@@ -23,7 +23,6 @@
 #include "url/origin.h"
 
 namespace content {
-
 namespace background_fetch {
 
 namespace {
@@ -524,5 +523,4 @@ std::string GetInitializationDataTask::HistogramName() const {
 }
 
 }  // namespace background_fetch
-
 }  // namespace content

@@ -32,7 +32,7 @@
 namespace storage {
 class BlobDataHandle;
 class QuotaManagerProxy;
-}
+}  // namespace storage
 
 namespace content {
 

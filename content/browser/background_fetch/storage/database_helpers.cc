@@ -8,7 +8,6 @@
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
 namespace content {
-
 namespace background_fetch {
 
 std::string ActiveRegistrationUniqueIdKey(const std::string& developer_id) {
@@ -194,5 +193,4 @@ GURL RemoveUniqueParamFromCacheURL(const GURL& url,
 }
 
 }  // namespace background_fetch
-
 }  // namespace content

@@ -26,7 +26,6 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace content {
-
 namespace background_fetch {
 
 namespace {
@@ -463,5 +462,4 @@ std::string CreateMetadataTask::HistogramName() const {
 }
 
 }  // namespace background_fetch
-
 }  // namespace content

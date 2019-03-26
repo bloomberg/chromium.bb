@@ -14,7 +14,6 @@
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace content {
-
 namespace background_fetch {
 
 // Moves the request from an active state to a complete state. Stores the
@@ -88,7 +87,6 @@ class MarkRequestCompleteTask : public DatabaseTask {
 };
 
 }  // namespace background_fetch
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_MARK_REQUEST_COMPLETE_TASK_H_

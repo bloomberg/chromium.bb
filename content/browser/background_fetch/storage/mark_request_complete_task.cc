@@ -22,7 +22,6 @@
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
 namespace content {
-
 namespace background_fetch {
 
 namespace {
@@ -311,5 +310,4 @@ std::string MarkRequestCompleteTask::HistogramName() const {
 }
 
 }  // namespace background_fetch
-
 }  // namespace content

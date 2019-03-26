@@ -17,9 +17,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/download_manager.h"
 #include "third_party/blink/public/mojom/blob/serialized_blob.mojom.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
-
-class SkBitmap;
 
 namespace content {
 
