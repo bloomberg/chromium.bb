@@ -11065,6 +11065,44 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileBottomToolbarHomeButton">
+  <owner>amaralp@chromium.org</owner>
+  <owner>chrome-android-apps@chromium.org</owner>
+  <description>
+    The user tapped on the bottom toolbar's home button.
+  </description>
+</action>
+
+<action name="MobileBottomToolbarNewTabButton">
+  <owner>amaralp@chromium.org</owner>
+  <owner>chrome-android-apps@chromium.org</owner>
+  <description>
+    The user tapped on the bottom toolbar's new tab button.
+  </description>
+</action>
+
+<action name="MobileBottomToolbarShareButton">
+  <owner>amaralp@chromium.org</owner>
+  <owner>chrome-android-apps@chromium.org</owner>
+  <description>
+    The user tapped on the bottom toolbar's share button.
+  </description>
+</action>
+
+<action name="MobileBottomToolbarShowMenu">
+  <owner>amaralp@chromium.org</owner>
+  <owner>chrome-android-apps@chromium.org</owner>
+  <description>The bottom toolbar's overflow menu was shown.</description>
+</action>
+
+<action name="MobileBottomToolbarTabSwitcherButtonInBrowsingView">
+  <owner>amaralp@chromium.org</owner>
+  <owner>chrome-android-apps@chromium.org</owner>
+  <description>
+    The user tapped on the bottom toolbar's tab switcher button.
+  </description>
+</action>
+
 <action name="MobileBreakpadUploadAttempt" not_user_triggered="true">
   <obsolete>
     Deprecated 2017/02/28 due to confusing semantics and lack of use.
@@ -12690,6 +12728,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileToolbarStackViewButtonInBrowsingView">
+  <owner>amaralp@chromium.org</owner>
+  <owner>chrome-android-apps@chromium.org</owner>
+  <description>
+    User in the Android browsing mode tapped the tab switcher button on the
+    toolbar to enter the tab switcher.
+  </description>
+</action>
+
 <action name="MobileToolbarStackViewButtonInStackView">
   <owner>rlanday@chromium.org</owner>
   <description>
@@ -12718,6 +12765,28 @@ should be able to be added at any place in this file.
 <action name="MobileToolbarToggleBookmark">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="MobileTopToolbarHomeButton">
+  <owner>amaralp@chromium.org</owner>
+  <owner>chrome-android-apps@chromium.org</owner>
+  <description>The user tapped on the top toolbar's home button.</description>
+</action>
+
+<action name="MobileTopToolbarNewTabButton">
+  <owner>amaralp@chromium.org</owner>
+  <owner>chrome-android-apps@chromium.org</owner>
+  <description>
+    The user tapped on the top toolbar's new tab button.
+  </description>
+</action>
+
+<action name="MobileTopToolbarShowMenu">
+  <owner>amaralp@chromium.org</owner>
+  <owner>chrome-android-apps@chromium.org</owner>
+  <description>
+    Action indicating the top toolbar's overflow menu was shown.
+  </description>
 </action>
 
 <action name="MobileUsingMenuByHwButtonDragging">
