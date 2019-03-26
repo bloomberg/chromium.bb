@@ -44,10 +44,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SessionCleanupCookieStore
       const scoped_refptr<net::SQLitePersistentCookieStore>& cookie_store);
 
   // net::CookieMonster::PersistentCookieStore:
-  void Load(const LoadedCallback& loaded_callback,
+  void Load(LoadedCallback loaded_callback,
             const net::NetLogWithSource& net_log) override;
   void LoadCookiesForKey(const std::string& key,
-                         const LoadedCallback& callback) override;
+                         LoadedCallback callback) override;
   void AddCookie(const net::CanonicalCookie& cc) override;
   void UpdateCookieAccessTime(const net::CanonicalCookie& cc) override;
   void DeleteCookie(const net::CanonicalCookie& cc) override;
@@ -65,7 +65,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SessionCleanupCookieStore
  private:
   // Called after cookies are loaded from the database.  Calls |loaded_callback|
   // when done.
-  void OnLoad(const LoadedCallback& loaded_callback,
+  void OnLoad(LoadedCallback loaded_callback,
               std::vector<std::unique_ptr<net::CanonicalCookie>> cookies);
 
   // Map of (domain keys(eTLD+1), is secure cookie) to number of cookies in the

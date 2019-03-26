@@ -640,7 +640,8 @@ typedef base::RefCountedThreadSafe<CookieMonster::PersistentCookieStore>
 class NET_EXPORT CookieMonster::PersistentCookieStore
     : public RefcountedPersistentCookieStore {
  public:
-  typedef base::Callback<void(std::vector<std::unique_ptr<CanonicalCookie>>)>
+  typedef base::OnceCallback<void(
+      std::vector<std::unique_ptr<CanonicalCookie>>)>
       LoadedCallback;
 
   // Initializes the store and retrieves the existing cookies. This will be
@@ -650,7 +651,7 @@ class NET_EXPORT CookieMonster::PersistentCookieStore
   // |loaded_callback| may not be NULL.
   // |net_log| is a NetLogWithSource that may be copied if the persistent
   // store wishes to log NetLog events.
-  virtual void Load(const LoadedCallback& loaded_callback,
+  virtual void Load(LoadedCallback loaded_callback,
                     const NetLogWithSource& net_log) = 0;
 
   // Does a priority load of all cookies for the domain key (eTLD+1). The
@@ -661,7 +662,7 @@ class NET_EXPORT CookieMonster::PersistentCookieStore
   //
   // |loaded_callback| may not be NULL.
   virtual void LoadCookiesForKey(const std::string& key,
-                                 const LoadedCallback& loaded_callback) = 0;
+                                 LoadedCallback loaded_callback) = 0;
 
   virtual void AddCookie(const CanonicalCookie& cc) = 0;
   virtual void UpdateCookieAccessTime(const CanonicalCookie& cc) = 0;

@@ -872,10 +872,11 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
   }
 
   void ExecuteLoads(CookieStoreCommand::Type type) {
-    for (const auto& command : persistent_store_->commands()) {
+    const auto& commands = persistent_store_->commands();
+    for (size_t i = 0; i < commands.size(); ++i) {
       // Only the first load command will produce the cookies.
-      if (command.type == type) {
-        std::move(command.loaded_callback).Run(std::move(loaded_cookies_));
+      if (commands[i].type == type) {
+        persistent_store_->TakeCallbackAt(i).Run(std::move(loaded_cookies_));
       }
     }
   }
@@ -2195,8 +2196,7 @@ TEST_F(CookieMonsterTest, WhileLoadingLoadCompletesBeforeKeyLoadCompletes) {
             store->commands()[1].type);
 
   // The main load completes first (With no cookies).
-  store->commands()[0].loaded_callback.Run(
-      std::vector<std::unique_ptr<CanonicalCookie>>());
+  store->TakeCallbackAt(0).Run(std::vector<std::unique_ptr<CanonicalCookie>>());
 
   // The tasks should run in order, and the get should see the cookies.
 
@@ -2209,8 +2209,7 @@ TEST_F(CookieMonsterTest, WhileLoadingLoadCompletesBeforeKeyLoadCompletes) {
 
   // The loaded for key event completes late, with not cookies (Since they
   // were already loaded).
-  store->commands()[1].loaded_callback.Run(
-      std::vector<std::unique_ptr<CanonicalCookie>>());
+  store->TakeCallbackAt(1).Run(std::vector<std::unique_ptr<CanonicalCookie>>());
 
   // The just set cookie should still be in the store.
   GetCookieListCallback get_cookie_list_callback2;
@@ -2246,7 +2245,7 @@ TEST_F(CookieMonsterTest, WhileLoadingDeleteAllGetForURL) {
   cookies.push_back(
       CanonicalCookie::Create(kUrl, "a=b", base::Time::Now(), CookieOptions()));
   ASSERT_TRUE(cookies[0]);
-  store->commands()[0].loaded_callback.Run(std::move(cookies));
+  store->TakeCallbackAt(0).Run(std::move(cookies));
 
   delete_callback.WaitUntilDone();
   EXPECT_EQ(1u, delete_callback.result());
@@ -2282,8 +2281,7 @@ TEST_F(CookieMonsterTest, WhileLoadingGetAllSetGetAll) {
   ASSERT_EQ(CookieStoreCommand::LOAD, store->commands()[0].type);
 
   // The load completes (With no cookies).
-  store->commands()[0].loaded_callback.Run(
-      std::vector<std::unique_ptr<CanonicalCookie>>());
+  store->TakeCallbackAt(0).Run(std::vector<std::unique_ptr<CanonicalCookie>>());
 
   get_cookie_list_callback1.WaitUntilDone();
   EXPECT_EQ(0u, get_cookie_list_callback1.cookies().size());
@@ -2335,8 +2333,7 @@ TEST_F(CookieMonsterTest, CheckOrderOfCookieTaskQueueWhenLoadingCompletes) {
   ASSERT_EQ(CookieStoreCommand::LOAD, store->commands()[0].type);
 
   // The load completes.
-  store->commands()[0].loaded_callback.Run(
-      std::vector<std::unique_ptr<CanonicalCookie>>());
+  store->TakeCallbackAt(0).Run(std::vector<std::unique_ptr<CanonicalCookie>>());
 
   // The get cookies call should see no cookies set.
   get_cookie_list_callback1.WaitUntilDone();
@@ -3131,9 +3128,10 @@ TEST_F(CookieMonsterTest, SetCanonicalCookieDoesNotBlockForLoadAll) {
                                    callback_get.MakeCallback());
 
   // Now go through the store commands, and execute individual loads.
-  for (const CookieStoreCommand& command : persistent_store->commands()) {
-    if (command.type == CookieStoreCommand::LOAD_COOKIES_FOR_KEY)
-      command.loaded_callback.Run(
+  const auto& commands = persistent_store->commands();
+  for (size_t i = 0; i < commands.size(); ++i) {
+    if (commands[i].type == CookieStoreCommand::LOAD_COOKIES_FOR_KEY)
+      persistent_store->TakeCallbackAt(i).Run(
           std::vector<std::unique_ptr<CanonicalCookie>>());
   }
 
@@ -3142,9 +3140,9 @@ TEST_F(CookieMonsterTest, SetCanonicalCookieDoesNotBlockForLoadAll) {
   callback_get.WaitUntilDone();
 
   // Now execute full-store loads as well.
-  for (const CookieStoreCommand& command : persistent_store->commands()) {
-    if (command.type == CookieStoreCommand::LOAD)
-      command.loaded_callback.Run(
+  for (size_t i = 0; i < commands.size(); ++i) {
+    if (commands[i].type == CookieStoreCommand::LOAD)
+      persistent_store->TakeCallbackAt(i).Run(
           std::vector<std::unique_ptr<CanonicalCookie>>());
   }
 }
@@ -3285,7 +3283,7 @@ TEST_F(CookieMonsterNotificationTest, GlobalNotBroadcast) {
                   &initial_cookies);
 
   // Execute the load
-  store->commands()[0].loaded_callback.Run(std::move(initial_cookies));
+  store->TakeCallbackAt(0).Run(std::move(initial_cookies));
   base::RunLoop().RunUntilIdle();
 
   // We should see two insertions, no deletions, and only one cookie in the
