@@ -233,8 +233,8 @@ DemoSession::DemoModeConfig DemoSession::GetDemoConfig() {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   bool is_demo_device_mode = connector->GetInstallAttributes()->GetMode() ==
                              policy::DeviceMode::DEVICE_MODE_DEMO;
-  bool is_demo_device_domain = connector->GetInstallAttributes()->GetDomain() ==
-                               DemoSetupController::kDemoModeDomain;
+  bool is_demo_device_domain =
+      connector->GetInstallAttributes()->GetDomain() == policy::kDemoModeDomain;
 
   // TODO(agawronska): We check device mode and domain to allow for dev/test
   // setup that is done by manual enrollment into demo domain. Device mode is

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_STUB_INSTALL_ATTRIBUTES_H_
-#define CHROME_BROWSER_CHROMEOS_SETTINGS_STUB_INSTALL_ATTRIBUTES_H_
+#ifndef CHROMEOS_TPM_STUB_INSTALL_ATTRIBUTES_H_
+#define CHROMEOS_TPM_STUB_INSTALL_ATTRIBUTES_H_
 
 #include <string>
 
@@ -82,4 +82,4 @@ class ScopedStubInstallAttributes {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_SETTINGS_STUB_INSTALL_ATTRIBUTES_H_
+#endif  // CHROMEOS_TPM_STUB_INSTALL_ATTRIBUTES_H_

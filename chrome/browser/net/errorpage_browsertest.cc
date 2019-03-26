@@ -88,7 +88,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/policy/core/common/policy_types.h"
 #else
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
