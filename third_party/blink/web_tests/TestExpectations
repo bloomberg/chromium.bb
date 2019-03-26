@@ -3008,6 +3008,10 @@ crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-or
 crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/semantics/forms/the-textarea-element/multiline-placeholder-cr.html [ Failure ]
+crbug.com/626703 [ Mac10.10 ] external/wpt/event-timing/event-timing-onloadthenobserve.html [ Timeout ]
+crbug.com/626703 [ Mac10.11 ] external/wpt/event-timing/event-timing-onloadthenobserve.html [ Timeout ]
+crbug.com/626703 [ Win7 ] external/wpt/event-timing/event-timing-onloadthenobserve.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/webrtc/RTCPeerConnection-ondatachannel.html [ Failure Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
@@ -3832,7 +3836,6 @@ crbug.com/626703 external/wpt/css/css-values/lh-unit-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-tables/fixup-dynamic-anonymous-inline-table-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-tables/fixup-dynamic-anonymous-table-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-tables/fixup-dynamic-anonymous-inline-table-001.html [ Failure ]
-crbug.com/626703 external/wpt/html/form-elements/the-textarea-element/multiline-placeholder-cr.html [ Failure ]
 crbug.com/626703 external/wpt/svg/path/bearing/zero.svg [ Failure ]
 crbug.com/626703 external/wpt/svg/path/bearing/relative.svg [ Failure ]
 crbug.com/626703 external/wpt/svg/path/bearing/absolute.svg [ Failure ]

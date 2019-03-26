@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 506 tests; 363 PASS, 143 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 506 tests; 376 PASS, 130 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Test driver for asyncInitCertificate
 FAIL Test driver for asyncInitTransports assert_unreached: Failed to run asyncInitTransports: Error: assert_true: Expect pc.sctp to be instance of RTCSctpTransport expected true got false Reached unreachable code
@@ -90,13 +90,13 @@ PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property 
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "setConfiguration(RTCConfiguration)" with the proper type
 PASS RTCPeerConnection interface: calling setConfiguration(RTCConfiguration) on new RTCPeerConnection() with too few arguments must throw TypeError
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "close()" with the proper type
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "onnegotiationneeded" with the proper type Unrecognized type EventHandler
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "onicecandidate" with the proper type Unrecognized type EventHandler
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "onnegotiationneeded" with the proper type
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "onicecandidate" with the proper type
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "onicecandidateerror" with the proper type assert_inherits: property "onicecandidateerror" not found in prototype chain
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "onsignalingstatechange" with the proper type Unrecognized type EventHandler
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "oniceconnectionstatechange" with the proper type Unrecognized type EventHandler
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "onicegatheringstatechange" with the proper type Unrecognized type EventHandler
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "onconnectionstatechange" with the proper type Unrecognized type EventHandler
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "onsignalingstatechange" with the proper type
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "oniceconnectionstatechange" with the proper type
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "onicegatheringstatechange" with the proper type
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "onconnectionstatechange" with the proper type
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "createOffer(RTCSessionDescriptionCallback, RTCPeerConnectionErrorCallback, RTCOfferOptions)" with the proper type
 PASS RTCPeerConnection interface: calling createOffer(RTCSessionDescriptionCallback, RTCPeerConnectionErrorCallback, RTCOfferOptions) on new RTCPeerConnection() with too few arguments must throw TypeError
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "setLocalDescription(RTCSessionDescriptionInit, VoidFunction, RTCPeerConnectionErrorCallback)" with the proper type
@@ -118,11 +118,11 @@ PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property 
 PASS RTCPeerConnection interface: calling removeTrack(RTCRtpSender) on new RTCPeerConnection() with too few arguments must throw TypeError
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "addTransceiver([object Object],[object Object], RTCRtpTransceiverInit)" with the proper type
 PASS RTCPeerConnection interface: calling addTransceiver([object Object],[object Object], RTCRtpTransceiverInit) on new RTCPeerConnection() with too few arguments must throw TypeError
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "ontrack" with the proper type Unrecognized type EventHandler
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "ontrack" with the proper type
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "sctp" with the proper type
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "createDataChannel(USVString, RTCDataChannelInit)" with the proper type
 PASS RTCPeerConnection interface: calling createDataChannel(USVString, RTCDataChannelInit) on new RTCPeerConnection() with too few arguments must throw TypeError
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "ondatachannel" with the proper type Unrecognized type EventHandler
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "ondatachannel" with the proper type
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "getStats(MediaStreamTrack)" with the proper type
 PASS RTCPeerConnection interface: calling getStats(MediaStreamTrack) on new RTCPeerConnection() with too few arguments must throw TypeError
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "onstatsended" with the proper type assert_inherits: property "onstatsended" not found in prototype chain
@@ -431,12 +431,12 @@ FAIL RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') mus
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "readyState" with the proper type
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "bufferedAmount" with the proper type
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "bufferedAmountLowThreshold" with the proper type
-FAIL RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "onopen" with the proper type Unrecognized type EventHandler
-FAIL RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "onbufferedamountlow" with the proper type Unrecognized type EventHandler
-FAIL RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "onerror" with the proper type Unrecognized type EventHandler
-FAIL RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "onclose" with the proper type Unrecognized type EventHandler
+PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "onopen" with the proper type
+PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "onbufferedamountlow" with the proper type
+PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "onerror" with the proper type
+PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "onclose" with the proper type
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "close()" with the proper type
-FAIL RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "onmessage" with the proper type Unrecognized type EventHandler
+PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "onmessage" with the proper type
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "binaryType" with the proper type
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "send(USVString)" with the proper type
 PASS RTCDataChannel interface: calling send(USVString) on new RTCPeerConnection().createDataChannel('') with too few arguments must throw TypeError
