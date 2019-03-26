@@ -41,7 +41,7 @@ class OrientationIteratorTest : public testing::Test {
                   const Vector<OrientationExpectedRun>& expect) {
     unsigned limit;
     OrientationIterator::RenderOrientation render_orientation;
-    unsigned long run_count = 0;
+    size_t run_count = 0;
     while (orientation_iterator->Consume(&limit, &render_orientation)) {
       ASSERT_LT(run_count, expect.size());
       ASSERT_EQ(expect[run_count].limit, limit);
