@@ -426,10 +426,13 @@ LayoutUnit ComputeInlineSizeForFragment(
   // If we have usable cached min/max intrinsic sizes, use those if we can. They
   // will normally also be constrained to {min,max}-inline-size, but not if
   // percentages are involved. In such cases we'll have to calculate and apply
-  // the constraints on our own.
+  // the constraints on our own. We also need to discard the cached values if
+  // the box has certain properties (e.g. percentage padding) that cause the
+  // cached values to be affected by extrinsic sizing.
   if (!box->PreferredLogicalWidthsDirty() && !override_minmax_for_test &&
       !style.LogicalMinWidth().IsPercentOrCalc() &&
-      !style.LogicalMaxWidth().IsPercentOrCalc()) {
+      !style.LogicalMaxWidth().IsPercentOrCalc() &&
+      !box->NeedsPreferredWidthsRecalculation()) {
     if (logical_width.IsFitContent()) {
       // This is not as easy as {min, max}.ShrinkToFit() because we also need
       // to subtract inline margins from the available size. The code in
