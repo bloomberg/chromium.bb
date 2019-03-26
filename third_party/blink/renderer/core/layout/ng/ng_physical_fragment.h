@@ -180,6 +180,11 @@ class CORE_EXPORT NGPhysicalFragment
   // Whether this object has a self-painting |Layer()|.
   bool HasSelfPaintingLayer() const;
 
+  // True if overflow != 'visible', except for certain boxes that do not allow
+  // overflow clip; i.e., AllowOverflowClip() returns false.
+  bool HasOverflowClip() const;
+  bool ShouldClipOverflow() const;
+
   // GetLayoutObject should only be used when necessary for compatibility
   // with LegacyLayout.
   LayoutObject* GetLayoutObject() const { return layout_object_; }
