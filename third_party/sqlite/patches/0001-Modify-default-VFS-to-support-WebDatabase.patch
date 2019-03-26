@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: dumi <dumi@chromium.org>
 Date: Mon, 20 Jul 2009 23:40:51 +0000
-Subject: [PATCH 01/10] Modify default VFS to support WebDatabase.
+Subject: [PATCH 01/11] Modify default VFS to support WebDatabase.
 
 The renderer WebDatabase implementation needs to broker certain requests
 to the browser.  This modifies SQLite to allow monkey-patching the VFS
@@ -42,7 +42,7 @@ index 52ef64116444..d0e1c39bc4b8 100644
 @@ -5879,6 +5885,45 @@ static int findCreateFileMode(
    return rc;
  }
- 
+
 +/*
 +** Initialize |unixFile| internals of |file| on behalf of chromiumOpen() in
 +** WebDatabase SQLiteFileSystemPosix.cpp.  Function is a subset of unixOpen(),
@@ -92,7 +92,7 @@ index 52ef64116444..d0e1c39bc4b8 100644
 +
 +  /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
    memset(p, 0, sizeof(unixFile));
- 
+
    if( eType==SQLITE_OPEN_MAIN_DB ){
 @@ -5987,6 +6034,7 @@ static int unixOpen(
      if( pUnused ){
@@ -104,7 +104,7 @@ index 52ef64116444..d0e1c39bc4b8 100644
          return SQLITE_NOMEM_BKPT;
 @@ -6071,6 +6119,7 @@ static int unixOpen(
    }
- 
+
    if( p->pPreallocatedUnused ){
 +    /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
      p->pPreallocatedUnused->fd = fd;
@@ -116,7 +116,7 @@ index 52ef64116444..d0e1c39bc4b8 100644
    );
 +  /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
    rc = fillInUnixFile(pVfs, fd, pFile, zPath, ctrlFlags);
- 
+
  open_finished:
    if( rc!=SQLITE_OK ){
 +    /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
@@ -130,7 +130,7 @@ index aafc89f7d2d5..76743781a019 100644
 @@ -6130,4 +6130,12 @@ int sqlite3_os_end(void){
    return SQLITE_OK;
  }
- 
+
 +CHROMIUM_SQLITE_API
 +void chromium_sqlite3_initialize_win_sqlite3_file(sqlite3_file* file, HANDLE handle) {
 +  winFile* winSQLite3File = (winFile*)file;
@@ -147,7 +147,7 @@ index e279e21a8cb2..0c566e8f557e 100644
 @@ -8407,6 +8407,29 @@ int sqlite3_strnicmp(const char *, const char *, int);
  */
  int sqlite3_strglob(const char *zGlob, const char *zStr);
- 
+
 +/* Begin WebDatabase patch for Chromium */
 +/* Expose some SQLite internals for the WebDatabase vfs.
 +** DO NOT EXTEND THE USE OF THIS.
@@ -174,6 +174,6 @@ index e279e21a8cb2..0c566e8f557e 100644
  /*
  ** CAPI3REF: String LIKE Matching
  *
--- 
+--
 2.21.0.352.gf09ad66450-goog
 
