@@ -93,6 +93,10 @@ base::Value UkmDebugDataExtractor::GetStructuredData(
   ukm_data.SetKey("session_id",
                   base::Value(static_cast<int>(ukm_service->session_id_)));
 
+  ukm_data.SetKey(
+      "is_sampling_enabled",
+      base::Value(static_cast<bool>(ukm_service->IsSamplingEnabled())));
+
   std::map<SourceId, SourceData> source_data;
   for (const auto& kv : ukm_service->recordings_.sources) {
     source_data[kv.first].source = kv.second.get();

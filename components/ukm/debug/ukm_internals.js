@@ -34,6 +34,7 @@ let UkmDataSource;
  *   client_id: !Array<number>,
  *   session_id: string,
  *   sources: !Array<!UkmDataSource>,
+ *   is_sampling_enabled: boolean,
  * }}
  */
 let UkmData;
@@ -346,6 +347,7 @@ function updateUkmData() {
     $('state').innerText = data.state? 'ENABLED' : 'DISABLED';
     $('clientid').innerText = '0x' + data.client_id;
     $('sessionid').innerText = data.session_id;
+    $('is_sampling_enabled').innerText = data.is_sampling_enabled;
 
     const sourcesDiv = /** @type {!Element} */ ($('sources'));
     removeChildren(sourcesDiv);

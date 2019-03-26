@@ -60,6 +60,9 @@ class UkmRecorderImpl : public UkmRecorder {
   // Disables sampling for testing purposes.
   void DisableSamplingForTesting() override;
 
+  // True if sampling is enabled.
+  bool IsSamplingEnabled() const;
+
   // Deletes stored recordings.
   void Purge();
 
