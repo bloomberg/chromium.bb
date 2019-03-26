@@ -8,9 +8,6 @@ traits_headers = [ "//ash/public/cpp/app_list/app_list_struct_traits.h" ]
 sources = [
   "//ash/public/cpp/app_list/app_list_struct_traits.cc",
 ]
-deps = [
-  "//ui/gfx/range/mojo:struct_traits",
-]
 type_mappings = [
   "ash.mojom.AppListState=ash::AppListState",
   "ash.mojom.AppListModelStatus=ash::AppListModelStatus",
