@@ -185,11 +185,11 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
         "isolate_coverage_data": true,
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },

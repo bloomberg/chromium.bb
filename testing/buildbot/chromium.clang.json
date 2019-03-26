@@ -161,10 +161,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -902,10 +902,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2064,10 +2064,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3668,8 +3668,8 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*",
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -3678,11 +3678,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "perfetto_content_browsertests"
+            "nonperfetto_content_browsertests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -6324,8 +6324,8 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*",
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -6334,11 +6334,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "perfetto_content_browsertests"
+            "nonperfetto_content_browsertests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -8303,10 +8303,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -8940,11 +8940,11 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*",
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*",
           "--test-launcher-print-test-stdio=always"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -9683,10 +9683,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -10238,10 +10238,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -10795,10 +10795,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11358,10 +11358,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11922,10 +11922,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -12475,10 +12475,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -13161,11 +13161,11 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*",
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*",
           "--test-launcher-print-test-stdio=always"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -13811,10 +13811,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -14463,10 +14463,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -15087,10 +15087,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -15711,10 +15711,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -16497,10 +16497,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17691,10 +17691,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -18885,10 +18885,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -19917,10 +19917,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -20541,10 +20541,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -21165,10 +21165,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -21789,10 +21789,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -22395,10 +22395,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -23097,10 +23097,10 @@
       },
       {
         "args": [
-          "--enable-perfetto",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
