@@ -35,6 +35,8 @@ class AnimationMetricsReporter;
 namespace ash {
 FORWARD_DECLARE_TEST(AppListControllerImplTest,
                      CheckAppListViewBoundsWhenVKeyboardEnabled);
+FORWARD_DECLARE_TEST(AppListControllerImplTest,
+                     CheckAppListViewBoundsWhenDismissVKeyboard);
 }
 
 namespace app_list {
@@ -302,6 +304,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
  private:
   FRIEND_TEST_ALL_PREFIXES(ash::AppListControllerImplTest,
                            CheckAppListViewBoundsWhenVKeyboardEnabled);
+  FRIEND_TEST_ALL_PREFIXES(ash::AppListControllerImplTest,
+                           CheckAppListViewBoundsWhenDismissVKeyboard);
 
   // A widget observer that is responsible for keeping the AppListView state up
   // to date on closing.

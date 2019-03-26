@@ -56,6 +56,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/ime_util_chromeos.h"
 #include "ui/wm/core/shadow_types.h"
 
 using ash::ColorProfileType;
@@ -1243,6 +1244,13 @@ void AppListView::OnTabletModeChanged(bool started) {
                    app_list_state_ == AppListViewState::FULLSCREEN_SEARCH
                ? AppListViewState::FULLSCREEN_SEARCH
                : AppListViewState::FULLSCREEN_ALL_APPS);
+
+  // In tablet mode, AppListView should not be moved because of the change in
+  // virtual keyboard's visibility.
+  if (started) {
+    fullscreen_widget_->GetNativeView()->ClearProperty(
+        wm::kVirtualKeyboardRestoreBoundsKey);
+  }
 
   // Update background color opacity.
   SetBackgroundShieldColor();

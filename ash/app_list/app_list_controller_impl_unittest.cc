@@ -73,6 +73,10 @@ void DismissAppListNow() {
       base::TimeTicks::Now());
 }
 
+aura::Window* GetAppListViewNativeWindow() {
+  return GetAppListView()->get_fullscreen_widget_for_test()->GetNativeView();
+}
+
 }  // namespace
 
 class AppListControllerImplTest : public AshTestBase {
@@ -188,28 +192,51 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
   // Show the AppListView again. Check the following things:
   // (1) Virtual keyboard does not show.
   // (2) AppListView is in PEEKING state.
-  // (3) AppListView's bounds are the same with the preferred bounds for
+  // (3) AppListView's bounds are the same as the preferred bounds for
   // the PEEKING state.
   ShowAppListNow();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(app_list::AppListViewState::PEEKING,
             GetAppListView()->app_list_state());
   EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
-  gfx::Rect current_app_list_bounds_in_screen =
-      GetAppListView()
-          ->get_fullscreen_widget_for_test()
-          ->GetNativeView()
-          ->GetBoundsInScreen();
-  gfx::Rect expected_app_list_bounds_in_parent =
-      GetAppListView()->GetPreferredWidgetBoundsForState(
-          app_list::AppListViewState::PEEKING);
+  EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
+                app_list::AppListViewState::PEEKING),
+            GetAppListViewNativeWindow()->bounds());
+}
 
-  // The expected bounds are in the parent coordinate. But it should still be
-  // the same with the AppListView's bounds in screen coordinate. Because the
-  // parent window of the AppListView should have the same size with the display
-  // root window.
-  EXPECT_EQ(expected_app_list_bounds_in_parent,
-            current_app_list_bounds_in_screen);
+// Verifies that in tablet mode, the AppListView has correct bounds when the
+// virtual keyboard is dismissed (see https://crbug.com/944133).
+TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
+  Shell::Get()->ash_keyboard_controller()->SetEnableFlag(
+      keyboard::mojom::KeyboardEnableFlag::kShelfEnabled);
+
+  // Show the AppListView and click on the search box with mouse so the
+  // VirtualKeyboard is shown. Wait until the virtual keyboard shows.
+  ShowAppListNow();
+  GetSearchBoxView()->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
+
+  // Turn on the tablet mode. The virtual keyboard should still show.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_TRUE(IsTabletMode());
+  EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
+
+  // Close the virtual keyboard. Wait until it is hidden.
+  Shell::Get()->ash_keyboard_controller()->HideKeyboard(
+      mojom::HideReason::kUser);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
+
+  // Check the following things:
+  // (1) AppListView's state is FULLSCREEN_SEARCH
+  // (2) AppListView's bounds are the same as the preferred bounds for
+  // the FULLSCREEN_SEARCH state.
+  EXPECT_EQ(app_list::AppListViewState::FULLSCREEN_SEARCH,
+            GetAppListView()->app_list_state());
+  EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
+                app_list::AppListViewState::FULLSCREEN_SEARCH),
+            GetAppListViewNativeWindow()->bounds());
 }
 
 class AppListControllerImplMetricsTest : public AshTestBase {
