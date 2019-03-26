@@ -21,8 +21,10 @@ import java.util.List;
 public class AssistantOverlayModel extends PropertyModel {
     public static final WritableIntPropertyKey STATE = new WritableIntPropertyKey();
 
+    // Skipping equality as a way of fixing offset issues. See b/129048184.
+    // TODO(b/129050125): Handle offsets properly and remove.
     public static final WritableObjectPropertyKey<List<RectF>> TOUCHABLE_AREA =
-            new WritableObjectPropertyKey<>();
+            new WritableObjectPropertyKey<>(/* skipEquality= */ true);
 
     public static final WritableObjectPropertyKey<AssistantOverlayDelegate> DELEGATE =
             new WritableObjectPropertyKey<>();
