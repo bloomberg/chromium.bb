@@ -405,10 +405,12 @@ public class AutofillAssistantPaymentRequest {
                                     PaymentRequestUI.DataType.CONTACT_DETAILS, mContactSection);
                         }
                     }
-
-                    mUI.updateSection(PaymentRequestUI.DataType.SHIPPING_ADDRESSES,
-                            mShippingAddressesSection);
                 }
+
+                // If |editedAddress| is null, the user has cancelled out of the "Add flow". No
+                // action to take (if an address was selected in the UI, it will stay selected).
+                mUI.updateSection(
+                        PaymentRequestUI.DataType.SHIPPING_ADDRESSES, mShippingAddressesSection);
             }
         });
     }
