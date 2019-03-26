@@ -2194,14 +2194,14 @@ void AppsGridView::RemoveLastItemFromReparentItemFolderIfNecessary(
     const std::string& source_folder_id) {
   AppListFolderItem* source_folder =
       static_cast<AppListFolderItem*>(item_list_->FindItem(source_folder_id));
-  if (source_folder && !source_folder->ShouldAutoRemove())
+  if (!source_folder || (source_folder && !source_folder->ShouldAutoRemove()))
     return;
 
   // Save the folder item view's bounds before deletion, which will be used as
   // last item view's bounds.
   gfx::Rect folder_rect = activated_folder_item_view()->bounds();
-  GridIndex target_index = GetIndexOfView(activated_folder_item_view());
-  int target_model_index =
+  const GridIndex target_index = GetIndexOfView(activated_folder_item_view());
+  const int target_model_index =
       view_model_.GetIndexOfView(activated_folder_item_view());
 
   // Delete view associated with the folder item to be removed.
