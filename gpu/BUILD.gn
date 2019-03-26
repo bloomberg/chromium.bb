@@ -579,6 +579,10 @@ test("gpu_perftests") {
     "//ui/gl/init",
   ]
 
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+
   data_deps = [
     # Needed for isolate script to execute.
     "//testing:run_perf_test",
@@ -608,6 +612,10 @@ test("command_buffer_perftests") {
     "//ui/gl",
     "//ui/gl/init",
   ]
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
 
   data_deps = [
     # Needed for isolate script to execute.
