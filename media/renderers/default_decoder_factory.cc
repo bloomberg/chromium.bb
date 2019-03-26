@@ -93,9 +93,7 @@ void DefaultDecoderFactory::CreateVideoDecoders(
 
   // Perfer an external decoder since one will only exist if it is hardware
   // accelerated.
-  // Remember that |gpu_factories| will be null if HW video decode is turned
-  // off in chrome://flags.
-  if (gpu_factories) {
+  if (gpu_factories && gpu_factories->IsGpuVideoAcceleratorEnabled()) {
     // |gpu_factories_| requires that its entry points be called on its
     // |GetTaskRunner()|. Since |pipeline_| will own decoders created from the
     // factories, require that their message loops are identical.
