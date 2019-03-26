@@ -8,8 +8,6 @@ traits_headers = [ "//ui/gfx/ipc/color/gfx_param_traits.h" ]
 public_deps = [
   "//ipc",
   "//ui/gfx",
-]
-deps = [
   "//ui/gfx/ipc/color",
 ]
 type_mappings = [ "gfx.mojom.ColorSpace=gfx::ColorSpace" ]
