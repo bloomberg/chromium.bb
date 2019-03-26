@@ -227,11 +227,9 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   std::unique_ptr<base::DictionaryValue> GetInfoAsValue(
       const std::string& name,
       const std::string& type) const override;
-
-  // Dumps memory allocation stats. |parent_dump_absolute_name| is the name
-  // used by the parent MemoryAllocatorDump in the memory dump hierarchy.
-  void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
-                       const std::string& parent_dump_absolute_name) const;
+  void DumpMemoryStats(
+      base::trace_event::ProcessMemoryDump* pmd,
+      const std::string& parent_dump_absolute_name) const override;
 
   bool RequestInGroupWithHandleHasJobForTesting(
       const ClientSocketPool::GroupId& group_id,

@@ -31,11 +31,9 @@ typedef base::Callback<int(const AddressList&, const NetLogWithSource& net_log)>
 
 class ClientSocketHandle;
 class HostPortPair;
-class HttpNetworkSession;
 class NetLogWithSource;
 class ProxyInfo;
 class ProxyServer;
-class TransportClientSocketPool;
 
 struct SSLConfig;
 
@@ -82,8 +80,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManager {
 
   // Returns the socket pool for the specified ProxyServer (Which may be
   // ProxyServer::Direct()).
-  virtual TransportClientSocketPool* GetSocketPool(
-      const ProxyServer& proxy_server) = 0;
+  virtual ClientSocketPool* GetSocketPool(const ProxyServer& proxy_server) = 0;
 
   // Creates a Value summary of the state of the socket pools.
   virtual std::unique_ptr<base::Value> SocketPoolInfoToValue() const = 0;

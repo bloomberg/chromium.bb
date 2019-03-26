@@ -48,6 +48,7 @@
 #include "net/quic/quic_stream_factory_peer.h"
 #include "net/quic/quic_test_packet_maker.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/client_socket_pool.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/mock_client_socket_pool_manager.h"
 #include "net/socket/next_proto.h"
@@ -1393,7 +1394,7 @@ TEST_F(HttpStreamFactoryTest, PrivacyModeUsesDifferentSocketPoolGroup) {
 
   std::unique_ptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSession(&session_deps));
-  TransportClientSocketPool* ssl_pool = session->GetSocketPool(
+  ClientSocketPool* ssl_pool = session->GetSocketPool(
       HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct());
 
   EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 0);

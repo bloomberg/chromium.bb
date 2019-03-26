@@ -21,7 +21,10 @@
 
 namespace base {
 class DictionaryValue;
+namespace trace_event {
+class ProcessMemoryDump;
 }
+}  // namespace base
 
 namespace net {
 
@@ -194,6 +197,8 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
     DISALLOW_COPY_AND_ASSIGN(SocketParams);
   };
 
+  ~ClientSocketPool() override;
+
   // Requests a connected socket with a specified GroupId.
   //
   // There are five possible results from calling this function:
@@ -314,6 +319,12 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
       const std::string& name,
       const std::string& type) const = 0;
 
+  // Dumps memory allocation stats. |parent_dump_absolute_name| is the name
+  // used by the parent MemoryAllocatorDump in the memory dump hierarchy.
+  virtual void DumpMemoryStats(
+      base::trace_event::ProcessMemoryDump* pmd,
+      const std::string& parent_dump_absolute_name) const = 0;
+
   // Returns the maximum amount of time to wait before retrying a connect.
   static const int kMaxConnectRetryIntervalMs = 250;
 
@@ -322,7 +333,6 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
 
  protected:
   ClientSocketPool();
-  ~ClientSocketPool() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientSocketPool);

@@ -30,7 +30,7 @@ namespace net {
 
 class ProxyServer;
 class SSLConfigService;
-class TransportClientSocketPool;
+class ClientSocketPool;
 
 class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
     : public ClientSocketPoolManager,
@@ -49,8 +49,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
   void FlushSocketPoolsWithError(int error) override;
   void CloseIdleSockets() override;
 
-  TransportClientSocketPool* GetSocketPool(
-      const ProxyServer& proxy_server) override;
+  ClientSocketPool* GetSocketPool(const ProxyServer& proxy_server) override;
 
   // Creates a Value summary of the state of the socket pools.
   std::unique_ptr<base::Value> SocketPoolInfoToValue() const override;
@@ -63,8 +62,8 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
       const std::string& parent_dump_absolute_name) const override;
 
  private:
-  using TransportSocketPoolMap =
-      std::map<ProxyServer, std::unique_ptr<TransportClientSocketPool>>;
+  using SocketPoolMap =
+      std::map<ProxyServer, std::unique_ptr<ClientSocketPool>>;
 
   const CommonConnectJobParams common_connect_job_params_;
   // Used only for direct WebSocket connections (i.e., no proxy in use).
@@ -74,7 +73,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
 
   const HttpNetworkSession::SocketPoolType pool_type_;
 
-  TransportSocketPoolMap socket_pools_;
+  SocketPoolMap socket_pools_;
 
   THREAD_CHECKER(thread_checker_);
 

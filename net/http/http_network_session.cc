@@ -300,7 +300,7 @@ void HttpNetworkSession::RemoveResponseDrainer(
   response_drainers_.erase(drainer);
 }
 
-TransportClientSocketPool* HttpNetworkSession::GetSocketPool(
+ClientSocketPool* HttpNetworkSession::GetSocketPool(
     SocketPoolType pool_type,
     const ProxyServer& proxy_server) {
   return GetSocketPoolManager(pool_type)->GetSocketPool(proxy_server);

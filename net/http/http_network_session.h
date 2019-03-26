@@ -54,6 +54,7 @@ namespace net {
 class CTPolicyEnforcer;
 class CertVerifier;
 class ClientSocketFactory;
+class ClientSocketPool;
 class ClientSocketPoolManager;
 class CTVerifier;
 class HostResolver;
@@ -76,7 +77,6 @@ class ReportingService;
 #endif
 class SocketPerformanceWatcherFactory;
 class SSLConfigService;
-class TransportClientSocketPool;
 class TransportSecurityState;
 
 // Specifies the maximum HPACK dynamic table size the server is allowed to set.
@@ -296,8 +296,8 @@ class NET_EXPORT HttpNetworkSession {
   // Returns the socket pool of the given type for use with the specified
   // ProxyServer. Use ProxyServer::Direct() to get the pool for use with direct
   // connections.
-  TransportClientSocketPool* GetSocketPool(SocketPoolType pool_type,
-                                           const ProxyServer& proxy_server);
+  ClientSocketPool* GetSocketPool(SocketPoolType pool_type,
+                                  const ProxyServer& proxy_server);
 
   CertVerifier* cert_verifier() { return cert_verifier_; }
   ProxyResolutionService* proxy_resolution_service() {

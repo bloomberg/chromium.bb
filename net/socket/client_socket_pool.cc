@@ -152,6 +152,8 @@ std::string ClientSocketPool::GroupId::ToString() const {
   return result;
 }
 
+ClientSocketPool::~ClientSocketPool() = default;
+
 // static
 base::TimeDelta ClientSocketPool::used_idle_socket_timeout() {
   return base::TimeDelta::FromSeconds(g_used_idle_socket_timeout_s);
@@ -164,7 +166,5 @@ void ClientSocketPool::set_used_idle_socket_timeout(base::TimeDelta timeout) {
 }
 
 ClientSocketPool::ClientSocketPool() = default;
-
-ClientSocketPool::~ClientSocketPool() = default;
 
 }  // namespace net
