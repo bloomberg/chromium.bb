@@ -120,9 +120,14 @@ void av1_simple_motion_search_based_split(
       *partition_vert_allowed = 0;
       *do_rectangular_split = 0;
     }
-    // TODO(Venkat): Experiment to skip only rectangular/extended parititions
     if (cpi->sf.simple_motion_search_split_only >= 2) {
       if (score < -split_only_thresh) *do_square_split = 0;
+      // For larger scores (>split_only_thresh), none and rectangular partitions
+      // are skipped. As score reduces, possibility of split decreases. Hence
+      // for near larger scores (.875 * split_only_thresh to split_only_thresh)
+      // none partition is disabled, but rectangular partitions are evaluated
+      // additionally.
+      if (score > (split_only_thresh * 0.875)) *partition_none_allowed = 0;
     }
   }
 }
