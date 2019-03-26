@@ -179,7 +179,7 @@ class ParentAccessView::AccessCodeInput : public views::View,
     DCHECK_LE(0, value);
     DCHECK_GE(9, value);
 
-    ActiveField()->SetText(base::IntToString16(value));
+    ActiveField()->SetText(base::NumberToString16(value));
     FocusNextField();
 
     on_input_change_.Run(GetCode().has_value());
