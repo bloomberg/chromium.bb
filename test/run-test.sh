@@ -28,8 +28,9 @@ esac
 TESTDIR=${srcdir-"$MyPWD"}
 BUILDTESTDIR=${builddir-"$MyPWD"}
 
-FONTDIR="$MyPWD"/fonts
-CACHEDIR="$MyPWD"/cache.dir
+BASEDIR=`mktemp -d --tmpdir fontconfig.XXXXXXXX`
+FONTDIR="$BASEDIR"/fonts
+CACHEDIR="$BASEDIR"/cache.dir
 EXPECTED=${EXPECTED-"out.expected"}
 LOG_COMPILER=${LOG_COMPILER-"$TESTDIR/wrapper-script.sh"}
 
@@ -226,6 +227,7 @@ dotest "sysroot option"
 prep
 mkdir -p $MyPWD/sysroot/$FONTDIR
 mkdir -p $MyPWD/sysroot/$CACHEDIR
+mkdir -p $MyPWD/sysroot/$MyPWD
 cp $FONT1 $MyPWD/sysroot/$FONTDIR
 cp $MyPWD/fonts.conf $MyPWD/sysroot/$MyPWD/fonts.conf
 $FCCACHE -y $MyPWD/sysroot
@@ -245,4 +247,4 @@ rm -rf $MyPWD/sysroot
 
 fi
 
-rm -rf $FONTDIR $CACHEFILE $CACHEDIR $FONTCONFIG_FILE out
+rm -rf $FONTDIR $CACHEFILE $CACHEDIR $BASEDIR $FONTCONFIG_FILE out
