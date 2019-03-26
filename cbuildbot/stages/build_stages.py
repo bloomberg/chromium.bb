@@ -719,10 +719,9 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       creds_file = topology.topology.get(topology.DATASTORE_WRITER_CREDS_KEY)
 
       build_identifier, db = self._run.GetCIDBHandle()
-      build_id = build_identifier.cidb_id
+      buildbucket_id = build_identifier.buildbucket_id
       if db and creds_file:
-        parent_key = ('Build', build_id, 'BuildStage', self._build_stage_id)
-
+        parent_key = ('Build', buildbucket_id)
         commands.ExportToGCloud(
             self._build_root,
             creds_file,
