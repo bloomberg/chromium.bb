@@ -392,6 +392,7 @@ class CORE_EXPORT HTMLMediaElement
   void ContextDestroyed(ExecutionContext*) override;
 
   virtual void UpdateDisplayState() {}
+  virtual void OnPlay() {}
 
   void SetReadyState(ReadyState);
   void SetNetworkState(WebMediaPlayer::NetworkState);

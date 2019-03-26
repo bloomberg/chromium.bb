@@ -1435,6 +1435,12 @@
       name: "V8IdleTasks",
     },
     {
+      // Whether a video element should automatically play fullscreen unless
+      // 'playsinline' is set.
+      name: "VideoAutoFullscreen",
+      settable_from_internals: true,
+    },
+    {
       name: "VideoFullscreenDetection",
     },
     {

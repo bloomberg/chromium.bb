@@ -379,6 +379,15 @@ void HTMLVideoElement::UpdateDisplayState() {
     SetDisplayMode(kPoster);
 }
 
+void HTMLVideoElement::OnPlay() {
+  if (!RuntimeEnabledFeatures::VideoAutoFullscreenEnabled() ||
+      FastHasAttribute(html_names::kPlaysinlineAttr)) {
+    return;
+  }
+
+  webkitEnterFullscreen();
+}
+
 void HTMLVideoElement::PaintCurrentFrame(
     cc::PaintCanvas* canvas,
     const IntRect& dest_rect,
@@ -537,6 +546,11 @@ void HTMLVideoElement::DidExitFullscreen() {
         kCompositingUpdateRebuildTree);
   }
   in_overlay_fullscreen_video_ = false;
+
+  if (RuntimeEnabledFeatures::VideoAutoFullscreenEnabled() &&
+      !FastHasAttribute(html_names::kPlaysinlineAttr)) {
+    pause();
+  }
 }
 
 void HTMLVideoElement::DidMoveToNewDocument(Document& old_document) {
