@@ -62,6 +62,7 @@ static_library("sync_sessions") {
     "//components/prefs",
     "//components/variations",
     "//components/version_info",
+    "//google_apis",
     "//ui/base:base",
     "//ui/gfx",
     "//url",
