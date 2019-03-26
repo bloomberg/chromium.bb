@@ -230,7 +230,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void DidFinishLoad() override;
   void ReadyToCommitNavigation(
       blink::WebDocumentLoader* document_loader) override;
-  void WillCommitProvisionalLoad() override;
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override;
   void OnDestruct() override;
@@ -352,8 +351,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                                   blink::WebInputElement* password_element,
                                   PasswordInfo** password_info);
 
-  // Invoked when the frame is closing.
-  void FrameClosing();
+  // Cleans up the state when document is shut down, e.g. when committing a new
+  // document or closing the frame.
+  void CleanupOnDocumentShutdown();
 
   // Clears the preview for the username and password fields, restoring both to
   // their previous filled state.

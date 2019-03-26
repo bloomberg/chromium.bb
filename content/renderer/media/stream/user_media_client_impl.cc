@@ -136,7 +136,7 @@ UserMediaClientImpl::~UserMediaClientImpl() {
   // Force-close all outstanding user media requests and local sources here,
   // before the outstanding WeakPtrs are invalidated, to ensure a clean
   // shutdown.
-  WillCommitProvisionalLoad();
+  DeleteAllUserMediaRequests();
 }
 
 void UserMediaClientImpl::RequestUserMedia(
@@ -292,7 +292,8 @@ void UserMediaClientImpl::DeleteAllUserMediaRequests() {
   pending_request_infos_.clear();
 }
 
-void UserMediaClientImpl::WillCommitProvisionalLoad() {
+void UserMediaClientImpl::ReadyToCommitNavigation(
+    blink::WebDocumentLoader* document_loader) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Cancel all outstanding UserMediaRequests.
   DeleteAllUserMediaRequests();

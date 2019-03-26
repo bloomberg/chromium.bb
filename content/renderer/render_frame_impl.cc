@@ -4355,11 +4355,6 @@ void RenderFrameImpl::FrameFocused() {
   Send(new FrameHostMsg_FrameFocused(routing_id_));
 }
 
-void RenderFrameImpl::WillCommitProvisionalLoad() {
-  for (auto& observer : observers_)
-    observer.WillCommitProvisionalLoad();
-}
-
 void RenderFrameImpl::DidChangeName(const blink::WebString& name) {
   if (current_history_item_.IsNull()) {
     // Once a navigation has committed, the unique name must no longer change to

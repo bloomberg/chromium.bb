@@ -102,9 +102,6 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // These match the Blink API notifications
   virtual void DidCreateNewDocument() {}
   virtual void DidCreateDocumentElement() {}
-  // Called when a provisional load is about to commit in a frame. This is
-  // dispatched just before the Javascript unload event.
-  virtual void WillCommitProvisionalLoad() {}
   // TODO(dgozman): replace next two methods with DidFinishNavigation.
   virtual void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                         ui::PageTransition transition) {}

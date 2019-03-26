@@ -98,7 +98,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidFinishSameDocumentNavigation(HistoryItem*,
                                        WebHistoryCommitType,
                                        bool content_initiated) override;
-  void DispatchWillCommitProvisionalLoad() override;
   void DispatchDidStartProvisionalLoad(DocumentLoader*) override;
   void DispatchDidReceiveTitle(const String&) override;
   void DispatchDidChangeIcons(IconType) override;

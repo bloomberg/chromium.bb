@@ -427,11 +427,6 @@ void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
   }
 }
 
-void LocalFrameClientImpl::DispatchWillCommitProvisionalLoad() {
-  if (web_frame_->Client())
-    web_frame_->Client()->WillCommitProvisionalLoad();
-}
-
 void LocalFrameClientImpl::DispatchDidStartProvisionalLoad(
     DocumentLoader* loader) {
   if (web_frame_->Client()) {
