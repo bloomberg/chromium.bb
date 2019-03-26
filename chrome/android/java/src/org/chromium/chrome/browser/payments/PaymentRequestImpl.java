@@ -368,7 +368,10 @@ public class PaymentRequestImpl
         // Do not persist changes on disk in incognito mode.
         mAddressEditor = new AddressEditor(
                 AddressEditor.Purpose.PAYMENT_REQUEST, /*saveToDisk=*/!mIsIncognito);
-        mCardEditor = new CardEditor(mWebContents, mAddressEditor, sObserverForTest);
+        // PaymentRequest card editor does not show the organization name in the dropdown with the
+        // billing address labels.
+        mCardEditor = new CardEditor(
+                mWebContents, mAddressEditor, /*includeOrgLabel=*/false, sObserverForTest);
 
         mJourneyLogger = new JourneyLogger(mIsIncognito, mWebContents);
         mCurrencyFormatterMap = new HashMap<>();

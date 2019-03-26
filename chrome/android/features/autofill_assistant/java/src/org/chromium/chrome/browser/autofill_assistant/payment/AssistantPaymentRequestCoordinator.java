@@ -13,6 +13,7 @@ import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.payments.AddressEditor;
@@ -120,7 +121,9 @@ public class AssistantPaymentRequestCoordinator implements AssistantPaymentReque
         assert !webContents.isIncognito();
         mAddressEditor = new AddressEditor(AddressEditor.Purpose.AUTOFILL_ASSISTANT,
                 /* saveToDisk= */ !webContents.isIncognito());
-        mCardEditor = new CardEditor(webContents, mAddressEditor, /* observerForTest= */ null);
+        mCardEditor = new CardEditor(webContents, mAddressEditor, /* includeOrgLabel= */
+                ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_COMPANY_NAME),
+                /* observerForTest= */ null);
 
         // Only enable 'basic-card' payment method.
         PaymentMethodData methodData = new PaymentMethodData();
