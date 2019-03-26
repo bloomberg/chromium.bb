@@ -2178,10 +2178,22 @@ void GLES2DecoderPassthroughImpl::RemovePendingQuery(GLuint service_id) {
 
 void GLES2DecoderPassthroughImpl::ReadBackBuffersIntoShadowCopies(
     const BufferShadowUpdateMap& updates) {
+  if (updates.empty()) {
+    return;
+  }
+
   GLint old_binding = 0;
   api()->glGetIntegervFn(GL_ARRAY_BUFFER_BINDING, &old_binding);
   for (const auto& u : updates) {
-    GLuint service_id = u.first;
+    GLuint client_id = u.first;
+    GLuint service_id = 0;
+    if (!resources_->buffer_id_map.GetServiceID(client_id, &service_id)) {
+      // Buffer no longer exists, this shadow update should have been removed by
+      // DoDeleteBuffers
+      DCHECK(false);
+      continue;
+    }
+
     const auto& update = u.second;
 
     void* shadow = update.shm->GetDataAddress(update.shm_offset, update.size);

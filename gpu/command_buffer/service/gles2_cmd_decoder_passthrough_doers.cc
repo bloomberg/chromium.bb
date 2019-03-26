@@ -926,6 +926,9 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteBuffers(
       return update.first == client_id;
     };
     base::EraseIf(buffer_shadow_updates_, is_the_deleted_buffer);
+    for (PendingQuery& pending_query : pending_queries_) {
+      base::EraseIf(pending_query.buffer_shadow_updates, is_the_deleted_buffer);
+    }
   }
   api()->glDeleteBuffersARBFn(n, service_ids.data());
 
@@ -5073,6 +5076,12 @@ GLES2DecoderPassthroughImpl::DoSetReadbackBufferShadowAllocationINTERNAL(
   update.shm = GetSharedMemoryBuffer(shm_id);
   update.shm_offset = shm_offset;
   update.size = size;
+
+  GLuint buffer_service_id = 0;
+  if (!resources_->buffer_id_map.GetServiceID(buffer_id, &buffer_service_id)) {
+    InsertError(GL_INVALID_OPERATION, "Invalid buffer ID");
+    return error::kNoError;
+  }
 
   if (!update.shm) {
     return error::kInvalidArguments;
