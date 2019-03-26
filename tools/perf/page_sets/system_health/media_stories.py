@@ -77,6 +77,13 @@ class GooglePlayMusicDesktopStory(_MediaStory):
     self._WaitForAndClickElementBySelector(action_runner,
                                            self.NAVIGATE_SELECTOR)
 
+  # TODO(yoichio): Remove this flags when the site finishes V0 migration.
+  # crbug.com/911943.
+  def __init__(self, story_set, take_memory_measurement):
+    super(GooglePlayMusicDesktopStory, self).__init__(
+        story_set, take_memory_measurement,
+        extra_browser_args=[
+          '--enable-blink-features=HTMLImports,CustomElementsV0'])
 
 class SoundCloudDesktopStory(_MediaStory):
   """Load soundcloud.com, search for "Smooth Jazz", then play a song."""
