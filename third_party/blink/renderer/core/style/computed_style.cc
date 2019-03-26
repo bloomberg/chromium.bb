@@ -227,7 +227,7 @@ bool ComputedStyle::NeedsReattachLayoutTree(const ComputedStyle* old_style,
       !old_style->HasPseudoStyle(kPseudoIdFirstLine))
     return true;
 
-  return old_style->ForceLegacyLayout() != new_style->ForceLegacyLayout();
+  return false;
 }
 
 ComputedStyle::Difference ComputedStyle::ComputeDifference(

@@ -214,6 +214,76 @@ bool IsRootEditableElementWithCounting(const Element& element) {
   return is_editable;
 }
 
+// Return true if we're absolutely sure that this node is going to establish a
+// new formatting context. Whether or not it establishes a new formatting
+// context cannot be accurately determined until we have actually created the
+// object (see LayoutBlockFlow::CreatesNewFormattingContext()), so this function
+// may (and is allowed to) return false negatives, but NEVER false positives.
+bool DefinitelyNewFormattingContext(const Node& node,
+                                    const ComputedStyle& style) {
+  auto display = style.Display();
+  if (display == EDisplay::kInline || display == EDisplay::kContents)
+    return false;
+  // The only block-container display types that potentially don't establish a
+  // new formatting context, are 'block' and 'list-item'.
+  if (display != EDisplay::kBlock && display != EDisplay::kListItem)
+    return true;
+  if (!style.IsOverflowVisible())
+    return node.GetDocument().ViewportDefiningElement() != &node;
+  if (style.HasOutOfFlowPosition() || style.IsFloating() ||
+      style.ContainsPaint() || style.ContainsLayout() ||
+      style.SpecifiesColumns())
+    return true;
+  if (node.GetDocument().documentElement() == &node)
+    return true;
+  if (const Element* element = ToElementOrNull(&node)) {
+    if (IsHTMLImageElement(element) || element->IsFormControlElement() ||
+        element->IsMediaElement() || element->IsFrameOwnerElement())
+      return true;
+  }
+  if (const Node* parent = LayoutTreeBuilderTraversal::LayoutParent(node))
+    return parent->ComputedStyleRef().IsDisplayFlexibleOrGridBox();
+  return false;
+}
+
+bool CalculateStyleShouldForceLegacyLayout(const Element& element,
+                                           const ComputedStyle& style) {
+  const Document& document = element.GetDocument();
+
+  // TODO(layout-dev): Once LayoutNG handles inline content editable, we
+  // should get rid of following code fragment.
+  if (!RuntimeEnabledFeatures::EditingNGEnabled()) {
+    if (style.UserModify() != EUserModify::kReadOnly || document.InDesignMode())
+      return true;
+  }
+
+  if (style.Display() == EDisplay::kWebkitBox ||
+      style.Display() == EDisplay::kWebkitInlineBox)
+    return true;
+
+  if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
+    // Disable NG for the entire subtree if we're establishing a block
+    // fragmentation context.
+    if (style.SpecifiesColumns() || style.IsOverflowPaged())
+      return true;
+    if (document.Printing() && element == document.documentElement())
+      return true;
+  }
+
+  // The custom container is laid out by the legacy engine. Its children may
+  // not establish new formatting contexts, so we need to protect against
+  // re-entering LayoutNG there.
+  if (style.Display() == EDisplay::kLayoutCustom ||
+      style.Display() == EDisplay::kInlineLayoutCustom)
+    return true;
+
+  // 'text-combine-upright' property is not supported yet.
+  if (style.HasTextCombine() && !style.IsHorizontalWritingMode())
+    return true;
+
+  return false;
+}
+
 }  // namespace
 
 Element* Element::Create(const QualifiedName& tag_name, Document* document) {
@@ -2084,14 +2154,18 @@ void Element::AttachLayoutTree(AttachContext& context) {
     return;
   }
 
-  if (style) {
-    if (CanParticipateInFlatTree()) {
-      LayoutTreeBuilderForElement builder(*this, style);
-      builder.CreateLayoutObjectIfNeeded(LegacyLayout::kAuto);
-    }
-  }
-
   AttachContext children_context(context);
+
+  if (style && CanParticipateInFlatTree()) {
+    // If an element requires forced legacy layout, all descendants need it too.
+    if (ShouldForceLegacyLayout())
+      children_context.force_legacy_layout = true;
+    LegacyLayout legacy = children_context.force_legacy_layout
+                              ? LegacyLayout::kForce
+                              : LegacyLayout::kAuto;
+    LayoutTreeBuilderForElement builder(*this, style);
+    builder.CreateLayoutObjectIfNeeded(legacy);
+  }
 
   LayoutObject* layout_object = GetLayoutObject();
   if (layout_object)
@@ -2433,9 +2507,12 @@ StyleRecalcChange Element::RecalcOwnStyle(const StyleRecalcChange change) {
     UpdateCallbackSelectors(old_style.get(), new_style.get());
   }
 
-  if (old_style && new_style && !change.RecalcChildren() &&
-      old_style->HasChildDependentFlags()) {
-    new_style->CopyChildDependentFlagsFrom(*old_style);
+  if (new_style) {
+    if (old_style && !change.RecalcChildren() &&
+        old_style->HasChildDependentFlags())
+      new_style->CopyChildDependentFlagsFrom(*old_style);
+    if (RuntimeEnabledFeatures::LayoutNGEnabled())
+      UpdateForceLegacyLayout(*new_style, old_style.get());
   }
 
   if (child_change.ReattachLayoutTree()) {
@@ -2471,6 +2548,11 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
 
   if (NeedsReattachLayoutTree()) {
     AttachContext reattach_context;
+    if (const Node* parent = LayoutTreeBuilderTraversal::LayoutParent(*this)) {
+      const LayoutObject* parent_object = parent->GetLayoutObject();
+      if (parent_object && parent_object->ForceLegacyLayout())
+        reattach_context.force_legacy_layout = true;
+    }
     ReattachLayoutTree(reattach_context);
     whitespace_attacher.DidReattachElement(this,
                                            reattach_context.previous_in_flow);
@@ -3439,6 +3521,69 @@ bool Element::DisplayLockPreventsActivation() const {
     }
   }
   return false;
+}
+
+bool Element::StyleShouldForceLegacyLayoutInternal() const {
+  return GetElementRareData()->StyleShouldForceLegacyLayout();
+}
+
+void Element::SetStyleShouldForceLegacyLayoutInternal(bool force) {
+  EnsureElementRareData().SetStyleShouldForceLegacyLayout(force);
+}
+
+bool Element::ShouldForceLegacyLayoutForChildInternal() const {
+  return GetElementRareData()->ShouldForceLegacyLayoutForChild();
+}
+
+void Element::SetShouldForceLegacyLayoutForChildInternal(bool force) {
+  EnsureElementRareData().SetShouldForceLegacyLayoutForChild(force);
+}
+
+void Element::UpdateForceLegacyLayout(const ComputedStyle& new_style,
+                                      const ComputedStyle* old_style) {
+  bool old_force = old_style && ShouldForceLegacyLayout();
+  SetStyleShouldForceLegacyLayout(
+      CalculateStyleShouldForceLegacyLayout(*this, new_style));
+  if (ShouldForceLegacyLayout()) {
+    if (!old_force) {
+      if (const LayoutObject* layout_object = GetLayoutObject()) {
+        // Forced legacy layout is inherited down the layout tree, so even if we
+        // just decided here on the DOM side that we need forced legacy layout,
+        // check with the LayoutObject whether this is news and that it really
+        // needs to be reattached.
+        if (!layout_object->ForceLegacyLayout())
+          SetNeedsReattachLayoutTree();
+      }
+    }
+    // Even if we also previously forced legacy layout, we may need to introduce
+    // forced legacy layout in the ancestry, e.g. if this element no longer
+    // establishes a new formatting context.
+    ForceLegacyLayoutInFormattingContext(new_style);
+  } else if (old_force) {
+    // TODO(mstensho): If we have ancestors that got legacy layout just because
+    // of this child, we should clean it up, and switch the subtree back to NG,
+    // rather than being stuck with legacy forever.
+    SetNeedsReattachLayoutTree();
+  }
+}
+
+void Element::ForceLegacyLayoutInFormattingContext(
+    const ComputedStyle& new_style) {
+  if (DefinitelyNewFormattingContext(*this, new_style))
+    return;
+
+  bool found_bfc = false;
+  for (Element* ancestor = this; !found_bfc;) {
+    ancestor = ToElementOrNull(LayoutTreeBuilderTraversal::Parent(*ancestor));
+    if (!ancestor || ancestor->ShouldForceLegacyLayout())
+      break;
+    const ComputedStyle* style = ancestor->GetComputedStyle();
+    if (style->Display() == EDisplay::kNone)
+      break;
+    found_bfc = DefinitelyNewFormattingContext(*ancestor, *style);
+    ancestor->SetShouldForceLegacyLayoutForChild(true);
+    ancestor->SetNeedsReattachLayoutTree();
+  }
 }
 
 bool Element::IsFocusedElementInDocument() const {

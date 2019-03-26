@@ -678,6 +678,8 @@ class CORE_EXPORT Node : public EventTarget {
     bool performing_reattach = false;
     // True if the previous_in_flow member is up-to-date, even if it is nullptr.
     bool use_previous_in_flow = false;
+    // True if we need to force legacy layout objects for the entire subtree.
+    bool force_legacy_layout = false;
 
     AttachContext() {}
   };

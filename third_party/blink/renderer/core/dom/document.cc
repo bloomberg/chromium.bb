@@ -108,7 +108,6 @@
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
-#include "third_party/blink/renderer/core/dom/layout_tree_builder.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/live_node_list.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
@@ -2333,9 +2332,7 @@ void Document::UpdateStyle() {
         document_element->ChildNeedsReattachLayoutTree()) {
       TRACE_EVENT0("blink,blink_style", "Document::rebuildLayoutTree");
       SCOPED_BLINK_UMA_HISTOGRAM_TIMER_HIGHRES("Style.RebuildLayoutTreeTime");
-      ReattachLegacyLayoutObjectList legacy_layout_objects(*this);
       GetStyleEngine().RebuildLayoutTree();
-      legacy_layout_objects.ForceLegacyLayoutIfNeeded();
     }
   }
   GetStyleEngine().ClearWhitespaceReattachSet();
@@ -2659,12 +2656,8 @@ void Document::Initialize() {
   layout_view_->Compositor()->SetNeedsCompositingUpdate(
       kCompositingUpdateAfterCompositingInputChange);
 
-  {
-    ReattachLegacyLayoutObjectList legacy_layout_objects(*this);
-    AttachContext context;
-    ContainerNode::AttachLayoutTree(context);
-    legacy_layout_objects.ForceLegacyLayoutIfNeeded();
-  }
+  AttachContext context;
+  ContainerNode::AttachLayoutTree(context);
 
   // The TextAutosizer can't update layout view info while the Document is
   // detached, so update now in case anything changed.

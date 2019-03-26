@@ -55,7 +55,7 @@ LayoutTextFragment* LayoutTextFragment::Create(const ComputedStyle& style,
                                                StringImpl* str,
                                                int start_offset,
                                                int length) {
-  if (RuntimeEnabledFeatures::LayoutNGEnabled() && !style.ForceLegacyLayout())
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
     return new LayoutNGTextFragment(node, str, start_offset, length);
   return new LayoutTextFragment(node, str, start_offset, length);
 }

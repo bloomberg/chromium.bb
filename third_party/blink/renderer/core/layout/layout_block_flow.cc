@@ -286,9 +286,10 @@ LayoutBlockFlow::~LayoutBlockFlow() = default;
 
 LayoutBlockFlow* LayoutBlockFlow::CreateAnonymous(
     Document* document,
-    scoped_refptr<ComputedStyle> style) {
-  LayoutBlockFlow* layout_block_flow = LayoutObjectFactory::CreateBlockFlow(
-      *document, *style, LegacyLayout::kAuto);
+    scoped_refptr<ComputedStyle> style,
+    LegacyLayout legacy) {
+  LayoutBlockFlow* layout_block_flow =
+      LayoutObjectFactory::CreateBlockFlow(*document, *style, legacy);
   layout_block_flow->SetDocumentForAnonymous(document);
   layout_block_flow->SetStyle(style);
   return layout_block_flow;

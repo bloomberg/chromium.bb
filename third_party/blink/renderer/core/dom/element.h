@@ -793,7 +793,18 @@ class CORE_EXPORT Element : public ContainerNode {
   // sent at all.
   virtual bool IsDisabledFormControl() const { return false; }
 
-  virtual bool ShouldForceLegacyLayout() const { return false; }
+  // Return true if we should force legacy layout on this element and all
+  // descendants. Note that even if this element returns true, it's not implied
+  // that all descendants will return the same. Once an element needs to force
+  // legacy layout, though, the layout engine knows that it will have to perform
+  // legacy layout on the entire subtree.
+  bool ShouldForceLegacyLayout() const {
+    if (TypeShouldForceLegacyLayout())
+      return true;
+    if (!HasRareData())
+      return false;
+    return StyleShouldForceLegacyLayout() || ShouldForceLegacyLayoutForChild();
+  }
 
   virtual void BuildPendingResource() {}
 
@@ -1110,6 +1121,51 @@ class CORE_EXPORT Element : public ContainerNode {
   bool DisplayLockPreventsActivation() const;
   FRIEND_TEST_ALL_PREFIXES(DisplayLockContextTest,
                            DisplayLockPreventsActivation);
+
+  // Return whether this element type requires legacy layout.
+  virtual bool TypeShouldForceLegacyLayout() const { return false; }
+
+  // Return whether the computed style of this element causes need for legacy
+  // layout.
+  bool StyleShouldForceLegacyLayout() const {
+    if (!HasRareData())
+      return false;
+    return StyleShouldForceLegacyLayoutInternal();
+  }
+  bool StyleShouldForceLegacyLayoutInternal() const;
+  void SetStyleShouldForceLegacyLayout(bool force) {
+    if (!force && !HasRareData())
+      return;
+    SetStyleShouldForceLegacyLayoutInternal(force);
+  }
+  void SetStyleShouldForceLegacyLayoutInternal(bool);
+
+  // Return whether this element needs legacy layout because of a child.
+  bool ShouldForceLegacyLayoutForChild() const {
+    if (!HasRareData())
+      return false;
+    return ShouldForceLegacyLayoutForChildInternal();
+  }
+  bool ShouldForceLegacyLayoutForChildInternal() const;
+  void SetShouldForceLegacyLayoutForChild(bool force) {
+    if (!force && !HasRareData())
+      return;
+    SetShouldForceLegacyLayoutForChildInternal(force);
+  }
+  void SetShouldForceLegacyLayoutForChildInternal(bool);
+
+  // Update ForceLegacyLayout flags for this element, and for ancestors, if
+  // necessary. We cannot establish a ForceLegacyLayout subtree at an arbitrary
+  // element; it needs to be a block formatting context root.
+  void UpdateForceLegacyLayout(const ComputedStyle& new_style,
+                               const ComputedStyle* old_style);
+
+  // If this element requires legacy layout, and we can't tell for sure that it
+  // is going to establish a new formatting context, we need to force legacy
+  // layout on ancestors until we reach one that we're sure that will establish
+  // a new formatting context. LayoutNG and legacy layout cannot cooperate
+  // within a formatting context.
+  void ForceLegacyLayoutInFormattingContext(const ComputedStyle& new_style);
 
   Member<ElementData> element_data_;
 };

@@ -334,7 +334,7 @@ LayoutText* Text::CreateTextLayoutObject(const ComputedStyle& style) {
   if (style.HasTextCombine())
     return new LayoutTextCombine(this, DataImpl());
 
-  if (RuntimeEnabledFeatures::LayoutNGEnabled() && !style.ForceLegacyLayout())
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
     return new LayoutNGText(this, DataImpl());
 
   return new LayoutText(this, DataImpl());

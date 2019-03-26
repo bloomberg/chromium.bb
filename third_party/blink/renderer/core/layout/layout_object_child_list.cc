@@ -210,6 +210,13 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
   if (new_child->WasNotifiedOfSubtreeChange())
     owner->NotifyAncestorsOfSubtreeChange();
 
+  if (owner->ForceLegacyLayout()) {
+    new_child->SetForceLegacyLayout();
+    // TODO(crbug.com/943574): This would be a great place to DCHECK that the
+    // child isn't an NG object, but there are unfortunately cases where this
+    // actually happens.
+  }
+
   // Clear NeedsCollectInlines to ensure the marking doesn't stop on
   // |new_child|.
   new_child->ClearNeedsCollectInlines();

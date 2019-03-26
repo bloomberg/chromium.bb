@@ -36,7 +36,8 @@ class LayoutTableCellDeathTest : public RenderingTest {
     RenderingTest::SetUp();
     auto style = ComputedStyle::Create();
     style->SetDisplay(EDisplay::kTableCell);
-    cell_ = LayoutTableCell::CreateAnonymous(&GetDocument(), std::move(style));
+    cell_ = LayoutTableCell::CreateAnonymous(&GetDocument(), std::move(style),
+                                             LegacyLayout::kAuto);
   }
 
   void TearDown() override {

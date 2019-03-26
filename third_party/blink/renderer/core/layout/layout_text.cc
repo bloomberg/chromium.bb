@@ -160,10 +160,9 @@ LayoutText::~LayoutText() {
 LayoutText* LayoutText::CreateEmptyAnonymous(
     Document& doc,
     scoped_refptr<ComputedStyle> style) {
-  LayoutText* text =
-      RuntimeEnabledFeatures::LayoutNGEnabled() && !style->ForceLegacyLayout()
-          ? new LayoutNGText(nullptr, StringImpl::empty_)
-          : new LayoutText(nullptr, StringImpl::empty_);
+  LayoutText* text = RuntimeEnabledFeatures::LayoutNGEnabled()
+                         ? new LayoutNGText(nullptr, StringImpl::empty_)
+                         : new LayoutText(nullptr, StringImpl::empty_);
   text->SetDocumentForAnonymous(&doc);
   text->SetStyle(std::move(style));
   return text;

@@ -25,21 +25,6 @@ namespace blink {
 
 namespace {
 
-inline bool ShouldUseNewLayout(Document& document,
-                               const ComputedStyle& style,
-                               LegacyLayout legacy) {
-  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
-    return false;
-  if (legacy == LegacyLayout::kForce || style.ForceLegacyLayout())
-    return false;
-  bool requires_ng_block_fragmentation =
-      document.Printing() ||
-      (document.GetLayoutView() &&
-       document.GetLayoutView()->StyleRef().IsOverflowPaged());
-  return !requires_ng_block_fragmentation ||
-         RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled();
-}
-
 inline Element* GetElementForLayoutObject(Node& node) {
   if (node.IsElementNode())
     return &ToElement(node);
@@ -48,66 +33,79 @@ inline Element* GetElementForLayoutObject(Node& node) {
   return nullptr;
 }
 
+template <typename BaseType, typename NGType, typename LegacyType = BaseType>
+inline BaseType* CreateObject(Node& node,
+                              const ComputedStyle& style,
+                              LegacyLayout legacy,
+                              bool disable_ng_for_type = false) {
+  Element* element = GetElementForLayoutObject(node);
+  bool force_legacy = false;
+
+  // If no reason has been found for disabling NG for this particular type,
+  // check if the NG feature is enabled at all, before considering creating an
+  // NG object.
+  if (!disable_ng_for_type && RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    // The last thing to check is whether we should force legacy layout. This
+    // happens when the NG feature is enabled for the object in question, but
+    // we're dealing with something that isn't implemented in NG yet (such as
+    // editing or multicol). We then need to force legacy layout for the entire
+    // subtree.
+    force_legacy = legacy == LegacyLayout::kForce;
+
+    if (!force_legacy)
+      return new NGType(element);
+  }
+  BaseType* new_object = new LegacyType(element);
+  if (force_legacy)
+    new_object->SetForceLegacyLayout();
+  return new_object;
+}
+
 }  // anonymous namespace
 
 LayoutBlockFlow* LayoutObjectFactory::CreateBlockFlow(
     Node& node,
     const ComputedStyle& style,
     LegacyLayout legacy) {
-  Element* element = GetElementForLayoutObject(node);
-  if (ShouldUseNewLayout(node.GetDocument(), style, legacy))
-    return new LayoutNGBlockFlow(element);
-  return new LayoutBlockFlow(element);
+  return CreateObject<LayoutBlockFlow, LayoutNGBlockFlow>(node, style, legacy);
 }
 
 LayoutBlock* LayoutObjectFactory::CreateFlexibleBox(Node& node,
                                                     const ComputedStyle& style,
                                                     LegacyLayout legacy) {
-  Element* element = GetElementForLayoutObject(node);
-  if (RuntimeEnabledFeatures::LayoutNGFlexBoxEnabled() &&
-      ShouldUseNewLayout(node.GetDocument(), style, legacy))
-    return new LayoutNGFlexibleBox(element);
-  return new LayoutFlexibleBox(element);
+  bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGFlexBoxEnabled();
+  return CreateObject<LayoutBlock, LayoutNGFlexibleBox, LayoutFlexibleBox>(
+      node, style, legacy, disable_ng_for_type);
 }
 
 LayoutBlockFlow* LayoutObjectFactory::CreateListItem(Node& node,
                                                      const ComputedStyle& style,
                                                      LegacyLayout legacy) {
-  Element* element = GetElementForLayoutObject(node);
-  if (ShouldUseNewLayout(node.GetDocument(), style, legacy))
-    return new LayoutNGListItem(element);
-  return new LayoutListItem(element);
+  return CreateObject<LayoutBlockFlow, LayoutNGListItem, LayoutListItem>(
+      node, style, legacy);
 }
 
 LayoutTableCaption* LayoutObjectFactory::CreateTableCaption(
     Node& node,
     const ComputedStyle& style,
     LegacyLayout legacy) {
-  Element* element = GetElementForLayoutObject(node);
-  if (ShouldUseNewLayout(node.GetDocument(), style, legacy))
-    return new LayoutNGTableCaption(element);
-  return new LayoutTableCaption(element);
+  return CreateObject<LayoutTableCaption, LayoutNGTableCaption>(node, style,
+                                                                legacy);
 }
 
 LayoutTableCell* LayoutObjectFactory::CreateTableCell(
     Node& node,
     const ComputedStyle& style,
     LegacyLayout legacy) {
-  Element* element = GetElementForLayoutObject(node);
-  if (ShouldUseNewLayout(node.GetDocument(), style, legacy))
-    return new LayoutNGTableCell(element);
-  return new LayoutTableCell(element);
+  return CreateObject<LayoutTableCell, LayoutNGTableCell>(node, style, legacy);
 }
 
 LayoutBlock* LayoutObjectFactory::CreateFieldset(Node& node,
                                                  const ComputedStyle& style,
                                                  LegacyLayout legacy) {
-  Element* element = GetElementForLayoutObject(node);
-  if (RuntimeEnabledFeatures::LayoutNGFieldsetEnabled() &&
-      ShouldUseNewLayout(node.GetDocument(), style, legacy)) {
-    return new LayoutNGFieldset(element);
-  }
-  return new LayoutFieldset(element);
+  bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGFieldsetEnabled();
+  return CreateObject<LayoutBlock, LayoutNGFieldset, LayoutFieldset>(
+      node, style, legacy, disable_ng_for_type);
 }
 
 }  // namespace blink

@@ -139,7 +139,6 @@ class HitTestRequest;
 class IdleRequestOptions;
 class IntersectionObserverController;
 class LayoutPoint;
-class ReattachLegacyLayoutObjectList;
 class LayoutView;
 class LazyLoadImageObserver;
 class LiveNodeListBase;
@@ -1413,9 +1412,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   const AtomicString& RequiredCSP();
 
-  // TODO(layout-dev): Once everything are LayoutNG, we can get rid of this.
-  ReattachLegacyLayoutObjectList& GetReattachLegacyLayoutObjectList();
-
   StylePropertyMapReadOnly* ComputedStyleMap(Element*);
   void AddComputedStyleMapItem(Element*, StylePropertyMapReadOnly*);
   StylePropertyMapReadOnly* RemoveComputedStyleMapItem(Element*);
@@ -1935,11 +1931,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<DOMFeaturePolicy> policy_;
 
   Member<SlotAssignmentEngine> slot_assignment_engine_;
-
-  friend class ReattachLegacyLayoutObjectList;
-  // TODO(layout-dev): Once everything are LayoutNG, we can get rid of this.
-  // Used for legacy layout tree fallback
-  ReattachLegacyLayoutObjectList* reattach_legacy_object_list_;
 
   // TODO(tkent): Should it be moved to LocalFrame or LocalFrameView?
   Member<ViewportData> viewport_data_;
