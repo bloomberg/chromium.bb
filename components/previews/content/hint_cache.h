@@ -52,11 +52,27 @@ class HintCache {
   std::unique_ptr<HintCacheStore::ComponentUpdateData>
   MaybeCreateComponentUpdateData(const base::Version& version) const;
 
+  // Returns an UpdateData created by the store to hold updates for fetched
+  // hints. No version is needed nor applicable for fetched hints. During
+  // processing of the GetHintsResponse, hints are moved into the update data.
+  // After processing is complete, the update data is provided to the backing
+  // store to update hints.
+  std::unique_ptr<HintCacheStore::ComponentUpdateData>
+  CreateUpdateDataForFetchedHints() const;
+
   // Updates the store's component data using the provided ComponentUpdateData
   // and asynchronously runs the provided callback after the update finishes.
   void UpdateComponentData(
       std::unique_ptr<HintCacheStore::ComponentUpdateData> component_data,
       base::OnceClosure callback);
+
+  // Process |get_hints_response| to be stored in the hint cache store.
+  // Returns true if processing get_hints_response is successful and applicable
+  // hints can be stored. Returns false if there are no applicable hints in
+  // |get_hints_response| or it cannot be processed.
+  bool StoreFetchedHints(
+      std::unique_ptr<optimization_guide::proto::GetHintsResponse>
+          get_hints_response);
 
   // Returns whether the cache has a hint data for |host| locally (whether
   // in memory or persisted on disk).

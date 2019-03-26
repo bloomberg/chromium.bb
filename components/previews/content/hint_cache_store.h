@@ -81,6 +81,15 @@ class HintCacheStore {
   std::unique_ptr<ComponentUpdateData> virtual MaybeCreateComponentUpdateData(
       const base::Version& version) const = 0;
 
+  // Pure virtual function to create an UpdateData object for Fetched Hints.
+  // This object is used to collect a batch of hints in a format that is usable
+  // by the concrete HintCacheStore. This is always created when hints have been
+  // successfully fetched from the remote Optimization Guide Service so the
+  // store can expire old hints, remove hints specified by the server, and
+  // store the fresh hints.
+  virtual std::unique_ptr<ComponentUpdateData> CreateUpdateDataForFetchedHints()
+      const = 0;
+
   // Pure virtual function for updating the component data (both version and
   // hints) contained within the store. When this is called, all pre-existing
   // component data within the store is purged and only the new data is

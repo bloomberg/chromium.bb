@@ -24,6 +24,7 @@
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_top_host_provider.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/bloom_filter.h"
@@ -1583,6 +1584,9 @@ TEST_F(PreviewsOptimizationGuideTest, HintsFetcherEnabled) {
 
   EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_));
   CreateServiceAndGuide();
+  // Load hints so that OnHintsUpdated is called. This will force FetchHints to
+  // be triggered if OptimizationHintsFetching is enabled.
+  InitializeFixedCountResourceLoadingHints();
 }
 
 TEST_F(PreviewsOptimizationGuideTest, HintsFetcherDisabled) {
@@ -1591,6 +1595,10 @@ TEST_F(PreviewsOptimizationGuideTest, HintsFetcherDisabled) {
 
   EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_)).Times(0);
   CreateServiceAndGuide();
+  // Load hints so that OnHintsUpdated is called. This will
+  // check that FetcHints is not triggered by making sure that top_host_provider
+  // is not called.
+  InitializeFixedCountResourceLoadingHints();
 }
 
 }  // namespace previews
