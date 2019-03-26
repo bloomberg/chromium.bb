@@ -84,7 +84,6 @@
 #import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #import "ios/web/web_state/error_translation_util.h"
-#import "ios/web/web_state/js/crw_js_post_request_loader.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
 #import "ios/web/web_state/navigation_context_impl.h"
 #import "ios/web/web_state/page_viewport_state.h"
@@ -310,9 +309,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   // history navigations.
   BOOL _dispatchingSameDocumentHashChangeEvent;
 
-  // Object for loading POST requests with body.
-  CRWJSPOSTRequestLoader* _POSTRequestLoader;
-
   // A set of script managers whose scripts have been injected into the current
   // page.
   // TODO(stuartmorgan): Revisit this approach; it's intended only as a stopgap
@@ -453,16 +449,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 // Returns the current URL of the web view, and sets |trustLevel| accordingly
 // based on the confidence in the verification.
 - (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel;
-// Loads POST request with body in |_wkWebView| by constructing an HTML page
-// that executes the request through JavaScript and replaces document with the
-// result.
-// Note that this approach includes multiple body encodings and decodings, plus
-// the data is passed to |_wkWebView| on main thread.
-// This is necessary because WKWebView ignores POST request body.
-// Workaround for https://bugs.webkit.org/show_bug.cgi?id=145410
-// TODO(crbug.com/740987): Remove |loadPOSTRequest:| workaround once iOS 10 is
-// dropped.
-- (WKNavigation*)loadPOSTRequest:(NSMutableURLRequest*)request;
 
 // Returns a NSMutableURLRequest that represents the current NavigationItem.
 - (NSMutableURLRequest*)requestForCurrentNavigationItem;
@@ -1984,34 +1970,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     }
   }
 
-  // If the request has POST data and is not a repost form, configure and
-  // run the POST request.
+  // If the request has POST data and is not a repost form, configure the POST
+  // request.
   if (POSTData.length && !repostedForm) {
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:POSTData];
     [request setAllHTTPHeaderFields:self.currentHTTPHeaders];
-    // As of iOS 11, WKWebView supports requests with POST data, so the
-    // Javascript POST workaround only needs to be used if the OS version is
-    // less than iOS 11.
-    // TODO(crbug.com/740987): Remove POST workaround once iOS 10 is dropped.
-    if (!base::ios::IsRunningOnIOS11OrLater()) {
-      GURL navigationURL =
-          currentItem ? currentItem->GetURL() : GURL::EmptyGURL();
-      std::unique_ptr<web::NavigationContextImpl> navigationContext =
-          [self registerLoadRequestForURL:navigationURL
-                                 referrer:self.currentNavItemReferrer
-                               transition:self.currentTransition
-                   sameDocumentNavigation:sameDocumentNavigation
-                           hasUserGesture:YES
-                        rendererInitiated:NO
-                    placeholderNavigation:NO];
-      WKNavigation* navigation = [self loadPOSTRequest:request];
-      [_navigationStates setContext:std::move(navigationContext)
-                      forNavigation:navigation];
-      [_navigationStates setState:web::WKNavigationState::REQUESTED
-                    forNavigation:navigation];
-      return;
-    }
   }
 
   ProceduralBlock defaultNavigationBlock = ^{
@@ -2130,28 +2094,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         else
           [self stopLoading];
       }));
-}
-
-- (WKNavigation*)loadPOSTRequest:(NSMutableURLRequest*)request {
-  if (!_POSTRequestLoader) {
-    _POSTRequestLoader = [[CRWJSPOSTRequestLoader alloc] init];
-  }
-
-  CRWWKScriptMessageRouter* messageRouter =
-      [self webViewConfigurationProvider].GetScriptMessageRouter();
-
-  return
-      [_POSTRequestLoader loadPOSTRequest:request
-                                inWebView:self.webView
-                            messageRouter:messageRouter
-                        completionHandler:^(NSError* loadError) {
-                          if (loadError)
-                            [self handleLoadError:loadError
-                                    forNavigation:nil
-                                  provisionalLoad:YES];
-                          else
-                            self.webStateImpl->SetContentsMimeType("text/html");
-                        }];
 }
 
 - (void)reportBackForwardNavigationTypeForFastNavigation:(BOOL)isFast {

@@ -71,11 +71,6 @@ TEST_F(WebFrameImplIntTest, CallJavaScriptFunctionOnMainFrame) {
 }
 
 TEST_F(WebFrameImplIntTest, CallJavaScriptFunctionOnIframe) {
-  if (!base::ios::IsRunningOnIOS11OrLater()) {
-    // WebFrame will not have a key on iOS 10, so function cannot be called.
-    return;
-  }
-
   ASSERT_TRUE(LoadHtml("<p><iframe srcdoc='<p>'/>"));
 
   __block WebFramesManagerImpl* manager =
@@ -139,11 +134,6 @@ TEST_F(WebFrameImplIntTest, CallJavaScriptFunctionTimeout) {
 
 // Tests that messages routed through CallJavaScriptFunction cannot be replayed.
 TEST_F(WebFrameImplIntTest, PreventMessageReplay) {
-  if (!base::ios::IsRunningOnIOS11OrLater()) {
-    // |_gCrWeb.frameMessaging.routeMessage| is not supported on iOS 10.
-    return;
-  }
-
   ASSERT_TRUE(LoadHtml("<p>"));
 
   WebFrame* main_frame = GetMainWebFrame(web_state());
@@ -211,10 +201,6 @@ TEST_F(WebFrameImplIntTest, PreventMessageReplay) {
 // Tests that the main WebFrame is passed to the callback when sending a
 // JS -> native message.
 TEST_F(WebFrameImplIntTest, JavaScriptMessageFromMainFrame) {
-  if (!base::ios::IsRunningOnIOS11OrLater()) {
-    // Frame messaging is not supported on iOS 10.
-    return;
-  }
   ASSERT_TRUE(LoadHtml("<p>"));
   __block bool command_received = false;
   // The callback doesn't care about any of the parameters not related to
@@ -247,10 +233,6 @@ TEST_F(WebFrameImplIntTest, JavaScriptMessageFromMainFrame) {
 // Tests that an iframe WebFrame is passed to the callback when sending a
 // JS -> native message.
 TEST_F(WebFrameImplIntTest, JavaScriptMessageFromFrame) {
-  if (!base::ios::IsRunningOnIOS11OrLater()) {
-    // Frame messaging is not supported on iOS 10.
-    return;
-  }
   ASSERT_TRUE(LoadHtml("<p><iframe>"));
   __block bool command_received = false;
   // The callback doesn't care about any of the parameters not related to
