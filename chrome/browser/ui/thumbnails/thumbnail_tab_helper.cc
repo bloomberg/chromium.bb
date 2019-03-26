@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
@@ -21,44 +23,43 @@
 #include "ui/gfx/scrollbar_size.h"
 
 ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
-    : ThumbnailWebContentsObserver(contents),
-      view_is_visible_(contents->GetVisibility() ==
-                       content::Visibility::VISIBLE) {}
+    : view_is_visible_(contents->GetVisibility() ==
+                       content::Visibility::VISIBLE),
+      adapter_(contents),
+      scoped_observer_(this) {
+  scoped_observer_.Add(&adapter_);
+}
 
 ThumbnailTabHelper::~ThumbnailTabHelper() = default;
 
 void ThumbnailTabHelper::TopLevelNavigationStarted(const GURL& url) {
-  UpdateCurrentUrl(url);
+  TransitionLoadingState(LoadingState::kNavigationStarted, url);
 }
 
 void ThumbnailTabHelper::TopLevelNavigationEnded(const GURL& url) {
-  UpdateCurrentUrl(url);
+  TransitionLoadingState(LoadingState::kNavigationFinished, url);
 }
 
-void ThumbnailTabHelper::UpdateCurrentUrl(const GURL& url) {
-  current_url_ = url;
-  if (current_url_ != thumbnail_url_ &&
-      thumbnail_state_ != ThumbnailState::kNoThumbnail) {
-    thumbnail_state_ = ThumbnailState::kNoThumbnail;
-    thumbnail_ = ThumbnailImage();
-    NotifyTabPreviewChanged();
+void ThumbnailTabHelper::PageLoadStarted(
+    thumbnails::FrameContext frame_context) {
+  if (frame_context == thumbnails::FrameContext::kMainFrame) {
+    TransitionLoadingState(LoadingState::kLoadStarted,
+                           web_contents()->GetVisibleURL());
   }
-}
-
-void ThumbnailTabHelper::PageLoadStarted(FrameContext frame_context) {
-  if (frame_context == FrameContext::kMainFrame)
-    is_loading_ = true;
   ScheduleThumbnailCapture(CaptureSchedule::kDelayed);
 }
 
-void ThumbnailTabHelper::PageLoadFinished(FrameContext frame_context) {
-  if (frame_context == FrameContext::kMainFrame)
-    is_loading_ = false;
-  ScheduleThumbnailCapture(CaptureSchedule::kAttemptImmediate);
+void ThumbnailTabHelper::PageLoadFinished(
+    thumbnails::FrameContext frame_context) {
+  if (frame_context == thumbnails::FrameContext::kMainFrame) {
+    TransitionLoadingState(LoadingState::kLoadFinished,
+                           web_contents()->GetVisibleURL());
+  }
+  ScheduleThumbnailCapture(CaptureSchedule::kDelayed);
 }
 
-void ThumbnailTabHelper::PageUpdated(FrameContext frame_context) {
-  ScheduleThumbnailCapture(CaptureSchedule::kAttemptImmediate);
+void ThumbnailTabHelper::PageUpdated(thumbnails::FrameContext frame_context) {
+  ScheduleThumbnailCapture(CaptureSchedule::kDelayed);
 }
 
 void ThumbnailTabHelper::VisibilityChanged(bool visible) {
@@ -80,14 +81,11 @@ void ThumbnailTabHelper::VisibilityChanged(bool visible) {
 void ThumbnailTabHelper::ScheduleThumbnailCapture(CaptureSchedule schedule) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (schedule != CaptureSchedule::kImmediate && !view_is_visible_)
+  if (!CanCaptureThumbnail(schedule))
     return;
 
-  constexpr base::TimeDelta kDelayTime = base::TimeDelta::FromMilliseconds(250);
-  constexpr base::TimeDelta kMinTimeBetweenCaptures =
-      base::TimeDelta::FromMilliseconds(500);
-
   // We will do the capture either now or at some point in the future.
+  constexpr base::TimeDelta kDelayTime = base::TimeDelta::FromMilliseconds(500);
   base::TimeDelta delay;
   if (schedule == CaptureSchedule::kDelayed)
     delay += kDelayTime;
@@ -99,6 +97,8 @@ void ThumbnailTabHelper::ScheduleThumbnailCapture(CaptureSchedule schedule) {
 
   // If we would schedule a non-immediate capture too close to an existing
   // capture, push it out or discard it altogether.
+  constexpr base::TimeDelta kMinTimeBetweenCaptures =
+      base::TimeDelta::FromMilliseconds(2000);
   if (schedule != CaptureSchedule::kImmediate &&
       delay - until_scheduled < kMinTimeBetweenCaptures) {
     if (until_scheduled > delay)
@@ -123,18 +123,18 @@ void ThumbnailTabHelper::ScheduleThumbnailCapture(CaptureSchedule schedule) {
 void ThumbnailTabHelper::StartThumbnailCapture(CaptureSchedule schedule) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  CaptureInfo capture_info{web_contents()->GetVisibleURL(),
-                           is_loading_ ? ThumbnailState::kLoadInProgress
-                                       : ThumbnailState::kFinishedLoading};
-  DCHECK(!capture_info.url.is_empty());
-
-  if (!view_is_visible_ && schedule != CaptureSchedule::kImmediate)
+  if (!CanCaptureThumbnail(schedule))
     return;
 
-  // Destroying a WebContents may trigger it to be hidden, prompting a snapshot
-  // which would be unwise to attempt <http://crbug.com/130097>. If the
-  // WebContents is in the middle of destruction, do not risk it.
-  if (!web_contents() || web_contents()->IsBeingDestroyed())
+  CaptureInfo capture_info{web_contents()->GetVisibleURL(),
+                           GetThumbnailState()};
+
+  // Don't try to capture thumbnails if we're in the navigation phase.
+  if (capture_info.target_state == ThumbnailState::kNoThumbnail)
+    return;
+
+  // If there's no currently-visible URL, don't capture.
+  if (capture_info.url.is_empty())
     return;
 
   base::TimeTicks start_time = base::TimeTicks::Now();
@@ -223,6 +223,77 @@ void ThumbnailTabHelper::MaybeScheduleAnotherCapture(
       finish_time > last_scheduled_capture_time_) {
     ScheduleThumbnailCapture(CaptureSchedule::kDelayed);
   }
+}
+
+bool ThumbnailTabHelper::CanCaptureThumbnail(CaptureSchedule schedule) const {
+  // Destroying a WebContents may trigger it to be hidden, prompting a snapshot
+  // which would be unwise to attempt <http://crbug.com/130097>. If the
+  // WebContents is in the middle of destruction, do not risk it.
+  if (!web_contents() || web_contents()->IsBeingDestroyed())
+    return false;
+
+  // Windows which are not being shown often have no or invalid data, so don't
+  // try to capture them. The exception is snapshots that happen on visibility
+  // transitions, which have the |kImmediate| schedule.
+  switch (schedule) {
+    case CaptureSchedule::kImmediate:
+      return true;
+    default:
+      return view_is_visible_;
+  }
+}
+
+ThumbnailTabHelper::ThumbnailState ThumbnailTabHelper::GetThumbnailState()
+    const {
+  switch (loading_state_) {
+    case LoadingState::kLoadStarted:
+      return ThumbnailState::kLoadInProgress;
+    case LoadingState::kLoadFinished:
+      return ThumbnailState::kFinishedLoading;
+    default:
+      return ThumbnailState::kNoThumbnail;
+  }
+}
+
+void ThumbnailTabHelper::TransitionLoadingState(LoadingState state,
+                                                const GURL& url) {
+  // Because the loading process is unpredictable, and because there are a large
+  // number of events which could be interpreted as navigation of the main frame
+  // or loading, only move the loading progress forward.
+  switch (state) {
+    case LoadingState::kNavigationStarted:
+    case LoadingState::kNavigationFinished:
+      if (current_url_ != url) {
+        current_url_ = url;
+        ClearThumbnail();
+        loading_state_ = state;
+      } else {
+        loading_state_ = std::max(loading_state_, state);
+      }
+      break;
+    case LoadingState::kLoadStarted:
+    case LoadingState::kLoadFinished:
+      if (current_url_ != url &&
+          (loading_state_ == LoadingState::kNavigationStarted ||
+           loading_state_ == LoadingState::kNavigationFinished)) {
+        // This probably refers to an old page, so ignore it.
+        return;
+      }
+      current_url_ = url;
+      loading_state_ = std::max(loading_state_, state);
+      break;
+    case LoadingState::kNone:
+      NOTREACHED();
+      break;
+  }
+}
+
+void ThumbnailTabHelper::ClearThumbnail() {
+  if (!thumbnail_.HasData())
+    return;
+  thumbnail_state_ = ThumbnailState::kNoThumbnail;
+  thumbnail_ = ThumbnailImage();
+  NotifyTabPreviewChanged();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ThumbnailTabHelper)
