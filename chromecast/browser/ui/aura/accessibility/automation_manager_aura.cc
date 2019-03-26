@@ -51,6 +51,12 @@ void AutomationManagerAura::Enable() {
         views::AXAuraObjCache::GetInstance()->GetOrCreate(active_window);
     SendEvent(focus, ax::mojom::Event::kChildrenChanged);
   }
+
+  // Notify the browser process of a change to accessibility state so it
+  // can notify any out of out of process (non chrome renderers) that need
+  // to know.
+  chromecast::shell::CastBrowserProcess::GetInstance()
+      ->AccessibilityStateChanged(true);
 }
 
 void AutomationManagerAura::Disable() {
