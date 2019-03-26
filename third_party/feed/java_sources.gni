@@ -277,6 +277,7 @@ feed_lib_java_sources = [
   "src/src/main/java/com/google/android/libraries/feed/piet/ui/GradientDrawable.java",
   "src/src/main/java/com/google/android/libraries/feed/piet/ui/GradientShader.java",
   "src/src/main/java/com/google/android/libraries/feed/piet/ui/GridRowView.java",
+  "src/src/main/java/com/google/android/libraries/feed/piet/ui/RoundedCornerMaskCache.java",
   "src/src/main/java/com/google/android/libraries/feed/piet/ui/RoundedCornerViewHelper.java",
   "src/src/main/java/com/google/android/libraries/feed/piet/ui/RoundedCornerWrapperView.java",
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/constants/Constants.java",
@@ -304,6 +305,7 @@ feed_lib_java_sources = [
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/removetrackingfactory/StreamRemoveTrackingFactory.java",
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/scroll/ScrollRestoreHelper.java",
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/scroll/StreamScrollMonitor.java",
+  "src/src/main/java/com/google/android/libraries/feed/sharedstream/ui/MaterialSpinnerView.java",
 ]
 
 feed_conformance_test_lib_sources = [
@@ -311,9 +313,9 @@ feed_conformance_test_lib_sources = [
   "src/src/main/java/com/google/android/libraries/feed/api/common/testing/InternalProtocolBuilder.java",
   "src/src/main/java/com/google/android/libraries/feed/common/concurrent/testing/ClockBackedFakeMainThreadRunner.java",
   "src/src/main/java/com/google/android/libraries/feed/common/concurrent/testing/FakeMainThreadRunner.java",
-  "src/src/main/java/com/google/android/libraries/feed/common/testing/FakeActionUploadRequestManager.java",
+  "src/src/main/java/com/google/android/libraries/feed/common/concurrent/testing/FakeTaskQueue.java",
+  "src/src/main/java/com/google/android/libraries/feed/common/concurrent/testing/FakeThreadUtils.java",
   "src/src/main/java/com/google/android/libraries/feed/common/testing/FakeBasicLoggingApi.java",
-  "src/src/main/java/com/google/android/libraries/feed/common/testing/FakeRequestManager.java",
   "src/src/main/java/com/google/android/libraries/feed/common/testing/InfrastructureIntegrationScope.java",
   "src/src/main/java/com/google/android/libraries/feed/common/testing/ModelProviderValidator.java",
   "src/src/main/java/com/google/android/libraries/feed/common/testing/PagingState.java",
@@ -327,4 +329,6 @@ feed_conformance_test_lib_sources = [
   "src/src/main/java/com/google/android/libraries/feed/testing/conformance/storage/ContentStorageDirectConformanceTest.java",
   "src/src/main/java/com/google/android/libraries/feed/testing/conformance/storage/JournalStorageConformanceTest.java",
   "src/src/main/java/com/google/android/libraries/feed/testing/conformance/storage/JournalStorageDirectConformanceTest.java",
+  "src/src/main/java/com/google/android/libraries/feed/testing/requestmanager/FakeActionUploadRequestManager.java",
+  "src/src/main/java/com/google/android/libraries/feed/testing/requestmanager/FakeRequestManager.java",
 ]
