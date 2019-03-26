@@ -472,6 +472,15 @@ class DCLayerTree::SwapChainPresenter {
   }
 
  private:
+  // Mapped to DirectCompositonVideoPresentationMode UMA enum.  Do not remove or
+  // remap existing entries!
+  enum class VideoPresentationMode {
+    kZeroCopyDecodeSwapChain = 0,
+    kUploadAndVideoProcessorBlit = 1,
+    kBindAndVideoProcessorBlit = 2,
+    kMaxValue = kBindAndVideoProcessorBlit,
+  };
+
   // Upload given YUV buffers to NV12 |staging_texture_|.  Returns true on
   // success.
   bool UploadVideoImages(gl::GLImageMemory* y_image_memory,
@@ -1303,8 +1312,21 @@ void DCLayerTree::SwapChainPresenter::RecordPresentationStatistics() {
       is_yuv_swapchain_ ? g_overlay_format_used : OverlayFormat::kBGRA;
   UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.SwapChainFormat2",
                             swap_chain_format);
+
+  VideoPresentationMode presentation_mode;
+  if (decode_swap_chain_) {
+    presentation_mode = VideoPresentationMode::kZeroCopyDecodeSwapChain;
+  } else if (staging_texture_) {
+    presentation_mode = VideoPresentationMode::kUploadAndVideoProcessorBlit;
+  } else {
+    presentation_mode = VideoPresentationMode::kBindAndVideoProcessorBlit;
+  }
+  UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.VideoPresentationMode",
+                            presentation_mode);
+
   UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.DecodeSwapChainUsed",
                         !!decode_swap_chain_);
+
   TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("gpu.service"),
                        "SwapChain::Present", TRACE_EVENT_SCOPE_THREAD,
                        "PixelFormat", swap_chain_format, "ZeroCopy",
@@ -1498,6 +1520,7 @@ void DCLayerTree::SwapChainPresenter::ReleaseSwapChainResources() {
   decode_swap_chain_.Reset();
   decode_resource_.Reset();
   swap_chain_handle_.Close();
+  staging_texture_.Reset();
 }
 
 bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
