@@ -32,12 +32,12 @@ class WebAppUrlLoader {
   using ResultCallback = base::OnceCallback<void(Result)>;
 
   WebAppUrlLoader();
-  ~WebAppUrlLoader();
+  virtual ~WebAppUrlLoader();
 
   // Navigates |web_contents| to |url| and runs callback with the result code.
-  void LoadUrl(const GURL& url,
-               content::WebContents* web_contents,
-               ResultCallback callback);
+  virtual void LoadUrl(const GURL& url,
+                       content::WebContents* web_contents,
+                       ResultCallback callback);
 
   // Exposed for testing.
   static constexpr base::TimeDelta kSecondsToWaitForWebContentsLoad =
