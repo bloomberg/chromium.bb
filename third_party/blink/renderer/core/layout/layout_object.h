@@ -584,7 +584,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // function also doesn't handle the default association between a tag
   // and its renderer (e.g. <iframe> creates a LayoutIFrame even if the
   // initial 'display' value is inline).
-  static LayoutObject* CreateObject(Element*, const ComputedStyle&);
+  static LayoutObject* CreateObject(Element*,
+                                    const ComputedStyle&,
+                                    LegacyLayout);
 
   // LayoutObjects are allocated out of the rendering partition.
   void* operator new(size_t);

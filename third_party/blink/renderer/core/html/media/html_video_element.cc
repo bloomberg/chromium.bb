@@ -151,7 +151,8 @@ bool HTMLVideoElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   return HTMLElement::LayoutObjectIsNeeded(style);
 }
 
-LayoutObject* HTMLVideoElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* HTMLVideoElement::CreateLayoutObject(const ComputedStyle&,
+                                                   LegacyLayout) {
   return new LayoutVideo(this);
 }
 

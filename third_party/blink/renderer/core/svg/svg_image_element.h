@@ -96,7 +96,7 @@ class CORE_EXPORT SVGImageElement final
   void AttachLayoutTree(AttachContext&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   const AtomicString ImageSourceURL() const override;
 

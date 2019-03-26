@@ -63,9 +63,10 @@ void HTMLBRElement::CollectStyleForPresentationAttribute(
   }
 }
 
-LayoutObject* HTMLBRElement::CreateLayoutObject(const ComputedStyle& style) {
+LayoutObject* HTMLBRElement::CreateLayoutObject(const ComputedStyle& style,
+                                                LegacyLayout legacy) {
   if (style.HasContent())
-    return LayoutObject::CreateObject(this, style);
+    return LayoutObject::CreateObject(this, style, legacy);
   return new LayoutBR(this);
 }
 

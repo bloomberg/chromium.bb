@@ -74,7 +74,8 @@ class CORE_EXPORT FileInputType final : public InputType,
   bool ValueMissing(const String&) const override;
   String ValueMissingText() const override;
   void HandleDOMActivateEvent(Event&) override;
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) const override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&,
+                                   LegacyLayout) const override;
   bool CanSetStringValue() const override;
   FileList* Files() override;
   bool SetFiles(FileList*) override;

@@ -500,7 +500,8 @@ void SVGSVGElement::AttachLayoutTree(AttachContext& context) {
     ToLayoutSVGRoot(GetLayoutObject())->IntrinsicSizingInfoChanged();
 }
 
-LayoutObject* SVGSVGElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGSVGElement::CreateLayoutObject(const ComputedStyle&,
+                                                LegacyLayout) {
   if (IsOutermostSVGSVGElement())
     return new LayoutSVGRoot(this);
 

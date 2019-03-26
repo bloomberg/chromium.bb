@@ -684,7 +684,8 @@ bool HTMLMediaElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   return ShouldShowControls() && HTMLElement::LayoutObjectIsNeeded(style);
 }
 
-LayoutObject* HTMLMediaElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* HTMLMediaElement::CreateLayoutObject(const ComputedStyle&,
+                                                   LegacyLayout) {
   return new LayoutMedia(this);
 }
 

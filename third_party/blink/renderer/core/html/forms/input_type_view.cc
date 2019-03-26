@@ -87,9 +87,9 @@ HTMLFormElement* InputTypeView::FormForSubmission() const {
   return GetElement().Form();
 }
 
-LayoutObject* InputTypeView::CreateLayoutObject(
-    const ComputedStyle& style) const {
-  return LayoutObject::CreateObject(&GetElement(), style);
+LayoutObject* InputTypeView::CreateLayoutObject(const ComputedStyle& style,
+                                                LegacyLayout legacy) const {
+  return LayoutObject::CreateObject(&GetElement(), style, legacy);
 }
 
 scoped_refptr<ComputedStyle> InputTypeView::CustomStyleForLayoutObject(

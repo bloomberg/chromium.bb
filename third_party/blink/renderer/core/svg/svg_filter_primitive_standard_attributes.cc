@@ -159,7 +159,8 @@ void SVGFilterPrimitiveStandardAttributes::SetStandardAttributes(
 }
 
 LayoutObject* SVGFilterPrimitiveStandardAttributes::CreateLayoutObject(
-    const ComputedStyle&) {
+    const ComputedStyle&,
+    LegacyLayout) {
   return new LayoutSVGResourceFilterPrimitive(this);
 }
 

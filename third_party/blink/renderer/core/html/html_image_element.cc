@@ -392,7 +392,8 @@ ImageCandidate HTMLImageElement::FindBestFitImageFromPictureParent() {
   return ImageCandidate();
 }
 
-LayoutObject* HTMLImageElement::CreateLayoutObject(const ComputedStyle& style) {
+LayoutObject* HTMLImageElement::CreateLayoutObject(const ComputedStyle& style,
+                                                   LegacyLayout legacy) {
   const ContentData* content_data = style.GetContentData();
   if (content_data && content_data->IsImage()) {
     const StyleImage* content_image =
@@ -400,12 +401,12 @@ LayoutObject* HTMLImageElement::CreateLayoutObject(const ComputedStyle& style) {
     bool error_occurred = content_image && content_image->CachedImage() &&
                           content_image->CachedImage()->ErrorOccurred();
     if (!error_occurred)
-      return LayoutObject::CreateObject(this, style);
+      return LayoutObject::CreateObject(this, style, legacy);
   }
 
   switch (layout_disposition_) {
     case LayoutDisposition::kFallbackContent:
-      return LayoutObjectFactory::CreateBlockFlow(*this, style);
+      return LayoutObjectFactory::CreateBlockFlow(*this, style, legacy);
     case LayoutDisposition::kPrimaryContent: {
       LayoutImage* image = new LayoutImage(this);
       image->SetImageResource(LayoutImageResource::Create());

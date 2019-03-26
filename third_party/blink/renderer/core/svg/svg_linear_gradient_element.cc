@@ -80,8 +80,8 @@ void SVGLinearGradientElement::SvgAttributeChanged(
   SVGGradientElement::SvgAttributeChanged(attr_name);
 }
 
-LayoutObject* SVGLinearGradientElement::CreateLayoutObject(
-    const ComputedStyle&) {
+LayoutObject* SVGLinearGradientElement::CreateLayoutObject(const ComputedStyle&,
+                                                           LegacyLayout) {
   return new LayoutSVGResourceLinearGradient(this);
 }
 

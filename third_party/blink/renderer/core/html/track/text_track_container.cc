@@ -85,7 +85,8 @@ TextTrackContainer* TextTrackContainer::Create(
   return element;
 }
 
-LayoutObject* TextTrackContainer::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* TextTrackContainer::CreateLayoutObject(const ComputedStyle&,
+                                                     LegacyLayout) {
   // TODO(mstensho): Should use LayoutObjectFactory to create the right type of
   // object here, to enable LayoutNG, but currently we can't, because this will
   // typically be a child of LayoutVideo (a legacy type), and we'll typically

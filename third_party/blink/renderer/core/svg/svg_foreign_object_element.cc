@@ -119,8 +119,8 @@ void SVGForeignObjectElement::SvgAttributeChanged(
   SVGGraphicsElement::SvgAttributeChanged(attr_name);
 }
 
-LayoutObject* SVGForeignObjectElement::CreateLayoutObject(
-    const ComputedStyle&) {
+LayoutObject* SVGForeignObjectElement::CreateLayoutObject(const ComputedStyle&,
+                                                          LegacyLayout) {
   return new LayoutSVGForeignObject(this);
 }
 

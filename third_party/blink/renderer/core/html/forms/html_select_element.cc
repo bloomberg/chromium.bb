@@ -331,7 +331,8 @@ bool HTMLSelectElement::CanSelectAll() const {
   return !UsesMenuList();
 }
 
-LayoutObject* HTMLSelectElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* HTMLSelectElement::CreateLayoutObject(const ComputedStyle&,
+                                                    LegacyLayout) {
   if (UsesMenuList())
     return new LayoutMenuList(this);
   return new LayoutListBox(this);

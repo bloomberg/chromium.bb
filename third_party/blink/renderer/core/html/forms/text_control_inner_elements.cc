@@ -52,7 +52,8 @@ TextControlInnerContainer* TextControlInnerContainer::Create(
 }
 
 LayoutObject* TextControlInnerContainer::CreateLayoutObject(
-    const ComputedStyle&) {
+    const ComputedStyle&,
+    LegacyLayout) {
   return new LayoutTextControlInnerContainer(this);
 }
 
@@ -132,7 +133,8 @@ void TextControlInnerEditorElement::SetVisibility(bool is_visible) {
 }
 
 LayoutObject* TextControlInnerEditorElement::CreateLayoutObject(
-    const ComputedStyle&) {
+    const ComputedStyle&,
+    LegacyLayout) {
   return new LayoutTextControlInnerEditor(this);
 }
 

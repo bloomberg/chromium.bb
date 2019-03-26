@@ -104,10 +104,10 @@ void ImageInputType::HandleDOMActivateEvent(Event& event) {
   event.SetDefaultHandled();
 }
 
-LayoutObject* ImageInputType::CreateLayoutObject(
-    const ComputedStyle& style) const {
+LayoutObject* ImageInputType::CreateLayoutObject(const ComputedStyle& style,
+                                                 LegacyLayout legacy) const {
   if (use_fallback_content_)
-    return LayoutObjectFactory::CreateBlockFlow(GetElement(), style);
+    return LayoutObjectFactory::CreateBlockFlow(GetElement(), style, legacy);
   LayoutImage* image = new LayoutImage(&GetElement());
   image->SetImageResource(LayoutImageResource::Create());
   return image;

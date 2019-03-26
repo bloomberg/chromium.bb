@@ -66,7 +66,8 @@ bool HiddenInputType::SupportsValidation() const {
   return false;
 }
 
-LayoutObject* HiddenInputType::CreateLayoutObject(const ComputedStyle&) const {
+LayoutObject* HiddenInputType::CreateLayoutObject(const ComputedStyle&,
+                                                  LegacyLayout) const {
   NOTREACHED();
   return nullptr;
 }

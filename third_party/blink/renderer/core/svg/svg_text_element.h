@@ -34,7 +34,7 @@ class SVGTextElement final : public SVGTextPositioningElement {
   explicit SVGTextElement(Document&);
 
  private:
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 };
 
 }  // namespace blink

@@ -63,7 +63,8 @@ class DataListIndicatorElement final : public HTMLDivElement {
     return ToHTMLInputElement(OwnerShadowHost());
   }
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override {
+  LayoutObject* CreateLayoutObject(const ComputedStyle&,
+                                   LegacyLayout) override {
     return new LayoutDetailsMarker(this);
   }
 
@@ -268,8 +269,8 @@ bool TextFieldInputType::ShouldSubmitImplicitly(const Event& event) {
          InputTypeView::ShouldSubmitImplicitly(event);
 }
 
-LayoutObject* TextFieldInputType::CreateLayoutObject(
-    const ComputedStyle&) const {
+LayoutObject* TextFieldInputType::CreateLayoutObject(const ComputedStyle&,
+                                                     LegacyLayout) const {
   return new LayoutTextControlSingleLine(&GetElement());
 }
 

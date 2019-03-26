@@ -61,7 +61,8 @@ void SearchInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeSearch);
 }
 
-LayoutObject* SearchInputType::CreateLayoutObject(const ComputedStyle&) const {
+LayoutObject* SearchInputType::CreateLayoutObject(const ComputedStyle&,
+                                                  LegacyLayout) const {
   return new LayoutSearchField(&GetElement());
 }
 

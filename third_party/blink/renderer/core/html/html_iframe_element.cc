@@ -315,7 +315,8 @@ bool HTMLIFrameElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
          HTMLElement::LayoutObjectIsNeeded(style);
 }
 
-LayoutObject* HTMLIFrameElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* HTMLIFrameElement::CreateLayoutObject(const ComputedStyle&,
+                                                    LegacyLayout) {
   return new LayoutIFrame(this);
 }
 

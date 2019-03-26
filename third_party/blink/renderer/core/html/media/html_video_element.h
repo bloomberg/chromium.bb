@@ -208,7 +208,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   void ContextDestroyed(ExecutionContext*) final;
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
   void AttachLayoutTree(AttachContext&) override;
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;

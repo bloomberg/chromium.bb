@@ -101,16 +101,16 @@ class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {
  public:
   LayoutTreeBuilderForElement(Element&, ComputedStyle*);
 
-  void CreateLayoutObjectIfNeeded() {
+  void CreateLayoutObjectIfNeeded(LegacyLayout legacy) {
     if (ShouldCreateLayoutObject())
-      CreateLayoutObject();
+      CreateLayoutObject(legacy);
   }
 
  private:
   LayoutObject* ParentLayoutObject() const;
   LayoutObject* NextLayoutObject() const;
   bool ShouldCreateLayoutObject() const;
-  void CreateLayoutObject();
+  void CreateLayoutObject(LegacyLayout);
 
   scoped_refptr<ComputedStyle> style_;
 };

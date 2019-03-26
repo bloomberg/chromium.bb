@@ -111,6 +111,17 @@ enum class SlotChangeType {
 
 enum class CloneChildrenFlag { kClone, kSkip };
 
+// Whether or not to force creation of a legacy layout object (i.e. disallow
+// LayoutNG).
+enum class LegacyLayout {
+  // Allow LayoutNG, if nothing else is preventing it (runtime feature disabled,
+  // specific object type not yet implemented, Element says no, etc.)
+  kAuto,
+
+  // Force legacy layout object creation.
+  kForce
+};
+
 // A Node is a base class for all objects in the DOM tree.
 // The spec governing this interface can be found here:
 // https://dom.spec.whatwg.org/#interface-node

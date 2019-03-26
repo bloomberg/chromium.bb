@@ -134,14 +134,14 @@ bool LayoutTreeBuilderForElement::ShouldCreateLayoutObject() const {
 }
 
 DISABLE_CFI_PERF
-void LayoutTreeBuilderForElement::CreateLayoutObject() {
+void LayoutTreeBuilderForElement::CreateLayoutObject(LegacyLayout legacy) {
   ReattachLegacyLayoutObjectList& legacy_layout_objects =
       node_->GetDocument().GetReattachLegacyLayoutObjectList();
   if (legacy_layout_objects.IsForcingLegacyLayout()) {
     DCHECK(!node_->GetLayoutObject());
     style_->SetForceLegacyLayout(true);
   }
-  LayoutObject* new_layout_object = node_->CreateLayoutObject(*style_);
+  LayoutObject* new_layout_object = node_->CreateLayoutObject(*style_, legacy);
   if (!new_layout_object)
     return;
 

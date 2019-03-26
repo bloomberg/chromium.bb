@@ -55,7 +55,7 @@ class SVGRectElement final : public SVGGeometryElement {
 
   bool SelfHasRelativeLengths() const override;
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   Member<SVGAnimatedLength> x_;
   Member<SVGAnimatedLength> y_;
