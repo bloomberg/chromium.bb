@@ -46,7 +46,6 @@ template("trichrome_library_apk_tmpl") {
                              "apk_name",
                              "android_manifest",
                              "android_manifest_dep",
-                             "static_library_dependent_targets",
                            ])
 
     # TODO(torne): this contains the list of locales amongst other things.
