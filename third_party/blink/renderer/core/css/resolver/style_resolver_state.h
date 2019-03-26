@@ -191,7 +191,7 @@ class CORE_EXPORT StyleResolverState {
 
   HeapHashMap<CSSPropertyID, Member<const CSSValue>>&
   ParsedPropertiesForPendingSubstitutionCache(
-      const CSSPendingSubstitutionValue&) const;
+      const cssvalue::CSSPendingSubstitutionValue&) const;
 
  private:
   CSSToLengthConversionData UnzoomedLengthConversionData(
@@ -228,7 +228,7 @@ class CORE_EXPORT StyleResolverState {
   ElementStyleResources element_style_resources_;
 
   mutable HeapHashMap<
-      Member<const CSSPendingSubstitutionValue>,
+      Member<const cssvalue::CSSPendingSubstitutionValue>,
       Member<HeapHashMap<CSSPropertyID, Member<const CSSValue>>>>
       parsed_properties_for_pending_substitution_cache_;
   DISALLOW_COPY_AND_ASSIGN(StyleResolverState);

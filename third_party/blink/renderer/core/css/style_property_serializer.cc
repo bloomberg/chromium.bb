@@ -40,6 +40,8 @@
 
 namespace blink {
 
+using namespace cssvalue;
+
 StylePropertySerializer::CSSPropertyValueSetForSerializer::
     CSSPropertyValueSetForSerializer(const CSSPropertyValueSet& properties)
     : property_set_(&properties),
