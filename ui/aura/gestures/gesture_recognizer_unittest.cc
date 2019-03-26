@@ -41,8 +41,8 @@ namespace test {
 namespace {
 
 std::string WindowIDAsString(ui::GestureConsumer* consumer) {
-  return consumer ?
-      base::IntToString(static_cast<Window*>(consumer)->id()) : "?";
+  return consumer ? base::NumberToString(static_cast<Window*>(consumer)->id())
+                  : "?";
 }
 
 #define EXPECT_0_EVENTS(events) \

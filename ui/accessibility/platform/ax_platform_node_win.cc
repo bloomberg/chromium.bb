@@ -320,7 +320,7 @@ void AXPlatformNodeWin::IntAttributeToUIAAriaProperty(
   int value;
   if (GetIntAttribute(attribute, &value)) {
     properties.push_back(base::ASCIIToUTF16(uia_aria_property) + L"=" +
-                         base::IntToString16(value));
+                         base::NumberToString16(value));
   }
 }
 
@@ -966,9 +966,9 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accValue(VARIANT var_id, BSTR* value) {
     unsigned int green = SkColorGetG(color);
     unsigned int blue = SkColorGetB(color);
     base::string16 value_text;
-    value_text = base::UintToString16(red * 100 / 255) + L"% red " +
-                 base::UintToString16(green * 100 / 255) + L"% green " +
-                 base::UintToString16(blue * 100 / 255) + L"% blue";
+    value_text = base::NumberToString16(red * 100 / 255) + L"% red " +
+                 base::NumberToString16(green * 100 / 255) + L"% green " +
+                 base::NumberToString16(blue * 100 / 255) + L"% blue";
     *value = SysAllocString(value_text.c_str());
     DCHECK(*value);
     return S_OK;

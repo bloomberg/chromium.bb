@@ -73,7 +73,7 @@ std::string DisplayPowerStateToString(chromeos::DisplayPowerState state) {
     case chromeos::DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF:
       return "INTERNAL_ON_EXTERNAL_OFF";
     default:
-      return "unknown (" + base::IntToString(state) + ")";
+      return "unknown (" + base::NumberToString(state) + ")";
   }
 }
 

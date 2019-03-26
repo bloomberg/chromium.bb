@@ -676,7 +676,7 @@ gfx::Rect DesktopWindowTreeHostX11::GetRestoredBounds() const {
 }
 
 std::string DesktopWindowTreeHostX11::GetWorkspace() const {
-  return workspace_ ? base::IntToString(workspace_.value()) : std::string();
+  return workspace_ ? base::NumberToString(workspace_.value()) : std::string();
 }
 
 void DesktopWindowTreeHostX11::UpdateWorkspace() {
@@ -915,7 +915,7 @@ bool DesktopWindowTreeHostX11::IsVisibleOnAllWorkspaces() const {
   // that the window remain in a fixed position even if the viewport scrolls.
   // This is different from the type of workspace that's associated with
   // _NET_WM_DESKTOP.
-  return GetWorkspace() == base::IntToString(kAllDesktops);
+  return GetWorkspace() == base::NumberToString(kAllDesktops);
 }
 
 bool DesktopWindowTreeHostX11::SetWindowTitle(const base::string16& title) {

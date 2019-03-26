@@ -72,7 +72,7 @@ std::string X11DesktopHandler::GetWorkspace() {
 bool X11DesktopHandler::UpdateWorkspace() {
   int desktop;
   if (ui::GetCurrentDesktop(&desktop)) {
-    workspace_ = base::IntToString(desktop);
+    workspace_ = base::NumberToString(desktop);
     return true;
   }
   return false;

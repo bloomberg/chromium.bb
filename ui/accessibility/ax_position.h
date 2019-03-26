@@ -139,10 +139,10 @@ class AXPosition {
         } else if (child_index_ == INVALID_INDEX) {
           str_child_index = "invalid";
         } else {
-          str_child_index = base::IntToString(child_index_);
+          str_child_index = base::NumberToString(child_index_);
         }
         str = "TreePosition tree_id=" + tree_id_.ToString() +
-              " anchor_id=" + base::IntToString(anchor_id_) +
+              " anchor_id=" + base::NumberToString(anchor_id_) +
               " child_index=" + str_child_index;
         break;
       }
@@ -151,9 +151,9 @@ class AXPosition {
         if (text_offset_ == INVALID_OFFSET) {
           str_text_offset = "invalid";
         } else {
-          str_text_offset = base::IntToString(text_offset_);
+          str_text_offset = base::NumberToString(text_offset_);
         }
-        str = "TextPosition anchor_id=" + base::IntToString(anchor_id_) +
+        str = "TextPosition anchor_id=" + base::NumberToString(anchor_id_) +
               " text_offset=" + str_text_offset + " affinity=" +
               ui::ToString(static_cast<ax::mojom::TextAffinity>(affinity_));
         break;

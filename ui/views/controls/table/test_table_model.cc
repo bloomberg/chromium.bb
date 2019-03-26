@@ -20,8 +20,8 @@ int TestTableModel::RowCount() {
 }
 
 base::string16 TestTableModel::GetText(int row, int column_id) {
-  return base::ASCIIToUTF16(base::IntToString(row) + "x" +
-                            base::IntToString(column_id));
+  return base::ASCIIToUTF16(base::NumberToString(row) + "x" +
+                            base::NumberToString(column_id));
 }
 
 gfx::ImageSkia TestTableModel::GetIcon(int row) {

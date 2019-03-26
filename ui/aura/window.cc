@@ -1373,7 +1373,7 @@ void Window::UpdateLayerName() {
     layer_name = "Unnamed Window";
 
   if (id_ != -1)
-    layer_name += " " + base::IntToString(id_);
+    layer_name += " " + base::NumberToString(id_);
 
   layer()->set_name(layer_name);
 #endif

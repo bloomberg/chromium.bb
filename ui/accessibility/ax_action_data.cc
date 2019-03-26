@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enum_util.h"
 
-using base::IntToString;
+using base::NumberToString;
 
 namespace ui {
 
@@ -35,7 +35,7 @@ std::string AXActionData::ToString() const {
   std::string result = ui::ToString(action);
 
   if (target_node_id != -1)
-    result += " target_node_id=" + IntToString(target_node_id);
+    result += " target_node_id=" + NumberToString(target_node_id);
 
   if (IsFlagSet(flags, ax::mojom::ActionFlags::kRequestImages))
     result += " flag_request_images";
@@ -44,12 +44,12 @@ std::string AXActionData::ToString() const {
     result += " flag_request_inline_text_boxes";
 
   if (anchor_node_id != -1) {
-    result += " anchor_node_id=" + IntToString(anchor_node_id);
-    result += " anchor_offset=" + IntToString(anchor_offset);
+    result += " anchor_node_id=" + NumberToString(anchor_node_id);
+    result += " anchor_offset=" + NumberToString(anchor_offset);
   }
   if (focus_node_id != -1) {
-    result += " focus_node_id=" + IntToString(focus_node_id);
-    result += " focus_offset=" + IntToString(focus_offset);
+    result += " focus_node_id=" + NumberToString(focus_node_id);
+    result += " focus_offset=" + NumberToString(focus_offset);
   }
 
   return result;

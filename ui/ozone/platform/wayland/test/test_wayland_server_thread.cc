@@ -88,7 +88,8 @@ bool TestWaylandServerThread::Start(uint32_t shell_version) {
   if (!base::Thread::StartWithOptions(options))
     return false;
 
-  setenv("WAYLAND_SOCKET", base::UintToString(client_fd.release()).c_str(), 1);
+  setenv("WAYLAND_SOCKET", base::NumberToString(client_fd.release()).c_str(),
+         1);
 
   return true;
 }

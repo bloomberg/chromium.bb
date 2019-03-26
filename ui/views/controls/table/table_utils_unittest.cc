@@ -23,7 +23,7 @@ std::string IntVectorToString(const std::vector<int>& values) {
   for (size_t i = 0; i < values.size(); ++i) {
     if (i != 0)
       result += ",";
-    result += base::IntToString(values[i]);
+    result += base::NumberToString(values[i]);
   }
   return result;
 }

@@ -95,7 +95,7 @@ class DummyComboboxModel : public ui::ComboboxModel {
   // Overridden from ui::ComboboxModel:
   int GetItemCount() const override { return 10; }
   base::string16 GetItemAt(int index) override {
-    return ASCIIToUTF16("Item ") + base::IntToString16(index);
+    return ASCIIToUTF16("Item ") + base::NumberToString16(index);
   }
 };
 
