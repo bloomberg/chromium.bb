@@ -5204,6 +5204,7 @@ if (!is_android) {
         # Use only the _chromeos version on Ash / Chrome OS.
         "../browser/ui/views/test/view_event_test_platform_part_default.cc",
       ]
+      sources += [ "../browser/ui/ash/split_view_interactive_uitest.cc" ]
     } else {  # ! is_chromeos
       # Non-ChromeOS notifications tests.
       sources += [
