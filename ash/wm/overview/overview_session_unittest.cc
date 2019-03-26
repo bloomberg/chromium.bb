@@ -141,10 +141,10 @@ class OverviewSessionTest : public AshTestBase {
     shelf_view_test_api_->SetAnimationDuration(1);
     ScopedOverviewTransformWindow::SetImmediateCloseForTests();
     OverviewController::SetDoNotChangeWallpaperBlurForTests();
-    FpsCounter::SetFoceReportZeroAnimationForTest(true);
+    FpsCounter::SetForceReportZeroAnimationForTest(true);
   }
   void TearDown() override {
-    FpsCounter::SetFoceReportZeroAnimationForTest(false);
+    FpsCounter::SetForceReportZeroAnimationForTest(false);
     trace_names_.clear();
     AshTestBase::TearDown();
   }

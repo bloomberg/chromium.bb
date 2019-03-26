@@ -125,10 +125,10 @@ class SplitViewControllerTest : public AshTestBase {
     // mode.
     base::RunLoop().RunUntilIdle();
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-    FpsCounter::SetFoceReportZeroAnimationForTest(true);
+    FpsCounter::SetForceReportZeroAnimationForTest(true);
   }
   void TearDown() override {
-    FpsCounter::SetFoceReportZeroAnimationForTest(false);
+    FpsCounter::SetForceReportZeroAnimationForTest(false);
     trace_names_.clear();
     AshTestBase::TearDown();
   }
