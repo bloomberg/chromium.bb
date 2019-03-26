@@ -144,12 +144,17 @@ AXSelection AXSelection::FromCurrentSelection(
   const AXObject* ax_text_control =
       ax_object_cache_impl->GetOrCreate(&text_control);
   DCHECK(ax_text_control);
-  const TextAffinity affinity = text_control.Selection().Affinity();
+  const TextAffinity extent_affinity = text_control.Selection().Affinity();
+  const TextAffinity base_affinity =
+      text_control.selectionStart() == text_control.selectionEnd()
+          ? extent_affinity
+          : TextAffinity::kDownstream;
   const auto ax_base = AXPosition::CreatePositionInTextObject(
-      *ax_text_control, static_cast<int>(text_control.selectionStart()));
+      *ax_text_control, static_cast<int>(text_control.selectionStart()),
+      base_affinity);
   const auto ax_extent = AXPosition::CreatePositionInTextObject(
       *ax_text_control, static_cast<int>(text_control.selectionEnd()),
-      affinity);
+      extent_affinity);
 
   AXSelection::Builder selection_builder;
   selection_builder.SetBase(ax_base).SetExtent(ax_extent);
@@ -166,8 +171,9 @@ AXSelection AXSelection::FromSelection(
 
   const Position dom_base = selection.Base();
   const Position dom_extent = selection.Extent();
-  const TextAffinity base_affinity = TextAffinity::kDownstream;
   const TextAffinity extent_affinity = selection.Affinity();
+  const TextAffinity base_affinity =
+      selection.IsCaret() ? extent_affinity : TextAffinity::kDownstream;
 
   AXPositionAdjustmentBehavior base_adjustment =
       AXPositionAdjustmentBehavior::kMoveRight;
