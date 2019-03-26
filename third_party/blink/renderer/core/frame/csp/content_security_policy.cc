@@ -474,6 +474,7 @@ bool ContentSecurityPolicy::CheckHashAgainstPolicy(
   return false;
 }
 
+// https://w3c.github.io/webappsec-csp/#should-block-inline
 bool ContentSecurityPolicy::AllowInline(
     InlineType inline_type,
     Element* element,
@@ -482,8 +483,8 @@ bool ContentSecurityPolicy::AllowInline(
     const String& context_url,
     const WTF::OrdinalNumber& context_line,
     SecurityViolationReportingPolicy reporting_policy) const {
-  DCHECK(element || inline_type == InlineType::kInlineEventHandler ||
-         inline_type == InlineType::kJavaScriptURL);
+  DCHECK(element || inline_type == InlineType::kScriptAttribute ||
+         inline_type == InlineType::kNavigation);
 
   const bool is_script = IsScriptInlineType(inline_type);
   if (!is_script && override_inline_style_allowed_) {
@@ -496,7 +497,11 @@ bool ContentSecurityPolicy::AllowInline(
       is_script ? script_hash_algorithms_used_ : style_hash_algorithms_used_,
       &csp_hash_values);
 
+  // Step 2. Let result be "Allowed". [spec text]
   bool is_allowed = true;
+
+  // Step 3. For each policy in element’s Document's global object’s CSP list:
+  // [spec text]
   for (const auto& policy : policies_) {
     // May be whitelisted by hash, if 'unsafe-hashes' is present in a policy.
     // Check against the digest of the |content| and also check whether inline
@@ -512,13 +517,13 @@ bool ContentSecurityPolicy::AllowInline(
 
 bool ContentSecurityPolicy::IsScriptInlineType(InlineType inline_type) {
   switch (inline_type) {
-    case ContentSecurityPolicy::InlineType::kJavaScriptURL:
-    case ContentSecurityPolicy::InlineType::kInlineEventHandler:
-    case ContentSecurityPolicy::InlineType::kInlineScriptElement:
+    case ContentSecurityPolicy::InlineType::kNavigation:
+    case ContentSecurityPolicy::InlineType::kScriptAttribute:
+    case ContentSecurityPolicy::InlineType::kScript:
       return true;
 
-    case ContentSecurityPolicy::InlineType::kInlineStyleAttribute:
-    case ContentSecurityPolicy::InlineType::kInlineStyleElement:
+    case ContentSecurityPolicy::InlineType::kStyleAttribute:
+    case ContentSecurityPolicy::InlineType::kStyle:
       return false;
   }
 }

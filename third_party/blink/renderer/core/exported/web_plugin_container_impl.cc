@@ -551,7 +551,7 @@ WebString WebPluginContainerImpl::ExecuteScriptURL(const WebURL& url,
                                            DecodeURLMode::kUTF8OrIsomorphic);
 
   if (!element_->GetDocument().GetContentSecurityPolicy()->AllowInline(
-          ContentSecurityPolicy::InlineType::kJavaScriptURL, element_, script,
+          ContentSecurityPolicy::InlineType::kNavigation, element_, script,
           String() /* nonce */, element_->GetDocument().Url(),
           OrdinalNumber())) {
     return WebString();

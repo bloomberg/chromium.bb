@@ -232,7 +232,7 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(
   if (!GetFrame()->GetPage() ||
       (!should_bypass_main_world_content_security_policy &&
        !GetFrame()->GetDocument()->GetContentSecurityPolicy()->AllowInline(
-           ContentSecurityPolicy::InlineType::kJavaScriptURL, element,
+           ContentSecurityPolicy::InlineType::kNavigation, element,
            script_source, String() /* nonce */,
            GetFrame()->GetDocument()->Url(), EventHandlerPosition().line_))) {
     return true;

@@ -732,11 +732,10 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
     policy->DidReceiveHeader(String("script-src ") + test.policy,
                              kContentSecurityPolicyHeaderTypeEnforce,
                              kContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(
-        test.allowed,
-        policy->AllowInline(
-            ContentSecurityPolicy::InlineType::kInlineScriptElement, element,
-            content, String(test.nonce), context_url, context_line));
+    EXPECT_EQ(test.allowed,
+              policy->AllowInline(ContentSecurityPolicy::InlineType::kScript,
+                                  element, content, String(test.nonce),
+                                  context_url, context_line));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Enforce 'style-src'
@@ -745,11 +744,10 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
     policy->DidReceiveHeader(String("style-src ") + test.policy,
                              kContentSecurityPolicyHeaderTypeEnforce,
                              kContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(
-        test.allowed,
-        policy->AllowInline(
-            ContentSecurityPolicy::InlineType::kInlineStyleElement, element,
-            content, String(test.nonce), context_url, context_line));
+    EXPECT_EQ(test.allowed,
+              policy->AllowInline(ContentSecurityPolicy::InlineType::kStyle,
+                                  element, content, String(test.nonce),
+                                  context_url, context_line));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Report 'script-src'
@@ -758,9 +756,9 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
     policy->DidReceiveHeader(String("script-src ") + test.policy,
                              kContentSecurityPolicyHeaderTypeReport,
                              kContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_TRUE(policy->AllowInline(
-        ContentSecurityPolicy::InlineType::kInlineScriptElement, element,
-        content, String(test.nonce), context_url, context_line));
+    EXPECT_TRUE(policy->AllowInline(ContentSecurityPolicy::InlineType::kScript,
+                                    element, content, String(test.nonce),
+                                    context_url, context_line));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Report 'style-src'
@@ -769,9 +767,9 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
     policy->DidReceiveHeader(String("style-src ") + test.policy,
                              kContentSecurityPolicyHeaderTypeReport,
                              kContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_TRUE(policy->AllowInline(
-        ContentSecurityPolicy::InlineType::kInlineStyleElement, element,
-        content, String(test.nonce), context_url, context_line));
+    EXPECT_TRUE(policy->AllowInline(ContentSecurityPolicy::InlineType::kStyle,
+                                    element, content, String(test.nonce),
+                                    context_url, context_line));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
   }
 }
@@ -1522,11 +1520,11 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
       HTMLScriptElement::Create(*document, CreateElementFlags::ByParser());
 
   EXPECT_TRUE(csp->Headers().IsEmpty());
+  EXPECT_TRUE(csp->AllowInline(ContentSecurityPolicy::InlineType::kNavigation,
+                               element, source, String() /* nonce */,
+                               context_url, ordinal_number));
   EXPECT_TRUE(csp->AllowInline(
-      ContentSecurityPolicy::InlineType::kJavaScriptURL, element, source,
-      String() /* nonce */, context_url, ordinal_number));
-  EXPECT_TRUE(csp->AllowInline(
-      ContentSecurityPolicy::InlineType::kInlineEventHandler, element, source,
+      ContentSecurityPolicy::InlineType::kScriptAttribute, element, source,
       String() /* nonce */, context_url, ordinal_number));
   EXPECT_TRUE(csp->AllowEval(nullptr, SecurityViolationReportingPolicy::kReport,
                              ContentSecurityPolicy::kWillNotThrowException,
@@ -1569,12 +1567,12 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
       example_url, nonce, IntegrityMetadataSet(), kParserInserted));
 
   EXPECT_TRUE(csp->AllowTrustedTypePolicy("somepolicy"));
-  EXPECT_TRUE(
-      csp->AllowInline(ContentSecurityPolicy::InlineType::kInlineScriptElement,
-                       element, source, nonce, context_url, ordinal_number));
-  EXPECT_TRUE(
-      csp->AllowInline(ContentSecurityPolicy::InlineType::kInlineStyleElement,
-                       element, source, nonce, context_url, ordinal_number));
+  EXPECT_TRUE(csp->AllowInline(ContentSecurityPolicy::InlineType::kScript,
+                               element, source, nonce, context_url,
+                               ordinal_number));
+  EXPECT_TRUE(csp->AllowInline(ContentSecurityPolicy::InlineType::kStyle,
+                               element, source, nonce, context_url,
+                               ordinal_number));
   EXPECT_TRUE(csp->AllowAncestors(document->GetFrame(), example_url));
   EXPECT_FALSE(csp->IsFrameAncestorsEnforced());
   EXPECT_TRUE(csp->AllowRequestWithoutIntegrity(
