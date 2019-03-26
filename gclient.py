@@ -96,7 +96,11 @@ import pprint
 import re
 import sys
 import time
-import urlparse
+
+try:
+  import urlparse
+except ImportError:  # For Py3 compatibility
+  import urllib.parse as urlparse
 
 import detect_host_arch
 import fix_encoding
@@ -128,14 +132,14 @@ def ToGNString(value, allow_dicts = True):
   allow_dicts indicates if this function will allow converting dictionaries
   to GN scopes. This is only possible at the top level, you can't nest a
   GN scope in a list, so this should be set to False for recursive calls."""
-  if isinstance(value, basestring):
+  if isinstance(value, str):
     if value.find('\n') >= 0:
       raise GNException("Trying to print a string with a newline in it.")
     return '"' + \
         value.replace('\\', '\\\\').replace('"', '\\"').replace('$', '\\$') + \
         '"'
 
-  if isinstance(value, unicode):
+  if sys.version_info.major == 2 and isinstance(value, unicode):
     return ToGNString(value.encode('utf-8'))
 
   if isinstance(value, bool):
@@ -286,7 +290,7 @@ class DependencySettings(object):
     self._custom_hooks = custom_hooks or []
 
     # Post process the url to remove trailing slashes.
-    if isinstance(self.url, basestring):
+    if isinstance(self.url, str):
       # urls are sometime incorrectly written as proto://host/path/@rev. Replace
       # it to proto://host/path@rev.
       self.set_url(self.url.replace('/@', '@'))
@@ -428,7 +432,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     self._OverrideUrl()
     # This is inherited from WorkItem.  We want the URL to be a resource.
-    if self.url and isinstance(self.url, basestring):
+    if self.url and isinstance(self.url, str):
       # The url is usually given to gclient either as https://blah@123
       # or just https://blah.  The @123 portion is irrelevant.
       self.resources.append(self.url.split('@')[0])
@@ -448,7 +452,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
                    self.url, parsed_url)
       self.set_url(parsed_url)
 
-    elif isinstance(self.url, basestring):
+    elif isinstance(self.url, str):
       parsed_url = urlparse.urlparse(self.url)
       if (not parsed_url[0] and
           not re.match(r'^\w+\@[\w\.-]+\:[\w\/]+', parsed_url[2])):
@@ -572,7 +576,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     # If a line is in custom_deps, but not in the solution, we want to append
     # this line to the solution.
-    for dep_name, dep_info in self.custom_deps.iteritems():
+    for dep_name, dep_info in self.custom_deps.items():
       if dep_name not in deps:
         deps[dep_name] = {'url': dep_info, 'dep_type': 'git'}
 
@@ -601,7 +605,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   def _deps_to_objects(self, deps, use_relative_paths):
     """Convert a deps dict to a dict of Dependency objects."""
     deps_to_add = []
-    for name, dep_value in deps.iteritems():
+    for name, dep_value in deps.items():
       should_process = self.should_process
       if dep_value is None:
         continue
@@ -709,7 +713,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     self._vars = local_scope.get('vars', {})
     if self.parent:
-      for key, value in self.parent.get_vars().iteritems():
+      for key, value in self.parent.get_vars().items():
         if key in self._vars:
           self._vars[key] = value
     # Since we heavily post-process things, freeze ones which should
@@ -737,7 +741,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     if 'recursedeps' in local_scope:
       for ent in local_scope['recursedeps']:
-        if isinstance(ent, basestring):
+        if isinstance(ent, str):
           self.recursedeps[ent] = self.deps_file
         else:  # (depname, depsfilename)
           self.recursedeps[ent[0]] = ent[1]
@@ -746,7 +750,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       if rel_prefix:
         logging.warning('Updating recursedeps by prepending %s.', rel_prefix)
         rel_deps = {}
-        for depname, options in self.recursedeps.iteritems():
+        for depname, options in self.recursedeps.items():
           rel_deps[
               os.path.normpath(os.path.join(rel_prefix, depname))] = options
         self.recursedeps = rel_deps
@@ -1004,7 +1008,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     variables = self.get_vars()
     for arg in self._gn_args:
       value = variables[arg]
-      if isinstance(value, basestring):
+      if isinstance(value, str):
         value = gclient_eval.EvaluateCondition(value, variables)
       lines.append('%s = %s' % (arg, ToGNString(value)))
     with open(os.path.join(self.root.root_dir, self._gn_args_file), 'w') as f:
@@ -1353,7 +1357,8 @@ solutions = %(solution_list)s
                                                 mirror.exists())
           else:
             mirror_string = 'not used'
-          raise gclient_utils.Error('''
+          raise gclient_utils.Error(
+              '''
 Your .gclient file seems to be broken. The requested URL is different from what
 is actually checked out in %(checkout_path)s.
 
@@ -1581,7 +1586,7 @@ it or fix the checkout.
     full_entries = [os.path.join(self.root_dir, e.replace('/', os.path.sep))
                     for e in entries]
 
-    for entry, prev_url in self._ReadEntries().iteritems():
+    for entry, prev_url in self._ReadEntries().items():
       if not prev_url:
         # entry must have been overridden via .gclient custom_deps
         continue

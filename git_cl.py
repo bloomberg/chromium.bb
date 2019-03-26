@@ -4443,7 +4443,7 @@ def GenerateGerritChangeId(message):
   # entropy.
   lines.append(message)
   change_hash = RunCommand(['git', 'hash-object', '-t', 'commit', '--stdin'],
-                           stdin='\n'.join(lines))
+                           stdin=('\n'.join(lines)).encode())
   return 'I%s' % change_hash.strip()
 
 

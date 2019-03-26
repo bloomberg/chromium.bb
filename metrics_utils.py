@@ -9,7 +9,11 @@ import re
 import scm
 import subprocess2
 import sys
-import urlparse
+
+try:
+  import urlparse
+except ImportError:  # For Py3 compatibility
+  import urllib.parse as urlparse
 
 
 # Current version of metrics recording.
@@ -280,7 +284,7 @@ def print_boxed_text(out, min_width, lines):
   width = max(min_width, max(len(line) for line in lines))
   out(SE + EW * (width + 2) + SW + '\n')
   for line in lines:
-     out('%s %-*s %s\n' % (NS, width, line, NS))
+    out('%s %-*s %s\n' % (NS, width, line, NS))
   out(NE + EW * (width + 2) + NW + '\n')
 
 def print_notice(countdown):

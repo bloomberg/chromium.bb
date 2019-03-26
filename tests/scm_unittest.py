@@ -47,7 +47,6 @@ class RootTestCase(BaseSCMTestCase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'cStringIO',
         'determine_scm',
         'ElementTree',
         'gclient_utils',
@@ -55,6 +54,7 @@ class RootTestCase(BaseSCMTestCase):
         'GetCasedPath',
         'GIT',
         'glob',
+        'io',
         'logging',
         'only_int',
         'os',

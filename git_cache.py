@@ -6,6 +6,7 @@
 """A git command for managing a local cache of git repositories."""
 
 from __future__ import print_function
+
 import contextlib
 import errno
 import logging
@@ -17,7 +18,12 @@ import threading
 import time
 import subprocess
 import sys
-import urlparse
+
+try:
+  import urlparse
+except ImportError:  # For Py3 compatibility
+  import urllib.parse as urlparse
+
 import zipfile
 
 from download_from_google_storage import Gsutil
