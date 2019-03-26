@@ -243,9 +243,6 @@ extern const char kDisableIpcFloodingProtectionDescription[];
 extern const char kDisablePushStateThrottleName[];
 extern const char kDisablePushStateThrottleDescription[];
 
-extern const char kDisableTabForDesktopShareName[];
-extern const char kDisableTabForDesktopShareDescription[];
-
 extern const char kDisallowDocWrittenScriptsUiName[];
 extern const char kDisallowDocWrittenScriptsUiDescription[];
 

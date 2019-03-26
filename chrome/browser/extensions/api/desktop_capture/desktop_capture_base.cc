@@ -112,10 +112,6 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
         break;
       }
       case api::desktop_capture::DESKTOP_CAPTURE_SOURCE_TYPE_TAB: {
-        if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-                extensions::switches::kDisableTabForDesktopShare)) {
-          continue;
-        }
         media_types.push_back(content::DesktopMediaID::TYPE_WEB_CONTENTS);
         break;
       }

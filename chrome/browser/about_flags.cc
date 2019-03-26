@@ -2124,11 +2124,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableAudioForDesktopShareName,
      flag_descriptions::kDisableAudioForDesktopShareDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kDisableAudioSupportForDesktopShare)},
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    {"tab-for-desktop-share", flag_descriptions::kDisableTabForDesktopShareName,
-     flag_descriptions::kDisableTabForDesktopShareDescription, kOsAll,
-     SINGLE_VALUE_TYPE(extensions::switches::kDisableTabForDesktopShare)},
-#endif  // ENABLE_EXTENSIONS
 #if defined(OS_ANDROID)
     {"keep-prefetched-content-suggestions",
      flag_descriptions::kKeepPrefetchedContentSuggestionsName,

@@ -2929,11 +2929,6 @@
     "expiry_milestone": 79
   },
   {
-    "name": "tab-for-desktop-share",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "tab-groups",
     "owners": [ "chrome-desktop-ui-seattle@google.com", "bsep" ],
     "expiry_milestone": 76
