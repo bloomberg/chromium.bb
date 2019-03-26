@@ -34,7 +34,7 @@ android_resources("sharedstream_ui_resources") {
   resource_dirs = [
     "src/src/main/java/com/google/android/libraries/feed/sharedstream/ui/res",
   ]
-  custom_package = "com.google.android.libraries.feed.sharedstream"
+  custom_package = "com.google.android.libraries.feed.sharedstream.ui"
 }
 
 android_resources("piet_resources") {
@@ -75,11 +75,6 @@ android_resources("shared_stream_publicapi_menumeasurer_resources") {
 android_resources("sharedstream_contextmenumanager_resources") {
   resource_dirs = [
     "src/src/main/java/com/google/android/libraries/feed/sharedstream/ui/res",
-  ]
-
-  # TODO(skym): Delete this next DEPS roll, this seems to fix a ninja phony edge issue.
-  deps = [
-    ":sharedstream_ui_resources",
   ]
   custom_package =
       "com.google.android.libraries.feed.sharedstream.contextmenumanager"
