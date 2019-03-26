@@ -775,7 +775,7 @@ public class ToolbarManager
                 shareButtonListener, mAppThemeColorProvider);
 
         mIsBottomToolbarVisible = FeatureUtilities.isBottomToolbarEnabled()
-                && (!FeatureUtilities.isAdaptiveToolbarEnabled()
+                && (!FeatureUtilities.isAdaptiveToolbarEnabled(mActivity)
                         || mActivity.getResources().getConfiguration().orientation
                                 != Configuration.ORIENTATION_LANDSCAPE);
         mBottomControlsCoordinator.setBottomControlsVisible(mIsBottomToolbarVisible);
@@ -1197,8 +1197,8 @@ public class ToolbarManager
     public void onOrientationChange() {
         if (mActionModeController != null) mActionModeController.showControlsOnOrientationChange();
 
-        if (mBottomControlsCoordinator != null && FeatureUtilities.isBottomToolbarEnabled()
-                && FeatureUtilities.isAdaptiveToolbarEnabled()) {
+        if (mBottomControlsCoordinator != null
+                && FeatureUtilities.isAdaptiveToolbarEnabled(mActivity)) {
             mIsBottomToolbarVisible = mActivity.getResources().getConfiguration().orientation
                     != Configuration.ORIENTATION_LANDSCAPE;
             mToolbar.onBottomToolbarVisibilityChanged(mIsBottomToolbarVisible);
