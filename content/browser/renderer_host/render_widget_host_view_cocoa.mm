@@ -1408,6 +1408,10 @@ void ExtractUnderlines(NSAttributedString* string,
   return client_;
 }
 
+- (void)setAccessibilityParentElement:(id)accessibilityParent {
+  accessibilityParent_.reset(accessibilityParent, base::scoped_policy::RETAIN);
+}
+
 // TODO(crbug.com/921109): Migrate from the NSObject accessibility API to the
 // NSAccessibility API, then remove this suppression.
 #pragma clang diagnostic push
@@ -1438,6 +1442,9 @@ void ExtractUnderlines(NSAttributedString* string,
        [attribute isEqualToString:NSAccessibilityContentsAttribute]) &&
       root_element) {
     return [NSArray arrayWithObjects:root_element, nil];
+  } else if ([attribute isEqualToString:NSAccessibilityParentAttribute] &&
+             accessibilityParent_) {
+    return accessibilityParent_;
   } else if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
     return NSAccessibilityScrollAreaRole;
   }

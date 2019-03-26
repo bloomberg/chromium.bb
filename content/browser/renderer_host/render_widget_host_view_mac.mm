@@ -314,6 +314,14 @@ void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
     browser_compositor_->SetParentUiLayer(parent_ui_layer);
 }
 
+void RenderWidgetHostViewMac::SetParentAccessibilityElement(
+    id parent_accessibility_element) {
+  // Set the parent only for the in-browser-process RenderWidgetHostViewCocoa.
+  // TODO(https://crbug.com/944698): Don't even involve the
+  // RenderWidgetHostViewCocoa in the accessibility tree.
+  [cocoa_view() setAccessibilityParentElement:parent_accessibility_element];
+}
+
 RenderWidgetHostViewCocoa* RenderWidgetHostViewMac::cocoa_view() const {
   if (ns_view_bridge_local_)
     return ns_view_bridge_local_->GetRenderWidgetHostViewCocoa();
