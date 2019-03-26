@@ -23,6 +23,14 @@
 namespace {
 
 constexpr char kMetadataSizeField[] = "HeapProfiler.AllocationInBytes";
+
+constexpr base::Feature kSamplingHeapProfilerFeature{
+    "SamplingHeapProfiler", base::FEATURE_DISABLED_BY_DEFAULT};
+
+constexpr char kSamplingHeapProfilerFeatureSamplingRateKB[] =
+    "sampling-rate-kb";
+
+constexpr size_t kDefaultSamplingRateKB = 128;
 constexpr base::TimeDelta kHeapCollectionInterval =
     base::TimeDelta::FromHours(24);
 
@@ -53,7 +61,35 @@ class SampleMetadataRecorder : public metrics::MetadataRecorder {
 HeapProfilerController::HeapProfilerController() = default;
 HeapProfilerController::~HeapProfilerController() = default;
 
-void HeapProfilerController::Start() {
+void HeapProfilerController::StartIfEnabled() {
+  DCHECK(!started_);
+  size_t sampling_rate_kb = 0;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kSamplingHeapProfiler)) {
+    unsigned value;
+    bool parsed = base::StringToUint(
+        command_line->GetSwitchValueASCII(switches::kSamplingHeapProfiler),
+        &value);
+    sampling_rate_kb = parsed ? value : kDefaultSamplingRateKB;
+  }
+
+  bool on_trial = base::FeatureList::IsEnabled(kSamplingHeapProfilerFeature);
+  if (on_trial && !sampling_rate_kb) {
+    sampling_rate_kb = std::max(
+        base::GetFieldTrialParamByFeatureAsInt(
+            kSamplingHeapProfilerFeature,
+            kSamplingHeapProfilerFeatureSamplingRateKB, kDefaultSamplingRateKB),
+        0);
+  }
+
+  if (!sampling_rate_kb)
+    return;
+
+  started_ = true;
+  auto* profiler = base::SamplingHeapProfiler::Get();
+  profiler->SetSamplingInterval(sampling_rate_kb * 1024);
+  profiler->Start();
+
   ScheduleNextSnapshot();
 }
 
