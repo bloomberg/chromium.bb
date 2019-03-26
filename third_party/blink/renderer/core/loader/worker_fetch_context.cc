@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
-#include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -277,10 +276,6 @@ void WorkerFetchContext::DispatchDidFail(const KURL& url,
                                          int64_t encoded_data_length,
                                          bool is_internal_request) {
   probe::DidFailLoading(Probe(), identifier, nullptr, error);
-  if (network_utils::IsCertificateTransparencyRequiredError(
-          error.ErrorCode())) {
-    CountUsage(WebFeature::kCertificateTransparencyRequiredErrorOnResourceLoad);
-  }
 }
 
 void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {

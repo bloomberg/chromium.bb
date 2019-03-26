@@ -1853,13 +1853,17 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
 
   resource_timing_info_map_.Take(resource);
 
-  bool is_internal_request = resource->Options().initiator_info.name ==
-                             fetch_initiator_type_names::kInternal;
-
   resource->VirtualTimePauser().UnpauseVirtualTime();
   if (error.IsCancellation())
     RemovePreload(resource);
+  if (network_utils::IsCertificateTransparencyRequiredError(
+          error.ErrorCode())) {
+    Context().CountUsage(
+        mojom::WebFeature::kCertificateTransparencyRequiredErrorOnResourceLoad);
+  }
   resource->FinishAsError(error, task_runner_.get());
+  const bool is_internal_request = resource->Options().initiator_info.name ==
+                                   fetch_initiator_type_names::kInternal;
   Context().DispatchDidFail(
       resource->LastResourceRequest().Url(), resource->Identifier(), error,
       resource->GetResponse().EncodedDataLength(), is_internal_request);
