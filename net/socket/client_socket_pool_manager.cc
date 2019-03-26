@@ -16,9 +16,9 @@
 #include "net/http/http_stream_factory.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/client_socket_pool.h"
 #include "net/socket/socks_connect_job.h"
 #include "net/socket/ssl_connect_job.h"
-#include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/ssl/ssl_config.h"
 
@@ -74,8 +74,7 @@ static_assert(base::size(g_max_sockets_per_proxy_server) ==
 // related to pooling distinguishable sockets together, reduce the arguments to
 // just those that are used to populate |connection_group|, and those used to
 // locate the socket pool to use.
-scoped_refptr<TransportClientSocketPool::SocketParams>
-CreateSocketParamsAndGetGroupId(
+scoped_refptr<ClientSocketPool::SocketParams> CreateSocketParamsAndGetGroupId(
     ClientSocketPoolManager::SocketGroupType group_type,
     const HostPortPair& endpoint,
     const ProxyInfo& proxy_info,
@@ -160,17 +159,17 @@ CreateSocketParamsAndGetGroupId(
             std::move(ssl_tcp_params), std::move(socks_params),
             std::move(http_proxy_params), endpoint, ssl_config_for_origin,
             privacy_mode);
-    return TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+    return ClientSocketPool::SocketParams::CreateFromSSLSocketParams(
         std::move(ssl_params));
   }
 
   if (proxy_info.is_http() || proxy_info.is_https()) {
-    return TransportClientSocketPool::SocketParams::
-        CreateFromHttpProxySocketParams(std::move(http_proxy_params));
+    return ClientSocketPool::SocketParams::CreateFromHttpProxySocketParams(
+        std::move(http_proxy_params));
   }
 
   if (proxy_info.is_socks()) {
-    return TransportClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
+    return ClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
         std::move(socks_params));
   }
 
@@ -178,8 +177,8 @@ CreateSocketParamsAndGetGroupId(
   scoped_refptr<TransportSocketParams> tcp_params =
       base::MakeRefCounted<TransportSocketParams>(endpoint,
                                                   resolution_callback);
-  return TransportClientSocketPool::SocketParams::
-      CreateFromTransportSocketParams(std::move(tcp_params));
+  return ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+      std::move(tcp_params));
 }
 
 int InitSocketPoolHelper(
@@ -211,13 +210,13 @@ int InitSocketPoolHelper(
   }
 
   ClientSocketPool::GroupId connection_group;
-  scoped_refptr<TransportClientSocketPool::SocketParams> socket_params =
+  scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       CreateSocketParamsAndGetGroupId(
           group_type, origin_host_port, proxy_info, ssl_config_for_origin,
           ssl_config_for_proxy, force_tunnel, privacy_mode, resolution_callback,
           &connection_group);
 
-  TransportClientSocketPool* pool =
+  ClientSocketPool* pool =
       session->GetSocketPool(socket_pool_type, proxy_info.proxy_server());
   ClientSocketPool::RespectLimits respect_limits =
       ClientSocketPool::RespectLimits::ENABLED;
@@ -377,7 +376,7 @@ NET_EXPORT std::unique_ptr<ConnectJob> CreateConnectJobForRawConnect(
   DCHECK(!proxy_info.is_quic());
 
   ClientSocketPool::GroupId unused_connection_group;
-  scoped_refptr<TransportClientSocketPool::SocketParams> socket_params =
+  scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       CreateSocketParamsAndGetGroupId(
           use_tls ? ClientSocketPoolManager::SSL_GROUP
                   : ClientSocketPoolManager::NORMAL_GROUP,

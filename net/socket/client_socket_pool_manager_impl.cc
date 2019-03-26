@@ -56,9 +56,9 @@ void ClientSocketPoolManagerImpl::CloseIdleSockets() {
   }
 }
 
-TransportClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPool(
+ClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPool(
     const ProxyServer& proxy_server) {
-  TransportSocketPoolMap::const_iterator it = socket_pools_.find(proxy_server);
+  SocketPoolMap::const_iterator it = socket_pools_.find(proxy_server);
   if (it != socket_pools_.end())
     return it->second.get();
 
@@ -73,7 +73,7 @@ TransportClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPool(
         std::min(sockets_per_proxy_server, max_sockets_per_group(pool_type_));
   }
 
-  std::unique_ptr<TransportClientSocketPool> new_pool;
+  std::unique_ptr<ClientSocketPool> new_pool;
 
   // Use specialized WebSockets pool for WebSockets when no proxy is in use.
   if (pool_type_ == HttpNetworkSession::WEBSOCKET_SOCKET_POOL &&
@@ -89,7 +89,7 @@ TransportClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPool(
         ssl_config_service_);
   }
 
-  std::pair<TransportSocketPoolMap::iterator, bool> ret =
+  std::pair<SocketPoolMap::iterator, bool> ret =
       socket_pools_.insert(std::make_pair(proxy_server, std::move(new_pool)));
   return ret.first->second.get();
 }
@@ -121,7 +121,7 @@ void ClientSocketPoolManagerImpl::OnCertDBChanged() {
 void ClientSocketPoolManagerImpl::DumpMemoryStats(
     base::trace_event::ProcessMemoryDump* pmd,
     const std::string& parent_dump_absolute_name) const {
-  TransportSocketPoolMap::const_iterator socket_pool =
+  SocketPoolMap::const_iterator socket_pool =
       socket_pools_.find(ProxyServer::Direct());
   if (socket_pool == socket_pools_.end())
     return;
