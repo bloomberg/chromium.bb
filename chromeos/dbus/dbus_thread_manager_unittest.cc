@@ -33,7 +33,6 @@ TEST(DBusThreadManagerTest, Initialize) {
   EXPECT_TRUE(manager->GetImageBurnerClient());
   EXPECT_TRUE(manager->GetLorgnetteManagerClient());
   EXPECT_TRUE(manager->GetModemMessagingClient());
-  EXPECT_TRUE(manager->GetPermissionBrokerClient());
   EXPECT_TRUE(manager->GetSeneschalClient());
   EXPECT_TRUE(manager->GetSessionManagerClient());
   EXPECT_TRUE(manager->GetShillDeviceClient());
@@ -59,7 +58,6 @@ TEST(DBusThreadManagerTest, InitializeForBrowser) {
   EXPECT_TRUE(manager->GetCrasAudioClient());
   EXPECT_TRUE(manager->GetGsmSMSClient());
   EXPECT_TRUE(manager->GetModemMessagingClient());
-  EXPECT_TRUE(manager->GetPermissionBrokerClient());
   EXPECT_TRUE(manager->GetSessionManagerClient());
   EXPECT_TRUE(manager->GetShillDeviceClient());
   EXPECT_TRUE(manager->GetShillIPConfigClient());
@@ -96,7 +94,6 @@ TEST(DBusThreadManagerTest, InitializeForAsh) {
   EXPECT_TRUE(manager->GetCrasAudioClient());
   EXPECT_TRUE(manager->GetGsmSMSClient());
   EXPECT_TRUE(manager->GetModemMessagingClient());
-  EXPECT_TRUE(manager->GetPermissionBrokerClient());
   EXPECT_TRUE(manager->GetSessionManagerClient());
   EXPECT_TRUE(manager->GetShillDeviceClient());
   EXPECT_TRUE(manager->GetShillIPConfigClient());

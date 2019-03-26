@@ -9,8 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/permission_broker_client.h"
+#include "chromeos/dbus/permission_broker/permission_broker_client.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -156,14 +155,11 @@ void ArcUsbHostBridge::OpenDevice(const std::string& guid,
     return;
   }
 
-  chromeos::PermissionBrokerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
-  DCHECK(client) << "Could not get permission broker client.";
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
-  client->OpenPath(device->device_path(),
-                   base::Bind(&OnDeviceOpened, repeating_callback),
-                   base::Bind(&OnDeviceOpenError, repeating_callback));
+  chromeos::PermissionBrokerClient::Get()->OpenPath(
+      device->device_path(), base::Bind(&OnDeviceOpened, repeating_callback),
+      base::Bind(&OnDeviceOpenError, repeating_callback));
 }
 
 void ArcUsbHostBridge::OpenDeviceDeprecated(

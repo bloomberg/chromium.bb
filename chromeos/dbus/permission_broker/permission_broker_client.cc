@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/permission_broker_client.h"
+#include "chromeos/dbus/permission_broker/permission_broker_client.h"
 
 #include <stdint.h>
 #include <utility>
@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/dbus/permission_broker/fake_permission_broker_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -28,12 +29,17 @@ using permission_broker::kRequestUdpPortAccess;
 namespace chromeos {
 
 namespace {
+
 const char kNoResponseError[] = "org.chromium.Error.NoResponse";
-}
+
+PermissionBrokerClient* g_instance = nullptr;
+
+}  // namespace
 
 class PermissionBrokerClientImpl : public PermissionBrokerClient {
  public:
-  PermissionBrokerClientImpl() : proxy_(NULL), weak_ptr_factory_(this) {}
+  PermissionBrokerClientImpl() = default;
+  ~PermissionBrokerClientImpl() override = default;
 
   void CheckPathAccess(const std::string& path,
                        const ResultCallback& callback) override {
@@ -118,8 +124,7 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
- protected:
-  void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) {
     proxy_ =
         bus->GetObjectProxy(kPermissionBrokerServiceName,
                             dbus::ObjectPath(kPermissionBrokerServicePath));
@@ -164,22 +169,46 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
     callback.Run(error_name, error_message);
   }
 
-  dbus::ObjectProxy* proxy_;
+  dbus::ObjectProxy* proxy_ = nullptr;
 
   // Note: This should remain the last member so that it will be destroyed
   // first, invalidating its weak pointers, before the other members are
   // destroyed.
-  base::WeakPtrFactory<PermissionBrokerClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PermissionBrokerClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PermissionBrokerClientImpl);
 };
 
-PermissionBrokerClient::PermissionBrokerClient() = default;
+PermissionBrokerClient::PermissionBrokerClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-PermissionBrokerClient::~PermissionBrokerClient() = default;
+PermissionBrokerClient::~PermissionBrokerClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
-PermissionBrokerClient* PermissionBrokerClient::Create() {
-  return new PermissionBrokerClientImpl();
+// static
+void PermissionBrokerClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+  (new PermissionBrokerClientImpl())->Init(bus);
+}
+
+// static
+void PermissionBrokerClient::InitializeFake() {
+  new FakePermissionBrokerClient();
+}
+
+// static
+void PermissionBrokerClient::Shutdown() {
+  DCHECK(g_instance);
+  delete g_instance;
+}
+
+// static
+PermissionBrokerClient* PermissionBrokerClient::Get() {
+  return g_instance;
 }
 
 }  // namespace chromeos

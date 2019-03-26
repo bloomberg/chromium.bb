@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_PERMISSION_BROKER_CLIENT_H_
-#define CHROMEOS_DBUS_PERMISSION_BROKER_CLIENT_H_
+#ifndef CHROMEOS_DBUS_PERMISSION_BROKER_PERMISSION_BROKER_CLIENT_H_
+#define CHROMEOS_DBUS_PERMISSION_BROKER_PERMISSION_BROKER_CLIENT_H_
 
 #include <stdint.h>
 
@@ -13,7 +13,10 @@
 #include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "chromeos/dbus/dbus_client.h"
+
+namespace dbus {
+class Bus;
+}
 
 namespace chromeos {
 
@@ -24,8 +27,7 @@ namespace chromeos {
 // which the user the browser runs under normally wouldn't have access to. For
 // more details on the permission broker see:
 // http://git.chromium.org/gitweb/?p=chromiumos/platform/permission_broker.git
-class COMPONENT_EXPORT(CHROMEOS_DBUS) PermissionBrokerClient
-    : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) PermissionBrokerClient {
  public:
   // The ResultCallback is used for both the RequestPathAccess and
   // RequestUsbAccess methods. Its boolean parameter represents the result of
@@ -41,9 +43,17 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PermissionBrokerClient
                               const std::string& message)>
       ErrorCallback;
 
-  ~PermissionBrokerClient() override;
+  // Creates and initializes the global instance. |bus| must not be null.
+  static void Initialize(dbus::Bus* bus);
 
-  static PermissionBrokerClient* Create();
+  // Creates and initializes a fake global instance if not already created.
+  static void InitializeFake();
+
+  // Destroys the global instance which must have been initialized.
+  static void Shutdown();
+
+  // Returns the global instance if initialized. May return null.
+  static PermissionBrokerClient* Get();
 
   // CheckPathAccess requests a hint from the permission broker about whether
   // a later call to RequestPathAccess will be successful. It presumes that
@@ -96,7 +106,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PermissionBrokerClient
                               const ResultCallback& callback) = 0;
 
  protected:
+  // Initialize/Shutdown should be used instead.
   PermissionBrokerClient();
+  virtual ~PermissionBrokerClient();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PermissionBrokerClient);
@@ -104,4 +116,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PermissionBrokerClient
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_PERMISSION_BROKER_CLIENT_H_
+#endif  // CHROMEOS_DBUS_PERMISSION_BROKER_PERMISSION_BROKER_CLIENT_H_

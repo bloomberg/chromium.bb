@@ -12,7 +12,6 @@
 #include "chromeos/dbus/fake_cras_audio_client.h"
 #include "chromeos/dbus/fake_gsm_sms_client.h"
 #include "chromeos/dbus/fake_modem_messaging_client.h"
-#include "chromeos/dbus/fake_permission_broker_client.h"
 #include "chromeos/dbus/fake_shill_device_client.h"
 #include "chromeos/dbus/fake_shill_ipconfig_client.h"
 #include "chromeos/dbus/fake_shill_manager_client.h"
@@ -22,7 +21,6 @@
 #include "chromeos/dbus/fake_sms_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
-#include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
@@ -77,11 +75,6 @@ DBusClientsCommon::DBusClientsCommon(bool use_real_clients) {
   else
     modem_messaging_client_.reset(new FakeModemMessagingClient);
 
-  if (use_real_clients)
-    permission_broker_client_.reset(PermissionBrokerClient::Create());
-  else
-    permission_broker_client_.reset(new FakePermissionBrokerClient);
-
   session_manager_client_.reset(SessionManagerClient::Create(client_impl_type));
 
   if (use_real_clients)
@@ -98,7 +91,6 @@ void DBusClientsCommon::Initialize(dbus::Bus* system_bus) {
   cras_audio_client_->Init(system_bus);
   gsm_sms_client_->Init(system_bus);
   modem_messaging_client_->Init(system_bus);
-  permission_broker_client_->Init(system_bus);
   session_manager_client_->Init(system_bus);
   shill_device_client_->Init(system_bus);
   shill_ipconfig_client_->Init(system_bus);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/fake_permission_broker_client.h"
+#include "chromeos/dbus/permission_broker/fake_permission_broker_client.h"
 
 #include <fcntl.h>
 #include <stdint.h>
@@ -21,6 +21,8 @@ namespace chromeos {
 namespace {
 
 const char kOpenFailedError[] = "open_failed";
+
+FakePermissionBrokerClient* g_instance = nullptr;
 
 // So that real devices can be accessed by tests and "Chromium OS on Linux" this
 // function implements a simplified version of the method implemented by the
@@ -48,11 +50,21 @@ void OpenPath(const std::string& path,
 
 }  // namespace
 
-FakePermissionBrokerClient::FakePermissionBrokerClient() = default;
+FakePermissionBrokerClient::FakePermissionBrokerClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-FakePermissionBrokerClient::~FakePermissionBrokerClient() = default;
+FakePermissionBrokerClient::~FakePermissionBrokerClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
-void FakePermissionBrokerClient::Init(dbus::Bus* bus) {}
+// static
+FakePermissionBrokerClient* FakePermissionBrokerClient::Get() {
+  DCHECK(g_instance);
+  return g_instance;
+}
 
 void FakePermissionBrokerClient::CheckPathAccess(
     const std::string& path,

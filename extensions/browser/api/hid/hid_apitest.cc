@@ -21,6 +21,10 @@
 #include "services/device/public/mojom/hid.mojom.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/permission_broker/fake_permission_broker_client.h"
+#endif  // defined(OS_CHROMEOS)
+
 using base::ThreadTaskRunnerHandle;
 using device::FakeHidManager;
 using device::HidReportDescriptor;
@@ -95,6 +99,10 @@ class TestExtensionsAPIClient : public ShellExtensionsAPIClient {
 class HidApiTest : public ShellApiTest {
  public:
   HidApiTest() {
+#if defined(OS_CHROMEOS)
+    // Required for DevicePermissionsPrompt:
+    chromeos::PermissionBrokerClient::InitializeFake();
+#endif
     // Because Device Service also runs in this process (browser process), we
     // can set our binder to intercept requests for HidManager interface to it.
     fake_hid_manager_ = std::make_unique<FakeHidManager>();
@@ -107,6 +115,9 @@ class HidApiTest : public ShellApiTest {
   ~HidApiTest() override {
     service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
         device::mojom::HidManager>(device::mojom::kServiceName);
+#if defined(OS_CHROMEOS)
+    chromeos::PermissionBrokerClient::Shutdown();
+#endif
   }
 
   void SetUpOnMainThread() override {
