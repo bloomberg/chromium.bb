@@ -6753,9 +6753,13 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info,
 
   params.href_translate = info->href_translate.Latin1();
 
-  bool has_download_sandbox_flag =
+  bool current_frame_has_download_sandbox_flag =
       (frame_->EffectiveSandboxFlags() & blink::WebSandboxFlags::kDownloads) !=
       blink::WebSandboxFlags::kNone;
+  bool has_download_sandbox_flag =
+      info->initiator_frame_has_download_sandbox_flag ||
+      current_frame_has_download_sandbox_flag;
+
   MaybeSetOpenerAndSandboxDownloadPolicy(
       info->is_opener_navigation, info->url_request,
       frame_->GetSecurityOrigin(), has_download_sandbox_flag,
@@ -7076,9 +7080,12 @@ void RenderFrameImpl::BeginNavigationInternal(
       blink::mojom::NavigationInitiatorPtrInfo(
           std::move(info->navigation_initiator_handle), 0));
 
-  bool has_download_sandbox_flag =
+  bool current_frame_has_download_sandbox_flag =
       (frame_->EffectiveSandboxFlags() & blink::WebSandboxFlags::kDownloads) !=
       blink::WebSandboxFlags::kNone;
+  bool has_download_sandbox_flag =
+      info->initiator_frame_has_download_sandbox_flag ||
+      current_frame_has_download_sandbox_flag;
 
   GetFrameHost()->BeginNavigation(
       MakeCommonNavigationParams(frame_->GetSecurityOrigin(), std::move(info),

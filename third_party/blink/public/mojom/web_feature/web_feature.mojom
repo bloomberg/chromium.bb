@@ -1680,8 +1680,6 @@ enum WebFeature {
   kV8MediaCapabilitiesInfo_Smooth_AttributeGetter = 2242,
   kV8MediaCapabilitiesInfo_PowerEfficient_AttributeGetter = 2243,
   kWindowEventInV0ShadowTree = 2244,
-  kHTMLAnchorElementDownloadInSandboxWithUserGesture = 2245,
-  kHTMLAnchorElementDownloadInSandboxWithoutUserGesture = 2246,
   kWindowOpenRealmMismatch = 2247,
   kGridRowTrackPercentIndefiniteHeight = 2248,
   kVRGetDisplaysSupportsPresent = 2249,
@@ -2056,8 +2054,6 @@ enum WebFeature {
   kHTMLAnchorElementHrefTranslateAttribute = 2629,
   kWebKitUserModifyEffective = 2630,
   kPlainTextEditingEffective = 2631,
-  kNavigationDownloadInSandboxWithUserGesture = 2632,
-  kNavigationDownloadInSandboxWithoutUserGesture = 2633,
   kLegacyTLSVersionInMainFrameResource = 2634,
   kLegacyTLSVersionInSubresource = 2635,
   kLegacyTLSVersionInSubframeMainResource = 2636,
@@ -2248,6 +2244,9 @@ enum WebFeature {
   kTargetCurrent = 2835,
   kSandboxBackForwardStaysWithinSubtree = 2836,
   kSandboxBackForwardAffectsFramesOutsideSubtree = 2837,
+  kDownloadPrePolicyCheck = 2838,
+  kDownloadPostPolicyCheck = 2839,
+  kDownloadInSandboxWithoutUserGesture = 2840,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -566,10 +566,14 @@ void LocalFrameClientImpl::BeginNavigation(
   if (form)
     navigation_info->form = WebFormElement(form);
 
-  navigation_info->is_opener_navigation =
-      origin_document && origin_document->GetFrame() &&
-      origin_document->GetFrame()->Client()->Opener() ==
-          ToCoreFrame(web_frame_);
+  LocalFrame* frame = origin_document ? origin_document->GetFrame() : nullptr;
+  if (frame) {
+    navigation_info->is_opener_navigation =
+        frame->Client()->Opener() == ToCoreFrame(web_frame_);
+    navigation_info->initiator_frame_has_download_sandbox_flag =
+        frame->GetSecurityContext() &&
+        frame->GetSecurityContext()->IsSandboxed(kSandboxDownloads);
+  }
 
   navigation_info
       ->blocking_downloads_in_sandbox_without_user_activation_enabled =

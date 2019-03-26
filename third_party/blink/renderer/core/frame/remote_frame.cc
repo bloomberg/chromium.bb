@@ -96,13 +96,23 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
                                       frame_request.OriginDocument(),
                                       frame_request.GetFrameType());
 
-  Document* document = frame_request.OriginDocument();
-  bool is_opener_navigation = document && document->GetFrame() &&
-                              document->GetFrame()->Client()->Opener() == this;
+  bool is_opener_navigation = false;
+  bool initiator_frame_has_download_sandbox_flag = false;
+  LocalFrame* frame = frame_request.OriginDocument()
+                          ? frame_request.OriginDocument()->GetFrame()
+                          : nullptr;
+  if (frame) {
+    is_opener_navigation = frame->Client()->Opener() == this;
+    initiator_frame_has_download_sandbox_flag =
+        frame->GetSecurityContext() &&
+        frame->GetSecurityContext()->IsSandboxed(kSandboxDownloads);
+  }
 
-  bool has_download_sandbox_flag =
+  bool current_frame_has_download_sandbox_flag =
       GetSecurityContext() &&
       GetSecurityContext()->IsSandboxed(kSandboxDownloads);
+  bool has_download_sandbox_flag = initiator_frame_has_download_sandbox_flag ||
+                                   current_frame_has_download_sandbox_flag;
 
   Client()->Navigate(frame_request.GetResourceRequest(),
                      frame_load_type == WebFrameLoadType::kReplaceCurrentItem,

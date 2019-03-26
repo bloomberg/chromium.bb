@@ -1073,19 +1073,34 @@ void NavigationRequest::OnResponseStarted(
   is_stream_ = is_stream;
   request_id_ = request_id;
 
-  // Log UseCounters for opener navigations.
-  if (is_download &&
-      download_policy.IsType(NavigationDownloadType::kOpenerCrossOrigin)) {
+  if (is_download) {
     content::RenderFrameHost* rfh = frame_tree_node_->current_frame_host();
-    rfh->AddMessageToConsole(
-        blink::mojom::ConsoleMessageLevel::kError,
-        base::StringPrintf(
-            "Navigating a cross-origin opener to a download (%s) is "
-            "deprecated, see "
-            "https://www.chromestatus.com/feature/5742188281462784.",
-            navigation_handle_->GetURL().spec().c_str()));
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-        rfh, blink::mojom::WebFeature::kOpenerNavigationDownloadCrossOrigin);
+        rfh, blink::mojom::WebFeature::kDownloadPrePolicyCheck);
+
+    // Log UseCounters for opener navigations.
+    if (download_policy.IsType(NavigationDownloadType::kOpenerCrossOrigin)) {
+      rfh->AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kError,
+          base::StringPrintf(
+              "Navigating a cross-origin opener to a download (%s) is "
+              "deprecated, see "
+              "https://www.chromestatus.com/feature/5742188281462784.",
+              navigation_handle_->GetURL().spec().c_str()));
+      GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+          rfh, blink::mojom::WebFeature::kOpenerNavigationDownloadCrossOrigin);
+    }
+
+    // Log UseCounters for download in sandbox without user activation.
+    if (download_policy.IsType(NavigationDownloadType::kSandboxNoGesture)) {
+      GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+          rfh, blink::mojom::WebFeature::kDownloadInSandboxWithoutUserGesture);
+    }
+
+    if (is_download_) {
+      GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+          rfh, blink::mojom::WebFeature::kDownloadPostPolicyCheck);
+    }
   }
 
   DCHECK_EQ(state_, STARTED);
