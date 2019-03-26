@@ -12,8 +12,8 @@
 #include <utility>
 #include <vector>
 
-#include "tools/cddl/parse.h"
 #include "third_party/abseil/src/absl/types/optional.h"
+#include "tools/cddl/parse.h"
 
 struct CddlGroup;
 
@@ -101,9 +101,7 @@ struct CddlGroup {
       CddlGroup* group;
     };
 
-    bool HasOccurrenceOperator() const {
-      return occurrence_specified;
-    }
+    bool HasOccurrenceOperator() const { return occurrence_specified; }
   };
 
   std::vector<std::unique_ptr<Entry>> entries;

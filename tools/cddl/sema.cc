@@ -267,7 +267,8 @@ bool AnalyzeGroupEntry(CddlSymbolTable* table,
         }
       }
 
-      int upper_bound = CddlGroup::Entry::kOccurrenceMaxUnbounded;;
+      int upper_bound = CddlGroup::Entry::kOccurrenceMaxUnbounded;
+
       std::string second_half =
           index >= node->text.length() ? "" : node->text.substr(index + 1);
       if ((second_half.length() != 1 || second_half.at(0) != '0') &&
@@ -284,9 +285,9 @@ bool AnalyzeGroupEntry(CddlSymbolTable* table,
     entry->occurrence_specified = true;
     node = node->sibling;
   } else {
-      entry->opt_occurrence_min = 1;
-      entry->opt_occurrence_max = 1;
-      entry->occurrence_specified = false;
+    entry->opt_occurrence_min = 1;
+    entry->opt_occurrence_max = 1;
+    entry->occurrence_specified = false;
   }
 
   // If it's a member key (key in a map), save it and go to next node.
@@ -296,8 +297,7 @@ bool AnalyzeGroupEntry(CddlSymbolTable* table,
     entry->which = CddlGroup::Entry::Which::kType;
     InitGroupEntry(&entry->type);
     entry->type.opt_key = std::string(node->children->text);
-    entry->type.integer_key =
-        ParseOptionalUint(node->integer_member_key_text);
+    entry->type.integer_key = ParseOptionalUint(node->integer_member_key_text);
     node = node->sibling;
   }
 
@@ -367,8 +367,7 @@ void DumpGroup(CddlGroup* group, int indent_level) {
       case CddlGroup::Entry::Which::kType:
         printf("kType:");
         if (entry->HasOccurrenceOperator())
-          printf("minOccurance: %d maxOccurance: %d",
-                 entry->opt_occurrence_min,
+          printf("minOccurance: %d maxOccurance: %d", entry->opt_occurrence_min,
                  entry->opt_occurrence_max);
         if (!entry->type.opt_key.empty())
           printf(" %s =>", entry->type.opt_key.c_str());
@@ -377,8 +376,7 @@ void DumpGroup(CddlGroup* group, int indent_level) {
         break;
       case CddlGroup::Entry::Which::kGroup:
         if (entry->HasOccurrenceOperator())
-          printf("minOccurance: %d maxOccurance: %d",
-                 entry->opt_occurrence_min,
+          printf("minOccurance: %d maxOccurance: %d", entry->opt_occurrence_min,
                  entry->opt_occurrence_max);
         DumpGroup(entry->group, indent_level + 1);
         break;
@@ -541,7 +539,8 @@ bool AddMembersToStruct(
           return false;
         if (member_type->name.empty())
           member_type->name = x->type.opt_key;
-        if (x->opt_occurrence_min == CddlGroup::Entry::kOccurrenceMinUnbounded &&
+        if (x->opt_occurrence_min ==
+                CddlGroup::Entry::kOccurrenceMinUnbounded &&
             x->opt_occurrence_max == 1) {
           // Create an "optional" type, with sub-type being the type that is
           // optional. This corresponds with occurrence operator '?'.
@@ -599,9 +598,9 @@ CppType* MakeCppType(CppSymbolTable* table,
           type.array->entries[0]->HasOccurrenceOperator()) {
         cpp_type->InitVector();
         cpp_type->vector_type.min_length =
-          type.array->entries[0]->opt_occurrence_min;
+            type.array->entries[0]->opt_occurrence_min;
         cpp_type->vector_type.max_length =
-          type.array->entries[0]->opt_occurrence_max;
+            type.array->entries[0]->opt_occurrence_max;
         cpp_type->vector_type.element_type =
             GetCppType(table, type.array->entries[0]->type.value->id);
       } else {

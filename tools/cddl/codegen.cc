@@ -60,7 +60,7 @@ std::string CppTypeToString(const CppType& cpp_type) {
       if (element_string.empty())
         return std::string();
       return "std::vector<" + element_string + ">";
-    } break;
+    }
     case CppType::Which::kEnum:
       return ToCamelCase(cpp_type.name);
     case CppType::Which::kStruct:
@@ -350,11 +350,10 @@ bool WriteEncoder(int fd,
             dprintf(fd,
                     "  CBOR_RETURN_ON_ERROR(cbor_encode_text_string("
                     "&encoder%d, \"%s\", sizeof(\"%s\") - 1));\n",
-                    encoder_depth, x.name.c_str(),
-                    x.name.c_str());
+                    encoder_depth, x.name.c_str(), x.name.c_str());
           }
-          if (!WriteEncoder(fd, name + "." + ToUnderscoreId(x.name),
-                            *x.type, nested_type_scope, encoder_depth)) {
+          if (!WriteEncoder(fd, name + "." + ToUnderscoreId(x.name), *x.type,
+                            nested_type_scope, encoder_depth)) {
             return false;
           }
         }
@@ -392,14 +391,14 @@ bool WriteEncoder(int fd,
       if (cpp_type.vector_type.min_length !=
           CppType::Vector::kMinLengthUnbounded) {
         dprintf(fd, "  if (%s.size() < %d) {\n", cid.c_str(),
-          cpp_type.vector_type.min_length);
+                cpp_type.vector_type.min_length);
         dprintf(fd, "    return -CborErrorTooFewItems;\n");
         dprintf(fd, "  }\n");
       }
       if (cpp_type.vector_type.max_length !=
           CppType::Vector::kMaxLengthUnbounded) {
         dprintf(fd, "  if (%s.size() > %d) {\n", cid.c_str(),
-          cpp_type.vector_type.max_length);
+                cpp_type.vector_type.max_length);
         dprintf(fd, "    return -CborErrorTooManyItems;\n");
         dprintf(fd, "  }\n");
       }
@@ -556,16 +555,15 @@ bool WriteMapEncoder(int fd,
       }
 
       if (x.integer_key.has_value()) {
-        dprintf(
-            fd,
-            "  CBOR_RETURN_ON_ERROR(cbor_encode_uint(&encoder%d, %" PRIu64
-            "));\n", encoder_depth, x.integer_key.value());
+        dprintf(fd,
+                "  CBOR_RETURN_ON_ERROR(cbor_encode_uint(&encoder%d, %" PRIu64
+                "));\n",
+                encoder_depth, x.integer_key.value());
       } else {
-        dprintf(
-            fd,
-            "  CBOR_RETURN_ON_ERROR(cbor_encode_text_string(&encoder%d, "
-            "\"%s\", sizeof(\"%s\") - 1));\n",
-            encoder_depth, x.name.c_str(), x.name.c_str());
+        dprintf(fd,
+                "  CBOR_RETURN_ON_ERROR(cbor_encode_text_string(&encoder%d, "
+                "\"%s\", sizeof(\"%s\") - 1));\n",
+                encoder_depth, x.name.c_str(), x.name.c_str());
       }
       if (x.type->which == CppType::Which::kDiscriminatedUnion) {
         dprintf(fd, "  switch (%s.%s.which) {\n", fullname.c_str(),
@@ -870,14 +868,14 @@ bool WriteDecoder(int fd,
       if (cpp_type.vector_type.min_length !=
           CppType::Vector::kMinLengthUnbounded) {
         dprintf(fd, "  if (it%d_length < %d) {\n", decoder_depth + 1,
-          cpp_type.vector_type.min_length);
+                cpp_type.vector_type.min_length);
         dprintf(fd, "    return -CborErrorTooFewItems;\n");
         dprintf(fd, "  }\n");
       }
       if (cpp_type.vector_type.max_length !=
           CppType::Vector::kMaxLengthUnbounded) {
         dprintf(fd, "  if (it%d_length > %d) {\n", decoder_depth + 1,
-          cpp_type.vector_type.max_length);
+                cpp_type.vector_type.max_length);
         dprintf(fd, "    return -CborErrorTooManyItems;\n");
         dprintf(fd, "  }\n");
       }
@@ -1057,7 +1055,8 @@ bool WriteMapDecoder(int fd,
       if (x.integer_key.has_value()) {
         dprintf(fd,
                 "  CBOR_RETURN_ON_ERROR(EXPECT_INT_KEY_CONSTANT(&it%d, %" PRIu64
-                "));\n", decoder_depth, x.integer_key.value());
+                "));\n",
+                decoder_depth, x.integer_key.value());
       } else {
         dprintf(fd,
                 "  CBOR_RETURN_ON_ERROR(EXPECT_KEY_CONSTANT(&it%d, \"%s\"));\n",
@@ -1077,7 +1076,8 @@ bool WriteMapDecoder(int fd,
       if (x.integer_key.has_value()) {
         dprintf(fd,
                 "  CBOR_RETURN_ON_ERROR(EXPECT_INT_KEY_CONSTANT(&it%d, %" PRIu64
-                "));\n", decoder_depth, x.integer_key.value());
+                "));\n",
+                decoder_depth, x.integer_key.value());
       } else {
         dprintf(fd,
                 "  CBOR_RETURN_ON_ERROR(EXPECT_KEY_CONSTANT(&it%d, \"%s\"));\n",
