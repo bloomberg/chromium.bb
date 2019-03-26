@@ -105,6 +105,10 @@ void TransferBuffer::ShrinkLastBlock(unsigned int new_size) {
   ring_buffer_->ShrinkLastBlock(new_size);
 }
 
+unsigned int TransferBuffer::GetMaxSize() const {
+  return max_buffer_size_ - result_size_;
+}
+
 void TransferBuffer::AllocateRingBuffer(unsigned int size) {
   for (;size >= min_buffer_size_; size /= 2) {
     int32_t id = -1;
@@ -269,10 +273,6 @@ int TransferBuffer::GetShmId() {
 
 unsigned int TransferBuffer::GetCurrentMaxAllocationWithoutRealloc() const {
   return HaveBuffer() ? ring_buffer_->GetLargestFreeOrPendingSize() : 0;
-}
-
-unsigned int TransferBuffer::GetMaxAllocation() const {
-  return HaveBuffer() ? max_buffer_size_ - result_size_ : 0;
 }
 
 ScopedTransferBufferPtr::ScopedTransferBufferPtr(
