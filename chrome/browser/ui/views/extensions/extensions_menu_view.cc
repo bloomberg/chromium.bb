@@ -26,6 +26,9 @@ ExtensionsMenuView::ExtensionsMenuView(views::View* anchor_view,
       model_observer_(this) {
   model_observer_.Add(model_);
 
+  AddAccelerator(ui::Accelerator(ui::VKEY_DOWN, ui::EF_NONE));
+  AddAccelerator(ui::Accelerator(ui::VKEY_UP, ui::EF_NONE));
+
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(0),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -40,6 +43,21 @@ ExtensionsMenuView::~ExtensionsMenuView() {
 
 base::string16 ExtensionsMenuView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_EXTENSIONS_MENU_TITLE);
+}
+
+bool ExtensionsMenuView::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  if (accelerator.key_code() != ui::VKEY_DOWN &&
+      accelerator.key_code() != ui::VKEY_UP)
+    return BubbleDialogDelegateView::AcceleratorPressed(accelerator);
+
+  // Move the focus up or down.
+  GetFocusManager()->AdvanceFocus(accelerator.key_code() != ui::VKEY_DOWN);
+  return true;
+}
+
+int ExtensionsMenuView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 void ExtensionsMenuView::Repopulate() {
