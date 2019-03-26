@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
-#include "chrome/browser/extensions/extension_apitest.h"
 
 namespace content {
 class WebUI;
@@ -22,7 +21,7 @@ namespace chromeos {
 class NetworkPortalDetectorTestImpl;
 
 // Base class for OOBE, login, SAML and Kiosk tests.
-class OobeBaseTest : public extensions::ExtensionApiTest {
+class OobeBaseTest : public MixinBasedInProcessBrowserTest {
  public:
   OobeBaseTest();
   ~OobeBaseTest() override;
@@ -32,15 +31,12 @@ class OobeBaseTest : public extensions::ExtensionApiTest {
   virtual void RegisterAdditionalRequestHandlers();
 
  protected:
-  // extensions::ExtensionApiTest:
+  // MixinBasedInProcessBrowserTest::
   void SetUp() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
-  void SetUpDefaultCommandLine(base::CommandLine* command_line) override;
   void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
-  void TearDownInProcessBrowserTestFixture() override;
-  void TearDown() override;
 
   // If this returns true (default), the |ash::switches::kShowWebUiLogin|
   // command-line switch is passed to force the Web Ui Login.
@@ -73,8 +69,6 @@ class OobeBaseTest : public extensions::ExtensionApiTest {
   void WaitForSigninScreen();
   void WaitForEnrollmentSuccess();
   test::JSChecker SigninFrameJS();
-
-  InProcessBrowserTestMixinHost mixin_host_;
 
   NetworkPortalDetectorTestImpl* network_portal_detector_ = nullptr;
 
