@@ -903,6 +903,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsInLayoutNGInlineFormattingContext() const {
     return bitfields_.IsInLayoutNGInlineFormattingContext();
   }
+  bool ForceLegacyLayout() const { return bitfields_.ForceLegacyLayout(); }
   bool IsAtomicInlineLevel() const { return bitfields_.IsAtomicInlineLevel(); }
   bool IsHorizontalWritingMode() const {
     return bitfields_.HorizontalWritingMode();
@@ -1251,6 +1252,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void SetIsInLayoutNGInlineFormattingContext(bool);
   virtual NGPaintFragment* FirstInlineFragment() const { return nullptr; }
   virtual void SetFirstInlineFragment(NGPaintFragment*) {}
+  void SetForceLegacyLayout() { bitfields_.SetForceLegacyLayout(true); }
 
   void SetHasBoxDecorationBackground(bool);
 
@@ -2609,6 +2611,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           is_box_(false),
           is_inline_(true),
           is_in_layout_ng_inline_formatting_context_(false),
+          force_legacy_layout_(false),
           is_atomic_inline_level_(false),
           horizontal_writing_mode_(true),
           has_layer_(false),
@@ -2760,6 +2763,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // legacy.
     ADD_BOOLEAN_BITFIELD(is_in_layout_ng_inline_formatting_context_,
                          IsInLayoutNGInlineFormattingContext);
+
+    // Set if we're to force legacy layout (i.e. disable LayoutNG) on this
+    // object, and all descendants.
+    ADD_BOOLEAN_BITFIELD(force_legacy_layout_, ForceLegacyLayout);
 
     // This boolean is set if the element is an atomic inline-level box.
     //

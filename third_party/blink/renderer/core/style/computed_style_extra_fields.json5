@@ -1045,14 +1045,6 @@
       keywords: ["no-auto-repeat", "auto-fill", "auto-fit"],
       default_value: "no-auto-repeat",
     },
-    {
-      name: "ForceLegacyLayout",
-      inherited: true,
-      field_template: "primitive",
-      type_name: "bool",
-      default_value: "false",
-      field_group: "*",
-    },
     // We only create and store ComputedStyle objects for elements in
     // display:none subtrees if we need it for e.g. getComputedStyle. This flag
     // is true for such ComputedStyle objects.

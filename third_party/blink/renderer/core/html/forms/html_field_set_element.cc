@@ -131,7 +131,7 @@ LayoutObject* HTMLFieldSetElement::CreateLayoutObject(
   return LayoutObjectFactory::CreateFieldset(*this, style, legacy);
 }
 
-bool HTMLFieldSetElement::ShouldForceLegacyLayout() const {
+bool HTMLFieldSetElement::TypeShouldForceLegacyLayout() const {
   return !RuntimeEnabledFeatures::LayoutNGFieldsetEnabled();
 }
 

@@ -2102,15 +2102,19 @@ LayoutBlock* LayoutBlock::CreateAnonymousWithParentAndDisplay(
   scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(parent->StyleRef(),
                                                      new_display);
+
+  LegacyLayout legacy =
+      parent->ForceLegacyLayout() ? LegacyLayout::kForce : LegacyLayout::kAuto;
+
   parent->UpdateAnonymousChildStyle(nullptr, *new_style);
   LayoutBlock* layout_block;
   if (new_display == EDisplay::kFlex) {
-    layout_block = LayoutObjectFactory::CreateFlexibleBox(
-        parent->GetDocument(), *new_style, LegacyLayout::kAuto);
+    layout_block = LayoutObjectFactory::CreateFlexibleBox(parent->GetDocument(),
+                                                          *new_style, legacy);
   } else {
     DCHECK_EQ(new_display, EDisplay::kBlock);
-    layout_block = LayoutObjectFactory::CreateBlockFlow(
-        parent->GetDocument(), *new_style, LegacyLayout::kAuto);
+    layout_block = LayoutObjectFactory::CreateBlockFlow(parent->GetDocument(),
+                                                        *new_style, legacy);
   }
   layout_block->SetDocumentForAnonymous(&parent->GetDocument());
   layout_block->SetStyle(std::move(new_style));

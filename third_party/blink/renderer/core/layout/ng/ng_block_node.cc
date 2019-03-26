@@ -521,11 +521,8 @@ NGBlockNode NGBlockNode::GetFieldsetContent() const {
 
 bool NGBlockNode::CanUseNewLayout(const LayoutBox& box) {
   DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
-  if (box.StyleRef().ForceLegacyLayout())
+  if (box.ForceLegacyLayout())
     return false;
-
-  // When the style has |ForceLegacyLayout|, it's usually not LayoutNGMixin,
-  // but anonymous block can be.
   return box.IsLayoutNGMixin() || box.IsLayoutNGFlexibleBox();
 }
 

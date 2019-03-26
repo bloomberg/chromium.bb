@@ -1146,9 +1146,10 @@ void LayoutTableCell::ScrollbarsChanged(bool horizontal_scrollbar_changed,
 
 LayoutTableCell* LayoutTableCell::CreateAnonymous(
     Document* document,
-    scoped_refptr<ComputedStyle> style) {
-  LayoutTableCell* layout_object = LayoutObjectFactory::CreateTableCell(
-      *document, *style, LegacyLayout::kAuto);
+    scoped_refptr<ComputedStyle> style,
+    LegacyLayout legacy) {
+  LayoutTableCell* layout_object =
+      LayoutObjectFactory::CreateTableCell(*document, *style, legacy);
   layout_object->SetDocumentForAnonymous(document);
   layout_object->SetStyle(std::move(style));
   return layout_object;
@@ -1159,8 +1160,10 @@ LayoutTableCell* LayoutTableCell::CreateAnonymousWithParent(
   scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(parent->StyleRef(),
                                                      EDisplay::kTableCell);
+  LegacyLayout legacy =
+      parent->ForceLegacyLayout() ? LegacyLayout::kForce : LegacyLayout::kAuto;
   LayoutTableCell* new_cell = LayoutTableCell::CreateAnonymous(
-      &parent->GetDocument(), std::move(new_style));
+      &parent->GetDocument(), std::move(new_style), legacy);
   return new_cell;
 }
 

@@ -532,6 +532,7 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
     scoped_refptr<ComputedStyle> new_style =
         ComputedStyle::CreateAnonymousStyleWithDisplay(StyleRef(),
                                                        EDisplay::kBlock);
+    const LayoutBlock* containing_block = ContainingBlock();
     // The anon block we create here doesn't exist in the CSS spec, so
     // we need to ensure that any blocks it contains inherit properly
     // from its true parent. This means they must use the direction set by the
@@ -541,7 +542,7 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
     // but only affect the layout of children we will want to special-case
     // them here too. Writing-mode would be one if it didn't create a
     // formatting context of its own, removing the need for continuations.
-    new_style->SetDirection(ContainingBlock()->StyleRef().Direction());
+    new_style->SetDirection(containing_block->StyleRef().Direction());
 
     // If inside an inline affected by in-flow positioning the block needs to be
     // affected by it too. Giving the block a layer like this allows it to
@@ -550,8 +551,12 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
             InFlowPositionedInlineAncestor(this))
       new_style->SetPosition(positioned_ancestor->StyleRef().GetPosition());
 
-    LayoutBlockFlow* new_box =
-        LayoutBlockFlow::CreateAnonymous(&GetDocument(), std::move(new_style));
+    LegacyLayout legacy = containing_block->ForceLegacyLayout()
+                              ? LegacyLayout::kForce
+                              : LegacyLayout::kAuto;
+
+    LayoutBlockFlow* new_box = LayoutBlockFlow::CreateAnonymous(
+        &GetDocument(), std::move(new_style), legacy);
     LayoutBoxModelObject* old_continuation = Continuation();
     SetContinuation(new_box);
 

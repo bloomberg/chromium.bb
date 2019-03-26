@@ -30,6 +30,7 @@ LayoutNGMixin<Base>::LayoutNGMixin(Element* element) : Base(element) {
   static_assert(
       std::is_base_of<LayoutBlockFlow, Base>::value,
       "Base class of LayoutNGMixin must be LayoutBlockFlow or derived class.");
+  DCHECK(!element || !element->ShouldForceLegacyLayout());
 }
 
 template <typename Base>

@@ -154,6 +154,19 @@ class ElementRareData : public NodeRareData {
   bool DidAttachInternals() const { return did_attach_internals_; }
   ElementInternals& EnsureElementInternals(HTMLElement& target);
 
+  void SetStyleShouldForceLegacyLayout(bool force) {
+    style_should_force_legacy_layout_ = force;
+  }
+  bool StyleShouldForceLegacyLayout() const {
+    return style_should_force_legacy_layout_;
+  }
+  void SetShouldForceLegacyLayoutForChild(bool force) {
+    should_force_legacy_layout_for_child_ = force;
+  }
+  bool ShouldForceLegacyLayoutForChild() const {
+    return should_force_legacy_layout_for_child_;
+  }
+
   AccessibleNode* GetAccessibleNode() const { return accessible_node_.Get(); }
   AccessibleNode* EnsureAccessibleNode(Element* owner_element) {
     if (!accessible_node_) {
@@ -236,6 +249,8 @@ class ElementRareData : public NodeRareData {
 
   WeakMember<DisplayLockContext> display_lock_context_;
   bool did_attach_internals_ = false;
+  bool should_force_legacy_layout_for_child_ = false;
+  bool style_should_force_legacy_layout_ = false;
 };
 
 inline LayoutSize DefaultMinimumSizeForResizing() {

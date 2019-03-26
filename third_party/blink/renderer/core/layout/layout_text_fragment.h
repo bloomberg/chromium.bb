@@ -41,7 +41,8 @@ class CORE_EXPORT LayoutTextFragment : public LayoutText {
  public:
   ~LayoutTextFragment() override;
 
-  // |style| is used for checking |ForceLegacyLayout()|.
+  // TODO(mstensho): |style| was used for checking |ForceLegacyLayout()|, but is
+  // now unused. Remove the parameter.
   static LayoutTextFragment* Create(const ComputedStyle& style,
                                     Node*,
                                     StringImpl*,
