@@ -286,12 +286,6 @@ void ClipboardProvider::ConstructImageMatchCallback(
       base::string16::npos, 0, match.description.length(),
       ACMatchClassification::NONE, &match.description_class);
 
-  match.contents.assign(l10n_util::GetStringFUTF16(IDS_SEARCH_WEB_FOR_IMAGE,
-                                                   default_url->short_name()));
-  AutocompleteMatch::ClassifyLocationInString(
-      base::string16::npos, 0, match.contents.length(),
-      ACMatchClassification::NONE, &match.contents_class);
-
   TemplateURLRef::SearchTermsArgs search_args(base::ASCIIToUTF16(""));
   search_args.image_thumbnail_content.assign(image_bytes->front_as<char>(),
                                              image_bytes->size());
