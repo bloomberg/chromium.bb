@@ -65,71 +65,8 @@ struct UserShare;
 
 namespace browser_sync {
 
-// ProfileSyncService is the layer between browser subsystems like bookmarks,
-// and the sync engine. Each subsystem is logically thought of as being a sync
-// datatype. Individual datatypes can, at any point, be in a variety of stages
-// of being "enabled". Here are some specific terms for concepts used in this
-// class:
-//
-//   'Registered' (feature suppression for a datatype)
-//
-//      When a datatype is registered, the user has the option of syncing it.
-//      The sync opt-in UI will show only registered types; a checkbox should
-//      never be shown for an unregistered type, nor can it ever be synced.
-//
-//   'Preferred' (user preferences and opt-out for a datatype)
-//
-//      This means the user's opt-in or opt-out preference on a per-datatype
-//      basis. The sync service will try to make active exactly these types.
-//      If a user has opted out of syncing a particular datatype, it will
-//      be registered, but not preferred. Also note that not all datatypes can
-//      be directly chosen by the user: e.g. AUTOFILL_PROFILE is implied by
-//      AUTOFILL but can't be selected separately. If AUTOFILL is chosen by the
-//      user, then AUTOFILL_PROFILE will also be considered preferred. See
-//      SyncPrefs::ResolvePrefGroups.
-//
-//      This state is controlled by SyncUserSettings::SetChosenDataTypes. They
-//      are stored in the preferences system and persist; though if a datatype
-//      is not registered, it cannot be a preferred datatype.
-//
-//   'Active' (run-time initialization of sync system for a datatype)
-//
-//      An active datatype is a preferred datatype that is actively being
-//      synchronized: the syncer has been instructed to querying the server
-//      for this datatype, first-time merges have finished, and there is an
-//      actively installed ChangeProcessor that listens for changes to this
-//      datatype, propagating such changes into and out of the sync engine
-//      as necessary.
-//
-//      When a datatype is in the process of becoming active, it may be
-//      in some intermediate state. Those finer-grained intermediate states
-//      are differentiated by the DataTypeController state, but not exposed.
-//
-// Sync Configuration:
-//
-//   Sync configuration is accomplished via SyncUserSettings, in particular:
-//    * SetChosenDataTypes(): Set the data types the user wants to sync.
-//    * SetDecryptionPassphrase(): Attempt to decrypt the user's encrypted data
-//        using the passed passphrase.
-//    * SetEncryptionPassphrase(): Re-encrypt the user's data using the passed
-//        passphrase.
-//
-// Initial sync setup:
-//
-//   For privacy reasons, it is usually desirable to avoid syncing any data
-//   types until the user has finished setting up sync. There are two APIs
-//   that control the initial sync download:
-//
-//    * SyncUserSettings::SetFirstSetupComplete()
-//    * GetSetupInProgressHandle()
-//
-//   SetFirstSetupComplete() should be called once the user has finished setting
-//   up sync at least once on their account. GetSetupInProgressHandle() should
-//   be called while the user is actively configuring their account. The handle
-//   should be deleted once configuration is complete.
-//
-//   Once first setup has completed and there are no outstanding
-//   setup-in-progress handles, datatype configuration will begin.
+// Look at the syncer::SyncService interface for information on how to use this
+// class. You should not need to know about ProfileSyncService directly.
 class ProfileSyncService : public syncer::SyncService,
                            public syncer::SyncEngineHost,
                            public syncer::SyncPrefObserver,
