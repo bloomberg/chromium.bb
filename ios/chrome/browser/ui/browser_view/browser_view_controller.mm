@@ -3997,11 +3997,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (BOOL)canGoBack {
-  return self.currentWebState->GetNavigationManager()->CanGoBack();
+  return self.currentWebState &&
+         self.currentWebState->GetNavigationManager()->CanGoBack();
 }
 
 - (BOOL)canGoForward {
-  return self.currentWebState->GetNavigationManager()->CanGoForward();
+  return self.currentWebState &&
+         self.currentWebState->GetNavigationManager()->CanGoForward();
 }
 
 - (void)focusTabAtIndex:(NSUInteger)index {
@@ -4132,11 +4134,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - BrowserCommands
 
 - (void)goBack {
-  web_navigation_util::GoBack(self.currentWebState);
+  if (self.currentWebState)
+    web_navigation_util::GoBack(self.currentWebState);
 }
 
 - (void)goForward {
-  web_navigation_util::GoForward(self.currentWebState);
+  if (self.currentWebState)
+    web_navigation_util::GoForward(self.currentWebState);
 }
 
 - (void)stopLoading {
