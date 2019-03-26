@@ -34,8 +34,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/system/sys_info.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/permission_broker_client.h"
+#include "chromeos/dbus/permission_broker/permission_broker_client.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace device {
@@ -224,13 +223,10 @@ void HidServiceLinux::Connect(const std::string& device_guid,
   auto params = std::make_unique<ConnectParams>(device_info, callback);
 
 #if defined(OS_CHROMEOS)
-  chromeos::PermissionBrokerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
-  DCHECK(client) << "Could not get permission broker client.";
   chromeos::PermissionBrokerClient::ErrorCallback error_callback =
       base::Bind(&HidServiceLinux::OnPathOpenError,
                  params->device_info->device_node(), params->callback);
-  client->OpenPath(
+  chromeos::PermissionBrokerClient::Get()->OpenPath(
       device_info->device_node(),
       base::Bind(&HidServiceLinux::OnPathOpenComplete, base::Passed(&params)),
       error_callback);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_FAKE_PERMISSION_BROKER_CLIENT_H_
-#define CHROMEOS_DBUS_FAKE_PERMISSION_BROKER_CLIENT_H_
+#ifndef CHROMEOS_DBUS_PERMISSION_BROKER_FAKE_PERMISSION_BROKER_CLIENT_H_
+#define CHROMEOS_DBUS_PERMISSION_BROKER_FAKE_PERMISSION_BROKER_CLIENT_H_
 
 #include <stdint.h>
 
@@ -13,7 +13,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chromeos/dbus/permission_broker_client.h"
+#include "chromeos/dbus/permission_broker/permission_broker_client.h"
 
 namespace chromeos {
 
@@ -23,7 +23,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePermissionBrokerClient
   FakePermissionBrokerClient();
   ~FakePermissionBrokerClient() override;
 
-  void Init(dbus::Bus* bus) override;
+  // Checks that a fake instance was initialized and returns it.
+  static FakePermissionBrokerClient* Get();
+
   void CheckPathAccess(const std::string& path,
                        const ResultCallback& callback) override;
   void OpenPath(const std::string& path,
@@ -76,4 +78,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePermissionBrokerClient
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_FAKE_PERMISSION_BROKER_CLIENT_H_
+#endif  // CHROMEOS_DBUS_PERMISSION_BROKER_FAKE_PERMISSION_BROKER_CLIENT_H_

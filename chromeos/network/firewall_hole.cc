@@ -14,8 +14,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/permission_broker_client.h"
+#include "chromeos/dbus/permission_broker/permission_broker_client.h"
 
 namespace chromeos {
 
@@ -65,8 +64,7 @@ void FirewallHole::Open(PortType type,
       base::Bind(&FirewallHole::PortAccessGranted, type, port, interface,
                  base::Passed(&lifeline_local), callback);
 
-  PermissionBrokerClient* client =
-      DBusThreadManager::Get()->GetPermissionBrokerClient();
+  PermissionBrokerClient* client = PermissionBrokerClient::Get();
   DCHECK(client) << "Could not get permission broker client.";
 
   switch (type) {
@@ -85,8 +83,7 @@ FirewallHole::~FirewallHole() {
   base::Callback<void(bool)> port_released_closure = base::Bind(
       &PortReleased, type_, port_, interface_, base::Passed(&lifeline_fd_));
 
-  PermissionBrokerClient* client =
-      DBusThreadManager::Get()->GetPermissionBrokerClient();
+  PermissionBrokerClient* client = PermissionBrokerClient::Get();
   DCHECK(client) << "Could not get permission broker client.";
   switch (type_) {
     case PortType::TCP:

@@ -19,7 +19,6 @@ namespace chromeos {
 class CrasAudioClient;
 class GsmSMSClient;
 class ModemMessagingClient;
-class PermissionBrokerClient;
 class SessionManagerClient;
 class ShillDeviceClient;
 class ShillIPConfigClient;
@@ -54,7 +53,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusClientsCommon {
   std::unique_ptr<ShillProfileClient> shill_profile_client_;
   std::unique_ptr<ShillThirdPartyVpnDriverClient>
       shill_third_party_vpn_driver_client_;
-  std::unique_ptr<PermissionBrokerClient> permission_broker_client_;
   std::unique_ptr<SMSClient> sms_client_;
   std::unique_ptr<SessionManagerClient> session_manager_client_;
 

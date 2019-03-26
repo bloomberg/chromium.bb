@@ -24,8 +24,7 @@
 #include "device/usb/usb_service.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/permission_broker_client.h"
+#include "chromeos/dbus/permission_broker/permission_broker_client.h"
 #include "device/usb/usb_device_linux.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -87,8 +86,6 @@ void DeviceManagerImpl::CheckAccess(const std::string& guid,
 void DeviceManagerImpl::OpenFileDescriptor(
     const std::string& guid,
     OpenFileDescriptorCallback callback) {
-  auto* client =
-      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
   scoped_refptr<UsbDevice> device = usb_service_->GetDevice(guid);
   if (!device) {
     LOG(ERROR) << "Was asked to open non-existent USB device: " << guid;
@@ -98,7 +95,7 @@ void DeviceManagerImpl::OpenFileDescriptor(
         base::AdaptCallbackForRepeating(std::move(callback));
     auto devpath =
         static_cast<device::UsbDeviceLinux*>(device.get())->device_path();
-    client->OpenPath(
+    chromeos::PermissionBrokerClient::Get()->OpenPath(
         devpath,
         base::BindRepeating(&DeviceManagerImpl::OnOpenFileDescriptor,
                             weak_factory_.GetWeakPtr(), copyable_callback),
