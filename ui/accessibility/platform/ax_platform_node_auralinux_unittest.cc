@@ -1800,4 +1800,135 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAllReverseAtkRelations) {
                          ATK_RELATION_LABELLED_BY, ATK_RELATION_LABEL_FOR);
 }
 
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextTextFieldGetNSelectionsZero) {
+  Init(BuildTextField());
+  AtkObject* root_atk_object(GetRootAtkObject());
+  g_object_ref(root_atk_object);
+
+  AtkText* atk_text = ATK_TEXT(root_atk_object);
+  ASSERT_NE(nullptr, atk_text);
+  EXPECT_EQ(0, atk_text_get_n_selections(atk_text));
+
+  g_object_unref(root_atk_object);
+}
+
+TEST_F(AXPlatformNodeAuraLinuxTest,
+       TestAtkTextContentEditableGetNSelectionsZero) {
+  Init(BuildContentEditable());
+  AtkObject* root_atk_object(GetRootAtkObject());
+  g_object_ref(root_atk_object);
+
+  AtkText* atk_text = ATK_TEXT(root_atk_object);
+  ASSERT_NE(nullptr, atk_text);
+  EXPECT_EQ(0, atk_text_get_n_selections(atk_text));
+
+  g_object_unref(root_atk_object);
+}
+
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextContentEditableGetNSelections) {
+  Init(BuildContentEditableWithSelectionRange(1, 2));
+  AtkObject* root_atk_object(GetRootAtkObject());
+  g_object_ref(root_atk_object);
+
+  AtkText* atk_text = ATK_TEXT(root_atk_object);
+  ASSERT_NE(nullptr, atk_text);
+  EXPECT_EQ(1, atk_text_get_n_selections(atk_text));
+
+  g_object_unref(root_atk_object);
+}
+
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextTextFieldSetSelection) {
+  Init(BuildTextField());
+  AtkObject* root_atk_object(GetRootAtkObject());
+  g_object_ref(root_atk_object);
+
+  AtkText* atk_text = ATK_TEXT(root_atk_object);
+  ASSERT_NE(nullptr, atk_text);
+
+  bool saw_selection_change = false;
+  g_signal_connect(
+      atk_text, "text-selection-changed",
+      G_CALLBACK(+[](AtkObject* atkobject, bool* flag) { *flag = true; }),
+      &saw_selection_change);
+
+  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 0, 1));
+  EXPECT_TRUE(saw_selection_change);
+
+  saw_selection_change = false;
+  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 1, 0));
+  EXPECT_TRUE(saw_selection_change);
+
+  saw_selection_change = false;
+  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 2, 2));
+  EXPECT_TRUE(saw_selection_change);
+
+  saw_selection_change = false;
+  EXPECT_FALSE(atk_text_set_selection(atk_text, 1, 0, 0));
+  EXPECT_FALSE(saw_selection_change);
+
+  saw_selection_change = false;
+  EXPECT_FALSE(atk_text_set_selection(atk_text, 0, 0, 50));
+  EXPECT_FALSE(saw_selection_change);
+
+  saw_selection_change = false;
+  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 0, 1));
+  EXPECT_EQ(1, atk_text_get_n_selections(atk_text));
+  EXPECT_TRUE(atk_text_remove_selection(atk_text, 0));
+  EXPECT_TRUE(saw_selection_change);
+  EXPECT_EQ(0, atk_text_get_n_selections(atk_text));
+
+  saw_selection_change = false;
+  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 0, 1));
+  EXPECT_EQ(1, atk_text_get_n_selections(atk_text));
+  EXPECT_FALSE(atk_text_remove_selection(atk_text, 1));
+  EXPECT_TRUE(saw_selection_change);
+  EXPECT_EQ(1, atk_text_get_n_selections(atk_text));
+
+  g_object_unref(root_atk_object);
+}
+
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextTextFieldGetSelection) {
+  Init(BuildTextField());
+  AtkObject* root_atk_object(GetRootAtkObject());
+  g_object_ref(root_atk_object);
+
+  AtkText* atk_text = ATK_TEXT(root_atk_object);
+  ASSERT_NE(nullptr, atk_text);
+
+  int selection_start = 0, selection_end = 0;
+  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 0, 3));
+  gchar* selected_text =
+      atk_text_get_selection(atk_text, 0, &selection_start, &selection_end);
+  EXPECT_STREQ("How", selected_text);
+  EXPECT_EQ(selection_start, 0);
+  EXPECT_EQ(selection_end, 3);
+  g_free(selected_text);
+
+  selection_start = 0;
+  selection_end = 0;
+
+  EXPECT_TRUE(atk_text_remove_selection(atk_text, 0));
+  selected_text =
+      atk_text_get_selection(atk_text, 0, &selection_start, &selection_end);
+  EXPECT_EQ(nullptr, selected_text);
+  EXPECT_EQ(selection_start, 0);
+  EXPECT_EQ(selection_end, 0);
+
+  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 0, 3));
+
+  selected_text =
+      atk_text_get_selection(atk_text, 1, &selection_start, &selection_end);
+  EXPECT_EQ(nullptr, selected_text);
+  EXPECT_EQ(selection_start, 0);
+  EXPECT_EQ(selection_end, 0);
+
+  selected_text =
+      atk_text_get_selection(atk_text, -1, &selection_start, &selection_end);
+  EXPECT_EQ(nullptr, selected_text);
+  EXPECT_EQ(selection_start, 0);
+  EXPECT_EQ(selection_end, 0);
+
+  g_object_unref(root_atk_object);
+}
+
 }  // namespace ui

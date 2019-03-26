@@ -117,6 +117,9 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   int GetCaretOffset();
   bool SetCaretOffset(int offset);
+  bool SetTextSelectionForAtkText(int start_offset, int end_offset);
+  bool HasSelection();
+  gchar* GetSelection(int* start_offset, int* end_offset);
 
  protected:
   // Offsets for the AtkText API are calculated in UTF-16 code point offsets,
