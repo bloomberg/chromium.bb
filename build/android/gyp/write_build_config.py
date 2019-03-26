@@ -537,8 +537,10 @@ invoking `javac`.
 This type corresponds to an Android app bundle (`.aab` file).
 
 --------------- END_MARKDOWN ---------------------------------------------------
+TODO(estevenson): Add docs for static library synchronized proguarding.
 """
 
+import collections
 import itertools
 import json
 import optparse
@@ -903,6 +905,10 @@ def main(argv):
   parser.add_option('--incremental-install-json-path',
                     help="Path to the target's generated incremental install "
                     "json.")
+  parser.add_option(
+      '--static-library-dependent-configs',
+      help='GN list of .build_configs of targets that use this target as a '
+      'static library.')
 
   parser.add_option('--tested-apk-config',
       help='Path to the build config of the tested apk (for an instrumentation '
@@ -1008,6 +1014,19 @@ def main(argv):
       'java_library', 'android_apk', 'dist_aar', 'dist_jar',
       'system_java_library', 'android_app_bundle_module')
 
+  is_static_library_dex_provider_target = (
+      options.static_library_dependent_configs and options.proguard_enabled)
+  if is_static_library_dex_provider_target and options.type != 'android_apk':
+    raise Exception(
+        '--static-library-dependent-configs only supports --type=android_apk')
+
+  options.static_library_dependent_configs = build_utils.ParseGnList(
+      options.static_library_dependent_configs)
+  static_library_dependent_configs_by_path = {
+      p: GetDepConfig(p)
+      for p in options.static_library_dependent_configs
+  }
+
   deps = _DepsFromPaths(
       build_utils.ParseGnList(options.deps_configs), options.type)
   processor_deps = _DepsFromPaths(
@@ -1017,9 +1036,10 @@ def main(argv):
       build_utils.ParseGnList(options.classpath_deps_configs or ''),
       options.type)
 
-  all_inputs = sorted(set(deps.AllConfigPaths() +
-                          processor_deps.AllConfigPaths() +
-                          classpath_deps.AllConfigPaths()))
+  all_inputs = sorted(
+      set(deps.AllConfigPaths() + processor_deps.AllConfigPaths() +
+          classpath_deps.AllConfigPaths() +
+          list(static_library_dependent_configs_by_path)))
 
   system_library_deps = deps.Direct('system_java_library')
   direct_library_deps = deps.Direct('java_library')
@@ -1085,12 +1105,11 @@ def main(argv):
   # opposed to groups and libraries.
   if is_apk_or_module_target or options.type in (
       'group', 'java_library', 'junit_binary'):
-    config['jni'] = {}
+    deps_info['jni'] = {}
     all_java_sources = [c['java_sources_file'] for c in all_library_deps
                         if 'java_sources_file' in c]
     if options.java_sources_file:
       all_java_sources.append(options.java_sources_file)
-    config['jni']['all_source'] = all_java_sources
 
     if options.apk_proto_resources:
       deps_info['proto_resources_path'] = options.apk_proto_resources
@@ -1314,6 +1333,52 @@ def main(argv):
             c for c in d.get('java_runtime_classpath', [])
             if c not in java_full_classpath)
 
+  all_configs = build_utils.ParseGnList(options.proguard_configs)
+  deps_info['proguard_configs'] = list(all_configs)
+  extra_jars = []
+
+  if is_static_library_dex_provider_target:
+    # Map classpath entries to configs that include them in their classpath.
+    configs_by_classpath_entry = collections.defaultdict(list)
+    for config_path, dep_config in (
+        static_library_dependent_configs_by_path.iteritems()):
+      all_configs.extend(dep_config['proguard_all_configs'])
+      extra_jars.extend(dep_config['proguard_classpath_jars'])
+      all_java_sources.extend(dep_config['jni']['all_source'])
+      for cp_entry in dep_config['java_runtime_classpath']:
+        # The APK Java targets for the static library dependent targets will
+        # have some of the same classes (R.java) due to shared resource
+        # dependencies. To avoid Proguard failures due to duplicate classes, we
+        # merge the APK jars into the static library's jar_path as a
+        # preprocessing build step.
+        if cp_entry != dep_config['jar_path']:
+          configs_by_classpath_entry[cp_entry].append(config_path)
+
+    for cp_entry in java_full_classpath:
+      configs_by_classpath_entry[cp_entry].append(options.build_config)
+
+    # Map configs to classpath entries that should be included in their final
+    # dex.
+    classpath_entries_by_owning_config = collections.defaultdict(list)
+    for cp_entry, candidate_configs in configs_by_classpath_entry.iteritems():
+      config_path = (candidate_configs[0]
+                     if len(candidate_configs) == 1 else options.build_config)
+      classpath_entries_by_owning_config[config_path].append(cp_entry)
+      java_full_classpath.append(cp_entry)
+
+    classpath_entries_by_owning_config[options.build_config].append(
+        deps_info['jar_path'])
+
+    java_full_classpath = sorted(set(java_full_classpath))
+    deps_info['static_library_dependent_classpath_configs'] = {
+        path: sorted(set(classpath))
+        for path, classpath in classpath_entries_by_owning_config.iteritems()
+    }
+
+  if is_apk_or_module_target or options.type in ('group', 'java_library',
+                                                 'junit_binary'):
+    deps_info['jni']['all_source'] = sorted(set(all_java_sources))
+
   system_jars = [c['jar_path'] for c in system_library_deps]
   system_interface_jars = [c['interface_jar_path'] for c in system_library_deps]
   if system_library_deps:
@@ -1321,14 +1386,8 @@ def main(argv):
     config['android']['sdk_interface_jars'] = system_interface_jars
     config['android']['sdk_jars'] = system_jars
 
-  if options.proguard_configs:
-    deps_info['proguard_configs'] = (
-        build_utils.ParseGnList(options.proguard_configs))
-
   if options.type in ('android_apk', 'dist_aar',
       'dist_jar', 'android_app_bundle_module', 'android_app_bundle'):
-    all_configs = deps_info.get('proguard_configs', [])
-    extra_jars = list()
     for c in all_library_deps:
       all_configs.extend(
           p for p in c.get('proguard_configs', []) if p not in all_configs)
@@ -1341,13 +1400,13 @@ def main(argv):
       for c in deps.Direct('android_app_bundle_module'):
         all_configs.extend(
             p for p in c.get('proguard_configs', []) if p not in all_configs)
-    deps_info['proguard_all_configs'] = all_configs
+    deps_info['proguard_all_configs'] = sorted(set(all_configs))
     if options.type == 'android_app_bundle':
       for d in deps.Direct('android_app_bundle_module'):
         extra_jars.extend(
             c for c in d.get('proguard_classpath_jars', [])
             if c not in extra_jars)
-    deps_info['proguard_classpath_jars'] = extra_jars
+    deps_info['proguard_classpath_jars'] = sorted(set(extra_jars))
 
     if options.type == 'android_app_bundle':
       deps_proguard_enabled = []
