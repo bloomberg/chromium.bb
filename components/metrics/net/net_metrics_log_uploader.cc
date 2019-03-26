@@ -322,7 +322,7 @@ void NetMetricsLogUploader::UploadLogToURL(
     if (should_ablate && base::RandInt(0, 99) < failure_rate) {
       // Simulate collector outage by not actually trying to upload the
       // logs but instead call on_upload_complete_ immediately.
-      bool was_https = url_loader_->GetFinalURL().SchemeIs(url::kHttpsScheme);
+      bool was_https = url.SchemeIs(url::kHttpsScheme);
       url_loader_.reset();
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(on_upload_complete_, kParamErrorCode.Get(),
