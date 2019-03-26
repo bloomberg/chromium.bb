@@ -1938,9 +1938,6 @@ extern const char kExperimentalAccessibilityChromeVoxLanguageSwitchingName[];
 extern const char
     kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[];
 
-extern const char kFirstRunUiTransitionsName[];
-extern const char kFirstRunUiTransitionsDescription[];
-
 extern const char kForceEnableStylusToolsName[];
 extern const char kForceEnableStylusToolsDescription[];
 

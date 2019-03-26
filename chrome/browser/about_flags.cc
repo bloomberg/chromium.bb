@@ -1609,12 +1609,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kZeroCopyDescription, kOsAll,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableZeroCopy,
                                switches::kDisableZeroCopy)},
-#if defined(OS_CHROMEOS)
-    {"enable-first-run-ui-transitions",
-     flag_descriptions::kFirstRunUiTransitionsName,
-     flag_descriptions::kFirstRunUiTransitionsDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableFirstRunUITransitions)},
-#endif  // OS_CHROMEOS
 #if defined(OS_MACOSX)
     {"bookmark-apps", flag_descriptions::kNewBookmarkAppsName,
      flag_descriptions::kNewBookmarkAppsDescription, kOsMac,

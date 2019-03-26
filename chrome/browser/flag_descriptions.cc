@@ -3231,11 +3231,6 @@ const char kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[] =
     "Enable ChromeVox language switching, which changes ChromeVox's "
     "output language upon detection of new language.";
 
-const char kFirstRunUiTransitionsName[] =
-    "Animated transitions in the first-run tutorial";
-const char kFirstRunUiTransitionsDescription[] =
-    "Transitions during first-run tutorial are animated.";
-
 const char kForceEnableStylusToolsName[] = "Force enable stylus features";
 const char kForceEnableStylusToolsDescription[] =
     "Forces display of the stylus tools menu in the shelf and the stylus "
