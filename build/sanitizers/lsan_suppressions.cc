@@ -53,10 +53,6 @@ char kLSanDefaultSuppressions[] =
     // impossible, i.e. when enabling leak detection for the first time for a
     // test target with pre-existing leaks.
 
-    // Small test-only leak in ppapi_unittests. http://crbug.com/258113
-    "leak:ppapi::proxy::PPP_Instance_Private_ProxyTest_PPPInstancePrivate_"
-    "Test\n"
-
     // http://crbug.com/356306
     "leak:service_manager::SetProcessTitleFromCommandLine\n"
 
