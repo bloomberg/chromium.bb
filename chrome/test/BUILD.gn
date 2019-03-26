@@ -2025,6 +2025,9 @@ test("browser_tests") {
         sources += [
           # The screen this test is checking exists in official build only.
           "../browser/chromeos/login/sync_consent_interactive_ui_test.cc",
+
+          # The KioskNext app is available in Chrome-branded builds only.
+          "../browser/ui/ash/kiosk_next_shell_client_browsertest.cc",
         ]
       }
       sources -= [

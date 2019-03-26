@@ -1156,7 +1156,7 @@ void AppListControllerImpl::UpdateLauncherContainer() {
     return;
 
   auto container_id = launcher_should_show_behind_apps
-                          ? ash::kShellWindowId_AppListTabletModeContainer
+                          ? ash::kShellWindowId_HomeScreenContainer
                           : ash::kShellWindowId_AppListContainer;
 
   aura::Window* root_window = window->GetRootWindow();

@@ -17,7 +17,16 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+namespace {
+
+KioskNextShellClient* g_kiosk_next_shell_client_instance = nullptr;
+
+}  // namespace
+
 KioskNextShellClient::KioskNextShellClient() {
+  DCHECK(!g_kiosk_next_shell_client_instance);
+  g_kiosk_next_shell_client_instance = this;
+
   ash::mojom::KioskNextShellControllerPtr kiosk_next_shell_controller;
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
@@ -28,12 +37,21 @@ KioskNextShellClient::KioskNextShellClient() {
   kiosk_next_shell_controller->SetClient(std::move(client));
 }
 
-KioskNextShellClient::~KioskNextShellClient() = default;
+KioskNextShellClient::~KioskNextShellClient() {
+  DCHECK_EQ(this, g_kiosk_next_shell_client_instance);
+  g_kiosk_next_shell_client_instance = nullptr;
+}
+
+// static
+KioskNextShellClient* KioskNextShellClient::Get() {
+  return g_kiosk_next_shell_client_instance;
+}
 
 void KioskNextShellClient::LaunchKioskNextShell(const AccountId& account_id) {
   // TODO(michaelpg): Create a dummy app for non-internal builds.
 
 #if defined(GOOGLE_CHROME_BUILD)
+  has_launched_ = true;
   Profile* profile =
       chromeos::ProfileHelper::Get()->GetProfileByAccountId(account_id);
   const extensions::Extension* app =
