@@ -148,7 +148,6 @@ component("net") {
     "base/net_error_list.h",
     "base/net_errors.cc",
     "base/net_errors.h",
-    "base/net_export.h",
     "base/net_module.cc",
     "base/net_module.h",
     "base/net_string_util.h",
@@ -387,6 +386,7 @@ component("net") {
   ]
 
   public_deps = [
+    ":net_export_header",
     ":net_public_deps",
     "//net/dns",
     "//net/dns:dns_client",
@@ -2223,6 +2223,14 @@ component("net") {
   }
 }
 
+# net_export.h has its own build target so that code (eg
+# net_nqe_proto) can use it without depending on the whole of //net.
+source_set("net_export_header") {
+  sources = [
+    "base/net_export.h",
+  ]
+}
+
 # Private dependencies for the //net component and for any build targets (e.g.
 # source sets with circular dependencies with //net) that need to share the same
 # dependencies.
@@ -2240,6 +2248,7 @@ source_set("net_deps") {
 
   public_deps = [
     ":constants",
+    ":net_export_header",
     ":net_resources",
     ":preload_decoder",
     "//base",
@@ -2339,6 +2348,10 @@ proto_library("net_nqe_proto") {
   cc_include = "net/base/net_export.h"
   component_build_force_source_set = true
 
+  deps = [
+    ":net_export_header",
+  ]
+
   defines = [ "NET_IMPLEMENTATION" ]
 
   extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
@@ -2355,6 +2368,10 @@ proto_library("net_quic_proto") {
   cc_generator_options = "dllexport_decl=NET_EXPORT_PRIVATE:"
   cc_include = "net/base/net_export.h"
   component_build_force_source_set = true
+
+  deps = [
+    ":net_export_header",
+  ]
 
   defines = [ "NET_IMPLEMENTATION" ]
 
