@@ -18,7 +18,7 @@
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -117,7 +117,7 @@ class WebRequestProxyingURLLoaderFactory
     void ContinueToBeforeRedirect(const net::RedirectInfo& redirect_info,
                                   int error_code);
     void HandleResponseOrRedirectHeaders(
-        const net::CompletionCallback& continuation);
+        net::CompletionOnceCallback continuation);
     void OnRequestError(const network::URLLoaderCompletionStatus& status);
     bool IsRedirectSafe(const GURL& from_url, const GURL& to_url);
     void HandleBeforeRequestRedirect();

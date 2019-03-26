@@ -24,6 +24,7 @@
 #include "content/shell/common/web_test/web_test_messages.h"
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "content/test/mock_platform_notification_service.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/fileapi/isolated_context.h"
@@ -124,7 +125,7 @@ void WebTestMessageFilter::OnRegisterIsolatedFileSystem(
 void WebTestMessageFilter::OnClearAllDatabases() {
   DCHECK(database_tracker_->task_runner()->RunsTasksInCurrentSequence());
   database_tracker_->DeleteDataModifiedSince(base::Time(),
-                                             net::CompletionCallback());
+                                             net::CompletionOnceCallback());
 }
 
 void WebTestMessageFilter::OnSetDatabaseQuota(int quota) {

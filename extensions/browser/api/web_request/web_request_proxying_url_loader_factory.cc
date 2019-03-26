@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -17,6 +18,7 @@
 #include "content/public/common/url_utils.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
@@ -204,8 +206,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveResponse(
   } else {
     current_response_ = head;
     HandleResponseOrRedirectHeaders(
-        base::BindRepeating(&InProgressRequest::ContinueToResponseStarted,
-                            weak_factory_.GetWeakPtr()));
+        base::BindOnce(&InProgressRequest::ContinueToResponseStarted,
+                       weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -229,8 +231,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
   } else {
     current_response_ = head;
     HandleResponseOrRedirectHeaders(
-        base::BindRepeating(&InProgressRequest::ContinueToBeforeRedirect,
-                            weak_factory_.GetWeakPtr(), redirect_info));
+        base::BindOnce(&InProgressRequest::ContinueToBeforeRedirect,
+                       weak_factory_.GetWeakPtr(), redirect_info));
   }
 }
 
@@ -290,9 +292,9 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::HandleAuthRequest(
   }
   // We first need to simulate |onHeadersReceived| for the response headers
   // which indicated a need to authenticate.
-  HandleResponseOrRedirectHeaders(base::BindRepeating(base::BindRepeating(
+  HandleResponseOrRedirectHeaders(base::BindOnce(
       &InProgressRequest::ContinueAuthRequest, weak_factory_.GetWeakPtr(),
-      base::RetainedRef(auth_info), base::Passed(&callback))));
+      base::RetainedRef(auth_info), std::move(callback)));
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnLoaderCreated(
@@ -325,8 +327,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnHeadersReceived(
   current_response_.headers =
       base::MakeRefCounted<net::HttpResponseHeaders>(headers);
   HandleResponseOrRedirectHeaders(
-      base::BindRepeating(&InProgressRequest::ContinueToHandleOverrideHeaders,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&InProgressRequest::ContinueToHandleOverrideHeaders,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
@@ -688,16 +690,18 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
-    HandleResponseOrRedirectHeaders(
-        const net::CompletionCallback& continuation) {
+    HandleResponseOrRedirectHeaders(net::CompletionOnceCallback continuation) {
   override_headers_ = nullptr;
   redirect_url_ = GURL();
+
+  net::CompletionRepeatingCallback copyable_callback =
+      base::AdaptCallbackForRepeating(std::move(continuation));
   if (request_.url.SchemeIsHTTPOrHTTPS()) {
     int result =
         ExtensionWebRequestEventRouter::GetInstance()->OnHeadersReceived(
             factory_->browser_context_, factory_->info_map_, &info_.value(),
-            continuation, current_response_.headers.get(), &override_headers_,
-            &redirect_url_);
+            copyable_callback, current_response_.headers.get(),
+            &override_headers_, &redirect_url_);
     if (result == net::ERR_BLOCKED_BY_CLIENT) {
       OnRequestError(network::URLLoaderCompletionStatus(result));
       return;
@@ -716,7 +720,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     DCHECK_EQ(net::OK, result);
   }
 
-  continuation.Run(net::OK);
+  copyable_callback.Run(net::OK);
 }
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError(
     const network::URLLoaderCompletionStatus& status) {
