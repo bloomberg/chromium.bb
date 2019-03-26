@@ -28,6 +28,7 @@
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -1269,7 +1270,7 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
       views::Widget* widget = sender->GetWidget();
       if (node->is_url()) {
         const gfx::Image& image = model_->GetFavicon(node);
-        icon = image.IsEmpty() ? *GetImageSkiaNamed(IDR_DEFAULT_FAVICON)
+        icon = image.IsEmpty() ? favicon::GetDefaultFavicon().AsImageSkia()
                                : image.AsImageSkia();
       } else {
         icon = chrome::GetBookmarkFolderIcon(
@@ -1615,7 +1616,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
             gfx::CreateVectorIcon(kDefaultTouchFaviconMaskIcon, SK_ColorBLACK);
         favicon = gfx::ImageSkiaOperations::CreateMaskedImage(icon, mask);
       } else {
-        favicon = *GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
+        favicon = favicon::GetDefaultFavicon().AsImageSkia();
       }
       themify_icon = true;
     }
