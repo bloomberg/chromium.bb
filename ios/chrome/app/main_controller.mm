@@ -85,6 +85,7 @@
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/net/cookie_util.h"
+#include "ios/chrome/browser/ntp/features.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument_launcher.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument_launcher_factory.h"
@@ -2309,7 +2310,8 @@ enum class EnterTabSwitcherSnapshotResult {
   // session, the NTP may appear committed when it is still loading.  For the
   // time being, always load within a new tab when this feature is enabled.
   // TODO(crbug.com/931284): Revert this change when fixed.
-  BOOL alwaysInsertNewTab = YES;
+  BOOL alwaysInsertNewTab =
+      base::FeatureList::IsEnabled(kBlockNewTabPagePendingLoad);
   // If the current tab isn't an NTP, open a new tab.  Be sure to use
   // -GetLastCommittedURL incase the NTP is still loading.
   if (alwaysInsertNewTab ||
