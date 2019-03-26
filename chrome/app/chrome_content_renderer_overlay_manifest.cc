@@ -23,7 +23,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/common/sandbox_status_extension_android.mojom.h"
-#include "third_party/blink/public/platform/modules/document_metadata/copyless_paste.mojom.h"
+#include "third_party/blink/public/mojom/document_metadata/copyless_paste.mojom.h"
 #endif
 
 #if defined(OS_MACOSX)

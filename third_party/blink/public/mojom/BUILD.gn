@@ -173,13 +173,12 @@ mojom("mojom_platform") {
   export_header_blink = "third_party/blink/renderer/platform/platform_export.h"
 }
 
-# Kept separate from "mojom_platform" because the Java bindings are specifically
-# needed by Android's implementation of payments and webshare
-# (in components/payments/content/android and chrome/android/),
-# input (in android_webview/ and content/browser/android/), remote objects
-# (in content/public/android/) and webauthn (in chrome/android).
+# Kept separate from "mojom_platform" because the Java bindings are
+# needed by Android's implementation (in chrome/android or in android_webview)
+# for following mojom files.
 mojom("android_mojo_bindings") {
   sources = [
+    "document_metadata/copyless_paste.mojom",
     "input/input_host.mojom",
     "input/input_messages.mojom",
     "installedapp/installed_app_provider.mojom",
