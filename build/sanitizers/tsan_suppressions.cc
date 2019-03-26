@@ -163,9 +163,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/347538
     "race:sctp_timer_start\n"
 
-    // http://crbug.com/347553
-    "race:blink::WebString::reset\n"
-
     // http://crbug.com/348511
     "race:webrtc::acm1::AudioCodingModuleImpl::PlayoutData10Ms\n"
 
