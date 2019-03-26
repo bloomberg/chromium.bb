@@ -171,9 +171,23 @@ cr.define('cr.ui', function() {
      * first.
      */
     focusSelectedItem: function() {
-      if (this.selectedIndex < 0 ||
-          this.selectedIndex > this.menuItems.length) {
-        this.selectedIndex = 0;
+      const items = this.menuItems;
+      if (this.selectedIndex < 0 || this.selectedIndex > items.length) {
+        // Find first visible item to focus by default.
+        for (let idx = 0; idx < items.length; idx++) {
+          const item = items[idx];
+          if (item.hasAttribute('hidden') || item.isSeparator()) {
+            continue;
+          }
+          // If the item is disabled we accept it, but try to find the next
+          // enabled item, but keeping the first disabled item.
+          if (!item.disabled) {
+            this.selectedIndex = idx;
+            break;
+          } else if (this.selectedIndex === -1) {
+            this.selectedIndex = idx;
+          }
+        }
       }
 
       if (this.selectedItem) {
