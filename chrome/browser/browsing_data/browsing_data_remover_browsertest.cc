@@ -999,21 +999,12 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, SessionCookieDeletion) {
   TestSiteData("SessionCookie", GetParam());
 }
 
-// TODO(crbug.com/849238): This test is flaky on Mac (dbg) builds.
-#if defined(OS_MACOSX)
-#define MAYBE_LocalStorageDeletion DISABLED_LocalStorageDeletion
-#define MAYBE_LocalStorageIncognitoDeletion \
-  DISABLED_LocalStorageIncognitoDeletion
-#else
-#define MAYBE_LocalStorageDeletion LocalStorageDeletion
-#define MAYBE_LocalStorageIncognitoDeletion LocalStorageIncognitoDeletion
-#endif
-IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
-                       MAYBE_LocalStorageDeletion) {
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, LocalStorageDeletion) {
   TestSiteData("LocalStorage", GetParam());
 }
+
 IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
-                       MAYBE_LocalStorageIncognitoDeletion) {
+                       LocalStorageIncognitoDeletion) {
   UseIncognitoBrowser();
   TestSiteData("LocalStorage", GetParam());
 }
