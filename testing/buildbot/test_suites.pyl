@@ -3592,7 +3592,6 @@
 
     'ios_code_coverage_gtests': {
       'ios_components_unittests': {},
-      'ios_web_view_inttests': {},
     },
 
     # END tests which run on the GPU bots
