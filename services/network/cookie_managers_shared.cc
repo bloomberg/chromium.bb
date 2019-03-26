@@ -32,16 +32,4 @@ mojom::CookieChangeCause ToCookieChangeCause(net::CookieChangeCause net_cause) {
   return mojom::CookieChangeCause::EXPLICIT;
 }
 
-net::CookieStore::SetCookiesCallback AdaptCookieInclusionStatusToBool(
-    base::OnceCallback<void(bool)> callback) {
-  return base::BindOnce(
-      [](base::OnceCallback<void(bool)> callback,
-         const net::CanonicalCookie::CookieInclusionStatus status) {
-        bool success =
-            (status == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
-        std::move(callback).Run(success);
-      },
-      std::move(callback));
-}
-
 }  // namespace network

@@ -16,9 +16,6 @@ namespace network {
 
 mojom::CookieChangeCause ToCookieChangeCause(net::CookieChangeCause net_cause);
 
-net::CookieStore::SetCookiesCallback AdaptCookieInclusionStatusToBool(
-    base::OnceCallback<void(bool)> callback);
-
 }  // namespace network
 
 #endif  // SERVICES_NETWORK_COOKIE_MANAGERS_SHARED_H_
