@@ -32,6 +32,9 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       bool has_generated_password,
       bool update_password) override;
   void HideManualFallbackForSaving() override;
+  void FocusedInputChanged(const url::Origin& last_committed_origin,
+                           bool is_fillable,
+                           bool is_password_field) override;
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const GURL& origin,
@@ -64,6 +67,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
 #endif
   ukm::SourceId GetUkmSourceId() override;
   PasswordManagerMetricsRecorder* GetMetricsRecorder() override;
+  bool IsIsolationForPasswordSitesEnabled() const override;
 
  private:
   const StubCredentialsFilter credentials_filter_;

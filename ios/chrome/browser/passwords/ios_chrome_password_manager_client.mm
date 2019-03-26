@@ -116,6 +116,13 @@ void IOSChromePasswordManagerClient::HideManualFallbackForSaving() {
   NOTIMPLEMENTED();
 }
 
+void IOSChromePasswordManagerClient::FocusedInputChanged(
+    const url::Origin& last_committed_origin,
+    bool is_fillable,
+    bool is_password_field) {
+  NOTIMPLEMENTED();
+}
+
 void IOSChromePasswordManagerClient::AutomaticPasswordSave(
     std::unique_ptr<PasswordFormManagerForUI> saved_form_manager) {
   NOTIMPLEMENTED();
@@ -208,4 +215,9 @@ void IOSChromePasswordManagerClient::PromptUserToEnableAutosignin() {
 password_manager::PasswordManager*
 IOSChromePasswordManagerClient::GetPasswordManager() {
   return delegate_.passwordManager;
+}
+
+bool IOSChromePasswordManagerClient::IsIsolationForPasswordSitesEnabled()
+    const {
+  return false;
 }
