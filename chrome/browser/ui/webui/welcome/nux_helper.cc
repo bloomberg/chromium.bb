@@ -143,7 +143,7 @@ base::DictionaryValue GetNuxOnboardingModules(Profile* profile) {
     // Default behavior w/o checking feature flag.
     modules.SetString("new-user", kDefaultNewUserModules);
     modules.SetString("returning-user", kDefaultReturningUserModules);
-    modules.SetString("show-email-interstitial", false);
+    modules.SetBoolean("show-email-interstitial", false);
   }
 
   return modules;
