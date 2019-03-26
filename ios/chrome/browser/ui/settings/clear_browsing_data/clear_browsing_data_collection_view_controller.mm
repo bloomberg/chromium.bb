@@ -154,8 +154,6 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
       scoped_observer_->Add(
           BrowsingDataRemoverFactory::GetForBrowserState(browserState));
     }
-
-    [self restartCounters:BrowsingDataRemoveMask::REMOVE_ALL];
   }
   return self;
 }
@@ -164,6 +162,11 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
   [super viewDidLoad];
 
   [self loadModel];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  [self restartCounters:BrowsingDataRemoveMask::REMOVE_ALL];
 }
 
 #pragma mark CollectionViewController
@@ -306,17 +309,9 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
       if (clearDataItem.accessoryType == MDCCollectionViewCellAccessoryNone) {
         clearDataItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
         _browserState->GetPrefs()->SetBoolean(clearDataItem.prefName, true);
-        if (itemType == ItemTypeDataTypeCookiesSiteData &&
-            IsNewClearBrowsingDataUIEnabled()) {
-          [self updateCounter:itemType
-                   detailText:l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER)];
-        }
       } else {
         clearDataItem.accessoryType = MDCCollectionViewCellAccessoryNone;
         _browserState->GetPrefs()->SetBoolean(clearDataItem.prefName, false);
-        if (IsNewClearBrowsingDataUIEnabled()) {
-          [self updateCounter:itemType detailText:@""];
-        }
       }
       [self reconfigureCellsForItems:@[ clearDataItem ]];
       break;
@@ -376,6 +371,16 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
         base::mac::ObjCCastStrict<ClearBrowsingDataItem>(
             [model itemAtIndexPath:indexPath]);
     [historyItem restartCounter];
+  }
+
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CACHE)) {
+    NSIndexPath* indexPath = [self.collectionViewModel
+        indexPathForItemType:ItemTypeDataTypeCache
+           sectionIdentifier:SectionIdentifierDataTypes];
+    ClearBrowsingDataItem* cacheItem =
+        base::mac::ObjCCastStrict<ClearBrowsingDataItem>(
+            [model itemAtIndexPath:indexPath]);
+    [cacheItem restartCounter];
   }
 
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_PASSWORDS)) {
