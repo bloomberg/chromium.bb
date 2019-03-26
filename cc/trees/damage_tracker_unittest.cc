@@ -18,6 +18,7 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
+#include "cc/trees/transform_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -1364,6 +1365,46 @@ TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromDescendantLayer) {
                   ->has_damage_from_contributing_content());
 }
 
+TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromDescendantSurface) {
+  // If descendant surface changes position, the ancestor surface should be
+  // damaged with the old and new descendant surface regions.
+
+  LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
+  LayerImpl* child1 = root->test_properties()->children[0];
+  child1->SetDrawsContent(true);
+  EmulateDrawingOneFrame(root);
+
+  gfx::Rect child_damage_rect;
+  gfx::Rect root_damage_rect;
+
+  ClearDamageForAllSurfaces(root);
+  child1->test_properties()->position = gfx::PointF(105.f, 107.f);
+  child1->NoteLayerPropertyChanged();
+  TransformNode* child1_transform =
+      root->layer_tree_impl()->property_trees()->transform_tree.Node(
+          child1->transform_tree_index());
+  child1_transform->transform_changed = true;
+  EmulateDrawingOneFrame(root);
+  EXPECT_TRUE(GetRenderSurface(child1)->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
+  EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
+
+  // Damage to the root surface should be the union of child1's *entire* render
+  // surface (in target space), and its old exposed area (also in target
+  // space).
+  EXPECT_EQ(gfx::Rect(100, 100, 206, 208).ToString(),
+            root_damage_rect.ToString());
+  // The child surface should also be damaged.
+  EXPECT_EQ(gfx::Rect(0, 0, 206, 208).ToString(), child_damage_rect.ToString());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_TRUE(GetRenderSurface(child1)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+}
+
 TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromAncestorLayer) {
   // An ancestor/owning layer changes that affects the position/transform of
   // the render surface. Note that in this case, the layer_property_changed flag
@@ -1763,7 +1804,7 @@ TEST_F(DamageTrackerTest, VerifyDamageAccumulatesUntilReset) {
 }
 
 TEST_F(DamageTrackerTest, HugeDamageRect) {
-  // This number is so large that we start losting floating point accuracy.
+  // This number is so large that we start losing floating point accuracy.
   const int kBigNumber = 900000000;
   // Walk over a range to find floating point inaccuracy boundaries that move
   // toward the wrong direction.

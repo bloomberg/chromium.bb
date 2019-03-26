@@ -250,6 +250,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   compositor_node.post_local.matrix().setTranslate(origin.X(), origin.Y(),
                                                    origin.Z());
   compositor_node.needs_local_transform_update = true;
+  compositor_node.transform_changed = true;
   compositor_node.flattens_inherited_transform =
       transform_node.FlattensInheritedTransform();
   compositor_node.sorting_context_id = transform_node.RenderingContextId();
@@ -347,6 +348,7 @@ int PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
   compositor_node.post_local.matrix() = compositor_node.local.matrix();
   compositor_node.pre_local.matrix().setIdentity();
   compositor_node.local.matrix().setIdentity();
+  compositor_node.transform_changed = true;
 
   return id;
 }
