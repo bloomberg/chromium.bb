@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include "base/feature_list.h"
-#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -183,28 +182,26 @@ struct ContextMenuInfo {
     [_contextMenuRecognizer setDelegate:self];
     [_webView addGestureRecognizer:_contextMenuRecognizer];
 
-    if (base::ios::IsRunningOnIOS11OrLater()) {
-      // WKWebView's default context menu gesture recognizer interferes with
-      // the detection of a long press by |_contextMenuRecognizer|. WKWebView's
-      // context menu gesture recognizer should fail if |_contextMenuRecognizer|
-      // detects a long press.
-      NSString* fragment = @"action=_longPressRecognized:";
-      UIGestureRecognizer* systemContextMenuRecognizer =
-          [self gestureRecognizerWithDescriptionFragment:fragment];
-      if (systemContextMenuRecognizer) {
-        [systemContextMenuRecognizer
-            requireGestureRecognizerToFail:_contextMenuRecognizer];
-        // requireGestureRecognizerToFail: doesn't retain the recognizer, so it
-        // is possible for |iRecognizer| to outlive |recognizer| and end up with
-        // a dangling pointer. Add a retaining associative reference to ensure
-        // that the lifetimes work out.
-        // Note that normally using the value as the key wouldn't make any
-        // sense, but here it's fine since nothing needs to look up the value.
-        void* associated_object_key = (__bridge void*)_contextMenuRecognizer;
-        objc_setAssociatedObject(systemContextMenuRecognizer.view,
-                                 associated_object_key, _contextMenuRecognizer,
-                                 OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-      }
+    // WKWebView's default context menu gesture recognizer interferes with
+    // the detection of a long press by |_contextMenuRecognizer|. WKWebView's
+    // context menu gesture recognizer should fail if |_contextMenuRecognizer|
+    // detects a long press.
+    NSString* fragment = @"action=_longPressRecognized:";
+    UIGestureRecognizer* systemContextMenuRecognizer =
+        [self gestureRecognizerWithDescriptionFragment:fragment];
+    if (systemContextMenuRecognizer) {
+      [systemContextMenuRecognizer
+          requireGestureRecognizerToFail:_contextMenuRecognizer];
+      // requireGestureRecognizerToFail: doesn't retain the recognizer, so it
+      // is possible for |iRecognizer| to outlive |recognizer| and end up with
+      // a dangling pointer. Add a retaining associative reference to ensure
+      // that the lifetimes work out.
+      // Note that normally using the value as the key wouldn't make any
+      // sense, but here it's fine since nothing needs to look up the value.
+      void* associated_object_key = (__bridge void*)_contextMenuRecognizer;
+      objc_setAssociatedObject(systemContextMenuRecognizer.view,
+                               associated_object_key, _contextMenuRecognizer,
+                               OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
 
     // Listen for fetched element response.

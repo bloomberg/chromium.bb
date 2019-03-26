@@ -1631,51 +1631,6 @@ TEST_P(WebStateObserverTest, GoBackToNativeContent) {
 
 // Tests successful navigation to a new page with post HTTP method.
 TEST_P(WebStateObserverTest, UserInitiatedPostNavigation) {
-  // Prior to iOS 11, POST navigation is implemented as an XMLHttpRequest in
-  // JavaScript. This doesn't create a WKBackForwardListItem in WKWebView on
-  // which to attach the pending NavigationItem, if WKBasedNavigationManager is
-  // used. When POST is the first navigation in an empty web view, this causes a
-  // DCHECK in WKBasedNavigationManagerImpl::CommitPendingItem(). When it is not
-  // the first navigation, it attaches the pending NavigationItem to the wrong
-  // WKBackForwardListItem. However, this is not worth fixing now. Load an
-  // initial request to the web view to stop this test from crashing, even
-  // though this doesn't fix the underlying bug.
-  // TODO(crbug.com/740987): remove this hack once support for iOS10 is dropped.
-  if (!base::ios::IsRunningOnIOS11OrLater() &&
-      GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
-    const GURL url = test_server_->GetURL("/echoall?bar");
-
-    // Perform new page navigation.
-    NavigationContext* context = nullptr;
-    int32_t nav_id = 0;
-    EXPECT_CALL(observer_, DidStartLoading(web_state()));
-    WebStatePolicyDecider::RequestInfo expected_request_info(
-        ui::PageTransition::PAGE_TRANSITION_TYPED,
-        /*target_main_frame=*/true, /*has_user_gesture=*/false);
-    EXPECT_CALL(*decider_,
-                ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
-        .WillOnce(Return(true));
-    EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-        .WillOnce(VerifyPageStartedContext(
-            web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED,
-            &context, &nav_id));
-    EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-        .WillOnce(Return(true));
-    EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
-        .WillOnce(VerifyNewPageFinishedContext(
-            web_state(), url, kExpectedMimeType, /*content_is_html=*/true,
-            &context, &nav_id));
-    EXPECT_CALL(observer_, TitleWasSet(web_state()))
-        .WillOnce(VerifyTitle(url.GetContent()));
-    EXPECT_CALL(observer_, TitleWasSet(web_state()))
-        .WillOnce(VerifyTitle("EmbeddedTestServer - EchoAll"));
-    EXPECT_CALL(observer_, DidStopLoading(web_state()));
-    EXPECT_CALL(observer_,
-                PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
-    ASSERT_TRUE(LoadUrl(url));
-    ASSERT_TRUE(WaitForWebViewContainingText(web_state(), "bar"));
-  }
-
   const GURL url = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
