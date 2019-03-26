@@ -57,7 +57,7 @@ void FpsCounter::OnCompositingShuttingDown(ui::Compositor* compositor) {
 }
 
 // static
-void FpsCounter::SetFoceReportZeroAnimationForTest(bool value) {
+void FpsCounter::SetForceReportZeroAnimationForTest(bool value) {
   force_report_zero_animation_for_test = value;
 }
 
