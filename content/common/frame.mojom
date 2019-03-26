@@ -59,11 +59,6 @@ interface Frame {
   // Cancels blocked requests. BlockRequests must have been called before.
   CancelBlockedRequests();
 
-  // Forwards message to the portal's main frame.
-  ForwardMessageToPortalHost(string message,
-                             url.mojom.Origin source_origin,
-                             url.mojom.Origin? target_origin);
-
   // Set the lifecycle state.
   SetLifecycleState(blink.mojom.FrameLifecycleState state);
 
@@ -220,6 +215,11 @@ interface FrameNavigationControl {
                    mojo_base.mojom.String16 source_origin,
                    mojo_base.mojom.String16 target_origin,
                    blink.mojom.TransferableMessage message);
+
+  // Forwards message to the portal's main frame.
+  ForwardMessageToPortalHost(string message,
+                             url.mojom.Origin source_origin,
+                             url.mojom.Origin? target_origin);
 
   // Called on the main frame of a page embedded in a Portal when it is
   // activated. The frame has the option to adopt the previous page as a portal
