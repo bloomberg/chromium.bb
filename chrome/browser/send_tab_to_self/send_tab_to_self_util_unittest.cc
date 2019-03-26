@@ -16,7 +16,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/device_info_sync_bridge.h"

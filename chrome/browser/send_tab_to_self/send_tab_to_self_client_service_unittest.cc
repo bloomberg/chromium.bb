@@ -8,35 +8,13 @@
 
 #include "base/time/time.h"
 #include "chrome/browser/send_tab_to_self/receiving_ui_handler.h"
-#include "components/send_tab_to_self/send_tab_to_self_model.h"
+#include "components/send_tab_to_self/test_send_tab_to_self_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace send_tab_to_self {
 
 namespace {
-
-// A fake version of the SendTabToSelf model that doesn't do anything and return
-// null pointers. Needed to setup the SendTabToSelfClientService.
-class FakeSendTabToSelfModel : public SendTabToSelfModel {
- public:
-  FakeSendTabToSelfModel() = default;
-  ~FakeSendTabToSelfModel() override = default;
-
-  std::vector<std::string> GetAllGuids() const override { return {}; }
-  void DeleteAllEntries() override {}
-  const SendTabToSelfEntry* GetEntryByGUID(
-      const std::string& guid) const override {
-    return nullptr;
-  }
-  const SendTabToSelfEntry* AddEntry(const GURL& url,
-                                     const std::string& title,
-                                     base::Time navigation_time) override {
-    return nullptr;
-  }
-  void DeleteEntry(const std::string& guid) override {}
-  void DismissEntry(const std::string& guid) override {}
-};
 
 // A test ReceivingUiHandler that keeps track of the number of entries for which
 // DisplayNewEntry was called.
@@ -89,8 +67,8 @@ class TestSendTabToSelfClientService : public SendTabToSelfClientService {
 // remotely.
 TEST(SendTabToSelfClientServiceTest, MultipleEntriesAdded) {
   // Set up the test objects.
-  FakeSendTabToSelfModel fake_model_;
-  TestSendTabToSelfClientService client_service(&fake_model_);
+  TestSendTabToSelfModel test_model_;
+  TestSendTabToSelfClientService client_service(&test_model_);
   TestReceivingUiHandler* test_handler = client_service.SetupTestHandler();
 
   // Create 2 entries and simulated that they were both added remotely.
