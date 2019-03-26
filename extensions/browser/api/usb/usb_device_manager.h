@@ -59,10 +59,10 @@ class UsbDeviceManager : public BrowserContextKeyedAPI,
   // Forward UsbDeviceManager methods.
   void GetDevices(device::mojom::UsbDeviceManager::GetDevicesCallback callback);
   void GetDevice(const std::string& guid,
-                 device::mojom::UsbDeviceRequest device_request,
-                 device::mojom::UsbDeviceClientPtr device_client);
+                 device::mojom::UsbDeviceRequest device_request);
 
   const device::mojom::UsbDeviceInfo* GetDeviceInfo(const std::string& guid);
+  bool UpdateActiveConfig(const std::string& guid, uint8_t config_value);
 
 #if defined(OS_CHROMEOS)
   void CheckAccess(

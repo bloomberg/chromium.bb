@@ -10,6 +10,7 @@
 #include <map>
 #include <utility>
 
+#include "device/usb/public/cpp/usb_utils.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
 
@@ -21,7 +22,7 @@ device::mojom::UsbEndpointInfoPtr TypeConverter<
     device::UsbEndpointDescriptor>::Convert(const device::UsbEndpointDescriptor&
                                                 endpoint) {
   auto info = device::mojom::UsbEndpointInfo::New();
-  info->endpoint_number = endpoint.address & 0xf;
+  info->endpoint_number = device::ConvertEndpointAddressToNumber(endpoint);
   info->direction = endpoint.direction;
   info->type = endpoint.transfer_type;
   info->packet_size = static_cast<uint32_t>(endpoint.maximum_packet_size);

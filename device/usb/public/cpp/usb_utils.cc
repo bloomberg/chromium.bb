@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "device/usb/public/mojom/device_enumeration_options.mojom.h"
+#include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
 
 namespace device {
@@ -117,6 +118,18 @@ std::vector<mojom::UsbIsochronousPacketPtr> BuildIsochronousPacketArray(
     packets.push_back(std::move(packet));
   }
   return packets;
+}
+
+uint8_t ConvertEndpointAddressToNumber(const UsbEndpointDescriptor& endpoint) {
+  return endpoint.address & 0x0F;
+}
+
+uint8_t ConvertEndpointNumberToAddress(
+    const mojom::UsbEndpointInfo& mojo_endpoint) {
+  return mojo_endpoint.endpoint_number |
+         (mojo_endpoint.direction == mojom::UsbTransferDirection::INBOUND
+              ? 0x80
+              : 0x00);
 }
 
 }  // namespace device

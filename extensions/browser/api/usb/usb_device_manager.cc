@@ -155,11 +155,10 @@ void UsbDeviceManager::GetDevices(
 
 void UsbDeviceManager::GetDevice(
     const std::string& guid,
-    device::mojom::UsbDeviceRequest device_request,
-    device::mojom::UsbDeviceClientPtr device_client) {
+    device::mojom::UsbDeviceRequest device_request) {
   EnsureConnectionWithDeviceManager();
   device_manager_->GetDevice(guid, std::move(device_request),
-                             std::move(device_client));
+                             /*device_client=*/nullptr);
 }
 
 const device::mojom::UsbDeviceInfo* UsbDeviceManager::GetDeviceInfo(
@@ -167,6 +166,17 @@ const device::mojom::UsbDeviceInfo* UsbDeviceManager::GetDeviceInfo(
   DCHECK(is_initialized_);
   auto it = devices_.find(guid);
   return it == devices_.end() ? nullptr : it->second.get();
+}
+
+bool UsbDeviceManager::UpdateActiveConfig(const std::string& guid,
+                                          uint8_t config_value) {
+  DCHECK(is_initialized_);
+  auto it = devices_.find(guid);
+  if (it == devices_.end()) {
+    return false;
+  }
+  it->second->active_configuration = config_value;
+  return true;
 }
 
 #if defined(OS_CHROMEOS)
