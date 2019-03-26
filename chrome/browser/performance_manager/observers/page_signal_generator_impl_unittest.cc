@@ -33,14 +33,11 @@ MATCHER_P3(IdentityMatches, cu_id, navigation_id, url, "") {
 
 class MockPageSignalGeneratorImpl : public PageSignalGeneratorImpl {
  public:
-  // Overridden from PageSignalGeneratorImpl.
-  void OnProcessPropertyChanged(
-      ProcessNodeImpl* process_node,
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) override {
-    if (property_type == resource_coordinator::mojom::PropertyType::
-                             kExpectedTaskQueueingDuration)
-      ++eqt_change_count_;
+  void OnExpectedTaskQueueingDurationSample(
+      ProcessNodeImpl* process_node) override {
+    ++eqt_change_count_;
+    // Forward the sample on to the actual implementation.
+    PageSignalGeneratorImpl::OnExpectedTaskQueueingDurationSample(process_node);
   }
 
   size_t eqt_change_count() const { return eqt_change_count_; }
@@ -60,12 +57,13 @@ class MockPageSignalReceiverImpl
   // resource_coordinator::mojom::PageSignalReceiver implementation.
   void NotifyPageAlmostIdle(const resource_coordinator::PageNavigationIdentity&
                                 page_navigation_id) override {}
-  void SetExpectedTaskQueueingDuration(
-      const resource_coordinator::PageNavigationIdentity& page_navigation_id,
-      base::TimeDelta duration) override {}
   void SetLifecycleState(
       const resource_coordinator::PageNavigationIdentity& page_navigation_id,
       resource_coordinator::mojom::LifecycleState) override {}
+  MOCK_METHOD2(SetExpectedTaskQueueingDuration,
+               void(const resource_coordinator::PageNavigationIdentity&
+                        page_navigation_id,
+                    base::TimeDelta duration));
   MOCK_METHOD1(NotifyNonPersistentNotificationCreated,
                void(const resource_coordinator::PageNavigationIdentity&
                         page_navigation_id));
@@ -118,17 +116,52 @@ TEST_F(PageSignalGeneratorImplTest,
        CalculatePageEQTForSinglePageWithMultipleProcesses) {
   MockSinglePageWithMultipleProcessesGraph mock_graph(graph());
 
-  mock_graph.process->SetExpectedTaskQueueingDuration(
-      base::TimeDelta::FromMilliseconds(1));
-  mock_graph.other_process->SetExpectedTaskQueueingDuration(
-      base::TimeDelta::FromMilliseconds(10));
+  // Create a mock receiver and register it against the psg.
+  resource_coordinator::mojom::PageSignalReceiverPtr mock_receiver_ptr;
+  MockPageSignalReceiver mock_receiver(mojo::MakeRequest(&mock_receiver_ptr));
+  page_signal_generator()->AddReceiver(std::move(mock_receiver_ptr));
 
-  EXPECT_EQ(2u, page_signal_generator()->eqt_change_count());
-  // The |other_process| is not for the main frame so its EQT values does not
-  // propagate to the page.
-  int64_t eqt;
-  EXPECT_TRUE(mock_graph.page->GetExpectedTaskQueueingDuration(&eqt));
-  EXPECT_EQ(1, eqt);
+  auto* page = mock_graph.page.get();
+
+  // Expect an EQT notification on the page for the measurement taken from its
+  // main frame.
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(mock_receiver, SetExpectedTaskQueueingDuration(
+                                   IdentityMatches(page->id(), 0u, ""),
+                                   base::TimeDelta::FromMilliseconds(1)))
+        .WillOnce(
+            ::testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+    // Sent two EQT measurements, one per process. One of them will be forwarded
+    // to the page signal receiver.
+    mock_graph.process->SetExpectedTaskQueueingDuration(
+        base::TimeDelta::FromMilliseconds(1));
+    mock_graph.other_process->SetExpectedTaskQueueingDuration(
+        base::TimeDelta::FromMilliseconds(10));
+
+    // Expect both of the signals to have been processed by the page signal
+    // generator.
+    EXPECT_EQ(2u, page_signal_generator()->eqt_change_count());
+
+    run_loop.Run();
+    ::testing::Mock::VerifyAndClear(&mock_receiver);
+  }
+
+  // Send an identical measurement and expect a repeated notification.
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(mock_receiver, SetExpectedTaskQueueingDuration(
+                                   IdentityMatches(page->id(), 0u, ""),
+                                   base::TimeDelta::FromMilliseconds(1)))
+        .WillOnce(
+            ::testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+    mock_graph.process->SetExpectedTaskQueueingDuration(
+        base::TimeDelta::FromMilliseconds(1));
+    EXPECT_EQ(3u, page_signal_generator()->eqt_change_count());
+    run_loop.Run();
+    ::testing::Mock::VerifyAndClear(&mock_receiver);
+  }
 }
 
 TEST_F(PageSignalGeneratorImplTest, PageDataCorrectlyManaged) {

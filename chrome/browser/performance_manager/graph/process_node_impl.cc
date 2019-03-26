@@ -35,9 +35,9 @@ void ProcessNodeImpl::SetCPUUsage(double cpu_usage) {
 
 void ProcessNodeImpl::SetExpectedTaskQueueingDuration(
     base::TimeDelta duration) {
-  SetProperty(
-      resource_coordinator::mojom::PropertyType::kExpectedTaskQueueingDuration,
-      duration.InMilliseconds());
+  SetPropertyAndNotifyObservers(
+      &GraphObserver::OnExpectedTaskQueueingDurationSample, duration, this,
+      &expected_task_queueing_duration_);
 }
 
 void ProcessNodeImpl::SetLaunchTime(base::Time launch_time) {

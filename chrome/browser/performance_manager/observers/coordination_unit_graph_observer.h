@@ -102,6 +102,10 @@ class GraphObserver {
   virtual void OnIsVisibleChanged(PageNodeImpl* page_node) {}
   virtual void OnIsLoadingChanged(PageNodeImpl* page_node) {}
 
+  // ProcessNodeImpl notifications.
+  virtual void OnExpectedTaskQueueingDurationSample(
+      ProcessNodeImpl* process_node) {}
+
   // Called when page almost idle state changes. This is a computed property and
   // will only be maintained if a PageAlmostIdleDecorator exists on the graph.
   virtual void OnPageAlmostIdleChanged(PageNodeImpl* page_node) {}

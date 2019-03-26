@@ -115,31 +115,6 @@ TEST_F(PageNodeImplTest,
   EXPECT_EQ(50, mock_graph.other_page->GetCPUUsage());
 }
 
-TEST_F(PageNodeImplTest, CalculatePageEQTForSinglePageInSingleProcess) {
-  MockSinglePageInSingleProcessGraph mock_graph(graph());
-
-  mock_graph.process->SetExpectedTaskQueueingDuration(
-      base::TimeDelta::FromMilliseconds(1));
-
-  int64_t eqt;
-  EXPECT_TRUE(mock_graph.page->GetExpectedTaskQueueingDuration(&eqt));
-  EXPECT_EQ(1, eqt);
-}
-
-TEST_F(PageNodeImplTest, CalculatePageEQTForMultiplePagesInSingleProcess) {
-  MockMultiplePagesInSingleProcessGraph mock_graph(graph());
-
-  mock_graph.process->SetExpectedTaskQueueingDuration(
-      base::TimeDelta::FromMilliseconds(1));
-
-  int64_t eqt;
-  EXPECT_TRUE(mock_graph.page->GetExpectedTaskQueueingDuration(&eqt));
-  EXPECT_EQ(1, eqt);
-  eqt = 0;
-  EXPECT_TRUE(mock_graph.other_page->GetExpectedTaskQueueingDuration(&eqt));
-  EXPECT_EQ(1, eqt);
-}
-
 TEST_F(PageNodeImplTest, TimeSinceLastVisibilityChange) {
   MockSinglePageInSingleProcessGraph mock_graph(graph());
 

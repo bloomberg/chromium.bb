@@ -96,27 +96,6 @@ void PageSignalGeneratorImpl::OnPagePropertyChanged(
   }
 }
 
-void PageSignalGeneratorImpl::OnProcessPropertyChanged(
-    ProcessNodeImpl* process_node,
-    resource_coordinator::mojom::PropertyType property_type,
-    int64_t value) {
-  if (property_type == resource_coordinator::mojom::PropertyType::
-                           kExpectedTaskQueueingDuration) {
-    for (auto* frame_node : process_node->GetFrameNodes()) {
-      if (!frame_node->IsMainFrame())
-        continue;
-      auto* page_node = frame_node->GetPageNode();
-      int64_t duration;
-      if (!page_node || !page_node->GetExpectedTaskQueueingDuration(&duration))
-        continue;
-      DispatchPageSignal(page_node,
-                         &resource_coordinator::mojom::PageSignalReceiver::
-                             SetExpectedTaskQueueingDuration,
-                         base::TimeDelta::FromMilliseconds(duration));
-    }
-  }
-}
-
 void PageSignalGeneratorImpl::OnFrameEventReceived(
     FrameNodeImpl* frame_node,
     resource_coordinator::mojom::Event event) {
@@ -192,6 +171,23 @@ void PageSignalGeneratorImpl::OnPageAlmostIdleChanged(PageNodeImpl* page_node) {
     DispatchPageSignal(
         page_node,
         &resource_coordinator::mojom::PageSignalReceiver::NotifyPageAlmostIdle);
+  }
+}
+
+void PageSignalGeneratorImpl::OnExpectedTaskQueueingDurationSample(
+    ProcessNodeImpl* process_node) {
+  // Report this measurement to all pages that are hosting a main frame in
+  // the process that was sampled.
+  const base::TimeDelta& sample =
+      process_node->expected_task_queueing_duration();
+  for (auto* frame_node : process_node->GetFrameNodes()) {
+    if (!frame_node->IsMainFrame())
+      continue;
+    auto* page_node = frame_node->GetPageNode();
+    DispatchPageSignal(page_node,
+                       &resource_coordinator::mojom::PageSignalReceiver::
+                           SetExpectedTaskQueueingDuration,
+                       sample);
   }
 }
 

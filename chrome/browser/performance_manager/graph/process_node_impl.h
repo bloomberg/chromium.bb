@@ -67,6 +67,10 @@ class ProcessNodeImpl
   base::Time launch_time() const { return launch_time_; }
   base::Optional<int32_t> exit_status() const { return exit_status_; }
 
+  const base::TimeDelta& expected_task_queueing_duration() const {
+    return expected_task_queueing_duration_;
+  }
+
   // Add |frame_node| to this process.
   void AddFrame(FrameNodeImpl* frame_node);
   // Removes |frame_node| from the set of frames hosted by this process. Invoked
@@ -96,6 +100,8 @@ class ProcessNodeImpl
   base::ProcessId process_id_ = base::kNullProcessId;
   base::Time launch_time_;
   base::Optional<int32_t> exit_status_;
+
+  base::TimeDelta expected_task_queueing_duration_;
 
   std::set<FrameNodeImpl*> frame_nodes_;
 

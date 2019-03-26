@@ -79,13 +79,13 @@ void PageNodeImpl::MaybeRemoveFrame(FrameNodeImpl* frame_node) {
 }
 
 void PageNodeImpl::SetIsLoading(bool is_loading) {
-  SetPropertyAndNotifyObservers(&GraphObserver::OnIsLoadingChanged, is_loading,
-                                this, &is_loading_);
+  SetPropertyAndNotifyObserversIfChanged(&GraphObserver::OnIsLoadingChanged,
+                                         is_loading, this, &is_loading_);
 }
 
 void PageNodeImpl::SetIsVisible(bool is_visible) {
-  SetPropertyAndNotifyObservers(&GraphObserver::OnIsVisibleChanged, is_visible,
-                                this, &is_visible_);
+  SetPropertyAndNotifyObserversIfChanged(&GraphObserver::OnIsVisibleChanged,
+                                         is_visible, this, &is_visible_);
   // The change time needs to be updated after observers are notified, as they
   // use this to determine time passed since the *previous* visibility state
   // change. They can infer the current state change time themselves via
@@ -148,21 +148,6 @@ double PageNodeImpl::GetCPUUsage() const {
   }
 
   return cpu_usage / 1000;
-}
-
-bool PageNodeImpl::GetExpectedTaskQueueingDuration(int64_t* output) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Calculate the EQT for the process of the main frame only because
-  // the smoothness of the main frame may affect the users the most.
-  FrameNodeImpl* main_frame_node = GetMainFrameNode();
-  if (!main_frame_node)
-    return false;
-  auto* process_node = main_frame_node->GetProcessNode();
-  if (!process_node)
-    return false;
-  return process_node->GetProperty(
-      resource_coordinator::mojom::PropertyType::kExpectedTaskQueueingDuration,
-      output);
 }
 
 base::TimeDelta PageNodeImpl::TimeSinceLastNavigation() const {
@@ -267,11 +252,9 @@ void PageNodeImpl::LeaveGraph() {
 }
 
 void PageNodeImpl::SetPageAlmostIdle(bool page_almost_idle) {
-  if (page_almost_idle_ == page_almost_idle)
-    return;
-  page_almost_idle_ = page_almost_idle;
-  for (auto& observer : observers())
-    observer.OnPageAlmostIdleChanged(this);
+  SetPropertyAndNotifyObserversIfChanged(
+      &GraphObserver::OnPageAlmostIdleChanged, page_almost_idle, this,
+      &page_almost_idle_);
 }
 
 void PageNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
