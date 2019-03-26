@@ -2696,7 +2696,6 @@ if (enable_java_templates) {
         if (_proguard_enabled) {
           forward_variables_from(invoker, [ "proguard_jar_path" ])
           deps += _deps + [ ":$_compile_resources_target" ]
-          proguard_configs = [ _jar_path ]
           proguard_mapping_path = _proguard_mapping_path
           if (!defined(invoker.proguard_jar_path) &&
               _verify_android_configuration) {
