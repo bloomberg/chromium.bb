@@ -14,6 +14,7 @@
 #include "chromecast/media/base/supported_codec_profile_levels_memo.h"
 #include "chromecast/public/media/media_capabilities_shlib.h"
 #include "chromecast/renderer/cast_media_playback_options.h"
+#include "chromecast/renderer/cast_url_loader_throttle_provider.h"
 #include "chromecast/renderer/media/key_systems_cast.h"
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
@@ -295,6 +296,12 @@ void CastContentRendererClient::
 void CastContentRendererClient::OnSupportedBitstreamAudioCodecsChanged(
     int codecs) {
   supported_bitstream_audio_codecs_ = codecs;
+}
+
+std::unique_ptr<content::URLLoaderThrottleProvider>
+CastContentRendererClient::CreateURLLoaderThrottleProvider(
+    content::URLLoaderThrottleProviderType type) {
+  return std::make_unique<CastURLLoaderThrottleProvider>(type);
 }
 
 }  // namespace shell

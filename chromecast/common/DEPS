@@ -8,6 +8,7 @@ include_rules = [
   "+extensions/shell/grit",
   "+mojo/public/cpp/bindings",
   "+services/service_manager/public/cpp",
+  "+services/network/public/cpp",
   "+ui/accessibility",
   "+ui/base",
   "+ui/gfx",
