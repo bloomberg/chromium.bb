@@ -4,7 +4,10 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_queue.h"
 
+#include "gpu/command_buffer/client/webgpu_interface.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_fence.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_fence_descriptor.h"
 
 namespace blink {
 
@@ -21,6 +24,22 @@ GPUQueue::~GPUQueue() {
     return;
   }
   GetProcs().queueRelease(GetHandle());
+}
+
+void GPUQueue::signal(GPUFence* fence, uint64_t signal_value) {
+  GetProcs().queueSignal(GetHandle(), fence->GetHandle(), signal_value);
+  device_->GetInterface()->FlushCommands();
+}
+
+GPUFence* GPUQueue::createFence(const GPUFenceDescriptor* descriptor) {
+  DCHECK(descriptor);
+
+  DawnFenceDescriptor desc;
+  desc.nextInChain = nullptr;
+  desc.initialValue = descriptor->initialValue();
+
+  return GPUFence::Create(device_,
+                          GetProcs().queueCreateFence(GetHandle(), &desc));
 }
 
 }  // namespace blink

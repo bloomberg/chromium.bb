@@ -6,7 +6,7 @@
 
 [
     RuntimeEnabled=WebGPU
-] interface GPUQueue {
-    void signal(GPUFence fence, unsigned long long signalValue);
-    GPUFence createFence(GPUFenceDescriptor descriptor);
+] interface GPUFence {
+    unsigned long long getCompletedValue();
+    [CallWith=ScriptState] Promise<void> onCompletion(unsigned long long completionValue);
 };
