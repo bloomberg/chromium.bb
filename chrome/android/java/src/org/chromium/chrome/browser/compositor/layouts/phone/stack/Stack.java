@@ -18,6 +18,7 @@ import android.view.animation.Interpolator;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.animation.FloatProperty;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
@@ -260,6 +261,13 @@ public abstract class Stack implements ChromeAnimation.Animatable {
     public Stack(Context context, StackLayoutBase layout) {
         mLayout = layout;
         contextChanged(context);
+    }
+
+    /**
+     * @return Animation handler associated with this stack.
+     */
+    public CompositorAnimationHandler getAnimationHandler() {
+        return mLayout.getAnimationHandler();
     }
 
     /**
