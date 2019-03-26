@@ -1145,6 +1145,7 @@ test("content_browsertests") {
       "../browser/accessibility/accessibility_browsertest.h",
       "../browser/accessibility/accessibility_win_browsertest.cc",
       "../browser/accessibility/ax_platform_node_win_browsertest.cc",
+      "../browser/renderer_host/accessibility_object_lifetime_win_browsertest.cc",
       "../browser/renderer_host/accessibility_tree_linkage_win_browsertest.cc",
       "../browser/renderer_host/direct_manipulation_win_browsertest.cc",
     ]
@@ -1156,6 +1157,8 @@ test("content_browsertests") {
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
     ]
+
+    libs = [ "uiautomationcore.lib" ]
 
     if (symbol_level != 0) {
       data += [ "$root_out_dir/content_browsertests.exe.pdb" ]

@@ -97,6 +97,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
     MESSAGE_HANDLER_EX(WM_NCCALCSIZE, OnNCCalcSize)
     MESSAGE_HANDLER_EX(WM_SIZE, OnSize)
     MESSAGE_HANDLER_EX(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
+    MESSAGE_HANDLER_EX(WM_DESTROY, OnDestroy)
     MESSAGE_HANDLER_EX(DM_POINTERHITTEST, OnPointerHitTest)
   END_MSG_MAP()
 
@@ -133,6 +134,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   void OnFinalMessage(HWND hwnd) override;
 
  private:
+  friend class AccessibilityObjectLifetimeWinBrowserTest;
   friend class DirectManipulationBrowserTest;
 
   explicit LegacyRenderWidgetHostHWND(HWND parent);
@@ -162,6 +164,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   LRESULT OnNCCalcSize(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnSize(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnWindowPosChanged(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnDestroy(UINT message, WPARAM w_param, LPARAM l_param);
 
   LRESULT OnPointerHitTest(UINT message, WPARAM w_param, LPARAM l_param);
 

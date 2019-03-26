@@ -943,6 +943,13 @@ jumbo_source_set("test_support") {
     ]
   }
 
+  if (is_win) {
+    sources += [
+      "test/desktop_window_tree_host_win_test_api.cc",
+      "test/desktop_window_tree_host_win_test_api.h",
+    ]
+  }
+
   if (use_aura) {
     sources += [
       "corewm/test/tooltip_aura_test_api.cc",
@@ -1156,6 +1163,7 @@ test("views_unittests") {
       "imm32.lib",
       "oleacc.lib",
       "comctl32.lib",
+      "uiautomationcore.lib",
     ]
 
     sources += [
@@ -1208,6 +1216,11 @@ test("views_unittests") {
     if (is_mac) {
       # views_unittests not yet compiling on Mac. http://crbug.com/378134
       sources -= [ "widget/window_reorderer_unittest.cc" ]
+    }
+
+    if (is_win) {
+      sources +=
+          [ "widget/desktop_aura/desktop_window_tree_host_win_unittest.cc" ]
     }
 
     if (use_x11) {

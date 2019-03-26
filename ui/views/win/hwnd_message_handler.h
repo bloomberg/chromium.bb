@@ -52,6 +52,10 @@ namespace views {
 class FullscreenHandler;
 class HWNDMessageHandlerDelegate;
 
+namespace test {
+class DesktopWindowTreeHostWinTestApi;
+}
+
 // These two messages aren't defined in winuser.h, but they are sent to windows
 // with captions. They appear to paint the window caption and frame.
 // Unfortunately if you override the standard non-client rendering as we do
@@ -180,6 +184,8 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   bool is_translucent() const { return is_translucent_; }
 
  private:
+  friend class ::views::test::DesktopWindowTreeHostWinTestApi;
+
   using TouchIDs = std::set<DWORD>;
   enum class DwmFrameState { OFF, ON };
 

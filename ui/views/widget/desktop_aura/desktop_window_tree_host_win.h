@@ -41,6 +41,10 @@ namespace corewm {
 class TooltipWin;
 }
 
+namespace test {
+class DesktopWindowTreeHostWinTestApi;
+}
+
 class VIEWS_EXPORT DesktopWindowTreeHostWin
     : public DesktopWindowTreeHost,
       public wm::AnimationHost,
@@ -232,6 +236,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   HWND GetHWND() const;
 
  private:
+  friend class ::views::test::DesktopWindowTreeHostWinTestApi;
+
   void SetWindowTransparency();
 
   // Returns true if a modal window is active in the current root window chain.

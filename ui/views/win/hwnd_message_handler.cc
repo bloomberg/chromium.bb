@@ -1616,6 +1616,12 @@ void HWNDMessageHandler::OnDestroy() {
       break;
     }
   }
+
+  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+    // Signal to UIA that all objects associated with this HWND can be
+    // discarded.
+    UiaReturnRawElementProvider(hwnd(), 0, 0, nullptr);
+  }
 }
 
 void HWNDMessageHandler::OnDisplayChange(UINT bits_per_pixel,
@@ -1764,11 +1770,10 @@ LRESULT HWNDMessageHandler::OnGetObject(UINT message,
   // because it sometimes gets sign-extended incorrectly (but not always).
   DWORD obj_id = static_cast<DWORD>(static_cast<DWORD_PTR>(l_param));
 
-  // Accessibility readers will send an OBJID_CLIENT message
-  if (delegate_->GetNativeViewAccessible()) {
-    bool is_uia_request = static_cast<DWORD>(UiaRootObjectId) == obj_id;
-    bool is_msaa_request = static_cast<DWORD>(OBJID_CLIENT) == obj_id;
-
+  bool is_uia_request = static_cast<DWORD>(UiaRootObjectId) == obj_id;
+  bool is_msaa_request = static_cast<DWORD>(OBJID_CLIENT) == obj_id;
+  if ((is_uia_request || is_msaa_request) &&
+      delegate_->GetNativeViewAccessible()) {
     // Expose either the UIA or the MSAA implementation, but not both, depending
     // on the state of the feature flag.
     if (is_uia_request &&
@@ -1787,15 +1792,15 @@ LRESULT HWNDMessageHandler::OnGetObject(UINT message,
       // Retrieve MSAA dispatch object for the root view.
       Microsoft::WRL::ComPtr<IAccessible> root(
           delegate_->GetNativeViewAccessible());
-      reference_result = LresultFromObject(
-          IID_IAccessible, w_param, static_cast<IAccessible*>(root.Detach()));
+      reference_result =
+          LresultFromObject(IID_IAccessible, w_param, root.Get());
     }
   } else if (::GetFocus() == hwnd() && ax_system_caret_ &&
              static_cast<DWORD>(OBJID_CARET) == obj_id) {
     Microsoft::WRL::ComPtr<IAccessible> ax_system_caret_accessible =
         ax_system_caret_->GetCaret();
     reference_result = LresultFromObject(IID_IAccessible, w_param,
-                                         ax_system_caret_accessible.Detach());
+                                         ax_system_caret_accessible.Get());
   }
 
   return reference_result;
