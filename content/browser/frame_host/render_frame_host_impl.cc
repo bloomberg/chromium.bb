@@ -1069,7 +1069,8 @@ void RenderFrameHostImpl::ForwardMessageToPortalHost(
     if (target_origin != GetLastCommittedOrigin())
       return;
   }
-  frame_->ForwardMessageToPortalHost(message, source_origin, target_origin);
+  GetNavigationControl()->ForwardMessageToPortalHost(message, source_origin,
+                                                     target_origin);
 }
 
 SiteInstanceImpl* RenderFrameHostImpl::GetSiteInstance() {
