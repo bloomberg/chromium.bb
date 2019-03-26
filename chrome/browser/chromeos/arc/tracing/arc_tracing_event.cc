@@ -60,7 +60,7 @@ std::string GetStringFromDictionary(const base::DictionaryValue* dictionary,
 
 }  // namespace
 
-ArcTracingEvent::ArcTracingEvent(std::unique_ptr<base::Value> dictionary)
+ArcTracingEvent::ArcTracingEvent(base::Value dictionary)
     : dictionary_(std::move(dictionary)) {}
 
 ArcTracingEvent::~ArcTracingEvent() = default;
@@ -71,7 +71,7 @@ int ArcTracingEvent::GetPid() const {
 }
 
 void ArcTracingEvent::SetPid(int pid) {
-  dictionary_->SetKey(kKeyPid, base::Value(pid));
+  dictionary_.SetKey(kKeyPid, base::Value(pid));
 }
 
 int ArcTracingEvent::GetTid() const {
@@ -80,7 +80,7 @@ int ArcTracingEvent::GetTid() const {
 }
 
 void ArcTracingEvent::SetTid(int tid) {
-  dictionary_->SetKey(kKeyTid, base::Value(tid));
+  dictionary_.SetKey(kKeyTid, base::Value(tid));
 }
 
 std::string ArcTracingEvent::GetId() const {
@@ -89,7 +89,7 @@ std::string ArcTracingEvent::GetId() const {
 }
 
 void ArcTracingEvent::SetId(const std::string& id) {
-  dictionary_->SetKey(kKeyId, base::Value(id));
+  dictionary_.SetKey(kKeyId, base::Value(id));
 }
 
 std::string ArcTracingEvent::GetCategory() const {
@@ -98,7 +98,7 @@ std::string ArcTracingEvent::GetCategory() const {
 }
 
 void ArcTracingEvent::SetCategory(const std::string& category) {
-  dictionary_->SetKey(kKeyCategory, base::Value(category));
+  dictionary_.SetKey(kKeyCategory, base::Value(category));
 }
 
 std::string ArcTracingEvent::GetName() const {
@@ -107,7 +107,7 @@ std::string ArcTracingEvent::GetName() const {
 }
 
 void ArcTracingEvent::SetName(const std::string& name) {
-  dictionary_->SetKey(kKeyName, base::Value(name));
+  dictionary_.SetKey(kKeyName, base::Value(name));
 }
 
 char ArcTracingEvent::GetPhase() const {
@@ -117,7 +117,7 @@ char ArcTracingEvent::GetPhase() const {
 }
 
 void ArcTracingEvent::SetPhase(char phase) {
-  dictionary_->SetKey(kKeyPhase, base::Value(std::string() + phase));
+  dictionary_.SetKey(kKeyPhase, base::Value(std::string() + phase));
 }
 
 int64_t ArcTracingEvent::GetTimestamp() const {
@@ -126,7 +126,7 @@ int64_t ArcTracingEvent::GetTimestamp() const {
 }
 
 void ArcTracingEvent::SetTimestamp(double timestamp) {
-  dictionary_->SetKey(kKeyTimestamp, base::Value(timestamp));
+  dictionary_.SetKey(kKeyTimestamp, base::Value(timestamp));
 }
 
 int64_t ArcTracingEvent::GetDuration() const {
@@ -135,7 +135,7 @@ int64_t ArcTracingEvent::GetDuration() const {
 }
 
 void ArcTracingEvent::SetDuration(double duration) {
-  dictionary_->SetKey(kKeyDuration, base::Value(duration));
+  dictionary_.SetKey(kKeyDuration, base::Value(duration));
 }
 
 int64_t ArcTracingEvent::GetEndTimestamp() const {
@@ -144,13 +144,13 @@ int64_t ArcTracingEvent::GetEndTimestamp() const {
 
 const base::DictionaryValue* ArcTracingEvent::GetDictionary() const {
   const base::DictionaryValue* dictionary = nullptr;
-  dictionary_->GetAsDictionary(&dictionary);
+  dictionary_.GetAsDictionary(&dictionary);
   return dictionary;
 }
 
 const base::DictionaryValue* ArcTracingEvent::GetArgs() const {
   const base::Value* value =
-      dictionary_->FindKeyOfType(kKeyArguments, base::Value::Type::DICTIONARY);
+      dictionary_.FindKeyOfType(kKeyArguments, base::Value::Type::DICTIONARY);
   if (!value)
     return nullptr;
   const base::DictionaryValue* args = nullptr;
