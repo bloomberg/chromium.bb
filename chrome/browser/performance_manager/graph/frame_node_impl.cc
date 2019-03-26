@@ -176,12 +176,18 @@ void FrameNodeImpl::SetAllInterventionPoliciesForTesting(
 
 void FrameNodeImpl::JoinGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (parent_frame_node_)
-    parent_frame_node_->AddChildFrame(this);
 
   for (size_t i = 0; i < base::size(intervention_policy_); ++i)
     intervention_policy_[i] =
         resource_coordinator::mojom::InterventionPolicy::kUnknown;
+
+  // Hook up the frame hierarchy.
+  if (parent_frame_node_)
+    parent_frame_node_->AddChildFrame(this);
+
+  // And join the page.
+  // TODO(siggi): Only do this for the main frame and retire the frame set.
+  page_node_->AddFrame(this);
 
   NodeBase::JoinGraph();
 }
@@ -192,10 +198,12 @@ void FrameNodeImpl::LeaveGraph() {
 
   DCHECK(child_frame_nodes_.empty());
 
+  // Leave the page.
+  page_node_->RemoveFrame(this);
+
+  // Leave the frame hierarchy.
   if (parent_frame_node_)
     parent_frame_node_->RemoveChildFrame(this);
-  DCHECK(page_node_);
-  page_node_->MaybeRemoveFrame(this);
 
   if (process_node_)
     process_node_->RemoveFrame(this);

@@ -23,7 +23,6 @@ MockSinglePageInSingleProcessGraph::MockSinglePageInSingleProcessGraph(
       page(TestNodeWrapper<PageNodeImpl>::Create(graph)),
       frame(
           TestNodeWrapper<FrameNodeImpl>::Create(graph, page.get(), nullptr)) {
-  page->AddFrame(frame.get());
   frame->SetAllInterventionPoliciesForTesting(
       resource_coordinator::mojom::InterventionPolicy::kDefault);
   frame->SetProcess(process.get());
@@ -43,7 +42,6 @@ MockMultiplePagesInSingleProcessGraph::MockMultiplePagesInSingleProcessGraph(
       other_frame(TestNodeWrapper<FrameNodeImpl>::Create(graph,
                                                          other_page.get(),
                                                          nullptr)) {
-  other_page->AddFrame(other_frame.get());
   other_frame->SetAllInterventionPoliciesForTesting(
       resource_coordinator::mojom::InterventionPolicy::kDefault);
   other_frame->SetProcess(process.get());
@@ -62,7 +60,6 @@ MockSinglePageWithMultipleProcessesGraph::
                                                          page.get(),
                                                          frame.get())),
       other_process(TestNodeWrapper<ProcessNodeImpl>::Create(graph)) {
-  page->AddFrame(child_frame.get());
   child_frame->SetAllInterventionPoliciesForTesting(
       resource_coordinator::mojom::InterventionPolicy::kDefault);
   child_frame->SetProcess(other_process.get());
@@ -79,7 +76,6 @@ MockMultiplePagesWithMultipleProcessesGraph::
                                                          other_page.get(),
                                                          other_frame.get())),
       other_process(TestNodeWrapper<ProcessNodeImpl>::Create(graph)) {
-  other_page->AddFrame(child_frame.get());
   child_frame->SetAllInterventionPoliciesForTesting(
       resource_coordinator::mojom::InterventionPolicy::kDefault);
   child_frame->SetProcess(other_process.get());
