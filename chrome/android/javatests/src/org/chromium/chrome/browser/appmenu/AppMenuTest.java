@@ -163,9 +163,12 @@ public class AppMenuTest {
      * Test that hitting ENTER on the top item actually triggers the top item.
      * Catches regressions for https://crbug.com/191239 for shrunken menus.
      */
-    @Test
+    /*
     @SmallTest
     @Feature({"Browser", "Main"})
+    */
+    @Test
+    @DisabledTest(message = "crbug.com/945861")
     public void testKeyboardMenuEnterOnTopItemLandscape() {
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
