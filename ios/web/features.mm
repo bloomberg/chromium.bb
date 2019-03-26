@@ -41,7 +41,7 @@ const base::Feature kHistoryClobberWorkaround{
     "WKWebViewHistoryClobberWorkaround", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kBlockUniversalLinksInOffTheRecordMode{
-    "BlockUniversalLinksInOffTheRecord", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BlockUniversalLinksInOffTheRecord", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kWebUISchemeHandling{"WebUISchemeHandling",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
