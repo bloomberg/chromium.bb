@@ -449,15 +449,34 @@ InstallableStatusCode AppBannerManager::TerminationCode() const {
   return NO_ERROR_DETECTED;
 }
 
+bool AppBannerManager::IsInstallable() const {
+  return installable_ == Installable::INSTALLABLE_YES;
+}
+
 void AppBannerManager::SetInstallable(Installable installable) {
   if (installable_ == installable)
     return;
 
   installable_ = installable;
-  install_animation_pending_ = IsInstallable();
+
+  if (IsInstallable()) {
+    // TODO(https://crbug.com/943916): Move empty scope handling up into the
+    // ManifestParser.
+    SetLastInstallableScope(manifest_.scope.is_empty() ? manifest_.start_url
+                                                       : manifest_.scope);
+  } else if (installable_ == Installable::INSTALLABLE_NO) {
+    SetLastInstallableScope(GURL());
+  }
 
   for (Observer& observer : observer_list_)
     observer.OnInstallabilityUpdated();
+}
+
+void AppBannerManager::SetLastInstallableScope(const GURL& url) {
+  if (last_installable_scope_ == url)
+    return;
+  last_installable_scope_ = url;
+  install_animation_pending_ = last_installable_scope_.is_valid();
 }
 
 void AppBannerManager::MigrateObserverListForTesting(
@@ -473,6 +492,8 @@ void AppBannerManager::MigrateObserverListForTesting(
 void AppBannerManager::Stop(InstallableStatusCode code) {
   ReportStatus(code);
 
+  if (installable_ == Installable::UNKNOWN)
+    SetInstallable(Installable::INSTALLABLE_NO);
   weak_factory_.InvalidateWeakPtrs();
   ResetBindings();
   UpdateState(State::COMPLETE);
@@ -631,12 +652,18 @@ base::string16 AppBannerManager::GetInstallableAppName(
   return manager->GetAppName();
 }
 
-bool AppBannerManager::IsInstallable() const {
-  return installable_ == Installable::INSTALLABLE_YES;
+bool AppBannerManager::IsProbablyInstallable() const {
+  if (IsInstallable())
+    return true;
+  return installable_ == Installable::UNKNOWN &&
+         last_installable_scope_.is_valid() &&
+         base::StartsWith(web_contents()->GetLastCommittedURL().spec(),
+                          last_installable_scope_.spec(),
+                          base::CompareCase::SENSITIVE);
 }
 
 bool AppBannerManager::MaybeConsumeInstallAnimation() {
-  DCHECK(IsInstallable());
+  DCHECK(IsProbablyInstallable());
   if (!install_animation_pending_)
     return false;
   install_animation_pending_ = false;

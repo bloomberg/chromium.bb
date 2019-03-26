@@ -30,12 +30,18 @@ TestAppBannerManagerDesktop* TestAppBannerManagerDesktop::CreateForWebContents(
   return result;
 }
 
+void TestAppBannerManagerDesktop::WaitForInstallableCheckTearDown() {
+  base::RunLoop run_loop;
+  tear_down_quit_closure_ = run_loop.QuitClosure();
+  run_loop.Run();
+}
+
 bool TestAppBannerManagerDesktop::WaitForInstallableCheck() {
   DCHECK(IsExperimentalAppBannersEnabled());
 
   if (!installable_.has_value()) {
     base::RunLoop run_loop;
-    quit_closure_ = run_loop.QuitClosure();
+    installable_quit_closure_ = run_loop.QuitClosure();
     run_loop.Run();
   }
   bool installable = *installable_;
@@ -59,11 +65,17 @@ void TestAppBannerManagerDesktop::OnDidPerformInstallableCheck(
   SetInstallable(result.errors.empty());
 }
 
+void TestAppBannerManagerDesktop::ResetCurrentPageData() {
+  AppBannerManagerDesktop::ResetCurrentPageData();
+  if (tear_down_quit_closure_)
+    std::move(tear_down_quit_closure_).Run();
+}
+
 void TestAppBannerManagerDesktop::SetInstallable(bool installable) {
   DCHECK(!installable_.has_value());
   installable_ = installable;
-  if (quit_closure_)
-    std::move(quit_closure_).Run();
+  if (installable_quit_closure_)
+    std::move(installable_quit_closure_).Run();
 }
 
 }  // namespace banners

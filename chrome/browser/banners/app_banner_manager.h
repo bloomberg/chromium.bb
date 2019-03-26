@@ -145,8 +145,9 @@ class AppBannerManager : public content::WebContentsObserver,
       content::WebContents* web_contents);
 
   // Returns whether installability checks have passed (e.g. having a service
-  // worker fetch event).
-  bool IsInstallable() const;
+  // worker fetch event) or have passed previously within the current manifest
+  // scope.
+  bool IsProbablyInstallable() const;
 
   // Each successful installability check gets to show one animation prompt,
   // this returns and consumes the animation prompt if it is available.
@@ -366,7 +367,10 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns a status code based on the current state, to log when terminating.
   InstallableStatusCode TerminationCode() const;
 
+  bool IsInstallable() const;
   void SetInstallable(Installable installable);
+
+  void SetLastInstallableScope(const GURL& url);
 
   // Fetches the data required to display a banner for the current page.
   InstallableManager* manager_;
@@ -388,6 +392,10 @@ class AppBannerManager : public content::WebContentsObserver,
   std::unique_ptr<StatusReporter> status_reporter_;
   bool install_animation_pending_;
   Installable installable_;
+
+  // The scope of the most recent installability check if successful otherwise
+  // invalid.
+  GURL last_installable_scope_;
 
   base::ObserverList<Observer, true> observer_list_;
 
