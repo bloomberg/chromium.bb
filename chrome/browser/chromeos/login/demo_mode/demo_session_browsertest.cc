@@ -8,8 +8,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
@@ -72,9 +72,10 @@ class DemoSessionDemoEnrolledDeviceTest : public LoginManagerTest {
   DemoSessionDemoEnrolledDeviceTest()
       : LoginManagerTest(true /*should_launch_browser*/,
                          true /* should_initialize_webui */),
-        install_attributes_(StubInstallAttributes::CreateCloudManaged(
-            DemoSetupController::kDemoModeDomain,
-            kFakeDeviceId)) {}
+        install_attributes_(
+            StubInstallAttributes::CreateCloudManaged(policy::kDemoModeDomain,
+                                                      kFakeDeviceId)) {}
+
   ~DemoSessionDemoEnrolledDeviceTest() override = default;
 
   // LoginManagerTest:
@@ -193,7 +194,7 @@ class DemoSessionActiveDirectoryDeviceTest : public LoginManagerTest {
       : LoginManagerTest(true /*should_launch_browser*/,
                          true /* should_initialize_webui */),
         install_attributes_(StubInstallAttributes::CreateActiveDirectoryManaged(
-            DemoSetupController::kDemoModeDomain,
+            policy::kDemoModeDomain,
             kFakeDeviceId)) {}
   ~DemoSessionActiveDirectoryDeviceTest() override = default;
 

@@ -157,9 +157,6 @@ class DemoSetupController
   using OnSetupError = base::OnceCallback<void(const DemoSetupError&)>;
   using HasPreinstalledDemoResourcesCallback = base::OnceCallback<void(bool)>;
 
-  // Domain that demo mode devices are enrolled into.
-  static constexpr char kDemoModeDomain[] = "cros-demo-mode.com";
-
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   // Clears demo device enrollment requisition on the given |policy_manager| if

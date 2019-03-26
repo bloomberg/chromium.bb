@@ -17,11 +17,11 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/fake_statistics_provider.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

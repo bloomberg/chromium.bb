@@ -17,10 +17,10 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;

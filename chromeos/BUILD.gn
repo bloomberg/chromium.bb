@@ -129,6 +129,7 @@ source_set("test_support_source_set") {
     "//chromeos/login/auth:test_support",
     "//chromeos/login/login_state:test_support",
     "//chromeos/network:test_support",
+    "//chromeos/tpm:test_support",
     "//google_apis",
     "//net:test_support",
     "//services/network:test_support",

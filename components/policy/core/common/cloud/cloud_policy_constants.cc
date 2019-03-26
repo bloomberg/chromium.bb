@@ -117,6 +117,8 @@ const uint8_t kPolicyVerificationKey[] = {
 
 const char kPolicyVerificationKeyHash[] = "1:356l7w";
 
+const char kDemoModeDomain[] = "cros-demo-mode.com";
+
 std::string GetPolicyVerificationKey() {
   return std::string(reinterpret_cast<const char*>(kPolicyVerificationKey),
                      sizeof(kPolicyVerificationKey));

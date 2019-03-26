@@ -159,6 +159,7 @@ source_set("chromeos") {
     "//components/policy:generated",
     "//components/policy/core/browser",
     "//components/policy/core/common:common",
+    "//components/policy/core/common:common_constants",
     "//components/pref_registry",
     "//components/proxy_config",
     "//components/quirks",

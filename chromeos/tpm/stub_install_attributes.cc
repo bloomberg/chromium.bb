@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 
-#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 namespace chromeos {
@@ -88,7 +87,7 @@ void StubInstallAttributes::SetActiveDirectoryManaged(
 
 void StubInstallAttributes::SetDemoMode(const std::string& device_id) {
   registration_mode_ = policy::DEVICE_MODE_DEMO;
-  registration_domain_ = DemoSetupController::kDemoModeDomain;
+  registration_domain_ = policy::kDemoModeDomain;
   registration_realm_.clear();
   registration_device_id_ = device_id;
 }
