@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/sampling_heap_profiler/sampling_heap_profiler.h"
+#include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
 #include "components/metrics/call_stack_profile_builder.h"
@@ -58,17 +58,16 @@ TEST(HeapProfilerControllerTest, ProfileCollectionsScheduler) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   base::TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner.get());
 
-  base::SamplingHeapProfiler::Init();
-  auto* profiler = base::SamplingHeapProfiler::Get();
-  profiler->SetSamplingInterval(1024);
-  profiler->Start();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII(switches::kSamplingHeapProfiler, "1");
 
   int profiles_collected = 0;
   metrics::CallStackProfileBuilder::SetBrowserProcessReceiverCallback(
       base::BindRepeating(&CheckProfile, &profiles_collected));
+  base::PoissonAllocationSampler::Init();
   HeapProfilerController controller;
   controller.SetTaskRunnerForTest(task_runner.get());
-  controller.Start();
+  controller.StartIfEnabled();
   auto* sampler = base::PoissonAllocationSampler::Get();
   sampler->SuppressRandomnessForTest(true);
   sampler->RecordAlloc(reinterpret_cast<void*>(0x1337), kAllocationSize,
