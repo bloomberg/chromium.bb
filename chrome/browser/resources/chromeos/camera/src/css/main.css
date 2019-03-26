@@ -542,6 +542,17 @@ body.mirror:not(.streaming) #preview-video {
   transform: scale(-1.03, 1.03);
 }
 
+body:not(.mode-switching).square-mode #preview-wrapper {
+  height: 0; /* Calculate at runtime. */
+  width: 0; /* Calculate at runtime. */
+}
+
+body:not(.mode-switching).square-mode #preview-video {
+  left: 0; /* Calculate at runtime. */
+  position: absolute;
+  top: 0; /* Calculate at runtime. */
+}
+
 #preview-grid {
   bottom: 0;
   left: 0;
