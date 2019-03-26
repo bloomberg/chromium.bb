@@ -5,6 +5,7 @@
 #include "base/i18n/break_iterator.h"
 
 #include <stddef.h>
+#include <vector>
 
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -370,6 +371,56 @@ TEST(BreakIteratorTest, BreakLine) {
   EXPECT_FALSE(iter.IsWord());
   EXPECT_FALSE(iter.Advance());   // Test unexpected advance after end.
   EXPECT_FALSE(iter.IsWord());
+}
+
+TEST(BreakIteratorTest, BreakSentence) {
+  string16 nl(UTF8ToUTF16("\n"));
+  string16 str(UTF8ToUTF16(
+      "\nFoo bar!\nOne sentence.\n\n\tAnother sentence?One more thing"));
+  BreakIterator iter(str, BreakIterator::BREAK_SENTENCE);
+  ASSERT_TRUE(iter.Init());
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_FALSE(iter.IsWord());
+  EXPECT_EQ(nl, iter.GetString());
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_FALSE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16("Foo bar!\n"), iter.GetString());
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_FALSE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16("One sentence.\n"), iter.GetString());
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_FALSE(iter.IsWord());
+  EXPECT_EQ(nl, iter.GetString());
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_FALSE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16("\tAnother sentence?"), iter.GetString());
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_FALSE(iter.IsWord());
+  EXPECT_EQ(UTF8ToUTF16("One more thing"), iter.GetString());
+  EXPECT_FALSE(iter.Advance());  // Test unexpected advance after end.
+  EXPECT_FALSE(iter.IsWord());
+}
+
+TEST(BreakIteratorTest, IsSentenceBoundary) {
+  string16 str(UTF8ToUTF16(
+      "Foo bar!\nOne sentence.\n\n\tAnother sentence?One more thing"));
+  BreakIterator iter(str, BreakIterator::BREAK_SENTENCE);
+  ASSERT_TRUE(iter.Init());
+
+  std::vector<size_t> sentence_breaks;
+  sentence_breaks.push_back(0);
+  sentence_breaks.push_back(9);
+  sentence_breaks.push_back(23);
+  sentence_breaks.push_back(24);
+  sentence_breaks.push_back(42);
+  for (size_t i = 0; i < str.size(); i++) {
+    if (std::find(sentence_breaks.begin(), sentence_breaks.end(), i) !=
+        sentence_breaks.end()) {
+      EXPECT_TRUE(iter.IsSentenceBoundary(i)) << " at index=" << i;
+    } else {
+      EXPECT_FALSE(iter.IsSentenceBoundary(i)) << " at index=" << i;
+    }
+  }
 }
 
 TEST(BreakIteratorTest, BreakLineNL) {
