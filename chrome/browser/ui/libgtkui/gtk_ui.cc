@@ -908,7 +908,6 @@ void GtkUi::UpdateColors() {
         color_utils::GetResultingPaintColor(GetBgColor(""), frame_color);
 
     color_map[ThemeProperties::COLOR_TOOLBAR] = tab_color;
-    color_map[ThemeProperties::COLOR_CONTROL_BACKGROUND] = tab_color;
 
     const SkColor background_tab_text_color =
         GetFgColor(header_selector + " GtkLabel.title");

@@ -338,9 +338,8 @@ void BrowserThemePackTest::VerifyStarGazing(BrowserThemePack* pack) {
       pack->GetImageNamed(IDR_THEME_TAB_BACKGROUND_INCOGNITO_INACTIVE)
           .IsEmpty());
 
-    // Make sure we don't have phantom data.
-    EXPECT_FALSE(pack->GetColor(TP::COLOR_CONTROL_BACKGROUND, &color));
-    EXPECT_FALSE(pack->GetTint(TP::TINT_FRAME, &actual));
+  // Make sure we don't have phantom data.
+  EXPECT_FALSE(pack->GetTint(TP::TINT_FRAME, &actual));
 }
 
 // static

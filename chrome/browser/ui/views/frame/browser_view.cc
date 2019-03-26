@@ -2530,8 +2530,6 @@ void BrowserView::InitViews() {
   devtools_web_view_->SetVisible(false);
 
   contents_container_ = new views::View();
-  contents_container_->SetBackground(views::CreateSolidBackground(
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_CONTROL_BACKGROUND)));
   contents_container_->AddChildView(devtools_web_view_);
   contents_container_->AddChildView(contents_web_view_);
   contents_container_->SetLayoutManager(std::make_unique<ContentsLayoutManager>(
