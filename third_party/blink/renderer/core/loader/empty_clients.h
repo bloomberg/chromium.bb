@@ -266,7 +266,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       const ResourceResponse&) override {}
 
   void DispatchDidHandleOnloadEvents() override {}
-  void DispatchWillCommitProvisionalLoad() override {}
   void DispatchDidStartProvisionalLoad(DocumentLoader*) override {}
   void DispatchDidReceiveTitle(const String&) override {}
   void DispatchDidChangeIcons(IconType) override {}

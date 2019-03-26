@@ -1169,10 +1169,8 @@ bool FrameLoader::PrepareForCommit() {
   // both when unloading itself and when unloading its descendants.
   IgnoreOpensDuringUnloadCountIncrementer ignore_opens_during_unload(
       frame_->GetDocument());
-  if (document_loader_) {
-    Client()->DispatchWillCommitProvisionalLoad();
+  if (document_loader_)
     DispatchUnloadEvent();
-  }
   frame_->DetachChildren();
   // The previous calls to dispatchUnloadEvent() and detachChildren() can
   // execute arbitrary script via things like unload events. If the executed

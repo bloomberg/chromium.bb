@@ -1234,10 +1234,6 @@ void PasswordAutofillAgent::DidFinishLoad() {
   SendPasswordForms(true);
 }
 
-void PasswordAutofillAgent::WillCommitProvisionalLoad() {
-  FrameClosing();
-}
-
 void PasswordAutofillAgent::DidCommitProvisionalLoad(
     bool is_same_document_navigation,
     ui::PageTransition transition) {
@@ -1259,7 +1255,7 @@ void PasswordAutofillAgent::OnFrameDetached() {
     GetPasswordManagerDriver()->SameDocumentNavigation(
         provisionally_saved_form_.password_form());
   }
-  FrameClosing();
+  CleanupOnDocumentShutdown();
 }
 
 void PasswordAutofillAgent::OnWillSubmitForm(const WebFormElement& form) {
@@ -1343,12 +1339,13 @@ void PasswordAutofillAgent::ReadyToCommitNavigation(
   if (navigated_frame->Parent()) {
     if (logger)
       logger->LogMessage(Logger::STRING_FRAME_NOT_MAIN_FRAME);
-    return;
+  } else {
+    // This is a new navigation, so require a new user gesture before filling in
+    // passwords.
+    gatekeeper_.Reset();
   }
 
-  // This is a new navigation, so require a new user gesture before filling in
-  // passwords.
-  gatekeeper_.Reset();
+  CleanupOnDocumentShutdown();
 }
 
 void PasswordAutofillAgent::OnProbablyFormSubmitted() {
@@ -1637,7 +1634,7 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
   return CanShowSuggestion(password_info.fill_data, username_string, show_all);
 }
 
-void PasswordAutofillAgent::FrameClosing() {
+void PasswordAutofillAgent::CleanupOnDocumentShutdown() {
   web_input_to_password_info_.clear();
   password_to_username_.clear();
   last_supplied_password_info_iter_ = web_input_to_password_info_.end();

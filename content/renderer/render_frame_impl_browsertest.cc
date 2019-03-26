@@ -786,8 +786,8 @@ constexpr char kFrameEventDidCreateNewFrame[] = "did-create-new-frame";
 constexpr char kFrameEventDidCreateNewDocument[] = "did-create-new-document";
 constexpr char kFrameEventDidCreateDocumentElement[] =
     "did-create-document-element";
-constexpr char kFrameEventWillCommitProvisionalLoad[] =
-    "will-commit-provisional-load";
+constexpr char kFrameEventReadyToCommitNavigation[] =
+    "ready-to-commit-navigation";
 constexpr char kFrameEventDidCommitProvisionalLoad[] =
     "did-commit-provisional-load";
 constexpr char kFrameEventDidCommitSameDocumentLoad[] =
@@ -929,8 +929,8 @@ class FrameHostTestInterfaceRequestIssuer : public RenderFrameObserver {
     RequestTestInterfaceOnFrameEvent(kFrameEventDidCreateNewDocument);
   }
 
-  void WillCommitProvisionalLoad() override {
-    RequestTestInterfaceOnFrameEvent(kFrameEventWillCommitProvisionalLoad);
+  void ReadyToCommitNavigation(blink::WebDocumentLoader* loader) override {
+    RequestTestInterfaceOnFrameEvent(kFrameEventReadyToCommitNavigation);
   }
 
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
@@ -1224,7 +1224,7 @@ TEST_F(RenderFrameRemoteInterfacesTest, ChildFrameAtFirstCommittedLoad) {
         {{GURL(kNoDocumentMarkerURL), kFrameEventDidCreateNewFrame},
          {initial_empty_url, kFrameEventDidCreateNewDocument},
          {initial_empty_url, kFrameEventDidCreateDocumentElement},
-         {initial_empty_url, kFrameEventWillCommitProvisionalLoad},
+         {initial_empty_url, kFrameEventReadyToCommitNavigation},
          // TODO(https://crbug.com/555773): It seems strange that the new
          // document is created and DidCreateNewDocument is invoked *before* the
          // provisional load would have even committed.
@@ -1289,7 +1289,7 @@ TEST_F(RenderFrameRemoteInterfacesTest,
         main_frame_exerciser
             .document_interface_broker_request_for_initial_empty_document(),
         {{initial_empty_url, kFrameEventDidCreateNewFrame},
-         {initial_empty_url, kFrameEventWillCommitProvisionalLoad},
+         {initial_empty_url, kFrameEventReadyToCommitNavigation},
          {new_window_url, kFrameEventDidCreateNewDocument}});
     ExpectPendingInterfaceRequestsFromSources(
         main_frame_exerciser.interface_request_for_first_document(),
@@ -1347,7 +1347,7 @@ TEST_F(RenderFrameRemoteInterfacesTest,
       {{GURL(kNoDocumentMarkerURL), kFrameEventDidCreateNewFrame},
        {initial_empty_url, kFrameEventDidCreateNewDocument},
        {initial_empty_url, kFrameEventDidCreateDocumentElement},
-       {initial_empty_url, kFrameEventWillCommitProvisionalLoad},
+       {initial_empty_url, kFrameEventReadyToCommitNavigation},
        {child_frame_url, kFrameEventDidCreateNewDocument},
        {child_frame_url, kFrameEventDidCommitProvisionalLoad},
        {child_frame_url, kFrameEventDidCreateDocumentElement}});
@@ -1393,7 +1393,7 @@ TEST_F(RenderFrameRemoteInterfacesTest, ReplacedOnNonSameDocumentNavigation) {
       std::move(interface_provider_request_for_first_document),
       std::move(document_interface_broker_request_for_first_document),
       {{GURL(kTestFirstURL), kFrameEventAfterCommit},
-       {GURL(kTestFirstURL), kFrameEventWillCommitProvisionalLoad},
+       {GURL(kTestFirstURL), kFrameEventReadyToCommitNavigation},
        {GURL(kTestSecondURL), kFrameEventDidCreateNewDocument}});
 
   ASSERT_TRUE(interface_provider_request_for_second_document.is_pending());
