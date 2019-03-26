@@ -352,12 +352,6 @@ bool NGPaintFragment::HasSelfPaintingLayer() const {
   return physical_fragment_->HasSelfPaintingLayer();
 }
 
-bool NGPaintFragment::HasOverflowClip() const {
-  auto* box_physical_fragment =
-      DynamicTo<NGPhysicalBoxFragment>(physical_fragment_.get());
-  return box_physical_fragment && box_physical_fragment->HasOverflowClip();
-}
-
 bool NGPaintFragment::ShouldClipOverflow() const {
   auto* box_physical_fragment =
       DynamicTo<NGPhysicalBoxFragment>(physical_fragment_.get());
@@ -543,9 +537,6 @@ NGPhysicalOffsetRect NGPaintFragment::ContentsInkOverflow() const {
 }
 
 NGPhysicalOffsetRect NGPaintFragment::InkOverflow() const {
-  if (HasOverflowClip() || Style().HasMask())
-    return SelfInkOverflow();
-
   // Get the cached value in |LayoutBox| if there is one.
   if (const LayoutBox* box = InkOverflowOwnerBox())
     return NGPhysicalOffsetRect(box->VisualOverflowRect());
@@ -557,6 +548,12 @@ NGPhysicalOffsetRect NGPaintFragment::InkOverflow() const {
 
   if (!ink_overflow_)
     return fragment.LocalRect();
+
+  // |Style()| is one of the most expensive operations in this function. Do this
+  // after other checks.
+  if (HasOverflowClip() || fragment.Style().HasMask())
+    return ink_overflow_->self_ink_overflow;
+
   NGPhysicalOffsetRect rect = ink_overflow_->self_ink_overflow;
   rect.Unite(ink_overflow_->contents_ink_overflow);
   return rect;

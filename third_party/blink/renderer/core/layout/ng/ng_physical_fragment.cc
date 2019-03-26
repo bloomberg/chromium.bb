@@ -318,6 +318,14 @@ bool NGPhysicalFragment::HasSelfPaintingLayer() const {
       ->HasSelfPaintingLayer();
 }
 
+bool NGPhysicalFragment::HasOverflowClip() const {
+  return layout_object_ && layout_object_->HasOverflowClip();
+}
+
+bool NGPhysicalFragment::ShouldClipOverflow() const {
+  return layout_object_ && layout_object_->ShouldClipOverflow();
+}
+
 bool NGPhysicalFragment::IsBlockFlow() const {
   return layout_object_ && layout_object_->IsLayoutBlockFlow();
 }

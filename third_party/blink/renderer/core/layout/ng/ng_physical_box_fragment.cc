@@ -75,19 +75,6 @@ bool NGPhysicalBoxFragment::HasSelfPaintingLayer() const {
   return GetLayoutBoxModelObject().HasSelfPaintingLayer();
 }
 
-bool NGPhysicalBoxFragment::HasOverflowClip() const {
-  const LayoutObject* layout_object = GetLayoutObject();
-  DCHECK(layout_object);
-  return layout_object->HasOverflowClip();
-}
-
-bool NGPhysicalBoxFragment::ShouldClipOverflow() const {
-  const LayoutObject* layout_object = GetLayoutObject();
-  DCHECK(layout_object);
-  return layout_object->IsBox() &&
-         ToLayoutBox(layout_object)->ShouldClipOverflow();
-}
-
 bool NGPhysicalBoxFragment::HasControlClip() const {
   const LayoutObject* layout_object = GetLayoutObject();
   DCHECK(layout_object);
