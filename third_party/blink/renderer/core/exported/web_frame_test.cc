@@ -8612,7 +8612,45 @@ TEST_F(WebFrameTest, OverlayFullscreenVideo) {
   web_view_impl->MainFrameWidget()->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_TRUE(video->IsFullscreen());
-  EXPECT_LT(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
+  EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()),
+            SK_AlphaTRANSPARENT);
+
+  web_view_impl->MainFrameWidget()->DidExitFullscreen();
+  UpdateAllLifecyclePhases(web_view_impl);
+  EXPECT_FALSE(video->IsFullscreen());
+  EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
+}
+
+TEST_F(WebFrameTest, OverlayFullscreenVideoInIframe) {
+  ScopedForceOverlayFullscreenVideoForTest force_overlay_fullscreen_video(true);
+  RegisterMockedHttpURLLoad("fullscreen_video_in_iframe.html");
+  RegisterMockedHttpURLLoad("fullscreen_video.html");
+  frame_test_helpers::TestWebWidgetClient web_widget_client;
+  frame_test_helpers::WebViewHelper web_view_helper;
+  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
+      base_url_ + "fullscreen_video_in_iframe.html", nullptr, nullptr,
+      &web_widget_client);
+
+  const cc::LayerTreeHost* layer_tree_host =
+      web_widget_client.layer_tree_view()->layer_tree_host();
+  LocalFrame* iframe =
+      To<WebLocalFrameImpl>(
+          web_view_helper.GetWebView()->MainFrame()->FirstChild())
+          ->GetFrame();
+  std::unique_ptr<UserGestureIndicator> gesture =
+      LocalFrame::NotifyUserActivation(iframe);
+  HTMLVideoElement* video =
+      ToHTMLVideoElement(iframe->GetDocument()->getElementById("video"));
+  EXPECT_TRUE(video->UsesOverlayFullscreenVideo());
+  EXPECT_FALSE(video->IsFullscreen());
+  EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
+
+  video->webkitEnterFullscreen();
+  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
+  UpdateAllLifecyclePhases(web_view_impl);
+  EXPECT_TRUE(video->IsFullscreen());
+  EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()),
+            SK_AlphaTRANSPARENT);
 
   web_view_impl->MainFrameWidget()->DidExitFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
