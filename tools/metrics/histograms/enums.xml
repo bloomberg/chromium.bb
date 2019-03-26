@@ -6204,6 +6204,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Wiped out"/>
 </enum>
 
+<enum name="BooleanWithinSubtree">
+  <int value="0" label="Not entirely within subtree"/>
+  <int value="1" label="Within subtree"/>
+</enum>
+
 <enum name="BoringSSLReasonCode">
   <obsolete>
     Removed in March 2016.
@@ -21532,7 +21537,7 @@ Called by update_net_error_codes.py.-->
   <int value="1799" label="CSSValueUserModifyReadWrite"/>
   <int value="1800" label="CSSValueUserModifyReadWritePlaintextOnly"/>
   <int value="1801" label="V8TextDetector_Detect_Method"/>
-  <int value="1802" label="CSSValueID::kOnDemand"/>
+  <int value="1802" label="CSSValueOnDemand"/>
   <int value="1803" label="ServiceWorkerNavigationPreload"/>
   <int value="1804" label="FullscreenRequestWithPendingElement"/>
   <int value="1805"
@@ -22619,6 +22624,8 @@ Called by update_net_error_codes.py.-->
   <int value="2833" label="SearchEventFired"/>
   <int value="2834" label="IdleDetectionStart"/>
   <int value="2835" label="TargetCurrent"/>
+  <int value="2836" label="SandboxBackForwardStaysWithinSubtree"/>
+  <int value="2837" label="SandboxBackForwardAffectsFramesOutsideSubtree"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

@@ -101,6 +101,12 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       RenderFrameHostImpl* render_frame_host,
       const GURL& default_url);
 
+  // Navigates to a specified offset from the "current entry". Currently records
+  // a histogram indicating whether the session history navigation would only
+  // affect frames within the subtree of |sandbox_frame_tree_node_id|, which
+  // initiated the navigation.
+  void GoToOffsetInSandboxedFrame(int offset, int sandbox_frame_tree_node_id);
+
   // Called when a document requests a navigation through a
   // RenderFrameProxyHost.
   void NavigateFromFrameProxy(
@@ -273,8 +279,18 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
     base::Time high_water_mark_;
   };
 
+  // Navigates in session history to the given index. If
+  // |sandbox_frame_tree_node_id| is valid, then this request came
+  // from a sandboxed iframe with top level navigation disallowed. This
+  // is currently only used for tracking metrics.
+  void GoToIndex(int index, int sandbox_frame_tree_node_id);
+
   // Starts a navigation to an already existing pending NavigationEntry.
-  void NavigateToExistingPendingEntry(ReloadType reload_type);
+  // Currently records a histogram indicating whether the session history
+  // navigation would only affect frames within the subtree of
+  // |sandbox_frame_tree_node_id|, which initiated the navigation.
+  void NavigateToExistingPendingEntry(ReloadType reload_type,
+                                      int sandboxed_source_frame_tree_node_id);
 
   // Recursively identifies which frames need to be navigated for a navigation
   // to |pending_entry_|, starting at |frame| and exploring its children.

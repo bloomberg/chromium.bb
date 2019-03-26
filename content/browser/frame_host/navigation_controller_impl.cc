@@ -440,6 +440,30 @@ bool ResetSkippableForSameDocumentEntry(FrameTreeNode* root_frame,
   return false;
 }
 
+// Returns whether the session history NavigationRequests in |navigations|
+// would stay within the subtree of the sandboxed iframe in
+// |sandbox_frame_tree_node_id|.
+bool DoesSandboxNavigationStayWithinSubtree(
+    int sandbox_frame_tree_node_id,
+    const std::vector<std::unique_ptr<NavigationRequest>>& navigations) {
+  for (auto& item : navigations) {
+    bool within_subtree = false;
+    // Check whether this NavigationRequest affects a frame within the
+    // sandboxed frame's subtree by walking up the tree looking for the
+    // sandboxed frame.
+    for (auto* frame = item->frame_tree_node(); frame;
+         frame = frame->parent()) {
+      if (frame->frame_tree_node_id() == sandbox_frame_tree_node_id) {
+        within_subtree = true;
+        break;
+      }
+    }
+    if (!within_subtree)
+      return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 // NavigationControllerImpl ----------------------------------------------------
@@ -638,7 +662,8 @@ void NavigationControllerImpl::Reload(ReloadType reload_type,
     pending_entry_index_ = current_index;
     pending_entry_->SetTransitionType(ui::PAGE_TRANSITION_RELOAD);
 
-    NavigateToExistingPendingEntry(reload_type);
+    NavigateToExistingPendingEntry(reload_type,
+                                   FrameTreeNode::kFrameTreeNodeInvalidId);
   }
 }
 
@@ -859,6 +884,11 @@ void NavigationControllerImpl::GoForward() {
 }
 
 void NavigationControllerImpl::GoToIndex(int index) {
+  GoToIndex(index, FrameTreeNode::kFrameTreeNodeInvalidId);
+}
+
+void NavigationControllerImpl::GoToIndex(int index,
+                                         int sandbox_frame_tree_node_id) {
   TRACE_EVENT0("browser,navigation,benchmark",
                "NavigationControllerImpl::GoToIndex");
   if (index < 0 || index >= static_cast<int>(entries_.size())) {
@@ -885,7 +915,7 @@ void NavigationControllerImpl::GoToIndex(int index) {
   pending_entry_index_ = index;
   pending_entry_->SetTransitionType(ui::PageTransitionFromInt(
       pending_entry_->GetTransitionType() | ui::PAGE_TRANSITION_FORWARD_BACK));
-  NavigateToExistingPendingEntry(ReloadType::NONE);
+  NavigateToExistingPendingEntry(ReloadType::NONE, sandbox_frame_tree_node_id);
 }
 
 void NavigationControllerImpl::GoToOffset(int offset) {
@@ -2177,6 +2207,14 @@ bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(
   return true;
 }
 
+void NavigationControllerImpl::GoToOffsetInSandboxedFrame(
+    int offset,
+    int sandbox_frame_tree_node_id) {
+  if (!CanGoToOffset(offset))
+    return;
+  GoToIndex(GetIndexForOffset(offset), sandbox_frame_tree_node_id);
+}
+
 void NavigationControllerImpl::NavigateFromFrameProxy(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
@@ -2514,7 +2552,8 @@ void NavigationControllerImpl::PruneOldestSkippableEntryIfFull() {
 }
 
 void NavigationControllerImpl::NavigateToExistingPendingEntry(
-    ReloadType reload_type) {
+    ReloadType reload_type,
+    int sandboxed_source_frame_tree_node_id) {
   DCHECK(pending_entry_);
   DCHECK(IsInitialNavigation() || pending_entry_index_ != -1);
   DCHECK(!IsRendererDebugURL(pending_entry_->GetURL()));
@@ -2587,6 +2626,33 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
       return;
     }
     different_document_loads.push_back(std::move(navigation_request));
+  }
+
+  // If |sandboxed_source_frame_node_id| is valid, then track whether this
+  // navigation affects any frame outside the frame's subtree.
+  if (sandboxed_source_frame_tree_node_id !=
+      FrameTreeNode::kFrameTreeNodeInvalidId) {
+    bool navigates_inside_tree =
+        DoesSandboxNavigationStayWithinSubtree(
+            sandboxed_source_frame_tree_node_id, same_document_loads) &&
+        DoesSandboxNavigationStayWithinSubtree(
+            sandboxed_source_frame_tree_node_id, different_document_loads);
+    UMA_HISTOGRAM_BOOLEAN(
+        "Navigation.SandboxFrameBackForwardStaysWithinSubtree",
+        navigates_inside_tree);
+
+    // Also count the navigations as web use counters so we can determine
+    // the number of pages that trigger this.
+    FrameTreeNode* sandbox_source_frame_tree_node =
+        FrameTreeNode::GloballyFindByID(sandboxed_source_frame_tree_node_id);
+    if (sandbox_source_frame_tree_node) {
+      GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+          sandbox_source_frame_tree_node->current_frame_host(),
+          navigates_inside_tree
+              ? blink::mojom::WebFeature::kSandboxBackForwardStaysWithinSubtree
+              : blink::mojom::WebFeature::
+                    kSandboxBackForwardAffectsFramesOutsideSubtree);
+    }
   }
 
   // If an interstitial page is showing, the previous renderer is blocked and
@@ -3239,11 +3305,13 @@ void NavigationControllerImpl::LoadIfNecessary() {
   // Explicitly use NavigateToPendingEntry so that the renderer uses the
   // cached state.
   if (pending_entry_) {
-    NavigateToExistingPendingEntry(ReloadType::NONE);
+    NavigateToExistingPendingEntry(ReloadType::NONE,
+                                   FrameTreeNode::kFrameTreeNodeInvalidId);
   } else if (last_committed_entry_index_ != -1) {
     pending_entry_ = entries_[last_committed_entry_index_].get();
     pending_entry_index_ = last_committed_entry_index_;
-    NavigateToExistingPendingEntry(ReloadType::NONE);
+    NavigateToExistingPendingEntry(ReloadType::NONE,
+                                   FrameTreeNode::kFrameTreeNodeInvalidId);
   } else {
     // If there is something to reload, the successful reload will clear the
     // |needs_reload_| flag. Otherwise, just do it here.
