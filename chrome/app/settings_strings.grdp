@@ -2984,6 +2984,18 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_USB_DEVICES_BLOCK" desc="The block label for USB devices in site settings.">
     Do not allow any sites to access USB devices
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SERIAL_PORTS" desc="Label for serial ports in site settings.">
+    Serial ports
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SERIAL_PORTS_ASK" desc="The ask label for serial ports in site settings.">
+    Ask when a site wants to access serial ports
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SERIAL_PORTS_ASK_RECOMMENDED" desc="The ask label for serial ports in site settings (with the 'recommended' suffix).">
+    Ask when a site wants to access serial ports (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SERIAL_PORTS_BLOCK" desc="The block label for serial ports in site settings.">
+    Do not allow any sites to access serial ports
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_REMOVE_ZOOM_LEVEL" desc="Title tooltip and accessibility text for the button to remove zoom levels in site settings">
     Remove zoom level
   </message>
@@ -3300,6 +3312,9 @@
 
   <message name="IDS_SETTINGS_NO_USB_DEVICES_FOUND" desc="Explanation for not showing USB devices in site settings.">
     No USB devices found
+  </message>
+  <message name="IDS_SETTINGS_NO_SERIAL_PORTS_FOUND" desc="Explanation for not showing serial ports in site settings.">
+    No serial ports found
   </message>
   <message name="IDS_SETTINGS_ADD_SITE_EXCEPTION_PLACEHOLDER" desc="Placeholder text shown before the user starts typing a new content settings exception for a site." >
     [*.]example.com

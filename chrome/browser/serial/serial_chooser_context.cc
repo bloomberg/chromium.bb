@@ -142,6 +142,7 @@ void SerialChooserContext::RevokeObjectPermission(
 
   DCHECK(IsValidObject(object));
   ports.erase(DecodeToken(*object.FindStringKey(kTokenKey)));
+  NotifyPermissionRevoked(requesting_origin, embedding_origin);
 }
 
 void SerialChooserContext::GrantPortPermission(
@@ -153,6 +154,7 @@ void SerialChooserContext::GrantPortPermission(
   ephemeral_ports_[std::make_pair(requesting_origin, embedding_origin)].insert(
       port.token);
   port_info_[port.token] = PortInfoToValue(port);
+  NotifyPermissionChanged();
 }
 
 bool SerialChooserContext::HasPortPermission(
@@ -211,5 +213,20 @@ void SerialChooserContext::SetUpPortManagerConnection(
 
 void SerialChooserContext::OnPortManagerConnectionError() {
   port_info_.clear();
+
+  std::vector<std::pair<url::Origin, url::Origin>> revoked_origins;
+  revoked_origins.reserve(ephemeral_ports_.size());
+  for (const auto& map_entry : ephemeral_ports_)
+    revoked_origins.push_back(map_entry.first);
   ephemeral_ports_.clear();
+
+  // Notify permission observers that all ephemeral permissions have been
+  // revoked.
+  for (auto& observer : permission_observer_list_) {
+    observer.OnChooserObjectPermissionChanged(guard_content_settings_type_,
+                                              data_content_settings_type_);
+    for (const auto& origin : revoked_origins)
+      observer.OnPermissionRevoked(origin.first.GetURL(),
+                                   origin.second.GetURL());
+  }
 }

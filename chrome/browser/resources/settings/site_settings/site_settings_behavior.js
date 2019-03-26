@@ -195,6 +195,9 @@ const SiteSettingsBehaviorImpl = {
     addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.SENSORS, 'enableSensorsContentSetting');
     addOrRemoveSettingWithFlag(
+        settings.ContentSettingsTypes.SERIAL_PORTS,
+        'enableExperimentalWebPlatformFeatures');
+    addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.ADS,
         'enableSafeBrowsingSubresourceFilter');
     addOrRemoveSettingWithFlag(

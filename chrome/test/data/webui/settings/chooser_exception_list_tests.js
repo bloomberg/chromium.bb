@@ -346,7 +346,10 @@ suite('ChooserExceptionList', function() {
         .then(function(chooserType) {
           assertEquals(settings.ChooserType.USB_DEVICES, chooserType);
           assertEquals(0, testElement.chooserExceptions.length);
-          assertFalse(testElement.$$('#empty-list-message').hidden);
+          const emptyListMessage = testElement.$$('#empty-list-message');
+          assertFalse(emptyListMessage.hidden);
+          assertEquals(
+              'No USB devices found', emptyListMessage.textContent.trim());
         });
   });
 

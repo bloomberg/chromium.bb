@@ -17,6 +17,8 @@
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/serial/serial_chooser_context.h"
+#include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/pref_names.h"
@@ -50,6 +52,7 @@ typedef std::map<std::pair<GURL, std::string>, OneOriginObjects>
 
 // Chooser data group names.
 const char kUsbChooserDataGroupType[] = "usb-devices-data";
+const char kSerialChooserDataGroupType[] = "serial-ports-data";
 
 const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     // The following ContentSettingsTypes have UI in Content Settings
@@ -79,6 +82,8 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_USB_GUARD, "usb-devices"},
     {CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, kUsbChooserDataGroupType},
     {CONTENT_SETTINGS_TYPE_IDLE_DETECTION, "idle-detection"},
+    {CONTENT_SETTINGS_TYPE_SERIAL_GUARD, "serial-ports"},
+    {CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA, kSerialChooserDataGroupType},
 
     // Add new content settings here if a corresponding Javascript string
     // representation for it is not required. Note some exceptions do have UI in
@@ -104,9 +109,6 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_PLUGINS_DATA, nullptr},
     {CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH, nullptr},
     {CONTENT_SETTINGS_TYPE_INTENT_PICKER_DISPLAY, nullptr},
-    // TODO(crbug.com/908836): Add UI for setting this permission.
-    {CONTENT_SETTINGS_TYPE_SERIAL_GUARD, nullptr},
-    {CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA, nullptr},
 };
 static_assert(base::size(kContentSettingsTypeGroupNames) ==
                   // ContentSettingsType starts at -1, so add 1 here.
@@ -240,8 +242,13 @@ ChooserContextBase* GetUsbChooserContext(Profile* profile) {
   return UsbChooserContextFactory::GetForProfile(profile);
 }
 
+ChooserContextBase* GetSerialChooserContext(Profile* profile) {
+  return SerialChooserContextFactory::GetForProfile(profile);
+}
+
 const ChooserTypeNameEntry kChooserTypeGroupNames[] = {
     {&GetUsbChooserContext, kUsbChooserDataGroupType},
+    {&GetSerialChooserContext, kSerialChooserDataGroupType},
 };
 
 }  // namespace
