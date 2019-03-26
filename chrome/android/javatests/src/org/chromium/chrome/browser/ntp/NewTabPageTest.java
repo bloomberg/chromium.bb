@@ -309,6 +309,9 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testFocusFakebox(boolean interestFeedEnabled) {
+        // TODO(https://crbug.com/944061): Re-enable tablet test on interest feed enabled.
+        if (interestFeedEnabled && mActivityTestRule.getActivity().isTablet()) return;
+
         int initialFakeboxTop = getFakeboxTop(mNtp);
 
         TouchCommon.singleClickView(mFakebox);
@@ -437,6 +440,9 @@ public class NewTabPageTest {
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testUrlFocusAnimationsDisabledOnLoad(boolean interestFeedEnabled)
             throws InterruptedException {
+        // TODO(https://crbug.com/944061): Re-enable tablet test on interest feed enabled.
+        if (interestFeedEnabled && mActivityTestRule.getActivity().isTablet()) return;
+
         Assert.assertFalse(getUrlFocusAnimationsDisabled());
         ChromeTabUtils.waitForTabPageLoaded(mTab, mTestServer.getURL(TEST_PAGE), new Runnable() {
             @Override
@@ -535,6 +541,9 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testSetSearchProviderInfo(boolean interestFeedEnabled) throws Throwable {
+        // TODO(https://crbug.com/944061): Re-enable tablet test on interest feed enabled.
+        if (interestFeedEnabled && mActivityTestRule.getActivity().isTablet()) return;
+
         mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
