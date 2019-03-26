@@ -6696,4 +6696,8 @@ void RenderFrameHostImpl::PostMessageEvent(int32_t source_routing_id,
                                            target_origin, std::move(message));
 }
 
+bool RenderFrameHostImpl::IsTestRenderFrameHost() const {
+  return false;
+}
+
 }  // namespace content

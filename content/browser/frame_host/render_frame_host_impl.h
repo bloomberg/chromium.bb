@@ -917,6 +917,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
                         const base::string16& target_origin,
                         blink::TransferableMessage message);
 
+  // Manual RTTI to ensure safe downcasts in tests.
+  virtual bool IsTestRenderFrameHost() const;
+
  protected:
   friend class RenderFrameHostFactory;
 
