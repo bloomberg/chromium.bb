@@ -1,9 +1,0 @@
-This text should be in the regular Segoe UI font.
-#regular-weight:
-"Segoe UI" : 49
-
-This text should be in the Segoe UI semilight font.
-#semilight-weight:
-"Segoe UI Semilight" : 51
-
-
