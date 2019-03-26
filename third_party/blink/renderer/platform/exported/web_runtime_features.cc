@@ -43,11 +43,6 @@ void WebRuntimeFeatures::EnableBlinkHeapUnifiedGarbageCollection(bool enable) {
   RuntimeEnabledFeatures::SetHeapUnifiedGarbageCollectionEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableBlinkHeapCollectLiveNonNodeWrappers(
-    bool enable) {
-  RuntimeEnabledFeatures::SetHeapCollectLiveNonNodeWrappersEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableBloatedRendererDetection(bool enable) {
   RuntimeEnabledFeatures::SetBloatedRendererDetectionEnabled(enable);
 }

@@ -108,11 +108,6 @@ const base::Feature kCanvas2DImageChromium {
 #endif
 };
 
-// When CollectLiveNonNodeWrappers is enabled, live non-Node wrappers that are
-// re-creatable will get collected by V8's minor garbage collector.
-const base::Feature kCollectLiveNonNodeWrappers{
-    "CollectLiveNonNodeWrappers", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables the compositing of fixed position content that is opaque and can
 // preserve LCD text.
 const base::Feature kCompositeOpaqueFixedPosition{

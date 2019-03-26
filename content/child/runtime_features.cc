@@ -70,9 +70,6 @@ void SetIndividualRuntimeFeatures(
       base::FeatureList::IsEnabled(
           features::kBlinkHeapUnifiedGarbageCollection));
 
-  WebRuntimeFeatures::EnableBlinkHeapCollectLiveNonNodeWrappers(
-      base::FeatureList::IsEnabled(features::kCollectLiveNonNodeWrappers));
-
   if (base::FeatureList::IsEnabled(features::kBloatedRendererDetection))
     WebRuntimeFeatures::EnableBloatedRendererDetection(true);
 
