@@ -2918,8 +2918,8 @@ class AddChildNotificationsObserver : public WindowObserver {
   AddChildNotificationsObserver() : added_count_(0), removed_count_(0) {}
 
   std::string CountStringAndReset() {
-    std::string result = base::IntToString(added_count_) + " " +
-        base::IntToString(removed_count_);
+    std::string result = base::NumberToString(added_count_) + " " +
+                         base::NumberToString(removed_count_);
     added_count_ = removed_count_ = 0;
     return result;
   }

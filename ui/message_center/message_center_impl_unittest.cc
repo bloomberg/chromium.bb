@@ -117,10 +117,10 @@ class TestDelegate : public NotificationDelegate {
     if (button_index) {
       if (!reply) {
         log_ += "ButtonClick_";
-        log_ += base::IntToString(*button_index) + "_";
+        log_ += base::NumberToString(*button_index) + "_";
       } else {
         log_ += "ReplyButtonClick_";
-        log_ += base::IntToString(*button_index) + "_";
+        log_ += base::NumberToString(*button_index) + "_";
         log_ += base::UTF16ToUTF8(*reply) + "_";
       }
     } else {

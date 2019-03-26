@@ -254,7 +254,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase,
   }
 
   std::string AddNotification() {
-    std::string id = base::IntToString(id_++);
+    std::string id = base::NumberToString(id_++);
     MessageCenter::Get()->AddNotification(CreateNotification(id));
     return id;
   }

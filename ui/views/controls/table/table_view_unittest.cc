@@ -39,10 +39,10 @@ class TableViewTestHelper {
 
   std::string GetPaintRegion(const gfx::Rect& bounds) {
     TableView::PaintRegion region(table_->GetPaintRegion(bounds));
-    return "rows=" + base::IntToString(region.min_row) + " " +
-        base::IntToString(region.max_row) + " cols=" +
-        base::IntToString(region.min_column) + " " +
-        base::IntToString(region.max_column);
+    return "rows=" + base::NumberToString(region.min_row) + " " +
+           base::NumberToString(region.max_row) +
+           " cols=" + base::NumberToString(region.min_column) + " " +
+           base::NumberToString(region.max_column);
   }
 
   size_t visible_col_count() {
@@ -177,7 +177,7 @@ int TestTableModel2::RowCount() {
 }
 
 base::string16 TestTableModel2::GetText(int row, int column_id) {
-  return base::IntToString16(rows_[row][column_id]);
+  return base::NumberToString16(rows_[row][column_id]);
 }
 
 void TestTableModel2::SetObserver(ui::TableModelObserver* observer) {
@@ -194,7 +194,7 @@ std::string GetViewToModelAsString(TableView* table) {
   for (int i = 0; i < table->RowCount(); ++i) {
     if (i != 0)
       result += " ";
-    result += base::IntToString(table->ViewToModel(i));
+    result += base::NumberToString(table->ViewToModel(i));
   }
   return result;
 }
@@ -205,7 +205,7 @@ std::string GetModelToViewAsString(TableView* table) {
   for (int i = 0; i < table->RowCount(); ++i) {
     if (i != 0)
       result += " ";
-    result += base::IntToString(table->ModelToView(i));
+    result += base::NumberToString(table->ModelToView(i));
   }
   return result;
 }
@@ -310,15 +310,15 @@ class TableViewTest : public ViewsTestBase {
   // 'active=X anchor=X selection=X X X...'.
   std::string SelectionStateAsString() const {
     const ui::ListSelectionModel& model(table_->selection_model());
-    std::string result = "active=" + base::IntToString(model.active()) +
-        " anchor=" + base::IntToString(model.anchor()) +
-        " selection=";
+    std::string result = "active=" + base::NumberToString(model.active()) +
+                         " anchor=" + base::NumberToString(model.anchor()) +
+                         " selection=";
     const ui::ListSelectionModel::SelectedIndices& selection(
         model.selected_indices());
     for (size_t i = 0; i < selection.size(); ++i) {
       if (i != 0)
         result += " ";
-      result += base::IntToString(selection[i]);
+      result += base::NumberToString(selection[i]);
     }
     return result;
   }

@@ -872,7 +872,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
   if (IsCellOrTableHeader(GetData().role)) {
     int32_t index = delegate_->GetTableCellIndex();
     if (index >= 0) {
-      std::string str_index(base::IntToString(index));
+      std::string str_index(base::NumberToString(index));
       AddAttributeToList("table-cell-index", str_index, attributes);
     }
   }
@@ -1051,7 +1051,7 @@ void AXPlatformNodeBase::AddAttributeToList(
 
   auto maybe_value = ComputeAttribute(delegate_, attribute);
   if (maybe_value.has_value()) {
-    std::string str_value = base::IntToString(maybe_value.value());
+    std::string str_value = base::NumberToString(maybe_value.value());
     AddAttributeToList(name, str_value, attributes);
   }
 }

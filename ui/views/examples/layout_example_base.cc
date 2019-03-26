@@ -276,9 +276,9 @@ void LayoutExampleBase::CreateExampleView(View* container) {
         (add_button_->height() - child_panel_size_[i]->height()) / 2);
   }
   child_panel_size_[0]->SetText(
-      base::IntToString16(kLayoutExampleDefaultChildSize.width()));
+      base::NumberToString16(kLayoutExampleDefaultChildSize.width()));
   child_panel_size_[1]->SetText(
-      base::IntToString16(kLayoutExampleDefaultChildSize.height()));
+      base::NumberToString16(kLayoutExampleDefaultChildSize.height()));
 
   CreateAdditionalControls(add_button_->y() + add_button_->height() +
                            kLayoutExampleVerticalSpacing);

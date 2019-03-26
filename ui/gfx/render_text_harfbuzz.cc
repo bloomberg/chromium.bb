@@ -814,7 +814,8 @@ void TextRunHarfBuzz::GetClusterAt(size_t pos,
     for (size_t i = 0; i < shape.glyph_count && i < shape.glyph_to_char.size();
          ++i) {
       glyph_to_char_string += base::NumberToString(i) + "->" +
-                              base::UintToString(shape.glyph_to_char[i]) + ", ";
+                              base::NumberToString(shape.glyph_to_char[i]) +
+                              ", ";
     }
     LOG(ERROR) << " TextRunHarfBuzz error, please report at crbug.com/724880:"
                << " range: " << range.ToString()
