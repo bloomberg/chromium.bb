@@ -1628,8 +1628,8 @@
   },
   {
     "name": "enable-service-worker-long-running-message",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "azeemarshad", "jlklein", "falken" ],
+    "expiry_milestone": 77
   },
   {
     "name": "enable-shill-sandboxing",
