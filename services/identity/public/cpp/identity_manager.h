@@ -357,8 +357,11 @@ class IdentityManager : public SigninManagerBase::Observer,
   // supported for the current platform.
   static bool IsAccountIdMigrationSupported();
 
-  // Registers local state prefs used by this class.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
+  // Registers per-install prefs used by this class.
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
+  // Registers per-profile prefs used by this class.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Picks the correct account_id for the specified account depending on the
   // migration state.

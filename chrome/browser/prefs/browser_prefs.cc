@@ -452,7 +452,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ExternalProtocolHandler::RegisterPrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterPrefs(registry);
   GpuModeManager::RegisterPrefs(registry);
-  identity::IdentityManager::RegisterPrefs(registry);
+  identity::IdentityManager::RegisterLocalStatePrefs(registry);
   IntranetRedirectDetector::RegisterPrefs(registry);
   IOThread::RegisterPrefs(registry);
   language::GeoLanguageProvider::RegisterLocalStatePrefs(registry);

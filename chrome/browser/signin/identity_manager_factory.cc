@@ -130,7 +130,7 @@ class IdentityManagerWrapper : public KeyedService,
 
 void IdentityManagerFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  SigninManagerBase::RegisterProfilePrefs(registry);
+  identity::IdentityManager::RegisterProfilePrefs(registry);
 }
 
 IdentityManagerFactory::IdentityManagerFactory()

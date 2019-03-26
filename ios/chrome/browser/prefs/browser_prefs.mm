@@ -73,7 +73,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   BrowserStateInfoCache::RegisterPrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterPrefs(registry);
   gcm::GCMChannelStatusSyncer::RegisterPrefs(registry);
-  identity::IdentityManager::RegisterPrefs(registry);
+  identity::IdentityManager::RegisterLocalStatePrefs(registry);
   IOSChromeMetricsServiceClient::RegisterPrefs(registry);
   network_time::NetworkTimeTracker::RegisterPrefs(registry);
   ios::NotificationPromo::RegisterPrefs(registry);
