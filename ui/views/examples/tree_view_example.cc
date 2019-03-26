@@ -49,7 +49,8 @@ TreeViewExample::TreeViewExample()
 
 TreeViewExample::~TreeViewExample() {
   // Remove the model from the view.
-  tree_view_->SetModel(nullptr);
+  if (tree_view_)
+    tree_view_->SetModel(nullptr);
 }
 
 void TreeViewExample::CreateExampleView(View* container) {
