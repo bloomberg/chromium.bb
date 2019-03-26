@@ -21,9 +21,9 @@ namespace {
 
 using browser_sync::ProfileSyncService;
 
-class SyncActiveChecker : public SingleClientStatusChangeChecker {
+class SyncTransportActiveChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit SyncActiveChecker(ProfileSyncService* service)
+  explicit SyncTransportActiveChecker(ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
           browser()->profile());
 
   // Wait until the first sync cycle is completed.
-  ASSERT_TRUE(SyncActiveChecker(service).Wait());
+  ASSERT_TRUE(SyncTransportActiveChecker(service).Wait());
 
   EXPECT_TRUE(service->IsLocalSyncEnabled());
 }

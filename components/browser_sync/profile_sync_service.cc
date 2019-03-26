@@ -538,6 +538,9 @@ void ProfileSyncService::Shutdown() {
   NotifyShutdown();
   ShutdownImpl(syncer::BROWSER_SHUTDOWN);
 
+  DCHECK(!data_type_manager_);
+  data_type_controllers_.clear();
+
   // All observers must be gone now: All KeyedServices should have unregistered
   // their observers already before, in their own Shutdown(), and all others
   // should have done it now when they got the shutdown notification.
@@ -550,9 +553,6 @@ void ProfileSyncService::Shutdown() {
 
   if (sync_thread_)
     sync_thread_->Stop();
-
-  DCHECK(!data_type_manager_);
-  data_type_controllers_.clear();
 }
 
 void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
