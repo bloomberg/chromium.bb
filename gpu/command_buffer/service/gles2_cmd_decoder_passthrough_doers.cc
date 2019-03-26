@@ -5152,8 +5152,8 @@ error::Error GLES2DecoderPassthroughImpl::DoUnlockDiscardableTextureCHROMIUM(
 error::Error
 GLES2DecoderPassthroughImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
     GLuint texture_client_id,
-    const volatile GLbyte* mailbox,
-    GLenum internalformat) {
+    GLenum internalformat,
+    const volatile GLbyte* mailbox) {
   // RGB emulation is not needed here.
   if (internalformat != GL_NONE) {
     InsertError(GL_INVALID_ENUM, "internal format not supported.");

@@ -1179,9 +1179,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   void DoCreateAndConsumeTextureINTERNAL(GLuint client_id,
                                          const volatile GLbyte* key);
-  void DoCreateAndTexStorage2DSharedImageINTERNAL(GLuint client_id,
-                                                  const volatile GLbyte* data,
-                                                  GLenum internal_format);
+  void DoCreateAndTexStorage2DSharedImageINTERNAL(
+      GLuint client_id,
+      GLenum internal_format,
+      const volatile GLbyte* mailbox);
   void DoBeginSharedImageAccessDirectCHROMIUM(GLuint client_id, GLenum mode);
   void DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id);
   void DoApplyScreenSpaceAntialiasingCHROMIUM();
@@ -18437,14 +18438,14 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(
 
 void GLES2DecoderImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
     GLuint client_id,
-    const volatile GLbyte* data,
-    GLenum internal_format) {
+    GLenum internal_format,
+    const volatile GLbyte* mailbox_data) {
   TRACE_EVENT2("gpu",
                "GLES2DecoderImpl::DoCreateAndTexStorage2DSharedImageCHROMIUM",
                "context", logger_.GetLogPrefix(), "mailbox[0]",
-               static_cast<unsigned char>(data[0]));
-  Mailbox mailbox =
-      Mailbox::FromVolatile(*reinterpret_cast<const volatile Mailbox*>(data));
+               static_cast<unsigned char>(mailbox_data[0]));
+  Mailbox mailbox = Mailbox::FromVolatile(
+      *reinterpret_cast<const volatile Mailbox*>(mailbox_data));
   DLOG_IF(ERROR, !mailbox.Verify())
       << "DoCreateAndTexStorage2DSharedImageCHROMIUM was passed an invalid "
          "mailbox.";

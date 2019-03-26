@@ -6422,18 +6422,18 @@ GLuint GLES2Implementation::CreateAndConsumeTextureCHROMIUM(
 }
 
 GLuint GLES2Implementation::CreateAndTexStorage2DSharedImageCHROMIUM(
-    const GLbyte* data) {
+    const GLbyte* mailbox_data) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix()
                      << "] CreateAndTexStorage2DSharedImageCHROMIUM("
-                     << static_cast<const void*>(data) << ")");
-  const Mailbox& mailbox = *reinterpret_cast<const Mailbox*>(data);
+                     << static_cast<const void*>(mailbox_data) << ")");
+  const Mailbox& mailbox = *reinterpret_cast<const Mailbox*>(mailbox_data);
   DCHECK(mailbox.Verify()) << "CreateAndTexStorage2DSharedImageCHROMIUM was "
                               "passed an invalid mailbox.";
   GLuint client_id;
   GetIdHandler(SharedIdNamespaces::kTextures)->MakeIds(this, 0, 1, &client_id);
-  helper_->CreateAndTexStorage2DSharedImageINTERNALImmediate(client_id, data,
-                                                             GL_NONE);
+  helper_->CreateAndTexStorage2DSharedImageINTERNALImmediate(client_id, GL_NONE,
+                                                             mailbox_data);
   if (share_group_->bind_generates_resource())
     helper_->CommandBufferHelper::OrderingBarrier();
   CheckGLError();
@@ -6442,21 +6442,22 @@ GLuint GLES2Implementation::CreateAndTexStorage2DSharedImageCHROMIUM(
 
 GLuint
 GLES2Implementation::CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM(
-    const GLbyte* data,
+    const GLbyte* mailbox_data,
     GLenum internalformat) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG(
       "[" << GetLogPrefix()
           << "] CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM("
-          << static_cast<const void*>(data) << ", " << internalformat << ")");
-  const Mailbox& mailbox = *reinterpret_cast<const Mailbox*>(data);
+          << static_cast<const void*>(mailbox_data) << ", " << internalformat
+          << ")");
+  const Mailbox& mailbox = *reinterpret_cast<const Mailbox*>(mailbox_data);
   DCHECK(mailbox.Verify())
       << "CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM was "
          "passed an invalid mailbox.";
   GLuint client_id;
   GetIdHandler(SharedIdNamespaces::kTextures)->MakeIds(this, 0, 1, &client_id);
-  helper_->CreateAndTexStorage2DSharedImageINTERNALImmediate(client_id, data,
-                                                             internalformat);
+  helper_->CreateAndTexStorage2DSharedImageINTERNALImmediate(
+      client_id, internalformat, mailbox_data);
   if (share_group_->bind_generates_resource())
     helper_->CommandBufferHelper::OrderingBarrier();
   CheckGLError();
