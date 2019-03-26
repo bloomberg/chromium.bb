@@ -718,7 +718,7 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
   //                                             paint_offset);
 
   // If we have no lines then we have no work to do.
-  if (!line_boxes.size())
+  if (line_boxes.IsEmpty())
     return;
 
   const bool is_horizontal = box_fragment_.Style().IsHorizontalWritingMode();

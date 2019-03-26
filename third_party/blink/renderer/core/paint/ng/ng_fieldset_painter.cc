@@ -23,7 +23,7 @@ void NGFieldsetPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
     const LayoutPoint paint_offset) {
   const NGPaintFragment* legend = nullptr;
-  if (fieldset_.Children().size()) {
+  if (!fieldset_.Children().IsEmpty()) {
     const auto& first_child = fieldset_.Children().front();
     if (first_child.PhysicalFragment().IsRenderedLegend())
       legend = &first_child;
