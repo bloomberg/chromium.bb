@@ -5,6 +5,7 @@
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_animation_types.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -15,6 +16,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_highlight_view.h"
 #include "ash/wm/splitview/split_view_utils.h"
+#include "ash/wm/window_animations.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
@@ -26,6 +28,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 
@@ -516,7 +519,15 @@ SplitViewDragIndicators::SplitViewDragIndicators() {
   widget_->Show();
 }
 
-SplitViewDragIndicators::~SplitViewDragIndicators() = default;
+SplitViewDragIndicators::~SplitViewDragIndicators() {
+  // Allow some extra time for animations to finish.
+  aura::Window* window = widget_->GetNativeWindow();
+  if (window == nullptr)
+    return;
+  ::wm::SetWindowVisibilityAnimationType(
+      window, wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END);
+  AnimateOnChildWindowVisibilityChanged(window, /*visible=*/false);
+}
 
 void SplitViewDragIndicators::SetIndicatorState(
     IndicatorState indicator_state,

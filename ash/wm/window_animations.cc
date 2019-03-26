@@ -308,6 +308,13 @@ void AnimateShowWindow_StepEnd(aura::Window* window) {
   window->layer()->SetOpacity(kWindowAnimation_ShowOpacity);
 }
 
+void AnimateHideWindow_StepEnd(aura::Window* window) {
+  ::wm::ScopedHidingAnimationSettings settings(window);
+  settings.layer_animation_settings()->SetTransitionDuration(kZeroAnimationMs);
+  settings.layer_animation_settings()->SetTweenType(gfx::Tween::ZERO);
+  window->layer()->SetVisible(false);
+}
+
 bool AnimateShowWindow(aura::Window* window) {
   if (!::wm::HasWindowVisibilityAnimationTransition(window,
                                                     ::wm::ANIMATE_SHOW)) {
@@ -355,11 +362,8 @@ bool AnimateHideWindow(aura::Window* window) {
       AnimateHideWindow_SlideOut(window);
       return true;
     case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END:
-      NOTREACHED()
-          << "wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END is only an "
-             "animation type for showing window. Hiding window with this type "
-             "of animation is not supported.";
-      return false;
+      AnimateHideWindow_StepEnd(window);
+      return true;
     default:
       NOTREACHED();
       return false;
