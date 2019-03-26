@@ -5456,8 +5456,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     aom_clear_system_state();
 
     if (tpl_frame->is_valid)
-      cpi->rd.r0 =
-          (double)intra_cost_base / (intra_cost_base + mc_dep_cost_base);
+      cpi->rd.r0 = (double)intra_cost_base / mc_dep_cost_base;
   }
 
   av1_frame_init_quantizer(cpi);
