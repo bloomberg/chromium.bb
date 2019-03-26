@@ -469,7 +469,7 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
       browser_compositor_->GetDelegatedFrameHost();
 
   bool has_saved_frame =
-      delegated_frame_host ? delegated_frame_host->HasSavedFrame() : false;
+      browser_compositor_->has_saved_frame_before_state_transition();
 
   auto tab_switch_start_time = GetAndResetLastTabChangeStartTime();
 
