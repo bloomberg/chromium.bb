@@ -779,6 +779,9 @@ extern const char kNewPasswordFormParsingForSavingDescription[];
 extern const char kOnlyNewPasswordFormParsingName[];
 extern const char kOnlyNewPasswordFormParsingDescription[];
 
+extern const char kNewPrintPreviewLayoutName[];
+extern const char kNewPrintPreviewLayoutDescription[];
+
 extern const char kUseSurfaceLayerForVideoName[];
 extern const char kUseSurfaceLayerForVideoDescription[];
 
