@@ -62,8 +62,10 @@ import org.chromium.chrome.browser.widget.FeatureHighlightProvider;
 import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.SystemAccountManagerDelegate;
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.policy.AppRestrictionsProvider;
 import org.chromium.policy.CombinedPolicyProvider;
+import org.chromium.services.service_manager.InterfaceRegistry;
 
 import java.util.Collections;
 import java.util.List;
@@ -428,5 +430,14 @@ public abstract class AppHooks {
      */
     public boolean interceptWebAppIntent(Intent intent, ChromeActivity activity) {
         return false;
+    }
+
+    /**
+     * @param registry The Chrome interface registry for the RenderFrameHost.
+     * @param renderFrameHost The RenderFrameHost the Interface Registry is for.
+     */
+    public void registerChromeRenderFrameHostInterfaces(
+            InterfaceRegistry registry, RenderFrameHost renderFrameHost) {
+        return;
     }
 }

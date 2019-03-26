@@ -13,6 +13,10 @@ import("//printing/buildflags/buildflags.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 # This target is for dependency tracking for the command ID header.
 source_set("command_ids") {
   sources = [
@@ -486,6 +490,10 @@ source_set("chrome_content_browser_overlay_manifest") {
       "//chrome/browser/ui/webui/discards:mojo_bindings",
       "//services/resource_coordinator/public/mojom",
     ]
+  }
+
+  if (is_android && notouch_build) {
+    configs += [ "//chrome/browser:notouch_config" ]
   }
 }
 

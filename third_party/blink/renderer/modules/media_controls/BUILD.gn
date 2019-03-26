@@ -5,6 +5,10 @@
 import("//third_party/blink/renderer/modules/modules.gni")
 import("//tools/grit/grit_rule.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 blink_modules_sources("media_controls") {
   sources = [
     "elements/media_control_animated_arrow_container_element.cc",
@@ -88,28 +92,36 @@ blink_modules_sources("media_controls") {
     "media_controls_resource_loader.h",
     "media_controls_rotate_to_fullscreen_delegate.cc",
     "media_controls_rotate_to_fullscreen_delegate.h",
-    "non_touch/elements/media_controls_non_touch_element.cc",
-    "non_touch/elements/media_controls_non_touch_element.h",
-    "non_touch/elements/media_controls_non_touch_overlay_element.cc",
-    "non_touch/elements/media_controls_non_touch_overlay_element.h",
-    "non_touch/elements/media_controls_non_touch_play_button_element.cc",
-    "non_touch/elements/media_controls_non_touch_play_button_element.h",
-    "non_touch/elements/media_controls_non_touch_seek_button_element.cc",
-    "non_touch/elements/media_controls_non_touch_seek_button_element.h",
-    "non_touch/elements/media_controls_non_touch_volume_button_element.cc",
-    "non_touch/elements/media_controls_non_touch_volume_button_element.h",
-    "non_touch/media_controls_non_touch_impl.cc",
-    "non_touch/media_controls_non_touch_impl.h",
-    "non_touch/media_controls_non_touch_media_event_listener.cc",
-    "non_touch/media_controls_non_touch_media_event_listener.h",
-    "non_touch/media_controls_non_touch_media_event_listener_observer.h",
+    "media_controls_text_track_manager.cc",
+    "media_controls_text_track_manager.h",
   ]
 
   deps = [
-    ":media_controls_non_touch_resources",
     ":media_controls_resources",
     "//services/service_manager/public/cpp",
   ]
+
+  if (is_android && notouch_build) {
+    sources += [
+      "non_touch/elements/media_controls_non_touch_element.cc",
+      "non_touch/elements/media_controls_non_touch_element.h",
+      "non_touch/elements/media_controls_non_touch_overlay_element.cc",
+      "non_touch/elements/media_controls_non_touch_overlay_element.h",
+      "non_touch/elements/media_controls_non_touch_play_button_element.cc",
+      "non_touch/elements/media_controls_non_touch_play_button_element.h",
+      "non_touch/elements/media_controls_non_touch_seek_button_element.cc",
+      "non_touch/elements/media_controls_non_touch_seek_button_element.h",
+      "non_touch/elements/media_controls_non_touch_volume_button_element.cc",
+      "non_touch/elements/media_controls_non_touch_volume_button_element.h",
+      "non_touch/media_controls_non_touch_impl.cc",
+      "non_touch/media_controls_non_touch_impl.h",
+      "non_touch/media_controls_non_touch_media_event_listener.cc",
+      "non_touch/media_controls_non_touch_media_event_listener.h",
+      "non_touch/media_controls_non_touch_media_event_listener_observer.h",
+    ]
+
+    deps += [ ":media_controls_non_touch_resources" ]
+  }
 }
 
 grit("media_controls_resources") {
@@ -122,11 +134,13 @@ grit("media_controls_resources") {
   ]
 }
 
-grit("media_controls_non_touch_resources") {
-  output_dir = "$blink_modules_output_dir/media_controls/non_touch/resources/"
-  source = "non_touch/resources/media_controls_non_touch_resources.grd"
-  outputs = [
-    "grit/media_controls_non_touch_resources.h",
-    "media_controls_non_touch_resources.pak",
-  ]
+if (is_android && notouch_build) {
+  grit("media_controls_non_touch_resources") {
+    output_dir = "$blink_modules_output_dir/media_controls/non_touch/resources/"
+    source = "non_touch/resources/media_controls_non_touch_resources.grd"
+    outputs = [
+      "grit/media_controls_non_touch_resources.h",
+      "media_controls_non_touch_resources.pak",
+    ]
+  }
 }
