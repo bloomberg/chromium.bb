@@ -16,12 +16,9 @@ component("dbus") {
     "//dbus",
   ]
   deps = [
-    ":attestation_proto",
     ":authpolicy_proto",
     ":cicerone_proto",
     ":concierge_proto",
-    ":cryptohome_proto",
-    ":cryptohome_signkey_proto",
     ":login_manager_proto",
     ":media_perception_proto",
     ":metrics_event_proto",
@@ -33,6 +30,11 @@ component("dbus") {
     ":smbprovider_proto",
     ":vm_applications_apps_proto",
     "//base",
+
+    # TODO(stevenjb): Remove these once auth_policy and session_manager are
+    # extracted. https://crbug.com/647367.
+    "//chromeos/dbus/cryptohome",
+    "//chromeos/dbus/cryptohome:cryptohome_proto",
     "//components/account_id",
     "//components/device_event_log",
     "//components/policy:cloud_policy_proto_generated_compile",
@@ -65,10 +67,6 @@ component("dbus") {
     "cras_audio_client.h",
     "cros_disks_client.cc",
     "cros_disks_client.h",
-    "cryptohome/cryptohome_client.cc",
-    "cryptohome/cryptohome_client.h",
-    "cryptohome/fake_cryptohome_client.cc",
-    "cryptohome/fake_cryptohome_client.h",
     "dbus_client.h",
     "dbus_client_implementation_type.h",
     "dbus_clients_browser.cc",
@@ -207,10 +205,6 @@ component("dbus") {
     "upstart/fake_upstart_client.h",
     "upstart/upstart_client.cc",
     "upstart/upstart_client.h",
-    "util/account_identifier_operators.cc",
-    "util/account_identifier_operators.h",
-    "util/tpm_util.cc",
-    "util/tpm_util.h",
     "util/version_loader.cc",
     "util/version_loader.h",
     "virtual_file_provider_client.cc",
@@ -264,7 +258,6 @@ source_set("unit_tests") {
   configs += [ "//build/config/linux/dbus" ]
   testonly = true
   deps = [
-    ":attestation_proto",
     ":dbus",
     ":oobe_config_proto",
     ":power_manager_proto",
@@ -272,6 +265,8 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//chromeos/dbus/biod:test_support",
+    "//chromeos/dbus/cryptohome",
+    "//chromeos/dbus/cryptohome:attestation_proto",
     "//components/account_id",
     "//dbus",
     "//dbus:test_support",
@@ -311,14 +306,6 @@ source_set("unit_tests") {
   ]
 }
 
-proto_library("attestation_proto") {
-  sources = [
-    "proto/attestation.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/attestation"
-}
-
 proto_library("authpolicy_proto") {
   sources = [
     "//third_party/cros_system_api/dbus/authpolicy/active_directory_info.proto",
@@ -341,23 +328,6 @@ proto_library("concierge_proto") {
   ]
 
   proto_out_dir = "chromeos/dbus/concierge"
-}
-
-proto_library("cryptohome_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/cryptohome/key.proto",
-    "//third_party/cros_system_api/dbus/cryptohome/rpc.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/cryptohome"
-}
-
-proto_library("cryptohome_signkey_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/cryptohome/signed_secret.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/cryptohome"
 }
 
 proto_library("login_manager_proto") {

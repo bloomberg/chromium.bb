@@ -15,8 +15,8 @@
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/authpolicy/active_directory_info.pb.h"
+#include "chromeos/dbus/cryptohome/tpm_util.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
-#include "chromeos/dbus/util/tpm_util.h"
 #include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

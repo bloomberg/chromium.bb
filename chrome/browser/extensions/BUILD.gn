@@ -975,6 +975,7 @@ jumbo_static_library("extensions") {
       "//chromeos/components/proximity_auth",
       "//chromeos/cryptohome",
       "//chromeos/dbus",
+      "//chromeos/dbus/cryptohome",
       "//chromeos/disks",
       "//chromeos/login/login_state",
       "//chromeos/network",

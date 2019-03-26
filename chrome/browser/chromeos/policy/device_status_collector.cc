@@ -54,6 +54,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
+#include "chromeos/dbus/cryptohome/tpm_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/update_engine_client.h"
@@ -1067,7 +1068,7 @@ DeviceStatusCollector::DeviceStatusCollector(
       base::Bind(&chromeos::version_loader::GetFirmware),
       base::Bind(&DeviceStatusCollector::OnOSFirmware,
                  weak_factory_.GetWeakPtr()));
-  chromeos::version_loader::GetTpmVersion(base::BindOnce(
+  chromeos::tpm_util::GetTpmVersion(base::BindOnce(
       &DeviceStatusCollector::OnTpmVersion, weak_factory_.GetWeakPtr()));
 
   // If doing enterprise device-level reporting, observe the list of users to be

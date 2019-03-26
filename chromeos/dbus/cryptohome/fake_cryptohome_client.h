@@ -23,7 +23,7 @@
 
 namespace chromeos {
 
-class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCryptohomeClient
+class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
     : public CryptohomeClient {
  public:
   // FakeCryptohomeClient can be embedded in unit tests, but the
