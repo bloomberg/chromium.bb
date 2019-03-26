@@ -42,6 +42,9 @@ namespace {
 using chromeos::CupsPrintersManager;
 using chromeos::CupsPrintersManagerFactory;
 
+// We only support sending username for named users but just in case.
+const char kUsernamePlaceholder[] = "chronos";
+
 // Store the name used in CUPS, Printer#id in |printer_name|, the description
 // as the system_driverinfo option value, and the Printer#display_name in
 // the |printer_description| field.  This will match how Mac OS X presents
@@ -261,10 +264,12 @@ void LocalPrinterHandlerChromeos::StartPrint(
   UMA_HISTOGRAM_MEMORY_KB("Printing.CUPS.PrintDocumentSize", size_in_kb);
   if (profile_->GetPrefs()->GetBoolean(
           prefs::kPrintingSendUsernameAndFilenameEnabled)) {
-    settings.SetKey(kSettingUsername,
-                    base::Value(chromeos::ProfileHelper::Get()
-                                    ->GetUserByProfile(profile_)
-                                    ->display_email()));
+    std::string username = chromeos::ProfileHelper::Get()
+                               ->GetUserByProfile(profile_)
+                               ->display_email();
+    settings.SetKey(
+        kSettingUsername,
+        base::Value(username.empty() ? kUsernamePlaceholder : username));
     settings.SetKey(kSettingSendUserInfo, base::Value(true));
   }
   StartLocalPrint(std::move(settings), std::move(print_data),
