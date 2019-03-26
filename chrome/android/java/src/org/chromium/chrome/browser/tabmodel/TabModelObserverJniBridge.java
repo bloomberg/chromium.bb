@@ -89,7 +89,7 @@ class TabModelObserverJniBridge implements TabModelObserver {
     }
 
     @Override
-    public final void allTabsPendingClosure(List<Tab> tabs) {
+    public final void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs) {
         // Convert the List to an array of objects. This makes the corresponding C++ code much
         // easier.
         assert mNativeTabModelObserverJniBridge != 0;

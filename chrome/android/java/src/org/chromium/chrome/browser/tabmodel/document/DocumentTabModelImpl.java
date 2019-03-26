@@ -308,6 +308,9 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     }
 
     @Override
+    public void closeMultipleTabs(List<Tab> tabs, boolean canUndo) {}
+
+    @Override
     public void closeAllTabs() {
         closeAllTabs(true, false);
     }

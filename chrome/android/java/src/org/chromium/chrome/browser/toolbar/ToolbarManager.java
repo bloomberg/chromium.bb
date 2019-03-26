@@ -380,7 +380,7 @@ public class ToolbarManager
             }
 
             @Override
-            public void allTabsPendingClosure(List<Tab> tabs) {
+            public void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs) {
                 refreshSelectedTab();
             }
 

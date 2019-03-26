@@ -50755,6 +50755,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="27" label="UMA_WEBAPK_PRIVACY_DISCLOSURE"/>
   <int value="28" label="UMA_TWA_PRIVACY_DISCLOSURE"/>
   <int value="29" label="UMA_AUTOFILL_ASSISTANT_STOP_UNDO"/>
+  <int value="30" label="UMA_TAB_CLOSE_MULTIPLE_UNDO"/>
 </enum>
 
 <enum name="SnippetOpenMethod">
