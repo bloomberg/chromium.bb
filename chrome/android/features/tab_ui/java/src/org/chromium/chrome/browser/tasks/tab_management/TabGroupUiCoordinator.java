@@ -59,7 +59,7 @@ public class TabGroupUiCoordinator
         TabContentManager tabContentManager = activity.getTabContentManager();
 
         mTabStripCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.STRIP,
-                mContext, tabModelSelector, tabContentManager,
+                mContext, tabModelSelector, null, null,
                 mTabStripToolbarCoordinator.getTabListContainerView(), true, COMPONENT_NAME);
 
         mTabGridSheetCoordinator =
