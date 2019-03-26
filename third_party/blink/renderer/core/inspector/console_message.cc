@@ -18,7 +18,7 @@ namespace blink {
 
 // static
 ConsoleMessage* ConsoleMessage::CreateForRequest(
-    MessageSource source,
+    mojom::ConsoleMessageSource source,
     mojom::ConsoleMessageLevel level,
     const String& message,
     const String& url,
@@ -33,7 +33,7 @@ ConsoleMessage* ConsoleMessage::CreateForRequest(
 
 // static
 ConsoleMessage* ConsoleMessage::Create(
-    MessageSource source,
+    mojom::ConsoleMessageSource source,
     mojom::ConsoleMessageLevel level,
     const String& message,
     std::unique_ptr<SourceLocation> location) {
@@ -42,7 +42,7 @@ ConsoleMessage* ConsoleMessage::Create(
 }
 
 // static
-ConsoleMessage* ConsoleMessage::Create(MessageSource source,
+ConsoleMessage* ConsoleMessage::Create(mojom::ConsoleMessageSource source,
                                        mojom::ConsoleMessageLevel level,
                                        const String& message) {
   return ConsoleMessage::Create(source, level, message,
@@ -55,8 +55,9 @@ ConsoleMessage* ConsoleMessage::CreateFromWorker(
     const String& message,
     std::unique_ptr<SourceLocation> location,
     WorkerThread* worker_thread) {
-  ConsoleMessage* console_message = ConsoleMessage::Create(
-      kWorkerMessageSource, level, message, std::move(location));
+  ConsoleMessage* console_message =
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kWorker, level,
+                             message, std::move(location));
   console_message->worker_id_ =
       IdentifiersFactory::IdFromToken(worker_thread->GetDevToolsWorkerToken());
   return console_message;
@@ -65,9 +66,9 @@ ConsoleMessage* ConsoleMessage::CreateFromWorker(
 ConsoleMessage* ConsoleMessage::CreateFromWebConsoleMessage(
     const WebConsoleMessage& message,
     LocalFrame* local_frame) {
-  MessageSource message_source = message.nodes.empty()
-                                     ? kOtherMessageSource
-                                     : kRecommendationMessageSource;
+  mojom::ConsoleMessageSource message_source =
+      message.nodes.empty() ? mojom::ConsoleMessageSource::kOther
+                            : mojom::ConsoleMessageSource::kRecommendation;
 
   ConsoleMessage* console_message = ConsoleMessage::Create(
       message_source, message.level, message.text,
@@ -84,7 +85,7 @@ ConsoleMessage* ConsoleMessage::CreateFromWebConsoleMessage(
   return console_message;
 }
 
-ConsoleMessage::ConsoleMessage(MessageSource source,
+ConsoleMessage::ConsoleMessage(mojom::ConsoleMessageSource source,
                                mojom::ConsoleMessageLevel level,
                                const String& message,
                                std::unique_ptr<SourceLocation> location)
@@ -109,7 +110,7 @@ double ConsoleMessage::Timestamp() const {
   return timestamp_;
 }
 
-MessageSource ConsoleMessage::Source() const {
+mojom::ConsoleMessageSource ConsoleMessage::Source() const {
   return source_;
 }
 

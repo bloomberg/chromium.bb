@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_CONSOLE_LOGGER_IMPL_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_CONSOLE_LOGGER_IMPL_BASE_H_
 
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 
 namespace blink {
@@ -28,7 +28,7 @@ class CORE_EXPORT ConsoleLoggerImplBase : public ConsoleLogger {
   virtual void AddConsoleMessage(ConsoleMessage*) = 0;
 
  private:
-  static MessageSource GetMessageSourceFromSource(Source);
+  static mojom::ConsoleMessageSource GetMessageSourceFromSource(Source);
 };
 
 }  // namespace blink

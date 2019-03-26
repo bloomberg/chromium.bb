@@ -232,7 +232,8 @@ HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
   // We don't support embedding portals in nested browsing contexts.
   if (!GetDocument().GetFrame()->IsMainFrame()) {
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kRenderingMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        mojom::ConsoleMessageSource::kRendering,
+        mojom::ConsoleMessageLevel::kWarning,
         "Cannot use <portal> in a nested browsing context."));
     return result;
   }

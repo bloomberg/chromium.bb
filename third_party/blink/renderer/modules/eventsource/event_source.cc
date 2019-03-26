@@ -243,8 +243,8 @@ void EventSource::DidReceiveResponse(uint64_t identifier,
       message.Append("\") that is not UTF-8. Aborting the connection.");
       // FIXME: We are missing the source line.
       GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, mojom::ConsoleMessageLevel::kError,
-          message.ToString()));
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kError, message.ToString()));
     }
   } else {
     // To keep the signal-to-noise ratio low, we only log 200-response with an
@@ -257,8 +257,8 @@ void EventSource::DidReceiveResponse(uint64_t identifier,
           "\") that is not \"text/event-stream\". Aborting the connection.");
       // FIXME: We are missing the source line.
       GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, mojom::ConsoleMessageLevel::kError,
-          message.ToString()));
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kError, message.ToString()));
     }
   }
 

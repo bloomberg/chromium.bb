@@ -93,7 +93,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   bool ShouldReportDetailedMessageForSource(LocalFrame&,
                                             const String&) override;
   void AddMessageToConsole(LocalFrame*,
-                           MessageSource,
+                           mojom::ConsoleMessageSource,
                            mojom::ConsoleMessageLevel,
                            const String& message,
                            unsigned line_number,

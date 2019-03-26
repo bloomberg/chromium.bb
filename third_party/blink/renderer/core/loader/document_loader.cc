@@ -629,7 +629,8 @@ void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
     if (!frame_->IsMainFrame()) {
       // Only the top-frame can load MHTML.
       frame_->Console().AddMessage(ConsoleMessage::Create(
-          kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kError,
           "Attempted to load a multipart archive into an subframe: " +
               url_.GetString()));
     } else {
@@ -639,7 +640,8 @@ void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
         archive_.Clear();
         // Log if attempting to load an invalid archive resource.
         frame_->Console().AddMessage(ConsoleMessage::Create(
-            kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kError,
             "Malformed multipart archive: " + url_.GetString()));
       } else {
         main_resource = archive_->MainResource();
@@ -785,7 +787,8 @@ ContentSecurityPolicy* DocumentLoader::CreateCSP(
                          "required by its embedder: '" +
                          GetFrameLoader().RequiredCSP() + "'.";
         ConsoleMessage* console_message = ConsoleMessage::CreateForRequest(
-            kSecurityMessageSource, mojom::ConsoleMessageLevel::kError, message,
+            mojom::ConsoleMessageSource::kSecurity,
+            mojom::ConsoleMessageLevel::kError, message,
             response.CurrentRequestUrl(), this, MainResourceIdentifier());
         frame_->GetDocument()->AddConsoleMessage(console_message);
         return nullptr;

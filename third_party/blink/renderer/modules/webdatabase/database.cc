@@ -761,8 +761,9 @@ void Database::ReportSqliteError(int sqlite_error_code) {
 }
 
 void Database::LogErrorMessage(const String& message) {
-  GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-      kStorageMessageSource, mojom::ConsoleMessageLevel::kError, message));
+  GetExecutionContext()->AddConsoleMessage(
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kStorage,
+                             mojom::ConsoleMessageLevel::kError, message));
 }
 
 ExecutionContext* Database::GetExecutionContext() const {

@@ -280,10 +280,12 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutFetch(
       allowed ? mojom::ConsoleMessageLevel::kWarning
               : mojom::ConsoleMessageLevel::kError;
   if (source_location) {
-    return ConsoleMessage::Create(kSecurityMessageSource, message_level,
-                                  message, std::move(source_location));
+    return ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
+                                  message_level, message,
+                                  std::move(source_location));
   }
-  return ConsoleMessage::Create(kSecurityMessageSource, message_level, message);
+  return ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
+                                message_level, message);
 }
 
 // static
@@ -527,7 +529,8 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutWebSocket(
   mojom::ConsoleMessageLevel message_level =
       allowed ? mojom::ConsoleMessageLevel::kWarning
               : mojom::ConsoleMessageLevel::kError;
-  return ConsoleMessage::Create(kSecurityMessageSource, message_level, message);
+  return ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
+                                message_level, message);
 }
 
 // static
@@ -628,8 +631,9 @@ bool MixedContentChecker::IsMixedFormAction(
         "endpoint should be made available over a secure connection.",
         MainResourceUrlForFrame(mixed_frame).ElidedString().Utf8().data(),
         url.ElidedString().Utf8().data());
-    frame->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
+    frame->GetDocument()->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
+                               mojom::ConsoleMessageLevel::kWarning, message));
   }
 
   return true;
@@ -745,7 +749,7 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutFetchAutoupgrade(
       "autoupgrade-mixed.md",
       main_resource_url.ElidedString().Utf8().data(),
       mixed_content_url.ElidedString().Utf8().data());
-  return ConsoleMessage::Create(kSecurityMessageSource,
+  return ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
                                 mojom::ConsoleMessageLevel::kWarning, message);
 }
 
@@ -763,7 +767,7 @@ MixedContentChecker::CreateConsoleMessageAboutWebSocketAutoupgrade(
       "autoupgrade-mixed.md",
       main_resource_url.ElidedString().Utf8().data(),
       mixed_content_url.ElidedString().Utf8().data());
-  return ConsoleMessage::Create(kSecurityMessageSource,
+  return ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
                                 mojom::ConsoleMessageLevel::kWarning, message);
 }
 

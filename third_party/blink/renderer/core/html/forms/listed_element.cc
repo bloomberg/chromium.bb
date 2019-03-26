@@ -489,8 +489,9 @@ bool ListedElement::reportValidity() {
     String message(
         "An invalid form control with name='%name' is not focusable.");
     message.Replace("%name", GetName());
-    element.GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kRenderingMessageSource, mojom::ConsoleMessageLevel::kError, message));
+    element.GetDocument().AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
+                               mojom::ConsoleMessageLevel::kError, message));
   }
   return false;
 }

@@ -295,7 +295,8 @@ void MediaKeySystemAccessInitializer::CheckVideoCapabilityRobustness() const {
     // using an empty robustness here, and provide the link to the doc in this
     // message. See http://crbug.com/720013
     resolver_->GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning,
         "It is recommended that a robustness level be specified. Not "
         "specifying the robustness level could result in unexpected "
         "behavior."));
@@ -333,9 +334,10 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
                                   ReportOptions::kReportOnFailure)) {
     UseCounter::Count(document,
                       WebFeature::kEncryptedMediaDisabledByFeaturePolicy);
-    document->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
-        kEncryptedMediaFeaturePolicyConsoleWarning));
+    document->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning,
+                               kEncryptedMediaFeaturePolicyConsoleWarning));
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(

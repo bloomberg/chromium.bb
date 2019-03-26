@@ -434,8 +434,8 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadError(
                                        : error->unsanitized_message;
   if (!error_message.IsEmpty()) {
     WorkerGlobalScope()->AddConsoleMessage(ConsoleMessage::Create(
-        kWorkerMessageSource, mojom::ConsoleMessageLevel::kError,
-        error_message));
+        mojom::ConsoleMessageSource::kWorker,
+        mojom::ConsoleMessageLevel::kError, error_message));
   }
   // Reject the preloadResponse promise.
   fetch_event->OnNavigationPreloadError(
@@ -613,13 +613,14 @@ void ServiceWorkerGlobalScopeProxy::ReportException(
 }
 
 void ServiceWorkerGlobalScopeProxy::ReportConsoleMessage(
-    MessageSource source,
+    mojom::ConsoleMessageSource source,
     mojom::ConsoleMessageLevel level,
     const String& message,
     SourceLocation* location) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  Client().ReportConsoleMessage(source, level, message, location->LineNumber(),
-                                location->Url());
+  // TODO(crbug.com/941871): Remove static_cast and use ConsoleMessageSource.
+  Client().ReportConsoleMessage(static_cast<int>(source), level, message,
+                                location->LineNumber(), location->Url());
 }
 
 void ServiceWorkerGlobalScopeProxy::WillInitializeWorkerContext() {

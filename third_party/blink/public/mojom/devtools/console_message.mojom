@@ -10,3 +10,20 @@ enum ConsoleMessageLevel {
   kWarning,
   kError
 };
+
+enum ConsoleMessageSource {
+  kXml,
+  kJavaScript,
+  kNetwork,
+  kConsoleApi,
+  kStorage,
+  kAppCache,
+  kRendering,
+  kSecurity,
+  kOther,
+  kDeprecation,
+  kWorker,
+  kViolation,
+  kIntervention,
+  kRecommendation
+};

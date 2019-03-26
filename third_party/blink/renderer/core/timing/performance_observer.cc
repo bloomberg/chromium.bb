@@ -128,7 +128,8 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
           "its "
           "entryTypes attribute.";
       GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning, message));
       return;
     }
     if (RuntimeEnabledFeatures::PerformanceObserverBufferedFlagEnabled() &&
@@ -137,7 +138,8 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
           "The Performance Observer does not support buffered flag with "
           "entryTypes. ";
       GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning, message));
     }
     filter_options_ = entry_types;
   } else {
@@ -162,7 +164,8 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
           "The Performance Observer MUST have a valid entryType in its "
           "type attribute.";
       GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning, message));
       return;
     }
     if (filter_options_ & entry_type) {
@@ -170,7 +173,8 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
           "The Performance Observer has already been called with this "
           "entryType";
       GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning, message));
       return;
     }
     if (RuntimeEnabledFeatures::PerformanceObserverBufferedFlagEnabled() &&
@@ -179,7 +183,8 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
         String message =
             "Buffered flag does not support the long task entry type ";
         GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-            kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning, message));
       } else {
         // Append all entries of this type to the current performance_entries_
         // to be returned on the next callback.

@@ -178,7 +178,7 @@ class CORE_EXPORT ChromeClient
   virtual bool ShouldReportDetailedMessageForSource(LocalFrame&,
                                                     const String& source) = 0;
   virtual void AddMessageToConsole(LocalFrame*,
-                                   MessageSource,
+                                   mojom::ConsoleMessageSource,
                                    mojom::ConsoleMessageLevel,
                                    const String& message,
                                    unsigned line_number,

@@ -723,7 +723,8 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
 
   if (!request.OriginDocument()->GetSecurityOrigin()->CanDisplay(url)) {
     request.OriginDocument()->AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError,
         "Not allowed to load local resource: " + url.ElidedString()));
     return false;
   }
@@ -743,7 +744,8 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
        (url.ProtocolIsData() &&
         network_utils::IsDataURLMimeTypeSupported(url)))) {
     frame_->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError,
         "Not allowed to navigate top frame to " + url.Protocol() +
             " URL: " + url.ElidedString()));
     return false;

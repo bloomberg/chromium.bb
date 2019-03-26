@@ -244,7 +244,7 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
 
   if (message->ErrorLevel() != v8::Isolate::kMessageError) {
     context->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource,
+        mojom::ConsoleMessageSource::kJavaScript,
         MessageLevelFromNonFatalErrorLevel(message->ErrorLevel()),
         ToCoreStringWithNullCheck(message->Get()), std::move(location)));
     return;
@@ -289,7 +289,7 @@ void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
 
   if (message->ErrorLevel() != v8::Isolate::kMessageError) {
     context->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource,
+        mojom::ConsoleMessageSource::kJavaScript,
         MessageLevelFromNonFatalErrorLevel(message->ErrorLevel()),
         ToCoreStringWithNullCheck(message->Get()), std::move(location)));
     return;

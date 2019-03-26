@@ -577,7 +577,7 @@ static bool ShouldAllowExternalLoad(const KURL& url) {
           XMLDocumentParserScope::current_document_->Url().ElidedString() +
           ". Domains, protocols and ports must match.\n";
       XMLDocumentParserScope::current_document_->AddConsoleMessage(
-          ConsoleMessage::Create(kSecurityMessageSource,
+          ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
                                  mojom::ConsoleMessageLevel::kError, message));
     }
     return false;

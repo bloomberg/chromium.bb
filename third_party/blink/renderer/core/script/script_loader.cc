@@ -186,16 +186,18 @@ ShouldFireErrorEvent ParseAndRegisterImportMap(ScriptElementBase& element,
 
   if (!modulator->IsAcquiringImportMaps()) {
     element_document.AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kError,
         "An import map is added after module script load was triggered."));
     return ShouldFireErrorEvent::kShouldFire;
   }
 
   // TODO(crbug.com/922212): Implemenet external import maps.
   if (element.HasSourceAttribute()) {
-    element_document.AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kError,
-        "External import maps are not yet supported."));
+    element_document.AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kError,
+                               "External import maps are not yet supported."));
     return ShouldFireErrorEvent::kShouldFire;
   }
 
@@ -432,7 +434,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   if (ShouldBlockSyncScriptForFeaturePolicy(element_.Get(), GetScriptType(),
                                             parser_inserted_)) {
     element_document.AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kError,
         "Synchronous script execution is disabled by Feature Policy"));
     return false;
   }

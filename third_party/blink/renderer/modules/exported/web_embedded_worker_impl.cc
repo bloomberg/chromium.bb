@@ -262,7 +262,7 @@ void WebEmbeddedWorkerImpl::ResumeAfterDownload() {
 void WebEmbeddedWorkerImpl::AddMessageToConsole(
     const WebConsoleMessage& message) {
   shadow_page_->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-      kOtherMessageSource, message.level, message.text,
+      mojom::ConsoleMessageSource::kOther, message.level, message.text,
       std::make_unique<SourceLocation>(message.url, message.line_number,
                                        message.column_number, nullptr)));
 }

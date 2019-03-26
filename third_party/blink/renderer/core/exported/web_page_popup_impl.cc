@@ -113,7 +113,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   }
 
   void AddMessageToConsole(LocalFrame*,
-                           MessageSource,
+                           mojom::ConsoleMessageSource,
                            mojom::ConsoleMessageLevel,
                            const String& message,
                            unsigned line_number,

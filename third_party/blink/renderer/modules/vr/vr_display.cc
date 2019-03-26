@@ -230,10 +230,11 @@ bool VRDisplay::getFrameData(VRFrameData* frame_data) {
   if (!in_animation_frame_) {
     Document* doc = navigator_vr_->GetDocument();
     if (doc) {
-      doc->AddConsoleMessage(ConsoleMessage::Create(
-          kRenderingMessageSource, mojom::ConsoleMessageLevel::kWarning,
-          "getFrameData must be called within a "
-          "VRDisplay.requestAnimationFrame callback."));
+      doc->AddConsoleMessage(
+          ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
+                                 mojom::ConsoleMessageLevel::kWarning,
+                                 "getFrameData must be called within a "
+                                 "VRDisplay.requestAnimationFrame callback."));
     }
     return false;
   }
@@ -798,16 +799,18 @@ void VRDisplay::submitFrame() {
 
   if (!is_presenting_) {
     doc->AddConsoleMessage(ConsoleMessage::Create(
-        kRenderingMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        mojom::ConsoleMessageSource::kRendering,
+        mojom::ConsoleMessageLevel::kWarning,
         "submitFrame has no effect when the VRDisplay is not presenting."));
     return;
   }
 
   if (!in_animation_frame_) {
-    doc->AddConsoleMessage(ConsoleMessage::Create(
-        kRenderingMessageSource, mojom::ConsoleMessageLevel::kWarning,
-        "submitFrame must be called within a "
-        "VRDisplay.requestAnimationFrame callback."));
+    doc->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
+                               mojom::ConsoleMessageLevel::kWarning,
+                               "submitFrame must be called within a "
+                               "VRDisplay.requestAnimationFrame callback."));
     return;
   }
 

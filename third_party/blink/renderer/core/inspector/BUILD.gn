@@ -18,7 +18,6 @@ blink_core_sources("inspector") {
     "console_message.h",
     "console_message_storage.cc",
     "console_message_storage.h",
-    "console_types.h",
     "dev_tools_emulator.cc",
     "dev_tools_emulator.h",
     "dev_tools_host.cc",

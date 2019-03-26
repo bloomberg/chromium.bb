@@ -103,11 +103,12 @@ MainThreadDebugger::~MainThreadDebugger() {
   instance_ = nullptr;
 }
 
-void MainThreadDebugger::ReportConsoleMessage(ExecutionContext* context,
-                                              MessageSource source,
-                                              mojom::ConsoleMessageLevel level,
-                                              const String& message,
-                                              SourceLocation* location) {
+void MainThreadDebugger::ReportConsoleMessage(
+    ExecutionContext* context,
+    mojom::ConsoleMessageSource source,
+    mojom::ConsoleMessageLevel level,
+    const String& message,
+    SourceLocation* location) {
   if (LocalFrame* frame = ToFrame(context))
     frame->Console().ReportMessageToClient(source, level, message, location);
 }
@@ -189,8 +190,9 @@ void MainThreadDebugger::ExceptionThrown(ExecutionContext* context,
   }
 
   frame->Console().ReportMessageToClient(
-      kJSMessageSource, mojom::ConsoleMessageLevel::kError,
-      event->MessageForConsole(), event->Location());
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kError, event->MessageForConsole(),
+      event->Location());
 
   const String default_message = "Uncaught";
   if (script_state && script_state->ContextIsValid()) {
@@ -336,9 +338,10 @@ void MainThreadDebugger::consoleAPIMessage(
   std::unique_ptr<SourceLocation> location = std::make_unique<SourceLocation>(
       ToCoreString(url), line_number, column_number,
       stack_trace ? stack_trace->clone() : nullptr, 0);
-  frame->Console().ReportMessageToClient(kConsoleAPIMessageSource,
-                                         V8MessageLevelToMessageLevel(level),
-                                         ToCoreString(message), location.get());
+  frame->Console().ReportMessageToClient(
+      mojom::ConsoleMessageSource::kConsoleApi,
+      V8MessageLevelToMessageLevel(level), ToCoreString(message),
+      location.get());
 }
 
 void MainThreadDebugger::consoleClear(int context_group_id) {

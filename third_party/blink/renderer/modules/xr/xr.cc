@@ -271,7 +271,8 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
 
   if (mode == XRSession::kModeInlineAR) {
     doc->AddConsoleMessage(ConsoleMessage::Create(
-        kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        mojom::ConsoleMessageSource::kOther,
+        mojom::ConsoleMessageLevel::kWarning,
         "Inline AR is deprecated and will be removed soon."));
   }
 

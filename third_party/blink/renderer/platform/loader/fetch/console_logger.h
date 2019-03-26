@@ -14,8 +14,8 @@ namespace blink {
 // A pure virtual interface for console logging.
 class PLATFORM_EXPORT ConsoleLogger : public GarbageCollectedMixin {
  public:
-  // This enum corresponds to blink::MessageSource. Expand this enum when
-  // needed.
+  // This enum corresponds to blink::mojom::ConsoleMessageSource. Expand this
+  // enum when needed.
   enum class Source {
     kScript,
     kSecurity,

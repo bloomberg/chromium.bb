@@ -841,8 +841,9 @@ bool DOMSelection::IsValidForPosition(Node* node) const {
 
 void DOMSelection::AddConsoleWarning(const String& message) {
   if (tree_scope_) {
-    tree_scope_->GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
+    tree_scope_->GetDocument().AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning, message));
   }
 }
 
