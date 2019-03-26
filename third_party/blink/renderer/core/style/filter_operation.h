@@ -124,11 +124,6 @@ class CORE_EXPORT FilterOperation
   DISALLOW_COPY_AND_ASSIGN(FilterOperation);
 };
 
-#define DEFINE_FILTER_OPERATION_TYPE_CASTS(thisType, operationType)  \
-  DEFINE_TYPE_CASTS(thisType, FilterOperation, op,                   \
-                    op->GetType() == FilterOperation::operationType, \
-                    op.GetType() == FilterOperation::operationType)
-
 class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
  public:
   static ReferenceFilterOperation* Create(const AtomicString& url,
@@ -168,7 +163,12 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
   Member<Filter> filter_;
 };
 
-DEFINE_FILTER_OPERATION_TYPE_CASTS(ReferenceFilterOperation, REFERENCE);
+template <>
+struct DowncastTraits<ReferenceFilterOperation> {
+  static bool AllowFrom(const FilterOperation& op) {
+    return op.GetType() == FilterOperation::REFERENCE;
+  }
+};
 
 // GRAYSCALE, SEPIA, SATURATE and HUE_ROTATE are variations on a basic color
 // matrix effect.  For HUE_ROTATE, the angle of rotation is stored in m_amount.
@@ -289,7 +289,12 @@ class CORE_EXPORT BlurFilterOperation : public FilterOperation {
   Length std_deviation_;
 };
 
-DEFINE_FILTER_OPERATION_TYPE_CASTS(BlurFilterOperation, BLUR);
+template <>
+struct DowncastTraits<BlurFilterOperation> {
+  static bool AllowFrom(const FilterOperation& op) {
+    return op.GetType() == FilterOperation::BLUR;
+  }
+};
 
 class CORE_EXPORT DropShadowFilterOperation : public FilterOperation {
  public:
@@ -320,7 +325,12 @@ class CORE_EXPORT DropShadowFilterOperation : public FilterOperation {
   ShadowData shadow_;
 };
 
-DEFINE_FILTER_OPERATION_TYPE_CASTS(DropShadowFilterOperation, DROP_SHADOW);
+template <>
+struct DowncastTraits<DropShadowFilterOperation> {
+  static bool AllowFrom(const FilterOperation& op) {
+    return op.GetType() == FilterOperation::DROP_SHADOW;
+  }
+};
 
 class CORE_EXPORT BoxReflectFilterOperation : public FilterOperation {
  public:
@@ -344,7 +354,13 @@ class CORE_EXPORT BoxReflectFilterOperation : public FilterOperation {
 
   BoxReflection reflection_;
 };
-DEFINE_FILTER_OPERATION_TYPE_CASTS(BoxReflectFilterOperation, BOX_REFLECT);
+
+template <>
+struct DowncastTraits<BoxReflectFilterOperation> {
+  static bool AllowFrom(const FilterOperation& op) {
+    return op.GetType() == FilterOperation::BOX_REFLECT;
+  }
+};
 
 #undef DEFINE_FILTER_OPERATION_TYPE_CASTS
 

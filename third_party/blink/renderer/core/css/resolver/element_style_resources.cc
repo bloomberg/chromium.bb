@@ -124,12 +124,12 @@ void ElementStyleResources::LoadPendingSVGResources(
     return;
   FilterOperations::FilterOperationVector& filter_operations =
       computed_style->MutableFilter().Operations();
-  for (auto& filter_operation : filter_operations) {
-    if (filter_operation->GetType() != FilterOperation::REFERENCE)
+  for (const auto& filter_operation : filter_operations) {
+    auto* reference_operation =
+        DynamicTo<ReferenceFilterOperation>(filter_operation.Get());
+    if (!reference_operation)
       continue;
-    ReferenceFilterOperation& reference_operation =
-        ToReferenceFilterOperation(*filter_operation);
-    if (SVGResource* resource = reference_operation.Resource())
+    if (SVGResource* resource = reference_operation->Resource())
       resource->Load(element_->GetDocument());
   }
 }
