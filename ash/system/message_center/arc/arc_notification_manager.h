@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/common/notifications.mojom.h"
-#include "components/arc/connection_holder.h"
-#include "components/arc/connection_observer.h"
+#include "components/arc/session/connection_holder.h"
+#include "components/arc/session/connection_observer.h"
 #include "ui/message_center/message_center.h"
 
 namespace ash {

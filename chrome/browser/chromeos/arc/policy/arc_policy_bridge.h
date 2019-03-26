@@ -18,7 +18,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/arc/common/policy.mojom.h"
-#include "components/arc/connection_observer.h"
+#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"

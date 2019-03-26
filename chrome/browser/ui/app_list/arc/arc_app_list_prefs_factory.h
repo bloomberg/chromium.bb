@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "components/arc/common/app.mojom.h"
-#include "components/arc/connection_holder.h"
+#include "components/arc/session/connection_holder.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class ArcAppListPrefs;

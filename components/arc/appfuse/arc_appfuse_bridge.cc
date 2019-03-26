@@ -10,8 +10,8 @@
 #include "base/memory/singleton.h"
 #include "chromeos/dbus/arc_appfuse_provider_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 #include <sys/epoll.h>

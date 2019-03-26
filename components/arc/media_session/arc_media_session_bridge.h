@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "components/arc/common/media_session.mojom.h"
-#include "components/arc/connection_observer.h"
+#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {

@@ -8,8 +8,8 @@
 #include "base/memory/singleton.h"
 #include "base/optional.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/session/arc_bridge_service.h"
 
 namespace arc {
 

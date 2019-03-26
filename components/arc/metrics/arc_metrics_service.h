@@ -17,7 +17,7 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/arc/common/metrics.mojom.h"
 #include "components/arc/common/process.mojom.h"
-#include "components/arc/connection_observer.h"
+#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
