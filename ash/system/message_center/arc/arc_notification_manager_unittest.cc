@@ -12,7 +12,7 @@
 #include "ash/system/message_center/arc/arc_notification_manager_delegate.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "components/arc/connection_holder.h"
+#include "components/arc/session/connection_holder.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_notifications_instance.h"
 #include "mojo/public/cpp/bindings/binding.h"

@@ -15,8 +15,8 @@
 #include "chrome/browser/task_manager/providers/task.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/common/process.mojom.h"
-#include "components/arc/connection_observer.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/session/connection_observer.h"
 
 namespace task_manager {
 
