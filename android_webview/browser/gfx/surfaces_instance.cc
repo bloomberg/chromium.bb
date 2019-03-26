@@ -23,7 +23,6 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
-#include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl_non_ddl.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -84,6 +83,7 @@ SurfacesInstance::SurfacesInstance()
       this, frame_sink_manager_.get(), frame_sink_id_, is_root,
       needs_sync_points);
 
+  // Android WebView always uses non-DDL regardless of RendererSetting.
   const bool use_skia_renderer =
       settings.use_skia_renderer || settings.use_skia_renderer_non_ddl;
   auto* command_line = base::CommandLine::ForCurrentProcess();
@@ -103,7 +103,7 @@ SurfacesInstance::SurfacesInstance()
   std::unique_ptr<viz::OutputSurface> output_surface;
   viz::SkiaOutputSurface* skia_output_surface = nullptr;
   gl_surface_ = base::MakeRefCounted<AwGLSurface>();
-  if (settings.use_skia_renderer || settings.use_skia_renderer_non_ddl) {
+  if (use_skia_renderer) {
     auto* task_executor = DeferredGpuCommandService::GetInstance();
     if (!shared_context_state_) {
       auto gl_context =
@@ -119,16 +119,10 @@ SurfacesInstance::SurfacesInstance()
                                            .enabled_gpu_driver_bug_workarounds),
           nullptr /* gr_shader_cache */);
     }
-    if (settings.use_skia_renderer_non_ddl) {
-      output_surface = std::make_unique<viz::SkiaOutputSurfaceImplNonDDL>(
-          gl_surface_, shared_context_state_, task_executor->mailbox_manager(),
-          task_executor->shared_image_manager(),
-          task_executor->sync_point_manager(),
-          false /* need_swapbuffers_ack */);
-    } else {
-      output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
-          task_executor, gl_surface_, shared_context_state_);
-    }
+    output_surface = std::make_unique<viz::SkiaOutputSurfaceImplNonDDL>(
+        gl_surface_, shared_context_state_, task_executor->mailbox_manager(),
+        task_executor->shared_image_manager(),
+        task_executor->sync_point_manager(), false /* need_swapbuffers_ack */);
     skia_output_surface =
         static_cast<viz::SkiaOutputSurface*>(output_surface.get());
   } else {
