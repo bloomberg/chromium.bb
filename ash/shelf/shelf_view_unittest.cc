@@ -274,6 +274,10 @@ class ShelfViewTest : public AshTestBase {
     AshTestBase::SetUp();
     model_ = Shell::Get()->shelf_model();
     shelf_view_ = GetPrimaryShelf()->GetShelfViewForTesting();
+    gfx::NativeWindow window = shelf_view_->shelf_widget()->GetNativeWindow();
+    status_area_ = RootWindowController::ForWindow(window)
+                       ->GetStatusAreaWidget()
+                       ->GetContentsView();
 
     // The bounds should be big enough for 4 buttons + overflow button.
     ASSERT_GE(shelf_view_->width(), 500);
@@ -678,6 +682,8 @@ class ShelfViewTest : public AshTestBase {
 
   ShelfModel* model_ = nullptr;
   ShelfView* shelf_view_ = nullptr;
+  views::View* status_area_ = nullptr;
+
   int id_ = 0;
 
   std::unique_ptr<ShelfViewTestAPI> test_api_;
@@ -2338,10 +2344,15 @@ TEST_F(ShelfViewTest, IconCenteringTest) {
     n_buttons = app_buttons.size();
   }
   EXPECT_TRUE(shelf_view_->GetOverflowButton()->visible());
-  // TODO(manucornet): Once the issue of overflow button size versus app size
-  // has been resolved and the centering is pixel-perfect, test here that
-  // the distance between the left app and the app list button is equal to the
-  // distance between the overflow button and the status area.
+  // Now that the apps + overflow button are centered over the available space
+  // on the shelf, check that the the distance between the left app and the
+  // app list button is equal to the distance between the overflow button
+  // and the status area.
+  ExpectWithinOnePixel(
+      app_buttons[0]->GetBoundsInScreen().x() -
+          shelf_view_->GetAppListButton()->GetBoundsInScreen().right(),
+      status_area_->GetBoundsInScreen().x() -
+          shelf_view_->GetOverflowButton()->GetBoundsInScreen().right());
 }
 
 TEST_F(ShelfViewTest, FirstAndLastVisibleIndex) {
@@ -2373,15 +2384,33 @@ TEST_F(ShelfViewTest, FirstAndLastVisibleIndex) {
     EXPECT_EQ(1, shelf_view_->first_visible_index());
     EXPECT_EQ(last_visible_index, shelf_view_->last_visible_index());
   }
+
+  // The overflow button is now visible. Check that the last visible index is
+  // one less than before, because the overflow button replaces the last visible
+  // app.
+  EXPECT_TRUE(shelf_view_->GetOverflowButton()->visible());
+  EXPECT_EQ(last_visible_index_before_overflow - 1,
+            shelf_view_->last_visible_index());
+
   // Now remove the last item we just added. That should get rid of the
   // overflow button, and get back to the previous state.
   RemoveByID(last_added_item_id);
   EXPECT_EQ(1, shelf_view_->first_visible_index());
   EXPECT_EQ(last_visible_index_before_overflow,
             shelf_view_->last_visible_index());
+
   // Adding another app should let the overflow button appear again.
   AddApp();
   EXPECT_TRUE(shelf_view_->GetOverflowButton()->visible());
+  EXPECT_EQ(last_visible_index_before_overflow - 1,
+            shelf_view_->last_visible_index());
+  // And now adding more apps shouldn't change the last visible index.
+  const int how_many_more_apps = 5;
+  for (int i = 0; i < how_many_more_apps; ++i) {
+    AddApp();
+    EXPECT_EQ(last_visible_index_before_overflow - 1,
+              shelf_view_->last_visible_index());
+  }
 }
 
 // Test class that tests both context and application menus.
@@ -3566,10 +3595,6 @@ class ShelfViewFocusTest : public ShelfViewTest {
     AddAppShortcut();
 
     Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
-    gfx::NativeWindow window = shelf->shelf_widget()->GetNativeWindow();
-    status_area_ = RootWindowController::ForWindow(window)
-                       ->GetStatusAreaWidget()
-                       ->GetContentsView();
 
     // Focus the shelf.
     Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
@@ -3585,9 +3610,6 @@ class ShelfViewFocusTest : public ShelfViewTest {
     generator.PressKey(ui::KeyboardCode::VKEY_TAB,
                        ui::EventFlags::EF_SHIFT_DOWN);
   }
-
- protected:
-  views::View* status_area_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfViewFocusTest);

@@ -76,12 +76,12 @@ enum ShelfAlignmentUmaEnumValue {
 //
 // If there is enough screen space, all icons can fit:
 //
-// -----------------------------------------------------------------
-// | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 10 | 11 | 12 | 13 |
-// -----------------------------------------------------------------
-//   ^                                               ^
-//   |                                               |
-// first_visible_index = 0                 last_visible_index = 13
+// -------------------------------------------------------------------------
+// | 1 |         | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
+// -------------------------------------------------------------------------
+//   ^                                                        ^
+//   |                                                        |
+// first_visible_index = 1 (app list)                 last_visible_index = 12
 // (back button = 0 is hidden)
 //
 // Where:
@@ -91,26 +91,24 @@ enum ShelfAlignmentUmaEnumValue {
 // If screen space is more constrained, some icons are placed in an overflow
 // menu (which holds its own instance of ShelfView):
 //
-//            first_visible_index = 10
-//               (for the overflow)     last_visible_index = 13 (for overflow)
-//                                |               |
-//                                v               v
-//                              ---------------------
-//                              | 10 | 11 | 12 | 13 |
-//                              ---------------------
-//                                        ^
-// -------------------------------------------
-// | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | ... |
-// -------------------------------------------
-//   ^                                    ^
-//   |                                    |
-// first_visible_index = 0       last_visible_index = 10
-//   (for the main shelf)         (the overflow button)
-//  (back button = 0
-//           is hidden)
+//             first_visible_index = 10          last_visible_index = 13
+//                    (for the overflow)         (for overflow)
+//                                     |               |
+//                                     v               v
+//                                   ---------------------
+//                                   | 10 | 11 | 12 | 13 |
+//                                   ---------------------
+//                                           ^
+// --------------------------------------------------
+// | 1 |    | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | ... |
+// --------------------------------------------------
+//   ^                                    ^    ^
+//   |                                    |    L-- overflow button
+// first_visible_index = 1                |
+//   (for the main shelf)        last_visible_index = 9
+//   (back button = 0
+//             is hidden)
 //
-// Note that last_visible_index is 10 (not 9) even though the overflow button
-// doesn't shift the array of indices.
 
 class ASH_EXPORT ShelfView : public views::View,
                              public ShelfModelObserver,
@@ -247,11 +245,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // Returns whether |item| should belong in the pinned section of the shelf.
   bool IsItemPinned(const ShelfItem& item) const;
 
-  // Enumerates the shelf apps and returns the total size they occupy,
-  // accounting for all apps or, if the total size is greater than |max_size|,
-  // the size of however many app can fit without exceeding |max_size|.
-  int GetDimensionOfAppIcons(int max_size) const;
-
   // Returns the index of the item after which the separator should be shown,
   // or -1 if no separator is required.
   int GetSeparatorIndex() const;
@@ -313,6 +306,12 @@ class ASH_EXPORT ShelfView : public views::View,
 
   int first_visible_index() const { return first_visible_index_; }
   int last_visible_index() const { return last_visible_index_; }
+  int number_of_visible_apps() const {
+    if (is_overflow_mode())
+      return last_visible_index_ - first_visible_index_ + 1;
+    else
+      return last_visible_index_ - 1;
+  }
   ShelfWidget* shelf_widget() const { return shelf_widget_; }
   OverflowBubble* overflow_bubble() { return overflow_bubble_.get(); }
   views::ViewModel* view_model() { return view_model_.get(); }
@@ -322,6 +321,11 @@ class ASH_EXPORT ShelfView : public views::View,
 
   class FadeOutAnimationDelegate;
   class StartFadeAnimationDelegate;
+
+  struct AppCenteringStrategy {
+    bool center_on_screen = false;
+    bool overflow = false;
+  };
 
   enum RemovableState {
     REMOVABLE,      // Item can be removed when dragged away.
@@ -341,6 +345,16 @@ class ASH_EXPORT ShelfView : public views::View,
   void UpdateAllButtonsVisibilityInOverflowMode();
 
   void LayoutAppListAndBackButtonHighlight() const;
+
+  // Returns the size that's actually available for app icons. Size occupied
+  // by the app list button and back button plus all appropriate margins is
+  // not available for app icons.
+  int GetAvailableSpaceForAppIcons() const;
+
+  // This method determines which centering strategy is adequate, returns that,
+  // and sets the |first_visible_index_| and |last_visible_index_| fields
+  // appropriately.
+  AppCenteringStrategy CalculateAppCenteringStrategy() const;
 
   // Calculates the ideal bounds. The bounds of each button corresponding to an
   // item in the model is set in |view_model_|.
@@ -537,8 +551,8 @@ class ASH_EXPORT ShelfView : public views::View,
   //   subset of items.
   mutable int first_visible_index_ = 0;
 
-  // Last index of a launcher button that is visible
-  // (does not go into overflow).
+  // Last index of a launcher button that is visible (does not go into
+  // overflow).
   mutable int last_visible_index_ = -1;
 
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;
