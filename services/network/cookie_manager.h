@@ -84,6 +84,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
   void SetForceKeepSessionState() override;
   void BlockThirdPartyCookies(bool block) override;
 
+  // Causes the next call to GetCookieList to crash the process.
+  static void CrashOnGetCookieList();
+
  private:
   // State associated with a CookieChangeListener.
   struct ListenerRegistration {

@@ -424,6 +424,23 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, SyncXHROnCrash) {
   // If the renderer is hung the test will hang.
 }
 
+// Verifies that sync cookie calls don't hang if the network service crashes.
+IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, SyncCookieGetOnCrash) {
+  if (IsInProcessNetworkService())
+    return;
+
+  network::mojom::NetworkServiceTestPtr network_service_test;
+  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
+      mojom::kNetworkServiceName, &network_service_test);
+  network_service_test->CrashOnGetCookieList();
+
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/empty.html"));
+
+  ASSERT_TRUE(
+      content::ExecuteScript(shell()->web_contents(), "document.cookie"));
+  // If the renderer is hung the test will hang.
+}
+
 class NetworkServiceInProcessBrowserTest : public ContentBrowserTest {
  public:
   NetworkServiceInProcessBrowserTest() {

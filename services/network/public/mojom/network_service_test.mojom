@@ -75,6 +75,9 @@ interface NetworkServiceTest {
   // Causes the next host resolve to the given hostname to crash the process.
   CrashOnResolveHost(string host);
 
+  // Causes the next CookieManager::GetCookieList call to crash.
+  CrashOnGetCookieList();
+
   // Gets the latest memory pressure level reported by the
   // MemoryPressureListener.
   [Sync]

@@ -28,6 +28,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
+#include "services/network/cookie_manager.h"
 #include "services/network/host_resolver.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
@@ -181,6 +182,10 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
   void CrashOnResolveHost(const std::string& host) override {
     network::HostResolver::SetResolveHostCallbackForTesting(
         base::BindRepeating(CrashResolveHost, host));
+  }
+
+  void CrashOnGetCookieList() override {
+    network::CookieManager::CrashOnGetCookieList();
   }
 
   void GetLatestMemoryPressureLevel(
