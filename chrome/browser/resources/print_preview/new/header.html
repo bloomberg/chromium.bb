@@ -17,7 +17,6 @@
   <template>
     <style include="print-preview-shared paper-button-style">
       :host {
-        background-color: white;
         border-bottom: var(--print-preview-settings-border);
         display: block;
         padding-bottom: 8px;
@@ -26,13 +25,17 @@
         padding-top: 20px;
       }
 
+      :host-context(html:not([dark])) {
+        background-color: white;
+      }
+
       .title-container {
         display: flex;
         padding-bottom: 12px;
       }
 
       .title {
-        color: var(--google-grey-900);
+        color: var(--cr-primary-text-color);
         font-size: calc(16/13 * 1em);
         font-weight: 400;
         line-height: 1.54em;
@@ -40,6 +43,7 @@
       }
 
       .summary {
+        color: var(--cr-primary-text-color);
         display: block;
         height: 1em;
         min-height: 20px;
@@ -66,7 +70,7 @@
 
       iron-icon {
         align-self: center;
-        fill: var(--google-grey-refresh-700);
+        fill: var(--cr-secondary-text-color);
         height: 16px;
         margin-inline-start: 8px;
         width: 16px;
