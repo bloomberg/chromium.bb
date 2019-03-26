@@ -252,8 +252,6 @@ enum class InfobarEvent {
   if ([self shouldIgnoreUserInteraction])
     return;
 
-  self.infoBarDelegate->InfoBarDismissed();
-
   if (self.userAction == UserActionNone) {
     [self recordInfobarEvent:InfobarEvent::INFOBAR_DECLINE];
   }
@@ -268,6 +266,7 @@ enum class InfobarEvent {
                              notificationType:
                                  TranslateNotificationTypeAutoNeverTranslate];
   } else {
+    self.infoBarDelegate->InfoBarDismissed();
     self.delegate->RemoveInfoBar();
   }
 }
@@ -425,8 +424,10 @@ enum class InfobarEvent {
       self.infoBarDelegate->ToggleAlwaysTranslate();
       self.infoBarDelegate->Translate();
       break;
-    case TranslateNotificationTypeNeverTranslate:
     case TranslateNotificationTypeAutoNeverTranslate:
+      self.infoBarDelegate->InfoBarDismissed();
+      FALLTHROUGH;
+    case TranslateNotificationTypeNeverTranslate:
       self.infoBarDelegate->ToggleTranslatableLanguageByPrefs();
       self.delegate->RemoveInfoBar();
       break;
@@ -457,6 +458,10 @@ enum class InfobarEvent {
     case TranslateNotificationTypeAutoNeverTranslate:
       [self
           recordInfobarEvent:InfobarEvent::INFOBAR_SNACKBAR_CANCEL_AUTO_NEVER];
+      // Remove the infobar even if the user tapped "Undo" since user explicitly
+      // dismissed the infobar.
+      self.infoBarDelegate->InfoBarDismissed();
+      self.delegate->RemoveInfoBar();
       break;
     case TranslateNotificationTypeNeverTranslateSite:
       [self
