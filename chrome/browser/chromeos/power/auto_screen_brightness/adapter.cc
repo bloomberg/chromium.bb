@@ -87,6 +87,7 @@ Adapter::Adapter(Profile* profile,
 Adapter::~Adapter() = default;
 
 void Adapter::OnAmbientLightUpdated(int lux) {
+  // Ambient light data is only used when adapter is initialized to success.
   if (adapter_status_ != Status::kSuccess)
     return;
 
@@ -115,21 +116,19 @@ void Adapter::OnBrightnessMonitorInitialized(bool success) {
 
 void Adapter::OnUserBrightnessChanged(double old_brightness_percent,
                                       double new_brightness_percent) {
-  current_brightness_ = new_brightness_percent;
-}
-
-void Adapter::OnUserBrightnessChangeRequested() {
-  if (params_.user_adjustment_effect != UserAdjustmentEffect::kContinueAuto) {
-    // Adapter will stop making brightness adjustment until suspend/resume or
-    // when browser restarts.
-    adapter_disabled_by_user_adjustment_ = true;
-  }
-
-  if (!als_init_status_)
+  // We skip this notification if adapter hasn't been initialised because its
+  // |params_| may change. We need to log even if adapter is initialized to
+  // disabled.
+  if (adapter_status_ == Status::kInitializing)
     return;
+
+  // TODO(jiameng): record current average als and update thresholds.
+  current_brightness_ = new_brightness_percent;
 
   if (!metrics_reporter_)
     return;
+
+  DCHECK(als_init_status_);
 
   switch (*als_init_status_) {
     case AlsReader::AlsInitStatus::kSuccess:
@@ -161,7 +160,22 @@ void Adapter::OnUserBrightnessChangeRequested() {
   }
 }
 
+void Adapter::OnUserBrightnessChangeRequested() {
+  // We skip this notification if adapter hasn't been initialised because its
+  // |params_| may change.
+  if (adapter_status_ == Status::kInitializing)
+    return;
+
+  if (params_.user_adjustment_effect != UserAdjustmentEffect::kContinueAuto) {
+    // Adapter will stop making brightness adjustment until suspend/resume or
+    // when browser restarts.
+    adapter_disabled_by_user_adjustment_ = true;
+  }
+}
+
 void Adapter::OnModelTrained(const MonotoneCubicSpline& brightness_curve) {
+  // It's ok to record brightness curve even when adapter is not completely
+  // initialized. But we stop recording curves if we know adapter is disabled.
   if (adapter_status_ == Status::kDisabled)
     return;
 
@@ -196,6 +210,11 @@ void Adapter::OnModelConfigLoaded(base::Optional<ModelConfig> model_config) {
 }
 
 void Adapter::SuspendDone(const base::TimeDelta& /* sleep_duration */) {
+  // We skip this notification if adapter hasn't been initialised because its
+  // |params_| may change.
+  if (adapter_status_ == Status::kInitializing)
+    return;
+
   if (params_.user_adjustment_effect == UserAdjustmentEffect::kPauseAuto)
     adapter_disabled_by_user_adjustment_ = false;
 }
@@ -385,6 +404,7 @@ base::Optional<Adapter::BrightnessChangeCause> Adapter::CanAdjustBrightness(
 }
 
 void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
+  DCHECK_EQ(adapter_status_, Status::kSuccess);
   DCHECK(ambient_light_values_);
   const base::Optional<AlsAvgStdDev> als_avg_stddev =
       ambient_light_values_->AverageAmbientWithStdDev(now);
@@ -437,6 +457,7 @@ void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
 }
 
 void Adapter::UpdateBrightnessChangeThresholds() {
+  DCHECK_NE(adapter_status_, Status::kInitializing);
   DCHECK(log_average_ambient_lux_);
 
   brightening_threshold_ =
@@ -447,6 +468,7 @@ void Adapter::UpdateBrightnessChangeThresholds() {
 
 base::Optional<double> Adapter::GetBrightnessBasedOnAmbientLogLux(
     double ambient_log_lux) const {
+  DCHECK_EQ(adapter_status_, Status::kSuccess);
   switch (params_.model_curve) {
     case ModelCurve::kGlobal:
       return global_curve_->Interpolate(ambient_log_lux);
@@ -465,6 +487,7 @@ base::Optional<double> Adapter::GetBrightnessBasedOnAmbientLogLux(
 void Adapter::WriteLogMessages(double new_log_als,
                                double new_brightness,
                                BrightnessChangeCause cause) const {
+  DCHECK_EQ(adapter_status_, Status::kSuccess);
   const std::string old_log_als =
       log_average_ambient_lux_
           ? base::StringPrintf("%.4f", log_average_ambient_lux_.value()) + "->"
