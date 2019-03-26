@@ -12,6 +12,7 @@
 #include "components/viz/host/renderer_settings_creation.h"
 #include "gpu/command_buffer/common/scheduling_priority.h"
 #include "services/ws/public/cpp/gpu/command_buffer_metrics.h"
+#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/ws/public/cpp/gpu/gpu.h"
 #include "services/ws/public/cpp/gpu/shared_worker_context_provider_factory.h"
 #include "ui/aura/mus/window_port_mus.h"
@@ -49,7 +50,7 @@ void MusContextFactory::OnEstablishedGpuChannel(
 
   DCHECK_EQ(host->compositor(), compositor.get());
 
-  scoped_refptr<viz::ContextProvider> context_provider =
+  scoped_refptr<ws::ContextProviderCommandBuffer> context_provider =
       gpu_->CreateContextProvider(gpu_channel);
   // If the binding fails, then we need to return early since the compositor
   // expects a successfully initialized/bound provider.
@@ -105,6 +106,14 @@ MusContextFactory::SharedMainThreadContextProvider() {
       shared_main_thread_context_provider_ = nullptr;
   }
   return shared_main_thread_context_provider_;
+}
+
+scoped_refptr<viz::RasterContextProvider>
+MusContextFactory::SharedMainThreadRasterContextProvider() {
+  // Exo is currently the only client requesting this context provider.
+  // Exo does not request this context in MUS.
+  NOTREACHED();
+  return nullptr;
 }
 
 void MusContextFactory::RemoveCompositor(ui::Compositor* compositor) {

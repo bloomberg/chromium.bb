@@ -9,6 +9,7 @@
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ws/ids.h"
+#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/ws/public/cpp/gpu/gpu.h"
 #include "ui/compositor/host/host_context_factory_private.h"
 
@@ -37,7 +38,7 @@ void HostContextFactory::OnEstablishedGpuChannel(
   if (!compositor)
     return;
 
-  scoped_refptr<viz::ContextProvider> context_provider =
+  scoped_refptr<ws::ContextProviderCommandBuffer> context_provider =
       gpu_->CreateContextProvider(std::move(gpu_channel));
   // If the binding fails, then we need to return early since the compositor
   // expects a successfully initialized/bound provider.
@@ -67,6 +68,16 @@ HostContextFactory::SharedMainThreadContextProvider() {
         gpu::ContextResult::kSuccess)
       shared_main_thread_context_provider_ = nullptr;
   }
+  return shared_main_thread_context_provider_;
+}
+
+scoped_refptr<viz::RasterContextProvider>
+HostContextFactory::SharedMainThreadRasterContextProvider() {
+  // Exo is currently the only client requesting this context provider.
+  // Exo does not request this context in the Window Service.
+  SharedMainThreadContextProvider();
+  DCHECK(!shared_main_thread_context_provider_ ||
+         shared_main_thread_context_provider_->RasterInterface());
   return shared_main_thread_context_provider_;
 }
 

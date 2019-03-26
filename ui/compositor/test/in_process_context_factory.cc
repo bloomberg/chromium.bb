@@ -311,6 +311,14 @@ InProcessContextFactory::SharedMainThreadContextProvider() {
   return shared_main_thread_contexts_;
 }
 
+scoped_refptr<viz::RasterContextProvider>
+InProcessContextFactory::SharedMainThreadRasterContextProvider() {
+  SharedMainThreadContextProvider();
+  DCHECK(!shared_main_thread_contexts_ ||
+         shared_main_thread_contexts_->RasterInterface());
+  return shared_main_thread_contexts_;
+}
+
 void InProcessContextFactory::RemoveCompositor(Compositor* compositor) {
   auto it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
