@@ -1771,8 +1771,8 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
                     frame_size);
           }
           const uint32_t obu_header_offset = 0;
-          obu_header_size = write_obu_header(
-              OBU_TEMPORAL_DELIMITER, 0,
+          obu_header_size = av1_write_obu_header(
+              cpi, OBU_TEMPORAL_DELIMITER, 0,
               (uint8_t *)(ctx->pending_cx_data + obu_header_offset));
 
           // OBUs are preceded/succeeded by an unsigned leb128 coded integer.

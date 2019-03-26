@@ -3234,8 +3234,12 @@ static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
   return wpos;
 }
 
-uint32_t write_obu_header(OBU_TYPE obu_type, int obu_extension,
-                          uint8_t *const dst) {
+uint32_t av1_write_obu_header(AV1_COMP *const cpi, OBU_TYPE obu_type,
+                              int obu_extension, uint8_t *const dst) {
+  if (cpi->keep_level_stats &&
+      (obu_type == OBU_FRAME || obu_type == OBU_FRAME_HEADER))
+    ++cpi->frame_header_count;
+
   struct aom_write_bit_buffer wb = { dst, 0 };
   uint32_t size = 0;
 
@@ -3433,7 +3437,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
     // For large_scale_tile case, we always have only one tile group, so it can
     // be written as an OBU_FRAME.
     const OBU_TYPE obu_type = OBU_FRAME;
-    const uint32_t tg_hdr_size = write_obu_header(obu_type, 0, data);
+    const uint32_t tg_hdr_size = av1_write_obu_header(cpi, obu_type, 0, data);
     data += tg_hdr_size;
 
     const uint32_t frame_header_size =
@@ -3588,7 +3592,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         const OBU_TYPE obu_type =
             (num_tg_hdrs == 1) ? OBU_FRAME : OBU_TILE_GROUP;
         curr_tg_data_size =
-            write_obu_header(obu_type, obu_extension_header, data);
+            av1_write_obu_header(cpi, obu_type, obu_extension_header, data);
         obu_header_size = curr_tg_data_size;
 
         if (num_tg_hdrs == 1) {
@@ -3674,8 +3678,9 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 
           // Rewrite the OBU header to change the OBU type to Redundant Frame
           // Header.
-          write_obu_header(OBU_REDUNDANT_FRAME_HEADER, obu_extension_header,
-                           &data[fh_info->obu_header_byte_offset]);
+          av1_write_obu_header(cpi, OBU_REDUNDANT_FRAME_HEADER,
+                               obu_extension_header,
+                               &data[fh_info->obu_header_byte_offset]);
 
           data += fh_info->total_length;
 
@@ -3754,11 +3759,13 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size,
   bitstream_queue_reset_write();
 #endif
 
+  cpi->frame_header_count = 0;
+
   // The TD is now written outside the frame encode loop
 
   // write sequence header obu if KEY_FRAME, preceded by 4-byte size
   if (cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) {
-    obu_header_size = write_obu_header(OBU_SEQUENCE_HEADER, 0, data);
+    obu_header_size = av1_write_obu_header(cpi, OBU_SEQUENCE_HEADER, 0, data);
 
     obu_payload_size = write_sequence_header_obu(cpi, data + obu_header_size);
     const size_t length_field_size =
@@ -3778,7 +3785,7 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size,
     // Write Frame Header OBU.
     fh_info.frame_header = data;
     obu_header_size =
-        write_obu_header(OBU_FRAME_HEADER, obu_extension_header, data);
+        av1_write_obu_header(cpi, OBU_FRAME_HEADER, obu_extension_header, data);
     obu_payload_size =
         write_frame_header_obu(cpi, &saved_wb, data + obu_header_size, 1);
 

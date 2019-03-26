@@ -993,6 +993,8 @@ typedef struct AV1_COMP {
   AV1_LEVEL target_seq_level_idx[MAX_NUM_OPERATING_POINTS];
   int keep_level_stats;
   AV1LevelInfo level_info[MAX_NUM_OPERATING_POINTS];
+  // Count the number of OBU_FRAME and OBU_FRAME_HEADER for level calculation.
+  int frame_header_count;
 } AV1_COMP;
 
 typedef struct {

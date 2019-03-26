@@ -27,8 +27,8 @@ uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst);
 
 // Writes the OBU header byte, and the OBU header extension byte when
 // 'obu_extension' is non-zero. Returns number of bytes written to 'dst'.
-uint32_t write_obu_header(OBU_TYPE obu_type, int obu_extension,
-                          uint8_t *const dst);
+uint32_t av1_write_obu_header(AV1_COMP *const cpi, OBU_TYPE obu_type,
+                              int obu_extension, uint8_t *const dst);
 
 int write_uleb_obu_size(uint32_t obu_header_size, uint32_t obu_payload_size,
                         uint8_t *dest);
