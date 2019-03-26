@@ -37,6 +37,7 @@ namespace blink {
 
 class ComputedStyle;
 class LayoutObject;
+enum class LegacyLayout;
 class PseudoElement;
 
 class ContentData : public GarbageCollectedFinalized<ContentData> {
@@ -54,7 +55,8 @@ class ContentData : public GarbageCollectedFinalized<ContentData> {
   virtual bool IsText() const { return false; }
 
   virtual LayoutObject* CreateLayoutObject(PseudoElement&,
-                                           ComputedStyle&) const = 0;
+                                           ComputedStyle&,
+                                           LegacyLayout) const = 0;
 
   virtual ContentData* Clone() const;
 
@@ -86,7 +88,8 @@ class ImageContentData final : public ContentData {
 
   bool IsImage() const override { return true; }
   LayoutObject* CreateLayoutObject(PseudoElement&,
-                                   ComputedStyle&) const override;
+                                   ComputedStyle&,
+                                   LegacyLayout) const override;
 
   bool Equals(const ContentData& data) const override {
     if (!data.IsImage())
@@ -124,7 +127,8 @@ class TextContentData final : public ContentData {
 
   bool IsText() const override { return true; }
   LayoutObject* CreateLayoutObject(PseudoElement&,
-                                   ComputedStyle&) const override;
+                                   ComputedStyle&,
+                                   LegacyLayout) const override;
 
   bool Equals(const ContentData& data) const override {
     if (!data.IsText())
@@ -157,7 +161,8 @@ class CounterContentData final : public ContentData {
 
   bool IsCounter() const override { return true; }
   LayoutObject* CreateLayoutObject(PseudoElement&,
-                                   ComputedStyle&) const override;
+                                   ComputedStyle&,
+                                   LegacyLayout) const override;
 
  private:
   ContentData* CloneInternal() const override {
@@ -194,7 +199,8 @@ class QuoteContentData final : public ContentData {
 
   bool IsQuote() const override { return true; }
   LayoutObject* CreateLayoutObject(PseudoElement&,
-                                   ComputedStyle&) const override;
+                                   ComputedStyle&,
+                                   LegacyLayout) const override;
 
   bool Equals(const ContentData& data) const override {
     if (!data.IsQuote())

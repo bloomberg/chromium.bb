@@ -57,7 +57,7 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
     for (Input& input : inputs) {
       if (!input.layout_text) {
         input.layout_text = LayoutText::CreateEmptyAnonymous(
-            GetDocument(), GetStyle(input.whitespace));
+            GetDocument(), GetStyle(input.whitespace), LegacyLayout::kAuto);
         anonymous_objects.push_back(input.layout_text);
       }
       builder.Append(input.text, input.layout_text->Style(), input.layout_text);

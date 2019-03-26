@@ -11,7 +11,11 @@
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_table_caption.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_flexible_box.h"
@@ -106,6 +110,40 @@ LayoutBlock* LayoutObjectFactory::CreateFieldset(Node& node,
   bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGFieldsetEnabled();
   return CreateObject<LayoutBlock, LayoutNGFieldset, LayoutFieldset>(
       node, style, legacy, disable_ng_for_type);
+}
+
+LayoutText* LayoutObjectFactory::CreateText(Node* node,
+                                            scoped_refptr<StringImpl> str,
+                                            LegacyLayout legacy) {
+  bool force_legacy = false;
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    force_legacy = legacy == LegacyLayout::kForce;
+    if (!force_legacy)
+      return new LayoutNGText(node, str);
+  }
+  LayoutText* layout_text = new LayoutText(node, str);
+  if (force_legacy)
+    layout_text->SetForceLegacyLayout();
+  return layout_text;
+}
+
+LayoutTextFragment* LayoutObjectFactory::CreateTextFragment(
+    Node* node,
+    StringImpl* str,
+    int start_offset,
+    int length,
+    LegacyLayout legacy) {
+  bool force_legacy = false;
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    force_legacy = legacy == LegacyLayout::kForce;
+    if (!force_legacy)
+      return new LayoutNGTextFragment(node, str, start_offset, length);
+  }
+  LayoutTextFragment* layout_text_fragment =
+      new LayoutTextFragment(node, str, start_offset, length);
+  if (force_legacy)
+    layout_text_fragment->SetForceLegacyLayout();
+  return layout_text_fragment;
 }
 
 }  // namespace blink

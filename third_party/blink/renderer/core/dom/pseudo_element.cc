@@ -180,7 +180,9 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
 
   for (const ContentData* content = style.GetContentData(); content;
        content = content->Next()) {
-    LayoutObject* child = content->CreateLayoutObject(*this, style);
+    LegacyLayout legacy = context.force_legacy_layout ? LegacyLayout::kForce
+                                                      : LegacyLayout::kAuto;
+    LayoutObject* child = content->CreateLayoutObject(*this, style, legacy);
     if (layout_object->IsChildAllowed(child, style)) {
       layout_object->AddChild(child);
       if (child->IsQuote())

@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -157,12 +158,11 @@ LayoutText::~LayoutText() {
 #endif
 }
 
-LayoutText* LayoutText::CreateEmptyAnonymous(
-    Document& doc,
-    scoped_refptr<ComputedStyle> style) {
-  LayoutText* text = RuntimeEnabledFeatures::LayoutNGEnabled()
-                         ? new LayoutNGText(nullptr, StringImpl::empty_)
-                         : new LayoutText(nullptr, StringImpl::empty_);
+LayoutText* LayoutText::CreateEmptyAnonymous(Document& doc,
+                                             scoped_refptr<ComputedStyle> style,
+                                             LegacyLayout legacy) {
+  LayoutText* text =
+      LayoutObjectFactory::CreateText(nullptr, StringImpl::empty_, legacy);
   text->SetDocumentForAnonymous(&doc);
   text->SetStyle(std::move(style));
   return text;

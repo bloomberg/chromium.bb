@@ -173,7 +173,11 @@ void LayoutTreeBuilderForText::CreateLayoutObject() {
     next_layout_object = NextLayoutObject();
   }
 
-  LayoutText* new_layout_object = node_->CreateTextLayoutObject(style);
+  LegacyLayout legacy_layout = layout_object_parent_->ForceLegacyLayout()
+                                   ? LegacyLayout::kForce
+                                   : LegacyLayout::kAuto;
+  LayoutText* new_layout_object =
+      node_->CreateTextLayoutObject(style, legacy_layout);
   if (!layout_object_parent_->IsChildAllowed(new_layout_object, style)) {
     new_layout_object->Destroy();
     return;
