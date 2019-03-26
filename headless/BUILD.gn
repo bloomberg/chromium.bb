@@ -884,7 +884,7 @@ jumbo_static_library("headless_shell_lib") {
   }
 
   if (is_win) {
-    defines = [ "HEADLESS_USE_CRASPHAD" ]
+    defines = [ "HEADLESS_USE_CRASHPAD" ]
 
     deps += [
       "//components/crash/content/app:crash_export_thunks",
