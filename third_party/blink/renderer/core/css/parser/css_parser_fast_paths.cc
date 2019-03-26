@@ -1226,8 +1226,8 @@ static CSSFunctionValue* ParseSimpleTransformValue(CharType*& pos,
       return nullptr;
     }
     pos += argument_start;
-    CSSFunctionValue* transform_value =
-        CSSFunctionValue::Create(transform_type);
+    auto* transform_value =
+        MakeGarbageCollected<CSSFunctionValue>(transform_type);
     if (!ParseTransformTranslateArguments(pos, end, expected_argument_count,
                                           transform_value))
       return nullptr;
@@ -1242,8 +1242,8 @@ static CSSFunctionValue* ParseSimpleTransformValue(CharType*& pos,
 
   if (is_matrix3d) {
     pos += 9;
-    CSSFunctionValue* transform_value =
-        CSSFunctionValue::Create(CSSValueID::kMatrix3d);
+    auto* transform_value =
+        MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMatrix3d);
     if (!ParseTransformNumberArguments(pos, end, 16, transform_value))
       return nullptr;
     return transform_value;
@@ -1257,8 +1257,8 @@ static CSSFunctionValue* ParseSimpleTransformValue(CharType*& pos,
 
   if (is_scale3d) {
     pos += 8;
-    CSSFunctionValue* transform_value =
-        CSSFunctionValue::Create(CSSValueID::kScale3d);
+    auto* transform_value =
+        MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kScale3d);
     if (!ParseTransformNumberArguments(pos, end, 3, transform_value))
       return nullptr;
     return transform_value;
@@ -1327,7 +1327,7 @@ static CSSValueList* ParseSimpleTransformList(const CharType* chars,
       ++pos;
     if (pos >= end)
       break;
-    CSSFunctionValue* transform_value = ParseSimpleTransformValue(pos, end);
+    auto* transform_value = ParseSimpleTransformValue(pos, end);
     if (!transform_value)
       return nullptr;
     if (!transform_list)

@@ -13,10 +13,6 @@ namespace blink {
 
 class CSSFunctionValue : public CSSValueList {
  public:
-  static CSSFunctionValue* Create(CSSValueID id) {
-    return MakeGarbageCollected<CSSFunctionValue>(id);
-  }
-
   CSSFunctionValue(CSSValueID id)
       : CSSValueList(kFunctionClass, kCommaSeparator), value_id_(id) {}
 

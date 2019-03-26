@@ -75,7 +75,8 @@ const CSSFunctionValue* CSSPerspective::ToCSSValue() const {
   }
 
   DCHECK(length);
-  CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueID::kPerspective);
+  auto* result =
+      MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kPerspective);
   result->Append(*length);
   return result;
 }

@@ -14,10 +14,6 @@ namespace cssvalue {
 
 class CSSFontVariationValue : public CSSValue {
  public:
-  static CSSFontVariationValue* Create(const AtomicString& tag, float value) {
-    return MakeGarbageCollected<CSSFontVariationValue>(tag, value);
-  }
-
   CSSFontVariationValue(const AtomicString& tag, float value);
 
   const AtomicString& Tag() const { return tag_; }

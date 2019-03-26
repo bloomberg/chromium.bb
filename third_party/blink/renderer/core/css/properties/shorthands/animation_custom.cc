@@ -110,7 +110,8 @@ const CSSValue* Animation::CSSValueFromComputedStyleInternal(
           CSSTimingData::GetRepeated(animation_data->FillModeList(), i)));
       list->Append(*ComputedStyleUtils::ValueForAnimationPlayState(
           CSSTimingData::GetRepeated(animation_data->PlayStateList(), i)));
-      list->Append(*CSSCustomIdentValue::Create(animation_data->NameList()[i]));
+      list->Append(*MakeGarbageCollected<CSSCustomIdentValue>(
+          animation_data->NameList()[i]));
       animations_list->Append(*list);
     }
     return animations_list;

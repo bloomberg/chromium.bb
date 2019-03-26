@@ -83,13 +83,13 @@ StyleEngine::StyleEngine(Document& document)
   if (document.GetFrame()) {
     // We don't need to create CSSFontSelector for imported document or
     // HTMLTemplateElement's document, because those documents have no frame.
-    font_selector_ = CSSFontSelector::Create(&document);
+    font_selector_ = MakeGarbageCollected<CSSFontSelector>(&document);
     font_selector_->RegisterForInvalidationCallbacks(this);
   }
   if (document.IsInMainFrame())
     viewport_resolver_ = ViewportStyleResolver::Create(document);
   if (IsMaster())
-    global_rule_set_ = CSSGlobalRuleSet::Create();
+    global_rule_set_ = MakeGarbageCollected<CSSGlobalRuleSet>();
   // Document is initially style dirty.
   style_recalc_root_.Update(nullptr, &document);
 }

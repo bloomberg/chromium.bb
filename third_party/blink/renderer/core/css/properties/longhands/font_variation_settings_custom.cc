@@ -37,8 +37,8 @@ cssvalue::CSSFontVariationValue* ConsumeFontVariationTag(
   double tag_value = 0;
   if (!css_property_parser_helpers::ConsumeNumberRaw(range, tag_value))
     return nullptr;
-  return cssvalue::CSSFontVariationValue::Create(tag,
-                                                 clampTo<float>(tag_value));
+  return MakeGarbageCollected<cssvalue::CSSFontVariationValue>(
+      tag, clampTo<float>(tag_value));
 }
 
 }  // namespace
@@ -75,8 +75,8 @@ const CSSValue* FontVariationSettings::CSSValueFromComputedStyleInternal(
   for (wtf_size_t i = 0; i < variation_settings->size(); ++i) {
     const FontVariationAxis& variation_axis = variation_settings->at(i);
     cssvalue::CSSFontVariationValue* variation_value =
-        cssvalue::CSSFontVariationValue::Create(variation_axis.Tag(),
-                                                variation_axis.Value());
+        MakeGarbageCollected<cssvalue::CSSFontVariationValue>(
+            variation_axis.Tag(), variation_axis.Value());
     list->Append(*variation_value);
   }
   return list;

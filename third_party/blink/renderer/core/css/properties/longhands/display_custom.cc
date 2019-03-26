@@ -52,7 +52,8 @@ const CSSValue* Display::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (style.IsDisplayLayoutCustomBox()) {
     return cssvalue::CSSLayoutFunctionValue::Create(
-        CSSCustomIdentValue::Create(style.DisplayLayoutCustomName()),
+        MakeGarbageCollected<CSSCustomIdentValue>(
+            style.DisplayLayoutCustomName()),
         style.IsDisplayInlineType());
   }
 

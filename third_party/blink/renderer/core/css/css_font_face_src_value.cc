@@ -103,7 +103,7 @@ FontResource& CSSFontFaceSrcValue::Fetch(ExecutionContext* context,
     if (auto* scope = DynamicTo<WorkerGlobalScope>(context)) {
       scope->EnsureFetcher();
     }
-    fetched_ = FontResourceHelper::Create(
+    fetched_ = MakeGarbageCollected<FontResourceHelper>(
         FontResource::Fetch(params, context->Fetcher(), client),
         context->GetTaskRunner(TaskType::kInternalLoading).get());
   } else {

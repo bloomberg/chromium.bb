@@ -34,10 +34,6 @@ namespace blink {
 namespace cssvalue {
 class CSSFontFeatureValue : public CSSValue {
  public:
-  static CSSFontFeatureValue* Create(const AtomicString& tag, int value) {
-    return MakeGarbageCollected<CSSFontFeatureValue>(tag, value);
-  }
-
   CSSFontFeatureValue(const AtomicString& tag, int value);
 
   const AtomicString& Tag() const { return tag_; }

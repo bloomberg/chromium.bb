@@ -455,8 +455,8 @@ TEST_F(FontFaceCacheTest, ObliqueRangeMatching) {
       CSSPrimitiveValue::Create(35, CSSPrimitiveValue::UnitType::kNumber);
   oblique_range->Append(*oblique_from);
   oblique_range->Append(*oblique_to);
-  CSSFontStyleRangeValue* oblique_value =
-      CSSFontStyleRangeValue::Create(*oblique_keyword_value, *oblique_range);
+  auto* oblique_value = MakeGarbageCollected<CSSFontStyleRangeValue>(
+      *oblique_keyword_value, *oblique_range);
 
   AppendTestFaceForCapabilities(*stretch_value, *oblique_value, *weight_value);
 
@@ -467,7 +467,7 @@ TEST_F(FontFaceCacheTest, ObliqueRangeMatching) {
       CSSPrimitiveValue::Create(10, CSSPrimitiveValue::UnitType::kNumber);
   oblique_range_second->Append(*oblique_from_second);
   oblique_range_second->Append(*oblique_to_second);
-  CSSFontStyleRangeValue* oblique_value_second = CSSFontStyleRangeValue::Create(
+  auto* oblique_value_second = MakeGarbageCollected<CSSFontStyleRangeValue>(
       *oblique_keyword_value, *oblique_range_second);
 
   AppendTestFaceForCapabilities(*stretch_value, *oblique_value_second,

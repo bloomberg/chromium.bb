@@ -30,8 +30,8 @@ CSSValue* ConsumeAttr(CSSParserTokenRange args,
   if (context.IsHTMLDocument())
     attr_name = attr_name.LowerASCII();
 
-  CSSFunctionValue* attr_value = CSSFunctionValue::Create(CSSValueID::kAttr);
-  attr_value->Append(*CSSCustomIdentValue::Create(attr_name));
+  auto* attr_value = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kAttr);
+  attr_value->Append(*MakeGarbageCollected<CSSCustomIdentValue>(attr_name));
   return attr_value;
 }
 
