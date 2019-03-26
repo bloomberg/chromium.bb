@@ -59,10 +59,11 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
       web_app::InstallSource install_source) const override;
   base::Optional<std::string> LookupAppId(const GURL& url) const override;
 
-  void SetFactoriesForTesting(WebContentsFactory web_contents_factory,
-                              TaskFactory task_factory);
+  void SetTaskFactoryForTesting(TaskFactory task_factory);
   void SetUninstallerForTesting(
       std::unique_ptr<BookmarkAppUninstaller> uninstaller);
+  void SetUrlLoaderForTesting(
+      std::unique_ptr<web_app::WebAppUrlLoader> url_loader);
 
  private:
   struct TaskAndCallback;
@@ -94,7 +95,6 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
   // unique_ptr so that it can be replaced in tests.
   std::unique_ptr<web_app::WebAppUrlLoader> url_loader_;
 
-  WebContentsFactory web_contents_factory_;
   TaskFactory task_factory_;
 
   std::unique_ptr<content::WebContents> web_contents_;

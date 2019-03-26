@@ -20,12 +20,6 @@ namespace extensions {
 
 namespace {
 
-std::unique_ptr<content::WebContents> WebContentsCreateWrapper(
-    Profile* profile) {
-  return content::WebContents::Create(
-      content::WebContents::CreateParams(profile));
-}
-
 std::unique_ptr<BookmarkAppInstallationTask> InstallationTaskCreateWrapper(
     Profile* profile,
     web_app::PendingAppManager::AppInfo app_info) {
@@ -54,7 +48,6 @@ PendingBookmarkAppManager::PendingBookmarkAppManager(
           std::make_unique<BookmarkAppUninstaller>(profile_, registrar_)),
       extension_ids_map_(profile->GetPrefs()),
       url_loader_(std::make_unique<web_app::WebAppUrlLoader>()),
-      web_contents_factory_(base::BindRepeating(&WebContentsCreateWrapper)),
       task_factory_(base::BindRepeating(&InstallationTaskCreateWrapper)) {}
 
 PendingBookmarkAppManager::~PendingBookmarkAppManager() = default;
@@ -105,16 +98,19 @@ base::Optional<std::string> PendingBookmarkAppManager::LookupAppId(
   return extension_ids_map_.LookupExtensionId(url);
 }
 
-void PendingBookmarkAppManager::SetFactoriesForTesting(
-    WebContentsFactory web_contents_factory,
+void PendingBookmarkAppManager::SetTaskFactoryForTesting(
     TaskFactory task_factory) {
-  web_contents_factory_ = std::move(web_contents_factory);
   task_factory_ = std::move(task_factory);
 }
 
 void PendingBookmarkAppManager::SetUninstallerForTesting(
     std::unique_ptr<BookmarkAppUninstaller> uninstaller) {
   uninstaller_ = std::move(uninstaller);
+}
+
+void PendingBookmarkAppManager::SetUrlLoaderForTesting(
+    std::unique_ptr<web_app::WebAppUrlLoader> url_loader) {
+  url_loader_ = std::move(url_loader);
 }
 
 base::Optional<bool> PendingBookmarkAppManager::IsExtensionPresentAndInstalled(
@@ -191,7 +187,8 @@ void PendingBookmarkAppManager::CreateWebContentsIfNecessary() {
   if (web_contents_)
     return;
 
-  web_contents_ = web_contents_factory_.Run(profile_);
+  web_contents_ = content::WebContents::Create(
+      content::WebContents::CreateParams(profile_));
   BookmarkAppInstallationTask::CreateTabHelpers(web_contents_.get());
 }
 
