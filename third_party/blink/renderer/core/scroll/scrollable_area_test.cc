@@ -24,25 +24,7 @@ namespace blink {
 namespace {
 
 using testing::_;
-using testing::Mock;
 using testing::Return;
-
-class MockAnimatingScrollableArea : public MockScrollableArea {
- public:
-  static MockAnimatingScrollableArea* Create() {
-    return MakeGarbageCollected<MockAnimatingScrollableArea>();
-  }
-  static MockAnimatingScrollableArea* Create(
-      const ScrollOffset& maximum_scroll_offset) {
-    MockAnimatingScrollableArea* mock = Create();
-    mock->SetMaximumScrollOffset(maximum_scroll_offset);
-    return mock;
-  }
-  Scrollbar* HorizontalScrollbar() const override { return nullptr; }
-  Scrollbar* VerticalScrollbar() const override { return nullptr; }
-  MOCK_CONST_METHOD0(ScrollAnimatorEnabled, bool());
-  MOCK_METHOD0(ScheduleAnimation, bool());
-};
 
 class ScrollbarThemeWithMockInvalidation : public ScrollbarThemeMock {
  public:
@@ -285,43 +267,6 @@ TEST_F(ScrollableAreaTest, ScrollableAreaDidScroll) {
 
   EXPECT_EQ(40, scrollable_area->ScrollOffsetInt().Width());
   EXPECT_EQ(51, scrollable_area->ScrollOffsetInt().Height());
-}
-
-TEST_F(ScrollableAreaTest, ProgrammaticScrollRespectAnimatorEnabled) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform;
-
-  MockAnimatingScrollableArea* scrollable_area =
-      MockAnimatingScrollableArea::Create(ScrollOffset(0, 100));
-
-  // Disable animations. Make sure an explicitly smooth programmatic scroll is
-  // instantly scrolled.
-  {
-    EXPECT_CALL(*scrollable_area, ScrollAnimatorEnabled())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*scrollable_area, ScheduleAnimation()).Times(0);
-
-    scrollable_area->SetScrollOffset(ScrollOffset(0, 100), kProgrammaticScroll,
-                                     kScrollBehaviorSmooth);
-
-    EXPECT_EQ(100, scrollable_area->GetScrollOffset().Height());
-  }
-
-  Mock::VerifyAndClearExpectations(scrollable_area);
-
-  // Enable animations. A smooth programmatic scroll should now schedule an
-  // animation rather than immediatley mutating the offset.
-  {
-    EXPECT_CALL(*scrollable_area, ScrollAnimatorEnabled())
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*scrollable_area, ScheduleAnimation()).WillOnce(Return(true));
-
-    scrollable_area->SetScrollOffset(ScrollOffset(0, 50), kProgrammaticScroll,
-                                     kScrollBehaviorSmooth);
-
-    // Offset is unchanged.
-    EXPECT_EQ(100, scrollable_area->GetScrollOffset().Height());
-  }
 }
 
 // Scrollbars in popups shouldn't fade out since they aren't composited and thus
