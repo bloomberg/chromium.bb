@@ -28,11 +28,13 @@ void AnalyzeRarFile(base::File rar_file,
   results->directory_count = 0;
 
   // If the file is too big to unpack, fall back to the old method.
-  bool too_big_to_unpack =
-      base::checked_cast<uint64_t>(rar_file.GetLength()) >
-      FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("rar");
-  if (base::FeatureList::IsEnabled(kInspectRarContentFeature) &&
-      !too_big_to_unpack) {
+  if (base::FeatureList::IsEnabled(kInspectRarContentFeature)) {
+    bool too_big_to_unpack =
+        base::checked_cast<uint64_t>(rar_file.GetLength()) >
+        FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("rar");
+    if (too_big_to_unpack)
+      return;
+
     third_party_unrar::RarReader reader;
     if (!reader.Open(std::move(rar_file), temp_file.Duplicate()))
       return;

@@ -75,7 +75,7 @@ void AnalyzeZipFile(base::File zip_file,
   UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipTooBigToUnpack",
                         too_big_to_unpack);
   if (too_big_to_unpack) {
-    results->success = true;
+    results->success = false;
     return;
   }
 

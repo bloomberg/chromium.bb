@@ -760,12 +760,9 @@ TEST_F(FileAnalyzerTest, LargeRarSkipsContentInspection) {
   run_loop.Run();
 
   ASSERT_TRUE(has_result_);
-  EXPECT_EQ(result_.type, ClientDownloadRequest::RAR_COMPRESSED_EXECUTABLE);
-  EXPECT_EQ(result_.archive_is_valid, FileAnalyzer::ArchiveValid::VALID);
-  ASSERT_EQ(1, result_.archived_binaries.size());
-
-  // Since the file is too large enough, we should not have any hashes
-  EXPECT_TRUE(result_.archived_binaries.Get(0).digests().sha256().empty());
+  EXPECT_EQ(result_.type, ClientDownloadRequest::INVALID_RAR);
+  EXPECT_EQ(result_.archive_is_valid, FileAnalyzer::ArchiveValid::INVALID);
+  ASSERT_EQ(0, result_.archived_binaries.size());
 }
 
 TEST_F(FileAnalyzerTest, ZipFilesGetFileCount) {
@@ -915,8 +912,8 @@ TEST_F(FileAnalyzerTest, LargeZipSkipsContentInspection) {
   run_loop.Run();
 
   ASSERT_TRUE(has_result_);
-  EXPECT_EQ(result_.type, ClientDownloadRequest::ZIPPED_EXECUTABLE);
-  EXPECT_EQ(result_.archive_is_valid, FileAnalyzer::ArchiveValid::VALID);
+  EXPECT_EQ(result_.type, ClientDownloadRequest::INVALID_ZIP);
+  EXPECT_EQ(result_.archive_is_valid, FileAnalyzer::ArchiveValid::INVALID);
   ASSERT_EQ(0, result_.archived_binaries.size());
 }
 
