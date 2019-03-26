@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "device/fido/ctap_get_assertion_request.h"
+#include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/device_operation.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_task.h"
@@ -23,6 +24,7 @@
 namespace device {
 
 class AuthenticatorGetAssertionResponse;
+class AuthenticatorMakeCredentialResponse;
 
 // Represents per device sign operation on CTAP1/CTAP2 devices.
 // https://fidoalliance.org/specs/fido-v2.0-rd-20161004/fido-client-to-authenticator-protocol-v2.0-rd-20161004.html#authenticatorgetassertion
@@ -33,6 +35,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
       base::Optional<AuthenticatorGetAssertionResponse>)>;
   using SignOperation = DeviceOperation<CtapGetAssertionRequest,
                                         AuthenticatorGetAssertionResponse>;
+  using RegisterOperation =
+      DeviceOperation<CtapMakeCredentialRequest,
+                      AuthenticatorMakeCredentialResponse>;
 
   GetAssertionTask(FidoDevice* device,
                    CtapGetAssertionRequest request,
@@ -46,6 +51,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
   void GetAssertion();
   void U2fSign();
 
+  // HandleResponse is the callback to a CTAP2 assertion request that requested
+  // user-presence.
+  void HandleResponse(
+      CtapDeviceResponseCode response_code,
+      base::Optional<AuthenticatorGetAssertionResponse> response_data);
+
   // HandleResponseToSilentRequest is a callback to a request without user-
   // presence requested used when this assertion request may require falling
   // back to U2F.
@@ -54,8 +65,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
       CtapDeviceResponseCode response_code,
       base::Optional<AuthenticatorGetAssertionResponse> response_data);
 
+  // HandleDummyMakeCredentialComplete is the callback for the dummy credential
+  // creation request that will be triggered, if needed, to get a touch.
+  void HandleDummyMakeCredentialComplete(
+      CtapDeviceResponseCode response_code,
+      base::Optional<AuthenticatorMakeCredentialResponse> response_data);
+
   CtapGetAssertionRequest request_;
   std::unique_ptr<SignOperation> sign_operation_;
+  std::unique_ptr<RegisterOperation> dummy_register_operation_;
   GetAssertionTaskCallback callback_;
   base::WeakPtrFactory<GetAssertionTask> weak_factory_;
 

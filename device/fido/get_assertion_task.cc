@@ -10,6 +10,7 @@
 #include "device/base/features.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/ctap2_device_operation.h"
+#include "device/fido/make_credential_task.h"
 #include "device/fido/u2f_sign_operation.h"
 
 namespace device {
@@ -81,7 +82,9 @@ void GetAssertionTask::GetAssertion() {
   sign_operation_ =
       std::make_unique<Ctap2DeviceOperation<CtapGetAssertionRequest,
                                             AuthenticatorGetAssertionResponse>>(
-          device(), request_, std::move(callback_),
+          device(), request_,
+          base::BindOnce(&GetAssertionTask::HandleResponse,
+                         weak_factory_.GetWeakPtr()),
           base::BindOnce(&ReadCTAPGetAssertionResponse));
   sign_operation_->Start();
 }
@@ -92,6 +95,28 @@ void GetAssertionTask::U2fSign() {
   sign_operation_ = std::make_unique<U2fSignOperation>(device(), request_,
                                                        std::move(callback_));
   sign_operation_->Start();
+}
+
+void GetAssertionTask::HandleResponse(
+    CtapDeviceResponseCode response_code,
+    base::Optional<AuthenticatorGetAssertionResponse> response_data) {
+  // Some authenticators will return this error before waiting for a touch if
+  // they don't recognise a credential. In other cases the result can be
+  // returned immediately.
+  if (response_code != CtapDeviceResponseCode::kCtap2ErrInvalidCredential) {
+    std::move(callback_).Run(response_code, std::move(response_data));
+    return;
+  }
+
+  // The request failed in a way that didn't request a touch. Simulate it.
+  dummy_register_operation_ = std::make_unique<Ctap2DeviceOperation<
+      CtapMakeCredentialRequest, AuthenticatorMakeCredentialResponse>>(
+      device(), MakeCredentialTask::GetTouchRequest(device()),
+      base::BindOnce(&GetAssertionTask::HandleDummyMakeCredentialComplete,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ReadCTAPMakeCredentialResponse,
+                     device()->DeviceTransport()));
+  dummy_register_operation_->Start();
 }
 
 void GetAssertionTask::HandleResponseToSilentRequest(
@@ -123,9 +148,18 @@ void GetAssertionTask::HandleResponseToSilentRequest(
   sign_operation_ =
       std::make_unique<Ctap2DeviceOperation<CtapGetAssertionRequest,
                                             AuthenticatorGetAssertionResponse>>(
-          device(), request_, std::move(callback_),
+          device(), request_,
+          base::BindOnce(&GetAssertionTask::HandleResponse,
+                         weak_factory_.GetWeakPtr()),
           base::BindOnce(&ReadCTAPGetAssertionResponse));
   sign_operation_->Start();
+}
+
+void GetAssertionTask::HandleDummyMakeCredentialComplete(
+    CtapDeviceResponseCode response_code,
+    base::Optional<AuthenticatorMakeCredentialResponse> response_data) {
+  std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials,
+                           base::nullopt);
 }
 
 }  // namespace device

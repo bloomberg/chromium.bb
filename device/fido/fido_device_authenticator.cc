@@ -18,7 +18,6 @@
 #include "device/fido/get_assertion_task.h"
 #include "device/fido/make_credential_task.h"
 #include "device/fido/pin.h"
-#include "device/fido/u2f_command_constructor.h"
 
 namespace device {
 
@@ -73,29 +72,8 @@ void FidoDeviceAuthenticator::GetAssertion(CtapGetAssertionRequest request,
 }
 
 void FidoDeviceAuthenticator::GetTouch(base::OnceCallback<void()> callback) {
-  // We want to flash and wait for a touch. Newer versions of the CTAP2 spec
-  // include a provision for blocking for a touch when an empty pinAuth is
-  // specified, but devices exist that predate this part of the spec and also
-  // the spec says that devices need only do that if they implement PIN support.
-  // Therefore, in order to portably wait for a touch, a dummy credential is
-  // created. This does assume that the device supports ECDSA P-256, however.
-  PublicKeyCredentialUserEntity user({1} /* user ID */);
-  // The user name is incorrectly marked as optional in the CTAP2 spec.
-  user.SetUserName("dummy");
-  CtapMakeCredentialRequest req(
-      "" /* client_data_json */, PublicKeyCredentialRpEntity(".dummy"),
-      std::move(user),
-      PublicKeyCredentialParams(
-          {{CredentialType::kPublicKey,
-            base::strict_cast<int>(CoseAlgorithmIdentifier::kCoseEs256)}}));
-  req.SetExcludeList({});
-  // Set an empty pinAuth in case the device is a newer CTAP2 and understands
-  // this to mean to block for touch.
-  req.SetPinAuth({});
-  DCHECK(IsConvertibleToU2fRegisterCommand(req));
-
   MakeCredential(
-      std::move(req),
+      MakeCredentialTask::GetTouchRequest(device()),
       base::BindOnce(
           [](base::OnceCallback<void()> callback, CtapDeviceResponseCode status,
              base::Optional<AuthenticatorMakeCredentialResponse>) {

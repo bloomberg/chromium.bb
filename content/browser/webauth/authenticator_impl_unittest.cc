@@ -1281,32 +1281,36 @@ TEST_F(AuthenticatorImplTest, InvalidResponse) {
   }
 }
 
-TEST_F(AuthenticatorImplTest, Ctap2AssertionWithInvalidCredentialError) {
-  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
-  device::VirtualCtap2Device::Config config;
-  config.return_immediate_invalid_credential_error = true;
-  scoped_virtual_device.SetCtap2Config(config);
-
+TEST_F(AuthenticatorImplTest, Ctap2AssertionWithUnknownCredential) {
   TestServiceManagerContext service_manager_context;
   SimulateNavigation(GURL(kTestOrigin1));
-  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
-      base::Time::Now(), base::TimeTicks::Now());
 
-  bool pressed = false;
-  scoped_virtual_device.mutable_state()->simulate_press_callback =
-      base::BindRepeating([](bool* flag) { *flag = true; }, &pressed);
+  for (bool return_immediate_invalid_credential_error : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "return_immediate_invalid_credential_error="
+                 << return_immediate_invalid_credential_error);
 
-  TestGetAssertionCallback callback_receiver;
-  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-  authenticator->GetAssertion(GetTestPublicKeyCredentialRequestOptions(),
-                              callback_receiver.callback());
-  base::RunLoop().RunUntilIdle();
-  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
-  callback_receiver.WaitForCallback();
-  // TODO(agl): this shouldn't timeout, rather it should return
-  // CREDENTIAL_NOT_RECOGNIZED after a press.
-  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
-  EXPECT_FALSE(pressed);
+    device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+    device::VirtualCtap2Device::Config config;
+    config.return_immediate_invalid_credential_error =
+        return_immediate_invalid_credential_error;
+    scoped_virtual_device.SetCtap2Config(config);
+
+    bool pressed = false;
+    scoped_virtual_device.mutable_state()->simulate_press_callback =
+        base::BindRepeating([](bool* flag) { *flag = true; }, &pressed);
+
+    TestGetAssertionCallback callback_receiver;
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+    authenticator->GetAssertion(GetTestPublicKeyCredentialRequestOptions(),
+                                callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
+              callback_receiver.status());
+    // The user must have pressed the authenticator for the operation to
+    // resolve.
+    EXPECT_TRUE(pressed);
+  }
 }
 
 enum class IndividualAttestation {
