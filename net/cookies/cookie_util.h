@@ -9,8 +9,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
 #include "url/origin.h"
 
@@ -110,6 +112,34 @@ ComputeSameSiteContextForRequest(const std::string& http_method,
                                  const GURL& site_for_cookies,
                                  const base::Optional<url::Origin>& initiator,
                                  bool attach_same_site_cookies);
+
+// Takes a OnceCallback with only a CookieList and binds it to a callback that
+// also accepts a CookieStatusList, making it compatible with
+// CookieStore::GetCookieListCallback.
+//
+// Can be used when the CookieWithStatus list (the list of
+// cookies excluded from being sent) is not needed and therefore isn't in the
+// callback signature. Also useful if you're using
+NET_EXPORT base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
+IgnoreCookieStatusList(base::OnceCallback<void(const CookieList&)> callback);
+
+// Takes a CookieStore::GetCookieListCallback and binds a function that only
+// takes a CookieList, sending an empty CookieStatusList.
+//
+// Can be used if you have a callback that's used with both GetCookieList and
+// GetAllCookies and you want to use the excluded cookies list when you have it.
+NET_EXPORT base::OnceCallback<void(const CookieList&)> AddCookieStatusList(
+    base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
+        callback);
+
+// Takes a callback accepting a CookieInclusionStatus and returns a callback
+// that accepts a bool, setting the bool to true if the CookieInclusionStatus
+// was set to INCLUDE, else sending false.
+//
+// Can be used with SetCanonicalCookie when you don't need to know why a cookie
+// was blocked, only if it was blocked.
+NET_EXPORT base::OnceCallback<void(CanonicalCookie::CookieInclusionStatus)>
+AdaptCookieInclusionStatusToBool(base::OnceCallback<void(bool)> callback);
 
 }  // namespace cookie_util
 }  // namespace net

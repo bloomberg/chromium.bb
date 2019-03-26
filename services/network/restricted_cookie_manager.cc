@@ -197,7 +197,7 @@ void RestrictedCookieManager::SetCanonicalCookie(
   options.set_exclude_httponly();  // Default, but make it explicit here.
   cookie_store_->SetCanonicalCookieAsync(
       std::move(sanitized_cookie), origin_.scheme(), options,
-      AdaptCookieInclusionStatusToBool(std::move(callback)));
+      net::cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback)));
 }
 
 void RestrictedCookieManager::AddChangeListener(

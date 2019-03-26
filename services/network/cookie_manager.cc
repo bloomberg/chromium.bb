@@ -23,23 +23,6 @@ using CookieDeleteSessionControl = net::CookieDeletionInfo::SessionControl;
 
 namespace network {
 
-namespace {
-
-// Converts the one-argument callbacks to two-argument callback that ignores
-// the second arument for the cookie_store
-net::CookieStore::GetCookieListCallback IgnoreSecondArg(
-    base::OnceCallback<void(const net::CookieList&)> callback) {
-  return base::BindOnce(
-      [](base::OnceCallback<void(const net::CookieList&)> callback,
-         const net::CookieList& cookies,
-         const net::CookieStatusList& excluded_list) {
-        std::move(callback).Run(cookies);
-      },
-      std::move(callback));
-}
-
-}  // namespace
-
 CookieManager::ListenerRegistration::ListenerRegistration() {}
 
 CookieManager::ListenerRegistration::~ListenerRegistration() {}
@@ -81,14 +64,16 @@ void CookieManager::AddRequest(mojom::CookieManagerRequest request) {
 }
 
 void CookieManager::GetAllCookies(GetAllCookiesCallback callback) {
-  cookie_store_->GetAllCookiesAsync(IgnoreSecondArg(std::move(callback)));
+  cookie_store_->GetAllCookiesAsync(
+      net::cookie_util::IgnoreCookieStatusList(std::move(callback)));
 }
 
 void CookieManager::GetCookieList(const GURL& url,
                                   const net::CookieOptions& cookie_options,
                                   GetCookieListCallback callback) {
   cookie_store_->GetCookieListWithOptionsAsync(
-      url, cookie_options, IgnoreSecondArg(std::move(callback)));
+      url, cookie_options,
+      net::cookie_util::IgnoreCookieStatusList(std::move(callback)));
 }
 
 void CookieManager::SetCanonicalCookie(const net::CanonicalCookie& cookie,
@@ -97,7 +82,8 @@ void CookieManager::SetCanonicalCookie(const net::CanonicalCookie& cookie,
                                        SetCanonicalCookieCallback callback) {
   cookie_store_->SetCanonicalCookieAsync(
       std::make_unique<net::CanonicalCookie>(cookie), source_scheme,
-      cookie_options, AdaptCookieInclusionStatusToBool(std::move(callback)));
+      cookie_options,
+      net::cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback)));
 }
 
 void CookieManager::DeleteCanonicalCookie(
