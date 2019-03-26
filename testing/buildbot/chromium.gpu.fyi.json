@@ -25211,5 +25211,308 @@
       }
     ]
   },
-  "Win7 FYI x64 dEQP Release (NVIDIA)": {}
+  "Win7 FYI x64 dEQP Release (NVIDIA)": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--test-launcher-batch-limit=400",
+          "--deqp-egl-display-type=angle-d3d11"
+        ],
+        "name": "angle_deqp_egl_d3d11_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-24.21.14.1195",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 4
+        },
+        "test": "angle_deqp_egl_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-23.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=400",
+          "--deqp-egl-display-type=angle-gl"
+        ],
+        "name": "angle_deqp_egl_gl_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-24.21.14.1195",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 4
+        },
+        "test": "angle_deqp_egl_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-23.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=400",
+          "--deqp-egl-display-type=angle-vulkan"
+        ],
+        "name": "angle_deqp_egl_vulkan_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-24.21.14.1195",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 4
+        },
+        "test": "angle_deqp_egl_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-23.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=400",
+          "--deqp-egl-display-type=angle-d3d11"
+        ],
+        "name": "angle_deqp_gles2_d3d11_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-24.21.14.1195",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 4
+        },
+        "test": "angle_deqp_gles2_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-23.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=400",
+          "--deqp-egl-display-type=angle-gl"
+        ],
+        "name": "angle_deqp_gles2_gl_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-24.21.14.1195",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 4
+        },
+        "test": "angle_deqp_gles2_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-23.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-vulkan",
+          "--test-launcher-batch-limit=400"
+        ],
+        "name": "angle_deqp_gles2_vulkan_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-24.21.14.1195",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 4
+        },
+        "test": "angle_deqp_gles2_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-23.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=400",
+          "--deqp-egl-display-type=angle-d3d11"
+        ],
+        "name": "angle_deqp_gles31_d3d11_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-24.21.14.1195",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 6
+        },
+        "test": "angle_deqp_gles31_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-23.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=400",
+          "--deqp-egl-display-type=angle-gl"
+        ],
+        "name": "angle_deqp_gles31_gl_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-24.21.14.1195",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 6
+        },
+        "test": "angle_deqp_gles31_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-23.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=400",
+          "--deqp-egl-display-type=angle-d3d11"
+        ],
+        "name": "angle_deqp_gles3_d3d11_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-24.21.14.1195",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 12
+        },
+        "test": "angle_deqp_gles3_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-23.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=400",
+          "--deqp-egl-display-type=angle-gl"
+        ],
+        "name": "angle_deqp_gles3_gl_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-24.21.14.1195",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 12
+        },
+        "test": "angle_deqp_gles3_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-23.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      }
+    ]
+  }
 }
