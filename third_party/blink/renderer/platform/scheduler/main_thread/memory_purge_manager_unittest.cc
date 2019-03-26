@@ -52,7 +52,7 @@ class MemoryPurgeManagerTest : public testing::Test {
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{features::kFreezePurgeMemoryAllPagesFrozen,
           {{"delay-in-minutes",
-            base::IntToString(kDelayForPurgeAfterFreeze.InMinutes())}}}},
+            base::NumberToString(kDelayForPurgeAfterFreeze.InMinutes())}}}},
         {features::kPurgeRendererMemoryWhenBackgrounded});
   }
 
@@ -327,7 +327,7 @@ TEST_F(MemoryPurgeManagerTest, PageFrozenAndResumedWhileBackgrounded) {
   scoped_feature_list_.InitWithFeaturesAndParameters(
       {{features::kFreezePurgeMemoryAllPagesFrozen,
         {{"delay-in-minutes",
-          base::IntToString(kFreezePurgeDelay.InMinutes())}}},
+          base::NumberToString(kFreezePurgeDelay.InMinutes())}}},
        {features::kPurgeRendererMemoryWhenBackgrounded, {}}},
       {});
 
@@ -356,7 +356,7 @@ TEST_F(MemoryPurgeManagerTest,
   scoped_feature_list_.InitWithFeaturesAndParameters(
       {{features::kFreezePurgeMemoryAllPagesFrozen,
         {{"delay-in-minutes",
-          base::IntToString(kFreezePurgeDelay.InMinutes())}}},
+          base::NumberToString(kFreezePurgeDelay.InMinutes())}}},
        {features::kPurgeRendererMemoryWhenBackgrounded, {}}},
       {});
 
@@ -379,7 +379,7 @@ TEST_F(MemoryPurgeManagerTest,
   scoped_feature_list_.InitWithFeaturesAndParameters(
       {{features::kFreezePurgeMemoryAllPagesFrozen,
         {{"delay-in-minutes",
-          base::IntToString(kFreezePurgeDelay.InMinutes())}}},
+          base::NumberToString(kFreezePurgeDelay.InMinutes())}}},
        {features::kPurgeRendererMemoryWhenBackgrounded, {}}},
       {});
 
