@@ -17518,7 +17518,7 @@ struct CreateAndTexStorage2DSharedImageINTERNALImmediate {
 
   void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
 
-  void Init(GLuint _texture, const GLbyte* _mailbox, GLenum _internalformat) {
+  void Init(GLuint _texture, GLenum _internalformat, const GLbyte* _mailbox) {
     SetHeader();
     texture = _texture;
     internalformat = _internalformat;
@@ -17527,9 +17527,9 @@ struct CreateAndTexStorage2DSharedImageINTERNALImmediate {
 
   void* Set(void* cmd,
             GLuint _texture,
-            const GLbyte* _mailbox,
-            GLenum _internalformat) {
-    static_cast<ValueType*>(cmd)->Init(_texture, _mailbox, _internalformat);
+            GLenum _internalformat,
+            const GLbyte* _mailbox) {
+    static_cast<ValueType*>(cmd)->Init(_texture, _internalformat, _mailbox);
     const uint32_t size = ComputeSize();
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }

@@ -3554,15 +3554,15 @@ void MaxShaderCompilerThreadsKHR(GLuint count) {
 }
 
 void CreateAndTexStorage2DSharedImageINTERNALImmediate(GLuint texture,
-                                                       const GLbyte* mailbox,
-                                                       GLenum internalformat) {
+                                                       GLenum internalformat,
+                                                       const GLbyte* mailbox) {
   const uint32_t size = gles2::cmds::
       CreateAndTexStorage2DSharedImageINTERNALImmediate::ComputeSize();
   gles2::cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate* c =
       GetImmediateCmdSpaceTotalSize<
           gles2::cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate>(size);
   if (c) {
-    c->Init(texture, mailbox, internalformat);
+    c->Init(texture, internalformat, mailbox);
   }
 }
 
