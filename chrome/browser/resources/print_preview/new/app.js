@@ -99,6 +99,7 @@ Polymer({
 
   /** @override */
   attached: function() {
+    document.documentElement.classList.remove('loading');
     this.nativeLayer_ = print_preview.NativeLayer.getInstance();
     this.addWebUIListener(
         'use-cloud-print', this.onCloudPrintEnable_.bind(this));
