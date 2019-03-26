@@ -5,9 +5,10 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
-#ifdef OS_WIN
+#include "build/build_config.h"
+#if defined(OS_WIN)
 #include "chrome/browser/vr/win/vr_browser_renderer_thread_win.h"
-#endif  // OS_WIN
+#endif  // defined(OS_WIN)
 #include "chrome/browser/vr/test/browser_test_browser_renderer_browser_interface.h"
 #include "chrome/browser/vr/test/ui_utils.h"
 #include "chrome/browser/vr/test/xr_browser_test.h"
@@ -93,6 +94,14 @@ void UiUtils::ReportUiOperationResult(const UiTestOperationType& action_type,
   std::move(ui_operation_callbacks_[static_cast<int>(action_type)]).Run();
 }
 
+void UiUtils::DisableFrameTimeoutForTesting() {
+#if defined(OS_WIN)
+  VRBrowserRendererThreadWin::DisableFrameTimeoutForTesting();
+#else
+  NOTREACHED();
+#endif  // defined(OS_WIN)
+}
+
 std::string UiUtils::UiTestOperationResultToString(
     UiTestOperationResult& result) {
   switch (result) {
@@ -112,15 +121,15 @@ std::string UiUtils::UiTestOperationResultToString(
 }
 
 VRBrowserRendererThreadWin* UiUtils::GetRendererThread() {
-#ifdef OS_WIN
+#if defined(OS_WIN)
   return VRBrowserRendererThreadWin::GetInstanceForTesting();
 #else
   NOTREACHED();
-#endif  // OS_WIN
+#endif  // defined(OS_WIN)
 }
 
 BrowserRenderer* UiUtils::GetBrowserRenderer() {
-#ifdef OS_WIN
+#if defined(OS_WIN)
   auto* renderer_thread = GetRendererThread();
   if (renderer_thread == nullptr)
     return nullptr;
@@ -128,7 +137,7 @@ BrowserRenderer* UiUtils::GetBrowserRenderer() {
       ->GetBrowserRendererForTesting();
 #else
   NOTREACHED();
-#endif  // OS_WIN
+#endif  // defined(OS_WIN)
 }
 
 }  // namespace vr

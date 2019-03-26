@@ -168,6 +168,15 @@ interface ImmersiveOverlay {
 
   // Allows the browser to hide WebXR content or overlays temporarily.
   SetOverlayAndWebXRVisibility(bool overlay_visible, bool webxr_visible);
+
+  // The browser may request to be notified the browser that the current page
+  // has submitted a frame.  This call returns when the current page submits a
+  // frame.
+  // If the current page's WebXR session is not visible because the browser has
+  // made its own UI visible, the page may receive one frame's worth of pose
+  // data to unblock rendering.  This allows frame-timeout UI to show while
+  // still allowing a timed-out page to recover and start submitting frames.
+  RequestNotificationOnWebXrSubmitted() => ();
 };
 
 // XRCompositorHost lives in the XRRuntime process, and allows the browser to

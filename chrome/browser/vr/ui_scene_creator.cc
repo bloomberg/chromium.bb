@@ -1595,6 +1595,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
   timeout_text->SetFieldWidth(kTimeoutMessageTextWidthDMM);
   timeout_text->set_hit_testable(true);
 
+#if !defined(OS_WIN)
   auto button_scaler =
       std::make_unique<ScaledDepthAdjuster>(kTimeoutButtonDepthOffset);
 
@@ -1628,11 +1629,17 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
   timeout_button_text->set_hit_testable(true);
 
   button->AddChild(std::move(timeout_button_text));
+  button_scaler->AddChild(std::move(button));
+#endif  // !defined(OS_WIN)
+
   timeout_layout->AddChild(std::move(timeout_icon));
   timeout_layout->AddChild(std::move(timeout_text));
   timeout_message->AddChild(std::move(timeout_layout));
-  button_scaler->AddChild(std::move(button));
+
+#if !defined(OS_WIN)
   timeout_message->AddChild(std::move(button_scaler));
+#endif  // !defined(OS_WIN)
+
   scaler->AddChild(std::move(timeout_message));
   scaler->AddChild(std::move(spinner));
   scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(scaler));
@@ -1862,12 +1869,26 @@ void UiSceneCreator::CreateContentRepositioningAffordance() {
   scene_->AddUiElement(k2dBrowsingRepositioner, std::move(hit_plane));
 }
 
+namespace {
+
+bool ControllerVisibility(Model* model) {
+#if defined(OS_WIN)
+  return model->browsing_enabled() ||
+         model->hosted_platform_ui.hosted_ui_enabled;
+#else
+  return model->browsing_enabled() || model->web_vr.state == kWebVrTimedOut ||
+         model->hosted_platform_ui.hosted_ui_enabled;
+#endif
+}
+
+}  // namespace
+
 void UiSceneCreator::CreateControllers() {
+  // Controllers are only visible on Android.
   auto root = std::make_unique<UiElement>();
   root->SetName(kControllerRoot);
-  VR_BIND_VISIBILITY(root, model->browsing_enabled() ||
-                               model->web_vr.state == kWebVrTimedOut ||
-                               model->hosted_platform_ui.hosted_ui_enabled);
+
+  VR_BIND_VISIBILITY(root, ControllerVisibility(model));
   scene_->AddUiElement(kRoot, std::move(root));
 
   auto group = Create<UiElement>(kNone, kPhaseNone);

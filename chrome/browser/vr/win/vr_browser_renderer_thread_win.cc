@@ -4,6 +4,8 @@
 
 #include "chrome/browser/vr/win/vr_browser_renderer_thread_win.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "chrome/browser/vr/audio_delegate.h"
 #include "chrome/browser/vr/browser_renderer.h"
@@ -21,6 +23,15 @@
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "ui/gfx/geometry/quaternion.h"
 
+namespace {
+constexpr base::TimeDelta kWebVrInitialFrameTimeout =
+    base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kWebVrSpinnerTimeout =
+    base::TimeDelta::FromSeconds(2);
+
+bool g_frame_timeout_ui_disabled_for_testing_ = false;
+}  // namespace
+
 namespace vr {
 
 VRBrowserRendererThreadWin* VRBrowserRendererThreadWin::instance_for_testing_ =
@@ -28,7 +39,8 @@ VRBrowserRendererThreadWin* VRBrowserRendererThreadWin::instance_for_testing_ =
 
 VRBrowserRendererThreadWin::VRBrowserRendererThreadWin(
     device::mojom::XRCompositorHost* compositor)
-    : compositor_(compositor) {
+    : compositor_(compositor),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(instance_for_testing_ == nullptr);
   instance_for_testing_ = this;
 }
@@ -42,7 +54,9 @@ VRBrowserRendererThreadWin::~VRBrowserRendererThreadWin() {
 void VRBrowserRendererThreadWin::StopOverlay() {
   browser_renderer_ = nullptr;
   initializing_graphics_ = nullptr;
-  overlay_ = nullptr;
+  started_ = false;
+  graphics_ = nullptr;
+  scheduler_ = nullptr;
 }
 
 void VRBrowserRendererThreadWin::SetVRDisplayInfo(
@@ -54,6 +68,61 @@ void VRBrowserRendererThreadWin::SetVRDisplayInfo(
 
 void VRBrowserRendererThreadWin::SetLocationInfo(GURL gurl) {
   gurl_ = gurl;
+}
+
+void VRBrowserRendererThreadWin::SetWebXrPresenting(bool presenting) {
+  webxr_presenting_ = presenting;
+
+  if (g_frame_timeout_ui_disabled_for_testing_)
+    return;
+
+  if (presenting) {
+    compositor_->CreateImmersiveOverlay(mojo::MakeRequest(&overlay_));
+    StartWebXrTimeout();
+  } else {
+    StopWebXrTimeout();
+  }
+}
+
+void VRBrowserRendererThreadWin::StartWebXrTimeout() {
+  overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
+                                         draw_state_.ShouldDrawWebXR());
+
+  overlay_->RequestNotificationOnWebXrSubmitted(base::BindOnce(
+      &VRBrowserRendererThreadWin::OnWebXRSubmitted, base::Unretained(this)));
+
+  webxr_spinner_timeout_closure_.Reset(base::BindOnce(
+      &VRBrowserRendererThreadWin::OnWebXrTimeoutImminent,
+      base::Unretained(
+          this)));  // Unretained safe because we explicitly cancel.
+  task_runner_->PostDelayedTask(FROM_HERE,
+                                webxr_spinner_timeout_closure_.callback(),
+                                kWebVrSpinnerTimeout);
+  webxr_frame_timeout_closure_.Reset(base::BindOnce(
+      &VRBrowserRendererThreadWin::OnWebXrTimedOut,
+      base::Unretained(
+          this)));  // Unretained safe because we explicitly cancel.
+  task_runner_->PostDelayedTask(FROM_HERE,
+                                webxr_frame_timeout_closure_.callback(),
+                                kWebVrInitialFrameTimeout);
+}
+
+void VRBrowserRendererThreadWin::StopWebXrTimeout() {
+  if (!webxr_spinner_timeout_closure_.IsCancelled())
+    webxr_spinner_timeout_closure_.Cancel();
+  if (!webxr_frame_timeout_closure_.IsCancelled())
+    webxr_frame_timeout_closure_.Cancel();
+  OnSpinnerVisibilityChanged(false);
+}
+
+void VRBrowserRendererThreadWin::OnWebXrTimeoutImminent() {
+  OnSpinnerVisibilityChanged(true);
+  scheduler_ui_->OnWebXrTimeoutImminent();
+}
+
+void VRBrowserRendererThreadWin::OnWebXrTimedOut() {
+  OnSpinnerVisibilityChanged(true);
+  scheduler_ui_->OnWebXrTimedOut();
 }
 
 void VRBrowserRendererThreadWin::SetVisibleExternalPromptNotification(
@@ -68,8 +137,12 @@ void VRBrowserRendererThreadWin::SetVisibleExternalPromptNotification(
 
   overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
                                          draw_state_.ShouldDrawWebXR());
-  if (!draw_state_.ShouldDrawUI())
+  if (draw_state_.ShouldDrawUI()) {
+    overlay_->RequestNextOverlayPose(base::BindOnce(
+        &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
+  } else {
     StopOverlay();
+  }
 }
 
 VRBrowserRendererThreadWin*
@@ -86,6 +159,10 @@ namespace {
 // as used for estimating prediction times.
 constexpr unsigned kSlidingAverageSize = 5;
 }  // namespace
+
+void VRBrowserRendererThreadWin::DisableFrameTimeoutForTesting() {
+  g_frame_timeout_ui_disabled_for_testing_ = true;
+}
 
 class VRUiBrowserInterface : public UiBrowserInterface {
  public:
@@ -118,7 +195,8 @@ class VRUiBrowserInterface : public UiBrowserInterface {
 };
 
 void VRBrowserRendererThreadWin::StartOverlay() {
-  compositor_->CreateImmersiveOverlay(mojo::MakeRequest(&overlay_));
+  if (started_)
+    return;
 
   initializing_graphics_ = std::make_unique<GraphicsDelegateWin>();
   if (!initializing_graphics_->InitializeOnMainThread()) {
@@ -150,6 +228,7 @@ void VRBrowserRendererThreadWin::StartOverlay() {
       0 /* platform_ui_texture_id - we don't support platform UI */);
   ui_ = static_cast<BrowserUiInterface*>(ui.get());
   ui_->SetWebVrMode(true);
+  scheduler_ui_ = static_cast<UiInterface*>(ui.get())->GetSchedulerUiPtr();
 
   if (gurl_.is_valid()) {
     // TODO(https://crbug.com/905375): Set more of this state.  Only the GURL is
@@ -178,13 +257,35 @@ void VRBrowserRendererThreadWin::StartOverlay() {
       std::move(initializing_graphics_), std::move(input_delegate),
       browser_renderer_interface, kSlidingAverageSize);
 
-  overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
-                                         draw_state_.ShouldDrawWebXR());
-  if (draw_state_.ShouldDrawUI()) {
-    overlay_->RequestNextOverlayPose(base::BindOnce(
-        &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
-  }
   graphics_->ClearContext();
+
+  started_ = true;
+}
+
+void VRBrowserRendererThreadWin::OnSpinnerVisibilityChanged(bool visible) {
+  if (draw_state_.SetSpinnerVisible(visible)) {
+    if (draw_state_.ShouldDrawUI()) {
+      StartOverlay();
+    }
+
+    if (overlay_) {
+      overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
+                                             draw_state_.ShouldDrawWebXR());
+    }
+
+    if (draw_state_.ShouldDrawUI()) {
+      overlay_->RequestNextOverlayPose(base::BindOnce(
+          &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
+    } else {
+      StopOverlay();
+    }
+  }
+}
+
+void VRBrowserRendererThreadWin::OnWebXRSubmitted() {
+  if (scheduler_ui_)
+    scheduler_ui_->OnWebXrFrameAvailable();
+  StopWebXrTimeout();
 }
 
 void VRBrowserRendererThreadWin::OnPose(device::mojom::XRFrameDataPtr data) {
@@ -197,8 +298,12 @@ void VRBrowserRendererThreadWin::OnPose(device::mojom::XRFrameDataPtr data) {
   }
 
   // Deliver pose to input and scheduler.
-  const std::vector<float>& quat = *data->pose->orientation;
-  const std::vector<float>& pos = *data->pose->position;
+  std::vector<float> quat = {0, 0, 0, 1};
+  if (data && data->pose && data->pose->orientation)
+    quat = *data->pose->orientation;
+  std::vector<float> pos = {0, 0, 0};
+  if (data && data->pose && data->pose->position)
+    pos = *data->pose->position;
 
   // The incoming pose represents where the headset is in "world space".  So
   // we'll need to invert to get the view transform.
@@ -241,7 +346,7 @@ void VRBrowserRendererThreadWin::SubmitResult(bool success) {
   if (!success) {
     graphics_->ResetMemoryBuffer();
   }
-  if (overlay_) {
+  if (draw_state_.ShouldDrawUI() && started_) {
     overlay_->RequestNextOverlayPose(base::BindOnce(
         &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
   }
@@ -249,11 +354,28 @@ void VRBrowserRendererThreadWin::SubmitResult(bool success) {
 
 // VRBrowserRendererThreadWin::DrawContentType functions.
 bool VRBrowserRendererThreadWin::DrawState::ShouldDrawUI() {
-  return prompt_ != ExternalPromptNotificationType::kPromptNone;
+  return prompt_ != ExternalPromptNotificationType::kPromptNone ||
+         spinner_visible_;
 }
 
 bool VRBrowserRendererThreadWin::DrawState::ShouldDrawWebXR() {
-  return prompt_ == ExternalPromptNotificationType::kPromptNone;
+  return prompt_ == ExternalPromptNotificationType::kPromptNone &&
+         !spinner_visible_;
+}
+
+bool VRBrowserRendererThreadWin::DrawState::SetPrompt(
+    ExternalPromptNotificationType prompt) {
+  bool old_ui = ShouldDrawUI();
+  bool old_webxr = ShouldDrawWebXR();
+  prompt_ = prompt;
+  return old_ui != ShouldDrawUI() || old_webxr != ShouldDrawWebXR();
+}
+
+bool VRBrowserRendererThreadWin::DrawState::SetSpinnerVisible(bool visible) {
+  bool old_ui = ShouldDrawUI();
+  bool old_webxr = ShouldDrawWebXR();
+  spinner_visible_ = visible;
+  return old_ui != ShouldDrawUI() || old_webxr != ShouldDrawWebXR();
 }
 
 }  // namespace vr

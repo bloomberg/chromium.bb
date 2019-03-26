@@ -48,7 +48,8 @@ VRUiHostImpl::~VRUiHostImpl() {
   // We don't call BrowserXRRuntime::RemoveObserver, because if we are being
   // destroyed, it means the corresponding device has been removed from
   // XRRuntimeManager, and the BrowserXRRuntime has been destroyed.
-
+  if (ui_rendering_thread_)
+    ui_rendering_thread_->SetWebXrPresenting(false);
   StopUiRendering();
 
   // Clean up permission observer.
@@ -108,6 +109,7 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
   web_contents_ = contents;
   if (contents) {
     StartUiRendering();
+    ui_rendering_thread_->SetWebXrPresenting(true);
 
     PermissionRequestManager::CreateForWebContents(contents);
     permission_request_manager_ =
@@ -127,6 +129,8 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
       DVLOG(1) << __func__ << ": No PermissionRequestManager";
     }
   } else {
+    if (ui_rendering_thread_)
+      ui_rendering_thread_->SetWebXrPresenting(false);
     StopUiRendering();
   }
 }
@@ -155,7 +159,6 @@ void VRUiHostImpl::StartUiRendering() {
 void VRUiHostImpl::StopUiRendering() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << __func__;
-
   ui_rendering_thread_ = nullptr;
 }
 

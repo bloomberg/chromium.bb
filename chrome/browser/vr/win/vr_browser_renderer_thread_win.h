@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_VR_WIN_VR_BROWSER_RENDERER_THREAD_WIN_H_
 #define CHROME_BROWSER_VR_WIN_VR_BROWSER_RENDERER_THREAD_WIN_H_
 
+#include <memory>
+
 #include "base/threading/thread.h"
 #include "chrome/browser/vr/browser_renderer.h"
 #include "chrome/browser/vr/model/web_vr_model.h"
@@ -20,6 +22,7 @@ class InputDelegateWin;
 class GraphicsDelegateWin;
 class SchedulerDelegateWin;
 class VRUiBrowserInterface;
+class SchedulerUiInterface;
 
 class VR_EXPORT VRBrowserRendererThreadWin {
  public:
@@ -29,6 +32,7 @@ class VR_EXPORT VRBrowserRendererThreadWin {
 
   void SetVRDisplayInfo(device::mojom::VRDisplayInfoPtr display_info);
   void SetLocationInfo(GURL gurl);
+  void SetWebXrPresenting(bool presenting);
 
   // The below function(s) affect(s) whether UI is drawn or not.
   void SetVisibleExternalPromptNotification(
@@ -36,16 +40,14 @@ class VR_EXPORT VRBrowserRendererThreadWin {
 
   static VRBrowserRendererThreadWin* GetInstanceForTesting();
   BrowserRenderer* GetBrowserRendererForTesting();
+  static void DisableFrameTimeoutForTesting();
 
  private:
   class DrawState {
    public:
     // State changing methods.
-    bool SetPrompt(ExternalPromptNotificationType prompt) {
-      auto old = prompt_;
-      prompt_ = prompt;
-      return prompt_ != old;
-    }
+    bool SetPrompt(ExternalPromptNotificationType prompt);
+    bool SetSpinnerVisible(bool visible);
 
     // State querying methods.
     bool ShouldDrawUI();
@@ -54,6 +56,8 @@ class VR_EXPORT VRBrowserRendererThreadWin {
    private:
     ExternalPromptNotificationType prompt_ =
         ExternalPromptNotificationType::kPromptNone;
+
+    bool spinner_visible_ = false;
   };
 
   void OnPose(device::mojom::XRFrameDataPtr data);
@@ -61,6 +65,12 @@ class VR_EXPORT VRBrowserRendererThreadWin {
   void SubmitFrame(device::mojom::XRFrameDataPtr data);
   void StartOverlay();
   void StopOverlay();
+  void OnWebXRSubmitted();
+  void OnSpinnerVisibilityChanged(bool visible);
+  void OnWebXrTimeoutImminent();
+  void OnWebXrTimedOut();
+  void StartWebXrTimeout();
+  void StopWebXrTimeout();
 
   // We need to do some initialization of GraphicsDelegateWin before
   // browser_renderer_, so we first store it in a unique_ptr, then transition
@@ -68,26 +78,35 @@ class VR_EXPORT VRBrowserRendererThreadWin {
   std::unique_ptr<GraphicsDelegateWin> initializing_graphics_;
   std::unique_ptr<VRUiBrowserInterface> ui_browser_interface_;
   std::unique_ptr<BrowserRenderer> browser_renderer_;
+  std::unique_ptr<SchedulerDelegateWin> scheduler_delegate_win_;
 
   // Raw pointers to objects owned by browser_renderer_:
   InputDelegateWin* input_ = nullptr;
   GraphicsDelegateWin* graphics_ = nullptr;
   SchedulerDelegateWin* scheduler_ = nullptr;
   BrowserUiInterface* ui_ = nullptr;
+  SchedulerUiInterface* scheduler_ui_ = nullptr;
 
   // Owned by vr_ui_host:
   device::mojom::XRCompositorHost* compositor_;
 
   GURL gurl_;
   DrawState draw_state_;
+  bool started_ = false;
+  bool webxr_presenting_ = false;
 
   device::mojom::ImmersiveOverlayPtr overlay_;
   device::mojom::VRDisplayInfoPtr display_info_;
+
+  base::CancelableOnceClosure webxr_frame_timeout_closure_;
+  base::CancelableOnceClosure webxr_spinner_timeout_closure_;
 
   // This class is effectively a singleton, although it's not actually
   // implemented as one. Since tests need to access the thread to post tasks,
   // just keep a static reference to the existing instance.
   static VRBrowserRendererThreadWin* instance_for_testing_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace vr

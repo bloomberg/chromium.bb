@@ -48,6 +48,8 @@ class UiUtils {
   void ReportUiOperationResult(const UiTestOperationType& action_type,
                                const UiTestOperationResult& result);
 
+  static void DisableFrameTimeoutForTesting();
+
  private:
   static void PollForBrowserRenderer(base::RunLoop* wait_loop);
   static VRBrowserRendererThreadWin* GetRendererThread();
