@@ -118,9 +118,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/308590
     "race:CustomThreadWatcher::~CustomThreadWatcher\n"
 
-    // http://crbug.com/310851
-    "race:net::ProxyResolverV8Tracing::Job::~Job\n"
-
     // http://crbug.com/476529
     "deadlock:cc::VideoLayerImpl::WillDraw\n"
 
