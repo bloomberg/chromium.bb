@@ -367,10 +367,10 @@ const char kSearchIconToggleName[] = "Change the icon for the search button";
 const char kSearchIconToggleDescription[] =
     "Different icons for the search button.";
 
-const char kSendUmaOverCellularName[] = "Send UMA data over cellular.";
-const char kSendUmaOverCellularDescription[] =
-    "When enabled, will send UMA data over WiFi if available or cellular if "
-    "not.";
+const char kSendUmaOverAnyNetwork[] =
+    "Send UMA data over any network available.";
+const char kSendUmaOverAnyNetworkDescription[] =
+    "When enabled, will send UMA data over either WiFi or cellular by default.";
 
 const char kSettingsRefreshName[] = "Enable the UI Refresh for Settings";
 const char kSettingsRefreshDescription[] =
