@@ -21998,9 +21998,10 @@ Called by update_net_error_codes.py.-->
   <int value="2243"
       label="V8MediaCapabilitiesInfo_PowerEfficient_AttributeGetter"/>
   <int value="2244" label="WindowEventInV0ShadowTree"/>
-  <int value="2245" label="HTMLAnchorElementDownloadInSandboxWithUserGesture"/>
+  <int value="2245"
+      label="OBSOLETE_HTMLAnchorElementDownloadInSandboxWithUserGesture"/>
   <int value="2246"
-      label="HTMLAnchorElementDownloadInSandboxWithoutUserGesture"/>
+      label="OBSOLETE_HTMLAnchorElementDownloadInSandboxWithoutUserGesture"/>
   <int value="2247" label="WindowOpenRealmMismatch"/>
   <int value="2248" label="GridRowTrackPercentIndefiniteHeight"/>
   <int value="2249" label="VRGetDisplaysSupportsPresent"/>
@@ -22402,8 +22403,10 @@ Called by update_net_error_codes.py.-->
   <int value="2629" label="HTMLAnchorElementHrefTranslateAttribute"/>
   <int value="2630" label="WebKitUserModifyEffective"/>
   <int value="2631" label="PlainTextEditingEffective"/>
-  <int value="2632" label="NavigationDownloadInSandboxWithUserGesture"/>
-  <int value="2633" label="NavigationDownloadInSandboxWithoutUserGesture"/>
+  <int value="2632"
+      label="OBSOLETE_NavigationDownloadInSandboxWithUserGesture"/>
+  <int value="2633"
+      label="OBSOLETE_NavigationDownloadInSandboxWithoutUserGesture"/>
   <int value="2634" label="LegacyTLSVersionInMainFrameResource"/>
   <int value="2635" label="LegacyTLSVersionInSubresource"/>
   <int value="2636" label="LegacyTLSVersionInSubframeMainResource"/>
@@ -22626,6 +22629,9 @@ Called by update_net_error_codes.py.-->
   <int value="2835" label="TargetCurrent"/>
   <int value="2836" label="SandboxBackForwardStaysWithinSubtree"/>
   <int value="2837" label="SandboxBackForwardAffectsFramesOutsideSubtree"/>
+  <int value="2838" label="DownloadPrePolicyCheck"/>
+  <int value="2839" label="DownloadPostPolicyCheck"/>
+  <int value="2840" label="DownloadInSandboxWithoutUserGesture"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

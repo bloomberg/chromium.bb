@@ -24,7 +24,6 @@
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
@@ -237,7 +236,6 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
   content::RenderFrameHost* ad_host = FindFrameMaybeUnsafe(navigation_handle);
 
   if (navigation_handle->IsDownload()) {
-    bool has_sandbox = ad_host->IsSandboxed(blink::WebSandboxFlags::kDownloads);
     bool has_gesture = navigation_handle->HasUserGesture();
 
     std::vector<blink::mojom::WebFeature> web_features;
@@ -250,14 +248,6 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
           has_gesture
               ? blink::mojom::WebFeature::kDownloadInAdFrameWithUserGesture
               : blink::mojom::WebFeature::kDownloadInAdFrameWithoutUserGesture;
-      RecordSingleFeatureUsage(ad_host, web_feature);
-    }
-    if (has_sandbox) {
-      blink::mojom::WebFeature web_feature =
-          has_gesture ? blink::mojom::WebFeature::
-                            kNavigationDownloadInSandboxWithUserGesture
-                      : blink::mojom::WebFeature::
-                            kNavigationDownloadInSandboxWithoutUserGesture;
       RecordSingleFeatureUsage(ad_host, web_feature);
     }
   }
@@ -277,24 +267,6 @@ void AdsPageLoadMetricsObserver::FrameReceivedFirstUserActivation(
   if (ancestor_data) {
     ancestor_data->SetReceivedUserActivation(
         GetDelegate()->GetVisibilityTracker().GetForegroundDuration());
-  }
-}
-
-void AdsPageLoadMetricsObserver::OnDidInternalNavigationAbort(
-    content::NavigationHandle* navigation_handle) {
-  // Main frame navigation
-  if (navigation_handle->IsDownload()) {
-    content::RenderFrameHost* rfh = FindFrameMaybeUnsafe(navigation_handle);
-    bool has_sandbox = rfh->IsSandboxed(blink::WebSandboxFlags::kDownloads);
-    bool has_gesture = navigation_handle->HasUserGesture();
-    if (has_sandbox) {
-      blink::mojom::WebFeature web_feature =
-          has_gesture ? blink::mojom::WebFeature::
-                            kNavigationDownloadInSandboxWithUserGesture
-                      : blink::mojom::WebFeature::
-                            kNavigationDownloadInSandboxWithoutUserGesture;
-      RecordSingleFeatureUsage(rfh, web_feature);
-    }
   }
 }
 

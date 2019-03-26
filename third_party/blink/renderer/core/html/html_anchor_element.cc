@@ -388,6 +388,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   if (hasAttribute(kDownloadAttr) &&
       NavigationPolicyFromEvent(&event) != kNavigationPolicyDownload &&
       GetDocument().GetSecurityOrigin()->CanReadContent(completed_url)) {
+    UseCounter::Count(GetDocument(), WebFeature::kDownloadPrePolicyCheck);
     if (frame->IsAdSubframe()) {
       // Note: Here it covers download originated from clicking on <a download>
       // link that results in direct download. These two features can also be
@@ -399,17 +400,15 @@ void HTMLAnchorElement::HandleClick(Event& event) {
                             : WebFeature::kDownloadInAdFrameWithoutUserGesture);
     }
     if (GetDocument().IsSandboxed(kSandboxDownloads)) {
-      if (!LocalFrame::HasTransientUserActivation(frame) &&
-          RuntimeEnabledFeatures::
-              BlockingDownloadsInSandboxWithoutUserActivationEnabled())
-        return;
-      UseCounter::Count(
-          GetDocument(),
-          LocalFrame::HasTransientUserActivation(frame)
-              ? WebFeature::kHTMLAnchorElementDownloadInSandboxWithUserGesture
-              : WebFeature::
-                    kHTMLAnchorElementDownloadInSandboxWithoutUserGesture);
+      if (!LocalFrame::HasTransientUserActivation(frame)) {
+        UseCounter::Count(GetDocument(),
+                          WebFeature::kDownloadInSandboxWithoutUserGesture);
+        if (RuntimeEnabledFeatures::
+                BlockingDownloadsInSandboxWithoutUserActivationEnabled())
+          return;
+      }
     }
+    UseCounter::Count(GetDocument(), WebFeature::kDownloadPostPolicyCheck);
     request.SetSuggestedFilename(
         static_cast<String>(FastGetAttribute(kDownloadAttr)));
     request.SetRequestContext(mojom::RequestContextType::DOWNLOAD);
