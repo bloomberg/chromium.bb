@@ -28,10 +28,23 @@ class TransformPaintPropertyNode;
 // Used to report whether and how paint properties have changed. The order is
 // important - it must go from no change to the most significant change.
 enum class PaintPropertyChangeType : unsigned char {
+  // Nothing has changed.
   kUnchanged,
+  // We only changed values that are mutated by compositor animations.
   kChangedOnlyCompositedAnimationValues,
+  // We only changed values that don't require re-raster (e.g. compositor
+  // element id changed).
   kChangedOnlyNonRerasterValues,
+  // We only changed values and not the hierarchy of the tree, and we know that
+  // the value changes are 'simple' in that they don't cause cascading changes.
+  // For example, they do not cause a new render surface to be created, which
+  // may otherwise cause tree changes elsewhere. An example of this is opacity
+  // changing in the [0, 1) range.
+  kChangedOnlySimpleValues,
+  // We only changed values and not the hierarchy of the tree, but nothing is
+  // known about the kind of value change.
   kChangedOnlyValues,
+  // We have directly modified the tree topology by adding or removing a node.
   kNodeAddedOrRemoved,
 };
 

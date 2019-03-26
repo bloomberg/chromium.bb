@@ -107,7 +107,7 @@ PaintInvalidationReason RasterInvalidator::ChunkPropertiesChanged(
   // the chunk state.
   if (&new_chunk_state.Effect() != &old_chunk_state.Effect() ||
       new_chunk_state.Effect().Changed(
-          PaintPropertyChangeType::kChangedOnlyValues, layer_state,
+          PaintPropertyChangeType::kChangedOnlySimpleValues, layer_state,
           &new_chunk_state.Transform()))
     return PaintInvalidationReason::kPaintProperty;
 
@@ -129,7 +129,7 @@ PaintInvalidationReason RasterInvalidator::ChunkPropertiesChanged(
   // chunk state.
   if (&new_chunk_state.Clip() != &old_chunk_state.Clip() ||
       new_chunk_state.Clip().Changed(
-          PaintPropertyChangeType::kChangedOnlyValues, layer_state,
+          PaintPropertyChangeType::kChangedOnlySimpleValues, layer_state,
           &new_chunk_state.Transform()))
     return PaintInvalidationReason::kPaintProperty;
 
