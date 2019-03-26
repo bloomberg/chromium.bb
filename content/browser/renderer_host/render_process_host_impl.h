@@ -631,9 +631,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static RenderProcessHost* FindReusableProcessHostForSiteInstance(
       SiteInstanceImpl* site_instance);
 
-  void CreateMediaStreamDispatcherHost(
-      MediaStreamManager* media_stream_manager,
-      blink::mojom::MediaStreamDispatcherHostRequest request);
   void CreateMediaStreamTrackMetricsHost(
       blink::mojom::MediaStreamTrackMetricsHostRequest request);
 
