@@ -3543,4 +3543,231 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
   TearDownDisplay();
 }
 
+TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerDoesNotOcclude) {
+  SetUpGpuDisplay(RendererSettings());
+
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+
+  CompositorFrame frame = MakeDefaultCompositorFrame();
+
+  // The quad with rounded corner does not completely cover the quad below it.
+  // The corners of the below quad are visiblg through the clipped corners.
+  gfx::Rect quad_rect(10, 10, 100, 100);
+  gfx::RRectF rounded_corner_bounds(gfx::RectF(quad_rect), 10.f);
+
+  bool is_clipped = false;
+  bool are_contents_opaque = true;
+  float opacity = 1.f;
+  SharedQuadState* shared_quad_state_with_rrect =
+      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
+  SharedQuadState* shared_quad_state_occluded =
+      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
+
+  auto* rounded_corner_quad =
+      frame.render_pass_list.front()
+          ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+  auto* occluded_quad =
+      frame.render_pass_list.front()
+          ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+
+  {
+    shared_quad_state_occluded->SetAll(
+        gfx::Transform(), quad_rect, quad_rect, gfx::RRectF(), quad_rect,
+        is_clipped, are_contents_opaque, opacity, SkBlendMode::kSrcOver, 0);
+    occluded_quad->SetNew(shared_quad_state_occluded, quad_rect, quad_rect,
+                          SK_ColorRED, false);
+
+    shared_quad_state_with_rrect->SetAll(gfx::Transform(), quad_rect, quad_rect,
+                                         rounded_corner_bounds, quad_rect,
+                                         is_clipped, are_contents_opaque,
+                                         opacity, SkBlendMode::kSrcOver, 0);
+    rounded_corner_quad->SetNew(shared_quad_state_with_rrect, quad_rect,
+                                quad_rect, SK_ColorBLUE, false);
+
+    EXPECT_EQ(2u, frame.render_pass_list.front()->quad_list.size());
+    display_->RemoveOverdrawQuads(&frame);
+
+    // Since none of the quads are culled, there should be 2 quads.
+    EXPECT_EQ(2u, frame.render_pass_list.front()->quad_list.size());
+    EXPECT_EQ(quad_rect.ToString(), frame.render_pass_list.front()
+                                        ->quad_list.ElementAt(0)
+                                        ->visible_rect.ToString());
+    EXPECT_EQ(quad_rect.ToString(), frame.render_pass_list.front()
+                                        ->quad_list.ElementAt(1)
+                                        ->visible_rect.ToString());
+  }
+  TearDownDisplay();
+}
+
+TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerDoesOcclude) {
+  SetUpGpuDisplay(RendererSettings());
+
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+
+  // The quad with rounded corner completely covers the quad below it.
+  CompositorFrame frame = MakeDefaultCompositorFrame();
+  gfx::Rect quad_rect(10, 10, 1000, 1000);
+  gfx::RRectF rounded_corner_bounds(gfx::RectF(quad_rect), 10.f);
+  gfx::Rect occluded_quad_rect(13, 13, 994, 994);
+
+  bool is_clipped = false;
+  bool are_contents_opaque = true;
+  float opacity = 1.f;
+  SharedQuadState* shared_quad_state_with_rrect =
+      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
+  SharedQuadState* shared_quad_state_occluded =
+      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
+
+  auto* rounded_corner_quad =
+      frame.render_pass_list.front()
+          ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+  auto* occluded_quad =
+      frame.render_pass_list.front()
+          ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+
+  {
+    shared_quad_state_occluded->SetAll(
+        gfx::Transform(), occluded_quad_rect, occluded_quad_rect, gfx::RRectF(),
+        occluded_quad_rect, is_clipped, are_contents_opaque, opacity,
+        SkBlendMode::kSrcOver, 0);
+    occluded_quad->SetNew(shared_quad_state_occluded, occluded_quad_rect,
+                          occluded_quad_rect, SK_ColorRED, false);
+
+    shared_quad_state_with_rrect->SetAll(gfx::Transform(), quad_rect, quad_rect,
+                                         rounded_corner_bounds, quad_rect,
+                                         is_clipped, are_contents_opaque,
+                                         opacity, SkBlendMode::kSrcOver, 0);
+    rounded_corner_quad->SetNew(shared_quad_state_with_rrect, quad_rect,
+                                quad_rect, SK_ColorBLUE, false);
+
+    EXPECT_EQ(2u, frame.render_pass_list.front()->quad_list.size());
+    display_->RemoveOverdrawQuads(&frame);
+    // Since the quad with rounded corner completely covers the quad with
+    // no rounded corner, the later quad is culled. We should only have 1 quad
+    // in the final list now.
+    EXPECT_EQ(1u, frame.render_pass_list.front()->quad_list.size());
+    EXPECT_EQ(quad_rect.ToString(), frame.render_pass_list.front()
+                                        ->quad_list.ElementAt(0)
+                                        ->visible_rect.ToString());
+  }
+  TearDownDisplay();
+}
+
+TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerPartialOcclude) {
+  SetUpGpuDisplay(RendererSettings());
+
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+
+  // The quad with rounded corner completely covers the quad below it.
+  CompositorFrame frame = MakeDefaultCompositorFrame();
+
+  //      +----------------------+
+  //      |                      | <- Large occluding Rect
+  //  +---|-  -  -  -  +  -  -  -|-------+
+  //  |***|            .         |*******|
+  //  |***|            .         |*******|
+  //  |***|            .         |*******|
+  //  +---|-  -  -  -  +  -  -  -|-------+
+  //  |***|            .         |*******|
+  //  |***|            .         |*******|
+  //  |***|            .         |*******|
+  //  +---|-  -  -  -  +  -  -  -|-------+
+  //      |                      |
+  //      +----------------------+
+  //
+  // * -> Visiblg rect for the quads.
+  gfx::Rect quad_rect(10, 10, 1000, 1000);
+  gfx::RRectF rounded_corner_bounds(gfx::RectF(quad_rect), 10.f);
+  gfx::Rect occluded_quad_rect_1(0, 20, 600, 490);
+  gfx::Rect occluded_quad_rect_2(600, 20, 600, 490);
+  gfx::Rect occluded_quad_rect_3(0, 510, 600, 490);
+  gfx::Rect occluded_quad_rect_4(600, 510, 600, 490);
+  gfx::Rect occluded_sqs_rect;
+  occluded_sqs_rect.Union(occluded_quad_rect_1);
+  occluded_sqs_rect.Union(occluded_quad_rect_2);
+  occluded_sqs_rect.Union(occluded_quad_rect_3);
+  occluded_sqs_rect.Union(occluded_quad_rect_4);
+
+  bool is_clipped = false;
+  bool are_contents_opaque = true;
+  float opacity = 1.f;
+  SharedQuadState* shared_quad_state_with_rrect =
+      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
+  SharedQuadState* shared_quad_state_occluded =
+      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
+
+  auto* rounded_corner_quad =
+      frame.render_pass_list.front()
+          ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+  auto* occluded_quad_1 =
+      frame.render_pass_list.front()
+          ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+  auto* occluded_quad_2 =
+      frame.render_pass_list.front()
+          ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+  auto* occluded_quad_3 =
+      frame.render_pass_list.front()
+          ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+  auto* occluded_quad_4 =
+      frame.render_pass_list.front()
+          ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+
+  {
+    shared_quad_state_occluded->SetAll(
+        gfx::Transform(), occluded_sqs_rect, occluded_sqs_rect, gfx::RRectF(),
+        occluded_sqs_rect, is_clipped, are_contents_opaque, opacity,
+        SkBlendMode::kSrcOver, 0);
+    occluded_quad_1->SetNew(shared_quad_state_occluded, occluded_quad_rect_1,
+                            occluded_quad_rect_1, SK_ColorRED, false);
+    occluded_quad_2->SetNew(shared_quad_state_occluded, occluded_quad_rect_2,
+                            occluded_quad_rect_2, SK_ColorRED, false);
+    occluded_quad_3->SetNew(shared_quad_state_occluded, occluded_quad_rect_3,
+                            occluded_quad_rect_3, SK_ColorRED, false);
+    occluded_quad_4->SetNew(shared_quad_state_occluded, occluded_quad_rect_4,
+                            occluded_quad_rect_4, SK_ColorRED, false);
+
+    shared_quad_state_with_rrect->SetAll(gfx::Transform(), quad_rect, quad_rect,
+                                         rounded_corner_bounds, quad_rect,
+                                         is_clipped, are_contents_opaque,
+                                         opacity, SkBlendMode::kSrcOver, 0);
+    rounded_corner_quad->SetNew(shared_quad_state_with_rrect, quad_rect,
+                                quad_rect, SK_ColorBLUE, false);
+
+    EXPECT_EQ(5u, frame.render_pass_list.front()->quad_list.size());
+    display_->RemoveOverdrawQuads(&frame);
+    // Since the quad with rounded corner completely covers the quad with
+    // no rounded corner, the later quad is culled. We should only have 1 quad
+    // in the final list now.
+    EXPECT_EQ(5u, frame.render_pass_list.front()->quad_list.size());
+    EXPECT_EQ(quad_rect.ToString(), frame.render_pass_list.front()
+                                        ->quad_list.ElementAt(0)
+                                        ->visible_rect.ToString());
+
+    // For rounded rect of bounds (10, 10, 1000, 1000) and corner radius of 10,
+    // the occluding rect for it would be (13, 13, 994, 994).
+    const gfx::Rect occluding_rect(13, 13, 994, 994);
+
+    // Computed the expe
+    gfx::Rect expected_visible_rect_1 = occluded_quad_rect_1;
+    expected_visible_rect_1.Subtract(occluding_rect);
+    gfx::Rect expected_visible_rect_2 = occluded_quad_rect_2;
+    expected_visible_rect_2.Subtract(occluding_rect);
+    gfx::Rect expected_visible_rect_3 = occluded_quad_rect_3;
+    expected_visible_rect_3.Subtract(occluding_rect);
+    gfx::Rect expected_visible_rect_4 = occluded_quad_rect_4;
+    expected_visible_rect_4.Subtract(occluding_rect);
+
+    const QuadList& quad_list = frame.render_pass_list.front()->quad_list;
+
+    EXPECT_EQ(expected_visible_rect_1, quad_list.ElementAt(1)->visible_rect);
+    EXPECT_EQ(expected_visible_rect_2, quad_list.ElementAt(2)->visible_rect);
+    EXPECT_EQ(expected_visible_rect_3, quad_list.ElementAt(3)->visible_rect);
+    EXPECT_EQ(expected_visible_rect_4, quad_list.ElementAt(4)->visible_rect);
+  }
+  TearDownDisplay();
+}
+
 }  // namespace viz

@@ -89,6 +89,32 @@ gfx::PresentationFeedback SanitizePresentationFeedback(
   return feedback;
 }
 
+// Returns the bounds for the largest rect that can be inscribed in a rounded
+// rect.
+gfx::RectF GetOccludingRectForRRectF(const gfx::RRectF& bounds) {
+  if (bounds.IsEmpty())
+    return gfx::RectF();
+  if (bounds.GetType() == gfx::RRectF::Type::kRect)
+    return bounds.rect();
+  gfx::RectF occluding_rect = bounds.rect();
+
+  // Compute the radius for each corner
+  float top_left = bounds.GetCornerRadii(gfx::RRectF::Corner::kUpperLeft).x();
+  float top_right = bounds.GetCornerRadii(gfx::RRectF::Corner::kUpperRight).x();
+  float lower_right =
+      bounds.GetCornerRadii(gfx::RRectF::Corner::kLowerRight).x();
+  float lower_left = bounds.GetCornerRadii(gfx::RRectF::Corner::kLowerLeft).x();
+
+  // Get a bounding rect that does not intersect with the rounding clip.
+  // When a rect has rounded corner with radius r, then the largest rect that
+  // can be inscribed inside it has an inset of |((2 - sqrt(2)) / 2) * radius|.
+  occluding_rect.Inset(std::max(top_left, lower_left) * 0.3f,
+                       std::max(top_left, top_right) * 0.3f,
+                       std::max(top_right, lower_right) * 0.3f,
+                       std::max(lower_right, lower_left) * 0.3f);
+  return occluding_rect;
+}
+
 }  // namespace
 
 Display::Display(
@@ -728,6 +754,14 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
               cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
                   last_sqs->quad_to_target_transform,
                   last_sqs->visible_quad_layer_rect);
+
+          // If a rounded corner is being applied then the visible rect for the
+          // sqs is actually even smaller. Reduce the rect size to get a
+          // rounded corner adjusted occluding region.
+          if (!last_sqs->rounded_corner_bounds.IsEmpty()) {
+            sqs_rect_in_target.Intersect(gfx::ToEnclosedRect(
+                GetOccludingRectForRRectF(last_sqs->rounded_corner_bounds)));
+          }
 
           if (last_sqs->is_clipped)
             sqs_rect_in_target.Intersect(last_sqs->clip_rect);
