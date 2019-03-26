@@ -945,11 +945,12 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
         next_gf_len + 1 >= rc->min_gf_interval;
 
     if (single_overlay_left || unbalanced_gf) {
-      // Note: Tried roll_back = DIVIDE_AND_ROUND(i, 8), but is does not work
-      // better in the current setting
       const int roll_back = REDUCE_GF_LENGTH_BY;
-      alt_offset = -roll_back;
-      i -= roll_back;
+      // Reduce length only if active_min_gf_interval will be respected later.
+      if (i - roll_back >= active_min_gf_interval + 1) {
+        alt_offset = -roll_back;
+        i -= roll_back;
+      }
     }
   }
 
