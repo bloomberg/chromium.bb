@@ -6582,22 +6582,23 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   expected_transform2.Translate(-52 * device_scale_factor,
                                 -52 * device_scale_factor);
 
-  // We should not submit hit test region for iframes with pointer-events: none
-  // in /2 hit-testing; we submit data in /1 but with Ignore flag set.
-  if (features::IsVizHitTestingSurfaceLayerEnabled()) {
-    DCHECK(hit_test_data.size() == 3);
-    EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
-    EXPECT_TRUE(
-        expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
-    EXPECT_EQ(kFastHitTestFlags, hit_test_data[2].flags);
-  } else if (features::IsVizHitTestingDrawQuadEnabled()) {
-    DCHECK(hit_test_data.size() == 4);
-    EXPECT_EQ(expected_region2.ToString(), hit_test_data[3].rect.ToString());
-    EXPECT_TRUE(
-        expected_transform2.ApproximatelyEqual(hit_test_data[3].transform()));
-    EXPECT_EQ(kSlowHitTestFlags | viz::HitTestRegionFlags::kHitTestIgnore,
-              hit_test_data[3].flags);
-  }
+  // We submit hit test region for OOPIFs with pointer-events: none, and mark
+  // them as kHitTestIgnore.
+  uint32_t flags = features::IsVizHitTestingSurfaceLayerEnabled()
+                       ? kFastHitTestFlags
+                       : kSlowHitTestFlags;
+
+  DCHECK(hit_test_data.size() == 4);
+  EXPECT_EQ(expected_region2.ToString(), hit_test_data[3].rect.ToString());
+  EXPECT_TRUE(
+      expected_transform2.ApproximatelyEqual(hit_test_data[3].transform()));
+  EXPECT_EQ(flags | viz::HitTestRegionFlags::kHitTestIgnore,
+            hit_test_data[3].flags);
+
+  EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
+  EXPECT_TRUE(
+      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
+  EXPECT_EQ(flags, hit_test_data[2].flags);
 
   // Check that an update on the css property can trigger an update in submitted
   // hit test data.

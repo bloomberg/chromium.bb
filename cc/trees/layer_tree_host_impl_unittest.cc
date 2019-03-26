@@ -14181,6 +14181,87 @@ TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, BuildHitTestData) {
             hit_test_region_list->regions[0].rect.ToString());
 }
 
+TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, PointerEvents) {
+  // Setup surface layers in LayerTreeHostImpl.
+  host_impl_->CreatePendingTree();
+  host_impl_->ActivateSyncTree();
+
+  // The structure of the layer tree:
+  // +-Root (1024x768)
+  // +---surface_child1 (0, 0), 100x100
+  // +---overlapping_surface_child2 (50, 50), 100x100, pointer-events: none,
+  // does not generate hit test region
+  std::unique_ptr<SurfaceLayerImpl> surface_child1 =
+      SurfaceLayerImpl::Create(host_impl_->active_tree(), 2);
+  std::unique_ptr<SurfaceLayerImpl> surface_child2 =
+      SurfaceLayerImpl::Create(host_impl_->active_tree(), 3);
+
+  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(1024, 768));
+
+  surface_child1->test_properties()->position = gfx::PointF(0, 0);
+  surface_child1->SetBounds(gfx::Size(100, 100));
+  surface_child1->SetDrawsContent(true);
+  surface_child1->SetSurfaceHitTestable(true);
+  surface_child1->SetHasPointerEventsNone(false);
+
+  surface_child2->test_properties()->position = gfx::PointF(50, 50);
+  surface_child2->SetBounds(gfx::Size(100, 100));
+  surface_child2->SetDrawsContent(true);
+  surface_child2->SetSurfaceHitTestable(false);
+  surface_child2->SetHasPointerEventsNone(true);
+
+  viz::LocalSurfaceId child_local_surface_id(2,
+                                             base::UnguessableToken::Create());
+  viz::FrameSinkId frame_sink_id(2, 0);
+  viz::SurfaceId child_surface_id(frame_sink_id, child_local_surface_id);
+  surface_child1->SetRange(viz::SurfaceRange(base::nullopt, child_surface_id),
+                           base::nullopt);
+
+  std::unique_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl_->active_tree(), 1);
+  host_impl_->active_tree()->SetRootLayerForTesting(std::move(root));
+  host_impl_->active_tree()
+      ->root_layer_for_testing()
+      ->test_properties()
+      ->AddChild(std::move(surface_child1));
+  host_impl_->active_tree()
+      ->root_layer_for_testing()
+      ->test_properties()
+      ->AddChild(std::move(surface_child2));
+
+  constexpr gfx::Rect kFrameRect(0, 0, 1024, 768);
+
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  host_impl_->active_tree()->UpdateDrawProperties();
+  base::Optional<viz::HitTestRegionList> hit_test_region_list =
+      host_impl_->BuildHitTestData();
+  // Generating HitTestRegionList should have been enabled for this test.
+  ASSERT_TRUE(hit_test_region_list);
+
+  uint32_t expected_flags = viz::HitTestRegionFlags::kHitTestMouse |
+                            viz::HitTestRegionFlags::kHitTestTouch |
+                            viz::HitTestRegionFlags::kHitTestMine;
+  EXPECT_EQ(expected_flags, hit_test_region_list->flags);
+  EXPECT_EQ(kFrameRect, hit_test_region_list->bounds);
+  // Since |surface_child2| is not |surface_hit_testable|, it does not
+  // contribute to a hit test region. Although it overlaps |surface_child1|, it
+  // does not make |surface_child1| kHitTestAsk because it has pointer-events
+  // none property.
+  EXPECT_EQ(1u, hit_test_region_list->regions.size());
+
+  EXPECT_EQ(child_surface_id.frame_sink_id(),
+            hit_test_region_list->regions[0].frame_sink_id);
+  expected_flags = viz::HitTestRegionFlags::kHitTestMouse |
+                   viz::HitTestRegionFlags::kHitTestTouch |
+                   viz::HitTestRegionFlags::kHitTestChildSurface;
+  EXPECT_EQ(expected_flags, hit_test_region_list->regions[0].flags);
+  gfx::Transform child1_transform;
+  EXPECT_TRUE(child1_transform.ApproximatelyEqual(
+      hit_test_region_list->regions[0].transform));
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
+            hit_test_region_list->regions[0].rect.ToString());
+}
+
 TEST_F(LayerTreeHostImplTest, ImplThreadPhaseUponImplSideInvalidation) {
   LayerTreeSettings settings = DefaultSettings();
   CreateHostImpl(settings, CreateLayerTreeFrameSink());

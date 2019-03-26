@@ -56,9 +56,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   }
 
   void SetSurfaceHitTestable(bool surface_hit_testable);
-  bool ShouldGenerateSurfaceHitTestData() const {
-    return surface_hit_testable_ && !has_pointer_events_none_;
-  }
+  bool surface_hit_testable() const { return surface_hit_testable_; }
 
   void SetHasPointerEventsNone(bool has_pointer_events_none);
   bool has_pointer_events_none() const { return has_pointer_events_none_; }
