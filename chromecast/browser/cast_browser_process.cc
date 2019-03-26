@@ -140,5 +140,10 @@ void CastBrowserProcess::SetWebViewFactory(
   web_view_factory_ = web_view_factory;
 }
 
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+void CastBrowserProcess::AccessibilityStateChanged(bool enabled) {
+  cast_service_->AccessibilityStateChanged(enabled);
+}
+#endif  // BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 }  // namespace shell
 }  // namespace chromecast
