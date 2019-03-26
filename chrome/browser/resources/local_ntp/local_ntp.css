@@ -126,6 +126,18 @@ body.remove-fakebox #fakebox-container {
   display: none;
 }
 
+.alternate-fakebox #fakebox-container {
+  /* Increase min-width to account for larger font + increased padding: 341px
+   * min-width + 50px */
+  min-width: 390px;
+}
+
+.show-fakebox-icon.alternate-fakebox #fakebox-container {
+  /* Increase min-width again to account for the search icon: 390px new
+   * min-width + additional 20px */
+  min-width: 410px;
+}
+
 #fakebox {
   background-color: rgb(var(--GG100-rgb));
   border-radius: 22px;
@@ -141,16 +153,43 @@ body.remove-fakebox #fakebox-container {
   transition: background-color 300ms ease-in-out, opacity 200ms
 }
 
-html[darkmode=true] body:not(.light-chip) #fakebox {
+html[darkmode=true] body:not(.alternate-fakebox) body:not(.light-chip) #fakebox {
   background-color: rgb(var(--GG900-rgb));
+}
+
+.alternate-fakebox #fakebox {
+  background: white;
+  border: 1px solid rgb(223, 225, 229);
+  box-sizing: border-box;
+  font-size: 16px;
+  height: 46px;
+  line-height: 21px;
+  max-width: 584px;
+  transition: none;
+}
+
+html[darkmode=true] .alternate-fakebox #fakebox {
+  border-color: transparent;
 }
 
 #fakebox:hover {
   background-color: rgb(var(--GG200-rgb));
 }
 
-html[darkmode=true] body:not(.light-chip) #fakebox:hover {
+html[darkmode=true] body:not(.alternate-fakebox) body:not(.light-chip) #fakebox:hover {
   background-color: rgb(42, 43, 46);
+}
+
+.alternate-fakebox #fakebox:hover,
+.alternate-fakebox.fakebox-focused #fakebox {
+  background: white;
+  border-color: transparent;
+  box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28);
+}
+
+html[darkmode=true] .alternate-fakebox #fakebox:hover,
+html[darkmode=true] .alternate-fakebox.fakebox-focused #fakebox {
+  box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .78);
 }
 
 .non-google-page #fakebox-container {
@@ -173,6 +212,31 @@ html[dir=rtl] #fakebox > input {
   right: 0;
 }
 
+#fakebox-search-icon {
+  -webkit-mask-image:
+      url(../../../../ui/webui/resources/images/icon_search.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background: 24px 24px rgb(128, 134, 139);
+  bottom: 0;
+  display: none;
+  height: 24px;
+  left: 0;
+  margin: auto 0;
+  margin-inline-start: 16px;
+  position: absolute;
+  top: 0;
+  width: 24px;
+}
+
+.show-fakebox-icon #fakebox-search-icon {
+  display: block;
+}
+
+html[dir=rtl] #fakebox-search-icon {
+  right: 0;
+}
+
 #fakebox-text {
   bottom: 4px;
   color: rgb(var(--GG600-rgb));
@@ -191,12 +255,31 @@ html[dir=rtl] #fakebox > input {
   white-space: nowrap;
 }
 
-html[darkmode=true] body:not(.light-chip) #fakebox-text {
+html[darkmode=true] body:not(.alternate-fakebox) body:not(.light-chip) #fakebox-text {
   color: rgb(var(--GG200-rgb));
 }
 
 html[dir=rtl] #fakebox-text {
   left: auto;
+  right: 0;
+}
+
+.alternate-fakebox #fakebox-text {
+  bottom: 0;
+  color: rgb(128, 134, 139);
+  font-size: 16px;
+  height: 21px;
+  margin: auto 0;
+  right: 44px;
+  top: 0;
+}
+
+.show-fakebox-icon.alternate-fakebox #fakebox-text {
+  padding-inline-start: 48px;
+}
+
+html[dir=rtl] #fakebox-text {
+  left: 44px;
   right: 0;
 }
 
@@ -215,8 +298,23 @@ html[dir=rtl] #fakebox-cursor {
   right: 20px;
 }
 
-html[darkmode=true] body:not(.light-chip) #fakebox-cursor {
+html[darkmode=true] body:not(.alternate-fakebox) body:not(.light-chip) #fakebox-cursor {
   background: rgb(var(--GB300-rgb));
+}
+
+.alternate-fakebox #fakebox-cursor {
+  /* Total 16px height: 46px fakebox height - 15px top - 15px bottom */
+  bottom: 15px;
+  top: 15px;
+}
+
+.show-fakebox-icon.alternate-fakebox #fakebox-cursor {
+  left: 48px;
+}
+
+html[dir=rtl] .show-fakebox-icon.alternate-fakebox #fakebox-cursor {
+  left: auto;
+  right: 48px;
 }
 
 #fakebox-microphone {
@@ -230,6 +328,12 @@ html[darkmode=true] body:not(.light-chip) #fakebox-cursor {
   right: 0;
   top: 0;
   width: 28px;
+}
+
+.alternate-fakebox #fakebox-microphone {
+  margin-inline-end: 16px;
+  padding: 11px 0 0;
+  width: 24px;
 }
 
 html[dir=rtl] #fakebox-microphone {
@@ -258,6 +362,11 @@ body.fakebox-drag-focused #fakebox-cursor {
 body.fakebox-focused #fakebox-cursor {
   animation: blink 1.3s step-end infinite;
   visibility: inherit;
+}
+
+.alternate-fakebox #user-content-wrapper {
+  /* Reduce margin by new height of fakebox (46px) - old height (44px) = 2px */
+  margin-top: -2px;
 }
 
 body.remove-fakebox #user-content {

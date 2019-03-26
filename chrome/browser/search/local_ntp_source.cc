@@ -558,6 +558,11 @@ class LocalNtpSource::SearchConfigurationProvider
     if (is_google) {
       config_data.SetBoolean("removeFakebox", base::FeatureList::IsEnabled(
                                                   features::kRemoveNtpFakebox));
+      config_data.SetBoolean("alternateFakebox",
+                             features::IsUseAlternateFakeboxOnNtpEnabled());
+      config_data.SetBoolean(
+          "fakeboxSearchIcon",
+          base::FeatureList::IsEnabled(features::kFakeboxSearchIconOnNtp));
     }
 
     // Serialize the dictionary.

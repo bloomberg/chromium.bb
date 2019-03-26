@@ -29,4 +29,18 @@ const base::Feature kSearchSuggestionsOnLocalNtp{
 const base::Feature kUseGoogleLocalNtp{"UseGoogleLocalNtp",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, show a search icon (magnifier glass) in the NTP fakebox.
+const base::Feature kFakeboxSearchIconOnNtp{"FakeboxSearchIconOnNtp",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, the NTP fakebox will be changed to the Google search style. Also
+// implicitly enabled by |kFakeboxSearchIconOnNtp|.
+const base::Feature kUseAlternateFakeboxOnNtp{
+    "UseAlternateFakeboxOnNtp", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsUseAlternateFakeboxOnNtpEnabled() {
+  return base::FeatureList::IsEnabled(kFakeboxSearchIconOnNtp) ||
+         base::FeatureList::IsEnabled(kUseAlternateFakeboxOnNtp);
+}
+
 }  // namespace features

@@ -18,6 +18,12 @@ extern const base::Feature kRemoveNtpFakebox;
 extern const base::Feature kSearchSuggestionsOnLocalNtp;
 extern const base::Feature kUseGoogleLocalNtp;
 
+extern const base::Feature kFakeboxSearchIconOnNtp;
+extern const base::Feature kUseAlternateFakeboxOnNtp;
+
+// Returns whether the Google search style fakebox is enabled.
+bool IsUseAlternateFakeboxOnNtpEnabled();
+
 }  // namespace features
 
 #endif  // CHROME_BROWSER_SEARCH_NTP_FEATURES_H_
