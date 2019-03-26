@@ -24,6 +24,7 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
   static void ShowBubble(views::View* anchor_view, Browser* browser);
   static bool IsShowing();
   static void Hide();
+  static ExtensionsMenuView* GetExtensionsMenuViewForTesting();
 
   // views::BubbleDialogDelegateView:
   base::string16 GetWindowTitle() const override;
