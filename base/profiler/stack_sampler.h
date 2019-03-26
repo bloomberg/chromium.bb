@@ -20,11 +20,11 @@ class StackSamplerTestDelegate;
 // StackSampler is an implementation detail of StackSamplingProfiler. It
 // abstracts the native implementation required to record a set of stack frames
 // for a given thread.
-class StackSampler {
+class BASE_EXPORT StackSampler {
  public:
   // This class contains a buffer for stack copies that can be shared across
   // multiple instances of StackSampler.
-  class StackBuffer {
+  class BASE_EXPORT StackBuffer {
    public:
     StackBuffer(size_t buffer_size);
     ~StackBuffer();
