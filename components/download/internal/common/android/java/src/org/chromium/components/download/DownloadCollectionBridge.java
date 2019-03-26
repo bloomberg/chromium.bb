@@ -155,6 +155,12 @@ public class DownloadCollectionBridge {
     }
 
     /**
+     *  Refreshes the expiration date so the unpublished download won't get abandoned.
+     *  @param intermediateUri The intermediate Uri that is not yet published.
+     */
+    protected void refreshExpirationDate(final String intermediateUri) {}
+
+    /**
      * Creates an intermediate URI for download to be written into. On completion, call
      * nativeOnCreateIntermediateUriResult() with |callbackId|.
      * @param fileName Name of the file.
@@ -223,6 +229,7 @@ public class DownloadCollectionBridge {
             ContentResolver resolver = ContextUtils.getApplicationContext().getContentResolver();
             ParcelFileDescriptor pfd =
                     resolver.openFileDescriptor(Uri.parse(intermediateUri), "rw");
+            getDownloadCollectionBridge().refreshExpirationDate(intermediateUri);
             return pfd.detachFd();
         } catch (Exception e) {
             Log.e(TAG, "Cannot open intermediate Uri.", e);
