@@ -169,6 +169,13 @@ class CORE_EXPORT DisplayLockContext final
   // Notify this element will be disconnected.
   void NotifyWillDisconnect();
 
+  void SetNeedsPrePaintSubtreeWalk(
+      bool needs_effective_whitelisted_touch_action_update) {
+    needs_effective_whitelisted_touch_action_update_ =
+        needs_effective_whitelisted_touch_action_update;
+    needs_prepaint_subtree_walk_ = true;
+  }
+
  private:
   friend class DisplayLockContextTest;
   friend class DisplayLockBudgetTest;
@@ -284,6 +291,9 @@ class CORE_EXPORT DisplayLockContext final
   bool update_forced_ = false;
   bool timeout_task_is_scheduled_ = false;
   bool activatable_ = false;
+
+  bool needs_effective_whitelisted_touch_action_update_ = false;
+  bool needs_prepaint_subtree_walk_ = false;
 
   base::WeakPtrFactory<DisplayLockContext> weak_factory_;
 };

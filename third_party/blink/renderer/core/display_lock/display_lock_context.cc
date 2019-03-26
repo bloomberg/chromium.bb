@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/pre_paint_tree_walk.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 
 namespace blink {
@@ -580,6 +581,16 @@ bool DisplayLockContext::MarkAncestorsForPrePaintIfNeeded() {
     auto* layout_object = element_->GetLayoutObject();
     if (auto* parent = layout_object->Parent())
       parent->SetSubtreeShouldCheckForPaintInvalidation();
+
+    // Note that if either we or our descendants are marked as needing this
+    // update, then ensure to mark self as needing the update. This sets up the
+    // correct flags for PrePaint to recompute the necessary values and
+    // propagate the information into the subtree.
+    if (needs_effective_whitelisted_touch_action_update_ ||
+        layout_object->EffectiveWhitelistedTouchActionChanged() ||
+        layout_object->DescendantEffectiveWhitelistedTouchActionChanged()) {
+      layout_object->MarkEffectiveWhitelistedTouchActionChanged();
+    }
     return true;
   }
   return false;
@@ -605,10 +616,10 @@ bool DisplayLockContext::IsElementDirtyForLayout() const {
 
 bool DisplayLockContext::IsElementDirtyForPrePaint() const {
   if (auto* layout_object = element_->GetLayoutObject()) {
-    return layout_object->ShouldCheckForPaintInvalidation() ||
-           layout_object->SubtreeShouldCheckForPaintInvalidation() ||
-           layout_object->NeedsPaintPropertyUpdate() ||
-           layout_object->DescendantNeedsPaintPropertyUpdate();
+    return PrePaintTreeWalk::ObjectRequiresPrePaint(*layout_object) ||
+           PrePaintTreeWalk::ObjectRequiresTreeBuilderContext(*layout_object) ||
+           needs_prepaint_subtree_walk_ ||
+           needs_effective_whitelisted_touch_action_update_;
   }
   return false;
 }

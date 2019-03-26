@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_options.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
@@ -76,6 +77,10 @@ class DisplayLockTestFindInPageClient : public mojom::blink::FindInPageClient {
   mojo::Binding<mojom::blink::FindInPageClient> binding_;
 };
 
+class DisplayLockEmptyEventListener final : public NativeEventListener {
+ public:
+  void Invoke(ExecutionContext*, Event*) final {}
+};
 }  // namespace
 
 class DisplayLockContextTest : public testing::Test {
@@ -1176,6 +1181,327 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
   EXPECT_EQ(document_child->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()),
             MakeRGB(255, 0, 0));
+}
+
+TEST_F(DisplayLockContextTest, AncestorWhitelistedTouchAction) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    #locked {
+      width: 100px;
+      height: 100px;
+      contain: content;
+    }
+    </style>
+    <div id="ancestor">
+      <div id="handler">
+        <div id="descendant">
+          <div id="locked">
+            <div id="lockedchild"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* ancestor_element = GetDocument().getElementById("ancestor");
+  auto* handler_element = GetDocument().getElementById("handler");
+  auto* descendant_element = GetDocument().getElementById("descendant");
+  auto* locked_element = GetDocument().getElementById("locked");
+  auto* lockedchild_element = GetDocument().getElementById("lockedchild");
+
+  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+  {
+    ScriptState::Scope scope(script_state);
+    locked_element->getDisplayLockForBindings()->acquire(script_state, nullptr);
+  }
+
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(locked_element->GetDisplayLockContext()->IsLocked());
+
+  auto* ancestor_object = ancestor_element->GetLayoutObject();
+  auto* handler_object = handler_element->GetLayoutObject();
+  auto* descendant_object = descendant_element->GetLayoutObject();
+  auto* locked_object = locked_element->GetLayoutObject();
+  auto* lockedchild_object = lockedchild_element->GetLayoutObject();
+
+  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(handler_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(lockedchild_object->EffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_FALSE(
+      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      lockedchild_object->DescendantEffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(handler_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(descendant_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(locked_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(lockedchild_object->InsideBlockingTouchEventHandler());
+
+  auto* callback = MakeGarbageCollected<DisplayLockEmptyEventListener>();
+  handler_element->addEventListener(event_type_names::kTouchstart, callback);
+
+  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_TRUE(handler_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(lockedchild_object->EffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_TRUE(
+      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      lockedchild_object->DescendantEffectiveWhitelistedTouchActionChanged());
+
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(handler_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(lockedchild_object->EffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_FALSE(
+      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      lockedchild_object->DescendantEffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
+  EXPECT_TRUE(handler_object->InsideBlockingTouchEventHandler());
+  EXPECT_TRUE(descendant_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(locked_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(lockedchild_object->InsideBlockingTouchEventHandler());
+
+  {
+    ScriptState::Scope scope(script_state);
+    locked_element->GetDisplayLockContext()->commit(script_state);
+  }
+
+  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(handler_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_TRUE(locked_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(lockedchild_object->EffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_TRUE(
+      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_TRUE(
+      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_TRUE(
+      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      lockedchild_object->DescendantEffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
+  EXPECT_TRUE(handler_object->InsideBlockingTouchEventHandler());
+  EXPECT_TRUE(descendant_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(locked_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(lockedchild_object->InsideBlockingTouchEventHandler());
+
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(handler_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(lockedchild_object->EffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_FALSE(
+      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      lockedchild_object->DescendantEffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
+  EXPECT_TRUE(handler_object->InsideBlockingTouchEventHandler());
+  EXPECT_TRUE(descendant_object->InsideBlockingTouchEventHandler());
+  EXPECT_TRUE(locked_object->InsideBlockingTouchEventHandler());
+  EXPECT_TRUE(lockedchild_object->InsideBlockingTouchEventHandler());
+}
+
+TEST_F(DisplayLockContextTest, DescendantWhitelistedTouchAction) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    #locked {
+      width: 100px;
+      height: 100px;
+      contain: content;
+    }
+    </style>
+    <div id="ancestor">
+      <div id="descendant">
+        <div id="locked">
+          <div id="handler"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* ancestor_element = GetDocument().getElementById("ancestor");
+  auto* descendant_element = GetDocument().getElementById("descendant");
+  auto* locked_element = GetDocument().getElementById("locked");
+  auto* handler_element = GetDocument().getElementById("handler");
+
+  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+  {
+    ScriptState::Scope scope(script_state);
+    locked_element->getDisplayLockForBindings()->acquire(script_state, nullptr);
+  }
+
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(locked_element->GetDisplayLockContext()->IsLocked());
+
+  auto* ancestor_object = ancestor_element->GetLayoutObject();
+  auto* descendant_object = descendant_element->GetLayoutObject();
+  auto* locked_object = locked_element->GetLayoutObject();
+  auto* handler_object = handler_element->GetLayoutObject();
+
+  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(handler_object->EffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_FALSE(
+      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(descendant_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(locked_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(handler_object->InsideBlockingTouchEventHandler());
+
+  auto* callback = MakeGarbageCollected<DisplayLockEmptyEventListener>();
+  handler_element->addEventListener(event_type_names::kTouchstart, callback);
+
+  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_TRUE(handler_object->EffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_FALSE(
+      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_TRUE(
+      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_TRUE(handler_object->EffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_FALSE(
+      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_TRUE(
+      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(descendant_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(locked_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(handler_object->InsideBlockingTouchEventHandler());
+
+  // Do the same check again. For now, nothing is expected to change. However,
+  // when we separate self and child layout, then some flags would be different.
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_TRUE(handler_object->EffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_FALSE(
+      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_TRUE(
+      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(descendant_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(locked_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(handler_object->InsideBlockingTouchEventHandler());
+
+  {
+    ScriptState::Scope scope(script_state);
+    locked_element->GetDisplayLockContext()->commit(script_state);
+  }
+
+  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_TRUE(locked_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_TRUE(handler_object->EffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_TRUE(
+      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_TRUE(
+      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_TRUE(
+      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(descendant_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(locked_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(handler_object->InsideBlockingTouchEventHandler());
+
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(handler_object->EffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_FALSE(
+      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(
+      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+
+  EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(descendant_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(locked_object->InsideBlockingTouchEventHandler());
+  EXPECT_TRUE(handler_object->InsideBlockingTouchEventHandler());
 }
 
 }  // namespace blink
