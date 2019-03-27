@@ -89,7 +89,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, Basic) {
   if (!base::AndroidHardwareBufferCompat::IsSupportAvailable())
     return;
 
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -174,7 +174,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, GLSkiaGL) {
     return;
 
   // Create a backing using mailbox.
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(1, 1);
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -257,7 +257,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, InvalidFormat) {
   if (!base::AndroidHardwareBufferCompat::IsSupportAvailable())
     return;
 
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::UYVY_422;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -272,7 +272,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, InvalidSize) {
   if (!base::AndroidHardwareBufferCompat::IsSupportAvailable())
     return;
 
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(0, 0);
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -291,7 +291,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, EstimatedSize) {
   if (!base::AndroidHardwareBufferCompat::IsSupportAvailable())
     return;
 
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
