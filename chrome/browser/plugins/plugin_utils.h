@@ -51,12 +51,6 @@ class PluginUtils {
       HostContentSettingsMap* host_content_settings_map,
       const GURL& top_level_url);
 
-  // Returns true if HTML content should be prefered, by hiding Flash from the
-  // plugin list. Use this instead of
-  // base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins).
-  static bool ShouldPreferHtmlOverPlugins(
-      const HostContentSettingsMap* host_content_settings_map);
-
   // If there's an extension that is allowed to handle |mime_type|, returns its
   // ID. Otherwise returns an empty string.
   static std::string GetExtensionIdForMimeType(

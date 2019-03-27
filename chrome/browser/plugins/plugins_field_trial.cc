@@ -20,9 +20,7 @@ ContentSetting PluginsFieldTrial::EffectiveContentSetting(
     return setting;
   }
 
-  // For Plugins, ASK is obsolete. Show as BLOCK or, if PreferHtmlOverPlugins
-  // feature is enabled, as DETECT_IMPORTANT_CONTENT to reflect actual behavior.
-  return PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map)
-             ? ContentSetting::CONTENT_SETTING_DETECT_IMPORTANT_CONTENT
-             : ContentSetting::CONTENT_SETTING_BLOCK;
+  // For Plugins, ASK is obsolete. Show as DETECT_IMPORTANT_CONTENT to reflect
+  // actual behavior.
+  return ContentSetting::CONTENT_SETTING_DETECT_IMPORTANT_CONTENT;
 }

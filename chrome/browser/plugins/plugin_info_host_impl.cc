@@ -326,7 +326,6 @@ void PluginInfoHostImpl::Context::DecidePluginStatus(
 
   if (plugin_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ||
       (plugin_setting == CONTENT_SETTING_ALLOW &&
-       PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map_) &&
        !run_all_flash_in_allow_mode_.GetValue())) {
     *status = chrome::mojom::PluginStatus::kPlayImportantContent;
   } else if (plugin_setting == CONTENT_SETTING_BLOCK) {
@@ -396,9 +395,9 @@ bool PluginInfoHostImpl::Context::FindEnabledPlugin(
     i = 0;
     *status = chrome::mojom::PluginStatus::kDisabled;
 
-    if (PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map_) &&
-        matching_plugins[0].name ==
-            base::ASCIIToUTF16(content::kFlashPluginName)) {
+    // Special case for Flash: this is our Prefer HTML over Plugins logic.
+    if (matching_plugins[0].name ==
+        base::ASCIIToUTF16(content::kFlashPluginName)) {
       *status = chrome::mojom::PluginStatus::kFlashHiddenPreferHtml;
 
       // In the Prefer HTML case, the plugin is actually enabled, but hidden.

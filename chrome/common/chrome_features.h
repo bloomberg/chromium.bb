@@ -327,8 +327,6 @@ extern const base::Feature kPrerenderFallbackToPreconnect;
 #if BUILDFLAG(ENABLE_PLUGINS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kFlashDeprecationWarning;
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kPreferHtmlOverPlugins;
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

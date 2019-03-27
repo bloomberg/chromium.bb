@@ -16,7 +16,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_request_limiter.h"
-#include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
@@ -162,10 +161,8 @@ bool ShouldShowPluginExplanation(content::WebContents* web_contents,
 
   // For plugins, show the animated explanation in these cases:
   //  - The plugin is blocked despite the user having content setting ALLOW.
-  //  - The user has disabled Flash using BLOCK and HTML5 By Default feature.
-  return setting == CONTENT_SETTING_ALLOW ||
-         (setting == CONTENT_SETTING_BLOCK &&
-          PluginUtils::ShouldPreferHtmlOverPlugins(map));
+  //  - The user has disabled Flash using BLOCK.
+  return setting == CONTENT_SETTING_ALLOW || setting == CONTENT_SETTING_BLOCK;
 }
 
 struct ContentSettingsImageDetails {

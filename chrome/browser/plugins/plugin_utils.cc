@@ -6,7 +6,6 @@
 
 #include "base/values.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/plugin_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -88,7 +87,6 @@ void GetPluginContentSettingInternal(
     // Unless the setting is explicitly ALLOW, return BLOCK for any scheme that
     // is not HTTP, HTTPS, FILE, or chrome-extension.
     if (*setting != CONTENT_SETTING_ALLOW &&
-        PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map) &&
         !main_frame_url.SchemeIsHTTPOrHTTPS() &&
         !main_frame_url.SchemeIsFile() &&
         !main_frame_url.SchemeIs(extensions::kExtensionScheme)) {
@@ -141,12 +139,6 @@ void PluginUtils::RememberFlashChangedForSite(
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       top_level_url, top_level_url, CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
       std::string(), std::move(dict));
-}
-
-// static
-bool PluginUtils::ShouldPreferHtmlOverPlugins(
-    const HostContentSettingsMap* host_content_settings_map) {
-  return base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins);
 }
 
 // static
