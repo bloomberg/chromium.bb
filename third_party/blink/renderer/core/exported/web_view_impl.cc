@@ -636,6 +636,11 @@ bool WebViewImpl::StartPageScaleAnimation(const IntPoint& target_position,
                                           bool use_anchor,
                                           float new_scale,
                                           double duration_in_seconds) {
+  // PageScaleFactor is a property of the main frame only, and only exists when
+  // compositing.
+  DCHECK(MainFrameImpl());
+  DCHECK(does_composite_);
+
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
   gfx::Point clamped_point = target_position;
   if (!use_anchor) {
@@ -662,9 +667,7 @@ bool WebViewImpl::StartPageScaleAnimation(const IntPoint& target_position,
     fake_page_scale_animation_use_anchor_ = use_anchor;
     fake_page_scale_animation_page_scale_factor_ = new_scale;
   } else {
-    if (!layer_tree_view_)
-      return false;
-    layer_tree_view_->StartPageScaleAnimation(
+    AsWidget().client->StartPageScaleAnimation(
         static_cast<gfx::Vector2d>(target_position), use_anchor, new_scale,
         duration_in_seconds);
   }
@@ -1996,6 +1999,8 @@ void WebViewImpl::DidAttachLocalMainFrame(WebWidgetClient* client) {
   if (does_composite_) {
     // When attaching a local main frame, set up any state on the compositor.
     AsWidget().client->SetBackgroundColor(BackgroundColor());
+    AsWidget().client->SetPageScaleFactorAndLimits(
+        PageScaleFactor(), MinimumPageScaleFactor(), MaximumPageScaleFactor());
   }
 }
 
@@ -2531,7 +2536,10 @@ void WebViewImpl::RefreshPageScaleFactor() {
   // The constraints may have changed above which affects the page scale limits,
   // so we must update those even though SetPageScaleFactor() may do the same if
   // the scale factor is changed.
-  UpdateLayerTreeViewPageScale();
+  if (does_composite_) {
+    AsWidget().client->SetPageScaleFactorAndLimits(
+        PageScaleFactor(), MinimumPageScaleFactor(), MaximumPageScaleFactor());
+  }
 }
 
 void WebViewImpl::UpdatePageDefinedViewportConstraints(
@@ -2798,7 +2806,10 @@ void WebViewImpl::SendResizeEventForMainFrame() {
   }
 
   // A resized main frame can change the page scale limits.
-  UpdateLayerTreeViewPageScale();
+  if (does_composite_) {
+    AsWidget().client->SetPageScaleFactorAndLimits(
+        PageScaleFactor(), MinimumPageScaleFactor(), MaximumPageScaleFactor());
+  }
 }
 
 void WebViewImpl::ConfigureAutoResizeMode() {
@@ -3069,8 +3080,18 @@ void WebViewImpl::DidChangeContentsSize() {
 }
 
 void WebViewImpl::PageScaleFactorChanged() {
+  // This is called from the VisualViewport which only is used to control the
+  // page scale/scroll viewport for a local main frame, and only when
+  // compositing as PageScaleFactor doesn't exist otherwise.
+  DCHECK(MainFrameImpl());
+  DCHECK(does_composite_);
+
   GetPageScaleConstraintsSet().SetNeedsReset(false);
-  UpdateLayerTreeViewPageScale();
+  // Set up the compositor.
+  AsWidget().client->SetPageScaleFactorAndLimits(
+      PageScaleFactor(), MinimumPageScaleFactor(), MaximumPageScaleFactor());
+  // Also inform the browser of the PageScaleFactor, which is tracked
+  // per-view.
   auto& viewport = GetPage()->GetVisualViewport();
   AsView().client->PageScaleFactorChanged(viewport.Scale(),
                                           viewport.IsPinchGestureActive());
@@ -3177,6 +3198,7 @@ bool WebViewImpl::TabsToLinks() const {
 
 void WebViewImpl::RegisterViewportLayersWithCompositor() {
   DCHECK(layer_tree_view_);
+  DCHECK(does_composite_);
 
   if (!GetPage()->MainFrame() || !GetPage()->MainFrame()->IsLocalFrame())
     return;
@@ -3296,10 +3318,6 @@ void WebViewImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
   // WebViewImpl, so don't allow cc to commit any frames Blink might
   // try to create in the meantime.
   scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
-
-  // Any changes to the Page while a main frame was remote need to be propagated
-  // to the widget/compositor for the main frame when it becomes local.
-  UpdateLayerTreeViewPageScale();
 }
 
 void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
@@ -3398,17 +3416,6 @@ void WebViewImpl::SendScrollEndEventFromImplSide(
       FindNodeFromScrollableCompositorElementId(scroll_latched_element_id);
   if (target_node)
     target_node->GetDocument().EnqueueScrollEndEventForNode(target_node);
-}
-
-void WebViewImpl::UpdateLayerTreeViewPageScale() {
-  // Non-composited WebViews can not use page scale factor.
-  if (!does_composite_)
-    return;
-  // TODO(danakj): When the main frame is remote the LayerTreeView is not
-  // present. So add early-return here.
-
-  layer_tree_view_->SetPageScaleFactorAndLimits(
-      PageScaleFactor(), MinimumPageScaleFactor(), MaximumPageScaleFactor());
 }
 
 void WebViewImpl::UpdateDeviceEmulationTransform() {

@@ -132,14 +132,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
   // blink::WebLayerTreeView implementation.
   viz::FrameSinkId GetFrameSinkId() override;
   void SetNonBlinkManagedRootLayer(scoped_refptr<cc::Layer> layer);
-  void SetPageScaleFactorAndLimits(float page_scale_factor,
-                                   float minimum,
-                                   float maximum) override;
-  void StartPageScaleAnimation(const gfx::Vector2d& target_offset,
-                               bool use_anchor,
-                               float new_page_scale,
-                               double duration_sec) override;
-  bool HasPendingPageScaleAnimation() const override;
   void HeuristicsForGpuRasterizationUpdated(bool matches_heuristics) override;
   void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) override;

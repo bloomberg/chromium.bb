@@ -55,6 +55,7 @@ struct ViewportLayers;
 
 namespace gfx {
 class Point;
+class Vector2d;
 }
 
 namespace blink {
@@ -232,6 +233,22 @@ class WebWidgetClient {
                                             bool up,
                                             bool down) {}
   virtual void FallbackCursorModeSetCursorVisibility(bool visible) {}
+
+  // Sets the current page scale factor and minimum / maximum limits. Both
+  // limits are initially 1 (no page scale allowed).
+  virtual void SetPageScaleFactorAndLimits(float page_scale_factor,
+                                           float minimum,
+                                           float maximum) {}
+
+  // Starts an animation of the page scale to a target scale factor and scroll
+  // offset.
+  // If use_anchor is true, destination is a point on the screen that will
+  // remain fixed for the duration of the animation.
+  // If use_anchor is false, destination is the final top-left scroll position.
+  virtual void StartPageScaleAnimation(const gfx::Vector2d& destination,
+                                       bool use_anchor,
+                                       float new_page_scale,
+                                       double duration_sec) {}
 };
 
 }  // namespace blink

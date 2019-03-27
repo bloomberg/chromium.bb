@@ -204,6 +204,9 @@ class TestWebWidgetClient : public WebWidgetClient {
   void RegisterViewportLayers(const cc::ViewportLayers& layOAers) override;
   void RegisterSelection(const cc::LayerSelection& selection) override;
   void SetBackgroundColor(SkColor color) override;
+  void SetPageScaleFactorAndLimits(float page_scale_factor,
+                                   float minimum,
+                                   float maximum) override;
 
   content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
   cc::LayerTreeHost* layer_tree_host() {

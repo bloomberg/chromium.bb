@@ -305,27 +305,6 @@ void LayerTreeView::SetNonBlinkManagedRootLayer(
   layer_tree_host_->SetNonBlinkManagedRootLayer(std::move(layer));
 }
 
-void LayerTreeView::SetPageScaleFactorAndLimits(float page_scale_factor,
-                                                float minimum,
-                                                float maximum) {
-  layer_tree_host_->SetPageScaleFactorAndLimits(page_scale_factor, minimum,
-                                                maximum);
-}
-
-void LayerTreeView::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
-                                            bool use_anchor,
-                                            float new_page_scale,
-                                            double duration_sec) {
-  base::TimeDelta duration = base::TimeDelta::FromMicroseconds(
-      duration_sec * base::Time::kMicrosecondsPerSecond);
-  layer_tree_host_->StartPageScaleAnimation(target_offset, use_anchor,
-                                            new_page_scale, duration);
-}
-
-bool LayerTreeView::HasPendingPageScaleAnimation() const {
-  return layer_tree_host_->HasPendingPageScaleAnimation();
-}
-
 void LayerTreeView::HeuristicsForGpuRasterizationUpdated(
     bool matches_heuristics) {
   layer_tree_host_->SetHasGpuRasterizationTrigger(matches_heuristics);
