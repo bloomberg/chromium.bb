@@ -43,7 +43,7 @@ TEST_F(FrameNodeImplTest, AddFrameHierarchyBasic) {
   auto child3_node = CreateNode<FrameNodeImpl>(page.get(), parent_node.get());
 
   EXPECT_EQ(nullptr, parent_node->GetParentFrameNode());
-  EXPECT_EQ(2u, parent_node->child_frame_nodes_for_testing().size());
+  EXPECT_EQ(2u, parent_node->child_frame_nodes().size());
   EXPECT_EQ(parent_node.get(), child2_node->GetParentFrameNode());
   EXPECT_EQ(parent_node.get(), child3_node->GetParentFrameNode());
 }
@@ -55,15 +55,15 @@ TEST_F(FrameNodeImplTest, RemoveChildFrame) {
       CreateNode<FrameNodeImpl>(page.get(), parent_frame_node.get());
 
   // Ensure correct Parent-child relationships have been established.
-  EXPECT_EQ(1u, parent_frame_node->child_frame_nodes_for_testing().size());
+  EXPECT_EQ(1u, parent_frame_node->child_frame_nodes().size());
   EXPECT_TRUE(!parent_frame_node->GetParentFrameNode());
-  EXPECT_EQ(0u, child_frame_node->child_frame_nodes_for_testing().size());
+  EXPECT_EQ(0u, child_frame_node->child_frame_nodes().size());
   EXPECT_EQ(parent_frame_node.get(), child_frame_node->GetParentFrameNode());
 
   child_frame_node.reset();
 
   // Parent-child relationships should no longer exist.
-  EXPECT_EQ(0u, parent_frame_node->child_frame_nodes_for_testing().size());
+  EXPECT_EQ(0u, parent_frame_node->child_frame_nodes().size());
   EXPECT_TRUE(!parent_frame_node->GetParentFrameNode());
 }
 

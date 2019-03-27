@@ -4,6 +4,7 @@
 
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 
+#include "base/stl_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
@@ -55,7 +56,8 @@ TEST_F(PageNodeImplTest, RemoveFrame) {
 
   // Ensure correct page-frame relationship has been established.
   EXPECT_EQ(1u, page_node->GetFrameNodes().size());
-  EXPECT_EQ(1u, page_node->GetFrameNodes().count(frame_node.get()));
+  EXPECT_TRUE(
+      base::ContainsValue(page_node->GetFrameNodes(), frame_node.get()));
   EXPECT_EQ(page_node.get(), frame_node->GetPageNode());
 
   frame_node.reset();
@@ -261,7 +263,7 @@ void ExpectInitialInterventionPolicyAggregationWorks(
   ExpectInterventionPolicy(f0_policy_aggregated, page.get());
 
   TestNodeWrapper<FrameNodeImpl> f1 =
-      TestNodeWrapper<FrameNodeImpl>::Create(mock_graph, page.get(), nullptr);
+      TestNodeWrapper<FrameNodeImpl>::Create(mock_graph, page.get(), f0.get());
   // Do it again. This time the raw values should be the same as the
   // aggregated values above.
   f1->SetAllInterventionPoliciesForTesting(f1_policy);

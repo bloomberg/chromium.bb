@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
@@ -27,6 +28,18 @@ size_t ToIndex(
   return kIndex;
 }
 
+// Calls |map_function| for |frame_node| and all its offspring, or until
+// |map_function| returns false.
+template <typename MapFunction>
+void ForFrameAndDescendents(FrameNodeImpl* frame_node,
+                            MapFunction map_function) {
+  if (!map_function(frame_node))
+    return;
+
+  for (FrameNodeImpl* child : frame_node->child_frame_nodes())
+    ForFrameAndDescendents(child, map_function);
+}
+
 }  // namespace
 
 PageNodeImpl::PageNodeImpl(Graph* graph)
@@ -45,8 +58,10 @@ void PageNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
   DCHECK_EQ(this, frame_node->GetPageNode());
   DCHECK(NodeInGraph(frame_node));
 
-  const bool inserted = frame_nodes_.insert(frame_node).second;
-  DCHECK(inserted);
+  if (frame_node->GetParentFrameNode() == nullptr) {
+    main_frame_nodes_.insert(frame_node);
+  }
+  ++frame_node_count_;
 
   OnNumFrozenFramesStateChange(
       frame_node->lifecycle_state() ==
@@ -62,8 +77,12 @@ void PageNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
   DCHECK_EQ(this, frame_node->GetPageNode());
   DCHECK(NodeInGraph(frame_node));
 
-  const size_t removed = frame_nodes_.erase(frame_node);
-  DCHECK(removed);
+  --frame_node_count_;
+  if (frame_node->GetParentFrameNode() == nullptr) {
+    size_t removed = main_frame_nodes_.erase(frame_node);
+    DCHECK_EQ(1u, removed);
+  }
+
   OnNumFrozenFramesStateChange(
       frame_node->lifecycle_state() ==
               resource_coordinator::mojom::LifecycleState::kFrozen
@@ -115,12 +134,11 @@ std::set<ProcessNodeImpl*> PageNodeImpl::GetAssociatedProcessCoordinationUnits()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::set<ProcessNodeImpl*> process_nodes;
-
-  for (auto* frame_node : frame_nodes_) {
-    if (auto* process_node = frame_node->GetProcessNode()) {
+  ForAllFrameNodes([&process_nodes](FrameNodeImpl* frame_node) -> bool {
+    if (auto* process_node = frame_node->GetProcessNode())
       process_nodes.insert(process_node);
-    }
-  }
+    return true;
+  });
   return process_nodes;
 }
 
@@ -156,20 +174,31 @@ base::TimeDelta PageNodeImpl::TimeSinceLastVisibilityChange() const {
   return ResourceCoordinatorClock::NowTicks() - visibility_change_time_;
 }
 
+std::vector<FrameNodeImpl*> PageNodeImpl::GetFrameNodes() const {
+  std::vector<FrameNodeImpl*> all_frames;
+  ForAllFrameNodes([&all_frames](FrameNodeImpl* frame_node) -> bool {
+    all_frames.push_back(frame_node);
+    return true;
+  });
+
+  return all_frames;
+}
+
 FrameNodeImpl* PageNodeImpl::GetMainFrameNode() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto* frame_node : frame_nodes_) {
-    if (frame_node->IsMainFrame())
-      return frame_node;
-  }
-  return nullptr;
+  // Return an arbitrary node from the main frame nodes set.
+  // TODO(siggi): Make sure to preferentially return the active main frame node.
+  if (main_frame_nodes_.empty())
+    return nullptr;
+
+  return *main_frame_nodes_.begin();
 }
 
 void PageNodeImpl::OnFrameLifecycleStateChanged(
     FrameNodeImpl* frame_node,
     resource_coordinator::mojom::LifecycleState old_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::ContainsKey(frame_nodes_, frame_node));
+  DCHECK_EQ(this, frame_node->GetPageNode());
   DCHECK_NE(old_state, frame_node->lifecycle_state());
 
   int delta = 0;
@@ -203,7 +232,7 @@ void PageNodeImpl::OnFrameInterventionPolicyChanged(
       intervention == resource_coordinator::mojom::
                           PolicyControlledIntervention::kMaxValue) {
     ++intervention_policy_frames_reported_;
-    DCHECK_LE(intervention_policy_frames_reported_, frame_nodes_.size());
+    DCHECK_LE(intervention_policy_frames_reported_, frame_node_count_);
   }
 }
 
@@ -212,8 +241,8 @@ PageNodeImpl::GetInterventionPolicy(
     resource_coordinator::mojom::PolicyControlledIntervention intervention) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // If there are no frames, or they've not all reported, then return kUnknown.
-  if (frame_nodes_.empty() ||
-      intervention_policy_frames_reported_ != frame_nodes_.size()) {
+  if (frame_node_count_ == 0u ||
+      intervention_policy_frames_reported_ != frame_node_count_) {
     return resource_coordinator::mojom::InterventionPolicy::kUnknown;
   }
 
@@ -240,9 +269,22 @@ void PageNodeImpl::JoinGraph() {
 void PageNodeImpl::LeaveGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DCHECK(frame_nodes_.empty());
+  DCHECK_EQ(0u, frame_node_count_);
 
   NodeBase::LeaveGraph();
+}
+
+bool PageNodeImpl::HasFrame(FrameNodeImpl* frame_node) {
+  bool has_node = false;
+  ForAllFrameNodes([&has_node, &frame_node](FrameNodeImpl* node) -> bool {
+    if (node != frame_node)
+      return true;
+
+    has_node = true;
+    return false;
+  });
+
+  return has_node;
 }
 
 void PageNodeImpl::SetPageAlmostIdle(bool page_almost_idle) {
@@ -268,7 +310,7 @@ void PageNodeImpl::OnPropertyChanged(
 void PageNodeImpl::OnNumFrozenFramesStateChange(int num_frozen_frames_delta) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   num_frozen_frames_ += num_frozen_frames_delta;
-  DCHECK_LE(num_frozen_frames_, frame_nodes_.size());
+  DCHECK_LE(num_frozen_frames_, frame_node_count_);
 
   const int64_t kRunning = static_cast<int64_t>(
       resource_coordinator::mojom::LifecycleState::kRunning);
@@ -283,7 +325,7 @@ void PageNodeImpl::OnNumFrozenFramesStateChange(int num_frozen_frames_delta) {
           resource_coordinator::mojom::PropertyType::kLifecycleState,
           kRunning) == kFrozen;
   bool is_fully_frozen =
-      !frame_nodes_.empty() && num_frozen_frames_ == frame_nodes_.size();
+      (frame_node_count_ != 0) && num_frozen_frames_ == frame_node_count_;
   if (was_fully_frozen == is_fully_frozen)
     return;
 
@@ -291,12 +333,14 @@ void PageNodeImpl::OnNumFrozenFramesStateChange(int num_frozen_frames_delta) {
     // Aggregate the beforeunload handler information from the entire frame
     // tree.
     bool has_nonempty_beforeunload = false;
-    for (auto* frame : frame_nodes_) {
-      if (frame->has_nonempty_beforeunload()) {
-        has_nonempty_beforeunload = true;
-        break;
-      }
-    }
+    ForAllFrameNodes(
+        [&has_nonempty_beforeunload](FrameNodeImpl* frame_node) -> bool {
+          if (!frame_node->has_nonempty_beforeunload())
+            return true;
+          has_nonempty_beforeunload = true;
+          return false;
+        });
+
     set_has_nonempty_beforeunload(has_nonempty_beforeunload);
   }
 
@@ -318,11 +362,10 @@ void PageNodeImpl::MaybeInvalidateInterventionPolicies(
     bool adding_frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Ensure that the frame was already added or removed as expected.
-  DCHECK(adding_frame == frame_nodes_.count(frame_node));
+  DCHECK(!adding_frame || HasFrame(frame_node));
 
   // Determine whether or not the frames had all reported prior to this change.
-  const size_t prior_frame_count =
-      frame_nodes_.size() + (adding_frame ? -1 : 1);
+  const size_t prior_frame_count = frame_node_count_ + (adding_frame ? -1 : 1);
   const bool frames_all_reported_prior =
       prior_frame_count > 0 &&
       intervention_policy_frames_reported_ == prior_frame_count;
@@ -340,7 +383,7 @@ void PageNodeImpl::MaybeInvalidateInterventionPolicies(
   if (frame_reported)
     intervention_policy_frames_reported_ += adding_frame ? 1 : -1;
 
-  DCHECK_LE(intervention_policy_frames_reported_, frame_nodes_.size());
+  DCHECK_LE(intervention_policy_frames_reported_, frame_node_count_);
 }
 
 void PageNodeImpl::RecomputeInterventionPolicy(
@@ -349,11 +392,11 @@ void PageNodeImpl::RecomputeInterventionPolicy(
   const size_t kIndex = ToIndex(intervention);
 
   // This should never be called with an empty frame tree.
-  DCHECK(!frame_nodes_.empty());
+  DCHECK_NE(0u, frame_node_count_);
 
   resource_coordinator::mojom::InterventionPolicy policy =
       resource_coordinator::mojom::InterventionPolicy::kDefault;
-  for (auto* frame : frame_nodes_) {
+  ForAllFrameNodes([&policy, &kIndex](FrameNodeImpl* frame) -> bool {
     // No frame should have an unknown policy, as aggregation should only be
     // invoked after all frames have checked in.
     DCHECK_NE(resource_coordinator::mojom::InterventionPolicy::kUnknown,
@@ -363,9 +406,8 @@ void PageNodeImpl::RecomputeInterventionPolicy(
     // frames have opted in.
     if (frame->intervention_policy_[kIndex] ==
         resource_coordinator::mojom::InterventionPolicy::kOptOut) {
-      intervention_policy_[kIndex] =
-          resource_coordinator::mojom::InterventionPolicy::kOptOut;
-      return;
+      policy = resource_coordinator::mojom::InterventionPolicy::kOptOut;
+      return false;
     }
 
     // If any frame opts in and none opt out, then the whole tree opts in.
@@ -373,9 +415,16 @@ void PageNodeImpl::RecomputeInterventionPolicy(
         resource_coordinator::mojom::InterventionPolicy::kOptIn) {
       policy = resource_coordinator::mojom::InterventionPolicy::kOptIn;
     }
-  }
+    return true;
+  });
 
   intervention_policy_[kIndex] = policy;
+}
+
+template <typename MapFunction>
+void PageNodeImpl::ForAllFrameNodes(MapFunction map_function) const {
+  for (auto* main_frame_node : main_frame_nodes_)
+    ForFrameAndDescendents(main_frame_node, map_function);
 }
 
 }  // namespace performance_manager
