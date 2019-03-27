@@ -16,6 +16,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -166,6 +167,21 @@ id<GREYMatcher> AlwaysTranslate(NSString* language) {
   return ButtonWithAccessibilityLabel(
       l10n_util::GetNSStringF(IDS_TRANSLATE_INFOBAR_OPTIONS_ALWAYS,
                               base::SysNSStringToUTF16(language)));
+}
+
+// Returns a matcher for the "Never translate ..." entry in translate options
+// menu.
+id<GREYMatcher> NeverTranslate(NSString* language) {
+  return ButtonWithAccessibilityLabel(l10n_util::GetNSStringF(
+      IDS_TRANSLATE_INFOBAR_OPTIONS_NEVER_TRANSLATE_LANG,
+      base::SysNSStringToUTF16(language)));
+}
+
+// Returns a matcher for the "Never translate this site" entry in translate
+// options menu.
+id<GREYMatcher> NeverTranslateSite() {
+  return ButtonWithAccessibilityLabel(l10n_util::GetNSString(
+      IDS_TRANSLATE_INFOBAR_OPTIONS_NEVER_TRANSLATE_SITE));
 }
 
 // Returns a matcher for the "Page not in ..." entry in translate options menu.
@@ -1104,18 +1120,384 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
              @"French to English translation is whitelisted");
 }
 
+// Tests that "Always Translate" is automatically triggered after a minimum
+// number of translate attempts by the user.
+- (void)testInfobarAutoAlwaysTranslate {
+  // Start the HTTP server.
+  std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
+  web::test::SetUpHttpServer(std::move(provider));
+
+  // Load a page with French text.
+  GURL URL = web::test::HttpServer::MakeUrl(
+      base::StringPrintf("http://%s", kFrenchPagePath));
+  [ChromeEarlGrey loadURL:URL];
+
+  [self assertTranslateInfobarIsVisible];
+
+  // Make sure that French to English translation is not whitelisted.
+  std::unique_ptr<translate::TranslatePrefs> translatePrefs(
+      ChromeIOSTranslateClient::CreateTranslatePrefs(
+          chrome_test_util::GetOriginalBrowserState()->GetPrefs()));
+  GREYAssert(!translatePrefs->IsLanguagePairWhitelisted("fr", "en"),
+             @"French to English translation is whitelisted");
+
+  // Translate the page by tapping the target language tab until
+  // "Always Translate" is automatically triggered.
+  for (int i = 0; i <= translate::kAutoAlwaysThreshold; i++) {
+    [[EarlGrey
+        selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
+        performAction:grey_tap()];
+  }
+
+  // Make sure that French to English translation is not whitelisted yet.
+  GREYAssert(!translatePrefs->IsLanguagePairWhitelisted("fr", "en"),
+             @"French to English translation is whitelisted");
+
+  // Tap the notification snackbar to dismiss it.
+  NSString* snackbarTitle =
+      l10n_util::GetNSStringF(IDS_TRANSLATE_NOTIFICATION_ALWAYS_TRANSLATE,
+                              base::SysNSStringToUTF16(@"French"),
+                              base::SysNSStringToUTF16(@"English"));
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarTitle)]
+      performAction:grey_tap()];
+
+  // Make sure that French to English translation is whitelisted after the
+  // snackbar is dismissed.
+  GREYAssert(translatePrefs->IsLanguagePairWhitelisted("fr", "en"),
+             @"French to English translation is not whitelisted");
+}
+
+// Tests that "Always Translate" is automatically triggered only for a maximum
+// number of times if refused by the user.
+- (void)testInfobarAutoAlwaysTranslateMaxTries {
+  // Start the HTTP server.
+  std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
+  web::test::SetUpHttpServer(std::move(provider));
+
+  // Load a page with French text.
+  GURL URL = web::test::HttpServer::MakeUrl(
+      base::StringPrintf("http://%s", kFrenchPagePath));
+  [ChromeEarlGrey loadURL:URL];
+
+  [self assertTranslateInfobarIsVisible];
+
+  // Make sure that French to English translation is not whitelisted.
+  std::unique_ptr<translate::TranslatePrefs> translatePrefs(
+      ChromeIOSTranslateClient::CreateTranslatePrefs(
+          chrome_test_util::GetOriginalBrowserState()->GetPrefs()));
+  GREYAssert(!translatePrefs->IsLanguagePairWhitelisted("fr", "en"),
+             @"French to English translation is whitelisted");
+
+  // Trigger and refuse the auto "Always Translate".
+  for (int i = 0; i < translate::kMaxNumberOfAutoAlways; i++) {
+    // Translate the page by tapping the target language tab until
+    // "Always Translate" is automatically triggered.
+    for (int j = 0; j <= translate::kAutoAlwaysThreshold; j++) {
+      [[EarlGrey
+          selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
+          performAction:grey_tap()];
+    }
+    // Tap the notification snackbar's "UNDO" button.
+    [[EarlGrey selectElementWithMatcher:UndoButton()] performAction:grey_tap()];
+  }
+
+  // Translate the page by tapping the target language tab in order to
+  // automatically trigger "Always Translate".
+  for (int i = 0; i <= translate::kAutoAlwaysThreshold; i++) {
+    [[EarlGrey
+        selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
+        performAction:grey_tap()];
+  }
+
+  // Make sure "Always Translate" is not triggered.
+  NSString* snackbarTitle =
+      l10n_util::GetNSStringF(IDS_TRANSLATE_NOTIFICATION_ALWAYS_TRANSLATE,
+                              base::SysNSStringToUTF16(@"French"),
+                              base::SysNSStringToUTF16(@"English"));
+  GREYAssertFalse([self waitForElementToAppearOrTimeout:grey_accessibilityLabel(
+                                                            snackbarTitle)],
+                  @"Always Translate was triggered.");
+}
+
+// Tests that the "Never Translate ..." options dismisses the infobar and
+// updates the prefs accordingly.
+- (void)testInfobarNeverTranslate {
+  // Start the HTTP server.
+  std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
+  web::test::SetUpHttpServer(std::move(provider));
+
+  // Load a page with French text.
+  GURL URL = web::test::HttpServer::MakeUrl(
+      base::StringPrintf("http://%s", kFrenchPagePath));
+  [ChromeEarlGrey loadURL:URL];
+
+  [self assertTranslateInfobarIsVisible];
+
+  // Make sure that translation from French is not blocked.
+  std::unique_ptr<translate::TranslatePrefs> translatePrefs(
+      ChromeIOSTranslateClient::CreateTranslatePrefs(
+          chrome_test_util::GetOriginalBrowserState()->GetPrefs()));
+  GREYAssert(!translatePrefs->IsBlockedLanguage("fr"),
+             @"Translation from French is blocked");
+
+  // Open the translate options menu.
+  [[EarlGrey selectElementWithMatcher:OptionsButton()]
+      performAction:grey_tap()];
+
+  // Tap the "Never Translate French" entry.
+  [[EarlGrey selectElementWithMatcher:NeverTranslate(@"French")]
+      performAction:grey_tap()];
+
+  // Expect the translate options menu to have disappeared.
+  [[EarlGrey selectElementWithMatcher:OptionsMenu()]
+      assertWithMatcher:grey_nil()];
+
+  // Tap the notification snackbar's "UNDO" button.
+  [[EarlGrey selectElementWithMatcher:UndoButton()] performAction:grey_tap()];
+
+  // Make sure that translation from French is still not blocked.
+  GREYAssert(!translatePrefs->IsBlockedLanguage("fr"),
+             @"Translation from French is blocked");
+
+  // Open the translate options menu.
+  [[EarlGrey selectElementWithMatcher:OptionsButton()]
+      performAction:grey_tap()];
+
+  // Tap the "Never Translate French" entry.
+  [[EarlGrey selectElementWithMatcher:NeverTranslate(@"French")]
+      performAction:grey_tap()];
+
+  // Make sure that translation from French is not blocked yet.
+  GREYAssert(!translatePrefs->IsBlockedLanguage("fr"),
+             @"Translation from French is blocked");
+
+  // Tap the notification snackbar to dismiss it.
+  NSString* snackbarTitle =
+      l10n_util::GetNSStringF(IDS_TRANSLATE_NOTIFICATION_LANGUAGE_NEVER,
+                              base::SysNSStringToUTF16(@"French"));
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarTitle)]
+      performAction:grey_tap()];
+
+  // Wait until the translate infobar disappears.
+  GREYAssert([self waitForElementToDisappearOrTimeout:TranslateInfobar()],
+             @"Translate infobar failed to disappear.");
+
+  // Make sure that translation from French is blocked after the snackbar is
+  // dismissed.
+  GREYAssert(translatePrefs->IsBlockedLanguage("fr"),
+             @"Translation from French is not blocked");
+
+  // Reload the page.
+  [ChromeEarlGrey reload];
+
+  // Make sure the translate infobar does not appear.
+  GREYAssertFalse([self waitForElementToAppearOrTimeout:TranslateInfobar()],
+                  @"Translate infobar appeared.");
+}
+
+// Tests that "Never Translate ..." is automatically triggered after a minimum
+// number of translate infobar dismissals by the user.
+- (void)testInfobarAutoNeverTranslate {
+  // Start the HTTP server.
+  std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
+  web::test::SetUpHttpServer(std::move(provider));
+
+  // Load a page with French text.
+  GURL URL = web::test::HttpServer::MakeUrl(
+      base::StringPrintf("http://%s", kFrenchPagePath));
+  [ChromeEarlGrey loadURL:URL];
+
+  [self assertTranslateInfobarIsVisible];
+
+  // Make sure that translation from French is not blocked.
+  std::unique_ptr<translate::TranslatePrefs> translatePrefs(
+      ChromeIOSTranslateClient::CreateTranslatePrefs(
+          chrome_test_util::GetOriginalBrowserState()->GetPrefs()));
+  GREYAssert(!translatePrefs->IsBlockedLanguage("fr"),
+             @"Translation from French is blocked");
+
+  // Dismiss the translate infobar until "Never Translate ..." is automatically
+  // triggered.
+  for (int i = 0; i < translate::kAutoNeverThreshold; i++) {
+    // Reload the page.
+    [ChromeEarlGrey reload];
+
+    [self assertTranslateInfobarIsVisible];
+
+    // Dismiss the translate infobar.
+    [[EarlGrey selectElementWithMatcher:CloseButton()]
+        performAction:grey_tap()];
+  }
+
+  // Make sure that translation from French is not blocked yet.
+  GREYAssert(!translatePrefs->IsBlockedLanguage("fr"),
+             @"Translation from French is blocked");
+
+  // Tap the notification snackbar to dismiss it.
+  NSString* snackbarTitle =
+      l10n_util::GetNSStringF(IDS_TRANSLATE_NOTIFICATION_LANGUAGE_NEVER,
+                              base::SysNSStringToUTF16(@"French"));
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarTitle)]
+      performAction:grey_tap()];
+
+  // Wait until the translate infobar disappears.
+  GREYAssert([self waitForElementToDisappearOrTimeout:TranslateInfobar()],
+             @"Translate infobar failed to disappear.");
+
+  // Make sure that translation from French is blocked after the snackbar is
+  // dismissed.
+  GREYAssert(translatePrefs->IsBlockedLanguage("fr"),
+             @"Translation from French is not blocked");
+}
+
+// Tests that "Never Translate ..." is automatically triggered only for a
+// maximum number of times if refused by the user.
+- (void)testInfobarAutoNeverTranslateMaxTries {
+  // TODO(crbug.com/945118): Re-enable when fixed.
+  EARL_GREY_TEST_DISABLED(@"Test disabled.");
+
+  // Start the HTTP server.
+  std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
+  web::test::SetUpHttpServer(std::move(provider));
+
+  // Load a page with French text.
+  GURL URL = web::test::HttpServer::MakeUrl(
+      base::StringPrintf("http://%s", kFrenchPagePath));
+  [ChromeEarlGrey loadURL:URL];
+
+  [self assertTranslateInfobarIsVisible];
+
+  // Make sure that translation from French is not blocked.
+  std::unique_ptr<translate::TranslatePrefs> translatePrefs(
+      ChromeIOSTranslateClient::CreateTranslatePrefs(
+          chrome_test_util::GetOriginalBrowserState()->GetPrefs()));
+  GREYAssert(!translatePrefs->IsBlockedLanguage("fr"),
+             @"Translation from French is blocked");
+
+  // Trigger and refuse the auto "Never Translate ...".
+  for (int i = 0; i < translate::kMaxNumberOfAutoNever; i++) {
+    // Dismiss the translate infobar until "Never Translate ..." is
+    // automatically triggered.
+    for (int j = 0; j < translate::kAutoNeverThreshold; j++) {
+      // Reload the page.
+      [ChromeEarlGrey reload];
+
+      [self assertTranslateInfobarIsVisible];
+
+      // Dismiss the translate infobar.
+      [[EarlGrey selectElementWithMatcher:CloseButton()]
+          performAction:grey_tap()];
+    }
+    // Tap the notification snackbar's "UNDO" button.
+    [[EarlGrey selectElementWithMatcher:UndoButton()] performAction:grey_tap()];
+
+    // Wait until the translate infobar disappears.
+    GREYAssert([self waitForElementToDisappearOrTimeout:TranslateInfobar()],
+               @"Translate infobar failed to disappear.");
+  }
+
+  // Dismiss the translate infobar in order to automatically trigger
+  // "Never Translate ...".
+  for (int i = 0; i < translate::kAutoNeverThreshold; i++) {
+    // Reload the page.
+    [ChromeEarlGrey reload];
+
+    [self assertTranslateInfobarIsVisible];
+
+    // Dismiss the translate infobar.
+    [[EarlGrey selectElementWithMatcher:CloseButton()]
+        performAction:grey_tap()];
+  }
+
+  // Make sure "Never Translate ..." is not triggered.
+  NSString* snackbarTitle =
+      l10n_util::GetNSStringF(IDS_TRANSLATE_NOTIFICATION_LANGUAGE_NEVER,
+                              base::SysNSStringToUTF16(@"French"));
+  GREYAssertFalse([self waitForElementToAppearOrTimeout:grey_accessibilityLabel(
+                                                            snackbarTitle)],
+                  @"Never Translate French was triggered.");
+}
+
+// Tests that the "Never Translate this site" option dismisses the infobar and
+// updates the prefs accordingly.
+- (void)testInfobarNeverTranslateSite {
+  // Start the HTTP server.
+  std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
+  web::test::SetUpHttpServer(std::move(provider));
+
+  // Load a page with French text.
+  GURL URL = web::test::HttpServer::MakeUrl(
+      base::StringPrintf("http://%s", kFrenchPagePath));
+  [ChromeEarlGrey loadURL:URL];
+
+  [self assertTranslateInfobarIsVisible];
+
+  // Make sure that translation for the site is not blocked.
+  std::unique_ptr<translate::TranslatePrefs> translatePrefs(
+      ChromeIOSTranslateClient::CreateTranslatePrefs(
+          chrome_test_util::GetOriginalBrowserState()->GetPrefs()));
+  GREYAssert(!translatePrefs->IsSiteBlacklisted(URL.HostNoBrackets()),
+             @"Translation is blocked for the site");
+
+  // Open the translate options menu.
+  [[EarlGrey selectElementWithMatcher:OptionsButton()]
+      performAction:grey_tap()];
+
+  // Tap the "Never Translate this site" entry.
+  [[EarlGrey selectElementWithMatcher:NeverTranslateSite()]
+      performAction:grey_tap()];
+
+  // Expect the translate options menu to have disappeared.
+  [[EarlGrey selectElementWithMatcher:OptionsMenu()]
+      assertWithMatcher:grey_nil()];
+
+  // Tap the notification snackbar's "UNDO" button.
+  [[EarlGrey selectElementWithMatcher:UndoButton()] performAction:grey_tap()];
+
+  // Make sure that translation for the site is still not blocked.
+  GREYAssert(!translatePrefs->IsSiteBlacklisted(URL.HostNoBrackets()),
+             @"Translation is blocked for the site");
+
+  // Open the translate options menu.
+  [[EarlGrey selectElementWithMatcher:OptionsButton()]
+      performAction:grey_tap()];
+
+  // Tap the "Never Translate this site" entry.
+  [[EarlGrey selectElementWithMatcher:NeverTranslateSite()]
+      performAction:grey_tap()];
+
+  // Make sure that translation for the site is not blocked yet.
+  GREYAssert(!translatePrefs->IsSiteBlacklisted(URL.HostNoBrackets()),
+             @"Translation is blocked for the site");
+
+  // Tap the notification snackbar to dismiss it.
+  NSString* snackbarTitle =
+      l10n_util::GetNSString(IDS_TRANSLATE_NOTIFICATION_SITE_NEVER);
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarTitle)]
+      performAction:grey_tap()];
+
+  // Make sure that translation for the site is blocked after the snackbar is
+  // dismissed.
+  GREYAssert(translatePrefs->IsSiteBlacklisted(URL.HostNoBrackets()),
+             @"Translation is not blocked for the site");
+
+  // Wait until the translate infobar disappears.
+  GREYAssert([self waitForElementToDisappearOrTimeout:TranslateInfobar()],
+             @"Translate infobar failed to disappear.");
+
+  // Reload the page.
+  [ChromeEarlGrey reload];
+
+  // Make sure the translate infobar does not appear.
+  GREYAssertFalse([self waitForElementToAppearOrTimeout:TranslateInfobar()],
+                  @"Translate infobar appeared.");
+}
+
 #pragma mark - Utility methods
 
 - (void)assertTranslateInfobarIsVisible {
   // Wait until the translate infobar becomes visible.
-  ConditionBlock condition = ^{
-    NSError* error = nil;
-    [[EarlGrey selectElementWithMatcher:TranslateInfobar()]
-        assertWithMatcher:grey_notNil()
-                    error:&error];
-    return error == nil;
-  };
-  GREYAssert(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, condition),
+  GREYAssert([self waitForElementToAppearOrTimeout:TranslateInfobar()],
              @"Translate infobar failed to show.");
 
   // Check that the translate infobar is fully visible.
@@ -1127,6 +1509,26 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey selectElementWithMatcher:CloseButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+- (BOOL)waitForElementToAppearOrTimeout:(id<GREYMatcher>)matcher {
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:matcher] assertWithMatcher:grey_notNil()
+                                                             error:&error];
+    return error == nil;
+  };
+  return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition);
+}
+
+- (BOOL)waitForElementToDisappearOrTimeout:(id<GREYMatcher>)matcher {
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:matcher] assertWithMatcher:grey_nil()
+                                                             error:&error];
+    return error == nil;
+  };
+  return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition);
 }
 
 // Waits until a language has been detected and checks the language details.
