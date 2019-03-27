@@ -1230,6 +1230,8 @@ component("ash") {
     "wm/wm_toplevel_window_event_handler.h",
     "wm/wm_window_animations.cc",
     "wm/wm_window_animations.h",
+    "wm/work_area_insets.cc",
+    "wm/work_area_insets.h",
     "wm/workspace/backdrop_controller.cc",
     "wm/workspace/backdrop_controller.h",
     "wm/workspace/backdrop_delegate.h",

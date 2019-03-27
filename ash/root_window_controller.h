@@ -53,6 +53,7 @@ class TouchExplorationManager;
 class TouchObserverHUD;
 class WallpaperWidgetController;
 class WindowManager;
+class WorkAreaInsets;
 class WorkspaceController;
 
 namespace wm {
@@ -119,6 +120,9 @@ class ASH_EXPORT RootWindowController {
     return root_window_layout_manager_;
   }
 
+  // Returns parameters of the work area associated with this root window.
+  WorkAreaInsets* work_area_insets() { return work_area_insets_.get(); }
+
   // Access the shelf layout manager associated with this root
   // window controller, NULL if no such shelf exists.
   ShelfLayoutManager* GetShelfLayoutManager();
@@ -156,16 +160,6 @@ class ASH_EXPORT RootWindowController {
   // Gets the last location seen in a mouse event in this root window's
   // coordinates. This may return a point outside the root window's bounds.
   gfx::Point GetLastMouseLocationInRoot();
-
-  // Returns height of the accessibility panel for this root window.
-  int GetAccessibilityPanelHeight() const;
-
-  // Returns height of the docked magnifier for this root window.
-  int GetDockedMagnifierHeight() const;
-
-  // Sets height of the docked magnifier for this root window. Notifies shell
-  // observers that work area changed.
-  void SetDockedMagnifierHeight(int height);
 
   aura::Window* GetContainer(int container_id);
   const aura::Window* GetContainer(int container_id) const;
@@ -310,7 +304,7 @@ class ASH_EXPORT RootWindowController {
   // calling related cleanup code more than once.
   bool did_close_child_windows_ = false;
 
-  int docked_magnifier_height_ = 0;
+  std::unique_ptr<WorkAreaInsets> work_area_insets_;
 
   static std::vector<RootWindowController*>* root_window_controllers_;
 

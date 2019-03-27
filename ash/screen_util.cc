@@ -8,9 +8,9 @@
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -40,11 +40,11 @@ gfx::Rect GetDisplayBoundsInParent(aura::Window* window) {
 
 gfx::Rect GetFullscreenWindowBoundsInParent(aura::Window* window) {
   gfx::Rect result = GetDisplayBoundsInParent(window);
-  const RootWindowController* const root_window_controller =
-      RootWindowController::ForWindow(window->GetRootWindow());
+  const WorkAreaInsets* const work_area_insets =
+      WorkAreaInsets::ForWindow(window->GetRootWindow());
   result.Inset(0,
-               root_window_controller->GetAccessibilityPanelHeight() +
-                   root_window_controller->GetDockedMagnifierHeight(),
+               work_area_insets->accessibility_panel_height() +
+                   work_area_insets->docked_magnifier_height(),
                0, 0);
   return result;
 }
