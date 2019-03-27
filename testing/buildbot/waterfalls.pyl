@@ -1094,11 +1094,6 @@
           'gtest_tests': 'goma_gtests',
         },
       },
-      'Linux Clang Analyzer': {
-        'additional_compile_targets': [
-          'chrome',
-        ]
-      },
       'Linux Viz': {
         'additional_compile_targets': [
           'all',
