@@ -33,12 +33,12 @@ def EnsureEmptyDir(path):
 
 def BuildForArch(arch):
   build_dir = 'out/release-' + arch
-  Run('scripts/fx', 'set', arch,
-      '--product=sdk_image',
-      '--packages=topaz/packages/sdk/topaz',
+  Run('scripts/fx', 'set', 'sdk_image.' + arch,
+      '--with=//topaz/packages/sdk:topaz',
       '--args=is_debug=false', '--args=build_sdk_archives=true',
-      build_dir)
-  Run('scripts/fx', 'full-build')
+      '--build-dir=' + build_dir)
+  Run('scripts/fx', 'build-zircon')
+  Run('scripts/fx', 'build', 'topaz/public/sdk:topaz')
 
 
 def main(args):
