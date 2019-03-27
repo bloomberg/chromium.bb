@@ -476,8 +476,9 @@ ScriptPromise MediaCapabilities::decodingInfo(
     if (!message.IsEmpty()) {
       if (ExecutionContext* execution_context =
               ExecutionContext::From(script_state)) {
-        execution_context->AddWarningMessage(ConsoleLogger::Source::kOther,
-                                             message);
+        execution_context->AddConsoleMessage(
+            mojom::ConsoleMessageSource::kOther,
+            mojom::ConsoleMessageLevel::kWarning, message);
       }
     }
 

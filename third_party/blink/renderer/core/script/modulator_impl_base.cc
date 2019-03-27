@@ -222,15 +222,15 @@ void ModulatorImplBase::RegisterImportMap(const ImportMap* import_map) {
   if (import_map_) {
     // Only one import map is allowed.
     // TODO(crbug.com/927119): Implement merging.
-    GetExecutionContext()->AddErrorMessage(
-        ConsoleLogger::Source::kOther,
+    GetExecutionContext()->AddConsoleMessage(
+        mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kError,
         "Multiple import maps are not yet supported. https://crbug.com/927119");
     return;
   }
 
   if (!BuiltInModuleInfraEnabled()) {
-    GetExecutionContext()->AddErrorMessage(
-        ConsoleLogger::Source::kOther,
+    GetExecutionContext()->AddConsoleMessage(
+        mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kError,
         "Import maps are disabled when Layered API Infra is disabled.");
     return;
   }
