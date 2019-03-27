@@ -501,8 +501,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
       ClientSocketPool::GroupId(key.host_port_pair(),
                                 ClientSocketPool::SocketType::kSsl,
                                 key.privacy_mode()),
-      TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
-          ssl_params),
+      ClientSocketPool::SocketParams::CreateFromSSLSocketParams(ssl_params),
       MEDIUM, key.socket_tag(), ClientSocketPool::RespectLimits::ENABLED,
       callback.callback(), ClientSocketPool::ProxyAuthCallback(),
       http_session->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,

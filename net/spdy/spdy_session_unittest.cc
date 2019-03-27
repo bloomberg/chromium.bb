@@ -3556,8 +3556,8 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
           ClientSocketPool::GroupId(host_port2,
                                     ClientSocketPool::SocketType::kHttp,
                                     false /* privacy_mode */),
-          TransportClientSocketPool::SocketParams::
-              CreateFromTransportSocketParams(params2),
+          ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+              params2),
           DEFAULT_PRIORITY, SocketTag(),
           ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
           ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));
@@ -3641,8 +3641,8 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
           ClientSocketPool::GroupId(host_port3,
                                     ClientSocketPool::SocketType::kHttp,
                                     false /* privacy_mode */),
-          TransportClientSocketPool::SocketParams::
-              CreateFromTransportSocketParams(params3),
+          ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+              params3),
           DEFAULT_PRIORITY, SocketTag(),
           ClientSocketPool::RespectLimits::ENABLED, callback3.callback(),
           ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));
@@ -3724,8 +3724,8 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
           ClientSocketPool::GroupId(host_port2,
                                     ClientSocketPool::SocketType::kHttp,
                                     false /* privacy_mode */),
-          TransportClientSocketPool::SocketParams::
-              CreateFromTransportSocketParams(params2),
+          ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+              params2),
           DEFAULT_PRIORITY, SocketTag(),
           ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
           ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));

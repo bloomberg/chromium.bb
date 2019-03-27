@@ -66,11 +66,10 @@ class WebSocketTransportClientSocketPoolTest
       : group_id_(HostPortPair("www.google.com", 80),
                   ClientSocketPool::SocketType::kHttp,
                   false /* privacy_mode */),
-        params_(TransportClientSocketPool::SocketParams::
-                    CreateFromTransportSocketParams(
-                        base::MakeRefCounted<TransportSocketParams>(
-                            HostPortPair("www.google.com", 80),
-                            OnHostResolutionCallback()))),
+        params_(ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+            base::MakeRefCounted<TransportSocketParams>(
+                HostPortPair("www.google.com", 80),
+                OnHostResolutionCallback()))),
         host_resolver_(new MockHostResolver),
         client_socket_factory_(&net_log_),
         common_connect_job_params_(
@@ -136,7 +135,7 @@ class WebSocketTransportClientSocketPoolTest
   TestNetLog net_log_;
   // |group_id_| and |params_| correspond to the same socket parameters.
   const ClientSocketPool::GroupId group_id_;
-  scoped_refptr<TransportClientSocketPool::SocketParams> params_;
+  scoped_refptr<ClientSocketPool::SocketParams> params_;
   std::unique_ptr<MockHostResolver> host_resolver_;
   MockTransportClientSocketFactory client_socket_factory_;
   WebSocketEndpointLockManager websocket_endpoint_lock_manager_;
@@ -187,8 +186,8 @@ TEST_F(WebSocketTransportClientSocketPoolTest, InitHostResolutionFailure) {
   TestCompletionCallback callback;
   ClientSocketHandle handle;
   HostPortPair host_port_pair("unresolvable.host.name", 80);
-  scoped_refptr<TransportClientSocketPool::SocketParams> dest(
-      TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+  scoped_refptr<ClientSocketPool::SocketParams> dest(
+      ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
           base::MakeRefCounted<TransportSocketParams>(
               host_port_pair, OnHostResolutionCallback())));
   EXPECT_EQ(
@@ -418,8 +417,8 @@ void RequestSocketOnComplete(const ClientSocketPool::GroupId& group_id,
   handle->socket()->Disconnect();
   handle->Reset();
 
-  scoped_refptr<TransportClientSocketPool::SocketParams> dest(
-      TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+  scoped_refptr<ClientSocketPool::SocketParams> dest(
+      ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
           base::MakeRefCounted<TransportSocketParams>(
               HostPortPair("www.google.com", 80), OnHostResolutionCallback())));
   int rv = handle->Init(
@@ -436,8 +435,8 @@ void RequestSocketOnComplete(const ClientSocketPool::GroupId& group_id,
 // ClientSocketHandle for the second socket, after disconnecting the first.
 TEST_F(WebSocketTransportClientSocketPoolTest, RequestTwice) {
   ClientSocketHandle handle;
-  scoped_refptr<TransportClientSocketPool::SocketParams> dest(
-      TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+  scoped_refptr<ClientSocketPool::SocketParams> dest(
+      ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
           base::MakeRefCounted<TransportSocketParams>(
               HostPortPair("www.google.com", 80), OnHostResolutionCallback())));
   TestCompletionCallback second_result_callback;

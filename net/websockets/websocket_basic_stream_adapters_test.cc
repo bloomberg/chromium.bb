@@ -113,8 +113,7 @@ class WebSocketClientSocketHandleAdapterTest
         ClientSocketPool::GroupId(host_port_pair_,
                                   ClientSocketPool::SocketType::kSsl,
                                   false /* privacy_mode */),
-        TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
-            ssl_params_),
+        ClientSocketPool::SocketParams::CreateFromSSLSocketParams(ssl_params_),
         MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
         callback.callback(), ClientSocketPool::ProxyAuthCallback(),
         socket_pool_manager_->GetSocketPool(ProxyServer::Direct()), net_log_);
