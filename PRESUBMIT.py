@@ -59,6 +59,7 @@ _TEST_CODE_EXCLUDED_PATHS = (
     r'testing[\\/]iossim[\\/]iossim\.mm$',
 )
 
+_THIRD_PARTY_EXCEPT_BLINK = 'third_party/(?!blink/)'
 
 _TEST_ONLY_WARNING = (
     'You might be calling functions intended only for testing from\n'
@@ -73,6 +74,10 @@ _INCLUDE_ORDER_WARNING = (
     'cppguide.html#Names_and_Order_of_Includes')
 
 
+# Format: Sequence of tuples containing:
+# * String pattern or, if starting with a slash, a regular expression.
+# * Sequence of strings to show when the pattern matches.
+# * Error flag. True if a match is a presubmit error, otherwise it's a warning.
 _BANNED_JAVA_FUNCTIONS = (
     (
       'StrictMode.allowThreadDiskReads()',
@@ -92,6 +97,10 @@ _BANNED_JAVA_FUNCTIONS = (
     ),
 )
 
+# Format: Sequence of tuples containing:
+# * String pattern or, if starting with a slash, a regular expression.
+# * Sequence of strings to show when the pattern matches.
+# * Error flag. True if a match is a presubmit error, otherwise it's a warning.
 _BANNED_OBJC_FUNCTIONS = (
     (
       'addTrackingRect:',
@@ -185,6 +194,10 @@ _BANNED_OBJC_FUNCTIONS = (
     ),
 )
 
+# Format: Sequence of tuples containing:
+# * String pattern or, if starting with a slash, a regular expression.
+# * Sequence of strings to show when the pattern matches.
+# * Error flag. True if a match is a presubmit error, otherwise it's a warning.
 _BANNED_IOS_OBJC_FUNCTIONS = (
     (
       r'/\bTEST[(]',
@@ -208,6 +221,11 @@ _BANNED_IOS_OBJC_FUNCTIONS = (
 )
 
 
+# Format: Sequence of tuples containing:
+# * String pattern or, if starting with a slash, a regular expression.
+# * Sequence of strings to show when the pattern matches.
+# * Error flag. True if a match is a presubmit error, otherwise it's a warning.
+# * Sequence of paths to *not* check (regexps).
 _BANNED_CPP_FUNCTIONS = (
     (
       r'\bNULL\b',
@@ -457,7 +475,7 @@ _BANNED_CPP_FUNCTIONS = (
         'the related functions in base/i18n/number_formatting.h.',
       ),
       False,  # Only a warning for now since it is already used,
-      (r'third_party/'),  # Don't warn in third_party folders.
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
     ),
     (
       r'/\bstd::shared_ptr\b',
@@ -465,7 +483,67 @@ _BANNED_CPP_FUNCTIONS = (
         'std::shared_ptr should not be used. Use scoped_refptr instead.',
       ),
       True,
-      (r'third_party/'),  # Not an error in third_party folders.
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    (
+      r'/\blong long\b',
+      (
+        'long long is banned. Use stdint.h if you need a 64 bit number.',
+      ),
+      False,  # Only a warning since it is already used.
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    (
+      r'/\bstd::bind\b',
+      (
+        'std::bind is banned because of lifetime risks.',
+        'Use base::BindOnce or base::BindRepeating instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    (
+      r'/\b#include <chrono>\b',
+      (
+        '<chrono> overlaps with Time APIs in base. Keep using',
+        'base classes.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    (
+      r'/\b#include <exception>\b',
+      (
+        'Exceptions are banned and disabled in Chromium.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    (
+      r'/\bstd::function\b',
+      (
+        'std::function is banned. Instead use base::Callback which directly',
+        'supports Chromium\'s weak pointers, ref counting and more.',
+      ),
+      False,  # Only a warning since there are dozens of uses already.
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Do not warn in third_party folders.
+    ),
+    (
+      r'/\b#include <random>\b',
+      (
+        'Do not use any random number engines from <random>. Instead',
+        'use base::RandomBitGenerator.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    (
+      r'/\bstd::ratio\b',
+      (
+        'std::ratio is banned by the Google Style Guide.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     (
       (r'/base::ThreadRestrictions::(ScopedAllowIO|AssertIOAllowed|'
