@@ -176,6 +176,38 @@ static void GL_BINDING_CALL Mock_glClearColor(GLclampf red,
 static void GL_BINDING_CALL Mock_glClearDepth(GLclampd depth);
 static void GL_BINDING_CALL Mock_glClearDepthf(GLclampf depth);
 static void GL_BINDING_CALL Mock_glClearStencil(GLint s);
+static void GL_BINDING_CALL Mock_glClearTexImage(GLuint texture,
+                                                 GLint level,
+                                                 GLenum format,
+                                                 GLenum type,
+                                                 const GLvoid* data);
+static void GL_BINDING_CALL Mock_glClearTexImageEXT(GLuint texture,
+                                                    GLint level,
+                                                    GLenum format,
+                                                    GLenum type,
+                                                    const GLvoid* data);
+static void GL_BINDING_CALL Mock_glClearTexSubImage(GLuint texture,
+                                                    GLint level,
+                                                    GLint xoffset,
+                                                    GLint yoffset,
+                                                    GLint zoffset,
+                                                    GLint width,
+                                                    GLint height,
+                                                    GLint depth,
+                                                    GLenum format,
+                                                    GLenum type,
+                                                    const GLvoid* data);
+static void GL_BINDING_CALL Mock_glClearTexSubImageEXT(GLuint texture,
+                                                       GLint level,
+                                                       GLint xoffset,
+                                                       GLint yoffset,
+                                                       GLint zoffset,
+                                                       GLint width,
+                                                       GLint height,
+                                                       GLint depth,
+                                                       GLenum format,
+                                                       GLenum type,
+                                                       const GLvoid* data);
 static GLenum GL_BINDING_CALL Mock_glClientWaitSync(GLsync sync,
                                                     GLbitfield flags,
                                                     GLuint64 timeout);

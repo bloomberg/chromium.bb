@@ -128,6 +128,22 @@ typedef void(GL_BINDING_CALL* glClearColorProc)(GLclampf red,
 typedef void(GL_BINDING_CALL* glClearDepthProc)(GLclampd depth);
 typedef void(GL_BINDING_CALL* glClearDepthfProc)(GLclampf depth);
 typedef void(GL_BINDING_CALL* glClearStencilProc)(GLint s);
+typedef void(GL_BINDING_CALL* glClearTexImageProc)(GLuint texture,
+                                                   GLint level,
+                                                   GLenum format,
+                                                   GLenum type,
+                                                   const GLvoid* data);
+typedef void(GL_BINDING_CALL* glClearTexSubImageProc)(GLuint texture,
+                                                      GLint level,
+                                                      GLint xoffset,
+                                                      GLint yoffset,
+                                                      GLint zoffset,
+                                                      GLint width,
+                                                      GLint height,
+                                                      GLint depth,
+                                                      GLenum format,
+                                                      GLenum type,
+                                                      const GLvoid* data);
 typedef GLenum(GL_BINDING_CALL* glClientWaitSyncProc)(GLsync sync,
                                                       GLbitfield flags,
                                                       GLuint64 timeout);
@@ -1832,6 +1848,7 @@ struct ExtensionsGL {
   bool b_GL_APPLE_vertex_array_object;
   bool b_GL_ARB_ES2_compatibility;
   bool b_GL_ARB_blend_func_extended;
+  bool b_GL_ARB_clear_texture;
   bool b_GL_ARB_draw_buffers;
   bool b_GL_ARB_draw_instanced;
   bool b_GL_ARB_framebuffer_object;
@@ -1857,6 +1874,7 @@ struct ExtensionsGL {
   bool b_GL_CHROMIUM_glgetstringi_hack;
   bool b_GL_CHROMIUM_path_rendering;
   bool b_GL_EXT_blend_func_extended;
+  bool b_GL_EXT_clear_texture;
   bool b_GL_EXT_debug_marker;
   bool b_GL_EXT_direct_state_access;
   bool b_GL_EXT_discard_framebuffer;
@@ -1945,6 +1963,8 @@ struct ProcsGL {
   glClearDepthProc glClearDepthFn;
   glClearDepthfProc glClearDepthfFn;
   glClearStencilProc glClearStencilFn;
+  glClearTexImageProc glClearTexImageFn;
+  glClearTexSubImageProc glClearTexSubImageFn;
   glClientWaitSyncProc glClientWaitSyncFn;
   glColorMaskProc glColorMaskFn;
   glCompileShaderProc glCompileShaderFn;
@@ -2500,6 +2520,22 @@ class GL_EXPORT GLApi {
   virtual void glClearDepthFn(GLclampd depth) = 0;
   virtual void glClearDepthfFn(GLclampf depth) = 0;
   virtual void glClearStencilFn(GLint s) = 0;
+  virtual void glClearTexImageFn(GLuint texture,
+                                 GLint level,
+                                 GLenum format,
+                                 GLenum type,
+                                 const GLvoid* data) = 0;
+  virtual void glClearTexSubImageFn(GLuint texture,
+                                    GLint level,
+                                    GLint xoffset,
+                                    GLint yoffset,
+                                    GLint zoffset,
+                                    GLint width,
+                                    GLint height,
+                                    GLint depth,
+                                    GLenum format,
+                                    GLenum type,
+                                    const GLvoid* data) = 0;
   virtual GLenum glClientWaitSyncFn(GLsync sync,
                                     GLbitfield flags,
                                     GLuint64 timeout) = 0;
@@ -4067,6 +4103,8 @@ class GL_EXPORT GLApi {
 #define glClearDepth ::gl::g_current_gl_context->glClearDepthFn
 #define glClearDepthf ::gl::g_current_gl_context->glClearDepthfFn
 #define glClearStencil ::gl::g_current_gl_context->glClearStencilFn
+#define glClearTexImage ::gl::g_current_gl_context->glClearTexImageFn
+#define glClearTexSubImage ::gl::g_current_gl_context->glClearTexSubImageFn
 #define glClientWaitSync ::gl::g_current_gl_context->glClientWaitSyncFn
 #define glColorMask ::gl::g_current_gl_context->glColorMaskFn
 #define glCompileShader ::gl::g_current_gl_context->glCompileShaderFn

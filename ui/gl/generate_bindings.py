@@ -226,6 +226,23 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glClearStencil'],
   'arguments': 'GLint s', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glClearTexImage',
+                 'extensions': ['GL_ARB_clear_texture'] },
+               { 'name': 'glClearTexImageEXT',
+                 'extensions': ['GL_EXT_clear_texture'] }],
+  'arguments':
+      'GLuint texture, GLint level, GLenum format, GLenum type, '
+      'const GLvoid* data', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glClearTexSubImage',
+                 'extensions': ['GL_EXT_clear_texture'] },
+               { 'name': 'glClearTexSubImageEXT',
+                 'extensions': ['GL_EXT_clear_texture'] }],
+  'arguments':
+      'GLuint texture, GLint level, GLint xoffset, GLint yoffset, '
+      'GLint zoffset, GLint width, GLint height, GLint depth, GLenum format, '
+      'GLenum type, const GLvoid* data', },
 { 'return_type': 'GLenum',
   'versions': [{ 'name': 'glClientWaitSync',
                  'extensions': ['GL_ARB_sync'] }],
