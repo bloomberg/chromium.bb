@@ -38,7 +38,7 @@ _OS_TYPE_MAP = {
 
 
 def load_software_rendering_list_features(feature_type_filename):
-  header_file = open(feature_type_filename, 'rb')
+  header_file = open(feature_type_filename, 'r')
   start = False
   features = []
   for line in header_file:
@@ -67,7 +67,7 @@ def load_software_rendering_list_features(feature_type_filename):
 
 
 def load_gpu_driver_bug_workarounds(workaround_type_filename):
-  header_file = open(workaround_type_filename, 'rb')
+  header_file = open(workaround_type_filename, 'r')
   start = False
   workaround = None
   workarounds = []
@@ -189,14 +189,14 @@ def write_version(version_info, name_tag, data_file):
     'between': 'kBetween',
     '': 'kUnknown',
   }
-  assert op_map.has_key(op)
+  assert op in op_map
   data_file.write('GpuControlList::%s, ' % op_map[op])
   style_map = {
     'lexical': 'Lexical',
     'numerical': 'Numerical',
     '': 'Numerical',
   }
-  assert style_map.has_key(style)
+  assert style in style_map
   data_file.write('GpuControlList::kVersionStyle%s, ' % style_map[style])
   write_string(version1, data_file)
   data_file.write(', ')
@@ -301,7 +301,7 @@ def write_machine_model_info(entry_id, is_exception, exception_id,
 
 
 def write_os_type(os_type, data_file):
-  assert _OS_TYPE_MAP.has_key(os_type)
+  assert os_type in _OS_TYPE_MAP
   data_file.write('GpuControlList::%s,  // os_type\n' % _OS_TYPE_MAP[os_type])
 
 
@@ -313,7 +313,7 @@ def write_multi_gpu_category(multi_gpu_category, data_file):
     'any': 'Any',
     '': 'None',
   }
-  assert map.has_key(multi_gpu_category)
+  assert multi_gpu_category in map
   data_file.write(
     'GpuControlList::kMultiGpuCategory%s,  // multi_gpu_category\n' %
     map[multi_gpu_category])
@@ -327,7 +327,7 @@ def write_multi_gpu_style(multi_gpu_style, data_file):
     'amd_switchable_integrated': 'AMDSwitchableIntegrated',
     '': 'None',
   }
-  assert map.has_key(multi_gpu_style)
+  assert multi_gpu_style in map
   data_file.write(
     'GpuControlList::kMultiGpuStyle%s,  // multi_gpu_style\n' %
     map[multi_gpu_style])
@@ -340,7 +340,7 @@ def write_gl_type(gl_type, data_file):
     'angle': 'ANGLE',
     '': 'None',
   }
-  assert map.has_key(gl_type)
+  assert gl_type in map
   data_file.write('GpuControlList::kGLType%s,  // gl_type\n' % map[gl_type])
 
 
@@ -352,7 +352,7 @@ def write_supported_or_not(feature_value, feature_name, data_file):
     'unsupported': 'Unsupported',
     'dont_care': 'DontCare',
   }
-  assert map.has_key(feature_value)
+  assert feature_value in map
   data_file.write('GpuControlList::k%s,  // %s\n' %
                   (map[feature_value], feature_name))
 
@@ -535,7 +535,7 @@ def write_gpu_series_list(entry_id, is_exception, exception_id, gpu_series_list,
       'intel_coffeelake': 'kIntelCoffeeLake',
     }
     for series in gpu_series_list:
-      assert gpu_series_map.has_key(series)
+      assert series in gpu_series_map
       data_helper_file.write('GpuSeriesType::%s,\n' %
                              gpu_series_map[series])
     data_helper_file.write('};\n\n')
@@ -559,7 +559,7 @@ def write_entry_more_data(entry_id, is_exception, exception_id, gl_type,
   basename = os.path.basename(data_helper_file.name)
   # & 0xffffffff converts to unsigned to keep consistent across Python versions
   # and platforms as per https://docs.python.org/3/library/zlib.html
-  suffix = '_%s' % (zlib.crc32(basename) & 0xffffffff)
+  suffix = '_%s' % (zlib.crc32(basename.encode()) & 0xffffffff)
   var_name = 'kMoreForEntry' + str(entry_id) + suffix
   if is_exception:
     var_name += 'Exception' + str(exception_id)
@@ -675,20 +675,20 @@ def process_json_file(json_filepath, list_tag,
   json_file = open(json_filepath, 'rb')
   json_data = json.load(json_file)
   json_file.close()
-  data_file = open(output_data_filepath, 'wb')
+  data_file = open(output_data_filepath, 'w')
   data_file.write(_LICENSE)
   data_file.write(_DO_NOT_EDIT_WARNING)
   data_file.write('#include "%s/%s"\n\n' % (path, output_header_filename))
   data_file.write('#include "%s/%s"\n' % (path, output_helper_filename))
   data_file.write('#include "%s/%s"\n\n' % (path, output_exception_filename))
-  data_helper_file = open(output_helper_filepath, 'wb')
+  data_helper_file = open(output_helper_filepath, 'w')
   data_helper_file.write(_LICENSE)
   data_helper_file.write(_DO_NOT_EDIT_WARNING)
   write_header_file_guard(data_helper_file, output_helper_filename, path, True)
   data_helper_file.write('#include "gpu/config/%s"\n\n' %
                          feature_header_filename)
   data_helper_file.write('namespace gpu {\n')
-  data_exception_file = open(output_exception_filepath, 'wb')
+  data_exception_file = open(output_exception_filepath, 'w')
   data_exception_file.write(_LICENSE)
   data_exception_file.write(_DO_NOT_EDIT_WARNING)
   write_header_file_guard(data_exception_file, output_exception_filename, path,
@@ -706,7 +706,7 @@ def process_json_file(json_filepath, list_tag,
     if 'os' in entry:
       os_type = entry['os']['type']
       # Check for typos in the .json data
-      if not _OS_TYPE_MAP.has_key(os_type):
+      if os_type not in _OS_TYPE_MAP:
         raise Exception('Unknown OS type "%s" for entry %d' %
                         (os_type, entry_id))
       if os_filter != None and os_type != os_filter:
@@ -726,7 +726,7 @@ def process_json_file(json_filepath, list_tag,
   write_header_file_guard(data_exception_file, output_exception_filename, path,
                           False)
   data_exception_file.close()
-  data_header_file = open(output_header_filepath, 'wb')
+  data_header_file = open(output_header_filepath, 'w')
   data_header_file.write(_LICENSE)
   data_header_file.write(_DO_NOT_EDIT_WARNING)
   write_header_file_guard(data_header_file, output_header_filename, path, True)
@@ -838,7 +838,7 @@ def write_test_entry_enums(input_json_filepath, output_entry_enums_filepath,
   json_file.close()
 
   output_entry_enums_filename = os.path.basename(output_entry_enums_filepath)
-  enum_file = open(output_entry_enums_filepath, 'wb')
+  enum_file = open(output_entry_enums_filepath, 'w')
   enum_file.write(_LICENSE)
   enum_file.write(_DO_NOT_EDIT_WARNING)
   write_header_file_guard(enum_file, output_entry_enums_filename, path, True)
