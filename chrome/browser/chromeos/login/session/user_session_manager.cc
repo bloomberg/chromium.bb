@@ -456,7 +456,6 @@ void UserSessionManager::MaybeAppendPolicySwitches(
       user_profile_prefs->FindPreference(prefs::kIsolateOrigins);
   bool site_per_process = site_per_process_pref->IsManaged() &&
                           site_per_process_pref->GetValue()->GetBool();
-
   std::string isolate_origins =
       isolate_origins_pref->IsManaged()
           ? isolate_origins_pref->GetValue()->GetString()
@@ -479,23 +478,14 @@ void UserSessionManager::MaybeAppendPolicySwitches(
   // We use the policy-style sentinels because these values originate from
   // policy, and because login_manager uses the same sentinels when adding the
   // login-screen site isolation flags.
-  bool use_policy_sentinels =
-      site_per_process || !isolate_origins.empty() || disable_site_isolation;
-  if (use_policy_sentinels)
+  bool use_policy_sentinels = site_per_process || disable_site_isolation;
+  if (use_policy_sentinels) {
     user_flags->AppendSwitch(chromeos::switches::kPolicySwitchesBegin);
+  }
 
-  // Inject site isolation and isolate origins command line switch from
-  // user policy.
   if (site_per_process) {
     user_flags->AppendSwitch(::switches::kSitePerProcess);
   }
-
-  if (!isolate_origins.empty()) {
-    user_flags->AppendSwitchASCII(
-        ::switches::kIsolateOrigins,
-        user_profile_prefs->GetString(prefs::kIsolateOrigins));
-  }
-
   if (disable_site_isolation) {
     user_flags->AppendSwitch(::switches::kDisableSiteIsolationForPolicy);
   }

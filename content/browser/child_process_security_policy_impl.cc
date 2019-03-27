@@ -1531,6 +1531,15 @@ bool ChildProcessSecurityPolicyImpl::IsIsolatedOrigin(
   return GetMatchingIsolatedOrigin(isolation_context, origin, &unused_result);
 }
 
+bool ChildProcessSecurityPolicyImpl::IsGloballyIsolatedOriginForTesting(
+    const url::Origin& origin) {
+  BrowserOrResourceContext no_browser_context;
+  BrowsingInstanceId null_browsing_instance_id;
+  IsolationContext isolation_context(null_browsing_instance_id,
+                                     no_browser_context);
+  return IsIsolatedOrigin(isolation_context, origin);
+}
+
 bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
     const IsolationContext& isolation_context,
     const url::Origin& origin,
