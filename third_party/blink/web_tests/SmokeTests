@@ -11,7 +11,6 @@ compositing/animation/animated-composited-inside-hidden.html
 compositing/animation/animation-compositing.html
 compositing/animation/computed-style-during-delay.html
 compositing/backing/no-backing-foreground-layer.html
-compositing/columns/geometry-map-paginated-assert.html
 compositing/contents-opaque/body-background-painted.html
 compositing/contents-opaque/layer-transform.html
 compositing/contents-opaque/visibility-hidden.html
@@ -23,7 +22,6 @@ compositing/filters/sw-shadow-overlaps-hw-shadow.html
 compositing/force-compositing-mode/force-composite-empty.html
 compositing/geometry/bounds-ignores-hidden.html
 compositing/geometry/limit-layer-bounds-positioned-transition.html
-compositing/gestures/gesture-tapHighlight-no-graphics-layer-region-based-multicol.html
 compositing/iframes/visibility-hidden-transformed-content.html
 compositing/images/clip-on-directly-composited-image.html
 compositing/layer-creation/fixed-position-out-of-view-dynamic.html
@@ -704,8 +702,6 @@ fast/overflow/generated-content-crash.html
 fast/overflow/position-fixed-transform-clipping.html
 fast/overflow/scroll-vertical-not-horizontal.html
 fast/overflow/setting-scrollTop-after-hide-show.html
-fast/pagination/first-letter-inherit-all-crash.html
-fast/pagination/very-tall-auto-height-crash.html
 fast/parser/broken-comment-4.html
 fast/peerconnection/RTCIceCandidate.html
 fast/plugins/keypress-event.html

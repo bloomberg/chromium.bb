@@ -339,22 +339,20 @@ LayoutUnit LayoutMultiColumnSet::LogicalBottomInFlowThread() const {
 
 bool LayoutMultiColumnSet::HeightIsAuto() const {
   LayoutMultiColumnFlowThread* flow_thread = MultiColumnFlowThread();
-  if (!flow_thread->IsLayoutPagedFlowThread()) {
-    // If support for the column-fill property isn't enabled, we want to behave
-    // as if column-fill were auto, so that multicol containers with specified
-    // height don't get their columns balanced (auto-height multicol containers
-    // will still get their columns balanced, even if column-fill isn't
-    // 'balance' - in accordance with the spec).
-    // Pretending that column-fill is auto also matches the old multicol
-    // implementation, which has no support for this property.
-    if (MultiColumnBlockFlow()->StyleRef().GetColumnFill() ==
-        EColumnFill::kBalance)
+  // If support for the column-fill property isn't enabled, we want to behave
+  // as if column-fill were auto, so that multicol containers with specified
+  // height don't get their columns balanced (auto-height multicol containers
+  // will still get their columns balanced, even if column-fill isn't 'balance'
+  // - in accordance with the spec).
+  // Pretending that column-fill is auto also matches the old multicol
+  // implementation, which has no support for this property.
+  if (MultiColumnBlockFlow()->StyleRef().GetColumnFill() ==
+      EColumnFill::kBalance)
+    return true;
+  if (LayoutBox* next = NextSiblingBox()) {
+    if (next->IsLayoutMultiColumnSpannerPlaceholder()) {
+      // If we're followed by a spanner, we need to balance.
       return true;
-    if (LayoutBox* next = NextSiblingBox()) {
-      if (next->IsLayoutMultiColumnSpannerPlaceholder()) {
-        // If we're followed by a spanner, we need to balance.
-        return true;
-      }
     }
   }
   return !flow_thread->ColumnHeightAvailable();
@@ -606,9 +604,6 @@ LayoutRect LayoutMultiColumnSet::FlowThreadPortionRect() const {
 bool LayoutMultiColumnSet::ComputeColumnRuleBounds(
     const LayoutPoint& paint_offset,
     Vector<LayoutRect>& column_rule_bounds) const {
-  if (FlowThread()->IsLayoutPagedFlowThread())
-    return false;
-
   // Reference: https://www.w3.org/TR/css3-multicol/#column-gaps-and-rules
   const ComputedStyle& block_style = MultiColumnBlockFlow()->StyleRef();
   bool rule_transparent = block_style.ColumnRuleIsTransparent();

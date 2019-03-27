@@ -2485,8 +2485,6 @@ bool LayoutBox::IsBreakBetweenControllable(EBreakBetween break_value) const {
         return true;
       bool is_multicol_value = break_value == EBreakBetween::kColumn ||
                                break_value == EBreakBetween::kAvoidColumn;
-      if (ToLayoutFlowThread(curr)->IsLayoutPagedFlowThread())
-        return !is_multicol_value;
       if (is_multicol_value)
         return true;
       // If this is a flow thread for a multicol container, and we have a break
@@ -2507,7 +2505,7 @@ bool LayoutBox::IsBreakInsideControllable(EBreakInside break_value) const {
   const LayoutFlowThread* flow_thread = FlowThreadContainingBlock();
   // 'avoid-column' is only valid in a multicol context.
   if (break_value == EBreakInside::kAvoidColumn)
-    return flow_thread && !flow_thread->IsLayoutPagedFlowThread();
+    return flow_thread;
   // 'avoid' is valid in any kind of fragmentation context.
   if (break_value == EBreakInside::kAvoid && flow_thread)
     return true;
@@ -2517,14 +2515,6 @@ bool LayoutBox::IsBreakInsideControllable(EBreakInside break_value) const {
     return true;  // The view is paginated, probably because we're printing.
   if (!flow_thread)
     return false;  // We're not inside any pagination context
-  // We're inside a flow thread. We need to be contained by a flow thread for
-  // paged overflow in order for pagination values to be valid, though.
-  for (const LayoutBlock* ancestor = flow_thread; ancestor;
-       ancestor = ancestor->ContainingBlock()) {
-    if (ancestor->IsLayoutFlowThread() &&
-        ToLayoutFlowThread(ancestor)->IsLayoutPagedFlowThread())
-      return true;
-  }
   return false;
 }
 

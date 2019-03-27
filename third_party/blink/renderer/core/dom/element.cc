@@ -264,7 +264,7 @@ bool CalculateStyleShouldForceLegacyLayout(const Element& element,
   if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
     // Disable NG for the entire subtree if we're establishing a block
     // fragmentation context.
-    if (style.SpecifiesColumns() || style.IsOverflowPaged())
+    if (style.SpecifiesColumns())
       return true;
     if (document.Printing() && element == document.documentElement())
       return true;

@@ -671,9 +671,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueID::kVisible ||
              value_id == CSSValueID::kHidden ||
              value_id == CSSValueID::kScroll || value_id == CSSValueID::kAuto ||
-             value_id == CSSValueID::kOverlay ||
-             value_id == CSSValueID::kWebkitPagedX ||
-             value_id == CSSValueID::kWebkitPagedY;
+             value_id == CSSValueID::kOverlay;
     case CSSPropertyID::kBreakAfter:
     case CSSPropertyID::kBreakBefore:
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kAvoid ||

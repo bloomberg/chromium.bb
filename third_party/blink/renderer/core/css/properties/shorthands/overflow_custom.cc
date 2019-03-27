@@ -5,10 +5,10 @@
 #include "third_party/blink/renderer/core/css/properties/shorthands/overflow.h"
 
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
-#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
-#include "third_party/blink/renderer/core/css/parser/css_parser_fast_paths.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
 namespace css_shorthand {
@@ -19,48 +19,8 @@ bool Overflow::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  CSSValueID x_id = CSSValueID::kInvalid;
-  // Per the FIXME below, if only one value is specified, it could be a valid
-  // value for overflow-y but not overflow-x. Thus, we first assume it is the
-  // overflow-y value.
-  CSSValueID y_id = range.ConsumeIncludingWhitespace().Id();
-  if (!range.AtEnd()) {
-    x_id = y_id;
-    y_id = range.ConsumeIncludingWhitespace().Id();
-    if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-            CSSPropertyID::kOverflowX, x_id, context.Mode()))
-      return false;
-  }
-  if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-          CSSPropertyID::kOverflowY, y_id, context.Mode()))
-    return false;
-  if (!range.AtEnd())
-    return false;
-  CSSValue* overflow_x_value = nullptr;
-  CSSValue* overflow_y_value = CSSIdentifierValue::Create(y_id);
-
-  // FIXME: -webkit-paged-x or -webkit-paged-y only apply to overflow-y.
-  // If this value has been set using the shorthand, then for now overflow-x
-  // will default to auto, but once we implement pagination controls, it
-  // should default to hidden. If the overflow-y value is anything but
-  // paged-x or paged-y, then overflow-x and overflow-y should have the
-  // same value.
-  if (IsValidCSSValueID(x_id))
-    overflow_x_value = CSSIdentifierValue::Create(x_id);
-  else if (y_id == CSSValueID::kWebkitPagedX ||
-           y_id == CSSValueID::kWebkitPagedY)
-    overflow_x_value = CSSIdentifierValue::Create(CSSValueID::kAuto);
-  else
-    overflow_x_value = overflow_y_value;
-  css_property_parser_helpers::AddProperty(
-      CSSPropertyID::kOverflowX, CSSPropertyID::kOverflow, *overflow_x_value,
-      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
-      properties);
-  css_property_parser_helpers::AddProperty(
-      CSSPropertyID::kOverflowY, CSSPropertyID::kOverflow, *overflow_y_value,
-      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
-      properties);
-  return true;
+  return css_property_parser_helpers::ConsumeShorthandVia2Longhands(
+      overflowShorthand(), important, context, range, properties);
 }
 
 const CSSValue* Overflow::CSSValueFromComputedStyleInternal(

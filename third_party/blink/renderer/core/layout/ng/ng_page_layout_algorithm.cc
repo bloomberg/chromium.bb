@@ -41,13 +41,8 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   scoped_refptr<const NGBlockBreakToken> break_token = BreakToken();
   LayoutUnit intrinsic_block_size;
   NGLogicalOffset page_offset(border_scrollbar_padding.StartOffset());
-  NGLogicalOffset page_progression;
-  if (Style().OverflowY() == EOverflow::kWebkitPagedX) {
-    page_progression.inline_offset = page_size.inline_size;
-  } else {
-    // TODO(mstensho): Handle auto block size.
-    page_progression.block_offset = page_size.block_size;
-  }
+  // TODO(mstensho): Handle auto block size.
+  NGLogicalOffset page_progression(LayoutUnit(), page_size.block_size);
 
   do {
     // Lay out one page. Each page will become a fragment.

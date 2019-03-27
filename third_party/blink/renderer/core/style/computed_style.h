@@ -2011,10 +2011,6 @@ class ComputedStyle : public ComputedStyleBase,
     DCHECK(OverflowX() != EOverflow::kVisible || OverflowX() == OverflowY());
     return OverflowX() == EOverflow::kVisible;
   }
-  bool IsOverflowPaged() const {
-    return OverflowY() == EOverflow::kWebkitPagedX ||
-           OverflowY() == EOverflow::kWebkitPagedY;
-  }
 
   bool IsDisplayTableRowOrColumnType() const {
     return Display() == EDisplay::kTableRow ||
@@ -2030,7 +2026,6 @@ class ComputedStyle : public ComputedStyleBase,
 
   bool HasAutoVerticalScroll() const {
     return OverflowY() == EOverflow::kAuto ||
-           OverflowY() == EOverflow::kWebkitPagedY ||
            OverflowY() == EOverflow::kOverlay;
   }
 
@@ -2263,16 +2258,6 @@ class ComputedStyle : public ComputedStyleBase,
   // Text direction utility functions.
   bool ShouldPlaceBlockDirectionScrollbarOnLogicalLeft() const {
     return !IsLeftToRightDirection() && IsHorizontalWritingMode();
-  }
-  bool HasInlinePaginationAxis() const {
-    // If the pagination axis is parallel with the writing mode inline axis,
-    // columns may be laid out along the inline axis, just like for regular
-    // multicol. Otherwise, we need to lay out along the block axis.
-    if (IsOverflowPaged()) {
-      return (OverflowY() == EOverflow::kWebkitPagedX) ==
-             IsHorizontalWritingMode();
-    }
-    return false;
   }
 
   // Border utility functions.

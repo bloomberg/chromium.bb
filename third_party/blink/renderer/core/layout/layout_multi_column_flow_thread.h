@@ -140,8 +140,9 @@ enum class CoordinateSpaceConversion {
 //
 // There's also some documentation online:
 // https://www.chromium.org/developers/design-documents/multi-column-layout
-class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
-                                                public FragmentationContext {
+class CORE_EXPORT LayoutMultiColumnFlowThread final
+    : public LayoutFlowThread,
+      public FragmentationContext {
  public:
   ~LayoutMultiColumnFlowThread() override;
 
@@ -205,15 +206,13 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
   // be calculated per fragmentainer group.
   LayoutUnit MaxColumnLogicalHeight() const;
 
-  bool ProgressionIsInline() const { return progression_is_inline_; }
-
   LayoutUnit TallestUnbreakableLogicalHeight(
       LayoutUnit offset_in_flow_thread) const;
 
   LayoutSize ColumnOffset(const LayoutPoint&) const final;
 
   // Do we need to set a new width and lay out?
-  virtual bool NeedsNewWidth() const;
+  bool NeedsNewWidth() const;
 
   bool IsPageLogicalHeightKnown() const final;
   bool MayHaveNonUniformPageLogicalHeight() const final;
@@ -291,15 +290,10 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
 
   const char* GetName() const override { return "LayoutMultiColumnFlowThread"; }
 
- protected:
+ private:
   LayoutMultiColumnFlowThread();
-  void SetProgressionIsInline(bool is_inline) {
-    progression_is_inline_ = is_inline;
-  }
-
   void UpdateLayout() override;
 
- private:
   void CalculateColumnHeightAvailable();
   void CalculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const;
   static LayoutUnit ColumnGap(const ComputedStyle&, LayoutUnit available_width);
@@ -308,7 +302,7 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
       LayoutBox* spanner_object_in_flow_thread,
       LayoutObject* inserted_before_in_flow_thread);
   void DestroySpannerPlaceholder(LayoutMultiColumnSpannerPlaceholder*);
-  virtual bool DescendantIsValidColumnSpanner(LayoutObject* descendant) const;
+  bool DescendantIsValidColumnSpanner(LayoutObject* descendant) const;
 
   void AddColumnSetToThread(LayoutMultiColumnSet*) override;
   void WillBeRemovedFromTree() override;
@@ -361,9 +355,6 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
   bool column_heights_changed_;
 
   bool all_columns_have_known_height_ = false;
-
-  // Always true for regular multicol. False for paged-y overflow.
-  bool progression_is_inline_;
 
   bool is_being_evacuated_;
 
