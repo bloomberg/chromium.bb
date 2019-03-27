@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/editing/selection_modifier.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/set_selection_options.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
@@ -572,7 +573,7 @@ TEST_F(AccessibilitySelectionTest, FromCurrentSelectionInTextField) {
   EXPECT_EQ(ax_input, ax_selection.Base().ContainerObject());
   EXPECT_EQ(0, ax_selection.Base().TextOffset());
   EXPECT_EQ(TextAffinity::kDownstream, ax_selection.Base().Affinity());
-  EXPECT_TRUE(ax_selection.Extent().IsTextPosition());
+  ASSERT_TRUE(ax_selection.Extent().IsTextPosition());
   EXPECT_EQ(ax_input, ax_selection.Extent().ContainerObject());
   EXPECT_EQ(18, ax_selection.Extent().TextOffset());
   EXPECT_EQ(TextAffinity::kDownstream, ax_selection.Extent().Affinity());
@@ -618,7 +619,7 @@ TEST_F(AccessibilitySelectionTest, FromCurrentSelectionInTextarea) {
   EXPECT_EQ(ax_textarea, ax_selection.Base().ContainerObject());
   EXPECT_EQ(0, ax_selection.Base().TextOffset());
   EXPECT_EQ(TextAffinity::kDownstream, ax_selection.Base().Affinity());
-  EXPECT_TRUE(ax_selection.Extent().IsTextPosition());
+  ASSERT_TRUE(ax_selection.Extent().IsTextPosition());
   EXPECT_EQ(ax_textarea, ax_selection.Extent().ContainerObject());
   EXPECT_EQ(53, ax_selection.Extent().TextOffset());
   EXPECT_EQ(TextAffinity::kDownstream, ax_selection.Extent().Affinity());
@@ -632,7 +633,7 @@ TEST_F(AccessibilitySelectionTest, FromCurrentSelectionInTextareaWithAffinity) {
   SetBodyInnerHTML(R"HTML(
       <textarea id="textarea"
           rows="2" cols="15"
-          style="font-family: Ahem; width: 15ch;">
+          style="font-family: monospace; width: 15ch;">
         InsideTextareaField.
       </textarea>
       )HTML");
@@ -646,10 +647,10 @@ TEST_F(AccessibilitySelectionTest, FromCurrentSelectionInTextareaWithAffinity) {
 
   // This test should only be testing accessibility code. Ordinarily we should
   // be setting up the test using Javascript in order to avoid depending on the
-  // internal implementation of DOM selection. However, sending the "end" key is
-  // the only way I found to achieve this, which might be unreliable on certain
-  // platforms, so we modify the selection using Blink internal functions
-  // instead.
+  // internal implementation of DOM selection. However, the only way I found to
+  // get an upstream affinity is to send the "end" key which might be unreliable
+  // on certain platforms, so we modify the selection using Blink internal
+  // functions instead.
   textarea->focus();
   Selection().Modify(SelectionModifyAlteration::kMove,
                      SelectionModifyDirection::kBackward,
@@ -683,7 +684,7 @@ TEST_F(
   SetBodyInnerHTML(R"HTML(
       <textarea id="textarea"
           rows="2" cols="15"
-          style="font-family: Ahem; width: 15ch;">
+          style="font-family: monospace; width: 15ch;">
         InsideTextareaField.
       </textarea>
       )HTML");
@@ -697,10 +698,10 @@ TEST_F(
 
   // This test should only be testing accessibility code. Ordinarily we should
   // be setting up the test using Javascript in order to avoid depending on the
-  // internal implementation of DOM selection. However, sending the "end" key is
-  // the only way I found to achieve this, which might be unreliable on certain
-  // platforms, so we modify the selection using Blink internal functions
-  // instead.
+  // internal implementation of DOM selection. However, the only way I found to
+  // get an upstream affinity is to send the "end" key which might be unreliable
+  // on certain platforms, so we modify the selection using Blink internal
+  // functions instead.
   textarea->focus();
   Selection().Modify(SelectionModifyAlteration::kMove,
                      SelectionModifyDirection::kBackward,
@@ -715,7 +716,7 @@ TEST_F(
   ASSERT_NE(nullptr, ax_textarea);
   ASSERT_EQ(ax::mojom::Role::kTextField, ax_textarea->RoleValue());
 
-  const auto ax_selection = AXSelection::FromCurrentSelection(GetDocument());
+  const auto ax_selection = AXSelection::FromCurrentSelection(text_control);
   ASSERT_TRUE(ax_selection.IsValid());
 
   EXPECT_TRUE(ax_selection.Base().IsTextPosition());
@@ -1423,6 +1424,63 @@ TEST_F(AccessibilitySelectionTest, InvalidSelectionInTextarea) {
 }
 
 TEST_F(AccessibilitySelectionTest,
+       FromCurrentSelectionInContenteditableWithAffinity) {
+  SetBodyInnerHTML(R"HTML(
+      <div role="textbox" contenteditable id="contenteditable"
+          style="font-family: monospace; width: 15ch;">
+        InsideContenteditableTextboxField.
+      </div>
+      )HTML");
+
+  ASSERT_FALSE(AXSelection::FromCurrentSelection(GetDocument()).IsValid());
+
+  Element* const contenteditable =
+      GetDocument().QuerySelector("div[role=textbox]");
+  ASSERT_NE(nullptr, contenteditable);
+
+  // This test should only be testing accessibility code. Ordinarily we should
+  // be setting up the test using Javascript in order to avoid depending on the
+  // internal implementation of DOM selection. However, the only way I found to
+  // get an upstream affinity is to send the "end" key which might be unreliable
+  // on certain platforms, so we modify the selection using Blink internal
+  // functions instead.
+  contenteditable->focus();
+  Selection().Modify(SelectionModifyAlteration::kMove,
+                     SelectionModifyDirection::kBackward,
+                     TextGranularity::kDocumentBoundary, SetSelectionBy::kUser);
+  Selection().Modify(SelectionModifyAlteration::kMove,
+                     SelectionModifyDirection::kForward,
+                     TextGranularity::kLineBoundary, SetSelectionBy::kUser);
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_EQ(TextAffinity::kUpstream,
+            Selection().GetSelectionInDOMTree().Affinity());
+
+  const AXObject* ax_contenteditable =
+      GetAXObjectByElementId("contenteditable");
+  ASSERT_NE(nullptr, ax_contenteditable);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_contenteditable->RoleValue());
+  const AXObject* ax_text = ax_contenteditable->FirstChild();
+  ASSERT_NE(nullptr, ax_text);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_text->RoleValue());
+
+  const auto ax_selection = AXSelection::FromCurrentSelection(GetDocument());
+  ASSERT_TRUE(ax_selection.IsValid());
+
+  EXPECT_TRUE(ax_selection.Base().IsTextPosition());
+  EXPECT_EQ(ax_text, ax_selection.Base().ContainerObject());
+  EXPECT_LE(15, ax_selection.Base().TextOffset());
+  EXPECT_GT(int{ax_text->ComputedName().length()},
+            ax_selection.Base().TextOffset());
+  EXPECT_EQ(TextAffinity::kUpstream, ax_selection.Base().Affinity());
+  EXPECT_TRUE(ax_selection.Extent().IsTextPosition());
+  EXPECT_EQ(ax_text, ax_selection.Extent().ContainerObject());
+  EXPECT_LE(15, ax_selection.Extent().TextOffset());
+  EXPECT_GT(int{ax_text->ComputedName().length()},
+            ax_selection.Extent().TextOffset());
+  EXPECT_EQ(TextAffinity::kUpstream, ax_selection.Extent().Affinity());
+}
+
+TEST_F(AccessibilitySelectionTest,
        SelectEachConsecutiveCharacterInContenteditable) {
   // The text should wrap after each word.
   SetBodyInnerHTML(R"HTML(
@@ -1442,7 +1500,6 @@ TEST_F(AccessibilitySelectionTest,
   const AXObject* ax_contenteditable =
       GetAXObjectByElementId("contenteditable");
   ASSERT_NE(nullptr, ax_contenteditable);
-  ASSERT_EQ(ax::mojom::Role::kTextField, ax_contenteditable->RoleValue());
   ASSERT_EQ(1, ax_contenteditable->ChildCount());
   const AXObject* ax_static_text = ax_contenteditable->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
