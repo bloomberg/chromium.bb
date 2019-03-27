@@ -164,6 +164,7 @@ if (is_android) {
       "src/src/crazy_linker_line_reader_unittest.cpp",
       "src/src/crazy_linker_pointer_set_unittest.cpp",
       "src/src/crazy_linker_proc_maps_unittest.cpp",
+      "src/src/crazy_linker_rdebug_unittest.cpp",
       "src/src/crazy_linker_relr_relocations_unittest.cpp",
       "src/src/crazy_linker_search_path_list_unittest.cpp",
       "src/src/crazy_linker_system_unittest.cpp",
