@@ -76,6 +76,15 @@ Polymer({
     pageVisibility: Object,
 
     /**
+     * Authentication token provided by settings-lock-screen.
+     * @private
+     */
+    authToken_: {
+      type: String,
+      value: '',
+    },
+
+    /**
      * The currently selected profile icon URL. May be a data URL.
      * @private
      */

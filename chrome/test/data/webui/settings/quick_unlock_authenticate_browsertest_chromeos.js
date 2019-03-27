@@ -323,7 +323,7 @@ cr.define('settings_people_page_quick_unlock', function() {
 
       // Toggling the lock screen preference calls setLockScreenEnabled.
       test('SetLockScreenEnabled', function() {
-        testElement.authToken_ = quickUnlockPrivateApi.getFakeToken();
+        testElement.authToken = quickUnlockPrivateApi.getFakeToken();
         let toggle = getFromElement('#enableLockScreen');
         let lockScreenEnabled = toggle.checked;
         quickUnlockPrivateApi.lockScreenEnabled = lockScreenEnabled;

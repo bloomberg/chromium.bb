@@ -73,6 +73,7 @@
 
     <template is="dom-if" if="[[showSetupFingerprintDialog_]]" restamp>
       <settings-setup-fingerprint-dialog
+          auth-token="[[authToken]]"
           on-add-fingerprint="updateFingerprintsList_"
           on-close="onSetupFingerprintDialogClose_"
           allow-add-another-finger="[[allowAddAnotherFinger_]]">
