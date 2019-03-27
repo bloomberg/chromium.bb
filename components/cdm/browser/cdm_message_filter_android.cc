@@ -100,7 +100,7 @@ CdmMessageFilterAndroid::CdmMessageFilterAndroid(
     bool force_to_support_secure_codecs)
     : BrowserMessageFilter(EncryptedMediaMsgStart),
       task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       can_persist_data_(can_persist_data),
       force_to_support_secure_codecs_(force_to_support_secure_codecs) {}
 
