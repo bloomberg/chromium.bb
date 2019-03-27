@@ -421,38 +421,33 @@ AstNode* ParseGroup(Parser* p) {
 // Parse optional range operator .. (inlcusive) or ... (exclusive)
 // ABNF rule: rangeop = "..." / ".."
 AstNode* ParseRangeop(Parser* p) {
-  const char* orig = p->data;
-  if (orig[0] != '.') {
-    return nullptr;
-  }
-  if (orig[1] != '.') {
-    return nullptr;
-  }
-  if (orig[2] != '.') {
-    // rangeop ..
-    p->data = orig + 2;
-  } else {
+  absl::string_view view(p->data);
+  if (absl::StartsWith(view, "...")) {
     // rangeop ...
-    p->data = orig + 3;
+    p->data += 3;
+    return AddNode(p, AstNode::Type::kRangeop, view.substr(0, 3));
+  } else if (absl::StartsWith(view, "..")) {
+    // rangeop ..
+    p->data += 2;
+    return AddNode(p, AstNode::Type::kRangeop, view.substr(0, 2));
   }
-  return AddNode(p, AstNode::Type::kRangeop,
-                 absl::string_view(orig, p->data - orig));
+  return nullptr;
 }
 
 // Parse optional control operator .id
 // ABNF rule: ctlop = "." id
 AstNode* ParseCtlop(Parser* p) {
-  const char* orig = p->data;
-  if (orig[0] != '.') {
+  absl::string_view view(p->data);
+  if (!absl::StartsWith(view, ".")) {
     return nullptr;
   }
-  p->data = orig + 1;
+  ++p->data;
   AstNode* id = ParseId(p);
   if (!id) {
     return nullptr;
   }
   return AddNode(p, AstNode::Type::kCtlop,
-                 absl::string_view(orig, p->data - orig), id);
+                 view.substr(0, p->data - view.begin()), id);
 }
 
 AstNode* ParseType2(Parser* p) {
