@@ -89,6 +89,10 @@ void BrowserAccessibilityManagerWin::FireFocusEvent(
     BrowserAccessibility* node) {
   BrowserAccessibilityManager::FireFocusEvent(node);
   DCHECK(node);
+
+  if (node->GetRole() == ax::mojom::Role::kMenu)
+    FireUiaAccessibilityEvent(UIA_MenuOpenedEventId, node);
+
   FireWinAccessibilityEvent(EVENT_OBJECT_FOCUS, node);
   FireUiaAccessibilityEvent(UIA_AutomationFocusChangedEventId, node);
 }
@@ -304,6 +308,14 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       // It's okay to skip them.
       break;
   }
+}
+
+void BrowserAccessibilityManagerWin::OnFocusLost(BrowserAccessibility* node) {
+  BrowserAccessibilityManager::OnFocusLost(node);
+  DCHECK(node);
+
+  if (node->GetRole() == ax::mojom::Role::kMenu)
+    FireUiaAccessibilityEvent(UIA_MenuClosedEventId, node);
 }
 
 void BrowserAccessibilityManagerWin::FireWinAccessibilityEvent(

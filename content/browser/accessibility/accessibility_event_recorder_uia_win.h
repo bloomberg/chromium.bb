@@ -66,6 +66,7 @@ class AccessibilityEventRecorderUia : public AccessibilityEventRecorder {
 
     Microsoft::WRL::ComPtr<IUIAutomation> uia_;
     Microsoft::WRL::ComPtr<IUIAutomationElement> root_;
+    Microsoft::WRL::ComPtr<IUIAutomationCacheRequest> cache_request_;
 
     // Thread synchronization members
     base::OnceClosure initialization_complete_;

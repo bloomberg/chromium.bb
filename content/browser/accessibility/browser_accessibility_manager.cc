@@ -247,8 +247,12 @@ void BrowserAccessibilityManager::FireFocusEventsIfNeeded() {
     focus = nullptr;
   }
 
-  if (focus && focus != last_focused_node_)
-    FireFocusEvent(focus);
+  if (focus != last_focused_node_) {
+    if (last_focused_node_)
+      OnFocusLost(last_focused_node_);
+    if (focus)
+      FireFocusEvent(focus);
+  }
 
   last_focused_node_ = focus;
   last_focused_manager_ = focus ? focus->manager() : nullptr;
@@ -1151,36 +1155,40 @@ gfx::Rect BrowserAccessibilityManager::GetPageBoundsForRange(
 void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXTree* tree,
                                                       ui::AXNode* node) {
   DCHECK(node);
-  if (id_wrapper_map_.find(node->id()) == id_wrapper_map_.end())
-    return;
-  GetFromAXNode(node)->Destroy();
-  id_wrapper_map_.erase(node->id());
+  if (BrowserAccessibility* wrapper = GetFromAXNode(node)) {
+    if (wrapper == last_focused_node_) {
+      last_focused_node_ = nullptr;
+      last_focused_manager_ = nullptr;
+    }
+    wrapper->Destroy();
+    id_wrapper_map_.erase(node->id());
+  }
 }
 
 void BrowserAccessibilityManager::OnSubtreeWillBeDeleted(ui::AXTree* tree,
                                                          ui::AXNode* node) {
   DCHECK(node);
-  BrowserAccessibility* obj = GetFromAXNode(node);
-  if (obj)
-    obj->OnSubtreeWillBeDeleted();
+  if (BrowserAccessibility* wrapper = GetFromAXNode(node))
+    wrapper->OnSubtreeWillBeDeleted();
 }
 
 void BrowserAccessibilityManager::OnNodeCreated(ui::AXTree* tree,
                                                 ui::AXNode* node) {
+  DCHECK(node);
   BrowserAccessibility* wrapper = factory_->Create();
-  wrapper->Init(this, node);
   id_wrapper_map_[node->id()] = wrapper;
+  wrapper->Init(this, node);
   wrapper->OnDataChanged();
 }
 
 void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,
                                                    ui::AXNode* node) {
-  BrowserAccessibility* wrapper = GetFromID(node->id());
+  DCHECK(node);
+  BrowserAccessibility* wrapper = GetFromAXNode(node);
   if (!wrapper) {
     wrapper = factory_->Create();
     id_wrapper_map_[node->id()] = wrapper;
   }
-
   wrapper->Init(this, node);
   wrapper->OnDataChanged();
 }
@@ -1188,7 +1196,8 @@ void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,
 void BrowserAccessibilityManager::OnNodeChanged(ui::AXTree* tree,
                                                 ui::AXNode* node) {
   DCHECK(node);
-  GetFromAXNode(node)->OnDataChanged();
+  if (BrowserAccessibility* wrapper = GetFromAXNode(node))
+    wrapper->OnDataChanged();
 }
 
 void BrowserAccessibilityManager::OnAtomicUpdateFinished(

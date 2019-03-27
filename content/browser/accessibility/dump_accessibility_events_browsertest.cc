@@ -612,4 +612,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest, ValueValueChanged) {
   RunEventTest(FILE_PATH_LITERAL("value-value-changed.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsMenuOpenedClosed) {
+  RunEventTest(FILE_PATH_LITERAL("menu-opened-closed.html"));
+}
+
 }  // namespace content
