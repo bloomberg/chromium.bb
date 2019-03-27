@@ -2818,10 +2818,7 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
 // relied upon because if the indicator state changes from a preview state to
 // kNone, then it will trigger the animation associated with snapping a window,
 // which is not an appropriate animation for the case where the preview area is
-// showing and you drag the window away from the edge of the screen. CL 1500625
-// aims to address the problem that when you actually do snap the window, the
-// SplitViewDragIndicators object goes out of scope before you can see the
-// animation.
+// showing and you drag the window away from the edge of the screen.
 TEST_F(SplitViewTabDraggingTest, DragSnappedWindow) {
   UpdateDisplay("600x600");
   const gfx::Rect bounds(0, 0, 400, 400);
