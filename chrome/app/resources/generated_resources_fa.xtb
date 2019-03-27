@@ -3534,6 +3534,7 @@
 <translation id="6264365405983206840">انتخاب &amp;همه</translation>
 <translation id="6267166720438879315">انتخاب گواهی برای راستی‌آزمایی خودتان در <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">باز کردن با <ph name="APP" /></translation>
+<translation id="6270770586500173387">ارسال <ph name="BEGIN_LINK1" />اطلاعات برنامه و سیستم<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />معیارها<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">هنگام بارگیری افزایه، خطایی (<ph name="ERROR" />) روی داد</translation>
 <translation id="6273677812470008672">کیفیت</translation>
 <translation id="6277105963844135994">مهلت زمانی شبکه</translation>
@@ -3608,6 +3609,7 @@
 <translation id="6390799748543157332">صفحاتی که در این پنجره مشاهده می‌کنید در سابقه مرورگر نشان داده نمی‌شوند و بعد از بسته شدن همه پنجره‌های مهمان باز، هیچ رد دیگری (مانند کوکی) در رایانه از خود به جای نمی‌گذارند. با این وجود، فایل‌هایی که بارگیری می‌کنید، حفظ می‌شوند.</translation>
 <translation id="6390994422085833176">مرور ویژگی‌های همگام‌سازی و شخصی‌سازی بعد از راه‌اندازی</translation>
 <translation id="6393156038355142111">پیشنهاد گذرواژه قوی</translation>
+<translation id="6395423953133416962">ارسال <ph name="BEGIN_LINK1" />اطلاعات سیستم<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />معیارها<ph name="END_LINK2" /></translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> مورد</translation>
 <translation id="6397094776139756010">گزینه‌های همگام‌سازی و شخصی‌سازی</translation>
 <translation id="6398715114293939307">‏برداشتن «فروشگاه Google Play»</translation>
@@ -5097,7 +5099,6 @@
 <translation id="8637688295594795546">به‌روزرسانی سیستم موجود است. در حال آماده سازی برای بارگیری...</translation>
 <translation id="8639047128869322042">درحال بررسی وجود نرم‌افزار مضر...</translation>
 <translation id="8642171459927087831">کد دسترسی</translation>
-<translation id="8642895855701880552">ارسال اطلاعات <ph name="BEGIN_LINK1" />سیستم و برنامه<ph name="END_LINK1" /></translation>
 <translation id="8642947597466641025">طولانی تر کردن متن</translation>
 <translation id="8643418457919840804">برای ادامه، گزینه‌ای را انتخاب کنید:</translation>
 <translation id="8645354835496065562">دسترسی به حسگر همچنان مجاز باشد</translation>

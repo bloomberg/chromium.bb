@@ -294,7 +294,6 @@
 <translation id="2501278716633472235">Go back</translation>
 <translation id="2503184589641749290">Accepted debit and prepaid cards</translation>
 <translation id="2515629240566999685">Checking the signal in your area</translation>
-<translation id="2516852381693169964">Search <ph name="SEARCH_ENGINE" /> for image</translation>
 <translation id="2523886232349826891">Saved on this device only</translation>
 <translation id="2524461107774643265">Add More Information</translation>
 <translation id="2536110899380797252">Add Address</translation>
@@ -803,7 +802,6 @@
 <translation id="5455374756549232013">Bad policy timestamp</translation>
 <translation id="5457113250005438886">Invalid</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> more}other{<ph name="CONTACT_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> more}}</translation>
-<translation id="5461666840533392417">Looks like you navigated off on your own. I’ll leave you to it. Have a nice day :)</translation>
 <translation id="5470861586879999274">&amp;Redo edit</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">This content might try to install dangerous software on your device that steals or deletes your information. <ph name="BEGIN_LINK" />Show anyway<ph name="END_LINK" /></translation>
@@ -1050,6 +1048,7 @@
 <translation id="6965978654500191972">Device</translation>
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">Both fixed proxy servers and a .pac script URL are specified.</translation>
+<translation id="6973932557599545801">Sorry I'm not able to help. Please continue on your own.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Mute (default)</translation>
 <translation id="6984479912851154518">Leaving private mode to pay via an external application. Continue?</translation>

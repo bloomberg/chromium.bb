@@ -3536,6 +3536,7 @@
 <translation id="6264365405983206840">എല്ലാം &amp;തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6267166720438879315">നിങ്ങളെ <ph name="HOST_NAME" /> ലേക്ക് ആധാരീകരിക്കാന്‍ ഒരു സര്‍ട്ടിഫിക്കറ്റ് തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6268252012308737255"><ph name="APP" /> ഉപയോഗിച്ച് തുറക്കുക</translation>
+<translation id="6270770586500173387"><ph name="BEGIN_LINK1" />സിസ്‌റ്റവും ആപ്പ് വിവരവും<ph name="END_LINK1" /> <ph name="BEGIN_LINK2" />മെട്രിക്‌സും<ph name="END_LINK2" /> അയയ്‌ക്കുക</translation>
 <translation id="6272643420381259437">പ്ലഗിൻ ഡൗൺലോഡുചെയ്യുമ്പോൾ പിശക് (<ph name="ERROR" />) ഉണ്ടായി</translation>
 <translation id="6273677812470008672">നിലവാരം</translation>
 <translation id="6277105963844135994">നെറ്റ്‌വർക്കിന്റെ സമയപരിധി കഴിഞ്ഞു</translation>
@@ -3610,6 +3611,7 @@
 <translation id="6390799748543157332">തുറന്നിരിക്കുന്ന എല്ലാ അതിഥി വിൻഡോകളും അടച്ചുകഴിഞ്ഞാൽ, ഈ വിൻഡോയിൽ നിങ്ങൾ കാണുന്ന പേജുകൾ നിങ്ങളുടെ ബ്രൗസർ ചരിത്രത്തിൽ ദൃശ്യമാകില്ല, അവ കുക്കികൾ പോലുള്ള മറ്റ് തെളിവുകൾ നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ അവശേഷിപ്പിക്കുകയുമില്ല. എന്നിരുന്നാലും, നിങ്ങൾ ഡൗൺലോഡ് ചെയ്യുന്ന എല്ലാ ഫയലുകളും സൂക്ഷിക്കും.</translation>
 <translation id="6390994422085833176">സജ്ജീകരണത്തിന് ശേഷം സമന്വയിപ്പിക്കൽ, വ്യക്തിഗതമാക്കൽ ഫീച്ചറുകൾ അവലോകനം ചെയ്യുക</translation>
 <translation id="6393156038355142111">ശക്തമായ പാസ്‌വേഡ് നിർദ്ദേശിക്കുക</translation>
+<translation id="6395423953133416962"><ph name="BEGIN_LINK1" />സിസ്റ്റം വിവരങ്ങളും<ph name="END_LINK1" /> <ph name="BEGIN_LINK2" />മെട്രിക്‌സും<ph name="END_LINK2" /> അയയ്‌ക്കുക</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> ഇനങ്ങൾ</translation>
 <translation id="6397094776139756010">സമന്വയവും വ്യക്തിപരമാക്കലും ഓപ്‌ഷനുകൾ</translation>
 <translation id="6398715114293939307">Google Play സ്‌റ്റോർ നീക്കംചെയ്യുക</translation>
@@ -5100,7 +5102,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8637688295594795546">സിസ്റ്റം അപ്ഡേറ്റ് ലഭ്യമാണ്. ഡൌണ്‍ലോഡുചെയ്യുന്നതിന് തയ്യാറെടുക്കുന്നു...</translation>
 <translation id="8639047128869322042">ദോഷകരമായ സോഫ്‌റ്റ്‌വെയർ ഉണ്ടോയെന്ന് പരിശോധിക്കുന്നു...</translation>
 <translation id="8642171459927087831">ആക്‌സസ്സ് ടോക്കൺ</translation>
-<translation id="8642895855701880552"><ph name="BEGIN_LINK1" />സിസ്‌റ്റം, ആപ്പ് വിവരം<ph name="END_LINK1" /> അയയ്ക്കുക</translation>
 <translation id="8642947597466641025">പാഠത്തെ വലുതാക്കുക</translation>
 <translation id="8643418457919840804">തുടരാൻ, ഒരു ഓപ്ഷൻ തിരഞ്ഞെടുക്കുക:</translation>
 <translation id="8645354835496065562">സെൻസർ ആക്‌സസ് അനുവദിക്കുന്നത് തുടരുക</translation>

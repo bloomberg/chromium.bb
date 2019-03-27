@@ -1962,6 +1962,7 @@
 <translation id="3892414795099177503">Add OpenVPN/L2TP...</translation>
 <translation id="3893536212201235195">Read and change your accessibility settings</translation>
 <translation id="3893630138897523026">ChromeVox (spoken feedback)</translation>
+<translation id="3894123633473837029">Include recent Assistant history via Sherlog. This may include your identity, location and debug info. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Add folder</translation>
 <translation id="389589731200570180">Share with guests</translation>
 <translation id="3898521660513055167">Token Status</translation>
@@ -3537,6 +3538,7 @@
 <translation id="6264365405983206840">Select &amp;All</translation>
 <translation id="6267166720438879315">Select a certificate to which you want to authenticate <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Open with <ph name="APP" /></translation>
+<translation id="6270770586500173387">Send <ph name="BEGIN_LINK1" />system and app information<ph name="END_LINK1" />, and <ph name="BEGIN_LINK2" />metrics<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">There was an error (<ph name="ERROR" />) while downloading the plug-in</translation>
 <translation id="6273677812470008672">Quality</translation>
 <translation id="6277105963844135994">Network timeout</translation>
@@ -3611,6 +3613,7 @@
 <translation id="6390799748543157332">Pages that you view in this window won’t appear in the browser history and they won’t leave other traces, like cookies, on the computer after you close all open Guest windows. Any files that you download, however, will be preserved.</translation>
 <translation id="6390994422085833176">Review sync and personalisation features following setup</translation>
 <translation id="6393156038355142111">Suggest strong password</translation>
+<translation id="6395423953133416962">Send <ph name="BEGIN_LINK1" />system information<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />metrics<ph name="END_LINK2" /></translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> items</translation>
 <translation id="6397094776139756010">Sync and personalisation options</translation>
 <translation id="6398715114293939307">Remove Google Play Store</translation>
@@ -5100,7 +5103,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8637688295594795546">System update available. Preparing to download…</translation>
 <translation id="8639047128869322042">Checking for harmful software…</translation>
 <translation id="8642171459927087831">Access Token</translation>
-<translation id="8642895855701880552">Send <ph name="BEGIN_LINK1" />system and app information<ph name="END_LINK1" /></translation>
 <translation id="8642947597466641025">Make Text Larger</translation>
 <translation id="8643418457919840804">To continue, choose an option:</translation>
 <translation id="8645354835496065562">Continue allowing sensor access</translation>

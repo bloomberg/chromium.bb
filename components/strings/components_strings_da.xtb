@@ -302,7 +302,6 @@
 <translation id="2501278716633472235">Gå tilbage</translation>
 <translation id="2503184589641749290">Accepterede debetkort og forudbetalte kort</translation>
 <translation id="2515629240566999685">Kontrollere signalet i dit område</translation>
-<translation id="2516852381693169964">Søg efter billedet på <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2523886232349826891">Gemmes kun på denne enhed</translation>
 <translation id="2524461107774643265">Tilføj flere oplysninger</translation>
 <translation id="2536110899380797252">Tilføj adresse</translation>
@@ -811,7 +810,6 @@
 <translation id="5455374756549232013">Forkert tidsstempel for politik</translation>
 <translation id="5457113250005438886">Ugyldig</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> anden}one{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> anden}other{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> andre}}</translation>
-<translation id="5461666840533392417">Det ser ud til, at du har navigeret væk. Jeg vil fordufte, mens du kigger dig omkring. Hav en god dag!</translation>
 <translation id="5470861586879999274">&amp;Annuller fortryd redigering</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">Dette indhold forsøger muligvis at installere farlig software på din enhed, der kan stjæle eller slette dine oplysninger. <ph name="BEGIN_LINK" />Vis alligevel<ph name="END_LINK" /></translation>
@@ -1058,6 +1056,7 @@
 <translation id="6965978654500191972">Enhed</translation>
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="6973656660372572881">Både faste proxyservere og en webadresse for .pac-script angives.</translation>
+<translation id="6973932557599545801">Jeg kan desværre ikke hjælpe. Fortsæt på egen hånd.</translation>
 <translation id="6979158407327259162">Google Drev</translation>
 <translation id="6979440798594660689">Slå lyden fra (standard)</translation>
 <translation id="6984479912851154518">Du forlader privat tilstand for at betale via en ekstern app. Vil du fortsætte?</translation>

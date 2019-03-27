@@ -302,7 +302,6 @@
 <translation id="2501278716633472235">Rudi nyuma</translation>
 <translation id="2503184589641749290">Kadi za malipo na za kulipia awali zinazokubaliwa</translation>
 <translation id="2515629240566999685">Kuangalia uthabiti wa mawimbi katika eneo lako</translation>
-<translation id="2516852381693169964">Tafuta Picha kwenye <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2523886232349826891">Imehifadhiwa kwenye kifaa hiki pekee</translation>
 <translation id="2524461107774643265">Ongeza Maelezo Zaidi</translation>
 <translation id="2536110899380797252">Ongeza Anwani</translation>
@@ -811,7 +810,6 @@
 <translation id="5455374756549232013">Muhuri wa muda wa sera mbaya</translation>
 <translation id="5457113250005438886">Haiwezi kutumika</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> na mwingine <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> na wengine <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
-<translation id="5461666840533392417">Inaonekana kuwa siwezi kukusaidia, nitakuacha uendelee. Kuwa na siku njema :)</translation>
 <translation id="5470861586879999274">Rudia kuhariri</translation>
 <translation id="5478437291406423475">B6/C4 (Bahasha)</translation>
 <translation id="5481076368049295676">Huenda maudhui haya yakajaribu kusakinisha programu hatari inayoiba au kufuta maelezo yaliyo kwenye kifaa chako. <ph name="BEGIN_LINK" />Onyesha tu<ph name="END_LINK" /></translation>
@@ -1058,6 +1056,7 @@
 <translation id="6965978654500191972">Kifaa</translation>
 <translation id="6970216967273061347">Wilaya</translation>
 <translation id="6973656660372572881">Seva zote za proksi thabiti na URL ya hati ya .pac zimebainishwa.</translation>
+<translation id="6973932557599545801">Samahani, nimeshindwa kukusaidia, tafadhali endelea mwenyewe.</translation>
 <translation id="6979158407327259162">Hifadhi ya Google</translation>
 <translation id="6979440798594660689">Zima (chaguomsingi)</translation>
 <translation id="6984479912851154518">Unafunga hali ya faragha ili ulipe kupitia programu ya nje. Ungependa kuendelea?</translation>

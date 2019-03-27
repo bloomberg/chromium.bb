@@ -1964,6 +1964,7 @@
 <translation id="3892414795099177503">Tambahkan OpenVPN / L2TP...</translation>
 <translation id="3893536212201235195">Baca dan tukar tetapan kebolehaksesan anda</translation>
 <translation id="3893630138897523026">ChromeVox (maklum balas dituturkan)</translation>
+<translation id="3894123633473837029">Sertakan sejarah Pembantu terbaharu melalui Sherlog. Maklumat ini boleh mengandungi identiti, lokasi dan maklumat nyahpepijat anda. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Tambah folder</translation>
 <translation id="389589731200570180">Berkongsi dengan tetamu</translation>
 <translation id="3898521660513055167">Status Token</translation>
@@ -3539,6 +3540,7 @@
 <translation id="6264365405983206840">Pilih &amp;Semua</translation>
 <translation id="6267166720438879315">Pilih sijil untuk mengesahkan dengan sendiri pada <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Buka menggunakan <ph name="APP" /></translation>
+<translation id="6270770586500173387">Hantar <ph name="BEGIN_LINK1" />maklumat sistem dan apl<ph name="END_LINK1" /> serta <ph name="BEGIN_LINK2" />metrik<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Terdapat ralat (<ph name="ERROR" />) semasa memuat turun pemalam</translation>
 <translation id="6273677812470008672">Kualiti</translation>
 <translation id="6277105963844135994">Tamat masa rangkaian</translation>
@@ -3613,6 +3615,7 @@
 <translation id="6390799748543157332">Halaman yang anda lihat dalam tetingkap ini tidak akan dipaparkan dalam sejarah penyemak imbas dan halaman ini tidak akan meninggalkan kesan lain, seperti kuki, pada komputer selepas anda menutup semua tetingkap Tetamu yang terbuka. Walau bagaimanapun, sebarang fail yang anda muat turun akan disimpan.</translation>
 <translation id="6390994422085833176">Semak ciri penyegerakan dan pemeribadian selepas penyediaan dilakukan</translation>
 <translation id="6393156038355142111">Cadangkan kata laluan yang kukuh</translation>
+<translation id="6395423953133416962">Hantar <ph name="BEGIN_LINK1" />maklumat sistem<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />metrik<ph name="END_LINK2" /></translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> item</translation>
 <translation id="6397094776139756010">Pilihan penyegerakan dan pemperibadian</translation>
 <translation id="6398715114293939307">Alih keluar Gedung Google Play</translation>
@@ -5103,7 +5106,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8637688295594795546">Kemas kini sistem tersedia. Bersedia untuk  muat turun…</translation>
 <translation id="8639047128869322042">Menyemak untuk mengesan perisian berbahaya...</translation>
 <translation id="8642171459927087831">Token Akses</translation>
-<translation id="8642895855701880552">Hantar <ph name="BEGIN_LINK1" />maklumat sistem dan apl<ph name="END_LINK1" /></translation>
 <translation id="8642947597466641025">Jadikan Teks Lebih Besar</translation>
 <translation id="8643418457919840804">Buat pilihan untuk meneruskan:</translation>
 <translation id="8645354835496065562">Teruskan membenarkan akses penderia</translation>

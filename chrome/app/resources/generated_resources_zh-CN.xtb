@@ -1956,6 +1956,7 @@
 <translation id="3892414795099177503">添加 OpenVPN / L2TP…</translation>
 <translation id="3893536212201235195">读取和更改您的无障碍设置</translation>
 <translation id="3893630138897523026">ChromeVox（语音反馈）</translation>
+<translation id="3894123633473837029">通过 Sherlog 将最近的 Google 助理历史记录包含在内。这可能包括您的身份、地理位置和调试信息。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">添加文件夹</translation>
 <translation id="389589731200570180">与访客共享</translation>
 <translation id="3898521660513055167">令牌状态</translation>
@@ -3525,6 +3526,7 @@
 <translation id="6264365405983206840">全选(&amp;A)</translation>
 <translation id="6267166720438879315">请选择证书，以在 <ph name="HOST_NAME" /> 上对您本人进行身份验证</translation>
 <translation id="6268252012308737255">使用<ph name="APP" />打开</translation>
+<translation id="6270770586500173387">发送<ph name="BEGIN_LINK1" />系统和应用信息<ph name="END_LINK1" />以及<ph name="BEGIN_LINK2" />指标<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">下载该插件时出现错误 (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">打印质量</translation>
 <translation id="6277105963844135994">网络超时</translation>
@@ -3599,6 +3601,7 @@
 <translation id="6390799748543157332">当您关闭以访客身份打开的所有窗口后，您在此窗口中浏览的网页将不会显示在浏览器历史记录中，也不会在计算机上留下其他痕迹（例如Cookie）。不过，您下载的所有文件均会保留下来。</translation>
 <translation id="6390994422085833176">在完成设置后查看同步及个性化功能</translation>
 <translation id="6393156038355142111">建议一个安全系数高的密码</translation>
+<translation id="6395423953133416962">发送<ph name="BEGIN_LINK1" />系统信息<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />指标<ph name="END_LINK2" /></translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> 项内容</translation>
 <translation id="6397094776139756010">同步和个性化选项</translation>
 <translation id="6398715114293939307">移除 Google Play 商店</translation>
@@ -5083,7 +5086,6 @@
 <translation id="8637688295594795546">有系统更新，开始下载...</translation>
 <translation id="8639047128869322042">正在查找有害软件…</translation>
 <translation id="8642171459927087831">访问令牌</translation>
-<translation id="8642895855701880552">发送<ph name="BEGIN_LINK1" />系统和应用信息<ph name="END_LINK1" /></translation>
 <translation id="8642947597466641025">放大文字</translation>
 <translation id="8643418457919840804">要继续，请选择一个选项：</translation>
 <translation id="8645354835496065562">继续允许使用传感器</translation>

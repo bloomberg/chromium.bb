@@ -3538,6 +3538,7 @@
 <translation id="6264365405983206840">&amp;सर्व निवडा</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME" /> वर तुमच्या स्वतःस प्रमाणीकृत करण्यासाठी एक सर्टिफिकेट निवडा</translation>
 <translation id="6268252012308737255"><ph name="APP" /> सह उघडा</translation>
+<translation id="6270770586500173387"><ph name="BEGIN_LINK1" />सिस्टम आणि ॲप माहिती<ph name="END_LINK1" /> आणि <ph name="BEGIN_LINK2" />मेट्रिक्स<ph name="END_LINK2" /> पाठवा</translation>
 <translation id="6272643420381259437">प्लगिन डाउनलोड करताना (<ph name="ERROR" />) एरर आली</translation>
 <translation id="6273677812470008672">गुणवत्ता</translation>
 <translation id="6277105963844135994">नेटवर्क कालबाह्य</translation>
@@ -3612,6 +3613,7 @@
 <translation id="6390799748543157332">या विंडोमध्ये तुम्ही पाहत असलेली पेज ब्राउझर इतिहासात दिसणार नाहीत आणि तुम्ही सर्व उघड्या अतिथी विंडो बंद केल्यानंतर संगणकावरील, कुकीज सारखे, अन्य ट्रेस ते सोडणार नाहीत. असे असले तरीही, तुम्ही डाउनलोड करता त्या कोणत्याही फायली संरक्षित केल्या जातील.</translation>
 <translation id="6390994422085833176">सेटअपला फॉलो करणाऱ्या सिंक आणि पर्सनलाइझ वैशिष्ट्यांचे परीक्षण करा</translation>
 <translation id="6393156038355142111">क्लिष्ट पासवर्ड सुचवा</translation>
+<translation id="6395423953133416962"><ph name="BEGIN_LINK1" />सिस्टम माहिती<ph name="END_LINK1" /> आणि <ph name="BEGIN_LINK2" />मेट्रिक्स<ph name="END_LINK2" /> पाठवा</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> आयटम</translation>
 <translation id="6397094776139756010">सिंक आणि पर्सनलायझेशन पर्याय</translation>
 <translation id="6398715114293939307">Google Play स्टोअर काढून टाका</translation>
@@ -5099,7 +5101,6 @@
 <translation id="8637688295594795546">सिस्टम अपडेट उपलब्ध. डाउनलोड करण्याची तयारी करत आहे…</translation>
 <translation id="8639047128869322042">हानिकारक सॉफ्टवेअरसाठी तपासत आहे...</translation>
 <translation id="8642171459927087831">प्रवेश टोकन</translation>
-<translation id="8642895855701880552"><ph name="BEGIN_LINK1" />सिस्टम आणि अ‍ॅ‍प माहिती<ph name="END_LINK1" /> पाठवा</translation>
 <translation id="8642947597466641025">मजकूर मोठा करा</translation>
 <translation id="8643418457919840804">पुढे सुरू ठेवण्यासाठी, पर्याय निवडा:</translation>
 <translation id="8645354835496065562">सेन्सर अॅक्सेस देणे सुरू ठेवा</translation>

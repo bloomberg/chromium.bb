@@ -302,7 +302,6 @@
 <translation id="2501278716633472235">Wróć</translation>
 <translation id="2503184589641749290">Akceptowane karty debetowe i przedpłacone</translation>
 <translation id="2515629240566999685">Sprawdź sygnał w swojej okolicy</translation>
-<translation id="2516852381693169964">Wyszukaj obraz w: <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2523886232349826891">Zapisana tylko na tym urządzeniu</translation>
 <translation id="2524461107774643265">Dodaj więcej informacji</translation>
 <translation id="2536110899380797252">Dodaj adres</translation>
@@ -811,7 +810,6 @@
 <translation id="5455374756549232013">Nieprawidłowy czas zasady</translation>
 <translation id="5457113250005438886">Nieprawidłowe</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}many{<ph name="CONTACT_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
-<translation id="5461666840533392417">Wygląda na to, że jesteś już gdzie indziej, więc nie będę Ci przeszkadzać. Udanego dnia :)</translation>
 <translation id="5470861586879999274">&amp;Ponów edycję</translation>
 <translation id="5478437291406423475">B6/C4 (koperta)</translation>
 <translation id="5481076368049295676">Te treści mogą próbować instalować na Twoim urządzeniu niebezpieczne oprogramowanie, które wykrada lub usuwa dane. <ph name="BEGIN_LINK" />Wyświetl mimo to<ph name="END_LINK" /></translation>
@@ -1058,6 +1056,7 @@
 <translation id="6965978654500191972">Urządzenie</translation>
 <translation id="6970216967273061347">Okręg</translation>
 <translation id="6973656660372572881">Określono zarówno stałe serwery proxy, jak i URL skryptu PAC.</translation>
+<translation id="6973932557599545801">Nie jestem w stanie Ci pomóc. Kontynuuj samodzielnie.</translation>
 <translation id="6979158407327259162">Dysk Google</translation>
 <translation id="6979440798594660689">Wycisz (domyślnie)</translation>
 <translation id="6984479912851154518">Opuszczasz tryb prywatny, by zapłacić w zewnętrznej aplikacji. Kontynuować?</translation>

@@ -332,7 +332,7 @@
 <translation id="1483493594462132177">Verzenden</translation>
 <translation id="1485015260175968628">De app/extensie kan nu het volgende doen:</translation>
 <translation id="1485141095922496924">Versie <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
-<translation id="1486096554574027028">Wachtwoorden zoeken</translation>
+<translation id="1486096554574027028">Zoek in wachtwoorden</translation>
 <translation id="1487335504823219454">Aan - aangepaste instellingen</translation>
 <translation id="1489664337021920575">Een andere optie kiezen</translation>
 <translation id="1493892686965953381">Wachten op <ph name="LOAD_STATE_PARAMETER" />...</translation>
@@ -1361,7 +1361,7 @@
 <translation id="3003967365858406397">Je <ph name="PHONE_NAME" /> maakt een privé-wifi-verbinding.</translation>
 <translation id="3004391367407090544">Probeer het later opnieuw</translation>
 <translation id="3006881078666935414">Geen gebruiksgegevens</translation>
-<translation id="3007214526293698309">Beeldhouding corrigeren</translation>
+<translation id="3007214526293698309">Beeldverhouding corrigeren</translation>
 <translation id="3007771295016901659">Tabblad dupliceren</translation>
 <translation id="3008272652534848354">Rechten resetten</translation>
 <translation id="3009300415590184725">Weet je zeker dat je het instellen van een mobiele dataservice wilt annuleren?</translation>
@@ -1756,7 +1756,7 @@
 <translation id="3613134908380545408"><ph name="FOLDER_NAME" /> weergeven</translation>
 <translation id="3613422051106148727">&amp;Openen op nieuw tabblad</translation>
 <translation id="3616113530831147358">Audio</translation>
-<translation id="3616741288025931835">&amp;Browsegegevens wissen...</translation>
+<translation id="3616741288025931835">&amp;Browsegegevens wissen</translation>
 <translation id="3617891479562106823">Achtergronden zijn niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="3620292326130836921">Er is een back-up van alles gemaakt</translation>
 <translation id="3623574769078102674">Deze gebruiker met beperkte rechten wordt beheerd door <ph name="MANAGER_EMAIL" />.</translation>
@@ -1963,6 +1963,7 @@
 <translation id="3892414795099177503">OpenVPN/L2TP toevoegen...</translation>
 <translation id="3893536212201235195">Je toegankelijkheidsinstellingen lezen en wijzigen</translation>
 <translation id="3893630138897523026">ChromeVox (gesproken feedback)</translation>
+<translation id="3894123633473837029">Neem recente Assistent-geschiedenis op via Sherlog. Deze geschiedenis kan je identiteit, locatie en foutopsporingsinformatie omvatten. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Map toevoegen</translation>
 <translation id="389589731200570180">Delen met gasten</translation>
 <translation id="3898521660513055167">Status van token</translation>
@@ -2318,7 +2319,7 @@
 <translation id="447252321002412580">Help de functies en prestaties van Chrome verbeteren</translation>
 <translation id="4472575034687746823">Aan de slag</translation>
 <translation id="4474155171896946103">Bladwijzer toevoegen aan alle tabbladen...</translation>
-<translation id="4475552974751346499">Zoeken in downloads</translation>
+<translation id="4475552974751346499">Zoek in downloads</translation>
 <translation id="4476590490540813026">Atlete</translation>
 <translation id="4477015793815781985">Neem Ctrl, Alt of ⌘ op</translation>
 <translation id="4478664379124702289">Lin&amp;k opslaan als...</translation>
@@ -3158,7 +3159,7 @@
 <translation id="5720705177508910913">Huidige gebruiker</translation>
 <translation id="572155275267014074">Android-instellingen</translation>
 <translation id="5722930212736070253">Helaas. Er is een fout voor Zip Archiver opgetreden.</translation>
-<translation id="572328651809341494">Recent gebruikte tabbladen</translation>
+<translation id="572328651809341494">Recente tabbladen</translation>
 <translation id="5723508132121499792">Geen actieve achtergrondapps</translation>
 <translation id="5727728807527375859">Extensies, applicaties en thema's kunnen schade toebrengen aan je computer. Weet je zeker dat je wilt doorgaan?</translation>
 <translation id="5729712731028706266">&amp;Weergave</translation>
@@ -3389,7 +3390,7 @@
 <translation id="6049065490165456785">Foto via interne camera</translation>
 <translation id="6051354611314852653">Het systeem kan API-toegang voor dit apparaat niet verifiëren.</translation>
 <translation id="6052976518993719690">SSL-certificeringsinstantie</translation>
-<translation id="6053401458108962351">&amp;Browsegegevens wissen...</translation>
+<translation id="6053401458108962351">&amp;Browsegegevens wissen</translation>
 <translation id="6055171183283175969">Het opgegeven wachtwoord is onjuist.</translation>
 <translation id="6055392876709372977">PKCS nr. 1 SHA-256 met RSA-encryptie</translation>
 <translation id="6056710589053485679">Normaal opnieuw laden</translation>
@@ -3528,7 +3529,7 @@
 <translation id="6247802389331535091">Systeem: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">Update gereed</translation>
 <translation id="6248400709929739064">Ondertiteling inschakelen</translation>
-<translation id="6248988683584659830">Zoeken in de instellingen</translation>
+<translation id="6248988683584659830">Zoek in de instellingen</translation>
 <translation id="6251870443722440887">GDI-handles</translation>
 <translation id="6251889282623539337">Servicevoorwaarden voor <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Inbreuk op sleutel</translation>
@@ -3539,6 +3540,7 @@
 <translation id="6264365405983206840">&amp;Alles selecteren</translation>
 <translation id="6267166720438879315">Selecteer een certificaat om je identiteit te verifiëren voor <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Openen met <ph name="APP" /></translation>
+<translation id="6270770586500173387"><ph name="BEGIN_LINK1" />Systeem- en app-gegevens<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />statistieken<ph name="END_LINK2" /> verzenden</translation>
 <translation id="6272643420381259437">Er is een fout (<ph name="ERROR" />) opgetreden tijdens het downloaden van de plug-in.</translation>
 <translation id="6273677812470008672">Kwaliteit</translation>
 <translation id="6277105963844135994">Time-out van netwerk</translation>
@@ -3609,10 +3611,11 @@
 <translation id="6384275966486438344">Je zoekinstellingen wijzigen in: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Sites kunnen cookiegegevens opslaan en lezen</translation>
 <translation id="6386099547750337629">Als dit onverwacht is, neem je contact op met support.</translation>
-<translation id="6388429472088318283">Talen zoeken</translation>
+<translation id="6388429472088318283">Zoek in talen</translation>
 <translation id="6390799748543157332">De pagina's die je in dit venster bekijkt, worden niet in de browsergeschiedenis weergegeven en laten geen sporen op de computer achter (zoals cookies) nadat je alle geopende gastvensters hebt gesloten. Bestanden die je downloadt, blijven echter wel behouden.</translation>
 <translation id="6390994422085833176">De synchronisatie- en personalisatiefuncties controleren na de installatie</translation>
 <translation id="6393156038355142111">Sterk wachtwoord voorstellen</translation>
+<translation id="6395423953133416962"><ph name="BEGIN_LINK1" />Systeeminformatie<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />statistische gegevens<ph name="END_LINK2" /> verzenden</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> items</translation>
 <translation id="6397094776139756010">Synchronisatie- en personalisatieopties</translation>
 <translation id="6398715114293939307">Google Play Store verwijderen</translation>
@@ -5101,7 +5104,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8637688295594795546">Systeemupdate beschikbaar. Download voorbereiden...</translation>
 <translation id="8639047128869322042">Controleren op schadelijke software...</translation>
 <translation id="8642171459927087831">Toegangstoken</translation>
-<translation id="8642895855701880552"><ph name="BEGIN_LINK1" />Systeem- en app-gegevens<ph name="END_LINK1" /> verzenden</translation>
 <translation id="8642947597466641025">De tekst groter maken</translation>
 <translation id="8643418457919840804">Kies een optie om door te gaan:</translation>
 <translation id="8645354835496065562">Toegang tot sensoren blijven toestaan</translation>

@@ -302,7 +302,6 @@
 <translation id="2501278716633472235">Föregående</translation>
 <translation id="2503184589641749290">Godkända betalkort och förbetalda kort</translation>
 <translation id="2515629240566999685">kontrollera mottagningen i området</translation>
-<translation id="2516852381693169964">Sök på <ph name="SEARCH_ENGINE" /> efter bild</translation>
 <translation id="2523886232349826891">Endast sparat på den här enheten</translation>
 <translation id="2524461107774643265">Lägg till mer information</translation>
 <translation id="2536110899380797252">Lägg till adress</translation>
@@ -811,7 +810,6 @@
 <translation id="5455374756549232013">Felaktig tidsstämpel för policy</translation>
 <translation id="5457113250005438886">Ogiltigt</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> och <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> till}other{<ph name="CONTACT_PREVIEW" /> och <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> till}}</translation>
-<translation id="5461666840533392417">Det verkar som att du har navigerat i väg själv, så jag lämnar dig i fred. Ha en fin dag :)</translation>
 <translation id="5470861586879999274">&amp;Gör om Redigera</translation>
 <translation id="5478437291406423475">B6/C4 (kuvert)</translation>
 <translation id="5481076368049295676">Sidan kan ha till syfte att installera farlig programvara som stjäl eller raderar information på enheten. <ph name="BEGIN_LINK" />Visa ändå<ph name="END_LINK" />.</translation>
@@ -1058,6 +1056,7 @@
 <translation id="6965978654500191972">Enhet</translation>
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="6973656660372572881">Både fasta proxyservrar och en webbadress för PAC-skript anges.</translation>
+<translation id="6973932557599545801">Jag kan tyvärr inte hjälpa till. Fortsätt på egen hand.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Ljud av (standard)</translation>
 <translation id="6984479912851154518">Om du betalar i en extern app sker inte det i privat läge. Vill du fortsätta?</translation>

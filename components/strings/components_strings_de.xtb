@@ -294,7 +294,6 @@
 <translation id="2501278716633472235">Zurück</translation>
 <translation id="2503184589641749290">Akzeptierte Debit- und Prepaidkarten</translation>
 <translation id="2515629240566999685">Signal an Ihrem Standort prüfen</translation>
-<translation id="2516852381693169964">Mit <ph name="SEARCH_ENGINE" /> nach Bild suchen</translation>
 <translation id="2523886232349826891">Nur auf diesem Gerät gespeichert</translation>
 <translation id="2524461107774643265">Weitere Informationen hinzufügen</translation>
 <translation id="2536110899380797252">Adresse hinzufügen</translation>
@@ -801,7 +800,6 @@
 <translation id="5455374756549232013">Zeitstempel der Richtlinie ist fehlerhaft.</translation>
 <translation id="5457113250005438886">Ungültig</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> und <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> weiterer}other{<ph name="CONTACT_PREVIEW" /> und <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> weitere}}</translation>
-<translation id="5461666840533392417">Sie sind anscheinend schon selbst weiter auf der Website unterwegs, ich lasse Sie jetzt allein weitermachen. Einen schönen Tag noch!</translation>
 <translation id="5470861586879999274">&amp;Bearbeiten wiederholen</translation>
 <translation id="5478437291406423475">B6/C4 (Umschlag)</translation>
 <translation id="5481076368049295676">Diese Inhalte versuchen möglicherweise, gefährliche Software auf Ihrem Gerät zu installieren, durch die Ihre Informationen gestohlen oder gelöscht werden. <ph name="BEGIN_LINK" />Trotzdem anzeigen<ph name="END_LINK" /></translation>
@@ -917,7 +915,7 @@
 <translation id="6059925163896151826">USB-Geräte</translation>
 <translation id="6080696365213338172">Sie haben über ein vom Administrator bereitgestelltes Zertifikat auf Inhalte zugegriffen. Die Daten, die Sie innerhalb von <ph name="DOMAIN" /> bereitstellen, können von Ihrem Administrator abgefangen werden.</translation>
 <translation id="6094273045989040137">Anmerkung hinzufügen</translation>
-<translation id="610911394827799129">Möglicherweise verfügt Ihr Google-Konto unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> über andere Browserverläufe.</translation>
+<translation id="610911394827799129">Unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> sind möglicherweise weitere Arten von Browserverlaufsdaten für Ihr Google-Konto gespeichert.</translation>
 <translation id="6132597952260690497">Informationen zu installierten Erweiterungen und Plug-ins</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Keine}=1{1 Passwort (synchronisiert)}other{# Passwörter (synchronisiert)}}</translation>
 <translation id="6146055958333702838">Überprüfen Sie alle Kabel und starten Sie alle verwendeten Router, Modems und

@@ -302,7 +302,6 @@
 <translation id="2501278716633472235">Επιστροφή</translation>
 <translation id="2503184589641749290">Αποδεκτές χρεωστικές και προπληρωμένες κάρτες</translation>
 <translation id="2515629240566999685">Ελέγξτε το σήμα στην περιοχή σας</translation>
-<translation id="2516852381693169964">Αναζήτηση σε <ph name="SEARCH_ENGINE" /> για εικόνα</translation>
 <translation id="2523886232349826891">Αποθηκεύτηκε μόνο σε αυτήν τη συσκευή</translation>
 <translation id="2524461107774643265">Προσθήκη περισσότερων πληροφοριών</translation>
 <translation id="2536110899380797252">Προσθήκη διεύθυνσης</translation>
@@ -812,7 +811,6 @@
 <translation id="5455374756549232013">Εσφαλμένη χρονική σήμανση πολιτικής</translation>
 <translation id="5457113250005438886">Μη έγκυρο</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ακόμη}other{<ph name="CONTACT_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ακόμη}}</translation>
-<translation id="5461666840533392417">Φαίνεται πως απομακρυνθήκατε με δική σας επιλογή. Αποφασίστε πώς θέλετε να προχωρήσετε. Να έχετε μια όμορφη ημέρα!</translation>
 <translation id="5470861586879999274">&amp;Επανάληψη επεξεργασίας</translation>
 <translation id="5478437291406423475">B6/C4 (Φάκελος)</translation>
 <translation id="5481076368049295676">Αυτό το περιεχόμενο μπορεί να προσπαθήσει να εγκαταστήσει επικίνδυνο λογισμικό στη συσκευή σας το οποίο κλέβει ή διαγράφει τα στοιχεία σας. <ph name="BEGIN_LINK" />Εμφάνιση ούτως ή άλλως<ph name="END_LINK" /></translation>
@@ -1059,6 +1057,7 @@
 <translation id="6965978654500191972">Συσκευή</translation>
 <translation id="6970216967273061347">Περιφέρεια</translation>
 <translation id="6973656660372572881">Καθορίζονται τόσο οι σταθεροί διακομιστές μεσολάβησης όσο και μια διεύθυνση URL σεναρίου .pac.</translation>
+<translation id="6973932557599545801">Δυστυχώς, δεν μπορώ να σας βοηθήσω, θα πρέπει να συνεχίσετε μόνοι σας.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Σίγαση (προεπιλογή)</translation>
 <translation id="6984479912851154518">Αποχώρηση από την κατάσταση ιδιωτικής περιήγησης για πληρωμή μέσω εξωτερικής εφαρμογής. Συνέχεια;</translation>

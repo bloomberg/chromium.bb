@@ -3536,6 +3536,7 @@
 <translation id="6264365405983206840">選取全部(&amp;A)</translation>
 <translation id="6267166720438879315">請選取你在 <ph name="HOST_NAME" /> 的驗證憑證</translation>
 <translation id="6268252012308737255">使用「<ph name="APP" />」開啟</translation>
+<translation id="6270770586500173387">傳送<ph name="BEGIN_LINK1" />系統和應用程式資訊<ph name="END_LINK1" />，以及<ph name="BEGIN_LINK2" />指標<ph name="END_LINK2" />資訊</translation>
 <translation id="6272643420381259437">下載外掛程式時發生錯誤 (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">品質</translation>
 <translation id="6277105963844135994">網路逾時</translation>
@@ -3610,6 +3611,7 @@
 <translation id="6390799748543157332">你在這個視窗瀏覽的網頁不會顯示在瀏覽器記錄中，而且在你關閉所有開啟的訪客視窗後，電腦也不會留下 Cookie 等其他記錄。不過，系統將會保留你下載的所有檔案。</translation>
 <translation id="6390994422085833176">在設定完成後檢閱同步處理和個人化功能</translation>
 <translation id="6393156038355142111">建議高強度密碼</translation>
+<translation id="6395423953133416962">傳送<ph name="BEGIN_LINK1" />系統資訊<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />指標<ph name="END_LINK2" /></translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> 個項目</translation>
 <translation id="6397094776139756010">同步處理與個人化選項</translation>
 <translation id="6398715114293939307">移除 Google Play 商店</translation>
@@ -5093,7 +5095,6 @@
 <translation id="8637688295594795546">可安裝系統更新，正在準備下載…</translation>
 <translation id="8639047128869322042">正在檢查有害軟體...</translation>
 <translation id="8642171459927087831">存取憑證</translation>
-<translation id="8642895855701880552">傳送<ph name="BEGIN_LINK1" />系統和應用程式資訊<ph name="END_LINK1" /></translation>
 <translation id="8642947597466641025">放大文字</translation>
 <translation id="8643418457919840804">如要繼續，請選擇一個選項：</translation>
 <translation id="8645354835496065562">繼續允許存取感應器</translation>

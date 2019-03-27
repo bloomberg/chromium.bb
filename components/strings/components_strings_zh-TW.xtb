@@ -302,7 +302,6 @@
 <translation id="2501278716633472235">返回</translation>
 <translation id="2503184589641749290">接受的簽帳金融卡和預付卡</translation>
 <translation id="2515629240566999685">檢查所在位置的網路訊號</translation>
-<translation id="2516852381693169964">透過 <ph name="SEARCH_ENGINE" /> 搜尋圖片</translation>
 <translation id="2523886232349826891">僅儲存在這部裝置</translation>
 <translation id="2524461107774643265">新增詳細資訊</translation>
 <translation id="2536110899380797252">新增地址</translation>
@@ -811,7 +810,6 @@
 <translation id="5455374756549232013">政策時間戳記有誤</translation>
 <translation id="5457113250005438886">無效</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{「<ph name="CONTACT_PREVIEW" />」和另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 項聯絡資訊}other{「<ph name="CONTACT_PREVIEW" />」和另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 項聯絡資訊}}</translation>
-<translation id="5461666840533392417">你似乎已瀏覽到其他頁面，我就不插手了。祝你有個愉快的一天 :)</translation>
 <translation id="5470861586879999274">重做編輯(&amp;R)</translation>
 <translation id="5478437291406423475">B6/C4 (信封)</translation>
 <translation id="5481076368049295676">這項內容可能會試圖在你的裝置上安裝危險軟體，藉此竊取或刪除你的資訊。<ph name="BEGIN_LINK" />仍要顯示<ph name="END_LINK" /></translation>

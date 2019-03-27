@@ -302,7 +302,6 @@
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2503184589641749290">Прийнятні дебетові та передплачені картки</translation>
 <translation id="2515629240566999685">перевірити сигнал у своїй місцевості</translation>
-<translation id="2516852381693169964">Шукати зображення в <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2523886232349826891">Збережено лише на цьому пристрої</translation>
 <translation id="2524461107774643265">Додайте більше інформації</translation>
 <translation id="2536110899380797252">Додати адресу</translation>
@@ -811,7 +810,6 @@
 <translation id="5455374756549232013">Недійсна мітка часу правила</translation>
 <translation id="5457113250005438886">Недійсні дані</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}many{<ph name="CONTACT_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
-<translation id="5461666840533392417">Схоже, моя допомога вже не потрібна. Хорошого вам дня :)</translation>
 <translation id="5470861586879999274">&amp;Повторити редагування</translation>
 <translation id="5478437291406423475">B6/C4 (конверт)</translation>
 <translation id="5481076368049295676">Цей вміст може намагатися встановити на ваш пристрій небезпечну програму, яка викрадає або видаляє інформацію. <ph name="BEGIN_LINK" />Усе одно показати<ph name="END_LINK" /></translation>

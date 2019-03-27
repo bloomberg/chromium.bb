@@ -1963,6 +1963,7 @@
 <translation id="3892414795099177503">Включить OpenVPN/L2TP...</translation>
 <translation id="3893536212201235195">Чтение и изменение настроек специальных возможностей</translation>
 <translation id="3893630138897523026">ChromeVox (голосовое сопровождение)</translation>
+<translation id="3894123633473837029">Добавить в отчет недавнюю историю Ассистента с помощью Sherlog. В ней могут содержаться ваши личные данные, информация о местонахождении и сведения для отладки. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Добавление папки</translation>
 <translation id="389589731200570180">Проявляйте гостеприимство</translation>
 <translation id="3898521660513055167">Статус токена</translation>
@@ -3538,6 +3539,7 @@
 <translation id="6264365405983206840">Выделить все</translation>
 <translation id="6267166720438879315">Выберите сертификат для аутентификации на <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Открыть в приложении <ph name="APP" /></translation>
+<translation id="6270770586500173387">Отправлять <ph name="BEGIN_LINK1" />информацию о системе и приложениях<ph name="END_LINK1" /> и различные <ph name="BEGIN_LINK2" />показатели<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">При скачивании плагина произошла ошибка (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">Качество</translation>
 <translation id="6277105963844135994">Время ожидания сети истекло</translation>
@@ -3612,6 +3614,7 @@
 <translation id="6390799748543157332">Страницы, открытые в гостевом режиме, не сохранятся в истории браузера и не оставят на компьютере следов, таких как файлы cookie. После того как вы их закроете, будут сохранены только скачанные вами файлы.</translation>
 <translation id="6390994422085833176">Проверить настройки синхронизации и персонализации после завершения установки</translation>
 <translation id="6393156038355142111">Сгенерировать надежный пароль</translation>
+<translation id="6395423953133416962">Отправлять <ph name="BEGIN_LINK1" />сведения о системе<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />значения показателей<ph name="END_LINK2" /></translation>
 <translation id="6395575651121294044">Объектов: <ph name="NUMBER_OF_FILES" /></translation>
 <translation id="6397094776139756010">Настройки синхронизации и персонализации</translation>
 <translation id="6398715114293939307">Удалить Google Play Маркет</translation>
@@ -5101,7 +5104,6 @@
 <translation id="8637688295594795546">Доступно обновление системы. Подготовка к скачиванию…</translation>
 <translation id="8639047128869322042">Поиск вредоносного ПО…</translation>
 <translation id="8642171459927087831">Токен доступа</translation>
-<translation id="8642895855701880552">Отправлять <ph name="BEGIN_LINK1" />сведения о системе и приложениях<ph name="END_LINK1" /></translation>
 <translation id="8642947597466641025">Увеличить размер шрифта</translation>
 <translation id="8643418457919840804">Чтобы продолжить, выберите один из вариантов:</translation>
 <translation id="8645354835496065562">Всегда разрешать использовать датчики</translation>

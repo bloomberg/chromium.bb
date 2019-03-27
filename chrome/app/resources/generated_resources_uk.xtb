@@ -3538,6 +3538,7 @@
 <translation id="6264365405983206840">Вибрати &amp;всі</translation>
 <translation id="6267166720438879315">Виберіть сертифікат, щоб ідентифікувати себе на <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Відкрити за допомогою додатка <ph name="APP" /></translation>
+<translation id="6270770586500173387">Надсилати <ph name="BEGIN_LINK1" />інформацію про систему й додатки<ph name="END_LINK1" />, а також <ph name="BEGIN_LINK2" />показники<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Під час завантаження плагіна сталася помилка (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">Якість</translation>
 <translation id="6277105963844135994">Час очікування мережі минув</translation>
@@ -3612,6 +3613,7 @@
 <translation id="6390799748543157332">Сторінки, які ви переглядаєте в цьому вікні, не відображатимуться в історії веб-переглядача, а після закривання всіх вікон, відкритих у гостьовому режимі, не залишать у комп’ютері інших слідів, наприклад файлів cookie. Однак завантажені файли зберігаються.</translation>
 <translation id="6390994422085833176">Переглянути функції синхронізації та персоналізації після налаштування</translation>
 <translation id="6393156038355142111">Запропонувати надійний пароль</translation>
+<translation id="6395423953133416962">Надсилати <ph name="BEGIN_LINK1" />інформацію про систему<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />показники<ph name="END_LINK2" /></translation>
 <translation id="6395575651121294044">Елементів: <ph name="NUMBER_OF_FILES" /></translation>
 <translation id="6397094776139756010">Параметри синхронізації та персоналізації</translation>
 <translation id="6398715114293939307">Вилучити Google Play Маркет</translation>
@@ -5101,7 +5103,6 @@
 <translation id="8637688295594795546">Доступне оновлення системи. Підготовка до завантаження…</translation>
 <translation id="8639047128869322042">Пошук шкідливих програм…</translation>
 <translation id="8642171459927087831">Маркер доступу</translation>
-<translation id="8642895855701880552">Надсилати <ph name="BEGIN_LINK1" />інформацію про систему й додатки<ph name="END_LINK1" /></translation>
 <translation id="8642947597466641025">Збільшити розмір тексту</translation>
 <translation id="8643418457919840804">Щоб продовжити, виберіть опцію:</translation>
 <translation id="8645354835496065562">Дозволяти доступ до датчиків</translation>

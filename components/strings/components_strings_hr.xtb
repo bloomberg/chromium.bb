@@ -302,7 +302,6 @@
 <translation id="2501278716633472235">Natrag</translation>
 <translation id="2503184589641749290">Prihvaćene debitne i pretplatne kartice</translation>
 <translation id="2515629240566999685">provjerite jačinu signala na svom području</translation>
-<translation id="2516852381693169964">Pretraži sliku uz <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2523886232349826891">Sprema se samo na ovom uređaju</translation>
 <translation id="2524461107774643265">Dodajte još podataka</translation>
 <translation id="2536110899380797252">Dodaj adresu</translation>
@@ -810,7 +809,6 @@
 <translation id="5455374756549232013">Vremenska oznaka pravila koje nije valjano</translation>
 <translation id="5457113250005438886">Nije važeće</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
-<translation id="5461666840533392417">Čini se da ste svojevoljno otišli s web-mjesta. Slobodno nastavite sami. Želim vam ugodan dan :)</translation>
 <translation id="5470861586879999274">&amp;Ponovi uređivanje</translation>
 <translation id="5478437291406423475">B6/C4 (omotnica)</translation>
 <translation id="5481076368049295676">Ovaj sadržaj može pokušati na vaš uređaj instalirati opasan softver koji krade ili briše podatke. <ph name="BEGIN_LINK" />Ipak prikaži<ph name="END_LINK" /></translation>
@@ -1057,6 +1055,7 @@
 <translation id="6965978654500191972">Uređaj</translation>
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="6973656660372572881">Određeni su fiksni proxy poslužitelji i URL .pac skripte.</translation>
+<translation id="6973932557599545801">Nažalost, ne mogu vam pomoći, nastavite sami.</translation>
 <translation id="6979158407327259162">Google disk</translation>
 <translation id="6979440798594660689">Bez zvuka (zadano)</translation>
 <translation id="6984479912851154518">Napuštate privatni način rada da biste platili putem vanjske aplikacije. Želite li nastaviti?</translation>

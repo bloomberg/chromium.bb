@@ -3538,6 +3538,7 @@
 <translation id="6264365405983206840">&amp;అన్నీ ఎంచుకోండి</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME" />కు మిమ్మల్ని మీరు ప్రమాణీకరించడానికి ఒక సర్టిఫికెట్‌ను ఎంచుకోండి</translation>
 <translation id="6268252012308737255"><ph name="APP" />తో తెరువు</translation>
+<translation id="6270770586500173387"><ph name="BEGIN_LINK1" />సిస్టమ్, యాప్‌ సమాచారాన్ని<ph name="END_LINK1" /> మరియు <ph name="BEGIN_LINK2" />గణాంకాలను<ph name="END_LINK2" /> పంపు</translation>
 <translation id="6272643420381259437">ప్లగ్ఇన్‌‌ను డౌన్‌లోడ్ చేస్తున్నప్పుడు ఎర్రర్ (<ph name="ERROR" />) ఏర్పడింది</translation>
 <translation id="6273677812470008672">నాణ్యత</translation>
 <translation id="6277105963844135994">నెట్‌వర్క్ సమయం ముగిసింది</translation>
@@ -3612,6 +3613,7 @@
 <translation id="6390799748543157332">మీరు ఈ విండో‌లో తెరిచే పేజీలు బ్రౌజర్ చరిత్రలో కనిపించవు, తెరిచిన అన్ని అతిథి విండోలను మీరు మూసివేసిన తర్వాత, అవి కంప్యూటర్‌లో కుక్కీల వంటి ఇతర జాడలను వదిలిపెట్టవు. అయితే, మీరు డౌన్‌లోడ్ చేసే ఫైల్‌లు భద్రపరచబడతాయి.</translation>
 <translation id="6390994422085833176">సెటప్ పూర్తయిన తర్వాత సమకాలీకరణ మరియు వ్యక్తిగతీకరణ ఫీచర్‌లను సమీక్షించండి</translation>
 <translation id="6393156038355142111">శక్తివంతమైన పాస్‌వర్డ్‌ని సూచించు</translation>
+<translation id="6395423953133416962"><ph name="BEGIN_LINK1" />సిస్టమ్ సమాచారం<ph name="END_LINK1" /> మరియు <ph name="BEGIN_LINK2" />గణాంకాలు<ph name="END_LINK2" /> పంపు</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> అంశాలు</translation>
 <translation id="6397094776139756010">సమకాలీకరణ మరియు వ్యక్తిగతీకరణ ఎంపికలు</translation>
 <translation id="6398715114293939307">Google Play స్టోర్‌ని తీసివేయండి</translation>
@@ -5098,7 +5100,6 @@
 <translation id="8637688295594795546">సిస్టమ్ అప్‌డేట్‌ అందుబాటులో ఉంది. డౌన్‌లోడ్ చేయ‌డానికి సిద్ధం చేస్తోంది...</translation>
 <translation id="8639047128869322042">హానికరమైన సాఫ్ట్‌వేర్‌ కోసం తనిఖీ చేస్తోంది...</translation>
 <translation id="8642171459927087831">యాక్సెస్ టోకెన్</translation>
-<translation id="8642895855701880552"><ph name="BEGIN_LINK1" />సిస్టమ్, యాప్ సమాచారం<ph name="END_LINK1" /> పంపు</translation>
 <translation id="8642947597466641025">టెక్స్ట్‌ని పెద్దదిగా చెయ్యి</translation>
 <translation id="8643418457919840804">కొనసాగడానికి, ఒక ఎంపికను ఎంచుకోండి:</translation>
 <translation id="8645354835496065562">సెన్సార్ యాక్సెన్‌ను అనుమతించడం కొనసాగించు</translation>

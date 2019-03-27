@@ -3539,6 +3539,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6264365405983206840">&amp;Tümünü Seç</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME" /> sunucusunda kimliğinizi doğrulamak için bir sertifika seçin</translation>
 <translation id="6268252012308737255"><ph name="APP" /> ile aç</translation>
+<translation id="6270770586500173387"><ph name="BEGIN_LINK1" />Sistem ve uygulama bilgilerini<ph name="END_LINK1" /> ve <ph name="BEGIN_LINK2" />metrikleri<ph name="END_LINK2" /> gönder</translation>
 <translation id="6272643420381259437">Eklenti indirilirken bir hata (<ph name="ERROR" />) oluştu</translation>
 <translation id="6273677812470008672">Kalite</translation>
 <translation id="6277105963844135994">Ağ zaman aşımı</translation>
@@ -3613,6 +3614,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6390799748543157332">Bu pencerede görüntülediğiniz sayfalar, göz atma geçmişinde görünmez ve açık olan tüm Misafir pencerelerini kapattığınızda bilgisayarda çerez gibi başka izler bırakmaz. Ancak indirdiğiniz dosyalar saklanır.</translation>
 <translation id="6390994422085833176">Kurulumun ardından senkronizasyon ve kişiselleştirme özelliklerini incele</translation>
 <translation id="6393156038355142111">Güçlü şifre öner</translation>
+<translation id="6395423953133416962"><ph name="BEGIN_LINK1" />Sistem bilgileri<ph name="END_LINK1" /> ve <ph name="BEGIN_LINK2" />metrikleri<ph name="END_LINK2" /> gönder</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> öğe</translation>
 <translation id="6397094776139756010">Senkronizasyon ve kişiselleştirme seçenekleri</translation>
 <translation id="6398715114293939307">Google Play Store'u kaldır</translation>
@@ -5101,7 +5103,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8637688295594795546">Kullanılabilir sistem güncellemesi mevcut. İndirmeye hazırlanılıyor...</translation>
 <translation id="8639047128869322042">Zararlı yazılımlar denetleniyor...</translation>
 <translation id="8642171459927087831">Erişim Verisi</translation>
-<translation id="8642895855701880552"><ph name="BEGIN_LINK1" />Sistem ve uygulama bilgileri<ph name="END_LINK1" /> gönder</translation>
 <translation id="8642947597466641025">Metni Büyüt</translation>
 <translation id="8643418457919840804">Devam etmek için bir seçenek belirleyin:</translation>
 <translation id="8645354835496065562">Sensör erişimine izin vermeye devam et</translation>

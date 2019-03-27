@@ -1970,7 +1970,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Tingues en compte que, si la plataforma admet notificacions sobre polítiques, el retard d'actualització s'establirà en 24 hores (i s'ignoraran tots els valors predeterminats i el valor d'aquesta política), ja que es preveu que aquestes notificacions forcin una actualització automàtica cada vegada que canviï la política. Per tant, serà innecessari fer actualitzacions més freqüents.</translation>
 <translation id="5530347722229944744">Bloqueja baixades potencialment perilloses</translation>
 <translation id="5535973522252703021">Llista blanca del servidor de delegacions Kerberos</translation>
-<translation id="555077880566103058">Permet que tots els llocs executin el connector <ph name="FLASH_PLUGIN_NAME" /> automàticament</translation>
+<translation id="555077880566103058">Permet que tots els llocs web executin el connector <ph name="FLASH_PLUGIN_NAME" /> automàticament</translation>
 <translation id="5559079916187891399">Aquesta política no té cap efecte a les aplicacions per a Android.</translation>
 <translation id="5560039246134246593">Afegeix un paràmetre a l'obtenció del valor seed de les variacions a <ph name="PRODUCT_NAME" />.
 

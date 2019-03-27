@@ -302,7 +302,6 @@
 <translation id="2501278716633472235">Înapoi</translation>
 <translation id="2503184589641749290">Carduri de debit și preplătite acceptate</translation>
 <translation id="2515629240566999685">să verifici semnalul din zona ta;</translation>
-<translation id="2516852381693169964">Caută imaginea pe <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2523886232349826891">Salvat numai pe acest dispozitiv</translation>
 <translation id="2524461107774643265">Adaugă mai multe informații</translation>
 <translation id="2536110899380797252">Adaugă o adresă</translation>
@@ -811,7 +810,6 @@
 <translation id="5455374756549232013">Marcaj temporal greșit pentru politică</translation>
 <translation id="5457113250005438886">Nevalide</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
-<translation id="5461666840533392417">Se pare că ai început să navighezi singur(ă), te las să continui. O zi frumoasă! :)</translation>
 <translation id="5470861586879999274">&amp;Repetați editarea</translation>
 <translation id="5478437291406423475">B6/C4 (Plic)</translation>
 <translation id="5481076368049295676">Acest conținut ar putea încerca să instaleze software periculos pe dispozitivul tău, care îți fură sau îți șterge informațiile. <ph name="BEGIN_LINK" />Afișează oricum<ph name="END_LINK" /></translation>
@@ -1058,6 +1056,7 @@
 <translation id="6965978654500191972">Dispozitiv</translation>
 <translation id="6970216967273061347">Județ</translation>
 <translation id="6973656660372572881">Sunt specificate atât servere proxy fixe, cât și o adresă URL pentru scripturi .pac.</translation>
+<translation id="6973932557599545801">Nu te mai pot ajuta. Continuă personal.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Dezactivează sunetul (prestabilit)</translation>
 <translation id="6984479912851154518">Vei părăsi modul privat pentru a plăti folosind o aplicație externă. Continui?</translation>

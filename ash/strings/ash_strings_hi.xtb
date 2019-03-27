@@ -13,7 +13,7 @@
 <translation id="112308213915226829">अलमारी को स्वत: छिपाएं</translation>
 <translation id="1153356358378277386">युग्‍मित डिवाइस</translation>
 <translation id="1195412055398077112">ओवरस्कैन</translation>
-<translation id="119944043368869598">सभी साफ़ करें</translation>
+<translation id="119944043368869598">सारा डेटा साफ़ करें</translation>
 <translation id="123828989343052515">नई डेस्क</translation>
 <translation id="1247372569136754018">माइक्रोफ़ोन (आंतरिक)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> से चार्ज हो रहा है</translation>
@@ -99,7 +99,7 @@
 <translation id="2416346634399901812"><ph name="NETWORK_NAME" /> से कनेक्ट है</translation>
 <translation id="2427507373259914951">बायां क्लिक</translation>
 <translation id="2429753432712299108">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. स्वीकार करने से पहले, कृपया दुबारा पूछें कि यह पासकुंजी उस डिवाइस पर दिखाई जा रही है: <ph name="PASSKEY" /></translation>
-<translation id="2482878487686419369">अधिसूचनाएं</translation>
+<translation id="2482878487686419369">सूचनाएं</translation>
 <translation id="2484513351006226581">कीबोर्ड लेआउट स्विच करने के लिए <ph name="KEYBOARD_SHORTCUT" /> दबाएं.</translation>
 <translation id="2501920221385095727">रोचक कुंजियां</translation>
 <translation id="2509468283778169019">CAPS LOCK चालू है</translation>
@@ -257,7 +257,7 @@
 <translation id="5136175204352732067">अलग कीबोर्ड कनेक्ट किया गया</translation>
 <translation id="5168181903108465623">कास्ट डिवाइस उपलब्ध हैं</translation>
 <translation id="5207949376430453814">लेख कैरेट हाइलाइट करें</translation>
-<translation id="5222676887888702881">प्रस्थान करें</translation>
+<translation id="5222676887888702881">साइन आउट करें</translation>
 <translation id="523505283826916779">पहुंच-योग्यता विकल्प</translation>
 <translation id="5283198616748585639">एक मिनट जोड़ें</translation>
 <translation id="5302048478445481009">भाषा</translation>

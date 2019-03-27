@@ -20,7 +20,7 @@
 <translation id="1023873740278604399">Mova o dedo levemente para adicionar as diferentes partes da sua impressão digital.</translation>
 <translation id="1026822031284433028">Carregar Imagem</translation>
 <translation id="1029317248976101138">Zoom</translation>
-<translation id="1030706264415084469">O URL <ph name="URL" /> quer armazenar permanentemente um grande volume de dados no seu dispositivo</translation>
+<translation id="1030706264415084469"><ph name="URL" /> quer armazenar permanentemente um grande volume de dados no seu dispositivo</translation>
 <translation id="1031362278801463162">Carregando visualização</translation>
 <translation id="103279545524624934">Libere espaço em disco para iniciar apps Android.</translation>
 <translation id="1033780634303702874">Acessar seus dispositivos de série</translation>
@@ -489,7 +489,7 @@
 <translation id="1708713382908678956"><ph name="NAME_PH" /> (código: <ph name="ID_PH" />)</translation>
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (nativo)</translation>
 <translation id="1712349894969001173">Receber essa senha no seu iPhone</translation>
-<translation id="1712552549805331520">O URL <ph name="URL" /> quer armazenar permanentemente os dados no computador local</translation>
+<translation id="1712552549805331520"><ph name="URL" /> quer armazenar dados no computador local</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1719312230114180055">Observação: sua impressão digital pode ser menos segura que uma senha forte ou um PIN.</translation>
 <translation id="1720318856472900922">Autenticação do servidor TLS WWW</translation>
@@ -680,7 +680,7 @@
 <translation id="1989112275319619282">Procurar</translation>
 <translation id="1992397118740194946">Não definido</translation>
 <translation id="1994173015038366702">URL do site</translation>
-<translation id="1997484222658892567">O URL <ph name="URL" /> quer armazenar permanentemente dados grandes no computador local</translation>
+<translation id="1997484222658892567"><ph name="URL" /> quer armazenar permanentemente dados grandes no computador local</translation>
 <translation id="1997616988432401742">Seus certificados</translation>
 <translation id="1999115740519098545">Inicialização</translation>
 <translation id="1999763610967697511">Arrastar e soltar</translation>
@@ -1478,7 +1478,7 @@
 <translation id="3188465121994729530">Média móvel</translation>
 <translation id="3190558889382726167">Senha salva</translation>
 <translation id="3192947282887913208">Arquivos de áudio</translation>
-<translation id="3194737229810486521">O URL <ph name="URL" /> quer armazenar permanentemente os dados no seu dispositivo</translation>
+<translation id="3194737229810486521"><ph name="URL" /> quer armazenar permanentemente os dados no seu dispositivo</translation>
 <translation id="3199127022143353223">Servidores</translation>
 <translation id="3202131003361292969">Caminho</translation>
 <translation id="3202173864863109533">O áudio desta guia está sendo desativado.</translation>
@@ -1963,6 +1963,7 @@
 <translation id="3892414795099177503">Adicionar OpenVPN / L2TP…</translation>
 <translation id="3893536212201235195">Ler e alterar as configurações de acessibilidade</translation>
 <translation id="3893630138897523026">ChromeVox (feedback falado)</translation>
+<translation id="3894123633473837029">Incluir o histórico recente do Assistente via Sherlog. Isso pode conter sua identidade, seu local e suas informações de depuração. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Adicionar pasta</translation>
 <translation id="389589731200570180">Compartilhar com convidados</translation>
 <translation id="3898521660513055167">Status do token</translation>
@@ -2033,7 +2034,7 @@
 <translation id="3983400541576569538">Os dados de alguns apps podem ter sido perdidos</translation>
 <translation id="3983586614702900908">dispositivos de um fornecedor desconhecido</translation>
 <translation id="3984159763196946143">Não foi possível iniciar o modo de demonstração</translation>
-<translation id="3987348946546879621">Dados salvos</translation>
+<translation id="3987348946546879621">Dados economizados</translation>
 <translation id="3987938432087324095">Não entendi.</translation>
 <translation id="3988996860813292272">Selecionar fuso horário</translation>
 <translation id="399179161741278232">Importado</translation>
@@ -2343,7 +2344,7 @@
 <translation id="4519935350946509010">Erro de conexão.</translation>
 <translation id="4520385623207007473">Cookies em uso</translation>
 <translation id="452039078290142656">dispositivos desconhecidos do <ph name="VENDOR_NAME" /></translation>
-<translation id="4522570452068850558">Detalhes</translation>
+<translation id="4522570452068850558">Saiba mais</translation>
 <translation id="4522600456902129422">Continuar permitindo que esse site veja a área de transferência</translation>
 <translation id="4524832533047962394">O modo de inscrição fornecido não é compatível com esta versão do sistema operacional. Verifique se você está executando a versão mais recente.</translation>
 <translation id="4525382759303819021">Receber as atualizações e recomendações mais recentes sobre os apps da Play Store</translation>
@@ -2438,7 +2439,7 @@
 <translation id="4669606053856530811">Membros de '<ph name="SOURCE_NAME" />' perderão acesso a menos que esses itens sejam compartilhados com eles.</translation>
 <translation id="4672657274720418656">Página de conversão</translation>
 <translation id="4673442866648850031">Abrir ferramentas da stylus quando a stylus for removida</translation>
-<translation id="4677585247300749148">O URL <ph name="URL" /> quer responder a eventos de acessibilidade</translation>
+<translation id="4677585247300749148"><ph name="URL" /> quer responder a eventos de acessibilidade</translation>
 <translation id="4677772697204437347">Memória do GPU</translation>
 <translation id="4680105648806843642">O som foi desativado nesta página</translation>
 <translation id="4681930562518940301">Abrir &amp;imagem original em uma nova guia</translation>
@@ -2475,7 +2476,7 @@
 <translation id="4726710629007580002">Houve avisos quando você tentou instalar esta extensão:</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4732760563705710320">Este vídeo não é suportado pelo seu dispositivo de transmissão.</translation>
-<translation id="4733082559415072992">O URL <ph name="URL" /> quer usar o local do seu dispositivo</translation>
+<translation id="4733082559415072992"><ph name="URL" /> quer acessar o local do seu dispositivo</translation>
 <translation id="4733793249294335256">Local</translation>
 <translation id="4734518477988699048">O valor inserido é inválido.</translation>
 <translation id="473546211690256853">Esta conta é gerenciada por <ph name="DOMAIN" /></translation>
@@ -2817,7 +2818,7 @@
 <translation id="5246282308050205996"><ph name="APP_NAME" /> travou. Clique neste balão para reiniciar o aplicativo.</translation>
 <translation id="5247051749037287028">Nome de exibição (opcional)</translation>
 <translation id="5249624017678798539">O navegador travou antes do término do download.</translation>
-<translation id="5250372599208556903">O <ph name="SEARCH_ENGINE_NAME" /> usa sua localização para oferecer conteúdo local a você. É possível alterar isso em <ph name="SETTINGS_LINK" />.</translation>
+<translation id="5250372599208556903">O <ph name="SEARCH_ENGINE_NAME" /> usa sua localização para que você tenha acesso a conteúdo local. É possível alterar isso em <ph name="SETTINGS_LINK" />.</translation>
 <translation id="5252456968953390977">Roaming</translation>
 <translation id="5252653240322147470">O PIN deve ter menos de <ph name="MAXIMUM" /> dígitos</translation>
 <translation id="5253070652067921974">Criado por</translation>
@@ -3080,7 +3081,7 @@
 <translation id="5608580678041221894">Toque nas teclas a seguir para ajustar ou mover a área de corte</translation>
 <translation id="5609231933459083978">Este aplicativo parece ser inválido.</translation>
 <translation id="5610038042047936818">Alternar para o modo de câmera</translation>
-<translation id="5612720917913232150">O URL <ph name="URL" /> quer usar o local do seu computador</translation>
+<translation id="5612720917913232150"><ph name="URL" /> quer acessar o local do seu computador</translation>
 <translation id="5612734644261457353">Não foi possível confirmar sua senha. Nota: se você alterou sua senha recentemente, a nova senha será aplicada depois que você sair. Use a senha antiga aqui.</translation>
 <translation id="5614190747811328134">Aviso para o usuário</translation>
 <translation id="5614553682702429503">Salvar senha?</translation>
@@ -3540,6 +3541,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6264365405983206840">Selecionar &amp;tudo</translation>
 <translation id="6267166720438879315">Selecione um certificado para se autenticar no <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Abrir com <ph name="APP" /></translation>
+<translation id="6270770586500173387">Enviar <ph name="BEGIN_LINK2" />métricas<ph name="END_LINK2" /> e <ph name="BEGIN_LINK1" />informações sobre o sistema e apps<ph name="END_LINK1" /></translation>
 <translation id="6272643420381259437">Ocorreu um erro (<ph name="ERROR" />) ao fazer o download do plug-in</translation>
 <translation id="6273677812470008672">Qualidade</translation>
 <translation id="6277105963844135994">Tempo limite de rede</translation>
@@ -3614,6 +3616,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6390799748543157332">As páginas que você visualiza nesta janela não aparecem no histórico do navegador e não deixam outros rastros, como cookies, no computador depois que todas as janelas abertas no modo de visitante são fechadas. No entanto, todos os arquivos baixados serão preservados.</translation>
 <translation id="6390994422085833176">Revise os recursos de sincronização e personalização após a configuração</translation>
 <translation id="6393156038355142111">Sugerir senha forte</translation>
+<translation id="6395423953133416962">Enviar <ph name="BEGIN_LINK1" />informações<ph name="END_LINK1" /> e <ph name="BEGIN_LINK2" />métricas do sistema<ph name="END_LINK2" /></translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> itens</translation>
 <translation id="6397094776139756010">Opções de sincronização e personalização</translation>
 <translation id="6398715114293939307">Remover Google Play Store</translation>
@@ -3945,7 +3948,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6904344821472985372">Revogar acesso a arquivos</translation>
 <translation id="6904655473976120856">Pressione o botão App para sair</translation>
 <translation id="6910211073230771657">Excluído</translation>
-<translation id="6910240653697687763">O URL <ph name="URL" /> quer ter controle total sobre seus dispositivos MIDI</translation>
+<translation id="6910240653697687763"><ph name="URL" /> quer ter controle total sobre seus dispositivos MIDI</translation>
 <translation id="691024665142758461">Fazer o download de vários arquivos</translation>
 <translation id="6911324888870229398">A conexão de rede foi perdida. Verifique a conexão ou tente outra rede Wi-Fi.</translation>
 <translation id="6911734910326569517">Ocupação da memória</translation>
@@ -5104,7 +5107,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8637688295594795546">A atualização do sistema está disponível. Preparando para fazer download...</translation>
 <translation id="8639047128869322042">Procurando softwares perigosos…</translation>
 <translation id="8642171459927087831">Token de acesso</translation>
-<translation id="8642895855701880552">Enviar <ph name="BEGIN_LINK1" />informações do sistema e do app<ph name="END_LINK1" /></translation>
 <translation id="8642947597466641025">Aumentar o texto</translation>
 <translation id="8643418457919840804">Para continuar, escolha uma opção:</translation>
 <translation id="8645354835496065562">Continuar permitindo acesso ao sensor</translation>

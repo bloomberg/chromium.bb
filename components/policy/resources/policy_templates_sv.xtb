@@ -250,7 +250,7 @@
 
       Om en app som tidigare har tvångsinstallerats tas bort från listan avinstalleras den automatiskt av <ph name="PRODUCT_NAME" />.
 
-      Varje post i principen är en sträng som innehåller ett tilläggs-id och en uppdateringsadress avgränsade med semikolon (<ph name="SEMICOLON" />). Ett tilläggs-id är sträng med 32 bokstäver, till exempel den som finns på <ph name="CHROME_EXTENSIONS_LINK" /> i utvecklarläge. Uppdateringsadressen ska peka på ett XML-manifestdokument för uppdatering enligt beskrivningen på <ph name="LINK_TO_EXTENSION_DOC1" />. Observera att uppdateringsadressen som anges i den här principen bara används för den ursprungliga installationen. För senare uppdateringar av tillägget används den uppdateringsadress som anges i tilläggets manifest.
+      Varje post i principen är en sträng som innehåller ett tilläggs-id och en uppdateringsadress avgränsade med semikolon (<ph name="SEMICOLON" />). Ett tilläggs-id är en sträng med 32 bokstäver, till exempel den som finns på <ph name="CHROME_EXTENSIONS_LINK" /> i utvecklarläge. Uppdateringsadressen ska peka på ett XML-manifestdokument för uppdatering enligt beskrivningen på <ph name="LINK_TO_EXTENSION_DOC1" />. Observera att uppdateringsadressen som anges i den här principen bara används för den ursprungliga installationen. För senare uppdateringar av tillägget används den uppdateringsadress som anges i tilläggets manifest.
 
       Exempel: <ph name="EXTENSION_POLICY_EXAMPLE" /> installerar appen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> från standarduppdateringsadressen för Chrome Web Store. Mer information om att tillhandahålla tillägg finns på: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="1435659902881071157">Nätverkskonfiguration på enhetsnivå</translation>
@@ -874,7 +874,7 @@
 <translation id="257788512393330403">Lösenord krävs var sjätte timme</translation>
 <translation id="2587719089023392205">Gör <ph name="PRODUCT_NAME" /> till min standardwebbläsare</translation>
 <translation id="2592091433672667839">Inaktivitetstid innan skärmsläckaren visas på inloggningsskärmen i återförsäljarläge</translation>
-<translation id="2592162121850992309">Om den här principen är inställd på sant eller inte ställs in aktiveras maskinvaruacceleration om inte en viss funktion i grafikprocessorn är svartlistad.
+<translation id="2592162121850992309">Om den här principen är inställd på sant eller inte ställs in aktiveras maskinvaruacceleration såvida en viss funktion i grafikprocessorn inte är svartlistad.
 
       Om principen är inställd på falskt inaktiveras maskinvaruacceleration.</translation>
 <translation id="2596260130957832043">Styr om NTLMv2 är aktiverat.
@@ -1352,7 +1352,7 @@
       När principen är inställd på falskt försöker enheten inte kontakta
       Quirks-servern för att ladda ned konfigurationsfiler.
 
-      Om principen är inställd på sant eller om den inte har konfigurerats kommer <ph name="PRODUCT_OS_NAME" /> automatiskt att kontakta Quirks-servern och ladda ned konfigurationsfiler (i mån av tillgång) och spara dem på enheten.  Sådana filer kan till exempel användas för att förbättra visningskvaliteten på anslutna skärmar.</translation>
+      Om principen är inställd på sant eller om den inte har konfigurerats kontaktar <ph name="PRODUCT_OS_NAME" /> automatiskt Quirks-servern och laddar ned konfigurationsfiler (i mån av tillgång) och sparar dem på enheten.  Sådana filer kan till exempel användas för att förbättra visningskvaliteten på anslutna skärmar.</translation>
 <translation id="3524204464536655762">Tillåt inte att någon webbplats begär åtkomst till USB-enheter via WebUSB API</translation>
 <translation id="3526752951628474302">Endast utskrift i svartvitt</translation>
 <translation id="3528000905991875314">Aktivera alternativa felsidor</translation>
@@ -1383,7 +1383,7 @@
 <translation id="3628480121685794414">Aktivera enkelsidig utskrift</translation>
 <translation id="3631099945620529777">När principen ställs in på falskt är knappen Avsluta aktivitet inaktiverad i Aktivitetshanteraren.
 
-      När principen ställs in sant eller inte har konfigurerats kan användaren avsluta aktiviteter i Aktivitetshanteraren.</translation>
+      När principen ställs in på sant eller inte har konfigurerats kan användaren avsluta aktiviteter i Aktivitetshanteraren.</translation>
 <translation id="3646859102161347133">Ange typen av skärmförstorare</translation>
 <translation id="3653237928288822292">Ikon för standardsökleverantör</translation>
 <translation id="3660510274595679517">
@@ -3409,7 +3409,7 @@
 <translation id="7683777542468165012">Dynamisk policyuppdatering</translation>
 <translation id="7687943045976362719">Om den här principen ställs in hanteras de angivna innehållstyperna av <ph name="PRODUCT_FRAME_NAME" />.
 
-          Om ingen principen inte ställs in används standardrenderaren för alla webbplatser. (Standardrenderaren kan konfigureras med hjälp av principen <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" />.)</translation>
+          Om principen inte ställs in används standardrenderaren för alla webbplatser. (Standardrenderaren kan konfigureras med hjälp av principen <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" />.)</translation>
 <translation id="7694807474048279351">Schemalägg en automatisk omstart efter uppdatering av <ph name="PRODUCT_OS_NAME" />.
 
       När den här principen är sann schemaläggs en automatisk omstart när <ph name="PRODUCT_OS_NAME" /> har uppdaterats och en omstart krävs för att slutföra processen. Omstarten schemaläggs omedelbart man kan fördröjas i upp till 24 timmar om någon använder enheten.
@@ -4053,7 +4053,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
       När den här principen är inställd på värdet -1 kan användaren verifieras offline i oändlighet. När den här principen är inställd på ett annat värde anges tidslängden sedan den senaste onlineverifieringen efter vilken användaren måste använda onlineverifieringen igen.
 
-      Om ingen principen inte ställs in använder <ph name="PRODUCT_OS_NAME" /> en standardtid på 14 dagar efter vilka användaren måste använda onlineverifieringen igen.
+      Om principen inte ställs in använder <ph name="PRODUCT_OS_NAME" /> en standardtid på 14 dagar efter vilka användaren måste använda onlineverifieringen igen.
 
       Den här principen påverkar endast användare som verifieras via SAML.
 
@@ -4191,7 +4191,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
           Om principen inte anges används 3 och användaren kan ändra inställningen.</translation>
 <translation id="9167719789236691545">Inaktivera Drive i appen Filer i <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="9185107612228451403">Konfigurerar principer för tillägg. Användaren tillåts inte installera svartlistade tillägg såvida de inte också står på vitlistan. Du kan även tvinga <ph name="PRODUCT_NAME" /> att installera tillägg automatiskt genom att ange dem i <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />. Tillägg med tvingande installation installeras även om de står på den svarta listan.</translation>
+<translation id="9185107612228451403">Konfigurerar principer för tillägg. Användaren får inte installera svartlistade tillägg såvida de inte är vitlistade. Du kan även tvinga <ph name="PRODUCT_NAME" /> att installera tillägg automatiskt genom att ange dem i <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />. Tillägg med tvingande installation installeras även om de står på den svarta listan.</translation>
 <translation id="9187743794267626640">Inaktivera montering av extern lagring</translation>
 <translation id="9197740283131855199">Procentsats med vilken fördröjningen av dämpningen av skärmen ska skalanpassas om användaren gör något efter dämpningen</translation>
 <translation id="9200828125069750521">Parametrar för bildwebbadresser som använder POST</translation>

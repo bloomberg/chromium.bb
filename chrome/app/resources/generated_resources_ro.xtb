@@ -1963,6 +1963,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3892414795099177503">Adaugă OpenVPN/L2TP…</translation>
 <translation id="3893536212201235195">Citește și modifică setările de accesibilitate</translation>
 <translation id="3893630138897523026">ChromeVox (feedback rostit)</translation>
+<translation id="3894123633473837029">Include istoricul recent al Asistentului prin Sherlog. Acesta poate include identitatea, locația și informațiile de remediere a erorilor. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Adaugă un dosar</translation>
 <translation id="389589731200570180">Permiteți accesul invitaților</translation>
 <translation id="3898521660513055167">Stare indicativ</translation>
@@ -3538,6 +3539,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6264365405983206840">Select&amp;ează tot</translation>
 <translation id="6267166720438879315">Selectează un certificat pentru a te autentifica pe <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Deschide cu <ph name="APP" /></translation>
+<translation id="6270770586500173387">Trimite <ph name="BEGIN_LINK1" />informații despre sistem și aplicații<ph name="END_LINK1" /> și <ph name="BEGIN_LINK2" />valori<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">A apărut o eroare (<ph name="ERROR" />) la descărcarea pluginului</translation>
 <translation id="6273677812470008672">Calitate</translation>
 <translation id="6277105963844135994">Conectarea la rețea a expirat</translation>
@@ -3612,6 +3614,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6390799748543157332">Paginile pe care le accesați în această fereastră nu vor apărea în istoricul browserului și nu vor lăsa alte urme pe computer (de ex., cookie-uri) după ce închideți toate ferestrele deschise în modul Invitat. Cu toate acestea, fișierele pe care le descărcați vor fi păstrate.</translation>
 <translation id="6390994422085833176">Examinează funcțiile de sincronizare și personalizare după configurare</translation>
 <translation id="6393156038355142111">Sugerează o parolă puternică</translation>
+<translation id="6395423953133416962">Trimiteți <ph name="BEGIN_LINK2" />valori<ph name="END_LINK2" /> și <ph name="BEGIN_LINK1" />informații de sistem<ph name="END_LINK1" /></translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> elemente</translation>
 <translation id="6397094776139756010">Opțiuni de sincronizare și personalizare</translation>
 <translation id="6398715114293939307">Elimină Magazinul Google Play</translation>
@@ -5101,7 +5104,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8637688295594795546">Este disponibilă o actualizare de sistem. Se pregătește descărcarea...</translation>
 <translation id="8639047128869322042">Se caută software dăunător...</translation>
 <translation id="8642171459927087831">Indicativ de acces</translation>
-<translation id="8642895855701880552">Trimite <ph name="BEGIN_LINK1" />informațiile privind sistemul și aplicația<ph name="END_LINK1" /></translation>
 <translation id="8642947597466641025">Măriți textul</translation>
 <translation id="8643418457919840804">Pentru a continua, alege o opțiune:</translation>
 <translation id="8645354835496065562">Permite în continuare accesul la senzori</translation>

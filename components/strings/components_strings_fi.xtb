@@ -302,7 +302,6 @@
 <translation id="2501278716633472235">Takaisin</translation>
 <translation id="2503184589641749290">Hyväksytyt maksu- ja prepaid-kortit</translation>
 <translation id="2515629240566999685">Tarkista alueesi mobiilisignaali.</translation>
-<translation id="2516852381693169964">Hae kuvaa (<ph name="SEARCH_ENGINE" />)</translation>
 <translation id="2523886232349826891">Tallennetaan vain tälle laitteelle</translation>
 <translation id="2524461107774643265">Lisää tietoja</translation>
 <translation id="2536110899380797252">Lisää osoite</translation>
@@ -639,7 +638,7 @@
 <translation id="4424024547088906515">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; Chrome ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="443121186588148776">Sarjaportti</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> ei hyväksynyt kirjautumisvarmennettasi, tai varmennetta ei annettu.</translation>
-<translation id="4434045419905280838">Ponnahdusikk. ja uudelleenohj.</translation>
+<translation id="4434045419905280838">Ponn.ikkunat ja uudelleenohj.</translation>
 <translation id="4435702339979719576">Postikortti</translation>
 <translation id="443673843213245140">Välityspalvelinta ei saa käyttää, mutta erilliset välityspalvelimen asetukset on määritetty.</translation>
 <translation id="445100540951337728">Hyväksytyt maksukortit</translation>
@@ -812,7 +811,6 @@
 <translation id="5455374756549232013">Virheellinen käytännön aikaleima</translation>
 <translation id="5457113250005438886">Virheellinen</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> ja <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> toinen}other{<ph name="CONTACT_PREVIEW" /> ja <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> muuta}}</translation>
-<translation id="5461666840533392417">Siirryit näköjään itse pois, joten asetun taka-alalle. Mukavaa päivänjatkoa :)</translation>
 <translation id="5470861586879999274">&amp;Toista muokkaus</translation>
 <translation id="5478437291406423475">B6/C4 (kirjekuori)</translation>
 <translation id="5481076368049295676">Tämä sisältö saattaa yrittää asentaa vaarallisia ohjelmistoja laitteellesi tai varastaa tai poistaa tietojasi. <ph name="BEGIN_LINK" />Näytä silti<ph name="END_LINK" /></translation>
@@ -1043,7 +1041,7 @@
 <translation id="6891596781022320156">Käytännön tasoa ei tueta.</translation>
 <translation id="6895330447102777224">Korttisi vahvistettiin.</translation>
 <translation id="6897140037006041989">User agent</translation>
-<translation id="6903319715792422884">Auta kehittämään selaussuojaa lähettämällä tiettyjä <ph name="BEGIN_WHITEPAPER_LINK" />järjestelmätietoa ja sivujen sisältöä<ph name="END_WHITEPAPER_LINK" /> Googlelle. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="6903319715792422884">Auta kehittämään Selaussuojaa lähettämällä <ph name="BEGIN_WHITEPAPER_LINK" />järjestelmätietoja ja sivujen sisältöä<ph name="END_WHITEPAPER_LINK" /> Googlelle. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Käyttäjä:</translation>
 <translation id="6934672428414710184">Tämä nimi on peräisin Google-tililtäsi</translation>
 <translation id="6939583532829045966"><ph name="ENROLLMENT_DOMAIN" /> ylläpitää laitettasi. Järjestelmänvalvoja voi siis määrittää laitteen etäyhteydellä.</translation>
@@ -1059,6 +1057,7 @@
 <translation id="6965978654500191972">Laite</translation>
 <translation id="6970216967273061347">Alue</translation>
 <translation id="6973656660372572881">Sekä kiinteät välityspalvelimet että .pac-URL-osoite on määritetty.</translation>
+<translation id="6973932557599545801">En valitettavasti voi auttaa. Voit jatkaa omatoimisesti.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Mykistä (oletus)</translation>
 <translation id="6984479912851154518">Yksityinen tila suljetaan, jotta voit tehdä maksun ulkoisella sovelluksella. Haluatko jatkaa?</translation>

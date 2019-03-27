@@ -294,7 +294,6 @@
 <translation id="2501278716633472235">戻る</translation>
 <translation id="2503184589641749290">利用可能なデビットカードとプリペイド カード</translation>
 <translation id="2515629240566999685">電波状況を確認する</translation>
-<translation id="2516852381693169964"><ph name="SEARCH_ENGINE" /> で画像を検索</translation>
 <translation id="2523886232349826891">カードはこのデバイスのみに保存されます</translation>
 <translation id="2524461107774643265">その他の情報の追加</translation>
 <translation id="2536110899380797252">住所を追加</translation>
@@ -803,7 +802,6 @@
 <translation id="5455374756549232013">ポリシーのタイムスタンプが不適切です</translation>
 <translation id="5457113250005438886">無効</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 件）}other{<ph name="CONTACT_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 件）}}</translation>
-<translation id="5461666840533392417">自動入力はお客様によって無効にされたようです。手動で入力してください。</translation>
 <translation id="5470861586879999274">編集のやり直し（&amp;R）</translation>
 <translation id="5478437291406423475">B6 / C4（封筒）</translation>
 <translation id="5481076368049295676">アクセス先のコンテンツによって、個人情報を入手したり削除したりする危険なソフトウェアがインストールされる可能性があります。<ph name="BEGIN_LINK" />危険性を理解したうえで表示する<ph name="END_LINK" /></translation>
@@ -1050,6 +1048,7 @@
 <translation id="6965978654500191972">デバイス</translation>
 <translation id="6970216967273061347">地区</translation>
 <translation id="6973656660372572881">固定プロキシ サーバーと .pac スクリプト URL の両方が指定されています。</translation>
+<translation id="6973932557599545801">自動入力できません。残りの入力はご自身で行ってください。</translation>
 <translation id="6979158407327259162">Google ドライブ</translation>
 <translation id="6979440798594660689">ミュート（デフォルト）</translation>
 <translation id="6984479912851154518">外部アプリケーションでのお支払い処理に進むため、プライベート モードを解除します。続行しますか？</translation>

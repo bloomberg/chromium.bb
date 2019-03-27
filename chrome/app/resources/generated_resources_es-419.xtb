@@ -3534,6 +3534,7 @@
 <translation id="6264365405983206840">Seleccion&amp;ar todo</translation>
 <translation id="6267166720438879315">Seleccionar un certificado para autenticarte como <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Abrir con <ph name="APP" /></translation>
+<translation id="6270770586500173387">Enviar <ph name="BEGIN_LINK2" />métricas<ph name="END_LINK2" /> e <ph name="BEGIN_LINK1" />información de apps y el sistema<ph name="END_LINK1" /></translation>
 <translation id="6272643420381259437">Se produjo un error (<ph name="ERROR" />) al descargar el complemento</translation>
 <translation id="6273677812470008672">Calidad</translation>
 <translation id="6277105963844135994">Tiempo de espera de red agotado</translation>
@@ -3608,6 +3609,7 @@
 <translation id="6390799748543157332">Las páginas a las que accedas desde esta ventana no aparecerán en el historial del navegador ni dejarán rastros (por ejemplo, cookies) en la computadora después de cerrar todas las ventanas abiertas de la sesión de invitado. Los archivos descargados permanecerán intactos.</translation>
 <translation id="6390994422085833176">Después de establecer la configuración, revisa las funciones de sincronización y personalización</translation>
 <translation id="6393156038355142111">Sugerir contraseña segura</translation>
+<translation id="6395423953133416962">Enviar <ph name="BEGIN_LINK1" />información del sistema<ph name="END_LINK1" /> y <ph name="BEGIN_LINK2" />métricas<ph name="END_LINK2" /></translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> elementos</translation>
 <translation id="6397094776139756010">Opciones de personalización y sincronización</translation>
 <translation id="6398715114293939307">Quitar Google Play Store</translation>
@@ -5096,7 +5098,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8637688295594795546">Actualización del sistema disponible. Preparando para descargar...</translation>
 <translation id="8639047128869322042">Buscando software dañino…</translation>
 <translation id="8642171459927087831">Token de acceso</translation>
-<translation id="8642895855701880552">Enviar <ph name="BEGIN_LINK1" />información del sistema y la app<ph name="END_LINK1" /></translation>
 <translation id="8642947597466641025">Aumentar el tamaño del texto</translation>
 <translation id="8643418457919840804">Para continuar, elige una opción:</translation>
 <translation id="8645354835496065562">Seguir permitiendo el acceso a los sensores</translation>

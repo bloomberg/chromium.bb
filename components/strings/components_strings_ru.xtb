@@ -294,7 +294,6 @@
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2503184589641749290">Дебетовые карты и карты предоплаты, которые принимаются к оплате</translation>
 <translation id="2515629240566999685">Проверьте уровень сигнала сети.</translation>
-<translation id="2516852381693169964">Найти картинку (<ph name="SEARCH_ENGINE" />)</translation>
 <translation id="2523886232349826891">Карта будет сохранена только на этом устройстве</translation>
 <translation id="2524461107774643265">Укажите дополнительную информацию</translation>
 <translation id="2536110899380797252">Добавить адрес</translation>
@@ -802,7 +801,6 @@
 <translation id="5455374756549232013">Неверная временная метка политики</translation>
 <translation id="5457113250005438886">Недопустимые данные</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контакт}one{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контакт}few{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контакта}many{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контактов}other{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контакта}}</translation>
-<translation id="5461666840533392417">Похоже, моя помощь больше не нужна. Хорошего дня! :)</translation>
 <translation id="5470861586879999274">&amp;Повторить изменения</translation>
 <translation id="5478437291406423475">B6/C4 (конверт)</translation>
 <translation id="5481076368049295676">Посещение этой страницы может привести к установке вредоносной программы, которая похищает или удаляет данные. <ph name="BEGIN_LINK" />Все равно продолжить<ph name="END_LINK" /></translation>
@@ -1049,6 +1047,7 @@
 <translation id="6965978654500191972">Устройство</translation>
 <translation id="6970216967273061347">Округ</translation>
 <translation id="6973656660372572881">Указаны как фиксированные прокси-серверы, так и URL PAC-скриптов.</translation>
+<translation id="6973932557599545801">Извините, я ничем не могу помочь. Продолжите самостоятельно.</translation>
 <translation id="6979158407327259162">Google Диск</translation>
 <translation id="6979440798594660689">Без звука (по умолчанию)</translation>
 <translation id="6984479912851154518">Вы выйдете из режима инкогнито, чтобы произвести оплату во внешнем приложении. Продолжить?</translation>

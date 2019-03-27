@@ -302,7 +302,6 @@
 <translation id="2501278716633472235">뒤로 이동</translation>
 <translation id="2503184589641749290">사용 가능한 직불카드 및 선불카드</translation>
 <translation id="2515629240566999685">현재 지역의 신호 확인</translation>
-<translation id="2516852381693169964"><ph name="SEARCH_ENGINE" />에서 이미지 검색</translation>
 <translation id="2523886232349826891">이 기기에만 저장됨</translation>
 <translation id="2524461107774643265">자세한 정보 추가</translation>
 <translation id="2536110899380797252">주소 추가</translation>
@@ -412,7 +411,7 @@
       <ph name="PLATFORM_TEXT" /></translation>
 <translation id="3195213714973468956"><ph name="SERVER_NAME" />의 <ph name="PRINTER_NAME" /></translation>
 <translation id="320323717674993345">결제 취소</translation>
-<translation id="3207960819495026254">북마크됨</translation>
+<translation id="3207960819495026254">북마크에 추가됨</translation>
 <translation id="321912867715453276">경고: 정책에 대한 소스가 두 개 이상 있으나 값이 동일합니다.</translation>
 <translation id="3225919329040284222">서버가 내장된 기대치와 일치하지 않는 인증서를 전달했습니다. 이러한 기대치는 사용자를 보호하기 위해 보안이 엄격한 특정 웹사이트에 포함됩니다.</translation>
 <translation id="3226128629678568754">페이지 로드에 필요한 데이터를 다시 제출하려면 새로고침 버튼을 누릅니다.</translation>
@@ -811,7 +810,6 @@
 <translation id="5455374756549232013">잘못된 정책 타임스탬프</translation>
 <translation id="5457113250005438886">잘못된 데이터</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />개}other{<ph name="CONTACT_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />개}}</translation>
-<translation id="5461666840533392417">직접 입력하시기로 하셨군요. 방해하지 않겠습니다. 좋은 하루 보내세요. ^^</translation>
 <translation id="5470861586879999274">수정 다시 실행(&amp;R)</translation>
 <translation id="5478437291406423475">B6/C4(봉투)</translation>
 <translation id="5481076368049295676">이 콘텐츠는 사용자의 정보를 도용하거나 삭제하는 위험한 소프트웨어를 기기에 설치하려 할 수도 있습니다. <ph name="BEGIN_LINK" />표시하기<ph name="END_LINK" /></translation>
@@ -1058,6 +1056,7 @@
 <translation id="6965978654500191972">기기</translation>
 <translation id="6970216967273061347">주소</translation>
 <translation id="6973656660372572881">고정 프록시 서버와 .pac 스크립트 URL이 모두 지정되어 있습니다.</translation>
+<translation id="6973932557599545801">죄송합니다. 더 이상 도와드릴 수 없습니다. 직접 계속해 주세요.</translation>
 <translation id="6979158407327259162">Google 드라이브</translation>
 <translation id="6979440798594660689">음소거(기본값)</translation>
 <translation id="6984479912851154518">시크릿 모드를 종료하고 외부 애플리케이션에서 결제합니다. 계속하시겠습니까?</translation>

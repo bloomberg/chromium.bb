@@ -302,7 +302,6 @@
 <translation id="2501278716633472235">Geri dön</translation>
 <translation id="2503184589641749290">Kabul edilen banka ve ön ödemeli kartlar</translation>
 <translation id="2515629240566999685">Bulunduğunuz bölgedeki sinyali kontrol etme</translation>
-<translation id="2516852381693169964"><ph name="SEARCH_ENGINE" /> içinde Resim ara</translation>
 <translation id="2523886232349826891">Yalnızca bu cihazda kaydedildi</translation>
 <translation id="2524461107774643265">Daha Fazla Bilgi Ekleyin</translation>
 <translation id="2536110899380797252">Adres Ekle</translation>
@@ -811,7 +810,6 @@
 <translation id="5455374756549232013">Politika zaman damgası yanlış</translation>
 <translation id="5457113250005438886">Geçersiz</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> ve <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> kişi daha}other{<ph name="CONTACT_PREVIEW" /> ve <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> kişi daha}}</translation>
-<translation id="5461666840533392417">Görünüşe göre siz zaten kendi başınıza yolunuzu bulmuşsunuz, bana gerek kalmadı. İyi günler :)</translation>
 <translation id="5470861586879999274">Düzenlemeyi &amp;yeniden yap</translation>
 <translation id="5478437291406423475">B6/C4 (Zarf)</translation>
 <translation id="5481076368049295676">Bu içerik, cihazınıza bilgilerinizi çalabilecek veya silebilecek tehlikeli yazılımlar yüklemeye çalışabilir. <ph name="BEGIN_LINK" />Yine de göster<ph name="END_LINK" /></translation>

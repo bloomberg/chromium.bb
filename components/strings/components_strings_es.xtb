@@ -294,7 +294,6 @@
 <translation id="2501278716633472235">Volver</translation>
 <translation id="2503184589641749290">Tarjetas prepago y de débito aceptadas</translation>
 <translation id="2515629240566999685">Comprobar la señal en tu zona</translation>
-<translation id="2516852381693169964">Buscar imagen en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2523886232349826891">Solo se guardará en este dispositivo</translation>
 <translation id="2524461107774643265">Añade más información</translation>
 <translation id="2536110899380797252">Añadir dirección</translation>
@@ -803,7 +802,6 @@
 <translation id="5455374756549232013">Marca de tiempo de política incorrecta</translation>
 <translation id="5457113250005438886">No válido</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> más}other{<ph name="CONTACT_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> más}}</translation>
-<translation id="5461666840533392417">Parece que estás navegando sin mi ayuda, avísame si necesitas algo. ¡Que tengas un buen día! :-)</translation>
 <translation id="5470861586879999274">&amp;Rehacer edición</translation>
 <translation id="5478437291406423475">B6/C4 (sobre)</translation>
 <translation id="5481076368049295676">Es posible que este contenido intente instalar software peligroso que robe o elimine tu información en el dispositivo. <ph name="BEGIN_LINK" />Mostrar de todos modos<ph name="END_LINK" /></translation>
@@ -1050,6 +1048,7 @@
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Se especifican tanto servidores proxy fijos como una URL de secuencia de comandos .pac.</translation>
+<translation id="6973932557599545801">Lo siento, no puedo ayudarte. Puedes continuar por tu cuenta.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Silenciar (predeterminado)</translation>
 <translation id="6984479912851154518">Saldrás del modo privado para hacer un pago en una aplicación externa. ¿Quieres continuar?</translation>

@@ -1961,6 +1961,7 @@
 <translation id="3892414795099177503">Tambahkan OpenVPN / L2TP...</translation>
 <translation id="3893536212201235195">Baca dan ubah setelan aksesibilitas Anda</translation>
 <translation id="3893630138897523026">ChromeVox (masukan lisan)</translation>
+<translation id="3894123633473837029">Sertakan histori Asisten terbaru melalui Sherlog. Informasi ini mencakup identitas, lokasi, dan info debug Anda <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Tambah folder</translation>
 <translation id="389589731200570180">Berbagi dengan tamu</translation>
 <translation id="3898521660513055167">Status Token</translation>
@@ -3536,6 +3537,7 @@
 <translation id="6264365405983206840">Pilih Semu&amp;a</translation>
 <translation id="6267166720438879315">Pilih sertifikat untuk membuktikan diri Anda ke <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Buka dengan <ph name="APP" /></translation>
+<translation id="6270770586500173387">Kirim <ph name="BEGIN_LINK1" />informasi aplikasi dan sistem<ph name="END_LINK1" /> serta <ph name="BEGIN_LINK2" />metrik<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Terjadi kesalahan (<ph name="ERROR" />) saat mendownload plugin</translation>
 <translation id="6273677812470008672">Kualitas</translation>
 <translation id="6277105963844135994">Waktu tunggu jaringan habis</translation>
@@ -3610,6 +3612,7 @@
 <translation id="6390799748543157332">Halaman yang Anda lihat di jendela ini tidak akan muncul dalam histori browser dan tidak meninggalkan jejak lain, seperti cookie, di komputer setelah Anda menutup semua jendela Tamu yang terbuka. Namun, file apa pun yang Anda download akan tersimpan.</translation>
 <translation id="6390994422085833176">Tinjau fitur sinkronisasi dan personalisasi setelah penyiapan</translation>
 <translation id="6393156038355142111">Sarankan sandi yang kuat</translation>
+<translation id="6395423953133416962">Kirim <ph name="BEGIN_LINK1" />informasi sistem<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />metrik<ph name="END_LINK2" /></translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> item</translation>
 <translation id="6397094776139756010">Opsi sinkronisasi dan personalisasi</translation>
 <translation id="6398715114293939307">Hapus Google Play Store</translation>
@@ -5099,7 +5102,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8637688295594795546">Pembaruan sistem tersedia. Bersiap mendownload...</translation>
 <translation id="8639047128869322042">Memeriksa software berbahaya...</translation>
 <translation id="8642171459927087831">Token Akses</translation>
-<translation id="8642895855701880552">Kirim <ph name="BEGIN_LINK1" />informasi sistem dan aplikasi<ph name="END_LINK1" /></translation>
 <translation id="8642947597466641025">Perbesar Teks</translation>
 <translation id="8643418457919840804">Untuk melanjutkan, pilih salah satu opsi:</translation>
 <translation id="8645354835496065562">Terus izinkan akses sensor</translation>

@@ -49,10 +49,10 @@
 <translation id="2063848847527508675">‏يلزم إعادة تشغيل نظام التشغيل Chrome حتى يتم تطبيق التحديث.</translation>
 <translation id="2094919256425865063">‏هل تريد الخروج من Chrome على أي حال؟</translation>
 <translation id="2120620239521071941">‏سيعمل هذا على حذف <ph name="ITEMS_COUNT" /> من العناصر من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chrome كـ <ph name="USER_EMAIL" />.</translation>
-<translation id="2123055963409958220">‏ساعد في تحسين Chrome بالإبلاغ عن <ph name="BEGIN_LINK" />الإعدادات الحالية<ph name="END_LINK" /></translation>
+<translation id="2123055963409958220">‏يمكنك المساعدة في تحسين Chrome بالإبلاغ عن <ph name="BEGIN_LINK" />الإعدادات الحالية<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">‏بادِر بتثبيت Chrome على هاتفك. سنرسل رسالة قصيرة SMS إلى رقم هاتف استرداد حسابك.</translation>
 <translation id="2246246234298806438">‏لا يمكن لـ Google Chrome عرض معاينة الطباعة عندما يكون عارض PDF المضمّن مفقودًا.</translation>
-<translation id="2252923619938421629">‏ساعد في تحسين Google Chrome بالإبلاغ عن الإعدادات الحالية</translation>
+<translation id="2252923619938421629">‏يمكنك المساعدة في تحسين Google Chrome بالإبلاغ عن الإعدادات الحالية</translation>
 <translation id="225363235161345695">{0,plural, =1{‏ستتم إعادة تشغيل Chrome خلال ساعة واحدة}zero{‏ستتم إعادة تشغيل Chrome خلال # ساعة}two{‏ستتم إعادة تشغيل Chrome خلال ساعتين (#)}few{‏ستتم إعادة تشغيل Chrome خلال # ساعات}many{‏ستتم إعادة تشغيل Chrome خلال # ساعةً}other{‏ستتم إعادة تشغيل Chrome خلال # ساعة}}</translation>
 <translation id="2286950485307333924">‏تم تسجيل دخولك الآن إلى Chrome</translation>
 <translation id="2290014774651636340">‏مفاتيح واجهة برمجة تطبيقات Google مفقودة. وسيترتب على ذلك توقف بعض وظائف Google Chrome عن العمل.</translation>
@@ -81,7 +81,7 @@
 <translation id="2847461019998147611">‏عرض Google Chrome بهذه اللغة</translation>
 <translation id="2857540653560290388">‏جارٍ إطلاق Chrome...</translation>
 <translation id="2871893339301912279">‏تم تسجيل دخولك إلى Chrome!</translation>
-<translation id="2888126860611144412">‏حول Chrome</translation>
+<translation id="2888126860611144412">‏لمحة عن Chrome</translation>
 <translation id="3037838751736561277">‏Google Chrome في وضع الخلفية.</translation>
 <translation id="3047079729301751317">‏سيؤدي قطع اتصال <ph name="USERNAME" /> إلى مسح السجّل والإشارات المرجعية والإعدادات وبيانات Chrome الأخرى المخزنة على هذا الجهاز. لن يتم مسح البيانات المخزنة في حساب Google ويمكن إدارتها على <ph name="GOOGLE_DASHBOARD_LINK" />لوحة تحكم Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3065168410429928842">‏علامة تبويب Chrome</translation>
@@ -124,7 +124,7 @@
 <translation id="4143243756087420366">‏الاسم والصورة على Chrome</translation>
 <translation id="4147555960264124640">‏إنك تسجل الدخول باستخدام حساب مُدار وتمنح المشرف إمكانية التحكم في ملفك الشخصي في Google Chrome. وسيتم ربط بيانات Chrome التابعة لك، مثل التطبيقات والإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى بالمستخدم <ph name="USER_NAME" />. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">‏فشلت أداة المثبِّت في فك ضغط الأرشيف. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
-<translation id="424864128008805179">‏هل تريد الخروج من Chrome؟</translation>
+<translation id="424864128008805179">‏هل تريد تسجيل الخروج من Chrome؟</translation>
 <translation id="4251615635259297716">‏هل ترغب في ربط بياناتك في Chrome بهذا الحساب؟</translation>
 <translation id="4251625577313994583">‏الحصول على Chrome على جهاز iPhone</translation>
 <translation id="4293420128516039005">‏يمكنك تسجيل الدخول لمزامنة Chrome وتخصيصه على جميع أجهزتك.</translation>
@@ -265,7 +265,7 @@
 <translation id="840084489713044809">‏يرغب Google Chrome في تصدير كلمات المرور.</translation>
 <translation id="8406086379114794905">‏ساهم في تحسين Chrome</translation>
 <translation id="8432724323949790809">‏يجب إعادة تشغيل Google Chrome الآن</translation>
-<translation id="8455999171311319804">‏اختياري: ساعد في تحسين نظام التشغيل Chrome عن طريق إرسال بيانات التشخيص والاستخدام إلى Google تلقائيًا.</translation>
+<translation id="8455999171311319804">‏اختياري: يمكنك المساعدة في تحسين نظام التشغيل Chrome عن طريق إرسال بيانات التشخيص والاستخدام إلى Google تلقائيًا.</translation>
 <translation id="8478823064122749032">‏بادِر بتثبيت Chrome على هاتفك. سنرسل رسالة قصيرة SMS إلى رقم هاتف استرداد حسابك: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8498858610309223613">‏تم للتو تطبيق تحديث أمان خاص لمتصفِّح Google Chrome. ويمكنك الآن إعادة التشغيل وستتم استعادة علامات التبويب.</translation>
 <translation id="8521348052903287641">‏قاعدة الوارد إلى إصدار مطوري البرامج من Google Chrome للسماح بحركة مرور mDNS.</translation>

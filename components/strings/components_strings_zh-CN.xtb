@@ -294,7 +294,6 @@
 <translation id="2501278716633472235">返回</translation>
 <translation id="2503184589641749290">接受的借记卡和预付卡</translation>
 <translation id="2515629240566999685">检查您所在区域的网络信号</translation>
-<translation id="2516852381693169964">通过<ph name="SEARCH_ENGINE" />搜索图片</translation>
 <translation id="2523886232349826891">仅会保存在此设备上</translation>
 <translation id="2524461107774643265">添加更多信息</translation>
 <translation id="2536110899380797252">添加地址</translation>
@@ -799,7 +798,6 @@
 <translation id="5455374756549232013">策略时间戳无效</translation>
 <translation id="5457113250005438886">无效</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 名联系人}other{<ph name="CONTACT_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 名联系人}}</translation>
-<translation id="5461666840533392417">看来您已主动离开导航页面，所以我不再提供帮助了。祝您度过愉快的一天 :)</translation>
 <translation id="5470861586879999274">恢复修改(&amp;R)</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">此内容可能会试图在您的设备上安装危险的软件来窃取或删除您的信息。<ph name="BEGIN_LINK" />仍然显示<ph name="END_LINK" /></translation>
@@ -1045,6 +1043,7 @@
 <translation id="6965978654500191972">设备</translation>
 <translation id="6970216967273061347">区</translation>
 <translation id="6973656660372572881">固定代理服务器和 .pac 脚本网址均已指定。</translation>
+<translation id="6973932557599545801">抱歉，我已是爱莫能助，请您自行继续操作。</translation>
 <translation id="6979158407327259162">Google 云端硬盘</translation>
 <translation id="6979440798594660689">静音（默认）</translation>
 <translation id="6984479912851154518">即将退出无痕模式，以便通过外部应用付款。要继续吗？</translation>

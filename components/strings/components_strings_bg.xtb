@@ -302,7 +302,6 @@
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2503184589641749290">Приемани дебитни и предплатени карти</translation>
 <translation id="2515629240566999685">Проверете сигнала в района.</translation>
-<translation id="2516852381693169964">Търсене на изображението чрез <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2523886232349826891">Запазено само на това устройство</translation>
 <translation id="2524461107774643265">Добавяне на още информация</translation>
 <translation id="2536110899380797252">Добавяне на адрес</translation>
@@ -811,7 +810,6 @@
 <translation id="5455374756549232013">Невалидно клеймо за дата и час на правилото</translation>
 <translation id="5457113250005438886">Невалидно</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
-<translation id="5461666840533392417">Изглежда взехте нещата в свои ръце. Няма да ви преча. Приятен ден :)</translation>
 <translation id="5470861586879999274">&amp;Възстановяване на редактирането</translation>
 <translation id="5478437291406423475">B6/C4 (плик)</translation>
 <translation id="5481076368049295676">Въпросното съдържание може да се опита да инсталира опасен софтуер на устройството ви, който да открадне или изтрие информацията ви. <ph name="BEGIN_LINK" />Показване въпреки това<ph name="END_LINK" /></translation>
@@ -1058,6 +1056,7 @@
 <translation id="6965978654500191972">Устройство</translation>
 <translation id="6970216967273061347">Окръг</translation>
 <translation id="6973656660372572881">Посочени са както фиксирани прокси сървъри, така и URL адрес на скрипт във формат .pac.</translation>
+<translation id="6973932557599545801">За съжаление, не мога да помогна. Моля, продължете ръчно.</translation>
 <translation id="6979158407327259162">Google Диск</translation>
 <translation id="6979440798594660689">Заглушаване (стандартно)</translation>
 <translation id="6984479912851154518">Ще напуснете режима на частно сърфиране, за да платите във външно приложение. Искате ли да продължите?</translation>

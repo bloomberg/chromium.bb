@@ -1961,6 +1961,7 @@
 <translation id="3892414795099177503">Tilføj OpenVPN/L2TP...</translation>
 <translation id="3893536212201235195">Læse og redigere dine indstillinger for hjælpefunktioner</translation>
 <translation id="3893630138897523026">ChromeVox (talefeedback)</translation>
+<translation id="3894123633473837029">Medtag seneste Assistent-historik via Sherlog. Dette kan omfatte din identitet, placering og fejlretningsoplysninger. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Tilføj mappe</translation>
 <translation id="389589731200570180">Del med gæster</translation>
 <translation id="3898521660513055167">Status for token</translation>
@@ -3537,6 +3538,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6264365405983206840">Vælg &amp;alle</translation>
 <translation id="6267166720438879315">Vælg et certifikat til at bekræfte dig selv over for <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Åbn med <ph name="APP" /></translation>
+<translation id="6270770586500173387">Send <ph name="BEGIN_LINK1" />system- og appoplysninger<ph name="END_LINK1" /> samt <ph name="BEGIN_LINK2" />metrics<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Der opstod en fejl (<ph name="ERROR" />) under download af pluginnet</translation>
 <translation id="6273677812470008672">Kvalitet</translation>
 <translation id="6277105963844135994">Netværkstimeout</translation>
@@ -3611,6 +3613,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6390799748543157332">De sider, du ser i dette vindue, vises ikke i browserhistorikken, og de efterlader ikke andre spor som f.eks. cookies på computeren, når du lukker alle åbne vinduer i gæstesessionen. Alle de filer, du downloader, vil dog blive gemt.</translation>
 <translation id="6390994422085833176">Gennemgå funktioner for synkronisering og tilpasning efter konfiguration</translation>
 <translation id="6393156038355142111">Foreslå en stærk adgangskode</translation>
+<translation id="6395423953133416962">Send <ph name="BEGIN_LINK1" />systemoplysninger<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />metrics<ph name="END_LINK2" /></translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> elementer</translation>
 <translation id="6397094776139756010">Muligheder for synkronisering og tilpasning</translation>
 <translation id="6398715114293939307">Fjern Google Play Butik</translation>
@@ -5099,7 +5102,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8637688295594795546">Der findes en tilgængelig opdatering til systemet. Forbereder download...</translation>
 <translation id="8639047128869322042">Søger efter skadelig software...</translation>
 <translation id="8642171459927087831">Adgangstoken</translation>
-<translation id="8642895855701880552">Send <ph name="BEGIN_LINK1" />system- og appoplysninger<ph name="END_LINK1" /></translation>
 <translation id="8642947597466641025">Gør teksten større</translation>
 <translation id="8643418457919840804">Vælg en indstilling for at fortsætte:</translation>
 <translation id="8645354835496065562">Fortsæt med at tillade adgang til sensorer</translation>

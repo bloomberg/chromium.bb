@@ -3536,6 +3536,7 @@
 <translation id="6264365405983206840">בחר &amp;הכל</translation>
 <translation id="6267166720438879315">בחר אישור כדי לאמת את עצמך מול <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">פתח באמצעות <ph name="APP" /></translation>
+<translation id="6270770586500173387">שלח <ph name="BEGIN_LINK1" />פרטי מערכת ויישומים<ph name="END_LINK1" />, כמו גם <ph name="BEGIN_LINK2" />מדדים<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">אירעה שגיאה (<ph name="ERROR" />) במהלך הורדת הפלאגין</translation>
 <translation id="6273677812470008672">איכות</translation>
 <translation id="6277105963844135994">תם הזמן הקצוב לתפוגה של הרשת</translation>
@@ -3610,6 +3611,7 @@
 <translation id="6390799748543157332">‏הדפים שאתה מציג בחלון זה לא יופיעו בהיסטוריית הדפדפן, ולאחר שתסגור את כל חלונות האורח הפתוחים, לא יותירו במחשב עקבות, כמו קובצי Cookie. עם זאת, כל הקבצים שאתה מוריד יישמרו.</translation>
 <translation id="6390994422085833176">בדיקת תכונות ההתאמה האישית והסינכרון אחרי ההגדרה</translation>
 <translation id="6393156038355142111">הצעת סיסמה חזקה</translation>
+<translation id="6395423953133416962">שלח <ph name="BEGIN_LINK1" />פרטי מערכת<ph name="END_LINK1" /> ו<ph name="BEGIN_LINK2" />ערכים<ph name="END_LINK2" /></translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> פריטים</translation>
 <translation id="6397094776139756010">אפשרויות סינכרון והתאמה אישית</translation>
 <translation id="6398715114293939307">‏הסרה של חנות Google Play</translation>
@@ -5096,7 +5098,6 @@
 <translation id="8637688295594795546">עדכון מערכת זמין. מתכונן להוריד…</translation>
 <translation id="8639047128869322042">מחפש תוכנות מזיקות...</translation>
 <translation id="8642171459927087831">אסימון גישה</translation>
-<translation id="8642895855701880552">שליחת <ph name="BEGIN_LINK1" />מידע על המערכת ועל אפליקציות<ph name="END_LINK1" /></translation>
 <translation id="8642947597466641025">הגדל טקסט</translation>
 <translation id="8643418457919840804">כדי להמשיך יש לבחור אפשרות:</translation>
 <translation id="8645354835496065562">המשך התרת הגישה לחיישנים</translation>

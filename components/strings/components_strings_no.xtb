@@ -302,7 +302,6 @@
 <translation id="2501278716633472235">Gå tilbake</translation>
 <translation id="2503184589641749290">Godkjente debetkort og forhåndsbetalte kort</translation>
 <translation id="2515629240566999685">Sjekk signalet i området ditt</translation>
-<translation id="2516852381693169964">Søk etter bildet på <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2523886232349826891">Kun lagret på denne enheten</translation>
 <translation id="2524461107774643265">Legg til mer informasjon</translation>
 <translation id="2536110899380797252">Legg til adresse</translation>
@@ -811,7 +810,6 @@
 <translation id="5455374756549232013">Feil tidsstempel for enhetsinnstillinger</translation>
 <translation id="5457113250005438886">Ugyldig</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> til}other{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> til}}</translation>
-<translation id="5461666840533392417">Det ser ut som om du har gått videre, så da lar jeg deg være i fred. Ha en fin dag :)</translation>
 <translation id="5470861586879999274">&amp;Endre likevel</translation>
 <translation id="5478437291406423475">B6/C4 (konvolutt)</translation>
 <translation id="5481076368049295676">Dette innholdet kan prøve å installere farlig programvare som stjeler eller sletter informasjon, på enheten din. <ph name="BEGIN_LINK" />Vis det likevel<ph name="END_LINK" /></translation>
@@ -927,7 +925,7 @@
 <translation id="6059925163896151826">USB-enheter</translation>
 <translation id="6080696365213338172">Du har åpnet innhold via et administratorlevert sertifikat. Data du sender til <ph name="DOMAIN" /> kan stoppes av administratoren din.</translation>
 <translation id="6094273045989040137">Annoter</translation>
-<translation id="610911394827799129">Det kan hende Google-kontoen din har andre typer nettlesingslogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="610911394827799129">Det kan hende Google-kontoen din har andre typer nettleserlogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6132597952260690497">Informasjon om installerte utvidelser og programtillegg</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Ingen}=1{1 passord (synkronisert)}other{# passord (synkronisert)}}</translation>
 <translation id="6146055958333702838">Sjekk alle kabler, og start rutere, modemer eller andre nettverksenheter

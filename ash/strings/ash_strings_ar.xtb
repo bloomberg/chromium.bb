@@ -13,7 +13,7 @@
 <translation id="112308213915226829">الإخفاء التلقائي للرف</translation>
 <translation id="1153356358378277386">الأجهزة المقترنة</translation>
 <translation id="1195412055398077112">الخروج عن إطار الشاشة</translation>
-<translation id="119944043368869598">محو جميع التنزيلات</translation>
+<translation id="119944043368869598">محو الكل</translation>
 <translation id="123828989343052515">مكتب جديد</translation>
 <translation id="1247372569136754018">ميكروفون (داخلي)</translation>
 <translation id="1252999807265626933">جارٍ الشحن من <ph name="POWER_SOURCE" /></translation>
@@ -100,7 +100,7 @@
 <translation id="2416346634399901812">تم الاتصال بشبكة <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">النقر بالزر الأيسر</translation>
 <translation id="2429753432712299108">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. قبل القبول، يُرجى التأكد أن مفتاح المرور هذا يظهر في هذا الجهاز: <ph name="PASSKEY" /></translation>
-<translation id="2482878487686419369">الاشعارات</translation>
+<translation id="2482878487686419369">الإشعارات</translation>
 <translation id="2484513351006226581">انقر على <ph name="KEYBOARD_SHORTCUT" /> لتبديل تنسيق لوحة المفاتيح.</translation>
 <translation id="2501920221385095727">مفاتيح الثبات</translation>
 <translation id="2509468283778169019">‏مفتاح CAPS LOCK قيد التشغيل</translation>
@@ -260,7 +260,7 @@
 <translation id="5136175204352732067">تم توصيل لوحة مفاتيح مختلفة</translation>
 <translation id="5168181903108465623">أجهزة البث متاحة</translation>
 <translation id="5207949376430453814">تمييز علامة إقحام النص</translation>
-<translation id="5222676887888702881">الخروج</translation>
+<translation id="5222676887888702881">تسجيل الخروج</translation>
 <translation id="523505283826916779">إعدادات إمكانية الدخول</translation>
 <translation id="5260676007519551770">مكتب 4</translation>
 <translation id="5283198616748585639">إضافة دقيقة واحدة</translation>
@@ -293,11 +293,11 @@
 <translation id="57838592816432529">كتم الصوت</translation>
 <translation id="5820394555380036790">‏نظام التشغيل Chromium</translation>
 <translation id="5837036133683224804">إيقاف <ph name="ROUTE_TITLE" /> في <ph name="RECEIVER_NAME" /></translation>
-<translation id="5860033963881614850">إيقاف</translation>
+<translation id="5860033963881614850">غير مفعّل</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
-<translation id="5916664084637901428">تشغيل</translation>
+<translation id="5916664084637901428">مفعّل</translation>
 <translation id="5947494881799873997">التراجع عن الإجراء</translation>
 <translation id="595202126637698455">تم تفعيل تتبع مستوى الأداء</translation>
 <translation id="5957083217255311415">تم إيقاف ميزة بيانات الجوّال.</translation>
@@ -366,7 +366,7 @@
 <translation id="6910714959251846841">‏يتطلَّب هذا التحديث إجراء عملية Powerwash لجهازك. مزيد من المعلومات حول آخر تحديث لتطبيق <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">الانضمام إلى شبكة أخرى...</translation>
 <translation id="6972754398087986839">البدء</translation>
-<translation id="6981982820502123353">إمكانية الدخول</translation>
+<translation id="6981982820502123353">إمكانية الوصول</translation>
 <translation id="698231206551913481">سيتم حذف جميع الملفات والبيانات المحلية المرتبطة بهذا المستخدم نهائيًا بمجرد إزالة هذا المستخدم.</translation>
 <translation id="7015766095477679451">يمكنك العودة لاستخدام الجهاز في <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">يمكنك ربط الجهاز <ph name="DEVICE_NAME" /> بهاتفك</translation>

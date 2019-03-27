@@ -3538,6 +3538,7 @@
 <translation id="6264365405983206840">அ&amp;னைத்தையும் தேர்ந்தெடு</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME" /> க்கு உங்களை அங்கீகரிக்க ஒரு சான்றிதழைத் தேர்ந்தெடுங்கள்</translation>
 <translation id="6268252012308737255"><ph name="APP" /> இல் திற</translation>
+<translation id="6270770586500173387"><ph name="BEGIN_LINK1" />சாதனம் மற்றும் பயன்பாட்டுத் தகவல்<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />அளவீடுகள்<ph name="END_LINK2" /> ஆகியவற்றை அனுப்பு</translation>
 <translation id="6272643420381259437">செருகுநிரலைப் பதிவிறக்கும் போது, பிழை (<ph name="ERROR" />) ஏற்பட்டது</translation>
 <translation id="6273677812470008672">தரம்</translation>
 <translation id="6277105963844135994">நெட்வொர்க் டைம்அவுட்</translation>
@@ -3612,6 +3613,7 @@
 <translation id="6390799748543157332">இந்தச் சாளரத்தில் பார்க்கும் பக்கங்கள் உங்களின் உலாவி வரலாற்றில் தோன்றாது, மேலும் திறக்கப்பட்டிருக்கும் எல்லா விருந்தினர் சாளரங்களையும் மூடிய பிறகு, பிற தடங்களான குக்கீகள் போன்றவற்றைக் கணினியில் விட்டுச் செல்லாது. எனினும், நீங்கள் பதிவிறக்கிய எல்லா கோப்புகளும் பாதுகாக்கப்படும்.</translation>
 <translation id="6390994422085833176">அமைவைத் தொடர்ந்து, ஒத்திசைவு மற்றும் தனிப்பயனாக்க அம்சங்களை மதிப்பாய்வு செய்</translation>
 <translation id="6393156038355142111">வலுவான கடவுச்சொல்லைப் பரிந்துரை</translation>
+<translation id="6395423953133416962"><ph name="BEGIN_LINK1" />கணினியின் தகவல்<ph name="END_LINK1" /> மற்றும் <ph name="BEGIN_LINK2" />அளவீடுகளை<ph name="END_LINK2" /> அனுப்பு</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> கோப்புகள்</translation>
 <translation id="6397094776139756010">ஒத்திசைவு மற்றும் தனிப்பயனாக்க விருப்பங்கள்</translation>
 <translation id="6398715114293939307">Google Play ஸ்டோரை அகற்று</translation>
@@ -5101,7 +5103,6 @@
 <translation id="8637688295594795546">கணினிப் புதுப்பிப்பு உள்ளது. பதிவிறக்கத் தயாராகிறது...</translation>
 <translation id="8639047128869322042">தீங்கிழைக்கும் மென்பொருள் உள்ளதா எனத் தேடுகிறது...</translation>
 <translation id="8642171459927087831">அணுகல் டோக்கன்</translation>
-<translation id="8642895855701880552"><ph name="BEGIN_LINK1" />சாதனம் மற்றும் ஆப்ஸ் தகவலை<ph name="END_LINK1" /> அனுப்பு</translation>
 <translation id="8642947597466641025">உரையை இன்னும் பெரிதாக்கு</translation>
 <translation id="8643418457919840804">தொடர, விருப்பத்தைத் தேர்வுசெய்யவும்:</translation>
 <translation id="8645354835496065562">தொடர்ந்து சென்சார் அணுகலை அனுமதி</translation>

@@ -1962,6 +1962,7 @@
 <translation id="3892414795099177503">OpenVPN / L2TP を追加...</translation>
 <translation id="3893536212201235195">ユーザー補助設定の読み取りと変更</translation>
 <translation id="3893630138897523026">ChromeVox（音声フィードバック）</translation>
+<translation id="3894123633473837029">Sherlog から最近のアシスタント履歴を含める。これには、ID、位置情報、デバッグ情報などが含まれる可能性があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">フォルダの追加</translation>
 <translation id="389589731200570180">ゲストと共有</translation>
 <translation id="3898521660513055167">トークンのステータス</translation>
@@ -3537,6 +3538,7 @@
 <translation id="6264365405983206840">すべて選択(&amp;A)</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME" /> での認証に使用する証明書を選択してください</translation>
 <translation id="6268252012308737255"><ph name="APP" /> で開く</translation>
+<translation id="6270770586500173387"><ph name="BEGIN_LINK1" />システムとアプリの情報<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />指標<ph name="END_LINK2" />を送信する</translation>
 <translation id="6272643420381259437">プラグインのダウンロード中にエラー（<ph name="ERROR" />）が発生しました。</translation>
 <translation id="6273677812470008672">品質</translation>
 <translation id="6277105963844135994">ネットワークがタイムアウトしました</translation>
@@ -3611,6 +3613,7 @@
 <translation id="6390799748543157332">このウィンドウで開いたページはブラウザの履歴に記録されません。また、開いているゲスト ウィンドウをすべて閉じると、Cookie などのデータはパソコンから消去されます。ただし、ダウンロードしたファイルは保持されます。</translation>
 <translation id="6390994422085833176">設定の完了後、同期とカスタマイズの機能を確認する</translation>
 <translation id="6393156038355142111">安全なパスワードを自動生成</translation>
+<translation id="6395423953133416962"><ph name="BEGIN_LINK1" />システム情報<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />指標データ<ph name="END_LINK2" />を送信する</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> 個のアイテム</translation>
 <translation id="6397094776139756010">同期とカスタマイズのオプション</translation>
 <translation id="6398715114293939307">Google Play ストアを削除</translation>
@@ -5099,7 +5102,6 @@
 <translation id="8637688295594795546">システムのアップデートが見つかりました。ダウンロードの準備をしています...</translation>
 <translation id="8639047128869322042">有害なソフトウェアを確認しています...</translation>
 <translation id="8642171459927087831">アクセス トークン</translation>
-<translation id="8642895855701880552"><ph name="BEGIN_LINK1" />システムとアプリの情報<ph name="END_LINK1" />を送信する</translation>
 <translation id="8642947597466641025">テキストを拡大する</translation>
 <translation id="8643418457919840804">続行するには次のいずれかを選択してください。</translation>
 <translation id="8645354835496065562">センサーへのアクセスを引き続き許可する</translation>
