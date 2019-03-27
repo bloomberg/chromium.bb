@@ -548,6 +548,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaImg) {
   RunAriaTest(FILE_PATH_LITERAL("aria-img.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaInsertionDeletion) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-insertion-deletion.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaInvalid) {
   RunAriaTest(FILE_PATH_LITERAL("aria-invalid.html"));
 }

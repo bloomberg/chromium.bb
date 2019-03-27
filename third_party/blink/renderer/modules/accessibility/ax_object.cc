@@ -105,6 +105,7 @@ const RoleEntry kRoles[] = {
     {"complementary", ax::mojom::Role::kComplementary},
     {"contentinfo", ax::mojom::Role::kContentInfo},
     {"definition", ax::mojom::Role::kDefinition},
+    {"deletion", ax::mojom::Role::kContentDeletion},
     {"dialog", ax::mojom::Role::kDialog},
     {"directory", ax::mojom::Role::kDirectory},
     // -------------------------------------------------
@@ -168,6 +169,7 @@ const RoleEntry kRoles[] = {
     {"group", ax::mojom::Role::kGroup},
     {"heading", ax::mojom::Role::kHeading},
     {"img", ax::mojom::Role::kImage},
+    {"insertion", ax::mojom::Role::kContentInsertion},
     {"link", ax::mojom::Role::kLink},
     {"list", ax::mojom::Role::kList},
     {"listbox", ax::mojom::Role::kListBox},
