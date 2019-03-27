@@ -1933,7 +1933,6 @@ drm_output_update_complete(struct drm_output *output, uint32_t flags,
 		output->dpms_off_pending = 0;
 		drm_output_get_disable_state(pending, output);
 		drm_pending_state_apply_sync(pending);
-		return;
 	} else if (output->state_cur->dpms == WESTON_DPMS_OFF &&
 	           output->base.repaint_status != REPAINT_AWAITING_COMPLETION) {
 		/* DPMS can happen to us either in the middle of a repaint
