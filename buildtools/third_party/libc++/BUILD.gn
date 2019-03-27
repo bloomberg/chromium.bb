@@ -122,7 +122,9 @@ target(_libcxx_target_type, "libc++") {
     defines += [ "_LIBCPP_EXTERN_TEMPLATE_TYPE_VIS=__attribute__((__visibility__(\"default\")))" ]
   }
   if (!libcxx_is_shared) {
-    if (is_mac && is_clang) {
+    # TODO(https://crbug.com/946629): Remove use_xcode_clang condition once
+    # XCode clang is updated to support -fvisibility-global-new-delete-hidden.
+    if ((is_mac || (is_ios && !use_xcode_clang)) && is_clang) {
       # We want operator new/delete to be private on Mac, but these functions
       # are implicitly created by the compiler for each translation unit, as
       # specified in the C++ spec 3.7.4p2, which makes them always have default
@@ -149,7 +151,7 @@ target(_libcxx_target_type, "libc++") {
       ]
     }
   }
-  if (!is_mac && (is_asan || is_tsan || is_msan)) {
+  if (!is_mac && !is_ios && (is_asan || is_tsan || is_msan)) {
     # In {a,t,m}san configurations, operator new and operator delete will be
     # provided by the sanitizer runtime library.  Since libc++ defines these
     # symbols with weak linkage, and the *san runtime uses strong linkage, it
