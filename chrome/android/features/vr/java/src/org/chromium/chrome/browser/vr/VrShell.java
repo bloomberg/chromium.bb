@@ -1247,7 +1247,7 @@ public class VrShell extends GvrLayout
     }
 
     public void performKeyboardInputForTesting(int inputType, String inputString) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
             nativePerformKeyboardInputForTesting(mNativeVrShell, inputType, inputString);
         });
     }
