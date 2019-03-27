@@ -22,11 +22,13 @@ namespace autofill {
 class StrikeDatabaseIntegratorTestStrikeDatabaseTest : public ::testing::Test {
  public:
   StrikeDatabaseIntegratorTestStrikeDatabaseTest()
-      : strike_database_(new StrikeDatabase(InitFilePath())) {}
+      : strike_database_service_(InitFilePath()),
+        strike_database_(&strike_database_service_) {}
 
  protected:
   base::HistogramTester* GetHistogramTester() { return &histogram_tester_; }
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  StrikeDatabase strike_database_service_;
   StrikeDatabaseIntegratorTestStrikeDatabase strike_database_;
 
  private:
