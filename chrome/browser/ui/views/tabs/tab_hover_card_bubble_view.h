@@ -54,9 +54,6 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
 
   void UpdatePreviewImage(gfx::ImageSkia preview_image);
 
-  // This receives all key press events in the native window.
-  void OnKeyEvent(ui::KeyEvent* event) override;
-
   gfx::Size CalculatePreferredSize() const override;
 
   base::OneShotTimer delayed_show_timer_;
