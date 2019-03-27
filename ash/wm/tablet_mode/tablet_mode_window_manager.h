@@ -15,7 +15,6 @@
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
@@ -43,8 +42,6 @@ class TabletModeEventHandler;
 class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
                                            public display::DisplayObserver,
                                            public ShellObserver,
-                                           public OverviewObserver,
-                                           public SplitViewController::Observer,
                                            public SessionObserver {
  public:
   // This should only be deleted by the creator (ash::Shell).
@@ -65,10 +62,6 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // ShellObserver:
   void OnSplitViewModeEnded() override;
 
-  // OverviewObserver:
-  void OnOverviewModeStarting() override;
-  void OnOverviewModeEnded() override;
-
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
@@ -85,10 +78,6 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   void OnDisplayAdded(const display::Display& display) override;
   void OnDisplayRemoved(const display::Display& display) override;
 
-  // SplitViewController::Observer:
-  void OnSplitViewStateChanged(SplitViewController::State previous_state,
-                               SplitViewController::State state) override;
-
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
 
@@ -102,8 +91,6 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   TabletModeWindowManager();
 
  private:
-  friend class TabletModeControllerTestApi;
-
   using WindowToState = std::map<aura::Window*, TabletModeWindowState*>;
 
   // Returns the state type that |window| had before tablet mode started. If
@@ -126,10 +113,6 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // |was_in_overview| indicates whether it was in overview before entering
   // desktop mode.
   void ArrangeWindowsForDesktopMode(bool was_in_overview = false);
-
-  // Set whether to defer bounds updates for |window|. When set to false bounds
-  // will be updated as they may be stale.
-  void SetDeferBoundsUpdates(aura::Window* window, bool defer_bounds_updates);
 
   // If the given window should be handled by us, this function will add it to
   // the list of known windows (remembering the initial show state).

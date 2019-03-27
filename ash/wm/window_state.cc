@@ -664,6 +664,10 @@ void WindowState::SetBoundsConstrained(const gfx::Rect& bounds) {
 
 void WindowState::SetBoundsDirectAnimated(const gfx::Rect& bounds,
                                           base::TimeDelta duration) {
+  if (::wm::WindowAnimationsDisabled(window_)) {
+    SetBoundsDirect(bounds);
+    return;
+  }
   ui::Layer* layer = window_->layer();
   ui::ScopedLayerAnimationSettings slide_settings(layer->GetAnimator());
   slide_settings.SetPreemptionStrategy(
@@ -683,8 +687,9 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds,
   }
 
   // If the window already has a transform in place, do not use the cross fade
-  // animation, set the bounds directly instead.
-  if (!window_->layer()->GetTargetTransform().IsIdentity()) {
+  // animation, set the bounds directly instead, or animation is disabled.
+  if (!window_->layer()->GetTargetTransform().IsIdentity() ||
+      ::wm::WindowAnimationsDisabled(window_)) {
     SetBoundsDirect(new_bounds);
     return;
   }

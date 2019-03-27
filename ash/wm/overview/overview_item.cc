@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
@@ -76,18 +77,19 @@ class OverviewItem::WindowSurfaceCacheObserver : public aura::WindowObserver {
 
     window_ = window;
     window_->AddObserver(this);
-    for (auto* window : wm::GetTransientTreeIterator(window_))
-      window->layer()->AddCacheRenderSurfaceRequest();
+    window_->layer()->AddCacheRenderSurfaceRequest();
   }
 
   // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override { StopObserving(); }
+  void OnWindowDestroying(aura::Window* window) override {
+    DCHECK_EQ(window_, window);
+    StopObserving();
+  }
 
  private:
   void StopObserving() {
     if (window_) {
-      for (auto* window : wm::GetTransientTreeIterator(window_))
-        window->layer()->RemoveCacheRenderSurfaceRequest();
+      window_->layer()->RemoveCacheRenderSurfaceRequest();
       window_->RemoveObserver(this);
       window_ = nullptr;
     }
@@ -367,9 +369,11 @@ void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
           ? CaptionContainerView::HeaderVisibility::kInvisible
           : CaptionContainerView::HeaderVisibility::kCloseButtonInvisibleOnly);
 
-  // Start caching render surface during overview window dragging.
-  window_surface_cache_observers_ =
-      std::make_unique<WindowSurfaceCacheObserver>(GetWindowForStacking());
+  if (!features::ShouldUseShaderRoundedCorner()) {
+    // Start caching render surface during overview window dragging.
+    window_surface_cache_observers_ =
+        std::make_unique<WindowSurfaceCacheObserver>(GetWindowForStacking());
+  }
 }
 
 void OverviewItem::OnSelectorItemDragEnded() {

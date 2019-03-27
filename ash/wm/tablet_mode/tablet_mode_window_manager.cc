@@ -10,6 +10,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/scoped_animation_disabler.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -81,9 +82,7 @@ TabletModeWindowManager::~TabletModeWindowManager() {
     window->RemoveObserver(this);
   added_windows_.clear();
   Shell::Get()->RemoveShellObserver(this);
-  Shell::Get()->overview_controller()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
-  Shell::Get()->split_view_controller()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
   EnableBackdropBehindTopWindowOnEachDisplay(false);
   RemoveWindowCreationObservers();
@@ -141,26 +140,11 @@ void TabletModeWindowManager::OnSplitViewModeEnded() {
   for (auto* window : windows) {
     wm::WindowState* window_state = wm::GetWindowState(window);
     if (window_state->IsSnapped()) {
+      ScopedAnimationDisabler disable(window);
       wm::WMEvent event(wm::WM_EVENT_MAXIMIZE);
       window_state->OnWMEvent(&event);
     }
   }
-}
-
-void TabletModeWindowManager::OnOverviewModeStarting() {
-  aura::Window* default_snapped_window =
-      Shell::Get()->split_view_controller()->GetDefaultSnappedWindow();
-  for (auto& pair : window_state_map_) {
-    aura::Window* window = pair.first;
-    if (window == default_snapped_window)
-      continue;
-    SetDeferBoundsUpdates(window, /*defer_bounds_updates=*/true);
-  }
-}
-
-void TabletModeWindowManager::OnOverviewModeEnded() {
-  for (auto& pair : window_state_map_)
-    SetDeferBoundsUpdates(pair.first, /*defer_bounds_updates=*/false);
 }
 
 void TabletModeWindowManager::OnWindowDestroying(aura::Window* window) {
@@ -264,33 +248,6 @@ void TabletModeWindowManager::OnDisplayRemoved(
   DisplayConfigurationChanged();
 }
 
-void TabletModeWindowManager::OnSplitViewStateChanged(
-    SplitViewController::State previous_state,
-    SplitViewController::State state) {
-  // It might be possible that split view mode and overview mode are active at
-  // the same time. We need make sure the snapped windows bounds can be updated
-  // immediately.
-  // TODO(xdai): In overview mode, if we snap two windows to the same position
-  // one by one, we need to restore the first window's |defer_bounds_updates_|
-  // state here. It's unnecessary now since we don't insert the first window
-  // back to the overview grid but we probably should do so in the future.
-  if (state != SplitViewController::NO_SNAP) {
-    SplitViewController* split_view_controller =
-        Shell::Get()->split_view_controller();
-    if (split_view_controller->left_window())
-      SetDeferBoundsUpdates(split_view_controller->left_window(), false);
-    if (split_view_controller->right_window())
-      SetDeferBoundsUpdates(split_view_controller->right_window(), false);
-  } else {
-    // If split view mode is ended when overview mode is still active, defer
-    // all bounds change until overview mode is ended.
-    if (Shell::Get()->overview_controller()->IsSelecting()) {
-      for (auto& pair : window_state_map_)
-        SetDeferBoundsUpdates(pair.first, true);
-    }
-  }
-}
-
 void TabletModeWindowManager::OnActiveUserSessionChanged(
     const AccountId& account_id) {
   SplitViewController* split_view_controller =
@@ -378,8 +335,6 @@ TabletModeWindowManager::TabletModeWindowManager() {
   EnableBackdropBehindTopWindowOnEachDisplay(true);
   display::Screen::GetScreen()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
-  Shell::Get()->overview_controller()->AddObserver(this);
-  Shell::Get()->split_view_controller()->AddObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
   accounts_since_entering_tablet_.insert(
       Shell::Get()->session_controller()->GetActiveAccountId());
@@ -471,13 +426,6 @@ void TabletModeWindowManager::ArrangeWindowsForDesktopMode(
   while (window_state_map_.size())
     ForgetWindow(window_state_map_.begin()->first, false /* destroyed */,
                  was_in_overview);
-}
-
-void TabletModeWindowManager::SetDeferBoundsUpdates(aura::Window* window,
-                                                    bool defer_bounds_updates) {
-  auto iter = window_state_map_.find(window);
-  if (iter != window_state_map_.end())
-    iter->second->SetDeferBoundsUpdates(defer_bounds_updates);
 }
 
 void TabletModeWindowManager::TrackWindow(aura::Window* window,
