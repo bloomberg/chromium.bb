@@ -111,6 +111,8 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // it is dragged.
   void SetSelectionWidgetVisibility(bool visible);
 
+  void ShowNoRecentsWindowMessage(bool visible);
+
   void UpdateCannotSnapWarningVisibility();
 
   // Called when any OverviewItem on any OverviewGrid has started/ended being
@@ -162,6 +164,10 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Checks if the grid needs to have the wallpaper animated. Returns false if
   // one of the grids windows covers the the entire workspace, true otherwise.
   bool ShouldAnimateWallpaper() const;
+
+  bool IsNoItemsIndicatorLabelVisibleForTesting();
+
+  gfx::Rect GetNoItemsIndicatorLabelBoundsForTesting() const;
 
   // Calculates |should_animate_when_entering_| and
   // |should_animate_when_exiting_| of the overview items based on where
@@ -240,11 +246,11 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
 
   views::Widget* shield_widget() { return shield_widget_.get(); }
 
-  void set_suspend_reposition(bool value) { suspend_reposition_ = value; }
-
   views::Widget* drop_target_widget_for_testing() {
     return drop_target_widget_.get();
   }
+
+  void set_suspend_reposition(bool value) { suspend_reposition_ = value; }
 
   const DesksBarView* GetDesksBarViewForTesting() const;
 
@@ -334,7 +340,7 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   ScopedObserver<aura::Window, OverviewGrid> window_observer_;
   ScopedObserver<wm::WindowState, OverviewGrid> window_state_observer_;
 
-  // Widget that shows the virtual desk UI.
+  // Widget that darkens the screen background.
   std::unique_ptr<views::Widget> shield_widget_;
 
   // A pointer to |shield_widget_|'s content view.
