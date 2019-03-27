@@ -2135,10 +2135,6 @@ test("base_perftests") {
     "synchronization/waitable_event_perftest.cc",
     "threading/thread_perftest.cc",
   ]
-  if (!is_ios) {
-    # iOS doesn't use the partition allocator, therefore it can't run this test.
-    sources += [ "allocator/partition_allocator/partition_alloc_perftest.cc" ]
-  }
   deps = [
     ":base",
     "//base/test:test_support",
