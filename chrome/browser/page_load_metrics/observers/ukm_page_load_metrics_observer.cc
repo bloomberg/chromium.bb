@@ -18,6 +18,7 @@
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/metrics/net/network_metrics_provider.h"
+#include "components/offline_pages/buildflags/buildflags.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/http_response_headers.h"
@@ -27,7 +28,13 @@
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/offline_page_tab_helper.h"
+#endif
+
 namespace {
+
+const char kOfflinePreviewsMimeType[] = "multipart/related";
 
 enum class HttpProtocolScheme { kHttp11, kHttp2, kQuic };
 
@@ -128,9 +135,25 @@ UkmPageLoadMetricsObserver::OnRedirect(
   return CONTINUE_OBSERVING;
 }
 
+UkmPageLoadMetricsObserver::ObservePolicy
+UkmPageLoadMetricsObserver::ShouldObserveMimeType(
+    const std::string& mime_type) const {
+  if (PageLoadMetricsObserver::ShouldObserveMimeType(mime_type) ==
+          CONTINUE_OBSERVING ||
+      mime_type == kOfflinePreviewsMimeType) {
+    return CONTINUE_OBSERVING;
+  }
+  return STOP_OBSERVING;
+}
+
 UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
+  if (navigation_handle->GetWebContents()->GetContentsMimeType() ==
+      kOfflinePreviewsMimeType) {
+    if (!IsOfflinePreview(navigation_handle->GetWebContents()))
+      return STOP_OBSERVING;
+  }
   connection_info_ = navigation_handle->GetConnectionInfo();
   const net::HttpResponseHeaders* response_headers =
       navigation_handle->GetResponseHeaders();
@@ -573,4 +596,15 @@ void UkmPageLoadMetricsObserver::RecordNoStatePrefetchMetrics(
   builder.SetPrefetchedRecently_FinalStatus(final_status);
   builder.SetPrefetchedRecently_Origin(prefetch_origin);
   builder.Record(ukm::UkmRecorder::Get());
+}
+
+bool UkmPageLoadMetricsObserver::IsOfflinePreview(
+    content::WebContents* web_contents) const {
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  offline_pages::OfflinePageTabHelper* tab_helper =
+      offline_pages::OfflinePageTabHelper::FromWebContents(web_contents);
+  return tab_helper && tab_helper->GetOfflinePreviewItem();
+#else
+  return false;
+#endif
 }

@@ -1064,3 +1064,64 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutStability) {
                   "PageLoad.Experimental.LayoutStability.JankScore"),
               testing::ElementsAre(base::Bucket(25, 1)));
 }
+
+TEST_F(UkmPageLoadMetricsObserverTest, MHTMLNotTracked) {
+  auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
+      GURL(kTestUrl1), web_contents());
+  navigation->SetContentsMimeType("multipart/related");
+  navigation->Commit();
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  EXPECT_EQ(0ul, test_ukm_recorder().entries_count());
+}
+
+class TestOfflinePreviewsUkmPageLoadMetricsObserver
+    : public UkmPageLoadMetricsObserver {
+ public:
+  TestOfflinePreviewsUkmPageLoadMetricsObserver(
+      MockNetworkQualityProvider* network_quality_provider)
+      : UkmPageLoadMetricsObserver(network_quality_provider) {}
+
+  ~TestOfflinePreviewsUkmPageLoadMetricsObserver() override {}
+
+  bool IsOfflinePreview(content::WebContents* web_contents) const override {
+    return true;
+  }
+};
+
+class OfflinePreviewsUKMPageLoadMetricsObserverTest
+    : public UkmPageLoadMetricsObserverTest {
+ public:
+  OfflinePreviewsUKMPageLoadMetricsObserverTest() = default;
+  ~OfflinePreviewsUKMPageLoadMetricsObserverTest() override = default;
+
+  void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
+    tracker->AddObserver(
+        std::make_unique<TestOfflinePreviewsUkmPageLoadMetricsObserver>(
+            &mock_network_quality_provider()));
+  }
+};
+
+TEST_F(OfflinePreviewsUKMPageLoadMetricsObserverTest, OfflinePreviewReported) {
+  auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
+      GURL(kTestUrl1), web_contents());
+  navigation->SetContentsMimeType("multipart/related");
+  navigation->Commit();
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
+  EXPECT_EQ(1ul, merged_entries.size());
+
+  for (const auto& kv : merged_entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
+                                                GURL(kTestUrl1));
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), PageLoad::kNavigation_PageEndReasonName,
+        page_load_metrics::END_CLOSE);
+  }
+}
