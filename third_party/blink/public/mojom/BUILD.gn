@@ -356,6 +356,31 @@ mojom("web_client_hints_types_mojo_bindings") {
   ]
 }
 
+# The embedded_frame_sink_mojo_bindings is separated from the rest of mojom
+# files because its deps contain too many files in Chromium that would pollute
+# the include paths in generated mojom-blink files for other services.
+mojom("embedded_frame_sink_mojo_bindings") {
+  visibility = [ "//content/*" ]
+  visibility_blink = [ "//third_party/blink/renderer/platform" ]
+  sources = [
+    "frame_sinks/embedded_frame_sink.mojom",
+  ]
+  deps = [
+    "//services/viz/public/interfaces",
+  ]
+
+  component_output_prefix = "blink_embedded_frame_sink_mojo_bindings"
+
+  # The chromium variant must be linked with content and use the same export
+  # settings in component build.
+  export_class_attribute = "CONTENT_EXPORT"
+  export_define = "CONTENT_IMPLEMENTATION=1"
+  export_header = "content/common/content_export.h"
+  export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
+  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+  export_header_blink = "third_party/blink/public/platform/web_common.h"
+}
+
 # This is a separate target because it needs unscrambled message IDs.
 mojom("authenticator_test_mojo_bindings") {
   sources = [
