@@ -817,6 +817,9 @@ public class CookieManagerTest {
     @Feature({"AndroidWebView", "Privacy"})
     public void testAcceptFileSchemeCookies() throws Throwable {
         mCookieManager.setAcceptFileSchemeCookies(true);
+        Assert.assertTrue("allowFileSchemeCookies() should return true after "
+                        + "setAcceptFileSchemeCookies(true)",
+                mCookieManager.allowFileSchemeCookies());
         mAwContents.getSettings().setAllowFileAccess(true);
 
         mAwContents.getSettings().setAcceptThirdPartyCookies(true);
@@ -830,12 +833,39 @@ public class CookieManagerTest {
     @Feature({"AndroidWebView", "Privacy"})
     public void testRejectFileSchemeCookies() throws Throwable {
         mCookieManager.setAcceptFileSchemeCookies(false);
+        Assert.assertFalse("allowFileSchemeCookies() should return false after "
+                        + "setAcceptFileSchemeCookies(false)",
+                mCookieManager.allowFileSchemeCookies());
         mAwContents.getSettings().setAllowFileAccess(true);
 
         mAwContents.getSettings().setAcceptThirdPartyCookies(true);
         Assert.assertFalse(fileURLCanSetCookie("3"));
         mAwContents.getSettings().setAcceptThirdPartyCookies(false);
         Assert.assertFalse(fileURLCanSetCookie("4"));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testInvokeAcceptFileSchemeCookiesTooLate() throws Throwable {
+        // AwCookieManager only respects calls to setAcceptFileSchemeCookies() which happen *before*
+        // the underlying cookie store is first used. Here we call into the cookie store with dummy
+        // values to trigger this case, so we can test the CookieManager's observable state
+        // (mainly, that allowFileSchemeCookies() is consistent with the actual behavior of
+        // rejecting/accepting file scheme cookies).
+        mCookieManager.setCookie("https://www.any.url.will.work/", "any-key=any-value");
+
+        // Now try to enable file scheme cookies.
+        mCookieManager.setAcceptFileSchemeCookies(true);
+        Assert.assertFalse("allowFileSchemeCookies() should return false if "
+                        + "setAcceptFileSchemeCookies was called too late",
+                mCookieManager.allowFileSchemeCookies());
+        mAwContents.getSettings().setAllowFileAccess(true);
+
+        mAwContents.getSettings().setAcceptThirdPartyCookies(true);
+        Assert.assertFalse(fileURLCanSetCookie("5"));
+        mAwContents.getSettings().setAcceptThirdPartyCookies(false);
+        Assert.assertFalse(fileURLCanSetCookie("6"));
     }
 
     private boolean fileURLCanSetCookie(String suffix) throws Throwable {

@@ -639,6 +639,13 @@ CookieChangeDispatcher& CookieStoreIOS::GetChangeDispatcher() {
   return change_dispatcher_;
 }
 
+void CookieStoreIOS::SetCookieableSchemes(
+    const std::vector<std::string>& schemes,
+    SetCookieableSchemesCallback callback) {
+  // Not supported on iOS.
+  std::move(callback).Run(false);
+}
+
 bool CookieStoreIOS::IsEphemeral() {
   return cookie_monster_->IsEphemeral();
 }

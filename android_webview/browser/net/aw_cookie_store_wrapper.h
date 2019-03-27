@@ -66,6 +66,8 @@ class AwCookieStoreWrapper : public net::CookieStore {
   void FlushStore(base::OnceClosure callback) override;
   void SetForceKeepSessionState() override;
   net::CookieChangeDispatcher& GetChangeDispatcher() override;
+  void SetCookieableSchemes(const std::vector<std::string>& schemes,
+                            SetCookieableSchemesCallback callback) override;
   bool IsEphemeral() override;
 
  private:

@@ -105,6 +105,8 @@ class CookieStoreIOS : public net::CookieStore,
   void DeleteSessionCookiesAsync(DeleteCallback callback) override;
   void FlushStore(base::OnceClosure callback) override;
   CookieChangeDispatcher& GetChangeDispatcher() override;
+  void SetCookieableSchemes(const std::vector<std::string>& schemes,
+                            SetCookieableSchemesCallback callback) override;
   bool IsEphemeral() override;
 
  protected:

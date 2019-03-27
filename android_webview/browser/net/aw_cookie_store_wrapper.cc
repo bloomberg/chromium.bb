@@ -81,6 +81,12 @@ void SetForceKeepSessionStateOnCookieThread() {
   GetCookieStore()->SetForceKeepSessionState();
 }
 
+void SetCookieableSchemesOnCookieThread(
+    const std::vector<std::string>& schemes,
+    net::CookieStore::SetCookieableSchemesCallback callback) {
+  GetCookieStore()->SetCookieableSchemes(schemes, std::move(callback));
+}
+
 }  // namespace
 
 AwCookieStoreWrapper::AwCookieStoreWrapper()
@@ -180,6 +186,15 @@ void AwCookieStoreWrapper::SetForceKeepSessionState() {
 
 net::CookieChangeDispatcher& AwCookieStoreWrapper::GetChangeDispatcher() {
   return change_dispatcher_;
+}
+
+void AwCookieStoreWrapper::SetCookieableSchemes(
+    const std::vector<std::string>& schemes,
+    SetCookieableSchemesCallback callback) {
+  DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
+  PostTaskToCookieStoreTaskRunner(
+      base::BindOnce(&SetCookieableSchemesOnCookieThread, schemes,
+                     CreateWrappedCallback<bool>(std::move(callback))));
 }
 
 bool AwCookieStoreWrapper::IsEphemeral() {

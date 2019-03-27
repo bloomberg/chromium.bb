@@ -1228,7 +1228,11 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   // and save it.
   std::unique_ptr<CookieMonster> cookie_monster =
       std::make_unique<CookieMonster>(store_.get(), nullptr);
-  cookie_monster->SetCookieableSchemes({"gopher", "http"});
+  ResultSavingCookieCallback<bool> cookie_scheme_callback1;
+  cookie_monster->SetCookieableSchemes({"gopher", "http"},
+                                       cookie_scheme_callback1.MakeCallback());
+  cookie_scheme_callback1.WaitUntilDone();
+  EXPECT_TRUE(cookie_scheme_callback1.result());
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_cookie_callback;
   cookie_monster->SetCookieWithOptionsAsync(
@@ -1268,7 +1272,11 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   // starts looking at the state on disk.
   Create(false, false, true /* want current thread to invoke cookie monster */);
   cookie_monster = std::make_unique<CookieMonster>(store_.get(), nullptr);
-  cookie_monster->SetCookieableSchemes({"gopher", "http"});
+  ResultSavingCookieCallback<bool> cookie_scheme_callback2;
+  cookie_monster->SetCookieableSchemes({"gopher", "http"},
+                                       cookie_scheme_callback2.MakeCallback());
+  cookie_scheme_callback2.WaitUntilDone();
+  EXPECT_TRUE(cookie_scheme_callback2.result());
 
   // Now try to get the cookie back.
   GetCookieListCallback get_callback;

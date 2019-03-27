@@ -81,6 +81,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
   }
 
   void FlushCookieStore(FlushCookieStoreCallback callback) override;
+  void AllowFileSchemeCookies(bool allow,
+                              AllowFileSchemeCookiesCallback callback) override;
   void SetForceKeepSessionState() override;
   void BlockThirdPartyCookies(bool block) override;
 

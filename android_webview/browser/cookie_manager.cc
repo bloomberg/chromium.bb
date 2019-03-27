@@ -526,9 +526,44 @@ bool CookieManager::AllowFileSchemeCookies() {
 
 void CookieManager::SetAcceptFileSchemeCookies(bool accept) {
   base::AutoLock lock(accept_file_scheme_cookies_lock_);
-  // Can only modify this before the cookie store is created.
-  if (!cookie_store_created_)
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    bool success;
+    ExecCookieTaskSync(
+        base::BindOnce(&CookieManager::AllowFileSchemeCookiesAsyncHelper,
+                       base::Unretained(this), accept, &success));
+    // Should only update |accept_file_scheme_cookies_| if the CookieManager
+    // call had an effect.
+    if (!success)
+      return;
     accept_file_scheme_cookies_ = accept;
+  } else {
+    // Can only modify |accept_file_scheme_cookies_| before the cookie store is
+    // created.
+    if (cookie_store_created_)
+      return;
+    accept_file_scheme_cookies_ = accept;
+  }
+}
+
+void CookieManager::AllowFileSchemeCookiesAsyncHelper(
+    bool accept,
+    bool* result,
+    base::OnceClosure complete) {
+  DCHECK(cookie_store_task_runner_->RunsTasksInCurrentSequence());
+  // We only need this in the Network Service code path.
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+
+  GetCookieManagerWrapper()->AllowFileSchemeCookies(
+      accept,
+      base::BindOnce(&CookieManager::AllowFileSchemeCookiesCompleted,
+                     base::Unretained(this), std::move(complete), result));
+}
+
+void CookieManager::AllowFileSchemeCookiesCompleted(base::OnceClosure complete,
+                                                    bool* result,
+                                                    bool value) {
+  *result = value;
+  std::move(complete).Run();
 }
 
 static void JNI_AwCookieManager_SetShouldAcceptCookies(

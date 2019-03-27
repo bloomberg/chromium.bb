@@ -32,6 +32,8 @@ class AwCookieManagerWrapper {
       network::mojom::CookieManager::DeleteCookiesCallback;
   using FlushCookieStoreCallback =
       network::mojom::CookieManager::FlushCookieStoreCallback;
+  using AllowFileSchemeCookiesCallback =
+      network::mojom::CookieManager::AllowFileSchemeCookiesCallback;
 
   // Called when content layer starts up, to pass in a NetworkContextPtr for us
   // to use for Cookies APIs.
@@ -54,6 +56,9 @@ class AwCookieManagerWrapper {
   void GetAllCookies(GetCookieListCallback callback);
 
   void FlushCookieStore(FlushCookieStoreCallback callback);
+
+  void AllowFileSchemeCookies(bool allow,
+                              AllowFileSchemeCookiesCallback callback);
 
  private:
   // A CookieManagerPtr which is cloned from the NetworkContext's
