@@ -44,6 +44,10 @@ class GPU_GLES2_EXPORT SharedImageManager {
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       const Mailbox& mailbox,
       MemoryTypeTracker* ref);
+  std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
+      const Mailbox& mailbox,
+      MemoryTypeTracker* ref,
+      DawnDevice device);
 
   // Called by SharedImageRepresentation in the destructor.
   void OnRepresentationDestroyed(const Mailbox& mailbox,

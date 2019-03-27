@@ -118,6 +118,9 @@ class GPU_GLES2_EXPORT SharedImageRepresentationFactory {
   ProduceGLTexturePassthrough(const Mailbox& mailbox);
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       const Mailbox& mailbox);
+  std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
+      const Mailbox& mailbox,
+      DawnDevice device);
 
  private:
   SharedImageManager* manager_;
