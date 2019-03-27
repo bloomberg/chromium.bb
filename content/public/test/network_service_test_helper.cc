@@ -90,18 +90,22 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
   // network::mojom::NetworkServiceTest:
   void AddRules(std::vector<network::mojom::RulePtr> rules,
                 AddRulesCallback callback) override {
+    auto* host_resolver = test_host_resolver_.host_resolver();
     for (const auto& rule : rules) {
-      if (rule->resolver_type ==
-          network::mojom::ResolverType::kResolverTypeFail) {
-        test_host_resolver_.host_resolver()->AddSimulatedFailure(
-            rule->host_pattern);
-      } else if (rule->resolver_type ==
-                 network::mojom::ResolverType::kResolverTypeIPLiteral) {
-        test_host_resolver_.host_resolver()->AddIPLiteralRule(
-            rule->host_pattern, rule->replacement, std::string());
-      } else {
-        test_host_resolver_.host_resolver()->AddRule(rule->host_pattern,
-                                                     rule->replacement);
+      switch (rule->resolver_type) {
+        case network::mojom::ResolverType::kResolverTypeFail:
+          host_resolver->AddSimulatedFailure(rule->host_pattern);
+          break;
+        case network::mojom::ResolverType::kResolverTypeIPLiteral:
+          host_resolver->AddIPLiteralRule(rule->host_pattern, rule->replacement,
+                                          std::string());
+          break;
+        case network::mojom::ResolverType::kResolverTypeDirectLookup:
+          host_resolver->AllowDirectLookup(rule->host_pattern);
+          break;
+        default:
+          host_resolver->AddRule(rule->host_pattern, rule->replacement);
+          break;
       }
     }
     std::move(callback).Run();

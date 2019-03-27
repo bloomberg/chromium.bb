@@ -14,6 +14,7 @@ enum ResolverType {
   kResolverTypeFail,
   kResolverTypeSystem,
   kResolverTypeIPLiteral,
+  kResolverTypeDirectLookup,
 };
 
 struct Rule {
