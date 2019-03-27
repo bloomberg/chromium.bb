@@ -76,13 +76,12 @@ ClientSocketPool::GroupId TestGroupId(const std::string& host,
                                    privacy_mode);
 }
 
-// Returns a TransportClientSocketPool::SocketParams that will never be used to
+// Returns a ClientSocketPool::SocketParams that will never be used to
 // create a real TreansportConnectJob.
-scoped_refptr<TransportClientSocketPool::SocketParams> CreateDummyParams() {
-  return TransportClientSocketPool::SocketParams::
-      CreateFromTransportSocketParams(
-          base::MakeRefCounted<TransportSocketParams>(
-              HostPortPair("ignored", 80), OnHostResolutionCallback()));
+scoped_refptr<ClientSocketPool::SocketParams> CreateDummyParams() {
+  return ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+      base::MakeRefCounted<TransportSocketParams>(HostPortPair("ignored", 80),
+                                                  OnHostResolutionCallback()));
 }
 
 // Make sure |handle| sets load times correctly when it has been assigned a
@@ -705,7 +704,7 @@ class ClientSocketPoolBaseTest : public TestWithScopedTaskEnvironment {
   MockClientSocketFactory client_socket_factory_;
   TestConnectJobFactory* connect_job_factory_;
   // These parameters are never actually used to create a TransportConnectJob.
-  scoped_refptr<TransportClientSocketPool::SocketParams> params_;
+  scoped_refptr<ClientSocketPool::SocketParams> params_;
   std::unique_ptr<TransportClientSocketPool> pool_;
   ClientSocketPoolTest test_base_;
 };
@@ -2766,7 +2765,7 @@ class ConnectWithinCallback : public TestCompletionCallbackBase {
  public:
   ConnectWithinCallback(
       const ClientSocketPool::GroupId& group_id,
-      const scoped_refptr<TransportClientSocketPool::SocketParams>& params,
+      const scoped_refptr<ClientSocketPool::SocketParams>& params,
       TransportClientSocketPool* pool)
       : group_id_(group_id), params_(params), pool_(pool) {}
 
@@ -2793,7 +2792,7 @@ class ConnectWithinCallback : public TestCompletionCallbackBase {
   }
 
   const ClientSocketPool::GroupId group_id_;
-  const scoped_refptr<TransportClientSocketPool::SocketParams> params_;
+  const scoped_refptr<ClientSocketPool::SocketParams> params_;
   TransportClientSocketPool* const pool_;
   ClientSocketHandle handle_;
   TestCompletionCallback nested_callback_;
@@ -4875,7 +4874,7 @@ class TestAuthHelper {
   ~TestAuthHelper() = default;
 
   void InitHandle(
-      scoped_refptr<TransportClientSocketPool::SocketParams> params,
+      scoped_refptr<ClientSocketPool::SocketParams> params,
       TransportClientSocketPool* pool,
       RequestPriority priority = DEFAULT_PRIORITY,
       ClientSocketPool::RespectLimits respect_limits =

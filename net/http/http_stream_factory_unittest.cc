@@ -2012,8 +2012,7 @@ TEST_F(HttpStreamFactoryTest, NewSpdySessionCloseIdleH2Sockets) {
                                        false /* privacy_mode */);
     int rv = connection->Init(
         group_id,
-        TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
-            ssl_params),
+        ClientSocketPool::SocketParams::CreateFromSSLSocketParams(ssl_params),
         MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
         callback.callback(), ClientSocketPool::ProxyAuthCallback(),
         session->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
