@@ -396,8 +396,6 @@
       Si aquesta política no es configura o s'hi estableix el valor "tls1.2", <ph name="PRODUCT_NAME" /> ja no segueix el procés alternatiu. Tingueu en compte que aquesta configuració no desactiva la compatibilitat amb versions anteriors de TLS, sinó que només defineix si <ph name="PRODUCT_NAME" /> evita els servidors amb errors que no puguin negociar correctament les versions.
 
       Si cal mantenir la compatibilitat amb un servidor amb errors, es pot establir el valor "tls1.1" a la política. És un recurs temporal que no treu la necessitat de reparar el servidor ràpidament.</translation>
-<translation id="1864269674877167562">Si aquesta política s'estableix en una cadena en blanc o no està configurada, <ph name="PRODUCT_OS_NAME" /> no mostrarà una opció d'emplenament automàtic durant el flux d'inici de sessió de l'usuari.
-      Si aquesta política s'estableix en una cadena que representa un nom de domini, <ph name="PRODUCT_OS_NAME" /> mostrarà una opció de compleció automàtica durant l'inici de sessió de l'usuari que li permetrà escriure només el nom d'usuari, sense l'extensió del nom del domini. L'usuari podrà substituir aquesta extensió del nom del domini.</translation>
 <translation id="1864382791685519617">Activa la predicció de xarxa a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta opció de configuració.
 
       Controla la baixada prèvia de DNS, així com la connexió i la renderització prèvies de TCP i d'SSL de les pàgines web.
@@ -1578,14 +1576,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4534500438517478692">Nom de la restricció d'Android:</translation>
 <translation id="4541530620466526913">Comptes locals del dispositiu</translation>
 <translation id="4543502256674577024">Configuració de l'actualització del dispositiu</translation>
-<translation id="4544079461524242527">Configura les opcions de gestió d'extensions per a <ph name="PRODUCT_NAME" />.
-
-          Aquesta política controla diverses opcions de configuració, com ara les opcions controlades per qualsevol política actual que estigui relacionada amb extensions. Aquesta política substituirà qualsevol política anterior, si totes dues s'han configurat.
-
-          Aquesta política assigna un identificador d'extensió o un URL d'actualització a la configuració corresponent. Amb un identificador d'extensió, la configuració s'aplicarà només a l'extensió especificada. Es pot establir una configuració predeterminada per a l'identificador especial <ph name="DEFAULT_SCOPE" />, que s'aplicarà a totes les extensions que no tinguin establerta una configuració personalitzada en aquesta política. Amb un URL d'actualització, la configuració s'aplicarà a totes les extensions que tinguin el mateix URL d'actualització indicat al fitxer de manifest de l'extensió, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Per obtenir una descripció detallada de les opcions de configuració possibles i de l'estructura d'aquesta política, visita https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Mode de processament retroactiu de la política d'usuari</translation>
 <translation id="4554841826517980623">Aquesta política controla si la funció Fitxers compartits de la xarxa per a <ph name="PRODUCT_NAME" /> ha d'utilitzar <ph name="NETBIOS_PROTOCOL" /> per descobrir usos compartits a la xarxa.
       Si aquesta política s'estableix en "true", la detecció d'usos compartits farà servir el protocol <ph name="NETBIOS_PROTOCOL" /> per detectar usos compartits a la xarxa.
@@ -1949,7 +1939,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Tingues en compte que, si la plataforma admet notificacions sobre polítiques, el retard d'actualització s'establirà en 24 hores (i s'ignoraran tots els valors predeterminats i el valor d'aquesta política), ja que es preveu que aquestes notificacions forcin una actualització automàtica cada vegada que canviï la política. Per tant, serà innecessari fer actualitzacions més freqüents.</translation>
 <translation id="5530347722229944744">Bloqueja baixades potencialment perilloses</translation>
 <translation id="5535973522252703021">Llista blanca del servidor de delegacions Kerberos</translation>
-<translation id="555077880566103058">Permet que tots els llocs executin el connector <ph name="FLASH_PLUGIN_NAME" /> automàticament</translation>
+<translation id="555077880566103058">Permet que tots els llocs web executin el connector <ph name="FLASH_PLUGIN_NAME" /> automàticament</translation>
 <translation id="5559079916187891399">Aquesta política no té cap efecte a les aplicacions per a Android.</translation>
 <translation id="5560039246134246593">Afegeix un paràmetre a l'obtenció del valor seed de les variacions a <ph name="PRODUCT_NAME" />.
 

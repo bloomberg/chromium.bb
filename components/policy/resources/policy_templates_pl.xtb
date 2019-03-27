@@ -467,8 +467,6 @@ Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator r
       Jeśli ta zasada nie jest skonfigurowana lub jest ustawiona na „tls1.2”, <ph name="PRODUCT_NAME" /> nie stosuje już tego rozwiązania zastępczego. Pamiętaj, że nie wyłącza to obsługi starszych wersji protokołu TLS, tylko określa, czy <ph name="PRODUCT_NAME" /> będzie mieć możliwość obejścia wadliwie działających serwerów, które nie są w stanie przeprowadzić prawidłowego negocjowania wersji.
 
       Jeśli utrzymanie zgodności z wadliwie działającym serwerem jest konieczne, można wybrać „tls1.1”. To jednak tylko rozwiązanie tymczasowe – serwer trzeba jak najszybciej naprawić.</translation>
-<translation id="1864269674877167562">Jeśli ta zasada jest pusta lub nieskonfigurowana, <ph name="PRODUCT_OS_NAME" /> nie będzie wyświetlać opcji autouzupełniania podczas logowania użytkownika.
-      Jeśli zasada jest ustawiona na nazwę domeny, <ph name="PRODUCT_OS_NAME" /> będzie wyświetlać opcję autouzupełniania podczas logowania użytkownika, umożliwiając mu wpisanie tylko jego nazwy, bez konieczności podawania rozszerzenia nazwy domeny. Użytkownik będzie mógł zastąpić rozszerzenie nazwy domeny.</translation>
 <translation id="1864382791685519617">Włącza przewidywanie działań sieciowych w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
 
       Ta zasada kontroluje wstępne pobieranie DNS, wstępne łączenie przez TCP i SSL oraz wstępne renderowanie stron internetowych.
@@ -1814,14 +1812,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="4534500438517478692">Nazwa ograniczenia w Androidzie:</translation>
 <translation id="4541530620466526913">Lokalne konta na urządzeniu</translation>
 <translation id="4543502256674577024">Ustawienia aktualizacji urządzenia</translation>
-<translation id="4544079461524242527">Umożliwia skonfigurowanie zarządzania rozszerzeniami dla <ph name="PRODUCT_NAME" />.
-
-          Ta zasada steruje wieloma ustawieniami, m.in. tymi kontrolowanymi przez dowolne inne polityki związane z rozszerzeniami. Jeśli ustawione są inne istniejące zasady, zostanie ona zastąpiona.
-
-          Ta zasada mapuje identyfikator rozszerzenia lub URL aktualizacji na jego konfigurację. W przypadku URL-a identyfikatora konfiguracja zostanie zastosowana tylko do określonego rozszerzenia. Domyślną konfigurację można zastosować do specjalnego identyfikatora <ph name="DEFAULT_SCOPE" />, który będzie przypisany do wszystkich rozszerzeń bez niestandardowej konfiguracji w tej polityce. W przypadku adresu URL aktualizacji konfiguracja zostanie zastosowana do wszystkich rozszerzeń z dokładnym URL-em aktualizacji wskazanym w manifeście rozszerzenia zgodnie z opisem na stronie <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Pełny opis dostępnych ustawień i struktury tej zasady można znaleźć na stronie https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Tryb przetwarzania w pętli zasad dotyczących użytkowników</translation>
 <translation id="4554841826517980623">Ta zasada określa, czy funkcja sieciowych udziałów plików w <ph name="PRODUCT_NAME" /> ma używać <ph name="NETBIOS_PROTOCOL" /> do wykrywania udziałów w sieci.
       Gdy zasada ma wartość prawda, udziały w sieci będą wykrywane przy użyciu protokołu <ph name="NETBIOS_PROTOCOL" />.

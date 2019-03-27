@@ -364,6 +364,22 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Advarsel: Det er ikke anbefalt å delegere kontroll over <ph name="PRODUCT_OS_NAME" />-versjonen til en kioskapp, siden dette kan hindre enheten i å motta programvareoppdateringer og kritiske sikkerhetsløsninger. Hvis kontroll over <ph name="PRODUCT_OS_NAME" />-versjonen delegeres, kan brukerne bli utsatt for risiko.</translation>
 <translation id="1675002386741412210">Støttes på:</translation>
 <translation id="1689963000958717134">Tillater skyving av nettverkskonfigurasjon for alle brukere av en <ph name="PRODUCT_OS_NAME" />-enhet. Nettverkskonfigurasjonen er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL" /></translation>
+<translation id="1704516734140344991">Konfigurerer tilgjengeligheten og atferden til oppdateringsfunksjonaliteten til <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren.
+
+      Enkeltinnstillinger kan angis i JSON-egenskaper:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Hvis den er satt til <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, kan brukere utløse Powerwash-prosessen for å installere en oppdatering for <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Hvis den er satt til <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, kan brukere sette i gang oppdateringsflyten for <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren som opprettholder den enhetsgjeldende tilstanden (inkludert bedriftsregistrering), men taper brukerdata. Denne oppdateringsflyten er tilgjengelig fra versjon 68.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Styrer hvordan automatiske oppdateringer av <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren tvinges igjennom for sårbar <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvare. All flyt opprettholder den lokale enhetstilstanden.
+        Hvis den er satt til 1 eller ikke er angitt, tvinges ikke oppdateringer av TPM-fastvaren igjennom.
+        Hvis den er satt til 2, oppdateres <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren ved neste omstart etter at brukeren har bekreftet oppdateringen.
+        Hvis den er satt til 3, oppdateres <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren ved neste omstart.
+        Hvis den er satt til 4, oppdateres <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren etter registreringen og før brukeren logger på.
+        Dette alternativet er tilgjengelig fra versjon 74.
+
+      Hvis regelen ikke er satt, er oppdateringsfunksjonalitet for <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren ikke tilgjengelig.</translation>
 <translation id="1708496595873025510">Angi begrensning for henting av startverdien for variasjonene</translation>
 <translation id="1717817358640580294">Hvis denne regelen ikke er angitt og Opprydning for Chrome oppdager uønsket programvare, kan den rapportere metadata om skanningen til Google, i samsvar med regelen som er angitt av SafeBrowsingExtendedReportingEnabled. Opprydning for Chrome spør deretter brukerne om de vil fjerne den uønskede programvaren. Brukerne kan velge å dele resultatet fra opprydninger med Google, for å hjelpe oss med å bli enda bedre på å oppdage uønsket programvare. Disse resultatene inneholder informasjon om filmetadata, automatisk installerte utvidelser og registernøkler – som beskrevet i det tekniske dokumentet om personvern i Chrome.
 
@@ -442,8 +458,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne regelen ikke er konfigurert, eller hvis den er satt til «tls1.2», gjennomfører ikke <ph name="PRODUCT_NAME" /> denne reserveprosessen lenger. Vær oppmerksom på at dette ikke slår av støtten for eldre TLS-versjoner – det avgjør bare om <ph name="PRODUCT_NAME" /> omgår problemer med tjenere som ikke kan forhandle versjoner riktig.
 
       Hvis det er nødvendig å beholde kompatibiliteten med en tjener med feil, kan denne regelen settes til «tls1.1». Dette er en midlertidig løsning, og tjeneren må fikses så fort som mulig.</translation>
-<translation id="1864269674877167562">Hvis denne regelen settes til en tom streng eller ikke konfigureres, ser ikke brukerne noe alternativ for autofullføring i <ph name="PRODUCT_OS_NAME" /> under påloggingsprosessen.
-      Hvis denne regelen settes til en streng som representerer et domenenavn, ser brukeren alternativet for autofullføring i <ph name="PRODUCT_OS_NAME" /> under påloggingsprosessen, slik at vedkommende kan skrive inn bare brukernavnet sitt uten domenenavnutvidelsen. Brukeren kan overskrive denne domenenavnutvidelsen.</translation>
 <translation id="1864382791685519617">Slår på nettverksforutsigelse i <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre denne innstillingen.
 
       Dette styrer DNS-forhåndshenting, TCP- og SSL-forhåndstilkobling og forhåndsgjengivelse av nettsider.
@@ -1221,6 +1235,17 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Denne regelen kan bare angis som en anbefaling. Du kan bruke den til å flytte sett med anbefalte lokaliteter til toppen av listen, men brukerne kan alltid velge blant alle lokalitetene som er støttet i <ph name="PRODUCT_OS_NAME" />, i øktene sine.
       </translation>
 <translation id="3381968327636295719">Bruk vertsnettleser som standard</translation>
+<translation id="3384115339826100753">Aktivér regelen for strømstyring av strømtoppskift.
+
+          Toppskift er en regel for strømsparing som minimerer bruken av vekselstrøm på de tidene enheten brukes mest. Du kan angi en start- og sluttid for modusen for strømtoppskift for hver ukedag. I disse tidsrommene kjøres systemet på batteriet, selv når vekselstrøm er tilkoblet, så lenge batteriet er over den spesifiserte terskelen. Etter den spesifiserte sluttiden kjøres systemet på vekselstrøm hvis dette er tilkoblet, men batteriet lades ikke. Etter det spesifiserte starttidspunktet for lading bruker systemet vekselstrøm og lader batteriet som vanlig.
+
+          Hvis denne regelen er satt til sann, og DevicePowerPeakShiftBatteryThreshold og DevicePowerPeakShiftDayConfig er angitt, er strømtoppskift alltid på hvis dette støttes av enheten.
+
+          Hvis denne regelen er satt til usann, er strømtoppskift alltid av.
+
+          Hvis du angir denne regelen, kan ikke brukere endre eller overstyre den.
+
+          Hvis denne regelen ikke angis, er strømtoppskift av og kan ikke slås på av brukeren.</translation>
 <translation id="3388153794103186066">Lar deg angi en liste over nettadresser som spesifiserer nettsteder som automatisk får tilgang til USB-enheter fra gjeldende leverandører og produkt-ID-er. Hvert element på listen må inneholde både enhetene og nettadressene for at regelen skal gjelde. Hvert element i enheter kan inneholde felt for leverandør-ID og produkt-ID. Eventuelle ID-er som ikke føres opp på listen, behandles som jokertegn, med ett unntak: Du kan ikke angi en produkt-ID uten å angi en leverandør-ID. Hvis ikke er regelen ugyldig og den blir ignorert.
 
         USB-tillatelsesmodellen bruker nettadressen forespørselen kommer fra («forespørsel-nettadressen»), og nettadressen med den innebygde iframe-koden («nettadressen med innebygging») for å gi nettadressen forespørselen kommer fra, tilgang til USB-enheten. Forespørsel-nettadressen kan være forskjellig fra nettadressen med innebygging når nettstedet forespørselen kommer fra, ligger i en iframe. Derfor kan feltet «urls» (nettadresser) inneholde opptil to nettadressestrenger atskilt med komma for å spesifisere henholdsvis forespørsel-nettadressen og nettadressen med innebygging. Hvis kun én nettadresse er spesifisert, gis tilgang til de samsvarende USB-enhetene når forespørsel-nettadressen samsvarer med denne nettadressen, uavhengig av innebyggingsstatus. Nettadressene i «urls» (nettadresser) må være gyldige, ellers blir regelen ignorert.
@@ -1312,6 +1337,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne regelen er angitt som «DeveloperToolsDisallowed» (verdi 2), kan ikke utviklerverktøyene brukes, og elementer på nettsteder kan ikke inspiseres lenger. Alle hurtigtaster og alle oppføringer for menyer eller kontekstuelle menyer for å åpne utviklerverktøy eller JavaScript-konsollen deaktiveres.</translation>
 <translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
 <translation id="355118380775352753">Nettsteder som skal åpnes i en alternativ nettleser</translation>
+<translation id="3554984410014457319">La Google-assistenten lytte etter frasen for taleaktivering</translation>
 <translation id="3577251398714997599">Annonseinnstillinger for nettsteder med forstyrrende annonser</translation>
 <translation id="357917253161699596">Tillat brukere å administrere brukersertifikater</translation>
 <translation id="3583230441447348508">Spesifiserer en liste over forhåndskonfigurerte delte nettverksressurser.
@@ -1545,6 +1571,12 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       <ph name="PRODUCT_OS_NAME" />-enheter ser automatisk etter oppdateringer når denne innstillingen ikke er konfigurert eller den er angitt som «false» (usann).
 
       Advarsel: Vi anbefaler å ha automatiske oppdateringer slått på, slik at brukere får programvareoppdateringer og kritiske sikkerhetsløsninger. Hvis automatiske oppdateringer slås av, kan brukerne bli utsatt for risiko.</translation>
+<translation id="4018000735882846261">Denne regelen gir Google-assistenten tillatelse til å lytte etter frasen for taleaktivering.
+
+      Hvis regelen er aktivert, lytter Google-assistenten etter frasen for taleaktivering.
+      Hvis regelen er deaktivert, lytter ikke Google-assistenten etter frasen for taleaktivering.
+      Hvis regelen ikke er angitt, lytter ikke Google-assistenten etter frasen for taleaktivering.
+      </translation>
 <translation id="4020682745012723568">Informasjonskapsler som overføres til brukerens profil, kan ikke brukes av Android-apper.</translation>
 <translation id="402759845255257575">Ikke tillat nettsteder å kjøre JavaScript</translation>
 <translation id="4027608872760987929">Aktiver standard søkeleverandør</translation>
@@ -1740,6 +1772,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Selv om selve regelen støttes på plattformene ovenfor, kan funksjonene som slås på, være tilgjengelige på færre plattformer. Ikke alle avviklede nettplattformfunksjoner kan slås på igjen. Bare funksjonene som uttrykkelig listes opp nedenfor, kan slås på igjen for en begrenset periode. Perioden varierer fra funksjon til funksjon. Det generelle formatet for streng-taggene er [NavnetPåDenAvvikledeFunksjonen]_EffectiveUntil[ååååmmdd]. Som referanse kan du gå til https://bit.ly/blinkintents for å se formålet med endringene av nettplattformfunksjonene.
       </translation>
 <translation id="4442582539341804154">Aktiver lås når enheten blir inaktiv eller suspendert</translation>
+<translation id="4449469846627734399">Angi dagskonfigurasjon for strømtoppskift</translation>
 <translation id="4449545651113180484">Rotér skjermen 270 grader med klokken</translation>
 <translation id="445270821089253489">Kontrollerer hva slags bruker- og enhetsinformasjon som rapporteres.</translation>
 <translation id="4454820008017317557">Vis verktøylinjeikonet for <ph name="PRODUCT_NAME" /></translation>
@@ -1786,14 +1819,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="4534500438517478692">Navnet på Android-begrensningen:</translation>
 <translation id="4541530620466526913">Lokale kontoer på enheten</translation>
 <translation id="4543502256674577024">Innstillinger for enhetsoppdatering</translation>
-<translation id="4544079461524242527">Konfigurerer innstillingene for administrering av utvidelser for <ph name="PRODUCT_NAME" />.
-
-          Denne regelen kontrollerer flere innstillinger, inkludert innstillinger som kontrolleres av eventuelle eksisterende utvidelsesrelaterte regler. Denne regelen overstyrer eventuelle eldre regler som er til stede.
-
-          Denne regelen knytter en utvidelses-ID eller en nettadresse for oppdatering til den samsvarende konfigurasjonen. Med en utvidelses-ID blir konfigurasjonen kun brukt for den angitte utvidelsen. En standardkonfigurasjon kan angis for den spesielle ID-en <ph name="DEFAULT_SCOPE" />, som brukes for alle utvidelser som ikke har noen tilpasset konfigurasjon angitt i denne regelen. Med en nettadresse for oppdatering blir konfigurasjonen brukt for alle utvidelser med den eksakte nettadressen for oppdatering som er oppgitt i manifestet til denne utvidelsen, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          For å få en fullstendig beskrivelse over mulige innstilinger samt strukturen i denne regelen, gå til https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Behandlingsmodus for tilbakekobling av brukerinnstillinger</translation>
 <translation id="4554841826517980623">Denne regelen kontrollerer om funksjonen for fildeling på nettverket for <ph name="PRODUCT_NAME" /> skal bruke <ph name="NETBIOS_PROTOCOL" /> for å finne delte filer på nettverket.
       Når sann er valgt for denne regelen, brukes <ph name="NETBIOS_PROTOCOL" />-protokollen til å finne delinger på nettverket.
@@ -1939,6 +1964,11 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Denne regelen er bare tilgjengelig som en plattform.
       </translation>
+<translation id="5034604678285451405">Angi batteriterskelen for strømtoppskift i prosent.
+
+          Denne regelen brukes bare hvis DevicePowerPeakShiftEnabled er satt til sann.
+
+          Hvis denne regelen ikke konfigureres eller angis, er strømtoppskift alltid av.</translation>
 <translation id="5047604665028708335">Gi tilgang til nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="5052081091120171147">Denne retningslinjen tvinger import av nettleserloggen fra den aktuelle standardnettleseren hvis den er aktivert. Hvis den er aktivert, påvirker denne retningslinjen også importdialogen. Hvis den er deaktivert, importeres ingen nettleserlogg. Hvis den ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="5055312535952606505">Konfigurerer innstillingene for proxy-tjenere for <ph name="PRODUCT_NAME" />. Disse er også tilgjengelige for ARC-apper.
@@ -2221,6 +2251,7 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
 <translation id="5457065417344056871">Slå på gjestemodus i nettleseren</translation>
 <translation id="5457924070961220141">Gjør at du kan konfigurere standard HTML-gjengivelsen når <ph name="PRODUCT_FRAME_NAME" /> er installert.
           Standardinnstillingen som brukes når denne retningslinjen er angitt, er for å tillate vertstjeneren å foreta gjengivelsen, men du kan velge å overstyre dette sånn at <ph name="PRODUCT_FRAME_NAME" /> som standard gjengir HTML-sider.</translation>
+<translation id="5458584148602890023">Slå på strømtoppskift</translation>
 <translation id="5464816904705580310">Konfigurer innstillinger for administrerte brukere.</translation>
 <translation id="546726650689747237">Forsinkelse for lysdemping på skjermen når enheten kjører på vekselstrøm</translation>
 <translation id="5469143988693423708">Brukeren har tillatelse til å kjøre Crostini</translation>
@@ -2564,6 +2595,7 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
 
       Hvis denne regelen ikke er spesifisert, er listen over frakoblingsbare USB-enheter tom.</translation>
 <translation id="6083631234867522991">Windows (Windows-klienter):</translation>
+<translation id="608788685013546076">Angi batteriterskelen for strømtoppskift i prosent</translation>
 <translation id="6089679180657323464">Kontrollerer innstillinger for wilco-DTC-en (kontrolleren for diagnostikk og telemetri).</translation>
 <translation id="6091233616732024397">Tving brukere til å logge på for å bruke nettleseren</translation>
 <translation id="6093156968240188330">Tillat at eksterne brukere kommuniserer via uthevede vinduer i fjernhjelpøkter.</translation>
@@ -3776,6 +3808,9 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8548832052135586762">Konfigurerer utskrift i bare fargemodus, bare svart/hvitt eller uten begrensninger knyttet til fargemodus. Regler som ikke er konfigurert, regnes for å være uten begrensninger.</translation>
 <translation id="8549772397068118889">Varsle ved besøk på nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="8566842294717252664">Skjul nettbutikken fra nye faner og appvelgeren</translation>
+<translation id="8569734380847633643">
+          Hvis regelen er satt til usann, slår <ph name="PRODUCT_OS_NAME" /> av Wi-Fi, og brukere kan ikke slå det på igjen.
+          Hvis regelen er satt til sann eller ikke er angitt, kan brukere slå Wi-Fi av og på som de vil.</translation>
 <translation id="857369585509260201">Denne regelen er avviklet. Vurder å bruke BrowserSignin i stedet.
 
       Hvis denne regelen er angitt som «True» (sann), må brukeren logge på <ph name="PRODUCT_NAME" /> med profilen sin før nettleseren brukes. Standardverdien for BrowserGuestModeEnabled er «False» (usann). Merk at eksisterende, usignerte profiler låses og gjøres utilgjengelige når denne regelen aktiveres. For mer informasjon, se brukerstøtteartikkelen.
@@ -3835,6 +3870,13 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8685024486845674965">Advarselen om passordbeskyttelse utløses ved gjenbruk av passord</translation>
 <translation id="8693243869659262736">Bruk innebygd DNS-klient</translation>
 <translation id="8703488928438047864">Rapportér kortstatus</translation>
+<translation id="8703872185032220081">Angi dagskonfigurasjon for strømtoppskift.
+
+          Denne regelen brukes bare hvis DevicePowerPeakShiftEnabled er satt til sann.
+
+          Hvis denne regelen ikke konfigureres eller angis, er strømtoppskift alltid av.
+
+          Merk: Tillatte verdier for <ph name="MINUTE_FIELD_NAME" />-feltet i <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> og <ph name="CHARGE_START_TIME_FIELD_NAME" /> er 0, 15, 30, 45.</translation>
 <translation id="8704831857353097849">Liste over deaktiverte programtillegg</translation>
 <translation id="8711086062295757690">Angir nøkkelordet, som er snarveien som brukes i søkefeltet for å utløse søket for denne leverandøren.
 
@@ -4014,6 +4056,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Hvis denne innstillingen ikke er angitt, kan brukerne velge sine egne brukerbilder for påloggingskjermen.</translation>
 <translation id="9035964157729712237">Utvidelses-ID-er som skal unntas sperrelisten</translation>
+<translation id="9038839118379817310">Slå på Wi-Fi</translation>
 <translation id="9039822628127365650">Når denne regelen er angitt, spesifiserer den hvor lang tid det tar før brukerne automatisk logges av og økten avsluttes. Brukerne ser den gjenværende tiden som en nedtelling i systemfeltet.
 
       Når denne regelen ikke er angitt, begrenses ikke øktlengden.

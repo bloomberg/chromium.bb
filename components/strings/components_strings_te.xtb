@@ -547,6 +547,7 @@
 <translation id="40103911065039147">{URL_count,plural, =1{1 వెబ్ పేజీ సమీపంలో ఉంది}other{# వెబ్ పేజీలు సమీపంలో ఉన్నాయి}}</translation>
 <translation id="4030383055268325496">&amp;జోడించడాన్ని రద్దు చేయి</translation>
 <translation id="4032320456957708163">మీ బ్రౌజర్ <ph name="ENROLLMENT_DOMAIN" /> ద్వారా నిర్వహించబడుతోంది</translation>
+<translation id="4034375457890803692">లింక్‌ని క్లిక్ చేసినప్పుడు మీరు సాధారణంగా సందర్శించని సైట్‌కు తీసుకెళుతోంది. మిమ్మల్ని తికమక పెట్టడానికి ఇది ప్రయత్నిస్తుండవచ్చు.</translation>
 <translation id="4058922952496707368">కీ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (ఎన్వలప్)</translation>
 <translation id="4067947977115446013">చెల్లుబాటు అయ్యే చిరునామాను జోడించండి</translation>
@@ -1046,6 +1047,7 @@
 <translation id="6957887021205513506">సర్వర్ ధృవీకరణ పత్రం చెల్లదు.</translation>
 <translation id="6964255747740675745">నెట్‌వర్క్ కాన్ఫిగరేషన్‌ని అన్వయించడం విఫలమైంది (JSON చెల్లదు).</translation>
 <translation id="6965382102122355670">సరే</translation>
+<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">పరికరం</translation>
 <translation id="6970216967273061347">జిల్లా</translation>
 <translation id="6973656660372572881">రెండు స్థిర ప్రాక్సీ సర్వర్లు మరియు ఒక .pac స్క్రిప్ట్ URL పేర్కొనబడ్డాయి.</translation>

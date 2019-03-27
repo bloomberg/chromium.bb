@@ -1848,6 +1848,7 @@
 <translation id="3892414795099177503">OpenVPN / L2TP を追加...</translation>
 <translation id="3893536212201235195">ユーザー補助設定の読み取りと変更</translation>
 <translation id="3893630138897523026">ChromeVox（音声フィードバック）</translation>
+<translation id="3894123633473837029">Sherlog から最近のアシスタント履歴を含める。これには、ID、位置情報、デバッグ情報などが含まれる可能性があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">フォルダの追加</translation>
 <translation id="389589731200570180">ゲストと共有</translation>
 <translation id="3898521660513055167">トークンのステータス</translation>
@@ -3719,6 +3720,7 @@
 <translation id="6915804003454593391">ユーザー:</translation>
 <translation id="6916590542764765824">拡張機能を管理</translation>
 <translation id="6920989436227028121">通常のタブとして開く</translation>
+<translation id="6921104647315081813">アクティビティを削除</translation>
 <translation id="6921709132208495314">このページでデータの使用を停止する</translation>
 <translation id="6922128026973287222">Google データセーバーを使うとデータの保存や閲覧が速くなります。クリックして詳細をご確認ください。</translation>
 <translation id="6923132443355966645">スクロール / クリック</translation>

@@ -214,7 +214,7 @@
 <translation id="131461803491198646">Domače omrežje, brez gostovanja</translation>
 <translation id="1316136264406804862">Iskanje ...</translation>
 <translation id="1316495628809031177">Sinhronizacija je zaustavljena</translation>
-<translation id="1322046419516468189">Ogled in upravljanje shranjenih gesel tukaj: <ph name="SAVED_PASSWORDS_STORE" /></translation>
+<translation id="1322046419516468189">Shranjena gesla si lahko ogledate in jih upravljate tukaj: <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1326317727527857210">Če želite dostopati do zavihkov v drugih napravah, se prijavite v Chrome.</translation>
 <translation id="1327074568633507428">Tiskalnik v Google Tiskanju v oblaku</translation>
 <translation id="1327977588028644528">Prehod</translation>
@@ -1165,7 +1165,7 @@
 <translation id="2812989263793994277">Ne pokaži slik</translation>
 <translation id="281390819046738856">Zahteve ni bilo mogoče podpisati.</translation>
 <translation id="2814489978934728345">Ustavite nalaganje te strani</translation>
-<translation id="281504910091592009">Ogled in upravljanje shranjenih gesel v <ph name="BEGIN_LINK" />Google Računu<ph name="END_LINK" /></translation>
+<translation id="281504910091592009">Shranjena gesla si lahko ogledate in jih upravljate v <ph name="BEGIN_LINK" />Google Računu<ph name="END_LINK" /></translation>
 <translation id="2815693974042551705">Mapa z zaznamki</translation>
 <translation id="2818476747334107629">Podrobnosti tiskalnika</translation>
 <translation id="2820957248982571256">Iskanje ...</translation>
@@ -1438,7 +1438,7 @@
 <translation id="3280237271814976245">Shrani &amp;kot ...</translation>
 <translation id="3280243678470289153">Ostani v Chromu</translation>
 <translation id="3281892622610078515">Datoteke in programi, določeni za karanteno:</translation>
-<translation id="3282568296779691940">Prijava v Google Chrome</translation>
+<translation id="3282568296779691940">Prijava v Chrome</translation>
 <translation id="3285322247471302225">Nov &amp;zavihek</translation>
 <translation id="3288047731229977326">Razširitve, ki se izvajajo v razvijalskem načinu, lahko škodijo vašemu računalniku. Če niste razvijalec, zaradi varnosti onemogočite razširitve, ki se izvajajo v razvijalskem načinu.</translation>
 <translation id="3289856944988573801">Če želite preveriti, ali so na voljo posodobitve, uporabite ethernet ali Wi-Fi.</translation>
@@ -2854,7 +2854,7 @@
 <translation id="5554489410841842733">Ta ikona bo vidna, ko lahko razširitev deluje na trenutni strani.</translation>
 <translation id="5554720593229208774">Overitelj potrdil za e-pošto</translation>
 <translation id="5556206011531515970">Kliknite »Naprej«, da izberete privzeti brskalnik.</translation>
-<translation id="5556459405103347317">Ponovno naloži</translation>
+<translation id="5556459405103347317">Znova naloži</translation>
 <translation id="5557991081552967863">Omogočanje Wi-Fi-ja v stanju pripravjenosti</translation>
 <translation id="5558129378926964177">Po&amp;večaj</translation>
 <translation id="55601339223879446">Prilagodite meje namizja na zaslonu</translation>
@@ -2942,7 +2942,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5671658447180261823">Odstrani predlog <ph name="SUGGESTION_NAME" /></translation>
 <translation id="567643736130151854">Prijavite se in vklopite sinhronizacijo, če želite dostopati do svojih zaznamkov, gesel in drugega v vseh napravah</translation>
 <translation id="5677503058916217575">Jezik strani:</translation>
-<translation id="5677928146339483299">Blokiran</translation>
+<translation id="5677928146339483299">Blokirano</translation>
 <translation id="5678550637669481956">Odobren je dostop z možnostjo branja in pisanja za to: <ph name="VOLUME_NAME" />.</translation>
 <translation id="5678955352098267522">Branje vaših podatkov na spletnem mestu <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">ID sredstva</translation>
@@ -3553,7 +3553,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
     Vse račune si lahko ogledate in jih upravljate v »Nastavitve -&gt; Računi za Google«.</translation>
 <translation id="6639554308659482635">Pomnilnik SQLite</translation>
 <translation id="6641138807883536517">Naključno ustvarjeno geslo za varni modul ni na voljo. To je običajno po izvedbi funkcije Powerwash.</translation>
-<translation id="6643016212128521049">Počisti</translation>
+<translation id="6643016212128521049">Izbriši</translation>
 <translation id="6644512095122093795">Ponudi shranjevanje gesel</translation>
 <translation id="6644846457769259194">Posodabljanje naprave (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6645437135153136856">Izbrana naprava za Google Tiskanje v oblaku ni več podprta. <ph name="BR" /> Poskusite nastaviti tiskalnik v sistemskih nastavitvah računalnika.</translation>
@@ -3723,6 +3723,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6915804003454593391">Uporabnik:</translation>
 <translation id="6916590542764765824">Upravljanje razširitev</translation>
 <translation id="6920989436227028121">Odpri kot navaden zavihek</translation>
+<translation id="6921104647315081813">Izbriši dejavnosti</translation>
 <translation id="6921709132208495314">Ustavitev prenosa podatkov na tej strani</translation>
 <translation id="6922128026973287222">Z Google Varčevanjem s podatki varčujete s podatki in brskate hitreje. Kliknite, če želite izvedeti več.</translation>
 <translation id="6923132443355966645">Drsenje/klikanje</translation>

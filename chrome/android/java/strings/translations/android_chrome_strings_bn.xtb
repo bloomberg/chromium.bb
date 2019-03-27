@@ -82,7 +82,6 @@
 <translation id="1553358976309200471">Chrome আপডেট করুন</translation>
 <translation id="1569387923882100876">সংযুক্ত ডিভাইস</translation>
 <translation id="1571304935088121812">ইউজারনেম কপি করুন</translation>
-<translation id="1576370611341449972">শুধুমাত্র ওয়াই-ফাই চালু থাকাকালীন ডাউনলোড হয়</translation>
 <translation id="1612196535745283361">ডিভাইস স্ক্যান করার জন্য Chrome এর অবস্থানের অ্যাক্সেস প্রয়োজন। অবস্থানের অ্যাক্সেস <ph name="BEGIN_LINK" />এই ডিভাইসের জন্য বন্ধ করা হয়েছে<ph name="END_LINK" />।</translation>
 <translation id="1620510694547887537">ক্যামেরা</translation>
 <translation id="1623104350909869708">এই পৃষ্ঠাটিকে অতিরিক্ত কথোপকথন তৈরি করা থেকে বাধা দিন</translation>
@@ -371,7 +370,6 @@
 <translation id="3810838688059735925">ভিডিও</translation>
 <translation id="3810973564298564668">পরিচালনা</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" />টি ডাউনলোড মোছা হয়েছে</translation>
-<translation id="3819562311292413223">আপনার জন্য নিবন্ধ ডাউনলোড করা</translation>
 <translation id="3822502789641063741">সাইটের সঞ্চয়স্থান সাফ করবেন?</translation>
 <translation id="385051799172605136">ফিরুন</translation>
 <translation id="3859306556332390985">সামনে এগোন</translation>

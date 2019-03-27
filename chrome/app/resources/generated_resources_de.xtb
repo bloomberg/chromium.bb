@@ -2235,7 +2235,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">Die Version der externen Erweiterung ist identisch mit der vorhandenen Version oder niedriger als diese.</translation>
 <translation id="4555769855065597957">Schatten</translation>
-<translation id="4556110439722119938">Lesezeichen, Verlauf, Passwörter und andere Einstellungen werden mit Ihrem Google-Konto synchronisiert, damit Sie sie auf allen Ihren Geräten nutzen können.</translation>
+<translation id="4556110439722119938">Lesezeichen, Verlauf, Passwörter und andere Einstellungen werden mit Ihrem Google-Konto synchronisiert, damit Sie sie auf all Ihren Geräten nutzen können.</translation>
 <translation id="4558426062282641716">Berechtigung zum automatischen Start angefordert</translation>
 <translation id="4558491878126948419">Sie erhalten Tipps zu <ph name="DEVICE_TYPE" /> sowie Updates zu Google-Produkten und können uns Feedback geben. Die Abbestellung ist jederzeit möglich.</translation>
 <translation id="4559617833001311418">Diese Website greift auf meine Bewegungs- oder Lichtsensoren zu.</translation>
@@ -3716,6 +3716,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6915804003454593391">Nutzer:</translation>
 <translation id="6916590542764765824">Erweiterungen verwalten</translation>
 <translation id="6920989436227028121">In normalem Tab öffnen</translation>
+<translation id="6921104647315081813">Aktivitäten löschen</translation>
 <translation id="6921709132208495314">Datenverbrauch auf dieser Seite stoppen</translation>
 <translation id="6922128026973287222">Mit dem Google-Datensparmodus verbrauchen Sie weniger Daten und surfen schneller. Klicken Sie hier, um mehr zu erfahren.</translation>
 <translation id="6923132443355966645">Scrollen/Klicken</translation>
@@ -5168,7 +5169,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="93343527085570547">Auf der <ph name="BEGIN_LINK1" />Seite "Rechtliche Hinweise"<ph name="END_LINK1" /> haben Sie die Möglichkeit, die Änderung von Inhalten aus rechtlichen Gründen zu beantragen. Es könnte sein, dass dabei bestimmte Konto- und Systeminformationen an Google gesendet werden. Mithilfe der von Ihnen übermittelten Daten können wir unter Einhaltung unserer <ph name="BEGIN_LINK2" />Datenschutzerklärung<ph name="END_LINK2" /> und <ph name="BEGIN_LINK3" />Nutzungsbedingungen<ph name="END_LINK3" /> technische Probleme lösen und unsere Dienste verbessern.</translation>
 <translation id="93393615658292258">Nur Passwort</translation>
 <translation id="934503638756687833">Elemente, die hier nicht aufgeführt sind, werden bei Bedarf ebenfalls entfernt. Weitere Informationen zum &lt;a href="<ph name="URL" />"&gt;Schutz vor unerwünschter Software&lt;/a&gt; finden Sie im Whitepaper zum Datenschutz in Chrome.</translation>
-<translation id="935490618240037774">Lesezeichen, Verlauf, Passwörter und andere Einstellungen werden mit Ihrem Google-Konto synchronisiert, damit Sie sie auf allen Ihren Geräten nutzen können.</translation>
+<translation id="935490618240037774">Lesezeichen, Verlauf, Passwörter und andere Einstellungen werden mit Ihrem Google-Konto synchronisiert, damit Sie sie auf all Ihren Geräten nutzen können.</translation>
 <translation id="935854577147268200">Das Smartphone für Smart Lock wurde geändert. Geben Sie Ihr Passwort ein, um Smart Lock zu aktualisieren. Das nächste Mal wird Ihr <ph name="DEVICE_TYPE" /> von Ihrem Smartphone entsperrt. Sie können Smart Lock in den Einstellungen deaktivieren.</translation>
 <translation id="936801553271523408">Diagnosedaten des Systems</translation>
 <translation id="93766956588638423">Erweiterung reparieren</translation>

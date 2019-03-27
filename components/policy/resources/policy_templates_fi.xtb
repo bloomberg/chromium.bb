@@ -473,8 +473,6 @@
       Jos tätä käytäntöä ei ole määritetty tai sen arvo on tls1.2, <ph name="PRODUCT_NAME" /> ei enää suorita tätä varatoimenpidettä. Huomaa, että tämä ei poista käytöstä vanhempien TLS-versioiden tukea, vaan se määrittää vain, voiko <ph name="PRODUCT_NAME" /> kiertää palvelimien virheitä silloin, kun versioneuvottelua ei suoriteta oikein.
 
       Jos yhteensopivuus virheitä sisältävän palvelimen kanssa täytyy säilyttää, tämän käytännön arvoksi voidaan määrittää tls1.1. Tämä on kuitenkin tilapäinen toimenpide, ja palvelin tulee korjata mahdollisimman pian.</translation>
-<translation id="1864269674877167562">Jos tämän käytännön arvoksi asetetaan tyhjä merkkijono tai sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> ei näytä automaattisesti täydennettyä verkkotunnusta kirjautumisen yhteydessä.
-      Jos tämän käytännön arvoksi asetetaan verkkotunnusta vastaava merkkijono, <ph name="PRODUCT_OS_NAME" /> näyttää kirjautumisen yhteydessä automaattisesti täydennetyn verkkotunnuksen, jolloin käyttäjän tarvitsee kirjoittaa vain käyttäjänimi ilman verkkotunnusta. Käyttäjä voi myös korvata automaattisesti täydennetyn osan muulla verkkotunnuksella.</translation>
 <translation id="1864382791685519617">Tällä käytännöllä <ph name="PRODUCT_NAME" /> saa luvan käyttää verkon ennakointia, eivätkä käyttäjät voi muokata tätä asetusta.
 
       Tämä käytäntö koskee DNS-esilatauksen lisäksi TCP- ja SSL-yhteyksien esimuodostusta ja verkkosivujen esirenderöintiä.
@@ -1819,14 +1817,6 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="4534500438517478692">Android-rajoituksen nimi:</translation>
 <translation id="4541530620466526913">Laitteeseen lisätyt tilit</translation>
 <translation id="4543502256674577024">Laitteen päivitysasetukset</translation>
-<translation id="4544079461524242527">Määrittää laajennusten hallinta-asetukset, joita <ph name="PRODUCT_NAME" /> käyttää
-
-          Tämä käytäntö vaikuttaa moniin asetuksiin, jotka voivat olla esimerkiksi olemassa olevien laajennuksia koskevien käytäntöjen alaisia. Tämä käytäntö korvaa mahdollisesti käytössä olevat vanhat käytännöt.
-
-          Tämä käytäntö käyttää laajennustunnusta tai päivityksen URL-osoitetta. Laajennustunnusta käytettäessä määritys koskee vain tunnusta vastaavaa laajennusta. Oletusarvoinen määritys voidaan asettaa käyttämällä tunnusta <ph name="DEFAULT_SCOPE" />. Se koskee kaikkia laajennuksia, joille ei ole asetettu muokattua määritystä tässä käytännössä. Päivityksen URL-osoitetta käytettäessä määritys koskee kaikkia laajennuksia, jotka käyttävät täsmälleen laajennuksen luettelossa määriteltyä päivityksen URL-osoitetta. Katso <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Löydät mahdollisten asetusten täyden kuvauksen ja tämän käytännön rakenteen osoitteesta https://www.chromium.org/administrators/policy-list-3/extension-settings-full.
-          </translation>
 <translation id="4554651132977135445">Käyttäjäkäytännön osoitesilmukan käsittelytila</translation>
 <translation id="4554841826517980623">Tämä käytäntö määrittää, löytääkö <ph name="NETBIOS_PROTOCOL" /> verkon jaot, kun <ph name="PRODUCT_NAME" /> jakaa verkkotiedostoja.
       Jos tämän käytännön arvo on Tosi, <ph name="NETBIOS_PROTOCOL" /> löytää verkossa tehtyjä jakoja.

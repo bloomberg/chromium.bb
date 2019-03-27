@@ -444,8 +444,6 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
       Pokud tato zásada není nakonfigurována nebo je nastavena na hodnotu „tls1.2“, prohlížeč <ph name="PRODUCT_NAME" /> tento záložní postup neprovede. Tato zásada nedeaktivuje podporu starších verzí protokolu TLS, pouze určuje, zda se bude prohlížeč <ph name="PRODUCT_NAME" /> snažit řešit potíže s chybně fungujícími servery, které nedokážou správně vyjednávat verze.
 
       Pokud je třeba zajistit kompatibilitu s chybným serverem, lze nastavit hodnotu „tls1.1“. Jedná se však o nouzové řešení a server by měl být co nejrychleji opraven.</translation>
-<translation id="1864269674877167562">Pokud tato zásada není nastavena nebo je nastavena na prázdný textový řetězec, <ph name="PRODUCT_OS_NAME" /> během procesu přihlášení nezobrazí možnost automatického doplňování.
-      Pokud je tato zásada nastavena na textový řetězec, který představuje název domény, <ph name="PRODUCT_OS_NAME" /> během procesu přihlášení zobrazí možnost automatického doplňování a uživatel bude moci zadat pouze uživatelské jméno bez přípony s názvem domény. Příponu s názvem domény uživatel bude moci přepsat.</translation>
 <translation id="1864382791685519617">Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> předvídání akcí sítě a brání uživatelům ve změně tohoto nastavení.
 
 Tato zásada ovlivňuje předběžné načítání záznamů DNS, předběžná připojení TCP a SSL a předběžné vykreslování webových stránek.
@@ -1807,14 +1805,6 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
 <translation id="4534500438517478692">Název omezení Android:</translation>
 <translation id="4541530620466526913">Místní účty v zařízení</translation>
 <translation id="4543502256674577024">Nastavení aktualizace zařízení</translation>
-<translation id="4544079461524242527">Konfiguruje nastavení správy rozšíření prohlížeče <ph name="PRODUCT_NAME" />.
-
-          Tato zásada řídí několik nastavení, včetně těch, která jsou nakonfigurována existujícími zásadami pro rozšíření. Pokud je tato zásada nastavena, přepíše všechny starší nastavené zásady.
-
-          Tato zásada mapuje konfiguraci na ID rozšíření nebo adresu URL. Pokud je definováno ID rozšíření, bude konfigurace použita pouze na konkrétní rozšíření. Pro zvláštní ID <ph name="DEFAULT_SCOPE" /> lze nastavit výchozí konfiguraci. Tato konfigurace bude použita na všechna rozšíření, která v této zásadě nemají nastavenou vlastní konfiguraci. Pokud je definována adresa URL pro aktualizaci, bude konfigurace použita na všechna rozšíření, která mají v manifestu uvedenou přesně tuto adresu URL pro aktualizaci (viz <ph name="LINK_TO_EXTENSION_DOC1" />).
-
-          Úplný popis možných nastavení a struktury této zásady najdete na stránce https://www.chromium.org/administrators/policy-list-3/extension-settings-full.
-          </translation>
 <translation id="4554651132977135445">Režim zpracování zásad pro uživatele (loopback)</translation>
 <translation id="4554841826517980623">Tato zásada určuje, zda smí funkce sdílení síťových položek prohlížeče <ph name="PRODUCT_NAME" /> rozpoznávat sdílení v síti pomocí protokolu <ph name="NETBIOS_PROTOCOL" />.
       Je-li tato zásada nastavena na hodnotu true, při rozpoznávání sdílení v síti bude používán protokol <ph name="NETBIOS_PROTOCOL" />.

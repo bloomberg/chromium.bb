@@ -1849,6 +1849,7 @@
 <translation id="3892414795099177503">Lisää OpenVPN tai L2TP…</translation>
 <translation id="3893536212201235195">Lukea ja muokata esteettömyysasetuksiasi</translation>
 <translation id="3893630138897523026">ChromeVox (äänipalaute)</translation>
+<translation id="3894123633473837029">Lisää viimeaikainen Assistant-historia Sherlogin kautta. Se voi sisältää henkilöllisyys-, sijainti- ja virheenkorjaustietojasi. <ph name="BEGIN_LINK" />Lue lisää<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Lisää kansio</translation>
 <translation id="389589731200570180">Jaa vierailijoiden kanssa</translation>
 <translation id="3898521660513055167">Tunnuksen tila</translation>
@@ -2167,7 +2168,7 @@
 <translation id="442397852638519243"><ph name="USER_NAME" />, järjestelmänvalvojasi vaatii sinua vaihtamaan salasanasi.</translation>
 <translation id="4430019312045809116">Äänenvoimakkuus</translation>
 <translation id="4430369329743628066">Kirjanmerkki lisättiin</translation>
-<translation id="4434045419905280838">Ponnahdusikk. ja uudelleenohj.</translation>
+<translation id="4434045419905280838">Ponn.ikkunat ja uudelleenohj.</translation>
 <translation id="443454694385851356">Vanha (suojaamaton)</translation>
 <translation id="443475966875174318">Päivitä yhteensopimattomat sovellukset tai poista ne</translation>
 <translation id="4441124369922430666">Haluatko käynnistää tämän sovelluksen automaattisesti koneen käynnistyessä?</translation>
@@ -2510,7 +2511,7 @@
 <translation id="4994021816031734614">Nollaa suojausavain</translation>
 <translation id="4994474651455208930">Anna sivustojen ehdottaa protokollien oletuskäsittelypalveluiden määrittämistä.</translation>
 <translation id="4994754230098574403">Määritetään</translation>
-<translation id="4996978546172906250">Jaa tällä palvelulla:</translation>
+<translation id="4996978546172906250">Jaa palvelussa:</translation>
 <translation id="4997086284911172121">Ei internetyhteyttä.</translation>
 <translation id="4998873842614926205">Vahvista muutokset</translation>
 <translation id="5000922062037820727">Estetty (suositus)</translation>
@@ -3720,6 +3721,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6915804003454593391">Käyttäjä:</translation>
 <translation id="6916590542764765824">Hallinnoi laajennuksia</translation>
 <translation id="6920989436227028121">Avaa tavallisella välilehdellä</translation>
+<translation id="6921104647315081813">Tyhjennä toiminta</translation>
 <translation id="6921709132208495314">Lopeta tämän sivun datan käyttö</translation>
 <translation id="6922128026973287222">Vähennä tiedonsiirtomäärää ja selaa nopeammin Google Data Saverin avulla. Saat lisätietoja klikkaamalla.</translation>
 <translation id="6923132443355966645">Vieritä / klikkaa</translation>

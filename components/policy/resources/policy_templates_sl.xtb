@@ -476,8 +476,6 @@
       Če ta pravilnik ni konfiguriran ali če je nastavljen na »tls1.2«, <ph name="PRODUCT_NAME" /> ne izvede več tega preklopa. S tem ni onemogočena podpora za starejše različice TLS-ja, temveč je zgolj določeno, ali <ph name="PRODUCT_NAME" /> ne bo upošteval strežnikov z napakami, ki ne morejo pravilno izvesti pogajanj glede različice.
 
       Če je treba ohraniti združljivost s strežnikom z napakami, je pravilnik lahko nastavljen na »tls1«. To je začasen ukrep in napake v strežniku je treba hitro odpraviti.</translation>
-<translation id="1864269674877167562">Če je ta pravilnik nastavljen na prazen niz ali ni nastavljen, sistem <ph name="PRODUCT_OS_NAME" /> med potekom prijave uporabnika ne bo prikazal možnosti samodokončanja.
-      Če je ta pravilnik nastavljen na niz, ki predstavlja ime domene, bo <ph name="PRODUCT_OS_NAME" /> pri prijavi uporabnika prikazal možnost samodokončanja, s čimer bo uporabniku omogočeno, da vnese samo uporabniško ime brez končnice imena domene. Uporabnik bo lahko prepisal končnico tega imena domene.</translation>
 <translation id="1864382791685519617">Omogoča omrežno predvidevanje v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom preprečuje spreminjanje te nastavitve.
 
       Ta pravilnik nadzira vnaprejšnji prenos podatkov DNS, vnaprejšnje povezovanje TCP in SSL ter vnaprejšnje upodabljanje spletnih strani.
@@ -1861,14 +1859,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4534500438517478692">Ime omejitve za Android:</translation>
 <translation id="4541530620466526913">Lokalni računi za napravo</translation>
 <translation id="4543502256674577024">Nastavitve posodobitve naprave</translation>
-<translation id="4544079461524242527">Konfigurira nastavitve upravljanja razširitev za <ph name="PRODUCT_NAME" />.
-
-          Ta pravilnik nadzira več nastavitev, vključno z nastavitvami, ki jih nadzirajo kateri koli obstoječi pravilniki, povezani z razširitvami. Ta pravilnik preglasi vse morebitne starejše pravilnike, če so nastavljeni oboji.
-
-          Ta pravilnik preslika ID razširitve ali URL za posodobitev v svojo konfiguracijo. Konfiguracija z ID-jem razširitve bo uporabljena samo za določeno razširitev. Za posebni ID <ph name="DEFAULT_SCOPE" /> je mogoče nastaviti privzeto konfiguracijo, ki se bo uporabila za vse razširitve, ki v tem pravilniku nimajo nastavljene konfiguracije po meri. Konfiguracija z URL-jem za posodobitev bo uporabljena za vse razširitve s točno določenim URL-jem za posodobitev, navedenim v manifestu te razširitve, kot je opisano na <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Celoten opis mogočih nastavitev in struktura tega pravilnika sta na voljo na https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Način obdelave povratnih zank pri uporabniških pravilnikih</translation>
 <translation id="4554841826517980623">Ta pravilnik nadzira, ali naj funkcija omrežnih datotečnih sredstev v skupni rabi za izdelek <ph name="PRODUCT_NAME" /> uporablja protokol <ph name="NETBIOS_PROTOCOL" /> za odkrivanje sredstev v skupni rabi v omrežju.
       Če je ta pravilnik omogočen, bo mehanizem za odkrivanje sredstev v skupni rabi uporabljal protokol <ph name="NETBIOS_PROTOCOL" /> za odkrivanje sredstev v skupni rabi v omrežju.

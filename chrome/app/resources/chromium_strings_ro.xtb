@@ -189,6 +189,7 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="6990124437352146030">Chromium are nevoie de permisiune ca să acceseze microfonul pentru acest site</translation>
 <translation id="705851970750939768">Actualizează Chromium</translation>
 <translation id="7066436765290594559">Sistemul de operare Chromium nu a putut sincroniza datele. Actualizați parola de acces pentru sincronizare.</translation>
+<translation id="7067091210845072982">Dacă o imagine nu are o descriere utilă, Chromium va încerca să o completeze. Pentru a crea descrieri, imaginile sunt trimise la Google.</translation>
 <translation id="7162152143154757523">Chromium poate oferi o verificare a ortografiei mai inteligentă prin trimiterea textului introdus în browser la serverele Google, permițându-ți să folosești aceeași tehnologie de verificare a ortografiei folosită de Căutare Google.</translation>
 <translation id="7196312274710523067">Chromium nu a putut fi lansat. Încearcă din nou.</translation>
 <translation id="7205698830395646142">Ascunde în meniul Chromium</translation>
@@ -234,6 +235,7 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="8030318113982266900">Se actualizează dispozitivul pentru canalul <ph name="CHANNEL_NAME" />...</translation>
 <translation id="81770708095080097">Fișierul este periculos, așadar Chromium l-a blocat.</translation>
 <translation id="8222496066431494154">Instalează Chromium pe telefon. Vom trimite un SMS la numărul de telefon de recuperare a contului: <ph name="PHONE_NUMBER" /></translation>
+<translation id="8248265253516264921">Dacă o imagine nu are o descriere utilă, Chromium va încerca să o completeze. Pentru a crea descrieri, imaginile sunt trimise la Google. Poți dezactiva această opțiune oricând din setări.</translation>
 <translation id="8269379391216269538">Să îmbunătățim Chromium</translation>
 <translation id="8290862415967981663">Este posibil ca fișierul să fie periculos, așadar Chromium l-a blocat.</translation>
 <translation id="8330519371938183845">Conectează-te pentru a sincroniza și a personaliza Chromium pe toate dispozitivele</translation>

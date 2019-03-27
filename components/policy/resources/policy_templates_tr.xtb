@@ -465,8 +465,6 @@
       Bu politika yapılandırılmazsa veya "tls1.2" değerine ayarlanırsa <ph name="PRODUCT_NAME" />, bu yedek sürümü kullanma işlemini gerçekleştirmez. Bunun daha eski TLS sürümlerine yönelik desteği devre dışı bırakmadığını, yalnızca <ph name="PRODUCT_NAME" /> ürününün, sürümlerle ilgili pazarlığı doğru şekilde yapamayan hatalı sunuculardan kaçınmaya çalışıp çalışmayacağını belirlediğini unutmayın.
 
       Yapılandırılması durumunda, hatalı bir sunucuyla uyumluluğun korunması gerekiyorsa bu politika, "tls1.1" değerine ayarlanabilir. Bu geçici bir tedbirdir ve sunucudaki sorun kısa sürede çözülmelidir.</translation>
-<translation id="1864269674877167562">Bu politika için boş bir dize ayarlanırsa veya politika hiç yapılandırılmazsa <ph name="PRODUCT_OS_NAME" />, kullanıcı oturum açma akışında bir otomatik tamamlama seçeneği görüntülemez.
-      Bu politika için bir alan adına karşılık gelen dize ayarlanırsa <ph name="PRODUCT_OS_NAME" />, kullanıcı oturum açma akışı sırasında bir otomatik tamamlama seçeneği görüntüleyerek kullanıcının sadece kullanıcı adını (alan adı uzantısı olmadan) yazmasına olanak verir. Kullanıcı bu alan adı uzantısının üzerine yazabilir.</translation>
 <translation id="1864382791685519617"><ph name="PRODUCT_NAME" /> ürününde ağ tahminini etkinleştirir ve kullanıcıların bu ayarı değiştirmesini önler.
 
       Bu politika, DNS'nin önceden getirilmesini, TCP ve SSL ön bağlantısını ve web sayfalarının önceden oluşturulmasını denetler.
@@ -1842,14 +1840,6 @@ politikayı geçersiz kılamaz.
 <translation id="4534500438517478692">Android kısıtlama adı:</translation>
 <translation id="4541530620466526913">Cihaz-yerel hesaplar</translation>
 <translation id="4543502256674577024">Cihaz güncelleme ayarları</translation>
-<translation id="4544079461524242527"><ph name="PRODUCT_NAME" /> için uzantı yönetimi ayarlarını yapılandırır.
-
-          Bu politika birden fazla ayarı kontrol eder. Bu ayarlar arasında, uzantıyla ilgili tüm mevcut politikalar tarafından kontrol edilen ayarlar da bulunur. Bu politika, eski politikalarla birlikte ayarlanmış olduğunda, eski politikaları geçersiz kılar.
-
-          Bu politika, uzantı kimliğini veya güncelleme URL'sini ilgili yapılandırma ile eşler. Uzantı kimliği kullanıldığında yapılandırma yalnızca belirtilen uzantıya uygulanır. <ph name="DEFAULT_SCOPE" /> özel kimliği için varsayılan bir yapılandırma ayarlanabilir ve bu varsayılan yapılandırma, bu politikada özel bir yapılandırma ayarlanmamış tüm uzantılara uygulanır. Güncelleme URL'si kullanıldığında, yapılandırma <ph name="LINK_TO_EXTENSION_DOC1" /> dokümanında açıklandığı şekilde, bu uzantının manifest'inde belirtilen güncelleme URL'sinin aynısına sahip tüm uzantılara uygulanır.
-
-          Bu politikanın mümkün olan tüm ayarları ve yapısıyla ilgili tam açıklama için lütfen https://www.chromium.org/administrators/policy-list-3/extension-settings-full adresini ziyaret edin.
-          </translation>
 <translation id="4554651132977135445">Kullanıcı politikası geri döngü işleme modu</translation>
 <translation id="4554841826517980623">Bu politika, <ph name="PRODUCT_NAME" /> için Ağ Üzerinde Dosya Paylaşımı özelliğinin ağdaki paylaşımları keşfetmek için <ph name="NETBIOS_PROTOCOL" /> protokolünü kullanıp kullanamayacağını kontrol eder.
       Bu politika True (Doğru) değerine ayarlandığında, paylaşım keşfi işlevi ağdaki paylaşımları keşfetmek için <ph name="NETBIOS_PROTOCOL" /> protokolünü kullanır.

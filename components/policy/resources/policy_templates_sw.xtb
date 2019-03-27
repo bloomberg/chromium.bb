@@ -454,8 +454,6 @@ itabadilishwa na data ya hoja za utafutaji za kweli.
       Ikiwa sera hii haitawekwa au ikiwekwa kuwa "tls1.2" basi <ph name="PRODUCT_NAME" /> haitatekeleza mbadala huu. Kumbuka hili halizimi matumizi ya matoleo ya awali ya TLS, ni iwapo tu <ph name="PRODUCT_NAME" /> itafanya kazi kwenye seva zenye hitilafu ambazo haziwezi kuendesha matoleo vizuri.
 
       Vinginevyo, ikiwa ni lazima uoanifu na seva zenye hitilafu udumishwe, hii huenda ikawekwa hadi "tls1.1". Huu ni mkakati wa muda tu na seva inapaswa kurekebishwa haraka.</translation>
-<translation id="1864269674877167562">Sera hii ikiwekwa kuwa mfuatano mtupu au isipowekwa, <ph name="PRODUCT_OS_NAME" /> haitaonyesha chaguo la kukamilisha kiotomatiki wakati wa mtiririko wa mtumiaji kuingia katika akaunti.
-      Sera hii ikiwekwa kuwa mfuatano unaowakilisha jina la kikoa, <ph name="PRODUCT_OS_NAME" /> itaonyesha chaguo la kukamilisha kiotomatiki wakati wa mtumiaji kuingia katika akaunti hivyo kumruhusu kuandika jina lake la mtumiaji pekee bila kiendelezi cha jina la kikoa.  Mtumiaji ataweza kufuta jina la kiendelezi cha kikoa hiki.</translation>
 <translation id="1864382791685519617">Inawasha kipengele cha ubashiri wa mtandao katika <ph name="PRODUCT_NAME" /> na kuzuia watumiaji wasiweze kubadilisha mipangilio hii.
 
       Hatua hii hudhibiti hali ya kuleta DNS mapema, uunganishaji na utekelezaji awali wa kurasa za wavuti za TCP na SSL.
@@ -1249,7 +1247,7 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
 <translation id="3381968327636295719">Tumia kivinjari kipangishi kwa chaguomsingi</translation>
 <translation id="3384115339826100753">Washa sera ya udhibiti ya kipengele kinachopunguza matumizi ya betri kwa kubadilisha mfumo kuendeshwa kwenye nguvu za betri.
 
-          Kipengele Kinachopunguza Matumizi ya Betri kwa Bubadilisha Mfumo Kuendeshwa kwenye Nguvu za Betri ni sera ya kuokoa betri ambayo hupunguza utumiaji wa chaji inayobadilikabadilika wakati betri inatumika zaidi mchana. Kwa kila siku ya wiki unaweza kuweka muda wa kuanza na kumaliza kutumia hali ya Kipengele Kinachopunguza Matumizi ya Betri kwa Kubadilisha Mfumo Kuendeshwa kwenye Nguvu za Betri. Katika kipindi hiki, mfumo utatumia betri hata kama chaji inayobadilikabadilika imewekwa mradi betri haipungui kiwango cha nishati kilichobainishwa. Baada ya muda uliobainishwa kuisha, mfumo utatumia chaji inayobadilikabadilika ikiwekwa lakini haitachaji betri. Mfumo utafanya kazi tena kama kawaida ukitumia chaji inayobadilikabadilika na kuchaji betri tena baada ya Muda Uliobainishwa wa Kuanza wa Kuchaji.
+          Kipengele Kinachopunguza Matumizi ya Betri kwa Kubadilisha Mfumo Kuendeshwa kwenye Nguvu za Betri ni sera ya kuokoa betri ambayo hupunguza utumiaji wa chaji inayobadilikabadilika wakati betri inatumika zaidi mchana. Kwa kila siku ya wiki unaweza kuweka muda wa kuanza na kumaliza kutumia hali ya Kipengele Kinachopunguza Matumizi ya Betri kwa Kubadilisha Mfumo Kuendeshwa kwenye Nguvu za Betri. Katika kipindi hiki, mfumo utatumia betri hata kama chaji inayobadilikabadilika imewekwa mradi betri haipungui kiwango cha nishati kilichobainishwa. Baada ya muda uliobainishwa kuisha, mfumo utatumia chaji inayobadilikabadilika ikiwekwa lakini haitachaji betri. Mfumo utafanya kazi tena kama kawaida ukitumia chaji inayobadilikabadilika na kuchaji betri tena baada ya Muda Uliobainishwa wa Kuanza wa Kuchaji.
 
           Sera hii ikiwekwa kuwa ndivyo na DevicePowerPeakShiftBatteryThreshold, DevicePowerPeakShiftDayConfig ziwekwe, kipengele kinachopunguza matumizi ya betri kwa kubadilisha mfumo kuendeshwa kwenye nguvu za betri kitawashwa kila wakati ikiwa kinaweza kinatumika kwenye kifaa hiki.
 
@@ -1831,14 +1829,6 @@ Ikiwa sera hii haijawekwa, thamani ya 2 itatumika.</translation>
 <translation id="4534500438517478692">Jina la vikwazo la Android:</translation>
 <translation id="4541530620466526913">Akaunti za kifaa cha karibu nawe</translation>
 <translation id="4543502256674577024">Mipangilio ya kusasisha kifaa</translation>
-<translation id="4544079461524242527">Husanidi mipangilio ya udhibiti wa viendelezi vya <ph name="PRODUCT_NAME" />.
-
-          Sera hii hudhibiti mipangilio mingi, ikiwa ni pamoja na mipangilio inayodhibitiwa na sera zozote zilizopo zinazohusiana na viendelezi. Sera hii itabatilisha sera zozote zilizopitwa na wakati ikiwa zote zimewekwa.
-
-          Sera hii inalinganisha kitambulisho cha kiendelezo au URL ya sasisho na mipangilio yake. Ikiwa na kitambulisho cha kiendelezi, mipangilio itatekelezwa kwenye kiendelezi kilichobainishwa pekee. Mipagilio chaguomsingi inaweza kuwekwa kwa kitambulisho maalum cha <ph name="DEFAULT_SCOPE" />, ambacho kitatekelezwa kwenye viendelezi vyote visisvyokuwa na mipangilio maalum iliyowekwa kwenye sera hii. Ikiwa na URL ya sasisho, mipangilio itatekelezwa kwenye viendelezi vyote vikiwa na URL mahususi imebainishwa katika faili ya maelezo ya kiendelezi hiki, kama ilivyoelezwa katika <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Kwa maelezo kamili ya mipangilio inayoweza kutumika na muundo wa sera hii tafadhali tembelea https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Hali ya uchakataji unaojirudia wa sera ya mtumiaji</translation>
 <translation id="4554841826517980623">Sera hii inadhibiti iwapo kipengele cha Faili za Kushiriki kwenye Mtandao cha <ph name="PRODUCT_NAME" /> kinapaswa kitumie <ph name="NETBIOS_PROTOCOL" /> ili kugundua faili zinazoshirikiwa kwenye mtandao wako.
       Wakati sera hii imewekwa kuwa Ndivyo, kipengele cha kugundua faili za kushiriki kitatumia itifaki ya <ph name="NETBIOS_PROTOCOL" /> ili kugundua faili zinazoshirikiwa kwenye mtandao.

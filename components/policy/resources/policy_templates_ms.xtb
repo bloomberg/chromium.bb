@@ -475,8 +475,6 @@
       Jika dasar ini tidak dikonfigurasikan atau jika ditetapkan kepada "tls1.2" maka <ph name="PRODUCT_NAME" /> tidak lagi akan melaksanakan jatuh balik ini. Perhatian, langkah ini tidak melumpuhkan sokongan untuk versi TLS yang lebih lama, hanya sama ada <ph name="PRODUCT_NAME" /> akan membetulkan pelayan berpepijat yang tidak dapat merundingkan versi dengan betul.
 
       Sebaliknya, jika keserasian dengan pelayan berpepijat mesti dikekalkan, dasar ini mungkin ditetapkan kepada "tls1.1". Ini hanyalah langkah sementara dan pelayan harus dibetulkan dengan segera.</translation>
-<translation id="1864269674877167562">Jika dasar ini ditetapkan kepada rentetan kosong atau tidak dikonfigurasikan, <ph name="PRODUCT_OS_NAME" /> tidak akan memaparkan pilihan autolengkap semasa aliran log masuk pengguna.
-      Jika dasar ini ditetapkan kepada rentetan yang mewakili nama domain, <ph name="PRODUCT_OS_NAME" /> akan memaparkan pilihan autolengkap semasa log masuk pengguna yang membolehkan pengguna menaip nama pengguna mereka sahaja tanpa sambungan nama domain.  Pengguna boleh menulis ganti sambungan nama domain ini.</translation>
 <translation id="1864382791685519617">Membolehkan ramalan rangkaian dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah tetapan ini.
 
       Tetapan ini akan mengawal praambilan DNS, prasambungan TCP dan SSL serta prapemaparan halaman web.
@@ -1857,14 +1855,6 @@
 <translation id="4534500438517478692">Nama sekatan Android:</translation>
 <translation id="4541530620466526913">Akaun setempat peranti</translation>
 <translation id="4543502256674577024">Tetapan kemas kini peranti</translation>
-<translation id="4544079461524242527">Mengkonfigurasikan tetapan pengurusan sambungan untuk <ph name="PRODUCT_NAME" />.
-
-          Dasar ini mengawal berbilang tetapan, termasuk tetapan yang dikawal oleh sebarang dasar yang sedia ada berkaitan sambungan. Dasar ini akan membatalkan mana-mana dasar lama jika kedua-dua dasar ditetapkan.
-
-          Dasar ini memetakan ID sambungan atau URL kemas kini pada konfigurasi dasar. Dengan ID sambungan, konfigurasi akan digunakan pada sambungan yang ditentukan sahaja. Konfigurasi lalai boleh ditetapkan untuk ID khas <ph name="DEFAULT_SCOPE" />, yang akan digunakan pada semua sambungan yang tidak ditetapkan konfigurasi tersuai dalam dasar ini. Dengan URL kemas kini, konfigurasi akan digunakan pada semua sambungan dengan URL kemas kini tepat seperti yang dinyatakan dalam manifes sambungan ini, seperti yang diperihalkan di <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Untuk mendapatkan perihalan penuh tentang tetapan dan struktur berkemungkinan dasar ini, sila lawati https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Mod pemprosesan gelung balik dasar pengguna</translation>
 <translation id="4554841826517980623">Dasar ini mengawal sama ada ciri Perkongsian Fail Rangkaian <ph name="PRODUCT_NAME" /> harus menggunakan <ph name="NETBIOS_PROTOCOL" /> untuk menemui perkongsian di rangkaian.
       Apabila dasar ini ditetapkan kepada Benar, penemuan perkongsian akan menggunakan protokol <ph name="NETBIOS_PROTOCOL" /> untuk menemui perkongsian di rangkaian.

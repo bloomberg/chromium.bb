@@ -474,8 +474,6 @@
       Kung hindi naka-configure ang patakarang ito o kung ito ay nakatakda sa "tls1.2," hindi na isasagawa ng <ph name="PRODUCT_NAME" /> ang fallback na ito. Tandaang hindi nito dini-disable ang suporta para sa mga mas lumang bersyon ng TLS, kung gagana lang ang <ph name="PRODUCT_NAME" /> sa mga server na may maraming bug na hindi makakahanap ng kompromiso sa mga bersyon nang tama.
 
       Kung hindi, kung kailangang panatilihin ang compatibility sa isang server na maraming bug, maaaring itakda ang patakarang ito sa "tls1.1". Isa itong pansamantalang solusyon at dapat na maayos kaagad ang server.</translation>
-<translation id="1864269674877167562">Kung nakatakda sa isang blangkong string o hindi naka-configure ang patakaran na ito, hindi magpapakita ang <ph name="PRODUCT_OS_NAME" /> ng isang opsyon sa pag-autocomplete sa flow ng pag-sign in ng user.
-      Kung ang patakaran na ito ay nakatakda sa isang string na kumakatawan sa isang domain name, magpapakita ang <ph name="PRODUCT_OS_NAME" /> ng opsyon sa pag-autocomplete sa pag-sign in ng user na nagbibigay-daan sa user na i-type lang ang kanyang user name nang wala ang extension ng domain name. Magagawa ng user na i-overwrite ang extension ng domain name na ito.</translation>
 <translation id="1864382791685519617">Ine-enable ang panghuhula ng network sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang setting na ito.
 
       Kinokontrol nito ang pag-prefetch ng DNS, pag-preconnect ng TCP at SSL, at pag-prerender ng mga web page.
@@ -1858,14 +1856,6 @@
 <translation id="4534500438517478692">Pinaghihigpitang pangalan ng Android:</translation>
 <translation id="4541530620466526913">Mga account na lokal sa device</translation>
 <translation id="4543502256674577024">Mga setting ng pag-update ng device</translation>
-<translation id="4544079461524242527">Kino-configure ang mga setting ng pamamahala ng extension para sa <ph name="PRODUCT_NAME" />.
-
-          Ang patakarang ito ay nagkokontrol ng maraming setting, kasama na ang mga setting na kinokontrol ng anumang kasalukuyang patakarang nauugnay sa extension. Io-override ng patakarang ito ang anumang legacy na patakaran kung parehong nakatakda ang dalawang ito.
-
-          Ang patakarang ito ay nagmamapa ng extension ID o URL ng update sa configuration nito. Gamit ang isang extension ID, malalapat lang ang configuration sa tinukoy na extension. Maaaring magtakda ng default na configuration para sa espesyal na ID na <ph name="DEFAULT_SCOPE" />, na malalapat sa lahat ng extension na walang nakatakdang custom na hanay ng configuration sa patakarang ito. Gamit ang isang URL ng update, malalapat ang configuration sa lahat ng extension na may eksaktong URL ng update na nakasaad sa manifest ng extension na ito, gaya ng inilalarawan sa <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Para sa kumpletong paglalarawan ng mga posibleng setting at istruktura ng patakarang ito, pakibisita ang https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">loopback processing mode ng patakaran ng user</translation>
 <translation id="4554841826517980623">Kinokontrol ng patakarang ito kung gagamitin ng feature na Mga File Share sa Network para sa <ph name="PRODUCT_NAME" /> ang <ph name="NETBIOS_PROTOCOL" /> para tumuklas ng mga pagbabahagi sa network.
       Kapag nakatakda sa True ang patakarang ito, gagamitin sa pagtuklas ng pagbabahagi ang protocol na <ph name="NETBIOS_PROTOCOL" /> para tumuklas ng mga pagbabahagi sa network.

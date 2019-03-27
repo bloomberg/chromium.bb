@@ -1842,6 +1842,7 @@
 <translation id="3892414795099177503">添加 OpenVPN / L2TP…</translation>
 <translation id="3893536212201235195">读取和更改您的无障碍设置</translation>
 <translation id="3893630138897523026">ChromeVox（语音反馈）</translation>
+<translation id="3894123633473837029">通过 Sherlog 将最近的 Google 助理历史记录包含在内。这可能包括您的身份、地理位置和调试信息。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">添加文件夹</translation>
 <translation id="389589731200570180">与访客共享</translation>
 <translation id="3898521660513055167">令牌状态</translation>
@@ -3712,6 +3713,7 @@
 <translation id="6915804003454593391">用户：</translation>
 <translation id="6916590542764765824">管理扩展程序</translation>
 <translation id="6920989436227028121">在常规标签页中打开</translation>
+<translation id="6921104647315081813">清除活动</translation>
 <translation id="6921709132208495314">停止在此网页上消耗数据流量</translation>
 <translation id="6922128026973287222">使用 Google 流量节省程序可以节省流量并加速浏览。点击此处即可了解详情。</translation>
 <translation id="6923132443355966645">滚动/点击</translation>

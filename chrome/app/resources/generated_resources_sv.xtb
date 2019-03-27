@@ -54,6 +54,7 @@
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1070705170564860382">Öppnas i en annan webbläsare om <ph name="COUNTDOWN_SECONDS" /> sekunder</translation>
 <translation id="1071917609930274619">Datachiffrering</translation>
+<translation id="1072700771426194907">En USB-enhet har upptäckts</translation>
 <translation id="1076698951459398590">Aktivera temat</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1079766198702302550">Blockera alltid kameraåtkomsten</translation>
@@ -113,6 +114,7 @@
 <translation id="1167199480815330007">Titta efter den sexsiffriga pinkoden på säkerhetsnyckelns baksida</translation>
 <translation id="1168020859489941584">Öppnar om <ph name="TIME_REMAINING" />...</translation>
 <translation id="1168100932582989117">Googles namnservrar</translation>
+<translation id="1169909785351611170">Fel pinkod.</translation>
 <translation id="1171135284592304528">Markera objektet med tangentbordsfokus när det ändras</translation>
 <translation id="1173894706177603556">Ändra namn</translation>
 <translation id="1174073918202301297">Genvägen har lagts till</translation>
@@ -181,6 +183,7 @@
 <translation id="126156426083987769">Ett problem med enhetslicenser för demoläge uppstod.</translation>
 <translation id="126710816202626562">Översättningsspråk:</translation>
 <translation id="126768002343224824">16x</translation>
+<translation id="1270277066486377738">Bekräfta återställningen genom att trycka på samma säkerhetsnyckel en gång till. Då raderas alla användaruppgifter som lagrats på säkerhetsnyckeln och pinkoden tas bort om en sådan hade ställts in.</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1272978324304772054">Det här användarkontot hör inte till den domän som enheten är registrerad för. Om du vill registrera enheten för en annan domän måste du återställa den först.</translation>
 <translation id="1274977772557788323">Lagringsinställningar för Adobe Flash Player</translation>
@@ -234,6 +237,7 @@
 <translation id="1361655923249334273">Oanvänd</translation>
 <translation id="1361872463926621533">Spela upp ljud vid start</translation>
 <translation id="1364702626840264065">{NUM_TABS,plural, =1{Stäng flik}other{Stäng flikar}}</translation>
+<translation id="1365804713255256726">Det gick inte att återställa enheten. Felkod <ph name="ERROR_CODE" />.</translation>
 <translation id="1366177842110999534">Kör Linux-verktyg, redigerare och IDE:er på <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Läs mer&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Välj fil</translation>
 <translation id="1371301976177520732">Bokmärken, lösenord, historik med mera på alla dina enheter</translation>
@@ -372,6 +376,7 @@
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1587275751631642843">&amp;JavaScript-konsol</translation>
 <translation id="1587907146729660231">Sätt fingret på strömbrytaren</translation>
+<translation id="1587949806845069687">Ange en ny pinkod. Pinkoden måste bestå av minst fyra tecken och får innehålla bokstäver, siffror och andra tecken.</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="158849752021629804">Behöver hemnätverk</translation>
 <translation id="1588870296199743671">Öppna länk med ...</translation>
@@ -385,6 +390,7 @@
 <translation id="1600857548979126453">Få åtkomst till serverdelen för felsökning av sida</translation>
 <translation id="1601560923496285236">Verkställ</translation>
 <translation id="1603914832182249871">(Inkognito)</translation>
+<translation id="1606402239727171183">Sätt i säkerhetsnyckeln och tryck på den om du vill ställa in eller ändra pinkod</translation>
 <translation id="1607139524282324606">Rensa post</translation>
 <translation id="1608626060424371292">Ta bort den här användaren</translation>
 <translation id="1609170755653088773">Synkronisera det här lösenordet med iPhone</translation>
@@ -490,6 +496,7 @@
 <translation id="1763808908432309942">Öppnas på en ny flik</translation>
 <translation id="1764226536771329714">beta</translation>
 <translation id="176587472219019965">&amp;Nytt fönster</translation>
+<translation id="1766575458646819543">Helskärmsläget avslutades</translation>
 <translation id="1768278914020124551">Hoppsan. Det gick inte att kontakta inloggningsservern. Kontrollera nätverksanslutningen och domännamnet och försök igen.</translation>
 <translation id="1769104665586091481">Öppna länk i nytt f&amp;önster</translation>
 <translation id="1773212559869067373">Autentiseringscertifikatet godkändes inte lokalt</translation>
@@ -497,6 +504,7 @@
 <translation id="1774833706453699074">Spara bokmärke till öppna sidor…</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
 <translation id="1779652936965200207">Ange denna nyckel på <ph name="DEVICE_NAME" />:</translation>
+<translation id="1781291988450150470">Aktuell pinkod</translation>
 <translation id="1781502536226964113">Öppna sidan Ny flik</translation>
 <translation id="1781771911845953849">Konton och synkronisering</translation>
 <translation id="1782196717298160133">Sök efter din mobil</translation>
@@ -911,6 +919,7 @@
 <translation id="2453021845418314664">Avancerade synkroniseringsinställningar</translation>
 <translation id="2453860139492968684">Slutför</translation>
 <translation id="2454247629720664989">Sökord</translation>
+<translation id="2455122176076606103">Den säkerhetsnyckeln är låst på grund av att fel pinkod har angetts för många gånger. Den måste återställas innan det går att utföra fler pinkodsåtgärder med den.</translation>
 <translation id="245661998428026871">Videouppspelningen i bild-i-bild-läge stoppas.</translation>
 <translation id="2457246892030921239"><ph name="APP_NAME" /> vill kopiera filer från <ph name="VOLUME_NAME" />.</translation>
 <translation id="2458591546854598341">Token för enhetshantering är ogiltig.</translation>
@@ -932,6 +941,7 @@
 <translation id="2487067538648443797">Lägg till ett nytt bokmärke</translation>
 <translation id="2489829450872380594">Nästa gång låser en ny mobil upp denna <ph name="DEVICE_TYPE" />. Du kan stänga av Smart Lock i inställningarna.</translation>
 <translation id="2489918096470125693">Lägg till &amp;mapp ...</translation>
+<translation id="2490575462301446554">Pinkoden har ställts in.</translation>
 <translation id="249113932447298600">Enheten <ph name="DEVICE_LABEL" /> stöds inte just nu.</translation>
 <translation id="249303669840926644">Det gick inte att slutföra registreringen</translation>
 <translation id="2495777824269688114">Upptäck nya funktioner eller få svar på frågor. Välj ? om du behöver hjälp.</translation>
@@ -1004,6 +1014,7 @@
 <translation id="2588636910004461974">Enheter från <ph name="VENDOR_NAME" /></translation>
 <translation id="258932246702879617">Välj <ph name="BEGIN_BOLD" />Fäst i aktivitetsfältet<ph name="END_BOLD" /></translation>
 <translation id="2594999711683503743">Sök på Google eller skriv webbadressen</translation>
+<translation id="2600730035760241059">Återställa enheter, ange och ändra pinkoder.</translation>
 <translation id="2603115962224169880">Rensa upp på datorn</translation>
 <translation id="2603463522847370204">Öppna i &amp;inkognitofönster</translation>
 <translation id="2604255671529671813">Fel vid nätverksanslutning</translation>
@@ -1019,6 +1030,7 @@
 <translation id="2617342710774726426">SIM-kortet är låst</translation>
 <translation id="2619761439309613843">Daglig uppdatering</translation>
 <translation id="2620436844016719705">System</translation>
+<translation id="2622053291576368721">Påbörja återställningen genom att ta ut säkerhetsnyckeln, sätta i den igen och sedan trycka på den.</translation>
 <translation id="26224892172169984">Tillåt inte att någon webbplats hanterar protokoll</translation>
 <translation id="2624142942574147739">Din kamera och mikrofon används på sidan.</translation>
 <translation id="2626799779920242286">Försök igen senare.</translation>
@@ -1028,6 +1040,7 @@
 <translation id="2633199387167390344"><ph name="NAME" /> använder <ph name="USAGE" /> MB diskutrymme.</translation>
 <translation id="2633212996805280240">Vill du ta bort <ph name="EXTENSION_NAME" />?</translation>
 <translation id="263325223718984101">Installationen av <ph name="PRODUCT_NAME" /> kunde inte slutföras, men programmet kommer att fortsätta köras från diskavbildningen.</translation>
+<translation id="2634486338302512222">Ange den &lt;i&gt;nuvarande&lt;/i&gt; pinkoden om du vill ändra den. Om du inte kommer ihåg den nuvarande pinkoden måste den tas bort genom att token återställs.</translation>
 <translation id="2635094637295383009">Twitter</translation>
 <translation id="2635276683026132559">Signering</translation>
 <translation id="2636625531157955190">Chrome har inte åtkomst till bilden.</translation>
@@ -1068,6 +1081,7 @@
 <translation id="2691385045260836588">Modell</translation>
 <translation id="2693176596243495071">Hoppsan! Ett okänt fel har uppstått. Försök igen senare eller kontakta administratören om felet kvarstår.</translation>
 <translation id="2695749433451188613">Protokoll för internetutskrift (HTTPS)</translation>
+<translation id="2699911226086014512">Pinkodsåtgärden misslyckades med felkod <ph name="RETRIES" />.</translation>
 <translation id="270358213449696159">Innehåll i villkor för Google Chrome OS</translation>
 <translation id="2704184184447774363">Microsofts Signering av dokument</translation>
 <translation id="270516211545221798">Hastighet för styrplatta</translation>
@@ -1316,6 +1330,7 @@
 <translation id="3085752524577180175">SOCKS-värd</translation>
 <translation id="3088325635286126843">&amp;Byt namn ...</translation>
 <translation id="3089137131053189723">Sökningen har rensats</translation>
+<translation id="3089732468175192706">{NUM_ATTEMPTS,plural, =1{Fel pinkod. Du har bara ett försök kvar.}other{Fel pinkod. Du har # försök kvar.}}</translation>
 <translation id="3090193911106258841">Får åtkomst till ljud- och videoindata</translation>
 <translation id="3090819949319990166">Det går inte att kopiera den externa CRX-filen till <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558"><ph name="DEVICE_NAME" /> har kopplats</translation>
@@ -1375,6 +1390,7 @@
 <translation id="3192947282887913208">Ljudfiler</translation>
 <translation id="3194737229810486521"><ph name="URL" /> vill lagra data permanent på din enhet</translation>
 <translation id="3199127022143353223">Servrar</translation>
+<translation id="3201422919974259695">Tillgängliga USB-enheter visas här.</translation>
 <translation id="3202131003361292969">Sökväg</translation>
 <translation id="3202173864863109533">Ljudet är avstängt på den här fliken.</translation>
 <translation id="3208703785962634733">Obekräftade</translation>
@@ -1395,6 +1411,7 @@
 <translation id="323803881985677942">Öppna tilläggsalternativ</translation>
 <translation id="3241680850019875542">Välj rotkatalogen för tillägget som ska paketeras. Om du vill uppdatera ett tillägg väljer du också den privata nyckel som ska återanvändas.</translation>
 <translation id="3244294424315804309">Ljud fortsatt av</translation>
+<translation id="3246263372552241767">Säkerhetsnyckeln har tagits bort.</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> – nätverksfel</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;ingår inte i certifikat&gt;</translation>
@@ -1441,6 +1458,7 @@
 <translation id="3308006649705061278">Organisationsenhet (OU)</translation>
 <translation id="3308116878371095290">Den här sidan har förhindrats att ange cookies.</translation>
 <translation id="3308134619352333507">Dölj knapp</translation>
+<translation id="3308634184507184485">Säkerhetsnycklar</translation>
 <translation id="3308852433423051161">Google Assistent läses in …</translation>
 <translation id="3312424061798279731">Aktiverade språk</translation>
 <translation id="3313590242757056087">Om du vill ange vilka webbplatser som den kontrollerade användaren får besöka, kan du ange begränsningar
@@ -1621,6 +1639,7 @@
 <translation id="3593965109698325041">Certifikatnamnsbegränsningar</translation>
 <translation id="3596235046596950091">Aktivera molntjänster</translation>
 <translation id="3599863153486145794">Historik rensas från alla inloggade enheter. Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="3600051066689725006">Information om webbegäran</translation>
 <translation id="3600792891314830896">Stäng av ljudet på webbplatser</translation>
 <translation id="360180734785106144">Visa erbjudanden om nya funktioner när de blir tillgängliga</translation>
 <translation id="3602290021589620013">Förhandsgranskning</translation>
@@ -1731,6 +1750,7 @@
 <translation id="3752673729237782832">Mina enheter</translation>
 <translation id="3755411799582650620"><ph name="PHONE_NAME" /> kan nu även låsa upp <ph name="DEVICE_TYPE" />.</translation>
 <translation id="375636864092143889">Webbplatsen använder din mikrofon</translation>
+<translation id="3756578970075173856">Ange pinkod</translation>
 <translation id="3757733214359997190">Inga webbplatser hittades</translation>
 <translation id="375841316537350618">Laddar ned proxyskript ...</translation>
 <translation id="3758842566811519622">Cookies har sparats</translation>
@@ -1828,11 +1848,13 @@
 <translation id="3892414795099177503">Lägg till OpenVPN/L2TP …</translation>
 <translation id="3893536212201235195">Läsa och ändra tillgänglighetsinställningarna</translation>
 <translation id="3893630138897523026">ChromeVox (talad feedback)</translation>
+<translation id="3894123633473837029">Inkludera ny historik för assistenten via Sherlog. Historiken kan innehålla din identitet, plats och felsökningsinformation. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Lägg till mapp</translation>
 <translation id="389589731200570180">Dela med gäster</translation>
 <translation id="3898521660513055167">Tokenstatus</translation>
 <translation id="389901847090970821">Välj tangentbord</translation>
 <translation id="3899879303189199559">Offline i mer än ett år</translation>
+<translation id="3900105072479897941">Återställning tilläts inte. Med vissa säkerhetsnycklar tillåts bara återställning inom de första sekunderna efter att nyckeln sattes i. Du kan försöka igen och starta återställningen snabbare denna gång.</translation>
 <translation id="3900966090527141178">Exportera lösenord</translation>
 <translation id="3901991538546252627">Ansluter till <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Reparera appen</translation>
@@ -1894,6 +1916,7 @@
 <translation id="3981760180856053153">Du har angett en ogiltig typ att spara.</translation>
 <translation id="3982375475032951137">Konfigurera webbläsaren med några enkla steg</translation>
 <translation id="3983400541576569538">Data från vissa appar kanske inte sparas</translation>
+<translation id="3983503144326094739">Den säkerhetsnyckeln är tillfälligt låst på grund av för många försök med fel pinkod. Lås upp den genom att ta ut den och sätta i den igen.</translation>
 <translation id="3983586614702900908">enheter från en okänd leverantör</translation>
 <translation id="3984159763196946143">Det gick inte att starta demoläget</translation>
 <translation id="3987348946546879621">Sparar data</translation>
@@ -2057,6 +2080,7 @@
 <translation id="4268025649754414643">Nyckelchiffrering</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Inga träffar</translation>
+<translation id="4273065492769210106">Du har <ph name="RETRIES" /> försök kvar.</translation>
 <translation id="4275830172053184480">Starta om enheten</translation>
 <translation id="4278101229438943600">Assistenten är redo</translation>
 <translation id="4278390842282768270">Tillåtet</translation>
@@ -2116,6 +2140,7 @@
 <translation id="4378154925671717803">Mobil</translation>
 <translation id="4378551569595875038">Ansluter ...</translation>
 <translation id="4378556263712303865">Enhetsrekvirering</translation>
+<translation id="4380648069038809855">Helskärmsläget aktiverades</translation>
 <translation id="4384312707950789900">Lägg till i prioriterade nätverk</translation>
 <translation id="4384652540891215547">Aktivera tillägget</translation>
 <translation id="438503109373656455">Brunte</translation>
@@ -2196,6 +2221,7 @@
 <translation id="4524832533047962394">Det angivna registreringsläget stöds inte av den här versionen av operativsystemet. Kontrollera att du har den senaste versionen.</translation>
 <translation id="4525382759303819021">Få de senaste uppdateringarna och rekommendationerna för appar i Play Butik</translation>
 <translation id="4530494379350999373">Ursprung</translation>
+<translation id="4531586020343813806">Den säkerhetsnyckeln har inte stöd för återställning.</translation>
 <translation id="4533846798469727141">Säg nu ”Hey Google”</translation>
 <translation id="4533985347672295764">CPU-tid</translation>
 <translation id="4534661889221639075">Försök igen.</translation>
@@ -2484,6 +2510,7 @@
 <translation id="4992458225095111526">Bekräfta återställning med Powerwash</translation>
 <translation id="4992473555164495036">Administratören har begränsat vilka inmatningsmetoder som är tillgängliga.</translation>
 <translation id="4992926179187649719">Aktivera ”Ok Google”</translation>
+<translation id="4994021816031734614">Återställ säkerhetsnyckel</translation>
 <translation id="4994474651455208930">Tillåt att webbplatser begär att bli standardhanterare för protokoll</translation>
 <translation id="4994754230098574403">Konfigurerar</translation>
 <translation id="4996978546172906250">Dela via</translation>
@@ -2721,6 +2748,7 @@
 <translation id="540296380408672091">Blockera alltid cookies på <ph name="HOST" /></translation>
 <translation id="5405146885510277940">Återställ inställningarna</translation>
 <translation id="5408750356094797285">Zoomar: <ph name="PERCENT" /></translation>
+<translation id="5409075533903495802">Pinkoden innehåller ogiltiga tecken.</translation>
 <translation id="5411472733320185105">Använd inte proxyinställningar för dessa värdenheter och domäner:</translation>
 <translation id="5414566801737831689">Läsa in ikonerna för de webbplatser du besöker</translation>
 <translation id="5417312524372586921">Webbläsarteman</translation>
@@ -2842,6 +2870,7 @@
 <translation id="557722062034137776">Dina Google-konton eller data som synkroniserats med dessa konton påverkas inte när du återställer enheten. Alla filer som sparas lokalt på enheten kommer dock att tas bort.</translation>
 <translation id="5578059481725149024">Autoinloggning</translation>
 <translation id="558170650521898289">Microsofts Verifiera Windows-maskinvarudrivrutin</translation>
+<translation id="5582778940656297282">För närvarande stöds bara vissa enheter.</translation>
 <translation id="5582839680698949063">Huvudmeny</translation>
 <translation id="5583640892426849032">Backsteg</translation>
 <translation id="5584088138253955452">Vill du spara användarnamnet?</translation>
@@ -2922,6 +2951,7 @@
 <translation id="5696143504434933566">Rapportera otillåten användning från <ph name="EXTENSION_NAME" /></translation>
 <translation id="5696679855467848181">PPD-fil som används för närvarande: <ph name="PPD_NAME" /></translation>
 <translation id="5699533844376998780">Tillägget <ph name="EXTENSION_NAME" /> har lagts till.</translation>
+<translation id="5699804453758089950">Slutför genom att trycka på säkerhetsnyckeln en gång till.</translation>
 <translation id="570043786759263127">Appar och tjänster i Google Play</translation>
 <translation id="5700836101007545240">Lägg till anslutning har inaktiverats av administratören</translation>
 <translation id="5701080607174488915">Ett fel uppstod när policyn skulle hämtas från servern.</translation>
@@ -3281,6 +3311,7 @@
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6247802389331535091">System: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">Uppdateringen är klar</translation>
+<translation id="6248279564564080162">Säkerhetsnyckeln har återställts.</translation>
 <translation id="6248988683584659830">Sök i inställningar</translation>
 <translation id="6251870443722440887">GDI-handtag</translation>
 <translation id="6251889282623539337">Användarvillkor för <ph name="DOMAIN" /></translation>
@@ -3481,6 +3512,7 @@
 <translation id="6578664922716508575">Kryptera synkroniserade lösenord med ditt användarnamn och lösenord på Google</translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> – skrivbordet delas</translation>
 <translation id="6580151766480067746">ARC-version</translation>
+<translation id="6580231304296467005">Ange en pinkod för säkerhetsnyckeln att identifiera dig med</translation>
 <translation id="6582080224869403177">Du måste återställa <ph name="DEVICE_TYPE" /> för att uppgradera säkerheten.</translation>
 <translation id="6584878029876017575">Microsofts Livstids signering</translation>
 <translation id="6586451623538375658">Byt primär musknapp</translation>
@@ -3509,6 +3541,7 @@
 <translation id="6622980291894852883">Fortsätt att blockera bilder</translation>
 <translation id="6624687053722465643">Sockersöt</translation>
 <translation id="6628328486509726751">Uppladdat <ph name="WEBRTC_LOG_UPLOAD_TIME" /></translation>
+<translation id="662887686112111256">Du har bara ett försök kvar.</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> vill få permanent tillgång till ett certifikat för att autentisera sig själv för din räkning.</translation>
 <translation id="6635956300022133031">Välj och anpassa röster för text till tal</translation>
 <translation id="6637585982786704944">Appar och webbplatser som du har gett behörighet kan använda den kontoinformation de behöver för att fungera som de ska.
@@ -3688,6 +3721,7 @@
 <translation id="6915804003454593391">Användare:</translation>
 <translation id="6916590542764765824">Hantera tillägg</translation>
 <translation id="6920989436227028121">Öppna som en vanlig flik</translation>
+<translation id="6921104647315081813">Rensa aktiviteter</translation>
 <translation id="6921709132208495314">Sluta använda data på den här sidan</translation>
 <translation id="6922128026973287222">Spara data och bläddra snabbare med Google Databesparing. Klicka här om du vill veta mer.</translation>
 <translation id="6923132443355966645">Rulla/klicka</translation>
@@ -3807,6 +3841,7 @@
 <translation id="7099337801055912064">PPD-filen var för stor att läsa in. Storleksgränsen är 250 kB.</translation>
 <translation id="7102687220333134671">Automatiska uppdateringar har aktiverats</translation>
 <translation id="7102832101143475489">Begäran tog för lång tid</translation>
+<translation id="7105390788077117391">USB-inställningar</translation>
 <translation id="7108338896283013870">Dölj</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> vill använda kameran</translation>
 <translation id="7108668606237948702">retur</translation>
@@ -3818,6 +3853,7 @@
 <translation id="7117247127439884114">Logga in igen ...</translation>
 <translation id="711840821796638741">Visa hanterade bokmärken</translation>
 <translation id="711902386174337313">Läsa listan med dina inloggade enheter</translation>
+<translation id="7120683273130936452">En pinkod består av minst fyra tecken och används för att säkerställa att säkerhetsnyckelns ägare är närvarande i vissa sammanhang. När du har ställt in en pinkod kan du ändra den, men det går inte att ta bort den utan att återställa säkerhetsnyckeln helt.</translation>
 <translation id="7120865473764644444">Det gick inte att ansluta till synkroniseringsservern. Försöker igen …</translation>
 <translation id="7121362699166175603">Historik och autoslutföranden i adressfältet rensas. Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7121389946694989825">Skicka diagnostik- och användningsdata. Den här enheten skickar för närvarande diagnostikdata, enhetsdata och data om appanvändning till Google automatiskt. Denna data används till att förbättra systemets och apparnas stabilitet med mera och inte till att identifiera ditt barn. Viss samlad data används även till att förbättra appar från Google och partner, till exempel Android-utvecklare. Om ytterligare webb- och appaktivitet har aktiverats för ditt barn kan denna data sparas i Google-kontot. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
@@ -3910,6 +3946,7 @@
 <translation id="7257666756905341374">Läsa data som du kopierar och klistrar in</translation>
 <translation id="7258697411818564379">Pinkoden har lagts till</translation>
 <translation id="7262004276116528033">Inloggningstjänsten tillhandahålls av <ph name="SAML_DOMAIN" />.</translation>
+<translation id="7268127947535186412">Den här inställningen hanteras av enhetens ägare.</translation>
 <translation id="7270858098575133036">Fråga när en webbplats vill använda systemexklusiva meddelanden för att komma åt MIDI-enheter</translation>
 <translation id="7272674038937250585">Ingen beskrivning har angetts</translation>
 <translation id="7273110280511444812">senast ansluten den <ph name="DATE" /></translation>
@@ -4394,6 +4431,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Genvägen har ändrats</translation>
 <translation id="8018313076035239964">Styr vilken information som webbplatser kan ta del av och vilket innehåll de kan visa</translation>
+<translation id="802376096974994842">Att återställa en säkerhetsnyckel innebär att alla nycklar som kopplats till enheten raderas och alla pinkoder som konfigurerats tas bort.</translation>
 <translation id="8023801379949507775">Uppdatera tillägg nu</translation>
 <translation id="8024483450737722621">Appar som du har laddat ned på Google Play tas bort från Chromebook.
       <ph name="LINE_BREAKS1" />
@@ -4407,6 +4445,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8030656706657716245">Lägg till skrivare</translation>
 <translation id="8032244173881942855">Det gick inte att casta fliken.</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Öppna alla i ett &amp;inkognitofönster}=1{Öppna i ett &amp;inkognitofönster}other{Öppna alla (#) i ett &amp;inkognitofönster}}</translation>
+<translation id="8034467234497743242">Den säkerhetsnyckeln har inte stöd för att ställa in en pinkod.</translation>
 <translation id="8037117027592400564">Läsa all text som läses upp med syntetiskt tal</translation>
 <translation id="8037357227543935929">Fråga (standard)</translation>
 <translation id="803771048473350947">Arkiv</translation>
@@ -4447,6 +4486,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="80974698889265265">Pinkoderna matchar inte</translation>
 <translation id="8101987792947961127">Powerwash krävs vid nästa omstart</translation>
 <translation id="8102159139658438129">Du hittar alternativ för den anslutna mobilen i <ph name="LINK_BEGIN" />inställningarna<ph name="LINK_END" /></translation>
+<translation id="8102652888659661176">Fel pinkod.</translation>
 <translation id="8104696615244072556">Använd Powerwash på din <ph name="IDS_SHORT_PRODUCT_NAME" />-enhet och återgå till föregående version</translation>
 <translation id="8105368624971345109">Inaktivera</translation>
 <translation id="8107015733319732394">Google Play Butik installeras på din <ph name="DEVICE_TYPE" />. Det kan ta några minuter.</translation>
@@ -4532,6 +4572,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8244514732452879619">Dags att sluta snart</translation>
 <translation id="8246209727385807362">Okänd operatör</translation>
 <translation id="8248050856337841185">K&amp;listra in</translation>
+<translation id="8248880015234923589">Återställ en säkerhetsnyckel till standardinställningarna</translation>
 <translation id="8249048954461686687">OEM-mapp</translation>
 <translation id="8249672078237421304">Erbjud att översätta sidor som är på ett språk som du inte kan läsa</translation>
 <translation id="8251578425305135684">Miniatyren har tagits bort.</translation>
@@ -4911,6 +4952,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848561196844274665">När du ansluter enheter godkänner du att Chromebook</translation>
 <translation id="8850251000316748990">Visa fler …</translation>
+<translation id="885246833287407341">API-funktionens argument</translation>
 <translation id="8853586775156634952">Det här kortet sparas enbart på den här enheten</translation>
 <translation id="8859057652521303089">Välj språk:</translation>
 <translation id="8859174528519900719">Underram: <ph name="SUBFRAME_SITE" /></translation>
@@ -5048,6 +5090,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9065203028668620118">Redigera</translation>
 <translation id="9066773882585798925">Få text uppläst</translation>
 <translation id="9066782832737749352">Text till tal</translation>
+<translation id="907264006778172906">Ge Linux åtkomstbehörighet till USB-enheter. När en USB-enhet tas bort sparas ingen information om den i Linux.</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9074836595010225693">USB-mus har anslutits</translation>

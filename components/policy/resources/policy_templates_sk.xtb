@@ -391,8 +391,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto pravidlo nie je nakonfigurované alebo je nastavené na hodnotu „tls1.2“, prehliadač <ph name="PRODUCT_NAME" /> tento záložný postup nevykoná. Upozorňujeme, že touto akciou sa neruší podpora pre staršie verzie protokolu TLS, ale iba to, či sa bude prehliadač <ph name="PRODUCT_NAME" /> obchádzať chybné servery, ktoré nedokážu správne vyjednávať verzie.
 
       Ak musí byť zachovaná kompatibilita s chybným serverom, pravidlo môže byť nastavené na hodnotu „tls1“. Ide o krátkodobé riešenie a príslušný server by mal byť urýchlene opravený.</translation>
-<translation id="1864269674877167562">Ak nie je toto pravidlo nakonfigurované alebo ak je nastavené na prázdny textový reťazec, <ph name="PRODUCT_OS_NAME" /> nezobrazí počas procesu prihlásenia možnosť automatického dopĺňania.
-      Ak je toto pravidlo nastavené na textový reťazec, ktorý zastupuje názov domény, <ph name="PRODUCT_OS_NAME" /> zobrazí počas procesu prihlásenia možnosť automatického dopĺňania. Takto bude môcť používateľ zadávať iba používateľské meno bez prípony s názvom domény. Používateľ bude môcť príponu s názvom domény prepísať.</translation>
 <translation id="1864382791685519617">Povolí predpovedanie siete v prehliadači <ph name="PRODUCT_NAME" /> a zabráni používateľom toto nastavenie zmeniť.
 
       Toto pravidlo ovláda spoločne s predbežným načítaním servera DNS aj predbežné pripojenie pomocou protokolu TCP a SSL a predbežné vykreslenie webových stránok.
@@ -1620,14 +1618,6 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 <translation id="4534500438517478692">Názov obmedzenia systému Android:</translation>
 <translation id="4541530620466526913">Miestne účty na zariadení</translation>
 <translation id="4543502256674577024">Nastavenia aktualizácií zariadení</translation>
-<translation id="4544079461524242527">Konfiguruje nastavenia správy rozšírení pre <ph name="PRODUCT_NAME" />.
-
-          Toto pravidlo ovláda viaceré nastavenia, ako aj nastavenia ovládané existujúcimi pravidlami týkajúcimi sa rozšírení. Ak nastavíte obe, toto pravidlo prepíše všetky staré pravidlá.
-
-          Toto pravidlo namapuje identifikátor rozšírenia alebo webovú adresu aktualizácie na svoju konfiguráciu. Keď bude mať k dispozícii identifikátor rozšírenia, konfigurácia sa použije iba pre ním určené rozšírenie. Pre špeciálny identifikátor <ph name="DEFAULT_SCOPE" /> môžete nastaviť predvolenú konfiguráciu, ktorá sa použije pre všetky rozšírenia, pre ktoré ste v rámci tohto pravidla nenastavili vlastnú konfiguráciu. Keď bude mať k dispozícii webovú adresu aktualizácie, konfigurácia sa použije pre všetky rozšírenia s presnou webovou adresou aktualizácie stanovenou v manifeste tohto rozšírenia tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Úplný popis možných nastavení a štruktúry tohto pravidla nájdete na adrese https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Režim spracovania slučky pravidiel pre používateľov</translation>
 <translation id="4554841826517980623">Toto pravidlo riadi, či by mala funkcia zdieľania súborov v sieti pre <ph name="PRODUCT_NAME" /> použiť <ph name="NETBIOS_PROTOCOL" /> na objavenie zdieľaných položiek v sieti.
       Keď toto pravidlo nastavíte na hodnotu true, objavovanie zdieľaných položiek bude zisťovať zdieľané položky v sieti pomocou protokolu <ph name="NETBIOS_PROTOCOL" />.

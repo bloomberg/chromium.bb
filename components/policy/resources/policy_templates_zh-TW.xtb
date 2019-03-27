@@ -462,8 +462,6 @@
       如果未設定這項政策，或是將這項政策的值設為「tls1.2」，<ph name="PRODUCT_NAME" /> 就不會再執行這項遞補程序。請注意，這只會影響 <ph name="PRODUCT_NAME" /> 是否略過發生錯誤的伺服器 (無法正確交涉版本)，系統並不會因此停止支援較舊的 TLS 版本。
 
       如果實際狀況與上述情形皆不相符，而必須與發生錯誤的伺服器維持相容，系統可能會將這項政策的值設為「tls1.1」。這種方法是權宜之計，伺服器錯誤應該很快就會解決。</translation>
-<translation id="1864269674877167562">如果將這項政策設為空白字串或不予設定，<ph name="PRODUCT_OS_NAME" /> 將不會在使用者登入過程中顯示自動完成選項。
-      如果將這項政策設為代表網域名稱的字串，<ph name="PRODUCT_OS_NAME" /> 則會在使用者登入過程中顯示自動完成選項，讓使用者輸入自己的使用者名稱 (不含網域名稱)。不過，使用者可以覆寫您在這裡指定的網域名稱。</translation>
 <translation id="1864382791685519617">啟用 <ph name="PRODUCT_NAME" /> 的網路預測功能，並且禁止使用者變更這項設定。
 
       這項設定是用來控制 DNS 預先擷取、TCP 和 SSL 預先連線，以及網頁預先轉譯作業。
@@ -1791,14 +1789,6 @@
 <translation id="4534500438517478692">Android 限制名稱：</translation>
 <translation id="4541530620466526913">裝置本機帳戶</translation>
 <translation id="4543502256674577024">裝置更新設定</translation>
-<translation id="4544079461524242527">配置 <ph name="PRODUCT_NAME" /> 的擴充功能管理設定。
-
-          這項政策可控制多項設定 (包括由任何現有的擴充功能相關政策控制的設定)，效力優先於任何先前設定的既有政策。
-
-          這項政策可為擴充功能 ID 或更新網址與其設定建立對應關係。有了擴充功能 ID，系統就只會將設定套用到指定的擴充功能。您可以針對特殊的 ID <ph name="DEFAULT_SCOPE" /> 指定預設設定，讓沒有透過這項政策指定自訂設定的擴充功能全部套用預設設定。此外，系統會比對這個擴充功能的資訊清單提供的更新網址，將設定套用到所有更新網址相符的擴充功能 (如 <ph name="LINK_TO_EXTENSION_DOC1" /> 所述)。
-
-          如需可用設定和本政策結構的完整說明，請造訪 https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">使用者政策回送處理模式</translation>
 <translation id="4554841826517980623">這項政策可控管是否要允許 <ph name="PRODUCT_NAME" />的網路檔案共用功能使用 <ph name="NETBIOS_PROTOCOL" /> 搜尋網路上的共用項目。
       將這項政策設為 True 時，共用項目搜尋功能會使用 <ph name="NETBIOS_PROTOCOL" /> 通訊協定在網路上搜尋共用項目。

@@ -1308,6 +1308,7 @@
 <translation id="3045447014237878114">이 사이트에서 여러 파일을 자동으로 다운로드함</translation>
 <translation id="3046910703532196514">웹페이지, 전부</translation>
 <translation id="304747341537320566">음성 엔진</translation>
+<translation id="3047644958362961983">이 정보는 어시스턴트 문제를 파악하는 데 도움이 됩니다. 정보는 최대 90일까지 저장되며 해당 엔지니어링 및 피드백 팀만 액세스할 수 있습니다.</translation>
 <translation id="3053013834507634016">인증서 키 사용</translation>
 <translation id="3058498974290601450">언제든지 설정에서 동기화를 사용 설정할 수 있습니다.</translation>
 <translation id="3060379269883947824">텍스트 읽어주기 사용</translation>
@@ -1848,6 +1849,7 @@
 <translation id="3892414795099177503">OpenVPN/L2TP 추가...</translation>
 <translation id="3893536212201235195">접근성 설정 확인 및 변경</translation>
 <translation id="3893630138897523026">ChromeVox(음성 피드백)</translation>
+<translation id="3894123633473837029">Sherlog를 통해 최근 어시스턴트 기록을 포함합니다. ID, 위치 및 디버그 정보가 포함될 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">폴더 추가</translation>
 <translation id="389589731200570180">게스트와 공유</translation>
 <translation id="3898521660513055167">토큰 상태</translation>
@@ -3571,6 +3573,7 @@
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" />(USB)</translation>
 <translation id="667517062706956822">Google에서 이 페이지를 <ph name="SOURCE_LANGUAGE" />에서 <ph name="TARGET_LANGUAGE" />로 번역할까요?</translation>
 <translation id="6675665718701918026">포인팅 기기 연결됨</translation>
+<translation id="6676212663108450937">음성을 학습시킬 때 헤드폰 사용을 고려해 보세요.</translation>
 <translation id="6678717876183468697">쿼리 URL</translation>
 <translation id="6680442031740878064">사용 가능한 저장용량: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">평가</translation>
@@ -3717,6 +3720,7 @@
 <translation id="6915804003454593391">사용자:</translation>
 <translation id="6916590542764765824">확장 프로그램 관리</translation>
 <translation id="6920989436227028121">일반 탭으로 열기</translation>
+<translation id="6921104647315081813">활동 삭제</translation>
 <translation id="6921709132208495314">이 페이지에서 데이터 사용 중지</translation>
 <translation id="6922128026973287222">Google 데이터 절약 모드를 사용하여 더 빠르게 데이터를 저장하고 탐색하세요. 자세히 알아보려면 클릭하세요.</translation>
 <translation id="6923132443355966645">스크롤/클릭</translation>
@@ -4256,6 +4260,7 @@
 <translation id="7788383851298063850">어떤 문제인지 알려주세요.</translation>
 <translation id="7788444488075094252">언어 및 입력</translation>
 <translation id="7788668840732459509">위치:</translation>
+<translation id="7789963078219276159">시작 페이지 배경화면이 <ph name="CATEGORY" />(으)로 변경되었습니다.</translation>
 <translation id="7791543448312431591">추가</translation>
 <translation id="7792012425874949788">로그인 중에 문제가 발생했습니다.</translation>
 <translation id="7792388396321542707">공유 중지</translation>
@@ -4892,6 +4897,7 @@
 <translation id="8767621466733104912">모든 사용자의 Chrome 자동 업데이트</translation>
 <translation id="8770406935328356739">확장 프로그램 루트 디렉토리</translation>
 <translation id="8770507190024617908">사용자 관리</translation>
+<translation id="8771300903067484968">시작 페이지 배경화면이 기본 배경화면으로 재설정되었습니다.</translation>
 <translation id="8774934320277480003">상단 여백</translation>
 <translation id="8775144690796719618">URL이 올바르지 않습니다.</translation>
 <translation id="8777628254805677039">루트 비밀번호</translation>
@@ -4977,7 +4983,7 @@
 <translation id="8899851313684471736">새 창에서 링크 열기(&amp;W)</translation>
 <translation id="8902081783136172774">시작 페이지의 배경화면을 선택하세요.</translation>
 <translation id="8902667442496790482">텍스트 읽어주기 설정 열기</translation>
-<translation id="8904976895050290827">크롬 동기화</translation>
+<translation id="8904976895050290827">Chrome 동기화</translation>
 <translation id="890616557918890486">소스 변경</translation>
 <translation id="8909833622202089127">사이트에서 내 위치를 추적하고 있습니다.</translation>
 <translation id="8910146161325739742">화면 공유하기</translation>

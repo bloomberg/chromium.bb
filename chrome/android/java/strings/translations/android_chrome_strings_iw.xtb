@@ -82,7 +82,6 @@
 <translation id="1553358976309200471">‏עדכן את Chrome</translation>
 <translation id="1569387923882100876">מכשיר מחובר</translation>
 <translation id="1571304935088121812">העתק שם משתמש</translation>
-<translation id="1576370611341449972">‏הורדה רק בחיבור Wi-Fi</translation>
 <translation id="1612196535745283361">‏כדי לבצע סריקה לאיתור מכשירים, Chrome זקוק לגישה לנתוני מיקום. הגישה למיקום <ph name="BEGIN_LINK" />כבויה במכשיר הזה<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">מצלמה</translation>
 <translation id="1623104350909869708">מנע מהדף זה ליצור תיבות דו-שיח נוספות</translation>
@@ -370,7 +369,6 @@
 <translation id="3810838688059735925">וידאו</translation>
 <translation id="3810973564298564668">נהל</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> הורדות נמחקו</translation>
-<translation id="3819562311292413223">הורדת מאמרים שעשויים לעניין אותך</translation>
 <translation id="3822502789641063741">למחוק נתוני אתר מהאחסון?</translation>
 <translation id="385051799172605136">חזור</translation>
 <translation id="3859306556332390985">הרץ קדימה</translation>

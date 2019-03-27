@@ -475,7 +475,7 @@
 <translation id="3614103345592970299">Grootte 2</translation>
 <translation id="361438452008624280">Lijstitem '<ph name="LANGUAGE_ID" />': Onbekende of niet-ondersteunde taal.</translation>
 <translation id="3615877443314183785">Geef een geldige vervaldatum op</translation>
-<translation id="36224234498066874">Browsegegevens wissen...</translation>
+<translation id="36224234498066874">Browsegegevens wissen</translation>
 <translation id="362276910939193118">Volledige geschiedenis weergeven</translation>
 <translation id="3630155396527302611">Als dit programma al wordt vermeld als een programma dat toegang heeft tot het netwerk, kun je proberen het uit de lijst te verwijderen en het opnieuw toe te voegen.</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
@@ -789,7 +789,7 @@
 <translation id="5386426401304769735">De certificaatketen voor deze site bevat een certificaat dat is ondertekend met SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="540969355065856584">Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat is momenteel niet geldig. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
-<translation id="5421136146218899937">Browsegegevens wissen...</translation>
+<translation id="5421136146218899937">Browsegegevens wissen</translation>
 <translation id="5430298929874300616">Bladwijzer verwijderen</translation>
 <translation id="5431657950005405462">Je bestand is niet gevonden</translation>
 <translation id="5439770059721715174">Schemavalidatiefout op '<ph name="ERROR_PATH" />': <ph name="ERROR" /></translation>
@@ -1043,6 +1043,7 @@
 <translation id="6965978654500191972">Apparaat</translation>
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">Zowel vaste proxyservers als een pac-script-URL worden gespecificeerd.</translation>
+<translation id="6973932557599545801">Ik kan je helaas niet helpen. Ga zelf verder.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Dempen (standaard)</translation>
 <translation id="6984479912851154518">Je verlaat de privémodus om te betalen via een externe app. Doorgaan?</translation>
@@ -1372,7 +1373,7 @@ Aanvullende informatie:
 <translation id="8790007591277257123">&amp;Opnieuw verwijderen</translation>
 <translation id="8792621596287649091">Je kunt de toegang tot je account van <ph name="ORG_NAME" /> kwijtraken of slachtoffer worden van identiteitsdiefstal. Chromium raadt je aan je wachtwoord nu te wijzigen.</translation>
 <translation id="8800988563907321413">Je suggesties voor in de buurt worden hier weergegeven</translation>
-<translation id="8805819170075074995">Lijstitem '<ph name="LANGUAGE_ID" />': Item is genegeerd omdat dit ook in opgenomen in het beleid SpellcheckLanguage.</translation>
+<translation id="8805819170075074995">Lijstitem '<ph name="LANGUAGE_ID" />': Item is genegeerd omdat dit ook is opgenomen in het beleid SpellcheckLanguage.</translation>
 <translation id="8820817407110198400">Bladwijzers</translation>
 <translation id="883848425547221593">Andere bladwijzers</translation>
 <translation id="884264119367021077">Verzendadres</translation>

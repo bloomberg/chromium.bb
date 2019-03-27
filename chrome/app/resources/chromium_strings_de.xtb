@@ -189,6 +189,7 @@ Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte e
 <translation id="6990124437352146030">Chromium benötigt für diese Website die Berechtigung, auf Ihr Mikrofon zuzugreifen</translation>
 <translation id="705851970750939768">Chromium aktualisieren</translation>
 <translation id="7066436765290594559">Chromium OS konnte Ihre Daten nicht synchronisieren. Bitte aktualisieren Sie Ihre Passphrase für die Synchronisierung.</translation>
+<translation id="7067091210845072982">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chromium, eine für Sie zu finden. Damit entsprechende Beschreibungen erstellt werden können, werden die Bilder an Google gesendet.</translation>
 <translation id="7162152143154757523">Chromium bietet eine intelligentere Rechtschreibprüfung: Dabei sendet der Browser das, was Sie eingeben, an die Google-Server. So steht Ihnen dieselbe Technologie zur Rechtschreibprüfung zur Verfügung, die bei der Google-Suche zum Einsatz kommt.</translation>
 <translation id="7196312274710523067">Chromium konnte nicht gestartet werden. Versuchen Sie es noch einmal.</translation>
 <translation id="7205698830395646142">Im Chromium-Menü ausblenden</translation>
@@ -234,6 +235,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="8030318113982266900">Ihr Gerät wird auf Kanal <ph name="CHANNEL_NAME" /> aktualisiert...</translation>
 <translation id="81770708095080097">Diese Datei ist schädlich und wurde von Chromium blockiert.</translation>
 <translation id="8222496066431494154">Installieren Sie Chromium auf Ihrem Smartphone. Wir senden Ihnen eine SMS an die Telefonnummer zur Kontowiederherstellung: <ph name="PHONE_NUMBER" />.</translation>
+<translation id="8248265253516264921">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chromium, eine für Sie zu finden. Damit entsprechende Beschreibungen erstellt werden können, werden die Bilder an Google gesendet. Sie können dies jederzeit in den Einstellungen deaktivieren.</translation>
 <translation id="8269379391216269538">Chromium mit Ihrer Hilfe verbessern</translation>
 <translation id="8290862415967981663">Diese Datei ist eventuell schädlich und wurde von Chromium blockiert.</translation>
 <translation id="8330519371938183845">Wenn Sie sich anmelden, wird Chromium auf allen Ihren Geräten synchronisiert und personalisiert</translation>

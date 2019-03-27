@@ -1847,6 +1847,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3892414795099177503">Añadir OpenVPN / L2TP...</translation>
 <translation id="3893536212201235195">Leer y cambiar tu configuración de accesibilidad</translation>
 <translation id="3893630138897523026">ChromeVox (mensajes de voz)</translation>
+<translation id="3894123633473837029">Incluir el historial reciente del Asistente mediante Sherlog. Puede contener datos de identidad y ubicación e información de depuración. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Añadir carpeta</translation>
 <translation id="389589731200570180">Compartir con invitados</translation>
 <translation id="3898521660513055167">Estado del token</translation>
@@ -3571,6 +3572,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">¿Quieres que Google traduzca esta página de <ph name="SOURCE_LANGUAGE" /> a <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Dispositivo señalador conectado</translation>
+<translation id="6676212663108450937">Te recomendamos utilizar auriculares cuando entrenes tu voz</translation>
 <translation id="6678717876183468697">URL de la consulta</translation>
 <translation id="6680442031740878064">Disponible: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Velocidad</translation>
@@ -3717,6 +3719,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6915804003454593391">Usuario:</translation>
 <translation id="6916590542764765824">Administrar extensiones</translation>
 <translation id="6920989436227028121">Abrir como pestaña normal</translation>
+<translation id="6921104647315081813">Borrar actividades</translation>
 <translation id="6921709132208495314">Detener el consumo de datos en esta página</translation>
 <translation id="6922128026973287222">Ahorra datos y navega más rápido con Ahorro de Datos de Google. Haz clic para obtener más información.</translation>
 <translation id="6923132443355966645">Desplazarse/Hacer clic</translation>
@@ -4256,6 +4259,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7788383851298063850">Indícanos el problema</translation>
 <translation id="7788444488075094252">Idiomas y métodos de entrada</translation>
 <translation id="7788668840732459509">Posición:</translation>
+<translation id="7789963078219276159">Se ha cambiado el fondo de la página de inicio a <ph name="CATEGORY" />.</translation>
 <translation id="7791543448312431591">Añadir</translation>
 <translation id="7792012425874949788">Error al iniciar sesión</translation>
 <translation id="7792388396321542707">Dejar de compartir</translation>
@@ -4892,6 +4896,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8767621466733104912">Actualizar Chrome automáticamente para todos los usuarios</translation>
 <translation id="8770406935328356739">Directorio raíz de la extensión</translation>
 <translation id="8770507190024617908">Administrar usuarios</translation>
+<translation id="8771300903067484968">El fondo de pantalla de la página de inicio se ha restablecido al fondo de pantalla predeterminado.</translation>
 <translation id="8774934320277480003">Margen superior</translation>
 <translation id="8775144690796719618">La URL no es válida</translation>
 <translation id="8777628254805677039">contraseña raíz</translation>

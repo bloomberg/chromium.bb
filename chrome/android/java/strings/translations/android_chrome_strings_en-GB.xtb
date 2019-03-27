@@ -82,7 +82,6 @@
 <translation id="1553358976309200471">Update Chrome</translation>
 <translation id="1569387923882100876">Connected device</translation>
 <translation id="1571304935088121812">Copy username</translation>
-<translation id="1576370611341449972">Download occurs only on Wi-Fi</translation>
 <translation id="1612196535745283361">Chrome needs location access to scan for devices. Location access is <ph name="BEGIN_LINK" />turned off for this device<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Prevent this page from creating additional dialogues</translation>
@@ -371,7 +370,6 @@
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Manage</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads deleted</translation>
-<translation id="3819562311292413223">Download articles for you</translation>
 <translation id="3822502789641063741">Clear site storage?</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3859306556332390985">Seek forward</translation>

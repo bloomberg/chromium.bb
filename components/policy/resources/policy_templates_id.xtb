@@ -456,8 +456,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Jika kebijakan ini tidak dikonfigurasi atau jika disetel ke "tls1.2", <ph name="PRODUCT_NAME" /> akan berhenti menjalankan fallback ini. Perhatikan bahwa tindakan ini tidak menonaktifkan dukungan untuk TLS versi lebih lama, hanya jika <ph name="PRODUCT_NAME" /> akan memperbaiki server berisi bug yang tidak dapat melakukan negosiasi versi dengan tepat.
 
       Sebaliknya, jika kompatibilitas dengan server berisi bug harus dipertahankan, kebijakan ini akan disetel ke "tls1.1". Hal ini merupakan ukuran sementara dan server harus segera diperbaiki.</translation>
-<translation id="1864269674877167562">Jika kebijakan ini disetel sebagai string kosong atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> tidak akan menampilkan opsi pelengkapan otomatis selama alur proses masuk pengguna.
-      Jika kebijakan ini disetel sebagai string yang mewakili nama domain, <ph name="PRODUCT_OS_NAME" /> akan menampilkan opsi pelengkapan otomatis selama proses masuk pengguna, sehingga pengguna dapat mengetikkan nama penggunanya tanpa ekstensi nama domain. Pengguna dapat mengganti ekstensi nama domain ini.</translation>
 <translation id="1864382791685519617">Memungkinkan prediksi jaringan dalam <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
 
       Setelan ini mengontrol prapengambilan DNS, prakoneksi dan praperenderan TCP dan SSL halaman web.
@@ -1791,14 +1789,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4534500438517478692">Nama pembatasan Android:</translation>
 <translation id="4541530620466526913">Akun lokal perangkat</translation>
 <translation id="4543502256674577024">Setelan update perangkat</translation>
-<translation id="4544079461524242527">Mengonfigurasi setelan pengelolaan ekstensi untuk <ph name="PRODUCT_NAME" />.
-
-          Kebijakan ini mengontrol beberapa setelan, termasuk setelan yang dikontrol oleh kebijakan terkait ekstensi yang ada. Kebijakan ini akan mengganti kebijakan yang lalu jika keduanya disetel.
-
-          Kebijakan ini memetakan ID ekstensi atau URL update ke konfigurasinya. Dengan ID ekstensi, konfigurasi hanya akan diterapkan ke ekstensi tertentu. Konfigurasi default dapat disetel untuk ID khusus <ph name="DEFAULT_SCOPE" />, yang akan diterapkan ke semua ekstensi yang tidak memiliki konfigurasi khusus, yang disetel di kebijakan ini. Dengan URL update, konfigurasi akan diterapkan ke semua ekstensi dengan URL update yang sama persis yang ditetapkan di manifes ekstensi ini, seperti yang dijelaskan di <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Untuk deskripsi lengkap terkait kemungkinan setelan dan struktur kebijakan ini, buka https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Mode pemrosesan loopback kebijakan pengguna</translation>
 <translation id="4554841826517980623">Kebijakan ini mengontrol apakah fitur Berbagi File Jaringan untuk <ph name="PRODUCT_NAME" /> harus menggunakan <ph name="NETBIOS_PROTOCOL" /> untuk menemukan file yang dibagikan di jaringan.
       Jika kebijakan ini disetel ke True, penemuan berbagi akan menggunakan protokol <ph name="NETBIOS_PROTOCOL" /> untuk menemukan file yang dibagikan di jaringan.

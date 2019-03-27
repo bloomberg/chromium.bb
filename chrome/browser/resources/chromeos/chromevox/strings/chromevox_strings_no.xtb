@@ -54,6 +54,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="1319608975892113573">Det finnes ingen tidligere blokksitat-elementer.</translation>
 <translation id="1321576897702511272">Skjul hjelp for ChromeVox</translation>
 <translation id="1325946044405407859">Gyllenbrun</translation>
+<translation id="1331634987653814322">Punktskriftsinnstillinger</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> av <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">tegn- og ordekko</translation>
 <translation id="1334570596456017464">Senket skrift</translation>
@@ -548,6 +549,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="489907760999452556">Intern link</translation>
 <translation id="4915087353619183190">Starter læremodus. Trykk på en qwerty-tast, en dynamisk punktskrifttast eller en berøringshandling for å lære den tilhørende funksjonen. Trykk på Ctrl + W eller Esc for å avslutte.</translation>
 <translation id="492295894462528572">Forord</translation>
+<translation id="4943781537993885772">Visningsstil</translation>
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4953585991029886728">Rediger teksten</translation>
 <translation id="4954534434583049121">Forrige blokksitat</translation>
@@ -713,6 +715,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="6006050241733874051">Skjema</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{omvendt skråstrek}other{# omvendte skråstreker}}</translation>
 <translation id="6017514345406065928">Grønn</translation>
+<translation id="6021969570711251331">Innfelt</translation>
 <translation id="6034000775414344507">Lysegrå</translation>
 <translation id="6037602951055904232">Panorer frem</translation>
 <translation id="6042826534790431634">Trykk på Søk + mellomrom for å aktivere.</translation>
@@ -763,6 +766,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="6438968337250688271"><ph name="NAME" />, meny</translation>
 <translation id="6444046323172968959">Varseldialog</translation>
 <translation id="6452403590345320472">Innhold</translation>
+<translation id="6454456397828627257">Side ved side</translation>
 <translation id="6459511626086141404">Flatt tastaturoppsett</translation>
 <translation id="6468049171101508116">Neste-knappen</translation>
 <translation id="646954774886932461">Stikkordregister</translation>

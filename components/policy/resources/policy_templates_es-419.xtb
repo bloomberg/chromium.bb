@@ -394,8 +394,6 @@
       Si no se configura esta política o si se establece con el valor "tls1.2", <ph name="PRODUCT_NAME" /> ya no realiza este resguardo. Ten en cuenta que esto no inhabilita la compatibilidad para las versiones de TLS anteriores. Esto solo sucede si <ph name="PRODUCT_NAME" /> evita los servidores con errores que no pueden negociar las versiones correctamente.
 
       Caso contrario, si debe mantenerse la compatibilidad con un servidor con errores, esta política puede configurarse en "tls1.1". Esta es una medida provisoria, y el servidor debe arreglarse rápidamente.</translation>
-<translation id="1864269674877167562">Si esta política no se configura o se establece como un string en blanco, <ph name="PRODUCT_OS_NAME" /> no mostrará una opción de autocompletar durante el flujo de acceso del usuario.
-      Si esta política se establece como un string que representa un nombre de dominio, <ph name="PRODUCT_OS_NAME" /> mostrará una opción de autocompletar durante el acceso del usuario, lo que permitirá que el usuario escriba solamente el nombre de usuario sin la extensión del nombre de dominio. El usuario podrá sobrescribir esta extensión de nombre de dominio.</translation>
 <translation id="1864382791685519617">Habilita la predicción de red en <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta configuración.
 
       Controla la precarga de DNS y la preconexión a TCP y SSL, así como la representación previa de páginas web.
@@ -1554,14 +1552,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4534500438517478692">Nombre de restricción de Android:</translation>
 <translation id="4541530620466526913">Cuentas locales del dispositivo</translation>
 <translation id="4543502256674577024">Configuración de actualización del dispositivo</translation>
-<translation id="4544079461524242527">Establece la configuración de la administración de extensiones para <ph name="PRODUCT_NAME" />.
-
-          Esta política controla varias opciones de configuración, incluida la configuración regida por políticas existentes relacionadas con extensiones. Esta política anulará cualquier política heredada si ambas están configuradas.
-
-          Esta política asigna un ID de extensión o una URL de actualización a su configuración. Con un ID de extensión, la configuración se aplicará a la extensión especificada únicamente. Es posible establecer una configuración predeterminada para el ID especial <ph name="DEFAULT_SCOPE" />, que se aplicará a todas las extensiones que no tengan una configuración personalizada en esta política. Con una URL de actualización, la configuración se aplicará a todas las extensiones con la URL de actualización exacta establecida en el manifiesto de esta extensión, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Para obtener una descripción completa de las opciones de configuración posibles y la estructura de esta política, visita https://www.chromium.org/administrators/policy-list-3/extension-settings-full.
-          </translation>
 <translation id="4554651132977135445">Modo de procesamiento de bucle invertido de la política del usuario</translation>
 <translation id="4554841826517980623">Esta política controla si la función "Network File Shares" de <ph name="PRODUCT_NAME" /> debe usar el protocolo <ph name="NETBIOS_PROTOCOL" /> para descubrir contenido compartido en la red.
       Cuando se establece esta política como verdadera, la detección de archivos compartidos usará el protocolo <ph name="NETBIOS_PROTOCOL" /> para descubrir contenido compartido en la red.

@@ -471,8 +471,6 @@
       Ha ez a házirend nincs beállítva, illetve a beállítása „tls1.2”, akkor a <ph name="PRODUCT_NAME" /> a továbbiakban nem hajtja végre ezt a tartalékfolyamatot. Lényeges, hogy ez nem kapcsolja ki a TLS korábbi verzióinak támogatását, hanem csupán azt, hogy a <ph name="PRODUCT_NAME" /> keressen-e megoldást azoknál a hibásan működő szervereknél, amelyek nem tudják helyesen egyeztetni a verziókat.
 
       Ha fenn kell tartani a kompatibilitást a hibásan működő szerverrel, akkor a házirend a „tls1.1” értékre állítható. Ez átmeneti intézkedés, és a szervert mielőbb meg kell javítani.</translation>
-<translation id="1864269674877167562">Ha a házirend értéke üres karakterlánc, vagy ha nincs beállítva, a <ph name="PRODUCT_OS_NAME" /> nem jelenít meg automatikus kiegészítési lehetőséget a felhasználói bejelentkezési folyamat során.
-      Ha a házirend beállítása egy domainnevet jelképező karakterlánc, a <ph name="PRODUCT_OS_NAME" /> megjeleníti az automatikus kiegészítési lehetőséget a felhasználó bejelentkezése során, így annak csak a felhasználónevét kell beírnia (a domainnév nélkül). A felhasználó felülírhatja a domainnév-kiegészítést.</translation>
 <translation id="1864382791685519617">Engedélyezi a hálózati előrejelzést a <ph name="PRODUCT_NAME" /> termékben, és megakadályozza, hogy a felhasználók módosítsák ezt a beállítást.
 
       Ez vezérli a DNS-előtöltést, az előzetes TCP- és SSL-kapcsolatokat, valamint a weboldalak előzetes megjelenítését.
@@ -1812,14 +1810,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4534500438517478692">Android-korlátozás neve:</translation>
 <translation id="4541530620466526913">Eszköz helyi fiókjai</translation>
 <translation id="4543502256674577024">Eszközfrissítési beállítások</translation>
-<translation id="4544079461524242527">A(z) <ph name="PRODUCT_NAME" /> bővítménykezelési beállításainak konfigurálása.
-
-          Ez a házirend több beállítást szabályoz, többek között a már meglévő bővítményekkel kapcsolatos házirendek alapján szabályozott beállításokat. Mindkét beállítás megadása esetén ez a házirend felülír minden korábbi házirendet.
-
-          Ez a házirend megad a konfigurációhoz egy bővítményazonosítót vagy frissítési URL-címet. Bővítményazonosító esetén a konfiguráció csak a megadott bővítményre érvényesül. A(z) <ph name="DEFAULT_SCOPE" /> speciális azonosítóhoz megadható egy alapértelmezett konfiguráció, amely minden olyan bővítményre érvényesül, amelyik nem rendelkezik a jelenlegi házirenden belül megadott egyéni konfigurációval. Frissítési URL-cím esetén a konfiguráció érvényesül minden olyan bővítményre, amely a jelen bővítményben meghatározott pontos frissítési URL-címmel rendelkezik, amelyek leírása itt található: <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          A beállítási lehetőségek és a házirend szerkezetének teljes leírásáért látogasson el a következő címre: https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Felhasználói házirend visszacsatolás-feldolgozási módja</translation>
 <translation id="4554841826517980623">Ez a házirend azt szabályozza, hogy a <ph name="PRODUCT_NAME" /> hálózati fájlmegosztások funkciója a <ph name="NETBIOS_PROTOCOL" /> használatával fedezze-e fel a hálózaton megosztott tartalmakat.
       Ha a házirend értéke Igaz, a megosztásfelfedezés a <ph name="NETBIOS_PROTOCOL" /> protokoll segítségével fedezi fel a hálózaton megosztott tartalmakat.

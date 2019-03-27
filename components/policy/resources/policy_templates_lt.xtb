@@ -476,8 +476,6 @@
       Jei ši politika nesukonfigūruota arba nustatyta į „tls1.2“, tada „<ph name="PRODUCT_NAME" />“ nebevykdo šio surogato proceso. Atminkite, kad neišjungiamas ankstesnių TLS versijų palaikymas, tik nustatoma, ar „<ph name="PRODUCT_NAME" />“ pašalins serverių, kurie negali tinkamai suderinti versijų, riktus.
 
       Kitu atveju, jei reikia išlaikyti suderinamumą su serveriu, kuriame yra riktų, šią politiką galima nustatyti į „tls1.1“. Tai laikina priemonė; serverį reikia greitai sutvarkyti.</translation>
-<translation id="1864269674877167562">Jei ši politika nustatyta į tuščią eilutę arba yra nesukonfigūruota, „<ph name="PRODUCT_OS_NAME" />“ nerodys automatinio užbaigimo parinkties naudotojų prisijungimo eigoje.
-      Jei ši politika nustatyta į eilutę, kuri nurodo domeno pavadinimą, „<ph name="PRODUCT_OS_NAME" />“ rodys automatinio užbaigimo parinktį prisijungiant ir naudotojai galės įvesti tik savo naudotojo vardą be domeno pavadinimo plėtinio. Naudotojas galės nepaisyti šio domeno pavadinimo plėtinio.</translation>
 <translation id="1864382791685519617">Įgalinamas tinklo numatymas sistemoje „<ph name="PRODUCT_NAME" />“ ir naudotojams neleidžiama pakeisti šio nustatymo.
 
       Naudojant šią politiką valdomas išankstinis DNS pateikimas, išankstinis TCP ir SSL ryšys bei tinklalapių pateikimas.
@@ -1860,14 +1858,6 @@
 <translation id="4534500438517478692">„Android“ ribojimo pavadinimas:</translation>
 <translation id="4541530620466526913">Vietinės įrenginio paskyros</translation>
 <translation id="4543502256674577024">Įrenginio atnaujinimo nustatymai</translation>
-<translation id="4544079461524242527">Konfigūruojami „<ph name="PRODUCT_NAME" />“ plėtinių valdymo nustatymai.
-
-          Pagal šią politiką valdomi keli nustatymai, įskaitant nustatymus, valdomus pagal bet kokią esamą su plėtiniais susijusią politiką. Ši politika pakeis bet kokią pasenusią politiką, jei abi yra nustatytos.
-
-          Ši politika susieja plėtinio ID ar naujinio URL su konfigūracija. Naudojant plėtinio ID, konfigūracija bus taikoma tik nurodytam plėtiniui. Galima nustatyti specialaus ID <ph name="DEFAULT_SCOPE" /> numatytąją konfigūraciją, taikomą visiems plėtiniams, kurių tinkinta konfigūracija nenustatyta šioje politikoje. Naudojant naujinio URL, konfigūracija bus taikoma visiems plėtiniams su tiksliu naujinio URL, pateiktu šio plėtinio apraše, kaip nurodyta <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Jei norite peržiūrėti visą galimų šios politikos nustatymų ir struktūros aprašą, apsilankykite adresu https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Naudotojo politikos atgalinio ciklo apdorojimo režimas</translation>
 <translation id="4554841826517980623">Ši politika valdo, ar „<ph name="PRODUCT_NAME" />“ tinklo failų bendrinimo įrenginių funkcija turėtų naudoti „<ph name="NETBIOS_PROTOCOL" />“, kad atrastų bendrinimus tinkle.
       Kai ši politika nustatyta kaip „Tiesa“, bendrinimo įrenginys naudos protokolą „<ph name="NETBIOS_PROTOCOL" />“, kad atrastų bendrinimus tinkle.

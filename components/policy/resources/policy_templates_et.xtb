@@ -479,8 +479,6 @@ loendist, desinstallib teenus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui seda reeglit ei seadistata või see kasutab väärtust „tls1.2”, siis ei taanda teenus <ph name="PRODUCT_NAME" /> enam versiooni. Pange tähele, et see ei keela TLS-i vanemate versioonide tuge, vaid määrab, kas teenus <ph name="PRODUCT_NAME" /> väldib vigadega servereid, milles versioonide läbirääkimine ei õnnestu.
 
       Kui ühilduvus vigadega serveriga peab säilima, võib valida väärtuse „tls1.1”. See on ajutine abinõu ja server tuleb kiiresti parandada.</translation>
-<translation id="1864269674877167562">Kui selle reegli jaoks valitakse tühi string või jäetakse reegel seadistamata, ei näita <ph name="PRODUCT_OS_NAME" /> kasutaja sisselogimisvoos automaatse täitmise valikut.
-      Kui selleks reegliks on määratud string, mis esindab domeeni nime, kuvab <ph name="PRODUCT_OS_NAME" /> kasutaja sisselogimisel automaatse täitmise valiku, võimaldades kasutajal sisestada ainult oma kasutajanime ilma domeeninime laiendita. Kasutaja saab selle domeeninime laiendi alistada.</translation>
 <translation id="1864382791685519617">Lubab teenuses <ph name="PRODUCT_NAME" /> võrguprognoosid ja keelab kasutajatel selle seade muutmise.
 
       See juhib DNS-i eellaadimist, TCP ja SSL-i eelühendamist ning veebilehtede eelrenderdust.
@@ -1861,14 +1859,6 @@ ja need sisestatakse järgmisel korral saidile sisse logides automaatselt.
 <translation id="4534500438517478692">Androidi piirangu nimi:</translation>
 <translation id="4541530620466526913">Seadmepõhised kontod</translation>
 <translation id="4543502256674577024">Seadme värskendamise seaded</translation>
-<translation id="4544079461524242527">Seadistab rakenduse <ph name="PRODUCT_NAME" /> laiendite haldamise seaded.
-
-          Reegel juhib mitut seadet, sealhulgas seadeid, mida juhivad olemasolevad laiendustega seotud reeglid. Reegel alistab kõik pärandreeglid, kui mõlemad on määratud.
-
-          Reegel vastendab laienduse ID või värskenduse URL-i seadistusega. Laienduse ID-ga rakendatakse seadistus ainult määratud laiendusele. Spetsiaalse ID <ph name="DEFAULT_SCOPE" /> jaoks saab määrata vaikeseadistuse, mis kehtib kõikide laienduste puhul, millele ei ole reeglis määratud kohandatud seadistust. Värskenduse URL-iga rakendatakse seadistus kõikidele laiendustele, mille täpne värskenduse URL on märgitud laienduse manifesti, nagu on kirjeldatud jaotises <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Vaadake reegli võimalike seadete ja struktuuri täielikku kirjeldust https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Kasutajareeglite tagastusliidese töötlemisrežiim</translation>
 <translation id="4554841826517980623">Reegel määrab, kas teenuse <ph name="PRODUCT_NAME" /> failide võrguhoidlate funktsioon peab võrguhoidlate tuvastamiseks kasutama protokolli <ph name="NETBIOS_PROTOCOL" />.
       Kui reegel on seatud väärtusele Tõene, kasutab hoidlate tuvastamise funktsioon võrgus hoidlate tuvastamiseks protokolli <ph name="NETBIOS_PROTOCOL" />.

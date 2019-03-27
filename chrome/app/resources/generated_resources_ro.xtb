@@ -1849,6 +1849,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3892414795099177503">Adaugă OpenVPN/L2TP…</translation>
 <translation id="3893536212201235195">Citește și modifică setările de accesibilitate</translation>
 <translation id="3893630138897523026">ChromeVox (feedback rostit)</translation>
+<translation id="3894123633473837029">Include istoricul recent al Asistentului prin Sherlog. Acesta poate include identitatea, locația și informațiile de remediere a erorilor. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Adaugă un dosar</translation>
 <translation id="389589731200570180">Permiteți accesul invitaților</translation>
 <translation id="3898521660513055167">Stare indicativ</translation>
@@ -3721,6 +3722,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6915804003454593391">Utilizator:</translation>
 <translation id="6916590542764765824">Gestionează extensiile</translation>
 <translation id="6920989436227028121">Deschide ca filă obișnuită</translation>
+<translation id="6921104647315081813">Șterge activitățile</translation>
 <translation id="6921709132208495314">Nu mai folosi datele din această pagină</translation>
 <translation id="6922128026973287222">Economisește date și navighează mai rapid folosind Economizorul de date Google. Dă clic pentru a afla mai multe.</translation>
 <translation id="6923132443355966645">Derulează / Dă clic</translation>
