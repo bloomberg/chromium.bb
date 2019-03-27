@@ -86,9 +86,7 @@ Polymer({
 
   properties: {
     /**
-     * Populates the timezone select even if the element is hidden. Browser
-     * tests simulate a logged-in user, and hence don't show the timezone
-     * select, but still need to exercise it.
+     * Items to populate the timezone select.
      * @private
      */
     timezoneItems_: {
@@ -172,8 +170,9 @@ Polymer({
    * @private
    */
   setTimezone_: function(timezoneId) {
-    assert(this.$.timezoneSelect.childElementCount > 0);
-    this.$.timezoneSelect.value = timezoneId;
+    const timezoneSelect = this.$$('#timezoneSelect');
+    assert(timezoneSelect.childElementCount > 0);
+    timezoneSelect.value = timezoneId;
     this.updateTime_();
   },
 

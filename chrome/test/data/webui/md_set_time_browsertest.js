@@ -66,6 +66,17 @@ TEST_F('MdSetTimeBrowserTest', 'All', function() {
       }
     }
 
+    suiteSetup(function() {
+      loadTimeData.overrideValues({
+        currentTimezoneId: 'Westeros/Highgarden',
+        timezoneList: [
+          ['Westeros/Highgarden', '(KNG-2:00) The Reach Time (Highgarden)'],
+          ['Westeros/Winterfell', '(KNG-1:00) The North Time (Winterfell)'],
+          ['Westeros/Sunspear', '(KNG+2:00) Dorne Time (Sunspear)'],
+        ],
+      });
+    });
+
     setup(function() {
       testBrowserProxy = new TestSetTimeBrowserProxy();
       settime.SetTimeBrowserProxyImpl.instance_ = testBrowserProxy;
@@ -120,12 +131,14 @@ TEST_F('MdSetTimeBrowserTest', 'All', function() {
     test('SystemTimezoneChanged', () => {
       const timezoneSelect = setTimeElement.$$('#timezoneSelect');
       assertTrue(!!timezoneSelect);
+      expectEquals('Westeros/Highgarden', timezoneSelect.value);
 
-      cr.webUIListenerCallback('system-timezone-changed', 'America/New_York');
-      expectEquals('America/New_York', timezoneSelect.value);
+      cr.webUIListenerCallback(
+          'system-timezone-changed', 'Westeros/Winterfell');
+      expectEquals('Westeros/Winterfell', timezoneSelect.value);
 
-      cr.webUIListenerCallback('system-timezone-changed', 'Europe/Moscow');
-      expectEquals('Europe/Moscow', timezoneSelect.value);
+      cr.webUIListenerCallback('system-timezone-changed', 'Westeros/Sunspear');
+      expectEquals('Westeros/Sunspear', timezoneSelect.value);
     });
   });
 
