@@ -1,0 +1,17 @@
+This is a testharness.js-based test.
+FAIL ReadableStream teeing: rs.tee() returns an array of two ReadableStreams Failed to execute 'tee' on 'ReadableStream': tee not yet implemented
+FAIL ReadableStream teeing: should be able to read one branch to the end without affecting the other Failed to execute 'tee' on 'ReadableStream': tee not yet implemented
+FAIL ReadableStream teeing: values should be equal across each branch Failed to execute 'tee' on 'ReadableStream': tee not yet implemented
+FAIL ReadableStream teeing: errors in the source should propagate to both branches Failed to execute 'tee' on 'ReadableStream': tee not yet implemented
+FAIL ReadableStream teeing: canceling branch1 should not impact branch2 Failed to execute 'tee' on 'ReadableStream': tee not yet implemented
+FAIL ReadableStream teeing: canceling branch2 should not impact branch2 Failed to execute 'tee' on 'ReadableStream': tee not yet implemented
+FAIL ReadableStream teeing: canceling both branches should aggregate the cancel reasons into an array Failed to execute 'tee' on 'ReadableStream': tee not yet implemented
+FAIL ReadableStream teeing: canceling both branches in reverse order should aggregate the cancel reasons into an array Failed to execute 'tee' on 'ReadableStream': tee not yet implemented
+FAIL ReadableStream teeing: failing to cancel the original stream should cause cancel() to reject on branches Failed to execute 'tee' on 'ReadableStream': tee not yet implemented
+FAIL ReadableStream teeing: erroring a teed stream should properly handle canceled branches Failed to execute 'tee' on 'ReadableStream': tee not yet implemented
+FAIL ReadableStream teeing: erroring a teed stream should error both branches Failed to execute 'tee' on 'ReadableStream': tee not yet implemented
+FAIL ReadableStream teeing: closing the original should immediately close the branches Failed to execute 'tee' on 'ReadableStream': tee not yet implemented
+FAIL ReadableStream teeing: erroring the original should immediately error the branches Failed to execute 'tee' on 'ReadableStream': tee not yet implemented
+FAIL ReadableStreamTee should not use a modified ReadableStream constructor from the global object Failed to execute 'tee' on 'ReadableStream': tee not yet implemented
+Harness: the test ran to completion.
+
