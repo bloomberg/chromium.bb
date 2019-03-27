@@ -184,7 +184,7 @@ CSSVariableReferenceValue* CSSVariableParser::ParseRegisteredPropertyValue(
     return nullptr;  // Invalid or a css-wide keyword
   if (require_var_reference && !has_references)
     return nullptr;
-  return CSSVariableReferenceValue::Create(
+  return MakeGarbageCollected<CSSVariableReferenceValue>(
       CSSVariableData::Create(range, is_animation_tainted, has_references,
                               context.BaseURL(), context.Charset()),
       context);

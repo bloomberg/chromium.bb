@@ -130,7 +130,8 @@ const CSSValue* CSSPositionValue::ToCSSValue() const {
   const CSSValue* y = y_->ToCSSValue();
   if (!x || !y)
     return nullptr;
-  return CSSValuePair::Create(x, y, CSSValuePair::kKeepIdenticalValues);
+  return MakeGarbageCollected<CSSValuePair>(x, y,
+                                            CSSValuePair::kKeepIdenticalValues);
 }
 
 }  // namespace blink

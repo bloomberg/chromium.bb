@@ -915,8 +915,8 @@ static void PositionFromThreeOrFourValues(CSSValue** values,
 
     CSSValue* result = nullptr;
     if (values[i + 1] && !values[i + 1]->IsIdentifierValue()) {
-      result = CSSValuePair::Create(current_value, values[++i],
-                                    CSSValuePair::kKeepIdenticalValues);
+      result = MakeGarbageCollected<CSSValuePair>(
+          current_value, values[++i], CSSValuePair::kKeepIdenticalValues);
     } else {
       result = current_value;
     }
@@ -1030,9 +1030,10 @@ CSSValuePair* ConsumePosition(CSSParserTokenRange& range,
   CSSValue* result_x = nullptr;
   CSSValue* result_y = nullptr;
   if (ConsumePosition(range, context, unitless, three_value_position, result_x,
-                      result_y))
-    return CSSValuePair::Create(result_x, result_y,
-                                CSSValuePair::kKeepIdenticalValues);
+                      result_y)) {
+    return MakeGarbageCollected<CSSValuePair>(
+        result_x, result_y, CSSValuePair::kKeepIdenticalValues);
+  }
   return nullptr;
 }
 

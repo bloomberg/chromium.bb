@@ -38,8 +38,8 @@ const CSSValue* JustifyItems::ParseSingleValue(
     range = range_copy;
     if (position_keyword) {
       context.Count(WebFeature::kCSSLegacyAlignment);
-      return CSSValuePair::Create(legacy, position_keyword,
-                                  CSSValuePair::kDropIdenticalValues);
+      return MakeGarbageCollected<CSSValuePair>(
+          legacy, position_keyword, CSSValuePair::kDropIdenticalValues);
     }
     return legacy;
   }

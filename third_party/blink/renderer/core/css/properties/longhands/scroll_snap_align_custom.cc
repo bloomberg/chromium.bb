@@ -29,8 +29,8 @@ const CSSValue* ScrollSnapAlign::ParseSingleValue(
       CSSValueID::kCenter>(range);
   if (!inline_value)
     return block_value;
-  CSSValuePair* pair = CSSValuePair::Create(block_value, inline_value,
-                                            CSSValuePair::kDropIdenticalValues);
+  auto* pair = MakeGarbageCollected<CSSValuePair>(
+      block_value, inline_value, CSSValuePair::kDropIdenticalValues);
   return pair;
 }
 

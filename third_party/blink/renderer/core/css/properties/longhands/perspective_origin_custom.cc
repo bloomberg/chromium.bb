@@ -40,7 +40,7 @@ const CSSValue* PerspectiveOrigin::CSSValueFromComputedStyleInternal(
     if (layout_object->IsBox())
       box = ToLayoutBox(layout_object)->BorderBoxRect();
 
-    return CSSValuePair::Create(
+    return MakeGarbageCollected<CSSValuePair>(
         ZoomAdjustedPixelValue(
             MinimumValueForLength(style.PerspectiveOriginX(), box.Width()),
             style),
@@ -49,7 +49,7 @@ const CSSValue* PerspectiveOrigin::CSSValueFromComputedStyleInternal(
             style),
         CSSValuePair::kKeepIdenticalValues);
   } else {
-    return CSSValuePair::Create(
+    return MakeGarbageCollected<CSSValuePair>(
         ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
             style.PerspectiveOriginX(), style),
         ComputedStyleUtils::ZoomAdjustedPixelValueForLength(

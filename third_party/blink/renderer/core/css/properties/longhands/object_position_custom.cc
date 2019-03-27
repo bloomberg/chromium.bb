@@ -28,7 +28,7 @@ const CSSValue* ObjectPosition::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node* styled_node,
     bool allow_visited_style) const {
-  return CSSValuePair::Create(
+  return MakeGarbageCollected<CSSValuePair>(
       ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
           style.ObjectPosition().X(), style),
       ComputedStyleUtils::ZoomAdjustedPixelValueForLength(

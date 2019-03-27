@@ -31,26 +31,30 @@ bool BorderRadius::ParseShorthand(
 
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kBorderTopLeftRadius, CSSPropertyID::kBorderRadius,
-      *CSSValuePair::Create(horizontal_radii[0], vertical_radii[0],
-                            CSSValuePair::kDropIdenticalValues),
+      *MakeGarbageCollected<CSSValuePair>(horizontal_radii[0],
+                                          vertical_radii[0],
+                                          CSSValuePair::kDropIdenticalValues),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kBorderTopRightRadius, CSSPropertyID::kBorderRadius,
-      *CSSValuePair::Create(horizontal_radii[1], vertical_radii[1],
-                            CSSValuePair::kDropIdenticalValues),
+      *MakeGarbageCollected<CSSValuePair>(horizontal_radii[1],
+                                          vertical_radii[1],
+                                          CSSValuePair::kDropIdenticalValues),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kBorderBottomRightRadius, CSSPropertyID::kBorderRadius,
-      *CSSValuePair::Create(horizontal_radii[2], vertical_radii[2],
-                            CSSValuePair::kDropIdenticalValues),
+      *MakeGarbageCollected<CSSValuePair>(horizontal_radii[2],
+                                          vertical_radii[2],
+                                          CSSValuePair::kDropIdenticalValues),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kBorderBottomLeftRadius, CSSPropertyID::kBorderRadius,
-      *CSSValuePair::Create(horizontal_radii[3], vertical_radii[3],
-                            CSSValuePair::kDropIdenticalValues),
+      *MakeGarbageCollected<CSSValuePair>(horizontal_radii[3],
+                                          vertical_radii[3],
+                                          CSSValuePair::kDropIdenticalValues),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;

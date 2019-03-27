@@ -32,13 +32,6 @@ class CORE_EXPORT CSSValuePair : public CSSValue {
  public:
   enum IdenticalValuesPolicy { kDropIdenticalValues, kKeepIdenticalValues };
 
-  static CSSValuePair* Create(const CSSValue* first,
-                              const CSSValue* second,
-                              IdenticalValuesPolicy identical_values_policy) {
-    return MakeGarbageCollected<CSSValuePair>(first, second,
-                                              identical_values_policy);
-  }
-
   CSSValuePair(const CSSValue* first,
                const CSSValue* second,
                IdenticalValuesPolicy identical_values_policy)

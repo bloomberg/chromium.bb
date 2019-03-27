@@ -112,8 +112,9 @@ static CSSValuePair* BuildSerializablePositionOffset(CSSValue* offset,
     side = default_side;
   }
 
-  return CSSValuePair::Create(CSSIdentifierValue::Create(side), amount,
-                              CSSValuePair::kKeepIdenticalValues);
+  return MakeGarbageCollected<CSSValuePair>(CSSIdentifierValue::Create(side),
+                                            amount,
+                                            CSSValuePair::kKeepIdenticalValues);
 }
 
 String CSSBasicShapeCircleValue::CustomCSSText() const {

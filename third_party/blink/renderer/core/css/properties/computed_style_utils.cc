@@ -53,7 +53,7 @@ CSSValue* ComputedStyleUtils::ValueForPosition(const LengthPoint& position,
   if (position.X().IsAuto())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
 
-  return CSSValuePair::Create(
+  return MakeGarbageCollected<CSSValuePair>(
       ZoomAdjustedPixelValueForLength(position.X(), style),
       ZoomAdjustedPixelValueForLength(position.Y(), style),
       CSSValuePair::kKeepIdenticalValues);
@@ -431,8 +431,8 @@ CSSValue* ComputedStyleUtils::ValueForNinePieceImageRepeat(
     vertical_repeat =
         CSSIdentifierValue::Create(ValueForRepeatRule(image.VerticalRule()));
   }
-  return CSSValuePair::Create(horizontal_repeat, vertical_repeat,
-                              CSSValuePair::kDropIdenticalValues);
+  return MakeGarbageCollected<CSSValuePair>(horizontal_repeat, vertical_repeat,
+                                            CSSValuePair::kDropIdenticalValues);
 }
 
 CSSValue* ComputedStyleUtils::ValueForNinePieceImage(
@@ -643,15 +643,15 @@ CSSValueList* ComputedStyleUtils::ValueForItemPositionWithOverflowAlignment(
   if (data.PositionType() == ItemPositionType::kLegacy)
     result->Append(*CSSIdentifierValue::Create(CSSValueID::kLegacy));
   if (data.GetPosition() == ItemPosition::kBaseline) {
-    result->Append(
-        *CSSValuePair::Create(CSSIdentifierValue::Create(CSSValueID::kBaseline),
-                              CSSIdentifierValue::Create(CSSValueID::kBaseline),
-                              CSSValuePair::kDropIdenticalValues));
+    result->Append(*MakeGarbageCollected<CSSValuePair>(
+        CSSIdentifierValue::Create(CSSValueID::kBaseline),
+        CSSIdentifierValue::Create(CSSValueID::kBaseline),
+        CSSValuePair::kDropIdenticalValues));
   } else if (data.GetPosition() == ItemPosition::kLastBaseline) {
-    result->Append(
-        *CSSValuePair::Create(CSSIdentifierValue::Create(CSSValueID::kLast),
-                              CSSIdentifierValue::Create(CSSValueID::kBaseline),
-                              CSSValuePair::kDropIdenticalValues));
+    result->Append(*MakeGarbageCollected<CSSValuePair>(
+        CSSIdentifierValue::Create(CSSValueID::kLast),
+        CSSIdentifierValue::Create(CSSValueID::kBaseline),
+        CSSValuePair::kDropIdenticalValues));
   } else {
     if (data.GetPosition() >= ItemPosition::kCenter &&
         data.Overflow() != OverflowAlignment::kDefault)
@@ -682,7 +682,7 @@ ComputedStyleUtils::ValueForContentPositionAndDistributionWithOverflowAlignment(
       }
       break;
     case ContentPosition::kLastBaseline:
-      result->Append(*CSSValuePair::Create(
+      result->Append(*MakeGarbageCollected<CSSValuePair>(
           CSSIdentifierValue::Create(CSSValueID::kLast),
           CSSIdentifierValue::Create(CSSValueID::kBaseline),
           CSSValuePair::kDropIdenticalValues));
@@ -1507,7 +1507,7 @@ CSSValue* ComputedStyleUtils::CreateTimingFunctionValue(
         }
         return CSSIdentifierValue::Create(value_id);
       }
-      return CSSCubicBezierTimingFunctionValue::Create(
+      return MakeGarbageCollected<CSSCubicBezierTimingFunctionValue>(
           bezier_timing_function->X1(), bezier_timing_function->Y1(),
           bezier_timing_function->X2(), bezier_timing_function->Y2());
     }
@@ -2066,9 +2066,10 @@ CSSValue* ComputedStyleUtils::ValueForScrollSnapType(
     const cc::ScrollSnapType& type,
     const ComputedStyle& style) {
   if (!type.is_none) {
-    return CSSValuePair::Create(CSSIdentifierValue::Create(type.axis),
-                                CSSIdentifierValue::Create(type.strictness),
-                                CSSValuePair::kDropIdenticalValues);
+    return MakeGarbageCollected<CSSValuePair>(
+        CSSIdentifierValue::Create(type.axis),
+        CSSIdentifierValue::Create(type.strictness),
+        CSSValuePair::kDropIdenticalValues);
   }
   return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
@@ -2076,7 +2077,7 @@ CSSValue* ComputedStyleUtils::ValueForScrollSnapType(
 CSSValue* ComputedStyleUtils::ValueForScrollSnapAlign(
     const cc::ScrollSnapAlign& align,
     const ComputedStyle& style) {
-  return CSSValuePair::Create(
+  return MakeGarbageCollected<CSSValuePair>(
       CSSIdentifierValue::Create(align.alignment_block),
       CSSIdentifierValue::Create(align.alignment_inline),
       CSSValuePair::kDropIdenticalValues);
@@ -2267,8 +2268,8 @@ CSSValuePair* ComputedStyleUtils::ValuesForInlineBlockShorthand(
   if (!start_value || !end_value)
     return nullptr;
 
-  CSSValuePair* pair = CSSValuePair::Create(start_value, end_value,
-                                            CSSValuePair::kDropIdenticalValues);
+  auto* pair = MakeGarbageCollected<CSSValuePair>(
+      start_value, end_value, CSSValuePair::kDropIdenticalValues);
   return pair;
 }
 
