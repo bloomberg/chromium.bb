@@ -225,15 +225,16 @@ void AccessibilityEventRecorderUia::Thread::ThreadMain() {
     }
   }
 
-  // Signal thread shutdown complete; this will wake the main thread to compile
-  // test results and compare against the expected results.
-  std::move(shutdown_complete_).Run();
-
   // Cleanup
+  uia_->RemoveAllEventHandlers();
   uia_event_handler_->CleanUp();
   uia_event_handler_.Reset();
   root_.Reset();
   uia_.Reset();
+
+  // Signal thread shutdown complete; this will wake the main thread to compile
+  // test results and compare against the expected results.
+  std::move(shutdown_complete_).Run();
 }
 
 void AccessibilityEventRecorderUia::Thread::SendShutdownSignal() {

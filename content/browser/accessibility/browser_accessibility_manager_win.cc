@@ -20,6 +20,7 @@
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
+#include "ui/accessibility/platform/ax_platform_node_delegate_utils_win.h"
 #include "ui/base/win/atl_module.h"
 
 namespace content {
@@ -187,6 +188,9 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
         FireWinAccessibilityEvent(IA2_EVENT_TEXT_CARET_MOVED, focus_object);
       break;
     }
+    case ui::AXEventGenerator::Event::ENABLED_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_IsEnabledPropertyId, node);
+      break;
     case ui::AXEventGenerator::Event::FLOW_TO_CHANGED:
       FireUiaPropertyChangedEvent(UIA_FlowsToPropertyId, node);
       break;
@@ -240,6 +244,12 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::POSITION_IN_SET_CHANGED:
       FireUiaPropertyChangedEvent(UIA_PositionInSetPropertyId, node);
       break;
+    case ui::AXEventGenerator::Event::READONLY_CHANGED:
+      if (ui::IsRangeValueSupported(node->GetData()))
+        FireUiaPropertyChangedEvent(UIA_RangeValueIsReadOnlyPropertyId, node);
+      else if (ui::IsValuePatternSupported(node))
+        FireUiaPropertyChangedEvent(UIA_ValueIsReadOnlyPropertyId, node);
+      break;
     case ui::AXEventGenerator::Event::ROLE_CHANGED:
       FireUiaPropertyChangedEvent(UIA_AriaRolePropertyId, node);
       break;
@@ -256,7 +266,25 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       FireUiaPropertyChangedEvent(UIA_SizeOfSetPropertyId, node);
       break;
     case ui::AXEventGenerator::Event::VALUE_CHANGED:
-      FireUiaPropertyChangedEvent(UIA_ValueValuePropertyId, node);
+      FireWinAccessibilityEvent(EVENT_OBJECT_VALUECHANGE, node);
+      if (ui::IsRangeValueSupported(node->GetData()))
+        FireUiaPropertyChangedEvent(UIA_RangeValueValuePropertyId, node);
+      else if (ui::IsValuePatternSupported(node))
+        FireUiaPropertyChangedEvent(UIA_ValueValuePropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::VALUE_MAX_CHANGED:
+      if (IsRangeValueSupported(node->GetData()))
+        FireUiaPropertyChangedEvent(UIA_RangeValueMaximumPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::VALUE_MIN_CHANGED:
+      if (IsRangeValueSupported(node->GetData()))
+        FireUiaPropertyChangedEvent(UIA_RangeValueMinimumPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::VALUE_STEP_CHANGED:
+      if (IsRangeValueSupported(node->GetData())) {
+        FireUiaPropertyChangedEvent(UIA_RangeValueSmallChangePropertyId, node);
+        FireUiaPropertyChangedEvent(UIA_RangeValueLargeChangePropertyId, node);
+      }
       break;
 
     case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:

@@ -578,4 +578,33 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("button-click.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       RangeValueIsReadonlyChanged) {
+  RunEventTest(FILE_PATH_LITERAL("range-value-is-readonly-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest, RangeValueMaximumChanged) {
+  RunEventTest(FILE_PATH_LITERAL("range-value-maximum-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest, RangeValueMinimumChanged) {
+  RunEventTest(FILE_PATH_LITERAL("range-value-minimum-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest, RangeValueStepChanged) {
+  RunEventTest(FILE_PATH_LITERAL("range-value-step-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest, RangeValueValueChanged) {
+  RunEventTest(FILE_PATH_LITERAL("range-value-value-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest, ValueIsReadOnlyChanged) {
+  RunEventTest(FILE_PATH_LITERAL("value-is-readonly-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest, ValueValueChanged) {
+  RunEventTest(FILE_PATH_LITERAL("value-value-changed.html"));
+}
+
 }  // namespace content

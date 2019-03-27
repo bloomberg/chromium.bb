@@ -1243,7 +1243,13 @@ void AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout(
     MaybeNewRelationTarget(element, Get(element));
   } else if (attr_name == kTabindexAttr) {
     FocusableChangedWithCleanLayout(element);
-  } else if (attr_name == kDisabledAttr) {
+  } else if (attr_name == kDisabledAttr || attr_name == kReadonlyAttr) {
+    MarkElementDirty(element, false);
+  } else if (attr_name == kValueAttr) {
+    HandleValueChanged(element);
+  } else if (attr_name == kMinAttr || attr_name == kMaxAttr) {
+    MarkElementDirty(element, false);
+  } else if (attr_name == kStepAttr) {
     MarkElementDirty(element, false);
   }
 
@@ -1255,7 +1261,7 @@ void AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout(
     HandleActiveDescendantChangedWithCleanLayout(element);
   } else if (attr_name == kAriaValuenowAttr ||
              attr_name == kAriaValuetextAttr) {
-    PostNotification(element, ax::mojom::Event::kValueChanged);
+    HandleValueChanged(element);
   } else if (attr_name == kAriaLabelAttr || attr_name == kAriaLabeledbyAttr ||
              attr_name == kAriaLabelledbyAttr) {
     TextChangedWithCleanLayout(element);

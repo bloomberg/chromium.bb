@@ -264,9 +264,22 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
     case ax::mojom::IntAttribute::kPosInSet:
       AddEvent(node, Event::POSITION_IN_SET_CHANGED);
       break;
-    case ax::mojom::IntAttribute::kRestriction:
-      AddEvent(node, Event::STATE_CHANGED);
+    case ax::mojom::IntAttribute::kRestriction: {
+      bool was_enabled;
+      bool was_readonly;
+      GetRestrictionStates(static_cast<ax::mojom::Restriction>(old_value),
+                           &was_enabled, &was_readonly);
+      bool is_enabled;
+      bool is_readonly;
+      GetRestrictionStates(static_cast<ax::mojom::Restriction>(new_value),
+                           &is_enabled, &is_readonly);
+
+      if (was_enabled != is_enabled)
+        AddEvent(node, Event::ENABLED_CHANGED);
+      if (was_readonly != is_readonly)
+        AddEvent(node, Event::READONLY_CHANGED);
       break;
+    }
     case ax::mojom::IntAttribute::kScrollX:
     case ax::mojom::IntAttribute::kScrollY:
       AddEvent(node, Event::SCROLL_POSITION_CHANGED);
@@ -291,10 +304,23 @@ void AXEventGenerator::OnFloatAttributeChanged(AXTree* tree,
                                                float new_value) {
   DCHECK_EQ(tree_, tree);
 
-  if (attr == ax::mojom::FloatAttribute::kValueForRange)
-    AddEvent(node, Event::VALUE_CHANGED);
-  else
-    AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
+  switch (attr) {
+    case ax::mojom::FloatAttribute::kMaxValueForRange:
+      AddEvent(node, Event::VALUE_MAX_CHANGED);
+      break;
+    case ax::mojom::FloatAttribute::kMinValueForRange:
+      AddEvent(node, Event::VALUE_MIN_CHANGED);
+      break;
+    case ax::mojom::FloatAttribute::kStepValueForRange:
+      AddEvent(node, Event::VALUE_STEP_CHANGED);
+      break;
+    case ax::mojom::FloatAttribute::kValueForRange:
+      AddEvent(node, Event::VALUE_CHANGED);
+      break;
+    default:
+      AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
+      break;
+  }
 }
 
 void AXEventGenerator::OnBoolAttributeChanged(AXTree* tree,
@@ -513,6 +539,26 @@ bool AXEventGenerator::ShouldFireLoadEvents(AXNode* node) {
   const AXNodeData& data = node->data();
   return data.relative_bounds.bounds.width() ||
          data.relative_bounds.bounds.height();
+}
+
+// static
+void AXEventGenerator::GetRestrictionStates(ax::mojom::Restriction restriction,
+                                            bool* is_enabled,
+                                            bool* is_readonly) {
+  switch (restriction) {
+    case ax::mojom::Restriction::kDisabled:
+      *is_enabled = false;
+      *is_readonly = true;
+      break;
+    case ax::mojom::Restriction::kReadOnly:
+      *is_enabled = true;
+      *is_readonly = true;
+      break;
+    case ax::mojom::Restriction::kNone:
+      *is_enabled = true;
+      *is_readonly = false;
+      break;
+  }
 }
 
 }  // namespace ui
