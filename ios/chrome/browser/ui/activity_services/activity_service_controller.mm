@@ -260,30 +260,28 @@ NSString* const kActivityServicesSnackbarCategory =
                                       dispatcher:dispatcher];
     [applicationActivities addObject:readingListActivity];
 
-    if (IsUIRefreshPhase1Enabled()) {
-      if (bookmarkModel) {
-        BOOL bookmarked = bookmarkModel->loaded() &&
-                          bookmarkModel->IsBookmarked(data.visibleURL);
-        BookmarkActivity* bookmarkActivity =
-            [[BookmarkActivity alloc] initWithURL:data.visibleURL
-                                       bookmarked:bookmarked
-                                       dispatcher:dispatcher];
-        [applicationActivities addObject:bookmarkActivity];
-      }
+    if (bookmarkModel) {
+      BOOL bookmarked = bookmarkModel->loaded() &&
+                        bookmarkModel->IsBookmarked(data.visibleURL);
+      BookmarkActivity* bookmarkActivity =
+          [[BookmarkActivity alloc] initWithURL:data.visibleURL
+                                     bookmarked:bookmarked
+                                     dispatcher:dispatcher];
+      [applicationActivities addObject:bookmarkActivity];
+    }
 
-      if (data.isPageSearchable) {
-        FindInPageActivity* findInPageActivity =
-            [[FindInPageActivity alloc] initWithDispatcher:dispatcher];
-        [applicationActivities addObject:findInPageActivity];
-      }
+    if (data.isPageSearchable) {
+      FindInPageActivity* findInPageActivity =
+          [[FindInPageActivity alloc] initWithDispatcher:dispatcher];
+      [applicationActivities addObject:findInPageActivity];
+    }
 
-      if (data.userAgent != web::UserAgentType::NONE) {
-        RequestDesktopOrMobileSiteActivity* requestActivity =
-            [[RequestDesktopOrMobileSiteActivity alloc]
-                initWithDispatcher:dispatcher
-                         userAgent:data.userAgent];
-        [applicationActivities addObject:requestActivity];
-      }
+    if (data.userAgent != web::UserAgentType::NONE) {
+      RequestDesktopOrMobileSiteActivity* requestActivity =
+          [[RequestDesktopOrMobileSiteActivity alloc]
+              initWithDispatcher:dispatcher
+                       userAgent:data.userAgent];
+      [applicationActivities addObject:requestActivity];
     }
   }
   if (data.isPagePrintable) {
