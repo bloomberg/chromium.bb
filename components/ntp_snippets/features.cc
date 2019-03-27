@@ -24,7 +24,6 @@ const base::Feature kRemoteSuggestionsBackendFeature{
 const base::Feature* const kAllFeatures[] = {
     &kArticleSuggestionsFeature,
     &kBreakingNewsPushFeature,
-    &kCategoryOrder,
     &kCategoryRanker,
     &kContentSuggestionsDebugLog,
     &kKeepPrefetchedContentSuggestions,
@@ -86,39 +85,6 @@ std::unique_ptr<CategoryRanker> BuildSelectedCategoryRanker(
       return std::make_unique<ClickBasedCategoryRanker>(pref_service, clock);
   }
   return nullptr;
-}
-
-const base::Feature kCategoryOrder{"ContentSuggestionsCategoryOrder",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
-
-const char kCategoryOrderParameter[] = "category_order";
-const char kCategoryOrderGeneral[] = "general";
-const char kCategoryOrderEmergingMarketsOriented[] =
-    "emerging_markets_oriented";
-
-CategoryOrderChoice GetSelectedCategoryOrder() {
-  if (!base::FeatureList::IsEnabled(kCategoryOrder)) {
-    return CategoryOrderChoice::GENERAL;
-  }
-
-  std::string category_order_value =
-      variations::GetVariationParamValueByFeature(kCategoryOrder,
-                                                  kCategoryOrderParameter);
-
-  if (category_order_value.empty()) {
-    // Enabled with no parameters.
-    return CategoryOrderChoice::EMERGING_MARKETS_ORIENTED;
-  }
-  if (category_order_value == kCategoryOrderGeneral) {
-    return CategoryOrderChoice::GENERAL;
-  }
-  if (category_order_value == kCategoryOrderEmergingMarketsOriented) {
-    return CategoryOrderChoice::EMERGING_MARKETS_ORIENTED;
-  }
-
-  LOG(DFATAL) << "The " << kCategoryOrderParameter << " parameter value is '"
-              << category_order_value << "'";
-  return CategoryOrderChoice::GENERAL;
 }
 
 const base::Feature kNotificationsFeature = {"ContentSuggestionsNotifications",

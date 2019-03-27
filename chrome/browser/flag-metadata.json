@@ -386,11 +386,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "content-suggestions-category-order",
-    "owners": [ "fgorski" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "content-suggestions-category-ranker",
     "owners": [ "fgorski" ],
     "expiry_milestone": 76

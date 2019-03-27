@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/feature_list.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
@@ -62,22 +63,6 @@ std::unique_ptr<CategoryRanker> BuildSelectedCategoryRanker(
     PrefService* pref_service,
     base::Clock* clock,
     bool is_chrome_home_enabled);
-
-// Feature to choose a default category order.
-extern const base::Feature kCategoryOrder;
-
-// Parameter and its values for the kCategoryOrder feature flag.
-extern const char kCategoryOrderParameter[];
-extern const char kCategoryOrderGeneral[];
-extern const char kCategoryOrderEmergingMarketsOriented[];
-
-enum class CategoryOrderChoice {
-  GENERAL,
-  EMERGING_MARKETS_ORIENTED,
-};
-
-// Returns which category order to use according to kCategoryOrder feature.
-CategoryOrderChoice GetSelectedCategoryOrder();
 
 // Enables and configures notifications for content suggestions on Android.
 extern const base::Feature kNotificationsFeature;
