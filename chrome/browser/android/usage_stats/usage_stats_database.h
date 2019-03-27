@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/leveldb_proto/public/proto_database.h"
 
 class Profile;
@@ -62,18 +63,21 @@ class UsageStatsDatabase {
 
   void GetAllEvents(EventsCallback callback);
 
-  // Get all events in range between |start| (inclusive) and |end| (exclusive),
-  // where |start| and |end| are represented by milliseconds since Unix epoch.
-  void QueryEventsInRange(int64_t start, int64_t end, EventsCallback callback);
+  // Get all events in range between |startTime| (inclusive) and |endTime|
+  // (exclusive) at second-level granularity.
+  void QueryEventsInRange(base::Time startTime,
+                          base::Time endTime,
+                          EventsCallback callback);
 
   void AddEvents(std::vector<WebsiteEvent> events, StatusCallback callback);
 
   void DeleteAllEvents(StatusCallback callback);
 
-  // Delete all events in range between |start| (inclusive) and |end|
-  // (exclusive), where |start| and |end| are represented by milliseconds since
-  // Unix epoch.
-  void DeleteEventsInRange(int64_t start, int64_t end, StatusCallback callback);
+  // Delete all events in range between |startTime| (inclusive) and
+  // |endTime| (exclusive) at second-level granularity.
+  void DeleteEventsInRange(base::Time startTime,
+                           base::Time endTime,
+                           StatusCallback callback);
 
   void DeleteEventsWithMatchingDomains(base::flat_set<std::string> domains,
                                        StatusCallback callback);

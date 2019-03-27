@@ -75,6 +75,38 @@ public class EventTracker {
         return writePromise;
     }
 
+    /** Remove every item in the list of events. */
+    public Promise<Void> clearAll() {
+        final Promise<Void> writePromise = new Promise<>();
+        mRootPromise.then((result) -> {
+            mBridge.deleteAllEvents((didSucceed) -> {
+                if (didSucceed) {
+                    result.clear();
+                    writePromise.fulfill(null);
+                } else {
+                    writePromise.reject();
+                }
+            });
+        }, (e) -> {});
+        return writePromise;
+    }
+
+    /** Removes items in the list in the half-open range [startTimeMs, endTimeMs). */
+    public Promise<Void> clearRange(long startTimeMs, long endTimeMs) {
+        final Promise<Void> writePromise = new Promise<>();
+        mRootPromise.then((result) -> {
+            mBridge.deleteEventsInRange(startTimeMs, endTimeMs, (didSucceed) -> {
+                if (didSucceed) {
+                    sublistFromTimeRange(startTimeMs, endTimeMs, result).clear();
+                    writePromise.fulfill(null);
+                } else {
+                    writePromise.reject();
+                }
+            });
+        }, (e) -> {});
+        return writePromise;
+    }
+
     private WebsiteEventProtos.WebsiteEvent getProtoEvent(WebsiteEvent event) {
         return WebsiteEventProtos.WebsiteEvent.newBuilder()
                 .setFqdn(event.getFqdn())

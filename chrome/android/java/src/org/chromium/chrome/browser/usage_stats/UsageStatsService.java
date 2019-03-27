@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.usage_stats;
 
 import android.app.Activity;
 
+import org.chromium.base.Log;
 import org.chromium.base.Promise;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -23,6 +24,8 @@ import java.util.List;
  * UsageStatsService must be made on the UI thread.
  */
 public class UsageStatsService {
+    private static final String TAG = "UsageStatsService";
+
     private static UsageStatsService sInstance;
 
     private EventTracker mEventTracker;
@@ -45,7 +48,7 @@ public class UsageStatsService {
     @VisibleForTesting
     UsageStatsService() {
         Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
-        mBridge = new UsageStatsBridge(profile);
+        mBridge = new UsageStatsBridge(profile, this);
         mEventTracker = new EventTracker(mBridge);
         mSuspensionTracker = new SuspensionTracker(mBridge);
         mTokenTracker = new TokenTracker(mBridge);
@@ -128,6 +131,32 @@ public class UsageStatsService {
     public Promise<List<String>> getAllSuspendedWebsitesAsync() {
         ThreadUtils.assertOnUiThread();
         return mSuspensionTracker.getAllSuspendedWebsites();
+    }
+
+    public void onAllHistoryDeleted() {
+        ThreadUtils.assertOnUiThread();
+        mClient.notifyAllHistoryCleared();
+        mEventTracker.clearAll().except((exception) -> {
+            // Retry once; if the subsequent attempt fails, log the failure and move on.
+            mEventTracker.clearAll().except((exceptionInner) -> {
+                Log.e(TAG, "Failed to clear all events for history deletion");
+            });
+        });
+    }
+
+    public void onHistoryDeletedInRange(long startTimeMs, long endTimeMs) {
+        ThreadUtils.assertOnUiThread();
+        // endTimeMs could be Long.MAX_VALUE, which doesn't play well when converting into a
+        // Timestamp proto. It doesn't make any sense to delete into the future, so we can
+        // reasonably cap endTimeMs at now.
+        long effectiveEndTimeMs = Math.min(endTimeMs, System.currentTimeMillis());
+        mClient.notifyHistoryDeletion(startTimeMs, effectiveEndTimeMs);
+        mEventTracker.clearRange(startTimeMs, effectiveEndTimeMs).except((exception) -> {
+            // Retry once; if the subsequent attempt fails, log the failure and move on.
+            mEventTracker.clearRange(startTimeMs, endTimeMs).except((exceptionInner) -> {
+                Log.e(TAG, "Failed to clear range of events for history deletion");
+            });
+        });
     }
 
     // The below methods are dummies that are only being retained to avoid breaking the downstream
