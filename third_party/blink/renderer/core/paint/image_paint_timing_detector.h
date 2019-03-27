@@ -66,6 +66,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
  public:
   ImagePaintTimingDetector(LocalFrameView*);
   void RecordImage(const LayoutObject&,
+                   Image*,
                    const PropertyTreeState& current_paint_chunk_properties);
   static bool IsBackgroundImageContentful(const LayoutObject&, const Image&);
   static bool HasBackgroundImage(const LayoutObject& object);

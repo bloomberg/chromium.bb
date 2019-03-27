@@ -41,6 +41,7 @@ class CORE_EXPORT PaintTimingDetector
       const PropertyTreeState& current_paint_chunk_properties);
   static void NotifyImagePaint(
       const LayoutObject& object,
+      Image* image,
       const PropertyTreeState& current_paint_chunk_properties);
 
   static void NotifyTextPaint(const LayoutObject& object,

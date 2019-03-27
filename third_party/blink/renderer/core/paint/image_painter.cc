@@ -250,7 +250,7 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
 
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
     PaintTimingDetector::NotifyImagePaint(
-        layout_image_,
+        layout_image_, image.get(),
         context.GetPaintController().CurrentPaintChunkProperties());
   }
 }

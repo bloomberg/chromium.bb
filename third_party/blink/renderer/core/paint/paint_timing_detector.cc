@@ -57,19 +57,20 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
     return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   detector.GetImagePaintTimingDetector().RecordImage(
-      *object, current_paint_chunk_properties);
+      *object, image, current_paint_chunk_properties);
 }
 
 // static
 void PaintTimingDetector::NotifyImagePaint(
     const LayoutObject& object,
+    Image* image,
     const PropertyTreeState& current_paint_chunk_properties) {
   LocalFrameView* frame_view = object.GetFrameView();
   if (!frame_view)
     return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   detector.GetImagePaintTimingDetector().RecordImage(
-      object, current_paint_chunk_properties);
+      object, image, current_paint_chunk_properties);
 }
 
 // static
