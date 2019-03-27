@@ -351,7 +351,6 @@ crbug.com/931486 paint/invalidation/invalidation-on-foreground-graphics-layer.ht
 # different results.
 Bug(none) paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Failure ]
 
-Bug(none) fast/pagination/multicol.html [ Crash ]
 Bug(none) paint/clipath/change-mask-clip-path-multicol-crash.html [ Crash ]
 Bug(none) paint/pagination/composited-paginated-outlined-box.html [ Failure ]
 

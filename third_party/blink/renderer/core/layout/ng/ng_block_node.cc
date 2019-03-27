@@ -97,12 +97,10 @@ inline void DetermineAlgorithmAndRun(
     // Otherwise writing data back into the legacy tree will fail. Look for
     // the flow thread.
   } else if (GetFlowThread(box)) {
-    if (style.IsOverflowPaged())
-      CreateAlgorithmAndRun<NGPageLayoutAlgorithm>(params, callback);
-    else if (style.SpecifiesColumns())
+    if (style.SpecifiesColumns())
       CreateAlgorithmAndRun<NGColumnLayoutAlgorithm>(params, callback);
     else
-      NOTREACHED();
+      CreateAlgorithmAndRun<NGPageLayoutAlgorithm>(params, callback);
   } else {
     CreateAlgorithmAndRun<NGBlockLayoutAlgorithm>(params, callback);
   }

@@ -933,10 +933,6 @@
     // column-fill
     "balance",
 
-    // overflow
-    "-webkit-paged-x",
-    "-webkit-paged-y",
-
     // -webkit-app-region
     "drag",
     "no-drag",

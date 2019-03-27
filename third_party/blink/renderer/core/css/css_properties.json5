@@ -2402,8 +2402,7 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_template: "keyword",
       keywords: [
-        "visible", "hidden", "scroll", "auto", "overlay", "-webkit-paged-x",
-        "-webkit-paged-y"
+        "visible", "hidden", "scroll", "auto", "overlay"
       ],
       typedom_types: ["Keyword"],
       default_value: "visible",
@@ -2414,8 +2413,7 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_template: "keyword",
       keywords: [
-        "visible", "hidden", "scroll", "auto", "overlay", "-webkit-paged-x",
-        "-webkit-paged-y"
+        "visible", "hidden", "scroll", "auto", "overlay",
       ],
       typedom_types: ["Keyword"],
       default_value: "visible",

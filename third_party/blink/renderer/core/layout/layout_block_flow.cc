@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
-#include "third_party/blink/renderer/core/layout/layout_paged_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/glyph_overflow.h"
 #include "third_party/blink/renderer/core/layout/line/inline_iterator.h"
@@ -4494,48 +4493,13 @@ RootInlineBox* LayoutBlockFlow::CreateRootInlineBox() {
   return new RootInlineBox(LineLayoutItem(this));
 }
 
-bool LayoutBlockFlow::IsPagedOverflow(const ComputedStyle& style) {
-  return style.IsOverflowPaged() &&
-         GetNode() != GetDocument().ViewportDefiningElement();
-}
-
-LayoutBlockFlow::FlowThreadType LayoutBlockFlow::GetFlowThreadType(
-    const ComputedStyle& style) {
-  if (IsPagedOverflow(style))
-    return kPagedFlowThread;
-  if (style.SpecifiesColumns())
-    return kMultiColumnFlowThread;
-  return kNoFlowThread;
-}
-
-LayoutMultiColumnFlowThread* LayoutBlockFlow::CreateMultiColumnFlowThread(
-    FlowThreadType type) {
-  switch (type) {
-    case kMultiColumnFlowThread:
-      return LayoutMultiColumnFlowThread::CreateAnonymous(GetDocument(),
-                                                          StyleRef());
-    case kPagedFlowThread:
-      // Paged overflow is currently done using the multicol implementation.
-      UseCounter::Count(GetDocument(), WebFeature::kCSSOverflowPaged);
-      return LayoutPagedFlowThread::CreateAnonymous(GetDocument(), StyleRef());
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
-}
-
 void LayoutBlockFlow::CreateOrDestroyMultiColumnFlowThreadIfNeeded(
     const ComputedStyle* old_style) {
-  // Paged overflow trumps multicol in this implementation. Ideally, it should
-  // be possible to have both paged overflow and multicol on the same element,
-  // but then we need two flow threads. Anyway, this is nothing to worry about
-  // until we can actually nest multicol properly inside other fragmentation
-  // contexts.
-  FlowThreadType type = GetFlowThreadType(StyleRef());
+  bool specifies_columns = StyleRef().SpecifiesColumns();
 
   if (MultiColumnFlowThread()) {
     DCHECK(old_style);
-    if (type != GetFlowThreadType(*old_style)) {
+    if (specifies_columns != old_style->SpecifiesColumns()) {
       // If we're no longer to be multicol/paged, destroy the flow thread. Also
       // destroy it when switching between multicol and paged, since that
       // affects the column set structure (multicol containers may have
@@ -4544,9 +4508,10 @@ void LayoutBlockFlow::CreateOrDestroyMultiColumnFlowThreadIfNeeded(
       DCHECK(!MultiColumnFlowThread());
       pagination_state_changed_ = true;
     }
+    return;
   }
 
-  if (type == kNoFlowThread || MultiColumnFlowThread())
+  if (!specifies_columns)
     return;
 
   // Ruby elements manage child insertion in a special way, and would mess up
@@ -4566,7 +4531,8 @@ void LayoutBlockFlow::CreateOrDestroyMultiColumnFlowThreadIfNeeded(
   if (IsFileUploadControl() || IsTextControl() || IsListBox())
     return;
 
-  LayoutMultiColumnFlowThread* flow_thread = CreateMultiColumnFlowThread(type);
+  LayoutMultiColumnFlowThread* flow_thread =
+      LayoutMultiColumnFlowThread::CreateAnonymous(GetDocument(), StyleRef());
   AddChild(flow_thread);
   pagination_state_changed_ = true;
 

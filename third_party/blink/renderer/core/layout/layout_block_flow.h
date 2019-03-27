@@ -627,17 +627,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
         marking_behaviour == kMarkContainerChain);
   }
 
-  bool IsPagedOverflow(const ComputedStyle&);
-
-  enum FlowThreadType {
-    kNoFlowThread,
-    kMultiColumnFlowThread,
-    kPagedFlowThread
-  };
-
-  FlowThreadType GetFlowThreadType(const ComputedStyle&);
-
-  LayoutMultiColumnFlowThread* CreateMultiColumnFlowThread(FlowThreadType);
   void CreateOrDestroyMultiColumnFlowThreadIfNeeded(
       const ComputedStyle* old_style);
 

@@ -671,7 +671,6 @@ crbug.com/874695 virtual/gpu-rasterization/images/color-profile-layer-filter.htm
 crbug.com/874695 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Slow ]
 crbug.com/874695 virtual/gpu-rasterization/images/image-page-injected-script-crash.html [ Slow ]
 crbug.com/874695 virtual/gpu-rasterization/images/webp-color-profile-lossless.html [ Slow ]
-crbug.com/874695 virtual/layout_ng_experimental/fast/pagination/short-pages-tall-content.html [ Slow ]
 crbug.com/874695 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Slow ]
 crbug.com/874695 virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-click.html [ Slow ]
 crbug.com/874695 virtual/mouseevent_fractional/fast/events/touch/touch-slider-no-js-touch-listener.html [ Slow ]

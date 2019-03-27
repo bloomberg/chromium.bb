@@ -337,10 +337,6 @@ static void AdjustOverflow(ComputedStyle& style) {
   } else if (style.OverflowX() == EOverflow::kVisible &&
              style.OverflowY() != EOverflow::kVisible) {
     // If either overflow value is not visible, change to auto.
-    // FIXME: Once we implement pagination controls, overflow-x should default
-    // to hidden if overflow-y is set to -webkit-paged-x or -webkit-page-y. For
-    // now, we'll let it default to auto so we can at least scroll through the
-    // pages.
     style.SetOverflowX(EOverflow::kAuto);
   } else if (style.OverflowY() == EOverflow::kVisible &&
              style.OverflowX() != EOverflow::kVisible) {

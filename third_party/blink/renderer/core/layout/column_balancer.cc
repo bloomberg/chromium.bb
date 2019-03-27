@@ -214,7 +214,7 @@ void InitialColumnHeightFinder::ExamineBoxAfterEntering(
     return;
   LayoutMultiColumnFlowThread* inner_flow_thread =
       ToLayoutBlockFlow(box).MultiColumnFlowThread();
-  if (!inner_flow_thread || inner_flow_thread->IsLayoutPagedFlowThread())
+  if (!inner_flow_thread)
     return;
   LayoutUnit offset_in_inner_flow_thread =
       FlowThreadOffset() -
@@ -437,7 +437,7 @@ void MinimumSpaceShortageFinder::ExamineBoxAfterEntering(
     return;
   LayoutMultiColumnFlowThread* flow_thread =
       ToLayoutBlockFlow(box).MultiColumnFlowThread();
-  if (!flow_thread || flow_thread->IsLayoutPagedFlowThread())
+  if (!flow_thread)
     return;
   for (const LayoutMultiColumnSet* column_set =
            flow_thread->FirstMultiColumnSet();

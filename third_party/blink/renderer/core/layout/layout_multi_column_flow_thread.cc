@@ -43,7 +43,6 @@ LayoutMultiColumnFlowThread::LayoutMultiColumnFlowThread()
     : last_set_worked_on_(nullptr),
       column_count_(1),
       column_heights_changed_(false),
-      progression_is_inline_(true),
       is_being_evacuated_(false) {
   SetIsInsideFlowThread(true);
 }
@@ -623,11 +622,6 @@ bool LayoutMultiColumnFlowThread::RemoveSpannerPlaceholderIfNoLongerValid(
 
 LayoutMultiColumnFlowThread* LayoutMultiColumnFlowThread::EnclosingFlowThread(
     AncestorSearchConstraint constraint) const {
-  if (IsLayoutPagedFlowThread()) {
-    // Paged overflow containers should never be fragmented by enclosing
-    // fragmentation contexts. They are to be treated as unbreakable content.
-    return nullptr;
-  }
   if (!MultiColumnBlockFlow()->IsInsideFlowThread())
     return nullptr;
   return ToLayoutMultiColumnFlowThread(
@@ -662,8 +656,6 @@ void LayoutMultiColumnFlowThread::AppendNewFragmentainerGroupIfNeeded(
     // We should never create additional fragmentainer groups unless we're in a
     // nested fragmentation context.
     DCHECK(EnclosingFragmentationContext());
-
-    DCHECK(!IsLayoutPagedFlowThread());
 
     // We have run out of columns here, so we need to add at least one more row
     // to hold more columns.
