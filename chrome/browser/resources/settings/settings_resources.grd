@@ -904,12 +904,6 @@
         <structure name="IDR_SETTINGS_CUPS_PRINTERS_LIST_JS"
                    file="printing_page/cups_printers_list.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_CUPS_SET_MANUFACTURER_MODEL_BEHAVIOR_HTML"
-                   file="printing_page/cups_set_manufacturer_model_behavior.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_CUPS_SET_MANUFACTURER_MODEL_BEHAVIOR_JS"
-                   file="printing_page/cups_set_manufacturer_model_behavior.js"
-                   type="chrome_html" />
         <structure name="IDR_SETTINGS_CUPS_EDIT_PRINTER_DIALOG_HTML"
                    file="printing_page/cups_edit_printer_dialog.html"
                    type="chrome_html" />
