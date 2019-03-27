@@ -16,27 +16,19 @@ final class ContentSuggestionsViewBinder {
     public static void bind(
             PropertyModel model, SuggestionsRecyclerView view, PropertyKey propertyKey) {
         if (TouchlessNewTabPageProperties.SCROLL_POSITION_CALLBACK == propertyKey) {
-            Callback<ScrollPositionInfo> callback =
+            Callback<Integer> callback =
                     model.get(TouchlessNewTabPageProperties.SCROLL_POSITION_CALLBACK);
             view.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
                 public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                     super.onScrolled(recyclerView, dx, dy);
-
-                    LinearLayoutManager layoutManager =
-                            ((LinearLayoutManager) recyclerView.getLayoutManager());
-                    int index = layoutManager.findFirstVisibleItemPosition();
-                    int offset = layoutManager.findViewByPosition(index).getTop();
-                    callback.onResult(new ScrollPositionInfo(index, offset));
+                    callback.onResult(((LinearLayoutManager) recyclerView.getLayoutManager())
+                                              .findFirstVisibleItemPosition());
                 }
             });
         } else if (TouchlessNewTabPageProperties.INITIAL_SCROLL_POSITION == propertyKey) {
-            ScrollPositionInfo position =
-                    model.get(TouchlessNewTabPageProperties.INITIAL_SCROLL_POSITION);
-            view.getLinearLayoutManager().scrollToPositionWithOffset(
-                    position.index, position.offset);
-        } else {
-            assert false : "Unhandled property update";
+            view.getLinearLayoutManager().scrollToPosition(
+                    model.get(TouchlessNewTabPageProperties.INITIAL_SCROLL_POSITION));
         }
     }
 }
