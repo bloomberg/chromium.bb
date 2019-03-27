@@ -83,6 +83,7 @@ void WKBasedNavigationManagerImpl::OnNavigationItemsPruned(
 
 void WKBasedNavigationManagerImpl::DetachFromWebView() {
   web_view_cache_.DetachFromWebView();
+  is_restore_session_in_progress_ = false;
 }
 
 void WKBasedNavigationManagerImpl::OnNavigationItemCommitted() {
