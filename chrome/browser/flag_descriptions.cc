@@ -1761,6 +1761,11 @@ const char kShowAutofillTypePredictionsDescription[] =
     "Annotates web forms with Autofill field type predictions as placeholder "
     "text.";
 
+const char kSkiaRendererName[] = "Skia API for OOP-D compositing";
+const char kSkiaRendererDescription[] =
+    "If enabled, the display compositor will use Skia as the graphics API "
+    "instead of OpenGL ES. Requires Viz Display Compositor (OOP-D).";
+
 const char kHistoryManipulationIntervention[] =
     "History Manipulation Intervention";
 const char kHistoryManipulationInterventionDescription[] =

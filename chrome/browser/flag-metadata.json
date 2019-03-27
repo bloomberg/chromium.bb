@@ -1666,6 +1666,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-skia-renderer",
+    "owners": [ "backer"],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-sole-integration",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
