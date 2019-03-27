@@ -5931,6 +5931,25 @@ source_set("net_fuzzer_test_support") {
   allow_circular_includes_from = [ "//net/dns:fuzzer_test_support" ]
 }
 
+proto_library("disk_cache_lpm_fuzzer_proto") {
+  sources = [
+    "disk_cache/disk_cache_fuzzer.proto",
+  ]
+}
+
+fuzzer_test("disk_cache_lpm_fuzzer") {
+  sources = [
+    "disk_cache/disk_cache_fuzzer.cc",
+  ]
+  deps = [
+    ":disk_cache_lpm_fuzzer_proto",
+    ":test_support",
+    "//base",
+    "//net",
+    "//third_party/libprotobuf-mutator",
+  ]
+}
+
 fuzzer_test("net_data_job_fuzzer") {
   sources = [
     "url_request/url_request_data_job_fuzzer.cc",
