@@ -24,7 +24,12 @@ import re
 import stat
 import subprocess
 import sys
-import urllib2
+
+try:
+  import urllib2 as urllib
+except ImportError:
+  import urllib.request as urllib
+
 import zipfile
 
 
@@ -78,8 +83,8 @@ def main():
   url = 'https://chrome-infra-packages.appspot.com/dl/gn/gn/%s/+/%s' % (
       platform, args.version)
   try:
-    zipdata = urllib2.urlopen(url).read()
-  except urllib2.HTTPError as e:
+    zipdata = urllib.urlopen(url).read()
+  except urllib.HTTPError as e:
     print('Failed to download the package from %s: %d %s' % (
         url, e.code, e.reason))
     return 1
