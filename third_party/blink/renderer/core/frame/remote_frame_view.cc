@@ -142,10 +142,25 @@ bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
 
   // TODO(szager): There are some redundant IPC's here; clean them up.
   bool is_visible_for_throttling = !viewport_intersection.IsEmpty();
-  UpdateVisibility(is_visible_for_throttling);
-  UpdateRenderThrottlingStatus(
-      !is_visible_for_throttling,
-      is_attached_ && ParentFrameView()->CanThrottleRendering());
+  if (is_visible_for_throttling != scroll_visible_) {
+    // TODO(szager): There's no obvious reason why the calls to UpdateVisiblity
+    // and UpdateRenderThrottlingStatus should be scheduled via PostTask rather
+    // than running synchronously here, but doing so caused a performance
+    // regression (crbug.com/941116). Figure out why that's the case, and
+    // ideally get rid of the PostTask.
+    owner_element->GetDocument()
+        .GetTaskRunner(TaskType::kInternalIntersectionObserver)
+        ->PostTask(FROM_HERE,
+                   WTF::Bind(
+                       [](RemoteFrameView* remote_view, bool scroll_visible) {
+                         remote_view->UpdateVisibility(scroll_visible);
+                         remote_view->UpdateRenderThrottlingStatus(
+                             !scroll_visible,
+                             remote_view->is_attached_ &&
+                                 remote_view->ParentFrameView()->CanThrottleRendering());
+                       },
+                       WrapWeakPersistent(this), is_visible_for_throttling));
+  }
 
   if (viewport_intersection == last_viewport_intersection_ &&
       occlusion_state == last_occlusion_state_) {
