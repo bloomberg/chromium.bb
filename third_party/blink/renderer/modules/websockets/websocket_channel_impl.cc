@@ -264,7 +264,12 @@ bool WebSocketChannelImpl::Connect(
       execution_context_->GetTaskRunner(TaskType::kNetworking).get());
 
   if (handshake_throttle_) {
-    handshake_throttle_->ThrottleHandshake(url, this);
+    // The use of WrapWeakPersistent is safe and motivated by the fact that if
+    // the WebSocket is no longer referenced, there's no point in keeping it
+    // alive just to receive the throttling result.
+    handshake_throttle_->ThrottleHandshake(
+        url, WTF::Bind(&WebSocketChannelImpl::OnCompletion,
+                       WrapWeakPersistent(this)));
   } else {
     // Treat no throttle as success.
     throttle_passed_ = true;
@@ -736,11 +741,18 @@ void WebSocketChannelImpl::DidStartClosingHandshake(WebSocketHandle* handle) {
     client_->DidStartClosingHandshake();
 }
 
-void WebSocketChannelImpl::OnSuccess() {
+void WebSocketChannelImpl::OnCompletion(
+    const base::Optional<WebString>& console_message) {
   DCHECK(!throttle_passed_);
   DCHECK(handshake_throttle_);
-  throttle_passed_ = true;
   handshake_throttle_ = nullptr;
+
+  if (console_message) {
+    FailAsError(*console_message);
+    return;
+  }
+
+  throttle_passed_ = true;
   if (connect_info_) {
     // No flow control quota is supplied to the browser until we are ready to
     // receive messages. This fixes crbug.com/786776.
@@ -750,13 +762,6 @@ void WebSocketChannelImpl::OnSuccess() {
                         std::move(connect_info_->extensions));
     connect_info_.reset();
   }
-}
-
-void WebSocketChannelImpl::OnError(const WebString& console_message) {
-  DCHECK(!throttle_passed_);
-  DCHECK(handshake_throttle_);
-  handshake_throttle_ = nullptr;
-  FailAsError(console_message);
 }
 
 void WebSocketChannelImpl::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
