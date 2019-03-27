@@ -306,6 +306,7 @@ class Generator(generator.Generator):
       "namespace_declarations": self._NamespaceDeclarations,
       "closure_type_with_nullability": self._ClosureTypeWithNullability,
       "lite_closure_param_type": self._LiteClosureParamType,
+      "lite_closure_type": self._LiteClosureType,
       "lite_closure_type_with_nullability":
           self._LiteClosureTypeWithNullability,
       "lite_closure_field_type": self._LiteClosureFieldType,
@@ -442,8 +443,13 @@ class Generator(generator.Generator):
       name.append(named_kind.module.namespace)
     if named_kind.parent_kind:
       name.append(named_kind.parent_kind.name)
-    name.append("" + named_kind.name)
-    name = ".".join(name)
+
+    if mojom.IsEnumKind(kind) and named_kind.parent_kind:
+      name = ".".join(name)
+      name += "_" + named_kind.name
+    else:
+      name.append("" + named_kind.name)
+      name = ".".join(name)
 
     if (mojom.IsStructKind(kind) or mojom.IsUnionKind(kind) or
         mojom.IsEnumKind(kind)):
