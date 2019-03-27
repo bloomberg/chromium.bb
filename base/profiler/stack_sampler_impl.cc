@@ -86,21 +86,24 @@ void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
   DCHECK(stack_buffer);
 
   RegisterContext thread_context;
-  bool success = CopyStack(stack_buffer, profile_builder, &thread_context);
+  uintptr_t stack_top;
+  bool success =
+      CopyStack(stack_buffer, &stack_top, profile_builder, &thread_context);
   if (!success)
     return;
 
   if (test_delegate_)
     test_delegate_->OnPreStackWalk();
 
-  profile_builder->OnSampleCompleted(WalkStack(&thread_context));
+  profile_builder->OnSampleCompleted(WalkStack(&thread_context, stack_top));
 }
 
-// Suspends the thread, copies its stack and register context, and records the
-// current metadata, then resumes the thread.  Returns true on success, and
-// returns the copied state via the params. NO HEAP ALLOCATIONS within the
-// ScopedSuspendThread scope.
+// Suspends the thread, copies its stack, top address of the stack copy, and
+// register context, records the current metadata, then resumes the thread.
+// Returns true on success, and returns the copied state via the params. NO HEAP
+// ALLOCATIONS within the ScopedSuspendThread scope.
 bool StackSamplerImpl::CopyStack(StackBuffer* stack_buffer,
+                                 uintptr_t* stack_top,
                                  ProfileBuilder* profile_builder,
                                  RegisterContext* thread_context) {
   const uintptr_t top = thread_delegate_->GetStackBaseAddress();
@@ -136,6 +139,9 @@ bool StackSamplerImpl::CopyStack(StackBuffer* stack_buffer,
                                         stack_buffer->buffer());
   }
 
+  *stack_top =
+      reinterpret_cast<uintptr_t>(stack_buffer->buffer()) + (top - bottom);
+
   for (uintptr_t* reg :
        thread_delegate_->GetRegistersToRewrite(thread_context)) {
     *reg = RewritePointerIfInOriginalStack(reinterpret_cast<uintptr_t*>(bottom),
@@ -149,14 +155,16 @@ bool StackSamplerImpl::CopyStack(StackBuffer* stack_buffer,
 // Walks the stack represented by |thread_context|, recording and returning the
 // frames.
 std::vector<ProfileBuilder::Frame> StackSamplerImpl::WalkStack(
-    RegisterContext* thread_context) {
+    RegisterContext* thread_context,
+    uintptr_t stack_top) {
   std::vector<ProfileBuilder::Frame> stack;
   // Reserve enough memory for most stacks, to avoid repeated
   // allocations. Approximately 99.9% of recorded stacks are 128 frames or
   // fewer.
   stack.reserve(128);
 
-  thread_delegate_->WalkNativeFrames(thread_context, module_cache_, &stack);
+  thread_delegate_->WalkNativeFrames(thread_context, stack_top, module_cache_,
+                                     &stack);
 
   return stack;
 }
