@@ -127,12 +127,10 @@ public class SuggestionsCategoryInfo {
      */
     public void performViewAllAction(SuggestionsNavigationDelegate navigationDelegate) {
         switch (mCategory) {
-            case KnownCategories.BOOKMARKS:
-                navigationDelegate.navigateToBookmarks();
-                break;
             case KnownCategories.DOWNLOADS:
                 navigationDelegate.navigateToDownloadManager();
                 break;
+            case KnownCategories.BOOKMARKS_DEPRECATED:
             case KnownCategories.FOREIGN_TABS_DEPRECATED:
             case KnownCategories.PHYSICAL_WEB_PAGES_DEPRECATED:
             case KnownCategories.RECENT_TABS_DEPRECATED:

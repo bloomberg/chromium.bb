@@ -124,14 +124,12 @@ ConstantCategoryRanker::GetKnownCategoriesDefaultOrder() {
     case CategoryOrderChoice::GENERAL:
       categories.push_back(KnownCategories::READING_LIST);
       categories.push_back(KnownCategories::DOWNLOADS);
-      categories.push_back(KnownCategories::BOOKMARKS);
       categories.push_back(KnownCategories::ARTICLES);
       break;
     case CategoryOrderChoice::EMERGING_MARKETS_ORIENTED:
       categories.push_back(KnownCategories::ARTICLES);
       categories.push_back(KnownCategories::READING_LIST);
       categories.push_back(KnownCategories::DOWNLOADS);
-      categories.push_back(KnownCategories::BOOKMARKS);
       break;
   }
 

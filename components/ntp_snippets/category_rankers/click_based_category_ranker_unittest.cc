@@ -132,7 +132,7 @@ TEST_F(ClickBasedCategoryRankerTest, ShouldSortRemoteCategoriesByWhenAdded) {
 TEST_F(ClickBasedCategoryRankerTest, ShouldSortLocalCategoriesBeforeRemote) {
   const Category remote_category = AddUnusedRemoteCategory();
   const Category local_category =
-      Category::FromKnownCategory(KnownCategories::BOOKMARKS);
+      Category::FromKnownCategory(KnownCategories::DOWNLOADS);
   EXPECT_TRUE(CompareCategories(local_category, remote_category));
   EXPECT_FALSE(CompareCategories(remote_category, local_category));
 }
@@ -143,7 +143,7 @@ TEST_F(ClickBasedCategoryRankerTest,
   EXPECT_FALSE(CompareCategories(remote_category, remote_category));
 
   const Category local_category =
-      Category::FromKnownCategory(KnownCategories::BOOKMARKS);
+      Category::FromKnownCategory(KnownCategories::DOWNLOADS);
   EXPECT_FALSE(CompareCategories(local_category, local_category));
 }
 
@@ -586,18 +586,13 @@ TEST_F(ClickBasedCategoryRankerTest, ShouldIgnorePartialClearHistory) {
 TEST_F(ClickBasedCategoryRankerTest, ShouldPromoteCategory) {
   const Category downloads =
       Category::FromKnownCategory(KnownCategories::DOWNLOADS);
-  const Category bookmarks =
-      Category::FromKnownCategory(KnownCategories::BOOKMARKS);
   const Category articles =
       Category::FromKnownCategory(KnownCategories::ARTICLES);
-  ASSERT_TRUE(CompareCategories(downloads, bookmarks));
-  ASSERT_TRUE(CompareCategories(bookmarks, articles));
+  ASSERT_TRUE(CompareCategories(downloads, articles));
   SetPromotedCategoryVariationParam(articles.id());
   ResetRanker(base::DefaultClock::GetInstance());
   EXPECT_TRUE(CompareCategories(articles, downloads));
-  EXPECT_TRUE(CompareCategories(articles, bookmarks));
   EXPECT_FALSE(CompareCategories(downloads, articles));
-  EXPECT_FALSE(CompareCategories(bookmarks, articles));
   EXPECT_FALSE(CompareCategories(articles, articles));
 }
 
@@ -612,9 +607,6 @@ TEST_F(ClickBasedCategoryRankerTest,
       Category::FromKnownCategory(KnownCategories::DOWNLOADS)));
   EXPECT_TRUE(CompareCategories(
       Category::FromKnownCategory(KnownCategories::DOWNLOADS),
-      Category::FromKnownCategory(KnownCategories::BOOKMARKS)));
-  EXPECT_TRUE(CompareCategories(
-      Category::FromKnownCategory(KnownCategories::BOOKMARKS),
       Category::FromKnownCategory(KnownCategories::ARTICLES)));
 }
 
