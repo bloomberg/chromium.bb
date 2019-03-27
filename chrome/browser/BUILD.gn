@@ -4067,8 +4067,6 @@ jumbo_split_static_library("browser") {
 
   if (enable_extensions) {
     sources += [
-      "accessibility/accessibility_extension_api.cc",
-      "accessibility/accessibility_extension_api.h",
       "accessibility/animation_policy_prefs.cc",
       "accessibility/animation_policy_prefs.h",
       "autocomplete/keyword_extensions_delegate_impl.cc",
