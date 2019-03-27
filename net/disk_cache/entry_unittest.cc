@@ -90,6 +90,7 @@ class DiskCacheEntryTest : public DiskCacheTestWithCache {
                            int data_size,
                            int truncate_size);
   void UseAfterBackendDestruction();
+  void CloseSparseAfterBackendDestruction();
   void LastUsedTimePersists();
 };
 
@@ -4214,6 +4215,22 @@ void DiskCacheEntryTest::UseAfterBackendDestruction() {
   entry->Close();
 }
 
+void DiskCacheEntryTest::CloseSparseAfterBackendDestruction() {
+  const int kSize = 100;
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kSize);
+  CacheTestFillBuffer(buffer->data(), kSize, false);
+
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry("the first key", &entry), IsOk());
+  WriteSparseData(entry, 20000, buffer.get(), kSize);
+
+  cache_.reset();
+
+  // This call shouldn't DCHECK or crash.
+  entry->Close();
+}
+
 // Check that a newly-created entry with no third-stream writes omits the
 // third stream file.
 TEST_F(DiskCacheEntryTest, SimpleCacheOmittedThirdStream1) {
@@ -4978,6 +4995,19 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyUseAfterBackendDestruction) {
   SetMemoryOnlyMode();
   InitCache();
   UseAfterBackendDestruction();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCloseSparseAfterBackendDestruction) {
+  SetSimpleCacheMode();
+  InitCache();
+  CloseSparseAfterBackendDestruction();
+}
+
+TEST_F(DiskCacheEntryTest, MemoryOnlyCloseSparseAfterBackendDestruction) {
+  // https://crbug.com/946434
+  SetMemoryOnlyMode();
+  InitCache();
+  CloseSparseAfterBackendDestruction();
 }
 
 void DiskCacheEntryTest::LastUsedTimePersists() {
