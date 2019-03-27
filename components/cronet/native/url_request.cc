@@ -478,21 +478,25 @@ void Cronet_UrlRequestImpl::GetStatus(
                      Cronet_UrlRequestStatusListener_Status_INVALID));
 }
 
-void Cronet_UrlRequestImpl::OnUploadDataProviderError(
-    const std::string& error_message) {
-  {
-    base::AutoLock lock(lock_);
-    // If |error_| is not nullptr, that means that another network error is
-    // already reported.
-    if (error_)
-      return;
-    error_ = CreateCronet_Error(
-        0, 0, "Failure from UploadDataProvider: " + error_message);
-    error_->error_code = Cronet_Error_ERROR_CODE_ERROR_CALLBACK;
-  }
-  // Invoke Cronet_UrlRequestCallback_OnFailed on client executor.
+void Cronet_UrlRequestImpl::PostCallbackOnFailedToExecutor() {
   PostTaskToExecutor(base::BindOnce(
       &Cronet_UrlRequestImpl::InvokeCallbackOnFailed, base::Unretained(this)));
+}
+
+void Cronet_UrlRequestImpl::OnUploadDataProviderError(
+    const std::string& error_message) {
+  base::AutoLock lock(lock_);
+  // If |error_| is not nullptr, that means that another network error is
+  // already reported.
+  if (error_)
+    return;
+  error_ = CreateCronet_Error(
+      0, 0, "Failure from UploadDataProvider: " + error_message);
+  error_->error_code = Cronet_Error_ERROR_CODE_ERROR_CALLBACK;
+
+  request_->MaybeReportMetricsAndRunCallback(
+      base::BindOnce(&Cronet_UrlRequestImpl::PostCallbackOnFailedToExecutor,
+                     base::Unretained(this)));
 }
 
 void Cronet_UrlRequestImpl::PostTaskToExecutor(base::OnceClosure task) {

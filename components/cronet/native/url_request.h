@@ -82,6 +82,9 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   void InvokeCallbackOnFailed();
   void InvokeCallbackOnCanceled();
 
+  // Runs InvokeCallbackOnFailed() on the client executor.
+  void PostCallbackOnFailedToExecutor();
+
   // Invoke all members of |status_listeners_|. Should be called prior to
   // invoking a final callback. Once a final callback has been called, |this|
   // and |executor_| may be deleted and so the callbacks cannot be issued.
