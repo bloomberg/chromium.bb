@@ -1349,11 +1349,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-modal-permission-dialog-view",
-    "owners": [ "pavely" ],
-    "expiry_milestone": 75
-  },
-  {
     "name": "enable-myfiles-volume",
     "owners": [ "lucmult", "noel" ],
     "expiry_milestone": 76

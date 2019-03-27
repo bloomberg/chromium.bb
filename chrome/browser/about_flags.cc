@@ -1650,12 +1650,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSearchReadyOmniboxDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kSearchReadyOmniboxFeature)},
 #endif  // OS_ANDROID
-#if defined(OS_ANDROID)
-    {"enable-modal-permission-dialog-view",
-     flag_descriptions::kModalPermissionDialogViewName,
-     flag_descriptions::kModalPermissionDialogViewDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kModalPermissionDialogView)},
-#endif  // OS_ANDROID
     {"in-product-help-demo-mode-choice",
      flag_descriptions::kInProductHelpDemoModeChoiceName,
      flag_descriptions::kInProductHelpDemoModeChoiceDescription, kOsAll,

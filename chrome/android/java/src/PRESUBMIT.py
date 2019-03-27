@@ -73,8 +73,6 @@ def _CheckAlertDialogBuilder(input_api, output_api):
           'SignOutDialogFragment.java',
       'chrome/android/java/src/org/chromium/chrome/browser/'
           'RepostFormWarningDialog.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/permissions/'
-          'PermissionDialogView.java',
       'chrome/android/java/src/org/chromium/chrome/browser/sync/ui/'
           'PassphraseDialogFragment.java',
       'chrome/android/java/src/org/chromium/chrome/browser/webapps/'
@@ -158,7 +156,7 @@ def _CheckAlertDialogBuilder(input_api, output_api):
           'ClearDataDialogActivity.java',
   )
   error_msg = '''
-  AlertDialoga.Builder Check failed:
+  AlertDialog.Builder Check failed:
   Your new code added one or more calls to the AlertDialog.Builder, listed
   below.
 
