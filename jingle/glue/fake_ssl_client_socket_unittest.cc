@@ -164,28 +164,30 @@ class FakeSSLClientSocketTest : public testing::Test {
 
     for (int i = 0; i < num_resets + 1; ++i) {
       SCOPED_TRACE(i);
-      net::TestCompletionCallback test_completion_callback;
-      int status = fake_ssl_client_socket.Connect(
-          test_completion_callback.callback());
+      net::TestCompletionCallback connect_callback;
+      int status = fake_ssl_client_socket.Connect(connect_callback.callback());
       if (mode == net::ASYNC) {
         EXPECT_FALSE(fake_ssl_client_socket.IsConnected());
       }
-      ExpectStatus(mode, net::OK, status, &test_completion_callback);
+      ExpectStatus(mode, net::OK, status, &connect_callback);
       if (fake_ssl_client_socket.IsConnected()) {
         int read_len = base::size(kReadTestData);
         int read_buf_len = 2 * read_len;
         auto read_buf = base::MakeRefCounted<net::IOBuffer>(read_buf_len);
+
+        net::TestCompletionCallback read_callback;
         int read_status = fake_ssl_client_socket.Read(
-            read_buf.get(), read_buf_len, test_completion_callback.callback());
-        ExpectStatus(mode, read_len, read_status, &test_completion_callback);
+            read_buf.get(), read_buf_len, read_callback.callback());
+        ExpectStatus(mode, read_len, read_status, &read_callback);
 
         auto write_buf =
             base::MakeRefCounted<net::StringIOBuffer>(kWriteTestData);
+        net::TestCompletionCallback write_callback;
         int write_status = fake_ssl_client_socket.Write(
             write_buf.get(), base::size(kWriteTestData),
-            test_completion_callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
+            write_callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
         ExpectStatus(mode, base::size(kWriteTestData), write_status,
-                     &test_completion_callback);
+                     &write_callback);
       } else {
         ADD_FAILURE();
       }
