@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/bind.h"
 #include "base/numerics/ranges.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -62,7 +63,7 @@ inline gfx::Point GetCursorScreenPoint() {
 // given magnifier viewport |height| is allocated at the top of the screen.
 void SetViewportHeightInWorkArea(aura::Window* window, int height) {
   DCHECK(window);
-  RootWindowController::ForWindow(window->GetRootWindow())
+  WorkAreaInsets::ForWindow(window->GetRootWindow())
       ->SetDockedMagnifierHeight(height);
 }
 

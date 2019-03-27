@@ -55,6 +55,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/work_area_insets.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
@@ -357,6 +358,7 @@ std::vector<RootWindowController*>*
 RootWindowController::~RootWindowController() {
   Shutdown();
   DCHECK(!wallpaper_widget_controller_.get());
+  work_area_insets_.reset();
   ash_host_.reset();
   mus_window_tree_host_.reset();
   // The CaptureClient needs to be around for as long as the RootWindow is
@@ -510,21 +512,6 @@ aura::Window* RootWindowController::FindEventTarget(
 
 gfx::Point RootWindowController::GetLastMouseLocationInRoot() {
   return window_tree_host_->dispatcher()->GetLastMouseLocationInRoot();
-}
-
-int RootWindowController::GetAccessibilityPanelHeight() const {
-  const AccessibilityPanelLayoutManager* layout_manager =
-      GetAccessibilityPanelLayoutManager();
-  return layout_manager ? layout_manager->GetPanelHeight() : 0;
-}
-
-int RootWindowController::GetDockedMagnifierHeight() const {
-  return docked_magnifier_height_;
-}
-
-void RootWindowController::SetDockedMagnifierHeight(int height) {
-  docked_magnifier_height_ = height;
-  Shell::Get()->NotifyAccessibilityInsetsChanged(GetRootWindow());
 }
 
 aura::Window* RootWindowController::GetContainer(int container_id) {
@@ -705,7 +692,8 @@ RootWindowController::RootWindowController(
                                  : window_tree_host),
       shelf_(std::make_unique<Shelf>()),
       lock_screen_action_background_controller_(
-          LockScreenActionBackgroundController::Create()) {
+          LockScreenActionBackgroundController::Create()),
+      work_area_insets_(std::make_unique<WorkAreaInsets>(this)) {
   DCHECK((ash_host && !window_tree_host) || (!ash_host && window_tree_host));
 
   if (!root_window_controllers_)

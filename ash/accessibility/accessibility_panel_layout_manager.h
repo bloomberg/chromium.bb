@@ -37,9 +37,6 @@ class ASH_EXPORT AccessibilityPanelLayoutManager
   AccessibilityPanelLayoutManager();
   ~AccessibilityPanelLayoutManager() override;
 
-  // Returns current height of the accessibility panel in DIPs.
-  int GetPanelHeight() const;
-
   // Controls the panel's visibility and location.
   void SetAlwaysVisible(bool always_visible);
   void SetPanelBounds(const gfx::Rect& bounds,
@@ -75,6 +72,9 @@ class ASH_EXPORT AccessibilityPanelLayoutManager
  private:
   // Updates the panel window bounds.
   void UpdateWindowBounds();
+
+  // Sets cached height of the accessibility panel.
+  void UpdateWorkAreaForPanelHeight();
 
   // The panel being managed (e.g. the ChromeVoxPanel's native aura window).
   aura::Window* panel_window_ = nullptr;

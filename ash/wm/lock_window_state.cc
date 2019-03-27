@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/public/cpp/window_animation_types.h"
-#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -17,6 +16,7 @@
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm/work_area_insets.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -190,8 +190,8 @@ gfx::Rect LockWindowState::GetWindowBounds(aura::Window* window) {
           : 0;
   gfx::Rect bounds = screen_util::GetDisplayBoundsWithShelf(window);
   bounds.Inset(0,
-               RootWindowController::ForWindow(window->GetRootWindow())
-                   ->GetAccessibilityPanelHeight(),
+               WorkAreaInsets::ForWindow(window->GetRootWindow())
+                   ->accessibility_panel_height(),
                0, keyboard_height);
   return bounds;
 }

@@ -37,6 +37,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -913,12 +914,13 @@ gfx::Rect ShelfLayoutManager::CalculateTargetBounds(
   }
 
   aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
-  const RootWindowController* root_window_controller =
-      RootWindowController::ForWindow(shelf_window->GetRootWindow());
+  const WorkAreaInsets* const work_area_insets =
+      WorkAreaInsets::ForWindow(shelf_window);
   const int accessibility_panel_height =
-      root_window_controller->GetAccessibilityPanelHeight();
+      work_area_insets->accessibility_panel_height();
   const int docked_magnifier_height =
-      root_window_controller->GetDockedMagnifierHeight();
+      work_area_insets->docked_magnifier_height();
+
   gfx::Rect available_bounds =
       screen_util::GetDisplayBoundsWithShelf(shelf_window);
   available_bounds.Inset(
