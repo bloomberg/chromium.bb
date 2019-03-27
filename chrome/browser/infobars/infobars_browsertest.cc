@@ -23,6 +23,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
+#include "chrome/browser/plugins/flash_deprecation_infobar_delegate.h"
 #include "chrome/browser/plugins/hung_plugin_infobar_delegate.h"
 #include "chrome/browser/plugins/plugin_infobar_delegates.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
@@ -230,6 +231,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       {"automation", IBD::AUTOMATION_INFOBAR_DELEGATE},
       {"bloated_renderer", IBD::BLOATED_RENDERER_INFOBAR_DELEGATE},
       {"previews_lite_page", IBD::LITE_PAGE_PREVIEWS_INFOBAR},
+      {"flash_deprecation", IBD::FLASH_DEPRECATION_INFOBAR_DELEGATE},
   };
   auto id = kIdentifiers.find(name);
   expected_identifiers_.push_back((id == kIdentifiers.end()) ? IBD::INVALID
@@ -416,6 +418,10 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       PreviewsLitePageInfoBarDelegate::Create(GetWebContents());
       break;
 
+    case IBD::FLASH_DEPRECATION_INFOBAR_DELEGATE:
+      FlashDeprecationInfoBarDelegate::Create(GetInfoBarService());
+      break;
+
     default:
       break;
   }
@@ -581,6 +587,10 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_bloated_renderer) {
 }
 
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_previews_lite_page) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_flash_deprecation) {
   ShowAndVerifyUi();
 }
 
