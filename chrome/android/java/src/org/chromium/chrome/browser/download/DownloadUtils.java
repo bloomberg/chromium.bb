@@ -605,6 +605,7 @@ public class DownloadUtils {
      * @param filename file name obtained from content disposition header
      * @return The MIME type that should be used for this data.
      */
+    @CalledByNative
     public static String remapGenericMimeType(String mimeType, String url, String filename) {
         if (TextUtils.isEmpty(mimeType)) mimeType = UNKNOWN_MIME_TYPE;
         return ChromeDownloadDelegate.remapGenericMimeType(mimeType, url, filename);

@@ -16,6 +16,7 @@ class DownloadItem;
 }
 
 class DownloadOfflineContentProvider;
+class GURL;
 
 // Native side of DownloadUtils.java.
 class DownloadUtils {
@@ -23,6 +24,9 @@ class DownloadUtils {
   static base::FilePath GetUriStringForPath(const base::FilePath& file_path);
   static int GetAutoResumptionSizeLimit();
   static void OpenDownload(download::DownloadItem* item, int open_source);
+  static std::string RemapGenericMimeType(const std::string& mime_type,
+                                          const GURL& url,
+                                          const std::string& file_name);
   static DownloadOfflineContentProvider* GetDownloadOfflineContentProvider(
       content::BrowserContext* browser_context);
 };

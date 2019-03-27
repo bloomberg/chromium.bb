@@ -18,6 +18,7 @@
 #include "content/public/browser/download_item_utils.h"
 #include "jni/DownloadUtils_jni.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
@@ -96,6 +97,18 @@ void DownloadUtils::OpenDownload(download::DownloadItem* item,
       ConvertUTF8ToJavaString(env, item->GetGuid()), is_off_the_record,
       ConvertUTF8ToJavaString(env, original_url),
       ConvertUTF8ToJavaString(env, item->GetReferrerUrl().spec()), open_source);
+}
+
+// static
+std::string DownloadUtils::RemapGenericMimeType(const std::string& mime_type,
+                                                const GURL& url,
+                                                const std::string& file_name) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  auto j_remapped_mime_type = Java_DownloadUtils_remapGenericMimeType(
+      env, ConvertUTF8ToJavaString(env, mime_type),
+      ConvertUTF8ToJavaString(env, url.spec()),
+      ConvertUTF8ToJavaString(env, file_name));
+  return ConvertJavaStringToUTF8(env, j_remapped_mime_type);
 }
 
 // static
