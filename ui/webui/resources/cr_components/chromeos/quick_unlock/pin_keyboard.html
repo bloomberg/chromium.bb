@@ -4,12 +4,12 @@
 
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
@@ -82,12 +82,14 @@
       }
 
       #backspaceButton {
-        color: var(--pin-keyboard-backspace-color, var(--google-grey-700));
+        --cr-icon-button-color: var(--pin-keyboard-backspace-color,
+            var(--google-grey-700));
+        --cr-icon-button-icon-size: 16px;
+        --cr-icon-button-size: 48px;
         left: 0;
         opacity: var(--pin-keyboard-backspace-opacity, --dark-primary-opacity);
-        padding: 12px;
         position: absolute;
-        top: 0;
+        top: -4px;
       }
 
       #backspaceButton[disabled] {
@@ -96,7 +98,6 @@
 
       #backspaceButtonContainer {
         position: relative;
-        width: var(--backspace-button-width);
       }
 
       #backspaceButtonContainer paper-ripple {
@@ -121,7 +122,7 @@
         justify-content: center;
         margin: 0 var(--pin-button-horizontal-margin);
         min-height: 0;
-        opacity: 0.87px;
+        opacity: 0.87;
         padding: 0;
         width: var(--pin-button-width);
 
@@ -279,16 +280,15 @@
             <paper-ripple class="circle" center></paper-ripple>
           </paper-button>
           <div id="backspaceButtonContainer">
-            <paper-icon-button id="backspaceButton" class="digit-button"
+            <cr-icon-button id="backspaceButton" class="digit-button"
                 disabled$="[[!hasInput_(value)]]"
-                icon="pin-keyboard:backspace"
-                on-tap="onBackspaceTap_"
+                iron-icon="pin-keyboard:backspace"
+                on-click="onBackspaceTap_"
                 on-pointerdown="onBackspacePointerDown_"
                 on-pointerout="clearAndReset_"
                 on-pointerup="onBackspacePointerUp_"
-                title="[[i18n('pinKeyboardDeleteAccessibleName')]]"
-                noink>
-            </paper-icon-button>
+                title="[[i18n('pinKeyboardDeleteAccessibleName')]]">
+            </cr-icon-button>
             <paper-ripple class="circle" center hidden="[[!hasInput_(value)]]">
             </paper-ripple>
           </div>
