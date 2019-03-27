@@ -92,10 +92,6 @@ class DownloadHandler : public download::AllDownloadItemNotifier::Observer {
   // Sets free disk space delay for testing.
   void SetFreeDiskSpaceDelayForTesting(const base::TimeDelta& delay);
 
- protected:
-  virtual download::AllDownloadItemNotifier* GetDownloadNotifier(
-      content::DownloadManager* download_manager);
-
  private:
   // AllDownloadItemNotifier::Observer overrides:
   void OnDownloadCreated(content::DownloadManager* manager,
@@ -128,10 +124,9 @@ class DownloadHandler : public download::AllDownloadItemNotifier::Observer {
 
   FileSystemInterface* file_system_;  // Owned by DriveIntegrationService.
 
-  // Observe the DownloadManager for new downloads. Lifetime of the notifier is
-  // expected to outlive |this|.
-  download::AllDownloadItemNotifier* notifier_ = nullptr;
-  download::AllDownloadItemNotifier* notifier_incognito_ = nullptr;
+  // Observe the DownloadManager for new downloads.
+  std::unique_ptr<download::AllDownloadItemNotifier> notifier_;
+  std::unique_ptr<download::AllDownloadItemNotifier> notifier_incognito_;
 
   // Temporary download location directory.
   base::FilePath drive_tmp_download_path_;

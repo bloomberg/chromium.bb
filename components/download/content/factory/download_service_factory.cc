@@ -6,7 +6,6 @@
 
 #include "base/files/file_path.h"
 #include "build/build_config.h"
-#include "components/download/content/factory/all_download_item_notifier_factory.h"
 #include "components/download/content/factory/navigation_monitor_factory.h"
 #include "components/download/content/internal/download_driver_impl.h"
 #include "components/download/internal/background_service/client_set.h"
@@ -106,8 +105,7 @@ DownloadService* BuildDownloadService(
   auto config = Configuration::CreateFromFinch();
 
   auto driver = std::make_unique<DownloadDriverImpl>(
-      content::BrowserContext::GetDownloadManager(browser_context),
-      AllDownloadItemNotifierFactory::GetForBrowserContext(browser_context));
+      content::BrowserContext::GetDownloadManager(browser_context));
 
   auto entry_db_storage_dir = storage_dir.Append(kEntryDBStorageDir);
 
