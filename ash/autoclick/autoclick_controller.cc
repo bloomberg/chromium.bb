@@ -11,8 +11,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
-#include "ash/system/accessibility/autoclick_tray.h"
-#include "ash/system/status_area_widget.h"
 #include "ash/wm/root_window_finder.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -45,17 +43,6 @@ bool IsModifierKey(const ui::KeyboardCode key_code) {
 
 base::TimeDelta CalculateStartGestureDelay(base::TimeDelta total_delay) {
   return total_delay * kStartGestureDelayRatio;
-}
-
-// TODO(katie): Check the bubble menu here instead of the tray.
-bool AutoclickTrayContainsPoint(const gfx::Point& point) {
-  for (aura::Window* window : Shell::GetAllRootWindows()) {
-    AutoclickTray* autoclick_tray =
-        Shelf::ForWindow(window)->GetStatusAreaWidget()->autoclick_tray();
-    if (autoclick_tray && autoclick_tray->ContainsPointInScreen(point))
-      return true;
-  }
-  return false;
 }
 
 }  // namespace
@@ -208,12 +195,12 @@ void AutoclickController::DoAutoclickAction() {
   // in the middle of this event being executed it doesn't change execution.
   mojom::AutoclickEventType in_progress_event_type = event_type_;
 
-  // But if the thing that would be acted upon is the tray button, do a left
-  // click instead of whatever other action type we would have done. This
+  // But if the thing that would be acted upon is an autoclick menu button, do a
+  // left click instead of whatever other action type we would have done. This
   // ensures that no matter the autoclick setting, users can always change to
   // another autoclick setting.
   if (event_type_ != mojom::AutoclickEventType::kLeftClick &&
-      !DragInProgress() && AutoclickTrayContainsPoint(anchor_location_)) {
+      !DragInProgress() && AutoclickMenuContainsPoint(anchor_location_)) {
     // TODO: Check if the keyboard is up too, so we know if it's blocked.
     in_progress_event_type = mojom::AutoclickEventType::kLeftClick;
   }
@@ -285,15 +272,13 @@ void AutoclickController::DoAutoclickAction() {
 void AutoclickController::StartAutoclickGesture() {
   if (event_type_ == mojom::AutoclickEventType::kNoAction) {
     // If we are set to "no action" and the gesture wouldn't occur over
-    // the autoclick tray, cancel and return early rather than starting the
+    // the autoclick menu, cancel and return early rather than starting the
     // gesture.
-    if (!AutoclickTrayContainsPoint(gesture_anchor_location_)) {
+    if (!AutoclickMenuContainsPoint(gesture_anchor_location_)) {
       CancelAutoclickAction();
       return;
     }
-    // Otherwise, go ahead and start the gesture. When it competes, if the
-    // cursor is still over the tray, it will be changed to a left-click just
-    // this once.
+    // Otherwise, go ahead and start the gesture.
   }
   // The anchor is always the point in the screen where the timer starts.
   anchor_location_ = gesture_anchor_location_;
@@ -368,6 +353,12 @@ void AutoclickController::UpdateRingSize() {
 bool AutoclickController::DragInProgress() const {
   return event_type_ == mojom::AutoclickEventType::kDragAndDrop &&
          drag_event_rewriter_->IsEnabled();
+}
+
+bool AutoclickController::AutoclickMenuContainsPoint(
+    const gfx::Point& point) const {
+  return menu_bubble_controller_ &&
+         menu_bubble_controller_->ContainsPointInScreen(point);
 }
 
 void AutoclickController::RecordUserAction(

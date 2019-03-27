@@ -36,6 +36,7 @@ class AutoclickMenuBubbleController : public TrayBubbleView::Delegate {
 
  private:
   friend class AutoclickMenuBubbleControllerTest;
+  friend class AutoclickTest;
 
   // Owned by views hierarchy.
   AutoclickMenuBubbleView* bubble_view_ = nullptr;

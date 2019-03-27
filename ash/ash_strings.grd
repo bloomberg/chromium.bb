@@ -473,24 +473,6 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_AUTOCLICK" desc="The label and title used in the accessibility menu of the system tray to toggle on/off automatic mouse clicks.">
         Automatic clicks
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_AUTOCLICK_SETTINGS" desc="The settings button for the automatic clicks menu">
-        Settings
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_AUTOCLICK_OPTION_LEFT_CLICK" desc="The menu option for the automatic clicks menu that results in the next automatic click being a left-click.">
-        Left click
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_AUTOCLICK_OPTION_RIGHT_CLICK" desc="The menu option for the automatic clicks menu that results in the next automatic click being a right-click.">
-        Right click
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_AUTOCLICK_OPTION_DOUBLE_CLICK" desc="The menu option for the automatic clicks menu that results in the next automatic click being a double-click.">
-        Double click
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_AUTOCLICK_OPTION_DRAG_AND_DROP" desc="The menu option for the automatic clicks menu that results in the next automatic click being a drag-and-drop.">
-        Drag and drop
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_AUTOCLICK_OPTION_NO_ACTION" desc="The menu option for the automatic clicks menu that results in pausing the automatic clicks feature without disabling it.">
-        No action (pause)
-      </message>
       <message name="IDS_ASH_AUTOCLICK_OPTION_LEFT_CLICK" desc="The tooltip text for a menu option for the automatic clicks menu that results in the next automatic click being a left-click.">
         Left click
       </message>

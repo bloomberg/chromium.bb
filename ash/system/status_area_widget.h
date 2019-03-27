@@ -17,7 +17,6 @@ class Window;
 }
 
 namespace ash {
-class AutoclickTray;
 class FlagWarningTray;
 class ImeMenuTray;
 class LogoutButtonTray;
@@ -80,7 +79,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   SelectToSpeakTray* select_to_speak_tray() {
     return select_to_speak_tray_.get();
   }
-  AutoclickTray* autoclick_tray() { return autoclick_tray_.get(); }
 
   Shelf* shelf() { return shelf_; }
 
@@ -130,7 +128,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   std::unique_ptr<VirtualKeyboardTray> virtual_keyboard_tray_;
   std::unique_ptr<ImeMenuTray> ime_menu_tray_;
   std::unique_ptr<SelectToSpeakTray> select_to_speak_tray_;
-  std::unique_ptr<AutoclickTray> autoclick_tray_;
   std::unique_ptr<FlagWarningTray> flag_warning_tray_;
 
   LoginStatus login_status_ = LoginStatus::NOT_LOGGED_IN;
