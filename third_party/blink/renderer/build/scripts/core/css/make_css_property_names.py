@@ -22,8 +22,7 @@ class CSSPropertyNamesWriter(json5_generator.Writer):
         return "    %(enum_key)s = %(enum_value)s," % property_
 
     def _array_item(self, property_):
-        return "    static_cast<CSSPropertyID>(%(enum_value)s), " \
-            "// %(property_id)s" % property_
+        return "    CSSPropertyID::%(enum_key)s," % property_
 
     @template_expander.use_jinja('core/css/templates/css_property_names.h.tmpl')
     def generate_header(self):
