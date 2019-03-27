@@ -11,6 +11,9 @@ Bug(intentional) external/wpt/infrastructure/reftest/reftest_ref_timeout.html [ 
 Bug(intentional) external/wpt/infrastructure/reftest/reftest_timeout.html [ Timeout ]
 Bug(intentional) external/wpt/infrastructure/expected-fail/timeout.html [ Timeout ]
 
+# WebGPU tests are only run with --enable-unsafe-webgpu
+Bug(none) webgpu/fence.html [ Skip ]
+
 crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Timeout Pass ]
 
 # See crbug.com/891427. These tests either fail or become flaky on one or more
@@ -6111,7 +6114,6 @@ crbug.com/945085 [ Mac10.13 ] printing/composited-thead-tfoot-repeat.html [ Fail
 crbug.com/943940 http/tests/security/mixedContent/empty-url-plugin-in-frame.html [ Pass Failure ]
 crbug.com/943940 virtual/outofblink-cors/http/tests/security/mixedContent/empty-url-plugin-in-frame.html [ Pass Failure ]
 crbug.com/944025 http/tests/preload/meta-viewport-device-width-link-headers.html [ Pass Failure ]
-
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Pass Failure ]
 crbug.com/945665 virtual/binary-for-devtools/http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Pass Failure ]
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure ]
@@ -6122,19 +6124,18 @@ crbug.com/945665 [ Win7 ] http/tests/devtools/elements/styles-3/style-rule-from-
 crbug.com/945665 [ Win7 ] virtual/binary-for-devtools/http/tests/devtools/elements/styles-3/style-rule-from-imported-stylesheet.js  [ Failure Pass ]
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
 crbug.com/945665 virtual/binary-for-devtools/http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
-
 crbug.com/945507 [ Win ] fast/url/standard-url.html [ Pass Failure ]
-
 crbug.com/945629 http/tests/devtools/network/network-filters.js [ Pass Failure Timeout ]
 crbug.com/945629 virtual/binary-for-devtools/http/tests/devtools/network/network-filters.js [ Pass Failure Timeout ]
-
-# Failing on: https://ci.chromium.org/buildbot/chromium.mac/Mac10.13%20Tests/11291
 crbug.com/945832 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Failure Timeout Crash ]
+
 
 # Sheriff 2019-03-26
 crbug.com/945774 [ Mac10.13 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
 crbug.com/945845 http/tests/security/inactive-document-with-empty-security-origin.html [ Timeout ]
 crbug.com/945845 virtual/outofblink-cors/http/tests/security/inactive-document-with-empty-security-origin.html [ Timeout ]
-
-# WebGPU tests are only run with --enable-unsafe-webgpu
-Bug(none) webgpu/fence.html [ Skip ]
+crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/window-resize-background-image-fixed-centered.html [ Failure Pass ]
+crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/window-resize-background-image-fixed-centered-composited.html [ Failure Pass ]
+crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/window-resize-background-image-fixed-generated.html [ Failure Pass ]
+crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/window-resize-background-image-fixed-scrolling-contents.html [ Failure Pass ]
+crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/window-resize-background-image-non-fixed.html [ Failure Pass ]
