@@ -682,12 +682,15 @@ void CommandBufferStub::RegisterTransferBufferForTest(
   command_buffer_->RegisterTransferBuffer(id, std::move(buffer));
 }
 
-bool CommandBufferStub::CheckContextLost() {
+void CommandBufferStub::CheckContextLost() {
   DCHECK(command_buffer_);
   CommandBuffer::State state = command_buffer_->GetState();
-  bool was_lost = state.error == error::kLostContext;
 
-  if (was_lost) {
+  // Check the error reason and robustness extension to get a better idea if the
+  // GL context was lost. We might try restarting the GPU process to recover
+  // from actual GL context loss but it's unnecessary for other types of parse
+  // errors.
+  if (state.error == error::kLostContext) {
     bool was_lost_by_robustness =
         decoder_context_ &&
         decoder_context_->WasContextLostByRobustnessExtension();
@@ -695,7 +698,6 @@ bool CommandBufferStub::CheckContextLost() {
   }
 
   CheckCompleteWaits();
-  return was_lost;
 }
 
 void CommandBufferStub::UpdateActiveUrl() {

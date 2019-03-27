@@ -762,25 +762,35 @@ void InProcessCommandBuffer::OnParseError() {
   // error and make the race benign.
   UpdateLastStateOnGpuThread();
 
+  CommandBuffer::State state = command_buffer_->GetState();
+
   // Tell the browser about this context loss so it can determine whether client
   // APIs like WebGL need to be blocked from automatically running.
   if (gpu_channel_manager_delegate_) {
-    CommandBuffer::State state = command_buffer_->GetState();
     gpu_channel_manager_delegate_->DidLoseContext(
         is_offscreen_, state.context_lost_reason, active_url_.url());
   }
 
-  bool was_lost_by_robustness =
-      decoder_ && decoder_->WasContextLostByRobustnessExtension();
+  // Check the error reason and robustness extension to get a better idea if the
+  // GL context was lost. We might try restarting the GPU process to recover
+  // from actual GL context loss but it's unnecessary for other types of parse
+  // errors.
+  if (state.error == error::kLostContext) {
+    bool was_lost_by_robustness =
+        decoder_ && decoder_->WasContextLostByRobustnessExtension();
 
-  // Work around issues with recovery by allowing a new GPU process to launch.
-  if (was_lost_by_robustness) {
-    GpuDriverBugWorkarounds workarounds(
-        GetGpuFeatureInfo().enabled_gpu_driver_bug_workarounds);
-    if (workarounds.exit_on_context_lost && gpu_channel_manager_delegate_)
-      gpu_channel_manager_delegate_->MaybeExitOnContextLost();
+    if (was_lost_by_robustness) {
+      GpuDriverBugWorkarounds workarounds(
+          GetGpuFeatureInfo().enabled_gpu_driver_bug_workarounds);
 
-    // TODO(crbug.com/924148): Check if we should force lose all contexts too.
+      // Work around issues with recovery by allowing a new GPU process to
+      // launch.
+      if (workarounds.exit_on_context_lost && gpu_channel_manager_delegate_)
+        gpu_channel_manager_delegate_->MaybeExitOnContextLost();
+
+      // TODO(crbug.com/924148): Check if we should force lose all contexts
+      // too.
+    }
   }
 
   PostOrRunClientCallback(
