@@ -90,7 +90,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void Trace(blink::Visitor*);
 
  private:
-  ImageRecord* FindCandidate(ImageRecordSet&);
   void PopulateTraceValue(TracedValue&,
                           const ImageRecord& first_image_paint,
                           unsigned report_count) const;

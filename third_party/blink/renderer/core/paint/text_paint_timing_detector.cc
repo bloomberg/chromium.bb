@@ -28,7 +28,13 @@ constexpr size_t kTextNodeNumberLimit = 5000;
 
 static bool LargeTextFirst(const base::WeakPtr<TextRecord>& a,
                            const base::WeakPtr<TextRecord>& b) {
-  return a->first_size > b->first_size;
+  DCHECK(a);
+  DCHECK(b);
+  if (a->first_size != b->first_size)
+    return a->first_size > b->first_size;
+  // This make sure that two different nodes with the same |first_size| wouldn't
+  // be merged in the set.
+  return a->node_id > b->node_id;
 }
 
 TextPaintTimingDetector::TextPaintTimingDetector(LocalFrameView* frame_view)
@@ -281,7 +287,7 @@ TextRecord* TextRecordsManager::FindLargestPaintCandidate() {
   // TODO(crbug/944248): An identified bug here is that the records with the
   // same size will be silently ignored by |size_ordered_set_|. This is what
   // causes these two sizes to be different.
-  DCHECK_GE(visible_node_map.size(), size_ordered_set_.size());
+  DCHECK_EQ(visible_node_map.size(), size_ordered_set_.size());
   if (!is_result_invalidated_)
     return cached_largest_paint_candidate_;
   TextRecord* new_largest_paint_candidate = nullptr;
