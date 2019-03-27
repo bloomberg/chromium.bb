@@ -301,26 +301,28 @@ class FormAutofillTest : public ChromeRenderViewTest {
                     const std::vector<base::string16>& labels,
                     const std::vector<base::string16>& names,
                     const std::vector<base::string16>& values) {
-    std::vector<std::string> control_types(labels.size(), "text");
-    ExpectLabelsAndTypes(html, id_attributes, name_attributes, labels, names,
-                         values, control_types);
-  }
-
-  // TODO(crbug/896682): Refactor this method signature to take a vector of
-  // expected {id, name, label, etc} structs.
-  void ExpectLabelsAndTypes(const char* html,
-                            const std::vector<base::string16>& id_attributes,
-                            const std::vector<base::string16>& name_attributes,
-                            const std::vector<base::string16>& labels,
-                            const std::vector<base::string16>& names,
-                            const std::vector<base::string16>& values,
-                            const std::vector<std::string>& control_types) {
     ASSERT_EQ(labels.size(), id_attributes.size());
     ASSERT_EQ(labels.size(), name_attributes.size());
     ASSERT_EQ(labels.size(), names.size());
     ASSERT_EQ(labels.size(), values.size());
-    ASSERT_EQ(labels.size(), control_types.size());
 
+    std::vector<FormFieldData> fields;
+    for (size_t i = 0; i < labels.size(); ++i) {
+      FormFieldData expected;
+      expected.id_attribute = id_attributes[i];
+      expected.name_attribute = name_attributes[i];
+      expected.label = labels[i];
+      expected.name = names[i];
+      expected.value = values[i];
+      expected.form_control_type = "text";
+      expected.max_length = WebInputElement::DefaultMaxLength();
+      fields.push_back(expected);
+    }
+    ExpectLabelsAndTypes(html, fields);
+  }
+
+  void ExpectLabelsAndTypes(const char* html,
+                            const std::vector<FormFieldData>& fields) {
     LoadHTML(html);
 
     WebLocalFrame* web_frame = GetMainFrame();
@@ -335,22 +337,11 @@ class FormAutofillTest : public ChromeRenderViewTest {
     EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->GetDocument()),
               form.origin);
     EXPECT_EQ(GURL("http://cnn.com"), form.action);
+    ASSERT_EQ(fields.size(), form.fields.size());
 
-    const std::vector<FormFieldData>& fields = form.fields;
-    ASSERT_EQ(labels.size(), fields.size());
-    for (size_t i = 0; i < labels.size(); ++i) {
-      int max_length =
-          control_types[i] == "text" ? WebInputElement::DefaultMaxLength() : 0;
-      FormFieldData expected;
-      expected.id_attribute = id_attributes[i];
-      expected.name_attribute = name_attributes[i];
-      expected.label = labels[i];
-      expected.name = names[i];
-      expected.value = values[i];
-      expected.form_control_type = control_types[i];
-      expected.max_length = max_length;
+    for (size_t i = 0; i < fields.size(); ++i) {
       SCOPED_TRACE(base::StringPrintf("i: %" PRIuS, i));
-      EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[i]);
+      EXPECT_FORM_FIELD_DATA_EQUALS(fields[i], form.fields[i]);
     }
   }
 
@@ -4194,44 +4185,53 @@ TEST_F(FormAutofillTest, LabelsInferredFromPreviousTD) {
 // inferred.
 // Also <!-- comment --> is excluded.
 TEST_F(FormAutofillTest, LabelsInferredFromTableWithSpecialElements) {
-  std::vector<base::string16> id_attributes, name_attributes, labels, names,
-      values;
-  std::vector<std::string> control_types;
+  FormFieldData expected;
+  std::vector<FormFieldData> fields;
 
-  id_attributes.push_back(ASCIIToUTF16("firstname"));
-  name_attributes.push_back(ASCIIToUTF16(""));
-  labels.push_back(ASCIIToUTF16("* First Name"));
-  names.push_back(id_attributes.back());
-  values.push_back(ASCIIToUTF16("John"));
-  control_types.push_back("text");
+  expected.id_attribute = ASCIIToUTF16("firstname");
+  expected.name_attribute = ASCIIToUTF16("");
+  expected.label = ASCIIToUTF16("* First Name");
+  expected.name = expected.id_attribute;
+  expected.value = ASCIIToUTF16("John");
+  expected.form_control_type = "text";
+  expected.max_length = WebInputElement::DefaultMaxLength();
+  fields.push_back(expected);
 
-  id_attributes.push_back(ASCIIToUTF16("middlename"));
-  name_attributes.push_back(ASCIIToUTF16(""));
-  labels.push_back(ASCIIToUTF16("* Middle Name"));
-  names.push_back(id_attributes.back());
-  values.push_back(ASCIIToUTF16("Joe"));
-  control_types.push_back("text");
+  expected.id_attribute = ASCIIToUTF16("middlename");
+  expected.name_attribute = ASCIIToUTF16("");
+  expected.label = ASCIIToUTF16("* Middle Name");
+  expected.name = expected.id_attribute;
+  expected.value = ASCIIToUTF16("Joe");
+  expected.form_control_type = "text";
+  expected.max_length = WebInputElement::DefaultMaxLength();
+  fields.push_back(expected);
 
-  id_attributes.push_back(ASCIIToUTF16("lastname"));
-  name_attributes.push_back(ASCIIToUTF16(""));
-  labels.push_back(ASCIIToUTF16("* Last Name"));
-  names.push_back(id_attributes.back());
-  values.push_back(ASCIIToUTF16("Smith"));
-  control_types.push_back("text");
+  expected.id_attribute = ASCIIToUTF16("lastname");
+  expected.name_attribute = ASCIIToUTF16("");
+  expected.label = ASCIIToUTF16("* Last Name");
+  expected.name = expected.id_attribute;
+  expected.value = ASCIIToUTF16("Smith");
+  expected.form_control_type = "text";
+  expected.max_length = WebInputElement::DefaultMaxLength();
+  fields.push_back(expected);
 
-  id_attributes.push_back(ASCIIToUTF16("country"));
-  name_attributes.push_back(ASCIIToUTF16(""));
-  labels.push_back(ASCIIToUTF16("* Country"));
-  names.push_back(id_attributes.back());
-  values.push_back(ASCIIToUTF16("US"));
-  control_types.push_back("select-one");
+  expected.id_attribute = ASCIIToUTF16("country");
+  expected.name_attribute = ASCIIToUTF16("");
+  expected.label = ASCIIToUTF16("* Country");
+  expected.name = expected.id_attribute;
+  expected.value = ASCIIToUTF16("US");
+  expected.form_control_type = "select-one";
+  expected.max_length = 0;
+  fields.push_back(expected);
 
-  id_attributes.push_back(ASCIIToUTF16("email"));
-  name_attributes.push_back(ASCIIToUTF16(""));
-  labels.push_back(ASCIIToUTF16("* Email"));
-  names.push_back(id_attributes.back());
-  values.push_back(ASCIIToUTF16("john@example.com"));
-  control_types.push_back("text");
+  expected.id_attribute = ASCIIToUTF16("email");
+  expected.name_attribute = ASCIIToUTF16("");
+  expected.label = ASCIIToUTF16("* Email");
+  expected.name = expected.id_attribute;
+  expected.value = ASCIIToUTF16("john@example.com");
+  expected.form_control_type = "text";
+  expected.max_length = WebInputElement::DefaultMaxLength();
+  fields.push_back(expected);
 
   ExpectLabelsAndTypes(
       "<FORM name='TestForm' action='http://cnn.com' method='post'>"
@@ -4299,7 +4299,7 @@ TEST_F(FormAutofillTest, LabelsInferredFromTableWithSpecialElements) {
       "  </TR>"
       "</TABLE>"
       "</FORM>",
-      id_attributes, name_attributes, labels, names, values, control_types);
+      fields);
 }
 
 TEST_F(FormAutofillTest, LabelsInferredFromTableLabels) {
