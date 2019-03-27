@@ -309,7 +309,8 @@ IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, TestAffiliation) {
   ASSERT_NO_FATAL_FAILURE(VerifyAffiliationExpectations());
 }
 
-INSTANTIATE_TEST_SUITE_P(AffiliationCheck,
+// TODO(https://crbug.com/946024): PRE_ test is flakily timing out.
+INSTANTIATE_TEST_SUITE_P(DISABLED_AffiliationCheck,
                          UserAffiliationBrowserTest,
                          //         affiliated            active_directory
                          //              |                         |
