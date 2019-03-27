@@ -15,7 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "fuchsia/base/mem_buffer_util.h"
-#include "fuchsia/runners/common/javascript_injection.h"
+#include "fuchsia/runners/cast/injected_bindings_registry.h"
 
 namespace {
 constexpr char kBindingsPath[] =
@@ -30,7 +30,12 @@ QueryableDataBindings::QueryableDataBindings(
 
   base::FilePath assets_path;
   CHECK(base::PathService::Get(base::DIR_ASSETS, &assets_path));
-  InjectJavaScriptFileIntoFrame(assets_path.AppendASCII(kBindingsPath), frame_);
+  frame_->AddJavaScriptBindings(
+      static_cast<uint64_t>(CastPlatformBindingsId::QUERYABLE_DATA), {"*"},
+      cr_fuchsia::MemBufferFromFile(
+          base::File(assets_path.AppendASCII(kBindingsPath),
+                     base::File::FLAG_OPEN | base::File::FLAG_READ)),
+      [](bool success) { CHECK(success) << "JavaScript injection error."; });
 
   service_->GetChangedEntries(
       fit::bind_member(this, &QueryableDataBindings::OnEntriesReceived));
@@ -73,8 +78,10 @@ void QueryableDataBindings::OnEntriesReceived(
   initialize_values_js.clear();
   initialize_values_js.shrink_to_fit();
 
-  InjectJavaScriptBufferIntoFrame(std::move(initialize_values_js_buffer),
-                                  frame_);
+  frame_->AddJavaScriptBindings(
+      static_cast<uint64_t>(CastPlatformBindingsId::QUERYABLE_DATA_VALUES),
+      {"*"}, std::move(initialize_values_js_buffer),
+      [](bool success) { CHECK(success) << "JavaScript injection error."; });
 
   // TODO(crbug.com/929291): Handle change events by calling and waiting on
   // GetChangedEntries() here.

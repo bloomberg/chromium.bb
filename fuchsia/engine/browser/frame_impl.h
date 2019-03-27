@@ -8,6 +8,7 @@
 #include <lib/fidl/cpp/binding_set.h>
 #include <lib/zx/channel.h>
 #include <list>
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -46,8 +47,6 @@ class FrameImpl : public chromium::web::Frame,
             fidl::InterfaceRequest<chromium::web::Frame> frame_request);
   ~FrameImpl() override;
 
-  zx::unowned_channel GetBindingChannelForTest() const;
-
   // chromium::web::Frame implementation.
   void CreateView(fuchsia::ui::views::ViewToken view_token) override;
   void CreateView2(
@@ -70,17 +69,21 @@ class FrameImpl : public chromium::web::Frame,
                    std::string target_origin,
                    PostMessageCallback callback) override;
   void SetEnableInput(bool enable_input) override;
+  void AddJavaScriptBindings(uint64_t id,
+                             std::vector<std::string> origins,
+                             fuchsia::mem::Buffer script,
+                             AddJavaScriptBindingsCallback callback) override;
+  void RemoveJavaScriptBindings(
+      uint64_t id,
+      RemoveJavaScriptBindingsCallback callback) override;
 
-  // Registers a callback for processing JavaScript console logging messages.
-  void set_javascript_console_message_hook_for_test(
-      base::RepeatingCallback<void(base::StringPiece)>
-          console_log_message_hook) {
-    console_log_message_hook_ = console_log_message_hook;
-  }
-
+  zx::unowned_channel GetBindingChannelForTest() const;
   content::WebContents* web_contents_for_test() { return web_contents_.get(); }
-
   bool has_view_for_test() { return window_tree_host_ != nullptr; }
+  void set_javascript_console_message_hook_for_test(
+      base::RepeatingCallback<void(base::StringPiece)> hook) {
+    console_log_message_hook_ = std::move(hook);
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, DelayedNavigationEventAck);
@@ -89,17 +92,23 @@ class FrameImpl : public chromium::web::Frame,
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, ReloadFrame);
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, Stop);
 
-  struct OriginScopedScript {
+  class OriginScopedScript {
+   public:
+    OriginScopedScript();
     OriginScopedScript(std::vector<std::string> origins,
                        base::ReadOnlySharedMemoryRegion script);
+    OriginScopedScript& operator=(OriginScopedScript&& other);
     ~OriginScopedScript();
 
-    std::vector<std::string> origins;
-
-    // A shared memory buffer containing the script, encoded as UTF16.
-    base::ReadOnlySharedMemoryRegion script;
+    const std::vector<std::string>& origins() const { return origins_; }
+    const base::ReadOnlySharedMemoryRegion& script() const { return script_; }
 
    private:
+    std::vector<std::string> origins_;
+
+    // A shared memory buffer containing the script, encoded as UTF16.
+    base::ReadOnlySharedMemoryRegion script_;
+
     DISALLOW_COPY_AND_ASSIGN(OriginScopedScript);
   };
 
@@ -157,14 +166,14 @@ class FrameImpl : public chromium::web::Frame,
   bool waiting_for_navigation_event_ack_;
   bool pending_navigation_event_is_dirty_;
   chromium::web::LogLevel log_level_ = chromium::web::LogLevel::NONE;
-  std::list<OriginScopedScript> before_load_scripts_;
+  std::map<uint64_t, OriginScopedScript> before_load_scripts_;
+  std::vector<uint64_t> before_load_scripts_order_;
   ContextImpl* context_ = nullptr;
+  uint64_t next_transitional_bindings_id_ = 0x80000000;
+  base::RepeatingCallback<void(base::StringPiece)> console_log_message_hook_;
 
   fidl::Binding<chromium::web::Frame> binding_;
   fidl::BindingSet<chromium::web::NavigationController> controller_bindings_;
-
-  // Used for testing.
-  base::RepeatingCallback<void(base::StringPiece)> console_log_message_hook_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameImpl);
 };
