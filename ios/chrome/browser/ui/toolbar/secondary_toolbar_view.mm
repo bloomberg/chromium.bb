@@ -135,8 +135,9 @@ const CGFloat kToolsMenuOffset = -7;
 
   // Move the tools menu button such as it looks visually balanced with the
   // button on the other side of the toolbar.
+  NSInteger textDirection = base::i18n::IsRTL() ? -1 : 1;
   self.toolsMenuButton.transform =
-      CGAffineTransformMakeTranslation(kToolsMenuOffset, 0);
+      CGAffineTransformMakeTranslation(textDirection * kToolsMenuOffset, 0);
 
   self.allButtons = @[
     self.backButton, self.forwardButton, self.omniboxButton, self.tabGridButton,
