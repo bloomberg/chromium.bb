@@ -3102,13 +3102,13 @@ void av1_simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   const int ref_idx = 0;
   int var;
 
+  av1_setup_pre_planes(xd, ref_idx, yv12, mi_row, mi_col,
+                       get_ref_scale_factors(cm, ref), num_planes);
+  set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
   if (scaled_ref_frame) {
     backup_yv12 = xd->plane[AOM_PLANE_Y].pre[ref_idx];
     av1_setup_pre_planes(xd, ref_idx, scaled_ref_frame, mi_row, mi_col, NULL,
                          num_planes);
-  } else {
-    av1_setup_pre_planes(xd, ref_idx, yv12, mi_row, mi_col,
-                         get_ref_scale_factors(cm, ref), num_planes);
   }
 
   // This overwrites the mv_limits so we will need to restore it later.
@@ -3122,6 +3122,9 @@ void av1_simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
 
   const int use_subpel_search =
       var < INT_MAX && !cpi->common.cur_frame_force_integer_mv && use_subpixel;
+  if (scaled_ref_frame) {
+    xd->plane[AOM_PLANE_Y].pre[ref_idx] = backup_yv12;
+  }
   if (use_subpel_search) {
     int not_used = 0;
     if (cpi->sf.use_accurate_subpel_search) {
@@ -3151,7 +3154,6 @@ void av1_simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   mbmi->mv[0].as_mv = x->best_mv.as_mv;
 
   // Get a copy of the prediction output
-  set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
   av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
                                 AOM_PLANE_Y, AOM_PLANE_Y);
 
