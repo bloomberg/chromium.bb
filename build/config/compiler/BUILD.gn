@@ -276,14 +276,6 @@ config("compiler") {
       ldflags += [ "-Wl,--fatal-warnings" ]
     }
   } else {
-    cflags += [
-      # Assume UTF-8 by default to avoid code page dependencies.
-      "/utf-8",
-    ]
-    if (is_clang) {
-      # Don't look for includes in %INCLUDE%.
-      cflags += [ "/X" ]
-    }
   }
 
   if (is_clang && is_debug) {
@@ -491,13 +483,6 @@ config("compiler") {
       "-Xclang",
       "-instcombine-lower-dbg-declare=0",
     ]
-  }
-
-  # Print absolute paths in diagnostics. There is no precedent for doing this
-  # on Linux/Mac (GCC doesn't support it), but MSVC does this with /FC and
-  # Windows developers rely on it (crbug.com/636109) so only do this on Windows.
-  if (msvc_use_absolute_paths && is_clang && is_win) {
-    cflags += [ "-fdiagnostics-absolute-paths" ]
   }
 
   # C11/C++11 compiler flags setup.
