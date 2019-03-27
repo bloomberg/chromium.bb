@@ -84,6 +84,12 @@ class SSLClientCertPendingRequests
                        scoped_refptr<net::X509Certificate> cert,
                        scoped_refptr<net::SSLPrivateKey> key);
 
+  // Remove pending requests when |should_keep| returns false. Calls |on_drop|
+  // before dropping a request.
+  void FilterPendingRequests(
+      std::function<bool(ClientCertRequest*)> should_keep,
+      std::function<void(ClientCertRequest*)> on_drop);
+
   base::WeakPtr<SSLClientCertPendingRequests> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
@@ -96,9 +102,7 @@ class SSLClientCertPendingRequests
   class CertificateDialogPolicy {
    public:
     // Has the maximum number of cert dialogs been exceeded?
-    // TODO(dmcardle) Once we have sufficient UMA data, change this to return
-    // |count_ > kMaxClientCertRequestDialogs|.
-    bool MaxExceeded() { return false; }
+    bool MaxExceeded() { return count_ >= k_max_displayed_dialogs; }
     // Resets counter. Should be called on navigation.
     void ResetCount() {
       // Record sample right before the value is reset. This represents the
@@ -112,6 +116,7 @@ class SSLClientCertPendingRequests
 
    private:
     size_t count_ = 0;
+    const size_t k_max_displayed_dialogs = 5;
   };
 
  private:
@@ -119,7 +124,7 @@ class SSLClientCertPendingRequests
 
   bool active_request_ = false;
 
-  CertificateDialogPolicy dialog_policy;
+  CertificateDialogPolicy dialog_policy_;
   base::queue<std::unique_ptr<ClientCertRequest>> pending_requests_;
   base::WeakPtrFactory<SSLClientCertPendingRequests> weak_factory_;
 
@@ -201,25 +206,40 @@ void SSLClientCertPendingRequests::AddRequest(
   PumpRequests();
 }
 
-void SSLClientCertPendingRequests::RequestComplete(
-    net::SSLCertRequestInfo* info,
-    scoped_refptr<net::X509Certificate> cert,
-    scoped_refptr<net::SSLPrivateKey> key) {
-  active_request_ = false;
-  std::string host_and_port = info->host_and_port.ToString();
-
+// Note that the default value for |on_drop| is a no-op.
+void SSLClientCertPendingRequests::FilterPendingRequests(
+    std::function<bool(ClientCertRequest*)> should_keep,
+    std::function<void(ClientCertRequest*)> on_drop = [](auto* unused) {}) {
   base::queue<std::unique_ptr<ClientCertRequest>> new_pending_requests;
   while (!pending_requests_.empty()) {
     std::unique_ptr<ClientCertRequest> next =
         std::move(pending_requests_.front());
     pending_requests_.pop();
-    if (host_and_port == next->cert_request_info()->host_and_port.ToString()) {
-      next->CertificateSelected(cert, key);
-    } else {
+    if (should_keep(next.get())) {
       new_pending_requests.push(std::move(next));
+    } else {
+      on_drop(next.get());
     }
   }
   pending_requests_.swap(new_pending_requests);
+}
+
+void SSLClientCertPendingRequests::RequestComplete(
+    net::SSLCertRequestInfo* info,
+    scoped_refptr<net::X509Certificate> cert,
+    scoped_refptr<net::SSLPrivateKey> key) {
+  active_request_ = false;
+
+  // Deduplicate pending requests. Only keep pending requests whose host and
+  // port differ from those of the completed request.
+  const std::string host_and_port = info->host_and_port.ToString();
+  auto should_keep = [host_and_port](ClientCertRequest* req) {
+                       return host_and_port != req->cert_request_info()->host_and_port.ToString();
+                     };
+  auto on_drop = [cert, key](ClientCertRequest* req) {
+                   req->CertificateSelected(cert, key);
+                 };
+  FilterPendingRequests(should_keep, on_drop);
 
   PumpRequests();
 }
@@ -235,8 +255,8 @@ void SSLClientCertPendingRequests::PumpRequests() {
   pending_requests_.pop();
 
   // Check if this page is allowed to show any more client cert dialogs.
-  if (!dialog_policy.MaxExceeded()) {
-    dialog_policy.IncrementCount();
+  if (!dialog_policy_.MaxExceeded()) {
+    dialog_policy_.IncrementCount();
     StartClientCertificateRequest(std::move(next), web_contents());
   }
 }
@@ -250,16 +270,16 @@ void SSLClientCertPendingRequests::ReadyToCommitNavigation(
   if (navigation_handle->IsInMainFrame() &&
       (navigation_handle->HasUserGesture() ||
        !navigation_handle->IsRendererInitiated())) {
-    // TODO(dmcardle) Flush any remaining dialogs before resetting the
-    // counter. On Android, these are System UI dialogs.
-
-    dialog_policy.ResetCount();
+    // Flush any remaining dialogs before resetting the counter.
+    auto should_keep = [](auto* req) { return false; };
+    FilterPendingRequests(should_keep);
+    dialog_policy_.ResetCount();
   }
 }
 
 void SSLClientCertPendingRequests::WebContentsDestroyed() {
   // Record UMA sample for last page loaded in WebContents.
-  dialog_policy.ResetCount();
+  dialog_policy_.ResetCount();
 }
 
 void ClientCertRequest::CertificateSelected(
