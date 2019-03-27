@@ -82,7 +82,7 @@ ShadowRoot::~ShadowRoot() = default;
 
 SlotAssignment& ShadowRoot::EnsureSlotAssignment() {
   if (!slot_assignment_)
-    slot_assignment_ = SlotAssignment::Create(*this);
+    slot_assignment_ = MakeGarbageCollected<SlotAssignment>(*this);
   return *slot_assignment_;
 }
 

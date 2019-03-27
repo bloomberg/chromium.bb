@@ -631,7 +631,7 @@ Document::Document(const DocumentInit& initializer,
       style_version_(0),
       listener_types_(0),
       mutation_observer_types_(0),
-      visited_link_state_(VisitedLinkState::Create(*this)),
+      visited_link_state_(MakeGarbageCollected<VisitedLinkState>(*this)),
       visually_ordered_(false),
       ready_state_(kComplete),
       parsing_state_(kFinishedParsing),
@@ -1865,14 +1865,14 @@ NodeIterator* Document::createNodeIterator(Node* root,
                                            unsigned what_to_show,
                                            V8NodeFilter* filter) {
   DCHECK(root);
-  return NodeIterator::Create(root, what_to_show, filter);
+  return MakeGarbageCollected<NodeIterator>(root, what_to_show, filter);
 }
 
 TreeWalker* Document::createTreeWalker(Node* root,
                                        unsigned what_to_show,
                                        V8NodeFilter* filter) {
   DCHECK(root);
-  return TreeWalker::Create(root, what_to_show, filter);
+  return MakeGarbageCollected<TreeWalker>(root, what_to_show, filter);
 }
 
 bool Document::NeedsLayoutTreeUpdate() const {
@@ -6900,7 +6900,8 @@ void Document::PluginLoadingTimerFired(TimerBase*) {
 
 ScriptedAnimationController& Document::EnsureScriptedAnimationController() {
   if (!scripted_animation_controller_) {
-    scripted_animation_controller_ = ScriptedAnimationController::Create(this);
+    scripted_animation_controller_ =
+        MakeGarbageCollected<ScriptedAnimationController>(this);
     // We need to make sure that we don't start up the animation controller on a
     // background tab, for example.
     if (!GetPage())
@@ -7677,7 +7678,7 @@ void Document::NavigateLocalAdsFrames() {
 
 SlotAssignmentEngine& Document::GetSlotAssignmentEngine() {
   if (!slot_assignment_engine_)
-    slot_assignment_engine_ = SlotAssignmentEngine::Create();
+    slot_assignment_engine_ = MakeGarbageCollected<SlotAssignmentEngine>();
   return *slot_assignment_engine_;
 }
 

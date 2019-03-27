@@ -136,10 +136,6 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
     return list;
   }
 
-  static NodeListsNodeData* Create() {
-    return MakeGarbageCollected<NodeListsNodeData>();
-  }
-
   NodeListsNodeData() : child_node_list_(nullptr) {}
 
   void InvalidateCaches(const QualifiedName* attr_name = nullptr);

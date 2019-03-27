@@ -447,7 +447,8 @@ NamedNodeMap* Element::attributesForBindings() const {
   if (NamedNodeMap* attribute_map = rare_data.AttributeMap())
     return attribute_map;
 
-  rare_data.SetAttributeMap(NamedNodeMap::Create(const_cast<Element*>(this)));
+  rare_data.SetAttributeMap(
+      MakeGarbageCollected<NamedNodeMap>(const_cast<Element*>(this)));
   return rare_data.AttributeMap();
 }
 
@@ -2656,7 +2657,7 @@ ShadowRoot& Element::CreateAndAttachShadowRoot(ShadowRootType type) {
 
   DCHECK(!GetShadowRoot());
 
-  ShadowRoot* shadow_root = ShadowRoot::Create(GetDocument(), type);
+  auto* shadow_root = MakeGarbageCollected<ShadowRoot>(GetDocument(), type);
 
   if (type != ShadowRootType::V0 && InActiveDocument()) {
     // Detach the host's children here for v1 (including UA shadow root),

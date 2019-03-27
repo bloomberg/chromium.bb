@@ -242,7 +242,7 @@ Document* LocalDOMWindow::CreateDocument(const String& mime_type,
         mime_type, init,
         init.GetFrame() ? init.GetFrame()->InViewSourceMode() : false);
     if (document->IsPluginDocument() && document->IsSandboxed(kSandboxPlugins))
-      document = SinkDocument::Create(init);
+      document = MakeGarbageCollected<SinkDocument>(init);
   }
 
   return document;

@@ -112,7 +112,7 @@ void NodeRareData::IncrementConnectedSubframeCount() {
 }
 
 NodeListsNodeData& NodeRareData::CreateNodeLists() {
-  node_lists_ = NodeListsNodeData::Create();
+  node_lists_ = MakeGarbageCollected<NodeListsNodeData>();
   return *node_lists_;
 }
 

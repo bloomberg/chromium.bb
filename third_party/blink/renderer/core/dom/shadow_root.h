@@ -56,10 +56,6 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   USING_GARBAGE_COLLECTED_MIXIN(ShadowRoot);
 
  public:
-  static ShadowRoot* Create(Document& document, ShadowRootType type) {
-    return MakeGarbageCollected<ShadowRoot>(document, type);
-  }
-
   ShadowRoot(Document&, ShadowRootType);
 
   // Disambiguate between Node and TreeScope hierarchies; TreeScope's

@@ -212,7 +212,8 @@ void ScriptedIdleTaskController::RunCallback(
       inspector_idle_callback_fire_event::Data(
           GetExecutionContext(), id, allotted_time.InMillisecondsF(),
           callback_type == IdleDeadline::CallbackType::kCalledByTimeout));
-  idle_task->invoke(IdleDeadline::Create(deadline, callback_type));
+  idle_task->invoke(
+      MakeGarbageCollected<IdleDeadline>(deadline, callback_type));
 
   // Finally there is no need to keep the idle task alive.
   //

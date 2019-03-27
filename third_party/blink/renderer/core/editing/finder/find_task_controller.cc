@@ -62,8 +62,9 @@ class FindTaskController::IdleFindTask
   }
 
   void ForceInvocationForTesting() {
-    invoke(IdleDeadline::Create(CurrentTimeTicks() + kFindTaskTestTimeout,
-                                IdleDeadline::CallbackType::kCalledWhenIdle));
+    invoke(MakeGarbageCollected<IdleDeadline>(
+        CurrentTimeTicks() + kFindTaskTestTimeout,
+        IdleDeadline::CallbackType::kCalledWhenIdle));
   }
 
   void Trace(Visitor* visitor) override {
