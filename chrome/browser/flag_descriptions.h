@@ -1045,6 +1045,9 @@ extern const char kShowAutofillSignaturesDescription[];
 extern const char kShowAutofillTypePredictionsName[];
 extern const char kShowAutofillTypePredictionsDescription[];
 
+extern const char kSkiaRendererName[];
+extern const char kSkiaRendererDescription[];
+
 extern const char kHistoryManipulationIntervention[];
 extern const char kHistoryManipulationInterventionDescription[];
 
