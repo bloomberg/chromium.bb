@@ -392,6 +392,28 @@ void AssistantManagerServiceImpl::OnConversationTurnFinished(
           weak_factory_.GetWeakPtr(), resolution));
 }
 
+void AssistantManagerServiceImpl::OnScheduleWait(int id, int time_ms) {
+  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnScheduleWait, id, time_ms);
+
+  // Schedule a wait for |time_ms|, notifying the CrosActionModule when the wait
+  // has finished so that it can inform LibAssistant to resume execution.
+  service_->main_task_runner()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](const base::WeakPtr<AssistantManagerServiceImpl>& weak_ptr,
+             int id) {
+            if (weak_ptr) {
+              weak_ptr->action_module_->OnScheduledWaitDone(
+                  id, /*cancelled=*/false);
+            }
+          },
+          weak_factory_.GetWeakPtr(), id),
+      base::TimeDelta::FromMilliseconds(time_ms));
+
+  // Notify subscribers that a wait has been started.
+  interaction_subscribers_.ForAllPtrs([](auto* ptr) { ptr->OnWaitStarted(); });
+}
+
 // TODO(b/113541754): Deprecate this API when the server provides a fallback.
 void AssistantManagerServiceImpl::OnShowContextualQueryFallback() {
   // Show fallback text.

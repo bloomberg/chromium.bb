@@ -529,6 +529,7 @@ class AutotestPrivateSendAssistantTextQueryFunction
       const std::string& final_result) override {}
   void OnSpeechLevelUpdated(float speech_level) override {}
   void OnTtsStarted(bool due_to_error) override {}
+  void OnWaitStarted() override {}
 
   // Called when Assistant service fails to respond in a certain amount of
   // time. We will respond with an error.

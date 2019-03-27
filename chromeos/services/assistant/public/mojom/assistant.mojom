@@ -120,6 +120,10 @@ interface AssistantInteractionSubscriber {
   // Assistant has started speaking. When TTS is started due to an error that
   // occurred during the interaction, |due_to_error| is true.
   OnTtsStarted(bool due_to_error);
+
+  // Assistant has started waiting. This occur during execution of a routine to
+  // give the user time to digest a response before continuing execution.
+  OnWaitStarted();
 };
 
 // Interface for browser to bind and start assistant.
