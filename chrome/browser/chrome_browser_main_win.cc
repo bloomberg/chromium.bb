@@ -88,8 +88,8 @@
 #include "ui/base/win/hidden_window.h"
 #include "ui/base/win/message_box_win.h"
 #include "ui/display/win/dpi.h"
-#include "ui/gfx/platform_font_win.h"
 #include "ui/gfx/switches.h"
+#include "ui/gfx/system_fonts_win.h"
 #include "ui/strings/grit/app_locale_settings.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -115,7 +115,7 @@ void DumpHungRendererProcessImpl(const base::Process& renderer) {
 }
 
 // gfx::Font callbacks
-void AdjustUIFont(gfx::PlatformFontWin::FontAdjustment* font_adjustment) {
+void AdjustUIFont(gfx::win::FontAdjustment* font_adjustment) {
   l10n_util::NeedOverrideDefaultUIFont(&font_adjustment->font_family_override,
                                        &font_adjustment->font_scale);
   font_adjustment->font_scale *= display::win::GetAccessibilityFontScale();
@@ -498,8 +498,8 @@ ChromeBrowserMainPartsWin::~ChromeBrowserMainPartsWin() {
 
 void ChromeBrowserMainPartsWin::ToolkitInitialized() {
   ChromeBrowserMainParts::ToolkitInitialized();
-  gfx::PlatformFontWin::SetAdjustFontCallback(&AdjustUIFont);
-  gfx::PlatformFontWin::SetGetMinimumFontSizeCallback(&GetMinimumFontSize);
+  gfx::win::SetAdjustFontCallback(&AdjustUIFont);
+  gfx::win::SetGetMinimumFontSizeCallback(&GetMinimumFontSize);
   ui::CursorLoaderWin::SetCursorResourceModule(chrome::kBrowserResourcesDll);
 }
 

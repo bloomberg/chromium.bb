@@ -60,7 +60,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
-#include "ui/gfx/platform_font_win.h"
+#include "ui/gfx/system_fonts_win.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 #endif
 
@@ -1230,8 +1230,7 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
 // static
 gfx::FontList NativeWidgetPrivate::GetWindowTitleFontList() {
 #if defined(OS_WIN)
-  return gfx::FontList(gfx::PlatformFontWin::GetSystemFont(
-      gfx::PlatformFontWin::SystemFont::kCaption));
+  return gfx::FontList(gfx::win::GetSystemFont(gfx::win::SystemFont::kCaption));
 #else
   return gfx::FontList();
 #endif

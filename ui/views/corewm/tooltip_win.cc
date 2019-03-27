@@ -12,7 +12,7 @@
 #include "ui/display/screen.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/platform_font_win.h"
+#include "ui/gfx/system_fonts_win.h"
 #include "ui/views/corewm/cursor_height_provider_win.h"
 
 namespace views {
@@ -98,7 +98,7 @@ void TooltipWin::PositionTooltip() {
 }
 
 void TooltipWin::MaybeOverrideFont() {
-  gfx::PlatformFontWin::FontAdjustment font_adjustment;
+  gfx::win::FontAdjustment font_adjustment;
   const HFONT old_font = GetWindowFont(tooltip_hwnd_);
 
   // Determine if we need to override the font.
@@ -113,7 +113,7 @@ void TooltipWin::MaybeOverrideFont() {
         display::win::ScreenWin::GetScaleFactorForHWND(tooltip_hwnd_);
     if (!override_font_ || current_scale != override_scale_) {
       override_font_ =
-          gfx::PlatformFontWin::AdjustExistingFont(old_font, font_adjustment);
+          gfx::win::AdjustExistingSystemFont(old_font, font_adjustment);
       override_scale_ = current_scale;
     }
 
