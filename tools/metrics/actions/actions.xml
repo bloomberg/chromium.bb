@@ -19787,6 +19787,22 @@ should be able to be added at any place in this file.
   <description>Ash system menu: Accessibility: Enable sticky keys</description>
 </action>
 
+<action name="StatusArea_SwitchAccessDisabled">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <description>
+    Ash system menu: Accessibility: Disable switch access
+  </description>
+</action>
+
+<action name="StatusArea_SwitchAccessEnabled">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <description>
+    Ash system menu: Accessibility: Enable switch access
+  </description>
+</action>
+
 <action name="StatusArea_TapDraggingDisabled">
   <obsolete>Tap dragging removed from status area menu 03/2018.</obsolete>
   <owner>minch@chromium.org</owner>
