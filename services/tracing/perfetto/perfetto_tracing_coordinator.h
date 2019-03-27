@@ -56,7 +56,6 @@ class PerfettoTracingCoordinator : public Coordinator {
                             StopAndFlushCallback callback);
 
   mojo::Binding<mojom::Coordinator> binding_;
-  const bool use_chrome_proto_;
 
   class TracingSession;
   std::unique_ptr<TracingSession> tracing_session_;

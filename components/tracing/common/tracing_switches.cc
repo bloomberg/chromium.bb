@@ -68,12 +68,6 @@ const char kPerfettoDisableInterning[] = "perfetto-disable-interning";
 // process startup to be able to replace the legacy startup tracing.
 const char kPerfettoOutputFile[] = "perfetto-output-file";
 
-// If enabled (and perfetto is enabled), the data sources will write trace
-// events in the new TraceEvent proto format instead of the ChromeEventBundle
-// format.
-// TODO(eseckler): Remove this when we remove ChromeEventBundle support.
-const char kPerfettoUseNewProtos[] = "perfetto-use-new-protos";
-
 // Sends a pretty-printed version of tracing info to the console.
 const char kTraceToConsole[]                = "trace-to-console";
 
