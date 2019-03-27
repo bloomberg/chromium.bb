@@ -179,11 +179,11 @@ void UrlAvailabilityRequester::ReceiverRequester::GetOrRequestAvailabilities(
     msgs::PresentationUrlAvailability availability = availability_entry->second;
     if (observer) {
       switch (availability) {
-        case msgs::kCompatible:
+        case msgs::PresentationUrlAvailability::kCompatible:
           observer->OnReceiverAvailable(url, service_id);
           break;
-        case msgs::kNotCompatible:
-        case msgs::kNotValid:
+        case msgs::PresentationUrlAvailability::kNotCompatible:
+        case msgs::PresentationUrlAvailability::kNotValid:
           observer->OnReceiverUnavailable(url, service_id);
           break;
       }
@@ -279,12 +279,12 @@ void UrlAvailabilityRequester::ReceiverRequester::UpdateAvailabilities(
     bool updated = (entry->second != *availability_it);
     if (inserted || updated) {
       switch (*availability_it) {
-        case msgs::kCompatible:
+        case msgs::PresentationUrlAvailability::kCompatible:
           for (auto* observer : observers)
             observer->OnReceiverAvailable(url, service_id);
           break;
-        case msgs::kNotCompatible:
-        case msgs::kNotValid:
+        case msgs::PresentationUrlAvailability::kNotCompatible:
+        case msgs::PresentationUrlAvailability::kNotValid:
           for (auto* observer : observers)
             observer->OnReceiverUnavailable(url, service_id);
           break;
@@ -362,7 +362,7 @@ void UrlAvailabilityRequester::ReceiverRequester::RemoveUnobservedWatches(
 
 void UrlAvailabilityRequester::ReceiverRequester::RemoveReceiver() {
   for (const auto& availability : known_availability_by_url) {
-    if (availability.second == msgs::kCompatible) {
+    if (availability.second == msgs::PresentationUrlAvailability::kCompatible) {
       const std::string& url = availability.first;
       for (auto& observer : listener->observers_by_url_[url])
         observer->OnReceiverUnavailable(url, service_id);

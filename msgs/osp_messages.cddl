@@ -82,7 +82,7 @@ presentation-url-availability = &(
 
 presentation-initiation-response = {
   response
-  result: &(result, url-not-valid: 10)
+  result: &(result, url-not-valid: 10, invalid-presentation-id: 11)
   ? connection-result: presentation-connection-open-result
 }
 

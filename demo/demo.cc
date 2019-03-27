@@ -230,7 +230,7 @@ class ReceiverDelegate final : public presentation::ReceiverDelegate {
     result.reserve(urls.size());
     for (const auto& url : urls) {
       OSP_LOG << "got availability request for: " << url;
-      result.push_back(msgs::kCompatible);
+      result.push_back(msgs::PresentationUrlAvailability::kCompatible);
     }
     return result;
   }

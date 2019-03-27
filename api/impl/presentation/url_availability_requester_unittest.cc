@@ -79,16 +79,16 @@ class UrlAvailabilityRequesterTest : public Test {
   void ExpectStreamMessage(MockMessageCallback* mock_callback,
                            msgs::PresentationUrlAvailabilityRequest* request) {
     EXPECT_CALL(*mock_callback, OnStreamMessage(_, _, _, _, _, _))
-        .WillOnce(Invoke(
-            [request](uint64_t endpoint_id, uint64_t cid,
-                      msgs::Type message_type, const uint8_t* buffer,
-                      size_t buffer_size, platform::Clock::time_point now) {
-              ssize_t request_result_size =
-                  msgs::DecodePresentationUrlAvailabilityRequest(
-                      buffer, buffer_size, request);
-              OSP_DCHECK_GT(request_result_size, 0);
-              return request_result_size;
-            }));
+        .WillOnce(Invoke([request](uint64_t endpoint_id, uint64_t cid,
+                                   msgs::Type message_type,
+                                   const uint8_t* buffer, size_t buffer_size,
+                                   platform::Clock::time_point now) {
+          ssize_t request_result_size =
+              msgs::DecodePresentationUrlAvailabilityRequest(
+                  buffer, buffer_size, request);
+          OSP_DCHECK_GT(request_result_size, 0);
+          return request_result_size;
+        }));
   }
 
   void SendAvailabilityResponse(
@@ -148,10 +148,10 @@ TEST_F(UrlAvailabilityRequesterTest, AvailableObserverFirst) {
   ASSERT_TRUE(stream);
 
   EXPECT_EQ(std::vector<std::string>{url1_}, request.urls);
-  SendAvailabilityResponse(
-      request,
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
-      stream.get());
+  SendAvailabilityResponse(request,
+                           std::vector<msgs::PresentationUrlAvailability>{
+                               msgs::PresentationUrlAvailability::kCompatible},
+                           stream.get());
 
   EXPECT_CALL(mock_observer, OnReceiverAvailable(url1_, service_id_));
   EXPECT_CALL(mock_observer, OnReceiverUnavailable(url1_, service_id_))
@@ -172,10 +172,10 @@ TEST_F(UrlAvailabilityRequesterTest, AvailableReceiverFirst) {
   ASSERT_TRUE(stream);
 
   EXPECT_EQ(std::vector<std::string>{url1_}, request.urls);
-  SendAvailabilityResponse(
-      request,
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
-      stream.get());
+  SendAvailabilityResponse(request,
+                           std::vector<msgs::PresentationUrlAvailability>{
+                               msgs::PresentationUrlAvailability::kCompatible},
+                           stream.get());
 
   EXPECT_CALL(mock_observer, OnReceiverAvailable(url1_, service_id_));
   EXPECT_CALL(mock_observer, OnReceiverUnavailable(url1_, service_id_))
@@ -198,7 +198,8 @@ TEST_F(UrlAvailabilityRequesterTest, Unavailable) {
   EXPECT_EQ(std::vector<std::string>{url1_}, request.urls);
   SendAvailabilityResponse(
       request,
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
+      std::vector<msgs::PresentationUrlAvailability>{
+          msgs::PresentationUrlAvailability::kNotCompatible},
       stream.get());
 
   EXPECT_CALL(mock_observer, OnReceiverAvailable(url1_, service_id_)).Times(0);
@@ -221,7 +222,8 @@ TEST_F(UrlAvailabilityRequesterTest, AvailabilityIsCached) {
   EXPECT_EQ(std::vector<std::string>{url1_}, request.urls);
   SendAvailabilityResponse(
       request,
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
+      std::vector<msgs::PresentationUrlAvailability>{
+          msgs::PresentationUrlAvailability::kNotCompatible},
       stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_)).Times(0);
@@ -249,7 +251,8 @@ TEST_F(UrlAvailabilityRequesterTest, AvailabilityCacheIsTransient) {
   EXPECT_EQ(std::vector<std::string>{url1_}, request.urls);
   SendAvailabilityResponse(
       request,
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
+      std::vector<msgs::PresentationUrlAvailability>{
+          msgs::PresentationUrlAvailability::kNotCompatible},
       stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_)).Times(0);
@@ -279,7 +282,8 @@ TEST_F(UrlAvailabilityRequesterTest, PartiallyCachedAnswer) {
   EXPECT_EQ(std::vector<std::string>{url1_}, request.urls);
   SendAvailabilityResponse(
       request,
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
+      std::vector<msgs::PresentationUrlAvailability>{
+          msgs::PresentationUrlAvailability::kNotCompatible},
       stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_)).Times(0);
@@ -297,7 +301,8 @@ TEST_F(UrlAvailabilityRequesterTest, PartiallyCachedAnswer) {
   EXPECT_EQ(std::vector<std::string>{url2_}, request.urls);
   SendAvailabilityResponse(
       request,
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
+      std::vector<msgs::PresentationUrlAvailability>{
+          msgs::PresentationUrlAvailability::kNotCompatible},
       stream.get());
 
   EXPECT_CALL(mock_observer2, OnReceiverAvailable(url2_, service_id_)).Times(0);
@@ -318,10 +323,10 @@ TEST_F(UrlAvailabilityRequesterTest, MultipleOverlappingObservers) {
   ASSERT_TRUE(stream);
 
   EXPECT_EQ(std::vector<std::string>{url1_}, request.urls);
-  SendAvailabilityResponse(
-      request,
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
-      stream.get());
+  SendAvailabilityResponse(request,
+                           std::vector<msgs::PresentationUrlAvailability>{
+                               msgs::PresentationUrlAvailability::kCompatible},
+                           stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_));
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_))
@@ -337,7 +342,8 @@ TEST_F(UrlAvailabilityRequesterTest, MultipleOverlappingObservers) {
   EXPECT_EQ(std::vector<std::string>{url2_}, request.urls);
   SendAvailabilityResponse(
       request,
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
+      std::vector<msgs::PresentationUrlAvailability>{
+          msgs::PresentationUrlAvailability::kNotCompatible},
       stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(_, service_id_)).Times(0);
@@ -359,10 +365,10 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserverUrls) {
 
   EXPECT_EQ(std::vector<std::string>{url1_}, request.urls);
   uint64_t url1_watch_id = request.watch_id;
-  SendAvailabilityResponse(
-      request,
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
-      stream.get());
+  SendAvailabilityResponse(request,
+                           std::vector<msgs::PresentationUrlAvailability>{
+                               msgs::PresentationUrlAvailability::kCompatible},
+                           stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_));
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_))
@@ -380,17 +386,18 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserverUrls) {
   listener_.RemoveObserverUrls({url1_}, &mock_observer1);
   SendAvailabilityResponse(
       request,
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
+      std::vector<msgs::PresentationUrlAvailability>{
+          msgs::PresentationUrlAvailability::kNotCompatible},
       stream.get());
 
   EXPECT_CALL(mock_observer2, OnReceiverAvailable(_, service_id_)).Times(0);
   EXPECT_CALL(mock_observer2, OnReceiverUnavailable(url2_, service_id_));
   quic_bridge_.RunTasksUntilIdle();
 
-  SendAvailabilityEvent(
-      url1_watch_id, std::vector<std::string>{url1_},
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
-      stream.get());
+  SendAvailabilityEvent(url1_watch_id, std::vector<std::string>{url1_},
+                        std::vector<msgs::PresentationUrlAvailability>{
+                            msgs::PresentationUrlAvailability::kNotCompatible},
+                        stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_))
       .Times(0);
@@ -412,10 +419,10 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserver) {
 
   EXPECT_EQ(std::vector<std::string>{url1_}, request.urls);
   uint64_t url1_watch_id = request.watch_id;
-  SendAvailabilityResponse(
-      request,
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
-      stream.get());
+  SendAvailabilityResponse(request,
+                           std::vector<msgs::PresentationUrlAvailability>{
+                               msgs::PresentationUrlAvailability::kCompatible},
+                           stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_));
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_))
@@ -434,17 +441,18 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserver) {
   listener_.RemoveObserver(&mock_observer1);
   SendAvailabilityResponse(
       request,
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
+      std::vector<msgs::PresentationUrlAvailability>{
+          msgs::PresentationUrlAvailability::kNotCompatible},
       stream.get());
 
   EXPECT_CALL(mock_observer2, OnReceiverAvailable(_, service_id_)).Times(0);
   EXPECT_CALL(mock_observer2, OnReceiverUnavailable(url2_, service_id_));
   quic_bridge_.RunTasksUntilIdle();
 
-  SendAvailabilityEvent(
-      url1_watch_id, std::vector<std::string>{url1_},
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
-      stream.get());
+  SendAvailabilityEvent(url1_watch_id, std::vector<std::string>{url1_},
+                        std::vector<msgs::PresentationUrlAvailability>{
+                            msgs::PresentationUrlAvailability::kNotCompatible},
+                        stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_))
       .Times(0);
@@ -453,15 +461,15 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserver) {
 
   listener_.RemoveObserver(&mock_observer2);
 
-  SendAvailabilityEvent(
-      url1_watch_id, std::vector<std::string>{url1_},
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
-      stream.get());
+  SendAvailabilityEvent(url1_watch_id, std::vector<std::string>{url1_},
+                        std::vector<msgs::PresentationUrlAvailability>{
+                            msgs::PresentationUrlAvailability::kNotCompatible},
+                        stream.get());
 
-  SendAvailabilityEvent(
-      url2_watch_id, std::vector<std::string>{url2_},
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
-      stream.get());
+  SendAvailabilityEvent(url2_watch_id, std::vector<std::string>{url2_},
+                        std::vector<msgs::PresentationUrlAvailability>{
+                            msgs::PresentationUrlAvailability::kCompatible},
+                        stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(_, service_id_)).Times(0);
   EXPECT_CALL(mock_observer2, OnReceiverUnavailable(_, service_id_)).Times(0);
@@ -483,7 +491,8 @@ TEST_F(UrlAvailabilityRequesterTest, EventUpdate) {
   EXPECT_EQ((std::vector<std::string>{url1_, url2_}), request.urls);
   SendAvailabilityResponse(request,
                            std::vector<msgs::PresentationUrlAvailability>{
-                               msgs::kCompatible, msgs::kCompatible},
+                               msgs::PresentationUrlAvailability::kCompatible,
+                               msgs::PresentationUrlAvailability::kCompatible},
                            stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_));
@@ -492,10 +501,10 @@ TEST_F(UrlAvailabilityRequesterTest, EventUpdate) {
   quic_bridge_.RunTasksUntilIdle();
 
   EXPECT_CALL(mock_callback_, OnStreamMessage(_, _, _, _, _, _)).Times(0);
-  SendAvailabilityEvent(
-      request.watch_id, std::vector<std::string>{url2_},
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
-      stream.get());
+  SendAvailabilityEvent(request.watch_id, std::vector<std::string>{url2_},
+                        std::vector<msgs::PresentationUrlAvailability>{
+                            msgs::PresentationUrlAvailability::kNotCompatible},
+                        stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url2_, service_id_));
   quic_bridge_.RunTasksUntilIdle();
@@ -514,10 +523,10 @@ TEST_F(UrlAvailabilityRequesterTest, RefreshWatches) {
   ASSERT_TRUE(stream);
 
   EXPECT_EQ(std::vector<std::string>{url1_}, request.urls);
-  SendAvailabilityResponse(
-      request,
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
-      stream.get());
+  SendAvailabilityResponse(request,
+                           std::vector<msgs::PresentationUrlAvailability>{
+                               msgs::PresentationUrlAvailability::kCompatible},
+                           stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_));
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(_, service_id_)).Times(0);
@@ -532,7 +541,8 @@ TEST_F(UrlAvailabilityRequesterTest, RefreshWatches) {
   EXPECT_EQ(std::vector<std::string>{url1_}, request.urls);
   SendAvailabilityResponse(
       request,
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
+      std::vector<msgs::PresentationUrlAvailability>{
+          msgs::PresentationUrlAvailability::kNotCompatible},
       stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_));
@@ -553,10 +563,10 @@ TEST_F(UrlAvailabilityRequesterTest, ResponseAfterRemoveObserver) {
 
   EXPECT_EQ(std::vector<std::string>{url1_}, request.urls);
   listener_.RemoveObserverUrls({url1_}, &mock_observer1);
-  SendAvailabilityResponse(
-      request,
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
-      stream.get());
+  SendAvailabilityResponse(request,
+                           std::vector<msgs::PresentationUrlAvailability>{
+                               msgs::PresentationUrlAvailability::kCompatible},
+                           stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_)).Times(0);
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_))
@@ -584,10 +594,10 @@ TEST_F(UrlAvailabilityRequesterTest,
   ASSERT_TRUE(stream);
 
   EXPECT_EQ(std::vector<std::string>{url1_}, request.urls);
-  SendAvailabilityResponse(
-      request,
-      std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
-      stream.get());
+  SendAvailabilityResponse(request,
+                           std::vector<msgs::PresentationUrlAvailability>{
+                               msgs::PresentationUrlAvailability::kCompatible},
+                           stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_));
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_))
@@ -620,12 +630,14 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserverInSteps) {
   listener_.RemoveObserverUrls({url2_}, &mock_observer1);
   SendAvailabilityResponse(request,
                            std::vector<msgs::PresentationUrlAvailability>{
-                               msgs::kCompatible, msgs::kCompatible},
+                               msgs::PresentationUrlAvailability::kCompatible,
+                               msgs::PresentationUrlAvailability::kCompatible},
                            stream.get());
   SendAvailabilityEvent(request.watch_id,
                         std::vector<std::string>{url1_, url2_},
                         std::vector<msgs::PresentationUrlAvailability>{
-                            msgs::kNotCompatible, msgs::kNotCompatible},
+                            msgs::PresentationUrlAvailability::kNotCompatible,
+                            msgs::PresentationUrlAvailability::kNotCompatible},
                         stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_)).Times(0);

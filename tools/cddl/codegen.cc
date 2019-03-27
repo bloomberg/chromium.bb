@@ -160,16 +160,24 @@ bool WriteStructMembers(
   return true;
 }
 
+void WriteEnumMembers(int fd, const CppType& type) {
+  for (const auto& x : type.enum_type.members) {
+    dprintf(fd, "  k%s = %" PRIu64 "ull,\n", ToCamelCase(x.first).c_str(),
+            x.second);
+  }
+  for (const auto* x : type.enum_type.sub_members) {
+    WriteEnumMembers(fd, *x);
+  }
+}
+
 // Writes a C++ type definition for |type| to the file descriptor |fd|.  This
 // only generates a definition for enums and structs.
 bool WriteTypeDefinition(int fd, const CppType& type) {
   switch (type.which) {
     case CppType::Which::kEnum: {
-      dprintf(fd, "\nenum %s : uint64_t {\n", ToCamelCase(type.name).c_str());
-      for (const auto& x : type.enum_type.members) {
-        dprintf(fd, "  k%s = %" PRIu64 "ull,\n", ToCamelCase(x.first).c_str(),
-                x.second);
-      }
+      dprintf(fd, "\nenum class %s : uint64_t {\n",
+              ToCamelCase(type.name).c_str());
+      WriteEnumMembers(fd, type);
       dprintf(fd, "};\n");
     } break;
     case CppType::Which::kStruct: {
@@ -428,7 +436,9 @@ bool WriteEncoder(int fd,
       return true;
     } break;
     case CppType::Which::kEnum: {
-      dprintf(fd, "  CBOR_RETURN_ON_ERROR(cbor_encode_uint(&encoder%d, %s));\n",
+      dprintf(fd,
+              "  CBOR_RETURN_ON_ERROR(cbor_encode_uint(&encoder%d, "
+              "static_cast<uint64_t>(%s)));\n",
               encoder_depth, ToUnderscoreId(name).c_str());
       return true;
     } break;

@@ -23,20 +23,20 @@ msgs::PresentationTerminationEvent_reason GetEventReason(
     TerminationReason reason) {
   switch (reason) {
     case TerminationReason::kReceiverUserTerminated:
-      return msgs::kUserViaReceiver;
+      return msgs::PresentationTerminationEvent_reason::kUserViaReceiver;
     case TerminationReason::kReceiverShuttingDown:
-      return msgs::kReceiverShuttingDown;
+      return msgs::PresentationTerminationEvent_reason::kReceiverShuttingDown;
     case TerminationReason::kReceiverPresentationUnloaded:
-      return msgs::kUnloaded;
+      return msgs::PresentationTerminationEvent_reason::kUnloaded;
     case TerminationReason::kReceiverPresentationReplaced:
-      return msgs::kNewReplacingCurrent;
+      return msgs::PresentationTerminationEvent_reason::kNewReplacingCurrent;
     case TerminationReason::kReceiverIdleTooLong:
-      return msgs::kIdleTooLong;
+      return msgs::PresentationTerminationEvent_reason::kIdleTooLong;
     case TerminationReason::kReceiverError:
-      return msgs::kReceiver;
+      return msgs::PresentationTerminationEvent_reason::kReceiver;
     case TerminationReason::kReceiverTerminateCalled:  // fallthrough
     default:
-      return msgs::kTerminate;
+      return msgs::PresentationTerminationEvent_reason::kTerminate;
   }
 }
 
@@ -125,9 +125,8 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
         msgs::PresentationInitiationResponse response;
         response.request_id = request.request_id;
 
-        // TODO(jophba): remove decltype? Can we do it in generated code?
-        response.result = static_cast<decltype(response.result)>(
-            msgs::kInvalidPresentationId);
+        response.result =
+            msgs::PresentationInitiationResponse_result::kInvalidPresentationId;
         Error write_error = WritePresentationInitiationResponse(
             response, GetProtocolConnection(endpoint_id).get());
 
@@ -155,7 +154,7 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
       msgs::PresentationInitiationResponse response;
       response.request_id = request.request_id;
       response.result =
-          static_cast<decltype(response.result)>(msgs::kUnknownError);
+          msgs::PresentationInitiationResponse_result::kUnknownError;
       Error write_error = WritePresentationInitiationResponse(
           response, GetProtocolConnection(endpoint_id).get());
       if (!write_error.ok())
@@ -184,8 +183,8 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
                                   started_presentations_.end()) {
         msgs::PresentationConnectionOpenResponse response;
         response.request_id = request.request_id;
-        response.result = static_cast<decltype(response.result)>(
-            msgs::kUnknownPresentationId);
+        response.result = msgs::PresentationConnectionOpenResponse_result::
+            kUnknownPresentationId;
         Error write_error = WritePresentationConnectionOpenResponse(
             response, GetProtocolConnection(endpoint_id).get());
         if (!write_error.ok())
@@ -214,7 +213,7 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
       msgs::PresentationConnectionOpenResponse response;
       response.request_id = request.request_id;
       response.result =
-          static_cast<decltype(response.result)>(msgs::kUnknownError);
+          msgs::PresentationConnectionOpenResponse_result::kUnknownError;
       Error write_error = WritePresentationConnectionOpenResponse(
           response, GetProtocolConnection(endpoint_id).get());
       if (!write_error.ok())
@@ -244,8 +243,8 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
       if (presentation_entry != started_presentations_.end()) {
         msgs::PresentationTerminationResponse response;
         response.request_id = request.request_id;
-        response.result = static_cast<decltype(response.result)>(
-            msgs::kInvalidPresentationId);
+        response.result = msgs::PresentationTerminationResponse_result::
+            kInvalidPresentationId;
         Error write_error = WritePresentationTerminationResponse(
             response, GetProtocolConnection(endpoint_id).get());
         if (!write_error.ok())
@@ -254,7 +253,8 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
       }
 
       TerminationReason reason =
-          (request.reason == msgs::kTerminatedByController)
+          (request.reason ==
+           msgs::PresentationTerminationRequest_reason::kTerminatedByController)
               ? TerminationReason::kControllerTerminateCalled
               : TerminationReason::kControllerUserTerminated;
       presentation_entry->second.terminate_request_id = request.request_id;
@@ -342,17 +342,16 @@ Error Receiver::OnPresentationStarted(const std::string& presentation_id,
            << protocol_connection->id();
   if (result != ResponseResult::kSuccess) {
     response.result =
-        static_cast<decltype(response.result)>(msgs::kUnknownError);
+        msgs::PresentationInitiationResponse_result::kUnknownError;
 
     queued_responses_.erase(queued_responses_entry);
     return WritePresentationInitiationResponse(response,
                                                raw_protocol_connection_ptr);
   }
 
-  response.result = static_cast<decltype(response.result)>(msgs::kSuccess);
+  response.result = msgs::PresentationInitiationResponse_result::kSuccess;
   response.has_connection_result = true;
-  response.connection_result =
-      static_cast<decltype(response.connection_result)>(msgs::kSuccess);
+  response.connection_result = msgs::PresentationConnectionOpenResult::kSuccess;
 
   Presentation& presentation = started_presentations_[presentation_id];
   presentation.endpoint_id = initiation_response.endpoint_id;
@@ -393,7 +392,7 @@ Error Receiver::OnConnectionCreated(uint64_t request_id,
 
   msgs::PresentationConnectionOpenResponse response;
   response.request_id = request_id;
-  response.result = static_cast<decltype(response.result)>(msgs::kSuccess);
+  response.result = msgs::PresentationConnectionOpenResponse_result::kSuccess;
 
   auto protocol_connection =
       GetProtocolConnection(connection_response.value()->endpoint_id);
@@ -425,7 +424,7 @@ Error Receiver::OnPresentationTerminated(const std::string& presentation_id,
     // TODO(btolsch): Also timeout if this point isn't reached.
     msgs::PresentationTerminationResponse response;
     response.request_id = presentation.terminate_request_id;
-    response.result = static_cast<decltype(response.result)>(msgs::kSuccess);
+    response.result = msgs::PresentationTerminationResponse_result::kSuccess;
     started_presentations_.erase(presentation_entry);
     return WritePresentationTerminationResponse(response,
                                                 protocol_connection.get());

@@ -84,14 +84,14 @@ class ControllerTest : public ::testing::Test {
       MockMessageCallback* mock_callback,
       msgs::PresentationUrlAvailabilityRequest* request) {
     EXPECT_CALL(*mock_callback, OnStreamMessage(_, _, _, _, _, _))
-        .WillOnce(Invoke(
-            [request](uint64_t endpoint_id, uint64_t cid,
-                      msgs::Type message_type, const uint8_t* buffer,
-                      size_t buffer_size, platform::Clock::time_point now) {
-              ssize_t result = msgs::DecodePresentationUrlAvailabilityRequest(
-                  buffer, buffer_size, request);
-              return result;
-            }));
+        .WillOnce(Invoke([request](uint64_t endpoint_id, uint64_t cid,
+                                   msgs::Type message_type,
+                                   const uint8_t* buffer, size_t buffer_size,
+                                   platform::Clock::time_point now) {
+          ssize_t result = msgs::DecodePresentationUrlAvailabilityRequest(
+              buffer, buffer_size, request);
+          return result;
+        }));
   }
 
   void SendAvailabilityResponse(
@@ -181,7 +181,8 @@ TEST_F(ControllerTest, ReceiverAvailable) {
 
   msgs::PresentationUrlAvailabilityResponse response;
   response.request_id = request.request_id;
-  response.url_availabilities.push_back(msgs::kCompatible);
+  response.url_availabilities.push_back(
+      msgs::PresentationUrlAvailability::kCompatible);
   SendAvailabilityResponse(response);
   EXPECT_CALL(mock_receiver_observer_, OnReceiverAvailable(_, _));
   quic_bridge_.RunTasksUntilIdle();
@@ -203,7 +204,8 @@ TEST_F(ControllerTest, ReceiverWatchCancel) {
 
   msgs::PresentationUrlAvailabilityResponse response;
   response.request_id = request.request_id;
-  response.url_availabilities.push_back(msgs::kCompatible);
+  response.url_availabilities.push_back(
+      msgs::PresentationUrlAvailability::kCompatible);
   SendAvailabilityResponse(response);
   EXPECT_CALL(mock_receiver_observer_, OnReceiverAvailable(_, _));
   quic_bridge_.RunTasksUntilIdle();
@@ -217,7 +219,8 @@ TEST_F(ControllerTest, ReceiverWatchCancel) {
   msgs::PresentationUrlAvailabilityEvent event;
   event.watch_id = request.watch_id;
   event.urls.emplace_back(kTestUrl);
-  event.url_availabilities.push_back(msgs::kNotCompatible);
+  event.url_availabilities.push_back(
+      msgs::PresentationUrlAvailability::kNotCompatible);
 
   EXPECT_CALL(mock_receiver_observer2, OnReceiverUnavailable(_, _));
   EXPECT_CALL(mock_receiver_observer_, OnReceiverUnavailable(_, _)).Times(0);

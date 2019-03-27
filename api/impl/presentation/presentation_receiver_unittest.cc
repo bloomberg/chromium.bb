@@ -136,22 +136,23 @@ TEST_F(PresentationReceiverTest, QueryAvailability) {
         EXPECT_EQ(std::vector<std::string>{url1_}, urls);
 
         return std::vector<msgs::PresentationUrlAvailability>{
-            msgs::kCompatible};
+            msgs::PresentationUrlAvailability::kCompatible};
       }));
 
   msgs::PresentationUrlAvailabilityResponse response;
   EXPECT_CALL(mock_callback, OnStreamMessage(_, _, _, _, _, _))
-      .WillOnce(Invoke(
-          [&response](uint64_t endpoint_id, uint64_t cid,
-                      msgs::Type message_type, const uint8_t* buffer,
-                      size_t buffer_size, platform::Clock::time_point now) {
-            ssize_t result = msgs::DecodePresentationUrlAvailabilityResponse(
-                buffer, buffer_size, &response);
-            return result;
-          }));
+      .WillOnce(Invoke([&response](uint64_t endpoint_id, uint64_t cid,
+                                   msgs::Type message_type,
+                                   const uint8_t* buffer, size_t buffer_size,
+                                   platform::Clock::time_point now) {
+        ssize_t result = msgs::DecodePresentationUrlAvailabilityResponse(
+            buffer, buffer_size, &response);
+        return result;
+      }));
   quic_bridge_.RunTasksUntilIdle();
   EXPECT_EQ(request.request_id, response.request_id);
-  EXPECT_EQ((std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible}),
+  EXPECT_EQ((std::vector<msgs::PresentationUrlAvailability>{
+                msgs::PresentationUrlAvailability::kCompatible}),
             response.url_availabilities);
 }
 
@@ -190,16 +191,16 @@ TEST_F(PresentationReceiverTest, StartPresentation) {
                                          ResponseResult::kSuccess);
   msgs::PresentationInitiationResponse response;
   EXPECT_CALL(mock_callback, OnStreamMessage(_, _, _, _, _, _))
-      .WillOnce(Invoke(
-          [&response](uint64_t endpoint_id, uint64_t cid,
-                      msgs::Type message_type, const uint8_t* buffer,
-                      size_t buffer_size, platform::Clock::time_point now) {
-            ssize_t result = msgs::DecodePresentationInitiationResponse(
-                buffer, buffer_size, &response);
-            return result;
-          }));
+      .WillOnce(Invoke([&response](uint64_t endpoint_id, uint64_t cid,
+                                   msgs::Type message_type,
+                                   const uint8_t* buffer, size_t buffer_size,
+                                   platform::Clock::time_point now) {
+        ssize_t result = msgs::DecodePresentationInitiationResponse(
+            buffer, buffer_size, &response);
+        return result;
+      }));
   quic_bridge_.RunTasksUntilIdle();
-  EXPECT_EQ(static_cast<decltype(response.result)>(msgs::kSuccess),
+  EXPECT_EQ(msgs::PresentationInitiationResponse_result::kSuccess,
             response.result);
 }
 
