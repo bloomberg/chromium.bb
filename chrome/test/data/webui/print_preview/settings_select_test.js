@@ -17,9 +17,9 @@ cr.define('settings_select_test', function() {
       document.body.appendChild(model);
 
       settingsSelect = document.createElement('print-preview-settings-select');
-      test_util.fakeDataBind(model, settingsSelect, 'settings');
       settingsSelect.settings = model.settings;
       settingsSelect.disabled = false;
+      test_util.fakeDataBind(model, settingsSelect, 'settings');
       document.body.appendChild(settingsSelect);
     });
 
