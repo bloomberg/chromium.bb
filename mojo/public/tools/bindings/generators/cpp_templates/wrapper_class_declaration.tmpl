@@ -1,3 +1,6 @@
+{%- set struct_prefix = "%s.%s"|format(module_prefix, struct.name) %}
+
+{{ kythe_annotation(struct_prefix) }}
 class {{export_attribute}} {{struct.name}} {
  public:
   using DataView = {{struct.name}}DataView;
@@ -5,11 +8,13 @@ class {{export_attribute}} {{struct.name}} {
 
 {#--- Enums #}
 {%- for enum in struct.enums -%}
+  {{ kythe_annotation(enum|get_full_mojom_name_for_kind()) }}
   using {{enum.name}} = {{enum|get_name_for_kind(flatten_nested_kind=True)}};
 {%- endfor %}
 
 {#--- Constants #}
 {%- for constant in struct.constants %}
+  {{ kythe_annotation("%s.%s"|format(struct_prefix, constant.name)) }}
   static {{constant|format_constant_declaration(nested=True)}};
 {%- endfor %}
 
@@ -119,6 +124,7 @@ class {{export_attribute}} {{struct.name}} {
 {%  for field in struct.fields %}
 {%-   set type = field.kind|cpp_wrapper_type %}
 {%-   set name = field.name %}
+  {{ kythe_annotation("%s.%s"|format(struct_prefix, name)) }}
   {{type}} {{name}};
 {%- endfor %}
 

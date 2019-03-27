@@ -215,7 +215,8 @@ class MojomProcessor(object):
             disallow_native_types=args.disallow_native_types,
             disallow_interfaces=args.disallow_interfaces,
             generate_message_ids=args.generate_message_ids,
-            generate_fuzzing=args.generate_fuzzing)
+            generate_fuzzing=args.generate_fuzzing,
+            enable_kythe_annotations=args.enable_kythe_annotations)
         filtered_args = []
         if hasattr(generator_module, 'GENERATOR_PREFIX'):
           prefix = '--' + generator_module.GENERATOR_PREFIX + '_'
@@ -497,6 +498,11 @@ def main():
       "--generate_fuzzing",
       action="store_true",
       help="Generates additional bindings for fuzzing in JS.")
+  generate_parser.add_argument(
+      "--enable_kythe_annotations",
+      action="store_true",
+      help="Adds annotations for kythe metadata generation.")
+
   generate_parser.set_defaults(func=_Generate)
 
   precompile_parser = subparsers.add_parser("precompile",

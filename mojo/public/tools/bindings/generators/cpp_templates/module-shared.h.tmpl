@@ -69,6 +69,12 @@ namespace {{namespace}} {
 #include "{{export_header}}"
 {%- endif %}
 
+{% if enable_kythe_annotations -%}
+#ifdef KYTHE_IS_RUNNING
+#pragma kythe_inline_metadata "Metadata comment"
+#endif
+{%- endif %}
+
 {{namespace_begin()}}
 
 {#--- Struct Forward Declarations -#}
@@ -105,8 +111,10 @@ namespace internal {
 
 {{namespace_begin()}}
 
+{%- set module_prefix = "%s"|format(namespaces_as_array|join(".")) %}
+
 {#--- Enums #}
-{%- from "enum_macros.tmpl" import enum_decl%}
+{%- from "enum_macros.tmpl" import enum_decl with context %}
 {%- for enum in all_enums %}
 {%-   if enum|is_native_only_kind %}
 using {{enum|get_name_for_kind(flatten_nested_kind=True)}} = mojo::NativeEnum;

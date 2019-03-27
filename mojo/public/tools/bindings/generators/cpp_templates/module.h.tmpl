@@ -30,6 +30,12 @@ namespace {{variant}} {
 {%-   endfor %}
 {%- endmacro %}
 
+{%- macro kythe_annotation(name) %}
+{%- if enable_kythe_annotations %}
+// @generated_from: {{name}}
+{%- endif %}
+{%- endmacro %}
+
 #ifndef {{header_guard}}
 #define {{header_guard}}
 
@@ -119,6 +125,12 @@ namespace {{variant}} {
 #include "{{export_header}}"
 {%- endif %}
 
+{% if enable_kythe_annotations -%}
+#ifdef KYTHE_IS_RUNNING
+#pragma kythe_inline_metadata "Metadata comment"
+#endif
+{%- endif %}
+
 {#--- WTF enum hashing #}
 {%- from "enum_macros.tmpl" import enum_hash_blink%}
 {%- if for_blink %}
@@ -130,6 +142,8 @@ namespace {{variant}} {
 {%- endif %}
 
 {{namespace_begin()}}
+
+{%- set module_prefix = "%s"|format(namespaces_as_array|join(".")) %}
 
 {#--- Interfaces -#}
 {%  for interface in interfaces %}

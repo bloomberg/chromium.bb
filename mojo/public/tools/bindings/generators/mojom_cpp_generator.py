@@ -294,6 +294,7 @@ class Generator(generator.Generator):
       "all_enums": all_enums,
       "disallow_interfaces": self.disallow_interfaces,
       "disallow_native_types": self.disallow_native_types,
+      "enable_kythe_annotations": self.enable_kythe_annotations,
       "enums": self.module.enums,
       "export_attribute": self.export_attribute,
       "export_header": self.export_header,
@@ -337,6 +338,7 @@ class Generator(generator.Generator):
       "format_constant_declaration": self._FormatConstantDeclaration,
       "get_container_validate_params_ctor_args":
           self._GetContainerValidateParamsCtorArgs,
+      "get_full_mojom_name_for_kind": self._GetFullMojomNameForKind,
       "get_name_for_kind": self._GetNameForKind,
       "get_pad": pack.GetPad,
       "get_qualified_name_for_kind": self._GetQualifiedNameForKind,

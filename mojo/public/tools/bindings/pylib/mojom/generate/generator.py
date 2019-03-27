@@ -165,7 +165,7 @@ class Generator(object):
                export_header=None, generate_non_variant_code=False,
                support_lazy_serialization=False, disallow_native_types=False,
                disallow_interfaces=False, generate_message_ids=False,
-               generate_fuzzing=False):
+               generate_fuzzing=False, enable_kythe_annotations=False):
     self.module = module
     self.output_dir = output_dir
     self.typemap = typemap or {}
@@ -181,6 +181,7 @@ class Generator(object):
     self.disallow_interfaces = disallow_interfaces
     self.generate_message_ids = generate_message_ids
     self.generate_fuzzing = generate_fuzzing
+    self.enable_kythe_annotations = enable_kythe_annotations
 
   def Write(self, contents, filename):
     if self.output_dir is None:
