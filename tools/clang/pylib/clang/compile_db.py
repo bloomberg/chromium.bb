@@ -102,17 +102,6 @@ def GetNinjaPath():
         '..', '..', '..', '..', 'third_party', 'depot_tools', ninja_executable)
 
 
-def IsGeneratedFile(entry):
-  """Check whether an entry in a compilation database is for generated file.
-  """
-  build_dir = entry['directory']
-  # According to https://www.chromium.org/developers/generated-files, Chromium's
-  # generated files are output in <build_dir>/gen directory.
-  gen_dir = os.path.join(build_dir, 'gen', '') # with trailing path separator
-  absolute_file_path = os.path.normpath(os.path.join(build_dir, entry['file']))
-  return absolute_file_path.startswith(gen_dir)
-
-
 # FIXME: This really should be a build target, rather than generated at runtime.
 def GenerateWithNinja(path, targets=[]):
   """Generates a compile database using ninja.
@@ -127,13 +116,10 @@ def GenerateWithNinja(path, targets=[]):
   # TODO(dcheng): Ensure that clang is enabled somehow.
 
   # First, generate the compile database.
-  json_compile_db = json.loads(subprocess.check_output(
+  json_compile_db = subprocess.check_output(
       [GetNinjaPath(), '-C', path] + targets +
-      ['-t', 'compdb', 'cc', 'cxx', 'objc', 'objcxx']))
-  # Drop generated files.
-  # The directory of the compliation database entry is expected to be the
-  # absolute path of the given 'path'.
-  return [entry for entry in json_compile_db if not IsGeneratedFile(entry) ]
+      ['-t', 'compdb', 'cc', 'cxx', 'objc', 'objcxx'])
+  return json.loads(json_compile_db)
 
 
 def Read(path):
