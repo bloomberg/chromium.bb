@@ -136,6 +136,7 @@ class GitCL(object):
 
         def closed_status_or_none():
             status = self._get_cl_status()
+            _log.debug('CL status is: %s', status)
             if status == 'closed':
                 self._host.print_('CL is closed.')
                 return status
