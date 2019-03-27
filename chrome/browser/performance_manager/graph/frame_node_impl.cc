@@ -215,14 +215,6 @@ void FrameNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
     observer.OnFrameEventReceived(this, event);
 }
 
-void FrameNodeImpl::OnPropertyChanged(
-    resource_coordinator::mojom::PropertyType property_type,
-    int64_t value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : observers())
-    observer.OnFramePropertyChanged(this, property_type, value);
-}
-
 bool FrameNodeImpl::HasFrameNodeInAncestors(FrameNodeImpl* frame_node) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (parent_frame_node_ == frame_node ||

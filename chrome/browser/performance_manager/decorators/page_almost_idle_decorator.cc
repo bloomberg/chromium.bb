@@ -74,16 +74,6 @@ bool PageAlmostIdleDecorator::ShouldObserve(const NodeBase* node) {
   NOTREACHED();
 }
 
-void PageAlmostIdleDecorator::OnProcessPropertyChanged(
-    ProcessNodeImpl* process_node,
-    resource_coordinator::mojom::PropertyType property_type,
-    int64_t value) {
-  if (property_type ==
-      resource_coordinator::mojom::PropertyType::kMainThreadTaskLoadIsLow) {
-    UpdateLoadIdleStateProcess(process_node);
-  }
-}
-
 void PageAlmostIdleDecorator::OnPageEventReceived(
     PageNodeImpl* page_node,
     resource_coordinator::mojom::Event event) {
@@ -106,6 +96,11 @@ void PageAlmostIdleDecorator::OnNetworkAlmostIdleChanged(
 
 void PageAlmostIdleDecorator::OnIsLoadingChanged(PageNodeImpl* page_node) {
   UpdateLoadIdleStatePage(page_node);
+}
+
+void PageAlmostIdleDecorator::OnMainThreadTaskLoadIsLow(
+    ProcessNodeImpl* process_node) {
+  UpdateLoadIdleStateProcess(process_node);
 }
 
 void PageAlmostIdleDecorator::UpdateLoadIdleStateFrame(
@@ -249,10 +244,7 @@ bool PageAlmostIdleDecorator::IsIdling(const PageNodeImpl* page_node) {
   // of session restore this is mitigated by having a timeout while waiting for
   // this signal.
   return main_frame_node->network_almost_idle() &&
-         process_node->GetPropertyOrDefault(
-             resource_coordinator::mojom::PropertyType::
-                 kMainThreadTaskLoadIsLow,
-             0u);
+         process_node->main_thread_task_load_is_low();
 }
 
 // static

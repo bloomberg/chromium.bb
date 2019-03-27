@@ -73,9 +73,6 @@ class SystemNodeImpl : public TypedNodeBase<SystemNodeImpl> {
 
   // CoordinationUnitInterface implementation:
   void OnEventReceived(resource_coordinator::mojom::Event event) override;
-  void OnPropertyChanged(
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) override;
 
   DISALLOW_COPY_AND_ASSIGN(SystemNodeImpl);
 };

@@ -20,22 +20,6 @@ using NodeBaseDeathTest = NodeBaseTest;
 
 }  // namespace
 
-TEST_F(NodeBaseTest, GetSetProperty) {
-  auto node = CreateNode<PageNodeImpl>();
-
-  // An empty value should be returned if property is not found
-  int64_t test_value;
-  EXPECT_FALSE(node->GetProperty(
-      resource_coordinator::mojom::PropertyType::kTest, &test_value));
-
-  // Perform a valid storage property set
-  node->SetPropertyForTesting(41);
-  EXPECT_EQ(1u, node->properties_for_testing().size());
-  EXPECT_TRUE(node->GetProperty(
-      resource_coordinator::mojom::PropertyType::kTest, &test_value));
-  EXPECT_EQ(41, test_value);
-}
-
 TEST_F(NodeBaseTest,
        GetAssociatedCoordinationUnitsForSinglePageInSingleProcess) {
   MockSinglePageInSingleProcessGraph mock_graph(graph());

@@ -229,7 +229,7 @@ void PerformanceManagerTabHelper::OnMainFrameNavigation(int64_t navigation_id) {
       ukm::ConvertToSourceId(navigation_id, ukm::SourceIdType::NAVIGATION_ID);
   performance_manager_->task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&PageNodeImpl::SetUKMSourceId,
+      base::BindOnce(&PageNodeImpl::SetUkmSourceId,
                      base::Unretained(page_node_.get()), ukm_source_id_));
 
   first_time_title_set_ = false;

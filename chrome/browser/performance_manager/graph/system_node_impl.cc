@@ -101,7 +101,7 @@ void SystemNodeImpl::DistributeMeasurementBatch(
           time_since_last_measurement.is_zero()) {
         // Imitate the behavior of GetPlatformIndependentCPUUsage, which
         // yields zero for the initial measurement of each process.
-        process->SetCPUUsage(0.0);
+        process->SetCPUUsage(0);
       } else {
         double cpu_usage = 100.0 * cumulative_cpu_delta.InMicrosecondsF() /
                            time_since_last_measurement.InMicrosecondsF();
@@ -162,14 +162,6 @@ void SystemNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnSystemEventReceived(this, event);
-}
-
-void SystemNodeImpl::OnPropertyChanged(
-    resource_coordinator::mojom::PropertyType property_type,
-    int64_t value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : observers())
-    observer.OnSystemPropertyChanged(this, property_type, value);
 }
 
 }  // namespace performance_manager

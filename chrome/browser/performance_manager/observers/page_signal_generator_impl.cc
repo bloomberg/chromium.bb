@@ -83,19 +83,6 @@ void PageSignalGeneratorImpl::OnBeforeNodeRemoved(NodeBase* cu) {
   DCHECK_EQ(1u, count);  // This should always erase exactly one CU.
 }
 
-void PageSignalGeneratorImpl::OnPagePropertyChanged(
-    PageNodeImpl* page_node,
-    resource_coordinator::mojom::PropertyType property_type,
-    int64_t value) {
-  if (property_type ==
-      resource_coordinator::mojom::PropertyType::kLifecycleState) {
-    DispatchPageSignal(
-        page_node,
-        &resource_coordinator::mojom::PageSignalReceiver::SetLifecycleState,
-        static_cast<resource_coordinator::mojom::LifecycleState>(value));
-  }
-}
-
 void PageSignalGeneratorImpl::OnFrameEventReceived(
     FrameNodeImpl* frame_node,
     resource_coordinator::mojom::Event event) {
@@ -172,6 +159,13 @@ void PageSignalGeneratorImpl::OnPageAlmostIdleChanged(PageNodeImpl* page_node) {
         page_node,
         &resource_coordinator::mojom::PageSignalReceiver::NotifyPageAlmostIdle);
   }
+}
+
+void PageSignalGeneratorImpl::OnLifecycleStateChanged(PageNodeImpl* page_node) {
+  DispatchPageSignal(
+      page_node,
+      &resource_coordinator::mojom::PageSignalReceiver::SetLifecycleState,
+      page_node->lifecycle_state());
 }
 
 void PageSignalGeneratorImpl::OnExpectedTaskQueueingDurationSample(

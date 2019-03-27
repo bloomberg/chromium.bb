@@ -19,15 +19,3 @@ enum Event {
   // This signal is set to the renderer ProcessCU.
   kRendererIsBloated,
 };
-
-// Defines the Storage property keys that can be get/set on the
-// CoordinationUnitImpl internal key-value store.
-enum PropertyType {
-  kTest,
-  kCPUUsage,
-  kExpectedTaskQueueingDuration,
-  kMainThreadTaskLoadIsLow,
-  kPID,
-  kUKMSourceId,
-  kLifecycleState,
-};

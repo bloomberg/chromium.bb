@@ -33,11 +33,8 @@ class MockGraphObserver : public GraphObserver {
 
 TEST_F(ProcessNodeImplTest, MeasureCPUUsage) {
   auto process_node = CreateNode<ProcessNodeImpl>();
-  process_node->SetCPUUsage(1);
-  int64_t cpu_usage;
-  EXPECT_TRUE(process_node->GetProperty(
-      resource_coordinator::mojom::PropertyType::kCPUUsage, &cpu_usage));
-  EXPECT_EQ(1, cpu_usage / 1000.0);
+  process_node->SetCPUUsage(1.0);
+  EXPECT_EQ(1.0, process_node->cpu_usage());
 }
 
 TEST_F(ProcessNodeImplTest, OnAllFramesInProcessFrozen) {

@@ -40,10 +40,6 @@ class PageSignalGeneratorImpl
   bool ShouldObserve(const NodeBase* node) override;
   void OnNodeAdded(NodeBase* node) override;
   void OnBeforeNodeRemoved(NodeBase* node) override;
-  void OnPagePropertyChanged(
-      PageNodeImpl* page_node,
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) override;
   void OnFrameEventReceived(FrameNodeImpl* frame_node,
                             resource_coordinator::mojom::Event event) override;
   void OnProcessEventReceived(
@@ -52,6 +48,7 @@ class PageSignalGeneratorImpl
   void OnSystemEventReceived(SystemNodeImpl* system_node,
                              resource_coordinator::mojom::Event event) override;
   void OnPageAlmostIdleChanged(PageNodeImpl* page_node) override;
+  void OnLifecycleStateChanged(PageNodeImpl* page_node) override;
   void OnExpectedTaskQueueingDurationSample(
       ProcessNodeImpl* process_node) override;
 

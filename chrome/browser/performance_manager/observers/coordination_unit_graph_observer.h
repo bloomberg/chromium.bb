@@ -49,37 +49,6 @@ class GraphObserver {
   // Called when the |node| is about to be destroyed.
   virtual void OnBeforeNodeRemoved(NodeBase* node) {}
 
-  // Called whenever a property of the |node| is changed if the
-  // |node| doesn't implement its own PropertyChanged handler.
-  virtual void OnPropertyChanged(
-      NodeBase* node,
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) {}
-
-  // Called whenever a property of the FrameNode is changed.
-  virtual void OnFramePropertyChanged(
-      FrameNodeImpl* frame_node,
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) {}
-
-  // Called whenever a property of the PageCoordinationUnit is changed.
-  virtual void OnPagePropertyChanged(
-      PageNodeImpl* page_node,
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) {}
-
-  // Called whenever a property of the ProcessCoordinationUnit is changed.
-  virtual void OnProcessPropertyChanged(
-      ProcessNodeImpl* process_node,
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) {}
-
-  // Called whenever a property of the SystemCoordinationUnit is changed.
-  virtual void OnSystemPropertyChanged(
-      SystemNodeImpl* system_node,
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) {}
-
   // Called whenever an event is received in |node| if the
   // |node| doesn't implement its own EventReceived handler.
   virtual void OnEventReceived(NodeBase* node,
@@ -101,10 +70,13 @@ class GraphObserver {
   // PageNodeImpl notifications.
   virtual void OnIsVisibleChanged(PageNodeImpl* page_node) {}
   virtual void OnIsLoadingChanged(PageNodeImpl* page_node) {}
+  virtual void OnUkmSourceIdChanged(PageNodeImpl* page_node) {}
+  virtual void OnLifecycleStateChanged(PageNodeImpl* page_node) {}
 
   // ProcessNodeImpl notifications.
   virtual void OnExpectedTaskQueueingDurationSample(
       ProcessNodeImpl* process_node) {}
+  virtual void OnMainThreadTaskLoadIsLow(ProcessNodeImpl* process_node) {}
 
   // Called when page almost idle state changes. This is a computed property and
   // will only be maintained if a PageAlmostIdleDecorator exists on the graph.

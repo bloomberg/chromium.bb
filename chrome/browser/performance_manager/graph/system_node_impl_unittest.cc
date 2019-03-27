@@ -35,21 +35,10 @@ class SystemAndProcessObserver : public GraphObserver {
     ++system_event_seen_count_;
   }
 
-  void OnProcessPropertyChanged(
-      ProcessNodeImpl* process_node,
-      resource_coordinator::mojom::PropertyType property,
-      int64_t value) override {
-    ++process_property_change_seen_count_;
-  }
-
   size_t system_event_seen_count() const { return system_event_seen_count_; }
-  size_t process_property_change_seen_count() const {
-    return process_property_change_seen_count_;
-  }
 
  private:
   size_t system_event_seen_count_ = 0;
-  size_t process_property_change_seen_count_ = 0;
 };
 
 class SystemNodeImplTest : public GraphTestHarness {
@@ -114,28 +103,21 @@ TEST_F(SystemNodeImplTest, DistributeMeasurementBatch) {
 
   // Build and dispatch a measurement batch.
   base::TimeTicks start_time = base::TimeTicks::Now();
-  EXPECT_EQ(0U, observer.process_property_change_seen_count());
   mock_graph.system->DistributeMeasurementBatch(
       CreateMeasurementBatch(start_time, 3, base::TimeDelta()));
 
   EXPECT_EQ(start_time, mock_graph.system->last_measurement_start_time());
   EXPECT_EQ(start_time, mock_graph.system->last_measurement_end_time());
 
-  EXPECT_EQ(2U, observer.process_property_change_seen_count());
   EXPECT_EQ(1u, observer.system_event_seen_count());
 
   // The first measurement batch results in a zero CPU usage for the processes.
-  int64_t cpu_usage;
-  EXPECT_TRUE(mock_graph.process->GetProperty(
-      resource_coordinator::mojom::PropertyType::kCPUUsage, &cpu_usage));
-  EXPECT_EQ(0, cpu_usage);
+  EXPECT_EQ(0, mock_graph.process->cpu_usage());
   EXPECT_EQ(100u, mock_graph.process->private_footprint_kb());
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(10u),
             mock_graph.process->cumulative_cpu_usage());
 
-  EXPECT_TRUE(mock_graph.other_process->GetProperty(
-      resource_coordinator::mojom::PropertyType::kCPUUsage, &cpu_usage));
-  EXPECT_EQ(0, cpu_usage);
+  EXPECT_EQ(0, mock_graph.process->cpu_usage());
   EXPECT_EQ(200u, mock_graph.other_process->private_footprint_kb());
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(20u),
             mock_graph.other_process->cumulative_cpu_usage());
@@ -152,14 +134,10 @@ TEST_F(SystemNodeImplTest, DistributeMeasurementBatch) {
   mock_graph.system->DistributeMeasurementBatch(
       CreateMeasurementBatch(start_time + base::TimeDelta::FromMicroseconds(10),
                              3, base::TimeDelta::FromMicroseconds(10)));
-  EXPECT_TRUE(mock_graph.process->GetProperty(
-      resource_coordinator::mojom::PropertyType::kCPUUsage, &cpu_usage));
-  EXPECT_EQ(100000, cpu_usage);
+  EXPECT_EQ(100, mock_graph.process->cpu_usage());
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(20u),
             mock_graph.process->cumulative_cpu_usage());
-  EXPECT_TRUE(mock_graph.other_process->GetProperty(
-      resource_coordinator::mojom::PropertyType::kCPUUsage, &cpu_usage));
-  EXPECT_EQ(100000, cpu_usage);
+  EXPECT_EQ(100, mock_graph.process->cpu_usage());
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(30u),
             mock_graph.other_process->cumulative_cpu_usage());
 
@@ -178,16 +156,12 @@ TEST_F(SystemNodeImplTest, DistributeMeasurementBatch) {
       CreateMeasurementBatch(start_time + base::TimeDelta::FromMicroseconds(20),
                              1, base::TimeDelta::FromMicroseconds(310)));
 
-  EXPECT_TRUE(mock_graph.process->GetProperty(
-      resource_coordinator::mojom::PropertyType::kCPUUsage, &cpu_usage));
-  EXPECT_EQ(3000000, cpu_usage);
+  EXPECT_EQ(3000, mock_graph.process->cpu_usage());
   EXPECT_EQ(100u, mock_graph.process->private_footprint_kb());
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(320u),
             mock_graph.process->cumulative_cpu_usage());
 
-  EXPECT_TRUE(mock_graph.other_process->GetProperty(
-      resource_coordinator::mojom::PropertyType::kCPUUsage, &cpu_usage));
-  EXPECT_EQ(0, cpu_usage);
+  EXPECT_EQ(3000, mock_graph.process->cpu_usage());
   EXPECT_EQ(0u, mock_graph.other_process->private_footprint_kb());
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(30u),
             mock_graph.other_process->cumulative_cpu_usage());

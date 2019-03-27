@@ -106,9 +106,9 @@ void PageNodeImpl::SetIsVisible(bool is_visible) {
   visibility_change_time_ = ResourceCoordinatorClock::NowTicks();
 }
 
-void PageNodeImpl::SetUKMSourceId(int64_t ukm_source_id) {
-  SetProperty(resource_coordinator::mojom::PropertyType::kUKMSourceId,
-              ukm_source_id);
+void PageNodeImpl::SetUkmSourceId(ukm::SourceId ukm_source_id) {
+  SetPropertyAndNotifyObserversIfChanged(&GraphObserver::OnUkmSourceIdChanged,
+                                         ukm_source_id, this, &ukm_source_id_);
 }
 
 void PageNodeImpl::OnFaviconUpdated() {
@@ -144,22 +144,16 @@ std::set<ProcessNodeImpl*> PageNodeImpl::GetAssociatedProcessCoordinationUnits()
 
 double PageNodeImpl::GetCPUUsage() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  double cpu_usage = 0.0;
+  double cpu_usage = 0;
 
   for (auto* process_node : GetAssociatedProcessCoordinationUnits()) {
     size_t pages_in_process =
         process_node->GetAssociatedPageCoordinationUnits().size();
     DCHECK_LE(1u, pages_in_process);
-
-    int64_t process_cpu_usage = 0;
-    if (process_node->GetProperty(
-            resource_coordinator::mojom::PropertyType::kCPUUsage,
-            &process_cpu_usage)) {
-      cpu_usage += static_cast<double>(process_cpu_usage) / pages_in_process;
-    }
+    cpu_usage += process_node->cpu_usage() / pages_in_process;
   }
 
-  return cpu_usage / 1000;
+  return cpu_usage;
 }
 
 base::TimeDelta PageNodeImpl::TimeSinceLastNavigation() const {
@@ -299,31 +293,18 @@ void PageNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
     observer.OnPageEventReceived(this, event);
 }
 
-void PageNodeImpl::OnPropertyChanged(
-    const resource_coordinator::mojom::PropertyType property_type,
-    int64_t value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : observers())
-    observer.OnPagePropertyChanged(this, property_type, value);
-}
-
 void PageNodeImpl::OnNumFrozenFramesStateChange(int num_frozen_frames_delta) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   num_frozen_frames_ += num_frozen_frames_delta;
   DCHECK_LE(num_frozen_frames_, frame_node_count_);
 
-  const int64_t kRunning = static_cast<int64_t>(
-      resource_coordinator::mojom::LifecycleState::kRunning);
-  const int64_t kFrozen = static_cast<int64_t>(
-      resource_coordinator::mojom::LifecycleState::kFrozen);
+  const auto kRunning = resource_coordinator::mojom::LifecycleState::kRunning;
+  const auto kFrozen = resource_coordinator::mojom::LifecycleState::kFrozen;
 
   // We are interested in knowing when we have transitioned to or from
   // "fully frozen". A page with no frames is considered to be running by
   // default.
-  bool was_fully_frozen =
-      GetPropertyOrDefault(
-          resource_coordinator::mojom::PropertyType::kLifecycleState,
-          kRunning) == kFrozen;
+  bool was_fully_frozen = lifecycle_state_ == kFrozen;
   bool is_fully_frozen =
       (frame_node_count_ != 0) && num_frozen_frames_ == frame_node_count_;
   if (was_fully_frozen == is_fully_frozen)
@@ -346,8 +327,11 @@ void PageNodeImpl::OnNumFrozenFramesStateChange(int num_frozen_frames_delta) {
 
   // TODO(fdoray): Store the lifecycle state as a member on the
   // PageCoordinationUnit rather than as a non-typed property.
-  SetProperty(resource_coordinator::mojom::PropertyType::kLifecycleState,
-              is_fully_frozen ? kFrozen : kRunning);
+  resource_coordinator::mojom::LifecycleState lifecycle_state =
+      is_fully_frozen ? kFrozen : kRunning;
+  SetPropertyAndNotifyObserversIfChanged(
+      &GraphObserver::OnLifecycleStateChanged, lifecycle_state, this,
+      &lifecycle_state_);
 }
 
 void PageNodeImpl::InvalidateAllInterventionPolicies() {
