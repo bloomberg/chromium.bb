@@ -53,6 +53,9 @@ std::string DumpEvents(AXEventGenerator* generator) {
       case AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
         event_name = "DOCUMENT_TITLE_CHANGED";
         break;
+      case AXEventGenerator::Event::ENABLED_CHANGED:
+        event_name = "ENABLED_CHANGED";
+        break;
       case AXEventGenerator::Event::EXPANDED:
         event_name = "EXPANDED";
         break;
@@ -113,6 +116,9 @@ std::string DumpEvents(AXEventGenerator* generator) {
       case AXEventGenerator::Event::RELATED_NODE_CHANGED:
         event_name = "RELATED_NODE_CHANGED";
         break;
+      case AXEventGenerator::Event::READONLY_CHANGED:
+        event_name = "READONLY_CHANGED";
+        break;
       case AXEventGenerator::Event::ROLE_CHANGED:
         event_name = "ROLE_CHANGED";
         break;
@@ -136,6 +142,15 @@ std::string DumpEvents(AXEventGenerator* generator) {
         break;
       case AXEventGenerator::Event::VALUE_CHANGED:
         event_name = "VALUE_CHANGED";
+        break;
+      case AXEventGenerator::Event::VALUE_MAX_CHANGED:
+        event_name = "VALUE_MAX_CHANGED";
+        break;
+      case AXEventGenerator::Event::VALUE_MIN_CHANGED:
+        event_name = "VALUE_MIN_CHANGED";
+        break;
+      case AXEventGenerator::Event::VALUE_STEP_CHANGED:
+        event_name = "VALUE_STEP_CHANGED";
         break;
       default:
         NOTREACHED();

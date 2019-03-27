@@ -1735,8 +1735,6 @@ void BrowserAccessibilityComWin::UpdateStep3FireEvents(
     }
     if (description() != old_win_attributes_->description)
       FireNativeEvent(EVENT_OBJECT_DESCRIPTIONCHANGE);
-    if (value() != old_win_attributes_->value)
-      FireNativeEvent(EVENT_OBJECT_VALUECHANGE);
 
     // Do not fire EVENT_OBJECT_STATECHANGE if the change was due to a focus
     // change.

@@ -34,6 +34,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     DESCRIPTION_CHANGED,
     DOCUMENT_SELECTION_CHANGED,
     DOCUMENT_TITLE_CHANGED,
+    ENABLED_CHANGED,
     EXPANDED,
     FLOW_TO_CHANGED,
     HIERARCHICAL_LEVEL_CHANGED,
@@ -54,6 +55,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     PLACEHOLDER_CHANGED,
     POSITION_IN_SET_CHANGED,
     RELATED_NODE_CHANGED,
+    READONLY_CHANGED,
     ROLE_CHANGED,
     ROW_COUNT_CHANGED,
     SCROLL_POSITION_CHANGED,
@@ -62,6 +64,9 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     SET_SIZE_CHANGED,
     STATE_CHANGED,
     VALUE_CHANGED,
+    VALUE_MAX_CHANGED,
+    VALUE_MIN_CHANGED,
+    VALUE_STEP_CHANGED,
   };
 
   struct EventParams {
@@ -194,6 +199,9 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   void FireActiveDescendantEvents();
   void FireRelationSourceEvents(AXTree* tree, AXNode* target_node);
   bool ShouldFireLoadEvents(AXNode* node);
+  static void GetRestrictionStates(ax::mojom::Restriction restriction,
+                                   bool* is_enabled,
+                                   bool* is_readonly);
 
   AXTree* tree_ = nullptr;  // Not owned.
   std::map<AXNode*, std::set<EventParams>> tree_events_;
