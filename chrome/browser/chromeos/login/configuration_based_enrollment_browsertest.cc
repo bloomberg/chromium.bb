@@ -121,14 +121,12 @@ class EnterpriseEnrollmentConfigurationTest : public OobeBaseTest {
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
   }
 
-  // Returns true if there are any OAuth-Enroll DOM elements with the given
-  // class.
-  bool IsStepDisplayed(const std::string& step) {
+  // Waits until specific enrollment step is displayed.
+  void WaitForStep(const std::string& step) {
     const std::string js =
         "document.getElementsByClassName('oauth-enroll-state-" + step +
-        "').length";
-    int count = test::OobeJS().GetInt(js);
-    return count > 0;
+        "').length > 0";
+    test::OobeJS().CreateWaiter(js)->Wait();
   }
 
  protected:
@@ -278,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestAcceptEula) {
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestSkipUpdate) {
   LoadConfiguration();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
-  EXPECT_TRUE(IsStepDisplayed("signin"));
+  WaitForStep("signin");
 }
 
 // Check that when configuration has requisition, it gets applied at the
@@ -304,8 +302,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
       "00000000-1111-2222-3333-444444444444");
   LoadConfiguration();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
-  test::OobeJS().Evaluate(";");
-  EXPECT_TRUE(IsStepDisplayed("success"));
+  WaitForStep("success");
 }
 
 // Check that HID detection screen is shown if it is not specified by
