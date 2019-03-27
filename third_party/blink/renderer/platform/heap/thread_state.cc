@@ -1135,12 +1135,21 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
       event.scope_data[ThreadHeapStatsCollector::kLazySweepOnAllocation];
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForGCCycle", cycle_duration);
 
-  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForNestedInV8", event.gc_nested_in_v8_);
+  const WTF::TimeDelta incremental_marking_duration =
+      event.scope_data
+          [ThreadHeapStatsCollector::kIncrementalMarkingStartMarking] +
+      event.scope_data[ThreadHeapStatsCollector::kIncrementalMarkingStep];
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForIncrementalMarking",
+                      incremental_marking_duration);
 
-  // TODO(mlippautz): Update name of this histogram.
-  UMA_HISTOGRAM_TIMES(
-      "BlinkGC.CollectGarbage",
-      event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]);
+  const WTF::TimeDelta marking_duration =
+      event.scope_data
+          [ThreadHeapStatsCollector::kIncrementalMarkingStartMarking] +
+      event.scope_data[ThreadHeapStatsCollector::kIncrementalMarkingStep] +
+      event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking];
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForMarking", marking_duration);
+
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForNestedInV8", event.gc_nested_in_v8_);
 
   UMA_HISTOGRAM_TIMES(
       "BlinkGC.AtomicPhaseMarking",
