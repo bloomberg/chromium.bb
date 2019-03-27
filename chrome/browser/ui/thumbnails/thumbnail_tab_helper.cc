@@ -85,7 +85,7 @@ void ThumbnailTabHelper::ScheduleThumbnailCapture(CaptureSchedule schedule) {
     return;
 
   // We will do the capture either now or at some point in the future.
-  constexpr base::TimeDelta kDelayTime = base::TimeDelta::FromMilliseconds(500);
+  constexpr base::TimeDelta kDelayTime = base::TimeDelta::FromMilliseconds(250);
   base::TimeDelta delay;
   if (schedule == CaptureSchedule::kDelayed)
     delay += kDelayTime;
@@ -98,7 +98,7 @@ void ThumbnailTabHelper::ScheduleThumbnailCapture(CaptureSchedule schedule) {
   // If we would schedule a non-immediate capture too close to an existing
   // capture, push it out or discard it altogether.
   constexpr base::TimeDelta kMinTimeBetweenCaptures =
-      base::TimeDelta::FromMilliseconds(2000);
+      base::TimeDelta::FromMilliseconds(1000);
   if (schedule != CaptureSchedule::kImmediate &&
       delay - until_scheduled < kMinTimeBetweenCaptures) {
     if (until_scheduled > delay)
