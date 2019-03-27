@@ -6,6 +6,7 @@
 
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_block.h"
 #include "base/mac/scoped_nsobject.h"
 
 // Best documentation / Is unofficial documentation
@@ -26,8 +27,11 @@ NSString* const kStagingKey = @"UpdatePending";
 
 @interface CrStagingKeyWatcher () {
   base::scoped_nsobject<NSUserDefaults> defaults_;
+  NSTimeInterval pollingTime_;
+  base::scoped_nsobject<NSTimer> pollingTimer_;
   BOOL observing_;
-  base::scoped_nsobject<NSPort> wakePort_;
+  base::mac::ScopedBlock<StagingKeyChangedObserver> callback_;
+  BOOL lastStagingKeyValue_;
 
   BOOL kvoDisabledForTesting_;
   BOOL lastWaitWasBlockedForTesting_;
@@ -37,14 +41,23 @@ NSString* const kStagingKey = @"UpdatePending";
 
 @implementation CrStagingKeyWatcher
 
-- (instancetype)init {
-  return [self initWithUserDefaults:[NSUserDefaults standardUserDefaults]];
+- (instancetype)initWithPollingTime:(NSTimeInterval)pollingTime {
+  return [self initWithUserDefaults:[NSUserDefaults standardUserDefaults]
+                        pollingTime:pollingTime];
 }
 
-- (instancetype)initWithUserDefaults:(NSUserDefaults*)defaults {
+- (instancetype)initWithUserDefaults:(NSUserDefaults*)defaults
+                         pollingTime:(NSTimeInterval)pollingTime {
   if ((self = [super init])) {
+    pollingTime_ = pollingTime;
     defaults_.reset(defaults, base::scoped_policy::RETAIN);
+    lastStagingKeyValue_ = [self isStagingKeySet];
     if (base::mac::IsAtLeastOS10_12() && !kvoDisabledForTesting_) {
+      // If a change is made in another process (which is the use case here),
+      // the prior value is never provided in the observation callback change
+      // dictionary, whether or not NSKeyValueObservingOptionPrior is specified.
+      // Therefore, pass in 0 for the NSKeyValueObservingOptions and rely on
+      // keeping the previous value in |lastStagingKeyValue_|.
       [defaults_ addObserver:self
                   forKeyPath:kStagingKey
                      options:0
@@ -55,7 +68,7 @@ NSString* const kStagingKey = @"UpdatePending";
   return self;
 }
 
-- (BOOL)shouldWait {
+- (BOOL)isStagingKeySet {
   NSArray<NSString*>* paths = [defaults_ stringArrayForKey:kStagingKey];
   if (!paths)
     return NO;
@@ -65,28 +78,29 @@ NSString* const kStagingKey = @"UpdatePending";
   return [paths containsObject:appPath];
 }
 
-- (void)waitForStagingKey {
-  if (![self shouldWait]) {
+- (void)waitForStagingKeyToClear {
+  if (![self isStagingKeySet]) {
     lastWaitWasBlockedForTesting_ = NO;
     return;
   }
 
   NSRunLoop* runloop = [NSRunLoop currentRunLoop];
   if (observing_) {
-    wakePort_.reset([NSPort port], base::scoped_policy::RETAIN);
-    [runloop addPort:wakePort_ forMode:NSDefaultRunLoopMode];
+    callback_.reset(
+        ^(BOOL stagingKeySet) {
+          CFRunLoopStop([runloop getCFRunLoop]);
+        },
+        base::scoped_policy::RETAIN);
 
-    while ([self shouldWait] && [runloop runMode:NSDefaultRunLoopMode
-                                      beforeDate:[NSDate distantFuture]]) {
+    while ([self isStagingKeySet] && [runloop runMode:NSDefaultRunLoopMode
+                                           beforeDate:[NSDate distantFuture]]) {
       /* run! */
     }
   } else {
-    const NSTimeInterval kPollingTime = 0.5;
-
-    while ([self shouldWait] &&
+    while ([self isStagingKeySet] &&
            [runloop
                   runMode:NSDefaultRunLoopMode
-               beforeDate:[NSDate dateWithTimeIntervalSinceNow:kPollingTime]]) {
+               beforeDate:[NSDate dateWithTimeIntervalSinceNow:pollingTime_]]) {
       /* run! */
     }
   }
@@ -94,11 +108,31 @@ NSString* const kStagingKey = @"UpdatePending";
   lastWaitWasBlockedForTesting_ = YES;
 }
 
+- (void)setStagingKeyChangedObserver:(StagingKeyChangedObserver)block {
+  callback_.reset(block, base::scoped_policy::RETAIN);
+
+  if (observing_) {
+    // Nothing to be done; the observation is already started.
+  } else {
+    pollingTimer_.reset(
+        [NSTimer scheduledTimerWithTimeInterval:pollingTime_
+                                         target:self
+                                       selector:@selector(timerFired:)
+                                       userInfo:nil
+                                        repeats:YES],
+        base::scoped_policy::RETAIN);
+  }
+}
+
+- (void)timerFired:(NSTimer*)timer {
+  [self observeValueForKeyPath:nil ofObject:nil change:nil context:nil];
+}
+
 - (void)dealloc {
   if (observing_)
     [defaults_ removeObserver:self forKeyPath:kStagingKey context:nullptr];
-  if (wakePort_)
-    [wakePort_ invalidate];
+  if (pollingTimer_)
+    [pollingTimer_ invalidate];
 
   [super dealloc];
 }
@@ -119,7 +153,12 @@ NSString* const kStagingKey = @"UpdatePending";
                       ofObject:(id)object
                         change:(NSDictionary*)change
                        context:(void*)context {
-  [wakePort_ sendBeforeDate:[NSDate date] components:nil from:nil reserved:0];
+  BOOL isStagingKeySet = [self isStagingKeySet];
+  if (isStagingKeySet == lastStagingKeyValue_)
+    return;
+
+  lastStagingKeyValue_ = isStagingKeySet;
+  callback_.get()([self isStagingKeySet]);
 }
 
 @end

@@ -365,8 +365,8 @@ int RelauncherMain(const content::MainFunctionParams& main_parameters) {
   // If an update is staged but not yet installed, wait for it to be installed.
   if (wait_for_staged_update) {
     base::scoped_nsobject<CrStagingKeyWatcher> watcher(
-        [[CrStagingKeyWatcher alloc] init]);
-    [watcher waitForStagingKey];
+        [[CrStagingKeyWatcher alloc] initWithPollingTime:0.5]);
+    [watcher waitForStagingKeyToClear];
   }
 
   NSString* path = base::SysUTF8ToNSString(relaunch_executable);

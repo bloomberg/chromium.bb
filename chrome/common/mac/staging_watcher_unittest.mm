@@ -34,13 +34,14 @@ class StagingKeyWatcherTest : public testing::TestWithParam<KVOOrNot> {
     [defaults_ removeObjectForKey:[CrStagingKeyWatcher stagingKeyForTesting]];
   }
 
-  CrStagingKeyWatcher* CreateKeyWatcher() {
-    keyWatcher_.reset(
-        [[CrStagingKeyWatcher alloc] initWithUserDefaults:defaults_]);
+  base::scoped_nsobject<CrStagingKeyWatcher> CreateKeyWatcher() {
+    base::scoped_nsobject<CrStagingKeyWatcher> keyWatcher(
+        [[CrStagingKeyWatcher alloc] initWithUserDefaults:defaults_
+                                              pollingTime:0.5]);
     if (GetParam() == KVOOrNot::kDontUseKVO)
-      [keyWatcher_ disableKVOForTesting];
+      [keyWatcher disableKVOForTesting];
 
-    return keyWatcher_;
+    return keyWatcher;
   }
 
   void SetDefaultsValue(id value) {
@@ -56,8 +57,18 @@ class StagingKeyWatcherTest : public testing::TestWithParam<KVOOrNot> {
                              ]];
   }
 
+  void SetDefaultsValueInSeparateProcess() {
+    NSString* appPath = [base::mac::OuterBundle() bundlePath];
+
+    [NSTask launchedTaskWithLaunchPath:@"/usr/bin/defaults"
+                             arguments:@[
+                               @"write", testingBundleID_.get(),
+                               [CrStagingKeyWatcher stagingKeyForTesting],
+                               @"-array", appPath
+                             ]];
+  }
+
  private:
-  base::scoped_nsobject<CrStagingKeyWatcher> keyWatcher_;
   base::scoped_nsobject<NSString> testingBundleID_;
   base::scoped_nsobject<NSUserDefaults> defaults_;
 };
@@ -70,32 +81,32 @@ INSTANTIATE_TEST_SUITE_P(KVOandNot,
 }  // namespace
 
 TEST_P(StagingKeyWatcherTest, NoBlockingWhenNoKey) {
-  CrStagingKeyWatcher* watcher = CreateKeyWatcher();
-  [watcher waitForStagingKey];
+  base::scoped_nsobject<CrStagingKeyWatcher> watcher = CreateKeyWatcher();
+  [watcher waitForStagingKeyToClear];
   ASSERT_FALSE([watcher lastWaitWasBlockedForTesting]);
 }
 
 TEST_P(StagingKeyWatcherTest, NoBlockingWhenWrongKeyType) {
   SetDefaultsValue(@"this is not an string array");
 
-  CrStagingKeyWatcher* watcher = CreateKeyWatcher();
-  [watcher waitForStagingKey];
+  base::scoped_nsobject<CrStagingKeyWatcher> watcher = CreateKeyWatcher();
+  [watcher waitForStagingKeyToClear];
   ASSERT_FALSE([watcher lastWaitWasBlockedForTesting]);
 }
 
 TEST_P(StagingKeyWatcherTest, NoBlockingWhenWrongArrayType) {
   SetDefaultsValue(@[ @3, @1, @4, @1, @5 ]);
 
-  CrStagingKeyWatcher* watcher = CreateKeyWatcher();
-  [watcher waitForStagingKey];
+  base::scoped_nsobject<CrStagingKeyWatcher> watcher = CreateKeyWatcher();
+  [watcher waitForStagingKeyToClear];
   ASSERT_FALSE([watcher lastWaitWasBlockedForTesting]);
 }
 
 TEST_P(StagingKeyWatcherTest, NoBlockingWhenEmptyArray) {
   SetDefaultsValue(@[]);
 
-  CrStagingKeyWatcher* watcher = CreateKeyWatcher();
-  [watcher waitForStagingKey];
+  base::scoped_nsobject<CrStagingKeyWatcher> watcher = CreateKeyWatcher();
+  [watcher waitForStagingKeyToClear];
   ASSERT_FALSE([watcher lastWaitWasBlockedForTesting]);
 }
 
@@ -111,7 +122,44 @@ TEST_P(StagingKeyWatcherTest, BlockFunctionality) {
     ClearDefaultsValueInSeparateProcess();
   });
 
-  CrStagingKeyWatcher* watcher = CreateKeyWatcher();
-  [watcher waitForStagingKey];
+  base::scoped_nsobject<CrStagingKeyWatcher> watcher = CreateKeyWatcher();
+  [watcher waitForStagingKeyToClear];
   ASSERT_TRUE([watcher lastWaitWasBlockedForTesting]);
+}
+
+TEST_P(StagingKeyWatcherTest, CallbackOnKeySet) {
+  // The staging key begins not set.
+
+  base::scoped_nsobject<CrStagingKeyWatcher> watcher = CreateKeyWatcher();
+  NSRunLoop* runloop = [NSRunLoop currentRunLoop];
+
+  [watcher setStagingKeyChangedObserver:^(BOOL stagingKeySet) {
+    CFRunLoopStop([runloop getCFRunLoop]);
+  }];
+
+  SetDefaultsValueInSeparateProcess();
+  while (![watcher isStagingKeySet] &&
+         [runloop runMode:NSDefaultRunLoopMode
+               beforeDate:[NSDate distantFuture]]) {
+    /* run! */
+  }
+}
+
+TEST_P(StagingKeyWatcherTest, CallbackOnKeyUnset) {
+  NSString* appPath = [base::mac::OuterBundle() bundlePath];
+  SetDefaultsValue(@[ appPath ]);
+
+  base::scoped_nsobject<CrStagingKeyWatcher> watcher = CreateKeyWatcher();
+  NSRunLoop* runloop = [NSRunLoop currentRunLoop];
+
+  [watcher setStagingKeyChangedObserver:^(BOOL stagingKeySet) {
+    CFRunLoopStop([runloop getCFRunLoop]);
+  }];
+
+  ClearDefaultsValueInSeparateProcess();
+  while ([watcher isStagingKeySet] &&
+         [runloop runMode:NSDefaultRunLoopMode
+               beforeDate:[NSDate distantFuture]]) {
+    /* run! */
+  }
 }
