@@ -90,6 +90,9 @@ void AutofillDriverIOS::SendFormDataToRenderer(
     RendererFormDataAction action,
     const FormData& data) {
   web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
+  if (!web_frame) {
+    return;
+  }
   [bridge_ fillFormData:data inFrame:web_frame];
 }
 
@@ -101,6 +104,9 @@ void AutofillDriverIOS::PropagateAutofillPredictions(
 void AutofillDriverIOS::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {
   web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
+  if (!web_frame) {
+    return;
+  }
   [bridge_ fillFormDataPredictions:FormStructure::GetFieldTypePredictions(forms)
                            inFrame:web_frame];
 }
