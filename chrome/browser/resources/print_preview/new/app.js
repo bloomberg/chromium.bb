@@ -89,6 +89,9 @@ Polymer({
   /** @private {boolean} */
   isInKioskAutoPrintMode_: false,
 
+  /** @private {?Promise} */
+  whenReady_: null,
+
   /** @private {!Array<!CrDialogElement>} */
   openDialogs_: [],
 
@@ -108,6 +111,7 @@ Polymer({
         'print-preset-options', this.onPrintPresetOptions_.bind(this));
     this.tracker_.add(window, 'keydown', this.onKeyDown_.bind(this));
     this.$.previewArea.setPluginKeyEventCallback(this.onKeyDown_.bind(this));
+    this.whenReady_ = print_preview.Model.whenReady();
     this.nativeLayer_.getInitialSettings().then(
         this.onInitialSettingsSet_.bind(this));
   },
@@ -115,6 +119,7 @@ Polymer({
   /** @override */
   detached: function() {
     this.tracker_.removeAll();
+    this.whenReady_ = null;
   },
 
   /**
@@ -221,7 +226,12 @@ Polymer({
    * @private
    */
   onInitialSettingsSet_: function(settings) {
-    print_preview.Model.whenReady().then(() => {
+    if (!this.whenReady_) {
+      // This element and its corresponding model were detached while waiting
+      // for the callback. This can happen in tests; return early.
+      return;
+    }
+    this.whenReady_.then(() => {
       this.$.documentInfo.init(
           settings.previewModifiable, settings.documentTitle,
           settings.documentHasSelection);
@@ -257,7 +267,12 @@ Polymer({
    * @private
    */
   onCloudPrintEnable_: function(cloudPrintUrl, appKioskMode) {
-    print_preview.Model.whenReady().then(() => {
+    if (!this.whenReady_) {
+      // This element and its corresponding model were detached while waiting
+      // for the callback. This can happen in tests; return early.
+      return;
+    }
+    this.whenReady_.then(() => {
       assert(!this.cloudPrintInterface_);
       this.cloudPrintInterface_ = cloudprint.getCloudPrintInterface(
           cloudPrintUrl, assert(this.nativeLayer_), appKioskMode);
