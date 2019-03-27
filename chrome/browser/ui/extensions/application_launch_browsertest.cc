@@ -35,7 +35,11 @@ IN_PROC_BROWSER_TEST_F(ApplicationLaunchBrowserTest,
       ReparentWebContentsForFocusMode(GetWebContentsForTab(browser(), 0));
   EXPECT_TRUE(app_browser->is_app());
   EXPECT_NE(app_browser, browser());
-  EXPECT_EQ(nullptr, browser()->tab_strip_model()->GetActiveWebContents());
+
+  content::WebContents* main_browser_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(main_browser_web_contents);
+  EXPECT_NE(url, main_browser_web_contents->GetLastCommittedURL());
 
   GURL app_browser_url = app_browser->tab_strip_model()
                              ->GetActiveWebContents()

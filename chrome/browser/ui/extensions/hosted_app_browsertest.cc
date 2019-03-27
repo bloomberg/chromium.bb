@@ -1319,6 +1319,22 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
             app_);
 }
 
+// Tests that reparenting the last browser tab doesn't close the browser window.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, ReparentLastBrowserTab) {
+  ASSERT_TRUE(https_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  InstallSecurePWA();
+  NavigateToURLAndWait(browser(), GetSecureAppURL());
+
+  Browser* app_browser = ReparentSecureActiveTabIntoPwaWindow(browser());
+  ASSERT_EQ(app_browser->hosted_app_controller()->GetExtensionForTesting(),
+            app_);
+
+  ASSERT_TRUE(IsBrowserOpen(browser()));
+  EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
+}
+
 // Tests that the manifest name of the current installable site is used in the
 // installation menu text.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InstallToShelfContainsAppName) {

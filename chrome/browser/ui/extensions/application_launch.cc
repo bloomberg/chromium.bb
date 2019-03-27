@@ -347,6 +347,10 @@ Browser* ReparentWebContentsWithBrowserCreateParams(
   Browser* target_browser = Browser::Create(browser_params);
 
   TabStripModel* source_tabstrip = source_browser->tab_strip_model();
+  // Avoid causing the existing browser window to close if this is the last tab
+  // remaining.
+  if (source_tabstrip->count() == 1)
+    chrome::NewTab(source_browser);
   target_browser->tab_strip_model()->AppendWebContents(
       source_tabstrip->DetachWebContentsAt(
           source_tabstrip->GetIndexOfWebContents(contents)),
