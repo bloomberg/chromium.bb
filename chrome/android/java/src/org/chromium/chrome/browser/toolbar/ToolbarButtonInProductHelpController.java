@@ -100,13 +100,18 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
         mPageLoadObserver.destroy();
     }
 
+    private static int getDataReductionMenuItemHighlight() {
+        return FeatureUtilities.isBottomToolbarEnabled() ? R.id.data_reduction_menu_item
+                                                         : R.id.app_menu_footer;
+    }
+
     // Attempts to show an IPH text bubble for data saver detail.
     private static void maybeShowDataSaverDetail(ChromeActivity activity) {
         View anchorView = activity.getToolbarManager().getMenuButton();
         if (anchorView == null) return;
 
         setupAndMaybeShowIPHForFeature(FeatureConstants.DATA_SAVER_DETAIL_FEATURE,
-                R.id.data_reduction_menu_item, false, R.string.iph_data_saver_detail_text,
+                getDataReductionMenuItemHighlight(), false, R.string.iph_data_saver_detail_text,
                 R.string.iph_data_saver_detail_accessibility_text, anchorView,
                 activity.getAppMenuHandler(), Profile.getLastUsedProfile(), activity, null);
     }
@@ -125,9 +130,9 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
             promo.onPromoTextSeen();
         };
         setupAndMaybeShowIPHForFeature(FeatureConstants.DATA_SAVER_MILESTONE_PROMO_FEATURE,
-                R.id.data_reduction_menu_item, false, promo.getPromoText(), promo.getPromoText(),
-                anchorView, activity.getAppMenuHandler(), Profile.getLastUsedProfile(), activity,
-                dismissCallback);
+                getDataReductionMenuItemHighlight(), false, promo.getPromoText(),
+                promo.getPromoText(), anchorView, activity.getAppMenuHandler(),
+                Profile.getLastUsedProfile(), activity, dismissCallback);
     }
 
     // Attempts to show an IPH text bubble for page in preview mode.
