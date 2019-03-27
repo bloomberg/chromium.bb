@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/frame/csp/execution_context_csp_delegate.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -97,6 +98,11 @@ void ExecutionContext::NotifyContextDestroyed() {
   is_context_destroyed_ = true;
   invalidator_.reset();
   ContextLifecycleNotifier::NotifyContextDestroyed();
+}
+
+bool ExecutionContext::FeatureEnabled(OriginTrialFeature feature) const {
+  const OriginTrialContext* context = OriginTrialContext::From(this);
+  return context && context->IsFeatureEnabled(feature);
 }
 
 void ExecutionContext::DispatchErrorEvent(

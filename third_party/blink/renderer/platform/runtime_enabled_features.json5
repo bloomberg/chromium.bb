@@ -47,6 +47,12 @@
       default: [],
       valid_type: "list",
     },
+
+    // *DO NOT* specify features that depend on origin trial features.
+    // It is NOT supported. As a workaround, you can either specify the same
+    // |origin_trial_feature_name| for the feature or add the OT feature to
+    // the |implied_by| list.
+    // TODO(yashard): Add support for origin trial features in 'depends_on' list
     depends_on: {
       default: [],
       valid_type: "list",
@@ -971,6 +977,11 @@
     {
       name: "OriginTrialsSampleAPI",
       origin_trial_feature_name: "Frobulate",
+    },
+    // TODO(yashard): Add tests for this feature.
+    {
+      name: "OriginTrialsSampleAPIDependent",
+      depends_on: ["OriginTrialsSampleAPI"],
     },
     // Define a sample API for testing integration with the Origin Trials
     // Framework. The sample API is used in both unit and web tests for the

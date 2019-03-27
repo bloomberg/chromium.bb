@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/loader/console_logger_impl_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "v8/include/v8.h"
 
@@ -116,7 +117,8 @@ enum class SecureContextMode { kInsecureContext, kSecureContext };
 // in common.
 class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
                                      public Supplementable<ExecutionContext>,
-                                     public ConsoleLoggerImplBase {
+                                     public ConsoleLoggerImplBase,
+                                     public FeatureContext {
   MERGE_GARBAGE_COLLECTED_MIXINS();
 
  public:
@@ -204,6 +206,9 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   void SetLifecycleState(mojom::FrameLifecycleState);
   void NotifyContextDestroyed() override;
+
+  // FeatureContext override
+  bool FeatureEnabled(OriginTrialFeature) const override;
 
   // TODO(haraken): Remove these methods by making the customers inherit from
   // ContextLifecycleObserver. ContextLifecycleObserver is a standard way to
