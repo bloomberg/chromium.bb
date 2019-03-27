@@ -19,9 +19,169 @@ namespace tracing {
 
 namespace {
 
+using TraceEvent = ::base::trace_event::TraceEvent;
+
 constexpr size_t kTraceEventBufferSizeInBytes = 100 * 1024;
 
+template <typename Nested>
+void AppendProtoArrayAsJSON(std::string* out, const Nested& array);
+
+template <typename Nested>
+void AppendProtoDictAsJSON(std::string* out, const Nested& dict);
+
+template <typename Nested>
+void AppendProtoValueAsJSON(std::string* out, const Nested& value) {
+  base::trace_event::TraceEvent::TraceValue json_value;
+  if (value.has_int_value()) {
+    json_value.as_int = value.int_value();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_INT, json_value, out);
+  } else if (value.has_double_value()) {
+    json_value.as_double = value.double_value();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_DOUBLE, json_value, out);
+  } else if (value.has_bool_value()) {
+    json_value.as_bool = value.bool_value();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_BOOL, json_value, out);
+  } else if (value.has_string_value()) {
+    json_value.as_string = value.string_value().c_str();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_STRING, json_value, out);
+  } else if (value.has_nested_type()) {
+    if (value.nested_type() == Nested::ARRAY) {
+      AppendProtoArrayAsJSON(out, value);
+      return;
+    } else if (value.nested_type() == Nested::DICT) {
+      AppendProtoDictAsJSON(out, value);
+    } else {
+      NOTREACHED();
+    }
+  } else {
+    NOTREACHED();
+  }
+}
+
+template <typename Nested>
+void AppendProtoArrayAsJSON(std::string* out, const Nested& array) {
+  out->append("[");
+
+  bool is_first_entry = true;
+  for (auto& value : array.array_values()) {
+    if (!is_first_entry) {
+      out->append(",");
+    } else {
+      is_first_entry = false;
+    }
+
+    AppendProtoValueAsJSON(out, value);
+  }
+
+  out->append("]");
+}
+
+template <typename Nested>
+void AppendProtoDictAsJSON(std::string* out, const Nested& dict) {
+  out->append("{");
+
+  DCHECK_EQ(dict.dict_keys_size(), dict.dict_values_size());
+  for (int i = 0; i < dict.dict_keys_size(); ++i) {
+    if (i != 0) {
+      out->append(",");
+    }
+
+    base::EscapeJSONString(dict.dict_keys(i), true, out);
+    out->append(":");
+
+    AppendProtoValueAsJSON(out, dict.dict_values(i));
+  }
+
+  out->append("}");
+}
+
+template <typename Value, typename Nested>
+void OutputJSONFromArgumentValue(const Value& arg,
+                                 const base::Optional<Nested>& nested,
+                                 const base::Optional<std::string>& json_value,
+                                 std::string* out) {
+  TraceEvent::TraceValue value;
+  if (arg.has_bool_value()) {
+    value.as_bool = arg.bool_value();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_BOOL, value, out);
+    return;
+  }
+
+  if (arg.has_uint_value()) {
+    value.as_uint = arg.uint_value();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_UINT, value, out);
+    return;
+  }
+
+  if (arg.has_int_value()) {
+    value.as_int = arg.int_value();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_INT, value, out);
+    return;
+  }
+
+  if (arg.has_double_value()) {
+    value.as_double = arg.double_value();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_DOUBLE, value, out);
+    return;
+  }
+
+  if (arg.has_pointer_value()) {
+    value.as_pointer = reinterpret_cast<void*>(arg.pointer_value());
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_POINTER, value, out);
+    return;
+  }
+
+  if (arg.has_string_value()) {
+    std::string str = arg.string_value();
+    value.as_string = &str[0];
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_STRING, value, out);
+    return;
+  }
+
+  if (json_value) {
+    *out += *json_value;
+    return;
+  }
+
+  if (nested) {
+    AppendProtoDictAsJSON(out, nested.value());
+    return;
+  }
+
+  NOTREACHED();
+}
 }  // namespace
+
+void OutputJSONFromArgumentProto(
+    const perfetto::protos::ChromeTraceEvent::Arg& arg,
+    std::string* out) {
+  base::Optional<perfetto::protos::ChromeTracedValue> traced_value;
+  if (arg.has_traced_value()) {
+    traced_value = arg.traced_value();
+  }
+  base::Optional<std::string> json_value;
+  if (arg.has_json_value()) {
+    json_value = arg.json_value();
+  }
+  OutputJSONFromArgumentValue<perfetto::protos::ChromeTraceEvent::Arg,
+                              perfetto::protos::ChromeTracedValue>(
+      arg, traced_value, json_value, out);
+}
+
+void OutputJSONFromArgumentProto(const perfetto::protos::DebugAnnotation& arg,
+                                 std::string* out) {
+  base::Optional<perfetto::protos::DebugAnnotation::NestedValue> nested_value;
+  if (arg.has_nested_value()) {
+    nested_value = arg.nested_value();
+  }
+  base::Optional<std::string> json_value;
+  if (arg.has_legacy_json_value()) {
+    json_value = arg.legacy_json_value();
+  }
+  OutputJSONFromArgumentValue<perfetto::protos::DebugAnnotation,
+                              perfetto::protos::DebugAnnotation::NestedValue>(
+      arg, nested_value, json_value, out);
+}
 
 JSONTraceExporter::JSONTraceExporter(
     ArgumentFilterPredicate argument_filter_predicate,
@@ -106,12 +266,12 @@ void JSONTraceExporter::AddChromeLegacyJSONTrace(
   DCHECK(!json_trace.data().empty());
   switch (json_trace.type()) {
     case perfetto::protos::ChromeLegacyJsonTrace::USER_TRACE:
-      *AddJSONTraceEvent() += json_trace.data();
-      return;
-    case perfetto::protos::ChromeLegacyJsonTrace::SYSTEM_TRACE:
       if (!ShouldOutputTraceEvents()) {
         return;
       }
+      *AddJSONTraceEvent() += json_trace.data();
+      return;
+    case perfetto::protos::ChromeLegacyJsonTrace::SYSTEM_TRACE:
       if (legacy_system_trace_events_.empty()) {
         legacy_system_trace_events_ = "{";
       } else {
@@ -371,6 +531,9 @@ JSONTraceExporter::ScopedJSONTraceEventAppender::ScopedJSONTraceEventAppender(
     JSONTraceExporter::ScopedJSONTraceEventAppender&& move) {
   out_ = move.out_;
   phase_ = move.phase_;
+  added_args_ = move.added_args_;
+  event_name_ = std::move(move.event_name_);
+  category_group_name_ = std::move(move.category_group_name_);
   argument_filter_predicate_ = std::move(move.argument_filter_predicate_);
   // We null out the string so that the destructor knows not to append the
   // closing brace for the json.

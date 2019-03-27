@@ -25,6 +25,8 @@ source_set("lib") {
     "perfetto/perfetto_tracing_coordinator.h",
     "perfetto/producer_host.cc",
     "perfetto/producer_host.h",
+    "perfetto/track_event_json_exporter.cc",
+    "perfetto/track_event_json_exporter.h",
     "recorder.cc",
     "recorder.h",
     "tracing_service.cc",
@@ -112,6 +114,7 @@ source_set("tests") {
       "perfetto/perfetto_tracing_coordinator_unittest.cc",
       "perfetto/test_utils.cc",
       "perfetto/test_utils.h",
+      "perfetto/track_event_json_exporter_unittest.cc",
     ]
 
     deps += [

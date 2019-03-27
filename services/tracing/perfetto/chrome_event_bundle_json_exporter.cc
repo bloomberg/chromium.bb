@@ -13,7 +13,6 @@
 
 namespace tracing {
 namespace {
-using TraceEvent = ::base::trace_event::TraceEvent;
 const char* GetStringFromStringTable(
     const std::unordered_map<int, std::string>& string_table,
     int index) {
@@ -22,132 +21,7 @@ const char* GetStringFromStringTable(
 
   return it->second.c_str();
 }
-void AppendProtoArrayAsJSON(std::string* out,
-                            const perfetto::protos::ChromeTracedValue& array);
 
-void AppendProtoDictAsJSON(std::string* out,
-                           const perfetto::protos::ChromeTracedValue& dict);
-
-void AppendProtoValueAsJSON(std::string* out,
-                            const perfetto::protos::ChromeTracedValue& value) {
-  base::trace_event::TraceEvent::TraceValue json_value;
-  if (value.has_int_value()) {
-    json_value.as_int = value.int_value();
-    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_INT, json_value, out);
-  } else if (value.has_double_value()) {
-    json_value.as_double = value.double_value();
-    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_DOUBLE, json_value, out);
-  } else if (value.has_bool_value()) {
-    json_value.as_bool = value.bool_value();
-    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_BOOL, json_value, out);
-  } else if (value.has_string_value()) {
-    json_value.as_string = value.string_value().c_str();
-    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_STRING, json_value, out);
-  } else if (value.has_nested_type()) {
-    if (value.nested_type() == perfetto::protos::ChromeTracedValue::ARRAY) {
-      AppendProtoArrayAsJSON(out, value);
-      return;
-    } else if (value.nested_type() ==
-               perfetto::protos::ChromeTracedValue::DICT) {
-      AppendProtoDictAsJSON(out, value);
-    } else {
-      NOTREACHED();
-    }
-  } else {
-    NOTREACHED();
-  }
-}
-
-void AppendProtoArrayAsJSON(std::string* out,
-                            const perfetto::protos::ChromeTracedValue& array) {
-  out->append("[");
-
-  bool is_first_entry = true;
-  for (auto& value : array.array_values()) {
-    if (!is_first_entry) {
-      out->append(",");
-    } else {
-      is_first_entry = false;
-    }
-
-    AppendProtoValueAsJSON(out, value);
-  }
-
-  out->append("]");
-}
-
-void AppendProtoDictAsJSON(std::string* out,
-                           const perfetto::protos::ChromeTracedValue& dict) {
-  out->append("{");
-
-  DCHECK_EQ(dict.dict_keys_size(), dict.dict_values_size());
-  for (int i = 0; i < dict.dict_keys_size(); ++i) {
-    if (i != 0) {
-      out->append(",");
-    }
-
-    base::EscapeJSONString(dict.dict_keys(i), true, out);
-    out->append(":");
-
-    AppendProtoValueAsJSON(out, dict.dict_values(i));
-  }
-
-  out->append("}");
-}
-
-void OutputJSONFromArgumentValue(
-    const perfetto::protos::ChromeTraceEvent::Arg& arg,
-    std::string* out) {
-  TraceEvent::TraceValue value;
-  if (arg.has_bool_value()) {
-    value.as_bool = arg.bool_value();
-    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_BOOL, value, out);
-    return;
-  }
-
-  if (arg.has_uint_value()) {
-    value.as_uint = arg.uint_value();
-    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_UINT, value, out);
-    return;
-  }
-
-  if (arg.has_int_value()) {
-    value.as_int = arg.int_value();
-    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_INT, value, out);
-    return;
-  }
-
-  if (arg.has_double_value()) {
-    value.as_double = arg.double_value();
-    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_DOUBLE, value, out);
-    return;
-  }
-
-  if (arg.has_pointer_value()) {
-    value.as_pointer = reinterpret_cast<void*>(arg.pointer_value());
-    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_POINTER, value, out);
-    return;
-  }
-
-  if (arg.has_string_value()) {
-    std::string str = arg.string_value();
-    value.as_string = &str[0];
-    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_STRING, value, out);
-    return;
-  }
-
-  if (arg.has_json_value()) {
-    *out += arg.json_value();
-    return;
-  }
-
-  if (arg.has_traced_value()) {
-    AppendProtoDictAsJSON(out, arg.traced_value());
-    return;
-  }
-
-  NOTREACHED();
-}
 }  // namespace
 
 ChromeEventBundleJsonExporter::ChromeEventBundleJsonExporter(
@@ -248,7 +122,7 @@ void ChromeEventBundleJsonExporter::ConstructTraceEventJSONWithBuilder(
 
     auto* maybe_arg = args_builder->MaybeAddArg(arg_name);
     if (maybe_arg) {
-      OutputJSONFromArgumentValue(arg, maybe_arg->mutable_out());
+      OutputJSONFromArgumentProto(arg, maybe_arg->mutable_out());
     }
   }
   // Do not add anything to |trace_event_builder| unless you destroy

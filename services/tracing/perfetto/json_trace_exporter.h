@@ -21,11 +21,19 @@ namespace perfetto {
 namespace protos {
 class ChromeLegacyJsonTrace;
 class ChromeMetadata;
+class ChromeTraceEvent_Arg;
+class DebugAnnotation;
 class TraceStats;
 }  // namespace protos
 }  // namespace perfetto
 
 namespace tracing {
+
+void OutputJSONFromArgumentProto(
+    const perfetto::protos::ChromeTraceEvent_Arg& arg,
+    std::string* out);
+void OutputJSONFromArgumentProto(const perfetto::protos::DebugAnnotation& arg,
+                                 std::string* out);
 
 // Converts proto-encoded trace data into the legacy JSON trace format.
 // Conversion happens on-the-fly as new trace packets are received.
