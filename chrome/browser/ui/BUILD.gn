@@ -2215,6 +2215,8 @@ jumbo_split_static_library("ui") {
       "views/try_chrome_dialog_win/try_chrome_dialog.h",
       "views/uninstall_view.cc",
       "views/uninstall_view.h",
+      "webui/conflicts/conflicts_data_fetcher.cc",
+      "webui/conflicts/conflicts_data_fetcher.h",
       "webui/conflicts/conflicts_handler.cc",
       "webui/conflicts/conflicts_handler.h",
       "webui/conflicts/conflicts_ui.cc",
