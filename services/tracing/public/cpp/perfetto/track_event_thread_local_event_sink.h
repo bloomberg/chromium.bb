@@ -51,7 +51,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
       base::trace_event::ConvertableToTraceFormat* value,
       perfetto::protos::pbzero::DebugAnnotation* annotation);
 
-  static constexpr size_t kMaxCompleteEventDepth = 20;
+  static constexpr size_t kMaxCompleteEventDepth = 30;
 
   // TODO(eseckler): Make it possible to register new indexes for use from
   // TRACE_EVENT macros.
