@@ -32,17 +32,12 @@ class VIEWS_EXPORT MouseWatcherListener {
 class VIEWS_EXPORT MouseWatcherHost {
  public:
   // The type of mouse event.
-  enum MouseEventType {
-    MOUSE_MOVE,
-    MOUSE_EXIT,
-    MOUSE_PRESS
-  };
+  enum class EventType { kMove, kExit, kPress };
 
   virtual ~MouseWatcherHost();
 
   // Return false when the mouse has moved outside the monitored region.
-  virtual bool Contains(const gfx::Point& screen_point,
-                        MouseEventType type) = 0;
+  virtual bool Contains(const gfx::Point& screen_point, EventType type) = 0;
 };
 
 // MouseWatcher is used to watch mouse movement and notify its listener when the

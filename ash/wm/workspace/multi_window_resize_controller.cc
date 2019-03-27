@@ -193,10 +193,10 @@ class MultiWindowResizeController::ResizeMouseWatcherHost
   ResizeMouseWatcherHost(MultiWindowResizeController* host) : host_(host) {}
 
   // MouseWatcherHost overrides:
-  bool Contains(const gfx::Point& point_in_screen,
-                MouseEventType type) override {
-    return (type == MOUSE_PRESS) ? host_->IsOverResizeWidget(point_in_screen)
-                                 : host_->IsOverWindows(point_in_screen);
+  bool Contains(const gfx::Point& point_in_screen, EventType type) override {
+    return (type == EventType::kPress)
+               ? host_->IsOverResizeWidget(point_in_screen)
+               : host_->IsOverWindows(point_in_screen);
   }
 
  private:
