@@ -280,24 +280,6 @@
     <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_VERY_LONG" desc="Description of a very long delay before mouse action.">
       very long (4s)
     </message>
-    <message name="IDS_SETTINGS_AUTOCLICK_EVENT_TYPE_LABEL" desc="Label for dropdown menu which contains various mouse actions for autoclick to take when the mouse cursor stops">
-      Dwell action
-    </message>
-    <message name="IDS_SETTINGS_AUTOCLICK_EVENT_TYPE_LEFT_CLICK" desc="Description of a left click mouse action.">
-      Left click
-    </message>
-    <message name="IDS_SETTINGS_AUTOCLICK_EVENT_TYPE_RIGHT_CLICK" desc="Description of a right click mouse action.">
-      Right click
-    </message>
-    <message name="IDS_SETTINGS_AUTOCLICK_EVENT_TYPE_DRAG_AND_DROP" desc="Description of a drag and drop mouse action.">
-      Drag and drop
-    </message>
-    <message name="IDS_SETTINGS_AUTOCLICK_EVENT_TYPE_DOUBLE_CLICK" desc="Description of a double click mouse action.">
-      Double click
-    </message>
-    <message name="IDS_SETTINGS_AUTOCLICK_EVENT_TYPE_NO_ACTION" desc="Description of an option to take no action (pause mouse actions).">
-      No action (pause)
-    </message>
     <message name="IDS_SETTINGS_AUTOCLICK_REVERT_TO_LEFT_CLICK" desc="Description of a checkbox that gives the option to return to the default left click action after taking another action.">
       Revert to left click after action
     </message>
