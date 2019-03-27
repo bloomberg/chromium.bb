@@ -332,9 +332,12 @@ class UI_BASE_IME_EXPORT TSFTextStore : public ITextStoreACP,
   gfx::Range composition_range_;
 
   // |previous_composition_string_| indicicates composition string in last
-  // edit session during same composition. If RequestLock() is called during two
-  // edit sessions, we don't want to set same composition string twice.
+  // edit session during same composition. |previous_composition_start_|
+  // indicates composition start in last session during same composition. If
+  // RequestLock() is called during two edit sessions, we don't want to set same
+  // composition string twice.
   base::string16 previous_composition_string_;
+  size_t previous_composition_start_ = 0;
 
   // |new_text_inserted_| indicates there is text to be inserted
   // into blink during ITextStoreACP::SetText().
