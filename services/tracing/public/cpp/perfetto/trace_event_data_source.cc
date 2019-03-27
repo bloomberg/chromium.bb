@@ -20,7 +20,6 @@
 #include "base/pickle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "services/tracing/public/cpp/perfetto/chrome_bundle_thread_local_event_sink.h"
 #include "services/tracing/public/cpp/perfetto/thread_local_event_sink.h"
 #include "services/tracing/public/cpp/perfetto/traced_value_proto_writer.h"
 #include "services/tracing/public/cpp/perfetto/track_event_thread_local_event_sink.h"
@@ -168,8 +167,6 @@ void TraceEventDataSource::ResetForTesting() {
 
 TraceEventDataSource::TraceEventDataSource()
     : DataSourceBase(mojom::kTraceEventDataSourceName),
-      use_chrome_proto_(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kPerfettoUseNewProtos)),
       disable_interning_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kPerfettoDisableInterning)) {
   g_trace_event_data_source_for_testing = this;
@@ -178,7 +175,7 @@ TraceEventDataSource::TraceEventDataSource()
 TraceEventDataSource::~TraceEventDataSource() = default;
 
 void TraceEventDataSource::RegisterWithTraceLog() {
-  RegisterTracedValueProtoWriter(true, use_chrome_proto_);
+  RegisterTracedValueProtoWriter(true);
   TraceLog::GetInstance()->SetAddTraceEventOverrides(
       &TraceEventDataSource::OnAddTraceEvent,
       &TraceEventDataSource::FlushCurrentThread,
@@ -186,7 +183,7 @@ void TraceEventDataSource::RegisterWithTraceLog() {
 }
 
 void TraceEventDataSource::UnregisterFromTraceLog() {
-  RegisterTracedValueProtoWriter(false, use_chrome_proto_);
+  RegisterTracedValueProtoWriter(false);
   TraceLog::GetInstance()->SetAddTraceEventOverrides(nullptr, nullptr, nullptr);
 }
 
@@ -370,11 +367,6 @@ ThreadLocalEventSink* TraceEventDataSource::CreateThreadLocalEventSink(
     return nullptr;
   }
 
-  if (use_chrome_proto_) {
-    return new ChromeBundleThreadLocalEventSink(std::move(trace_writer),
-                                                session_id, disable_interning_,
-                                                thread_will_flush);
-  }
   return new TrackEventThreadLocalEventSink(std::move(trace_writer), session_id,
                                             disable_interning_);
 }

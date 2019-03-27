@@ -24,8 +24,6 @@ if (!is_nacl && !is_ios) {
     sources = [
       "base_agent.cc",
       "base_agent.h",
-      "perfetto/chrome_bundle_thread_local_event_sink.cc",
-      "perfetto/chrome_bundle_thread_local_event_sink.h",
       "perfetto/interning_index.h",
       "perfetto/producer_client.cc",
       "perfetto/producer_client.h",

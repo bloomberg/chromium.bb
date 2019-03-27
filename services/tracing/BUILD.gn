@@ -13,8 +13,6 @@ source_set("lib") {
     "agent_registry.h",
     "coordinator.cc",
     "coordinator.h",
-    "perfetto/chrome_event_bundle_json_exporter.cc",
-    "perfetto/chrome_event_bundle_json_exporter.h",
     "perfetto/consumer_host.cc",
     "perfetto/consumer_host.h",
     "perfetto/json_trace_exporter.cc",
@@ -107,7 +105,6 @@ source_set("tests") {
 
   if (is_mac || is_linux || is_android || is_fuchsia) {
     sources += [
-      "perfetto/chrome_event_bundle_json_exporter_unittest.cc",
       "perfetto/consumer_host_unittest.cc",
       "perfetto/json_trace_exporter_unittest.cc",
       "perfetto/perfetto_integration_unittest.cc",

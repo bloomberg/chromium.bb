@@ -128,7 +128,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   // Logs a given histogram in traces.
   void LogHistogram(base::HistogramBase* histogram);
 
-  bool use_chrome_proto_;
   bool disable_interning_;
   base::OnceClosure stop_complete_callback_;
 
