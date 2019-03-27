@@ -445,7 +445,7 @@ if (enable_java_templates) {
 
       args = [
         # This is a list of .sources files.
-        "--sources-files=@FileArg($_rebased_build_config:jni:all_source)",
+        "--sources-files=@FileArg($_rebased_build_config:deps_info:jni:all_source)",
         "--srcjar-path",
         rebase_path(_srcjar_output, root_build_dir),
         "--depfile",
@@ -2593,6 +2593,7 @@ if (enable_java_templates) {
                                "no_build_hooks",
                                "secondary_abi_loadable_modules",
                                "secondary_native_lib_placeholders",
+                               "static_library_dependent_targets",
                              ])
       if (_is_bundle_module) {
         type = "android_app_bundle_module"
@@ -3106,6 +3107,7 @@ if (enable_java_templates) {
                                "shared_resources_whitelist_locales",
                                "shared_resources_whitelist_target",
                                "srcjar_deps",
+                               "static_library_dependent_targets",
                                "support_zh_hk",
                                "testonly",
                                "uncompress_shared_libraries",
