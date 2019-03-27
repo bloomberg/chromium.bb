@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/shared_memory.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -71,9 +70,7 @@ void AddToOSExchangeData(const std::string& data,
 // static
 WaylandDataDevice::WaylandDataDevice(WaylandConnection* connection,
                                      wl_data_device* data_device)
-    : data_device_(data_device),
-      connection_(connection),
-      shared_memory_(new base::SharedMemory()) {
+    : data_device_(data_device), connection_(connection) {
   static const struct wl_data_device_listener kDataDeviceListener = {
       WaylandDataDevice::OnDataOffer, WaylandDataDevice::OnEnter,
       WaylandDataDevice::OnLeave,     WaylandDataDevice::OnMotion,
@@ -81,12 +78,7 @@ WaylandDataDevice::WaylandDataDevice(WaylandConnection* connection,
   wl_data_device_add_listener(data_device_.get(), &kDataDeviceListener, this);
 }
 
-WaylandDataDevice::~WaylandDataDevice() {
-  if (!shared_memory_->handle().GetHandle())
-    return;
-  shared_memory_->Unmap();
-  shared_memory_->Close();
-}
+WaylandDataDevice::~WaylandDataDevice() = default;
 
 bool WaylandDataDevice::RequestSelectionData(const std::string& mime_type) {
   if (!selection_offer_)
@@ -388,22 +380,19 @@ void WaylandDataDevice::DrawDragIcon(const SkBitmap* icon_bitmap) {
   DCHECK(!icon_bitmap->empty());
   gfx::Size size(icon_bitmap->width(), icon_bitmap->height());
 
-  if (size != icon_buffer_size_) {
-    wl_buffer* buffer =
-        wl::CreateSHMBuffer(size, shared_memory_.get(), connection_->shm());
-    if (!buffer) {
+  if (!shm_buffer_ || shm_buffer_->size() != size) {
+    shm_buffer_.reset(new WaylandShmBuffer(connection_->shm(), size));
+    if (!shm_buffer_->IsValid()) {
       LOG(ERROR) << "Failed to create drag icon buffer.";
       return;
     }
-    buffer_.reset(buffer);
-    icon_buffer_size_ = size;
   }
-  wl::DrawBitmapToSHMB(icon_buffer_size_, *shared_memory_, *icon_bitmap);
+  wl::DrawBitmap(*icon_bitmap, shm_buffer_.get());
 
-  wl_surface_attach(icon_surface_.get(), buffer_.get(), 0, 0);
-  wl_surface_damage(icon_surface_.get(), 0, 0, icon_buffer_size_.width(),
-                    icon_buffer_size_.height());
-  wl_surface_commit(icon_surface_.get());
+  wl_surface* surface = icon_surface_.get();
+  wl_surface_attach(surface, shm_buffer_->get(), 0, 0);
+  wl_surface_damage(surface, 0, 0, size.width(), size.height());
+  wl_surface_commit(surface);
 }
 
 void WaylandDataDevice::HandleUnprocessedMimeTypes() {

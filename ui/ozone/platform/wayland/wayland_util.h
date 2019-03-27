@@ -7,20 +7,15 @@
 
 #include <wayland-client.h>
 
-#include <stdint.h>
-
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 
 class SkBitmap;
 
-namespace base {
-class SharedMemory;
-}
-
 namespace ui {
 class WaylandConnection;
+class WaylandShmBuffer;
 }
 
 namespace gfx {
@@ -40,17 +35,15 @@ using RequestSizeCallback = base::OnceCallback<void(const gfx::Size&)>;
 using OnRequestBufferCallback =
     base::OnceCallback<void(wl::Object<struct wl_buffer>)>;
 
-wl_buffer* CreateSHMBuffer(const gfx::Size& size,
-                           base::SharedMemory* shared_memory,
-                           wl_shm* shm);
-void DrawBitmapToSHMB(const gfx::Size& size,
-                      const base::SharedMemory& shared_memory,
-                      const SkBitmap& bitmap);
-
 // Identifies the direction of the "hittest" for Wayland. |connection|
 // is used to identify whether values from shell v5 or v6 must be used.
 uint32_t IdentifyDirection(const ui::WaylandConnection& connection,
                            int hittest);
+
+// Draws |bitmap| into |out_buffer|. Returns if no errors occur, and false
+// otherwise. It assumes the bitmap fits into the buffer and buffer is
+// currently mmap'ed in memory address space.
+bool DrawBitmap(const SkBitmap& bitmap, ui::WaylandShmBuffer* out_buffer);
 
 }  // namespace wl
 

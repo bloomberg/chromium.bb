@@ -18,12 +18,9 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/ozone/platform/wayland/wayland_data_offer.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
+#include "ui/ozone/platform/wayland/wayland_shm_buffer.h"
 
 class SkBitmap;
-
-namespace base {
-class SharedMemory;
-}
 
 namespace ui {
 
@@ -172,11 +169,8 @@ class WaylandDataDevice {
   bool is_handling_dropped_data_ = false;
   bool is_leaving_ = false;
 
-  std::unique_ptr<base::SharedMemory> shared_memory_;
-
-  wl::Object<wl_buffer> buffer_;
+  std::unique_ptr<WaylandShmBuffer> shm_buffer_ = nullptr;
   wl::Object<wl_surface> icon_surface_;
-  gfx::Size icon_buffer_size_;
 
   // Mime types to be handled.
   std::list<std::string> unprocessed_mime_types_;

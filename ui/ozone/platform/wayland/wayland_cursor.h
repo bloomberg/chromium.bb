@@ -15,12 +15,9 @@
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
+#include "ui/ozone/platform/wayland/wayland_shm_buffer.h"
 
 class SkBitmap;
-
-namespace base {
-class SharedMemory;
-}
 
 namespace gfx {
 class Point;
@@ -61,13 +58,8 @@ class WaylandCursor {
   wl_pointer* input_pointer_ = nullptr;  // Owned by WaylandPointer.
 
   // Holds the buffers and their memory until the compositor releases them.
-  base::flat_map<
-      wl_buffer*,
-      std::pair<wl::Object<wl_buffer>, std::unique_ptr<base::SharedMemory>>>
-      buffers_;
+  base::flat_map<wl_buffer*, WaylandShmBuffer> buffers_;
   wl::Object<wl_surface> pointer_surface_;
-
-  sk_sp<SkSurface> sk_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandCursor);
 };
