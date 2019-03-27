@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
@@ -15,76 +16,70 @@
 
 namespace grpc {
 class ClientContext;
+class CompletionQueue;
 }  // namespace grpc
 
 namespace remoting {
-namespace internal {
 
 // The GrpcAsyncRequest base class that holds logic invariant to the response
 // type.
 //
 // The lifetime of GrpcAsyncRequest is bound to the completion queue. A
 // subclass may enqueue itself multiple times into the completion queue, and
-// GrpcAsyncExecutor will dequeue it and call OnDequeuedOnDispatcherThread()
-// on a background thread when the event is handled. If the subclass won't
-// re-enqueue itself, OnDequeuedOnDispatcherThread() should return false, which
-// will delete the call data by calling DeleteOnCallerThread().
+// GrpcAsyncExecutor will dequeue it and call OnDequeue() when the event is
+// handled. If the subclass won't re-enqueue itself, OnDequeue() should return
+// false, which will delete the request object.
 //
-// Subclass is not allowed to enqueue itself outside the call stack of
-// StartInternal() and OnDequeuedOnDispatcherThread().
-//
-// Ctor, dtor, and methods except OnDequeuedOnDispatcherThread() will be called
-// from the same thread (caller_task_runner_).
+// All methods are called from the same sequence, but the destructor could end
+// up being called on an arbitrary sequence if the caller's sequence itself has
+// been destroyed.
 class GrpcAsyncRequest {
  public:
+  using RunTaskCallback = base::RepeatingCallback<void(base::OnceClosure)>;
+
   explicit GrpcAsyncRequest(std::unique_ptr<grpc::ClientContext> context);
   virtual ~GrpcAsyncRequest();
+
+  // Methods below are considered internal to grpc_support.
 
   // Force dequeues any pending request.
   void CancelRequest();
 
-  // Posts a task to delete |this| on the caller thread.
-  void DeleteOnCallerThread();
+  // Starts the request. Subclass can store |cq| but should only use |event_tag|
+  // before the method returns.
+  // Subclass shall only run callbacks using |run_task_cb|. Directly running
+  // task in OnDequeue() might result in concurrency issue.
+  virtual void Start(const RunTaskCallback& run_task_cb,
+                     grpc::CompletionQueue* cq,
+                     void* event_tag) = 0;
 
-  void Start();
+  // Called when the request has been dequeued from the completion queue.
+  // Returns true iff the task is not finished, and Reenqueue() should be
+  // called.
+  virtual bool OnDequeue(bool operation_succeeded) = 0;
 
-  // Returns true iff the task is not finished and the subclass will
-  // *immediately* enqueue itself back to the completion queue. If this method
-  // returns false, the object will be deleted by calling
-  // DeleteOnCallerThread(). Tasks posted within this method will be scheduled
-  // before DeleteOnCallerThread()'s deletion task, so subclass still has a
-  // chance to run on the caller thread before it gets deleted.
-  // Note that this will be called from an anonymous thread.
-  bool OnDequeuedOnDispatcherThread(bool operation_succeeded);
+  // Re-enqueues the request. This is only called if the previous call to
+  // OnDequeue() returns true. Subclass shall not store |event_tag|.
+  virtual void Reenqueue(void* event_tag) = 0;
+
+  // Called before calling Start(). If this returns false then Start() won't be
+  // called and request will be silently dropped.
+  virtual bool CanStartRequest() const = 0;
+
+  grpc::ClientContext* context() { return context_.get(); }
 
  protected:
-  // Gets an event tag for enqueueing |this| to the completion queue. This has
-  // to be called within StartInternal() and
-  // OnDequeuedOnDispatcherThreadInternal() without task posting, otherwise it
-  // will fail a DCHECK.
-  void* GetEventTag();
-
-  // The first enqueue must be done within this method.
-  virtual void StartInternal() = 0;
-
-  // See OnDequeuedOnDispatcherThread().
-  virtual bool OnDequeuedOnDispatcherThreadInternal(
-      bool operation_succeeded) = 0;
-
   // Called after CancelRequest() is called.
   virtual void OnRequestCanceled() = 0;
 
-  scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
   grpc::Status status_{grpc::StatusCode::UNKNOWN, "Uninitialized"};
 
  private:
-  bool is_get_event_tag_allowed_ = false;
   std::unique_ptr<grpc::ClientContext> context_;
 
   DISALLOW_COPY_AND_ASSIGN(GrpcAsyncRequest);
 };
 
-}  // namespace internal
 }  // namespace remoting
 
 #endif  // REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_REQUEST_H_

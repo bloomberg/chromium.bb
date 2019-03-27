@@ -10,11 +10,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/base/oauth_token_getter.h"
 #include "remoting/signaling/ftl_services.grpc.pb.h"
 #include "remoting/signaling/grpc_support/grpc_async_executor.h"
+#include "remoting/signaling/grpc_support/grpc_async_server_streaming_request.h"
+#include "remoting/signaling/grpc_support/grpc_async_unary_request.h"
 #include "remoting/signaling/grpc_support/scoped_grpc_server_stream.h"
 #include "third_party/grpc/src/include/grpcpp/support/status.h"
 
@@ -40,34 +43,37 @@ class FtlGrpcContext final {
   // |request| doesn't need to set the header field since this class will set
   // it for you.
   template <typename RequestType, typename ResponseType>
-  void ExecuteRpc(
-      GrpcAsyncExecutor::AsyncRpcFunction<RequestType, ResponseType> rpc,
-      const RequestType& request,
-      RpcCallback<ResponseType> callback) {
-    auto execute_rpc_with_context = base::BindOnce(
-        &FtlGrpcContext::ExecuteRpcWithContext<RequestType, ResponseType>,
-        weak_factory_.GetWeakPtr(), std::move(rpc), request,
-        std::move(callback));
-    GetOAuthTokenAndExecuteRpc(std::move(execute_rpc_with_context));
+  void ExecuteRpc(GrpcAsyncUnaryRpcFunction<RequestType, ResponseType> rpc,
+                  const RequestType& request,
+                  GrpcAsyncUnaryRpcCallback<ResponseType> callback) {
+    RequestType mutable_request = request;
+    mutable_request.set_allocated_header(BuildRequestHeader().release());
+    auto grpc_request =
+        CreateGrpcAsyncUnaryRequest(std::move(rpc), CreateClientContext(),
+                                    mutable_request, std::move(callback));
+    GetOAuthTokenAndExecuteRpc(std::move(grpc_request), base::DoNothing());
   }
 
   // |request| doesn't need to set the header field since this class will set
   // it for you.
+  // Note that |on_stream_started| will be removed in a future refactoring CL.
   template <typename RequestType, typename ResponseType>
   void ExecuteServerStreamingRpc(
-      GrpcAsyncExecutor::AsyncServerStreamingRpcFunction<RequestType,
-                                                         ResponseType> rpc,
+      GrpcAsyncServerStreamingRpcFunction<RequestType, ResponseType> rpc,
       const RequestType& request,
       StreamStartedCallback on_stream_started,
-      const GrpcAsyncExecutor::RpcStreamCallback<ResponseType>& on_incoming_msg,
-      GrpcAsyncExecutor::RpcChannelClosedCallback on_channel_closed) {
-    auto execute_rpc_with_context = base::BindOnce(
-        &FtlGrpcContext::ExecuteServerStreamingRpcWithContext<RequestType,
-                                                              ResponseType>,
-        weak_factory_.GetWeakPtr(), std::move(rpc), request,
-        std::move(on_stream_started), on_incoming_msg,
-        std::move(on_channel_closed));
-    GetOAuthTokenAndExecuteRpc(std::move(execute_rpc_with_context));
+      const base::RepeatingCallback<void(const ResponseType&)>& on_incoming_msg,
+      base::OnceCallback<void(const grpc::Status&)> on_channel_closed) {
+    RequestType mutable_request = request;
+    mutable_request.set_allocated_header(BuildRequestHeader().release());
+    std::unique_ptr<ScopedGrpcServerStream> scoped_stream;
+    auto grpc_request = CreateGrpcAsyncServerStreamingRequest(
+        std::move(rpc), CreateClientContext(), mutable_request,
+        std::move(on_incoming_msg), std::move(on_channel_closed),
+        &scoped_stream);
+    GetOAuthTokenAndExecuteRpc(
+        std::move(grpc_request),
+        base::BindOnce(std::move(on_stream_started), std::move(scoped_stream)));
   }
 
   std::shared_ptr<grpc::ChannelInterface> channel() { return channel_; }
@@ -75,41 +81,12 @@ class FtlGrpcContext final {
   void SetChannelForTesting(std::shared_ptr<grpc::ChannelInterface> channel);
 
  private:
-  using ExecuteRpcWithContextCallback =
-      base::OnceCallback<void(std::unique_ptr<grpc::ClientContext>)>;
-
-  template <typename RequestType, typename ResponseType>
-  void ExecuteRpcWithContext(
-      GrpcAsyncExecutor::AsyncRpcFunction<RequestType, ResponseType> rpc,
-      RequestType request,
-      RpcCallback<ResponseType> callback,
-      std::unique_ptr<grpc::ClientContext> context) {
-    request.set_allocated_header(BuildRequestHeader().release());
-    dispatcher_.ExecuteAsyncRpc(std::move(rpc), std::move(context), request,
-                                std::move(callback));
-  }
-
-  template <typename RequestType, typename ResponseType>
-  void ExecuteServerStreamingRpcWithContext(
-      GrpcAsyncExecutor::AsyncServerStreamingRpcFunction<RequestType,
-                                                         ResponseType> rpc,
-      RequestType request,
-      StreamStartedCallback on_stream_started,
-      const GrpcAsyncExecutor::RpcStreamCallback<ResponseType>& on_incoming_msg,
-      GrpcAsyncExecutor::RpcChannelClosedCallback on_channel_closed,
-      std::unique_ptr<grpc::ClientContext> context) {
-    request.set_allocated_header(BuildRequestHeader().release());
-    auto scoped_stream = dispatcher_.ExecuteAsyncServerStreamingRpc(
-        std::move(rpc), std::move(context), request, on_incoming_msg,
-        std::move(on_channel_closed));
-    std::move(on_stream_started).Run(std::move(scoped_stream));
-  }
-
-  void GetOAuthTokenAndExecuteRpc(
-      ExecuteRpcWithContextCallback execute_rpc_with_context);
+  void GetOAuthTokenAndExecuteRpc(std::unique_ptr<GrpcAsyncRequest> request,
+                                  base::OnceClosure on_stream_started);
 
   void ExecuteRpcWithFetchedOAuthToken(
-      ExecuteRpcWithContextCallback execute_rpc_with_context,
+      std::unique_ptr<GrpcAsyncRequest> request,
+      base::OnceClosure on_stream_started,
       OAuthTokenGetter::Status status,
       const std::string& user_email,
       const std::string& access_token);
@@ -119,7 +96,7 @@ class FtlGrpcContext final {
 
   std::shared_ptr<grpc::ChannelInterface> channel_;
   OAuthTokenGetter* token_getter_;
-  GrpcAsyncExecutor dispatcher_;
+  GrpcAsyncExecutor executor_;
   std::string auth_token_;
 
   base::WeakPtrFactory<FtlGrpcContext> weak_factory_;

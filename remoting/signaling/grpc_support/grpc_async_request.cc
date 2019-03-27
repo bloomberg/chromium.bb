@@ -4,16 +4,13 @@
 
 #include "remoting/signaling/grpc_support/grpc_async_request.h"
 
-#include "base/threading/thread_task_runner_handle.h"
 #include "third_party/grpc/src/include/grpcpp/client_context.h"
 
 namespace remoting {
-namespace internal {
 
 GrpcAsyncRequest::GrpcAsyncRequest(
     std::unique_ptr<grpc::ClientContext> context) {
   context_ = std::move(context);
-  caller_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
 GrpcAsyncRequest::~GrpcAsyncRequest() = default;
@@ -24,29 +21,4 @@ void GrpcAsyncRequest::CancelRequest() {
   OnRequestCanceled();
 }
 
-void GrpcAsyncRequest::DeleteOnCallerThread() {
-  caller_task_runner_->DeleteSoon(FROM_HERE, this);
-}
-
-void GrpcAsyncRequest::Start() {
-  DCHECK(!is_get_event_tag_allowed_);
-  is_get_event_tag_allowed_ = true;
-  StartInternal();
-  is_get_event_tag_allowed_ = false;
-}
-
-bool GrpcAsyncRequest::OnDequeuedOnDispatcherThread(bool operation_succeeded) {
-  DCHECK(!is_get_event_tag_allowed_);
-  is_get_event_tag_allowed_ = true;
-  bool result = OnDequeuedOnDispatcherThreadInternal(operation_succeeded);
-  is_get_event_tag_allowed_ = false;
-  return result;
-}
-
-void* GrpcAsyncRequest::GetEventTag() {
-  DCHECK(is_get_event_tag_allowed_);
-  return this;
-}
-
-}  // namespace internal
 }  // namespace remoting

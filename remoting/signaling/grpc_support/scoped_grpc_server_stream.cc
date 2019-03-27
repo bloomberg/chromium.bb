@@ -9,12 +9,12 @@
 namespace remoting {
 
 ScopedGrpcServerStream::ScopedGrpcServerStream(
-    base::WeakPtr<internal::GrpcAsyncServerStreamingRequestBase> call_data)
-    : call_data_(call_data) {}
+    base::WeakPtr<GrpcAsyncServerStreamingRequestBase> request)
+    : request_(request) {}
 
 ScopedGrpcServerStream::~ScopedGrpcServerStream() {
-  if (call_data_) {
-    call_data_->CancelRequest();
+  if (request_) {
+    request_->CancelRequest();
   }
 }
 
