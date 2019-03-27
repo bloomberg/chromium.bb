@@ -48,8 +48,7 @@ public class DownloadDirectoryProvider {
             ArrayList<DirectoryOption> dirs = new ArrayList<>();
 
             // Retrieve default directory.
-            File defaultDirectory =
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File defaultDirectory = DownloadUtils.getPrimaryDownloadDirectory();
 
             // If no default directory, return an error option.
             if (defaultDirectory == null) {
