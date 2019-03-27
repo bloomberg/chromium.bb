@@ -63,10 +63,12 @@ void RemoteModuleWatcher::InitializeOnTaskRunner(
   connector->BindInterface(content::mojom::kBrowserServiceName,
                            &module_event_sink_);
 
-  module_watcher_ = ModuleWatcher::Create(base::BindRepeating(
-      &OnModuleEvent, task_runner_,
-      base::BindRepeating(&RemoteModuleWatcher::HandleModuleEvent,
-                          weak_ptr_factory_.GetWeakPtr())));
+  module_watcher_ = ModuleWatcher::Create(
+      base::BindRepeating(
+          &OnModuleEvent, task_runner_,
+          base::BindRepeating(&RemoteModuleWatcher::HandleModuleEvent,
+                              weak_ptr_factory_.GetWeakPtr())),
+      /* report_background_loaded_modules = */ false);
 }
 
 void RemoteModuleWatcher::HandleModuleEvent(
