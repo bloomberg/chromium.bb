@@ -6116,3 +6116,4 @@ crbug.com/919789 paint/invalidation/window-resize/ [ Pass Timeout ]
 # Sheriff 2019-03-27
 crbug.com/835943 [ Release ] http/tests/appcache/non-html.xhtml [ Crash Pass Failure Timeout ]
 crbug.com/946323 [ Mac ] editing/caret/caret-painting-low-dpi.html [ Failure Pass ]
+crbug.com/946624 virtual/user-activation-v2/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Failure Pass ]
