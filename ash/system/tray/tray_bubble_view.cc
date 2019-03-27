@@ -63,7 +63,7 @@ class MouseMoveDetectorHost : public views::MouseWatcherHost {
   MouseMoveDetectorHost();
   ~MouseMoveDetectorHost() override;
 
-  bool Contains(const gfx::Point& screen_point, MouseEventType type) override;
+  bool Contains(const gfx::Point& screen_point, EventType type) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MouseMoveDetectorHost);
@@ -74,7 +74,7 @@ MouseMoveDetectorHost::MouseMoveDetectorHost() {}
 MouseMoveDetectorHost::~MouseMoveDetectorHost() {}
 
 bool MouseMoveDetectorHost::Contains(const gfx::Point& screen_point,
-                                     MouseEventType type) {
+                                     EventType type) {
   return false;
 }
 
