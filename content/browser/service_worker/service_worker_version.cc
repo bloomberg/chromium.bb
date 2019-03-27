@@ -1028,14 +1028,14 @@ void ServiceWorkerVersion::OnReportException(
 }
 
 void ServiceWorkerVersion::OnReportConsoleMessage(
-    int source_identifier,
+    blink::mojom::ConsoleMessageSource source,
     blink::mojom::ConsoleMessageLevel message_level,
     const base::string16& message,
     int line_number,
     const GURL& source_url) {
   for (auto& observer : observers_) {
-    observer.OnReportConsoleMessage(this, source_identifier, message_level,
-                                    message, line_number, source_url);
+    observer.OnReportConsoleMessage(this, source, message_level, message,
+                                    line_number, source_url);
   }
 }
 

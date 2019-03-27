@@ -111,7 +111,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
                                    int column_number,
                                    const GURL& source_url) {}
     virtual void OnReportConsoleMessage(
-        int source_identifier,
+        blink::mojom::ConsoleMessageSource source,
         blink::mojom::ConsoleMessageLevel message_level,
         const base::string16& message,
         int line_number,
@@ -285,7 +285,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
                          int line_number,
                          int column_number,
                          const GURL& source_url) override;
-  void OnReportConsoleMessage(int source_identifier,
+  void OnReportConsoleMessage(blink::mojom::ConsoleMessageSource source,
                               blink::mojom::ConsoleMessageLevel message_level,
                               const base::string16& message,
                               int line_number,

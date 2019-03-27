@@ -771,7 +771,7 @@ void ServiceWorkerContextCore::OnErrorReported(
 
 void ServiceWorkerContextCore::OnReportConsoleMessage(
     ServiceWorkerVersion* version,
-    int source_identifier,
+    blink::mojom::ConsoleMessageSource source,
     blink::mojom::ConsoleMessageLevel message_level,
     const base::string16& message,
     int line_number,
@@ -791,8 +791,7 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnReportConsoleMessage,
       version->version_id(),
-      ConsoleMessage(source_identifier, message_level, message, line_number,
-                     source_url));
+      ConsoleMessage(source, message_level, message, line_number, source_url));
 }
 
 void ServiceWorkerContextCore::OnControlleeAdded(

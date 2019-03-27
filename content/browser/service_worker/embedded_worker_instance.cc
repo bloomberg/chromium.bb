@@ -1020,14 +1020,14 @@ void EmbeddedWorkerInstance::OnReportException(
 }
 
 void EmbeddedWorkerInstance::OnReportConsoleMessage(
-    int source_identifier,
+    blink::mojom::ConsoleMessageSource source,
     blink::mojom::ConsoleMessageLevel message_level,
     const base::string16& message,
     int line_number,
     const GURL& source_url) {
   for (auto& observer : listener_list_) {
-    observer.OnReportConsoleMessage(source_identifier, message_level, message,
-                                    line_number, source_url);
+    observer.OnReportConsoleMessage(source, message_level, message, line_number,
+                                    source_url);
   }
 }
 
