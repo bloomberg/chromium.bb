@@ -85,17 +85,20 @@ class HttpCacheDataCounterTest : public testing::Test {
     // Create some entries in the cache.
     for (const CacheTestEntry& test_entry : kCacheEntries) {
       disk_cache::Entry* entry = nullptr;
-      net::TestCompletionCallback callback;
+      net::TestCompletionCallback create_entry_callback;
       int rv = backend_->CreateEntry(test_entry.url, net::HIGHEST, &entry,
-                                     callback.callback());
-      ASSERT_EQ(net::OK, callback.GetResult(rv));
+                                     create_entry_callback.callback());
+      ASSERT_EQ(net::OK, create_entry_callback.GetResult(rv));
       ASSERT_TRUE(entry);
 
       auto io_buf = base::MakeRefCounted<net::IOBuffer>(test_entry.size);
       std::fill(io_buf->data(), io_buf->data() + test_entry.size, 0);
+
+      net::TestCompletionCallback write_data_callback;
       rv = entry->WriteData(1, 0, io_buf.get(), test_entry.size,
-                            callback.callback(), true);
-      ASSERT_EQ(static_cast<int>(test_entry.size), callback.GetResult(rv));
+                            write_data_callback.callback(), true);
+      ASSERT_EQ(static_cast<int>(test_entry.size),
+                write_data_callback.GetResult(rv));
 
       base::Time time;
       ASSERT_TRUE(base::Time::FromString(test_entry.date, &time));
