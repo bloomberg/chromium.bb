@@ -792,7 +792,7 @@ bool TabStripModel::IsTabBlocked(int index) const {
 }
 
 const TabGroupData* TabStripModel::GetTabGroupForTab(int index) const {
-  return contents_data_[index]->group();
+  return (index == kNoTab) ? nullptr : contents_data_[index]->group();
 }
 
 std::vector<TabGroupData*> TabStripModel::ListTabGroups() const {

@@ -365,6 +365,10 @@ class BrowserTest : public extensions::ExtensionBrowserTest {
 #endif
   }
 
+  void OpenURLFromTab(WebContents* source, OpenURLParams params) {
+    browser()->OpenURLFromTab(source, params);
+  }
+
   // Returns the app extension aptly named "App Test".
   const Extension* GetExtension() {
     extensions::ExtensionRegistry* registry =
@@ -815,6 +819,31 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, BeforeUnloadVsBeforeReload) {
 
   // Accept the navigation so we end up on a page without a beforeunload hook.
   alert->native_dialog()->AcceptAppModalDialog();
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, NewTabFromLinkOpensInGroup) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Add a grouped tab.
+  TabStripModel* model = browser()->tab_strip_model();
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/empty.html"));
+  model->AddToNewGroup({0});
+
+  // Open a new background tab.
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  OpenURLFromTab(
+      contents,
+      OpenURLParams(embedded_test_server()->GetURL("/empty.html"), Referrer(),
+                    WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                    ui::PAGE_TRANSITION_TYPED, false));
+
+  // It should have inherited the tab group from the first tab.
+  EXPECT_EQ(browser()->tab_strip_model()->GetTabGroupForTab(0),
+            browser()->tab_strip_model()->GetTabGroupForTab(1));
+
+  // TODO (946263): Remove this teardown once the crash it prevents is fixed.
+  model->RemoveFromGroup({0, 1});
 }
 
 // BeforeUnloadAtQuitWithTwoWindows is a regression test for
