@@ -28,6 +28,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
 namespace {
@@ -114,7 +115,7 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
   bool HasIndependentMetrics() { return provider()->HasIndependentMetrics(); }
 
   bool ProvideIndependentMetrics(
-      SystemProfileProto* profile_proto,
+      ChromeUserMetricsExtension* uma_proto,
       base::HistogramSnapshotManager* snapshot_manager) {
     bool success = false;
     bool success_set = false;
@@ -125,7 +126,7 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
               *set_ptr = true;
             },
             &success, &success_set),
-        profile_proto, snapshot_manager);
+        uma_proto, snapshot_manager);
 
     RunTasks();
     CHECK(success_set);
@@ -154,9 +155,9 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
   size_t GetIndependentHistogramCount() {
     HistogramFlattenerDeltaRecorder flattener;
     base::HistogramSnapshotManager snapshot_manager(&flattener);
-    SystemProfileProto profile_proto;
+    ChromeUserMetricsExtension uma_proto;
     provider()->ProvideIndependentMetrics(base::BindOnce([](bool success) {}),
-                                          &profile_proto, &snapshot_manager);
+                                          &uma_proto, &snapshot_manager);
 
     RunTasks();
     return flattener.GetRecordedDeltaHistogramNames().size();
@@ -902,11 +903,11 @@ TEST_P(FileMetricsProviderTest, AccessEmbeddedProfileMetricsWithoutProfile) {
   {
     HistogramFlattenerDeltaRecorder flattener;
     base::HistogramSnapshotManager snapshot_manager(&flattener);
-    SystemProfileProto profile;
+    ChromeUserMetricsExtension uma_proto;
 
     // A read of metrics with internal profiles should return nothing.
     EXPECT_FALSE(HasIndependentMetrics());
-    EXPECT_FALSE(ProvideIndependentMetrics(&profile, &snapshot_manager));
+    EXPECT_FALSE(ProvideIndependentMetrics(&uma_proto, &snapshot_manager));
   }
   EXPECT_TRUE(base::PathExists(metrics_file()));
   OnDidCreateMetricsLog();
@@ -946,11 +947,11 @@ TEST_P(FileMetricsProviderTest, AccessEmbeddedProfileMetricsWithProfile) {
     EXPECT_EQ(0U, flattener.GetRecordedDeltaHistogramNames().size());
 
     // A read of metrics with internal profiles should return one result.
-    SystemProfileProto profile;
+    ChromeUserMetricsExtension uma_proto;
     EXPECT_TRUE(HasIndependentMetrics());
-    EXPECT_TRUE(ProvideIndependentMetrics(&profile, &snapshot_manager));
+    EXPECT_TRUE(ProvideIndependentMetrics(&uma_proto, &snapshot_manager));
     EXPECT_FALSE(HasIndependentMetrics());
-    EXPECT_FALSE(ProvideIndependentMetrics(&profile, &snapshot_manager));
+    EXPECT_FALSE(ProvideIndependentMetrics(&uma_proto, &snapshot_manager));
   }
   RunTasks();
   EXPECT_FALSE(base::PathExists(metrics_file()));
@@ -977,9 +978,9 @@ TEST_P(FileMetricsProviderTest, AccessEmbeddedFallbackMetricsWithoutProfile) {
     EXPECT_EQ(2U, flattener.GetRecordedDeltaHistogramNames().size());
 
     // A read of metrics with internal profiles should return nothing.
-    SystemProfileProto profile;
+    ChromeUserMetricsExtension uma_proto;
     EXPECT_FALSE(HasIndependentMetrics());
-    EXPECT_FALSE(ProvideIndependentMetrics(&profile, &snapshot_manager));
+    EXPECT_FALSE(ProvideIndependentMetrics(&uma_proto, &snapshot_manager));
   }
   EXPECT_TRUE(base::PathExists(metrics_file()));
   OnDidCreateMetricsLog();
@@ -1020,11 +1021,11 @@ TEST_P(FileMetricsProviderTest, AccessEmbeddedFallbackMetricsWithProfile) {
     EXPECT_EQ(0U, flattener.GetRecordedDeltaHistogramNames().size());
 
     // A read of metrics with internal profiles should return one result.
-    SystemProfileProto profile;
+    ChromeUserMetricsExtension uma_proto;
     EXPECT_TRUE(HasIndependentMetrics());
-    EXPECT_TRUE(ProvideIndependentMetrics(&profile, &snapshot_manager));
+    EXPECT_TRUE(ProvideIndependentMetrics(&uma_proto, &snapshot_manager));
     EXPECT_FALSE(HasIndependentMetrics());
-    EXPECT_FALSE(ProvideIndependentMetrics(&profile, &snapshot_manager));
+    EXPECT_FALSE(ProvideIndependentMetrics(&uma_proto, &snapshot_manager));
   }
   RunTasks();
   EXPECT_FALSE(base::PathExists(metrics_file()));
@@ -1072,14 +1073,14 @@ TEST_P(FileMetricsProviderTest, AccessEmbeddedProfileMetricsFromDir) {
   // A read of metrics with internal profiles should return one result.
   HistogramFlattenerDeltaRecorder flattener;
   base::HistogramSnapshotManager snapshot_manager(&flattener);
-  SystemProfileProto profile;
+  ChromeUserMetricsExtension uma_proto;
   for (int i = 0; i < file_count; ++i) {
     EXPECT_TRUE(HasIndependentMetrics()) << i;
-    EXPECT_TRUE(ProvideIndependentMetrics(&profile, &snapshot_manager)) << i;
+    EXPECT_TRUE(ProvideIndependentMetrics(&uma_proto, &snapshot_manager)) << i;
     RunTasks();
   }
   EXPECT_FALSE(HasIndependentMetrics());
-  EXPECT_FALSE(ProvideIndependentMetrics(&profile, &snapshot_manager));
+  EXPECT_FALSE(ProvideIndependentMetrics(&uma_proto, &snapshot_manager));
 
   OnDidCreateMetricsLog();
   RunTasks();

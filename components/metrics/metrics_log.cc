@@ -87,8 +87,7 @@ void MetricsLog::IndependentMetricsLoader::Run(
     base::OnceCallback<void(bool)> done_callback,
     MetricsProvider* metrics_provider) {
   metrics_provider->ProvideIndependentMetrics(
-      std::move(done_callback), log_->uma_proto()->mutable_system_profile(),
-      snapshot_manager_.get());
+      std::move(done_callback), log_->uma_proto(), snapshot_manager_.get());
 }
 
 std::unique_ptr<MetricsLog> MetricsLog::IndependentMetricsLoader::ReleaseLog() {
