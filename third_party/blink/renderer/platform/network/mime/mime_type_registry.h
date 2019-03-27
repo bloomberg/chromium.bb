@@ -103,6 +103,11 @@ class PLATFORM_EXPORT MIMETypeRegistry {
 
   // Checks to see if a mime type is suitable for being loaded as a text track.
   static bool IsSupportedTextTrackMIMEType(const String& mime_type);
+
+  // Checks to see if a mime type is an image type with lossy compression, whose
+  // size will be restricted via the 'unoptimized-lossy-images' feature
+  // policy. (JPEG)
+  static bool IsLossyImageMIMEType(const String& mime_type);
 };
 
 }  // namespace blink
