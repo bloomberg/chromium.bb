@@ -22,6 +22,13 @@
 
 namespace autofill {
 
+const int kStreetAddressFieldTypes[] = {
+    ADDRESS_HOME_LINE1,          ADDRESS_HOME_LINE2,
+    ADDRESS_HOME_APT_NUM,        ADDRESS_BILLING_LINE1,
+    ADDRESS_BILLING_LINE2,       ADDRESS_BILLING_APT_NUM,
+    ADDRESS_HOME_STREET_ADDRESS, ADDRESS_BILLING_STREET_ADDRESS,
+    ADDRESS_HOME_LINE3,          ADDRESS_BILLING_LINE3};
+
 bool ContainsName(uint32_t groups) {
   return groups & label_formatter_groups::kName;
 }
@@ -38,31 +45,9 @@ bool ContainsPhone(uint32_t groups) {
   return groups & label_formatter_groups::kPhone;
 }
 
-bool HasStreetAddress(const std::vector<ServerFieldType>& types) {
-  return std::any_of(types.begin(), types.end(), [](ServerFieldType type) {
-    return type == ADDRESS_HOME_STREET_ADDRESS || type == ADDRESS_HOME_LINE1 ||
-           type == ADDRESS_BILLING_STREET_ADDRESS ||
-           type == ADDRESS_BILLING_LINE1;
-  });
-}
-
-void AddLabelPartIfNotEmpty(const base::string16& part,
-                            std::vector<base::string16>* parts) {
-  if (!part.empty()) {
-    parts->push_back(part);
-  }
-}
-
-base::string16 ConstructLabelLine(const std::vector<base::string16>& parts) {
-  return parts.size() == kMaxNumberOfParts
-             ? l10n_util::GetStringFUTF16(IDS_AUTOFILL_SUGGESTION_LABEL,
-                                          parts.front(), parts.back())
-             : base::JoinString(parts, base::string16());
-}
-
-uint32_t DetermineGroups(const std::vector<ServerFieldType>& field_types) {
+uint32_t DetermineGroups(const std::vector<ServerFieldType>& types) {
   uint32_t group_bitmask = 0;
-  for (const ServerFieldType& type : field_types) {
+  for (const ServerFieldType& type : types) {
     const FieldTypeGroup group =
         AutofillType(AutofillType(type).GetStorableType()).group();
     switch (group) {
@@ -85,10 +70,52 @@ uint32_t DetermineGroups(const std::vector<ServerFieldType>& field_types) {
   return group_bitmask;
 }
 
-AutofillProfile MakeTrimmedProfile(
-    const AutofillProfile& profile,
-    const std::string& app_locale,
-    const std::vector<ServerFieldType>& field_types) {
+bool IsStreetAddressPart(ServerFieldType type) {
+  return std::find(std::begin(kStreetAddressFieldTypes),
+                   std::end(kStreetAddressFieldTypes),
+                   type) != std::end(kStreetAddressFieldTypes);
+}
+
+bool HasStreetAddress(const std::vector<ServerFieldType>& types) {
+  return std::any_of(types.begin(), types.end(), IsStreetAddressPart);
+}
+
+std::vector<ServerFieldType> ExtractSpecifiedAddressFieldTypes(
+    bool extract_street_address_types,
+    const std::vector<ServerFieldType>& types) {
+  auto should_be_extracted =
+      [&extract_street_address_types](ServerFieldType type) -> bool {
+    return AutofillType(AutofillType(type).GetStorableType()).group() ==
+               ADDRESS_HOME &&
+           (extract_street_address_types ? IsStreetAddressPart(type)
+                                         : !IsStreetAddressPart(type));
+  };
+
+  std::vector<ServerFieldType> extracted_address_types;
+  std::copy_if(types.begin(), types.end(),
+               std::back_inserter(extracted_address_types),
+               should_be_extracted);
+
+  return extracted_address_types;
+}
+
+void AddLabelPartIfNotEmpty(const base::string16& part,
+                            std::vector<base::string16>* parts) {
+  if (!part.empty()) {
+    parts->push_back(part);
+  }
+}
+
+base::string16 ConstructLabelLine(const std::vector<base::string16>& parts) {
+  return parts.size() == kMaxNumberOfParts
+             ? l10n_util::GetStringFUTF16(IDS_AUTOFILL_SUGGESTION_LABEL,
+                                          parts.front(), parts.back())
+             : base::JoinString(parts, base::string16());
+}
+
+AutofillProfile MakeTrimmedProfile(const AutofillProfile& profile,
+                                   const std::string& app_locale,
+                                   const std::vector<ServerFieldType>& types) {
   AutofillProfile trimmed_profile(profile.guid(), profile.origin());
   trimmed_profile.set_language_code(profile.language_code());
 
@@ -97,7 +124,7 @@ AutofillProfile MakeTrimmedProfile(
       profile.GetInfo(country_code_type, app_locale);
   trimmed_profile.SetInfo(country_code_type, country_code, app_locale);
 
-  for (const ServerFieldType& type : field_types) {
+  for (const ServerFieldType& type : types) {
     trimmed_profile.SetInfo(type, profile.GetInfo(type, app_locale),
                             app_locale);
   }
@@ -109,24 +136,37 @@ base::string16 GetLabelName(const AutofillProfile& profile,
   return profile.GetInfo(AutofillType(NAME_FULL), app_locale);
 }
 
-base::string16 GetLabelAddress(bool form_has_street_address_,
+base::string16 GetLabelForFocusedAddress(
+    ServerFieldType focused_field_type,
+    bool form_has_street_address,
+    const AutofillProfile& profile,
+    const std::string& app_locale,
+    const std::vector<ServerFieldType>& types) {
+  return GetLabelAddress(
+      form_has_street_address && !IsStreetAddressPart(focused_field_type),
+      profile, app_locale, types);
+}
+
+base::string16 GetLabelAddress(bool use_street_address,
                                const AutofillProfile& profile,
                                const std::string& app_locale,
                                const std::vector<ServerFieldType>& types) {
-  return form_has_street_address_
-             ? GetLabelStreetAddress(profile, app_locale,
-                                     {ADDRESS_HOME_STREET_ADDRESS})
+  return use_street_address
+             ? GetLabelStreetAddress(
+                   profile, app_locale,
+                   ExtractSpecifiedAddressFieldTypes(use_street_address, types))
              : GetLabelNationalAddress(profile, app_locale,
-                                       ExtractAddressFieldTypes(types));
+                                       ExtractSpecifiedAddressFieldTypes(
+                                           use_street_address, types));
 }
 
 base::string16 GetLabelNationalAddress(
     const AutofillProfile& profile,
     const std::string& app_locale,
-    const std::vector<ServerFieldType>& field_types) {
+    const std::vector<ServerFieldType>& types) {
   std::unique_ptr<::i18n::addressinput::AddressData> address_data =
       i18n::CreateAddressDataFromAutofillProfile(
-          MakeTrimmedProfile(profile, app_locale, field_types), app_locale);
+          MakeTrimmedProfile(profile, app_locale, types), app_locale);
 
   std::string address_line;
   ::i18n::addressinput::GetFormattedNationalAddressLine(*address_data,
@@ -137,10 +177,10 @@ base::string16 GetLabelNationalAddress(
 base::string16 GetLabelStreetAddress(
     const AutofillProfile& profile,
     const std::string& app_locale,
-    const std::vector<ServerFieldType>& field_types) {
+    const std::vector<ServerFieldType>& types) {
   std::unique_ptr<::i18n::addressinput::AddressData> address_data =
       i18n::CreateAddressDataFromAutofillProfile(
-          MakeTrimmedProfile(profile, app_locale, field_types), app_locale);
+          MakeTrimmedProfile(profile, app_locale, types), app_locale);
 
   std::string address_line;
   ::i18n::addressinput::GetStreetAddressLinesAsSingleLine(*address_data,
@@ -164,18 +204,6 @@ base::string16 GetLabelPhone(const AutofillProfile& profile,
              : base::UTF8ToUTF16(i18n::FormatPhoneNationallyForDisplay(
                    unformatted_phone,
                    data_util::GetCountryCodeWithFallback(profile, app_locale)));
-}
-
-std::vector<ServerFieldType> ExtractAddressFieldTypes(
-    const std::vector<ServerFieldType>& types) {
-  std::vector<ServerFieldType> address_types;
-  std::copy_if(
-      types.begin(), types.end(), std::back_inserter(address_types),
-      [](ServerFieldType type) {
-        return AutofillType(AutofillType(type).GetStorableType()).group() ==
-               ADDRESS_HOME;
-      });
-  return address_types;
 }
 
 }  // namespace autofill

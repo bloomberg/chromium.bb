@@ -26,8 +26,8 @@ class AddressContactFormLabelFormatter : public LabelFormatter {
 
   ~AddressContactFormLabelFormatter() override;
 
-  std::vector<base::string16> GetLabels(
-      const std::vector<AutofillProfile*>& profiles) const override;
+  base::string16 GetLabelForFocusedGroup(const AutofillProfile& profile,
+                                         FieldTypeGroup group) const override;
 };
 
 }  // namespace autofill

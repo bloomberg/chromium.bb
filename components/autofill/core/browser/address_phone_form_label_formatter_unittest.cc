@@ -10,13 +10,11 @@
 
 #include "base/guid.h"
 #include "base/strings/string16.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/label_formatter_test_utils.h"
-#include "components/autofill/core/browser/label_formatter_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,7 +24,7 @@ namespace autofill {
 namespace {
 
 std::vector<ServerFieldType> GetFieldTypes() {
-  return {UNKNOWN_TYPE,       NAME_FULL,          PHONE_HOME_WHOLE_NUMBER,
+  return {NO_SERVER_DATA,     NAME_FULL,          PHONE_HOME_WHOLE_NUMBER,
           ADDRESS_HOME_LINE1, ADDRESS_HOME_LINE2, ADDRESS_HOME_CITY,
           ADDRESS_HOME_STATE, ADDRESS_HOME_ZIP,   ADDRESS_HOME_COUNTRY};
 }
@@ -37,24 +35,7 @@ TEST(AddressPhoneFormLabelFormatterTest, GetLabelsWithMissingProfiles) {
   EXPECT_TRUE(formatter->GetLabels(std::vector<AutofillProfile*>()).empty());
 }
 
-TEST(AddressPhoneFormLabelFormatterTest,
-     GetLabelsForUSProfilesAndFocusedNoGroup) {
-  AutofillProfile profile1 =
-      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile1, "John", "F", "Kennedy", "jfk@gmail.com", "",
-                       "333 Washington St", "", "Brookline", "MA", "02445",
-                       "US", "16177302000");
-
-  const std::unique_ptr<LabelFormatter> formatter =
-      LabelFormatter::Create("en-US", NO_SERVER_DATA, GetFieldTypes());
-
-  EXPECT_THAT(
-      formatter->GetLabels(std::vector<AutofillProfile*>{&profile1}),
-      ElementsAre(FormatExpectedLabel("(617) 730-2000", "333 Washington St")));
-}
-
-TEST(AddressPhoneFormLabelFormatterTest,
-     GetLabelsForUSProfilesAndFocusedNonAddressNonPhone) {
+TEST(AddressPhoneFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedName) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "John", "F", "Kennedy", "jfk@gmail.com", "",
@@ -159,8 +140,7 @@ TEST(AddressPhoneFormLabelFormatterTest,
                   base::string16()));
 }
 
-TEST(AddressPhoneFormLabelFormatterTest,
-     GetLabelsForBRProfilesAndFocusedNonAddressNonPhone) {
+TEST(AddressPhoneFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedName) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Tarsila", "do", "Amaral", "tarsila@aol.com",
