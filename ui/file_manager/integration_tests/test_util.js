@@ -922,6 +922,23 @@ var ENTRIES = {
     },
   }),
 
+  teamDriveBDirectory: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    targetPath: 'teamDriveBDirectory',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'teamDriveBDirectory',
+    sizeText: '--',
+    typeText: 'Folder',
+    teamDriveName: 'Team Drive B',
+    capabilities: {
+      canCopy: true,
+      canDelete: false,
+      canRename: false,
+      canAddChildren: false,
+      canShare: true,
+    },
+  }),
+
   // Computer entries.
   computerA: new TestEntryInfo({
     type: EntryType.COMPUTER,

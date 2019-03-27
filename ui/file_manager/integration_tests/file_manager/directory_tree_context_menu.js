@@ -1114,4 +1114,232 @@
     await remoteCall.waitForElement(
         appId, '#directory-tree-context-menu[hidden]');
   };
+
+  /**
+   * Tests context menu for My Drive, read-only and read-write folder inside it.
+   */
+  testcase.dirContextMenuMyDrive = async () => {
+    const myDriveMenus = [
+      ['#share-with-linux', true],
+      ['#new-folder', true],
+    ];
+    const readOnlyFolderMenus = [
+      ['#cut', false],
+      ['#copy', true],
+      ['#paste-into-folder', false],
+      ['#share-with-linux', true],
+      ['#rename', false],
+      ['#create-folder-shortcut', true],
+      ['#delete', false],
+      ['#new-folder', false],
+    ];
+    const readWriteFolderMenus = [
+      ['#cut', true],
+      ['#copy', true],
+      ['#paste-into-folder', true],
+      ['#share-with-linux', true],
+      ['#rename', true],
+      ['#create-folder-shortcut', true],
+      ['#delete', true],
+      ['#new-folder', true],
+    ];
+
+    // Open Files App on Drive.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DRIVE, [], COMPLEX_DRIVE_ENTRY_SET);
+
+    // Select and copy hello.txt into the clipboard to test paste-into-folder
+    // command.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil(
+            'selectFile', appId, ['hello.txt']),
+        'selectFile failed');
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('execCommand', appId, ['copy']),
+        'execCommand failed');
+
+    // Check that Google Drive is expanded.
+    await remoteCall.waitForElement(
+        appId, ['#directory-tree .tree-item.drive-volume[expanded]']);
+
+    // Check the context menu for My Drive root.
+    await checkContextMenu(
+        appId, '/My Drive', myDriveMenus, false /* rootMenu */);
+
+    // Check the context menu for read-only folder.
+    await checkContextMenu(
+        appId, '/My Drive/Read-Only Folder', readOnlyFolderMenus,
+        false /* rootMenu */);
+
+    // Check the context menu for read+write folder.
+    await checkContextMenu(
+        appId, '/My Drive/photos', readWriteFolderMenus, false /* rootMenu */);
+  };
+
+  /**
+   * Tests context menu for Shared drives grand-root, a read+write shared drive
+   * root, a folder inside it, a read-only shared drive and a folder inside
+   * it.
+   */
+  testcase.dirContextMenuSharedDrive = async () => {
+    const sharedDriveGrandRootMenus = [
+      ['#share-with-linux', true],
+    ];
+    const readWriteSharedDriveRootMenus = [
+      ['#cut', false],
+      ['#copy', false],
+      ['#paste-into-folder', true],
+      ['#share-with-linux', true],
+      ['#rename', false],
+      ['#delete', true],
+      ['#new-folder', true],
+    ];
+    const readWriteFolderMenus = [
+      ['#cut', true],
+      ['#copy', true],
+      ['#paste-into-folder', true],
+      ['#share-with-linux', true],
+      ['#rename', true],
+      ['#create-folder-shortcut', true],
+      ['#delete', true],
+      ['#new-folder', true],
+    ];
+    const readOnlySharedDriveRootMenus = [
+      ['#cut', false],
+      ['#copy', false],
+      ['#paste-into-folder', false],
+      ['#share-with-linux', true],
+      ['#rename', false],
+      ['#delete', false],
+      ['#new-folder', false],
+    ];
+    const readOnlyFolderMenus = [
+      ['#cut', false],
+      ['#copy', true],
+      ['#paste-into-folder', false],
+      ['#share-with-linux', true],
+      ['#rename', false],
+      ['#create-folder-shortcut', true],
+      ['#delete', false],
+      ['#new-folder', false],
+    ];
+
+    // Open Files App on Drive.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DRIVE, [], SHARED_DRIVE_ENTRY_SET);
+
+    // Select and copy hello.txt into the clipboard to test paste-into-folder
+    // command.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil(
+            'selectFile', appId, ['hello.txt']),
+        'selectFile failed');
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('execCommand', appId, ['copy']),
+        'execCommand failed');
+
+    // Check that Google Drive is expanded.
+    await remoteCall.waitForElement(
+        appId, ['#directory-tree .tree-item.drive-volume[expanded]']);
+
+    // Check the context menu for Shared drives grand root.
+    await checkContextMenu(
+        appId, '/Shared drives', sharedDriveGrandRootMenus,
+        false /* rootMenu */);
+
+    // Check the context menu for a read+write shared drive root.
+    await checkContextMenu(
+        appId, '/Shared drives/Team Drive A', readWriteSharedDriveRootMenus,
+        false /* rootMenu */);
+
+    // Check the context menu for read+write folder.
+    await checkContextMenu(
+        appId, '/Shared drives/Team Drive A/teamDriveADirectory',
+        readWriteFolderMenus, false /* rootMenu */);
+
+    // Check the context menu for a read-only shared drive root.
+    await checkContextMenu(
+        appId, '/Shared drives/Team Drive B', readOnlySharedDriveRootMenus,
+        false /* rootMenu */);
+
+    // Check the context menu for read+write folder.
+    await checkContextMenu(
+        appId, '/Shared drives/Team Drive B/teamDriveBDirectory',
+        readOnlyFolderMenus, false /* rootMenu */);
+  };
+
+  /**
+   * Tests context menu for Google Drive/Shared with me root, currently it
+   * doesn't show context menu.
+   */
+  testcase.dirContextMenuSharedWithMe = async () => {
+    const query = '#directory-tree [entry-label="Shared with me"]';
+
+    // Open Files app on Drive.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET);
+
+    // Focus the directory tree.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil(
+            'focus', appId, ['#directory-tree']),
+        'focus failed: #directory-tree');
+
+    // Select Shared with me root.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [query]),
+        'fakeMouseClick failed');
+
+    // Wait it to navigate to it.
+    await remoteCall.waitUntilCurrentDirectoryIsChanged(
+        appId, '/Shared with me');
+
+    // Right click Shared with me root.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil(
+            'fakeMouseRightClick', appId, [query]),
+        'fakeMouseRightClick failed');
+
+    // Check that both menus are still hidden.
+    await remoteCall.waitForElement(appId, '#roots-context-menu[hidden]');
+    await remoteCall.waitForElement(
+        appId, '#directory-tree-context-menu[hidden]');
+  };
+
+  /**
+   * Tests context menu for Google Drive/Offline root, currently it doesn't show
+   * context menu.
+   */
+  testcase.dirContextMenuOffline = async () => {
+    const query = '#directory-tree [entry-label="Offline"]';
+
+    // Open Files app on Drive.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET);
+
+    // Focus the directory tree.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil(
+            'focus', appId, ['#directory-tree']),
+        'focus failed: #directory-tree');
+
+    // Select Shared with me root.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [query]),
+        'fakeMouseClick failed');
+
+    // Wait it to navigate to it.
+    await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Offline');
+
+    // Right click Shared with me root.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil(
+            'fakeMouseRightClick', appId, [query]),
+        'fakeMouseRightClick failed');
+
+    // Check that both menus are still hidden.
+    await remoteCall.waitForElement(appId, '#roots-context-menu[hidden]');
+    await remoteCall.waitForElement(
+        appId, '#directory-tree-context-menu[hidden]');
+  };
 })();
