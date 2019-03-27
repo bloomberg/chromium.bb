@@ -35,8 +35,4 @@ bool IsDownloadsProviderEnabled() {
   return AreAssetDownloadsEnabled() || AreOfflinePageDownloadsEnabled();
 }
 
-bool IsBookmarkProviderEnabled() {
-  return false;
-}
-
 }  // namespace ntp_snippets

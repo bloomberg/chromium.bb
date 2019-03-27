@@ -13,10 +13,6 @@ if (is_android) {
 
 static_library("ntp_snippets") {
   sources = [
-    "bookmarks/bookmark_last_visit_utils.cc",
-    "bookmarks/bookmark_last_visit_utils.h",
-    "bookmarks/bookmark_suggestions_provider.cc",
-    "bookmarks/bookmark_suggestions_provider.h",
     "breaking_news/breaking_news_listener.h",
     "breaking_news/breaking_news_metrics.cc",
     "breaking_news/breaking_news_metrics.h",
@@ -149,7 +145,6 @@ static_library("ntp_snippets") {
 
   deps = [
     ":explore_protos",
-    "//components/bookmarks/browser",
     "//components/data_use_measurement/core",
     "//components/favicon/core",
     "//components/favicon_base",
@@ -202,8 +197,6 @@ proto_library("explore_protos") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "bookmarks/bookmark_last_visit_utils_unittest.cc",
-    "bookmarks/bookmark_suggestions_provider_unittest.cc",
     "breaking_news/subscription_json_request_unittest.cc",
     "breaking_news/subscription_manager_impl_unittest.cc",
     "category_rankers/click_based_category_ranker_unittest.cc",
@@ -248,8 +241,6 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//components/bookmarks/browser",
-    "//components/bookmarks/test",
     "//components/gcm_driver",
     "//components/gcm_driver/instance_id",
     "//components/image_fetcher/core",

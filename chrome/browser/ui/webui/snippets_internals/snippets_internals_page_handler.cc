@@ -31,7 +31,6 @@ using ntp_snippets::Category;
 using ntp_snippets::CategoryInfo;
 using ntp_snippets::CategoryStatus;
 using ntp_snippets::ContentSuggestion;
-using ntp_snippets::IsBookmarkProviderEnabled;
 using ntp_snippets::RemoteSuggestionsProvider;
 using ntp_snippets::RemoteSuggestionsFetcher;
 using ntp_snippets::UserClassifier;
@@ -175,8 +174,6 @@ void SnippetsInternalsPageHandler::GetGeneralProperties(
       BooleanToString(AreAssetDownloadsEnabled());
   properties["flag-offline-page-download-suggestions"] =
       BooleanToString(AreOfflinePageDownloadsEnabled());
-  properties["flag-bookmark-suggestions"] =
-      BooleanToString(IsBookmarkProviderEnabled());
 
   if (remote_suggestions_provider_) {
     const ntp_snippets::RemoteSuggestionsFetcher* fetcher =

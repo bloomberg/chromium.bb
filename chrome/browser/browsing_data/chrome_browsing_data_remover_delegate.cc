@@ -81,7 +81,6 @@
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/pnacl_host.h"
-#include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
@@ -417,14 +416,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     if (content_suggestions_service) {
       content_suggestions_service->ClearHistory(delete_begin_, delete_end_,
                                                 filter);
-    }
-
-    // Remove the last visit dates meta-data from the bookmark model.
-    bookmarks::BookmarkModel* bookmark_model =
-        BookmarkModelFactory::GetForBrowserContext(profile_);
-    if (bookmark_model) {
-      ntp_snippets::RemoveLastVisitedDatesBetween(delete_begin_, delete_end_,
-                                                  filter, bookmark_model);
     }
 
     language::UrlLanguageHistogram* language_histogram =

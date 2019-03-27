@@ -78,7 +78,6 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/language/core/browser/url_language_histogram.h"
-#include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -144,12 +143,10 @@ using testing::ByRef;
 using testing::Eq;
 using testing::FloatEq;
 using testing::Invoke;
-using testing::IsEmpty;
 using testing::Matcher;
 using testing::MakeMatcher;
 using testing::MatcherInterface;
 using testing::MatchResultListener;
-using testing::Not;
 using testing::Return;
 using testing::SizeIs;
 using testing::WithArgs;
@@ -2661,71 +2658,6 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePluginData) {
   // of plugin data as well.
 }
 #endif
-
-// Test that the remover clears bookmark meta data (normally added in a tab
-// helper).
-TEST_F(ChromeBrowsingDataRemoverDelegateTest,
-       BookmarkLastVisitDatesGetCleared) {
-  GetProfile()->CreateBookmarkModel(true);
-
-  bookmarks::BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForBrowserContext(GetProfile());
-  bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
-
-  const base::Time delete_begin =
-      base::Time::Now() - base::TimeDelta::FromDays(1);
-
-  // Create a couple of bookmarks.
-  bookmark_model->AddURL(bookmark_model->bookmark_bar_node(), 0,
-                         base::string16(),
-                         GURL("http://foo.org/desktop"));
-  bookmark_model->AddURL(bookmark_model->mobile_node(), 0,
-                         base::string16(),
-                         GURL("http://foo.org/mobile"));
-
-  // Simulate their visits (this is using Time::Now() as timestamps).
-  ntp_snippets::UpdateBookmarkOnURLVisitedInMainFrame(
-      bookmark_model, GURL("http://foo.org/desktop"),
-      /*is_mobile_platform=*/false);
-  ntp_snippets::UpdateBookmarkOnURLVisitedInMainFrame(
-      bookmark_model, GURL("http://foo.org/mobile"),
-      /*is_mobile_platform=*/true);
-
-  // Add a bookmark with a visited timestamp before the deletion interval.
-  bookmarks::BookmarkNode::MetaInfoMap meta_info = {
-      {"last_visited",
-       base::NumberToString((delete_begin - base::TimeDelta::FromSeconds(1))
-                                .ToInternalValue())}};
-  bookmark_model->AddURLWithCreationTimeAndMetaInfo(
-      bookmark_model->mobile_node(), 0, base::ASCIIToUTF16("my title"),
-      GURL("http://foo-2.org/"), delete_begin - base::TimeDelta::FromDays(1),
-      &meta_info);
-
-  // There should be some recently visited bookmarks.
-  EXPECT_THAT(ntp_snippets::GetRecentlyVisitedBookmarks(
-                  bookmark_model, 2, base::Time::UnixEpoch(),
-                  /*consider_visits_from_desktop=*/false),
-              Not(IsEmpty()));
-
-  // Inject the bookmark model into the remover.
-  content::BrowsingDataRemover* remover =
-      content::BrowserContext::GetBrowsingDataRemover(GetProfile());
-
-  content::BrowsingDataRemoverCompletionObserver completion_observer(remover);
-  remover->RemoveAndReply(delete_begin, base::Time::Max(),
-                          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
-                          ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES,
-                          &completion_observer);
-  completion_observer.BlockUntilCompletion();
-
-  // There should be only 1 recently visited bookmarks.
-  std::vector<const bookmarks::BookmarkNode*> remaining_nodes =
-      ntp_snippets::GetRecentlyVisitedBookmarks(
-          bookmark_model, 3, base::Time::UnixEpoch(),
-          /*consider_visits_from_desktop=*/true);
-  EXPECT_THAT(remaining_nodes, SizeIs(1));
-  EXPECT_THAT(remaining_nodes[0]->url().spec(), Eq("http://foo-2.org/"));
-}
 
 // Test that the remover clears language model data (normally added by the
 // LanguageDetectionDriver).
