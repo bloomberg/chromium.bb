@@ -52,31 +52,24 @@ TEST_F(AppCacheTest, AddModifyRemoveEntry) {
 
   EXPECT_TRUE(cache->entries().empty());
   EXPECT_EQ(0L, cache->cache_size());
-  EXPECT_EQ(0L, cache->padding_size());
 
   const GURL kFooUrl("http://foo.com");
   const int64_t kFooResponseId = 1;
   const int64_t kFooSize = 100;
-  AppCacheEntry entry1(AppCacheEntry::MASTER, kFooResponseId,
-                       /*response_size=*/kFooSize,
-                       /*padding_size=*/0);
+  AppCacheEntry entry1(AppCacheEntry::MASTER, kFooResponseId, kFooSize);
   cache->AddEntry(kFooUrl, entry1);
   EXPECT_EQ(entry1.types(), cache->GetEntry(kFooUrl)->types());
   EXPECT_EQ(1UL, cache->entries().size());
   EXPECT_EQ(kFooSize, cache->cache_size());
-  EXPECT_EQ(0L, cache->padding_size());
 
   const GURL kBarUrl("http://bar.com");
   const int64_t kBarResponseId = 2;
   const int64_t kBarSize = 200;
-  AppCacheEntry entry2(AppCacheEntry::FALLBACK, kBarResponseId,
-                       /*response_size=*/kBarSize,
-                       /*padding_size=*/2 * kBarSize);
+  AppCacheEntry entry2(AppCacheEntry::FALLBACK, kBarResponseId, kBarSize);
   EXPECT_TRUE(cache->AddOrModifyEntry(kBarUrl, entry2));
   EXPECT_EQ(entry2.types(), cache->GetEntry(kBarUrl)->types());
   EXPECT_EQ(2UL, cache->entries().size());
   EXPECT_EQ(kFooSize + kBarSize, cache->cache_size());
-  EXPECT_EQ(2 * kBarSize, cache->padding_size());
 
   // Expected to return false when an existing entry is modified.
   AppCacheEntry entry3(AppCacheEntry::EXPLICIT);
@@ -87,7 +80,6 @@ TEST_F(AppCacheTest, AddModifyRemoveEntry) {
   EXPECT_EQ(kFooResponseId, cache->GetEntry(kFooUrl)->response_id());
   EXPECT_EQ(kFooSize, cache->GetEntry(kFooUrl)->response_size());
   EXPECT_EQ(kFooSize + kBarSize, cache->cache_size());
-  EXPECT_EQ(2 * kBarSize, cache->padding_size());
 
   EXPECT_EQ(entry2.types(), cache->GetEntry(kBarUrl)->types());  // unchanged
 
@@ -95,7 +87,6 @@ TEST_F(AppCacheTest, AddModifyRemoveEntry) {
   EXPECT_EQ(kFooSize, cache->cache_size());
   cache->RemoveEntry(kFooUrl);
   EXPECT_EQ(0L, cache->cache_size());
-  EXPECT_EQ(0L, cache->padding_size());
   EXPECT_TRUE(cache->entries().empty());
 }
 
@@ -570,18 +561,15 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   EXPECT_TRUE(cache->online_whitelist_namespaces_[0].is_pattern);
   EXPECT_EQ(kWhitelistUrl,
             cache->online_whitelist_namespaces_[0].namespace_url);
-  cache->AddEntry(kManifestUrl, AppCacheEntry(AppCacheEntry::MANIFEST,
-                                              /*response_id=*/1,
-                                              /*response_size=*/1000,
-                                              /*padding_size=*/0));
-  cache->AddEntry(kInterceptUrl, AppCacheEntry(AppCacheEntry::INTERCEPT,
-                                               /*response_id=*/3,
-                                               /*response_size=*/10000,
-                                               /*padding_size=*/10));
-  cache->AddEntry(kFallbackUrl, AppCacheEntry(AppCacheEntry::FALLBACK,
-                                              /*response_id=*/2,
-                                              /*response_size=*/100000,
-                                              /*padding_size=*/100));
+  cache->AddEntry(
+      kManifestUrl,
+      AppCacheEntry(AppCacheEntry::MANIFEST, 1, 1));
+  cache->AddEntry(
+      kInterceptUrl,
+      AppCacheEntry(AppCacheEntry::INTERCEPT, 3, 3));
+  cache->AddEntry(
+      kFallbackUrl,
+      AppCacheEntry(AppCacheEntry::FALLBACK, 2, 2));
 
   // Get it to produce database records and verify them.
   AppCacheDatabase::CacheRecord cache_record;
@@ -598,8 +586,7 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   EXPECT_EQ(kCacheId, cache_record.cache_id);
   EXPECT_EQ(kGroupId, cache_record.group_id);
   EXPECT_TRUE(cache_record.online_wildcard);
-  EXPECT_EQ(1000 + 10000 + 100000, cache_record.cache_size);
-  EXPECT_EQ(0 + 10 + 100, cache_record.padding_size);
+  EXPECT_EQ(1 + 2 + 3, cache_record.cache_size);
   EXPECT_EQ(3u, entries.size());
   EXPECT_EQ(1u, intercepts.size());
   EXPECT_EQ(1u, fallbacks.size());
@@ -620,8 +607,7 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
             cache->GetInterceptEntryUrl(GURL("http://foo.com/intercept")));
   EXPECT_EQ(kFallbackUrl,
             cache->GetFallbackEntryUrl(GURL("http://foo.com/")));
-  EXPECT_EQ(1000 + 10000 + 100000, cache->cache_size());
-  EXPECT_EQ(0 + 10 + 100, cache->padding_size());
+  EXPECT_EQ(1 + 2 + 3, cache->cache_size());
   EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
             cache->online_whitelist_namespaces_[0].type);
   EXPECT_TRUE(cache->online_whitelist_namespaces_[0].is_pattern);
