@@ -62,10 +62,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   AuthenticatorSupportedOptions::ClientPinAvailability
     WillNeedPINToMakeCredential(
       const CtapMakeCredentialRequest& request) override;
+
   // WillNeedPINToGetAssertion returns whether a PIN prompt will be needed to
   // serve the given request on this authenticator.
-  bool WillNeedPINToGetAssertion(const CtapGetAssertionRequest& request)
-    override;
+  GetAssertionPINDisposition WillNeedPINToGetAssertion(
+      const CtapGetAssertionRequest& request) override;
+
   void Reset(ResetCallback callback) override;
   void Cancel() override;
   std::string GetId() const override;

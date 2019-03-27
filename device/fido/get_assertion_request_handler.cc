@@ -211,24 +211,42 @@ void GetAssertionRequestHandler::DispatchRequest(
     return;
   }
 
-  if (!CheckUserVerificationCompatible(authenticator, request_, observer())) {
+  if (!base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
+      !CheckUserVerificationCompatible(authenticator, request_, observer())) {
+    // Don't flash authenticator without PIN support. This maintains
+    // previous behaviour and avoids adding UI unprotected by a feature
+    // flag without increasing the number of feature flags.
     FIDO_LOG(DEBUG) << "Not dispatching request to "
                     << authenticator->GetDisplayName()
                     << " because authenticator is not UV-compatible";
     return;
   }
 
-  if (base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
-      authenticator->WillNeedPINToGetAssertion(request_)) {
-    // A PIN will be needed. Just request a touch to let the user select this
-    // authenticator if they wish.
-    FIDO_LOG(DEBUG) << "Asking for touch from "
-                    << authenticator->GetDisplayName()
-                    << " because a PIN will be required";
-    authenticator->GetTouch(
-        base::BindOnce(&GetAssertionRequestHandler::HandleTouch,
-                       weak_factory_.GetWeakPtr(), authenticator));
-    return;
+  if (base::FeatureList::IsEnabled(device::kWebAuthPINSupport)) {
+    switch (authenticator->WillNeedPINToGetAssertion(request_)) {
+      case FidoAuthenticator::GetAssertionPINDisposition::kUsePIN:
+        // A PIN will be needed. Just request a touch to let the user select
+        // this authenticator if they wish.
+        FIDO_LOG(DEBUG) << "Asking for touch from "
+                        << authenticator->GetDisplayName()
+                        << " because a PIN will be required";
+        authenticator->GetTouch(
+            base::BindOnce(&GetAssertionRequestHandler::HandleTouch,
+                           weak_factory_.GetWeakPtr(), authenticator));
+        return;
+
+      case FidoAuthenticator::GetAssertionPINDisposition::kUnsatisfiable:
+        FIDO_LOG(DEBUG) << authenticator->GetDisplayName()
+                        << " cannot satisfy assertion request. Requesting "
+                           "touch in order to handle error case.";
+        authenticator->GetTouch(base::BindOnce(
+            &GetAssertionRequestHandler::HandleInapplicableAuthenticator,
+            weak_factory_.GetWeakPtr(), authenticator));
+        return;
+
+      case FidoAuthenticator::GetAssertionPINDisposition::kNoPIN:
+        break;
+    }
   }
 
   CtapGetAssertionRequest request(request_);
@@ -288,7 +306,8 @@ void GetAssertionRequestHandler::HandleResponse(
   // Requests that require a PIN should follow the |GetTouch| path initially.
   DCHECK(state_ == State::kWaitingForSecondTouch ||
          !base::FeatureList::IsEnabled(device::kWebAuthPINSupport) ||
-         !authenticator->WillNeedPINToGetAssertion(request_));
+         authenticator->WillNeedPINToGetAssertion(request_) ==
+             FidoAuthenticator::GetAssertionPINDisposition::kNoPIN);
 
   state_ = State::kFinished;
   if (response_code != CtapDeviceResponseCode::kSuccess) {
@@ -381,7 +400,8 @@ void GetAssertionRequestHandler::HandleTouch(FidoAuthenticator* authenticator) {
   }
 
   DCHECK(base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
-         authenticator->WillNeedPINToGetAssertion(request_));
+         authenticator->WillNeedPINToGetAssertion(request_) !=
+             FidoAuthenticator::GetAssertionPINDisposition::kNoPIN);
 
   DCHECK(observer());
   CancelActiveAuthenticators(authenticator->GetId());
@@ -390,6 +410,14 @@ void GetAssertionRequestHandler::HandleTouch(FidoAuthenticator* authenticator) {
   authenticator_->GetRetries(
       base::BindOnce(&GetAssertionRequestHandler::OnRetriesResponse,
                      weak_factory_.GetWeakPtr()));
+}
+
+void GetAssertionRequestHandler::HandleInapplicableAuthenticator(
+    FidoAuthenticator* authenticator) {
+  // User touched an authenticator that cannot handle this request.
+  std::move(completion_callback_)
+      .Run(FidoReturnCode::kUserConsentButCredentialNotRecognized,
+           base::nullopt, base::nullopt);
 }
 
 void GetAssertionRequestHandler::OnRetriesResponse(

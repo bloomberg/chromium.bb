@@ -390,6 +390,14 @@ void AuthenticatorRequestDialogModel::OnAuthenticatorRemovedDuringPINEntry() {
   SetCurrentStep(Step::kClientPinErrorAuthenticatorRemoved);
 }
 
+void AuthenticatorRequestDialogModel::OnAuthenticatorMissingResidentKeys() {
+  SetCurrentStep(Step::kMissingResidentKeys);
+}
+
+void AuthenticatorRequestDialogModel::OnAuthenticatorMissingUserVerification() {
+  SetCurrentStep(Step::kMissingUserVerification);
+}
+
 void AuthenticatorRequestDialogModel::OnBluetoothPoweredStateChanged(
     bool powered) {
   transport_availability_.is_ble_powered = powered;

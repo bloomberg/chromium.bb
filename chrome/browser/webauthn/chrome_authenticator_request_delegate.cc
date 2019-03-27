@@ -143,6 +143,12 @@ bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
     case InterestingFailureReason::kAuthenticatorRemovedDuringPINEntry:
       weak_dialog_model_->OnAuthenticatorRemovedDuringPINEntry();
       break;
+    case InterestingFailureReason::kAuthenticatorMissingResidentKeys:
+      weak_dialog_model_->OnAuthenticatorMissingResidentKeys();
+      break;
+    case InterestingFailureReason::kAuthenticatorMissingUserVerification:
+      weak_dialog_model_->OnAuthenticatorMissingUserVerification();
+      break;
   }
   return true;
 }

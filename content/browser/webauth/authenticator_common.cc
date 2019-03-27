@@ -964,6 +964,16 @@ void AuthenticatorCommon::OnRegisterResponse(
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorRemovedDuringPINEntry);
       return;
+    case device::FidoReturnCode::kAuthenticatorMissingResidentKeys:
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kAuthenticatorMissingResidentKeys);
+      return;
+    case device::FidoReturnCode::kAuthenticatorMissingUserVerification:
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kAuthenticatorMissingUserVerification);
+      return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
 
@@ -1132,6 +1142,16 @@ void AuthenticatorCommon::OnSignResponse(
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorRemovedDuringPINEntry);
       return;
+    case device::FidoReturnCode::kAuthenticatorMissingResidentKeys:
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kAuthenticatorMissingResidentKeys);
+      return;
+    case device::FidoReturnCode::kAuthenticatorMissingUserVerification:
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kAuthenticatorMissingUserVerification);
+      return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
 
@@ -1195,6 +1215,14 @@ void AuthenticatorCommon::SignalFailureToRequestDelegate(
       break;
     case AuthenticatorRequestClientDelegate::InterestingFailureReason::
         kAuthenticatorRemovedDuringPINEntry:
+      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
+      break;
+    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
+        kAuthenticatorMissingResidentKeys:
+      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
+      break;
+    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
+        kAuthenticatorMissingUserVerification:
       status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
       break;
   }

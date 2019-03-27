@@ -32,6 +32,8 @@ enum class FidoReturnCode : uint8_t {
   kAuthenticatorRemovedDuringPINEntry,
   kSoftPINBlock,
   kHardPINBlock,
+  kAuthenticatorMissingResidentKeys,
+  kAuthenticatorMissingUserVerification,
 };
 
 enum class ProtocolVersion {

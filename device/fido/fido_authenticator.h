@@ -111,10 +111,24 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   //   |kSupportedAndPinSet|: will need to prompt for an existing PIN.
   virtual AuthenticatorSupportedOptions::ClientPinAvailability
     WillNeedPINToMakeCredential( const CtapMakeCredentialRequest& request);
+
+  // GetAssertionPINDisposition enumerates the possible interactions between
+  // a user-verification level and the PIN support of an authenticator when
+  // getting an assertion.
+  enum class GetAssertionPINDisposition {
+    // kNoPIN means that a PIN will not be needed for this assertion.
+    kNoPIN,
+    // kUsePIN means that a PIN must be gathered and used for this assertion.
+    kUsePIN,
+    // kUnsatisfiable means that the request cannot be satisfied by this
+    // authenticator.
+    kUnsatisfiable,
+  };
   // WillNeedPINToGetAssertion returns whether a PIN prompt will be needed to
   // serve the given request on this authenticator.
-  virtual bool WillNeedPINToGetAssertion(const CtapGetAssertionRequest&
-      request);
+  virtual GetAssertionPINDisposition WillNeedPINToGetAssertion(
+      const CtapGetAssertionRequest& request);
+
   // Reset triggers a reset operation on the authenticator. This erases all
   // stored resident keys and any configured PIN.
   virtual void Reset(ResetCallback callback);

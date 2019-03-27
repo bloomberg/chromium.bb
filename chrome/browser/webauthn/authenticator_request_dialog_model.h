@@ -55,6 +55,8 @@ class AuthenticatorRequestDialogModel {
     kTimedOut,
     kKeyNotRegistered,
     kKeyAlreadyRegistered,
+    kMissingResidentKeys,
+    kMissingUserVerification,
 
     // The request is completed, and the dialog should be closed.
     kClosed,
@@ -128,6 +130,8 @@ class AuthenticatorRequestDialogModel {
     return current_step() == Step::kTimedOut ||
            current_step() == Step::kKeyNotRegistered ||
            current_step() == Step::kKeyAlreadyRegistered ||
+           current_step() == Step::kMissingResidentKeys ||
+           current_step() == Step::kMissingUserVerification ||
            current_step() == Step::kClosed;
   }
 
@@ -281,6 +285,14 @@ class AuthenticatorRequestDialogModel {
   // To be called when the selected authenticator was removed while
   // waiting for a PIN to be entered.
   void OnAuthenticatorRemovedDuringPINEntry();
+
+  // To be called when the selected authenticator doesn't have the requested
+  // resident key capability.
+  void OnAuthenticatorMissingResidentKeys();
+
+  // To be called when the selected authenticator doesn't have the requested
+  // user verification capability.
+  void OnAuthenticatorMissingUserVerification();
 
   // To be called when the Bluetooth adapter powered state changes.
   void OnBluetoothPoweredStateChanged(bool powered);

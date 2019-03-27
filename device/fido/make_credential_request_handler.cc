@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/stl_util.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
@@ -27,15 +28,11 @@ using ClientPinAvailability =
 
 namespace {
 
-bool CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
+// IsCandidateAuthenticatorPreTouch returns true if the given authenticator
+// should even blink for a request.
+bool IsCandidateAuthenticatorPreTouch(
     FidoAuthenticator* authenticator,
-    const AuthenticatorSelectionCriteria& authenticator_selection_criteria,
-    bool have_observer) {
-  using UvAvailability =
-      AuthenticatorSupportedOptions::UserVerificationAvailability;
-  const bool pin_support =
-      base::FeatureList::IsEnabled(device::kWebAuthPINSupport) && have_observer;
-
+    const AuthenticatorSelectionCriteria& authenticator_selection_criteria) {
   const auto& opt_options = authenticator->Options();
   if (!opt_options) {
     // This authenticator doesn't know its capabilities yet, so we need
@@ -53,9 +50,31 @@ bool CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
     return false;
   }
 
+  return true;
+}
+
+// IsCandidateAuthenticatorPostTouch returns a value other than |kSuccess| if
+// the given authenticator cannot handle a request.
+FidoReturnCode IsCandidateAuthenticatorPostTouch(
+    FidoAuthenticator* authenticator,
+    const AuthenticatorSelectionCriteria& authenticator_selection_criteria,
+    bool have_observer) {
+  using UvAvailability =
+      AuthenticatorSupportedOptions::UserVerificationAvailability;
+  const bool pin_support =
+      base::FeatureList::IsEnabled(device::kWebAuthPINSupport) && have_observer;
+
+  const auto& opt_options = authenticator->Options();
+  if (!opt_options) {
+    // This authenticator doesn't know its capabilities yet, so we need
+    // to assume it can handle the request. This is the case for Windows,
+    // where we proxy the request to the native API.
+    return FidoReturnCode::kSuccess;
+  }
+
   if (authenticator_selection_criteria.require_resident_key() &&
       !opt_options->supports_resident_key) {
-    return false;
+    return FidoReturnCode::kAuthenticatorMissingResidentKeys;
   }
 
   if (authenticator_selection_criteria.user_verification_requirement() ==
@@ -64,10 +83,10 @@ bool CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
           UvAvailability::kSupportedAndConfigured &&
       (!pin_support || opt_options->client_pin_availability ==
                            ClientPinAvailability::kNotSupported)) {
-    return false;
+    return FidoReturnCode::kAuthenticatorMissingUserVerification;
   }
 
-  return true;
+  return FidoReturnCode::kSuccess;
 }
 
 base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
@@ -141,8 +160,29 @@ void MakeCredentialRequestHandler::DispatchRequest(
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
   if (state_ != State::kWaitingForTouch ||
-      !CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
-          authenticator, authenticator_selection_criteria_, observer())) {
+      !IsCandidateAuthenticatorPreTouch(authenticator,
+                                        authenticator_selection_criteria_)) {
+    return;
+  }
+
+  if (IsCandidateAuthenticatorPostTouch(
+          authenticator, authenticator_selection_criteria_, observer()) !=
+      FidoReturnCode::kSuccess) {
+    if (!base::FeatureList::IsEnabled(device::kWebAuthPINSupport)) {
+      // Don't flash authenticator without PIN support. This maintains previous
+      // behaviour and avoids adding UI unprotected by a feature flag without
+      // increasing the number of feature flags.
+      FIDO_LOG(DEBUG) << "Dropping " << authenticator->GetDisplayName()
+                      << " because it does not meet selection criteria and PIN "
+                         "support is not enabled";
+      return;
+    }
+    // This authenticator does not meet requirements, but make it flash anyway
+    // so the user understands that it's functional. A descriptive error message
+    // will be shown if the user selects it.
+    authenticator->GetTouch(base::BindOnce(
+        &MakeCredentialRequestHandler::HandleInapplicableAuthenticator,
+        weak_factory_.GetWeakPtr(), authenticator));
     return;
   }
 
@@ -264,6 +304,16 @@ void MakeCredentialRequestHandler::HandleTouch(
       NOTREACHED();
       break;
   }
+}
+
+void MakeCredentialRequestHandler::HandleInapplicableAuthenticator(
+    FidoAuthenticator* authenticator) {
+  // User touched an authenticator that cannot handle this request.
+  const FidoReturnCode capability_error = IsCandidateAuthenticatorPostTouch(
+      authenticator, authenticator_selection_criteria_, observer());
+  DCHECK_NE(capability_error, FidoReturnCode::kSuccess);
+  std::move(completion_callback_)
+      .Run(capability_error, base::nullopt, base::nullopt);
 }
 
 void MakeCredentialRequestHandler::OnHavePIN(std::string pin) {
