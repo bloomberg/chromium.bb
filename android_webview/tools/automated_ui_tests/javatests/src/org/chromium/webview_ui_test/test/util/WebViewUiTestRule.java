@@ -15,6 +15,8 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasItem;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.content.Intent;
 import android.os.Build;
 import android.support.test.espresso.BaseLayerComponent;
@@ -29,6 +31,8 @@ import org.junit.runners.model.Statement;
 import org.chromium.webview_ui_test.R;
 import org.chromium.webview_ui_test.WebViewUiTestActivity;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * WebViewUiTestRule provides ways to synchronously loads file URL or javascript.
  *
@@ -36,6 +40,8 @@ import org.chromium.webview_ui_test.WebViewUiTestActivity;
  *
  */
 public class WebViewUiTestRule extends ActivityTestRule<WebViewUiTestActivity> {
+    private static final long ACTION_BAR_POPUP_TIMEOUT = scaleTimeout(5000L);
+    private static final long ACTION_BAR_CHECK_INTERVAL = 200L;
 
     private WebViewSyncWrapper mSyncWrapper;
     private String mLayout;
@@ -97,7 +103,43 @@ public class WebViewUiTestRule extends ActivityTestRule<WebViewUiTestActivity> {
         }
     }
 
+    /**
+     * Wait until the action bar is detected, or timeout occurs
+     *
+     * Using polling instead of idling resource because on L, the "Paste" option
+     * will disappear after a few seconds, too short for the idling resource
+     * check interval of 5 seconds to work reliably.
+     */
+    public boolean waitForActionBarPopup() {
+        long startTime = System.currentTimeMillis();
+        while (System.currentTimeMillis() - startTime < ACTION_BAR_POPUP_TIMEOUT) {
+            if (isActionBarDisplayed()) {
+                sleep(ACTION_BAR_CHECK_INTERVAL);
+                if (isActionBarDisplayed()) {
+                    return true;
+                }
+            }
+            sleep(ACTION_BAR_CHECK_INTERVAL);
+        }
+        return false;
+    }
+
     public boolean isActionBarDisplayed() {
+        final AtomicBoolean isDisplayed = new AtomicBoolean(false);
+        try {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    isDisplayed.set(isActionBarDisplayedFunc());
+                }
+            });
+        } catch (Throwable e) {
+            throw new RuntimeException("Exception while checking action bar", e);
+        }
+        return isDisplayed.get();
+    }
+
+    private boolean isActionBarDisplayedFunc() {
         if (mBaseLayerComponent == null) mBaseLayerComponent = DaggerBaseLayerComponent.create();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -126,5 +168,12 @@ public class WebViewUiTestRule extends ActivityTestRule<WebViewUiTestActivity> {
 
 
         return false;
+    }
+
+    private void sleep(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
+        }
     }
 }
