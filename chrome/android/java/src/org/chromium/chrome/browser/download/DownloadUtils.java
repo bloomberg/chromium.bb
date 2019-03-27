@@ -1211,6 +1211,10 @@ public class DownloadUtils {
      * @return If the path is in the download directory on primary storage.
      */
     public static boolean isInPrimaryStorageDownloadDirectory(String path) {
+        // Only primary storage can have content URI as file path.
+        if (ContentUriUtils.isContentUri(path)) return true;
+
+        // Check if the file path contains the external public directory.
         File primaryDir = null;
         try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
             primaryDir = Environment.getExternalStorageDirectory();
@@ -1218,6 +1222,27 @@ public class DownloadUtils {
         if (primaryDir == null || path == null) return false;
         String primaryPath = primaryDir.getAbsolutePath();
         return primaryPath == null ? false : path.contains(primaryPath);
+    }
+
+    /**
+     * Get the primary download directory in public external storage. The directory will be created
+     * if it doesn't exist.
+     * @return The download directory. Can be an invalid directory if failed to create the
+     *         directory.
+     */
+    public static File getPrimaryDownloadDirectory() {
+        File downloadDir =
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+
+        // Create the directory if needed.
+        if (!downloadDir.exists()) {
+            try {
+                downloadDir.mkdirs();
+            } catch (SecurityException e) {
+                Log.e(TAG, "Exception when creating download directory.", e);
+            }
+        }
+        return downloadDir;
     }
 
     /**
