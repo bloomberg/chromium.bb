@@ -57,19 +57,20 @@ kioskNextHome.Bridge = class {
   /**
    * Launches the app with the given appId.
    *
-   * Note: This is a fire and forget operation, given the  VMs involved and
+   * Note: This is a fire and forget operation, given the VMs involved and
    * their IPC interfaces, we can't tell if the operation was successful.
    * @param {string} appId Chrome OS identifier for the app.
    */
   launchApp(appId) {}
 
   /**
-   * Launches an ARC++ intent.
-   * @param {string} intent The URI of an ARC++ intent.
-   * @return {!Promise} Resolves when intent is launched, or rejects in case of
+   * Launches a URL prefixed by chromeos::switches::kKioskNextHomeUrlPrefix with
+   * the given suffix.
+   * @param {string} suffix
+   * @return {!Promise} Resolves if URL is launched, or rejects in case of
    *     failures.
    */
-  launchIntent(intent) {}
+  launchHomeUrl(suffix) {}
 
   /**
    * Uninstalls an app.

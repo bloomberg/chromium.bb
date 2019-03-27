@@ -62,17 +62,14 @@ function buildApp(mojoApp) {
 /** @implements {kioskNextHome.Bridge} */
 class KioskNextHomeBridge {
   constructor() {
-    /**
-     * @private
-     * @const {!Array<!kioskNextHome.Listener>}
-     */
+    /** @private @const {!Array<!kioskNextHome.Listener>} */
     this.listeners_ = [];
-    /** @private */
+    /** @private @const */
     this.identityAccessorProxy_ = new identity.mojom.IdentityAccessorProxy();
-    /** @private */
+    /** @private @const */
     this.appControllerProxy_ =
         new chromeos.kioskNextHome.mojom.AppControllerProxy();
-    /** @private */
+    /** @private @const */
     this.appControllerClientCallbackRouter_ =
         new chromeos.kioskNextHome.mojom.AppControllerClientCallbackRouter();
 
@@ -156,9 +153,12 @@ class KioskNextHomeBridge {
   }
 
   /** @override */
-  launchIntent(intent) {
-    // TODO(brunoad): Implement this method.
-    return Promise.reject('Not implemented.');
+  launchHomeUrl(suffix) {
+    return this.appControllerProxy_.launchHomeUrl(suffix).then(result => {
+      if (!result.launched) {
+        throw result.errorMessage;
+      }
+    });
   }
 
   /** @override */

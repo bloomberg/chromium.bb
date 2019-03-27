@@ -42,6 +42,8 @@ class AppControllerImpl : public mojom::AppController,
   void LaunchApp(const std::string& app_id) override;
   void GetArcAndroidId(
       mojom::AppController::GetArcAndroidIdCallback callback) override;
+  void LaunchHomeUrl(const std::string& suffix,
+                     LaunchHomeUrlCallback callback) override;
 
   // apps::AppRegistryCache::Observer:
   void OnAppUpdate(const apps::AppUpdate& update) override;
@@ -71,6 +73,9 @@ class AppControllerImpl : public mojom::AppController,
   // ARC++ already lost the information about app, so keeping a cache on our end
   // is necessary.
   std::map<std::string, std::string> android_package_map_;
+
+  // URL prefix that can be launched by Kiosk Next Home.
+  const std::string url_prefix_;
 
   DISALLOW_COPY_AND_ASSIGN(AppControllerImpl);
 };
