@@ -608,9 +608,9 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_attributes(
     attributes_str += attribute + L';';
   }
 
-  if (attributes.empty())
-    return S_FALSE;
-
+  // Returning an empty string is valid and indicates no attributes.
+  // This is better than returning S_FALSE which the screen reader
+  // may not recognize as valid attributes.
   *text_attributes = SysAllocString(attributes_str.c_str());
   DCHECK(*text_attributes);
   return S_OK;
@@ -2086,23 +2086,27 @@ void BrowserAccessibilityComWin::MergeSpellingIntoTextAttributes(
     return;
   }
 
+  std::vector<base::string16> prev_attributes;
   for (const auto& spelling_attribute : spelling_attributes) {
     int offset = start_offset + spelling_attribute.first;
-    const auto iterator = text_attributes->find(offset);
+    auto iterator = text_attributes->find(offset);
     if (iterator == text_attributes->end()) {
-      text_attributes->emplace(offset, spelling_attribute.second);
+      text_attributes->emplace(offset, prev_attributes);
+      iterator = text_attributes->find(offset);
     } else {
-      std::vector<base::string16>& existing_attributes = iterator->second;
-      // There might be a spelling attribute already in the list of text
-      // attributes, originating from "aria-invalid", that is being overwritten
-      // by a spelling marker. If it already exists, prefer it over this
-      // automatically computed attribute.
-      if (!HasAttribute(existing_attributes, L"invalid:")) {
-        // Does not exist -- insert our own.
-        existing_attributes.insert(existing_attributes.end(),
-                                   spelling_attribute.second.begin(),
-                                   spelling_attribute.second.end());
-      }
+      prev_attributes = iterator->second;
+    }
+
+    std::vector<base::string16>& existing_attributes = iterator->second;
+    // There might be a spelling attribute already in the list of text
+    // attributes, originating from "aria-invalid", that is being overwritten
+    // by a spelling marker. If it already exists, prefer it over this
+    // automatically computed attribute.
+    if (!HasAttribute(existing_attributes, L"invalid:")) {
+      // Does not exist -- insert our own.
+      existing_attributes.insert(existing_attributes.end(),
+                                 spelling_attribute.second.begin(),
+                                 spelling_attribute.second.end());
     }
   }
 }
