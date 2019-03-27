@@ -438,10 +438,9 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
       // test.
       NavigationController::LoadURLParams params(test_url_);
 
-      // Using PAGE_TRANSITION_LINK avoids a BrowsingInstance/process swap
-      // between web tests.
+      // Using PAGE_TRANSITION_TYPED replicates an omnibox navigation.
       params.transition_type =
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
+          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED);
 
       // Clear history to purge the prior navigation to about:blank.
       params.should_clear_history_list = true;

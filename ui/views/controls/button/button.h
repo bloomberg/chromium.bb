@@ -18,6 +18,9 @@
 #include "ui/views/widget/widget_observer.h"
 
 namespace views {
+namespace test {
+class ButtonTestApi;
+}
 
 class Button;
 class Event;
@@ -264,6 +267,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   ButtonListener* listener_;
 
  private:
+  friend class test::ButtonTestApi;
   FRIEND_TEST_ALL_PREFIXES(BlueButtonTest, Border);
 
   // Bridge class to allow Button to observe a Widget without being a

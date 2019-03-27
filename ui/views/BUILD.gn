@@ -837,6 +837,8 @@ jumbo_source_set("test_support") {
     "animation/test/test_ink_drop_ripple_observer.h",
     "controls/textfield/textfield_test_api.cc",
     "controls/textfield/textfield_test_api.h",
+    "test/button_test_api.cc",
+    "test/button_test_api.h",
     "test/capture_tracking_view.cc",
     "test/capture_tracking_view.h",
     "test/combobox_test_api.cc",

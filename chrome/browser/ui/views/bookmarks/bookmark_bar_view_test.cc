@@ -218,14 +218,21 @@ class TestingPageNavigator : public PageNavigator {
 
   WebContents* OpenURL(const OpenURLParams& params) override {
     urls_.push_back(params.url);
+    transitions_.push_back(params.transition);
     return NULL;
   }
 
   const std::vector<GURL>& urls() const { return urls_; }
   GURL last_url() const { return urls_.empty() ? GURL() : urls_.back(); }
 
+  ui::PageTransition last_transition() const {
+    return transitions_.empty() ? ui::PAGE_TRANSITION_LINK
+                                : transitions_.back();
+  }
+
  private:
   std::vector<GURL> urls_;
+  std::vector<ui::PageTransition> transitions_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingPageNavigator);
 };
@@ -566,6 +573,7 @@ class BookmarkBarViewTest1 : public BookmarkBarViewEventTestBase {
     // We should have navigated to URL f1a.
     ASSERT_EQ(navigator_.last_url(),
               model_->bookmark_bar_node()->GetChild(0)->GetChild(0)->url());
+    ASSERT_FALSE(PageTransitionIsWebTriggerable(navigator_.last_transition()));
 
     // Make sure button is no longer pushed.
     views::LabelButton* button = GetBookmarkButton(0);
@@ -786,6 +794,7 @@ class BookmarkBarViewTest4 : public BookmarkBarViewEventTestBase {
 
   void Step4() {
     EXPECT_EQ(navigator_.last_url(), model_->other_node()->GetChild(0)->url());
+    ASSERT_FALSE(PageTransitionIsWebTriggerable(navigator_.last_transition()));
     Done();
   }
 
@@ -850,6 +859,7 @@ class BookmarkBarViewTest6 : public BookmarkBarViewEventTestBase {
   void Step3() {
     ASSERT_EQ(navigator_.last_url(),
               model_->bookmark_bar_node()->GetChild(6)->url());
+    ASSERT_FALSE(PageTransitionIsWebTriggerable(navigator_.last_transition()));
     Done();
   }
 };
@@ -1136,6 +1146,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
   void Step9() {
     ASSERT_EQ(navigator_.last_url(),
               model_->bookmark_bar_node()->GetChild(0)->GetChild(0)->url());
+    ASSERT_FALSE(PageTransitionIsWebTriggerable(navigator_.last_transition()));
     Done();
   }
 };
@@ -2045,6 +2056,7 @@ class BookmarkBarViewTest23 : public BookmarkBarViewEventTestBase {
 
   void Step5() {
     EXPECT_EQ(navigator_.last_url(), model_->other_node()->GetChild(0)->url());
+    ASSERT_FALSE(PageTransitionIsWebTriggerable(navigator_.last_transition()));
     Done();
   }
 
