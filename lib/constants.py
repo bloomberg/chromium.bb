@@ -671,14 +671,16 @@ CQ_CONFIG_PRE_CQ_CONFIGS = 'pre-cq-configs'
 CQ_CONFIG_PRE_CQ_CONFIGS_REGEX = CQ_CONFIG_PRE_CQ_CONFIGS + ':'
 
 # Define pool of machines for Hardware tests.
+# TODO(akeshet): Delete constants for deprecated pools, and references to them.
 HWTEST_TRYBOT_NUM = 3
 HWTEST_MACH_POOL = 'bvt'
-HWTEST_MACH_POOL_UNI = 'bvt-uni'
-HWTEST_PALADIN_POOL = 'cq'
-HWTEST_TOT_PALADIN_POOL = 'tot-cq'
+HWTEST_MACH_POOL_UNI = 'bvt-uni'        # Deprecated
+HWTEST_PALADIN_POOL = 'cq'              # Deprecated
+HWTEST_QUOTA_POOL = 'quota'
+HWTEST_TOT_PALADIN_POOL = 'tot-cq'      # Deprecated
 HWTEST_PFQ_POOL = 'pfq'
 HWTEST_SUITES_POOL = 'suites'
-HWTEST_CHROME_PERF_POOL = 'chromeperf'
+HWTEST_CHROME_PERF_POOL = 'chromeperf'  # Probably deprecated, no existing DUTS.
 HWTEST_TRYBOT_POOL = HWTEST_SUITES_POOL
 HWTEST_WIFICELL_PRE_CQ_POOL = 'wificell-pre-cq'
 HWTEST_BLUESTREAK_PRE_CQ_POOL = 'bluestreak-pre-cq'

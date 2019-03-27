@@ -317,9 +317,15 @@ class SkylabHWTestStage(HWTestStage):
     # This hack will be deleted once all the skylab chrome pfq buildrs are
     # redirected to the cq/pfq merged pool.
     if (self._board_name == 'peppy' and
-        pool == 'bvt' and
+        pool == constants.HWTEST_MACH_POOL and
         'peppy-chrome-pfq' in build):
-      pool = 'cq'
+      pool = constants.HWTEST_QUOTA_POOL
+    # Retain guado_moblab and wukong paladins on cq pool, until they are able
+    # to migrate to Skylab. See crbug.com/949217
+    if (self._board_name in ('guado_moblab', 'wukong') and
+        config_lib.IsCQType(self._run.config.build_type)):
+      pool = constants.HWTEST_PALADIN_POOL
+
     return pool
 
   # Temporary measure during skylab and quotascheduler migration, because

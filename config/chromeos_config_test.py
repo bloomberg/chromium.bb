@@ -156,7 +156,7 @@ class HWTestList(object):
     Optional arguments may be overridden in `kwargs`, except that
     the `blocking` setting cannot be provided.
     """
-    default_dict = dict(pool=constants.HWTEST_PALADIN_POOL,
+    default_dict = dict(pool=constants.HWTEST_QUOTA_POOL,
                         timeout=config_lib.HWTestConfig.PALADIN_HW_TEST_TIMEOUT,
                         file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY,
                         minimum_duts=4)
