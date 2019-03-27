@@ -63,6 +63,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -355,10 +356,20 @@ public class ClearBrowsingDataPreferencesTest {
                 Assert.assertNotNull(preferences);
                 if (preferences.getImportantSitesDialogFragment() == null
                         || !preferences.getImportantSitesDialogFragment().getDialog().isShowing()) {
+                    updateFailureReason("Dialog was null or not shown.");
                     return false;
                 }
                 ListView sitesList = preferences.getImportantSitesDialogFragment().getSitesList();
-                return sitesList.getAdapter().getCount() == numImportantSites;
+                if (sitesList.getAdapter().getCount() != numImportantSites) {
+                    updateFailureReason(
+                            String.format(Locale.US, "Adapter item count, %d, did not match %d",
+                                    sitesList.getAdapter().getCount(), numImportantSites));
+                    return false;
+                }
+                updateFailureReason(
+                        String.format(Locale.US, "ListView child count, %d, expected to be >= %d",
+                                sitesList.getChildCount(), numImportantSites));
+                return sitesList.getChildCount() >= numImportantSites;
             }
         });
     }
