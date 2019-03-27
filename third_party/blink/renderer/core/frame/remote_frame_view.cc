@@ -143,7 +143,9 @@ bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
   // TODO(szager): There are some redundant IPC's here; clean them up.
   bool is_visible_for_throttling = !viewport_intersection.IsEmpty();
   UpdateVisibility(is_visible_for_throttling);
-  UpdateRenderThrottlingStatus(!is_visible_for_throttling, subtree_throttled_);
+  UpdateRenderThrottlingStatus(
+      !is_visible_for_throttling,
+      is_attached_ && ParentFrameView()->CanThrottleRendering());
 
   if (viewport_intersection == last_viewport_intersection_ &&
       occlusion_state == last_occlusion_state_) {
