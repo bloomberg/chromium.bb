@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -33,6 +34,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.MockSafeBrowsingApiHandler;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
@@ -69,7 +71,7 @@ public class DetachedResourceRequestTest {
     private static final int NET_OK = 0;
 
     @Before
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         mConnection = CustomTabsTestUtils.setUpConnection();
@@ -80,7 +82,7 @@ public class DetachedResourceRequestTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         CustomTabsTestUtils.cleanupSessions(mConnection);
         if (mServer != null) mServer.stopAndDestroyServer();
         mServer = null;
@@ -236,7 +238,7 @@ public class DetachedResourceRequestTest {
                     mConnection.handleParallelRequest(
                             session, prepareIntent(url, Uri.parse("http://not-the-right-origin"))));
         });
-        customTabsCallback.waitForRequest();
+        customTabsCallback.waitForRequest(0, 1);
     }
 
     @Test
@@ -261,9 +263,9 @@ public class DetachedResourceRequestTest {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                 () -> mConnection.onHandledIntent(session, prepareIntent(url, ORIGIN)));
         CustomTabsTestUtils.warmUpAndWait();
-        customTabsCallback.waitForRequest();
+        customTabsCallback.waitForRequest(0, 1);
         cb.waitForCallback(0, 1);
-        customTabsCallback.waitForCompletion();
+        customTabsCallback.waitForCompletion(0, 1);
     }
 
     @Test
@@ -402,6 +404,44 @@ public class DetachedResourceRequestTest {
         Assert.assertEquals("\"acookie\"", content);
     }
 
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.CCT_REPORT_PARALLEL_REQUEST_STATUS)
+    public void testRepeatedIntents() throws Exception {
+        mServer = EmbeddedTestServer.createAndStartServer(mContext);
+
+        final Uri url = Uri.parse(mServer.getURL("/set-cookie?acookie"));
+        DetachedResourceRequestCheckCallback callback = new DetachedResourceRequestCheckCallback(
+                url, CustomTabsConnection.ParallelRequestStatus.SUCCESS, NET_OK);
+        CustomTabsSession session = CustomTabsTestUtils.bindWithCallback(callback).session;
+
+        Uri launchedUrl = Uri.parse(mServer.getURL("/echotitle"));
+        Intent intent = (new CustomTabsIntent.Builder(session).build()).intent;
+        intent.setComponent(new ComponentName(mContext, ChromeLauncherActivity.class));
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setData(launchedUrl);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra(CustomTabsConnection.PARALLEL_REQUEST_URL_KEY, url);
+        intent.putExtra(CustomTabsConnection.PARALLEL_REQUEST_REFERRER_KEY, ORIGIN);
+
+        CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        Assert.assertTrue(mConnection.newSession(token));
+        mConnection.mClientManager.setAllowParallelRequestForSession(token, true);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            OriginVerifier.addVerificationOverride(mContext.getPackageName(),
+                    new Origin(ORIGIN.toString()), CustomTabsService.RELATION_USE_AS_ORIGIN);
+            Assert.assertTrue(mConnection.canDoParallelRequest(token, ORIGIN));
+        });
+
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        callback.waitForRequest(0, 1);
+        callback.waitForCompletion(0, 1);
+
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        callback.waitForRequest(1, 1);
+        callback.waitForCompletion(1, 1);
+    }
+
     private void testCanStartParallelRequest(boolean afterNative) throws Exception {
         final CallbackHelper cb = new CallbackHelper();
         setUpTestServerWithListener(new EmbeddedTestServer.ConnectionListener() {
@@ -422,9 +462,9 @@ public class DetachedResourceRequestTest {
                 () -> mConnection.onHandledIntent(session, prepareIntent(url, ORIGIN)));
         if (!afterNative) CustomTabsTestUtils.warmUpAndWait();
 
-        customTabsCallback.waitForRequest();
+        customTabsCallback.waitForRequest(0, 1);
         cb.waitForCallback(0, 1);
-        customTabsCallback.waitForCompletion();
+        customTabsCallback.waitForCompletion(0, 1);
     }
 
     private void testCanSetCookie(boolean afterNative) throws Exception {
@@ -441,8 +481,8 @@ public class DetachedResourceRequestTest {
                 () -> mConnection.onHandledIntent(session, prepareIntent(url, ORIGIN)));
 
         if (!afterNative) CustomTabsTestUtils.warmUpAndWait();
-        customTabsCallback.waitForRequest();
-        customTabsCallback.waitForCompletion();
+        customTabsCallback.waitForRequest(0, 1);
+        customTabsCallback.waitForCompletion(0, 1);
 
         String echoUrl = mServer.getURL("/echoheader?Cookie");
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(mContext, echoUrl);
@@ -619,11 +659,21 @@ public class DetachedResourceRequestTest {
         }
 
         public void waitForRequest() throws InterruptedException, TimeoutException {
-            mRequestedWaiter.waitForCallback(0, 1);
+            mRequestedWaiter.waitForCallback();
+        }
+
+        public void waitForRequest(int currentCallCount, int numberOfCallsToWaitFor)
+                throws InterruptedException, TimeoutException {
+            mRequestedWaiter.waitForCallback(currentCallCount, numberOfCallsToWaitFor);
         }
 
         public void waitForCompletion() throws InterruptedException, TimeoutException {
-            mCompletionWaiter.waitForCallback(0, 1);
+            mCompletionWaiter.waitForCallback();
+        }
+
+        public void waitForCompletion(int currentCallCount, int numberOfCallsToWaitFor)
+                throws InterruptedException, TimeoutException {
+            mCompletionWaiter.waitForCallback(currentCallCount, numberOfCallsToWaitFor);
         }
     }
 }

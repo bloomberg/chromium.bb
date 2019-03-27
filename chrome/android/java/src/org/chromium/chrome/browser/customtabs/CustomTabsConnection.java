@@ -851,6 +851,9 @@ public class CustomTabsConnection {
             args.putParcelable("url", url);
             args.putInt("status", status);
             safeExtraCallback(session, ON_DETACHED_REQUEST_REQUESTED, args);
+            if (mLogRequests) {
+                logCallback(ON_DETACHED_REQUEST_REQUESTED, bundleToJson(args).toString());
+            }
         }
 
         return status;
@@ -1492,7 +1495,11 @@ public class CustomTabsConnection {
         Bundle args = new Bundle();
         args.putParcelable("url", Uri.parse(url));
         args.putInt("net_error", status);
-        getInstance().safeExtraCallback(session, ON_DETACHED_REQUEST_COMPLETED, args);
+        CustomTabsConnection connection = getInstance();
+        connection.safeExtraCallback(session, ON_DETACHED_REQUEST_COMPLETED, args);
+        if (connection.mLogRequests) {
+            connection.logCallback(ON_DETACHED_REQUEST_COMPLETED, bundleToJson(args).toString());
+        }
     }
 
     @VisibleForTesting
