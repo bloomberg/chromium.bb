@@ -46,6 +46,7 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/core/SkString.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/effects/SkOverdrawColorFilter.h"
 #include "third_party/skia/include/effects/SkShaderMaskFilter.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -288,6 +289,21 @@ SkFilterQuality GetFilterQuality(const DrawQuad* quad) {
   return nearest_neighbor ? kNone_SkFilterQuality : kLow_SkFilterQuality;
 }
 
+// Return a color filter that multiplies the incoming color by the fixed alpha
+sk_sp<SkColorFilter> MakeOpacityFilter(float alpha, sk_sp<SkColorFilter> in) {
+  SkColor alpha_as_color = SkColorSetA(SK_ColorWHITE, 255 * alpha);
+  // MakeModeFilter treats fixed color as src, and input color as dst.
+  // kDstIn is (srcAlpha * dstColor, srcAlpha * dstAlpha) so this makes the
+  // output color equal to input color * alpha.
+  sk_sp<SkColorFilter> opacity =
+      SkColorFilter::MakeModeFilter(alpha_as_color, SkBlendMode::kDstIn);
+  if (in) {
+    return opacity->makeComposed(std::move(in));
+  } else {
+    return opacity;
+  }
+}
+
 }  // namespace
 
 // Parameters needed to draw a RenderPassDrawQuad.
@@ -338,6 +354,15 @@ struct SkiaRenderer::DrawQuadParams {
   // canvas. Is false if is_scissor_enabled_ is false or the scissor was
   // explicitly applied to the visible geometry already.
   bool has_scissor_rect;
+
+  SkPaint paint() const {
+    SkPaint p;
+    p.setFilterQuality(filter_quality);
+    p.setBlendMode(blend_mode);
+    p.setAlphaf(opacity);
+    p.setAntiAlias(aa_flags != SkCanvas::kNone_QuadAAFlags);
+    return p;
+  }
 };
 
 SkiaRenderer::DrawQuadParams::DrawQuadParams(const gfx::Transform& cdt,
@@ -365,7 +390,8 @@ class SkiaRenderer::ScopedSkImageBuilder {
  public:
   ScopedSkImageBuilder(SkiaRenderer* skia_renderer,
                        ResourceId resource_id,
-                       SkAlphaType alpha_type = kPremul_SkAlphaType);
+                       SkAlphaType alpha_type = kPremul_SkAlphaType,
+                       GrSurfaceOrigin origin = kTopLeft_GrSurfaceOrigin);
   ~ScopedSkImageBuilder() = default;
 
   const SkImage* sk_image() const { return sk_image_; }
@@ -380,14 +406,15 @@ class SkiaRenderer::ScopedSkImageBuilder {
 SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     SkiaRenderer* skia_renderer,
     ResourceId resource_id,
-    SkAlphaType alpha_type) {
+    SkAlphaType alpha_type,
+    GrSurfaceOrigin origin) {
   if (!resource_id)
     return;
   auto* resource_provider = skia_renderer->resource_provider_;
   if (!skia_renderer->is_using_ddl() || skia_renderer->non_root_surface_ ||
       !IsTextureResource(resource_provider, resource_id)) {
     // TODO(penghuang): remove this code when DDL is used everywhere.
-    lock_.emplace(resource_provider, resource_id, alpha_type);
+    lock_.emplace(resource_provider, resource_id, alpha_type, origin);
     sk_image_ = lock_->sk_image();
   } else {
     // Look up the image from promise_images_by resource_id and return the
@@ -396,8 +423,9 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     // to store the new created image later.
     auto& image = skia_renderer->promise_images_[resource_id];
     if (!image) {
-      image = skia_renderer->lock_set_for_external_use_
-                  ->LockResourceAndCreateSkImage(resource_id, alpha_type);
+      image =
+          skia_renderer->lock_set_for_external_use_
+              ->LockResourceAndCreateSkImage(resource_id, alpha_type, origin);
       LOG_IF(ERROR, !image) << "Failed to create the promise sk image.";
     }
     sk_image_ = image.get();
@@ -743,6 +771,9 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
     case DrawQuad::STREAM_VIDEO_CONTENT:
       DrawStreamVideoQuad(StreamVideoDrawQuad::MaterialCast(quad), params);
       break;
+    case DrawQuad::TEXTURE_CONTENT:
+      DrawTextureQuad(TextureDrawQuad::MaterialCast(quad), params);
+      break;
     case DrawQuad::TILED_CONTENT:
       DrawTileDrawQuad(TileDrawQuad::MaterialCast(quad), params);
       break;
@@ -833,11 +864,12 @@ SkCanvas::ImageSetEntry SkiaRenderer::MakeEntry(const DrawQuadParams& params,
                                                 const SkImage* image,
                                                 const gfx::RectF& src,
                                                 int matrix_index,
-                                                float alpha) {
-  return SkCanvas::ImageSetEntry({sk_ref_sp(image), gfx::RectFToSkRect(src),
-                                  gfx::RectFToSkRect(params.visible_rect),
-                                  matrix_index, alpha, params.aa_flags,
-                                  params.draw_region.has_value()});
+                                                bool use_opacity) {
+  return SkCanvas::ImageSetEntry(
+      {sk_ref_sp(image), gfx::RectFToSkRect(src),
+       gfx::RectFToSkRect(params.visible_rect), matrix_index,
+       use_opacity ? params.opacity : 1.f, params.aa_flags,
+       params.draw_region.has_value()});
 }
 
 bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
@@ -848,6 +880,7 @@ bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
   // TODO(michaelludwig) - Once other quad types are migrated from
   // DoDrawQuadLegacy, this check will be widened
   if (new_quad->material != DrawQuad::STREAM_VIDEO_CONTENT &&
+      new_quad->material != DrawQuad::TEXTURE_CONTENT &&
       new_quad->material != DrawQuad::TILED_CONTENT)
     return true;
 
@@ -898,8 +931,7 @@ void SkiaRenderer::AddQuadToBatch(const DrawQuadParams& params,
   }
   int matrix_index = cdts.size() - 1;
 
-  batched_quads_.push_back(
-      MakeEntry(params, image, tex_coords, matrix_index, params.opacity));
+  batched_quads_.push_back(MakeEntry(params, image, tex_coords, matrix_index));
 }
 
 void SkiaRenderer::FlushBatchedQuads() {
@@ -924,6 +956,27 @@ void SkiaRenderer::FlushBatchedQuads() {
   batched_cdt_matrices_.clear();
 }
 
+void SkiaRenderer::DrawSingleImage(const DrawQuadParams& params,
+                                   const SkImage* image,
+                                   const gfx::RectF& src,
+                                   const SkPaint* paint) {
+  DCHECK(batched_quads_.empty());
+  TRACE_EVENT0("viz", "SkiaRenderer::DrawSingleImage");
+
+  SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
+  PrepareCanvas(params.has_scissor_rect ? &scissor_rect_ : nullptr,
+                &params.content_device_transform);
+  // Use -1 for matrix index since the cdt is set on the canvas.
+  // Assume params.opacity has been somehow handled in the SkPaint
+  // (setAlphaf, color filter, image filter node, etc.).
+  SkCanvas::ImageSetEntry entry =
+      MakeEntry(params, image, src, -1, false /* use params.opacity */);
+  const SkPoint* draw_region =
+      params.draw_region.has_value() ? params.draw_region->points : nullptr;
+  current_canvas_->experimental_DrawEdgeAAImageSet(&entry, 1, draw_region,
+                                                   nullptr, paint);
+}
+
 void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                                        const DrawQuadParams& params) {
   DCHECK(!MustFlushBatchedQuads(quad, params));
@@ -939,6 +992,113 @@ void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
   gfx::RectF visible_uv_rect = cc::MathUtil::ScaleRectProportional(
       uv_rect, gfx::RectF(quad->rect), params.visible_rect);
   AddQuadToBatch(params, image, visible_uv_rect);
+}
+
+void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
+                                   const DrawQuadParams& params) {
+  ScopedSkImageBuilder builder(
+      this, quad->resource_id(),
+      quad->premultiplied_alpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType,
+      quad->y_flipped ? kBottomLeft_GrSurfaceOrigin : kTopLeft_GrSurfaceOrigin);
+  const SkImage* image = builder.sk_image();
+  if (!image)
+    return;
+  gfx::RectF uv_rect = gfx::ScaleRect(
+      gfx::BoundingRect(quad->uv_top_left, quad->uv_bottom_right),
+      image->width(), image->height());
+  gfx::RectF visible_uv_rect = cc::MathUtil::ScaleRectProportional(
+      uv_rect, gfx::RectF(quad->rect), params.visible_rect);
+
+  // There are two scenarios where a texture quad cannot be put into a batch:
+  // 1. It needs to be blended with a constant background color.
+  // 2. The vertex opacities are not all 1s.
+  bool blend_background =
+      quad->background_color != SK_ColorTRANSPARENT && !image->isOpaque();
+  bool vertex_alpha =
+      quad->vertex_opacity[0] < 1.f || quad->vertex_opacity[1] < 1.f ||
+      quad->vertex_opacity[2] < 1.f || quad->vertex_opacity[3] < 1.f;
+
+  if (!blend_background && !vertex_alpha) {
+    // This is a simple texture draw and can go into the batching system
+    // TODO(michaelludwig) - Batched quads always use the fast rect constraint,
+    // which maybe isn't appropriate for texture quads and we need to track
+    // the constraint needed for a batch?
+    DCHECK(!MustFlushBatchedQuads(quad, params));
+    AddQuadToBatch(params, image, visible_uv_rect);
+    return;
+  }
+  // This needs a color filter for background blending and/or a mask filter
+  // to simulate the vertex opacity, which requires configuring a full SkPaint
+  // and is incompatible with anything batched
+  if (!batched_quads_.empty())
+    FlushBatchedQuads();
+
+  SkPaint paint = params.paint();
+  float quad_alpha = params.opacity;
+  if (vertex_alpha) {
+    // If they are all the same value, combine it with the overall opacity,
+    // otherwise use a mask filter to emulate vertex opacity interpolation
+    if (quad->vertex_opacity[0] == quad->vertex_opacity[1] &&
+        quad->vertex_opacity[0] == quad->vertex_opacity[2] &&
+        quad->vertex_opacity[0] == quad->vertex_opacity[3]) {
+      quad_alpha *= quad->vertex_opacity[0];
+    } else {
+      // The only occurrences of non-constant vertex opacities come from unit
+      // tests and src/chrome/browser/android/compositor/decoration_title.cc,
+      // but they always produce the effect of a linear alpha gradient.
+      // All signs indicate point order is [BL, TL, TR, BR]
+      SkPoint gradient_pts[2];
+      if (quad->vertex_opacity[0] == quad->vertex_opacity[1] &&
+          quad->vertex_opacity[2] == quad->vertex_opacity[3]) {
+        // Left to right gradient
+        float y = params.visible_rect.y() + 0.5f * params.visible_rect.height();
+        gradient_pts[0] = {params.visible_rect.x(), y};
+        gradient_pts[1] = {params.visible_rect.right(), y};
+      } else if (quad->vertex_opacity[0] == quad->vertex_opacity[3] &&
+                 quad->vertex_opacity[1] == quad->vertex_opacity[2]) {
+        // Top to bottom gradient
+        float x = params.visible_rect.x() + 0.5f * params.visible_rect.width();
+        gradient_pts[0] = {x, params.visible_rect.y()};
+        gradient_pts[1] = {x, params.visible_rect.bottom()};
+      } else {
+        // Not sure how to emulate
+        NOTIMPLEMENTED();
+        return;
+      }
+
+      float a1 = quad->vertex_opacity[0] * quad_alpha;
+      float a2 = quad->vertex_opacity[2] * quad_alpha;
+      SkColor gradient_colors[2] = {SkColor4f({a1, a1, a1, a1}).toSkColor(),
+                                    SkColor4f({a2, a2, a2, a2}).toSkColor()};
+      sk_sp<SkShader> gradient = SkGradientShader::MakeLinear(
+          gradient_pts, gradient_colors, nullptr, 2, SkShader::kClamp_TileMode);
+      paint.setMaskFilter(SkShaderMaskFilter::Make(std::move(gradient)));
+      // shared quad opacity was folded into the gradient, so this will shorten
+      // any color filter chain needed for background blending
+      quad_alpha = 1.f;
+    }
+  }
+
+  // From gl_renderer, the final src color will be
+  // vertexAlpha * (textureColor + backgroundColor * (1 - textureAlpha)), where
+  // vertexAlpha is the quad's alpha * interpolated per-vertex alpha
+  if (blend_background) {
+    // Add a color filter that does DstOver blending between texture and the
+    // background color. Then, modulate by quad's opacity *after* blending.
+    sk_sp<SkColorFilter> cf = SkColorFilter::MakeModeFilter(
+        quad->background_color, SkBlendMode::kDstOver);
+    if (quad_alpha < 1.f) {
+      cf = MakeOpacityFilter(quad_alpha, std::move(cf));
+      quad_alpha = 1.f;
+      DCHECK(cf);
+    }
+    paint.setColorFilter(std::move(cf));
+  }
+
+  // Override the default paint opacity since it may not be params.opacity
+  paint.setAlphaf(quad_alpha);
+
+  DrawSingleImage(params, image, visible_uv_rect, &paint);
 }
 
 void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,
@@ -991,21 +1151,11 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
       quad->ya_tex_coord_rect, gfx::RectF(quad->rect),
       gfx::RectF(quad->visible_rect));
 
-  SkPaint paint;
-  paint.setFilterQuality(params.filter_quality);
-  paint.setBlendMode(params.blend_mode);
+  SkPaint paint = params.paint();
   if (color_filter)
     paint.setColorFilter(color_filter);
 
-  SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
-  PrepareCanvas(params.has_scissor_rect ? &scissor_rect_ : nullptr,
-                &params.content_device_transform);
-  SkCanvas::ImageSetEntry entry =
-      MakeEntry(params, image, visible_tex_coord_rect, -1, params.opacity);
-  current_canvas_->experimental_DrawEdgeAAImageSet(
-      &entry, 1,
-      params.draw_region.has_value() ? params.draw_region->points : nullptr,
-      nullptr, &paint);
+  DrawSingleImage(params, image, visible_tex_coord_rect, &paint);
 }
 
 void SkiaRenderer::DoSingleDrawQuad(const DrawQuad* quad,
@@ -1051,7 +1201,7 @@ void SkiaRenderer::DoSingleDrawQuad(const DrawQuad* quad,
       DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad), &paint);
       break;
     case DrawQuad::TEXTURE_CONTENT:
-      DrawTextureQuad(TextureDrawQuad::MaterialCast(quad), &paint);
+      NOTREACHED();
       break;
     case DrawQuad::TILED_CONTENT:
       NOTREACHED();
@@ -1187,47 +1337,6 @@ void SkiaRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
   current_canvas_->drawRect(gfx::RectToSkRect(quad->visible_rect), *paint);
 }
 
-void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
-                                   SkPaint* paint) {
-  DCHECK(paint);
-  ScopedSkImageBuilder builder(
-      this, quad->resource_id(),
-      quad->premultiplied_alpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
-  const SkImage* image = builder.sk_image();
-  if (!image)
-    return;
-  gfx::RectF uv_rect = gfx::ScaleRect(
-      gfx::BoundingRect(quad->uv_top_left, quad->uv_bottom_right),
-      image->width(), image->height());
-  gfx::RectF visible_uv_rect = cc::MathUtil::ScaleRectProportional(
-      uv_rect, gfx::RectF(quad->rect), gfx::RectF(quad->visible_rect));
-  SkRect sk_uv_rect = gfx::RectFToSkRect(visible_uv_rect);
-  SkRect quad_rect = gfx::RectToSkRect(quad->visible_rect);
-
-  if (quad->y_flipped) {
-    current_canvas_->translate(0, quad_rect.bottom());
-    current_canvas_->scale(1, -1);
-  }
-
-  bool blend_background =
-      quad->background_color != SK_ColorTRANSPARENT && !image->isOpaque();
-  bool needs_layer = blend_background && (paint->getAlpha() != 0xFF);
-  base::Optional<SkAutoCanvasRestore> auto_canvas_restore;
-  if (needs_layer) {
-    auto_canvas_restore.emplace(current_canvas_, false /* do_save */);
-    current_canvas_->saveLayerAlpha(&quad_rect, paint->getAlpha());
-    paint->setAlpha(0xFF);
-  }
-  if (blend_background) {
-    SkPaint background_paint;
-    background_paint.setColor(quad->background_color);
-    current_canvas_->drawRect(quad_rect, background_paint);
-  }
-  paint->setFilterQuality(quad->nearest_neighbor ? kNone_SkFilterQuality
-                                                 : kLow_SkFilterQuality);
-  current_canvas_->drawImageRect(image, sk_uv_rect, quad_rect, paint);
-}
-
 sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
                                                   const gfx::ColorSpace& dst) {
   sk_sp<SkColorFilter>& color_filter = color_filter_cache_[dst][src];
@@ -1290,11 +1399,8 @@ bool SkiaRenderer::CalculateRPDQParams(sk_sp<SkImage> content,
   // If we need to apply filter, apply opacity as the last step of image filter
   // so it is uniform across.
   if (filter && quad->shared_quad_state->opacity != 1.f) {
-    SkColor alpha_as_color =
-        SkColor4f({1.f, 1.f, 1.f, quad->shared_quad_state->opacity})
-            .toSkColor();
     sk_sp<SkColorFilter> cf =
-        SkColorFilter::MakeModeFilter(alpha_as_color, SkBlendMode::kDstIn);
+        MakeOpacityFilter(quad->shared_quad_state->opacity, nullptr);
     filter = SkColorFilterImageFilter::Make(cf, filter);
   }
 

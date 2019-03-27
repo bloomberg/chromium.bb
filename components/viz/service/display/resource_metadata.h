@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_RESOURCE_METADATA_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_RESOURCE_METADATA_H_
 
+#include "GrTypes.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
@@ -36,6 +37,9 @@ struct VIZ_SERVICE_EXPORT ResourceMetadata {
 
   // Whether resource is premultiplied.
   SkAlphaType alpha_type;
+
+  // If the SkImage should use top-left or bottom-left for (0,0) uv
+  GrSurfaceOrigin origin;
 };
 
 }  // namespace viz
