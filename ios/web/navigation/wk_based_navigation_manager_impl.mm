@@ -597,8 +597,13 @@ void WKBasedNavigationManagerImpl::UnsafeRestore(
   // TODO(crbug.com/771200): Retain these original NavigationItems restored from
   // storage and associate them with new WKBackForwardListItems created after
   // history restore so information such as scroll position is restored.
-  GURL url = wk_navigation_util::CreateRestoreSessionUrl(
-      last_committed_item_index, items);
+  int first_index = -1;
+  GURL url;
+  wk_navigation_util::CreateRestoreSessionUrl(last_committed_item_index, items,
+                                              &url, &first_index);
+  DCHECK_GE(first_index, 0);
+  DCHECK_LT(base::checked_cast<NSUInteger>(first_index), items.size());
+  DCHECK(url.is_valid());
 
   WebLoadParams params(url);
   // It's not clear how this transition type will be used and what's the impact.
@@ -607,11 +612,11 @@ void WKBasedNavigationManagerImpl::UnsafeRestore(
   params.transition_type = ui::PAGE_TRANSITION_RELOAD;
 
   // This pending item will become the first item in the restored history.
-  params.virtual_url = items[0]->GetVirtualURL();
+  params.virtual_url = items[first_index]->GetVirtualURL();
 
   // Grab the title of the first item before |restored_visible_item_| (which may
   // or may not be the first index) is moved out of |items| below.
-  const base::string16& firstTitle = items[0]->GetTitle();
+  const base::string16& firstTitle = items[first_index]->GetTitle();
 
   // Ordering is important. Cache the visible item of the restored session
   // before starting the new navigation, which may trigger client lookup of
