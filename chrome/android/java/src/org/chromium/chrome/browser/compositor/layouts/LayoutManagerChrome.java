@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.compositor.layouts;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 
 import org.chromium.base.ObserverList;
@@ -63,13 +64,23 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
     private final ObserverList<OverviewModeObserver> mOverviewModeObservers;
 
     /**
-     * Creates the {@link LayoutManagerChrome} instance.
-     * @param host              A {@link LayoutManagerHost} instance.
+     * {@link OverviewModeController} to delegate all OverviewMode related calls. Note that when
+     * this {@link LayoutManagerChrome} is the current {@link OverviewModeController}, show/hide
+     * calls eventually come back to this class.
      */
-    public LayoutManagerChrome(LayoutManagerHost host, boolean createOverviewLayout) {
+    protected final OverviewModeController mOverviewModeDelegate;
+
+    /**
+     * Creates the {@link LayoutManagerChrome} instance.
+     * @param host                 A {@link LayoutManagerHost} instance.
+     * @param overviewModeDelegate OverviewModeController to delegate tab switcher behavior.
+     */
+    public LayoutManagerChrome(LayoutManagerHost host, boolean createOverviewLayout,
+            @Nullable OverviewModeController overviewModeDelegate) {
         super(host);
         Context context = host.getContext();
         LayoutRenderHost renderHost = host.getLayoutRenderHost();
+        mOverviewModeDelegate = overviewModeDelegate == null ? this : overviewModeDelegate;
 
         mOverviewModeObservers = new ObserverList<OverviewModeObserver>();
 
@@ -419,7 +430,7 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
 
             if (mOverviewLayout != null && mScrollDirection == ScrollDirection.DOWN) {
                 RecordUserAction.record("MobileToolbarSwipeOpenStackView");
-                startShowing(mOverviewLayout, true);
+                mOverviewModeDelegate.showOverview(true);
             } else if (mToolbarSwipeLayout != null
                     && (mScrollDirection == ScrollDirection.LEFT
                                || mScrollDirection == ScrollDirection.RIGHT)) {

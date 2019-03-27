@@ -19,7 +19,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.resources.ResourceFactory;
 import org.chromium.chrome.browser.contextualsearch.SwipeRecognizer;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.chrome.browser.widget.ControlContainer;
@@ -292,8 +291,6 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
 
         @Override
         public boolean shouldRecognizeSwipe(MotionEvent e1, MotionEvent e2) {
-            if (FeatureUtilities.isTabGroupsAndroidEnabled()) return false;
-            if (FeatureUtilities.isGridTabSwitcherEnabled(getContext())) return false;
             if (isOnTabStrip(e1)) return false;
             if (mToolbar != null && mToolbar.shouldIgnoreSwipeGesture()) return false;
             if (KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(
