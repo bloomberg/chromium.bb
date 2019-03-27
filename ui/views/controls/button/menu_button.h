@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/button/menu_button_event_handler.h"
+#include "ui/views/controls/button/menu_button_controller.h"
 
 namespace views {
 
@@ -37,7 +37,7 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
 
   bool Activate(const ui::Event* event);
 
-  // TODO(cyan): Move into MenuButtonEventHandler.
+  // TODO(cyan): Move into MenuButtonController.
   virtual bool IsTriggerableEventType(const ui::Event& event);
 
   // View:
@@ -50,14 +50,14 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Disallow overriding of these methods.
-  // No-op implementations as these are handled in MenuButtonEventHandler (and
+  // No-op implementations as these are handled in MenuButtonController (and
   // should not be handled here as well). To override these you need to subclass
-  // MenuButtonEventHandler and replace this event handler of the button.
+  // MenuButtonController and replace this event handler of the button.
   void OnMouseEntered(const ui::MouseEvent& event) final;
   void OnMouseExited(const ui::MouseEvent& event) final;
   void OnMouseMoved(const ui::MouseEvent& event) final;
 
-  // Protected methods needed for MenuButtonEventHandler.
+  // Protected methods needed for MenuButtonController.
   // TODO(cyan): Move these to a delegate interface.
   using InkDropHostView::GetInkDrop;
   using View::InDrag;
@@ -68,8 +68,8 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   // Button:
   bool IsTriggerableEvent(const ui::Event& event) override;
 
-  MenuButtonEventHandler* menu_button_event_handler() {
-    return &menu_button_event_handler_;
+  MenuButtonController* menu_button_controller() {
+    return &menu_button_controller_;
   }
 
  protected:
@@ -81,9 +81,9 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
 
  private:
   // All events get sent to this handler to be processed.
-  // TODO(cyan): This will be generalized into a ButtonEventHandler and moved
+  // TODO(cyan): This will be generalized into a ButtonController and moved
   // into the Button class.
-  MenuButtonEventHandler menu_button_event_handler_;
+  MenuButtonController menu_button_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuButton);
 };

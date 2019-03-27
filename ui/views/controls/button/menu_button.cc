@@ -21,18 +21,18 @@ MenuButton::MenuButton(const base::string16& text,
                        MenuButtonListener* menu_button_listener,
                        int button_context)
     : LabelButton(nullptr, text, button_context),
-      menu_button_event_handler_(this, menu_button_listener) {
+      menu_button_controller_(this, menu_button_listener) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
 }
 
 MenuButton::~MenuButton() = default;
 
 bool MenuButton::Activate(const ui::Event* event) {
-  return menu_button_event_handler_.Activate(event);
+  return menu_button_controller_.Activate(event);
 }
 
 bool MenuButton::IsTriggerableEventType(const ui::Event& event) {
-  return menu_button_event_handler_.IsTriggerableEventType(event);
+  return menu_button_controller_.IsTriggerableEventType(event);
 }
 
 const char* MenuButton::GetClassName() const {
@@ -40,23 +40,23 @@ const char* MenuButton::GetClassName() const {
 }
 
 bool MenuButton::OnMousePressed(const ui::MouseEvent& event) {
-  return menu_button_event_handler_.OnMousePressed(event);
+  return menu_button_controller_.OnMousePressed(event);
 }
 
 void MenuButton::OnMouseReleased(const ui::MouseEvent& event) {
-  menu_button_event_handler_.OnMouseReleased(event);
+  menu_button_controller_.OnMouseReleased(event);
 }
 
 bool MenuButton::OnKeyPressed(const ui::KeyEvent& event) {
-  return menu_button_event_handler_.OnKeyPressed(event);
+  return menu_button_controller_.OnKeyPressed(event);
 }
 
 bool MenuButton::OnKeyReleased(const ui::KeyEvent& event) {
-  return menu_button_event_handler_.OnKeyReleased(event);
+  return menu_button_controller_.OnKeyReleased(event);
 }
 
 void MenuButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  menu_button_event_handler_.GetAccessibleNodeData(node_data);
+  menu_button_controller_.GetAccessibleNodeData(node_data);
 }
 
 void MenuButton::OnMouseEntered(const ui::MouseEvent& event) {}
@@ -69,19 +69,19 @@ void MenuButton::LabelButtonStateChanged(ButtonState old_state) {
 }
 
 bool MenuButton::IsTriggerableEvent(const ui::Event& event) {
-  return menu_button_event_handler_.IsTriggerableEvent(event);
+  return menu_button_controller_.IsTriggerableEvent(event);
 }
 
 bool MenuButton::ShouldEnterPushedState(const ui::Event& event) {
-  return menu_button_event_handler_.ShouldEnterPushedState(event);
+  return menu_button_controller_.ShouldEnterPushedState(event);
 }
 
 void MenuButton::StateChanged(ButtonState old_state) {
-  menu_button_event_handler_.StateChanged(old_state);
+  menu_button_controller_.StateChanged(old_state);
 }
 
 void MenuButton::NotifyClick(const ui::Event& event) {
-  menu_button_event_handler_.NotifyClick(event);
+  menu_button_controller_.NotifyClick(event);
 }
 
 }  // namespace views

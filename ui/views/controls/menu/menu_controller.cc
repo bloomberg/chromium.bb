@@ -487,7 +487,7 @@ void MenuController::Run(Widget* parent,
   SetSelection(root, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
 
   if (button) {
-    pressed_lock_ = button->menu_button_event_handler()->TakeLock(
+    pressed_lock_ = button->menu_button_controller()->TakeLock(
         false, ui::LocatedEvent::FromIfValid(event));
   }
 
@@ -1683,7 +1683,7 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
 
   // There is a sibling menu, update the button state, hide the current menu
   // and show the new one.
-  pressed_lock_ = button->menu_button_event_handler()->TakeLock(true, nullptr);
+  pressed_lock_ = button->menu_button_controller()->TakeLock(true, nullptr);
 
   // Need to reset capture when we show the menu again, otherwise we aren't
   // going to get any events.
@@ -2915,7 +2915,7 @@ MenuItemView* MenuController::ExitTopMostMenu() {
   }
 #endif
 
-  std::unique_ptr<MenuButtonEventHandler::PressedLock> nested_pressed_lock;
+  std::unique_ptr<MenuButtonController::PressedLock> nested_pressed_lock;
   bool nested_menu = !menu_stack_.empty();
   if (nested_menu) {
     DCHECK(!menu_stack_.empty());
