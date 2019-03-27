@@ -237,13 +237,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_47, false)
 // If true, disable QUIC version 39.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_39, false)
 
-// If true, simplifies the implementation of
-// QuicFramer::BuildConnectivityProbingPacket().
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_simplify_build_connectivity_probing_packet,
-    true)
-
 // If true, use one loss algorithm per encryption level.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_uber_loss_algorithm, false)
 
