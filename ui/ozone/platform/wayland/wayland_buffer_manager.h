@@ -13,6 +13,7 @@
 #include "base/files/file.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/presentation_feedback.h"
@@ -20,13 +21,7 @@
 #include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/ozone/platform/wayland/wayland_util.h"
 
-struct zwp_linux_dmabuf_v1;
-struct zwp_linux_buffer_params_v1;
 struct wp_presentation_feedback;
-
-namespace gfx {
-enum class BufferFormat;
-}  // namespace gfx
 
 namespace ui {
 
@@ -36,15 +31,10 @@ class WaylandConnection;
 // dmabuf buffers. Only used when GPU runs in own process.
 class WaylandBufferManager {
  public:
-  WaylandBufferManager(zwp_linux_dmabuf_v1* zwp_linux_dmabuf,
-                       WaylandConnection* connection);
+  explicit WaylandBufferManager(WaylandConnection* connection);
   ~WaylandBufferManager();
 
   std::string error_message() { return std::move(error_message_); }
-
-  std::vector<gfx::BufferFormat> supported_buffer_formats() {
-    return supported_buffer_formats_;
-  }
 
   // Creates a wl_buffer based on the dmabuf |file| descriptor. On error, false
   // is returned and |error_message_| is set.
@@ -86,13 +76,8 @@ class WaylandBufferManager {
   // to this Buffer object on run-time.
   struct Buffer {
     Buffer();
-    Buffer(uint32_t id,
-           zwp_linux_buffer_params_v1* zwp_params,
-           const gfx::Size& buffer_size);
+    explicit Buffer(const gfx::Size& buffer_size);
     ~Buffer();
-
-    // GPU GbmPixmapWayland corresponding buffer id.
-    uint32_t buffer_id = 0;
 
     // Actual buffer size.
     const gfx::Size size;
@@ -111,9 +96,6 @@ class WaylandBufferManager {
     // A feedback, which is received if a presentation feedback protocol is
     // supported.
     gfx::PresentationFeedback feedback;
-
-    // Params that are used to create a wl_buffer.
-    zwp_linux_buffer_params_v1* params = nullptr;
 
     // A wl_buffer backed by a dmabuf created on the GPU side.
     wl::Object<struct wl_buffer> wl_buffer;
@@ -150,29 +132,12 @@ class WaylandBufferManager {
   bool ValidateDataFromGpu(const gfx::AcceleratedWidget& widget,
                            uint32_t buffer_id);
 
-  void CreateSucceededInternal(struct zwp_linux_buffer_params_v1* params,
-                               struct wl_buffer* new_buffer);
+  // Callback method. Receives a result for the request to create a wl_buffer
+  // backend by dmabuf file descriptor from ::CreateBuffer call.
+  void OnCreateBufferComplete(uint32_t buffer_id,
+                              wl::Object<struct wl_buffer> new_buffer);
 
   void OnBufferSwapped(Buffer* buffer);
-
-  void AddSupportedFourCCFormat(uint32_t fourcc_format);
-
-  // zwp_linux_dmabuf_v1_listener
-  static void Modifiers(void* data,
-                        struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf,
-                        uint32_t format,
-                        uint32_t modifier_hi,
-                        uint32_t modifier_lo);
-  static void Format(void* data,
-                     struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf,
-                     uint32_t format);
-
-  // zwp_linux_buffer_params_v1_listener
-  static void CreateSucceeded(void* data,
-                              struct zwp_linux_buffer_params_v1* params,
-                              struct wl_buffer* new_buffer);
-  static void CreateFailed(void* data,
-                           struct zwp_linux_buffer_params_v1* params);
 
   // wl_callback_listener
   static void FrameCallbackDone(void* data,
@@ -198,19 +163,18 @@ class WaylandBufferManager {
       void* data,
       struct wp_presentation_feedback* wp_presentation_feedback);
 
-  // Stores announced buffer formats supported by the compositor.
-  std::vector<gfx::BufferFormat> supported_buffer_formats_;
-
   // A container of created buffers.
   base::flat_map<uint32_t, std::unique_ptr<Buffer>> buffers_;
 
   // Set when invalid data is received from the GPU process.
   std::string error_message_;
 
-  wl::Object<zwp_linux_dmabuf_v1> zwp_linux_dmabuf_;
-
   // Non-owned pointer to the main connection.
-  WaylandConnection* connection_ = nullptr;
+  WaylandConnection* const connection_;
+
+  base::WeakPtrFactory<WaylandBufferManager> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaylandBufferManager);
 };
 
 }  // namespace ui

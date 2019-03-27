@@ -37,6 +37,9 @@ using BufferSwapCallback =
 
 using RequestSizeCallback = base::OnceCallback<void(const gfx::Size&)>;
 
+using OnRequestBufferCallback =
+    base::OnceCallback<void(wl::Object<struct wl_buffer>)>;
+
 wl_buffer* CreateSHMBuffer(const gfx::Size& size,
                            base::SharedMemory* shared_memory,
                            wl_shm* shm);
