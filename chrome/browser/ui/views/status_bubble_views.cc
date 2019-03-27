@@ -147,6 +147,9 @@ class StatusBubbleViews::StatusView : public views::View {
   StatusView(StatusBubbleViews* status_bubble, gfx::Size popup_size);
   ~StatusView() override;
 
+  // views::View:
+  void Layout() override;
+
   // Set the bubble text, or hide the bubble if |text| is an empty string.
   // Triggers an animation sequence to display if |should_animate_open| is true.
   void SetText(const base::string16& text, bool should_animate_open);
@@ -192,9 +195,6 @@ class StatusBubbleViews::StatusView : public views::View {
   void StartHiding();
   void StartShowing();
 
-  // Update text label's size.
-  void ResizeText();
-
   // views::View:
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
@@ -239,12 +239,21 @@ StatusBubbleViews::StatusView::StatusView(StatusBubbleViews* status_bubble,
       blended_text_color, bubble_color));
   text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   text_ = AddChildView(std::move(text));
-  ResizeText();
 }
 
 StatusBubbleViews::StatusView::~StatusView() {
   animation_->Stop();
   CancelTimer();
+}
+
+void StatusBubbleViews::StatusView::Layout() {
+  gfx::Rect text_rect(kTextPositionX, 0,
+                      popup_size_.width() - kTextHorizPadding,
+                      popup_size_.height());
+  text_rect.Inset(kShadowThickness, kShadowThickness);
+  // Make sure the text is aligned to the right on RTL UIs.
+  text_rect = GetMirroredRect(text_rect);
+  text_->SetBoundsRect(text_rect);
 }
 
 void StatusBubbleViews::StatusView::SetText(const base::string16& text,
@@ -387,16 +396,6 @@ void StatusBubbleViews::StatusView::StartShowing() {
   }
 }
 
-void StatusBubbleViews::StatusView::ResizeText() {
-  gfx::Rect text_rect(kTextPositionX, 0,
-                      popup_size_.width() - kTextHorizPadding,
-                      popup_size_.height());
-  text_rect.Inset(kShadowThickness, kShadowThickness);
-  // Make sure the text is aligned to the right on RTL UIs.
-  text_rect = GetMirroredRect(text_rect);
-  text_->SetBoundsRect(text_rect);
-}
-
 void StatusBubbleViews::StatusView::SetOpacity(float opacity) {
   GetWidget()->SetOpacity(opacity);
 }
@@ -417,7 +416,7 @@ void StatusBubbleViews::StatusView::OnAnimationEnded() {
 
 void StatusBubbleViews::StatusView::SetWidth(int new_width) {
   popup_size_.set_width(new_width);
-  ResizeText();
+  Layout();
 }
 
 const char* StatusBubbleViews::StatusView::GetClassName() const {
