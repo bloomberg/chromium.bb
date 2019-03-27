@@ -1725,8 +1725,12 @@ crbug.com/875235 virtual/layout_ng_experimental/fast/forms/fieldset/legend-small
 
 ### virtual/bidi-caret-affinity/editing/selection/modify_move/
 crbug.com/923087 virtual/bidi-caret-affinity/editing/selection/modify_move/css-pseudo-element.html [ Failure ]
+crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move-by-word-visually-crash-test-1.html [ Crash ]
+crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move-by-word-visually-crash-test-2.html [ Crash ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move-by-word-visually-crash-test-3.html [ Crash ]
+crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move-by-word-visually-crash-test-4.html [ Crash ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move-by-word-visually-crash-test-5.html [ Pass Timeout Crash ]
+crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move-by-word-visually-crash-test-css-generated-content.html [ Crash ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move-by-word-visually-inline-block-positioned-element.html [ Crash Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move-by-word-visually-mac.html [ Timeout Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move-by-word-visually-multi-space.html [ Timeout Failure ]
