@@ -181,4 +181,8 @@ base::TimeDelta AccountReconcilorDelegate::GetReconcileTimeout() const {
 void AccountReconcilorDelegate::OnReconcileError(
     const GoogleServiceAuthError& error) {}
 
+bool AccountReconcilorDelegate::IsUnknownInvalidAccountInCookieAllowed() const {
+  return true;
+}
+
 }  // namespace signin
