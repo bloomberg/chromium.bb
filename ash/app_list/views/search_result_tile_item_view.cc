@@ -96,14 +96,11 @@ SearchResultTileItemView::SearchResultTileItemView(
   icon_->SetVerticalAlignment(views::ImageView::LEADING);
   AddChildView(icon_);
 
-  if (is_play_store_app_search_enabled_ ||
-      is_app_reinstall_recommendation_enabled_) {
-    badge_ = new views::ImageView;
-    badge_->set_can_process_events_within_subtree(false);
-    badge_->SetVerticalAlignment(views::ImageView::LEADING);
-    badge_->SetVisible(false);
-    AddChildView(badge_);
-  }
+  badge_ = new views::ImageView;
+  badge_->set_can_process_events_within_subtree(false);
+  badge_->SetVerticalAlignment(views::ImageView::LEADING);
+  badge_->SetVisible(false);
+  AddChildView(badge_);
 
   title_ = new views::Label;
   title_->SetAutoColorReadabilityEnabled(false);
@@ -411,9 +408,6 @@ void SearchResultTileItemView::SetIcon(const gfx::ImageSkia& icon) {
 }
 
 void SearchResultTileItemView::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
-  if (!badge_)
-    return;
-
   if (badge_icon.isNull()) {
     badge_->SetVisible(false);
     return;
@@ -537,17 +531,15 @@ void SearchResultTileItemView::Layout() {
     icon_rect.set_y(kSearchTileTopPadding);
     icon_->SetBoundsRect(icon_rect);
 
-    if (badge_) {
-      const int badge_icon_dimension =
-          AppListConfig::instance().search_tile_badge_icon_dimension();
-      const int badge_icon_offset =
-          AppListConfig::instance().search_tile_badge_icon_offset();
-      const gfx::Rect badge_rect(
-          icon_rect.right() - badge_icon_dimension + badge_icon_offset,
-          icon_rect.bottom() - badge_icon_dimension + badge_icon_offset,
-          badge_icon_dimension, badge_icon_dimension);
-      badge_->SetBoundsRect(badge_rect);
-    }
+    const int badge_icon_dimension =
+        AppListConfig::instance().search_tile_badge_icon_dimension();
+    const int badge_icon_offset =
+        AppListConfig::instance().search_tile_badge_icon_offset();
+    const gfx::Rect badge_rect(
+        icon_rect.right() - badge_icon_dimension + badge_icon_offset,
+        icon_rect.bottom() - badge_icon_dimension + badge_icon_offset,
+        badge_icon_dimension, badge_icon_dimension);
+    badge_->SetBoundsRect(badge_rect);
 
     rect.set_y(icon_rect.bottom() + kSearchTitleSpacing);
     rect.set_height(title_->GetPreferredSize().height());
