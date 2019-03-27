@@ -399,6 +399,8 @@ crbug.com/836886 compositing/scrollbars/nested-overlay-scrollbars.html [ Failure
 crbug.com/921105 virtual/threaded/animations/skew-notsequential-compositor.html [ Failure Pass ]
 crbug.com/921105 virtual/disable-blink-gen-property-trees/animations/skew-notsequential-compositor.html [ Skip ]
 
+crbug.com/946532 external/wpt/css/css-backgrounds/background-clip/clip-text-dynamic-2.html [ Failure ]
+
 # ====== Paint team owned tests to here ======
 
 crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure Pass ]
@@ -3017,7 +3019,6 @@ crbug.com/626703 [ Win7 ] external/wpt/event-timing/event-timing-onloadthenobser
 crbug.com/626703 [ Mac10.12 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/webrtc/RTCPeerConnection-ondatachannel.html [ Failure Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-backgrounds/background-clip/clip-text-dynamic-2.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-url-allow.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-url-allow.html [ Timeout ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-url-allow.html [ Timeout ]
