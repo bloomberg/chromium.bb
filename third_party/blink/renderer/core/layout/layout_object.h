@@ -392,6 +392,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     LayoutObject& layout_object_;
     bool preexisting_forbidden_;
   };
+#endif  // DCHECK_IS_ON()
+
+  // TODO(crbug.com/946004): When we no longer see missing layouts in LayoutNG,
+  // move the following two functions back to the DCHECK_IS_ON() block and
+  // remove relevant branches and CHECK.
 
   void AssertLaidOut() const {
 #ifndef NDEBUG
@@ -399,9 +404,16 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       ShowLayoutTreeForThis();
 #endif
     SECURITY_DCHECK(!NeedsLayout() || LayoutBlockedByDisplayLock());
+    if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+      return;
+    CHECK(!NeedsLayout() || LayoutBlockedByDisplayLock()) << this;
   }
 
   void AssertSubtreeIsLaidOut() const {
+#if !DCHECK_IS_ON()
+    if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+      return;
+#endif
     for (const LayoutObject* layout_object = this; layout_object;
          layout_object = layout_object->LayoutBlockedByDisplayLock()
                              ? layout_object->NextInPreOrderAfterChildren()
@@ -410,6 +422,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     }
   }
 
+#if DCHECK_IS_ON()
   void AssertClearedPaintInvalidationFlags() const {
 #ifndef NDEBUG
     if (PaintInvalidationStateIsDirty() && !PrePaintBlockedByDisplayLock()) {
@@ -428,7 +441,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     }
   }
 
-#endif
+#endif  // DCHECK_IS_ON()
 
   // LayoutObject tree manipulation
   //////////////////////////////////////////
