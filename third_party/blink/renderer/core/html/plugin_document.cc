@@ -49,35 +49,6 @@ namespace blink {
 
 using namespace html_names;
 
-class PluginDocument::BeforeUnloadEventListener : public NativeEventListener {
- public:
-  static BeforeUnloadEventListener* Create(PluginDocument* document) {
-    return MakeGarbageCollected<BeforeUnloadEventListener>(document);
-  }
-
-  explicit BeforeUnloadEventListener(PluginDocument* document)
-      : doc_(document) {}
-
-  void SetShowBeforeUnloadDialog(bool show_dialog) {
-    show_dialog_ = show_dialog;
-  }
-
-  void Trace(Visitor* visitor) override {
-    visitor->Trace(doc_);
-    NativeEventListener::Trace(visitor);
-  }
-
- private:
-  void Invoke(ExecutionContext*, Event* event) override {
-    DCHECK_EQ(event->type(), event_type_names::kBeforeunload);
-    if (show_dialog_)
-      ToBeforeUnloadEvent(event)->setReturnValue(g_empty_string);
-  }
-
-  Member<PluginDocument> doc_;
-  bool show_dialog_;
-};
-
 // FIXME: Share more code with MediaDocumentParser.
 class PluginDocumentParser : public RawDataDocumentParser {
  public:
@@ -230,28 +201,14 @@ WebPluginContainerImpl* PluginDocument::GetPluginView() {
   return plugin_node_ ? plugin_node_->OwnedPlugin() : nullptr;
 }
 
-void PluginDocument::SetShowBeforeUnloadDialog(bool show_dialog) {
-  if (!before_unload_event_listener_) {
-    if (!show_dialog)
-      return;
-
-    before_unload_event_listener_ = BeforeUnloadEventListener::Create(this);
-    domWindow()->addEventListener(event_type_names::kBeforeunload,
-                                  before_unload_event_listener_, false);
-  }
-  before_unload_event_listener_->SetShowBeforeUnloadDialog(show_dialog);
-}
-
 void PluginDocument::Shutdown() {
   // Release the plugin node so that we don't have a circular reference.
   plugin_node_ = nullptr;
-  before_unload_event_listener_ = nullptr;
   HTMLDocument::Shutdown();
 }
 
 void PluginDocument::Trace(Visitor* visitor) {
   visitor->Trace(plugin_node_);
-  visitor->Trace(before_unload_event_listener_);
   HTMLDocument::Trace(visitor);
 }
 

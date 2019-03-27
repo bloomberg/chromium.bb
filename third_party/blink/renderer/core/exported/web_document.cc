@@ -279,6 +279,18 @@ WebDistillabilityFeatures WebDocument::DistillabilityFeatures() {
   return DocumentStatisticsCollector::CollectStatistics(*Unwrap<Document>());
 }
 
+void WebDocument::SetShowBeforeUnloadDialog(bool show_dialog) {
+  if (!IsHTMLDocument())
+    return;
+  if (!IsPluginDocument() &&
+      !RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled()) {
+    return;
+  }
+
+  Document* doc = Unwrap<Document>();
+  doc->SetShowBeforeUnloadDialog(show_dialog);
+}
+
 WebDocument::WebDocument(Document* elem) : WebNode(elem) {}
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebDocument, ConstUnwrap<Node>()->IsDocumentNode())

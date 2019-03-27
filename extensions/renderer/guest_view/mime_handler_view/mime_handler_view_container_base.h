@@ -109,6 +109,11 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
   void SetEmbeddedLoader(
       content::mojom::TransferrableURLLoaderPtr transferrable_url_loader);
 
+  // mime_handler::BeforeUnloadControl implementation.
+  void SetShowBeforeUnloadDialog(
+      bool show_dialog,
+      SetShowBeforeUnloadDialogCallback callback) override;
+
   // Path of the plugin.
   const std::string plugin_path_;
 

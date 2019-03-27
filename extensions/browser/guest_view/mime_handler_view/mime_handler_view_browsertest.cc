@@ -470,9 +470,9 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, TargetBlankAnchor) {
       browser()->tab_strip_model()->GetWebContentsAt(1)->GetLastCommittedURL());
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, BeforeUnload_NoDialog) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, BeforeUnload_NoDialog) {
   ASSERT_NO_FATAL_FAILURE(RunTest("testBeforeUnloadNoDialog.csv"));
-  auto* web_contents = browser()->tab_strip_model()->GetWebContentsAt(0);
+  auto* web_contents = GetEmbedderWebContents();
   content::PrepContentsForBeforeUnloadTest(web_contents);
 
   // Wait for a round trip to the outer renderer to ensure any beforeunload
@@ -485,9 +485,10 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, BeforeUnload_NoDialog) {
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, BeforeUnload_ShowDialog) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
+                       BeforeUnload_ShowDialog) {
   ASSERT_NO_FATAL_FAILURE(RunTest("testBeforeUnloadShowDialog.csv"));
-  auto* web_contents = browser()->tab_strip_model()->GetWebContentsAt(0);
+  auto* web_contents = GetEmbedderWebContents();
   content::PrepContentsForBeforeUnloadTest(web_contents);
 
   // Wait for a round trip to the outer renderer to ensure the beforeunload

@@ -65,11 +65,6 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
   int32_t GetInstanceId() const final;
   gfx::Size GetElementSize() const final;
 
-  // mime_handler::BeforeUnloadControl implementation.
-  void SetShowBeforeUnloadDialog(
-      bool show_dialog,
-      SetShowBeforeUnloadDialogCallback callback) override;
-
   // Message handlers.
   void OnCreateMimeHandlerViewGuestACK(int element_instance_id);
   void OnGuestAttached(int element_instance_id,

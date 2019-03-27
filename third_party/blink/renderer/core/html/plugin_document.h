@@ -50,8 +50,6 @@ class CORE_EXPORT PluginDocument final : public HTMLDocument {
 
   WebPluginContainerImpl* GetPluginView();
 
-  void SetShowBeforeUnloadDialog(bool show_dialog);
-
   void Shutdown() override;
 
   void Trace(Visitor*) override;
@@ -62,7 +60,6 @@ class CORE_EXPORT PluginDocument final : public HTMLDocument {
   DocumentParser* CreateParser() override;
 
   Member<HTMLPlugInElement> plugin_node_;
-  Member<BeforeUnloadEventListener> before_unload_event_listener_;
 
   const Color background_color_;
 };

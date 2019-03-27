@@ -88,6 +88,7 @@ class AnimationClock;
 class AXContext;
 class AXObjectCache;
 class Attr;
+class BeforeUnloadEventListener;
 class CDATASection;
 class CSSStyleSheet;
 class CanvasFontCache;
@@ -1513,6 +1514,11 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool HaveRenderBlockingResourcesLoaded() const;
 
+  // Sets a beforeunload handler for documents which are embedding plugins. This
+  // includes PluginDocument as well as an HTMLDocument which embeds a plugin
+  // inside a cross-process frame (MimeHandlerView).
+  void SetShowBeforeUnloadDialog(bool show_dialog);
+
  protected:
   void DidUpdateSecurityOrigin() final;
 
@@ -1982,6 +1988,12 @@ class CORE_EXPORT Document : public ContainerNode,
   // Used to keep track of which ComputedAccessibleNodes have already been
   // instantiated in this document to avoid constructing duplicates.
   HeapHashMap<AXID, Member<ComputedAccessibleNode>> computed_node_mapping_;
+
+  // When the document contains MimeHandlerView, this variable might hold a
+  // beforeunload handler. This will be set by the blink embedder when
+  // necessary.
+  Member<BeforeUnloadEventListener>
+      mime_handler_view_before_unload_event_listener_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;
