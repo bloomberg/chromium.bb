@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace WTF {
@@ -67,6 +68,23 @@ inline bool isPropertyAlias(CSSPropertyID id) { return static_cast<int>(id) & {{
 CSSPropertyID unresolvedCSSPropertyID(const WTF::String&);
 
 CSSPropertyID CORE_EXPORT cssPropertyID(const WTF::String&);
+
+class CSSPropertyIDList {
+  STACK_ALLOCATED();
+ public:
+    class Iterator {
+      STACK_ALLOCATED();
+     public:
+      Iterator(int id) : id_(id) {}
+      CSSPropertyID operator*() const { return convertToCSSPropertyID(id_); }
+      Iterator& operator++() { id_++; return *this; }
+      bool operator!=(const Iterator& i) const { return id_ != i.id_; }
+     private:
+      int id_;
+    };
+  Iterator begin() const { return Iterator(kIntFirstCSSProperty); }
+  Iterator end() const { return Iterator(kIntLastCSSProperty + 1); }
+};
 
 }  // namespace blink
 

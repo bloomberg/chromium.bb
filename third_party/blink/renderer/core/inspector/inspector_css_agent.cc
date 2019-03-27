@@ -1129,8 +1129,7 @@ Response InspectorCSSAgent::getComputedStyleForNode(
   auto* computed_style_info =
       MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
   *style = protocol::Array<protocol::CSS::CSSComputedStyleProperty>::create();
-  for (int id = kIntFirstCSSProperty; id <= kIntLastCSSProperty; ++id) {
-    CSSPropertyID property_id = static_cast<CSSPropertyID>(id);
+  for (CSSPropertyID property_id : CSSPropertyIDList()) {
     const CSSProperty& property_class =
         CSSProperty::Get(resolveCSSPropertyID(property_id));
     if (!property_class.IsEnabled() || property_class.IsShorthand() ||

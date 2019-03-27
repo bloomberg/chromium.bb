@@ -192,8 +192,7 @@ void CSSStyleDeclaration::NamedPropertyEnumerator(Vector<String>& names,
   DEFINE_STATIC_LOCAL(PreAllocatedPropertyVector, property_names, ());
 
   if (property_names.IsEmpty()) {
-    for (int id = kIntFirstCSSProperty; id <= kIntLastCSSProperty; ++id) {
-      CSSPropertyID property_id = static_cast<CSSPropertyID>(id);
+    for (CSSPropertyID property_id : CSSPropertyIDList()) {
       const CSSProperty& property_class =
           CSSProperty::Get(resolveCSSPropertyID(property_id));
       if (property_class.IsEnabled())

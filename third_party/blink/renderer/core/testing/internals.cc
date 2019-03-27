@@ -3304,8 +3304,7 @@ void Internals::clearUseCounter(Document* document, uint32_t feature) {
 
 Vector<String> Internals::getCSSPropertyLonghands() const {
   Vector<String> result;
-  for (int id = kIntFirstCSSProperty; id <= kIntLastCSSProperty; ++id) {
-    CSSPropertyID property = static_cast<CSSPropertyID>(id);
+  for (CSSPropertyID property : CSSPropertyIDList()) {
     const CSSProperty& property_class = CSSProperty::Get(property);
     if (property_class.IsLonghand()) {
       result.push_back(property_class.GetPropertyNameString());
@@ -3316,8 +3315,7 @@ Vector<String> Internals::getCSSPropertyLonghands() const {
 
 Vector<String> Internals::getCSSPropertyShorthands() const {
   Vector<String> result;
-  for (int id = kIntFirstCSSProperty; id <= kIntLastCSSProperty; ++id) {
-    CSSPropertyID property = static_cast<CSSPropertyID>(id);
+  for (CSSPropertyID property : CSSPropertyIDList()) {
     const CSSProperty& property_class = CSSProperty::Get(property);
     if (property_class.IsShorthand()) {
       result.push_back(property_class.GetPropertyNameString());

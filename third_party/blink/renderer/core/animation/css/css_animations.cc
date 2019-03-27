@@ -1273,8 +1273,7 @@ const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   DEFINE_STATIC_LOCAL(StylePropertyShorthand, property_shorthand, ());
   if (properties.IsEmpty()) {
-    for (int i = kIntFirstCSSProperty; i <= kIntLastCSSProperty; ++i) {
-      CSSPropertyID id = convertToCSSPropertyID(i);
+    for (CSSPropertyID id : CSSPropertyIDList()) {
       // Avoid creating overlapping transitions with perspective-origin and
       // transition-origin.
       if (id == CSSPropertyID::kWebkitPerspectiveOriginX ||
