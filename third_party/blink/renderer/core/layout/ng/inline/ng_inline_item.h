@@ -6,6 +6,7 @@
 #define NGInlineItem_h
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_segment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
@@ -90,8 +91,16 @@ class CORE_EXPORT NGInlineItem {
 
   // If this item should create a box fragment. Box fragments can be omitted for
   // optimization if this is false.
-  bool ShouldCreateBoxFragment() const;
-  void SetShouldCreateBoxFragment();
+  bool ShouldCreateBoxFragment() const {
+    if (Type() == kOpenTag || Type() == kCloseTag)
+      return ToLayoutInline(layout_object_)->ShouldCreateBoxFragment();
+    DCHECK_EQ(Type(), kAtomicInline);
+    return false;
+  }
+  void SetShouldCreateBoxFragment() {
+    DCHECK(Type() == kOpenTag || Type() == kCloseTag);
+    ToLayoutInline(layout_object_)->SetShouldCreateBoxFragment();
+  }
 
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
@@ -102,16 +111,40 @@ class CORE_EXPORT NGInlineItem {
   // Resolved bidi level for the reordering algorithm. Certain items have
   // artificial bidi level for the reordering algorithm without affecting its
   // direction.
-  UBiDiLevel BidiLevelForReorder() const;
+  UBiDiLevel BidiLevelForReorder() const {
+    // List markers should not be reordered to protect it from being included
+    // into unclosed inline boxes.
+    return Type() != NGInlineItem::kListMarker ? BidiLevel() : 0;
+  }
 
   const ComputedStyle* Style() const { return style_.get(); }
   LayoutObject* GetLayoutObject() const { return layout_object_; }
 
-  void SetOffset(unsigned start, unsigned end);
-  void SetEndOffset(unsigned);
+  void SetOffset(unsigned start, unsigned end) {
+    DCHECK_GE(end, start);
+    start_offset_ = start;
+    end_offset_ = end;
+    // Any modification to the offset will invalidate the shape result.
+    shape_result_ = nullptr;
+  }
+  void SetEndOffset(unsigned end_offset) {
+    DCHECK_GE(end_offset, start_offset_);
+    end_offset_ = end_offset;
+    // Any modification to the offset will invalidate the shape result.
+    shape_result_ = nullptr;
+  }
 
-  bool HasStartEdge() const;
-  bool HasEndEdge() const;
+  bool HasStartEdge() const {
+    DCHECK(Type() == kOpenTag || Type() == kCloseTag);
+    // TODO(kojii): Should use break token when NG has its own tree building.
+    return !GetLayoutObject()->IsInlineElementContinuation();
+  }
+  bool HasEndEdge() const {
+    DCHECK(Type() == kOpenTag || Type() == kCloseTag);
+    // TODO(kojii): Should use break token when NG has its own tree building.
+    return !GetLayoutObject()->IsLayoutInline() ||
+           !ToLayoutInline(GetLayoutObject())->Continuation();
+  }
 
   void SetStyleVariant(NGStyleVariant style_variant) {
     style_variant_ = static_cast<unsigned>(style_variant);
@@ -124,7 +157,11 @@ class CORE_EXPORT NGInlineItem {
   NGCollapseType EndCollapseType() const {
     return static_cast<NGCollapseType>(end_collapse_type_);
   }
-  void SetEndCollapseType(NGCollapseType type);
+  void SetEndCollapseType(NGCollapseType type) {
+    DCHECK(Type() == NGInlineItem::kText || type == kOpaqueToCollapsing ||
+           (Type() == NGInlineItem::kControl && type == kCollapsible));
+    end_collapse_type_ = type;
+  }
 
   // True if this item was generated (not in DOM).
   // NGInlineItemsBuilder may generate break opportunitites to express the
@@ -137,22 +174,38 @@ class CORE_EXPORT NGInlineItem {
   // Whether the end collapsible space run contains a newline.
   // Valid only when kCollapsible or kCollapsed.
   bool IsEndCollapsibleNewline() const { return is_end_collapsible_newline_; }
-  void SetEndCollapseType(NGCollapseType type, bool is_newline);
+  void SetEndCollapseType(NGCollapseType type, bool is_newline) {
+    SetEndCollapseType(type);
+    is_end_collapsible_newline_ = is_newline;
+  }
 
   static void Split(Vector<NGInlineItem>&, unsigned index, unsigned offset);
 
   // RunSegmenter properties.
   unsigned SegmentData() const { return segment_data_; }
-  void SetSegmentData(unsigned segment_data);
+  void SetSegmentData(unsigned segment_data) {
+    DCHECK_EQ(Type(), NGInlineItem::kText);
+    segment_data_ = segment_data;
+  }
   static void SetSegmentData(const RunSegmenter::RunSegmenterRange& range,
                              Vector<NGInlineItem>* items);
 
-  RunSegmenter::RunSegmenterRange CreateRunSegmenterRange() const;
+  RunSegmenter::RunSegmenterRange CreateRunSegmenterRange() const {
+    return NGInlineItemSegment::UnpackSegmentData(start_offset_, end_offset_,
+                                                  segment_data_);
+  }
 
   // Whether the other item has the same RunSegmenter properties or not.
-  bool EqualsRunSegment(const NGInlineItem&) const;
+  bool EqualsRunSegment(const NGInlineItem& other) const {
+    return segment_data_ == other.segment_data_;
+  }
 
-  void SetBidiLevel(UBiDiLevel);
+  void SetBidiLevel(UBiDiLevel level) {
+    // Invalidate ShapeResult because it depends on the resolved direction.
+    if (DirectionFromLevel(level) != DirectionFromLevel(bidi_level_))
+      shape_result_ = nullptr;
+    bidi_level_ = level;
+  }
   static unsigned SetBidiLevel(Vector<NGInlineItem>&,
                                unsigned index,
                                unsigned end_offset,
