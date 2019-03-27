@@ -1,8 +1,14 @@
 # Cross-compiling Chrome/win
 
+As many Chromium developers are on Linux/Mac, cross-compiling Chromium for
+Windows targets facilitates development for Windows targets on non-Windows
+machines.
+
 It's possible to build most parts of the codebase on a Linux or Mac host while
-targeting Windows.  This document describes how to set that up, and current
-restrictions.
+targeting Windows.  It's also possible to run the locally-built binaries on
+swarming.  This document describes how to set that up, and current restrictions.
+
+## Limitations
 
 What does *not* work:
 
