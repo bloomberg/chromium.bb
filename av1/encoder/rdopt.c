@@ -8325,6 +8325,23 @@ static INLINE int64_t interpolation_filter_rd(
   return 0;
 }
 
+static INLINE int is_pred_filter_search_allowed(
+    const AV1_COMP *const cpi, BLOCK_SIZE bsize, int mi_row, int mi_col,
+    InterpFilters af_horiz, InterpFilters af_vert, InterpFilters lf_horiz,
+    InterpFilters lf_vert) {
+  const AV1_COMMON *cm = &cpi->common;
+  const int bsl = mi_size_wide_log2[bsize];
+  int pred_filter_search =
+      cpi->sf.cb_pred_filter_search
+          ? (((mi_row + mi_col) >> bsl) +
+             get_chessboard_index(cm->current_frame.frame_number)) &
+                0x1
+          : 0;
+  pred_filter_search &= ((af_horiz == lf_horiz) && (af_horiz != SWITCHABLE)) ||
+                        ((af_vert == lf_vert) && (af_vert != SWITCHABLE));
+  return pred_filter_search;
+}
+
 static INLINE void pred_dual_interp_filter_rd(
     MACROBLOCK *const x, const AV1_COMP *const cpi,
     const TileDataEnc *tile_data, BLOCK_SIZE bsize, int mi_row, int mi_col,
@@ -8385,25 +8402,18 @@ static INLINE void find_best_non_dual_interp_filter(
   assert(x->e_mbd.mi[0]->interp_filters == filter_sets[0]);
   assert(filter_set_size == DUAL_FILTER_SET_SIZE);
   if ((skip_hor & skip_ver) != cpi->default_interp_skip_flags) {
-    const AV1_COMMON *cm = &cpi->common;
-    int bsl, pred_filter_search;
+    int pred_filter_search;
     InterpFilters af = SWITCHABLE, lf = SWITCHABLE, filter_idx = 0;
     const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
     const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
-    bsl = mi_size_wide_log2[bsize];
-    pred_filter_search =
-        cpi->sf.cb_pred_filter_search
-            ? (((mi_row + mi_col) >> bsl) +
-               get_chessboard_index(cm->current_frame.frame_number)) &
-                  0x1
-            : 0;
     if (above_mbmi && is_inter_block(above_mbmi)) {
       af = above_mbmi->interp_filters;
     }
     if (left_mbmi && is_inter_block(left_mbmi)) {
       lf = left_mbmi->interp_filters;
     }
-    pred_filter_search &= ((af == lf) && (af != SWITCHABLE));
+    pred_filter_search = is_pred_filter_search_allowed(cpi, bsize, mi_row,
+                                                       mi_col, af, af, lf, lf);
     if (pred_filter_search) {
       filter_idx = SWITCHABLE * (af & 0xf);
       // This assert tells that (filter_x == filter_y) for non-dual filter case
@@ -8781,30 +8791,23 @@ static int64_t interpolation_filter_search(
     const int bw = block_size_wide[bsize];
     const int bh = block_size_high[bsize];
     int skip_pred;
-    int bsl, pred_filter_search;
+    int pred_filter_search = 0;
     InterpFilters af_horiz = SWITCHABLE, af_vert = SWITCHABLE,
                   lf_horiz = SWITCHABLE, lf_vert = SWITCHABLE, filter_idx = 0;
-    const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
-    const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
-    bsl = mi_size_wide_log2[bsize];
-    pred_filter_search =
-        cpi->sf.cb_pred_filter_search
-            ? (((mi_row + mi_col) >> bsl) +
-               get_chessboard_index(cm->current_frame.frame_number)) &
-                  0x1
-            : 0;
-    if (above_mbmi && is_inter_block(above_mbmi)) {
-      af_horiz = av1_extract_interp_filter(above_mbmi->interp_filters, 1);
-      af_vert = av1_extract_interp_filter(above_mbmi->interp_filters, 0);
+    if (!have_newmv_in_inter_mode(mbmi->mode)) {
+      const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
+      const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
+      if (above_mbmi && is_inter_block(above_mbmi)) {
+        af_horiz = av1_extract_interp_filter(above_mbmi->interp_filters, 1);
+        af_vert = av1_extract_interp_filter(above_mbmi->interp_filters, 0);
+      }
+      if (left_mbmi && is_inter_block(left_mbmi)) {
+        lf_horiz = av1_extract_interp_filter(left_mbmi->interp_filters, 1);
+        lf_vert = av1_extract_interp_filter(left_mbmi->interp_filters, 0);
+      }
+      pred_filter_search = is_pred_filter_search_allowed(
+          cpi, bsize, mi_row, mi_col, af_horiz, af_vert, lf_horiz, lf_vert);
     }
-    if (left_mbmi && is_inter_block(left_mbmi)) {
-      lf_horiz = av1_extract_interp_filter(left_mbmi->interp_filters, 1);
-      lf_vert = av1_extract_interp_filter(left_mbmi->interp_filters, 0);
-    }
-    pred_filter_search &= !have_newmv_in_inter_mode(mbmi->mode);
-    pred_filter_search &=
-        ((af_horiz == lf_horiz) && (af_horiz != SWITCHABLE)) ||
-        ((af_vert == lf_vert) && (af_vert != SWITCHABLE));
     if (pred_filter_search) {
       pred_dual_interp_filter_rd(
           x, cpi, tile_data, bsize, mi_row, mi_col, orig_dst, rd,
