@@ -611,10 +611,9 @@ base::Time MockNetworkLayer::Now() {
 int ReadTransaction(HttpTransaction* trans, std::string* result) {
   int rv;
 
-  TestCompletionCallback callback;
-
   std::string content;
   do {
+    TestCompletionCallback callback;
     scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(256);
     rv = trans->Read(buf.get(), 256, callback.callback());
     if (rv == ERR_IO_PENDING) {
