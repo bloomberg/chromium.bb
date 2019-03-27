@@ -384,6 +384,11 @@ void SetHiddenDownloadCallback(DownloadItem* item,
 }
 #endif
 
+// Callback for HistoryObserver; used in DownloadHistoryCheck
+bool HasDataAndName(const history::DownloadRow& row) {
+  return row.received_bytes > 0 && !row.target_path.empty();
+}
+
 }  // namespace
 
 DownloadTestObserverNotInProgress::DownloadTestObserverNotInProgress(
@@ -423,8 +428,15 @@ class HistoryObserver : public DownloadHistory::Observer {
       service->GetDownloadHistory()->RemoveObserver(this);
   }
 
+  void SetFilterCallback(const FilterCallback& callback) {
+    callback_ = callback;
+  }
+
   void OnDownloadStored(download::DownloadItem* item,
                         const history::DownloadRow& info) override {
+    if (!callback_.is_null() && (!callback_.Run(info)))
+        return;
+
     seen_stored_ = true;
     if (waiting_)
       base::RunLoop::QuitCurrentWhenIdleDeprecated();
@@ -448,6 +460,7 @@ class HistoryObserver : public DownloadHistory::Observer {
   Profile* profile_;
   bool waiting_ = false;
   bool seen_stored_ = false;
+  FilterCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryObserver);
 };
@@ -1921,7 +1934,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadHistoryCheck) {
       TestFileErrorInjector::Create(DownloadManagerForBrowser(browser())));
   TestFileErrorInjector::FileErrorInfo error_info = {
       TestFileErrorInjector::FILE_OPERATION_STREAM_COMPLETE, 0,
-      download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT};
+      download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED};
   error_info.stream_offset = 0;
   error_info.stream_bytes_written = 1024;
   injector->InjectError(error_info);
@@ -1936,11 +1949,36 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadHistoryCheck) {
   // Download the url and wait until the object has been stored.
   base::Time start(base::Time::Now());
   HistoryObserver observer(browser()->profile());
+  observer.SetFilterCallback(base::Bind(&HasDataAndName));
   ui_test_utils::NavigateToURL(browser(), redirect_url);
+  observer.WaitForStored();
 
   // Get the details on what was stored into the history.
   std::unique_ptr<std::vector<history::DownloadRow>> downloads_in_database;
-  ASSERT_EQ(0u, downloads_in_database->size());
+  ASSERT_TRUE(DownloadsHistoryDataCollector(
+      browser()->profile()).WaitForDownloadInfo(&downloads_in_database));
+  ASSERT_EQ(1u, downloads_in_database->size());
+
+  // Confirm history storage is what you expect for a partially completed
+  // slow download job.
+  history::DownloadRow& row(downloads_in_database->at(0));
+  EXPECT_EQ(DestinationFile(browser(), file), row.target_path);
+  EXPECT_EQ(FILE_PATH_LITERAL("Unconfirmed"),
+            row.current_path.BaseName().value().substr(0, 11));
+  EXPECT_EQ(FILE_PATH_LITERAL(".crdownload"), row.current_path.Extension());
+  ASSERT_EQ(2u, row.url_chain.size());
+  EXPECT_EQ(redirect_url.spec(), row.url_chain[0].spec());
+  EXPECT_EQ(download_url.spec(), row.url_chain[1].spec());
+  EXPECT_EQ(history::DownloadDangerType::MAYBE_DANGEROUS_CONTENT,
+            row.danger_type);
+  EXPECT_LE(start, row.start_time);
+  EXPECT_EQ(content::SlowDownloadHttpResponse::kFirstDownloadSize,
+            row.received_bytes);
+  EXPECT_EQ(content::SlowDownloadHttpResponse::kFirstDownloadSize +
+                content::SlowDownloadHttpResponse::kSecondDownloadSize,
+            row.total_bytes);
+  EXPECT_EQ(history::DownloadState::IN_PROGRESS, row.state);
+  EXPECT_FALSE(row.opened);
 
   // Finish the download.  We're ok relying on the history to be flushed
   // at this point as our queries will be behind the history updates
@@ -1961,7 +1999,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadHistoryCheck) {
   base::Time end(base::Time::Now());
 
   // Get what was stored in the history.
-  observer.WaitForStored();
   ASSERT_TRUE(DownloadsHistoryDataCollector(
       browser()->profile()).WaitForDownloadInfo(&downloads_in_database));
   ASSERT_EQ(1u, downloads_in_database->size());
@@ -1985,7 +2022,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadHistoryCheck) {
             row1.total_bytes);
   EXPECT_EQ(history::DownloadState::INTERRUPTED, row1.state);
   EXPECT_EQ(history::ToHistoryDownloadInterruptReason(
-                download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT),
+                download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED),
             row1.interrupt_reason);
   EXPECT_FALSE(row1.opened);
 }
@@ -2003,35 +2040,48 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryDangerCheck) {
       embedded_test_server()->GetURL("/downloads/dangerous/dangerous.swf");
 
   // Download the url and wait until the object has been stored.
-  auto completion_observer =
-      std::make_unique<content::DownloadTestObserverTerminal>(
+  std::unique_ptr<content::DownloadTestObserver> download_observer(
+      new content::DownloadTestObserverTerminal(
           DownloadManagerForBrowser(browser()), 1,
-          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_IGNORE);
-  auto dangerous_observer =
-      std::make_unique<content::DownloadTestObserverTerminal>(
-          DownloadManagerForBrowser(browser()), 1,
-          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_QUIT);
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_IGNORE));
   base::Time start(base::Time::Now());
   HistoryObserver observer(browser()->profile());
+  observer.SetFilterCallback(base::Bind(&HasDataAndName));
   ui_test_utils::NavigateToURL(browser(), download_url);
+  observer.WaitForStored();
+
+  // Get the details on what was stored into the history.
+  std::unique_ptr<std::vector<history::DownloadRow>> downloads_in_database;
+  ASSERT_TRUE(DownloadsHistoryDataCollector(
+      browser()->profile()).WaitForDownloadInfo(&downloads_in_database));
+  ASSERT_EQ(1u, downloads_in_database->size());
+
+  // Confirm history storage is what you expect for an unvalidated
+  // dangerous file.
+  base::FilePath file(FILE_PATH_LITERAL("downloads/dangerous/dangerous.swf"));
+  history::DownloadRow& row(downloads_in_database->at(0));
+  EXPECT_EQ(DestinationFile(browser(), file), row.target_path);
+  EXPECT_NE(DownloadTargetDeterminer::GetCrDownloadPath(
+                DestinationFile(browser(), file)),
+            row.current_path);
+  EXPECT_EQ(history::DownloadDangerType::DANGEROUS_FILE, row.danger_type);
+  EXPECT_LE(start, row.start_time);
+  EXPECT_EQ(history::DownloadState::IN_PROGRESS, row.state);
+  EXPECT_FALSE(row.opened);
 
   // Validate the download and wait for it to finish.
   std::vector<DownloadItem*> downloads;
   DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
-  dangerous_observer->WaitForFinished();
   downloads[0]->ValidateDangerousDownload();
-  completion_observer->WaitForFinished();
-  EXPECT_EQ(1u, completion_observer->NumDangerousDownloadsSeen());
+  download_observer->WaitForFinished();
 
   // Get history details and confirm it's what you expect.
-  observer.WaitForStored();
-  std::unique_ptr<std::vector<history::DownloadRow>> downloads_in_database;
+  downloads_in_database->clear();
   ASSERT_TRUE(DownloadsHistoryDataCollector(
       browser()->profile()).WaitForDownloadInfo(&downloads_in_database));
   ASSERT_EQ(1u, downloads_in_database->size());
   history::DownloadRow& row1(downloads_in_database->at(0));
-  base::FilePath file(FILE_PATH_LITERAL("downloads/dangerous/dangerous.swf"));
   EXPECT_EQ(DestinationFile(browser(), file), row1.target_path);
   EXPECT_EQ(DestinationFile(browser(), file), row1.current_path);
   EXPECT_EQ(history::DownloadDangerType::USER_VALIDATED, row1.danger_type);
