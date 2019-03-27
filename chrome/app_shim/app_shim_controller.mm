@@ -134,10 +134,16 @@ void AppShimController::InitBootstrapPipe() {
   if (base::PathExists(mojo_channel_mac_signal_file)) {
     base::FeatureList::InitializeInstance(mojo::features::kMojoChannelMac.name,
                                           std::string());
-    std::string name_fragment =
-        base::StringPrintf("%s.%s.%s", base::mac::BaseBundleID(),
-                           app_mode::kAppShimBootstrapNameFragment,
-                           base::MD5String(user_data_dir.value()).c_str());
+
+    NSString* browser_bundle_id =
+        base::mac::ObjCCast<NSString>([[NSBundle mainBundle]
+            objectForInfoDictionaryKey:app_mode::kBrowserBundleIDKey]);
+    CHECK(browser_bundle_id);
+
+    std::string name_fragment = base::StringPrintf(
+        "%s.%s.%s", base::SysNSStringToUTF8(browser_bundle_id).c_str(),
+        app_mode::kAppShimBootstrapNameFragment,
+        base::MD5String(user_data_dir.value()).c_str());
 
     // Normally NamedPlatformChannel is used for point-to-point peer
     // communication. For apps shims, the same server is used to establish
