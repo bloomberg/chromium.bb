@@ -438,6 +438,13 @@ class CONTENT_EXPORT RenderWidget
                                     bool up,
                                     bool down) override;
   void FallbackCursorModeSetCursorVisibility(bool visible) override;
+  void SetPageScaleFactorAndLimits(float page_scale_factor,
+                                   float minimum,
+                                   float maximum) override;
+  void StartPageScaleAnimation(const gfx::Vector2d& destination,
+                               bool use_anchor,
+                               float new_page_scale,
+                               double duration_sec) override;
 
   // Override point to obtain that the current input method state and caret
   // position.
@@ -548,6 +555,9 @@ class CONTENT_EXPORT RenderWidget
   uint32_t capture_sequence_number() const {
     return last_capture_sequence_number_;
   }
+
+  // Returns true if a page scale animation is active.
+  bool HasPendingPageScaleAnimation() const;
 
   // MainThreadEventQueueClient overrides.
   bool HandleInputEvent(const blink::WebCoalescedInputEvent& input_event,

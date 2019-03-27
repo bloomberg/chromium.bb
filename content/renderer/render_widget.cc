@@ -1005,6 +1005,10 @@ viz::FrameSinkId RenderWidget::GetFrameSinkIdAtPoint(const gfx::PointF& point,
   return input_handler_->GetFrameSinkIdAtPoint(point, local_point);
 }
 
+bool RenderWidget::HasPendingPageScaleAnimation() const {
+  return layer_tree_view_->layer_tree_host()->HasPendingPageScaleAnimation();
+}
+
 bool RenderWidget::HandleInputEvent(
     const blink::WebCoalescedInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
@@ -3309,6 +3313,22 @@ void RenderWidget::FallbackCursorModeLockCursor(bool left,
 
 void RenderWidget::FallbackCursorModeSetCursorVisibility(bool visible) {
   widget_input_handler_manager_->FallbackCursorModeSetCursorVisibility(visible);
+}
+
+void RenderWidget::SetPageScaleFactorAndLimits(float page_scale_factor,
+                                               float minimum,
+                                               float maximum) {
+  layer_tree_view_->layer_tree_host()->SetPageScaleFactorAndLimits(
+      page_scale_factor, minimum, maximum);
+}
+
+void RenderWidget::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
+                                           bool use_anchor,
+                                           float new_page_scale,
+                                           double duration_sec) {
+  base::TimeDelta duration = base::TimeDelta::FromSecondsD(duration_sec);
+  layer_tree_view_->layer_tree_host()->StartPageScaleAnimation(
+      target_offset, use_anchor, new_page_scale, duration);
 }
 
 void RenderWidget::RequestUnbufferedInputEvents() {

@@ -47,10 +47,6 @@ namespace cc {
 class PaintImage;
 }
 
-namespace gfx {
-class Vector2d;
-}  // namespace gfx
-
 namespace blink {
 
 class WebLayerTreeView {
@@ -74,25 +70,6 @@ class WebLayerTreeView {
   virtual ~WebLayerTreeView() = default;
 
   // View properties ---------------------------------------------------
-
-  // Sets the current page scale factor and minimum / maximum limits. Both
-  // limits are initially 1 (no page scale allowed).
-  virtual void SetPageScaleFactorAndLimits(float page_scale_factor,
-                                           float minimum,
-                                           float maximum) {}
-
-  // Starts an animation of the page scale to a target scale factor and scroll
-  // offset.
-  // If useAnchor is true, destination is a point on the screen that will remain
-  // fixed for the duration of the animation.
-  // If useAnchor is false, destination is the final top-left scroll position.
-  virtual void StartPageScaleAnimation(const gfx::Vector2d& destination,
-                                       bool use_anchor,
-                                       float new_page_scale,
-                                       double duration_sec) {}
-
-  // Returns true if the page scale animation had started.
-  virtual bool HasPendingPageScaleAnimation() const { return false; }
 
   virtual void HeuristicsForGpuRasterizationUpdated(bool) {}
 

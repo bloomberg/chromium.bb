@@ -2098,6 +2098,8 @@ void RenderViewImpl::PageScaleFactorChanged(float page_scale_factor,
 
   Send(new ViewHostMsg_PageScaleFactorChanged(GetRoutingID(),
                                               page_scale_factor));
+  // TODO(wjmaclean): Merge this into RenderWidget's
+  // SetPageScaleFactorAndLimits().
   GetWidget()->PageScaleFactorChanged(page_scale_factor,
                                       is_pinch_gesture_active);
 }

@@ -213,21 +213,32 @@ void WebFrameWidgetImpl::Resize(const WebSize& new_size) {
   // updates are throttled in the root's LocalFrameView, but for OOPIFs that
   // doesn't happen. Need to investigate if OOPIFs can be throttled during
   // load.
-  if (LocalRootImpl()->GetFrame()->GetDocument()->IsLoadCompleted())
-    SendResizeEventAndRepaint();
-}
+  if (LocalRootImpl()->GetFrame()->GetDocument()->IsLoadCompleted()) {
+    // FIXME: This is wrong. The LocalFrameView is responsible sending a
+    // resizeEvent as part of layout. Layout is also responsible for sending
+    // invalidations to the embedder. This method and all callers may be wrong.
+    // -- eseidel.
+    if (LocalRootImpl()->GetFrameView()) {
+      // Enqueues the resize event.
+      LocalRootImpl()->GetFrame()->GetDocument()->EnqueueResizeEvent();
+    }
 
-void WebFrameWidgetImpl::SendResizeEventAndRepaint() {
-  // FIXME: This is wrong. The LocalFrameView is responsible sending a
-  // resizeEvent as part of layout. Layout is also responsible for sending
-  // invalidations to the embedder. This method and all callers may be wrong. --
-  // eseidel.
-  if (LocalRootImpl()->GetFrameView()) {
-    // Enqueues the resize event.
-    LocalRootImpl()->GetFrame()->GetDocument()->EnqueueResizeEvent();
+    // TODO(danakj): |layer_tree_view_| is used as a proxy to tell if we're
+    // using compositing, and we should just set that explicitly... or read it
+    // from the WebView.
+    if (layer_tree_view_) {
+      // Pass the limits even though this is for subframes, as the limits will
+      // be needed in setting the raster scale. We set this value when setting
+      // up the compositor, but need to update it when the limits of the
+      // WebViewImpl have changed.
+      // TODO(wjmaclean): This is updating when the size of the *child frame*
+      // have changed which are completely independent of the WebView, and in an
+      // OOPIF where the main frame is remote, are these limits even useful?
+      Client()->SetPageScaleFactorAndLimits(1.f,
+                                            View()->MinimumPageScaleFactor(),
+                                            View()->MaximumPageScaleFactor());
+    }
   }
-
-  UpdateLayerTreeViewport();
 }
 
 void WebFrameWidgetImpl::ResizeVisualViewport(const WebSize& new_size) {
@@ -349,16 +360,6 @@ void WebFrameWidgetImpl::PaintContent(cc::PaintCanvas* canvas,
                                       const WebRect& rect) {
   // Out-of-process iframes require compositing.
   NOTREACHED();
-}
-
-void WebFrameWidgetImpl::UpdateLayerTreeViewport() {
-  if (!GetPage() || !layer_tree_view_)
-    return;
-
-  // Pass the limits even though this is for subframes, as the limits will be
-  // needed in setting the raster scale.
-  layer_tree_view_->SetPageScaleFactorAndLimits(
-      1, View()->MinimumPageScaleFactor(), View()->MaximumPageScaleFactor());
 }
 
 void WebFrameWidgetImpl::CompositeAndReadbackAsync(
@@ -995,7 +996,6 @@ void WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(bool active) {
   TRACE_EVENT0("blink",
                "WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(true)");
   Client()->SetRootLayer(root_layer_);
-  UpdateLayerTreeViewport();
   is_accelerated_compositing_active_ = true;
 }
 
@@ -1020,6 +1020,12 @@ void WebFrameWidgetImpl::SetRootGraphicsLayer(GraphicsLayer* layer) {
   // WebFrameWidgetImpl is used for child frames, which always have a
   // transparent background color.
   Client()->SetBackgroundColor(SK_ColorTRANSPARENT);
+  // Pass the limits even though this is for subframes, as the limits will
+  // be needed in setting the raster scale.
+  // TODO(wjmaclean): In an OOPIF where the main frame is remote, are these
+  // limits even useful?
+  Client()->SetPageScaleFactorAndLimits(1.f, View()->MinimumPageScaleFactor(),
+                                        View()->MaximumPageScaleFactor());
 
   // TODO(danakj): SetIsAcceleratedCompositingActive() also sets the root layer
   // if it's not null..
@@ -1038,6 +1044,10 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   // WebFrameWidgetImpl is used for child frames, which always have a
   // transparent background color.
   Client()->SetBackgroundColor(SK_ColorTRANSPARENT);
+  // Pass the limits even though this is for subframes, as the limits will
+  // be needed in setting the raster scale.
+  Client()->SetPageScaleFactorAndLimits(1.f, View()->MinimumPageScaleFactor(),
+                                        View()->MaximumPageScaleFactor());
 
   // TODO(danakj): SetIsAcceleratedCompositingActive() also sets the root layer
   // if it's not null..

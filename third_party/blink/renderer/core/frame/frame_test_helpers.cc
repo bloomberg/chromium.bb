@@ -638,6 +638,13 @@ void TestWebWidgetClient::SetBackgroundColor(SkColor color) {
   layer_tree_host()->set_background_color(color);
 }
 
+void TestWebWidgetClient::SetPageScaleFactorAndLimits(float page_scale_factor,
+                                                      float minimum,
+                                                      float maximum) {
+  layer_tree_host()->SetPageScaleFactorAndLimits(page_scale_factor, minimum,
+                                                 maximum);
+}
+
 void TestWebWidgetClient::RegisterViewportLayers(
     const cc::ViewportLayers& layers) {
   layer_tree_host()->RegisterViewportLayers(layers);

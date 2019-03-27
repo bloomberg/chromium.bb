@@ -138,9 +138,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
 
-  // Exposed for the purpose of overriding device metrics.
-  void SendResizeEventAndRepaint();
-
   void UpdateMainFrameLayoutSize();
 
   // Event related methods:

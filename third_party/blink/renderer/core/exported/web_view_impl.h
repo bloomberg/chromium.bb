@@ -507,7 +507,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetIsAcceleratedCompositingActive(bool);
   void DoComposite();
   void ReallocateRenderer();
-  void UpdateLayerTreeViewPageScale();
   void UpdateDeviceEmulationTransform();
 
   // Helper function: Widens the width of |source| by the specified margins
