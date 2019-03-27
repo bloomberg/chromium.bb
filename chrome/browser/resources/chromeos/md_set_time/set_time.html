@@ -121,19 +121,21 @@
             </div>
           </div>
 
-          <div id="timezone" class="row" hidden$="[[!isTimezoneVisible_]]">
-            <div id="label">$i18n{timezoneLabel}</div>
-            <select id="timezoneSelect"
-                class="md-select"
-                aria-label="$i18n{timezoneLabel}"
-                on-change="onTimezoneChange_">
-              <template is="dom-repeat" items="[[timezoneItems_]]" as="tz">
-                <option value="[[tz.id]]" selected="[[tz.selected]]">
-                  [[tz.name]]
-                </option>
-              </template>
-            </select>
-          </div>
+          <template is="dom-if" if="[[isTimezoneVisible_]]">
+            <div id="timezone" class="row">
+              <div id="label">$i18n{timezoneLabel}</div>
+              <select id="timezoneSelect"
+                  class="md-select"
+                  aria-label="$i18n{timezoneLabel}"
+                  on-change="onTimezoneChange_">
+                <template is="dom-repeat" items="[[timezoneItems_]]" as="tz">
+                  <option value="[[tz.id]]" selected="[[tz.selected]]">
+                    [[tz.name]]
+                  </option>
+                </template>
+              </select>
+            </div>
+          </template>
         </div>
 
         <div slot="button-container">
