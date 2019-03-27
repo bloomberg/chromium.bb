@@ -1950,7 +1950,7 @@ TEST_F(BrowserAccessibilityWinTest,
   for (LONG offset = 0; offset < value1_length; ++offset) {
     hr = ax_combo_box->GetCOM()->get_attributes(
         offset, &start_offset, &end_offset, text_attributes.Receive());
-    EXPECT_EQ(S_FALSE, hr);
+    EXPECT_TRUE(base::string16(text_attributes).empty());
     EXPECT_EQ(0, start_offset);
     EXPECT_EQ(value1_length, end_offset);
     text_attributes.Reset();
@@ -1973,7 +1973,7 @@ TEST_F(BrowserAccessibilityWinTest,
        ++offset) {
     hr = ax_combo_box->GetCOM()->get_attributes(
         offset, &start_offset, &end_offset, text_attributes.Receive());
-    EXPECT_EQ(S_FALSE, hr);
+    EXPECT_TRUE(base::string16(text_attributes).empty());
     EXPECT_EQ(value1_length + 4, start_offset);
     EXPECT_EQ(combo_box_value_length, end_offset);
     text_attributes.Reset();
@@ -2049,7 +2049,7 @@ TEST_F(BrowserAccessibilityWinTest, TestNewMisspellingsInSimpleTextFields) {
   for (LONG offset = 0; offset < combo_box_value_length; ++offset) {
     hr = ax_combo_box->GetCOM()->get_attributes(
         offset, &start_offset, &end_offset, text_attributes.Receive());
-    EXPECT_EQ(S_FALSE, hr);
+    EXPECT_TRUE(base::string16(text_attributes).empty());
     EXPECT_EQ(0, start_offset);
     EXPECT_EQ(combo_box_value_length, end_offset);
     text_attributes.Reset();
@@ -2074,7 +2074,7 @@ TEST_F(BrowserAccessibilityWinTest, TestNewMisspellingsInSimpleTextFields) {
   for (LONG offset = 0; offset < value1_length; ++offset) {
     hr = ax_combo_box->GetCOM()->get_attributes(
         offset, &start_offset, &end_offset, text_attributes.Receive());
-    EXPECT_EQ(S_FALSE, hr);
+    EXPECT_TRUE(base::string16(text_attributes).empty());
     EXPECT_EQ(0, start_offset);
     EXPECT_EQ(value1_length, end_offset);
     text_attributes.Reset();
@@ -2097,7 +2097,7 @@ TEST_F(BrowserAccessibilityWinTest, TestNewMisspellingsInSimpleTextFields) {
        ++offset) {
     hr = ax_combo_box->GetCOM()->get_attributes(
         offset, &start_offset, &end_offset, text_attributes.Receive());
-    EXPECT_EQ(S_FALSE, hr);
+    EXPECT_TRUE(base::string16(text_attributes).empty());
     EXPECT_EQ(value1_length + 4, start_offset);
     EXPECT_EQ(combo_box_value_length, end_offset);
     text_attributes.Reset();
