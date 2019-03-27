@@ -331,6 +331,16 @@
       'Chromium Android ARM 32-bit Goma RBE Prod (clobber)': 'android_release_bot_minimal_symbols',
       'Chromium Android ARM 32-bit Goma RBE Prod (dbg)': 'android_debug_static_bot',
       'Chromium Android ARM 32-bit Goma RBE Prod (dbg) (clobber)': 'android_debug_static_bot',
+
+      # For RBE load testing.
+      'Chromium Linux Goma RBE LoadTest': 'release_bot',
+      'Chromium Linux Goma RBE LoadTest (debug)': 'release_bot',
+      'Chromium Linux Goma RBE LoadTest (clobber)': 'release_bot',
+      'Chromium Linux Goma RBE LoadTest (clobber) (debug)': 'release_bot',
+      'Chromium Linux Goma RBE LoadTest (ATS)': 'release_bot',
+      'Chromium Linux Goma RBE LoadTest (ATS) (debug)': 'release_bot',
+      'Chromium Linux Goma RBE LoadTest (ATS) (clobber)': 'release_bot',
+      'Chromium Linux Goma RBE LoadTest (ATS) (clobber) (debug)': 'release_bot',
     },
 
     'chromium.gpu': {
