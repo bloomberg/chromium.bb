@@ -192,7 +192,6 @@ bool ServiceImageTransferCacheEntry::Deserialize(
   has_mips_ = needs_mips;
   size_t pixel_size;
   reader.ReadSize(&pixel_size);
-  size_ = data.size();
   sk_sp<SkColorSpace> pixmap_color_space;
   reader.Read(&pixmap_color_space);
   sk_sp<SkColorSpace> target_color_space;
@@ -213,6 +212,10 @@ bool ServiceImageTransferCacheEntry::Deserialize(
     return false;
 
   DCHECK(SkIsAlign4(reinterpret_cast<uintptr_t>(pixel_data)));
+
+  // Match GrTexture::onGpuMemorySize so that memory traces agree.
+  auto gr_mips = has_mips_ ? GrMipMapped::kYes : GrMipMapped::kNo;
+  size_ = GrContext::ComputeTextureSize(color_type, width, height, gr_mips);
 
   // Const-cast away the "volatile" on |pixel_data|. We specifically understand
   // that a malicious caller may change our pixels under us, and are OK with
