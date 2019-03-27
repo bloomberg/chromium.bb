@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Sat, 20 Jul 2013 11:42:21 -0700
-Subject: [PATCH 01/10] Virtual table supporting recovery of corrupted
+Subject: [PATCH 01/12] Virtual table supporting recovery of corrupted
  databases.
 
 "recover" implements a virtual table which uses the SQLite pager layer
@@ -15,15 +15,15 @@ listed.  This patch and the top of recover.c should be considered
 authoritative.  The history is mostly under
 third_party/sqlite/patched/src/{recover,recover-alt}.c .
 ---
- third_party/sqlite/patched/main.mk              |    5 +
- third_party/sqlite/patched/src/main.c           |    8 +
- third_party/sqlite/patched/src/recover.c        | 2270 +++++++++++++++++++
- third_party/sqlite/patched/src/recover.h        |   23 +
- third_party/sqlite/patched/src/recover_varint.c |  201 ++
- third_party/sqlite/patched/test/recover.test    |  164 ++
- third_party/sqlite/patched/test/recover0.test   |  532 +++++
- third_party/sqlite/patched/test/recover1.test   |  429 ++++
- third_party/sqlite/patched/test/recover2.test   |  157 ++
+ third_party/sqlite/patched/main.mk            |    5 +
+ third_party/sqlite/patched/src/main.c         |    8 +
+ third_party/sqlite/patched/src/recover.c      | 2270 +++++++++++++++++
+ third_party/sqlite/patched/src/recover.h      |   23 +
+ .../sqlite/patched/src/recover_varint.c       |  201 ++
+ third_party/sqlite/patched/test/recover.test  |  164 ++
+ third_party/sqlite/patched/test/recover0.test |  532 ++++
+ third_party/sqlite/patched/test/recover1.test |  429 ++++
+ third_party/sqlite/patched/test/recover2.test |  157 ++
  9 files changed, 3789 insertions(+)
  create mode 100644 third_party/sqlite/patched/src/recover.c
  create mode 100644 third_party/sqlite/patched/src/recover.h
@@ -3901,5 +3901,5 @@ index 000000000000..8aa4e049a010
 +
 +finish_test
 --
-2.21.0.225.g810b269d1ac-goog
+2.21.0.392.gf8f6787159e-goog
 
