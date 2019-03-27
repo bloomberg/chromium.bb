@@ -12,7 +12,6 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -383,26 +382,22 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     protected void saveLastScrollPosition() {
         int scrollPosition = mNewTabPageView.getScrollPosition();
         if (scrollPosition == RecyclerView.NO_POSITION) return;
-
-        saveScrollPositionToNavigationEntry(
-                NAVIGATION_ENTRY_SCROLL_POSITION_KEY, mTab, scrollPosition);
+        saveStringToNavigationEntry(
+                mTab, NAVIGATION_ENTRY_SCROLL_POSITION_KEY, Integer.toString(scrollPosition));
     }
 
     /**
-     * Saves the scroll position (just a number) to the navigation entry.
-     * It is up to the caller to interpret the value when it's extracted later.
-     * @param scrollPositionKey The key under which the scroll position will be stored in the
-     *                          NavigationEntryExtraData
-     *
-     * @param tab A Tab that is used to access the NavigationController
-     * @param scrollPosition The scroll position (an opaque integer) to save.
+     * Saves a single string under a given key to the navigation entry. It is up to the caller to
+     * extract and interpret later.
+     * @param tab A tab that is used to access the NavigationController and the NavigationEntry
+     *            extras.
+     * @param key The key to store the data under, will need to be used to access later.
+     * @param value The payload to persist.
      *
      * TODO(https://crbug.com/941581): Refactor this to be reusable across NativePage components.
-     **/
-    public static void saveScrollPositionToNavigationEntry(
-            String scrollPositionKey, Tab tab, int scrollPosition) {
+     */
+    public static void saveStringToNavigationEntry(Tab tab, String key, String value) {
         if (tab.getWebContents() == null) return;
-
         NavigationController controller = tab.getWebContents().getNavigationController();
         int index = controller.getLastCommittedEntryIndex();
         NavigationEntry entry = controller.getEntryAtIndex(index);
@@ -414,7 +409,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         // committed entry is for the NTP. The extra data must only be set in the latter case.
         if (!isNTPUrl(entry.getUrl())) return;
 
-        controller.setEntryExtraData(index, scrollPositionKey, Integer.toString(scrollPosition));
+        controller.setEntryExtraData(index, key, value);
     }
 
     /**
@@ -607,19 +602,48 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
      * @return The adapter scroll position.
      */
     public static int getScrollPositionFromNavigationEntry(String scrollPositionKey, Tab tab) {
-        if (tab.getWebContents() == null) return RecyclerView.NO_POSITION;
+        return getIntFromNavigationEntry(scrollPositionKey, tab, RecyclerView.NO_POSITION);
+    }
 
-        NavigationController controller = tab.getWebContents().getNavigationController();
-        int index = controller.getLastCommittedEntryIndex();
-        String scrollPositionData = controller.getEntryExtraData(index, scrollPositionKey);
-        if (TextUtils.isEmpty(scrollPositionData)) return RecyclerView.NO_POSITION;
+    /**
+     * Returns an arbitrary int value stored in the last committed navigation entry. If some step
+     * fails then the default is returned instead.
+     * @param key The string previously used to tag this piece of data.
+     * @param tab A tab that is used to access the NavigationController and the NavigationEntry
+     *            extras.
+     * @param defaultValue The value to return if lookup or parsing is unsuccessful.
+     * @return The value for the given key.
+     *
+     * TODO(https://crbug.com/941581): Refactor this to be reusable across NativePage components.
+     */
+    private static int getIntFromNavigationEntry(String key, Tab tab, int defaultValue) {
+        if (tab.getWebContents() == null) return defaultValue;
+
+        String stringValue = getStringFromNavigationEntry(tab, key);
 
         try {
-            return Integer.parseInt(scrollPositionData);
+            return Integer.parseInt(stringValue);
         } catch (NumberFormatException e) {
-            Log.w(TAG, "Bad data found for scroll position: %s", scrollPositionData, e);
+            Log.w(TAG, "Bad data found for %s : %s", key, stringValue, e);
             return RecyclerView.NO_POSITION;
         }
+    }
+
+    /**
+     * Returns an arbitrary string value stored in the last committed navigation entry. If the look
+     * up fails, an empty string is returned.
+     * @param tab A tab that is used to access the NavigationController and the NavigationEntry
+     *            extras.
+     * @param key The string previously used to tag this piece of data.
+     * @return The value previously stored with the given key.
+     *
+     * TODO(https://crbug.com/941581): Refactor this to be reusable across NativePage components.
+     */
+    public static String getStringFromNavigationEntry(Tab tab, String key) {
+        if (tab.getWebContents() == null) return "";
+        NavigationController controller = tab.getWebContents().getNavigationController();
+        int index = controller.getLastCommittedEntryIndex();
+        return controller.getEntryExtraData(index, key);
     }
 
     /**

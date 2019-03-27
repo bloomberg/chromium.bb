@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.touchless;
 
-import android.support.v7.widget.RecyclerView;
-
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
@@ -22,19 +20,21 @@ class TouchlessNewTabPageMediator extends EmptyTabObserver {
     private final Tab mTab;
     private long mLastShownTimeNs;
 
-    private int mScrollPosition = RecyclerView.NO_POSITION;
+    private ScrollPositionInfo mScrollPosition;
 
-    public TouchlessNewTabPageMediator(PropertyModel model, Tab tab) {
-        mModel = model;
+    public TouchlessNewTabPageMediator(Tab tab) {
         mTab = tab;
         mTab.addObserver(this);
 
-        mModel.set(TouchlessNewTabPageProperties.INITIAL_SCROLL_POSITION,
-                NewTabPage.getScrollPositionFromNavigationEntry(
-                        NAVIGATION_ENTRY_SCROLL_POSITION_KEY, mTab));
+        ScrollPositionInfo initialScrollPosition = ScrollPositionInfo.deserialize(
+                NewTabPage.getStringFromNavigationEntry(tab, NAVIGATION_ENTRY_SCROLL_POSITION_KEY));
 
-        mModel.set(TouchlessNewTabPageProperties.SCROLL_POSITION_CALLBACK,
-                (scrollPosition) -> mScrollPosition = scrollPosition);
+        mModel = new PropertyModel.Builder(TouchlessNewTabPageProperties.ALL_KEYS)
+                         .with(TouchlessNewTabPageProperties.INITIAL_SCROLL_POSITION,
+                                 initialScrollPosition)
+                         .with(TouchlessNewTabPageProperties.SCROLL_POSITION_CALLBACK,
+                                 (newScrollPosition) -> mScrollPosition = newScrollPosition)
+                         .build();
     }
 
     @Override
@@ -51,10 +51,13 @@ class TouchlessNewTabPageMediator extends EmptyTabObserver {
 
     @Override
     public void onPageLoadStarted(Tab tab, String url) {
-        if (mScrollPosition == RecyclerView.NO_POSITION) return;
+        if (mScrollPosition == null) return;
+        NewTabPage.saveStringToNavigationEntry(
+                tab, NAVIGATION_ENTRY_SCROLL_POSITION_KEY, mScrollPosition.serialize());
+    }
 
-        NewTabPage.saveScrollPositionToNavigationEntry(
-                NAVIGATION_ENTRY_SCROLL_POSITION_KEY, tab, mScrollPosition);
+    public PropertyModel getModel() {
+        return mModel;
     }
 
     void destroy() {
