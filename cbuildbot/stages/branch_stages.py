@@ -59,7 +59,7 @@ class BranchUtilStage(generic_stages.BuilderStage):
     """Forgive and do not mark the stage as failed."""
     logging.info('If a stage fails in a builder and no one knows about it,'
                  ' does it stop a release?')
-    self._HandleExceptionAsWarning(exc_info)
+    return self._HandleExceptionAsWarning(exc_info)
 
   def _RunPush(self, checkout, src_ref, dest_ref, force=False):
     """Perform a git push for a checkout.
