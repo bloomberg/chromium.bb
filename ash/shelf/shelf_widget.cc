@@ -213,15 +213,6 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
   const ShelfBackgroundType background_type =
       shelf_widget_->GetBackgroundType();
 
-  // If the app list is showing in clamshell mode, we should hide the shelf.
-  // otherwise, we should show it again. This creates a 'blending' effect
-  // between the two
-  if (background_type == SHELF_BACKGROUND_APP_LIST) {
-    opaque_background_.SetVisible(false);
-    UpdateBackgroundBlur();
-    return;
-  }
-
   if (!opaque_background_.visible())
     opaque_background_.SetVisible(true);
 
