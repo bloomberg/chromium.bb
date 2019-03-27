@@ -1,11 +1,11 @@
 # Using an Android Emulator
-Always use x86 emulators. Although arm emulators exist, they are so slow that
-they are not worth your time.
+Always use x86 emulators (or x86\_64 for testing 64-bit APKs). Although arm
+emulators exist, they are so slow that they are not worth your time.
 
 ## Building for Emulation
 You need to target the correct architecture via GN args:
 ```gn
-target_cpu = "x86"
+target_cpu = "x86"  # or "x64" if you have an x86_64 emulator
 ```
 
 ## Creating an Emulator Image
