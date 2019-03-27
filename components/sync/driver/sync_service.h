@@ -27,7 +27,6 @@ class JsController;
 class ProtocolEventObserver;
 class SyncCycleSnapshot;
 struct SyncTokenStatus;
-class SyncTypePreferenceProvider;
 class SyncUserSettings;
 class TypeDebugInfoObserver;
 struct SyncStatus;
@@ -370,21 +369,6 @@ class SyncService : public KeyedService {
 
   // Returns true if |observer| has already been added as an observer.
   virtual bool HasObserver(const SyncServiceObserver* observer) const = 0;
-
-  //////////////////////////////////////////////////////////////////////////////
-  // PREFERENCE PROVIDERS (which provide forced data types)
-  //////////////////////////////////////////////////////////////////////////////
-
-  // Adds a sync type preference provider. Each provider may only be added once.
-  virtual void AddPreferenceProvider(SyncTypePreferenceProvider* provider) = 0;
-  // Removes a sync type preference provider. May only be called for providers
-  // that have been added. Providers must not remove themselves while being
-  // called back.
-  virtual void RemovePreferenceProvider(
-      SyncTypePreferenceProvider* provider) = 0;
-  // Checks whether a given sync type preference provider has been added.
-  virtual bool HasPreferenceProvider(
-      SyncTypePreferenceProvider* provider) const = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // ACCESS TO INNER OBJECTS

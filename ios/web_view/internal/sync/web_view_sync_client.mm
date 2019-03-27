@@ -236,4 +236,8 @@ WebViewSyncClient::GetSyncApiComponentFactory() {
   return component_factory_.get();
 }
 
+syncer::SyncTypePreferenceProvider* WebViewSyncClient::GetPreferenceProvider() {
+  return nullptr;
+}
+
 }  // namespace ios_web_view

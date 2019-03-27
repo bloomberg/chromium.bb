@@ -55,7 +55,6 @@ namespace syncer {
 class BackendMigrator;
 class NetworkResources;
 class SyncAuthManager;
-class SyncTypePreferenceProvider;
 class TypeDebugInfoObserver;
 struct CommitCounters;
 struct StatusCounters;
@@ -139,12 +138,6 @@ class ProfileSyncService : public syncer::SyncService,
   void AddObserver(syncer::SyncServiceObserver* observer) override;
   void RemoveObserver(syncer::SyncServiceObserver* observer) override;
   bool HasObserver(const syncer::SyncServiceObserver* observer) const override;
-  void AddPreferenceProvider(
-      syncer::SyncTypePreferenceProvider* provider) override;
-  void RemovePreferenceProvider(
-      syncer::SyncTypePreferenceProvider* provider) override;
-  bool HasPreferenceProvider(
-      syncer::SyncTypePreferenceProvider* provider) const override;
   syncer::UserShare* GetUserShare() const override;
   syncer::SyncTokenStatus GetSyncTokenStatus() const override;
   bool QueryDetailedSyncStatusForDebugging(
@@ -470,8 +463,6 @@ class ProfileSyncService : public syncer::SyncService,
       protocol_event_observers_;
   base::ObserverList<syncer::TypeDebugInfoObserver>::Unchecked
       type_debug_info_observers_;
-
-  std::set<syncer::SyncTypePreferenceProvider*> preference_providers_;
 
   syncer::SyncJsController sync_js_controller_;
 

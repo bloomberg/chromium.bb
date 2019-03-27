@@ -59,6 +59,7 @@ class IOSChromeSyncClient : public browser_sync::BrowserSyncClient {
   scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
       syncer::ModelSafeGroup group) override;
   syncer::SyncApiComponentFactory* GetSyncApiComponentFactory() override;
+  syncer::SyncTypePreferenceProvider* GetPreferenceProvider() override;
 
  private:
   ios::ChromeBrowserState* const browser_state_;

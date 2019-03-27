@@ -36,10 +36,6 @@ class FakeSyncService : public SyncService {
   void AddObserver(SyncServiceObserver* observer) override;
   void RemoveObserver(SyncServiceObserver* observer) override;
   bool HasObserver(const SyncServiceObserver* observer) const override;
-  void AddPreferenceProvider(SyncTypePreferenceProvider* provider) override;
-  void RemovePreferenceProvider(SyncTypePreferenceProvider* provider) override;
-  bool HasPreferenceProvider(
-      SyncTypePreferenceProvider* provider) const override;
   void OnDataTypeRequestsSyncStartup(ModelType type) override;
   void StopAndClear() override;
   ModelTypeSet GetRegisteredDataTypes() const override;

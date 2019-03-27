@@ -1281,12 +1281,13 @@ syncer::ModelTypeSet ProfileSyncService::GetRegisteredDataTypes() const {
 
 syncer::ModelTypeSet ProfileSyncService::GetForcedDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  syncer::ModelTypeSet forced_types;
-  for (const syncer::SyncTypePreferenceProvider* provider :
-       preference_providers_) {
-    forced_types.PutAll(provider->GetForcedDataTypes());
+  const syncer::SyncTypePreferenceProvider* provider =
+      sync_client_->GetPreferenceProvider();
+  if (provider) {
+    return Intersection(provider->GetForcedDataTypes(),
+                        GetRegisteredDataTypes());
   }
-  return Intersection(forced_types, GetRegisteredDataTypes());
+  return syncer::ModelTypeSet();
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
@@ -1315,11 +1316,10 @@ void ProfileSyncService::SyncAllowedByPlatformChanged(bool allowed) {
 
 bool ProfileSyncService::IsEncryptEverythingAllowed() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (const syncer::SyncTypePreferenceProvider* provider :
-       preference_providers_) {
-    if (!provider->IsEncryptEverythingAllowed()) {
-      return false;
-    }
+  const syncer::SyncTypePreferenceProvider* provider =
+      sync_client_->GetPreferenceProvider();
+  if (provider) {
+    return provider->IsEncryptEverythingAllowed();
   }
   return true;
 }
@@ -1652,28 +1652,6 @@ void ProfileSyncService::RemoveTypeDebugInfoObserver(
       engine_initialized_) {
     engine_->DisableDirectoryTypeDebugInfoForwarding();
   }
-}
-
-void ProfileSyncService::AddPreferenceProvider(
-    syncer::SyncTypePreferenceProvider* provider) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!HasPreferenceProvider(provider))
-      << "Providers may only be added once!";
-  preference_providers_.insert(provider);
-}
-
-void ProfileSyncService::RemovePreferenceProvider(
-    syncer::SyncTypePreferenceProvider* provider) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(HasPreferenceProvider(provider))
-      << "Only providers that have been added before can be removed!";
-  preference_providers_.erase(provider);
-}
-
-bool ProfileSyncService::HasPreferenceProvider(
-    syncer::SyncTypePreferenceProvider* provider) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return preference_providers_.count(provider) > 0;
 }
 
 namespace {

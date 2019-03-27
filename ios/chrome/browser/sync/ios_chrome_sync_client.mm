@@ -347,3 +347,8 @@ syncer::SyncApiComponentFactory*
 IOSChromeSyncClient::GetSyncApiComponentFactory() {
   return component_factory_.get();
 }
+
+syncer::SyncTypePreferenceProvider*
+IOSChromeSyncClient::GetPreferenceProvider() {
+  return nullptr;
+}

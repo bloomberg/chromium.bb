@@ -79,11 +79,6 @@ class TestSyncService : public SyncService {
   void RemoveObserver(SyncServiceObserver* observer) override;
   bool HasObserver(const SyncServiceObserver* observer) const override;
 
-  void AddPreferenceProvider(SyncTypePreferenceProvider* provider) override;
-  void RemovePreferenceProvider(SyncTypePreferenceProvider* provider) override;
-  bool HasPreferenceProvider(
-      SyncTypePreferenceProvider* provider) const override;
-
   UserShare* GetUserShare() const override;
 
   SyncTokenStatus GetSyncTokenStatus() const override;

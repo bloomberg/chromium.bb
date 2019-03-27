@@ -569,14 +569,9 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return SupervisedUserSettingsServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();
     case syncer::SUPERVISED_USER_WHITELISTS: {
-      // Unlike other types here, ProfileSyncServiceFactory does not declare a
-      // DependsOn the SupervisedUserServiceFactory (in order to avoid circular
-      // dependency), which means we cannot assume it is still alive.
       SupervisedUserService* supervised_user_service =
-          SupervisedUserServiceFactory::GetForProfileIfExists(profile_);
-      if (supervised_user_service)
-        return supervised_user_service->GetWhitelistService()->AsWeakPtr();
-      return base::WeakPtr<syncer::SyncableService>();
+          SupervisedUserServiceFactory::GetForProfile(profile_);
+      return supervised_user_service->GetWhitelistService()->AsWeakPtr();
     }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case syncer::PASSWORDS: {
@@ -687,6 +682,10 @@ ChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
 syncer::SyncApiComponentFactory*
 ChromeSyncClient::GetSyncApiComponentFactory() {
   return component_factory_.get();
+}
+
+syncer::SyncTypePreferenceProvider* ChromeSyncClient::GetPreferenceProvider() {
+  return SupervisedUserServiceFactory::GetForProfile(profile_);
 }
 
 }  // namespace browser_sync

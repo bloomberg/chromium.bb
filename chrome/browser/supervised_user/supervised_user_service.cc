@@ -33,7 +33,6 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_site_list.h"
 #include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
@@ -42,8 +41,6 @@
 #include "components/policy/core/browser/url_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_user_settings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/buildflags/buildflags.h"
@@ -167,12 +164,6 @@ void SupervisedUserService::Init() {
       prefs::kSupervisedUserId,
       base::Bind(&SupervisedUserService::OnSupervisedUserIdChanged,
           base::Unretained(this)));
-
-  syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  // Can be null in tests.
-  if (sync_service)
-    sync_service->AddPreferenceProvider(this);
 
   std::string client_id = component_updater::SupervisedUserWhitelistInstaller::
       ClientIdForProfilePath(profile_->GetPath());
@@ -719,12 +710,6 @@ void SupervisedUserService::Shutdown() {
     base::RecordAction(UserMetricsAction("ManagedUsers_QuitBrowser"));
   }
   SetActive(false);
-
-  syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  // Can be null in tests.
-  if (sync_service)
-    sync_service->RemovePreferenceProvider(this);
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
