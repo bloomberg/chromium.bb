@@ -26,6 +26,11 @@ const base::Feature kCrostiniBackup{"CrostiniBackup",
 const base::Feature kCrostiniUsbSupport{"CrostiniUsbSupport",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables Crostini usb mounting for unsupported devices.
+// To enable, CrostiniUsbSupport must also be enabled.
+const base::Feature kCrostiniUsbAllowUnsupported{
+    "CrostiniUsbAllowUnsupported", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the CryptAuth v2 Enrollment flow.
 const base::Feature kCryptAuthV2Enrollment{"CryptAuthV2Enrollment",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

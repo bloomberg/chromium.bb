@@ -466,6 +466,11 @@
     "expiry_milestone": 77
   },
   {
+    "name": "crostini-usb-allow-unsupported",
+    "owners": [ "nverne", "benwells" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "crostini-usb-support",
     "owners": [ "jopra", "nverne", "benwells" ],
     "expiry_milestone": 76

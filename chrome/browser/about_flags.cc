@@ -2534,6 +2534,10 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          chromeos::switches::kShowAndroidFilesInFilesApp,
          chromeos::switches::kHideAndroidFilesInFilesApp)},
+    {"crostini-usb-allow-unsupported",
+     flag_descriptions::kCrostiniUsbAllowUnsupportedName,
+     flag_descriptions::kCrostiniUsbAllowUnsupportedDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUsbAllowUnsupported)},
     {"crostini-usb-support", flag_descriptions::kCrostiniUsbSupportName,
      flag_descriptions::kCrostiniUsbSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUsbSupport)},
