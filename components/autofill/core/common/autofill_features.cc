@@ -55,12 +55,6 @@ const base::Feature kAutofillCreateDataForTest{
 const base::Feature kAutofillCreditCardAssist{
     "AutofillCreditCardAssist", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAutofillDeleteDisusedAddresses{
-    "AutofillDeleteDisusedAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kAutofillDeleteDisusedCreditCards{
-    "AutofillDeleteDisusedCreditCards", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether we download server credit cards to the ephemeral
 // account-based storage when sync the transport is enabled.
 const base::Feature kAutofillEnableAccountWalletStorage{
@@ -196,14 +190,8 @@ const base::Feature kAutofillShowTypePredictions{
 const base::Feature kAutofillSkipComparingInferredLabels{
     "AutofillSkipComparingInferredLabels", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAutofillSuppressDisusedAddresses{
-    "AutofillSuppressDisusedAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kAutofillProfileClientValidation{
     "AutofillProfileClientValidation", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAutofillSuppressDisusedCreditCards{
-    "AutofillSuppressDisusedCreditCards", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether Autofill should search prefixes of all words/tokens when
 // filtering profiles, or only on prefixes of the whole string.

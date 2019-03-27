@@ -1138,16 +1138,13 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   // Get the profiles to suggest, which are already sorted.
   std::vector<AutofillProfile*> sorted_profiles = GetProfilesToSuggest();
 
-  // When suggesting with no prefix to match, consider suppressing disused
-  // address suggestions as well as those based on invalid profile data.
+  // When suggesting with no prefix to match, suppress disused address
+  // suggestions as well as those based on invalid profile data.
   if (field_contents_canon.empty()) {
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillSuppressDisusedAddresses)) {
-      const base::Time min_last_used =
-          AutofillClock::Now() - kDisusedDataModelTimeDelta;
-      suggestion_selection::RemoveProfilesNotUsedSinceTimestamp(
-          min_last_used, &sorted_profiles);
-    }
+    const base::Time min_last_used =
+        AutofillClock::Now() - kDisusedDataModelTimeDelta;
+    suggestion_selection::RemoveProfilesNotUsedSinceTimestamp(min_last_used,
+                                                              &sorted_profiles);
   }
 
   std::vector<AutofillProfile*> matched_profiles;
@@ -1246,11 +1243,8 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
     return std::vector<Suggestion>();
   std::vector<CreditCard*> cards =
       GetCreditCardsToSuggest(include_server_cards);
-  // If enabled, suppress disused address profiles when triggered from an empty
-  // field.
-  if (field_contents.empty() &&
-      base::FeatureList::IsEnabled(
-          features::kAutofillSuppressDisusedCreditCards)) {
+  // Suppress disused address profiles when triggered from an empty field.
+  if (field_contents.empty()) {
     const base::Time min_last_used =
         AutofillClock::Now() - kDisusedDataModelTimeDelta;
     RemoveExpiredCreditCardsNotUsedSinceTimestamp(AutofillClock::Now(),
@@ -2483,11 +2477,6 @@ std::string PersonalDataManager::MergeServerAddressesIntoProfiles(
 }
 
 bool PersonalDataManager::DeleteDisusedCreditCards() {
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillDeleteDisusedCreditCards)) {
-    return false;
-  }
-
   // Only delete local cards, as server cards are managed by Payments.
   auto cards = GetLocalCreditCards();
 
@@ -2519,12 +2508,6 @@ bool PersonalDataManager::DeleteDisusedCreditCards() {
 }
 
 bool PersonalDataManager::DeleteDisusedAddresses() {
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillDeleteDisusedAddresses)) {
-    DVLOG(1) << "Deletion is disabled";
-    return false;
-  }
-
   const std::vector<AutofillProfile*>& profiles = GetProfiles();
 
   // Early exit when there are no profiles.

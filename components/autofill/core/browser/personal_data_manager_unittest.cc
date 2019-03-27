@@ -2229,10 +2229,6 @@ TEST_F(PersonalDataManagerTest,
 
   ResetPersonalDataManager(USER_MODE_NORMAL);
 
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillSuppressDisusedAddresses);
-
   // Query with empty string only returns profile2.
   {
     std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
@@ -2270,23 +2266,6 @@ TEST_F(PersonalDataManagerTest,
         base::ASCIIToUTF16("456 Zoo St., Second Line, Third line, unit 5"),
         suggestions[0].value);
   }
-
-  // When suppression is disabled, returns all suggestions.
-  {
-    base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitAndDisableFeature(
-        features::kAutofillSuppressDisusedAddresses);
-    std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-        AutofillType(ADDRESS_HOME_STREET_ADDRESS), base::string16(), false,
-        std::vector<ServerFieldType>());
-    ASSERT_EQ(2U, suggestions.size());
-    EXPECT_EQ(
-        base::ASCIIToUTF16("456 Zoo St., Second Line, Third line, unit 5"),
-        suggestions[0].value);
-    EXPECT_EQ(
-        base::ASCIIToUTF16("123 Zoo St., Second Line, Third line, unit 5"),
-        suggestions[1].value);
-  }
 }
 
 // Tests that suggestions based on invalid data are handled correctly.
@@ -2294,7 +2273,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Validity) {
   // Set up 2 different profiles: one valid and one invalid.
   AutofillProfile valid_profile(test::GetFullValidProfileForCanada());
   valid_profile.set_use_date(AutofillClock::Now() -
-                             base::TimeDelta::FromDays(200));
+                             base::TimeDelta::FromDays(1));
   valid_profile.set_use_count(1);
   AddProfileToPersonalDataManager(valid_profile);
 
@@ -2317,7 +2296,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Validity) {
     scoped_features.InitWithFeatures(
         /*enabled_features=*/{features::kAutofillProfileServerValidation,
                               features::kAutofillProfileClientValidation},
-        /*disabled_features=*/{features::kAutofillSuppressDisusedAddresses});
+        /*disabled_features=*/{});
     std::vector<Suggestion> email_suggestions =
         personal_data_->GetProfileSuggestions(AutofillType(EMAIL_ADDRESS),
                                               base::string16(), false,
@@ -2366,7 +2345,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Validity) {
     scoped_features.InitWithFeatures(
         /*enabled_features=*/{features::kAutofillProfileClientValidation,
                               features::kAutofillProfileServerValidation},
-        /*disabled_features=*/{features::kAutofillSuppressDisusedAddresses});
+        /*disabled_features=*/{});
 
     std::vector<Suggestion> email_suggestions =
         personal_data_->GetProfileSuggestions(AutofillType(EMAIL_ADDRESS),
@@ -2396,8 +2375,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Validity) {
     base::test::ScopedFeatureList scoped_features;
     scoped_features.InitWithFeatures(
         /*enabled_features=*/{features::kAutofillProfileClientValidation},
-        /*disabled_features=*/{features::kAutofillSuppressDisusedAddresses,
-                               features::kAutofillProfileServerValidation});
+        /*disabled_features=*/{features::kAutofillProfileServerValidation});
     std::vector<Suggestion> email_suggestions =
         personal_data_->GetProfileSuggestions(AutofillType(EMAIL_ADDRESS),
                                               base::string16(), false,
@@ -2427,8 +2405,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Validity) {
     base::test::ScopedFeatureList scoped_features;
     scoped_features.InitWithFeatures(
         /*enabled_features=*/{features::kAutofillProfileServerValidation},
-        /*disabled_features=*/{features::kAutofillProfileClientValidation,
-                               features::kAutofillSuppressDisusedAddresses});
+        /*disabled_features=*/{features::kAutofillProfileClientValidation});
     LOG(ERROR) << __FUNCTION__;
     std::vector<Suggestion> email_suggestions =
         personal_data_->GetProfileSuggestions(AutofillType(EMAIL_ADDRESS),
@@ -3080,27 +3057,6 @@ TEST_F(PersonalDataManagerTest,
   personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
   ASSERT_EQ(4U, personal_data_->GetCreditCards().size());
-
-  // Verify no suppression if feature is disabled.
-  {
-    base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitAndDisableFeature(
-        features::kAutofillSuppressDisusedCreditCards);
-
-    std::vector<Suggestion> suggestions =
-        personal_data_->GetCreditCardSuggestions(
-            AutofillType(CREDIT_CARD_NAME_FULL), base::string16(),
-            /*include_server_cards=*/true);
-    EXPECT_EQ(4U, suggestions.size());
-    EXPECT_EQ(base::ASCIIToUTF16("Bonnie Parker"), suggestions[0].value);
-    EXPECT_EQ(base::ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
-    EXPECT_EQ(base::ASCIIToUTF16("Jane Doe"), suggestions[2].value);
-    EXPECT_EQ(base::ASCIIToUTF16("John Dillinger"), suggestions[3].value);
-  }
-
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillSuppressDisusedCreditCards);
 
   // Query with empty string only returns card0 and card1. Note expired
   // masked card2 is not suggested on empty fields.
@@ -5079,31 +5035,10 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_OncePerVersion) {
   EXPECT_EQ(2U, personal_data_->GetProfiles().size());
 }
 
-// Tests that DeleteDisusedAddresses is not run if the feature is disabled.
-TEST_F(PersonalDataManagerTest, DeleteDisusedAddresses_DoNothingWhenDisabled) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndDisableFeature(
-      features::kAutofillDeleteDisusedAddresses);
-
-  CreateDeletableDisusedProfile();
-
-  // DeleteDisusedCreditCards should return false to indicate it was not run.
-  EXPECT_FALSE(personal_data_->DeleteDisusedAddresses());
-
-  personal_data_->Refresh();
-
-  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
-}
-
 // Tests that DeleteDisusedAddresses only deletes the addresses that are
 // supposed to be deleted.
 TEST_F(PersonalDataManagerTest,
        DeleteDisusedAddresses_DeleteDesiredAddressesOnly) {
-  // Enable the feature.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillDeleteDisusedAddresses);
-
   auto now = AutofillClock::Now();
 
   // Create unverified/disused/not-used-by-valid-credit-card
@@ -5182,31 +5117,9 @@ TEST_F(PersonalDataManagerTest,
             personal_data_->GetProfiles()[2]->GetRawInfo(NAME_LAST));
 }
 
-// Tests that DeleteDisusedCreditCards is not run if the feature is disabled.
-TEST_F(PersonalDataManagerTest,
-       DeleteDisusedCreditCards_DoNothingWhenDisabled) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndDisableFeature(
-      features::kAutofillDeleteDisusedCreditCards);
-
-  CreateDeletableExpiredAndDisusedCreditCard();
-
-  // DeleteDisusedCreditCards should return false to indicate it was not run.
-  EXPECT_FALSE(personal_data_->DeleteDisusedCreditCards());
-
-  personal_data_->Refresh();
-
-  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
-}
-
 // Tests that DeleteDisusedCreditCards deletes desired credit cards only.
 TEST_F(PersonalDataManagerTest,
        DeleteDisusedCreditCards_OnlyDeleteExpiredDisusedLocalCards) {
-  // Enable the feature.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillDeleteDisusedCreditCards);
-
   const char kHistogramName[] = "Autofill.CreditCardsDeletedForDisuse";
   auto now = AutofillClock::Now();
 
