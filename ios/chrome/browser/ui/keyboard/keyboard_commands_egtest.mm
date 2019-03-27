@@ -134,21 +134,14 @@ using chrome_test_util::SettingsDoneButton;
         performAction:grey_tap()];
   } else {
     [ChromeEarlGreyUI openToolsMenu];
-    if (IsUIRefreshPhase1Enabled()) {
-      [[[EarlGrey
-          selectElementWithMatcher:grey_allOf(grey_accessibilityID(
-                                                  kToolsMenuAddToBookmarks),
-                                              grey_sufficientlyVisible(), nil)]
-             usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
-          onElementWithMatcher:grey_accessibilityID(
-                                   kPopupMenuToolsMenuTableViewId)]
-          performAction:grey_tap()];
-
-    } else {
-      [[EarlGrey
-          selectElementWithMatcher:grey_accessibilityLabel(@"Add Bookmark")]
-          performAction:grey_tap()];
-    }
+    [[[EarlGrey
+        selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                                kToolsMenuAddToBookmarks),
+                                            grey_sufficientlyVisible(), nil)]
+           usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+        onElementWithMatcher:grey_accessibilityID(
+                                 kPopupMenuToolsMenuTableViewId)]
+        performAction:grey_tap()];
   }
 
   // Tap on the HUD.
@@ -188,14 +181,9 @@ using chrome_test_util::SettingsDoneButton;
 
   [self verifyNoKeyboardCommandsAreRegistered];
 
-  // Clean up by dismissing the recent tabs UI before ending the test. The
-  // a11y ID for the dismiss button depends on the UIRefresh experiment.
-  id<GREYMatcher> exitMatcher = nil;
-  if (IsUIRefreshPhase1Enabled()) {
-    exitMatcher = grey_accessibilityID(kTableViewNavigationDismissButtonId);
-  } else {
-    exitMatcher = grey_accessibilityID(@"Exit");
-  }
+  // Clean up by dismissing the recent tabs UI before ending the test.
+  id<GREYMatcher> exitMatcher =
+      grey_accessibilityID(kTableViewNavigationDismissButtonId);
   [[EarlGrey selectElementWithMatcher:exitMatcher] performAction:grey_tap()];
 }
 
