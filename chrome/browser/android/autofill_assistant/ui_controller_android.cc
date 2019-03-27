@@ -407,7 +407,7 @@ void UiControllerAndroid::UpdateActions() {
           env, java_object_, chips,
           base::android::ConvertUTF8ToJavaString(
               env, l10n_util::GetStringUTF8(IDS_CLOSE)));
-    } else {
+    } else if (ui_delegate_->GetState() != AutofillAssistantState::INACTIVE) {
       Java_AutofillAssistantUiController_addCancelButton(
           env, java_object_, chips,
           base::android::ConvertUTF8ToJavaString(
