@@ -213,7 +213,7 @@ NetworkChangeNotifier* NetworkChangeNotifier::Create() {
   CHECK(false);
   return NULL;
 #elif defined(OS_CHROMEOS)
-  return new NetworkChangeNotifierPosix(CONNECTION_UNKNOWN, SUBTYPE_UNKNOWN);
+  return new NetworkChangeNotifierPosix(CONNECTION_NONE, SUBTYPE_NONE);
 #elif defined(OS_LINUX)
   return new NetworkChangeNotifierLinux(std::unordered_set<std::string>());
 #elif defined(OS_MACOSX)
