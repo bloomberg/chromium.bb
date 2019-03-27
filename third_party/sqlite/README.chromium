@@ -185,7 +185,7 @@ git cl upload  # Have the new code in a separate (impossible to review) CL.
 
 #### Create a branch for the old SQLite release's upstream version.
 git new-branch sqlite-old-base
-git rm -rf patached
+git rm -rf patched
 cp -r sqlite-src-${OLD}/ patched
 # Clean up trailing whitespace and CRLF so any patches look clean.
 find patched/ -type f -not -iname "*.db" -not -iname "*.eps" \
