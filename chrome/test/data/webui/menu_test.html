@@ -202,6 +202,27 @@ function testFocusSelectedItems() {
   // Focus remains in the first item.
   assertEquals(0, menu.selectedIndex);
 }
+
+/**
+ * Tests that cr.ui.MenuItem defaults to tabindex=-1.
+ */
+function testMenuItemTabIndex() {
+  // Defaults to -1.
+  const item1 = menu.addMenuItem({label: 'item 1'});
+  assertEquals('-1', item1.getAttribute('tabindex'));
+
+  // Keeps previously set tabindex.
+  const itemDiv = document.createElement('div');
+  itemDiv.setAttribute('tabindex', '0');
+  cr.ui.decorate(itemDiv, cr.ui.MenuItem);
+  assertEquals('0', itemDiv.getAttribute('tabindex'));
+
+  // Separator doesn't get tabindex.
+  menu.addSeparator();
+  const separator = menu.menuItems[menu.menuItems.length - 1];
+  assertTrue(separator.isSeparator());
+  assertFalse(separator.hasAttribute('tabindex'));
+}
 </script>
 </body>
 </html>
