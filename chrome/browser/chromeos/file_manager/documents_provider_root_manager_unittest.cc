@@ -26,12 +26,15 @@ namespace {
 class TestObserver : public DocumentsProviderRootManager::Observer {
  public:
   // DocumentsProviderRootManager::Observer overrides:
-  void OnDocumentsProviderRootAdded(const std::string& authority,
-                                    const std::string& root_id,
-                                    const std::string& document_id,
-                                    const std::string& title,
-                                    const std::string& summary,
-                                    const GURL& icon_url) override {
+  void OnDocumentsProviderRootAdded(
+      const std::string& authority,
+      const std::string& root_id,
+      const std::string& document_id,
+      const std::string& title,
+      const std::string& summary,
+      const GURL& icon_url,
+      bool read_only,
+      const std::vector<std::string>& mime_types) override {
     added_authorities_.push_back(authority);
   }
   void OnDocumentsProviderRootRemoved(const std::string& authority,

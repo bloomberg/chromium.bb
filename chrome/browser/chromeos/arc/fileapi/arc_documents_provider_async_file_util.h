@@ -13,9 +13,15 @@
 
 namespace arc {
 
-// The implementation of storage::AsyncFileUtil for media view.
+// The implementation of storage::AsyncFileUtil for documents providers.
 //
 // All of the methods must be called on the IO thread.
+// Assuming that the documents-provider file system is used only by Files app,
+// this implementation does not satisfy the definition of storage::AsyncFileUtil
+// interface completely. We omit some details which Files app doesn't care.
+// This is for simpicity, but results in layering violation. We should
+// complement the implementations to prepare for general usage in the future.
+// crbug.com/946329.
 class ArcDocumentsProviderAsyncFileUtil : public storage::AsyncFileUtil {
  public:
   ArcDocumentsProviderAsyncFileUtil();

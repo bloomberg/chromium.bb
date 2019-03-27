@@ -119,7 +119,8 @@ class Volume : public base::SupportsWeakPtr<Volume> {
       const std::string& document_id,
       const std::string& title,
       const std::string& summary,
-      const GURL& icon_url);
+      const GURL& icon_url,
+      bool read_only);
   static std::unique_ptr<Volume> CreateForTesting(
       const base::FilePath& path,
       VolumeType volume_type,
@@ -408,12 +409,15 @@ class VolumeManager : public KeyedService,
       const storage_monitor::StorageInfo& info) override;
 
   // file_manager::DocumentsProviderRootManager::Observer overrides.
-  void OnDocumentsProviderRootAdded(const std::string& authority,
-                                    const std::string& root_id,
-                                    const std::string& document_id,
-                                    const std::string& title,
-                                    const std::string& summary,
-                                    const GURL& icon_url) override;
+  void OnDocumentsProviderRootAdded(
+      const std::string& authority,
+      const std::string& root_id,
+      const std::string& document_id,
+      const std::string& title,
+      const std::string& summary,
+      const GURL& icon_url,
+      bool read_only,
+      const std::vector<std::string>& mime_types) override;
   void OnDocumentsProviderRootRemoved(const std::string& authority,
                                       const std::string& root_id,
                                       const std::string& document_id) override;

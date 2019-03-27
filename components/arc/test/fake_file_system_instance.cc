@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <sstream>
 #include <utility>
 
 #include "base/bind.h"
@@ -66,6 +67,14 @@ mojom::RootPtr MakeRoot(const FakeFileSystemInstance::Root& in_root) {
   root->document_id = in_root.document_id;
   root->title = in_root.title;
   return root;
+}
+
+// Generates unique document ID on each calls.
+std::string GenerateDocumentId() {
+  static int count = 0;
+  std::ostringstream ss;
+  ss << "doc_" << count++;
+  return ss.str();
 }
 
 }  // namespace
@@ -172,6 +181,46 @@ void FakeFileSystemInstance::TriggerWatchers(
   for (int64_t watcher_id : iter->second) {
     host_->OnDocumentChanged(watcher_id, type);
   }
+}
+
+bool FakeFileSystemInstance::DocumentExists(const std::string& authority,
+                                            const std::string& document_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DocumentKey key(authority, document_id);
+  return documents_.find(key) != documents_.end();
+}
+
+bool FakeFileSystemInstance::DocumentExists(const std::string& authority,
+                                            const std::string& root_document_id,
+                                            const base::FilePath& path) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  std::vector<std::string> path_components;
+  path.GetComponents(&path_components);
+  std::string document_id =
+      FindChildDocumentId(authority, root_document_id, path_components);
+  return DocumentExists(authority, document_id);
+}
+
+FakeFileSystemInstance::Document FakeFileSystemInstance::GetDocument(
+    const std::string& authority,
+    const std::string& document_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DocumentKey key(authority, document_id);
+  auto iter = documents_.find(key);
+  DCHECK(iter != documents_.end());
+  return iter->second;
+}
+
+FakeFileSystemInstance::Document FakeFileSystemInstance::GetDocument(
+    const std::string& authority,
+    const std::string& root_document_id,
+    const base::FilePath& path) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  std::vector<std::string> path_components;
+  path.GetComponents(&path_components);
+  std::string document_id =
+      FindChildDocumentId(authority, root_document_id, path_components);
+  return GetDocument(authority, document_id);
 }
 
 void FakeFileSystemInstance::AddWatcher(const std::string& authority,
@@ -310,6 +359,95 @@ void FakeFileSystemInstance::GetRoots(GetRootsCallback callback) {
                                 base::make_optional(std::move(roots))));
 }
 
+void FakeFileSystemInstance::DeleteDocument(const std::string& authority,
+                                            const std::string& document_id,
+                                            DeleteDocumentCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DocumentKey key(authority, document_id);
+  if (!documents_.erase(key)) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
+  }
+  size_t erased = child_documents_.erase(key);
+  DCHECK_NE(0u, erased);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void FakeFileSystemInstance::RenameDocument(const std::string& authority,
+                                            const std::string& document_id,
+                                            const std::string& display_name,
+                                            RenameDocumentCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DocumentKey key(authority, document_id);
+  auto iter = documents_.find(key);
+  DCHECK(iter != documents_.end());
+  iter->second.display_name = display_name;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), MakeDocument(iter->second)));
+}
+
+void FakeFileSystemInstance::CreateDocument(
+    const std::string& authority,
+    const std::string& parent_document_id,
+    const std::string& mime_type,
+    const std::string& display_name,
+    CreateDocumentCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  std::string document_id = GenerateDocumentId();
+  Document document(authority, document_id, parent_document_id, display_name,
+                    mime_type, 0, 0);
+  AddDocument(document);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), MakeDocument(document)));
+}
+
+void FakeFileSystemInstance::CopyDocument(
+    const std::string& authority,
+    const std::string& source_document_id,
+    const std::string& target_parent_document_id,
+    CopyDocumentCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DocumentKey source_key(authority, source_document_id);
+  auto iter = documents_.find(source_key);
+  DCHECK(iter != documents_.end());
+  Document target_document(iter->second);
+  target_document.document_id = target_document.display_name;
+  target_document.parent_document_id = target_parent_document_id;
+  AddDocument(target_document);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), MakeDocument(target_document)));
+}
+
+void FakeFileSystemInstance::MoveDocument(
+    const std::string& authority,
+    const std::string& source_document_id,
+    const std::string& source_parent_document_id,
+    const std::string& target_parent_document_id,
+    MoveDocumentCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DocumentKey source_key(authority, source_document_id);
+  DocumentKey source_parent_key(authority, source_parent_document_id);
+  DocumentKey target_parent_key(authority, target_parent_document_id);
+  for (auto iter = child_documents_[source_parent_key].begin();
+       iter != child_documents_[source_parent_key].end(); iter++) {
+    if (*iter == source_key) {
+      child_documents_[source_parent_key].erase(iter);
+      break;
+    }
+  }
+  child_documents_[target_parent_key].push_back(source_key);
+  auto iter = documents_.find(source_key);
+  DCHECK(iter != documents_.end());
+  iter->second.parent_document_id = target_parent_document_id;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), MakeDocument(iter->second)));
+}
+
 void FakeFileSystemInstance::InitDeprecated(mojom::FileSystemHostPtr host) {
   Init(std::move(host), base::DoNothing());
 }
@@ -348,6 +486,33 @@ void FakeFileSystemInstance::OpenUrlsWithPermission(
     mojom::OpenUrlsRequestPtr request,
     OpenUrlsWithPermissionCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+}
+
+std::string FakeFileSystemInstance::FindChildDocumentId(
+    const std::string& authority,
+    const std::string& parent_document_id,
+    const std::vector<std::string>& components) {
+  if (components.empty())
+    return parent_document_id;
+
+  auto children_iter =
+      child_documents_.find(DocumentKey(authority, parent_document_id));
+  if (children_iter == child_documents_.end())
+    return std::string();
+
+  for (DocumentKey key : children_iter->second) {
+    auto iter = documents_.find(key);
+    if (iter == documents_.end())
+      continue;
+
+    if (iter->second.display_name == components[0]) {
+      std::vector<std::string> next_components(components.begin() + 1,
+                                               components.end());
+      return FindChildDocumentId(authority, iter->second.document_id,
+                                 next_components);
+    }
+  }
+  return std::string();
 }
 
 }  // namespace arc
