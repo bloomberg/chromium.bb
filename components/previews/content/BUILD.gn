@@ -8,7 +8,6 @@ static_library("content") {
     "hint_cache.h",
     "hint_cache_leveldb_store.cc",
     "hint_cache_leveldb_store.h",
-    "hint_cache_store.h",
     "hints_fetcher.cc",
     "hints_fetcher.h",
     "previews_decider_impl.cc",

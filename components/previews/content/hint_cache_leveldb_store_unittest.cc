@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/leveldb_proto/testing/fake_db.h"
+#include "components/previews/content/proto/hint_cache.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -47,7 +48,7 @@ enum class MetadataSchemaState {
 class HintCacheLevelDBStoreTest : public testing::Test {
  public:
   using StoreEntry = previews::proto::StoreEntry;
-  using StoreEntryMap = std::map<HintCacheStore::EntryKey, StoreEntry>;
+  using StoreEntryMap = std::map<HintCacheLevelDBStore::EntryKey, StoreEntry>;
 
   HintCacheLevelDBStoreTest() : db_(nullptr) {}
 
@@ -95,7 +96,7 @@ class HintCacheLevelDBStoreTest : public testing::Test {
   }
 
   // Moves the specified number of component hints into the update data.
-  void SeedUpdateData(HintCacheStore::ComponentUpdateData* update_data,
+  void SeedUpdateData(HintCacheLevelDBStore::ComponentUpdateData* update_data,
                       size_t component_hint_count) {
     for (size_t i = 0; i < component_hint_count; ++i) {
       std::string host_suffix = GetHostSuffix(i);
@@ -152,7 +153,8 @@ class HintCacheLevelDBStoreTest : public testing::Test {
   }
 
   void UpdateComponentData(
-      std::unique_ptr<HintCacheStore::ComponentUpdateData> component_data,
+      std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData>
+          component_data,
       bool update_success = true,
       bool load_hint_entry_keys_success = true) {
     EXPECT_CALL(*this, OnUpdateComponentData());
@@ -191,7 +193,7 @@ class HintCacheLevelDBStoreTest : public testing::Test {
             base::Version(version));
     for (int i = 0; i < count; ++i) {
       std::string host_suffix = GetHostSuffix(i);
-      HintCacheStore::EntryKey hint_entry_key =
+      HintCacheLevelDBStore::EntryKey hint_entry_key =
           component_hint_entry_key_prefix + host_suffix;
       const auto& hint_entry = db_store_.find(hint_entry_key);
       if (hint_entry == db_store_.end()) {
@@ -209,7 +211,7 @@ class HintCacheLevelDBStoreTest : public testing::Test {
   }
 
   // Returns true if the data is present for the given key.
-  bool IsKeyPresent(const HintCacheStore::EntryKey& entry_key) const {
+  bool IsKeyPresent(const HintCacheLevelDBStore::EntryKey& entry_key) const {
     return db_store_.find(entry_key) != db_store_.end();
   }
 
@@ -218,10 +220,10 @@ class HintCacheLevelDBStoreTest : public testing::Test {
     return hint_store_->GetHintEntryKeyCount();
   }
 
-  HintCacheStore* hint_store() { return hint_store_.get(); }
+  HintCacheLevelDBStore* hint_store() { return hint_store_.get(); }
   FakeDB<previews::proto::StoreEntry>* db() { return db_; }
 
-  const HintCacheStore::EntryKey& last_loaded_hint_entry_key() const {
+  const HintCacheLevelDBStore::EntryKey& last_loaded_hint_entry_key() const {
     return last_loaded_hint_entry_key_;
   }
 
@@ -230,7 +232,7 @@ class HintCacheLevelDBStoreTest : public testing::Test {
   }
 
   void OnHintLoaded(
-      const HintCacheStore::EntryKey& hint_entry_key,
+      const HintCacheLevelDBStore::EntryKey& hint_entry_key,
       std::unique_ptr<optimization_guide::proto::Hint> loaded_hint) {
     last_loaded_hint_entry_key_ = hint_entry_key;
     last_loaded_hint_ = std::move(loaded_hint);
@@ -244,7 +246,7 @@ class HintCacheLevelDBStoreTest : public testing::Test {
   StoreEntryMap db_store_;
   std::unique_ptr<HintCacheLevelDBStore> hint_store_;
 
-  HintCacheStore::EntryKey last_loaded_hint_entry_key_;
+  HintCacheLevelDBStore::EntryKey last_loaded_hint_entry_key_;
   std::unique_ptr<optimization_guide::proto::Hint> last_loaded_hint_;
 
   DISALLOW_COPY_AND_ASSIGN(HintCacheLevelDBStoreTest);
@@ -711,7 +713,7 @@ TEST_F(HintCacheLevelDBStoreTest, UpdateComponentDataUpdateEntriesFails) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
+  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -730,7 +732,7 @@ TEST_F(HintCacheLevelDBStoreTest, UpdateComponentDataGetKeysFails) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
+  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -753,7 +755,7 @@ TEST_F(HintCacheLevelDBStoreTest, UpdateComponentData) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
+  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -777,7 +779,7 @@ TEST_F(HintCacheLevelDBStoreTest,
   CreateDatabase();
   InitializeStore(schema_state, true /*=purge_existing_data*/);
 
-  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
+  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -801,7 +803,7 @@ TEST_F(HintCacheLevelDBStoreTest,
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
+  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -824,10 +826,10 @@ TEST_F(HintCacheLevelDBStoreTest, UpdateComponentDataWithUpdatedVersionFails) {
   InitializeStore(schema_state);
 
   // Create two updates for the same component version with different counts.
-  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data_1 =
+  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data_1 =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
-  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data_2 =
+  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data_2 =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data_1);
@@ -857,7 +859,7 @@ TEST_F(HintCacheLevelDBStoreTest, LoadHintOnUnavailableStore) {
   SeedInitialData(MetadataSchemaState::kValid, initial_hint_count);
   CreateDatabase();
 
-  const HintCacheStore::EntryKey kInvalidEntryKey = "invalid";
+  const HintCacheLevelDBStore::EntryKey kInvalidEntryKey = "invalid";
   hint_store()->LoadHint(
       kInvalidEntryKey, base::BindOnce(&HintCacheLevelDBStoreTest::OnHintLoaded,
                                        base::Unretained(this)));
@@ -875,7 +877,7 @@ TEST_F(HintCacheLevelDBStoreTest, LoadHintFailure) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  const HintCacheStore::EntryKey kInvalidEntryKey = "invalid";
+  const HintCacheLevelDBStore::EntryKey kInvalidEntryKey = "invalid";
   hint_store()->LoadHint(
       kInvalidEntryKey, base::BindOnce(&HintCacheLevelDBStoreTest::OnHintLoaded,
                                        base::Unretained(this)));
@@ -900,7 +902,7 @@ TEST_F(HintCacheLevelDBStoreTest, LoadHintSuccessInitialData) {
   // loaded from the store.
   for (size_t i = 0; i < hint_count; ++i) {
     std::string host_suffix = GetHostSuffix(i);
-    HintCacheStore::EntryKey hint_entry_key;
+    HintCacheLevelDBStore::EntryKey hint_entry_key;
     if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
       FAIL() << "Hint entry not found for host suffix: " << host_suffix;
       continue;
@@ -931,7 +933,7 @@ TEST_F(HintCacheLevelDBStoreTest, LoadHintSuccessUpdateData) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
+  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -942,7 +944,7 @@ TEST_F(HintCacheLevelDBStoreTest, LoadHintSuccessUpdateData) {
   // be loaded from the store.
   for (size_t i = 0; i < update_hint_count; ++i) {
     std::string host_suffix = GetHostSuffix(i);
-    HintCacheStore::EntryKey hint_entry_key;
+    HintCacheLevelDBStore::EntryKey hint_entry_key;
     if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
       FAIL() << "Hint entry not found for host suffix: " << host_suffix;
       continue;
@@ -971,7 +973,7 @@ TEST_F(HintCacheLevelDBStoreTest, FindHintEntryKeyOnUnavailableStore) {
   CreateDatabase();
 
   std::string host_suffix = GetHostSuffix(0);
-  HintCacheStore::EntryKey hint_entry_key;
+  HintCacheLevelDBStore::EntryKey hint_entry_key;
 
   // Verify that hint entry keys can't be found when the store is unavailable.
   EXPECT_FALSE(hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
@@ -989,7 +991,7 @@ TEST_F(HintCacheLevelDBStoreTest, FindHintEntryKeyInitialData) {
   // properly reported as not being found.
   for (size_t i = 0; i < hint_count * 2; ++i) {
     std::string host_suffix = GetHostSuffix(i);
-    HintCacheStore::EntryKey hint_entry_key;
+    HintCacheLevelDBStore::EntryKey hint_entry_key;
     bool success = hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key);
     EXPECT_EQ(success, i < hint_count);
   }
@@ -1003,7 +1005,7 @@ TEST_F(HintCacheLevelDBStoreTest, FindHintEntryKeyUpdateData) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
+  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -1015,7 +1017,7 @@ TEST_F(HintCacheLevelDBStoreTest, FindHintEntryKeyUpdateData) {
   // component update are properly reported as not being found.
   for (size_t i = 0; i < update_hint_count * 2; ++i) {
     std::string host_suffix = GetHostSuffix(i);
-    HintCacheStore::EntryKey hint_entry_key;
+    HintCacheLevelDBStore::EntryKey hint_entry_key;
     bool success = hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key);
     EXPECT_EQ(success, i < update_hint_count);
   }
