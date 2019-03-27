@@ -29,15 +29,8 @@ namespace net {
 WebSocketTransportClientSocketPool::WebSocketTransportClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
-    base::TimeDelta unused_idle_socket_timeout,
-    const CommonConnectJobParams* common_connect_job_params,
-    SSLConfigService* ssl_config_service)
-    : TransportClientSocketPool(max_sockets,
-                                max_sockets_per_group,
-                                unused_idle_socket_timeout,
-                                common_connect_job_params,
-                                ssl_config_service),
-      common_connect_job_params_(common_connect_job_params),
+    const CommonConnectJobParams* common_connect_job_params)
+    : common_connect_job_params_(common_connect_job_params),
       max_sockets_(max_sockets),
       handed_out_socket_count_(0),
       flushing_(false),
@@ -248,8 +241,26 @@ WebSocketTransportClientSocketPool::GetInfoAsValue(
   return dict;
 }
 
+void WebSocketTransportClientSocketPool::DumpMemoryStats(
+    base::trace_event::ProcessMemoryDump* pmd,
+    const std::string& parent_dump_absolute_name) const {
+  // Not supported.
+}
+
 bool WebSocketTransportClientSocketPool::IsStalled() const {
   return !stalled_request_queue_.empty();
+}
+
+void WebSocketTransportClientSocketPool::AddHigherLayeredPool(
+    HigherLayeredPool* higher_pool) {
+  // This class doesn't use connection limits like the pools for HTTP do, so no
+  // need to track higher layered pools.
+}
+
+void WebSocketTransportClientSocketPool::RemoveHigherLayeredPool(
+    HigherLayeredPool* higher_pool) {
+  // This class doesn't use connection limits like the pools for HTTP do, so no
+  // need to track higher layered pools.
 }
 
 bool WebSocketTransportClientSocketPool::TryHandOutSocket(

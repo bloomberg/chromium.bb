@@ -46,8 +46,6 @@ namespace {
 
 const int kMaxSockets = 32;
 const int kMaxSocketsPerGroup = 6;
-constexpr base::TimeDelta kUnusedIdleSocketTimeout =
-    base::TimeDelta::FromSeconds(10);
 const RequestPriority kDefaultPriority = LOW;
 
 // RunLoop doesn't support this natively but it is easy to emulate.
@@ -88,11 +86,7 @@ class WebSocketTransportClientSocketPoolTest
             nullptr /* network_quality_estimator */,
             nullptr /* netlog */,
             &websocket_endpoint_lock_manager_),
-        pool_(kMaxSockets,
-              kMaxSocketsPerGroup,
-              kUnusedIdleSocketTimeout,
-              &common_connect_job_params_,
-              nullptr /* ssl_config_service */) {
+        pool_(kMaxSockets, kMaxSocketsPerGroup, &common_connect_job_params_) {
     websocket_endpoint_lock_manager_.SetUnlockDelayForTesting(
         base::TimeDelta());
   }

@@ -80,8 +80,7 @@ ClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPool(
       proxy_server.is_direct()) {
     new_pool = std::make_unique<WebSocketTransportClientSocketPool>(
         sockets_per_proxy_server, sockets_per_group,
-        unused_idle_socket_timeout(pool_type_),
-        &websocket_common_connect_job_params_, ssl_config_service_);
+        &websocket_common_connect_job_params_);
   } else {
     new_pool = std::make_unique<TransportClientSocketPool>(
         sockets_per_proxy_server, sockets_per_group,

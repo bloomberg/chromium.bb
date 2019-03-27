@@ -266,11 +266,6 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   // NetworkChangeNotifier::IPAddressObserver methods:
   void OnIPAddressChanged() override;
 
- protected:
-  // Methods shared with WebSocketTransportClientSocketPool
-  void NetLogTcpClientSocketPoolRequestedSocket(const NetLogWithSource& net_log,
-                                                const GroupId& group_id);
-
  private:
   // Entry for a persistent socket which became idle at time |start_time|.
   struct IdleSocket {
