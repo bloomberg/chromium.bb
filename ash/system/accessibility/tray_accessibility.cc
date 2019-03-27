@@ -45,6 +45,7 @@ enum AccessibilityState {
   A11Y_SELECT_TO_SPEAK = 1 << 11,
   A11Y_DOCKED_MAGNIFIER = 1 << 12,
   A11Y_DICTATION = 1 << 13,
+  A11Y_SWITCH_ACCESS = 1 << 14,
 };
 
 }  // namespace
@@ -102,6 +103,10 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   virtual_keyboard_enabled_ = controller->virtual_keyboard_enabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(virtual_keyboard_view_,
                                             virtual_keyboard_enabled_);
+
+  switch_access_enabled_ = controller->switch_access_enabled();
+  TrayPopupUtils::UpdateCheckMarkVisibility(switch_access_view_,
+                                            switch_access_enabled_);
 
   large_cursor_enabled_ = controller->large_cursor_enabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(large_cursor_view_,
@@ -194,6 +199,13 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD),
       virtual_keyboard_enabled_);
+
+  switch_access_enabled_ = controller->switch_access_enabled();
+  switch_access_view_ = AddScrollListCheckableItem(
+      kSwitchAccessIcon,
+      l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SWITCH_ACCESS),
+      switch_access_enabled_);
 
   scroll_content()->AddChildView(CreateListSubHeaderSeparator());
 
@@ -296,6 +308,12 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
                      ? UserMetricsAction("StatusArea_VirtualKeyboardEnabled")
                      : UserMetricsAction("StatusArea_VirtualKeyboardDisabled"));
     controller->SetVirtualKeyboardEnabled(new_state);
+  } else if (switch_access_view_ && view == switch_access_view_) {
+    bool new_state = !controller->switch_access_enabled();
+    RecordAction(new_state
+                     ? UserMetricsAction("StatusArea_SwitchAccessEnabled")
+                     : UserMetricsAction("StatusArea_SwitchAccessDisabled"));
+    controller->SetSwitchAccessEnabled(new_state);
   } else if (caret_highlight_view_ && view == caret_highlight_view_) {
     bool new_state = !controller->caret_highlight_enabled();
     RecordAction(new_state
