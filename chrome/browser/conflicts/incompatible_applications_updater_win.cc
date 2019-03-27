@@ -272,10 +272,7 @@ void IncompatibleApplicationsUpdater::RegisterLocalStatePrefs(
 
 // static
 bool IncompatibleApplicationsUpdater::IsWarningEnabled() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   return base::win::GetVersion() >= base::win::VERSION_WIN10 &&
-         ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() &&
          base::FeatureList::IsEnabled(
              features::kIncompatibleApplicationsWarning);
 }
@@ -283,6 +280,11 @@ bool IncompatibleApplicationsUpdater::IsWarningEnabled() {
 // static
 bool IncompatibleApplicationsUpdater::HasCachedApplications() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() ||
+      !IsWarningEnabled()) {
+    return false;
+  }
 
   bool found_valid_application = false;
 
@@ -302,6 +304,8 @@ bool IncompatibleApplicationsUpdater::HasCachedApplications() {
 std::vector<IncompatibleApplicationsUpdater::IncompatibleApplication>
 IncompatibleApplicationsUpdater::GetCachedApplications() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(ModuleDatabase::IsThirdPartyBlockingPolicyEnabled());
+  DCHECK(IsWarningEnabled());
 
   std::vector<IncompatibleApplication> valid_applications;
 
