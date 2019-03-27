@@ -64,7 +64,7 @@ class FrameNodeImpl
   // Returns true if all intervention policies have been set for this frame.
   bool AreAllInterventionPoliciesSet() const;
 
-  const std::set<FrameNodeImpl*>& child_frame_nodes_for_testing() const {
+  const std::set<FrameNodeImpl*>& child_frame_nodes() const {
     return child_frame_nodes_;
   }
 

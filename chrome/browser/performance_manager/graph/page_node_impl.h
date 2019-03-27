@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PAGE_NODE_IMPL_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -50,7 +51,7 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   // PageCoordinationUnit.
   base::TimeDelta TimeSinceLastVisibilityChange() const;
 
-  const std::set<FrameNodeImpl*>& GetFrameNodes() const { return frame_nodes_; }
+  std::vector<FrameNodeImpl*> GetFrameNodes() const;
 
   // Returns the main frame CU or nullptr if this page has no main frame.
   FrameNodeImpl* GetMainFrameNode() const;
@@ -127,6 +128,9 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   void JoinGraph() override;
   void LeaveGraph() override;
 
+  // Returns true iff |frame_node| is in the current frame hierarchy.
+  bool HasFrame(FrameNodeImpl* frame_node);
+
   void SetPageAlmostIdle(bool page_almost_idle);
 
   // CoordinationUnitInterface implementation.
@@ -136,7 +140,7 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
       int64_t value) override;
 
   // This is called whenever |num_frozen_frames_| changes, or whenever
-  // |frame_nodes_.size()| changes. It is used to synthesize the
+  // a frame is added to or removed from this page. It is used to synthesize the
   // value of |has_nonempty_beforeunload| and to update the LifecycleState of
   // the page. Calling this with |num_frozen_frames_delta == 0| implies that the
   // number of frames itself has changed.
@@ -158,7 +162,17 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   void RecomputeInterventionPolicy(
       resource_coordinator::mojom::PolicyControlledIntervention intervention);
 
-  std::set<FrameNodeImpl*> frame_nodes_;
+  // Invokes |map_function| for all frame nodes in this pages frame tree.
+  template <typename MapFunction>
+  void ForAllFrameNodes(MapFunction map_function) const;
+
+  // The main frame nodes of this page. There can be more than one main frame
+  // in a page, among other reasons because during main frame navigation, the
+  // pending navigation will coexist with the existing main frame until it's
+  // committed.
+  std::set<FrameNodeImpl*> main_frame_nodes_;
+  // The total count of frames that tally up to this page.
+  size_t frame_node_count_ = 0;
 
   base::TimeTicks visibility_change_time_;
   // Main frame navigation committed time.
