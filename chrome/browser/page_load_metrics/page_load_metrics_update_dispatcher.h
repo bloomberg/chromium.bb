@@ -160,6 +160,7 @@ class PageLoadMetricsUpdateDispatcher {
   const mojom::PageLoadMetadata& subframe_metadata() const {
     return *(subframe_metadata_.get());
   }
+  const PageRenderData& page_render_data() const { return page_render_data_; }
   const PageRenderData& main_frame_render_data() const {
     return main_frame_render_data_;
   }
@@ -177,9 +178,12 @@ class PageLoadMetricsUpdateDispatcher {
   void UpdateSubFrameMetadata(content::RenderFrameHost* render_frame_host,
                               mojom::PageLoadMetadataPtr subframe_metadata);
 
-  void UpdateMainFrameRenderData(mojom::FrameRenderDataUpdatePtr render_data);
-  void UpdateSubFrameRenderData(content::RenderFrameHost* render_frame_host,
-                                mojom::FrameRenderDataUpdatePtr render_data);
+  void UpdatePageRenderData(const mojom::FrameRenderDataUpdate& render_data);
+  void UpdateMainFrameRenderData(
+      const mojom::FrameRenderDataUpdate& render_data);
+  void OnSubFrameRenderDataChanged(
+      content::RenderFrameHost* render_frame_host,
+      const mojom::FrameRenderDataUpdate& render_data);
 
   void MaybeDispatchTimingUpdates(bool did_merge_new_timing_value);
   void DispatchTimingUpdates();
@@ -206,6 +210,7 @@ class PageLoadMetricsUpdateDispatcher {
   mojom::PageLoadMetadataPtr main_frame_metadata_;
   mojom::PageLoadMetadataPtr subframe_metadata_;
 
+  PageRenderData page_render_data_;
   PageRenderData main_frame_render_data_;
 
   // Navigation start offsets for the most recently committed document in each

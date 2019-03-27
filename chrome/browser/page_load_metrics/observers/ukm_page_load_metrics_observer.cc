@@ -499,7 +499,7 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
 void UkmPageLoadMetricsObserver::ReportLayoutStability(
     const page_load_metrics::PageLoadExtraInfo& info) {
   // Report (jank_score * 100) as an int in the range [0, 1000].
-  float jank_score = info.main_frame_render_data.layout_jank_score;
+  float jank_score = info.page_render_data.layout_jank_score;
   int64_t ukm_value =
       static_cast<int>(roundf(std::min(jank_score, 10.0f) * 100.0f));
 

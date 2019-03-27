@@ -537,6 +537,7 @@ PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() const {
       did_commit_, page_end_reason_, page_end_user_initiated_info_,
       page_end_time, metrics_update_dispatcher_.main_frame_metadata(),
       metrics_update_dispatcher_.subframe_metadata(),
+      metrics_update_dispatcher_.page_render_data(),
       metrics_update_dispatcher_.main_frame_render_data(), source_id_);
 }
 
