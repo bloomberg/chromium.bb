@@ -73,7 +73,7 @@ cr.define('cr.translateInternals', function() {
   /**
    * Creates a new LI element with a button to dismiss the item.
    *
-   * @param {string} text The lable of the LI element.
+   * @param {string} text The label of the LI element.
    * @param {Function} func Callback called when the button is clicked.
    */
   function createLIWithDismissingButton(text, func) {

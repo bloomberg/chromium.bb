@@ -87,16 +87,6 @@ grit("quota_internals_resources") {
   output_dir = "$root_gen_dir/chrome"
 }
 
-grit("translate_internals_resources") {
-  source = "translate_internals/translate_internals_resources.grd"
-  defines = chrome_grit_defines
-  outputs = [
-    "grit/translate_internals_resources.h",
-    "translate_internals_resources.pak",
-  ]
-  output_dir = "$root_gen_dir/chrome"
-}
-
 grit("webapks_ui_resources") {
   source = "webapks/webapks_ui_resources.grd"
   defines = chrome_grit_defines

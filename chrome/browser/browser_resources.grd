@@ -159,6 +159,8 @@
       <include name="IDR_UKM_INTERNALS_HTML" file="../../components/ukm/debug/ukm_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
       <include name="IDR_UKM_INTERNALS_JS" file="../../components/ukm/debug/ukm_internals.js" flattenhtml="true" compress="gzip" type="BINDATA" />
       <include name="IDR_UKM_INTERNALS_CSS" file="../../components/ukm/debug/ukm_internals.css" flattenhtml="true" compress="gzip" type="BINDATA" />
+      <include name="IDR_TRANSLATE_INTERNALS_HTML" file="../../components/translate/translate_internals/translate_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
+      <include name="IDR_TRANSLATE_INTERNALS_JS" file="../../components/translate/translate_internals/translate_internals.js" flattenhtml="true" compress="gzip" type="BINDATA" />
       <if expr="not is_android">
         <include name="IDR_DOWNLOADS_IMAGES_INCOGNITO_MARKER_SVG" file="resources\downloads\images\incognito_marker.svg" type="BINDATA" />
         <include name="IDR_DOWNLOADS_IMAGES_NO_DOWNLOADS_SVG" file="resources\downloads\images\no_downloads.svg" type="BINDATA" />
