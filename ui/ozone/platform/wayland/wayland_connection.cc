@@ -294,6 +294,12 @@ ozone::mojom::WaylandConnectionPtr WaylandConnection::BindInterface() {
   return ptr;
 }
 
+void WaylandConnection::OnChannelDestroyed() {
+  binding_.Unbind();
+  if (buffer_manager_)
+    buffer_manager_->ClearState();
+}
+
 std::vector<gfx::BufferFormat> WaylandConnection::GetSupportedBufferFormats() {
   if (zwp_dmabuf_)
     return zwp_dmabuf_->supported_buffer_formats();
@@ -397,8 +403,7 @@ void WaylandConnection::OnFileCanWriteWithoutBlocking(int fd) {}
 
 void WaylandConnection::TerminateGpuProcess(std::string reason) {
   std::move(terminate_gpu_cb_).Run(std::move(reason));
-  binding_.Unbind();
-  buffer_manager_->ClearState();
+  // The GPU process' failure results in calling ::OnChannelDestroyed.
 }
 
 void WaylandConnection::EnsureDataDevice() {
