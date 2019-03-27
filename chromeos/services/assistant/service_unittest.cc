@@ -165,9 +165,14 @@ class AssistantServiceTest : public testing::Test {
     FakePowerManagerClient::Get()->SetTabletMode(
         PowerManagerClient::TabletMode::OFF, base::TimeTicks());
 
+    shared_url_loader_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &url_loader_factory_);
+
     service_ = std::make_unique<Service>(
         test_connector_factory_.RegisterInstance(mojom::kServiceName),
-        nullptr /* network_connection_tracker */, nullptr /* io_task_runner */);
+        nullptr /* network_connection_tracker */,
+        shared_url_loader_factory_->Clone());
 
     mock_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
         base::Time::Now(), base::TimeTicks::Now());
@@ -188,13 +193,8 @@ class AssistantServiceTest : public testing::Test {
   void SetUp() override {
     GetPlatform()->Init(fake_assistant_client_.CreateInterfacePtrAndBind(),
                         fake_device_actions_.CreateInterfacePtrAndBind());
-    shared_url_loader_factory_ =
-        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            &url_loader_factory_);
     platform_.FlushForTesting();
     base::RunLoop().RunUntilIdle();
-
-    PowerManagerClient::Shutdown();
   }
 
   mojom::AssistantPlatform* GetPlatform() {
@@ -207,10 +207,6 @@ class AssistantServiceTest : public testing::Test {
 
   FakeAssistantManagerServiceImpl* assistant_manager_service() {
     return fake_assistant_manager_;
-  }
-
-  chromeos::FakePowerManagerClient* power_manager_client() {
-    return power_manager_client_;
   }
 
   base::TestMockTimeTaskRunner* mock_task_runner() {
@@ -230,7 +226,6 @@ class AssistantServiceTest : public testing::Test {
   FakeDeviceActions fake_device_actions_;
 
   FakeAssistantManagerServiceImpl* fake_assistant_manager_;
-  chromeos::FakePowerManagerClient* power_manager_client_;
 
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
@@ -278,7 +273,7 @@ TEST_F(AssistantServiceTest, RetryRefreshTokenAfterFailure) {
 
 TEST_F(AssistantServiceTest, RetryRefreshTokenAfterDeviceWakeup) {
   auto current_count = identity_accessor()->get_access_token_count();
-  power_manager_client()->SendSuspendDone();
+  FakePowerManagerClient::Get()->SendSuspendDone();
   base::RunLoop().RunUntilIdle();
 
   // Token requested immediately after suspend done.
