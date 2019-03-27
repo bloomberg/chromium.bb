@@ -539,6 +539,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaMultiselectableChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-multiselectable-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaPressedChanged) {
   RunEventTest(FILE_PATH_LITERAL("aria-pressed-changed.html"));
 }
