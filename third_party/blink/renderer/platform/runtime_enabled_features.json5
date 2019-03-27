@@ -361,6 +361,11 @@
       status: "stable",
     },
     {
+      name: "CSSPictureInPicture",
+      status: "experimental",
+      depends_on: ["PictureInPictureAPI"],
+    },
+    {
       name: "CSSPseudoIs",
       status: "experimental",
     },
