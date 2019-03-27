@@ -29,11 +29,11 @@ tabpanel {
 }
 
 tabpanel > div {
-  display: -webkit-flex;
+  display: flex;
 }
 
 tabpanel > div > div {
-  -webkit-flex: 1;
+  flex: 1;
 }
 
 .dump {

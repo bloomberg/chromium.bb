@@ -1,63 +1,70 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_HANDLER_H_
+#ifndef COMPONENTS_TRANSLATE_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_HANDLER_H_
+#define COMPONENTS_TRANSLATE_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_HANDLER_H_
 
 #include <memory>
 #include <string>
+#include <vector>
 
+#include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
+#include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_language_list.h"
 #include "components/translate/core/browser/translate_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/web_ui_message_handler.h"
-#include "content/public/common/webplugininfo.h"
+#include "components/variations/service/variations_service.h"
+
+namespace base {
+class DictionaryValue;
+class ListValue;
+class Value;
+}  // namespace base
 
 namespace translate {
+struct LanguageDetectionDetails;
 struct TranslateErrorDetails;
 struct TranslateEventDetails;
 struct TranslateInitDetails;
-}
 
-namespace base {
-class ListValue;
-class Value;
-}
-
-namespace content {
-class NotificationDetails;
-class NotificationSource;
-}
-
-// The handler class for TranslateInternals page operations.
-class TranslateInternalsHandler : public content::WebUIMessageHandler,
-                                  public content::NotificationObserver {
+// The handler class for chrome://translate-internals page operations.
+class TranslateInternalsHandler {
  public:
   TranslateInternalsHandler();
-  ~TranslateInternalsHandler() override;
+  ~TranslateInternalsHandler();
 
-  // content::WebUIMessageHandler methods:
-  void RegisterMessages() override;
+  // Returns a dictionary of languages in |dict| where each key is a language
+  // code and each value is a language name in the locale.
+  static void GetLanguages(base::DictionaryValue* dict);
+
+  virtual TranslateClient* GetTranslateClient() = 0;
+  virtual variations::VariationsService* GetVariationsService() = 0;
+  // Registers to handle |message| from JavaScript with |callback|.
+  using MessageCallback = base::RepeatingCallback<void(const base::ListValue*)>;
+  virtual void RegisterMessageCallback(const std::string& message,
+                                       const MessageCallback& callback) = 0;
+  // Calls a Javascript function with the given name and arguments.
+  virtual void CallJavascriptFunction(
+      const std::string& function_name,
+      const std::vector<const base::Value*>& args) = 0;
+
+ protected:
+  // Subclasses should call this in order to handle messages from JavaScript.
+  void RegisterMessageCallbacks();
+  // Subclasses should call this when language detection details are available.
+  void AddLanguageDetectionDetails(const LanguageDetectionDetails& details);
 
  private:
-  // content::NotificationObserver implementation:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // Callback for translate errors.
-  void OnTranslateError(const translate::TranslateErrorDetails& details);
+  void OnTranslateError(const TranslateErrorDetails& details);
 
   // Callback for translate initialisations.
   virtual void OnTranslateInit(const translate::TranslateInitDetails& details);
 
   // Callback for translate events.
-  virtual void OnTranslateEvent(
-      const translate::TranslateEventDetails& details);
+  virtual void OnTranslateEvent(const TranslateEventDetails& details);
 
   // Handles the Javascript message 'removePrefItem'. This message is sent
   // when UI requests to remove an item in the preference.
@@ -78,7 +85,7 @@ class TranslateInternalsHandler : public content::WebUIMessageHandler,
   // |args| is not used.
   void OnRequestInfo(const base::ListValue* args);
 
-  // Sends a messsage to Javascript.
+  // Sends a message to Javascript.
   void SendMessageToJs(const std::string& message, const base::Value& value);
 
   // Sends the current preference to Javascript.
@@ -92,22 +99,21 @@ class TranslateInternalsHandler : public content::WebUIMessageHandler,
   void SendCountryToJs(bool was_updated);
 
   // Subscription for translate events coming from the translate language list.
-  std::unique_ptr<
-      translate::TranslateLanguageList::EventCallbackList::Subscription>
+  std::unique_ptr<TranslateLanguageList::EventCallbackList::Subscription>
       event_subscription_;
 
   // Subscription for translate errors coming from the translate manager.
-  std::unique_ptr<
-      translate::TranslateManager::TranslateErrorCallbackList::Subscription>
+  std::unique_ptr<TranslateManager::TranslateErrorCallbackList::Subscription>
       error_subscription_;
 
+  // Subscription for translate initialization event.
   std::unique_ptr<
       translate::TranslateManager::TranslateInitCallbackList::Subscription>
       init_subscription_;
 
-  content::NotificationRegistrar notification_registrar_;
-
   DISALLOW_COPY_AND_ASSIGN(TranslateInternalsHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_HANDLER_H_
+}  // namespace translate
+
+#endif  // COMPONENTS_TRANSLATE_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_HANDLER_H_
