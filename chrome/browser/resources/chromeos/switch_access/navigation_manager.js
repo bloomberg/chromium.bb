@@ -25,9 +25,14 @@ class NavigationManager {
     this.backButtonManager_ = new BackButtonManager(this);
 
     /**
-     *
+     * Handles the details of text input, including typing and showing an
+     * additional focus ring for context when typing.
+     * @private {!TextInputManager}
+     */
+    this.textInputManager_ = new TextInputManager(this);
+
+    /**
      * The desktop node.
-     *
      * @private {!chrome.automation.AutomationNode}
      */
     this.desktop_ = desktop;
@@ -231,7 +236,7 @@ class NavigationManager {
     if (!this.node_.role)
       return;
 
-    if (TextInputManager.pressKey(this.node_)) {
+    if (this.textInputManager_.pressKey(this.node_)) {
       return;
     }
 
@@ -244,9 +249,7 @@ class NavigationManager {
     }
 
     if (SwitchAccessPredicate.isGroup(this.node_, this.scope_)) {
-      this.scopeStack_.push(this.scope_);
-      this.scope_ = this.node_;
-      this.moveForward();
+      this.setScope_(this.node_);
       return;
     }
 
@@ -263,10 +266,15 @@ class NavigationManager {
           /** @type {chrome.automation.ActionType} */ (action));
   }
 
-  exitCurrentScope() {
+  /**
+   * @param {chrome.automation.AutomationNode=} opt_newNode Optionally set the
+   *     node that will have the primary focus after exiting.
+   */
+  exitCurrentScope(opt_newNode) {
     if (this.scopeStack_.length === 0)
       return;
 
+    this.node_ = opt_newNode || this.scope_;
     // Find a previous scope that is still valid. The stack here always has
     // at least one valid scope (i.e., the desktop node).
     do {
@@ -274,6 +282,37 @@ class NavigationManager {
     } while (!this.scope_.role && this.scopeStack_.length > 0);
 
     this.updateFocusRings_();
+  }
+
+  /**
+   * Puts focus on the virtual keyboard, if the current node is a text input.
+   * TODO(946190): Handle the case where the user has not enabled the onscreen
+   *               keyboard.
+   */
+  openKeyboard() {
+    if (!this.textInputManager_.enterKeyboard(this.node_))
+      return;
+
+    this.selectCurrentNode();
+    this.setScope_(this.textInputManager_.getKeyboard(this.desktop_));
+  }
+
+  /**
+   * If exiting the current scope will not move from inside the keyboard to
+   * outside the keyboard, this method does nothing.
+   * When we are exiting the keyboard, it resets the scope and removes the text
+   * input focus ring.
+   * @return {boolean} Whether any action was taken.
+   */
+  leaveKeyboardIfNeeded() {
+    const newScope = this.scopeStack_[this.scopeStack_.length - 1];
+    if (!this.textInputManager_.inVirtualKeyboard(this.scope_) ||
+        this.textInputManager_.inVirtualKeyboard(newScope)) {
+      return false;
+    }
+
+    this.textInputManager_.returnToTextFocus();
+    return true;
   }
 
   /**
@@ -399,6 +438,19 @@ class NavigationManager {
   setCurrentNode_(node) {
     this.node_ = node;
     this.updateFocusRings_();
+  }
+
+  /**
+   * Set the scope to the provided node.
+   * @param {chrome.automation.AutomationNode} node
+   */
+  setScope_(node) {
+    if (!node)
+      return;
+    this.scopeStack_.push(this.scope_);
+    this.scope_ = node;
+    this.node_ = node;
+    this.moveForward();
   }
 
   /**
