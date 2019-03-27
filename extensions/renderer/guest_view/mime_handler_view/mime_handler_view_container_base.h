@@ -76,7 +76,7 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
   void DidLoadInternal();
   void SendResourceRequest();
   void EmbedderRenderFrameWillBeGone();
-  v8::Local<v8::Object> GetScriptableObject(v8::Isolate* isolate);
+  v8::Local<v8::Object> GetScriptableObjectInternal(v8::Isolate* isolate);
 
   // Returns the frame which is embedding the corresponding plugin element.
   content::RenderFrame* GetEmbedderRenderFrame() const;
