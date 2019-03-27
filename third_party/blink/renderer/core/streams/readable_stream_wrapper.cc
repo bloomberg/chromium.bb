@@ -228,7 +228,13 @@ ScriptValue ReadableStreamWrapper::pipeThrough(
     return ScriptValue();
   }
 
-  DCHECK(!RuntimeEnabledFeatures::StreamsNativeEnabled());
+  if (RuntimeEnabledFeatures::StreamsNativeEnabled()) {
+    // TODO(ricea): Replace this with a DCHECK once ReadableStreamNative is
+    // implemented.
+    exception_state.ThrowTypeError(
+        "pipeThrough disabled because StreamsNative feature is enabled");
+    return ScriptValue();
+  }
 
   // This cast is safe because the following code will only be run when the
   // native version of WritableStream is not in use.
@@ -274,7 +280,13 @@ ScriptPromise ReadableStreamWrapper::pipeTo(ScriptState* script_state,
   }
   DCHECK(destination);
 
-  DCHECK(!RuntimeEnabledFeatures::StreamsNativeEnabled());
+  if (RuntimeEnabledFeatures::StreamsNativeEnabled()) {
+    // TODO(ricea): Replace this with a DCHECK once ReadableStreamNative is
+    // implemented.
+    exception_state.ThrowTypeError(
+        "pipeTo disabled because StreamsNative feature is enabled");
+    return ScriptPromise();
+  }
 
   // This cast is safe because the following code will only be run when the
   // native version of WritableStream is not in use.
