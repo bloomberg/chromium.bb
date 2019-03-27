@@ -32,12 +32,23 @@
 
 #if defined(OS_WIN)
 #include "base/task/task_scheduler/platform_native_worker_pool_win.h"
+#elif defined(OS_MACOSX)
+#include "base/task/task_scheduler/platform_native_worker_pool_mac.h"
 #endif
 
 namespace base {
 namespace internal {
 
 namespace {
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+using PlatformNativeWorkerPoolType =
+#if defined(OS_WIN)
+    PlatformNativeWorkerPoolWin;
+#elif defined(OS_MACOSX)
+    PlatformNativeWorkerPoolMac;
+#endif
+#endif
 
 constexpr size_t kMaxTasks = 4;
 // By default, tests allow half of the pool to be used by best-effort tasks.
@@ -47,8 +58,8 @@ constexpr size_t kNumTasksPostedPerThread = 150;
 
 enum class PoolType {
   GENERIC,
-#if defined(OS_WIN)
-  WINDOWS,
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  NATIVE,
 #endif
 };
 
@@ -123,9 +134,9 @@ class TaskSchedulerWorkerPoolTest
             task_tracker_.GetTrackedRef(),
             tracked_ref_factory_.GetTrackedRef());
         break;
-#if defined(OS_WIN)
-      case PoolType::WINDOWS:
-        worker_pool_ = std::make_unique<PlatformNativeWorkerPoolWin>(
+#if defined(OS_WIN) || defined(OS_MACOSX)
+      case PoolType::NATIVE:
+        worker_pool_ = std::make_unique<PlatformNativeWorkerPoolType>(
             task_tracker_.GetTrackedRef(),
             tracked_ref_factory_.GetTrackedRef());
         break;
@@ -148,11 +159,11 @@ class TaskSchedulerWorkerPoolTest
             SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
         break;
       }
-#if defined(OS_WIN)
-      case PoolType::WINDOWS: {
-        PlatformNativeWorkerPoolWin* scheduler_worker_pool_windows_impl =
-            static_cast<PlatformNativeWorkerPoolWin*>(worker_pool_.get());
-        scheduler_worker_pool_windows_impl->Start();
+#if defined(OS_WIN) || defined(OS_MACOSX)
+      case PoolType::NATIVE: {
+        PlatformNativeWorkerPoolType* scheduler_worker_pool_native_impl =
+            static_cast<PlatformNativeWorkerPoolType*>(worker_pool_.get());
+        scheduler_worker_pool_native_impl->Start();
         break;
       }
 #endif
@@ -411,16 +422,15 @@ INSTANTIATE_TEST_SUITE_P(GenericSequenced,
                              PoolType::GENERIC,
                              test::ExecutionMode::SEQUENCED}));
 
-#if defined(OS_WIN)
-INSTANTIATE_TEST_SUITE_P(WinParallel,
+#if defined(OS_WIN) || defined(OS_MACOSX)
+INSTANTIATE_TEST_SUITE_P(NativeParallel,
                          TaskSchedulerWorkerPoolTest,
                          ::testing::Values(PoolExecutionType{
-                             PoolType::WINDOWS,
-                             test::ExecutionMode::PARALLEL}));
-INSTANTIATE_TEST_SUITE_P(WinSequenced,
+                             PoolType::NATIVE, test::ExecutionMode::PARALLEL}));
+INSTANTIATE_TEST_SUITE_P(NativeSequenced,
                          TaskSchedulerWorkerPoolTest,
                          ::testing::Values(PoolExecutionType{
-                             PoolType::WINDOWS,
+                             PoolType::NATIVE,
                              test::ExecutionMode::SEQUENCED}));
 #endif
 
