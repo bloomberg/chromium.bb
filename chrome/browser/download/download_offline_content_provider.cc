@@ -24,7 +24,6 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/download/download_manager_bridge.h"
-#include "chrome/browser/android/download/download_manager_service.h"
 #endif
 
 using OfflineItemFilter = offline_items_collection::OfflineItemFilter;
@@ -57,11 +56,15 @@ DownloadOfflineContentProvider::DownloadOfflineContentProvider(
 
 DownloadOfflineContentProvider::~DownloadOfflineContentProvider() {
   aggregator_->UnregisterProvider(name_space_);
+  if (manager_)
+    manager_->RemoveObserver(this);
 }
 
 void DownloadOfflineContentProvider::SetDownloadManager(
     DownloadManager* manager) {
+  DCHECK(manager);
   manager_ = manager;
+  manager_->AddObserver(this);
 }
 
 // TODO(shaktisahu) : Pass DownloadOpenSource.
@@ -179,6 +182,11 @@ void DownloadOfflineContentProvider::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+void DownloadOfflineContentProvider::ManagerGoingDown(
+    DownloadManager* manager) {
+  manager_ = nullptr;
+}
+
 void DownloadOfflineContentProvider::OnDownloadStarted(DownloadItem* item) {
   item->RemoveObserver(this);
   item->AddObserver(this);
@@ -239,27 +247,13 @@ void DownloadOfflineContentProvider::AddCompletedDownloadDone(
 
 DownloadItem* DownloadOfflineContentProvider::GetDownload(
     const std::string& download_guid) {
-#if defined(OS_ANDROID)
-  bool incognito = manager_ && manager_->GetBrowserContext()
-                       ? manager_->GetBrowserContext()->IsOffTheRecord()
-                       : false;
-  return DownloadManagerService::GetInstance()->GetDownload(download_guid,
-                                                            incognito);
-#else
-  return manager_->GetDownloadByGuid(download_guid);
-#endif
+  return manager_ ? manager_->GetDownloadByGuid(download_guid) : nullptr;
 }
 
 void DownloadOfflineContentProvider::GetAllDownloads(
     DownloadManager::DownloadVector* all_items) {
-#if defined(OS_ANDROID)
-  bool incognito = manager_ && manager_->GetBrowserContext()
-                       ? manager_->GetBrowserContext()->IsOffTheRecord()
-                       : false;
-  DownloadManagerService::GetInstance()->GetAllDownloads(all_items, incognito);
-#else
-  manager_->GetAllDownloads(all_items);
-#endif
+  if (manager_)
+    manager_->GetAllDownloads(all_items);
 }
 
 void DownloadOfflineContentProvider::UpdateObservers(DownloadItem* item) {

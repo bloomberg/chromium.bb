@@ -29,7 +29,8 @@ class SkBitmap;
 // single DownloadManager (or in-progress download manager in service manager
 // only mode) and notifies UI about updates about various downloads.
 class DownloadOfflineContentProvider : public OfflineContentProvider,
-                                       public download::DownloadItem::Observer {
+                                       public download::DownloadItem::Observer,
+                                       public DownloadManager::Observer {
  public:
   explicit DownloadOfflineContentProvider(OfflineContentAggregator* aggregator,
                                           const std::string& name_space);
@@ -63,8 +64,12 @@ class DownloadOfflineContentProvider : public OfflineContentProvider,
   void OnDownloadStarted(DownloadItem* download_item);
 
  private:
+  // DownloadItem::Observer overrides
   void OnDownloadUpdated(DownloadItem* item) override;
   void OnDownloadRemoved(DownloadItem* item) override;
+
+  // DownloadManager::Observer overrides
+  void ManagerGoingDown(DownloadManager* manager) override;
 
   void GetAllDownloads(DownloadManager::DownloadVector* all_items);
   DownloadItem* GetDownload(const std::string& download_guid);
