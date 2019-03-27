@@ -35,7 +35,6 @@
 #include "media/test/pipeline_integration_test_base.h"
 #include "media/test/test_media_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/libaom/av1_buildflags.h"
 #include "url/gurl.h"
 
 #if defined(MOJO_RENDERER)
