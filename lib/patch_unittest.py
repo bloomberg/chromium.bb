@@ -71,17 +71,9 @@ FAKE_LABELS_JSON = {
         'optional': True,
         'values': {
             ' 0': 'Not Ready',
-            '+1': 'Ready',
-            '+2': 'Sheriff only: Ready, allow in throttled tree',
+            '+1': 'Try ready',
+            '+2': 'Ready',
             '+3': 'Ignore this label',
-        },
-    },
-    'Trybot-Ready': {
-        'default_value': 0,
-        'optional': True,
-        'values': {
-            ' 0': 'Not Ready',
-            '+1': 'Ready',
         },
     },
     'Verified': {
@@ -99,7 +91,6 @@ FAKE_LABELS_JSON = {
 FAKE_PERMITTED_LABELS_JSON = {
     'Code-Review': ['-2', '-1', ' 0', '+1', '+2'],
     'Commit-Queue': [' 0', '+1', '+2'],
-    'Trybot-Ready': [' 0', '+1'],
     'Verified': ['-1', ' 0', '+1'],
 }
 

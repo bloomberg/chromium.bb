@@ -2057,8 +2057,8 @@ class GerritPatch(GerritFetchOnlyPatch):
     return not self.GetMergeException()
 
   def HasReadyFlag(self):
-    """Return true if the trybot-ready or commit-ready flag is set."""
-    return self.HasApproval('COMR', ('1', '2')) or self.HasApproval('TRY', '1')
+    """Return true if the commit-ready flag is set."""
+    return self.HasApproval('COMR', ('1', '2'))
 
   def GetMergeException(self):
     """Return the reason why this change is not mergeable.

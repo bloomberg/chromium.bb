@@ -75,7 +75,7 @@ $ cros tryjob -h -> for help on more options
 Add `--hwtest` to add hardware testing to your tryjob. You can use the link provided by the command to check the status of your tryjob. Alternatively, you can go to the [CI UI tryjobs page](https://cros-goldeneye.corp.google.com/chromeos/legoland/builderSummary?buildConfig&builderGroups=tryjob&email) and filter results by your email.
 
 ### Pre-CQ
-Once you mark your CL as Trybot-ready on [Chromium Gerrit](https://chromium-review.googlesource.com), the PreCQ will pick up your change and fire few preset config runs as a precursor to CQ. Currently, it doesn’t include any hardware or VM testing (for now!).
+Once you mark your CL as Commit-Queue +1 on [Chromium Gerrit](https://chromium-review.googlesource.com), the PreCQ will pick up your change and fire few preset config runs as a precursor to CQ. Currently, it doesn’t include any hardware or VM testing (for now!).
 
 ### Commit Queue
 This is the final step in getting your change pushed. CQ is the most comprehensive of all tests. There are a multitude of CL's being validated in the same CQ. Once a CL is verified by CQ, it is merged into the codebase.

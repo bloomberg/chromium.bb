@@ -880,7 +880,7 @@ _QUERIES = {
 }
 
 #
-# Please note that requiring the +2 code review (or Trybot-Ready) for all CQ
+# Please note that requiring the +2 code review (or CQ+1 for try) for all CQ
 # and PreCQ runs is a security requirement. Otherwise arbitrary people can
 # run code on our servers.
 #
@@ -891,15 +891,15 @@ _QUERIES = {
 
 # Default gerrit query used to find changes for CQ.
 CQ_READY_QUERY = (
-    '%(open)s AND %(approved)s AND label:Commit-Queue>=1 AND '
+    '%(open)s AND %(approved)s AND label:Commit-Queue>=2 AND '
     '-label:Legacy-Commit-Queue=-1' % _QUERIES,
     lambda change: change.IsMergeable())
 
 # The PreCQ does not require the CQ bit to be set if it's a recent CL, or if
-# the Trybot-Ready flag has been set.
+# the Commit-Queue +1 flag has been set.
 PRECQ_READY_QUERY = (
-    '%(open)s AND (%(approved)s AND label:Commit-Queue>=1 OR '
-    'label:Code-Review=+2 AND -age:2h OR label:Trybot-Ready=+1) AND '
+    '%(open)s AND (%(approved)s AND label:Commit-Queue>=2 OR '
+    'label:Code-Review=+2 AND -age:2h OR label:Commit-Queue=+1) AND '
     '-label:Legacy-Commit-Queue=-1' % _QUERIES,
     lambda change: (not change.IsBeingMerged() and
                     change.HasApproval('CRVW', '2') or
@@ -909,7 +909,6 @@ GERRIT_ON_BORG_LABELS = {
     'Code-Review': 'CRVW',
     'Commit-Queue': 'COMR',
     'Verified': 'VRIF',
-    'Trybot-Ready': 'TRY',
 }
 
 # Actions that a CQ run can take on a CL

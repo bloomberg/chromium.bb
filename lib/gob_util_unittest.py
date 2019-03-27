@@ -165,7 +165,7 @@ class NetworkGobTest(cros_test_lib.TestCase):
       gob_util.FetchUrlJson(
           config_lib.GetSiteParams().EXTERNAL_GERRIT_HOST,
           'changes/422652/revisions/901b4ee349a9395ba23a7a1e8597a35050f741e4/'
-          'review', reqtype='POST', body={'labels': {'Trybot-Ready': '+1'}})
+          'review', reqtype='POST', body={'labels': {'Commit-Ready': '+1'}})
 
     self.assertEqual(ex.exception.http_status, 409)
     self.assertEqual(ex.exception.reason,

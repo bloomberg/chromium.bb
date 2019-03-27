@@ -372,15 +372,15 @@ UserActReady.arg_min = 2
 UserActReady.usage = '<CLs...> <0|1>'
 
 
-def UserActTrybotready(opts, *args):
-  """Mark CLs with a trybot-ready status"""
+def UserActTryready(opts, *args):
+  """Mark CLs with a CQ+1 try status"""
   num = args[-1]
   for arg in args[:-1]:
     helper, cl = GetGerrit(opts, arg)
-    helper.SetReview(cl, labels={'Trybot-Ready': num},
+    helper.SetReview(cl, labels={'Commit-Queue': num},
                      dryrun=opts.dryrun, notify=opts.notify)
-UserActTrybotready.arg_min = 2
-UserActTrybotready.usage = '<CLs...> <0|1>'
+UserActTryready.arg_min = 2
+UserActTryready.usage = '<CLs...> <0|1>'
 
 
 def UserActSubmit(opts, *args):
