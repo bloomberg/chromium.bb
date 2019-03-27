@@ -332,13 +332,7 @@ class IndexedDBDatabase::DeleteRequest
   void Perform() override {
     if (db_->connections_.empty()) {
       // No connections, so delete immediately.
-      std::vector<ScopesLockManager::ScopeLockRequest> lock_requests = {
-          {kDatabaseRangeLockLevel, GetDatabaseLockRange(db_->metadata_.id),
-           ScopesLockManager::LockType::kExclusive}};
-      db_->lock_manager_->AcquireLocks(
-          std::move(lock_requests),
-          base::BindOnce(&IndexedDBDatabase::DeleteRequest::DoDelete,
-                         weak_factory_.GetWeakPtr()));
+      DoDelete();
       return;
     }
 
@@ -358,16 +352,10 @@ class IndexedDBDatabase::DeleteRequest
     if (!db_->connections_.empty())
       return;
 
-    std::vector<ScopesLockManager::ScopeLockRequest> lock_requests = {
-        {kDatabaseRangeLockLevel, GetDatabaseLockRange(db_->metadata_.id),
-         ScopesLockManager::LockType::kExclusive}};
-    db_->lock_manager_->AcquireLocks(
-        std::move(lock_requests),
-        base::BindOnce(&IndexedDBDatabase::DeleteRequest::DoDelete,
-                       weak_factory_.GetWeakPtr()));
+    DoDelete();
   }
 
-  void DoDelete(std::vector<ScopeLock> locks) {
+  void DoDelete() {
     Status s;
     if (db_->backing_store_)
       s = db_->backing_store_->DeleteDatabase(db_->metadata_.name);
