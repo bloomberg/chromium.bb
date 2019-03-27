@@ -11,6 +11,25 @@ struct TestStructA1 {
 };
 
 struct TestStructA2 {
+  enum NestedEnum {
+    A,
+    B,
+  };
+
   TestStructA1 ax;
   TestStructA1 ay;
+  NestedEnum enumField;
+};
+
+enum ModuleEnum {
+  THIRD,
+};
+
+interface ParentInterface {
+  enum NestedEnum {
+    FIRST,
+    SECOND,
+  };
+
+  SomeMethod(NestedEnum value);
 };
