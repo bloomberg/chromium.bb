@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -23,6 +24,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "content/public/browser/url_data_source.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
@@ -36,6 +38,14 @@ AppControllerImpl::AppControllerImpl(Profile* profile)
       url_prefix_(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           chromeos::switches::kKioskNextHomeUrlPrefix)) {
   app_service_proxy_->AppRegistryCache().AddObserver(this);
+
+  // Add the chrome://app-icon URL data source.
+  // TODO(ltenorio): Move this to a more suitable location when we change
+  // the Kiosk Next Home to WebUI.
+  if (profile) {
+    content::URLDataSource::Add(profile,
+                                std::make_unique<apps::AppIconSource>(profile));
+  }
 }
 
 AppControllerImpl::~AppControllerImpl() {

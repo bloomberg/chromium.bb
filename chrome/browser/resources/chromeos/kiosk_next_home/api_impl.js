@@ -54,8 +54,9 @@ function buildApp(mojoApp) {
     displayName: mojoApp.displayName,
     packageName: mojoApp.androidPackageName,
     readiness: getReadiness(mojoApp),
-    // TODO(ltenorio): Add the thumbnail when it's available from mojo.
-    thumbnailImage: '',
+    // We append the intended size of the icon in density-independent
+    // pixels, in this case 128x128 dips.
+    thumbnailImage: 'chrome://app-icon/' + mojoApp.appId + '/128',
   };
 }
 

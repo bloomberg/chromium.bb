@@ -4833,11 +4833,12 @@ void ChromeContentBrowserClient::
       (extension->is_platform_app() &&
        Manifest::IsComponentLocation(extension->location()))) {
     // Extensions, legacy packaged apps, and component platform apps are allowed
-    // to use chrome://favicon/ and chrome://extension-icon/ URLs. Hosted apps
-    // are not allowed because they are served via web servers (and are
-    // generally never given access to Chrome APIs).
+    // to use chrome://favicon/, chrome://extension-icon/ and chrome://app-icon
+    // URLs. Hosted apps are not allowed because they are served via web servers
+    // (and are generally never given access to Chrome APIs).
     allowed_webui_hosts.emplace_back(chrome::kChromeUIExtensionIconHost);
     allowed_webui_hosts.emplace_back(chrome::kChromeUIFaviconHost);
+    allowed_webui_hosts.emplace_back(chrome::kChromeUIAppIconHost);
   }
   if (!allowed_webui_hosts.empty()) {
     factories->emplace(
