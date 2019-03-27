@@ -10,6 +10,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/system/accessibility/autoclick_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/root_window_finder.h"
@@ -46,6 +47,7 @@ base::TimeDelta CalculateStartGestureDelay(base::TimeDelta total_delay) {
   return total_delay * kStartGestureDelayRatio;
 }
 
+// TODO(katie): Check the bubble menu here instead of the tray.
 bool AutoclickTrayContainsPoint(const gfx::Point& point) {
   for (aura::Window* window : Shell::GetAllRootWindows()) {
     AutoclickTray* autoclick_tray =
@@ -74,6 +76,11 @@ AutoclickController::AutoclickController()
 }
 
 AutoclickController::~AutoclickController() {
+  // Clean up UI.
+  menu_bubble_controller_ = nullptr;
+  CancelAutoclickAction();
+
+  Shell::Get()->RemovePreTargetHandler(this);
   SetTapDownTarget(nullptr);
   Shell::GetPrimaryRootWindow()
       ->GetHost()
@@ -101,10 +108,22 @@ void AutoclickController::SetEnabled(bool enabled) {
     return;
   enabled_ = enabled;
 
-  if (enabled_)
+  if (enabled_) {
     Shell::Get()->AddPreTargetHandler(this);
-  else
+
+    // Only create the bubble controller when needed. Most users will not enable
+    // automatic clicks, so there's no need to use these unless the feature
+    // is on.
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableExperimentalAccessibilityAutoclick)) {
+      menu_bubble_controller_ =
+          std::make_unique<AutoclickMenuBubbleController>();
+      menu_bubble_controller_->ShowBubble(event_type_, menu_position_);
+    }
+  } else {
     Shell::Get()->RemovePreTargetHandler(this);
+    menu_bubble_controller_ = nullptr;
+  }
 
   CancelAutoclickAction();
 }
@@ -125,6 +144,8 @@ void AutoclickController::SetAutoclickDelay(base::TimeDelta delay) {
 
 void AutoclickController::SetAutoclickEventType(
     mojom::AutoclickEventType type) {
+  if (menu_bubble_controller_)
+    menu_bubble_controller_->SetEventType(type);
   if (event_type_ == type)
     return;
   CancelAutoclickAction();
@@ -139,7 +160,8 @@ void AutoclickController::SetMovementThreshold(int movement_threshold) {
 void AutoclickController::SetMenuPosition(
     mojom::AutoclickMenuPosition menu_position) {
   menu_position_ = menu_position;
-  // TODO(katie): When the on-screen menu exists, update its position here.
+  if (menu_bubble_controller_)
+    menu_bubble_controller_->SetPosition(menu_position_);
 }
 
 void AutoclickController::CreateAutoclickRingWidget(

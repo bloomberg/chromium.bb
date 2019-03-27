@@ -26,6 +26,7 @@ namespace ash {
 
 class AutoclickDragEventRewriter;
 class AutoclickRingHandler;
+class AutoclickMenuBubbleController;
 
 // Autoclick is one of the accessibility features. If enabled, two circles will
 // animate at the mouse event location and an automatic mouse event event will
@@ -67,6 +68,9 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
 
   // Functionality for testing.
   static float GetStartGestureDelayRatioForTesting();
+  AutoclickMenuBubbleController* GetMenuBubbleControllerForTesting() {
+    return menu_bubble_controller_.get();
+  }
 
  private:
   void SetTapDownTarget(aura::Window* target);
@@ -82,6 +86,7 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   void UpdateRingSize();
   void RecordUserAction(mojom::AutoclickEventType event_type) const;
   bool DragInProgress() const;
+  void CreateMenuBubbleController();
 
   // ui::EventHandler overrides:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -98,6 +103,12 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   mojom::AutoclickEventType event_type_ = kDefaultAutoclickEventType;
   bool revert_to_left_click_ = true;
   int movement_threshold_ = kDefaultAutoclickMovementThreshold;
+  // TODO(katie): The default position should flex with the user's choice of
+  // language (RTL vs LTR) and shelf position, following the same behavior
+  // as the volume slider bubble. However, once the user changes the position
+  // manually, the position will be fixed regardless of language direction and
+  // shelf position. This probably means adding a new AutoclickMenuPostion
+  // enum for "system default".
   mojom::AutoclickMenuPosition menu_position_ = kDefaultAutoclickMenuPosition;
   int mouse_event_flags_ = ui::EF_NONE;
   // The target window is observed by AutoclickController for the duration
@@ -128,6 +139,7 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   std::unique_ptr<base::RetainingOneShotTimer> start_gesture_timer_;
   std::unique_ptr<AutoclickRingHandler> autoclick_ring_handler_;
   std::unique_ptr<AutoclickDragEventRewriter> drag_event_rewriter_;
+  std::unique_ptr<AutoclickMenuBubbleController> menu_bubble_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickController);
 };

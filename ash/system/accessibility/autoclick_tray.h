@@ -19,6 +19,7 @@ namespace ash {
 
 // A button in the tray that opens a menu which lets users manage their
 // autoclick settings.
+// TODO(katie): Remove this in favor of AutoclickMenuView per UX design changes.
 class ASH_EXPORT AutoclickTray : public TrayBackgroundView,
                                  public AccessibilityObserver,
                                  public SessionObserver {
