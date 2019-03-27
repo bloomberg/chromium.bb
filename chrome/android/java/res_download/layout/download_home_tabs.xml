@@ -21,6 +21,7 @@
         app:tabGravity="center"
         app:tabTextAppearance="@style/TextAppearance.BlackLink"
         app:tabIndicatorColor="@color/light_active_color"
+        app:tabSelectedTextColor="@color/tab_layout_selected_tab_color"
         android:background="@drawable/download_home_tabs_bg">
 
         <android.support.design.widget.TabItem
