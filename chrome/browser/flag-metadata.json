@@ -2828,8 +2828,8 @@
   },
   {
     "name": "shelf-hover-previews",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "manucornet" ],
+    "expiry_milestone": 77
   },
   {
     "name": "show-autofill-type-predictions",
