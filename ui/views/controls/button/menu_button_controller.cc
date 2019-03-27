@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/controls/button/menu_button_event_handler.h"
+#include "ui/views/controls/button/menu_button_controller.h"
 
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -14,66 +14,65 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
-using base::TimeTicks;
 using base::TimeDelta;
+using base::TimeTicks;
 
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// MenuButtonEventHandler::PressedLock
+// MenuButtonController::PressedLock
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-MenuButtonEventHandler::PressedLock::PressedLock(
-    MenuButtonEventHandler* menu_button_event_handler)
-    : PressedLock(menu_button_event_handler, false, nullptr) {}
+MenuButtonController::PressedLock::PressedLock(
+    MenuButtonController* menu_button_controller)
+    : PressedLock(menu_button_controller, false, nullptr) {}
 
-MenuButtonEventHandler::PressedLock::PressedLock(
-    MenuButtonEventHandler* menu_button_event_handler,
+MenuButtonController::PressedLock::PressedLock(
+    MenuButtonController* menu_button_controller,
     bool is_sibling_menu_show,
     const ui::LocatedEvent* event)
-    : menu_button_event_handler_(
-          menu_button_event_handler->weak_factory_.GetWeakPtr()) {
-  menu_button_event_handler_->IncrementPressedLocked(is_sibling_menu_show,
-                                                     event);
+    : menu_button_controller_(
+          menu_button_controller->weak_factory_.GetWeakPtr()) {
+  menu_button_controller_->IncrementPressedLocked(is_sibling_menu_show, event);
 }
 
-std::unique_ptr<MenuButtonEventHandler::PressedLock>
-MenuButtonEventHandler::TakeLock() {
+std::unique_ptr<MenuButtonController::PressedLock>
+MenuButtonController::TakeLock() {
   return TakeLock(false, nullptr);
 }
 
-std::unique_ptr<MenuButtonEventHandler::PressedLock>
-MenuButtonEventHandler::TakeLock(bool is_sibling_menu_show,
-                                 const ui::LocatedEvent* event) {
-  return std::make_unique<MenuButtonEventHandler::PressedLock>(
+std::unique_ptr<MenuButtonController::PressedLock>
+MenuButtonController::TakeLock(bool is_sibling_menu_show,
+                               const ui::LocatedEvent* event) {
+  return std::make_unique<MenuButtonController::PressedLock>(
       this, is_sibling_menu_show, event);
 }
 
-MenuButtonEventHandler::PressedLock::~PressedLock() {
-  if (menu_button_event_handler_)
-    menu_button_event_handler_->DecrementPressedLocked();
+MenuButtonController::PressedLock::~PressedLock() {
+  if (menu_button_controller_)
+    menu_button_controller_->DecrementPressedLocked();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// MenuButtonEventHandler
+// MenuButtonController
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-MenuButtonEventHandler::MenuButtonEventHandler(
+MenuButtonController::MenuButtonController(
     MenuButton* menu_button_parent,
     MenuButtonListener* menu_button_listener)
     : menu_button_parent_(menu_button_parent), listener_(menu_button_listener) {
   menu_button_parent_->AddPreTargetHandler(this);
 }
 
-MenuButtonEventHandler::~MenuButtonEventHandler() {
+MenuButtonController::~MenuButtonController() {
   menu_button_parent_->RemovePreTargetHandler(this);
 }
 
-bool MenuButtonEventHandler::OnMousePressed(const ui::MouseEvent& event) {
+bool MenuButtonController::OnMousePressed(const ui::MouseEvent& event) {
   if (menu_button_parent_->request_focus_on_press())
     menu_button_parent_->RequestFocus();
   if (menu_button_parent_->state() != Button::STATE_DISABLED &&
@@ -85,7 +84,7 @@ bool MenuButtonEventHandler::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 
-void MenuButtonEventHandler::OnMouseReleased(const ui::MouseEvent& event) {
+void MenuButtonController::OnMouseReleased(const ui::MouseEvent& event) {
   if (menu_button_parent_->state() != Button::STATE_DISABLED &&
       menu_button_parent_->IsTriggerableEvent(event) &&
       menu_button_parent_->HitTestPoint(event.location()) &&
@@ -97,22 +96,22 @@ void MenuButtonEventHandler::OnMouseReleased(const ui::MouseEvent& event) {
   }
 }
 
-void MenuButtonEventHandler::OnMouseEntered(const ui::MouseEvent& event) {
+void MenuButtonController::OnMouseEntered(const ui::MouseEvent& event) {
   if (pressed_lock_count_ == 0)  // Ignore mouse movement if state is locked.
     menu_button_parent_->LabelButton::OnMouseEntered(event);
 }
 
-void MenuButtonEventHandler::OnMouseExited(const ui::MouseEvent& event) {
+void MenuButtonController::OnMouseExited(const ui::MouseEvent& event) {
   if (pressed_lock_count_ == 0)  // Ignore mouse movement if state is locked.
     menu_button_parent_->LabelButton::OnMouseExited(event);
 }
 
-void MenuButtonEventHandler::OnMouseMoved(const ui::MouseEvent& event) {
+void MenuButtonController::OnMouseMoved(const ui::MouseEvent& event) {
   if (pressed_lock_count_ == 0)  // Ignore mouse movement if state is locked.
     menu_button_parent_->LabelButton::OnMouseMoved(event);
 }
 
-void MenuButtonEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+void MenuButtonController::OnGestureEvent(ui::GestureEvent* event) {
   if (menu_button_parent_->state() != Button::STATE_DISABLED) {
     auto ref = weak_factory_.GetWeakPtr();
     if (menu_button_parent_->IsTriggerableEvent(*event) && !Activate(event)) {
@@ -140,7 +139,7 @@ void MenuButtonEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   menu_button_parent_->LabelButton::OnGestureEvent(event);
 }
 
-bool MenuButtonEventHandler::OnKeyPressed(const ui::KeyEvent& event) {
+bool MenuButtonController::OnKeyPressed(const ui::KeyEvent& event) {
   switch (event.key_code()) {
     case ui::VKEY_SPACE:
       // Alt-space on windows should show the window menu.
@@ -164,12 +163,12 @@ bool MenuButtonEventHandler::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-bool MenuButtonEventHandler::OnKeyReleased(const ui::KeyEvent& event) {
+bool MenuButtonController::OnKeyReleased(const ui::KeyEvent& event) {
   // A MenuButton always activates the menu on key press.
   return false;
 }
 
-void MenuButtonEventHandler::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+void MenuButtonController::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   menu_button_parent_->Button::GetAccessibleNodeData(node_data);
   node_data->role = ax::mojom::Role::kPopUpButton;
   node_data->SetHasPopup(ax::mojom::HasPopup::kMenu);
@@ -177,11 +176,11 @@ void MenuButtonEventHandler::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kOpen);
 }
 
-bool MenuButtonEventHandler::ShouldEnterPushedState(const ui::Event& event) {
+bool MenuButtonController::ShouldEnterPushedState(const ui::Event& event) {
   return menu_button_parent_->IsTriggerableEventType(event);
 }
 
-void MenuButtonEventHandler::StateChanged(LabelButton::ButtonState old_state) {
+void MenuButtonController::StateChanged(LabelButton::ButtonState old_state) {
   if (pressed_lock_count_ != 0) {
     // The button's state was changed while it was supposed to be locked in a
     // pressed state. This shouldn't happen, but conceivably could if a caller
@@ -196,13 +195,13 @@ void MenuButtonEventHandler::StateChanged(LabelButton::ButtonState old_state) {
   }
 }
 
-void MenuButtonEventHandler::NotifyClick(const ui::Event& event) {
+void MenuButtonController::NotifyClick(const ui::Event& event) {
   // We don't forward events to the normal button listener, instead using the
   // MenuButtonListener.
   Activate(&event);
 }
 
-void MenuButtonEventHandler::IncrementPressedLocked(
+void MenuButtonController::IncrementPressedLocked(
     bool snap_ink_drop_to_activated,
     const ui::LocatedEvent* event) {
   ++pressed_lock_count_;
@@ -220,7 +219,7 @@ void MenuButtonEventHandler::IncrementPressedLocked(
   menu_button_parent_->GetInkDrop()->SetHovered(false);
 }
 
-void MenuButtonEventHandler::DecrementPressedLocked() {
+void MenuButtonController::DecrementPressedLocked() {
   --pressed_lock_count_;
   DCHECK_GE(pressed_lock_count_, 0);
 
@@ -247,7 +246,7 @@ void MenuButtonEventHandler::DecrementPressedLocked() {
   }
 }
 
-int MenuButtonEventHandler::GetMaximumScreenXCoordinate() {
+int MenuButtonController::GetMaximumScreenXCoordinate() {
   if (!menu_button_parent_->GetWidget()) {
     NOTREACHED();
     return 0;
@@ -258,7 +257,7 @@ int MenuButtonEventHandler::GetMaximumScreenXCoordinate() {
   return monitor_bounds.right() - 1;
 }
 
-bool MenuButtonEventHandler::Activate(const ui::Event* event) {
+bool MenuButtonController::Activate(const ui::Event* event) {
   if (listener_) {
     gfx::Rect lb = menu_button_parent_->GetLocalBounds();
 
@@ -328,7 +327,7 @@ bool MenuButtonEventHandler::Activate(const ui::Event* event) {
   return true;
 }
 
-bool MenuButtonEventHandler::IsTriggerableEventType(const ui::Event& event) {
+bool MenuButtonController::IsTriggerableEventType(const ui::Event& event) {
   if (event.IsMouseEvent()) {
     const ui::MouseEvent& mouseev = static_cast<const ui::MouseEvent&>(event);
     // Active on left mouse button only, to prevent a menu from being activated
@@ -351,7 +350,7 @@ bool MenuButtonEventHandler::IsTriggerableEventType(const ui::Event& event) {
 // TODO (cyan): Move all of the OnMouse.* methods here.
 // This gets more tricky because certain parts are still expected to be called
 // in the View::base class.
-void MenuButtonEventHandler::OnMouseEvent(ui::MouseEvent* event) {
+void MenuButtonController::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED:
       if ((event->flags() &
@@ -375,7 +374,7 @@ void MenuButtonEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
-bool MenuButtonEventHandler::IsTriggerableEvent(const ui::Event& event) {
+bool MenuButtonController::IsTriggerableEvent(const ui::Event& event) {
   return menu_button_parent_->IsTriggerableEventType(event) &&
          (TimeTicks::Now() - menu_closed_time_).InMilliseconds() >=
              kMinimumMsBetweenButtonClicks;

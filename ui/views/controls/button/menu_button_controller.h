@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_EVENT_HANDLER_H_
-#define UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_EVENT_HANDLER_H_
+#ifndef UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_CONTROLLER_H_
+#define UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_CONTROLLER_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -21,31 +21,31 @@ class MenuButtonListener;
 // An EventHandler that contains the event behavior of a MenuButton.
 // TODO (cyan): This will eventually be available to any Button derivative class
 // that wants MenuButton behavior.
-class VIEWS_EXPORT MenuButtonEventHandler : public ui::EventHandler {
+class VIEWS_EXPORT MenuButtonController : public ui::EventHandler {
  public:
   // A scoped lock for keeping the MenuButton in STATE_PRESSED e.g., while a
   // menu is running. These are cumulative.
   class VIEWS_EXPORT PressedLock {
    public:
-    explicit PressedLock(MenuButtonEventHandler* menu_button_event_handler);
+    explicit PressedLock(MenuButtonController* menu_button_controller);
 
     // |event| is the event that caused the button to be pressed. May be null.
-    PressedLock(MenuButtonEventHandler* menu_button_event_handler,
+    PressedLock(MenuButtonController* menu_button_controller,
                 bool is_sibling_menu_show,
                 const ui::LocatedEvent* event);
 
     ~PressedLock();
 
    private:
-    base::WeakPtr<MenuButtonEventHandler> menu_button_event_handler_;
+    base::WeakPtr<MenuButtonController> menu_button_controller_;
 
     DISALLOW_COPY_AND_ASSIGN(PressedLock);
   };
 
-  // TODO (cyan): MenuButtonEventHandler should take in a Button.
-  MenuButtonEventHandler(MenuButton* menu_button_parent,
-                         MenuButtonListener* menu_button_listener);
-  ~MenuButtonEventHandler() override;
+  // TODO (cyan): MenuButtonController should take in a Button.
+  MenuButtonController(MenuButton* menu_button_parent,
+                       MenuButtonListener* menu_button_listener);
+  ~MenuButtonController() override;
 
   // TODO (cyan): Methods in this block should override EventHandler methods.
   // These are currently called by the corresponding method from view::Views.
@@ -127,11 +127,11 @@ class VIEWS_EXPORT MenuButtonEventHandler : public ui::EventHandler {
   // we programmatically show a menu on a disabled button.
   bool should_disable_after_press_ = false;
 
-  base::WeakPtrFactory<MenuButtonEventHandler> weak_factory_{this};
+  base::WeakPtrFactory<MenuButtonController> weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(MenuButtonEventHandler);
+  DISALLOW_COPY_AND_ASSIGN(MenuButtonController);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_EVENT_HANDLER_H_
+#endif  // UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_CONTROLLER_H_
