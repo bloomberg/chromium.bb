@@ -26,7 +26,7 @@ enum class KnownCategories {
   DOWNLOADS,
 
   // Recently used bookmarks.
-  BOOKMARKS,
+  BOOKMARKS_DEPRECATED,
 
   // Physical Web page available in the vicinity.
   PHYSICAL_WEB_PAGES_DEPRECATED,

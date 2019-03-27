@@ -92,8 +92,8 @@ public class ImageFetcherTest {
         }
 
         @KnownCategories
-        int[] categoriesThatDontFetch = new int[] {
-                KnownCategories.DOWNLOADS, KnownCategories.BOOKMARKS, KnownCategories.READING_LIST};
+        int[] categoriesThatDontFetch =
+                new int[] {KnownCategories.DOWNLOADS, KnownCategories.READING_LIST};
         for (@KnownCategories int category : categoriesThatDontFetch) {
             SnippetArticle suggestion = createDummySuggestion(category);
             imageFetcher.makeFaviconRequest(suggestion, mockCallback);

@@ -58,9 +58,6 @@ public class SuggestionsEventReporterBridge implements SuggestionsEventReporter 
         int category = actionItem.getCategory();
         nativeOnMoreButtonClicked(category, actionItem.getPerSectionRank());
         switch (category) {
-            case KnownCategories.BOOKMARKS:
-                NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARKS_MANAGER);
-                break;
             case KnownCategories.DOWNLOADS:
                 NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_DOWNLOADS_MANAGER);
                 break;

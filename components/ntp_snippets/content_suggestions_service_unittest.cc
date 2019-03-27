@@ -812,7 +812,7 @@ TEST_F(ContentSuggestionsServiceTest,
   // The service is recreated to pick up the new ranker.
   ResetService();
 
-  Category category = Category::FromKnownCategory(KnownCategories::BOOKMARKS);
+  Category category = Category::FromKnownCategory(KnownCategories::ARTICLES);
   MockContentSuggestionsProvider* provider =
       MakeRegisteredMockProvider(category);
   provider->FireCategoryStatusChangedWithCurrentStatus(category);
