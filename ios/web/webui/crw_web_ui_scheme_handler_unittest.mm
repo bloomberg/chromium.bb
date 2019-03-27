@@ -14,15 +14,23 @@
 #import "net/base/mac/url_conversions.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+namespace {
+const char kOfflineHost[] = "offline";
+}  // namespace
+
 @interface FakeSchemeTask : NSObject <WKURLSchemeTask>
 
 // Override from the protocol to have it readwrite.
 @property(nonatomic, readwrite, copy) NSURLRequest* request;
+
+// The error received.
+@property(nonatomic, strong) NSError* error;
 
 @property(nonatomic, assign) BOOL receivedData;
 @property(nonatomic, assign) BOOL receivedError;
@@ -45,6 +53,7 @@
 
 - (void)didFailWithError:(NSError*)error {
   self.receivedError = YES;
+  self.error = error;
 }
 
 @end
@@ -53,8 +62,12 @@ namespace web {
 
 namespace {
 class FakeWebUIIOSControllerFactory : public WebUIIOSControllerFactory {
-  bool HasWebUIIOSControllerForURL(const GURL& url) const override {
-    return url.SchemeIs(kTestWebUIScheme);
+  NSInteger GetErrorCodeForWebUIURL(const GURL& url) const override {
+    if (!url.SchemeIs(kTestWebUIScheme))
+      return NSURLErrorUnsupportedURL;
+    if (url.host() == kOfflineHost)
+      return NSURLErrorNotConnectedToInternet;
+    return 0;
   }
 
   std::unique_ptr<WebUIIOSController> CreateWebUIIOSControllerForURL(
@@ -113,7 +126,7 @@ class CRWWebUISchemeManagerTest : public WebTest {
 // is a WebUI URL.
 TEST_F(CRWWebUISchemeManagerTest, StartTaskWithCorrectURL) {
   CRWWebUISchemeHandler* scheme_handler = CreateSchemeHandler();
-  WKWebView* web_view;
+  id web_view = OCMClassMock([WKWebView class]);
   FakeSchemeTask* url_scheme_task = [[FakeSchemeTask alloc] init];
   NSMutableURLRequest* request =
       [NSMutableURLRequest requestWithURL:GetWebUIURL()];
@@ -127,11 +140,42 @@ TEST_F(CRWWebUISchemeManagerTest, StartTaskWithCorrectURL) {
   EXPECT_FALSE(url_scheme_task.receivedError);
 }
 
+// Tests that the error returned is the same as the error from the factory.
+TEST_F(CRWWebUISchemeManagerTest, ErrorReceived) {
+  CRWWebUISchemeHandler* scheme_handler = CreateSchemeHandler();
+  id web_view = OCMClassMock([WKWebView class]);
+  FakeSchemeTask* url_scheme_task = [[FakeSchemeTask alloc] init];
+  NSURLComponents* components_url = [[NSURLComponents alloc] init];
+  components_url.scheme = base::SysUTF8ToNSString(kTestWebUIScheme);
+  components_url.host = base::SysUTF8ToNSString(kOfflineHost);
+  NSMutableURLRequest* request =
+      [NSMutableURLRequest requestWithURL:components_url.URL];
+  request.mainDocumentURL = request.URL;
+  url_scheme_task.request = request;
+
+  [scheme_handler webView:web_view startURLSchemeTask:url_scheme_task];
+
+  RespondWithData(net::GURLWithNSURL(request.URL), "{}");
+  EXPECT_FALSE(url_scheme_task.receivedData);
+  EXPECT_TRUE(url_scheme_task.receivedError);
+  EXPECT_EQ(NSURLErrorNotConnectedToInternet, url_scheme_task.error.code);
+
+  // Check with a different URL.
+  request.mainDocumentURL = [NSURL URLWithString:@"invalidScheme://page"];
+  url_scheme_task.request = request;
+  [scheme_handler webView:web_view startURLSchemeTask:url_scheme_task];
+
+  RespondWithData(net::GURLWithNSURL(request.URL), "{}");
+  EXPECT_FALSE(url_scheme_task.receivedData);
+  EXPECT_TRUE(url_scheme_task.receivedError);
+  EXPECT_EQ(NSURLErrorUnsupportedURL, url_scheme_task.error.code);
+}
+
 // Tests that calling start on the scheme handler returns some data when the URL
 // is *not* a WebUI URL but the main document URL is.
 TEST_F(CRWWebUISchemeManagerTest, StartTaskWithCorrectMainURL) {
   CRWWebUISchemeHandler* scheme_handler = CreateSchemeHandler();
-  WKWebView* web_view;
+  id web_view = OCMClassMock([WKWebView class]);
   FakeSchemeTask* url_scheme_task = [[FakeSchemeTask alloc] init];
   NSMutableURLRequest* request = [NSMutableURLRequest
       requestWithURL:[NSURL URLWithString:@"https://notAWebUIURL"]];
@@ -149,7 +193,7 @@ TEST_F(CRWWebUISchemeManagerTest, StartTaskWithCorrectMainURL) {
 // is correct but the mainDocumentURL is wrong.
 TEST_F(CRWWebUISchemeManagerTest, StartTaskWithWrongMainDocumentURL) {
   CRWWebUISchemeHandler* scheme_handler = CreateSchemeHandler();
-  WKWebView* web_view;
+  id web_view = OCMClassMock([WKWebView class]);
   FakeSchemeTask* url_scheme_task = [[FakeSchemeTask alloc] init];
   NSMutableURLRequest* request =
       [NSMutableURLRequest requestWithURL:GetWebUIURL()];
@@ -167,7 +211,7 @@ TEST_F(CRWWebUISchemeManagerTest, StartTaskWithWrongMainDocumentURL) {
 // data.
 TEST_F(CRWWebUISchemeManagerTest, StopTask) {
   CRWWebUISchemeHandler* scheme_handler = CreateSchemeHandler();
-  WKWebView* web_view;
+  id web_view = OCMClassMock([WKWebView class]);
   FakeSchemeTask* url_scheme_task = [[FakeSchemeTask alloc] init];
   NSMutableURLRequest* request =
       [NSMutableURLRequest requestWithURL:GetWebUIURL()];

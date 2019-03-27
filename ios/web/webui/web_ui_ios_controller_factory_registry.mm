@@ -12,6 +12,10 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 namespace {
 // Returns the global list of registered factories.
@@ -40,13 +44,15 @@ WebUIIOSControllerFactoryRegistry::GetInstance() {
   return instance.get();
 }
 
-bool WebUIIOSControllerFactoryRegistry::HasWebUIIOSControllerForURL(
+NSInteger WebUIIOSControllerFactoryRegistry::GetErrorCodeForWebUIURL(
     const GURL& url) const {
+  NSInteger error_code = NSURLErrorUnknown;
   for (WebUIIOSControllerFactory* factory : GetGlobalFactories()) {
-    if (factory->HasWebUIIOSControllerForURL(url))
-      return true;
+    error_code = factory->GetErrorCodeForWebUIURL(url);
+    if (error_code == 0)
+      return 0;
   }
-  return false;
+  return error_code;
 }
 
 std::unique_ptr<WebUIIOSController>
@@ -61,10 +67,8 @@ WebUIIOSControllerFactoryRegistry::CreateWebUIIOSControllerForURL(
   return nullptr;
 }
 
-WebUIIOSControllerFactoryRegistry::WebUIIOSControllerFactoryRegistry() {
-}
+WebUIIOSControllerFactoryRegistry::WebUIIOSControllerFactoryRegistry() {}
 
-WebUIIOSControllerFactoryRegistry::~WebUIIOSControllerFactoryRegistry() {
-}
+WebUIIOSControllerFactoryRegistry::~WebUIIOSControllerFactoryRegistry() {}
 
 }  // namespace web
