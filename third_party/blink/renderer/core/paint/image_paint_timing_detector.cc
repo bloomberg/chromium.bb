@@ -59,6 +59,34 @@ String GetImageUrl(const LayoutObject& object) {
 }
 #endif
 
+// In order for |rect_size| to align with the importance of the image, we
+// use this heuristics to alleviate the effect of scaling. For example,
+// an image has intrinsic size being 1x1 and scaled to 100x100, but only 50x100
+// is visible in the viewport. In this case, |intrinsic_image_size| is 1x1;
+// |displayed_image_size| is 100x100. |intrinsic_image_size| is 50x100.
+// As the image do not have a lot of content, we down scale |visual_size| by the
+// ratio of |intrinsic_image_size|/|displayed_image_size| = 1/10000.
+//
+// * |visual_size| referes to the size of the |displayed_image_size| after
+// clipping and transforming. The size is in the main-frame's coordinate.
+// * |displayed_image_size| refers to the paint size in the image object's
+// coordinate.
+// * |intrinsic_image_size| refers to the the image object's original size
+// before scaling. The size is in the image object's coordinate.
+uint64_t DownScaleIfIntrinsicSizeIsSmaller(
+    uint64_t visual_size,
+    const uint64_t& intrinsic_image_size,
+    const uint64_t& displayed_image_size) {
+  // This is an optimized equivalence to:
+  // |visual_size| * min(|displayed_image_size|, |intrinsic_image_size|) /
+  // |displayed_image_size|
+  if (intrinsic_image_size < displayed_image_size) {
+    return static_cast<double>(visual_size) * intrinsic_image_size /
+           displayed_image_size;
+  }
+  return visual_size;
+}
+
 bool AttachedBackgroundImagesAllLoaded(const LayoutObject& object) {
   DCHECK(ImagePaintTimingDetector::HasBackgroundImage(object));
   const ComputedStyle* style = object.Style();
@@ -268,6 +296,7 @@ bool ImagePaintTimingDetector::HasBackgroundImage(const LayoutObject& object) {
 
 void ImagePaintTimingDetector::RecordImage(
     const LayoutObject& object,
+    Image* image,
     const PropertyTreeState& current_paint_chunk_properties) {
   // TODO(crbug.com/933479): Use LayoutObject::GeneratingNode() to include
   // anonymous objects' rect.
@@ -292,6 +321,10 @@ void ImagePaintTimingDetector::RecordImage(
     uint64_t rect_size =
         frame_view_->GetPaintTimingDetector().CalculateVisualSize(
             visual_rect, current_paint_chunk_properties);
+    rect_size = DownScaleIfIntrinsicSizeIsSmaller(
+        rect_size, image->Size().Area(),
+        (visual_rect.Width() * visual_rect.Height()).ToUnsigned());
+
     DVLOG(2) << "Node id (" << node_id << "): size=" << rect_size
              << ", type=" << object.DebugName();
     if (rect_size == 0) {

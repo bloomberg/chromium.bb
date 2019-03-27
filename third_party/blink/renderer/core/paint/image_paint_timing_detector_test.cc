@@ -595,4 +595,63 @@ TEST_F(ImagePaintTimingDetectorTest, SameSizeShouldNotBeIgnored) {
   EXPECT_EQ(CountRankingSetRecords(), 3u);
 }
 
+TEST_F(ImagePaintTimingDetectorTest, UseIntrinsicSizeIfSmaller_Image) {
+  SetBodyInnerHTML(R"HTML(
+    <img height="300" width="300" display="block" id="target">
+    </img>
+  )HTML");
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  ImageRecord* record = FindLargestPaintCandidate();
+  EXPECT_TRUE(record);
+  EXPECT_EQ(record->first_size, 25u);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, NotUseIntrinsicSizeIfLarger_Image) {
+  SetBodyInnerHTML(R"HTML(
+    <img height="1" width="1" display="block" id="target">
+    </img>
+  )HTML");
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  ImageRecord* record = FindLargestPaintCandidate();
+  EXPECT_TRUE(record);
+  EXPECT_EQ(record->first_size, 1u);
+}
+
+TEST_F(ImagePaintTimingDetectorTest,
+       UseIntrinsicSizeIfSmaller_BackgroundImage) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #d {
+        width: 50px;
+        height: 50px;
+        background-image: url("data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==");
+      }
+    </style>
+    <div id="d"></div>
+  )HTML");
+  ImageRecord* record = FindLargestPaintCandidate();
+  EXPECT_TRUE(record);
+  EXPECT_EQ(record->first_size, 1u);
+}
+
+TEST_F(ImagePaintTimingDetectorTest,
+       NotUseIntrinsicSizeIfLarger_BackgroundImage) {
+  // The image is in 16x16.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #d {
+        width: 5px;
+        height: 5px;
+        background-image: url("data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAAb5JREFUOMulkr1KA0EQgGdvTwwnYmER0gQsrFKmSy+pLESw9Qm0F/ICNnba+h6iEOuAEWslKJKTOyJJvIT72d1xZuOFC0giOLA77O7Mt/PnNptN+I+49Xr9GhH3f3mb0v1ht9vtLAUYYw5ItkgDL3KyD8PhcLvdbl/WarXT3DjLMnAcR/f7/YfxeKwtgC5RKQVhGILWeg4hQ6hUKjWyucmhLFEUuWR3QYBWAZABQ9i5CCmXy16pVALP80BKaaG+70MQBLvzFMjRKKXh8j6FSYKF7ITdEWLa4/ktokN74wiqjSMpnVcbQZqmEJHz+ckeCPFjWKwULpyspAqhdXVXdcnZcPjsIgn+2BsVA8jVYuWlgJ3yBj0icgq2uoK+lg4t+ZvLomSKamSQ4AI5BcMADtMhyNoSgNIISUaFNtwlazcDcBc4gjjVwCWid2usCWroYEhnaqbzFJLUzAHIXRDChXCcQP8zhkSZ5eNLgHAUzwDcRu4CoIRn/wsGUQIIy4Vr9TH6SYFCNzw4nALn5627K4vIttOUOwfa5YnrDYzt/9OLv9I5l8kk5hZ3XLO20b7tbR7zHLy/BX8G0IeBEM7ZN1NGIaFUaKLgAAAAAElFTkSuQmCC");
+      }
+    </style>
+    <div id="d"></div>
+  )HTML");
+  ImageRecord* record = FindLargestPaintCandidate();
+  EXPECT_TRUE(record);
+  EXPECT_EQ(record->first_size, 25u);
+}
+
 }  // namespace blink
