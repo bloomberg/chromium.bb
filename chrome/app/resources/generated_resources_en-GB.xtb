@@ -1848,6 +1848,7 @@
 <translation id="3892414795099177503">Add OpenVPN/L2TP...</translation>
 <translation id="3893536212201235195">Read and change your accessibility settings</translation>
 <translation id="3893630138897523026">ChromeVox (spoken feedback)</translation>
+<translation id="3894123633473837029">Include recent Assistant history via Sherlog. This may include your identity, location and debug info. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Add folder</translation>
 <translation id="389589731200570180">Share with guests</translation>
 <translation id="3898521660513055167">Token Status</translation>
@@ -3720,6 +3721,7 @@
 <translation id="6915804003454593391">User:</translation>
 <translation id="6916590542764765824">Manage Extensions</translation>
 <translation id="6920989436227028121">Open as standard tab</translation>
+<translation id="6921104647315081813">Clear activities</translation>
 <translation id="6921709132208495314">Stop using data on this page</translation>
 <translation id="6922128026973287222">Save data and browse faster using Google Data Saver. Click to learn more.</translation>
 <translation id="6923132443355966645">Scroll/Click</translation>

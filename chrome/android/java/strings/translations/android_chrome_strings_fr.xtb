@@ -82,7 +82,6 @@
 <translation id="1553358976309200471">Mettre à jour Chrome</translation>
 <translation id="1569387923882100876">Appareil connecté</translation>
 <translation id="1571304935088121812">Copier le nom d'utilisateur</translation>
-<translation id="1576370611341449972">Le téléchargement ne s'effectue que sur Wi-Fi</translation>
 <translation id="1612196535745283361">Chrome doit avoir accès aux données de localisation pour rechercher des appareils. Cette fonctionnalité est <ph name="BEGIN_LINK" />désactivée pour cet appareil<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Appareil photo</translation>
 <translation id="1623104350909869708">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
@@ -371,7 +370,6 @@
 <translation id="3810838688059735925">Vidéo</translation>
 <translation id="3810973564298564668">Gérer</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> téléchargements supprimés</translation>
-<translation id="3819562311292413223">Télécharger des articles pour vous</translation>
 <translation id="3822502789641063741">Suppr. données de site ?</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3859306556332390985">Avance rapide</translation>

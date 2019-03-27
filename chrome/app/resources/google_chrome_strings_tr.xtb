@@ -234,6 +234,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="7651907282515937834">Chrome Enterprise logosu</translation>
 <translation id="7747138024166251722">Yükleyici geçici bir dizin oluşturamadı. Lütfen, kullanılabilir disk alanını ve yazılım yükleme iznini kontrol edin.</translation>
 <translation id="7761834446675418963">Chrome'u açmak ve göz atmaya başlamak için adınızı tıklayın.</translation>
+<translation id="7777080907402804672">Bir resmin işe yarar bir açıklaması yoksa, Chrome sizin için bir açıklama sağlamaya çalışır. Açıklama oluşturmak için resimler Google'a gönderilir. Bu özelliği istediğiniz zaman ayarlardan kapatabilirsiniz.</translation>
 <translation id="7781002470561365167">Google Chrome'un yeni bir sürümü çıktı.</translation>
 <translation id="7787950393032327779">Profilin başka bir bilgisayarda (<ph name="HOST_NAME" />) başka bir Google Chrome işlemi (<ph name="PROCESS_ID" />) tarafından kullanıldığı anlaşılıyor. Chrome, profili bozulmaması için kilitledi. Bu profili kullanan başka bir işlem olmadığından eminseniz profilin kilidini açabilir ve Chrome'u tekrar başlatabilirsiniz.</translation>
 <translation id="7808348361785373670">Chrome'dan kaldır...</translation>
@@ -246,6 +247,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="7962410387636238736">Windows XP ve Windows Vista artık desteklenmediğinden, bu bilgisayar bundan böyle Google Chrome güncellemelerini almayacaktır</translation>
 <translation id="8005540215158006229">Chrome neredeyse hazır.</translation>
 <translation id="8008534537613507642">Chrome'u yeniden yükle</translation>
+<translation id="8013993649590906847">Bir resmin işe yarar bir açıklaması yoksa, Chrome sizin için bir açıklama sağlamaya çalışır. Açıklama oluşturmak için resimler Google'a gönderilir.</translation>
 <translation id="8030318113982266900">Cihazınız <ph name="CHANNEL_NAME" /> kanalına güncelleniyor...</translation>
 <translation id="8032142183999901390">Hesabınızı Chrome'dan kaldırdıktan sonra, geçerli olması için açık sekmelerinizi yeniden yüklemeniz gerekebilir.</translation>
 <translation id="8077352834923175128">Yöneticiniz bu güncellemeyi uygulamak için Chrome OS'i yeniden başlatmanızı istiyor</translation>

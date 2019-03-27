@@ -915,7 +915,7 @@
 <translation id="6059925163896151826">USB-Geräte</translation>
 <translation id="6080696365213338172">Sie haben über ein vom Administrator bereitgestelltes Zertifikat auf Inhalte zugegriffen. Die Daten, die Sie innerhalb von <ph name="DOMAIN" /> bereitstellen, können von Ihrem Administrator abgefangen werden.</translation>
 <translation id="6094273045989040137">Anmerkung hinzufügen</translation>
-<translation id="610911394827799129">Möglicherweise verfügt Ihr Google-Konto unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> über andere Browserverläufe.</translation>
+<translation id="610911394827799129">Unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> sind möglicherweise weitere Arten von Browserverlaufsdaten für Ihr Google-Konto gespeichert.</translation>
 <translation id="6132597952260690497">Informationen zu installierten Erweiterungen und Plug-ins</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Keine}=1{1 Passwort (synchronisiert)}other{# Passwörter (synchronisiert)}}</translation>
 <translation id="6146055958333702838">Überprüfen Sie alle Kabel und starten Sie alle verwendeten Router, Modems und

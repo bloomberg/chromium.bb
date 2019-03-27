@@ -1845,6 +1845,7 @@
 <translation id="3892414795099177503">Додај OpenVPN/L2TP...</translation>
 <translation id="3893536212201235195">Читање и мењање ваших подешавања приступачности</translation>
 <translation id="3893630138897523026">ChromeVox (говорне повратне информације)</translation>
+<translation id="3894123633473837029">Уврсти недавну историју Помоћника преко Sherlog-а. Она може да обухвата ваш идентитет, локацију и информације о отклањању грешака. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Додајте директоријум</translation>
 <translation id="389589731200570180">Делите са гостима</translation>
 <translation id="3898521660513055167">Статус токена</translation>
@@ -3719,6 +3720,7 @@
 <translation id="6915804003454593391">Корисник:</translation>
 <translation id="6916590542764765824">Управљајте додацима</translation>
 <translation id="6920989436227028121">Отвори као уобичајену картицу</translation>
+<translation id="6921104647315081813">Обришите активности</translation>
 <translation id="6921709132208495314">Прекини употребу података на овој страници</translation>
 <translation id="6922128026973287222">Уштедите на подацима и прегледајте брже помоћу Google уштеде података. Кликните да бисте сазнали више.</translation>
 <translation id="6923132443355966645">Померајте/кликните</translation>

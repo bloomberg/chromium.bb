@@ -474,8 +474,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle n'est pas configurée ou si elle est définie sur "tls1.2", <ph name="PRODUCT_NAME" /> n'effectue plus ce traitement de secours. Notez que cela ne désactive pas la compatibilité avec les versions TLS antérieures, mais n'affecte que la façon dont <ph name="PRODUCT_NAME" /> contournera les serveurs qui comportent des bugs et qui sont incapables de procéder correctement à la négociation de version.
 
       Sinon, si la compatibilité avec un serveur comportant des bugs doit être maintenue, cette règle peut être définie sur "tls1.1". Il s'agit là d'une solution provisoire qui exige parallèlement de dépanner le serveur rapidement.</translation>
-<translation id="1864269674877167562">Si cette règle est définie sur une chaîne vide ou n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> n'affichera pas d'option de saisie semi-automatique lors de la procédure de connexion de l'utilisateur.
-      Si cette règle est définie sur une chaîne représentant un nom de domaine, <ph name="PRODUCT_OS_NAME" /> affichera une option de saisie semi-automatique lors de la procédure de connexion. Ceci permettra à l'utilisateur de ne saisir que son nom d'utilisateur sans préciser l'extension du nom de domaine. L'utilisateur sera autorisé à modifier cette extension du nom de domaine.</translation>
 <translation id="1864382791685519617">Active la prédiction réseau dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
 
       Cela contrôle la prélecture des DNS, ainsi que la préconnexion et le préchargement TCP et SSL des pages Web.
@@ -1861,13 +1859,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4534500438517478692">Nom de la restriction Android :</translation>
 <translation id="4541530620466526913">Comptes locaux de l'appareil</translation>
 <translation id="4543502256674577024">Paramètres de mise à jour de l'appareil</translation>
-<translation id="4544079461524242527">Configure les paramètres de gestion des extensions pour <ph name="PRODUCT_NAME" />.
-
-          Cette règle contrôle plusieurs paramètres, y compris ceux contrôlés par des règles associées à une extension. Le cas échéant, elle remplace les anciennes règles.
-
-          Cette règle fait correspondre un ID d'extension ou une URL de mise à jour avec sa configuration. Avec un ID d'extension, la configuration n'est appliquée qu'à l'extension spécifiée. Une configuration par défaut peut être définie pour l'ID spécial <ph name="DEFAULT_SCOPE" />, lequel s'applique à toutes les extensions dépourvues d'une configuration personnalisée dans cette règle. Avec une URL de mise à jour, la configuration est appliquée à l'ensemble des extensions avec l'URL de mise à jour telle qu'elle est indiquée dans le fichier manifeste de cette extension, comme indiqué sur la page <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Pour accéder à une description complète de la structure et des paramètres possibles pour cette règle, veuillez consulter https://www.chromium.org/administrators/policy-list-3/extension-settings-full.</translation>
 <translation id="4554651132977135445">Mode de traitement du bouclage pour les règles relatives aux utilisateurs</translation>
 <translation id="4554841826517980623">Cette règle permet de déterminer si la fonctionnalité Partages de fichiers en réseau pour <ph name="PRODUCT_NAME" /> doit détecter les partages sur le réseau via le protocole <ph name="NETBIOS_PROTOCOL" />.
       Lorsque cette règle est définie sur "True", la détection des partages sur le réseau s'effectue via le protocole <ph name="NETBIOS_PROTOCOL" />.

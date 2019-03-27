@@ -867,7 +867,7 @@
 <translation id="2356070529366658676">Vaicāt</translation>
 <translation id="2357949918965361754">Varat izmantot šo funkciju, lai rādītu Chrome saturu televizorā vai citās ierīcēs.</translation>
 <translation id="2359345697448000899">Pārvaldiet savus paplašinājumus, izvēlnē Rīki noklikšķinot uz Paplašinājumi.</translation>
-<translation id="2359808026110333948">Turpiniet</translation>
+<translation id="2359808026110333948">Turpināt</translation>
 <translation id="236117173274098341">Optimizēt</translation>
 <translation id="236141728043665931">Vienmēr bloķēt piekļuvi mikrofonam</translation>
 <translation id="2365507699358342471">Šī vietne var skatīt starpliktuvē kopēto tekstu un attēlus.</translation>
@@ -1849,6 +1849,7 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3892414795099177503">Pievienot OpenVPN/otrā slāņa tunelēšanas protokolu...</translation>
 <translation id="3893536212201235195">Skatīt un mainīt jūsu pieejamības iestatījumus</translation>
 <translation id="3893630138897523026">ChromeVox (balss komentāri)</translation>
+<translation id="3894123633473837029">Iekļaut neseno Asistenta vēsturi, izmantojot Sherlog. Tādējādi var tikt iekļauta jūsu identitāte, atrašanās vieta un atkļūdošanas informācija. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="3894427358181296146">Mapes pievienošana</translation>
 <translation id="389589731200570180">Dalīšanās ar viesiem</translation>
 <translation id="3898521660513055167">Pilnvaras statuss</translation>
@@ -3721,6 +3722,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6915804003454593391">Lietotājs:</translation>
 <translation id="6916590542764765824">Paplašinājumu pārvaldība</translation>
 <translation id="6920989436227028121">Atvērt kā parastu cilni</translation>
+<translation id="6921104647315081813">Notīrīt darbības</translation>
 <translation id="6921709132208495314">Pārtraukt resursu ielādi šajā lapā</translation>
 <translation id="6922128026973287222">Ietaupiet datu lietojumu un veiciet pārlūkošanu ātrāk, izmantojot Google datu lietojuma samazinātāju. Noklikšķiniet, lai uzzinātu vairāk.</translation>
 <translation id="6923132443355966645">Ritināt/klikšķināt</translation>

@@ -451,8 +451,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa norma non è configurata o se viene impostata su "tls1.2", <ph name="PRODUCT_NAME" /> non eseguirà più il fallback. Il supporto per le versioni precedenti di TLS non viene disattivato, solo se <ph name="PRODUCT_NAME" /> eviterà i server che presentano errori e che non sono in grado di trattare correttamente le versioni.
 
       In caso contrario, se è necessario mantenere la compatibilità con un server con errori, è possibile impostare la norma su "tls1.1". Si tratta di una misura temporanea ed è necessario correggere rapidamente il server.</translation>
-<translation id="1864269674877167562">Se questa norma non viene configurata o se viene impostata una stringa vuota, non verrà mostrata un'opzione di completamento automatico durante il flusso di accesso dell'utente in <ph name="PRODUCT_OS_NAME" />.
-      Se per questa norma viene impostata una stringa che rappresenta un nome di dominio, durante l'accesso dell'utente in <ph name="PRODUCT_OS_NAME" /> verrà mostrata un'opzione di completamento automatico che consentirà all'utente di digitare soltanto il nome utente senza l'estensione del nome di dominio. L'utente potrà sovrascrivere l'estensione del nome di dominio.</translation>
 <translation id="1864382791685519617">Consente la previsione della rete in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
 
       Controlla il precaricamento DNS, la preconnessione TCP ed SSL e il prerendering delle pagine web.
@@ -1773,14 +1771,6 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 <translation id="4534500438517478692">Nome della limitazione di Android:</translation>
 <translation id="4541530620466526913">Account del dispositivo</translation>
 <translation id="4543502256674577024">Impostazioni di aggiornamento del dispositivo</translation>
-<translation id="4544079461524242527">Configura le impostazioni di gestione delle estensioni per <ph name="PRODUCT_NAME" />.
-
-          Questa norma controlla più impostazioni, tra cui quelle controllate da norme correlate alle estensioni già presenti. Questa norma sostituisce tutte le norme precedenti se vengono impostate entrambe.
-
-          Questa norma consente di mappare un ID estensione o un URL di aggiornamento alla relativa configurazione. Con un ID estensione, la configurazione viene applicata solo all'estensione specificata. È possibile impostare una configurazione predefinita per l'ID speciale <ph name="DEFAULT_SCOPE" />, che verrà applicato a tutte le estensioni per cui non è impostata una configurazione personalizzata in questa norma. Con un URL di aggiornamento, la configurazione verrà applicata a tutte le estensioni con l'esatto URL di aggiornamento indicato nel file manifest dell'estensione, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Per una descrizione completa delle possibili impostazioni e della struttura di questa norma, visita la pagina https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Modalità di elaborazione loopback dei criteri relativi agli utenti</translation>
 <translation id="4554841826517980623">Questa norma controlla se per <ph name="PRODUCT_NAME" /> la funzione Condivisioni file di rete debba utilizzare o meno il protocollo <ph name="NETBIOS_PROTOCOL" /> per individuare le condivisioni sulla rete.
       Quando questa norma è impostata su True, il rilevamento delle condivisioni utilizza il protocollo <ph name="NETBIOS_PROTOCOL" /> per individuare le condivisioni sulla rete.

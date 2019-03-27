@@ -191,6 +191,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="6990124437352146030">Du behöver ge Chromium behörighet att använda mikrofonen på webbplatsen</translation>
 <translation id="705851970750939768">Uppdatera Chromium</translation>
 <translation id="7066436765290594559">Det gick inte att synkronisera data med Chromium. Uppdatera lösenfrasen för synkronisering.</translation>
+<translation id="7067091210845072982">Om en bild inte har någon användbar beskrivning görs ett försök att beskriva den åt dig i Chromium. Bilderna skickas till Google så att beskrivningen kan genereras.</translation>
 <translation id="7162152143154757523">Med Chromiums stavningskontroll skickas det du skriver i webbläsaren till Googles servrar så att du kan använda samma stavningsteknik som används i Googles webbsökning.</translation>
 <translation id="7196312274710523067">Det gick inte att starta Chromium. Försök igen.</translation>
 <translation id="7205698830395646142">Dölj i Chromium-menyn</translation>
@@ -236,6 +237,7 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="8030318113982266900">Uppdaterar din enhet till kanalen <ph name="CHANNEL_NAME" /> ...</translation>
 <translation id="81770708095080097">Filen är farlig och har blockerats av Chromium.</translation>
 <translation id="8222496066431494154">Installera Chromium på mobilen. Vi skickar ett sms till ditt telefonnummer för kontoåterställning: <ph name="PHONE_NUMBER" /></translation>
+<translation id="8248265253516264921">Om en bild inte har någon användbar beskrivning görs ett försök att beskriva den åt dig i Chromium. Bilderna skickas till Google så att beskrivningen kan genereras. Du kan när som helst inaktivera den här inställningen.</translation>
 <translation id="8269379391216269538">Bidra till att förbättra Chromium</translation>
 <translation id="8290862415967981663">Filen kan vara farlig och har blockerats av Chromium.</translation>
 <translation id="8330519371938183845">Genom att logga in kan du synkronisera och anpassa Chromium på alla enheter du använder</translation>

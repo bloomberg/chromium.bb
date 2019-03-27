@@ -410,7 +410,7 @@
       <ph name="PLATFORM_TEXT" /></translation>
 <translation id="3195213714973468956"><ph name="SERVER_NAME" />의 <ph name="PRINTER_NAME" /></translation>
 <translation id="320323717674993345">결제 취소</translation>
-<translation id="3207960819495026254">북마크됨</translation>
+<translation id="3207960819495026254">북마크에 추가됨</translation>
 <translation id="321912867715453276">경고: 정책에 대한 소스가 두 개 이상 있으나 값이 동일합니다.</translation>
 <translation id="3225919329040284222">서버가 내장된 기대치와 일치하지 않는 인증서를 전달했습니다. 이러한 기대치는 사용자를 보호하기 위해 보안이 엄격한 특정 웹사이트에 포함됩니다.</translation>
 <translation id="3226128629678568754">페이지 로드에 필요한 데이터를 다시 제출하려면 새로고침 버튼을 누릅니다.</translation>
@@ -485,6 +485,7 @@
 <translation id="3592413004129370115">Italian(봉투)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3614103345592970299">크기 2</translation>
+<translation id="361438452008624280">목록 항목 ‘<ph name="LANGUAGE_ID" />’: 알 수 없거나 지원되지 않는 언어입니다.</translation>
 <translation id="3615877443314183785">올바른 만료일을 입력하세요.</translation>
 <translation id="36224234498066874">인터넷 사용 기록 삭제...</translation>
 <translation id="362276910939193118">방문 기록 전체 보기</translation>
@@ -1056,6 +1057,7 @@
 <translation id="6965978654500191972">기기</translation>
 <translation id="6970216967273061347">주소</translation>
 <translation id="6973656660372572881">고정 프록시 서버와 .pac 스크립트 URL이 모두 지정되어 있습니다.</translation>
+<translation id="6973932557599545801">죄송합니다. 더 이상 도와드릴 수 없습니다. 직접 계속해 주세요.</translation>
 <translation id="6979158407327259162">Google 드라이브</translation>
 <translation id="6979440798594660689">음소거(기본값)</translation>
 <translation id="6984479912851154518">시크릿 모드를 종료하고 외부 애플리케이션에서 결제합니다. 계속하시겠습니까?</translation>
@@ -1387,6 +1389,7 @@
 <translation id="8790007591277257123">삭제 다시 실행(&amp;R)</translation>
 <translation id="8792621596287649091"><ph name="ORG_NAME" /> 계정에 액세스할 수 없게 되거나 신원 도용이 발생할 수도 있습니다. 따라서 지금 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="8800988563907321413">근처 추천 항목이 여기에 표시됩니다.</translation>
+<translation id="8805819170075074995">목록 항목 '<ph name="LANGUAGE_ID" />': SpellcheckLanguage 정책에도 포함되었기 때문에 항목이 무시되었습니다.</translation>
 <translation id="8820817407110198400">북마크</translation>
 <translation id="883848425547221593">기타 북마크</translation>
 <translation id="884264119367021077">배송지 주소</translation>
@@ -1410,6 +1413,7 @@
 <translation id="8968766641738584599">카드 저장</translation>
 <translation id="8971063699422889582">서버 인증서가 만료되었습니다.</translation>
 <translation id="8975012916872825179">전화번호, 이메일 주소, 배송지 주소 등의 정보를 포함합니다.</translation>
+<translation id="8975263830901772334">인쇄하는 파일의 이름</translation>
 <translation id="8978053250194585037">Google 세이프 브라우징이 최근 <ph name="SITE" />에서 <ph name="BEGIN_LINK" />피싱을 감지<ph name="END_LINK" />했습니다. 피싱 사이트는 사용자를 속이기 위해 다른 웹사이트인 것처럼 가장합니다.</translation>
 <translation id="8983003182662520383">Google Pay에 사용되는 결제 수단 및 주소</translation>
 <translation id="8987927404178983737">월</translation>

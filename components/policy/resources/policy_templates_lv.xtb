@@ -464,8 +464,6 @@
       Ja šī politika nav konfigurēta vai ir iestatīta uz “tls1.2”, pārlūkā <ph name="PRODUCT_NAME" /> vairs netiek veikts šis atkāpšanās process. Ņemiet vērā, ka šādi netiek atspējots vecāku TLS versiju atbalsts, bet tikai tas, vai <ph name="PRODUCT_NAME" /> apies kļūdainos serverus, kuri nevar pareizi saskaņot versijas.
 
       Pretējā gadījumā, ja ir jāuztur saderība ar kļūdainu serveri, šo politiku var iestatīt uz “tls1.1”. Tas ir pagaidu risinājums, un serveris ir steidzami jālabo.</translation>
-<translation id="1864269674877167562">Ja kā šīs politikas vērtība tiek iestatīta tukša virkne vai ja politika nav konfigurēta, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> lietotāja pierakstīšanās plūsmā netiks rādīta automātiskās pabeigšanas opcija.
-      Ja kā šīs politikas vērtība tiek iestatīta virkne ar domēna nosaukumu, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> lietotāja pierakstīšanās plūsmā tiks parādīta automātiskās pabeigšanas opcija, ļaujot lietotājam ievadīt tikai lietotājvārdu bez domēna nosaukuma paplašinājuma. Lietotājs varēs pārrakstīt šo domēna nosaukuma paplašinājumu.</translation>
 <translation id="1864382791685519617">Pārlūkā <ph name="PRODUCT_NAME" /> tiek iespējotas tīkla prognozes, un lietotājiem tiek liegta iespēja mainīt šo iestatījumu.
 
       Šī politika kontrolē DNS pirmsielādi, iepriekšēju TCP un SSL savienojuma izveidi un tīmekļa lapu iepriekšēju atveidi.
@@ -1845,14 +1843,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4534500438517478692">Android ierobežojuma nosaukums:</translation>
 <translation id="4541530620466526913">Ierīces lokālie konti</translation>
 <translation id="4543502256674577024">Ierīces atjaunināšanas iestatījumi</translation>
-<translation id="4544079461524242527">Šī politika tiek izmantota, lai konfigurētu <ph name="PRODUCT_NAME" /> paplašinājumu pārvaldības iestatījumus.
-
-          Ar šo politiku tiek regulēti vairāki iestatījumi, tostarp iestatījumi, kas tiek regulēti esošās ar paplašinājumiem saistītās politikās. Ja šī politika ir iestatīta, ar to tiek ignorētas jebkādas iestatītās mantotās politikas.
-
-          Izmantojot šo politiku, paplašinājuma ID vai atjauninājuma vietrādis URL tiek kartēts tā konfigurācijā. Izmantojot paplašinājuma ID, konfigurācija tiek lietota tikai konkrētajam paplašinājumam. Īpašajam ID “<ph name="DEFAULT_SCOPE" />” var iestatīt noklusējuma konfigurāciju, kas tiks lietota visiem paplašinājumiem, kuriem šajā politikā nav iestatīta pielāgota konfigurācija. Izmantojot atjauninājuma vietrādi URL, konfigurācija tiek lietota visiem paplašinājumiem, kuru manifestā ir norādīts konkrētais atjauninājuma vietrādis URL (kā aprakstīts šeit: <ph name="LINK_TO_EXTENSION_DOC1" />).
-
-          Pilnu iespējamo iestatījumu un šīs politikas struktūras aprakstu skatiet tīmekļa vietnē https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Lietotāju politikas atgriezeniskās cilpas apstrādes režīms</translation>
 <translation id="4554841826517980623">Šī politika nosaka to, vai lietotājam <ph name="PRODUCT_NAME" /> tiek atļauta tīkla failu kopīgošanas funkcijas lietošana ar <ph name="NETBIOS_PROTOCOL" />, lai meklētu tīklā kopīgotos failus.
       Ja šai politikai tiks iestatīta vērtība “True”, kopīgoto failu meklēšanas funkcija tīklā kopīgoto failu meklēšanai izmantos <ph name="NETBIOS_PROTOCOL" /> protokolu.

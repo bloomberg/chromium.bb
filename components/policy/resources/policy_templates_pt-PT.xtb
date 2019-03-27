@@ -475,8 +475,6 @@
       Se esta política não estiver configurada ou estiver definida para "tls1.2", o <ph name="PRODUCT_NAME" /> já não executa este processo alternativo. Tenha em atenção que esta operação não desativa o suporte para versões mais antigas do TLS, mas determina apenas se o <ph name="PRODUCT_NAME" /> deve contornar servidores com erros que não consigam negociar versões corretamente.
 
       Caso contrário, se for necessário manter a compatibilidade com um servidor com erros, é possível definir esta política para "tls1.1". Esta é uma medida temporária e o servidor deve ser reparado rapidamente.</translation>
-<translation id="1864269674877167562">Se esta política for definida para uma string em branco ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> não apresenta uma opção de preenchimento automático durante o fluxo de início de sessão do utilizador.
-      Se esta política for definida para uma string que represente um nome de domínio, o <ph name="PRODUCT_OS_NAME" /> apresenta uma opção de preenchimento automático durante o início de sessão do utilizador, o que permite ao utilizador escrever apenas o seu nome de utilizador sem a extensão do nome do domínio. O utilizador pode substituir esta extensão do nome do domínio.</translation>
 <translation id="1864382791685519617">Ativa a previsão de rede no <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem esta definição.
 
       Isto controla a Obtenção prévia de DNS, mas também a ligação e a composição prévias de TCP e SSL de páginas Web.
@@ -1819,14 +1817,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4534500438517478692">Nome de restrição Android:</translation>
 <translation id="4541530620466526913">Contas locais do dispositivo</translation>
 <translation id="4543502256674577024">Definições de atualização do dispositivo</translation>
-<translation id="4544079461524242527">Configura as definições de gestão de extensões do produto <ph name="PRODUCT_NAME" />.
-
-          Esta política controla várias definições, incluindo definições controladas por quaisquer políticas existentes relativas a extensões. Além disso, substitui todas as políticas antigas, caso estejam ambas definidas.
-
-          Esta política mapeia um ID de extensão ou um URL de atualização para a respetiva configuração. Com um ID de extensão, a configuração é aplicada apenas à extensão especificada. É possível definir uma configuração predefinida para o ID especial <ph name="DEFAULT_SCOPE" />, que irá aplicar-se a todas as extensões que não tenham uma configuração personalizada definida nesta política. Com um URL de atualização, a configuração é aplicada a todas as extensões com o URL de atualização exato indicado no manifesto desta extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Para obter uma descrição completa das definições possíveis e da estrutura desta política, aceda a https://www.chromium.org/administrators/policy-list-3/extension-settings-full.
-          </translation>
 <translation id="4554651132977135445">Modo de processamento de loopback da Política do Utilizador.</translation>
 <translation id="4554841826517980623">Esta política controla se a funcionalidade Partilhas de ficheiros na rede do <ph name="PRODUCT_NAME" /> deve utilizar o <ph name="NETBIOS_PROTOCOL" /> para detetar partilhas na rede.
       Se esta política estiver definida como "true", a deteção de partilhas utiliza o protocolo <ph name="NETBIOS_PROTOCOL" /> para detetar partilhas na rede.

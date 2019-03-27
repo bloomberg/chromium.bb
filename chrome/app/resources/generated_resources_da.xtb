@@ -1847,6 +1847,7 @@
 <translation id="3892414795099177503">Tilføj OpenVPN/L2TP...</translation>
 <translation id="3893536212201235195">Læse og redigere dine indstillinger for hjælpefunktioner</translation>
 <translation id="3893630138897523026">ChromeVox (talefeedback)</translation>
+<translation id="3894123633473837029">Medtag seneste Assistent-historik via Sherlog. Dette kan omfatte din identitet, placering og fejlretningsoplysninger. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Tilføj mappe</translation>
 <translation id="389589731200570180">Del med gæster</translation>
 <translation id="3898521660513055167">Status for token</translation>
@@ -3720,6 +3721,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6915804003454593391">Bruger:</translation>
 <translation id="6916590542764765824">Administrer udvidelser</translation>
 <translation id="6920989436227028121">Åbn som almindelig fane</translation>
+<translation id="6921104647315081813">Ryd aktiviteter</translation>
 <translation id="6921709132208495314">Stop med at bruge data på denne side</translation>
 <translation id="6922128026973287222">Spar på dataforbruget, og få en hurtigere browseroplevelse med Googles datasparefunktion. Klik for at få flere oplysninger.</translation>
 <translation id="6923132443355966645">Rul/klik</translation>

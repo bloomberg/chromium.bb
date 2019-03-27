@@ -461,8 +461,6 @@
       Ako se to pravilo ne konfigurira ili se postavi na "tls1.2", <ph name="PRODUCT_NAME" /> više neće izvršavati rezervni postupak. Time se ne onemogućuje podrška za starije verzije TLS-a, već se samo određuje hoće li <ph name="PRODUCT_NAME" /> zaobilaziti poslužitelje s pogreškama koji ne mogu ispravno dogovoriti verzije.
 
       No ako se mora održati kompatibilnost s poslužiteljem koji sadrži pogreške, pravilo se može postaviti na "tls1.1". To je samo privremena mjera i problem na poslužitelju potrebno je brzo riješiti.</translation>
-<translation id="1864269674877167562">Ako se to pravilo postavi na prazan niz ili se ne konfigurira, <ph name="PRODUCT_OS_NAME" /> neće prikazivati opciju samodovršavanja prilikom tijeka korisničke prijave.
-      Ako se to pravilo postavi na niz koji predstavlja naziv domene, <ph name="PRODUCT_OS_NAME" /> prikazivat će opciju samodovršavanja prilikom korisničke prijave koja omogućuje korisniku da unese samo svoje korisničko ime bez proširenja s nazivom domene. Korisnik će moći unijeti neko drugo proširenje s nazivom domene.</translation>
 <translation id="1864382791685519617">Omogućuje mrežno predviđanje na usluzi <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene tu postavku.
 
       Time se kontrolira prethodno dohvaćanje DNS-a, TCP i SSL pretpovezivanje i prethodno generiranje web-stranica.
@@ -1804,14 +1802,6 @@
 <translation id="4534500438517478692">Naziv ograničenja za Android:</translation>
 <translation id="4541530620466526913">Lokalni računi na uređaju</translation>
 <translation id="4543502256674577024">Postavke ažuriranja uređaja</translation>
-<translation id="4544079461524242527">Konfigurira postavke upravljanja proširenjima za <ph name="PRODUCT_NAME" />.
-
-          Ovo pravilo kontrolira više postavki, uključujući postavke kojima upravljaju postojeća pravila za proširenja. To će pravilo nadjačati sva naslijeđena pravila ako su postavljena.
-
-          To pravilo mapira ID proširenja ili URL ažuriranja na svoju konfiguraciju. S ID-jem proširenja konfiguracija će se primijeniti samo na određeno proširenje. Zadana konfiguracija može se postaviti za posebni ID <ph name="DEFAULT_SCOPE" />, tako da se primjenjuje na sva proširenja za koje u tom pravilu nije postavljena prilagođena konfiguracija. S URL-om ažuriranja konfiguracija će se primijeniti na sva proširenja s istim URL-om ažuriranja navedenim u manifestu proširenja kako je opisano u dokumentu <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Cijeli opis mogućih postavki i strukture tog pravila potražite na stranici https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Način obrade povratne petlje korisničkog pravila</translation>
 <translation id="4554841826517980623">To pravilo određuje treba li značajka mrežnog dijeljenja datoteka za <ph name="PRODUCT_NAME" /> upotrebljavati protokol <ph name="NETBIOS_PROTOCOL" /> za otkrivanje dijeljenja na mreži.
       Ako se to pravilo postavi na True, otkriće dijeljenja upotrebljavat će protokol <ph name="NETBIOS_PROTOCOL" /> za otkrivanje dijeljenja na mreži.

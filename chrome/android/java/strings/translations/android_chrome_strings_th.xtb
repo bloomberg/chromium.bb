@@ -82,7 +82,6 @@
 <translation id="1553358976309200471">อัปเดต Chrome</translation>
 <translation id="1569387923882100876">อุปกรณ์ที่เชื่อมต่อ</translation>
 <translation id="1571304935088121812">คัดลอกชื่อผู้ใช้</translation>
-<translation id="1576370611341449972">การดาวน์โหลดจะเกิดขึ้นเมื่อเชื่อมต่อ Wi-Fi เท่านั้น</translation>
 <translation id="1612196535745283361">Chrome ต้องมีสิทธิ์เข้าถึงตำแหน่งเพื่อสแกนหาอุปกรณ์ ตัวเลือกสิทธิ์เข้าถึงตำแหน่ง<ph name="BEGIN_LINK" />สำหรับอุปกรณ์เครื่องนี้ปิดอยู่<ph name="END_LINK" /></translation>
 <translation id="1620510694547887537">กล้องถ่ายรูป</translation>
 <translation id="1623104350909869708">ป้องกันหน้าเว็บนี้จากการสร้างการโต้ตอบเพิ่มเติม</translation>
@@ -371,7 +370,6 @@
 <translation id="3810838688059735925">วิดีโอ</translation>
 <translation id="3810973564298564668">จัดการ</translation>
 <translation id="3819178904835489326">ลบการดาวน์โหลด <ph name="NUMBER_OF_DOWNLOADS" /> รายการแล้ว</translation>
-<translation id="3819562311292413223">ดาวน์โหลดบทความสำหรับคุณ</translation>
 <translation id="3822502789641063741">ล้างพื้นที่เก็บข้อมูลเว็บไซต์ไหม</translation>
 <translation id="385051799172605136">กลับ</translation>
 <translation id="3859306556332390985">ไปข้างหน้า</translation>

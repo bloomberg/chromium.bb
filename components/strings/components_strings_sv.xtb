@@ -553,6 +553,7 @@
 <translation id="40103911065039147">{URL_count,plural, =1{1 webbsida i närheten}other{# webbsidor i närheten}}</translation>
 <translation id="4030383055268325496">&amp;Ångra Lägg till</translation>
 <translation id="4032320456957708163">Din webbläsare hanteras av <ph name="ENROLLMENT_DOMAIN" /></translation>
+<translation id="4034375457890803692">Länken du öppnade leder till en webbplats som du inte brukar besöka. Det kan vara ett försök att lura dig.</translation>
 <translation id="4058922952496707368">Nyckel <ph name="SUBKEY" />: <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (kuvert)</translation>
 <translation id="4067947977115446013">Lägg till giltig adress</translation>
@@ -1052,9 +1053,11 @@
 <translation id="6957887021205513506">Serverns certifikat verkar vara falskt.</translation>
 <translation id="6964255747740675745">Det gick inte att tolka nätverkskonfigurationen (ogiltig JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Enhet</translation>
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="6973656660372572881">Både fasta proxyservrar och en webbadress för PAC-skript anges.</translation>
+<translation id="6973932557599545801">Jag kan tyvärr inte hjälpa till. Fortsätt på egen hand.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Ljud av (standard)</translation>
 <translation id="6984479912851154518">Om du betalar i en extern app sker inte det i privat läge. Vill du fortsätta?</translation>

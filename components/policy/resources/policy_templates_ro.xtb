@@ -461,8 +461,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă această politică nu este configurată sau este setată la „tls1.2”, atunci <ph name="PRODUCT_NAME" /> nu mai efectuează această revenire. Reține că astfel nu se dezactivează compatibilitatea pentru versiunile TLS mai vechi, ci doar se stabilește dacă <ph name="PRODUCT_NAME" /> va ocoli serverele cu erori care nu pot negocia corect versiunile.
 
       În caz contrar, dacă trebuie menținută compatibilitatea cu un server cu erori, politica poate fi setată la „tls1”. Aceasta este o măsură temporară, iar problemele de pe server trebuie să fie remediate rapid.</translation>
-<translation id="1864269674877167562">Dacă această politică este configurată ca un șir necompletat sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> nu va afișa opțiunea de completare automată în timpul procesului de conectare a utilizatorului.
-      Dacă această politică este configurată ca un șir care reprezintă un nume de domeniu, <ph name="PRODUCT_OS_NAME" /> va afișa opțiunea de completare automată în timp ce utilizatorul se conectează. Astfel, utilizatorul poate introduce doar numele său de utilizator, fără extensia numelui de domeniu. Utilizatorul va putea să suprascrie extensia numelui de domeniu.</translation>
 <translation id="1864382791685519617">Activează anticiparea în rețea în <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice această setare.
 
       Aceasta controlează atât preluarea anticipată a datelor DNS, cât și conectarea anticipată TCP și SSL și încărcarea anticipată a paginilor web.
@@ -1812,14 +1810,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="4534500438517478692">Numele restricției Android:</translation>
 <translation id="4541530620466526913">Conturi locale de pe gadget</translation>
 <translation id="4543502256674577024">Setările de actualizare a dispozitivului</translation>
-<translation id="4544079461524242527">Configurează setările de gestionare a extensiilor pentru <ph name="PRODUCT_NAME" />.
-
-          Această politică stabilește mai multe setări, inclusiv pe cele controlate de eventualele politici existente privind extensiile. Această politică va suprascrie eventualele politici vechi dacă ambele sunt setate.
-
-          Această politică asociază un ID de extensie sau o adresă URL de actualizare la configurația sa. În cazul unui ID de extensie, configurația va fi aplicată numai pentru extensia specificată. O configurație prestabilită poate fi setată pentru ID-ul special „ <ph name="DEFAULT_SCOPE" />”, care se va aplica pentru toate extensiile care nu au o configurație personalizată setată în această politică. În cazul unei adrese URL de actualizare, configurația se va aplica pentru toate extensiile cu adresa URL de actualizare exactă specificată în manifestul acestei extensii, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Pentru o descriere completă a setărilor posibile și a structurii acestei politici, accesează https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Modul de procesare loopback conform politicii privind utilizatorii</translation>
 <translation id="4554841826517980623">Această politică stabilește dacă funcția Dispozitive de stocare în rețea pentru <ph name="PRODUCT_NAME" /> trebuie să folosească <ph name="NETBIOS_PROTOCOL" /> pentru a descoperi dispozitive în rețea.
       Când politica este activată, se va folosi protocolul <ph name="NETBIOS_PROTOCOL" /> pentru a se descoperi dispozitive în rețea.

@@ -82,7 +82,6 @@
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1569387923882100876">連結的裝置</translation>
 <translation id="1571304935088121812">複製使用者名稱</translation>
-<translation id="1576370611341449972">只透過 Wi-Fi 下載</translation>
 <translation id="1612196535745283361">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK" />這個裝置的位置資訊存取權已關閉<ph name="END_LINK" />。</translation>
 <translation id="1620510694547887537">攝影機</translation>
 <translation id="1623104350909869708">防止這個網頁產生其他對話方塊</translation>
@@ -371,7 +370,6 @@
 <translation id="3810838688059735925">影片</translation>
 <translation id="3810973564298564668">管理</translation>
 <translation id="3819178904835489326">已刪除 <ph name="NUMBER_OF_DOWNLOADS" /> 個下載項目</translation>
-<translation id="3819562311292413223">下載為你推薦的文章</translation>
 <translation id="3822502789641063741">要清除網站儲存的資料嗎？</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3859306556332390985">快轉到特定的播放時間點</translation>

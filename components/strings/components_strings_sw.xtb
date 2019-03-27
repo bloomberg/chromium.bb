@@ -553,7 +553,7 @@
 <translation id="40103911065039147">{URL_count,plural, =1{ukurasa 1 wa wavuti ulio karibu}other{kurasa # za wavuti zilizo karibu}}</translation>
 <translation id="4030383055268325496">Tendua kuongeza</translation>
 <translation id="4032320456957708163">Kivinjari chako kinadhibitiwa na <ph name="ENROLLMENT_DOMAIN" /></translation>
-<translation id="4034375457890803692">Kiungo ulichofungua kinaelekeza kwenye tovuti ambayo huitembelei. Huenda kinajaribu kukukanganya.</translation>
+<translation id="4034375457890803692">Kiungo ulichofungua kinaelekeza kwenye tovuti ambayo huwa huitembelei. Huenda kinajaribu kukukanganya.</translation>
 <translation id="4058922952496707368">Kitufe "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (Bahasha)</translation>
 <translation id="4067947977115446013">Ongeza Anwani Sahihi ya Mahali Bidhaa Itapelekwa</translation>
@@ -1057,6 +1057,7 @@
 <translation id="6965978654500191972">Kifaa</translation>
 <translation id="6970216967273061347">Wilaya</translation>
 <translation id="6973656660372572881">Seva zote za proksi thabiti na URL ya hati ya .pac zimebainishwa.</translation>
+<translation id="6973932557599545801">Samahani, nimeshindwa kukusaidia, tafadhali endelea mwenyewe.</translation>
 <translation id="6979158407327259162">Hifadhi ya Google</translation>
 <translation id="6979440798594660689">Zima (chaguomsingi)</translation>
 <translation id="6984479912851154518">Unafunga hali ya faragha ili ulipe kupitia programu ya nje. Ungependa kuendelea?</translation>

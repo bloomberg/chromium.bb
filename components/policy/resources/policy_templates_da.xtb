@@ -458,8 +458,6 @@ Når TLS-dataudveksling mislykkes, ville <ph name="PRODUCT_NAME" /> tidligere pr
 Hvis denne politik ikke konfigureres, eller hvis den indstilles til "tls1.2", udfører <ph name="PRODUCT_NAME" /> ikke længere dette fallback. Bemærk, at dette ikke deaktiverer understøttelse af ældre TLS-versioner, kun hvorvidt <ph name="PRODUCT_NAME" /> vil løse problemet med fejlbehæftede servere, som ikke kan forhandle versioner korrekt.
 
 Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne politik indstilles til "tls1.1". Dette er en midlertidig løsning, og problemet med serveren bør snarest udbedres.</translation>
-<translation id="1864269674877167562">Hvis denne politik er angivet med en tom streng, eller hvis den ikke er konfigureret, viser <ph name="PRODUCT_OS_NAME" /> ikke et forslag til autofuldførelse under loginflowet.
-      Hvis denne politik er angivet med en streng, der repræsenterer et domænenavn, viser <ph name="PRODUCT_OS_NAME" /> et forslag til autofuldførelse under loginflowet. Dette giver brugeren mulighed for kun at skulle angive sit brugernavn uden hele domænenavnet. Brugeren kan overskrive dette domænenavn.</translation>
 <translation id="1864382791685519617">Aktiverer netværksforudsigelse i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre denne indstilling.
 
       Dette styrer både forudhentning af DNS og forhåndstilslutning af TCP og SSL samt forhåndsgengivelse af websider.
@@ -1799,14 +1797,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4534500438517478692">Navn på Android-begrænsning:</translation>
 <translation id="4541530620466526913">Enhedslokale konti</translation>
 <translation id="4543502256674577024">Indstillinger for enhedsopdatering</translation>
-<translation id="4544079461524242527">Konfigurerer indstillinger for administration af udvidelser for <ph name="PRODUCT_NAME" />.
-
-          Denne politik styrer flere indstillinger, herunder indstillinger, der styres af eksisterende politikker vedrørende udvidelser. Denne politik tilsidesætter eventuelle ældre politikker, hvis begge er angivet.
-
-          Denne politik knytter et udvidelses-id eller en opdateringswebadresse til dens konfiguration. Med et udvidelses-id bliver konfigurationen udelukkende anvendt på den angivne udvidelse. Der kan angives en standardkonfiguration for det særlige id <ph name="DEFAULT_SCOPE" />, som gælder for alle udvidelser, hvor der ikke er angivet en standardkonfiguration i denne politik. Med en opdateringswebadresse anvendes konfigurationen på alle udvidelser, hvor den nøjagtige opdateringswebadresse er angivet i denne udvidelses manifestfil som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Du kan få en komplet beskrivelse af mulige indstillinger og mulig struktur for denne politik på https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Brugerpolitik for tilstand til behandling via loopback</translation>
 <translation id="4554841826517980623">Denne politik bestemmer, om funktionen Fildeling via netværk for <ph name="PRODUCT_NAME" /> anvender <ph name="NETBIOS_PROTOCOL" /> til at registrere deling på netværket.
       Når politikken er angivet som Sand, anvendes protokollen <ph name="NETBIOS_PROTOCOL" /> til at registrere deling på netværket.

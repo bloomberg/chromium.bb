@@ -553,6 +553,7 @@
 <translation id="40103911065039147">{URL_count,plural, =1{1 Like ved-nettside}other{# Like ved-nettsider}}</translation>
 <translation id="4030383055268325496">&amp;Angre tilleggingen</translation>
 <translation id="4032320456957708163">Nettleseren din administreres av <ph name="ENROLLMENT_DOMAIN" /></translation>
+<translation id="4034375457890803692">Linken du åpnet, tar deg til et nettsted du ikke vanligvis besøker. Det kan hende linken prøver å forvirre deg.</translation>
 <translation id="4058922952496707368">Nøkkel – «<ph name="SUBKEY" />»: <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (konvolutt)</translation>
 <translation id="4067947977115446013">Du må angi en gyldig adresse</translation>
@@ -924,7 +925,7 @@
 <translation id="6059925163896151826">USB-enheter</translation>
 <translation id="6080696365213338172">Du har åpnet innhold via et administratorlevert sertifikat. Data du sender til <ph name="DOMAIN" /> kan stoppes av administratoren din.</translation>
 <translation id="6094273045989040137">Annoter</translation>
-<translation id="610911394827799129">Det kan hende Google-kontoen din har andre typer nettlesingslogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="610911394827799129">Det kan hende Google-kontoen din har andre typer nettleserlogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6132597952260690497">Informasjon om installerte utvidelser og programtillegg</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Ingen}=1{1 passord (synkronisert)}other{# passord (synkronisert)}}</translation>
 <translation id="6146055958333702838">Sjekk alle kabler, og start rutere, modemer eller andre nettverksenheter
@@ -1052,6 +1053,7 @@
 <translation id="6957887021205513506">Tjenersertifikatet ser ut til å være forfalsket.</translation>
 <translation id="6964255747740675745">Nettverkskonfigurasjonen kunne ikke parses (ugyldig JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Enhet</translation>
 <translation id="6970216967273061347">Område</translation>
 <translation id="6973656660372572881">Både statiske proxytjenere og en .pac-skriptnettadresse er angitt.</translation>

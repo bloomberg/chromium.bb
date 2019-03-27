@@ -240,6 +240,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7651907282515937834">„Chrome Enterprise“ logotipas</translation>
 <translation id="7747138024166251722">Diegimo programai nepavyko sukurti laikino katalogo. Patikrinkite, ar yra laisvos vietos diske ir, ar leidžiama įdiegti programinę įrangą.</translation>
 <translation id="7761834446675418963">Spustelėkite savo vardą, kad atidarytumėte „Chrome“ ir pradėtumėte naršyti.</translation>
+<translation id="7777080907402804672">Jei nebus naudingo vaizdo aprašo, „Chrome“ bandys jums jį pateikti. Kad būtų galima kurti aprašus, vaizdai siunčiami į sistemą „Google“. Šią parinktį galite bet kada išjungti skiltyje „Nustatymai“.</translation>
 <translation id="7781002470561365167">Galima nauja „Google Chrome“ versija.</translation>
 <translation id="7787950393032327779">Atrodo, kad profilį naudoja kitas „Google Chrome“ procesas (<ph name="PROCESS_ID" />) kitame kompiuteryje (<ph name="HOST_NAME" />). „Chrome“ užrakino profilį, kad jis nebūtų sugadintas. Jei esate tikri, kad jokie kiti procesai nenaudoja šio profilio, galite atrakinti profilį ir iš naujo paleisti „Chrome“.</translation>
 <translation id="7808348361785373670">Pašalinti iš „Chrome“...</translation>
@@ -252,6 +253,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7962410387636238736">Šiame kompiuteryje nebebus gaunami „Google Chrome“ naujiniai, nes „Windows XP“ ir „Windows Vista“ nebepalaikomos.</translation>
 <translation id="8005540215158006229">„Chrome“ beveik paruošta.</translation>
 <translation id="8008534537613507642">Iš naujo įdiegti „Chrome“</translation>
+<translation id="8013993649590906847">Jei nebus naudingo vaizdo aprašo, „Chrome“ bandys jums jį pateikti. Kad būtų galima kurti aprašus, vaizdai siunčiami į sistemą „Google“.</translation>
 <translation id="8030318113982266900">Atnaujinamas įrenginys į „<ph name="CHANNEL_NAME" />“ kanalą...</translation>
 <translation id="8032142183999901390">Pašalinus paskyrą iš „Chrome“, galbūt reikės iš naujo įkelti skirtukus, kad pakeitimai įsigaliotų.</translation>
 <translation id="8077352834923175128">Administratorius prašo paleisti „Chrome“ OS iš naujo, kad galėtų pritaikyti šį naujinį</translation>

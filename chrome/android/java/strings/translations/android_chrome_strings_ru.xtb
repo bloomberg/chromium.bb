@@ -82,7 +82,6 @@
 <translation id="1553358976309200471">Обновить Chrome</translation>
 <translation id="1569387923882100876">Подключенное устройство</translation>
 <translation id="1571304935088121812">Копировать имя пользователя</translation>
-<translation id="1576370611341449972">Скачивание только при подключении к сети Wi-Fi</translation>
 <translation id="1612196535745283361">Чтобы выполнить поиск устройств, браузеру Chrome нужен доступ к геоданным. <ph name="BEGIN_LINK" />Включить<ph name="END_LINK" /></translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Запретить создание дополнительных диалоговых окон на этой странице</translation>
@@ -371,7 +370,6 @@
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3810973564298564668">Настроить</translation>
 <translation id="3819178904835489326">Удаленные скачивания: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
-<translation id="3819562311292413223">Скачивать статьи для вас</translation>
 <translation id="3822502789641063741">Удалить данные сайтов?</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3859306556332390985">Перемотать вперед</translation>
@@ -1111,7 +1109,7 @@
 <translation id="9219103736887031265">Картинки</translation>
 <translation id="926205370408745186">Удалить данные о действиях в Chrome из сервиса "Цифровое благополучие"</translation>
 <translation id="932327136139879170">Главная страница</translation>
-<translation id="932599481871055447">Просматривайте веб-страницы быстрее и экономьте трафик</translation>
+<translation id="932599481871055447">Загружайте веб-страницы быстрее и экономьте трафик</translation>
 <translation id="938850635132480979">Ошибка <ph name="ERROR_CODE" /></translation>
 <translation id="945522503751344254">Отправить отзыв</translation>
 <translation id="945632385593298557">Доступ к микрофону</translation>

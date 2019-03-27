@@ -470,8 +470,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Ist diese Richtlinie nicht konfiguriert oder auf "tls1.2" eingestellt, führt <ph name="PRODUCT_NAME" /> diesen Fallback nicht mehr durch. Die Unterstützung älterer TLS-Versionen wird dadurch nicht deaktiviert, es wird lediglich festgelegt, ob <ph name="PRODUCT_NAME" /> fehlerträchtige Server umgeht, die keine korrekten Versionsaushandlungen durchführen können.
 
       Wenn die Kompatibilität mit einem fehlerträchtigen Server aufrechterhalten werden muss, kann "tls1.1" eingestellt werden. Hierbei handelt es sich um einen provisorischen Wert und der Server sollte schnell repariert werden.</translation>
-<translation id="1864269674877167562">Wenn diese Richtlinie nicht konfiguriert ist oder ein leerer String dafür festgelegt ist, zeigt <ph name="PRODUCT_OS_NAME" /> keine Option für die automatische Vervollständigung beim Anmeldevorgang an.
-      Wenn die Richtlinie für einen String festgelegt ist, der einen Domainnamen darstellt, zeigt <ph name="PRODUCT_OS_NAME" /> eine Option für die automatische Vervollständigung beim Anmeldevorgang des Nutzers an, sodass er seinen Namen ohne die Domain-Namenserweiterung eingeben kann. Der Nutzer kann diese Domain-Namenserweiterung überschreiben.</translation>
 <translation id="1864382791685519617">Durch diese Richtlinie wird die Netzwerkvorhersage in <ph name="PRODUCT_NAME" /> aktiviert und es wird verhindert, dass die Einstellung von Nutzern geändert wird.
 
       Hiermit werden DNS-Vorabruf, TCP- und SSL-Vorverbindung sowie das Pre-Rendering von Webseiten gesteuert.
@@ -1810,14 +1808,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4534500438517478692">Name der Android-Einschränkung:</translation>
 <translation id="4541530620466526913">Lokale Gerätekonten</translation>
 <translation id="4543502256674577024">Einstellungen für die Geräteaktualisierung</translation>
-<translation id="4544079461524242527">Konfiguriert Einstellungen zur Erweiterungsverwaltung für <ph name="PRODUCT_NAME" />.
-
-          Mit dieser Richtlinie werden verschiedene Einstellungen gesteuert, darunter Einstellungen, die von bestehenden auf Erweiterungen bezogenen Richtlinien geregelt werden. Diese Richtlinie überschreibt ältere Richtlinien, wenn beide konfiguriert sind.
-
-          Mit dieser Richtlinie wird eine Erweiterungs-ID oder eine Update-URL ihrer Konfiguration zugeordnet. Bei einer Erweiterungs-ID wird die Konfiguration nur auf die angegebene Erweiterung angewendet. Eine Standardkonfiguration kann für die Spezial-ID "<ph name="DEFAULT_SCOPE" />" festgelegt werden, die auf alle Erweiterungen angewendet wird, für die keine Standardkonfiguration in dieser Richtlinie konfiguriert ist. Bei einer Update-URL wird die Konfiguration auf alle Erweiterungen mit genau der im Manifest dieser Erweiterung angegebenen Update-URL angewendet, wie unter <ph name="LINK_TO_EXTENSION_DOC1" /> erläutert.
-
-          Eine vollständige Beschreibung möglicher Einstellungen und des Aufbaus dieser Richtlinie finden Sie unter https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Loopback-Verarbeitungsmodus der Nutzerrichtlinien</translation>
 <translation id="4554841826517980623">Mit dieser Richtlinie wird gesteuert, ob die Funktion "Netzwerkfreigaben" für <ph name="PRODUCT_NAME" /> das <ph name="NETBIOS_PROTOCOL" /> nutzen sollte, um Inhaltsfreigaben im Netzwerk zu erkennen.
       Wenn diese Richtlinie auf "true" eingestellt ist, verwendet die Freigabeerkennung das Protokoll <ph name="NETBIOS_PROTOCOL" />, um Freigaben im Netzwerk zu erkennen.
@@ -4067,7 +4057,7 @@ Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älte
       Wird für diese Richtlinie ein niedrigerer Wert gewählt, wirkt sich dies dauerhaft aus: Das Gerät kann u. U. nicht auf eine frühere Version zurückgesetzt werden, auch wenn für die Richtlinie später wieder ein höherer Wert festgelegt wird.
 
       Die tatsächlichen Rollback-Optionen sind möglicherweise auch abhängig vom Board sowie von Patches für schwerwiegende Sicherheitslücken.</translation>
-<translation id="9126014181388780690">"Google Assistant darf auf Bildschirmkontext zugreifen"</translation>
+<translation id="9126014181388780690">"Google Assistant darf auf den Bildschirmkontext zugreifen"</translation>
 <translation id="913195841488580904">Zugriff auf aufgelistete URLs blockieren</translation>
 <translation id="9135033364005346124"><ph name="CLOUD_PRINT_NAME" />-Proxy aktivieren</translation>
 <translation id="9136399279941091445">Intervalle für Abwesenheitszeiten, wenn die angegebenen Geräterichtlinien veröffentlicht werden</translation>

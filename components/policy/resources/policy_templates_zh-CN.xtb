@@ -380,8 +380,6 @@
       如果此政策未配置或设为“tls1.2”，<ph name="PRODUCT_NAME" /> 将不再执行此回退。请注意，这并不会导致停止支持旧版 TLS，只是用于指定 <ph name="PRODUCT_NAME" /> 是否忽略存在错误且无法正确协商版本的服务器。
 
       在其他情况下，如果必须与存在错误的服务器保持兼容，则可将此政策设为“tls1.1”。这是一种权宜之计，服务器中的错误应该很快会得到解决。</translation>
-<translation id="1864269674877167562">如果此政策设为空字符串或未设置，<ph name="PRODUCT_OS_NAME" />将不会在用户登录期间显示自动填充选项。
-      如果此政策设为表示域名的字符串，<ph name="PRODUCT_OS_NAME" />将在用户登录期间显示自动填充选项，以便用户只输入自己的用户名，而无需输入网域扩展名。用户可以覆盖此网域扩展名。</translation>
 <translation id="1864382791685519617">在 <ph name="PRODUCT_NAME" /> 中启用网络联想查询功能，并禁止用户更改此设置。
 
       此政策用于控制 DNS 预提取、TCP 和 SSL 预连接以及网页预呈现。
@@ -1548,14 +1546,6 @@
 <translation id="4534500438517478692">Android 限制名称：</translation>
 <translation id="4541530620466526913">设备本地帐号</translation>
 <translation id="4543502256674577024">设备更新设置</translation>
-<translation id="4544079461524242527">为 <ph name="PRODUCT_NAME" /> 配置扩展程序管理设置。
-
-          此政策可控制多项设置，其中包括由任何现有的扩展程序相关政策控制的设置。此政策将会替换所有旧版政策（如果同时设置了这两种政策的话）。
-
-          此政策可将某个扩展程序 ID 或某个更新网址映射至其配置。对于扩展程序 ID，配置将只会应用于所指定的扩展程序。您可为特殊 ID“<ph name="DEFAULT_SCOPE" />”设置默认配置，该配置将会应用于未在此政策中设置自定义配置的所有扩展程序。对于更新网址，配置则会应用于具有在此扩展程序的清单中注明的确切更新网址的所有扩展程序（如 <ph name="LINK_TO_EXTENSION_DOC1" /> 中所述）。
-
-          若想全面了解此政策的可能设置和结构，请访问 https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">用户政策环回处理模式</translation>
 <translation id="4554841826517980623">此政策用于控制适用于 <ph name="PRODUCT_NAME" />的网络文件共享功能是否应使用“<ph name="NETBIOS_PROTOCOL" />”来搜索网络上的共享文件。
       如果此政策设为 true，共享文件发现功能将使用“<ph name="NETBIOS_PROTOCOL" />”协议搜索网络上的共享文件。

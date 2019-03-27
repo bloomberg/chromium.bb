@@ -231,6 +231,7 @@
 <translation id="7651907282515937834">Chrome Enterprise ロゴ</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
 <translation id="7761834446675418963">Chrome を開いてブラウジングを始めるには、名前をクリックしてください。</translation>
+<translation id="7777080907402804672">画像に有効な説明が設定されていない場合に、Chrome で説明を自動的に生成できるよう Google に画像が送信されます。この機能は設定でいつでも無効にできます。</translation>
 <translation id="7781002470561365167">Google クロームブラウザの最新バージョンを是非お試しください。</translation>
 <translation id="7787950393032327779">プロフィールは、別のコンピュータ（<ph name="HOST_NAME" />）の別の Google Chrome プロセス（<ph name="PROCESS_ID" />）で使用されているようです。Chrome はプロフィールが破損しないようにプロフィールをロックしています。他のプロセスがこのプロフィールを使用していないことが確実であれば、プロフィールのロックを解除して Chrome を再起動できます。</translation>
 <translation id="7808348361785373670">Chrome から削除...</translation>
@@ -243,6 +244,7 @@
 <translation id="7962410387636238736">Windows XP と Windows Vista はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません</translation>
 <translation id="8005540215158006229">Chrome はすぐに利用できるようになります。</translation>
 <translation id="8008534537613507642">Chrome を再インストール</translation>
+<translation id="8013993649590906847">画像に有効な説明が設定されていない場合に、Chrome で説明を自動的に生成できるよう Google に画像が送信されます。</translation>
 <translation id="8030318113982266900">デバイスを <ph name="CHANNEL_NAME" /> チャンネルに更新しています...</translation>
 <translation id="8032142183999901390">Chrome からアカウントを削除したら、場合によっては開いているタブを再読み込みして変更を反映させる必要があります。</translation>
 <translation id="8077352834923175128">管理者が、このアップデートを適用するために Chrome OS を再起動するよう求めています</translation>

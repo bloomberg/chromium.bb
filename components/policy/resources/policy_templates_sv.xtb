@@ -258,7 +258,7 @@
 
       Om en app som tidigare har tvångsinstallerats tas bort från listan avinstalleras den automatiskt av <ph name="PRODUCT_NAME" />.
 
-      Varje post i principen är en sträng som innehåller ett tilläggs-id och en uppdateringsadress avgränsade med semikolon (<ph name="SEMICOLON" />). Ett tilläggs-id är sträng med 32 bokstäver, till exempel den som finns på <ph name="CHROME_EXTENSIONS_LINK" /> i utvecklarläge. Uppdateringsadressen ska peka på ett XML-manifestdokument för uppdatering enligt beskrivningen på <ph name="LINK_TO_EXTENSION_DOC1" />. Observera att uppdateringsadressen som anges i den här principen bara används för den ursprungliga installationen. För senare uppdateringar av tillägget används den uppdateringsadress som anges i tilläggets manifest.
+      Varje post i principen är en sträng som innehåller ett tilläggs-id och en uppdateringsadress avgränsade med semikolon (<ph name="SEMICOLON" />). Ett tilläggs-id är en sträng med 32 bokstäver, till exempel den som finns på <ph name="CHROME_EXTENSIONS_LINK" /> i utvecklarläge. Uppdateringsadressen ska peka på ett XML-manifestdokument för uppdatering enligt beskrivningen på <ph name="LINK_TO_EXTENSION_DOC1" />. Observera att uppdateringsadressen som anges i den här principen bara används för den ursprungliga installationen. För senare uppdateringar av tillägget används den uppdateringsadress som anges i tilläggets manifest.
 
       Exempel: <ph name="EXTENSION_POLICY_EXAMPLE" /> installerar appen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> från standarduppdateringsadressen för Chrome Web Store. Mer information om att tillhandahålla tillägg finns på: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="1435659902881071157">Nätverkskonfiguration på enhetsnivå</translation>
@@ -382,6 +382,22 @@
       Obs! Att delegera kontrollen över vilken version av <ph name="PRODUCT_OS_NAME" /> som används till en kioskapp rekommenderas inte, eftersom det kan leda till att uppdateringar av programvaran och viktiga säkerhetskorrigeringar inte längre görs på enheten. Om du delegerar valet av <ph name="PRODUCT_OS_NAME" />-version kan användarnas säkerhet äventyras.</translation>
 <translation id="1675002386741412210">Stöds av:</translation>
 <translation id="1689963000958717134">Tillåter att en pushad nätverkskonfiguration används för alla användare på en <ph name="PRODUCT_OS_NAME" />-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL" /></translation>
+<translation id="1704516734140344991">Konfigurerar tillgängligheten och beteendet för uppdateringar av firmware för <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Enskilda inställningar kan anges som JSON-egenskaper:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Om värdet <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> anges för principen kan användarna aktivera Powerwash så att uppdateringar av firmware för <ph name="TPM_FIRMWARE_UPDATE_TPM" /> kan installeras.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Om värdet <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" /> anges för principen kan användarna påbörja en uppdatering av firmware för <ph name="TPM_FIRMWARE_UPDATE_TPM" /> som bevarar enhetens status (inklusive företagsregistrering) men tar bort användardata. Detta uppdateringsflöde är tillgängligt från och med version 68.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Styr hur automatisk uppdatering av firmware för <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ska göras för sårbar firmware för <ph name="TPM_FIRMWARE_UPDATE_TPM" />. Den lokala enhetens status bevaras oavsett flöde.
+        Med inställningen 1 eller om inställning saknas är uppdatering av firmware för TPM inte obligatorisk.
+        Med inställningen 2 uppdateras firmware för <ph name="TPM_FIRMWARE_UPDATE_TPM" /> vid nästa omstart efter att användaren har bekräftat uppdateringen.
+        Med inställningen 3 uppdateras firmware för <ph name="TPM_FIRMWARE_UPDATE_TPM" /> vid nästa omstart.
+        Med inställningen 4 uppdateras firmware för <ph name="TPM_FIRMWARE_UPDATE_TPM" /> efter registreringen, innan användaren loggar in.
+        Detta alternativ är tillgängligt från och med version 74.
+
+      Om inget värde anges för principen är uppdateringar av firmware för <ph name="TPM_FIRMWARE_UPDATE_TPM" /> inte tillgängliga.</translation>
 <translation id="1708496595873025510">Ange begränsning av hämtningen av startvärdet för Variations</translation>
 <translation id="1717817358640580294">Om ingen inställning anges kan Chrome Cleanup rapportera metadata om oönskad programvara hittas i en sökning till Google enligt inställningen i principen SafeBrowsingExtendedReportingEnabled. Chrome Cleanup frågar sedan om användaren vill ta bort det oönskade programmet. Användaren kan välja att dela resultatet av rensningen med Google för att bidra till att identifiera oönskade program i framtiden. Resultaten innehåller metadata om filer, automatiskt installerade tillägg och registernycklar enligt beskrivningen i rapporten om sekretess i Chrome.
 
@@ -460,8 +476,6 @@
       Om den här principen inte är konfigurerad eller om den är inställd på tls1.2 använder <ph name="PRODUCT_NAME" /> inte längre den alternativa versionen. Tänk på att detta inte inaktiverar stöd för äldre TLS-versioner. Det avgör bara om <ph name="PRODUCT_NAME" /> kringgår servrar med fel som inte kan förhandla versioner korrekt.
 
       Om kompatibiliteten med en server med fel måste upprätthållas kan den ställas in på tls1.1. Det här är en nödlösning och servern bör snabbt åtgärdas.</translation>
-<translation id="1864269674877167562">Om policyn anges som en tom sträng eller inte har konfigurerats visar inte <ph name="PRODUCT_OS_NAME" /> alternativet för autoslutför under användarens inloggningsflöde.
-      Om policyn är inställd på en sträng som motsvarar ett domännamn visar <ph name="PRODUCT_OS_NAME" /> ett alternativ för autoslutför under användarens inloggning så att användaren bara kan skriva sitt användarnamn utan domännamnstillägget. Användaren kan skriva över detta domännamnstillägg.</translation>
 <translation id="1864382791685519617">Principen aktiverar nätverksförslag i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
 
       Detta styr DNS-förhämtning, TCP- och SSL-föranslutning och förrendering av webbsidor.
@@ -865,7 +879,7 @@
 <translation id="257788512393330403">Lösenord krävs var sjätte timme</translation>
 <translation id="2587719089023392205">Gör <ph name="PRODUCT_NAME" /> till min standardwebbläsare</translation>
 <translation id="2592091433672667839">Inaktivitetstid innan skärmsläckaren visas på inloggningsskärmen i återförsäljarläge</translation>
-<translation id="2592162121850992309">Om den här principen är inställd på sant eller inte ställs in aktiveras maskinvaruacceleration om inte en viss funktion i grafikprocessorn är svartlistad.
+<translation id="2592162121850992309">Om den här principen är inställd på sant eller inte ställs in aktiveras maskinvaruacceleration såvida en viss funktion i grafikprocessorn inte är svartlistad.
 
       Om principen är inställd på falskt inaktiveras maskinvaruacceleration.</translation>
 <translation id="2596260130957832043">Styr om NTLMv2 är aktiverat.
@@ -1260,6 +1274,17 @@
       Den här principen kan endast ställas in som rekommenderad. Du kan använda principen för att flytta flera rekommenderade språkkoder högst upp, men användare kan alltid välja en språkkod som stöds av <ph name="PRODUCT_OS_NAME" /> för sessionen.
       </translation>
 <translation id="3381968327636295719">Använd värdwebbläsaren som standard</translation>
+<translation id="3384115339826100753">Aktivera energisparprincipen för belastningsförskjutning.
+
+          Belastningsförskjutning är en energisparprincip som används för att minimera användningen av växelström under den tid på dygnet då belastningen på elnätet är som högst. För varje veckodag kan du ange en starttid och en sluttid när läget för belastningsförskjutning ska vara aktivt. Inom detta tidsintervall körs systemet på batteri även om en växelströmkälla har anslutits, så länge batterinivån håller sig över det angivna tröskelvärdet. Efter den angivna sluttiden körs systemet på växelström om en sådan strömkälla har anslutits, men batteriet laddas inte. Efter den angivna starttiden för laddning börjar systemet fungera som vanligt igen så att växelström används och batteriet laddas.
+
+          Om den här principen är inställd på sant och principerna DevicePowerPeakShiftBatteryThreshold och DevicePowerPeakShiftDayConfig har ställts in är belastningsförskjutning alltid aktiverat om enheten har stöd för det.
+
+          Om den här principen är inställd på falskt är belastningsförskjutning alltid inaktiverat.
+
+          Om du ställer in den här principen kan användarna inte ändra eller åsidosätta den.
+
+          Om principen saknar inställning är belastningsförskjutning inaktiverat från start och användarna kan inte aktivera det.</translation>
 <translation id="3388153794103186066">Gör att du kan ange en lista med webbadresser som styr vilka webbplatser som automatiskt ska ges åtkomstbehörighet till en USB-enhet med angivet leverantörs- och produkt-id. Varje post i listan måste innehålla både enheter och webbadresser för att principen ska gälla. Varje enhetspost kan ha ett fält för leverantörs-id och ett för produkt-id. Om ett id utelämnas fungerar det som om ett jokertecken hade angetts, med ett undantag: det går inte att ange ett produkt-id om inget leverantörs-id har angetts. I så fall blir principen ogiltig och ignoreras.
 
         Med behörighetsmodellen för USB används webbadressen till den webbplats som begäran kommer från (den ”begärande” webbadressen) och webbadressen till ramen på toppnivå (den ”inbäddande” webbplatsen) när den begärande webbadressen ska ges åtkomstbehörighet till USB-enheten. Den begärande webbadressen behöver inte vara samma som den inbäddande webbadressen, om webbadressen som begäran kommer från har lästs in i en iframe. Därför kan webbadressfältet innehålla upp till två kommaavgränsade strängar som anger den begärande respektive inbäddande webbadressen. Om bara en webbadress har angetts kommer åtkomstbehörighet till USB-enheten att beviljas om den begärande webbadressen matchar denna, oavsett om den har bäddats in eller inte. Webbadresserna i webbadressfältet måste vara giltiga. I annat fall ignoreras principen.
@@ -1341,7 +1366,7 @@
       När principen är inställd på falskt försöker enheten inte kontakta
       Quirks-servern för att ladda ned konfigurationsfiler.
 
-      Om principen är inställd på sant eller om den inte har konfigurerats kommer <ph name="PRODUCT_OS_NAME" /> automatiskt att kontakta Quirks-servern och ladda ned konfigurationsfiler (i mån av tillgång) och spara dem på enheten.  Sådana filer kan till exempel användas för att förbättra visningskvaliteten på anslutna skärmar.</translation>
+      Om principen är inställd på sant eller om den inte har konfigurerats kontaktar <ph name="PRODUCT_OS_NAME" /> automatiskt Quirks-servern och laddar ned konfigurationsfiler (i mån av tillgång) och sparar dem på enheten.  Sådana filer kan till exempel användas för att förbättra visningskvaliteten på anslutna skärmar.</translation>
 <translation id="3524204464536655762">Tillåt inte att någon webbplats begär åtkomst till USB-enheter via WebUSB API</translation>
 <translation id="3526752951628474302">Endast utskrift i svartvitt</translation>
 <translation id="3528000905991875314">Aktivera alternativa felsidor</translation>
@@ -1352,6 +1377,7 @@
       Om DeveloperToolsDisallowed (värde 2) anges för principen går det inte att använda utvecklarverktygen eller att granska webbplatselement. Kortkommandon och alternativ för att öppna utvecklarverktygen eller JavaScript-konsolen på menyer och snabbmenyer inaktiveras.</translation>
 <translation id="3547954654003013442">Proxyinställningar</translation>
 <translation id="355118380775352753">Webbplatser som ska öppnas i alternativa webbläsare</translation>
+<translation id="3554984410014457319">Tillåt Google-assistenten att lyssna efter röstaktiveringsfrasen</translation>
 <translation id="3577251398714997599">Annonsinställningar för webbplatser med påträngande annonser</translation>
 <translation id="357917253161699596">Tillåt användarna att hantera användarcertifikat</translation>
 <translation id="3583230441447348508">Anger en lista med förkonfigurerade filresurser i nätverket.
@@ -1372,7 +1398,7 @@
 <translation id="3628480121685794414">Aktivera enkelsidig utskrift</translation>
 <translation id="3631099945620529777">När principen ställs in på falskt är knappen Avsluta aktivitet inaktiverad i Aktivitetshanteraren.
 
-      När principen ställs in sant eller inte har konfigurerats kan användaren avsluta aktiviteter i Aktivitetshanteraren.</translation>
+      När principen ställs in på sant eller inte har konfigurerats kan användaren avsluta aktiviteter i Aktivitetshanteraren.</translation>
 <translation id="3646859102161347133">Ange typen av skärmförstorare</translation>
 <translation id="3653237928288822292">Ikon för standardsökleverantör</translation>
 <translation id="3660510274595679517">
@@ -1586,6 +1612,12 @@
       <ph name="PRODUCT_OS_NAME" />-enheter söker automatiskt efter uppdateringar när inställningen inte är konfigurerad eller när den är inställd på falskt.
 
       Obs! Vi rekommenderar att du låter den automatiska uppdateringen vara aktiv så att användarna får uppdateringar av programvaran och viktiga säkerhetskorrigeringar. Om du inaktiverar automatiska uppdateringar kan användarnas säkerhet äventyras.</translation>
+<translation id="4018000735882846261">Den här principen ger Google-assistenten behörighet att lyssna efter röstaktiveringsfrasen.
+
+      Om principen har aktiverats lyssnar Google-assistenten efter röstaktiveringsfrasen.
+      Om principen har inaktiverats lyssnar Google-assistenten inte efter röstaktiveringsfrasen.
+      Om principen inte har angetts lyssnar Google-assistenten inte efter röstaktiveringsfrasen.
+      </translation>
 <translation id="4020682745012723568">Cookies som överförs till användarprofilen är inte tillgängliga för Android-appar.</translation>
 <translation id="402759845255257575">Tillåt inte att någon webbplats kör JavaScript</translation>
 <translation id="4027608872760987929">Aktivera standardsökleverantör</translation>
@@ -1781,6 +1813,7 @@
       Även om själva policyn stöds av plattformarna ovan kanske inte den återaktiverade funktionen stöds av alla dessa plattformar. Det är inte alla utfasade webbplattformsfunktioner som kan återaktiveras. Endast de funktioner som uttryckligen tas upp i listan nedan kan återaktiveras under en begränsad tid som varierar mellan olika funktioner. Strängtaggens allmänna format är [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. För information om ändringarna av webbplattformsfunktioner hänvisar vi till http://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Aktivera lås när enheten är i viloläge eller vänteläge</translation>
+<translation id="4449469846627734399">Ange dagskonfiguration för belastningsförskjutning</translation>
 <translation id="4449545651113180484">Rotera skärmen 270 grader medurs</translation>
 <translation id="445270821089253489">Styr vilket slags användar- och enhetsinformation som rapporteras.</translation>
 <translation id="4454820008017317557">Visa ikonen för <ph name="PRODUCT_NAME" /> i verktygsfältet</translation>
@@ -1827,14 +1860,6 @@
 <translation id="4534500438517478692">Namn på Android-begränsning:</translation>
 <translation id="4541530620466526913">Lokala konton på enheten</translation>
 <translation id="4543502256674577024">Inställningar för enhetsuppdatering</translation>
-<translation id="4544079461524242527">Konfigurerar inställningar för hantering av tillägg för <ph name="PRODUCT_NAME" />.
-
-          Principen styr flera inställningar, bland annat inställningar som styrs av befintliga tilläggsrelaterade policyer. Principen åsidosätter alla äldre principer om båda är angivna.
-
-          Principen mappar ett tilläggs-id eller en uppdateringsadress till dess konfiguration. Med ett tilläggs-id tillämpas konfigurationen endast på det angivna tillägget. En standardkonfiguration kan anges för det särskilda id:t <ph name="DEFAULT_SCOPE" />, som tillämpas på alla tillägg som inte har en anpassad konfiguration i den här principen. Med en uppdateringsadress tillämpas konfigurationen på alla tillägg med den exakta uppdateringsadressen som angetts i manifestet för tillägget, så som beskrivs på <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Du hittar en fullständig beskrivning av möjliga inställningar och strukturen för principen på https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Behandlingsläge för användarprincip-loopback</translation>
 <translation id="4554841826517980623">Principen styr om funktionen Network File Share i <ph name="PRODUCT_NAME" /> ska använda <ph name="NETBIOS_PROTOCOL" /> för att registrera delningar i nätverket.
       Om principen är inställd på Sant används protokollet <ph name="NETBIOS_PROTOCOL" /> för att registrera delningar i nätverket.
@@ -1979,6 +2004,11 @@
 
       Denna princip är endast tillgänglig som plattform.
       </translation>
+<translation id="5034604678285451405">Ange ett tröskelvärde i procent för batterianvändning vid belastningsförskjutning.
+
+          Principen används bara om DevicePowerPeakShiftEnabled är inställd på sant.
+
+          Om principen inte har konfigurerats eller saknar inställning är belastningsförskjutning alltid inaktiverat.</translation>
 <translation id="5047604665028708335">Tillåt åtkomst till webbplatser utanför innehållspaket</translation>
 <translation id="5052081091120171147">Om den här policyn är aktiverad gör den att webbhistoriken måste importeras från den nuvarande standardwebbläsaren. Den påverkar då även importfönstret.
 
@@ -2275,6 +2305,7 @@
 <translation id="5457065417344056871">Använda gästläget i webbläsaren</translation>
 <translation id="5457924070961220141">Policyn gör att du kan konfigurera standardrenderare för HTML när <ph name="PRODUCT_FRAME_NAME" /> installeras.
           Standardinställningen som används om policyn inte ställs in är att tillåta att värdwebbläsaren utför renderingen, men du kan åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME" /> rendera HTML-sidor som standard.</translation>
+<translation id="5458584148602890023">Aktivera belastningsförskjutning</translation>
 <translation id="5464816904705580310">Konfigurera inställningar för hanterade användare.</translation>
 <translation id="546726650689747237">Skärmdämpningstid när enheten är ansluten till elnätet</translation>
 <translation id="5469143988693423708">Crostini har aktiverats för användaren</translation>
@@ -2619,6 +2650,7 @@
 
       Om principen inte har konfigurerats är listan med frånkopplingsbara USB-enheter tom.</translation>
 <translation id="6083631234867522991">Windows (Windows-klienter):</translation>
+<translation id="608788685013546076">Ange ett tröskelvärde i procent för batterianvändning vid belastningsförskjutning</translation>
 <translation id="6089679180657323464">Styr inställningar för Wilcos styrenhet för diagnostik och telemetri.</translation>
 <translation id="6091233616732024397">Tvinga användare att logga in i webbläsaren</translation>
 <translation id="6093156968240188330">Tillåt att fjärranvändare kan interagera med fönster som öppnats med adminbehörighet i fjärrhjälpsessioner</translation>
@@ -3443,7 +3475,7 @@
 <translation id="7683777542468165012">Dynamisk policyuppdatering</translation>
 <translation id="7687943045976362719">Om den här principen ställs in hanteras de angivna innehållstyperna av <ph name="PRODUCT_FRAME_NAME" />.
 
-          Om ingen principen inte ställs in används standardrenderaren för alla webbplatser. (Standardrenderaren kan konfigureras med hjälp av principen <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" />.)</translation>
+          Om principen inte ställs in används standardrenderaren för alla webbplatser. (Standardrenderaren kan konfigureras med hjälp av principen <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" />.)</translation>
 <translation id="7694807474048279351">Schemalägg en automatisk omstart efter uppdatering av <ph name="PRODUCT_OS_NAME" />.
 
       När den här principen är sann schemaläggs en automatisk omstart när <ph name="PRODUCT_OS_NAME" /> har uppdaterats och en omstart krävs för att slutföra processen. Omstarten schemaläggs omedelbart man kan fördröjas i upp till 24 timmar om någon använder enheten.
@@ -3850,6 +3882,9 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="8548832052135586762">Ställer in utskrift endast i färg, endast i svartvitt eller utan begränsning vad gäller färg. Om principen har lämnats utan inställning används ingen begränsning.</translation>
 <translation id="8549772397068118889">Varna när du besöker webbplatser utanför innehållspaket</translation>
 <translation id="8566842294717252664">Dölj webbutiken från sidan ny flik och startprogrammet för appar</translation>
+<translation id="8569734380847633643">
+          Om principen är inställd på falskt inaktiveras Wi-Fi i <ph name="PRODUCT_OS_NAME" /> och användarna kan inte aktivera det igen.
+          Om principen är inställd på sant eller saknar inställning kan användarna aktivera och inaktivera Wi-Fi när de vill.</translation>
 <translation id="857369585509260201">Den här principen har fasats ut. Använd BrowserSignin i stället.
 
       Om principen är inställd på sant måste användaren logga in i <ph name="PRODUCT_NAME" /> med sin profil för att kunna använda webbläsaren. Dessutom anges falskt som standardvärde för BrowserGuestModeEnabled. Observera att när principen aktiveras låses befintliga, osignerade profiler och är därefter inte längre tillgängliga. I artikeln i hjälpcentret finns mer information.
@@ -3908,6 +3943,13 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="8685024486845674965">Lösenordsskyddets varningar utlöses av att lösenordet återanvänds</translation>
 <translation id="8693243869659262736">Använd en inbyggd DNS-klient</translation>
 <translation id="8703488928438047864">Rapportera kortstatus</translation>
+<translation id="8703872185032220081">Ange dagskonfiguration för belastningsförskjutning.
+
+          Principen används bara om DevicePowerPeakShiftEnabled är inställd på sant.
+
+          Om principen inte har konfigurerats eller saknar inställning är belastningsförskjutning alltid inaktiverat.
+
+          Obs! Tillåtna värden i fältet <ph name="MINUTE_FIELD_NAME" /> i <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> och <ph name="CHARGE_START_TIME_FIELD_NAME" /> är 0, 15, 30, 45.</translation>
 <translation id="8704831857353097849">Lista med inaktiverade plugin-program</translation>
 <translation id="8711086062295757690">Policyn anger nyckelordet, som är ett kortkommando som används i adressfältet för att aktivera sökning för den här leverantören.
 
@@ -4077,7 +4119,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
       När den här principen är inställd på värdet -1 kan användaren verifieras offline i oändlighet. När den här principen är inställd på ett annat värde anges tidslängden sedan den senaste onlineverifieringen efter vilken användaren måste använda onlineverifieringen igen.
 
-      Om ingen principen inte ställs in använder <ph name="PRODUCT_OS_NAME" /> en standardtid på 14 dagar efter vilka användaren måste använda onlineverifieringen igen.
+      Om principen inte ställs in använder <ph name="PRODUCT_OS_NAME" /> en standardtid på 14 dagar efter vilka användaren måste använda onlineverifieringen igen.
 
       Den här principen påverkar endast användare som verifieras via SAML.
 
@@ -4107,6 +4149,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
       Om principen inte anges kan användaren välja en avatarbild som representerar honom eller henne på inloggningsskärmen.</translation>
 <translation id="9035964157729712237">Tilläggs-ID:n att undanta från svartlistan</translation>
+<translation id="9038839118379817310">Aktivera Wi-Fi</translation>
 <translation id="9039822628127365650">När den här principen är inställd anges den tidsrymd efter vilken användaren loggas ut automatisk och sessionen avslutas. Användaren meddelas om den återstående tiden med en nedräkningstimer som visas i systemfältet.
 
       När principen inte är inställd begränsas inte sessionslängden.
@@ -4215,7 +4258,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
           Om principen inte anges används 3 och användaren kan ändra inställningen.</translation>
 <translation id="9167719789236691545">Inaktivera Drive i appen Filer i <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="9185107612228451403">Konfigurerar principer för tillägg. Användaren tillåts inte installera svartlistade tillägg såvida de inte också står på vitlistan. Du kan även tvinga <ph name="PRODUCT_NAME" /> att installera tillägg automatiskt genom att ange dem i <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />. Tillägg med tvingande installation installeras även om de står på den svarta listan.</translation>
+<translation id="9185107612228451403">Konfigurerar principer för tillägg. Användaren får inte installera svartlistade tillägg såvida de inte är vitlistade. Du kan även tvinga <ph name="PRODUCT_NAME" /> att installera tillägg automatiskt genom att ange dem i <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />. Tillägg med tvingande installation installeras även om de står på den svarta listan.</translation>
 <translation id="9187743794267626640">Inaktivera montering av extern lagring</translation>
 <translation id="9197740283131855199">Procentsats med vilken fördröjningen av dämpningen av skärmen ska skalanpassas om användaren gör något efter dämpningen</translation>
 <translation id="9200828125069750521">Parametrar för bildwebbadresser som använder POST</translation>

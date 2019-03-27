@@ -82,7 +82,6 @@
 <translation id="1553358976309200471">Aktualizovat Chrome</translation>
 <translation id="1569387923882100876">Připojené zařízení</translation>
 <translation id="1571304935088121812">Kopírovat uživatelské jméno</translation>
-<translation id="1576370611341449972">Stahování se provádí pouze přes Wi-Fi</translation>
 <translation id="1612196535745283361">K vyhledání zařízení potřebuje Chrome přístup k informacím o poloze. Přístup k poloze je v tomto zařízení <ph name="BEGIN_LINK" />vypnut<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Bránit této stránce ve vytváření dalších dialogových oken</translation>
@@ -371,7 +370,6 @@
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Spravovat</translation>
 <translation id="3819178904835489326">Počet smazaných stažených souborů: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
-<translation id="3819562311292413223">Stahovat články pro vás</translation>
 <translation id="3822502789641063741">Vymazat úložiště webů?</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3859306556332390985">Přetočit dopředu</translation>

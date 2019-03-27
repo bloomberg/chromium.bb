@@ -82,7 +82,6 @@
 <translation id="1553358976309200471">Atjaunināt Chrome</translation>
 <translation id="1569387923882100876">Pievienota ierīce</translation>
 <translation id="1571304935088121812">Kopēt lietotājvārdu</translation>
-<translation id="1576370611341449972">Lejupielāde notiek tikai Wi-Fi tīklā</translation>
 <translation id="1612196535745283361">Lai meklētu ierīces, pārlūkam Chrome ir nepieciešama piekļuve atrašanās vietas datiem. <ph name="BEGIN_LINK" />Šajā ierīcē ir izslēgta piekļuve atrašanās vietas datiem<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Neļaut šai lapai veidot papildu dialoglodziņus</translation>
@@ -188,7 +187,7 @@
 <translation id="2349710944427398404">Kopējais pārlūkā Chrome izmantoto datu apjoms, ieskaitot kontus, grāmatzīmes un saglabātos iestatījumus</translation>
 <translation id="2351097562818989364">Tulkošanas iestatījumi ir atiestatīti.</translation>
 <translation id="2353636109065292463">Notiek interneta savienojuma pārbaude</translation>
-<translation id="2359808026110333948">Turpiniet</translation>
+<translation id="2359808026110333948">Turpināt</translation>
 <translation id="2369533728426058518">atvērt cilnes</translation>
 <translation id="2387895666653383613">Teksta mērogošana</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
@@ -371,7 +370,6 @@
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Pārvaldīt</translation>
 <translation id="3819178904835489326">Izdzēsti <ph name="NUMBER_OF_DOWNLOADS" /> lejupielādētie vienumi</translation>
-<translation id="3819562311292413223">Ieteikto rakstu lejupielāde</translation>
 <translation id="3822502789641063741">Vai notīrīt vietnes krātuvi?</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="3859306556332390985">Pārtīt uz priekšu</translation>

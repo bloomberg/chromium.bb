@@ -473,8 +473,6 @@
       If this policy is not configured or if it is set to "tls1.2" then <ph name="PRODUCT_NAME" /> no longer performs this fallback. Note that this does not disable support for older TLS versions, only whether <ph name="PRODUCT_NAME" /> will work around buggy servers which cannot negotiate versions correctly.
 
       Otherwise, if compatibility with a buggy server must be maintained, this policy may be set to "tls1.1". This is a stopgap measure and the server should be rapidly fixed.</translation>
-<translation id="1864269674877167562">If this policy is set to a blank string or not configured, <ph name="PRODUCT_OS_NAME" /> will not show an auto-complete option during user sign-in flow.
-      If this policy is set to a string representing a domain name, <ph name="PRODUCT_OS_NAME" /> will show an auto-complete option during user sign-in allowing the user to type in only their user name without the domain name extension. The user will be able to overwrite this domain name extension.</translation>
 <translation id="1864382791685519617">Enables network prediction in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
 
       This controls DNS pre-fetching, TCP and SSL pre-connection and pre-rendering of web pages.
@@ -1853,14 +1851,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4534500438517478692">Android restriction name:</translation>
 <translation id="4541530620466526913">Device-local accounts</translation>
 <translation id="4543502256674577024">Device update settings</translation>
-<translation id="4544079461524242527">Configures extension management settings for <ph name="PRODUCT_NAME" />.
-
-          This policy controls multiple settings, including settings controlled by any existing extension-related policies. This policy will override any legacy policies if both are set.
-
-          This policy maps an extension ID or an update URL to its configuration. With an extension ID, configuration will be applied to the specified extension only. A default configuration can be set for the special ID <ph name="DEFAULT_SCOPE" />, which will apply to all extensions that don't have a custom configuration set in this policy. With an update URL, configuration will be applied to all extensions with the exact update URL stated in manifest of this extension, as described at <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          For a full description of possible settings and structure of this policy please visit https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">User policy loopback processing mode</translation>
 <translation id="4554841826517980623">This policy controls whether the Network File Shares feature for <ph name="PRODUCT_NAME" /> should use the <ph name="NETBIOS_PROTOCOL" /> to discover shares on the network.
       When this policy is set to True, share discovery will use the <ph name="NETBIOS_PROTOCOL" /> protocol to discover shares on the network.
