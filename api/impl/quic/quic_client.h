@@ -78,6 +78,8 @@ class QuicClient final : public ProtocolConnectionClient,
     std::vector<std::pair<uint64_t, ConnectionRequestCallback*>> callbacks;
   };
 
+  ConnectRequest CreatePendingConnection(const IPEndpoint& endpoint,
+                                         ConnectionRequestCallback* request);
   uint64_t StartConnectionRequest(const IPEndpoint& endpoint,
                                   ConnectionRequestCallback* request);
   void CloseAllConnections();

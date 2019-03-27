@@ -136,6 +136,31 @@ TEST_F(QuicClientTest, Connect) {
   client_->Stop();
 }
 
+TEST_F(QuicClientTest, DoubleConnect) {
+  client_->Start();
+
+  std::unique_ptr<ProtocolConnection> connection1;
+  ConnectionCallback connection_callback1(&connection1);
+  ProtocolConnectionClient::ConnectRequest request1 =
+      client_->Connect(quic_bridge_.kReceiverEndpoint, &connection_callback1);
+  ASSERT_TRUE(request1);
+  ASSERT_FALSE(connection1);
+
+  std::unique_ptr<ProtocolConnection> connection2;
+  ConnectionCallback connection_callback2(&connection2);
+  ProtocolConnectionClient::ConnectRequest request2 =
+      client_->Connect(quic_bridge_.kReceiverEndpoint, &connection_callback2);
+  ASSERT_TRUE(request2);
+
+  quic_bridge_.RunTasksUntilIdle();
+  ASSERT_TRUE(connection1);
+  ASSERT_TRUE(connection2);
+
+  SendTestMessage(connection1.get());
+
+  client_->Stop();
+}
+
 TEST_F(QuicClientTest, OpenImmediate) {
   client_->Start();
 

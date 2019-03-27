@@ -57,28 +57,13 @@ QuicClient::ConnectRequest QuicClient::Connect(
     return ConnectRequest(this, 0);
   auto endpoint_entry = endpoint_map_.find(endpoint);
   if (endpoint_entry != endpoint_map_.end()) {
-    auto connection_entry = connections_.find(endpoint_entry->second);
-    if (connection_entry != connections_.end()) {
-      std::unique_ptr<QuicProtocolConnection> pc =
-          QuicProtocolConnection::FromExisting(
-              this, connection_entry->second.connection.get(),
-              connection_entry->second.delegate.get(), endpoint_entry->second);
-      request->OnConnectionOpened(0, std::move(pc));
-      return ConnectRequest(this, 0);
-    }
-    auto pending_entry = pending_connections_.find(endpoint);
-    if (pending_entry == pending_connections_.end()) {
-      uint64_t request_id = StartConnectionRequest(endpoint, request);
-      return ConnectRequest(this, request_id);
-    } else {
-      uint64_t request_id = next_request_id_++;
-      pending_entry->second.callbacks.emplace_back(request_id, request);
-      return ConnectRequest(this, request_id);
-    }
+    auto immediate_result = CreateProtocolConnection(endpoint_entry->second);
+    OSP_DCHECK(immediate_result);
+    request->OnConnectionOpened(0, std::move(immediate_result));
+    return ConnectRequest(this, 0);
   }
 
-  uint64_t request_id = StartConnectionRequest(endpoint, request);
-  return ConnectRequest(this, request_id);
+  return CreatePendingConnection(endpoint, request);
 }
 
 std::unique_ptr<ProtocolConnection> QuicClient::CreateProtocolConnection(
@@ -164,6 +149,20 @@ QuicClient::PendingConnectionData::PendingConnectionData(
 QuicClient::PendingConnectionData::~PendingConnectionData() = default;
 QuicClient::PendingConnectionData& QuicClient::PendingConnectionData::operator=(
     PendingConnectionData&&) = default;
+
+QuicClient::ConnectRequest QuicClient::CreatePendingConnection(
+    const IPEndpoint& endpoint,
+    ConnectionRequestCallback* request) {
+  auto pending_entry = pending_connections_.find(endpoint);
+  if (pending_entry == pending_connections_.end()) {
+    uint64_t request_id = StartConnectionRequest(endpoint, request);
+    return ConnectRequest(this, request_id);
+  } else {
+    uint64_t request_id = next_request_id_++;
+    pending_entry->second.callbacks.emplace_back(request_id, request);
+    return ConnectRequest(this, request_id);
+  }
+}
 
 uint64_t QuicClient::StartConnectionRequest(
     const IPEndpoint& endpoint,
