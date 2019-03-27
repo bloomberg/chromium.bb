@@ -70,6 +70,11 @@ class FakeAnnotator : public image_annotation::mojom::Annotator {
     return_label_results_ = label;
   }
 
+  static void SetReturnErrorCode(
+      image_annotation::mojom::AnnotateImageError error_code) {
+    return_error_code_ = error_code;
+  }
+
   FakeAnnotator() = default;
   ~FakeAnnotator() override = default;
 
@@ -80,6 +85,14 @@ class FakeAnnotator : public image_annotation::mojom::Annotator {
   void AnnotateImage(const std::string& image_id,
                      image_annotation::mojom::ImageProcessorPtr image_processor,
                      AnnotateImageCallback callback) override {
+    if (return_error_code_) {
+      image_annotation::mojom::AnnotateImageResultPtr result =
+          image_annotation::mojom::AnnotateImageResult::NewErrorCode(
+              *return_error_code_);
+      std::move(callback).Run(std::move(result));
+      return;
+    }
+
     // Use the filename to create an annotation string.
     // Adds some trailing whitespace and punctuation to check that clean-up
     // happens correctly when combining annotation strings.
@@ -111,6 +124,8 @@ class FakeAnnotator : public image_annotation::mojom::Annotator {
   mojo::BindingSet<image_annotation::mojom::Annotator> bindings_;
   static bool return_ocr_results_;
   static bool return_label_results_;
+  static base::Optional<image_annotation::mojom::AnnotateImageError>
+      return_error_code_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAnnotator);
 };
@@ -119,6 +134,9 @@ class FakeAnnotator : public image_annotation::mojom::Annotator {
 bool FakeAnnotator::return_ocr_results_ = false;
 // static
 bool FakeAnnotator::return_label_results_ = false;
+// static
+base::Optional<image_annotation::mojom::AnnotateImageError>
+    FakeAnnotator::return_error_code_;
 
 // The fake ImageAnnotationService, which handles mojo calls from the renderer
 // process and passes them to FakeAnnotator.
@@ -272,4 +290,46 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImageDoc) {
       DescribeNodesWithAnnotations(ax_tree_update),
       testing::ElementsAre("rootWebArea Appears to say: red.png Annotation",
                            "image Appears to say: red.png Annotation"));
+}
+
+IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, NoAnnotationsAvailable) {
+  // Don't return any results.
+  FakeAnnotator::SetReturnOcrResults(false);
+  FakeAnnotator::SetReturnLabelResults(false);
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/image_annotation_doc.html"));
+
+  // Block until the annotation status for the root is empty. If that
+  // never occurs then the test will time out.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui::AXTreeUpdate snapshot =
+      content::GetAccessibilityTreeSnapshot(web_contents);
+  while (snapshot.nodes[0].GetImageAnnotationStatus() !=
+         ax::mojom::ImageAnnotationStatus::kAnnotationEmpty) {
+    content::WaitForAccessibilityTreeToChange(web_contents);
+    snapshot = content::GetAccessibilityTreeSnapshot(web_contents);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, AnnotationError) {
+  // Return an error code.
+  FakeAnnotator::SetReturnErrorCode(
+      image_annotation::mojom::AnnotateImageError::kFailure);
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/image_annotation_doc.html"));
+
+  // Block until the annotation status for the root is empty. If that
+  // never occurs then the test will time out.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui::AXTreeUpdate snapshot =
+      content::GetAccessibilityTreeSnapshot(web_contents);
+  while (snapshot.nodes[0].GetImageAnnotationStatus() !=
+         ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed) {
+    content::WaitForAccessibilityTreeToChange(web_contents);
+    snapshot = content::GetAccessibilityTreeSnapshot(web_contents);
+  }
 }
