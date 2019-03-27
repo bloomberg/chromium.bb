@@ -3,7 +3,7 @@
 
    <!-- Translate Info Bar -->
   <message name="IDS_TRANSLATE_INFOBAR_OPTIONS_MORE_LANGUAGE" desc="Text for the menu item that lets the user open a dialog to choose another target language for translation, from a list of available languages.">
-    More languages
+    More languages...
   </message>
   <message name="IDS_TRANSLATE_INFOBAR_OPTIONS_NOT_SOURCE_LANGUAGE" desc="Text for the menu item that lets the user open a dialog to choose another language as the source language for translation, from a list of available languages.">
     Page is not in <ph name="language">$1<ex>French</ex></ph>?
