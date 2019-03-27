@@ -422,6 +422,11 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
   // interpreted by data reduction proxy.
   if (headers.response_code() == net::HTTP_PROXY_AUTHENTICATION_REQUIRED &&
       !headers.HasHeader("Proxy-Authenticate")) {
+    // Bypass all proxies for a few RTTs until the config fetch could update the
+    // session key. The value 500 ms is the RTT observed for config fetches.
+    data_reduction_proxy_info->bypass_all = true;
+    data_reduction_proxy_info->bypass_duration =
+        base::TimeDelta::FromMilliseconds(3 * 500);
     return BYPASS_EVENT_TYPE_MALFORMED_407;
   }
 
