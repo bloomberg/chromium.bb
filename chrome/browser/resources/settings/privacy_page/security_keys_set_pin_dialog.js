@@ -124,6 +124,9 @@ Polymer({
       type: String,
       value: 'initial',
     },
+
+    /** @private */
+    title_: String,
   },
 
   /** @private {?settings.SecurityKeysBrowserProxy} */
@@ -131,6 +134,7 @@ Polymer({
 
   /** @override */
   attached: function() {
+    this.title_ = this.i18n('securityKeysSetPINInitialTitle');
     this.browserProxy_ = settings.SecurityKeysBrowserProxyImpl.getInstance();
     this.$.dialog.showModal();
 
@@ -169,9 +173,11 @@ Polymer({
         if (this.retries_ === null) {
           this.$.currentPINEntry.hidden = true;
           focusTarget = this.$.newPIN;
+          this.title_ = this.i18n('securityKeysSetPINCreateTitle');
         } else {
           this.$.currentPINEntry.hidden = false;
           focusTarget = this.$.currentPIN;
+          this.title_ = this.i18n('securityKeysSetPINChangeTitle');
         }
 
         this.shown_ = 'pinPrompt';

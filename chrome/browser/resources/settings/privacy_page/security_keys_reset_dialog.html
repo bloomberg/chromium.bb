@@ -18,11 +18,10 @@
     </style>
     <cr-dialog id="dialog" close-text="$i18n{close}" ignore-popstate
          on-close="closeDialog_">
-      <div slot="title">$i18n{securityKeysResetTitle}</div>
+      <div slot="title">[[title_]]</div>
       <div slot="body">
         <iron-pages attr-for-selected="id" selected="[[shown_]]">
           <div id="initial">
-            <p>$i18n{securityKeysResetIntro}</p>
             <p>$i18n{securityKeysResetStep1}</p>
             <paper-spinner-lite active></paper-spinner-lite>
           </div>
