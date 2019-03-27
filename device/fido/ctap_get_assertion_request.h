@@ -112,6 +112,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   bool is_incognito_mode_ = false;
 };
 
+class CtapGetNextAssertionRequest {
+ public:
+  std::vector<uint8_t> EncodeAsCBOR() const;
+};
+
 }  // namespace device
 
 #endif  // DEVICE_FIDO_CTAP_GET_ASSERTION_REQUEST_H_

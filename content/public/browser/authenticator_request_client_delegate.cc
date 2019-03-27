@@ -38,6 +38,18 @@ void AuthenticatorRequestClientDelegate::ShouldReturnAttestation(
   std::move(callback).Run(true);
 }
 
+bool AuthenticatorRequestClientDelegate::SupportsResidentKeys() {
+  return false;
+}
+
+void AuthenticatorRequestClientDelegate::SelectAccount(
+    std::vector<device::AuthenticatorGetAssertionResponse> responses,
+    base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
+        callback) {
+  // SupportsResidentKeys returned false so this should never be called.
+  NOTREACHED();
+}
+
 bool AuthenticatorRequestClientDelegate::IsFocused() {
   return true;
 }

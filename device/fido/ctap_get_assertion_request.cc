@@ -41,7 +41,7 @@ std::vector<uint8_t> CtapGetAssertionRequest::EncodeAsCBOR() const {
   cbor_map[cbor::Value(1)] = cbor::Value(rp_id_);
   cbor_map[cbor::Value(2)] = cbor::Value(client_data_hash_);
 
-  if (allow_list_) {
+  if (allow_list_ && !allow_list_->empty()) {
     cbor::Value::ArrayValue allow_list_array;
     for (const auto& descriptor : *allow_list_) {
       allow_list_array.push_back(descriptor.ConvertToCBOR());
@@ -134,6 +134,11 @@ bool CtapGetAssertionRequest::CheckResponseRpIdHash(
   return response_rp_id_hash == fido_parsing_utils::CreateSHA256Hash(rp_id_) ||
          (app_id_ &&
           response_rp_id_hash == *alternative_application_parameter());
+}
+
+std::vector<uint8_t> CtapGetNextAssertionRequest::EncodeAsCBOR() const {
+  return {
+      static_cast<uint8_t>(CtapRequestCommand::kAuthenticatorGetNextAssertion)};
 }
 
 }  // namespace device

@@ -120,10 +120,14 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
   // default values up to here.  TODO(martinkr): Initialize these fields earlier
   // (in AuthenticatorImpl) and get rid of the separate
   // AuthenticatorSelectionCriteriaParameter.
-  request_.SetResidentKeyRequired(
-      authenticator_selection_criteria_.require_resident_key());
-  request_.SetUserVerification(
-      authenticator_selection_criteria_.user_verification_requirement());
+  if (authenticator_selection_criteria_.require_resident_key()) {
+    request_.SetResidentKeyRequired(true);
+    request_.SetUserVerification(UserVerificationRequirement::kRequired);
+  } else {
+    request_.SetResidentKeyRequired(false);
+    request_.SetUserVerification(
+        authenticator_selection_criteria_.user_verification_requirement());
+  }
   request_.SetAuthenticatorAttachment(
       authenticator_selection_criteria_.authenticator_attachment());
 

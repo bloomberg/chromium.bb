@@ -639,7 +639,9 @@ void AuthenticatorCommon::MakeCredential(
   }
 
   if (options->authenticator_selection &&
-      options->authenticator_selection->require_resident_key) {
+      options->authenticator_selection->require_resident_key &&
+      (!base::FeatureList::IsEnabled(device::kWebAuthResidentKeys) ||
+       !request_delegate_->SupportsResidentKeys())) {
     // Disallow the creation of resident credentials.
     InvokeCallbackAndCleanup(
         std::move(callback),
@@ -806,11 +808,14 @@ void AuthenticatorCommon::GetAssertion(
   }
 
   if (options->allow_credentials.empty()) {
-    // Chrome currently does not support any resident keys.
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED);
-    return;
+    if (!base::FeatureList::IsEnabled(device::kWebAuthResidentKeys) ||
+        !request_delegate_->SupportsResidentKeys()) {
+      InvokeCallbackAndCleanup(
+          std::move(callback),
+          blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED);
+      return;
+    }
+    need_account_selection_ = true;
   }
 
   if (options->appid) {
@@ -1129,27 +1134,38 @@ void AuthenticatorCommon::OnSignResponse(
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
-      // Resident keys are not yet supported so there must be a single response.
-      DCHECK_EQ(1u, response_data->size());
-      auto& response = response_data.value()[0];
 
       if (transport_used) {
         request_delegate_->UpdateLastTransportUsed(*transport_used);
       }
 
-      base::Optional<bool> echo_appid_extension;
-      if (app_id_) {
-        echo_appid_extension =
-            (response.GetRpIdHash() == CreateApplicationParameter(*app_id_));
+      if (need_account_selection_) {
+        request_delegate_->SelectAccount(
+            std::move(*response_data),
+            base::BindOnce(&AuthenticatorCommon::OnAccountSelected,
+                           weak_factory_.GetWeakPtr()));
+        return;
       }
-      InvokeCallbackAndCleanup(std::move(get_assertion_response_callback_),
-                               blink::mojom::AuthenticatorStatus::SUCCESS,
-                               CreateGetAssertionResponse(
-                                   std::move(client_data_json_),
-                                   std::move(response), echo_appid_extension));
+
+      OnAccountSelected(std::move(response_data.value()[0]));
       return;
   }
   NOTREACHED();
+}
+
+void AuthenticatorCommon::OnAccountSelected(
+    device::AuthenticatorGetAssertionResponse response) {
+  base::Optional<bool> echo_appid_extension;
+  if (app_id_) {
+    echo_appid_extension =
+        (response.GetRpIdHash() == CreateApplicationParameter(*app_id_));
+  }
+  InvokeCallbackAndCleanup(
+      std::move(get_assertion_response_callback_),
+      blink::mojom::AuthenticatorStatus::SUCCESS,
+      CreateGetAssertionResponse(std::move(client_data_json_),
+                                 std::move(response), echo_appid_extension));
+  return;
 }
 
 void AuthenticatorCommon::SignalFailureToRequestDelegate(
@@ -1268,6 +1284,7 @@ void AuthenticatorCommon::Cleanup() {
   client_data_json_.clear();
   app_id_.reset();
   attestation_requested_ = false;
+  need_account_selection_ = false;
   error_awaiting_user_acknowledgement_ =
       blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
 }

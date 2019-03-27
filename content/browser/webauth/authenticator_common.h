@@ -154,6 +154,11 @@ class CONTENT_EXPORT AuthenticatorCommon {
   // Runs when the user cancels WebAuthN request via UI dialog.
   void Cancel();
 
+  // Called when a GetAssertion has completed, either because an allow_list was
+  // used and so an answer is returned directly, or because the user selected an
+  // account from the options.
+  void OnAccountSelected(device::AuthenticatorGetAssertionResponse response);
+
   // Decides whether or not UI is present that needs to block on user
   // acknowledgement before returning the error, and handles the error
   // appropriately.
@@ -193,6 +198,10 @@ class CONTENT_EXPORT AuthenticatorCommon {
   std::string relying_party_id_;
   std::unique_ptr<base::OneShotTimer> timer_;
   base::Optional<std::string> app_id_;
+  // need_account_selection_ indicates if an empty allow-list was used, thus
+  // implying that an account selection dialog needs to be displayed to the user
+  // before returning any assertions.
+  bool need_account_selection_ = false;
   // awaiting_attestation_response_ is true if the embedder has been queried
   // about an attestsation decision and the response is still pending.
   bool awaiting_attestation_response_ = false;

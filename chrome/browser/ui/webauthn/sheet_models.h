@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_sheet_model.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
+#include "ui/base/models/table_model.h"
 
 namespace ui {
 class MenuModel;
@@ -426,6 +427,37 @@ class AuthenticatorGenericErrorSheetModel : public AuthenticatorSheetModelBase {
 
   base::string16 title_;
   base::string16 description_;
+};
+
+// The sheet shown when the user needs to select an account.
+class AuthenticatorSelectAccountSheetModel : public AuthenticatorSheetModelBase,
+                                             public ui::TableModel {
+ public:
+  explicit AuthenticatorSelectAccountSheetModel(
+      AuthenticatorRequestDialogModel* dialog_model);
+  ~AuthenticatorSelectAccountSheetModel() override;
+
+  // Set the index of the currently selected row.
+  void SetCurrentSelection(int selected);
+
+  // AuthenticatorSheetModelBase:
+  void OnAccept() override;
+
+ private:
+  // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
+
+  // ui::TableModel:
+  int RowCount() override;
+  base::string16 GetText(int row, int column_id) override;
+  void SetObserver(ui::TableModelObserver* observer) override;
+
+  size_t selected_ = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBAUTHN_SHEET_MODELS_H_

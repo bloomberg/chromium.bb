@@ -45,6 +45,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
                       MakeCredentialCallback callback) override;
   void GetAssertion(CtapGetAssertionRequest request,
                     GetAssertionCallback callback) override;
+  void GetNextAssertion(GetAssertionCallback callback) override;
   void GetTouch(base::OnceCallback<void()> callback) override;
   void GetRetries(GetRetriesCallback callback) override;
   void GetEphemeralKey(GetEphemeralKeyCallback callback) override;

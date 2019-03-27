@@ -9423,6 +9423,18 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_CLIENT_PIN_AUTHENTICATOR_REMOVED_DESCRIPTION" desc="Description in the error dialog shown after their security key (an external physical device for user authentication) was removed while the application was waiting for the security key PIN to be entered.">
         Your security key has been removed.
       </message>
+      <message name="IDS_WEBAUTHN_ACCOUNT_COLUMN" desc="The title of a column in a table under which will be a list of usernames or email addresses, e.g. joe@gmail.com.">
+        Account
+      </message>
+      <message name="IDS_WEBAUTHN_NAME_COLUMN" desc="The title of a column in a table under which will be a list of names on accounts, i.e. names of people. For example, Joe Smith.">
+        Name
+      </message>
+      <message name="IDS_WEBAUTHN_SELECT_ACCOUNT" desc="The title on a dialog where the user is expected to select an account from a list. For example, the list may include several identities, e.g. joe@gmail.com, mary@gmail.com, and the user has to select one to login as.">
+        Select Account
+      </message>
+      <message name="IDS_WEBAUTHN_SELECT_ACCOUNT_DESC" desc="The description on a dialog where the user is expected to select an account from a list. For example, the list may include several identities, e.g. joe@gmail.com, mary@gmail.com, and the user has to select one to login as.">
+        Select an account to log in with:
+      </message>
    </if>
    <if expr="is_macosx">
      <message name="IDS_WEBAUTHN_TOUCH_ID_TITLE" desc="Title of the dialog shown when the user tries to sign in with Touch ID." meaning="'Touch ID' is the fingerprint recognition feature in macOS. Try to refer Apple support documentation in the target language for the appropriate product name translation.">

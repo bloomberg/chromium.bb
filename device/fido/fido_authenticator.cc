@@ -13,6 +13,11 @@
 
 namespace device {
 
+void FidoAuthenticator::GetNextAssertion(
+    FidoAuthenticator::GetAssertionCallback callback) {
+  NOTREACHED();
+}
+
 void FidoAuthenticator::GetTouch(base::OnceCallback<void()> callback) {}
 
 void FidoAuthenticator::GetRetries(

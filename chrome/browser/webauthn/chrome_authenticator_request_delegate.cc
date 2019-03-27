@@ -223,6 +223,22 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
 #endif
 }
 
+bool ChromeAuthenticatorRequestDelegate::SupportsResidentKeys() {
+  return true;
+}
+
+void ChromeAuthenticatorRequestDelegate::SelectAccount(
+    std::vector<device::AuthenticatorGetAssertionResponse> responses,
+    base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
+        callback) {
+  if (!IsWebAuthnUIEnabled() || !weak_dialog_model_) {
+    std::move(cancel_callback_).Run();
+    return;
+  }
+
+  weak_dialog_model_->SelectAccount(std::move(responses), std::move(callback));
+}
+
 bool ChromeAuthenticatorRequestDelegate::IsFocused() {
 #if defined(OS_ANDROID)
   // Android is expected to use platform APIs for webauthn.

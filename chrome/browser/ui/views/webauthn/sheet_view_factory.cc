@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/webauthn/authenticator_ble_pin_entry_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_client_pin_entry_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
+#include "chrome/browser/ui/views/webauthn/authenticator_select_account_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_transport_selector_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/ble_device_selection_sheet_view.h"
 #include "chrome/browser/ui/webauthn/sheet_models.h"
@@ -150,6 +151,10 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           AuthenticatorGenericErrorSheetModel::
               ForClientPinErrorAuthenticatorRemoved(dialog_model));
+      break;
+    case Step::kSelectAccount:
+      sheet_view = std::make_unique<AuthenticatorSelectAccountSheetView>(
+          std::make_unique<AuthenticatorSelectAccountSheetModel>(dialog_model));
       break;
     case Step::kNotStarted:
     case Step::kClosed:
