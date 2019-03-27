@@ -62,9 +62,19 @@ const base::Feature kAppNotificationStatusMessaging{
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
-// Use the App Service. See chrome/services/app_service/README.md.
+// App Service related flags. See chrome/services/app_service/README.md.
+//
+// The App Service, which is a Mojo service, has a server component and
+// multiple client components. Enabling the server component feature flag
+// (AppServiceServer) will also enable a default set of clients.
+//
+// Some work-in-progress clients have their own additional feature flag, such
+// as AppServiceAsh. Enabling any one of those client-specific feature flags
+// also implicitly enables AppServiceServer.
 const base::Feature kAppServiceAsh{"AppServiceAsh",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAppServiceServer{"AppServiceServer",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 // If enabled, the list of content suggestions on the New Tab page will contain
