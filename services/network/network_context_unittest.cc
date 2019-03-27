@@ -2402,19 +2402,20 @@ TEST_F(NetworkContextTest, CreateNetLogExporter) {
   const char kValEarly[] = "morning";
   dict_start.SetKey(kKeyEarly, base::Value(kValEarly));
 
-  net::TestCompletionCallback cb;
+  net::TestCompletionCallback start_callback;
   net_log_exporter->Start(std::move(out_file), std::move(dict_start),
                           mojom::NetLogCaptureMode::DEFAULT, 100 * 1024,
-                          cb.callback());
-  EXPECT_EQ(net::OK, cb.WaitForResult());
+                          start_callback.callback());
+  EXPECT_EQ(net::OK, start_callback.WaitForResult());
 
   base::Value dict_late(base::Value::Type::DICTIONARY);
   const char kKeyLate[] = "late";
   const char kValLate[] = "snowval";
   dict_late.SetKey(kKeyLate, base::Value(kValLate));
 
-  net_log_exporter->Stop(std::move(dict_late), cb.callback());
-  EXPECT_EQ(net::OK, cb.WaitForResult());
+  net::TestCompletionCallback stop_callback;
+  net_log_exporter->Stop(std::move(dict_late), stop_callback.callback());
+  EXPECT_EQ(net::OK, stop_callback.WaitForResult());
 
   // Check that file got written.
   std::string contents;
@@ -2445,16 +2446,17 @@ TEST_F(NetworkContextTest, CreateNetLogExporterUnbounded) {
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   ASSERT_TRUE(out_file.IsValid());
 
-  net::TestCompletionCallback cb;
+  net::TestCompletionCallback start_callback;
   net_log_exporter->Start(
       std::move(out_file), base::Value(base::Value::Type::DICTIONARY),
       mojom::NetLogCaptureMode::DEFAULT,
-      mojom::NetLogExporter::kUnlimitedFileSize, cb.callback());
-  EXPECT_EQ(net::OK, cb.WaitForResult());
+      mojom::NetLogExporter::kUnlimitedFileSize, start_callback.callback());
+  EXPECT_EQ(net::OK, start_callback.WaitForResult());
 
+  net::TestCompletionCallback stop_callback;
   net_log_exporter->Stop(base::Value(base::Value::Type::DICTIONARY),
-                         cb.callback());
-  EXPECT_EQ(net::OK, cb.WaitForResult());
+                         stop_callback.callback());
+  EXPECT_EQ(net::OK, stop_callback.WaitForResult());
 
   // Check that file got written.
   std::string contents;
@@ -2475,10 +2477,10 @@ TEST_F(NetworkContextTest, CreateNetLogExporterErrors) {
   mojom::NetLogExporterPtr net_log_exporter;
   network_context->CreateNetLogExporter(mojo::MakeRequest(&net_log_exporter));
 
-  net::TestCompletionCallback cb;
+  net::TestCompletionCallback stop_callback;
   net_log_exporter->Stop(base::Value(base::Value::Type::DICTIONARY),
-                         cb.callback());
-  EXPECT_EQ(net::ERR_UNEXPECTED, cb.WaitForResult());
+                         stop_callback.callback());
+  EXPECT_EQ(net::ERR_UNEXPECTED, stop_callback.WaitForResult());
 
   base::FilePath temp_path;
   ASSERT_TRUE(base::CreateTemporaryFile(&temp_path));
@@ -2486,10 +2488,11 @@ TEST_F(NetworkContextTest, CreateNetLogExporterErrors) {
                        base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   ASSERT_TRUE(temp_file.IsValid());
 
+  net::TestCompletionCallback start_callback;
   net_log_exporter->Start(
       std::move(temp_file), base::Value(base::Value::Type::DICTIONARY),
-      mojom::NetLogCaptureMode::DEFAULT, 100 * 1024, cb.callback());
-  EXPECT_EQ(net::OK, cb.WaitForResult());
+      mojom::NetLogCaptureMode::DEFAULT, 100 * 1024, start_callback.callback());
+  EXPECT_EQ(net::OK, start_callback.WaitForResult());
 
   // Can't start twice.
   base::FilePath temp_path2;
@@ -2498,10 +2501,12 @@ TEST_F(NetworkContextTest, CreateNetLogExporterErrors) {
       temp_path2, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   ASSERT_TRUE(temp_file2.IsValid());
 
-  net_log_exporter->Start(
-      std::move(temp_file2), base::Value(base::Value::Type::DICTIONARY),
-      mojom::NetLogCaptureMode::DEFAULT, 100 * 1024, cb.callback());
-  EXPECT_EQ(net::ERR_UNEXPECTED, cb.WaitForResult());
+  net::TestCompletionCallback start_callback2;
+  net_log_exporter->Start(std::move(temp_file2),
+                          base::Value(base::Value::Type::DICTIONARY),
+                          mojom::NetLogCaptureMode::DEFAULT, 100 * 1024,
+                          start_callback2.callback());
+  EXPECT_EQ(net::ERR_UNEXPECTED, start_callback2.WaitForResult());
 
   base::DeleteFile(temp_path, false);
   base::DeleteFile(temp_path2, false);
