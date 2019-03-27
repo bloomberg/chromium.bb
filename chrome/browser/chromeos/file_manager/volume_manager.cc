@@ -401,7 +401,8 @@ std::unique_ptr<Volume> Volume::CreateForDocumentsProvider(
     const std::string& document_id,
     const std::string& title,
     const std::string& summary,
-    const GURL& icon_url) {
+    const GURL& icon_url,
+    bool read_only) {
   std::unique_ptr<Volume> volume(new Volume());
   volume->type_ = VOLUME_TYPE_DOCUMENTS_PROVIDER;
   volume->device_type_ = chromeos::DEVICE_TYPE_UNKNOWN;
@@ -411,8 +412,7 @@ std::unique_ptr<Volume> Volume::CreateForDocumentsProvider(
       arc::GetDocumentsProviderMountPath(authority, document_id);
   volume->mount_condition_ = chromeos::disks::MOUNT_CONDITION_NONE;
   volume->volume_label_ = title;
-  // TODO(fukino): Set a proper flag when write operations are supported.
-  volume->is_read_only_ = true;
+  volume->is_read_only_ = read_only;
   volume->watchable_ = false;
   volume->volume_id_ = arc::GetDocumentsProviderVolumeId(authority, root_id);
   if (!icon_url.is_empty()) {
@@ -1219,17 +1219,21 @@ void VolumeManager::OnRemovableStorageDetached(
   }
 }
 
-void VolumeManager::OnDocumentsProviderRootAdded(const std::string& authority,
-                                                 const std::string& root_id,
-                                                 const std::string& document_id,
-                                                 const std::string& title,
-                                                 const std::string& summary,
-                                                 const GURL& icon_url) {
+void VolumeManager::OnDocumentsProviderRootAdded(
+    const std::string& authority,
+    const std::string& root_id,
+    const std::string& document_id,
+    const std::string& title,
+    const std::string& summary,
+    const GURL& icon_url,
+    bool read_only,
+    const std::vector<std::string>& mime_types) {
   arc::ArcDocumentsProviderRootMap::GetForArcBrowserContext()->RegisterRoot(
-      authority, document_id);
-  DoMountEvent(chromeos::MOUNT_ERROR_NONE,
-               Volume::CreateForDocumentsProvider(
-                   authority, root_id, document_id, title, summary, icon_url));
+      authority, document_id, root_id, mime_types);
+  DoMountEvent(
+      chromeos::MOUNT_ERROR_NONE,
+      Volume::CreateForDocumentsProvider(authority, root_id, document_id, title,
+                                         summary, icon_url, read_only));
 }
 
 void VolumeManager::OnDocumentsProviderRootRemoved(
@@ -1239,7 +1243,7 @@ void VolumeManager::OnDocumentsProviderRootRemoved(
   DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
                  *Volume::CreateForDocumentsProvider(
                      authority, root_id, std::string(), std::string(),
-                     std::string(), GURL()));
+                     std::string(), GURL(), false));
   arc::ArcDocumentsProviderRootMap::GetForArcBrowserContext()->UnregisterRoot(
       authority, document_id);
 }

@@ -77,6 +77,14 @@ class ArcFileSystemOperationRunner
   using GetRecentDocumentsCallback =
       mojom::FileSystemInstance::GetRecentDocumentsCallback;
   using GetRootsCallback = mojom::FileSystemInstance::GetRootsCallback;
+  using DeleteDocumentCallback =
+      mojom::FileSystemInstance::DeleteDocumentCallback;
+  using RenameDocumentCallback =
+      mojom::FileSystemInstance::RenameDocumentCallback;
+  using CreateDocumentCallback =
+      mojom::FileSystemInstance::CreateDocumentCallback;
+  using CopyDocumentCallback = mojom::FileSystemInstance::CopyDocumentCallback;
+  using MoveDocumentCallback = mojom::FileSystemInstance::MoveDocumentCallback;
   using AddWatcherCallback = base::OnceCallback<void(int64_t watcher_id)>;
   using RemoveWatcherCallback = base::OnceCallback<void(bool success)>;
   using ChangeType = storage::WatcherManager::ChangeType;
@@ -132,6 +140,27 @@ class ArcFileSystemOperationRunner
                           const std::string& root_id,
                           GetRecentDocumentsCallback callback);
   void GetRoots(GetRootsCallback callback);
+  void DeleteDocument(const std::string& authority,
+                      const std::string& document_id,
+                      DeleteDocumentCallback callback);
+  void RenameDocument(const std::string& authority,
+                      const std::string& document_id,
+                      const std::string& display_name,
+                      RenameDocumentCallback callback);
+  void CreateDocument(const std::string& authority,
+                      const std::string& parent_document_id,
+                      const std::string& mime_type,
+                      const std::string& display_name,
+                      CreateDocumentCallback callback);
+  void CopyDocument(const std::string& authority,
+                    const std::string& source_document_id,
+                    const std::string& target_parent_document_id,
+                    CopyDocumentCallback callback);
+  void MoveDocument(const std::string& authority,
+                    const std::string& source_document_id,
+                    const std::string& source_parent_document_id,
+                    const std::string& target_parent_document_id,
+                    MoveDocumentCallback callback);
   void AddWatcher(const std::string& authority,
                   const std::string& document_id,
                   const WatcherCallback& watcher_callback,

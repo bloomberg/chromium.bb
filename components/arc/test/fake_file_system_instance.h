@@ -163,6 +163,27 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   // Returns how many times GetChildDocuments() was called.
   int get_child_documents_count() const { return get_child_documents_count_; }
 
+  // Returns true if there is a document with the given authority and
+  // document_id.
+  bool DocumentExists(const std::string& authority,
+                      const std::string& document_id);
+
+  // Returns true if there is a document with the given authority,
+  // root's document_id, and file path from the root.
+  bool DocumentExists(const std::string& authority,
+                      const std::string& root_document_id,
+                      const base::FilePath& path);
+
+  // Returns a document with the given authority and document_id.
+  Document GetDocument(const std::string& authority,
+                       const std::string& document_id);
+
+  // Returns a document with the given authority, root's document_id, and file
+  // path from the root.
+  Document GetDocument(const std::string& authority,
+                       const std::string& document_id,
+                       const base::FilePath& path);
+
   // mojom::FileSystemInstance:
   void AddWatcher(const std::string& authority,
                   const std::string& document_id,
@@ -181,6 +202,27 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
                           const std::string& root_id,
                           GetRecentDocumentsCallback callback) override;
   void GetRoots(GetRootsCallback callback) override;
+  void DeleteDocument(const std::string& authority,
+                      const std::string& document_id,
+                      DeleteDocumentCallback callback) override;
+  void RenameDocument(const std::string& authority,
+                      const std::string& document_id,
+                      const std::string& display_name,
+                      RenameDocumentCallback callback) override;
+  void CreateDocument(const std::string& authority,
+                      const std::string& parent_document_id,
+                      const std::string& mime_type,
+                      const std::string& display_name,
+                      CreateDocumentCallback callback) override;
+  void CopyDocument(const std::string& authority,
+                    const std::string& source_document_id,
+                    const std::string& target_parent_document_id,
+                    CopyDocumentCallback callback) override;
+  void MoveDocument(const std::string& authority,
+                    const std::string& source_document_id,
+                    const std::string& source_parent_document_id,
+                    const std::string& target_parent_document_id,
+                    MoveDocumentCallback callback) override;
   void InitDeprecated(mojom::FileSystemHostPtr host) override;
   void Init(mojom::FileSystemHostPtr host, InitCallback callback) override;
   void OpenFileToRead(const std::string& url,
@@ -199,6 +241,12 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   // A pair of an authority and a root ID which identifies a root in
   // documents providers.
   using RootKey = std::pair<std::string, std::string>;
+
+  // Finds a document inside a document with parent_document_id by following
+  // given path components.
+  std::string FindChildDocumentId(const std::string& authority,
+                                  const std::string& parent_document_id,
+                                  const std::vector<std::string>& components);
 
   THREAD_CHECKER(thread_checker_);
 
