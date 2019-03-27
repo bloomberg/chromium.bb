@@ -34,12 +34,10 @@ class BASE_EXPORT StackSamplerImpl : public StackSampler {
 
  private:
   bool CopyStack(StackBuffer* stack_buffer,
-                 uintptr_t* stack_top,
                  ProfileBuilder* profile_builder,
                  RegisterContext* thread_context);
 
-  std::vector<ProfileBuilder::Frame> WalkStack(RegisterContext* thread_context,
-                                               uintptr_t stack_top);
+  std::vector<ProfileBuilder::Frame> WalkStack(RegisterContext* thread_context);
 
   const std::unique_ptr<ThreadDelegate> thread_delegate_;
   ModuleCache* const module_cache_;

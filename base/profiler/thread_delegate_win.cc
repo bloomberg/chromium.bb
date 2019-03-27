@@ -202,7 +202,6 @@ std::vector<uintptr_t*> ThreadDelegateWin::GetRegistersToRewrite(
 
 UnwindResult ThreadDelegateWin::WalkNativeFrames(
     CONTEXT* thread_context,
-    uintptr_t stack_top,
     ModuleCache* module_cache,
     std::vector<ProfileBuilder::Frame>* stack) {
   Win32StackFrameUnwinder frame_unwinder;

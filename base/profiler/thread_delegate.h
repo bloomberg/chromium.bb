@@ -72,7 +72,6 @@ class BASE_EXPORT ThreadDelegate {
   // TODO(wittman): Move the unwinding support into a separate UnwindDelegate.
   virtual UnwindResult WalkNativeFrames(
       RegisterContext* thread_context,
-      uintptr_t stack_top,
       ModuleCache* module_cache,
       std::vector<ProfileBuilder::Frame>* stack) = 0;
 };
