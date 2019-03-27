@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_PREVIEWS_CONTENT_HINT_CACHE_LEVELDB_STORE_H_
 #define COMPONENTS_PREVIEWS_CONTENT_HINT_CACHE_LEVELDB_STORE_H_
 
-#include "components/previews/content/hint_cache_store.h"
-
 #include <map>
 #include <string>
 #include <unordered_set>
@@ -17,19 +15,34 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "base/version.h"
 #include "components/leveldb_proto/public/proto_database.h"
-#include "components/previews/content/proto/hint_cache.pb.h"
 
 namespace base {
 class SequencedTaskRunner;
 }  // namespace base
 
-namespace previews {
+namespace optimization_guide {
+namespace proto {
+class Hint;
+}  // namespace proto
+}  // namespace optimization_guide
 
-// Concrete implementation of HintCacheStore using LevelDB. All public calls in
-// the store must be made on the same thread.
-class HintCacheLevelDBStore : public HintCacheStore {
+namespace previews {
+namespace proto {
+class StoreEntry;
+}  // namespace proto
+
+// The HintCache backing store, which is responsible for storing all hints that
+// are locally available. While the HintCache itself may retain some hints in a
+// memory cache, all of its hints are initially loaded asynchronously by the
+// store. All calls to this store must be made from the same thread.
+class HintCacheLevelDBStore {
  public:
+  using HintLoadedCallback = base::OnceCallback<void(
+      const std::string&,
+      std::unique_ptr<optimization_guide::proto::Hint>)>;
+  using EntryKey = std::string;
   using StoreEntryProtoDatabase =
       leveldb_proto::ProtoDatabase<previews::proto::StoreEntry>;
 
@@ -49,31 +62,81 @@ class HintCacheLevelDBStore : public HintCacheStore {
     kMaxValue = kFailed,
   };
 
+  // Abstract base class for storing hint component update data. The data itself
+  // is populated by moving component hints into it on a background thread; it
+  // is then used to update the store's component data on the UI thread.
+  class ComponentUpdateData {
+   public:
+    explicit ComponentUpdateData(const base::Version& version)
+        : version_(version) {
+      DCHECK(version_.IsValid());
+    }
+    virtual ~ComponentUpdateData() = default;
+
+    const base::Version& version() const { return version_; }
+
+    // Pure virtual function for moving a hint into ComponentUpdateData. After
+    // MoveHintIntoUpdateData() is called, |hint| is no longer valid.
+    virtual void MoveHintIntoUpdateData(
+        optimization_guide::proto::Hint&& hint) = 0;
+
+   private:
+    // The component version of the update data.
+    base::Version version_;
+  };
+
   HintCacheLevelDBStore(
       const base::FilePath& database_dir,
       scoped_refptr<base::SequencedTaskRunner> store_task_runner);
   HintCacheLevelDBStore(const base::FilePath& database_dir,
                         std::unique_ptr<StoreEntryProtoDatabase> database);
-  ~HintCacheLevelDBStore() override;
+  ~HintCacheLevelDBStore();
 
-  // HintCacheStore overrides:
-  void Initialize(bool purge_existing_data,
-                  base::OnceClosure callback) override;
+  // Initializes the hint cache store. If |purge_existing_data| is set to true,
+  // then the cache is purged during initialization and starts in a fresh state.
+  // When initialization completes, the provided callback is run asynchronously.
+  void Initialize(bool purge_existing_data, base::OnceClosure callback);
 
+  // Creates and returns a ComponentUpdateData object. This object is used to
+  // collect hints within a component in a format usable on a background
+  // thread and is later returned to the store in UpdateComponentData(). The
+  // ComponentUpdateData object is only created when the provided component
+  // version is newer than the store's version, indicating fresh hints. If the
+  // component's version is not newer than the store's version, then no
+  // ComponentUpdateData is created and nullptr is returned. This prevents
+  // unnecessary processing of the component's hints by the caller.
   std::unique_ptr<ComponentUpdateData> MaybeCreateComponentUpdateData(
-      const base::Version& version) const override;
+      const base::Version& version) const;
 
-  std::unique_ptr<HintCacheStore::ComponentUpdateData>
-  CreateUpdateDataForFetchedHints() const override;
+  // Creates and returns an UpdateData object for Fetched Hints.
+  // This object is used to collect a batch of hints in a format that is usable
+  // to update the store on a background thread. This is always created when
+  // hints have been successfully fetched from the remote Optimization Guide
+  // Service so the store can expire old hints, remove hints specified by the
+  // server, and store the fresh hints.
+  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData>
+  CreateUpdateDataForFetchedHints() const;
 
+  // Updates the component data (both version and hints) contained within the
+  // store. When this is called, all pre-existing component data within the
+  // store is purged and only the new data is retained. After the store is
+  // fully updated with the new component data, the callback is run
+  // asynchronously.
   void UpdateComponentData(std::unique_ptr<ComponentUpdateData> component_data,
-                           base::OnceClosure callback) override;
+                           base::OnceClosure callback);
 
+  // Finds a hint entry key associated with the specified host suffix. Returns
+  // true if a hint entry key is found, in which case |out_hint_entry_key| is
+  // populated with the key.
   bool FindHintEntryKey(const std::string& host_suffix,
-                        EntryKey* out_hint_entry_key) const override;
+                        EntryKey* out_hint_entry_key) const;
 
-  void LoadHint(const EntryKey& hint_entry_key,
-                HintLoadedCallback callback) override;
+  // Loads the hint specified by |hint_entry_key|.
+  // After the load finishes, the hint data is passed to |callback|. In the case
+  // where the hint cannot be loaded, the callback is run with a nullptr.
+  // Depending on the load result, the callback may be synchronous or
+  // asynchronous.
+  void LoadHint(const EntryKey& hint_entry_key, HintLoadedCallback callback);
 
  private:
   friend class HintCacheLevelDBStoreTest;

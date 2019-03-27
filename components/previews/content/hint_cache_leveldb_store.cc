@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "components/previews/content/proto/hint_cache.pb.h"
 
 namespace previews {
 
@@ -118,7 +119,7 @@ void HintCacheLevelDBStore::Initialize(bool purge_existing_data,
                                  purge_existing_data, std::move(callback)));
 }
 
-std::unique_ptr<HintCacheStore::ComponentUpdateData>
+std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData>
 HintCacheLevelDBStore::MaybeCreateComponentUpdateData(
     const base::Version& version) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -141,7 +142,7 @@ HintCacheLevelDBStore::MaybeCreateComponentUpdateData(
   return std::make_unique<LevelDBComponentUpdateData>(version);
 }
 
-std::unique_ptr<HintCacheStore::ComponentUpdateData>
+std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData>
 HintCacheLevelDBStore::CreateUpdateDataForFetchedHints() const {
   // TODO(mcrouse): Currently returns a LevelDBComponentUpdateData, future
   // refactor will create a LevelDBFetchedHintsData that will take a cache
@@ -150,7 +151,7 @@ HintCacheLevelDBStore::CreateUpdateDataForFetchedHints() const {
 }
 
 void HintCacheLevelDBStore::UpdateComponentData(
-    std::unique_ptr<ComponentUpdateData> component_data,
+    std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> component_data,
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(component_data);
@@ -281,7 +282,7 @@ HintCacheLevelDBStore::GetMetadataEntryKeyPrefix() {
 }
 
 // static
-HintCacheStore::EntryKey HintCacheLevelDBStore::GetMetadataTypeEntryKey(
+HintCacheLevelDBStore::EntryKey HintCacheLevelDBStore::GetMetadataTypeEntryKey(
     MetadataType metadata_type) {
   return GetMetadataEntryKeyPrefix() +
          std::to_string(static_cast<int>(metadata_type));

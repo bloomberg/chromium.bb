@@ -36,7 +36,7 @@
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/optimization_guide/optimization_guide_service.h"
-#include "components/previews/content/hint_cache_store.h"
+#include "components/previews/content/hint_cache_leveldb_store.h"
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_top_host_provider.h"
 #include "components/previews/content/previews_ui_service.h"
