@@ -35,30 +35,12 @@ extern const base::Feature kArticleSuggestionsFeature;
 // Feature to listen for GCM push updates from the server.
 extern const base::Feature kBreakingNewsPushFeature;
 
-// Feature to choose a category ranker.
-extern const base::Feature kCategoryRanker;
-
 // Feature for simple experimental comparison and validation of changes since
 // M58: enabling this brings back the M58 Stable fetching schedule (which is
 // suitable for Holdback groups).
 // TODO(jkrcal): Remove when the comparison is done (probably after M62).
 extern const base::Feature kRemoteSuggestionsEmulateM58FetchingSchedule;
 
-// Parameter and its values for the kCategoryRanker feature flag.
-extern const char kCategoryRankerParameter[];
-extern const char kCategoryRankerConstantRanker[];
-extern const char kCategoryRankerClickBasedRanker[];
-
-enum class CategoryRankerChoice {
-  CONSTANT,
-  CLICK_BASED,
-};
-
-// Returns which CategoryRanker to use according to kCategoryRanker feature and
-// Chrome Home.
-CategoryRankerChoice GetSelectedCategoryRanker(bool is_chrome_home_enabled);
-
-// Builds a CategoryRanker according to kCategoryRanker feature and Chrome Home.
 std::unique_ptr<CategoryRanker> BuildSelectedCategoryRanker(
     PrefService* pref_service,
     base::Clock* clock,

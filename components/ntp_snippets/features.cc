@@ -24,7 +24,6 @@ const base::Feature kRemoteSuggestionsBackendFeature{
 const base::Feature* const kAllFeatures[] = {
     &kArticleSuggestionsFeature,
     &kBreakingNewsPushFeature,
-    &kCategoryRanker,
     &kContentSuggestionsDebugLog,
     &kKeepPrefetchedContentSuggestions,
     &kNotificationsFeature,
@@ -36,55 +35,18 @@ const base::Feature kArticleSuggestionsFeature{
 const base::Feature kBreakingNewsPushFeature{"BreakingNewsPush",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kCategoryRanker{"ContentSuggestionsCategoryRanker",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kRemoteSuggestionsEmulateM58FetchingSchedule{
     "RemoteSuggestionsEmulateM58FetchingSchedule",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-const char kCategoryRankerParameter[] = "category_ranker";
-const char kCategoryRankerConstantRanker[] = "constant";
-const char kCategoryRankerClickBasedRanker[] = "click_based";
-
-CategoryRankerChoice GetSelectedCategoryRanker(bool is_chrome_home_enabled) {
-  std::string category_ranker_value =
-      variations::GetVariationParamValueByFeature(kCategoryRanker,
-                                                  kCategoryRankerParameter);
-
-  if (category_ranker_value.empty()) {
-    // Default, Enabled or Disabled.
-    if (is_chrome_home_enabled) {
-      return CategoryRankerChoice::CONSTANT;
-    }
-    return CategoryRankerChoice::CLICK_BASED;
-  }
-  if (category_ranker_value == kCategoryRankerConstantRanker) {
-    return CategoryRankerChoice::CONSTANT;
-  }
-  if (category_ranker_value == kCategoryRankerClickBasedRanker) {
-    return CategoryRankerChoice::CLICK_BASED;
-  }
-
-  LOG(DFATAL) << "The " << kCategoryRankerParameter << " parameter value is '"
-              << category_ranker_value << "'";
-  return CategoryRankerChoice::CONSTANT;
-}
 
 std::unique_ptr<CategoryRanker> BuildSelectedCategoryRanker(
     PrefService* pref_service,
     base::Clock* clock,
     bool is_chrome_home_enabled) {
-  CategoryRankerChoice choice =
-      ntp_snippets::GetSelectedCategoryRanker(is_chrome_home_enabled);
-
-  switch (choice) {
-    case CategoryRankerChoice::CONSTANT:
-      return std::make_unique<ConstantCategoryRanker>();
-    case CategoryRankerChoice::CLICK_BASED:
-      return std::make_unique<ClickBasedCategoryRanker>(pref_service, clock);
+  if (is_chrome_home_enabled) {
+    return std::make_unique<ConstantCategoryRanker>();
   }
-  return nullptr;
+  return std::make_unique<ClickBasedCategoryRanker>(pref_service, clock);
 }
 
 const base::Feature kNotificationsFeature = {"ContentSuggestionsNotifications",

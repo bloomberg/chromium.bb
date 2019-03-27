@@ -576,32 +576,6 @@ const FeatureEntry::Choice kSchedulerConfigurationChoices[] = {
 #endif  // OS_CHROMEOS
 
 #if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam
-    kContentSuggestionsCategoryRankerFeatureVariationConstant[] = {
-        {ntp_snippets::kCategoryRankerParameter,
-         ntp_snippets::kCategoryRankerConstantRanker},
-};
-
-const FeatureEntry::FeatureParam
-    kContentSuggestionsCategoryRankerFeatureVariationClickBased[] = {
-        {ntp_snippets::kCategoryRankerParameter,
-         ntp_snippets::kCategoryRankerClickBasedRanker},
-};
-
-const FeatureEntry::FeatureVariation
-    kContentSuggestionsCategoryRankerFeatureVariations[] = {
-        {"(constant)",
-         kContentSuggestionsCategoryRankerFeatureVariationConstant,
-         base::size(kContentSuggestionsCategoryRankerFeatureVariationConstant),
-         nullptr},
-        {"(click based)",
-         kContentSuggestionsCategoryRankerFeatureVariationClickBased,
-         base::size(
-             kContentSuggestionsCategoryRankerFeatureVariationClickBased),
-         nullptr}};
-#endif  // OS_ANDROID
-
-#if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kForceFetchedSuggestionsNotifications[] = {
     {"force_fetched_suggestions_notifications", "true"},
     {"enable_fetched_suggestions_notifications", "true"}};
@@ -2102,14 +2076,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kKeepPrefetchedContentSuggestionsDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(ntp_snippets::kKeepPrefetchedContentSuggestions)},
-    {"content-suggestions-category-ranker",
-     flag_descriptions::kContentSuggestionsCategoryRankerName,
-     flag_descriptions::kContentSuggestionsCategoryRankerDescription,
-     kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         ntp_snippets::kCategoryRanker,
-         kContentSuggestionsCategoryRankerFeatureVariations,
-         "ContentSuggestionsCategoryRanker")},
     {"content-suggestions-debug-log",
      flag_descriptions::kContentSuggestionsDebugLogName,
      flag_descriptions::kContentSuggestionsDebugLogDescription, kOsAndroid,
