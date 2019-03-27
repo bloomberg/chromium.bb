@@ -10,13 +10,10 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace web_app {
 
@@ -57,12 +54,17 @@ SystemWebAppManager::SystemWebAppManager(Profile* profile,
 SystemWebAppManager::~SystemWebAppManager() = default;
 
 void SystemWebAppManager::Start() {
-  content::BrowserThread::PostAfterStartupTask(
-      FROM_HERE,
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI}),
-      base::BindOnce(&SystemWebAppManager::StartAppInstallation,
-                     weak_ptr_factory_.GetWeakPtr()));
+  std::vector<InstallOptions> install_options_list;
+  if (IsEnabled()) {
+    // Skipping this will uninstall all System Apps currently installed.
+    for (const auto& app : system_app_urls_) {
+      install_options_list.push_back(
+          CreateInstallOptionsForSystemApp(app.second));
+    }
+  }
+
+  pending_app_manager_->SynchronizeInstalledApps(
+      std::move(install_options_list), InstallSource::kSystemInstalled);
 }
 
 base::Optional<std::string> SystemWebAppManager::GetAppIdForSystemApp(
@@ -80,20 +82,6 @@ void SystemWebAppManager::SetSystemAppsForTesting(
 // static
 bool SystemWebAppManager::IsEnabled() {
   return base::FeatureList::IsEnabled(features::kSystemWebApps);
-}
-
-void SystemWebAppManager::StartAppInstallation() {
-  std::vector<InstallOptions> install_options_list;
-  if (IsEnabled()) {
-    // Skipping this will uninstall all System Apps currently installed.
-    for (const auto& app : system_app_urls_) {
-      install_options_list.push_back(
-          CreateInstallOptionsForSystemApp(app.second));
-    }
-  }
-
-  pending_app_manager_->SynchronizeInstalledApps(
-      std::move(install_options_list), InstallSource::kSystemInstalled);
 }
 
 }  // namespace web_app
