@@ -53,8 +53,7 @@ OverlaySurfaceCandidate MakeOverlayCandidate(int z_order,
   // The same rectangle in floating point coordinates.
   overlay_candidate.display_rect = display_rect;
 
-  // Show the entire buffer by setting the crop to a unity square.
-  overlay_candidate.crop_rect = gfx::RectF(0, 0, 1, 1);
+  overlay_candidate.crop_rect = crop_rect;
 
   // The demo overlay instance is always ontop and not clipped. Clipped quads
   // cannot be placed in overlays.
@@ -201,11 +200,12 @@ void SurfacelessGlRenderer::RenderFrame() {
   float fraction = NextFraction();
 
   gfx::Rect overlay_rect;
+  const gfx::RectF unity_rect = gfx::RectF(0, 0, 1, 1);
 
   OverlayCandidatesOzone::OverlaySurfaceCandidateList overlay_list;
   if (!disable_primary_plane_) {
     overlay_list.push_back(
-        MakeOverlayCandidate(1, gfx::Rect(size_), gfx::RectF(0, 0, 1, 1)));
+        MakeOverlayCandidate(1, gfx::Rect(size_), unity_rect));
     // We know at least the primary plane can be scanned out.
     overlay_list.back().overlay_handled = true;
   }
@@ -219,8 +219,7 @@ void SurfacelessGlRenderer::RenderFrame() {
         stepped_fraction * (size_.width() - overlay_rect.width()),
         (size_.height() - overlay_rect.height()) / 2);
     overlay_rect += offset;
-    overlay_list.push_back(
-        MakeOverlayCandidate(1, overlay_rect, gfx::RectF(0, 0, 1, 1)));
+    overlay_list.push_back(MakeOverlayCandidate(1, overlay_rect, unity_rect));
   }
 
   // The actual validation for a specific overlay configuration is done
@@ -253,15 +252,15 @@ void SurfacelessGlRenderer::RenderFrame() {
 
     gl_surface_->ScheduleOverlayPlane(
         0, gfx::OVERLAY_TRANSFORM_NONE, buffers_[back_buffer_]->image(),
-        primary_plane_rect_, gfx::RectF(0, 0, 1, 1), false,
+        primary_plane_rect_, unity_rect, false,
         gl_fence ? gl_fence->GetGpuFence() : nullptr);
   }
 
   if (overlay_buffers_[0] && overlay_list.back().overlay_handled) {
-    gl_surface_->ScheduleOverlayPlane(
-        1, gfx::OVERLAY_TRANSFORM_NONE, overlay_buffers_[back_buffer_]->image(),
-        overlay_rect, gfx::RectF(0, 0, 1, 1), false,
-        /* gpu_fence */ nullptr);
+    gl_surface_->ScheduleOverlayPlane(1, gfx::OVERLAY_TRANSFORM_NONE,
+                                      overlay_buffers_[back_buffer_]->image(),
+                                      overlay_rect, unity_rect, false,
+                                      /* gpu_fence */ nullptr);
   }
 
   back_buffer_ ^= 1;
