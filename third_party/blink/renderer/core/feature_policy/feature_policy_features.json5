@@ -1,0 +1,49 @@
+{
+  // All feature policy (https://github.com/w3c/webappsec-feature-policy)
+  // features are defined here.
+  // All Features have to be defined in FeaturePolicyFeature enum as well
+  // (defined in third_party/blink/public/mojom/feature_policy/feature_policy.mojom).
+  // The enum value has to have the same name as the feature name here.
+  // This list is used to generate "feature_policy_helper.cc".
+  // TODO(yashard): Add all feature policy features here.
+
+  parameters: {
+    // "depends_on" specifies relationship to runtime features defined
+    // in "runtime_enabled_features.json5":
+    // depends_on: ["feature1", "feature2", ...]
+    // * If the depends_on features are *only* runtime features, the feature is
+    //   available if any of the runtime features are enabled.
+    // * If the depends_on list includes origin trial features, the feature is
+    //   available if any of the origin trial features are enabled.
+    depends_on: {
+      default: [],
+      valid_type: "list",
+    },
+    // feature_policy_name: "FEATURE_NAME" is used to specify the policy name
+    // which gets parsed from the header or the allow attribute.
+    feature_policy_name: {
+    },
+  },
+
+  data: [
+    {
+      name: "Frobulate",
+      feature_policy_name: "frobulate",
+      depends_on: ["OriginTrialsSampleAPI"],
+    },
+    {
+      name: "LazyLoad",
+      feature_policy_name: "lazyload",
+      depends_on: ["ExperimentalProductivityFeatures"],
+    },
+    {
+      name: "SyncXHR",
+      feature_policy_name: "sync-xhr",
+    },
+    {
+      name: "WebVr",
+      feature_policy_name: "vr",
+      depends_on: ["WebVR", "WebXR"],
+    },
+  ],
+}
