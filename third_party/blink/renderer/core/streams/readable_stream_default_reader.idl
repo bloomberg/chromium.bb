@@ -18,5 +18,5 @@
     [CallWith=ScriptState, NotEnumerable] Promise<void> cancel(
         optional any reason);
     [CallWith=ScriptState, NotEnumerable] Promise<void> read();
-    [CallWith=ScriptState, NotEnumerable] void releaseLock();
+    [CallWith=ScriptState, NotEnumerable, RaisesException] void releaseLock();
 };

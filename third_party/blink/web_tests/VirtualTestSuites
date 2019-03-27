@@ -1011,6 +1011,16 @@
     "args": ["--enable-blink-features=StreamsNative", "--enable-features=BlinkHeapUnifiedGarbageCollection"]
   },
   {
+    "prefix": "streams-native",
+    "base": "http/tests/fetch",
+    "args": ["--enable-blink-features=StreamsNative", "--enable-features=BlinkHeapUnifiedGarbageCollection"]
+  },
+  {
+    "prefix": "streams-native",
+    "base": "external/wpt/fetch",
+    "args": ["--enable-blink-features=StreamsNative", "--enable-features=BlinkHeapUnifiedGarbageCollection"]
+  },
+  {
     "prefix": "bidi-caret-affinity",
     "base": "editing/selection/modify_move",
     "args": ["--enable-blink-features=BidiCaretAffinity,EditingNG"]
