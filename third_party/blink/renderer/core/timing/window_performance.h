@@ -81,7 +81,7 @@ class CORE_EXPORT WindowPerformance final : public Performance,
                            bool cancelable);
 
   void AddElementTiming(const AtomicString& name,
-                        const IntRect& rect,
+                        const FloatRect& rect,
                         TimeTicks start_time,
                         TimeTicks response_end,
                         const AtomicString& identifier);

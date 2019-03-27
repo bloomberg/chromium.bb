@@ -12,7 +12,7 @@ namespace blink {
 // static
 PerformanceElementTiming* PerformanceElementTiming::Create(
     const AtomicString& name,
-    const IntRect& intersection_rect,
+    const FloatRect& intersection_rect,
     DOMHighResTimeStamp start_time,
     DOMHighResTimeStamp response_end,
     const AtomicString& identifier) {
@@ -22,12 +22,12 @@ PerformanceElementTiming* PerformanceElementTiming::Create(
 
 PerformanceElementTiming::PerformanceElementTiming(
     const AtomicString& name,
-    const IntRect& intersection_rect,
+    const FloatRect& intersection_rect,
     DOMHighResTimeStamp start_time,
     DOMHighResTimeStamp response_end,
     const AtomicString& identifier)
     : PerformanceEntry(name, start_time, start_time),
-      intersection_rect_(DOMRectReadOnly::FromIntRect(intersection_rect)),
+      intersection_rect_(DOMRectReadOnly::FromFloatRect(intersection_rect)),
       response_end_(response_end),
       identifier_(identifier) {}
 

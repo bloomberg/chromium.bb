@@ -17,6 +17,7 @@ namespace blink {
 
 class ImageResourceContent;
 class LayoutImage;
+class PropertyTreeState;
 
 // ImageElementTiming is responsible for tracking the paint timings for <img>
 // elements for a given window.
@@ -35,9 +36,10 @@ class CORE_EXPORT ImageElementTiming final
 
   // Called when the LayoutObject has been painted. This method might queue a
   // swap promise to compute and report paint timestamps.
-  void NotifyImagePainted(const LayoutObject*,
-                          const ImageResourceContent* cached_image,
-                          const PaintLayer*);
+  void NotifyImagePainted(
+      const LayoutObject*,
+      const ImageResourceContent* cached_image,
+      const PropertyTreeState& current_paint_chunk_properties);
 
   // Called when the LayoutImage will be destroyed.
   void NotifyWillBeDestroyed(const LayoutObject*);
@@ -46,15 +48,15 @@ class CORE_EXPORT ImageElementTiming final
 
  private:
   friend class ImageElementTimingTest;
-  // Computes the intersection rect and stores the viewport rect in |viewport_|.
-  IntRect ComputeIntersectionRect(const LocalFrame*,
-                                  const LayoutObject*,
-                                  const PaintLayer*);
+  // Computes the intersection rect.
+  FloatRect ComputeIntersectionRect(const LocalFrame*,
+                                    const LayoutObject*,
+                                    const PropertyTreeState&);
   // Checks if the element must be reported, given its elementtiming attribute
-  // and its intersection rect. Assumes that |viewport_| has been calculated,
-  // i.e. that ComputeIntersectionRect() has been called.
-  bool ShouldReportElement(const AtomicString& element_timing,
-                           const IntRect&) const;
+  // and its intersection rect.
+  bool ShouldReportElement(const LocalFrame*,
+                           const AtomicString& element_timing,
+                           const FloatRect&) const;
 
   // Callback for the swap promise. Reports paint timestamps.
   void ReportImagePaintSwapTime(WebLayerTreeView::SwapResult,
@@ -63,8 +65,8 @@ class CORE_EXPORT ImageElementTiming final
   // Struct containing information about image element timing.
   struct ElementTimingInfo {
     ElementTimingInfo(const AtomicString& name,
-                      IntRect rect,
-                      TimeTicks response_end,
+                      const FloatRect& rect,
+                      const TimeTicks& response_end,
                       const AtomicString& identifier)
         : name(name),
           rect(rect),
@@ -72,7 +74,7 @@ class CORE_EXPORT ImageElementTiming final
           identifier(identifier) {}
 
     AtomicString name;
-    IntRect rect;
+    FloatRect rect;
     TimeTicks response_end;
     AtomicString identifier;
   };
@@ -81,8 +83,6 @@ class CORE_EXPORT ImageElementTiming final
   WTF::Vector<ElementTimingInfo> element_timings_;
   // Hashmap of LayoutObjects for which paint has already been notified.
   WTF::HashSet<const LayoutObject*> images_notified_;
-  // Current viewport rect, updated every time an intersection rect is computed.
-  IntRect viewport_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageElementTiming);
 };
