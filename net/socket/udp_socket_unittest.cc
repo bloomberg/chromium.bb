@@ -566,7 +566,13 @@ TEST_F(UDPSocketTest, ServerGetPeerAddress) {
   EXPECT_EQ(rv, ERR_SOCKET_NOT_CONNECTED);
 }
 
-TEST_F(UDPSocketTest, ClientSetDoNotFragment) {
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/945590): Re-enable after the breaking SDK change has landed.
+#define MAYBE_ClientSetDoNotFragment DISABLED_ClientSetDoNotFragment
+#else
+#define MAYBE_ClientSetDoNotFragment ClientSetDoNotFragment
+#endif
+TEST_F(UDPSocketTest, MAYBE_ClientSetDoNotFragment) {
   for (std::string ip : {"127.0.0.1", "::1"}) {
     UDPClientSocket client(DatagramSocket::DEFAULT_BIND, nullptr,
                            NetLogSource());
@@ -579,16 +585,23 @@ TEST_F(UDPSocketTest, ClientSetDoNotFragment) {
       return;
     EXPECT_THAT(rv, IsOk());
 
-#if defined(OS_MACOSX)
-    EXPECT_EQ(ERR_NOT_IMPLEMENTED, client.SetDoNotFragment());
-#else
     rv = client.SetDoNotFragment();
+#if defined(OS_MACOSX) || defined(OS_FUCHSIA)
+    // TODO(crbug.com/945590): IP_MTU_DISCOVER is not implemented on Fuchsia.
+    EXPECT_THAT(rv, IsError(ERR_NOT_IMPLEMENTED));
+#else
     EXPECT_THAT(rv, IsOk());
 #endif
   }
 }
 
-TEST_F(UDPSocketTest, ServerSetDoNotFragment) {
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/945590): Re-enable after the breaking SDK change has landed.
+#define MAYBE_ServerSetDoNotFragment DISABLED_ServerSetDoNotFragment
+#else
+#define MAYBE_ServerSetDoNotFragment ServerSetDoNotFragment
+#endif
+TEST_F(UDPSocketTest, MAYBE_ServerSetDoNotFragment) {
   for (std::string ip : {"127.0.0.1", "::1"}) {
     IPEndPoint bind_address;
     ASSERT_TRUE(CreateUDPAddress(ip, 0, &bind_address));
@@ -600,10 +613,11 @@ TEST_F(UDPSocketTest, ServerSetDoNotFragment) {
       return;
     EXPECT_THAT(rv, IsOk());
 
-#if defined(OS_MACOSX)
-    EXPECT_EQ(ERR_NOT_IMPLEMENTED, server.SetDoNotFragment());
-#else
     rv = server.SetDoNotFragment();
+#if defined(OS_MACOSX) || defined(OS_FUCHSIA)
+    // TODO(crbug.com/945590): IP_MTU_DISCOVER is not implemented on Fuchsia.
+    EXPECT_THAT(rv, IsError(ERR_NOT_IMPLEMENTED));
+#else
     EXPECT_THAT(rv, IsOk());
 #endif
   }
