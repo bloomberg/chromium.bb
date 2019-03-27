@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
@@ -154,6 +155,26 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   std::vector<base::WeakPtr<PasswordManagerDriver>> GetDrivers() const override;
   const autofill::PasswordForm* GetSubmittedForm() const override;
 
+#if defined(OS_IOS)
+  // Presaves the form with |generated_password|. This function is called once
+  // when the user accepts the generated password. The password was generated in
+  // the field with identifier |generation_element|. |driver| corresponds to the
+  // |form| parent frame.
+  void PresaveGeneratedPassword(PasswordManagerDriver* driver,
+                                const autofill::FormData& form,
+                                const base::string16& generated_password,
+                                const base::string16& generation_element);
+
+  // Updates the presaved credential with the generated password when the user
+  // types in field with |field_identifier|, which is in form with
+  // |form_identifier| and the field value is |field_value|. Return true if
+  // |*this| manages a form with name |form_identifier|.
+  bool UpdateGeneratedPasswordOnUserInput(
+      const base::string16& form_identifier,
+      const base::string16& field_identifier,
+      const base::string16& field_value);
+#endif  // defined(OS_IOS)
+
   // Create a copy of |*this| which can be passed to the code handling
   // save-password related UI. This omits some parts of the internal data, so
   // the result is not identical to the original.
@@ -254,6 +275,10 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
       const autofill::FormData& form,
       FormDataParser::Mode mode);
 
+  void PresaveGeneratedPasswordInternal(
+      const autofill::FormData& form,
+      const base::string16& generated_password);
+
   // Calculates FillingAssistance metric for |submitted_form|. The metric is
   // recorded in case when the successful submission is detected.
   void CalculateFillingAssistanceMetric(
@@ -335,6 +360,12 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // Contains a generated password, empty if no password generation happened or
   // a generated password removed by the user.
   base::string16 generated_password_;
+
+#if defined(OS_IOS)
+  // Contains a generated password, empty if no password generation happened or
+  // a generated password removed by the user.
+  base::string16 generation_element_;
+#endif
 
   // Whether the saved password was overridden.
   bool password_overridden_ = false;

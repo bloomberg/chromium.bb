@@ -415,14 +415,10 @@ void PasswordManager::OnPresaveGeneratedPassword(PasswordManagerDriver* driver,
                                                  const PasswordForm& form) {
   DCHECK(client_->IsSavingAndFillingEnabled(form.origin));
   PasswordFormManagerInterface* form_manager = GetMatchedManager(driver, form);
-  if (form_manager) {
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager",
+                        !form_manager);
+  if (form_manager)
     form_manager->PresaveGeneratedPassword(form);
-    UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager",
-                          false);
-    return;
-  }
-
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager", true);
 }
 
 void PasswordManager::OnPasswordNoLongerGenerated(PasswordManagerDriver* driver,
@@ -1033,24 +1029,36 @@ void PasswordManager::PresaveGeneratedPassword(
     PasswordManagerDriver* driver,
     const FormData& form,
     const base::string16& generated_password,
-    const base::string16& generation_element,
-    bool is_manually_triggered) {
-  // TODO(https://crbug.com/886583): Implement it.
+    const base::string16& generation_element) {
+  NewPasswordFormManager* form_manager =
+      FindMatchedManager(form, form_managers_, driver);
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager",
+                        !form_manager);
+
+  // TODO(https://crbug.com/886583): Create form manager if not found.
+  if (form_manager) {
+    form_manager->PresaveGeneratedPassword(driver, form, generated_password,
+                                           generation_element);
+  }
 }
 
 void PasswordManager::UpdateGeneratedPasswordOnUserInput(
-    PasswordManagerDriver* driver,
     const base::string16& form_identifier,
     const base::string16& field_identifier,
     const base::string16& field_value) {
-  // TODO(https://crbug.com/886583): Implement it.
+  for (std::unique_ptr<NewPasswordFormManager>& manager : form_managers_) {
+    if (manager->UpdateGeneratedPasswordOnUserInput(
+            form_identifier, field_identifier, field_value)) {
+      break;
+    }
+  }
 }
 
 void PasswordManager::OnPasswordNoLongerGenerated(
     PasswordManagerDriver* driver) {
-  // TODO(https://crbug.com/886583): Implement it.
+  for (std::unique_ptr<NewPasswordFormManager>& manager : form_managers_)
+    manager->PasswordNoLongerGenerated();
 }
-
 #endif
 
 void PasswordManager::ProvisionallySaveManager(

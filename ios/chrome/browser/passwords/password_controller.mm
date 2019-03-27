@@ -385,8 +385,8 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   if (self.isPasswordGenerated) {
     // Always update, in case, for example, that username has been edited.
     self.passwordManager->UpdateGeneratedPasswordOnUserInput(
-        self.passwordManagerDriver, SysNSStringToUTF16(formName),
-        SysNSStringToUTF16(fieldIdentifier), SysNSStringToUTF16(typedValue));
+        SysNSStringToUTF16(formName), SysNSStringToUTF16(fieldIdentifier),
+        SysNSStringToUTF16(typedValue));
   }
 }
 
@@ -788,8 +788,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
         self.passwordManager->PresaveGeneratedPassword(
             self.passwordManagerDriver, form,
             SysNSStringToUTF16(generatedPassword),
-            SysNSStringToUTF16(newPasswordIdentifier),
-            /* is_manually_triggered */ false);
+            SysNSStringToUTF16(newPasswordIdentifier));
       }
       // If the form isn't found, it disappeared between fillPasswordForm below
       // and here. There isn't much that can be done.
