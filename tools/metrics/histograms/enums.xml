@@ -49230,6 +49230,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Sent, no form id"/>
 </enum>
 
+<enum name="SendTabToSelf">
+  <int value="0" label="SendTabToSelf menu item is shown."/>
+  <int value="1" label="SendTabToSelf menu item is clicked."/>
+</enum>
+
 <enum name="ServiceProcessEventType">
   <int value="0" label="SERVICE_EVENT_INITIALIZE"/>
   <int value="1" label="SERVICE_EVENT_ENABLED_ON_LAUNCH"/>

@@ -17,6 +17,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -90,6 +92,15 @@ namespace {
 constexpr base::Feature kOmniboxCanCopyHyperlinksToClipboard{
     "OmniboxCanCopyHyperlinksToClipboard", base::FEATURE_ENABLED_BY_DEFAULT};
 
+enum class UmaEnumOmniboxSendTabToSelf {
+  kShowItem = 0,
+  kClickItem = 1,
+  kMaxValue = kClickItem,
+};
+
+void RecordSendTabToSelf(UmaEnumOmniboxSendTabToSelf state) {
+  UMA_HISTOGRAM_ENUMERATION("OmniboxViewViews.SendTabToSelf", state);
+}
 // OmniboxState ---------------------------------------------------------------
 
 // Stores omnibox state for each tab.
@@ -477,6 +488,11 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
       return;
     case IDC_EDIT_SEARCH_ENGINES:
       location_bar_view_->command_updater()->ExecuteCommand(command_id);
+      return;
+    case IDC_SEND_TAB_TO_SELF:
+      RecordSendTabToSelf(UmaEnumOmniboxSendTabToSelf::kClickItem);
+      send_tab_to_self::CreateNewEntry(location_bar_view_->GetWebContents(),
+                                       location_bar_view_->profile());
       return;
 
     // These commands do invoke the popup.
@@ -1697,6 +1713,17 @@ int OmniboxViewViews::OnDrop(const ui::OSExchangeData& data) {
 }
 
 void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
+  // Only add this menu entry if SendTabToSelf feature is enabled.
+  if (send_tab_to_self::ShouldOfferFeature(
+          location_bar_view_->profile(),
+          location_bar_view_->GetWebContents())) {
+    RecordSendTabToSelf(UmaEnumOmniboxSendTabToSelf::kShowItem);
+    int position = menu_contents->GetIndexOfCommandId(IDS_APP_UNDO);
+    menu_contents->InsertSeparatorAt(position, ui::NORMAL_SEPARATOR);
+    menu_contents->InsertItemWithStringIdAt(position, IDC_SEND_TAB_TO_SELF,
+                                            IDS_CONTEXT_MENU_SEND_TAB_TO_SELF);
+  }
+
   int paste_position = menu_contents->GetIndexOfCommandId(IDS_APP_PASTE);
   DCHECK_GE(paste_position, 0);
   menu_contents->InsertItemWithStringIdAt(paste_position + 1, IDC_PASTE_AND_GO,
