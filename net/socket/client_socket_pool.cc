@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "net/http/http_proxy_connect_job.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_with_source.h"
 #include "net/socket/socks_connect_job.h"
 #include "net/socket/ssl_connect_job.h"
 #include "net/socket/stream_socket.h"
@@ -166,5 +168,25 @@ void ClientSocketPool::set_used_idle_socket_timeout(base::TimeDelta timeout) {
 }
 
 ClientSocketPool::ClientSocketPool() = default;
+
+void ClientSocketPool::NetLogTcpClientSocketPoolRequestedSocket(
+    const NetLogWithSource& net_log,
+    const GroupId& group_id) {
+  if (net_log.IsCapturing()) {
+    // TODO(eroman): Split out the host and port parameters.
+    net_log.AddEvent(NetLogEventType::TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKET,
+                     base::BindRepeating(&NetLogGroupIdCallback,
+                                         base::Unretained(&group_id)));
+  }
+}
+
+std::unique_ptr<base::Value> ClientSocketPool::NetLogGroupIdCallback(
+    const ClientSocketPool::GroupId* group_id,
+    NetLogCaptureMode /* capture_mode */) {
+  std::unique_ptr<base::DictionaryValue> event_params(
+      new base::DictionaryValue());
+  event_params->SetString("group_id", group_id->ToString());
+  return event_params;
+}
 
 }  // namespace net

@@ -46,15 +46,6 @@ std::unique_ptr<base::Value> NetLogCreateConnectJobCallback(
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogGroupIdCallback(
-    const ClientSocketPool::GroupId* group_id,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> event_params(
-      new base::DictionaryValue());
-  event_params->SetString("group_id", group_id->ToString());
-  return event_params;
-}
-
 // ConnectJobFactory implementation that creates the standard ConnectJob
 // classes, using SocketParams.
 class TransportConnectJobFactory
@@ -62,7 +53,12 @@ class TransportConnectJobFactory
  public:
   explicit TransportConnectJobFactory(
       const CommonConnectJobParams* common_connect_job_params)
-      : common_connect_job_params_(common_connect_job_params) {}
+      : common_connect_job_params_(common_connect_job_params) {
+    // This class should not be used with WebSockets. Note that
+    // |common_connect_job_params| may be nullptr in tests.
+    DCHECK(!common_connect_job_params ||
+           !common_connect_job_params->websocket_endpoint_lock_manager);
+  }
 
   ~TransportConnectJobFactory() override = default;
 
@@ -985,17 +981,6 @@ bool TransportClientSocketPool::FindTopStalledGroup(
 
 void TransportClientSocketPool::OnIPAddressChanged() {
   FlushWithError(ERR_NETWORK_CHANGED);
-}
-
-void TransportClientSocketPool::NetLogTcpClientSocketPoolRequestedSocket(
-    const NetLogWithSource& net_log,
-    const GroupId& group_id) {
-  if (net_log.IsCapturing()) {
-    // TODO(eroman): Split out the host and port parameters.
-    net_log.AddEvent(NetLogEventType::TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKET,
-                     base::BindRepeating(&NetLogGroupIdCallback,
-                                         base::Unretained(&group_id)));
-  }
 }
 
 void TransportClientSocketPool::FlushWithError(int error) {

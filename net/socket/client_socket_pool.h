@@ -17,10 +17,12 @@
 #include "net/base/request_priority.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_request_info.h"
+#include "net/log/net_log_capture_mode.h"
 #include "net/socket/connect_job.h"
 
 namespace base {
 class DictionaryValue;
+class Value;
 namespace trace_event {
 class ProcessMemoryDump;
 }
@@ -333,6 +335,14 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
 
  protected:
   ClientSocketPool();
+
+  void NetLogTcpClientSocketPoolRequestedSocket(const NetLogWithSource& net_log,
+                                                const GroupId& group_id);
+
+  // Utility method to log a GroupId with a NetLog event.
+  static std::unique_ptr<base::Value> NetLogGroupIdCallback(
+      const ClientSocketPool::GroupId* group_id,
+      NetLogCaptureMode capture_mode);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientSocketPool);

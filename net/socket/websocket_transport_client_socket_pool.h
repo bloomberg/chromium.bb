@@ -22,27 +22,26 @@
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/socket/transport_client_socket_pool.h"
 
 namespace base {
 class DictionaryValue;
+namespace trace_event {
+class ProcessMemoryDump;
 }
+}  // namespace base
 
 namespace net {
 
 struct CommonConnectJobParams;
-class SSLConfigService;
 class WebSocketTransportConnectJob;
 
 class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
-    : public TransportClientSocketPool {
+    : public ClientSocketPool {
  public:
   WebSocketTransportClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
-      base::TimeDelta unused_idle_socket_timeout,
-      const CommonConnectJobParams* common_connect_job_params,
-      SSLConfigService* ssl_config_service);
+      const CommonConnectJobParams* common_connect_job_params);
 
   ~WebSocketTransportClientSocketPool() override;
 
@@ -87,9 +86,14 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   std::unique_ptr<base::DictionaryValue> GetInfoAsValue(
       const std::string& name,
       const std::string& type) const override;
+  void DumpMemoryStats(
+      base::trace_event::ProcessMemoryDump* pmd,
+      const std::string& parent_dump_absolute_name) const override;
 
   // HigherLayeredPool implementation.
   bool IsStalled() const override;
+  void AddHigherLayeredPool(HigherLayeredPool* higher_pool) override;
+  void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool) override;
 
  private:
   class ConnectJobDelegate : public ConnectJob::Delegate {
