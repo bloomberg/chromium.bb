@@ -39,6 +39,7 @@
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/util.h"
 #include "ui/gfx/geometry/point.h"
+#include "url/url_util.h"
 
 namespace {
 
@@ -260,8 +261,6 @@ Status GetVisibleCookies(Session* session,
     if (session->w3c_compliant) {
       if (domain[0] == '.')
         domain.erase(0, 1);
-      else
-        domain.clear();
     }
     std::string path;
     cookie_dict->GetString("path", &path);
@@ -1850,7 +1849,7 @@ Status ExecuteAddCookie(Session* session,
   if (!GetOptionalString(cookie, "domain", &domain))
     return Status(kInvalidArgument, "invalid 'domain'");
   if (session->w3c_compliant)
-    if (!domain.empty() && domain[0] != '.')
+    if (!domain.empty() && domain[0] != '.' && !url::HostIsIPAddress(domain))
       domain.insert(0, 1, '.');
   std::string path("/");
   if (!GetOptionalString(cookie, "path", &path))
