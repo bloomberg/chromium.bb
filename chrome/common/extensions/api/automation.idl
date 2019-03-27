@@ -295,6 +295,7 @@
     focus,
     getImageData,
     getTextLocation,
+    hideTooltip,
     hitTest,
     increment,
     loadInlineTextBoxes,
@@ -313,7 +314,8 @@
     setSequentialFocusNavigationStartingPoint,
     setValue,
     showContextMenu,
-    signalEndOfTest
+    signalEndOfTest,
+    showTooltip
   };
 
   // Possible changes to the automation tree. For any given atomic change

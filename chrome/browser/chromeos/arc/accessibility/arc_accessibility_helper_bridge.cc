@@ -547,6 +547,16 @@ void ArcAccessibilityHelperBridge::OnAction(
               base::Unretained(this), data));
       return;
     }
+    case ax::mojom::Action::kShowTooltip: {
+      action_data->action_type =
+          arc::mojom::AccessibilityActionType::SHOW_TOOLTIP;
+      break;
+    }
+    case ax::mojom::Action::kHideTooltip: {
+      action_data->action_type =
+          arc::mojom::AccessibilityActionType::HIDE_TOOLTIP;
+      break;
+    }
     default:
       return;
   }

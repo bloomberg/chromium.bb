@@ -302,6 +302,7 @@ chrome.automation.ActionType = {
   FOCUS: 'focus',
   GET_IMAGE_DATA: 'getImageData',
   GET_TEXT_LOCATION: 'getTextLocation',
+  HIDE_TOOLTIP: 'hideTooltip',
   HIT_TEST: 'hitTest',
   INCREMENT: 'increment',
   LOAD_INLINE_TEXT_BOXES: 'loadInlineTextBoxes',
@@ -321,6 +322,7 @@ chrome.automation.ActionType = {
   SET_VALUE: 'setValue',
   SHOW_CONTEXT_MENU: 'showContextMenu',
   SIGNAL_END_OF_TEST: 'signalEndOfTest',
+  SHOW_TOOLTIP: 'showTooltip',
 };
 
 /**

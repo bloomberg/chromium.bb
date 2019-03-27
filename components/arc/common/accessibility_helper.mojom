@@ -82,6 +82,8 @@ enum AccessibilityActionType {
   SHOW_ON_SCREEN,
   CUSTOM_ACTION,  // Not a standard action.
   GET_TEXT_LOCATION,  // Not a standard action.
+  SHOW_TOOLTIP,
+  HIDE_TOOLTIP,
 };
 
 // Possible boolean properties set on an AccessibilityNodeInfo.
