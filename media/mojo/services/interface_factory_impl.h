@@ -43,7 +43,11 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
   void CreateDefaultRenderer(const std::string& audio_device_id,
                              mojom::RendererRequest request) final;
 #if defined(OS_ANDROID)
-  void CreateMediaPlayerRenderer(mojom::RendererRequest request) final;
+  void CreateMediaPlayerRenderer(
+      mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
+      mojom::RendererRequest request,
+      mojom::MediaPlayerRendererExtensionRequest renderer_extension_request)
+      final;
   void CreateFlingingRenderer(const std::string& presentation_id,
                               mojom::RendererRequest request) final;
 #endif  // defined(OS_ANDROID)

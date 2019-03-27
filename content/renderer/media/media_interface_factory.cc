@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
+#include "media/mojo/interfaces/renderer_extensions.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -69,17 +70,24 @@ void MediaInterfaceFactory::CreateDefaultRenderer(
 
 #if defined(OS_ANDROID)
 void MediaInterfaceFactory::CreateMediaPlayerRenderer(
-    media::mojom::RendererRequest request) {
+    media::mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
+    media::mojom::RendererRequest request,
+    media::mojom::MediaPlayerRendererExtensionRequest
+        renderer_extension_request) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&MediaInterfaceFactory::CreateMediaPlayerRenderer,
-                       weak_this_, std::move(request)));
+                       weak_this_, std::move(client_extension_ptr),
+                       std::move(request),
+                       std::move(renderer_extension_request)));
     return;
   }
 
   DVLOG(1) << __func__;
-  GetMediaInterfaceFactory()->CreateMediaPlayerRenderer(std::move(request));
+  GetMediaInterfaceFactory()->CreateMediaPlayerRenderer(
+      std::move(client_extension_ptr), std::move(request),
+      std::move(renderer_extension_request));
 }
 
 void MediaInterfaceFactory::CreateFlingingRenderer(

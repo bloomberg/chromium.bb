@@ -57,6 +57,8 @@ class MojoRendererFactory : public RendererFactory {
       VideoRendererSink* video_renderer_sink);
 
   std::unique_ptr<MojoRenderer> CreateMediaPlayerRenderer(
+      mojom::MediaPlayerRendererExtensionRequest renderer_extension_request,
+      mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       VideoRendererSink* video_renderer_sink);
 #endif  // defined (OS_ANDROID)

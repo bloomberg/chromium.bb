@@ -47,10 +47,6 @@ class RendererClient {
   // Only used if media stream contains a video track.
   virtual void OnVideoOpacityChange(bool opaque) = 0;
 
-  // Executed when video metadata is first read, and whenever it changes.
-  // Only used when we are using a URL demuxer (e.g. for MediaPlayerRenderer).
-  virtual void OnDurationChange(base::TimeDelta duration) = 0;
-
   // Executed when the status of a video playing remotely is changed, without
   // the change originating from the media::Pipeline that owns |this|.
   // Only used with the FlingingRenderer, when an external device play/pauses

@@ -9,6 +9,7 @@ import "media/mojo/interfaces/cdm_proxy.mojom";
 import "media/mojo/interfaces/decryptor.mojom";
 import "media/mojo/interfaces/content_decryption_module.mojom";
 import "media/mojo/interfaces/renderer.mojom";
+import "media/mojo/interfaces/renderer_extensions.mojom";
 import "media/mojo/interfaces/video_decoder.mojom";
 import "mojo/public/mojom/base/token.mojom";
 
@@ -23,7 +24,13 @@ interface InterfaceFactory {
 
   [EnableIf=is_android]
   // Creates a MediaPlayerRenderer (MediaPlayerRendererFactory).
-  CreateMediaPlayerRenderer(Renderer& renderer);
+  // - |renderer_extension| is bound in MediaPlayerRenderer, and receives calls
+  //   from MediaPlayerRendererClient.
+  // - |client_extension| is bound in MediaPlayerRendererClient, and receives
+  //   calls from the MediaPlayerRenderer.
+  CreateMediaPlayerRenderer(MediaPlayerRendererClientExtension client_extension,
+                            Renderer& renderer,
+                            MediaPlayerRendererExtension& renderer_extension);
 
   [EnableIf=is_android]
   // Creates a FlingingRenderer (FlingingRendererFactory).

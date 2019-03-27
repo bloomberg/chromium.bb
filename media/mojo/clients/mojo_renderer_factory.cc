@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "media/mojo/clients/mojo_renderer.h"
+#include "media/mojo/interfaces/renderer_extensions.mojom.h"
 #include "media/renderers/decrypting_renderer.h"
 #include "media/renderers/video_overlay_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -64,12 +65,16 @@ std::unique_ptr<MojoRenderer> MojoRendererFactory::CreateFlingingRenderer(
 }
 
 std::unique_ptr<MojoRenderer> MojoRendererFactory::CreateMediaPlayerRenderer(
+    mojom::MediaPlayerRendererExtensionRequest renderer_extension_request,
+    mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     VideoRendererSink* video_renderer_sink) {
   DCHECK(interface_factory_);
   mojom::RendererPtr renderer_ptr;
+
   interface_factory_->CreateMediaPlayerRenderer(
-      mojo::MakeRequest(&renderer_ptr));
+      std::move(client_extension_ptr), mojo::MakeRequest(&renderer_ptr),
+      std::move(renderer_extension_request));
 
   return std::make_unique<MojoRenderer>(
       media_task_runner, nullptr, video_renderer_sink, std::move(renderer_ptr));
