@@ -26,6 +26,7 @@
 #include "ui/ozone/platform/wayland/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/wayland_shared_memory_buffer_manager.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
+#include "ui/ozone/platform/wayland/wayland_zwp_linux_dmabuf.h"
 
 static_assert(XDG_SHELL_VERSION_CURRENT == 5, "Unsupported xdg-shell version");
 
@@ -287,17 +288,15 @@ void WaylandConnection::SetSequenceNumberUpdateCb(
 }
 
 ozone::mojom::WaylandConnectionPtr WaylandConnection::BindInterface() {
-  // This mustn't be called twice or when the zwp_linux_dmabuf interface is not
-  // available.
-  DCHECK(!binding_.is_bound() || buffer_manager_);
+  DCHECK(!binding_.is_bound());
   ozone::mojom::WaylandConnectionPtr ptr;
   binding_.Bind(MakeRequest(&ptr));
   return ptr;
 }
 
 std::vector<gfx::BufferFormat> WaylandConnection::GetSupportedBufferFormats() {
-  if (buffer_manager_)
-    return buffer_manager_->supported_buffer_formats();
+  if (zwp_dmabuf_)
+    return zwp_dmabuf_->supported_buffer_formats();
   return std::vector<gfx::BufferFormat>();
 }
 
@@ -510,13 +509,15 @@ void WaylandConnection::Global(void* data,
     connection->data_device_manager_.reset(new WaylandDataDeviceManager(
         data_device_manager.release(), connection));
     connection->EnsureDataDevice();
-  } else if (!connection->buffer_manager_ &&
+  } else if (!connection->zwp_dmabuf_ &&
              (strcmp(interface, "zwp_linux_dmabuf_v1") == 0)) {
     wl::Object<zwp_linux_dmabuf_v1> zwp_linux_dmabuf =
         wl::Bind<zwp_linux_dmabuf_v1>(
             registry, name, std::min(version, kMaxLinuxDmabufVersion));
-    connection->buffer_manager_.reset(
-        new WaylandBufferManager(zwp_linux_dmabuf.release(), connection));
+    connection->zwp_dmabuf_ = std::make_unique<WaylandZwpLinuxDmabuf>(
+        zwp_linux_dmabuf.release(), connection);
+    connection->buffer_manager_ =
+        std::make_unique<WaylandBufferManager>(connection);
   } else if (!connection->presentation_ &&
              (strcmp(interface, "wp_presentation") == 0)) {
     connection->presentation_ =

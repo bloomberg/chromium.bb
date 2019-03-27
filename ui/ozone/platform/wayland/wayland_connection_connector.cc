@@ -85,7 +85,7 @@ void WaylandConnectionConnector::OnWaylandConnectionPtrBinded(
   wcp_ptr->SetWaylandConnection(std::move(wc_ptr));
 
 #if defined(WAYLAND_GBM)
-  if (!connection_->buffer_manager()) {
+  if (!connection_->zwp_dmabuf()) {
     LOG(WARNING) << "zwp_linux_dmabuf is not available.";
     wcp_ptr->ResetGbmDevice();
   }

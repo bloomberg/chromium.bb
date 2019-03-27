@@ -34,6 +34,7 @@ class WaylandBufferManager;
 class WaylandShmBufferManager;
 class WaylandOutputManager;
 class WaylandWindow;
+class WaylandZwpLinuxDmabuf;
 
 // TODO(crbug.com/942203): factor out PlatformClipboard to a separate class.
 class WaylandConnection : public PlatformEventSource,
@@ -130,6 +131,8 @@ class WaylandConnection : public PlatformEventSource,
   }
 
   WaylandBufferManager* buffer_manager() const { return buffer_manager_.get(); }
+
+  WaylandZwpLinuxDmabuf* zwp_dmabuf() const { return zwp_dmabuf_.get(); }
 
   // Clipboard implementation.
   PlatformClipboard* GetPlatformClipboard();
@@ -248,6 +251,7 @@ class WaylandConnection : public PlatformEventSource,
   std::unique_ptr<WaylandTouch> touch_;
   std::unique_ptr<WaylandCursorPosition> wayland_cursor_position_;
   std::unique_ptr<WaylandShmBufferManager> shm_buffer_manager_;
+  std::unique_ptr<WaylandZwpLinuxDmabuf> zwp_dmabuf_;
 
   // Objects that are using when GPU runs in own process.
   std::unique_ptr<WaylandBufferManager> buffer_manager_;

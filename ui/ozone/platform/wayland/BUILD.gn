@@ -70,6 +70,8 @@ source_set("wayland") {
     "wayland_util.h",
     "wayland_window.cc",
     "wayland_window.h",
+    "wayland_zwp_linux_dmabuf.cc",
+    "wayland_zwp_linux_dmabuf.h",
     "xdg_popup_wrapper.h",
     "xdg_popup_wrapper_v5.cc",
     "xdg_popup_wrapper_v5.h",
