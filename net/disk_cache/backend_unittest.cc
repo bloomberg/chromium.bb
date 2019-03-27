@@ -3375,7 +3375,7 @@ void DiskCacheBackendTest::BackendDisabledAPI() {
   base::StringPairs stats;
   cache_->GetStats(&stats);
   EXPECT_TRUE(stats.empty());
-  cache_->OnExternalCacheHit("First");
+  OnExternalCacheHit("First");
 }
 
 TEST_F(DiskCacheBackendTest, DisabledAPI) {
@@ -3886,7 +3886,7 @@ TEST_F(DiskCacheBackendTest, UpdateRankForExternalCacheHit) {
   }
 
   // Ping the oldest entry.
-  cache_->OnExternalCacheHit("key0");
+  OnExternalCacheHit("key0");
 
   TrimForTest(false);
 
@@ -3909,7 +3909,7 @@ TEST_F(DiskCacheBackendTest, ShaderCacheUpdateRankForExternalCacheHit) {
   }
 
   // Ping the oldest entry.
-  cache_->OnExternalCacheHit("key0");
+  OnExternalCacheHit("key0");
 
   TrimForTest(false);
 

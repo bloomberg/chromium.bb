@@ -243,15 +243,21 @@ void DiskCacheTestWithCache::RunTaskForTest(const base::Closure& closure) {
   EXPECT_THAT(cb.GetResult(rv), IsOk());
 }
 
-int DiskCacheTestWithCache::ReadData(disk_cache::Entry* entry, int index,
-                                     int offset, net::IOBuffer* buf, int len) {
+int DiskCacheTestWithCache::ReadData(disk_cache::Entry* entry,
+                                     int index,
+                                     int offset,
+                                     net::IOBuffer* buf,
+                                     int len) {
   net::TestCompletionCallback cb;
   int rv = entry->ReadData(index, offset, buf, len, cb.callback());
   return cb.GetResult(rv);
 }
 
-int DiskCacheTestWithCache::WriteData(disk_cache::Entry* entry, int index,
-                                      int offset, net::IOBuffer* buf, int len,
+int DiskCacheTestWithCache::WriteData(disk_cache::Entry* entry,
+                                      int index,
+                                      int offset,
+                                      net::IOBuffer* buf,
+                                      int len,
                                       bool truncate) {
   net::TestCompletionCallback cb;
   int rv = entry->WriteData(index, offset, buf, len, cb.callback(), truncate);
@@ -276,16 +282,29 @@ int DiskCacheTestWithCache::WriteSparseData(disk_cache::Entry* entry,
   return cb.GetResult(rv);
 }
 
+int DiskCacheTestWithCache::GetAvailableRange(disk_cache::Entry* entry,
+                                              int64_t offset,
+                                              int len,
+                                              int64_t* start) {
+  net::TestCompletionCallback cb;
+  int rv = entry->GetAvailableRange(offset, len, start, cb.callback());
+  return cb.GetResult(rv);
+}
+
 void DiskCacheTestWithCache::TrimForTest(bool empty) {
+  if (memory_only_ || !cache_impl_)
+    return;
+
   RunTaskForTest(base::Bind(&disk_cache::BackendImpl::TrimForTest,
-                            base::Unretained(cache_impl_),
-                            empty));
+                            base::Unretained(cache_impl_), empty));
 }
 
 void DiskCacheTestWithCache::TrimDeletedListForTest(bool empty) {
+  if (memory_only_ || !cache_impl_)
+    return;
+
   RunTaskForTest(base::Bind(&disk_cache::BackendImpl::TrimDeletedListForTest,
-                            base::Unretained(cache_impl_),
-                            empty));
+                            base::Unretained(cache_impl_), empty));
 }
 
 void DiskCacheTestWithCache::AddDelay() {
@@ -296,14 +315,18 @@ void DiskCacheTestWithCache::AddDelay() {
     const base::Time initial_time = base::Time::Now();
     do {
       base::PlatformThread::YieldCurrentThread();
-    } while (base::Time::Now() -
-             initial_time < base::TimeDelta::FromSeconds(1));
+    } while (base::Time::Now() - initial_time <
+             base::TimeDelta::FromSeconds(1));
   }
 
   base::Time initial = base::Time::Now();
   while (base::Time::Now() <= initial) {
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
   };
+}
+
+void DiskCacheTestWithCache::OnExternalCacheHit(const std::string& key) {
+  cache_->OnExternalCacheHit(key);
 }
 
 void DiskCacheTestWithCache::TearDown() {

@@ -168,6 +168,10 @@ class DiskCacheTestWithCache : public DiskCacheTest {
                       int64_t offset,
                       net::IOBuffer* buf,
                       int len);
+  int GetAvailableRange(disk_cache::Entry* entry,
+                        int64_t offset,
+                        int len,
+                        int64_t* start);
 
   // Asks the cache to trim an entry. If |empty| is true, the whole cache is
   // deleted.
@@ -180,6 +184,8 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   // Makes sure that some time passes before continuing the test. Time::Now()
   // before and after this method will not be the same.
   void AddDelay();
+
+  void OnExternalCacheHit(const std::string& key);
 
   void TearDown() override;
 
