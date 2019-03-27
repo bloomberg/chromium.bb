@@ -91,6 +91,30 @@ class ArcAppReinstallSearchProviderTest : public AppListTestBase {
     package_item->SetKey(key, base::Value(int64_str));
   }
 
+  bool GetStateInt64(Profile* profile,
+                     const std::string& package_name,
+                     const std::string& key,
+                     int64_t* value) {
+    const base::DictionaryValue* dictionary =
+        profile->GetPrefs()->GetDictionary(kAppState);
+    if (!dictionary)
+      return false;
+    const base::Value* package_item =
+        dictionary->FindKeyOfType(package_name, base::Value::Type::DICTIONARY);
+    if (!package_item)
+      return false;
+    const std::string* value_str = package_item->FindStringKey(key);
+    if (!value_str)
+      return false;
+
+    if (!base::StringToInt64(*value_str, value)) {
+      LOG(ERROR) << "Failed conversion " << *value_str;
+      return false;
+    }
+
+    return true;
+  }
+
   // Owned by |app_provider_|.
   base::MockRepeatingTimer* mock_timer_;
   ArcAppTest arc_app_test_;
@@ -227,21 +251,45 @@ TEST_F(ArcAppReinstallSearchProviderTest, TestResultsWithAppsChanged) {
   app_provider_->OnIconLoaded("http://icon.com/icon1");
   EXPECT_EQ(1u, app_provider_->results().size());
 
-  // Check that impression counts are read appropriately.
+  // Check that impression counts are read and written appropriately.
+  const std::string fake_package2 = "com.package.fakepackage2";
   const std::string impression_count = "impression_count";
-  SetStateInt64(profile_.get(), "com.package.fakepackage2", impression_count,
-                50);
+  const std::string impression_time = "impression_time";
+
+  // should update to 1.
+  app_provider_->OnVisibilityChanged(fake_package2, true);
+  int64_t loaded_impression_count = 0;
+  EXPECT_TRUE(GetStateInt64(profile_.get(), fake_package2, impression_count,
+                            &loaded_impression_count));
+  EXPECT_EQ(1, loaded_impression_count);
+  // An immediate re-show does nothing.
+  app_provider_->OnVisibilityChanged(fake_package2, true);
+  loaded_impression_count = 0;
+  EXPECT_TRUE(GetStateInt64(profile_.get(), fake_package2, impression_count,
+                            &loaded_impression_count));
+  EXPECT_EQ(1, loaded_impression_count);
+
+  // But, setting impression time back does.
+  for (int i = 0; i < 4; ++i) {
+    SetStateInt64(profile_.get(), fake_package2, impression_time, 0);
+    app_provider_->OnVisibilityChanged(fake_package2, true);
+  }
+  loaded_impression_count = 0;
+  EXPECT_TRUE(GetStateInt64(profile_.get(), fake_package2, impression_count,
+                            &loaded_impression_count));
+  EXPECT_EQ(5, loaded_impression_count);
+
+  SetStateInt64(profile_.get(), fake_package2, impression_count, 50);
   app_provider_->UpdateResults();
   EXPECT_EQ(0u, app_provider_->results().size());
-  SetStateInt64(profile_.get(), "com.package.fakepackage2", impression_count,
-                0);
+  SetStateInt64(profile_.get(), fake_package2, impression_count, 0);
   app_provider_->UpdateResults();
   app_provider_->OnIconLoaded("http://icon.com/icon1");
   EXPECT_EQ(1u, app_provider_->results().size());
 
   // If uninstalled recently, avoid.
   const std::string uninstall_time = "uninstall_time";
-  SetStateInt64(profile_.get(), "com.package.fakepackage2", uninstall_time,
+  SetStateInt64(profile_.get(), fake_package2, uninstall_time,
                 base::Time::Now().ToDeltaSinceWindowsEpoch().InMilliseconds());
   app_provider_->UpdateResults();
   EXPECT_EQ(0u, app_provider_->results().size());
