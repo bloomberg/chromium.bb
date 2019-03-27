@@ -10,20 +10,18 @@
 
 namespace remoting {
 
-namespace internal {
 class GrpcAsyncServerStreamingRequestBase;
-}  // namespace internal
 
 // A class that holds a gRPC server stream. The streaming channel will be closed
 // once the holder object is deleted.
 class ScopedGrpcServerStream {
  public:
   explicit ScopedGrpcServerStream(
-      base::WeakPtr<internal::GrpcAsyncServerStreamingRequestBase> call_data);
+      base::WeakPtr<GrpcAsyncServerStreamingRequestBase> request);
   virtual ~ScopedGrpcServerStream();
 
  private:
-  base::WeakPtr<internal::GrpcAsyncServerStreamingRequestBase> call_data_;
+  base::WeakPtr<GrpcAsyncServerStreamingRequestBase> request_;
   DISALLOW_COPY_AND_ASSIGN(ScopedGrpcServerStream);
 };
 

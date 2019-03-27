@@ -29,10 +29,10 @@ void WaitForCompletionAndAssertOk(const base::Location& from_here,
   DCHECK(ok) << "Event is not ok. Location: " << from_here.ToString();
 }
 
-GrpcAsyncExecutor::RpcChannelClosedCallback CheckStatusThenQuitRunLoopCallback(
-    const base::Location& from_here,
-    grpc::StatusCode expected_status_code,
-    base::RunLoop* run_loop) {
+base::OnceCallback<void(const grpc::Status&)>
+CheckStatusThenQuitRunLoopCallback(const base::Location& from_here,
+                                   grpc::StatusCode expected_status_code,
+                                   base::RunLoop* run_loop) {
   return base::BindLambdaForTesting([=](const grpc::Status& status) {
     DCHECK_EQ(expected_status_code, status.error_code())
         << "Status code mismatched. Location: " << from_here.ToString();

@@ -31,10 +31,10 @@ void WaitForCompletionAndAssertOk(const base::Location& from_here,
                                   grpc::CompletionQueue* completion_queue,
                                   void* expected_tag);
 
-GrpcAsyncExecutor::RpcChannelClosedCallback CheckStatusThenQuitRunLoopCallback(
-    const base::Location& from_here,
-    grpc::StatusCode expected_status_code,
-    base::RunLoop* run_loop);
+base::OnceCallback<void(const grpc::Status&)>
+CheckStatusThenQuitRunLoopCallback(const base::Location& from_here,
+                                   grpc::StatusCode expected_status_code,
+                                   base::RunLoop* run_loop);
 
 // Helper class for responding to an async server request.
 template <typename ResponseType>
@@ -74,8 +74,15 @@ class GrpcServerStreamResponder {
 
   ~GrpcServerStreamResponder() { Close(grpc::Status::OK); }
 
-  bool SendMessage(const ResponseType& response) {
+  // Must call WaitForSendMessageResult() once the client has received the
+  // message.
+  void SendMessage(const ResponseType& response) {
     writer_.Write(response, /* event_tag */ this);
+  }
+
+  // Returns true if the client requests for more messages, false if the client
+  // has stopped the stream.
+  bool WaitForSendMessageResult() {
     return WaitForCompletion(FROM_HERE, completion_queue_, this);
   }
 

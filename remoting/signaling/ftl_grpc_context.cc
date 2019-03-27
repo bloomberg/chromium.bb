@@ -59,27 +59,31 @@ void FtlGrpcContext::SetChannelForTesting(
 }
 
 void FtlGrpcContext::GetOAuthTokenAndExecuteRpc(
-    ExecuteRpcWithContextCallback execute_rpc_with_context) {
-  token_getter_->CallWithToken(base::BindOnce(
-      &FtlGrpcContext::ExecuteRpcWithFetchedOAuthToken,
-      weak_factory_.GetWeakPtr(), std::move(execute_rpc_with_context)));
+    std::unique_ptr<GrpcAsyncRequest> request,
+    base::OnceClosure on_stream_started) {
+  token_getter_->CallWithToken(
+      base::BindOnce(&FtlGrpcContext::ExecuteRpcWithFetchedOAuthToken,
+                     weak_factory_.GetWeakPtr(), std::move(request),
+                     std::move(on_stream_started)));
 }
 
 void FtlGrpcContext::ExecuteRpcWithFetchedOAuthToken(
-    ExecuteRpcWithContextCallback execute_rpc_with_context,
+    std::unique_ptr<GrpcAsyncRequest> request,
+    base::OnceClosure on_stream_started,
     OAuthTokenGetter::Status status,
     const std::string& user_email,
     const std::string& access_token) {
-  std::unique_ptr<grpc::ClientContext> context = CreateClientContext();
   if (status != OAuthTokenGetter::Status::SUCCESS) {
     LOG(ERROR) << "Failed to fetch access token. Status: " << status;
   }
   if (status == OAuthTokenGetter::Status::SUCCESS && !access_token.empty()) {
-    context->set_credentials(grpc::AccessTokenCredentials(access_token));
+    request->context()->set_credentials(
+        grpc::AccessTokenCredentials(access_token));
   } else {
     LOG(WARNING) << "Attempting to execute RPC without access token.";
   }
-  std::move(execute_rpc_with_context).Run(std::move(context));
+  executor_.ExecuteRpc(std::move(request));
+  std::move(on_stream_started).Run();
 }
 
 // static

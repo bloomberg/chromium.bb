@@ -5,27 +5,26 @@
 #include "remoting/signaling/grpc_support/grpc_async_server_streaming_request.h"
 
 #include "base/bind.h"
-#include "remoting/signaling/grpc_support/scoped_grpc_server_stream.h"
 
 namespace remoting {
-namespace internal {
 
 GrpcAsyncServerStreamingRequestBase::GrpcAsyncServerStreamingRequestBase(
     std::unique_ptr<grpc::ClientContext> context,
-    base::OnceCallback<void(const grpc::Status&)> on_channel_closed)
+    base::OnceCallback<void(const grpc::Status&)> on_channel_closed,
+    std::unique_ptr<ScopedGrpcServerStream>* scoped_stream)
     : GrpcAsyncRequest(std::move(context)), weak_factory_(this) {
   DCHECK(on_channel_closed);
+  DCHECK_NE(nullptr, scoped_stream);
   on_channel_closed_ = std::move(on_channel_closed);
-  weak_ptr_ = weak_factory_.GetWeakPtr();
+  *scoped_stream =
+      std::make_unique<ScopedGrpcServerStream>(weak_factory_.GetWeakPtr());
 }
 
-GrpcAsyncServerStreamingRequestBase::~GrpcAsyncServerStreamingRequestBase() {
+GrpcAsyncServerStreamingRequestBase::~GrpcAsyncServerStreamingRequestBase() =
+    default;
+
+bool GrpcAsyncServerStreamingRequestBase::OnDequeue(bool operation_succeeded) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-bool GrpcAsyncServerStreamingRequestBase::OnDequeuedOnDispatcherThreadInternal(
-    bool operation_succeeded) {
-  base::AutoLock autolock(state_lock_);
   if (state_ == State::CLOSED) {
     return false;
   }
@@ -39,30 +38,36 @@ bool GrpcAsyncServerStreamingRequestBase::OnDequeuedOnDispatcherThreadInternal(
     VLOG(0) << "Can't read any more data. Figuring out the reason..."
             << " Streaming call: " << this;
     state_ = State::FINISHING;
-    FinishStream();
     return true;
   }
   if (state_ == State::STARTING) {
     VLOG(0) << "Streaming call started: " << this;
     state_ = State::STREAMING;
-    WaitForIncomingMessage();
     return true;
   }
   DCHECK_EQ(State::STREAMING, state_);
   VLOG(0) << "Streaming call received message: " << this;
   ResolveIncomingMessage();
-  WaitForIncomingMessage();
   return true;
 }
 
-std::unique_ptr<ScopedGrpcServerStream>
-GrpcAsyncServerStreamingRequestBase::CreateStreamHolder() {
-  return std::make_unique<ScopedGrpcServerStream>(weak_ptr_);
+void GrpcAsyncServerStreamingRequestBase::Reenqueue(void* event_tag) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  switch (state_) {
+    case State::STREAMING:
+      WaitForIncomingMessage(event_tag);
+      break;
+    case State::FINISHING:
+      FinishStream(event_tag);
+      break;
+    default:
+      NOTREACHED() << "Unexpected state: " << static_cast<int>(state_);
+      break;
+  }
 }
 
 void GrpcAsyncServerStreamingRequestBase::OnRequestCanceled() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::AutoLock autolock(state_lock_);
   if (state_ == State::CLOSED) {
     return;
   }
@@ -71,16 +76,16 @@ void GrpcAsyncServerStreamingRequestBase::OnRequestCanceled() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void GrpcAsyncServerStreamingRequestBase::RunClosure(
-    base::OnceClosure closure) {
+bool GrpcAsyncServerStreamingRequestBase::CanStartRequest() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::move(closure).Run();
+  return state_ == State::STARTING;
 }
 
 void GrpcAsyncServerStreamingRequestBase::ResolveChannelClosed() {
-  caller_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(on_channel_closed_), status_));
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(run_task_callback_);
+  run_task_callback_.Run(
+      base::BindOnce(std::move(on_channel_closed_), status_));
 }
 
-}  // namespace internal
 }  // namespace remoting

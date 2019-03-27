@@ -11,10 +11,11 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "remoting/base/fake_oauth_token_getter.h"
 #include "remoting/signaling/ftl_services.grpc.pb.h"
 #include "remoting/signaling/grpc_support/grpc_async_test_server.h"
@@ -33,7 +34,7 @@ constexpr char kFakeFtlAuthToken[] = "Dummy FTL Token";
 using PullMessagesCallback =
     FtlGrpcContext::RpcCallback<ftl::PullMessagesResponse>;
 using IncomingMessageCallback =
-    GrpcAsyncExecutor::RpcStreamCallback<ftl::ReceiveMessagesResponse>;
+    base::RepeatingCallback<void(const ftl::ReceiveMessagesResponse&)>;
 using PullMessagesResponder =
     test::GrpcServerResponder<ftl::PullMessagesResponse>;
 using ReceiveMessagesResponder =
@@ -62,24 +63,24 @@ class FtlGrpcContextTest : public testing::Test {
   void SendFakeReceiveMessagesRequest(
       FtlGrpcContext::StreamStartedCallback on_stream_started,
       const IncomingMessageCallback& on_incoming_msg,
-      GrpcAsyncExecutor::RpcChannelClosedCallback on_channel_closed);
+      base::OnceCallback<void(const grpc::Status&)> on_channel_closed);
   std::unique_ptr<PullMessagesResponder> HandlePullMessages(
       ftl::PullMessagesRequest* request);
   std::unique_ptr<ReceiveMessagesResponder> HandleReceiveMessages(
       ftl::ReceiveMessagesRequest* request);
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<FtlGrpcContext> context_;
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<Messaging::Stub> stub_;
   std::unique_ptr<test::GrpcAsyncTestServer> server_;
   std::unique_ptr<FakeOAuthTokenGetter> token_getter_;
 };
 
 void FtlGrpcContextTest::SetUp() {
-  task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  task_runner_ = base::SequencedTaskRunnerHandle::Get();
   server_ = std::make_unique<test::GrpcAsyncTestServer>(
       std::make_unique<Messaging::AsyncService>());
   stub_ = Messaging::NewStub(server_->CreateInProcessChannel());
@@ -107,7 +108,7 @@ void FtlGrpcContextTest::SendFakePullMessagesRequest(
 void FtlGrpcContextTest::SendFakeReceiveMessagesRequest(
     FtlGrpcContext::StreamStartedCallback on_stream_started,
     const IncomingMessageCallback& on_incoming_msg,
-    GrpcAsyncExecutor::RpcChannelClosedCallback on_channel_closed) {
+    base::OnceCallback<void(const grpc::Status&)> on_channel_closed) {
   context_->ExecuteServerStreamingRpc(
       base::BindOnce(&Messaging::Stub::AsyncReceiveMessages,
                      base::Unretained(stub_.get())),
@@ -232,6 +233,7 @@ TEST_F(FtlGrpcContextTest, ServerStreamingScenario) {
           [&](const ftl::ReceiveMessagesResponse& response) {
             ASSERT_EQ(fake_inbox_message.message_id(),
                       response.inbox_message().message_id());
+            ASSERT_TRUE(responder->WaitForSendMessageResult());
             responder->Close(grpc::Status::OK);
           }),
 

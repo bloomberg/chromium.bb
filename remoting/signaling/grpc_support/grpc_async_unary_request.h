@@ -11,75 +11,100 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "remoting/signaling/grpc_support/grpc_async_request.h"
 #include "third_party/grpc/src/include/grpcpp/support/async_unary_call.h"
 
 namespace remoting {
-namespace internal {
+
+template <typename RequestType, typename ResponseType>
+using GrpcAsyncUnaryRpcFunction = base::OnceCallback<std::unique_ptr<
+    grpc::ClientAsyncResponseReader<ResponseType>>(grpc::ClientContext*,
+                                                   const RequestType&,
+                                                   grpc::CompletionQueue*)>;
+
+template <typename ResponseType>
+using GrpcAsyncUnaryRpcCallback =
+    base::OnceCallback<void(const grpc::Status&, const ResponseType&)>;
 
 // GrpcAsyncRequest implementation for unary call. The object is enqueued
 // when waiting for response and dequeued once the response is received.
 template <typename ResponseType>
 class GrpcAsyncUnaryRequest : public GrpcAsyncRequest {
  public:
-  using RpcCallback =
-      base::OnceCallback<void(const grpc::Status&, const ResponseType&)>;
+  using StartAndCreateReaderCallback = base::OnceCallback<std::unique_ptr<
+      grpc::ClientAsyncResponseReader<ResponseType>>(grpc::CompletionQueue*)>;
 
-  GrpcAsyncUnaryRequest(
-      std::unique_ptr<grpc::ClientContext> context,
-      std::unique_ptr<grpc::ClientAsyncResponseReader<ResponseType>>
-          response_reader,
-      RpcCallback callback)
-      : GrpcAsyncRequest(std::move(context)), weak_factory_(this) {
-    response_reader_ = std::move(response_reader);
+  GrpcAsyncUnaryRequest(std::unique_ptr<grpc::ClientContext> context,
+                        StartAndCreateReaderCallback create_reader_cb,
+                        GrpcAsyncUnaryRpcCallback<ResponseType> callback)
+      : GrpcAsyncRequest(std::move(context)) {
+    create_reader_cb_ = std::move(create_reader_cb);
     callback_ = std::move(callback);
-    weak_ptr_ = weak_factory_.GetWeakPtr();
-  }
-  ~GrpcAsyncUnaryRequest() override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   }
 
+  ~GrpcAsyncUnaryRequest() override = default;
+
+ private:
   // GrpcAsyncRequest implementations
-
-  void StartInternal() override {
+  void Start(const RunTaskCallback& run_task_cb,
+             grpc::CompletionQueue* cq,
+             void* event_tag) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    response_reader_->Finish(&response_, &status_, GetEventTag());
+    response_reader_ = std::move(create_reader_cb_).Run(cq);
+    response_reader_->Finish(&response_, &status_, event_tag);
+    run_task_cb_ = run_task_cb;
   }
 
-  bool OnDequeuedOnDispatcherThreadInternal(bool operation_succeeded) override {
+  bool OnDequeue(bool operation_succeeded) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(operation_succeeded);
-    caller_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&GrpcAsyncUnaryRequest::RunCallback, weak_ptr_));
+    DCHECK(callback_);
+    run_task_cb_.Run(base::BindOnce(std::move(callback_), status_, response_));
     return false;
   }
 
- private:
+  void Reenqueue(void* event_tag) override { NOTREACHED(); }
+
+  bool CanStartRequest() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return !callback_.is_null();
+  }
+
   void OnRequestCanceled() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    weak_factory_.InvalidateWeakPtrs();
+    callback_.Reset();
   }
 
-  void RunCallback() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    std::move(callback_).Run(status_, response_);
-  }
-
+  StartAndCreateReaderCallback create_reader_cb_;
+  RunTaskCallback run_task_cb_;
   std::unique_ptr<grpc::ClientAsyncResponseReader<ResponseType>>
       response_reader_;
   ResponseType response_;
-  RpcCallback callback_;
+  GrpcAsyncUnaryRpcCallback<ResponseType> callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtr<GrpcAsyncUnaryRequest<ResponseType>> weak_ptr_;
-  base::WeakPtrFactory<GrpcAsyncUnaryRequest<ResponseType>> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(GrpcAsyncUnaryRequest);
 };
 
-}  // namespace internal
+// Creates a server streaming request.
+// |rpc_function| is called once GrpcExecutor is about to send out the request.
+// |callback| is called once the response is received from the server.
+template <typename RequestType, typename ResponseType>
+std::unique_ptr<GrpcAsyncUnaryRequest<ResponseType>>
+CreateGrpcAsyncUnaryRequest(
+    GrpcAsyncUnaryRpcFunction<RequestType, ResponseType> rpc_function,
+    std::unique_ptr<grpc::ClientContext> context,
+    const RequestType& request,
+    base::OnceCallback<void(const grpc::Status&, const ResponseType&)>
+        callback) {
+  auto create_reader_cb =
+      base::BindOnce(std::move(rpc_function), context.get(), request);
+  return std::make_unique<GrpcAsyncUnaryRequest<ResponseType>>(
+      std::move(context), std::move(create_reader_cb), std::move(callback));
+}
+
 }  // namespace remoting
 
 #endif  // REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_UNARY_REQUEST_H_

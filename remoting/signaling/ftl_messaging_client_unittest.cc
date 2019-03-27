@@ -22,6 +22,7 @@
 #include "remoting/signaling/ftl_services.grpc.pb.h"
 #include "remoting/signaling/grpc_support/grpc_async_test_server.h"
 #include "remoting/signaling/grpc_support/grpc_test_util.h"
+#include "remoting/signaling/grpc_support/scoped_grpc_server_stream.h"
 #include "remoting/signaling/message_reception_channel.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -147,6 +148,7 @@ void FtlMessagingClientTest::SetUp() {
 void FtlMessagingClientTest::TearDown() {
   messaging_client_.reset();
   test_environment_.reset();
+  server_task_runner_->DeleteSoon(FROM_HERE, std::move(server_));
 }
 
 void FtlMessagingClientTest::ServerWaitAndRespondToPullMessagesRequest(
@@ -379,8 +381,6 @@ TEST_F(FtlMessagingClientTest,
        TestStreamOpener_StreamsTwoMessagesThenCloseByClient) {
   base::RunLoop run_loop;
 
-  std::unique_ptr<test::GrpcServerStreamResponder<ftl::ReceiveMessagesResponse>>
-      responder;
   std::unique_ptr<ScopedGrpcServerStream> scoped_stream;
 
   ftl::ReceiveMessagesResponse response_1;
@@ -388,15 +388,26 @@ TEST_F(FtlMessagingClientTest,
   ftl::ReceiveMessagesResponse response_2;
   response_2.mutable_pong();
 
-  server_task_runner_->PostTask(
+  base::MockCallback<base::RepeatingClosure> exit_runloop_when_called_twice;
+  EXPECT_CALL(exit_runloop_when_called_twice, Run())
+      .WillOnce(Return())
+      .WillOnce([&]() {
+        // Whoever calls last quits the run loop.
+        run_loop.QuitWhenIdle();
+      });
+
+  server_task_runner_->PostTaskAndReply(
       FROM_HERE, base::BindLambdaForTesting([&]() {
         ftl::ReceiveMessagesRequest request;
         // This blocks the server thread until the client opens the stream.
-        responder = server_->HandleStreamRequest(
+        auto responder = server_->HandleStreamRequest(
             &Messaging::AsyncService::RequestReceiveMessages, &request);
-        ASSERT_TRUE(responder->SendMessage(response_1));
-        ASSERT_TRUE(responder->SendMessage(response_2));
-      }));
+        responder->SendMessage(response_1);
+        ASSERT_TRUE(responder->WaitForSendMessageResult());
+        responder->SendMessage(response_2);
+        ASSERT_TRUE(responder->WaitForSendMessageResult());
+      }),
+      exit_runloop_when_called_twice.Get());
 
   base::MockCallback<
       base::RepeatingCallback<void(const ftl::ReceiveMessagesResponse&)>>
@@ -409,7 +420,7 @@ TEST_F(FtlMessagingClientTest,
         ASSERT_TRUE(response.has_pong());
         DCHECK(scoped_stream);
         scoped_stream.reset();
-        run_loop.QuitWhenIdle();
+        exit_runloop_when_called_twice.Get().Run();
       });
 
   mock_message_reception_channel_->stream_opener()->Run(

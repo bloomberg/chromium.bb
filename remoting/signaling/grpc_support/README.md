@@ -19,24 +19,29 @@ class MyClass {
 
   void SayHello() {
     HelloRequest request;
-    dispatcher_->ExecuteAsyncRpc(
+    // Requests will be silently dropped once the executor is destroyed, so it's
+    // safe to bind with raw pointers.
+    auto grpc_request = CreateGrpcAsyncUnaryRequest(
         base::BindOnce(&HelloService::Stub::AsyncSayHello,
-                        base::Unretained(stub_.get())),
+                       base::Unretained(stub_.get())),
         std::make_unique<grpc::ClientContext>(), request,
         base::BindOnce(&MyClass::OnHelloResult,
-                        base::Unretained(this)));
+                       base::Unretained(this)));
+    executor_->ExecuteRpc(std::move(grpc_request));
   }
 
   void StartHelloStream() {
     StreamHelloRequest request;
-    scoped_hello_stream_ = dispatcher_->ExecuteAsyncServerStreamingRpc(
+    auto grpc_Request = CreateGrpcAsyncServerStreamingRequest(
         base::BindOnce(&HelloService::Stub::AsyncStreamHello,
-                      base::Unretained(stub_.get())),
+                       base::Unretained(stub_.get())),
         std::make_unique<grpc::ClientContext>(), request,
         base::BindRepeating(&MyClass::OnHelloStreamMessage,
                             base::Unretained(this)),
         base::BindOnce(&MyClass::OnHelloStreamClosed,
-                        base::Unretained(this)));
+                       base::Unretained(this)),
+        &scoped_hello_stream_);
+    executor_->ExecuteRpc(std::move(grpc_request));
   }
 
   void CloseHelloStream() {
@@ -69,7 +74,7 @@ class MyClass {
   }
 
   std::unique_ptr<HelloService::Stub> stub_;
-  GrpcAsyncExecutor dispatcher_;
+  GrpcAsyncExecutor executor_;
   std::unique_ptr<ScopedGrpcServerStream> scoped_hello_stream_;
 };
 ```
