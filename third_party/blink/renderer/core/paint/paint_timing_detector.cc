@@ -85,9 +85,9 @@ void PaintTimingDetector::NotifyTextPaint(
 }
 
 void PaintTimingDetector::NotifyNodeRemoved(const LayoutObject& object) {
-  if (!object.GetNode())
+  DOMNodeId node_id = DOMNodeIds::ExistingIdForNode(object.GetNode());
+  if (node_id == kInvalidDOMNodeId)
     return;
-  DOMNodeId node_id = DOMNodeIds::IdForNode(object.GetNode());
   text_paint_timing_detector_->NotifyNodeRemoved(node_id);
   image_paint_timing_detector_->NotifyNodeRemoved(node_id);
 }
