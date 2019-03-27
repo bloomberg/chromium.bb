@@ -5077,5 +5077,11 @@
       'webrtc_chromium_simple_gtests',
       'webrtc_chromium_simple_baremetal_gtests',
     ],
+
+    'webview_bot_gtests': [
+      'system_webview_shell_instrumentation_tests',
+      'webview_ui_instrumentation_tests',
+      'webview_cts_tests_gtest',
+    ],
   }
 }
