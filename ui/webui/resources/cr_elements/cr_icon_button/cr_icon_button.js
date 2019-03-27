@@ -56,7 +56,6 @@ Polymer({
   listeners: {
     blur: 'hideRipple_',
     click: 'onClick_',
-    down: 'onDown_',
     focus: 'showRipple_',
     keydown: 'onKeyDown_',
     keyup: 'onKeyUp_',
@@ -99,14 +98,6 @@ Polymer({
     if (this.disabled) {
       e.stopImmediatePropagation();
     }
-  },
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onDown_: function(e) {
-    e.stopPropagation();
   },
 
   /** @private */
