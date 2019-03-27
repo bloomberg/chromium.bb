@@ -16,6 +16,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler.h"
+#include "third_party/blink/public/platform/web_transmission_encoding_info_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -521,29 +522,39 @@ ScriptPromise MediaCapabilities::encodingInfo(
     return promise;
   }
 
-  // TODO(crbug.com/817382): Add "transmission" type support.
   if (configuration->type() == "transmission") {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                             "\"transmission\" type is not implemented yet."));
+    if (auto* handler =
+            Platform::Current()->TransmissionEncodingInfoHandler()) {
+      handler->EncodingInfo(
+          ToWebMediaConfiguration(configuration),
+          std::make_unique<MediaCapabilitiesEncodingInfoCallbacks>(resolver));
+      return promise;
+    }
+    resolver->Reject(DOMException::Create(
+        DOMExceptionCode::kInvalidStateError,
+        "Platform error: could not get EncodingInfoHandler."));
     return promise;
   }
 
-  std::unique_ptr<WebMediaRecorderHandler> handler =
-      Platform::Current()->CreateMediaRecorderHandler(
-          ExecutionContext::From(script_state)
-              ->GetTaskRunner(TaskType::kInternalMediaRealTime));
-  if (!handler) {
+  if (configuration->type() == "record") {
+    if (auto handler = Platform::Current()->CreateMediaRecorderHandler(
+            ExecutionContext::From(script_state)
+                ->GetTaskRunner(TaskType::kInternalMediaRealTime))) {
+      handler->EncodingInfo(
+          ToWebMediaConfiguration(configuration),
+          std::make_unique<MediaCapabilitiesEncodingInfoCallbacks>(resolver));
+      return promise;
+    }
     resolver->Reject(DOMException::Create(
         DOMExceptionCode::kInvalidStateError,
         "Platform error: could not create MediaRecorderHandler."));
     return promise;
   }
 
-  handler->EncodingInfo(
-      ToWebMediaConfiguration(configuration),
-      std::make_unique<MediaCapabilitiesEncodingInfoCallbacks>(resolver));
-
+  resolver->Reject(V8ThrowException::CreateTypeError(
+      script_state->GetIsolate(),
+      "Valid configuration |type| should be either 'transmission' or "
+      "'record'."));
   return promise;
 }
 
