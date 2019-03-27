@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1131,13 +1130,9 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
     return;
   }
 
-  const bool option_conditions_met = AreOptionConditionsMet();
-  UMA_HISTOGRAM_BOOLEAN("BackgroundSync.OptionConditionsChanged",
-                        !option_conditions_met);
-
   // The connectivity was lost before dispatching the sync event, so there is
   // no point in going through with it.
-  if (!option_conditions_met) {
+  if (!AreOptionConditionsMet()) {
     registration->set_sync_state(blink::mojom::BackgroundSyncState::PENDING);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, std::move(event_fired_callback));
