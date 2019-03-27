@@ -15,8 +15,6 @@ bool AreAssetDownloadsEnabled();
 bool AreOfflinePageDownloadsEnabled();
 bool IsDownloadsProviderEnabled();
 
-bool IsBookmarkProviderEnabled();
-
 bool IsPhysicalWebPageProviderEnabled();
 
 }  // namespace ntp_snippets

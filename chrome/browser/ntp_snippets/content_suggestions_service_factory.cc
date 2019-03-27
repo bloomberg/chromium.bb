@@ -14,7 +14,6 @@
 #include "base/time/default_clock.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
@@ -28,7 +27,6 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/instance_id_profile_service.h"
 #include "components/image_fetcher/core/image_decoder.h"
@@ -37,7 +35,6 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/language/core/browser/url_language_histogram.h"
-#include "components/ntp_snippets/bookmarks/bookmark_suggestions_provider.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
@@ -88,19 +85,16 @@
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 #endif
 
-using bookmarks::BookmarkModel;
 using content::BrowserThread;
 using history::HistoryService;
 using image_fetcher::ImageFetcherImpl;
 using language::UrlLanguageHistogram;
 using ntp_snippets::AreAssetDownloadsEnabled;
 using ntp_snippets::AreOfflinePageDownloadsEnabled;
-using ntp_snippets::BookmarkSuggestionsProvider;
 using ntp_snippets::BreakingNewsListener;
 using ntp_snippets::CategoryRanker;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::GetFetchEndpoint;
-using ntp_snippets::IsBookmarkProviderEnabled;
 using ntp_snippets::IsDownloadsProviderEnabled;
 using ntp_snippets::PersistentScheduler;
 using ntp_snippets::PrefetchedPagesTracker;
@@ -180,24 +174,6 @@ void RegisterDownloadsProviderIfEnabled(ContentSuggestionsService* service,
       profile->GetPrefs(), base::DefaultClock::GetInstance());
   service->RegisterProvider(std::move(provider));
 }
-
-#endif  // OS_ANDROID
-
-void RegisterBookmarkProviderIfEnabled(ContentSuggestionsService* service,
-                                       Profile* profile) {
-  BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForBrowserContext(profile);
-  if (!bookmark_model || !IsBookmarkProviderEnabled()) {
-    // bookmark_model may be null in tests.
-    return;
-  }
-
-  auto provider =
-      std::make_unique<BookmarkSuggestionsProvider>(service, bookmark_model);
-  service->RegisterProvider(std::move(provider));
-}
-
-#if defined(OS_ANDROID)
 
 bool AreGCMPushUpdatesEnabled() {
   return base::FeatureList::IsEnabled(ntp_snippets::kBreakingNewsPushFeature);
@@ -364,7 +340,6 @@ ContentSuggestionsServiceFactory::ContentSuggestionsServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "ContentSuggestionsService",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(BookmarkModelFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(LargeIconServiceFactory::GetInstance());
@@ -438,7 +413,6 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 
   RegisterArticleProviderIfEnabled(service, profile, user_classifier_raw,
                                    offline_page_model, raw_debug_logger);
-  RegisterBookmarkProviderIfEnabled(service, profile);
 
 #if defined(OS_ANDROID)
   RegisterDownloadsProviderIfEnabled(service, profile, offline_page_model);

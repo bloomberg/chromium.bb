@@ -34,7 +34,6 @@
 #include "chrome/browser/metrics/oom/out_of_memory_reporter.h"
 #include "chrome/browser/metrics/renderer_uptime_web_contents_observer.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
-#include "chrome/browser/ntp_snippets/bookmark_last_visit_updater.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
@@ -197,9 +196,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       g_browser_process->GetApplicationLocale(),
       autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
   BloatedRendererTabHelper::CreateForWebContents(web_contents);
-  BookmarkLastVisitUpdater::MaybeCreateForWebContentsWithBookmarkModel(
-      web_contents, BookmarkModelFactory::GetForBrowserContext(
-                        web_contents->GetBrowserContext()));
   chrome_browser_net::NetErrorTabHelper::CreateForWebContents(web_contents);
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents,

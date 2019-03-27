@@ -27,14 +27,6 @@
     Your suggested articles appear here
   </message>
 
-  <message name="IDS_NTP_BOOKMARK_SUGGESTIONS_SECTION_HEADER" desc="Header of the bookmarks section. The bookmarks section shows a list of recently *visited* bookmarks, irrespective of their creation date. It is *not* a list of recently *created* bookmarks">
-    Recent bookmarks
-  </message>
-
-  <message name="IDS_NTP_BOOKMARK_SUGGESTIONS_SECTION_EMPTY" desc="On the New Tab Page, text of the card explaining to the user that they can expect to see bookmarks in this area in the future.">
-    Your recently visited bookmarks appear here
-  </message>
-
   <!-- When you change this string, please change IDS_NTP_PHYSICAL_WEB_PAGE_SUGGESTIONS_SECTION_EMPTY description accordingly. -->
   <message name="IDS_NTP_PHYSICAL_WEB_PAGE_SUGGESTIONS_SECTION_HEADER" desc="Header of the physical web section. The physical web section shows a list of physical web pages available near the user. A physical web page is a URL transmitted over bluetooth by a low power device (a beacon). The user must be at most 100 meters (generally even closer) away from the beacon to receive the URL. This allows the URL to be context based (e.g. one is at a train station and the schedule is available as a physical web page).">
     Nearby
