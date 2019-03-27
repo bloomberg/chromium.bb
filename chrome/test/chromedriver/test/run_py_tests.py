@@ -105,6 +105,8 @@ _OS_SPECIFIC_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2579
     'ChromeDriverTest.testTakeElementScreenshot',
     'ChromeDriverTest.testTakeElementScreenshotInIframe',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=946023
+    'ChromeDriverTest.testWindowFullScreen',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
