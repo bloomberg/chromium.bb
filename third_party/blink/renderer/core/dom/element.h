@@ -961,6 +961,8 @@ class CORE_EXPORT Element : public ContainerNode {
   // svgAttributeChanged (called when element.className.baseValue is set)
   void ClassAttributeChanged(const AtomicString& new_class_string);
 
+  void PictureInPicturePseudoStateChanged();
+
   static bool AttributeValueIsJavaScriptURL(const Attribute&);
 
   scoped_refptr<ComputedStyle> OriginalStyleForLayoutObject();

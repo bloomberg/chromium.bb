@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -1041,6 +1042,12 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return Fullscreen::IsFullscreenElement(element);
     case CSSSelector::kPseudoFullScreenAncestor:
       return element.ContainsFullScreenElement();
+    case CSSSelector::kPseudoPictureInPicture:
+      return PictureInPictureController::IsElementInPictureInPicture(
+                 &element) ||
+             (IsShadowHost(element) &&
+              PictureInPictureController::IsShadowHostInPictureInPicture(
+                  element));
     case CSSSelector::kPseudoVideoPersistent:
       DCHECK(is_ua_rule_);
       return IsHTMLVideoElement(element) &&

@@ -280,6 +280,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoFullScreen:
     case kPseudoFullScreenAncestor:
     case kPseudoFullscreen:
+    case kPseudoPictureInPicture:
     case kPseudoSpatialNavigationFocus:
     case kPseudoSpatialNavigationInterest:
     case kPseudoIsHtml:
@@ -377,6 +378,7 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"optional", CSSSelector::kPseudoOptional},
     {"out-of-range", CSSSelector::kPseudoOutOfRange},
     {"past", CSSSelector::kPseudoPastCue},
+    {"picture-in-picture", CSSSelector::kPseudoPictureInPicture},
     {"placeholder", CSSSelector::kPseudoPlaceholder},
     {"placeholder-shown", CSSSelector::kPseudoPlaceholderShown},
     {"read-only", CSSSelector::kPseudoReadOnly},
@@ -446,6 +448,10 @@ static CSSSelector::PseudoType NameToPseudoType(const AtomicString& name,
 
   if (match->type == CSSSelector::kPseudoFocusVisible &&
       !RuntimeEnabledFeatures::CSSFocusVisibleEnabled())
+    return CSSSelector::kPseudoUnknown;
+
+  if (match->type == CSSSelector::kPseudoPictureInPicture &&
+      !RuntimeEnabledFeatures::CSSPictureInPictureEnabled())
     return CSSSelector::kPseudoUnknown;
 
   return static_cast<CSSSelector::PseudoType>(match->type);
@@ -624,6 +630,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoOnlyChild:
     case kPseudoOnlyOfType:
     case kPseudoOptional:
+    case kPseudoPictureInPicture:
     case kPseudoPlaceholderShown:
     case kPseudoOutOfRange:
     case kPseudoPastCue:

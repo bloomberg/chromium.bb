@@ -324,6 +324,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoFullScreen)
     DEFINE_STRING_MAPPING(PseudoFullScreenAncestor)
     DEFINE_STRING_MAPPING(PseudoFullscreen)
+    DEFINE_STRING_MAPPING(PseudoPictureInPicture)
     DEFINE_STRING_MAPPING(PseudoInRange)
     DEFINE_STRING_MAPPING(PseudoOutOfRange)
     DEFINE_STRING_MAPPING(PseudoWebKitCustomElement)
