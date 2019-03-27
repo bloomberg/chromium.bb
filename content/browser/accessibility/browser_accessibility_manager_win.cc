@@ -235,6 +235,10 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::LAYOUT_INVALIDATED:
       FireUiaAccessibilityEvent(UIA_LayoutInvalidatedEventId, node);
       break;
+    case ui::AXEventGenerator::Event::MULTISELECTABLE_STATE_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_SelectionCanSelectMultiplePropertyId,
+                                  node);
+      break;
     case ui::AXEventGenerator::Event::NAME_CHANGED:
       FireUiaPropertyChangedEvent(UIA_NamePropertyId, node);
       break;

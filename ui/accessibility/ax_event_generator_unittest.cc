@@ -101,6 +101,9 @@ std::string DumpEvents(AXEventGenerator* generator) {
       case AXEventGenerator::Event::MENU_ITEM_SELECTED:
         event_name = "MENU_ITEM_SELECTED";
         break;
+      case AXEventGenerator::Event::MULTISELECTABLE_STATE_CHANGED:
+        event_name = "MULTISELECTABLE_STATE_CHANGED";
+        break;
       case AXEventGenerator::Event::NAME_CHANGED:
         event_name = "NAME_CHANGED";
         break;
@@ -1096,6 +1099,23 @@ TEST(AXEventGeneratorTest, AriaBusyChanged) {
       "LAYOUT_INVALIDATED on 1, "
       "OTHER_ATTRIBUTE_CHANGED on 1",
       DumpEvents(&event_generator));
+}
+
+TEST(AXEventGeneratorTest, MultiselectableStateChanged) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(1);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].role = ax::mojom::Role::kGrid;
+
+  AXTree tree(initial_state);
+  AXEventGenerator event_generator(&tree);
+  AXTreeUpdate update = initial_state;
+
+  update.nodes[0].AddState(ax::mojom::State::kMultiselectable);
+  EXPECT_TRUE(tree.Unserialize(update));
+  EXPECT_EQ("MULTISELECTABLE_STATE_CHANGED on 1, STATE_CHANGED on 1",
+            DumpEvents(&event_generator));
 }
 
 }  // namespace ui
