@@ -57,10 +57,15 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
   // Helpers to implement XRDeviceAbstraction.
   bool EnsureSpatialInteractionManager();
   void InitializeOrigin();
+  void InitializeStageOrigin();
   void InitializeSpace();
   void StartPresenting();
   void UpdateWMRDataForNextFrame();
-  bool UpdateDisplayInfo();  // returns true if display info has changed.
+
+  // Returns true if display info has changed. Does not update stage parameters.
+  bool UpdateDisplayInfo();
+  // Returns true if stage parameters have changed.
+  bool UpdateStageParameters();
 
   std::unique_ptr<base::win::ScopedWinrtInitializer> initializer_;
 
@@ -69,6 +74,10 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
   Microsoft::WRL::ComPtr<
       ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem>
       origin_;
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem>
+      stage_origin_;
+  bool stage_transform_needs_updating_ = false;
   std::unique_ptr<MixedRealityWindow> window_;
   mojom::VRDisplayInfoPtr current_display_info_;
   base::RepeatingCallback<void(mojom::VRDisplayInfoPtr)>
