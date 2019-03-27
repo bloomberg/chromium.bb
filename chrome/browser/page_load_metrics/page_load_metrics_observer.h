@@ -150,6 +150,7 @@ struct PageLoadExtraInfo {
       const base::Optional<base::TimeDelta>& page_end_time,
       const mojom::PageLoadMetadata& main_frame_metadata,
       const mojom::PageLoadMetadata& subframe_metadata,
+      const PageRenderData& page_render_data,
       const PageRenderData& main_frame_render_data,
       ukm::SourceId source_id);
 
@@ -225,6 +226,7 @@ struct PageLoadExtraInfo {
   // PageLoadMetadata for subframes of the current page load.
   const mojom::PageLoadMetadata subframe_metadata;
 
+  const PageRenderData page_render_data;
   const PageRenderData main_frame_render_data;
 
   // UKM SourceId for the current page load.

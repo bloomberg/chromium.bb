@@ -450,15 +450,23 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
   // Report data usage before new timing and metadata for messages that have
   // both updates.
   client_->UpdateResourceDataUse(render_frame_host, resources);
-  if (render_frame_host->GetParent() == nullptr) {
+
+  bool is_main_frame = render_frame_host->GetParent() == nullptr;
+  if (is_main_frame) {
     UpdateMainFrameMetadata(std::move(new_metadata));
     UpdateMainFrameTiming(std::move(new_timing));
-    UpdateMainFrameRenderData(std::move(render_data));
+    UpdateMainFrameRenderData(*render_data);
   } else {
     UpdateSubFrameMetadata(render_frame_host, std::move(new_metadata));
     UpdateSubFrameTiming(render_frame_host, std::move(new_timing));
-    UpdateSubFrameRenderData(render_frame_host, std::move(render_data));
   }
+
+  UpdatePageRenderData(*render_data);
+  if (!is_main_frame) {
+    // This path is just for the AMP metrics.
+    OnSubFrameRenderDataChanged(render_frame_host, *render_data);
+  }
+
   client_->UpdateFeaturesUsage(render_frame_host, *new_features);
 }
 
@@ -600,15 +608,20 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
   client_->OnMainFrameMetadataChanged();
 }
 
-void PageLoadMetricsUpdateDispatcher::UpdateMainFrameRenderData(
-    mojom::FrameRenderDataUpdatePtr render_data) {
-  main_frame_render_data_.layout_jank_score += render_data->layout_jank_delta;
+void PageLoadMetricsUpdateDispatcher::UpdatePageRenderData(
+    const mojom::FrameRenderDataUpdate& render_data) {
+  page_render_data_.layout_jank_score += render_data.layout_jank_delta;
 }
 
-void PageLoadMetricsUpdateDispatcher::UpdateSubFrameRenderData(
+void PageLoadMetricsUpdateDispatcher::UpdateMainFrameRenderData(
+    const mojom::FrameRenderDataUpdate& render_data) {
+  main_frame_render_data_.layout_jank_score += render_data.layout_jank_delta;
+}
+
+void PageLoadMetricsUpdateDispatcher::OnSubFrameRenderDataChanged(
     content::RenderFrameHost* render_frame_host,
-    mojom::FrameRenderDataUpdatePtr render_data) {
-  client_->OnSubFrameRenderDataChanged(render_frame_host, *render_data);
+    const mojom::FrameRenderDataUpdate& render_data) {
+  client_->OnSubFrameRenderDataChanged(render_frame_host, render_data);
 }
 
 void PageLoadMetricsUpdateDispatcher::MaybeDispatchTimingUpdates(

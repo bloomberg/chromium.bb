@@ -1011,6 +1011,32 @@ TEST_F(UkmPageLoadMetricsObserverTest, MHTMLNotTracked) {
   EXPECT_EQ(0ul, test_ukm_recorder().entries_count());
 }
 
+TEST_F(UkmPageLoadMetricsObserverTest, LayoutStabilitySubframeAggregation) {
+  NavigateAndCommit(GURL(kTestUrl1));
+
+  // Simulate jank in the main frame.
+  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0);
+  SimulateRenderDataUpdate(render_data);
+
+  RenderFrameHost* subframe =
+      NavigationSimulator::NavigateAndCommitFromDocument(
+          GURL(kSubframeTestUrl),
+          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+              ->AppendChild("subframe"));
+
+  // Simulate jank in the subframe.
+  render_data.layout_jank_delta = 1.5;
+  SimulateRenderDataUpdate(render_data, subframe);
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  // Total jank should be the sum of jank from all frames.
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "PageLoad.Experimental.LayoutStability.JankScore"),
+              testing::ElementsAre(base::Bucket(25, 1)));
+}
+
 class TestOfflinePreviewsUkmPageLoadMetricsObserver
     : public UkmPageLoadMetricsObserver {
  public:
