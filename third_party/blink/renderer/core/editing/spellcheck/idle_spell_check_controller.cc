@@ -229,9 +229,9 @@ void IdleSpellCheckController::ForceInvocationForTesting() {
   if (!IsSpellCheckingEnabled())
     return;
 
-  IdleDeadline* deadline =
-      IdleDeadline::Create(CurrentTimeTicks() + kIdleSpellcheckTestTimeout,
-                           IdleDeadline::CallbackType::kCalledWhenIdle);
+  auto* deadline = MakeGarbageCollected<IdleDeadline>(
+      CurrentTimeTicks() + kIdleSpellcheckTestTimeout,
+      IdleDeadline::CallbackType::kCalledWhenIdle);
 
   switch (state_) {
     case State::kColdModeTimerStarted:

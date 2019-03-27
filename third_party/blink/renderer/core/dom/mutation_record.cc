@@ -102,7 +102,7 @@ class RecordWithEmptyNodeLists : public MutationRecord {
   static StaticNodeList* LazilyInitializeEmptyNodeList(
       Member<StaticNodeList>& node_list) {
     if (!node_list)
-      node_list = StaticNodeList::CreateEmpty();
+      node_list = MakeGarbageCollected<StaticNodeList>();
     return node_list.Get();
   }
 

@@ -38,8 +38,8 @@ void ScriptedAnimationControllerTest::SetUp() {
   // Note: The document doesn't know about this ScriptedAnimationController
   // instance, and will create another if
   // Document::ensureScriptedAnimationController is called.
-  controller_ =
-      WrapPersistent(ScriptedAnimationController::Create(&GetDocument()));
+  controller_ = WrapPersistent(
+      MakeGarbageCollected<ScriptedAnimationController>(&GetDocument()));
 }
 
 namespace {

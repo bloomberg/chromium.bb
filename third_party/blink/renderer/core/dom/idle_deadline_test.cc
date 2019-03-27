@@ -81,17 +81,17 @@ class IdleDeadlineTest : public testing::Test {
 };
 
 TEST_F(IdleDeadlineTest, DeadlineInFuture) {
-  IdleDeadline* deadline =
-      IdleDeadline::Create(TimeTicks() + TimeDelta::FromSecondsD(1.25),
-                           IdleDeadline::CallbackType::kCalledWhenIdle);
+  auto* deadline = MakeGarbageCollected<IdleDeadline>(
+      TimeTicks() + TimeDelta::FromSecondsD(1.25),
+      IdleDeadline::CallbackType::kCalledWhenIdle);
   // Note: the deadline is computed with reduced resolution.
   EXPECT_FLOAT_EQ(250.0, deadline->timeRemaining());
 }
 
 TEST_F(IdleDeadlineTest, DeadlineInPast) {
-  IdleDeadline* deadline =
-      IdleDeadline::Create(TimeTicks() + TimeDelta::FromSecondsD(0.75),
-                           IdleDeadline::CallbackType::kCalledWhenIdle);
+  auto* deadline = MakeGarbageCollected<IdleDeadline>(
+      TimeTicks() + TimeDelta::FromSecondsD(0.75),
+      IdleDeadline::CallbackType::kCalledWhenIdle);
   EXPECT_FLOAT_EQ(0, deadline->timeRemaining());
 }
 
@@ -99,9 +99,9 @@ TEST_F(IdleDeadlineTest, YieldForHighPriorityWork) {
   MockIdleDeadlineScheduler scheduler;
   ScopedSchedulerOverrider scheduler_overrider(&scheduler);
 
-  IdleDeadline* deadline =
-      IdleDeadline::Create(TimeTicks() + TimeDelta::FromSecondsD(1.25),
-                           IdleDeadline::CallbackType::kCalledWhenIdle);
+  auto* deadline = MakeGarbageCollected<IdleDeadline>(
+      TimeTicks() + TimeDelta::FromSecondsD(1.25),
+      IdleDeadline::CallbackType::kCalledWhenIdle);
   EXPECT_FLOAT_EQ(0, deadline->timeRemaining());
 }
 

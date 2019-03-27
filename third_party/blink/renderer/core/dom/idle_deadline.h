@@ -18,10 +18,6 @@ class CORE_EXPORT IdleDeadline : public ScriptWrappable {
  public:
   enum class CallbackType { kCalledWhenIdle, kCalledByTimeout };
 
-  static IdleDeadline* Create(TimeTicks deadline, CallbackType callback_type) {
-    return MakeGarbageCollected<IdleDeadline>(deadline, callback_type);
-  }
-
   IdleDeadline(TimeTicks deadline, CallbackType);
 
   double timeRemaining() const;

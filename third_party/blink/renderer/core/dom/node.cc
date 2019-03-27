@@ -353,10 +353,12 @@ Node::~Node() {
 }
 
 NodeRareData& Node::CreateRareData() {
-  if (IsElementNode())
+  if (IsElementNode()) {
     data_.rare_data_ = ElementRareData::Create(data_.node_layout_data_);
-  else
-    data_.rare_data_ = NodeRareData::Create(data_.node_layout_data_);
+  } else {
+    data_.rare_data_ =
+        MakeGarbageCollected<NodeRareData>(data_.node_layout_data_);
+  }
 
   DCHECK(data_.rare_data_);
   SetFlag(kHasRareDataFlag);

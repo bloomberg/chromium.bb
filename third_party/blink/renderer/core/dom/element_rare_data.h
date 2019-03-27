@@ -273,7 +273,7 @@ inline void ElementRareData::SetPseudoElement(PseudoId pseudo_id,
   if (!pseudo_element_data_) {
     if (!element)
       return;
-    pseudo_element_data_ = PseudoElementData::Create();
+    pseudo_element_data_ = MakeGarbageCollected<PseudoElementData>();
   }
   pseudo_element_data_->SetPseudoElement(pseudo_id, element);
 }

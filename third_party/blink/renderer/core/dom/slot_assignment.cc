@@ -215,7 +215,7 @@ void SlotAssignment::DidChangeHostChildSlotName(const AtomicString& old_value,
 }
 
 SlotAssignment::SlotAssignment(ShadowRoot& owner)
-    : slot_map_(TreeOrderedMap::Create()),
+    : slot_map_(MakeGarbageCollected<TreeOrderedMap>()),
       owner_(&owner),
       needs_collect_slots_(false),
       slot_count_(0) {

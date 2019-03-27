@@ -44,10 +44,6 @@ class StaticNodeTypeList final : public NodeList {
  public:
   static StaticNodeTypeList* Adopt(HeapVector<Member<NodeType>>& nodes);
 
-  static StaticNodeTypeList* CreateEmpty() {
-    return MakeGarbageCollected<StaticNodeTypeList>();
-  }
-
   ~StaticNodeTypeList() override;
 
   unsigned length() const override;

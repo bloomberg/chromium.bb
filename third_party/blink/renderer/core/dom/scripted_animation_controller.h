@@ -46,10 +46,6 @@ class CORE_EXPORT ScriptedAnimationController
     : public GarbageCollectedFinalized<ScriptedAnimationController>,
       public NameClient {
  public:
-  static ScriptedAnimationController* Create(Document* document) {
-    return MakeGarbageCollected<ScriptedAnimationController>(document);
-  }
-
   explicit ScriptedAnimationController(Document*);
   virtual ~ScriptedAnimationController() = default;
 
