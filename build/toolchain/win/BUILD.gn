@@ -7,7 +7,6 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/win/visual_studio_version.gni")
 import("//build/toolchain/cc_wrapper.gni")
-import("//build/toolchain/clang_static_analyzer.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
 
@@ -91,25 +90,7 @@ template("msvc_toolchain") {
 
     env = invoker.environment
 
-    # When the invoker has explicitly overridden use_goma or cc_wrapper in the
-    # toolchain args, use those values, otherwise default to the global one.
-    # This works because the only reasonable override that toolchains might
-    # supply for these values are to force-disable them.
-    if (defined(toolchain_args.is_clang)) {
-      toolchain_uses_clang = toolchain_args.is_clang
-    } else {
-      toolchain_uses_clang = is_clang
-    }
-
     cl = invoker.cl
-
-    if (toolchain_uses_clang && use_clang_static_analyzer) {
-      analyzer_prefix =
-          "$python_path " +
-          rebase_path("//build/toolchain/clang_static_analyzer_wrapper.py",
-                      root_build_dir) + " --mode=cl"
-      cl = "${analyzer_prefix} ${cl}"
-    }
 
     if (use_lld) {
       if (host_os == "win") {
@@ -141,7 +122,8 @@ template("msvc_toolchain") {
       sys_include_flags = "${invoker.sys_include_flags} "  # Note trailing space.
     } else {
       # clang-cl doesn't need this env hoop, so omit it there.
-      assert(!toolchain_uses_clang)
+      assert((defined(toolchain_args.is_clang) && !toolchain_args.is_clang) ||
+             !is_clang)
       env_wrapper = "ninja -t msvc -e $env -- "  # Note trailing space.
       sys_include_flags = ""
     }

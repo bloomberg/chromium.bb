@@ -14,12 +14,6 @@ import("//build/toolchain/toolchain.gni")
 assert(is_win)
 
 declare_args() {
-  # Set this to true to enable static analysis through Visual Studio's
-  # /analyze. This dramatically slows compiles and reports thousands of
-  # warnings, so normally this is done on a build machine and only the new
-  # warnings are examined.
-  use_vs_code_analysis = false
-
   # Turn this on to have the linker output extra timing information.
   win_linker_timing = false
 
@@ -212,46 +206,6 @@ config("compiler") {
   ]
 }
 
-config("vs_code_analysis") {
-  if (use_vs_code_analysis && !is_clang) {
-    # When use_vs_code_analysis is specified add the /analyze switch to enable
-    # static analysis. Specifying /analyze:WX- says that /analyze warnings
-    # should not be treated as errors.
-    cflags = [ "/analyze:WX-" ]
-
-    # Also, disable various noisy warnings that have low value.
-    cflags += [
-      "/wd6011",  # Dereferencing NULL pointer
-
-      # C6285 is ~16% of raw warnings and has low value
-      "/wd6285",  # non-zero constant || non-zero constant
-      "/wd6308",  # realloc might return null pointer
-
-      # Possible infinite loop: use of the constant
-      # EXCEPTION_CONTINUE_EXECUTION in the exception-filter
-      "/wd6312",
-
-      "/wd6322",  # Empty _except block
-      "/wd6330",  # 'char' used instead of 'unsigned char' for istype() call
-
-      # C6334 is ~80% of raw warnings and has low value
-      "/wd6334",  # sizeof applied to an expression with an operator
-      "/wd6326",  # Potential comparison of constant with constant
-      "/wd6340",  # Sign mismatch in function parameter
-      "/wd28159",  # Consider using 'GetTickCount64'
-      "/wd28196",  # The precondition is not satisfied
-      "/wd28204",  # Inconsistent SAL annotations
-      "/wd28251",  # Inconsistent SAL annotations
-      "/wd28252",  # Inconsistent SAL annotations
-      "/wd28253",  # Inconsistent SAL annotations
-      "/wd28278",  # Function appears with no prototype in scope
-      "/wd28285",  # syntax error in SAL annotation (in algorithm)
-      "/wd28301",  # Inconsistent SAL annotations
-      "/wd28182",  # Dereferencing NULL pointer
-    ]
-  }
-}
-
 # This is included by reference in the //build/config/compiler:runtime_library
 # config that is applied to all targets. It is here to separate out the logic
 # that is Windows-only. Please see that target for advice on what should go in
@@ -278,11 +232,9 @@ config("runtime_library") {
     "_SECURE_ATL",
   ]
 
-  if (!use_vs_code_analysis) {
-    # This is required for ATL to use XP-safe versions of its functions.
-    # However it is prohibited when using /analyze
-    defines += [ "_USING_V110_SDK71_" ]
-  }
+  # This is required for ATL to use XP-safe versions of its functions.
+  # TODO(thakis): We no longer support XP; try removing this.
+  defines += [ "_USING_V110_SDK71_" ]
 
   if (current_os == "winuwp") {
     # When targeting Windows Runtime, certain compiler/linker flags are
