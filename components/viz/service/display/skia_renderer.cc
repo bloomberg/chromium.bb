@@ -740,6 +740,9 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
   // TODO(michaelludwig): By the end of the Skia API update, this switch will
   // hold all quad draw types and resemble the old DoDrawSingleQuad.
   switch (quad->material) {
+    case DrawQuad::STREAM_VIDEO_CONTENT:
+      DrawStreamVideoQuad(StreamVideoDrawQuad::MaterialCast(quad), params);
+      break;
     case DrawQuad::TILED_CONTENT:
       DrawTileDrawQuad(TileDrawQuad::MaterialCast(quad), params);
       break;
@@ -844,7 +847,8 @@ bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
 
   // TODO(michaelludwig) - Once other quad types are migrated from
   // DoDrawQuadLegacy, this check will be widened
-  if (new_quad->material != DrawQuad::TILED_CONTENT)
+  if (new_quad->material != DrawQuad::STREAM_VIDEO_CONTENT &&
+      new_quad->material != DrawQuad::TILED_CONTENT)
     return true;
 
   if (batched_quad_state_.blend_mode != params.blend_mode ||
@@ -918,6 +922,23 @@ void SkiaRenderer::FlushBatchedQuads() {
   batched_quads_.clear();
   batched_draw_regions_.clear();
   batched_cdt_matrices_.clear();
+}
+
+void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
+                                       const DrawQuadParams& params) {
+  DCHECK(!MustFlushBatchedQuads(quad, params));
+  ScopedSkImageBuilder builder(this, quad->resource_id(),
+                               kUnpremul_SkAlphaType);
+  const SkImage* image = builder.sk_image();
+  if (!image)
+    return;
+
+  gfx::RectF uv_rect = gfx::ScaleRect(
+      gfx::BoundingRect(quad->uv_top_left, quad->uv_bottom_right),
+      image->width(), image->height());
+  gfx::RectF visible_uv_rect = cc::MathUtil::ScaleRectProportional(
+      uv_rect, gfx::RectF(quad->rect), params.visible_rect);
+  AddQuadToBatch(params, image, visible_uv_rect);
 }
 
 void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,
@@ -1044,7 +1065,7 @@ void SkiaRenderer::DoSingleDrawQuad(const DrawQuad* quad,
       NOTREACHED();
       break;
     case DrawQuad::STREAM_VIDEO_CONTENT:
-      DrawStreamVideoQuad(StreamVideoDrawQuad::MaterialCast(quad), &paint);
+      NOTREACHED();
       break;
     case DrawQuad::INVALID:
       DrawUnsupportedQuad(quad, &paint);
@@ -1204,26 +1225,6 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
   }
   paint->setFilterQuality(quad->nearest_neighbor ? kNone_SkFilterQuality
                                                  : kLow_SkFilterQuality);
-  current_canvas_->drawImageRect(image, sk_uv_rect, quad_rect, paint);
-}
-
-void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
-                                       SkPaint* paint) {
-  DCHECK(paint);
-  ScopedSkImageBuilder builder(this, quad->resource_id(),
-                               kUnpremul_SkAlphaType);
-  const SkImage* image = builder.sk_image();
-  if (!image)
-    return;
-  gfx::RectF uv_rect = gfx::ScaleRect(
-      gfx::BoundingRect(quad->uv_top_left, quad->uv_bottom_right),
-      image->width(), image->height());
-  gfx::RectF visible_uv_rect = cc::MathUtil::ScaleRectProportional(
-      uv_rect, gfx::RectF(quad->rect), gfx::RectF(quad->visible_rect));
-  SkRect sk_uv_rect = gfx::RectFToSkRect(visible_uv_rect);
-  SkRect quad_rect = gfx::RectToSkRect(quad->visible_rect);
-  // TODO(vikassoni): figure out how to set correct filter quality.
-  paint->setFilterQuality(kLow_SkFilterQuality);
   current_canvas_->drawImageRect(image, sk_uv_rect, quad_rect, paint);
 }
 
