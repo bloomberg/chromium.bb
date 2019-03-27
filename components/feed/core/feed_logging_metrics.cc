@@ -126,6 +126,10 @@ void RecordUndoableActionUMA(const std::string& histogram_base,
 
   // Since the |histogram_name| is dynamic, we can't use the regular macro.
   base::UmaHistogramExactLinear(histogram_name, position, kMaxSuggestionsTotal);
+
+  // Report to |histogram_base| as well, then |histogram_base| will be the sum
+  // of "Commit" and "Undo".
+  base::UmaHistogramExactLinear(histogram_base, position, kMaxSuggestionsTotal);
 }
 
 void CheckURLVisitedDone(int position, bool committed, bool visited) {
