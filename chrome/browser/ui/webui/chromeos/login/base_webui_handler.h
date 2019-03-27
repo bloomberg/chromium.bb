@@ -84,13 +84,6 @@ class BaseWebUIHandler : public content::WebUIMessageHandler {
   // via virtual Initialize() method (see below).
   void InitializeBase();
 
-  // Set the prefix used when running CallJs with a method. For example,
-  //    set_call_js_prefix("Oobe")
-  //    CallJs("lock") -> Invokes JS global named "Oobe.lock"
-  void set_call_js_prefix(const std::string& prefix) {
-    js_screen_path_prefix_ = prefix + ".";
-  }
-
   void set_async_assets_load_id(const std::string& async_assets_load_id) {
     async_assets_load_id_ = async_assets_load_id;
   }
@@ -259,11 +252,6 @@ class BaseWebUIHandler : public content::WebUIMessageHandler {
   bool page_is_ready_ = false;
 
   BaseScreen* base_screen_ = nullptr;
-
-  // Full name of the corresponding JS screen object. Can be empty, if
-  // there are no corresponding screen object or several different
-  // objects.
-  std::string js_screen_path_prefix_;
 
   // The string id used in the async asset load in JS. If it is set to a
   // non empty value, the Initialize will be deferred until the underlying load

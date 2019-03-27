@@ -13,17 +13,10 @@
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/strings/grit/ui_strings.h"
 
-namespace {
-
-const char kJsScreenPath[] = "login.ErrorMessageScreen";
-
-}  // namespace
-
 namespace chromeos {
 
 ErrorScreenHandler::ErrorScreenHandler(JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_call_js_prefix(kJsScreenPath);
   set_user_acted_method_path("login.ErrorMessageScreen.userActed");
 }
 

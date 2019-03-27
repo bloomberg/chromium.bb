@@ -46,8 +46,6 @@
 namespace chromeos {
 namespace {
 
-const char kJsScreenPath[] = "login.OAuthEnrollmentScreen";
-
 // Enrollment step names.
 const char kEnrollmentStepSignin[] = "signin";
 const char kEnrollmentStepAdJoin[] = "ad-join";
@@ -182,7 +180,6 @@ EnrollmentScreenHandler::EnrollmentScreenHandler(
       error_screen_(error_screen),
       histogram_helper_(new ErrorScreensHistogramHelper("Enrollment")),
       weak_ptr_factory_(this) {
-  set_call_js_prefix(kJsScreenPath);
   set_async_assets_load_id(GetOobeScreenName(kScreenId));
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_);

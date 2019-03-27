@@ -18,8 +18,6 @@
 
 namespace {
 
-const char kJsScreenPath[] = "login.RecommendAppsScreen";
-
 constexpr const char kUserActionSkip[] = "recommendAppsSkip";
 constexpr const char kUserActionRetry[] = "recommendAppsRetry";
 constexpr const char kUserActionInstall[] = "recommendAppsInstall";
@@ -76,7 +74,6 @@ namespace chromeos {
 RecommendAppsScreenHandler::RecommendAppsScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_call_js_prefix(kJsScreenPath);
 }
 
 RecommendAppsScreenHandler::~RecommendAppsScreenHandler() {

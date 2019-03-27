@@ -22,7 +22,6 @@ namespace chromeos {
 
 namespace {
 
-constexpr char kJsScreenPath[] = "login.ActiveDirectoryPasswordChangeScreen";
 constexpr char kUsernameKey[] = "username";
 constexpr char kErrorKey[] = "error";
 
@@ -45,7 +44,6 @@ ActiveDirectoryPasswordChangeScreenHandler::
       authpolicy_login_helper_(std::make_unique<AuthPolicyHelper>()),
       core_oobe_view_(core_oobe_view),
       weak_factory_(this) {
-  set_call_js_prefix(kJsScreenPath);
 }
 
 ActiveDirectoryPasswordChangeScreenHandler::

@@ -31,18 +31,11 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
-namespace {
-
-const char kJsScreenPath[] = "login.UserImageScreen";
-
-}  // namespace
-
 namespace chromeos {
 
 UserImageScreenHandler::UserImageScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_call_js_prefix(kJsScreenPath);
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   audio::SoundsManager* manager = audio::SoundsManager::Get();
   manager->Initialize(SOUND_OBJECT_DELETE,

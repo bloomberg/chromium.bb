@@ -17,17 +17,10 @@
 #include "components/login/localized_values_builder.h"
 #include "components/strings/grit/components_strings.h"
 
-namespace {
-
-const char kJsScreenPath[] = "login.ResetScreen";
-
-}  // namespace
-
 namespace chromeos {
 
 ResetScreenHandler::ResetScreenHandler(JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_call_js_prefix(kJsScreenPath);
   set_user_acted_method_path("login.ResetScreen.userActed");
 }
 

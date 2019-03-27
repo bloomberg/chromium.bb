@@ -20,12 +20,6 @@
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
 
-namespace {
-
-const char kJsScreenPath[] = "login.HIDDetectionScreen";
-
-}  // namespace
-
 namespace chromeos {
 
 HIDDetectionScreenHandler::HIDDetectionScreenHandler(
@@ -33,7 +27,6 @@ HIDDetectionScreenHandler::HIDDetectionScreenHandler(
     CoreOobeView* core_oobe_view)
     : BaseScreenHandler(kScreenId, js_calls_container),
       core_oobe_view_(core_oobe_view) {
-  set_call_js_prefix(kJsScreenPath);
 }
 
 HIDDetectionScreenHandler::~HIDDetectionScreenHandler() {

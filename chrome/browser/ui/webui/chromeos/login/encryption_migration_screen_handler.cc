@@ -49,8 +49,6 @@
 
 namespace {
 
-constexpr char kJsScreenPath[] = "login.EncryptionMigrationScreen";
-
 // Path to the mount point to check the available space.
 constexpr char kCheckStoragePath[] = "/home";
 
@@ -259,7 +257,6 @@ EncryptionMigrationScreenHandler::EncryptionMigrationScreenHandler(
     : BaseScreenHandler(kScreenId, js_calls_container),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       weak_ptr_factory_(this) {
-  set_call_js_prefix(kJsScreenPath);
   free_disk_space_fetcher_ = base::Bind(&base::SysInfo::AmountOfFreeDiskSpace,
                                         base::FilePath(kCheckStoragePath));
 }

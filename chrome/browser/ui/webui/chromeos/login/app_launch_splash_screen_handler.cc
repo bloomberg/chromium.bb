@@ -24,8 +24,6 @@
 
 namespace {
 
-const char kJsScreenPath[] = "login.AppLaunchSplashScreen";
-
 // Returns network name by service path.
 std::string GetNetworkName(const std::string& service_path) {
   const chromeos::NetworkState* network =
@@ -47,7 +45,6 @@ AppLaunchSplashScreenHandler::AppLaunchSplashScreenHandler(
     : BaseScreenHandler(kScreenId, js_calls_container),
       network_state_informer_(network_state_informer),
       error_screen_(error_screen) {
-  set_call_js_prefix(kJsScreenPath);
   network_state_informer_->AddObserver(this);
 }
 

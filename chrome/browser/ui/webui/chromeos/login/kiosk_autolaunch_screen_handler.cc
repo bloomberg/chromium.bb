@@ -24,18 +24,11 @@
 #include "content/public/browser/notification_service.h"
 #include "ui/base/webui/web_ui_util.h"
 
-namespace {
-
-const char kJsScreenPath[] = "login.AutolaunchScreen";
-
-}  // namespace
-
 namespace chromeos {
 
 KioskAutolaunchScreenHandler::KioskAutolaunchScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_call_js_prefix(kJsScreenPath);
   KioskAppManager::Get()->AddObserver(this);
 }
 
