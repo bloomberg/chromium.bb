@@ -1331,8 +1331,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     HDRProxy::Initialize();
   system_message_window_.reset(new media::SystemMessageWindowWin);
 #elif defined(OS_LINUX) && defined(USE_UDEV)
-  device_monitor_linux_.reset(
-      new media::DeviceMonitorLinux(io_thread_->task_runner()));
+  device_monitor_linux_ = std::make_unique<media::DeviceMonitorLinux>();
 #elif defined(OS_MACOSX)
   // On Mac, the audio task runner must belong to the main thread.
   // See audio_thread_impl.cc and https://crbug.com/158170.
