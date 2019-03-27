@@ -513,6 +513,11 @@ const base::Feature kPrerenderFallbackToPreconnect{
     "PrerenderFallbackToPreconnect", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(ENABLE_PLUGINS)
+// Show Flash deprecation warning to users who have manually enabled Flash.
+// https://crbug.com/918428
+const base::Feature kFlashDeprecationWarning{"FlashDeprecationWarning",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Prefer HTML content by hiding Flash from the list of plugins.
 // https://crbug.com/626728
 const base::Feature kPreferHtmlOverPlugins{"PreferHtmlOverPlugins",
