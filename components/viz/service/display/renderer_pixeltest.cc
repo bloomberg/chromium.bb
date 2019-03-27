@@ -3047,42 +3047,102 @@ TYPED_TEST(ExternalStencilPixelTest, RenderSurfacesIgnoreStencil) {
       cc::ExactPixelComparator(true)));
 }
 
+template <typename RendererType>
+class RendererAAPixelTest : public RendererPixelTest<RendererType> {
+ public:
+  void AntiAliasing() {
+    gfx::Rect rect(this->device_viewport_size_);
+
+    int id = 1;
+    std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+    gfx::Transform red_quad_to_target_transform;
+    red_quad_to_target_transform.Rotate(10);
+    SharedQuadState* red_shared_state = CreateTestSharedQuadState(
+        red_quad_to_target_transform, rect, pass.get(), gfx::RRectF());
+
+    auto* red = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    red->SetNew(red_shared_state, rect, rect, SK_ColorRED, false);
+
+    gfx::Transform yellow_quad_to_target_transform;
+    yellow_quad_to_target_transform.Rotate(5);
+    SharedQuadState* yellow_shared_state = CreateTestSharedQuadState(
+        yellow_quad_to_target_transform, rect, pass.get(), gfx::RRectF());
+
+    auto* yellow = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    yellow->SetNew(yellow_shared_state, rect, rect, SK_ColorYELLOW, false);
+
+    gfx::Transform blue_quad_to_target_transform;
+    SharedQuadState* blue_shared_state = CreateTestSharedQuadState(
+        blue_quad_to_target_transform, rect, pass.get(), gfx::RRectF());
+
+    auto* blue = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    blue->SetNew(blue_shared_state, rect, rect, SK_ColorBLUE, false);
+
+    RenderPassList pass_list;
+    pass_list.push_back(std::move(pass));
+
+    EXPECT_TRUE(this->RunPixelTest(
+        &pass_list, base::FilePath(FILE_PATH_LITERAL("anti_aliasing.png")),
+        cc::FuzzyPixelOffByOneComparator(true)));
+  }
+
+  void AntiAliasingPerspective() {
+    gfx::Rect rect(this->device_viewport_size_);
+
+    std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(1, rect);
+
+    gfx::Rect red_rect(0, 0, 180, 500);
+    gfx::Transform red_quad_to_target_transform(
+        1.0f, 2.4520f, 10.6206f, 19.0f, 0.0f, 0.3528f, 5.9737f, 9.5f, 0.0f,
+        -0.2250f, -0.9744f, 0.0f, 0.0f, 0.0225f, 0.0974f, 1.0f);
+    SharedQuadState* red_shared_state = CreateTestSharedQuadState(
+        red_quad_to_target_transform, red_rect, pass.get(), gfx::RRectF());
+    auto* red = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    red->SetNew(red_shared_state, red_rect, red_rect, SK_ColorRED, false);
+
+    gfx::Rect green_rect(19, 7, 180, 10);
+    SharedQuadState* green_shared_state = CreateTestSharedQuadState(
+        gfx::Transform(), green_rect, pass.get(), gfx::RRectF());
+    auto* green = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    green->SetNew(green_shared_state, green_rect, green_rect, SK_ColorGREEN,
+                  false);
+
+    SharedQuadState* blue_shared_state = CreateTestSharedQuadState(
+        gfx::Transform(), rect, pass.get(), gfx::RRectF());
+    auto* blue = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    blue->SetNew(blue_shared_state, rect, rect, SK_ColorBLUE, false);
+
+    RenderPassList pass_list;
+    pass_list.push_back(std::move(pass));
+
+    EXPECT_TRUE(this->RunPixelTest(
+        &pass_list,
+        base::FilePath(FILE_PATH_LITERAL("anti_aliasing_perspective.png")),
+        cc::FuzzyPixelOffByOneComparator(true)));
+  }
+};
+
+// TODO(crbug.com/939442): Combine these tests once they are passing on
+// SkiaRenderer.
+using GLRendererAAPixelTest = RendererAAPixelTest<GLRenderer>;
+using SkiaRendererAAPixelTest = RendererAAPixelTest<SkiaRenderer>;
+
 // Software renderer does not support anti-aliased edges.
-TYPED_TEST(GLOnlyRendererPixelTest, AntiAliasing) {
-  gfx::Rect rect(this->device_viewport_size_);
+TEST_F(GLRendererAAPixelTest, AntiAliasing) {
+  AntiAliasing();
+}
 
-  int id = 1;
-  std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+TEST_F(SkiaRendererAAPixelTest, DISABLED_AntiAliasing) {
+  AntiAliasing();
+}
 
-  gfx::Transform red_quad_to_target_transform;
-  red_quad_to_target_transform.Rotate(10);
-  SharedQuadState* red_shared_state = CreateTestSharedQuadState(
-      red_quad_to_target_transform, rect, pass.get(), gfx::RRectF());
+TEST_F(GLRendererAAPixelTest, AntiAliasingPerspective) {
+  AntiAliasingPerspective();
+}
 
-  auto* red = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  red->SetNew(red_shared_state, rect, rect, SK_ColorRED, false);
-
-  gfx::Transform yellow_quad_to_target_transform;
-  yellow_quad_to_target_transform.Rotate(5);
-  SharedQuadState* yellow_shared_state = CreateTestSharedQuadState(
-      yellow_quad_to_target_transform, rect, pass.get(), gfx::RRectF());
-
-  auto* yellow = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  yellow->SetNew(yellow_shared_state, rect, rect, SK_ColorYELLOW, false);
-
-  gfx::Transform blue_quad_to_target_transform;
-  SharedQuadState* blue_shared_state = CreateTestSharedQuadState(
-      blue_quad_to_target_transform, rect, pass.get(), gfx::RRectF());
-
-  auto* blue = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  blue->SetNew(blue_shared_state, rect, rect, SK_ColorBLUE, false);
-
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-
-  EXPECT_TRUE(this->RunPixelTest(
-      &pass_list, base::FilePath(FILE_PATH_LITERAL("anti_aliasing.png")),
-      cc::FuzzyPixelOffByOneComparator(true)));
+TEST_F(SkiaRendererAAPixelTest, DISABLED_AntiAliasingPerspective) {
+  AntiAliasingPerspective();
 }
 
 // This test tests that anti-aliasing works for axis aligned quads.
@@ -3290,41 +3350,6 @@ TYPED_TEST(GLCapableRendererPixelTest, TileDrawQuadForceAntiAliasingOff) {
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("force_anti_aliasing_off.png")),
       cc::ExactPixelComparator(false)));
-}
-
-TYPED_TEST(GLOnlyRendererPixelTest, AntiAliasingPerspective) {
-  gfx::Rect rect(this->device_viewport_size_);
-
-  std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(1, rect);
-
-  gfx::Rect red_rect(0, 0, 180, 500);
-  gfx::Transform red_quad_to_target_transform(
-      1.0f, 2.4520f, 10.6206f, 19.0f, 0.0f, 0.3528f, 5.9737f, 9.5f, 0.0f,
-      -0.2250f, -0.9744f, 0.0f, 0.0f, 0.0225f, 0.0974f, 1.0f);
-  SharedQuadState* red_shared_state = CreateTestSharedQuadState(
-      red_quad_to_target_transform, red_rect, pass.get(), gfx::RRectF());
-  auto* red = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  red->SetNew(red_shared_state, red_rect, red_rect, SK_ColorRED, false);
-
-  gfx::Rect green_rect(19, 7, 180, 10);
-  SharedQuadState* green_shared_state = CreateTestSharedQuadState(
-      gfx::Transform(), green_rect, pass.get(), gfx::RRectF());
-  auto* green = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  green->SetNew(green_shared_state, green_rect, green_rect, SK_ColorGREEN,
-                false);
-
-  SharedQuadState* blue_shared_state = CreateTestSharedQuadState(
-      gfx::Transform(), rect, pass.get(), gfx::RRectF());
-  auto* blue = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  blue->SetNew(blue_shared_state, rect, rect, SK_ColorBLUE, false);
-
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-
-  EXPECT_TRUE(this->RunPixelTest(
-      &pass_list,
-      base::FilePath(FILE_PATH_LITERAL("anti_aliasing_perspective.png")),
-      cc::FuzzyPixelOffByOneComparator(true)));
 }
 
 // Trilinear filtering is only supported in the gl renderer.
