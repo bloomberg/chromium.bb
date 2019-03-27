@@ -147,8 +147,15 @@ void SessionStorageNamespaceImplMojo::OpenArea(
   DCHECK(IsPopulated());
   DCHECK(!bindings_.empty());
   int process_id = bindings_.dispatch_context();
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanAccessDataForOrigin(
-          process_id, origin)) {
+  // TODO(943887): Replace HasSecurityState() call with something that can
+  // preserve security state after process shutdown. The security state check
+  // is a temporary solution to avoid crashes when this method is run after the
+  // process associated with |process_id| has been destroyed.
+  // It temporarily restores the old behavior of always allowing access if the
+  // process is gone.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (!policy->CanAccessDataForOrigin(process_id, origin) &&
+      policy->HasSecurityState(process_id)) {
     bindings_.ReportBadMessage("Access denied for sessionStorage request");
     return;
   }
