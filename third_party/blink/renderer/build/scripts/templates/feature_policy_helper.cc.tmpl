@@ -6,13 +6,12 @@
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_helper.h"
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
 namespace {
-
-using FeatureNameMapping = HashMap<String, mojom::FeaturePolicyFeature>;
 
 {% for feature in feature_policy_features %}
 const char k{{feature.name}}PolicyName[] = "{{feature.feature_policy_name}}";
@@ -28,8 +27,8 @@ const char k{{feature.name}}PolicyName[] = "{{feature.feature_policy_name}}";
 // origin trial feature, without using the feature themselves, can use feature
 // policy to allow use of the feature in subframes (The framed document will
 // still require a valid origin trial token to use the feature in this scenario).
-const FeatureNameMapping& DefaultFeatureNameMap() {
-  DEFINE_STATIC_LOCAL(FeatureNameMapping, default_feature_name_map, ());
+const FeatureNameMap& GetDefaultFeatureNameMap() {
+  DEFINE_STATIC_LOCAL(FeatureNameMap, default_feature_name_map, ());
   if (default_feature_name_map.IsEmpty()) {
     {% for feature in feature_policy_features %}
     {% if not feature.depends_on or feature.in_origin_trial %}
@@ -37,6 +36,11 @@ const FeatureNameMapping& DefaultFeatureNameMap() {
                                  mojom::FeaturePolicyFeature::k{{feature.name}});
     {% endif %}
     {% endfor %}
+    // WebVr manually added here. Its declaration should go to
+    // 'feature_policy_features.json5' once it is out of the origin trial.
+    ASSERT_ORIGIN_TRIAL(WebVR);
+    ASSERT_ORIGIN_TRIAL(WebXR);
+    default_feature_name_map.Set("vr", mojom::FeaturePolicyFeature::kWebVr);
     {% for runtime_feature_name, FP_features in runtime_to_feature_policy_map.items() %}
     if (RuntimeEnabledFeatures::{{runtime_feature_name}}Enabled()) {
       {% for feature in FP_features %}
