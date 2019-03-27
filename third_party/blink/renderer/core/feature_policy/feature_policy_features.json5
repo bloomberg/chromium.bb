@@ -27,9 +27,79 @@
 
   data: [
     {
+      name: "Accelerometer",
+      feature_policy_name: "accelerometer",
+      depends_on: ["Sensor"],
+    },
+    {
+      name: "AmbientLightSensor",
+      feature_policy_name: "ambient-light-sensor",
+      depends_on: ["Sensor"],
+    },
+    {
+      name: "Autoplay",
+      feature_policy_name: "autoplay",
+    },
+    {
+      name: "Camera",
+      feature_policy_name: "camera",
+    },
+    {
+      name: "DocumentDomain",
+      feature_policy_name: "document-domain",
+      depends_on: ["ExperimentalProductivityFeatures"],
+    },
+    {
+      name: "DocumentWrite",
+      feature_policy_name: "document-write",
+      depends_on: ["ExperimentalProductivityFeatures"],
+    },
+    {
+      name: "EncryptedMedia",
+      feature_policy_name: "encrypted-media",
+    },
+    {
+      name: "FontDisplay",
+      feature_policy_name: "font-display-late-swap",
+      depends_on: ["ExperimentalProductivityFeatures"],
+    },
+    {
+      name: "FormSubmission",
+      feature_policy_name: "forms",
+      depends_on: ["FeaturePolicyForSandbox"],
+    },
+    {
+      name: "Fullscreen",
+      feature_policy_name: "fullscreen",
+    },
+    {
       name: "Frobulate",
       feature_policy_name: "frobulate",
       depends_on: ["OriginTrialsSampleAPI"],
+    },
+    {
+      name: "Geolocation",
+      feature_policy_name: "geolocation",
+    },
+    {
+      name: "Gyroscope",
+      feature_policy_name: "gyroscope",
+      depends_on: ["Sensor"],
+    },
+    {
+      name: "Hid",
+      feature_policy_name: "hid",
+      depends_on: ["WebHID"],
+    },
+    {
+      name: "IdleDetection",
+      feature_policy_name: "idle-detection",
+      depends_on: ["IdleDetection"],
+    },
+    {
+      name: "LayoutAnimations",
+      feature_policy_name: "layout-animations",
+      depends_on: ["ExperimentalProductivityFeatures"],
     },
     {
       name: "LazyLoad",
@@ -37,13 +107,121 @@
       depends_on: ["ExperimentalProductivityFeatures"],
     },
     {
+      name: "LegacyImageFormats",
+      feature_policy_name: "legacy-image-formats",
+      depends_on: ["ExperimentalProductivityFeatures"],
+    },
+    {
+      name: "Magnetometer",
+      feature_policy_name: "magnetometer",
+      depends_on: ["Sensor"],
+    },
+    {
+      name: "Microphone",
+      feature_policy_name: "microphone",
+    },
+    {
+      name: "MidiFeature",
+      feature_policy_name: "midi",
+    },
+    {
+      name: "Modals",
+      feature_policy_name: "modals",
+      depends_on: ["FeaturePolicyForSandbox"],
+    },
+    {
+      name: "OrientationLock",
+      feature_policy_name: "orientation-lock",
+      depends_on: ["FeaturePolicyForSandbox"],
+    },
+    {
+      name: "OversizedImages",
+      feature_policy_name: "oversized-images",
+      depends_on: ["ExperimentalProductivityFeatures"],
+    },
+    {
+      name: "Payment",
+      feature_policy_name: "payment",
+      depends_on: ["PaymentRequest"],
+    },
+    {
+      name: "PictureInPicture",
+      feature_policy_name: "picture-in-picture",
+      depends_on: ["PictureInPictureAPI"],
+    },
+    {
+      name: "PointerLock",
+      feature_policy_name: "pointer-lock",
+      depends_on: ["FeaturePolicyForSandbox"],
+    },
+    {
+      name: "Popups",
+      feature_policy_name: "popups",
+      depends_on: ["FeaturePolicyForSandbox"],
+    },
+    {
+      name: "Presentation",
+      feature_policy_name: "presentation",
+      depends_on: ["FeaturePolicyForSandbox"],
+    },
+    {
+      name: "Script",
+      feature_policy_name: "scripts",
+      depends_on: ["FeaturePolicyForSandbox"],
+    },
+    {
+      name: "Serial",
+      feature_policy_name: "serial",
+      depends_on: ["Serial"],
+    },
+    {
+      name: "Speaker",
+      feature_policy_name: "speaker",
+    },
+    {
+      name: "SyncScript",
+      feature_policy_name: "sync-script",
+      depends_on: ["ExperimentalProductivityFeatures"],
+    },
+    {
       name: "SyncXHR",
       feature_policy_name: "sync-xhr",
     },
     {
-      name: "WebVr",
-      feature_policy_name: "vr",
-      depends_on: ["WebVR", "WebXR"],
+      name: "TopNavigation",
+      feature_policy_name: "top-navigation",
+      depends_on: ["FeaturePolicyForSandbox"],
     },
+    {
+      name: "UnoptimizedLossyImages",
+      feature_policy_name: "unoptimized-lossy-images",
+      depends_on: ["ExperimentalProductivityFeatures"],
+    },
+    {
+      name: "UnsizedMedia",
+      feature_policy_name: "unsized-media",
+      depends_on: ["ExperimentalProductivityFeatures"],
+    },
+    {
+      name: "Usb",
+      feature_policy_name: "usb",
+      depends_on: ["WebUSB"],
+    },
+    {
+      name: "VerticalScroll",
+      feature_policy_name: "vertical-scroll",
+      depends_on: ["ExperimentalProductivityFeatures"],
+    },
+    {
+      name: "WakeLock",
+      feature_policy_name: "wake-lock",
+      depends_on: ["WakeLock"],
+    },
+    // The feature is added manually in feature_policy_helper.cc.
+    // {
+    //   name: "WebVr",
+    //   feature_policy_name: "vr",
+    //   depends_on: ["WebVR", "WebXR"],
+    // },
   ],
 }
