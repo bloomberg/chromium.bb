@@ -154,7 +154,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   void set_decoder_context(std::unique_ptr<DecoderContext> decoder_context) {
     decoder_context_ = std::move(decoder_context);
   }
-  bool CheckContextLost();
+  void CheckContextLost();
 
   // Sets |active_url_| as the active GPU process URL.
   void UpdateActiveUrl();
