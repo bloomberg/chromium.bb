@@ -17,8 +17,8 @@ class LocalFrameUkmAggregatorTest : public testing::Test {
 
   void SetUp() override {
     clock_.emplace();
-    aggregator_.reset(new LocalFrameUkmAggregator(
-        ukm::UkmRecorder::GetNewSourceID(), &recorder_));
+    aggregator_ = base::MakeRefCounted<LocalFrameUkmAggregator>(
+        ukm::UkmRecorder::GetNewSourceID(), &recorder_);
   }
 
   void TearDown() override {
@@ -67,7 +67,7 @@ class LocalFrameUkmAggregatorTest : public testing::Test {
 
  private:
   base::Optional<WTF::ScopedMockClock> clock_;
-  std::unique_ptr<LocalFrameUkmAggregator> aggregator_;
+  scoped_refptr<LocalFrameUkmAggregator> aggregator_;
   ukm::TestUkmRecorder recorder_;
 };
 
