@@ -21,7 +21,6 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
-#include "components/download/content/factory/all_download_item_notifier_factory.h"
 #include "components/download/content/factory/download_service_factory.h"
 #include "components/download/public/background_service/clients.h"
 #include "components/download/public/background_service/download_service.h"
@@ -59,7 +58,6 @@ DownloadServiceFactory::DownloadServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "download::DownloadService",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(download::AllDownloadItemNotifierFactory::GetInstance());
   // Add this when this factory is a SimpleKeyedServiceFactory:
   // DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
 }

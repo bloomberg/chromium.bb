@@ -52,21 +52,18 @@ MATCHER_P(DriverEntryEqual, entry, "") {
 class DownloadDriverImplTest : public testing::Test {
  public:
   DownloadDriverImplTest()
-      : notifier_(&mock_manager_),
-        task_runner_(new base::TestSimpleTaskRunner),
-        handle_(task_runner_) {}
+      : task_runner_(new base::TestSimpleTaskRunner), handle_(task_runner_) {}
 
   ~DownloadDriverImplTest() override = default;
 
   void SetUp() override {
     EXPECT_CALL(mock_client_, IsTrackingDownload(_))
         .WillRepeatedly(Return(true));
-    driver_ = std::make_unique<DownloadDriverImpl>(&mock_manager_, &notifier_);
+    driver_ = std::make_unique<DownloadDriverImpl>(&mock_manager_);
   }
 
   // TODO(xingliu): implements test download manager for embedders to test.
   NiceMock<content::MockDownloadManager> mock_manager_;
-  AllDownloadItemNotifier notifier_;
   MockDriverClient mock_client_;
   std::unique_ptr<DownloadDriverImpl> driver_;
 

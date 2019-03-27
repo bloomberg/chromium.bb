@@ -36,7 +36,7 @@ class DownloadUIController
   // other platforms the target of the notification is a Browser object.
   //
   // Currently explicit delegates are only used for testing.
-  DownloadUIController(download::AllDownloadItemNotifier* notifier,
+  DownloadUIController(content::DownloadManager* manager,
                        std::unique_ptr<Delegate> delegate,
                        DownloadOfflineContentProvider* provider);
 
@@ -48,7 +48,8 @@ class DownloadUIController
   void OnDownloadUpdated(content::DownloadManager* manager,
                          download::DownloadItem* item) override;
 
-  download::AllDownloadItemNotifier* notifier_;
+  download::AllDownloadItemNotifier download_notifier_;
+
   std::unique_ptr<Delegate> delegate_;
   DownloadOfflineContentProvider* download_provider_;
 

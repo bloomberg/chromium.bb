@@ -193,19 +193,12 @@ class DownloadHistoryTest : public testing::Test {
       base::Callback<void(download::MockDownloadItem*)>;
 
   DownloadHistoryTest()
-      : manager_(std::make_unique<content::MockDownloadManager>()) {
-    EXPECT_CALL(manager(), AddObserver(_))
-        .WillOnce(
-            WithArg<0>(Invoke(this, &DownloadHistoryTest::SetManagerObserver)));
-    EXPECT_CALL(manager(), RemoveObserver(_));
-    notifier_.reset(new download::AllDownloadItemNotifier(manager_.get()));
-  }
+      : manager_(std::make_unique<content::MockDownloadManager>()) {}
 
  protected:
   void TearDown() override { download_history_.reset(); }
 
   content::MockDownloadManager& manager() { return *manager_.get(); }
-  download::AllDownloadItemNotifier* notifier() { return notifier_.get(); }
   download::MockDownloadItem& item(size_t index) { return *items_[index]; }
   DownloadHistory* download_history() { return download_history_.get(); }
 
@@ -223,6 +216,9 @@ class DownloadHistoryTest : public testing::Test {
                              bool return_null_item = false) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     CHECK(infos.get());
+    EXPECT_CALL(manager(), AddObserver(_)).WillOnce(WithArg<0>(Invoke(
+        this, &DownloadHistoryTest::SetManagerObserver)));
+    EXPECT_CALL(manager(), RemoveObserver(_));
     download_created_index_ = 0;
     for (size_t index = 0; index < infos->size(); ++index) {
       const history::DownloadRow& row = infos->at(index);
@@ -252,7 +248,7 @@ class DownloadHistoryTest : public testing::Test {
     history_->ExpectWillQueryDownloads(std::move(infos));
     EXPECT_CALL(manager(), GetAllDownloads(_)).WillRepeatedly(Return());
     download_history_.reset(new DownloadHistory(
-        notifier(),
+        &manager(),
         std::unique_ptr<DownloadHistory::HistoryAdapter>(history_)));
     content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
     history_->ExpectQueryDownloadsDone();
@@ -445,7 +441,6 @@ class DownloadHistoryTest : public testing::Test {
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::vector<std::unique_ptr<StrictMockDownloadItem>> items_;
   std::unique_ptr<content::MockDownloadManager> manager_;
-  std::unique_ptr<download::AllDownloadItemNotifier> notifier_;
   FakeHistoryAdapter* history_ = nullptr;
   std::unique_ptr<DownloadHistory> download_history_;
   content::DownloadManager::Observer* manager_observer_ = nullptr;
@@ -510,7 +505,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_OnHistoryQueryComplete_Pre) {
   // TestHistoryAdapter::QueryDownloads() to be called. The TestHistoryAdapter
   // stored the completion callback.
   std::unique_ptr<DownloadHistory> history(
-      new DownloadHistory(notifier(), std::move(test_history_adapter)));
+      new DownloadHistory(&manager(), std::move(test_history_adapter)));
   history->AddObserver(&observer);
   EXPECT_FALSE(observer.on_history_query_complete_called_);
   ASSERT_FALSE(query_callback.is_null());

@@ -10,7 +10,6 @@
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/download/content/factory/all_download_item_notifier_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
@@ -32,7 +31,6 @@ DownloadCoreServiceFactory::DownloadCoreServiceFactory()
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(NotificationDisplayServiceFactory::GetInstance());
   DependsOn(OfflineContentAggregatorFactory::GetInstance());
-  DependsOn(download::AllDownloadItemNotifierFactory::GetInstance());
 }
 
 DownloadCoreServiceFactory::~DownloadCoreServiceFactory() {}

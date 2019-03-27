@@ -26,7 +26,6 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
-#include "components/download/content/factory/all_download_item_notifier_factory.h"
 #include "components/download/network/android/network_status_listener_android.h"
 #include "components/download/public/common/auto_resumption_handler.h"
 #include "components/download/public/common/download_item.h"
@@ -247,10 +246,14 @@ void DownloadManagerService::Observe(
       if (!manager)
         break;
 
-      auto* notifier =
-          download::AllDownloadItemNotifierFactory::GetForBrowserContext(
-              profile);
-      notifier->AddObserver(this);
+      auto& notifier = profile->IsOffTheRecord() ? off_the_record_notifier_
+                                                 : original_notifier_;
+
+      // Update notifiers to monitor any newly created DownloadManagers.
+      if (!notifier || notifier->GetManager() != manager) {
+        notifier =
+            std::make_unique<download::AllDownloadItemNotifier>(manager, this);
+      }
     } break;
     default:
       NOTREACHED();
@@ -755,12 +758,20 @@ content::DownloadManager* DownloadManagerService::GetDownloadManager(
   if (is_off_the_record)
     profile = profile->GetOffTheRecordProfile();
 
+  auto& notifier =
+      is_off_the_record ? off_the_record_notifier_ : original_notifier_;
   content::DownloadManager* manager =
       content::BrowserContext::GetDownloadManager(profile);
-  auto* notifier =
-      download::AllDownloadItemNotifierFactory::GetForBrowserContext(profile);
-  notifier->AddObserver(this);
+  if (!manager) {
+    notifier.reset();
+    return nullptr;
+  }
 
+  // Update notifiers to monitor any newly created DownloadManagers.
+  if (!notifier || notifier->GetManager() != manager) {
+    notifier =
+        std::make_unique<download::AllDownloadItemNotifier>(manager, this);
+  }
   return manager;
 }
 

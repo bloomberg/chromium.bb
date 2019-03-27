@@ -31,8 +31,7 @@ class DownloadDriverImpl : public DownloadDriver,
   static DriverEntry CreateDriverEntry(const download::DownloadItem* item);
 
   // Create the driver.
-  DownloadDriverImpl(content::DownloadManager* manager,
-                     AllDownloadItemNotifier* notifier);
+  DownloadDriverImpl(content::DownloadManager* manager);
   ~DownloadDriverImpl() override;
 
   // DownloadDriver implementation.
@@ -72,10 +71,12 @@ class DownloadDriverImpl : public DownloadDriver,
 
   // Low level download handle.
   content::DownloadManager* download_manager_;
-  AllDownloadItemNotifier* notifier_;
 
   // The client that receives updates from low level download logic.
   DownloadDriver::Client* client_;
+
+  // Built lazily on initialize and destroyed when/if the manager is torn down.
+  std::unique_ptr<AllDownloadItemNotifier> notifier_;
 
   // Pending guid set of downloads that will be removed soon.
   std::set<std::string> guid_to_remove_;
