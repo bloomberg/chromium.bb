@@ -737,6 +737,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDevicePowerPeakShiftDayConfig,
     ash::prefs::kDevicePowerPeakShiftDayConfig,
     base::Value::Type::DICTIONARY },
+  { key::kDeviceBootOnAcEnabled,
+    ash::prefs::kDeviceBootOnAcEnabled,
+    base::Value::Type::BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS

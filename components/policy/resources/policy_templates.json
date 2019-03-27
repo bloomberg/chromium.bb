@@ -579,6 +579,7 @@
         'DevicePowerPeakShiftBatteryThreshold',
         'DevicePowerPeakShiftDayConfig',
         'DevicePowerPeakShiftEnabled',
+        'DeviceBootOnAcEnabled'
       ],
     },
     {
@@ -15233,6 +15234,32 @@
 
           Note: allowed values for <ph name="MINUTE_FIELD_NAME">minute</ph> field in <ph name="START_TIME_FIELD_NAME">start_time</ph>, <ph name="END_TIME_FIELD_NAME">end_time</ph> and <ph name="CHARGE_START_TIME_FIELD_NAME">charge_start_time</ph> are 0, 15, 30, 45.'''
     },
+    {
+      'name': 'DeviceBootOnAcEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:75-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False
+      },
+      'example_value': False,
+      'id': 541,
+      'caption': '''Enable boot on AC (alternating current)''',
+      'tags': [],
+      'desc': '''Enable the boot on AC power management policy.
+
+          Boot on AC provides an opportunity for system to automatically boot up from OFF/Hibernate state when line power is inserted.
+
+          If this policy is set to true then boot on AC will always be enabled if supported on the device.
+
+          If this policy is set to false, boot on AC will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, boot on AC is disabled and cannot be enabled by the user.'''
+    }
   ],
 
   'messages': {
@@ -15398,5 +15425,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  540
+  'highest_id_currently_used':  541
 }

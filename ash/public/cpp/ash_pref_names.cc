@@ -360,6 +360,9 @@ const char kDevicePowerPeakShiftBatteryThreshold[] =
 // For details see "DevicePowerPeakShiftDayConfig" in policy_templates.json.
 const char kDevicePowerPeakShiftDayConfig[] = "ash.power.peak_shift_day_config";
 
+// A boolean pref that indicates whether boot on AC is enabled.
+const char kDeviceBootOnAcEnabled[] = "ash.power.boot_on_ac_enabled";
+
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.
 
