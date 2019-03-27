@@ -81,9 +81,7 @@ class MediaPipelineImpl {
   void OnBufferingNotification(bool is_buffering);
 
   void UpdateMediaTime();
-
   void OnError(::media::PipelineStatus error);
-
   void ResetBitrateState();
 
   base::ThreadChecker thread_checker_;
