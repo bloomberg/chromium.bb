@@ -38,7 +38,7 @@ _TEST_APK_LIBS = [
   (0x0160e000, 0x01731960, 0x00123960, 'libblink_common.cr.so'),
   (0x01732000, 0x0174ce54, 0x0001ae54, 'libblink_controller.cr.so'),
   (0x0174d000, 0x0318c528, 0x01a3f528, 'libblink_core.cr.so'),
-  (0x0318d000, 0x03191700, 0x00004700, 'libblink_core_mojo_bindings_shared.cr.so'),
+  (0x0318d000, 0x03191700, 0x00004700, 'libblink_mojom_broadcastchannel_bindings_shared.cr.so'),
   (0x03192000, 0x03cd7918, 0x00b45918, 'libblink_modules.cr.so'),
   (0x03cd8000, 0x03d137d0, 0x0003b7d0, 'libblink_mojo_bindings_shared.cr.so'),
   (0x03d14000, 0x03d2670c, 0x0001270c, 'libblink_offscreen_canvas_mojo_bindings_shared.cr.so'),
