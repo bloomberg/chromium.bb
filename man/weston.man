@@ -358,6 +358,7 @@ weston
 .
 .\" ***************************************************************
 .SH "SEE ALSO"
+.BR weston-bindings (7),
 .BR weston-debug (1),
 .BR weston-drm (7),
 .BR weston-rdp (7),
