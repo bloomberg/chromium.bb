@@ -15,7 +15,9 @@
       :host {
         border-top: var(--cr-separator-line);
         display: block;
-        padding: 8px var(--cr-section-padding);
+        /* Unequal padding on left/right side as the paper-icon-button-light's
+         * width is greater than the delete icon's width. */
+        padding: 8px 8px 8px var(--cr-section-padding);
       }
 
       #activity-item-main-row {
@@ -88,7 +90,7 @@
         <span id="activity-key" title="[[data.key]]">[[data.key]]</span>
         <span id="activity-count">[[data.count]]</span>
       </div>
-      <cr-expand-button expanded="{{isExpanded_}}"
+      <cr-expand-button expanded="{{data.expanded}}"
           hidden$="[[!isExpandable_]]">
       </cr-expand-button>
       <div class="separator" hidden$="[[!isExpandable_]]"></div>
@@ -98,11 +100,11 @@
         </button>
       </paper-icon-button-light>
     </div>
-    <iron-collapse opened="[[isExpanded_]]">
+    <iron-collapse opened="[[data.expanded]]">
       <div id="page-url-list" hidden$="[[!isExpandable_]]">
         <template is="dom-repeat" items="[[getPageUrls_(data)]]">
           <div class="page-url">
-            <a class="page-url-link" href="[[item.page]]"
+            <a class="page-url-link" href="[[item.page]]" target="_blank"
                 title="[[item.page]]">[[item.page]]</a>
             <span class="page-url-count"
                 hidden$="[[!shouldShowPageUrlCount_(data)]]">

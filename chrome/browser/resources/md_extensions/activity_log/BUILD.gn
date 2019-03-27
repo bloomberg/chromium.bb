@@ -24,6 +24,7 @@ js_library("activity_log_history_item") {
 js_library("activity_log_history") {
   deps = [
     ":activity_log_history_item",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
     "//ui/webui/resources/js:cr",
   ]

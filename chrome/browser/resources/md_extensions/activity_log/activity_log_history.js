@@ -138,7 +138,8 @@ cr.define('extensions', function() {
             key,
             count,
             activityType,
-            countsByUrl: pageUrl ? new Map([[pageUrl, count]]) : new Map()
+            countsByUrl: pageUrl ? new Map([[pageUrl, count]]) : new Map(),
+            expanded: false,
           };
           groupedActivities.set(key, activityGroup);
         } else {
@@ -269,6 +270,33 @@ cr.define('extensions', function() {
       this.delegate.deleteActivitiesFromExtension(this.extensionId).then(() => {
         this.processActivities_([]);
       });
+    },
+
+    /** @private */
+    onMoreActionsClick_: function() {
+      this.$$('cr-action-menu').showAt(assert(this.$$('cr-icon-button')));
+    },
+
+    /**
+     * @private
+     * @param {boolean} expanded
+     */
+    expandItems_: function(expanded) {
+      this.activityData_.filter(item => item.countsByUrl.size > 0)
+          .forEach((item, index) => {
+            this.set(`activityData_.${index}.expanded`, expanded);
+          });
+      this.$$('cr-action-menu').close();
+    },
+
+    /** @private */
+    onExpandAllClick_: function() {
+      this.expandItems_(true);
+    },
+
+    /** @private */
+    onCollapseAllClick_: function() {
+      this.expandItems_(false);
     },
 
     /**

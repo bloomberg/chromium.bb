@@ -11,7 +11,8 @@ cr.define('extensions', function() {
    *   key: string,
    *   count: number,
    *   activityType: !chrome.activityLogPrivate.ExtensionActivityFilter,
-   *   countsByUrl: !Map<string, number>
+   *   countsByUrl: !Map<string, number>,
+   *   expanded: boolean
    * }}
    */
   let ActivityGroup;
@@ -41,12 +42,6 @@ cr.define('extensions', function() {
       isExpandable_: {
         type: Boolean,
         computed: 'computeIsExpandable_(data.countsByUrl)',
-      },
-
-      /** @private */
-      isExpanded_: {
-        type: Boolean,
-        value: false,
       },
     },
 
@@ -87,7 +82,7 @@ cr.define('extensions', function() {
     /** @private */
     onExpandTap_: function() {
       if (this.isExpandable_) {
-        this.isExpanded_ = !this.isExpanded_;
+        this.set('data.expanded', !this.data.expanded);
       }
     },
 
