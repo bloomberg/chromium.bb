@@ -99,7 +99,6 @@ void XRCompositorCommon::SubmitFrameWithTextureHandle(
     int16_t frame_index,
     mojo::ScopedHandle texture_handle) {
   TRACE_EVENT1("xr", "SubmitFrameWithTextureHandle", "frameIndex", frame_index);
-
   webxr_has_pose_ = false;
   // Tell the browser that WebXR has submitted a frame.
   if (on_webxr_submitted_)
@@ -351,7 +350,8 @@ void XRCompositorCommon::GetControllerDataAndSendFrameData(
 
   // We have posted a message to allow other calls to get through, and now state
   // may have changed.  WebXR may not be presenting any more, or may be hidden.
-  std::move(callback).Run(is_presenting_ && webxr_visible_
+  std::move(callback).Run(is_presenting_ &&
+                                  (webxr_visible_ || on_webxr_submitted_)
                               ? std::move(frame_data)
                               : mojom::XRFrameData::New());
 }

@@ -293,7 +293,9 @@ void VRBrowserRendererThreadWin::OnPose(device::mojom::XRFrameDataPtr data) {
     // We shouldn't be showing UI.
     overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
                                            draw_state_.ShouldDrawWebXR());
-    graphics_->ResetMemoryBuffer();
+
+    if (graphics_)
+      graphics_->ResetMemoryBuffer();
     return;
   }
 
