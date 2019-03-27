@@ -31,10 +31,4 @@ NGInlineChildLayoutContext::BoxStatesIfValidForItemIndex(
   return nullptr;
 }
 
-void NGInlineChildLayoutContext::SetItemIndex(const Vector<NGInlineItem>& items,
-                                              unsigned item_index) {
-  items_ = &items;
-  item_index_ = item_index;
-}
-
 }  // namespace blink
