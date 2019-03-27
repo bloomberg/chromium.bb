@@ -119,30 +119,6 @@ bool RevokeAllSecondaryTokens(
   return token_revoked;
 }
 
-// Returns true if current array of existing accounts in cookie is different
-// from the desired one. If this returns false, the multilogin call would be a
-// no-op.
-bool AccountsNeedUpdate(
-    const signin::MultiloginParameters& parameters,
-    const std::vector<gaia::ListedAccount>& existing_accounts) {
-  if (parameters.mode ==
-          gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER &&
-      !existing_accounts.empty() && !parameters.accounts_to_send.empty() &&
-      existing_accounts[0].id != parameters.accounts_to_send[0]) {
-    // In UPDATE mode update is needed if first accounts don't match.
-    return true;
-  }
-  // Maybe some accounts in cookies are not valid and need refreshing.
-  std::set<std::string> accounts_to_send_set(
-      parameters.accounts_to_send.begin(), parameters.accounts_to_send.end());
-  std::set<std::string> existing_accounts_set;
-  for (const gaia::ListedAccount& account : existing_accounts) {
-    if (account.valid)
-      existing_accounts_set.insert(account.id);
-  }
-  return (existing_accounts_set != accounts_to_send_set);
-}
-
 // Pick the account will become first after this reconcile is finished.
 std::string PickFirstGaiaAccount(
     const signin::MultiloginParameters& parameters,
@@ -154,6 +130,20 @@ std::string PickFirstGaiaAccount(
   }
   return parameters.accounts_to_send.empty() ? ""
                                              : parameters.accounts_to_send[0];
+}
+
+// Returns true if gaia_accounts contains an invalid account that is unknown to
+// the identity manager.
+bool HasUnknownInvalidAccountInCookie(
+    identity::IdentityManager* identity_manager,
+    const std::vector<gaia::ListedAccount>& gaia_accounts) {
+  for (const gaia::ListedAccount& account : gaia_accounts) {
+    if (!account.valid &&
+        !identity_manager->HasAccountWithRefreshToken(account.gaia_id)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -498,7 +488,7 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
           primary_has_error);
 
   DCHECK(is_reconcile_started_);
-  if (AccountsNeedUpdate(parameters_for_multilogin, gaia_accounts)) {
+  if (CookieNeedsUpdate(parameters_for_multilogin, gaia_accounts)) {
     if (parameters_for_multilogin.mode ==
             gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER &&
         parameters_for_multilogin.accounts_to_send.empty()) {
@@ -532,7 +522,7 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
     // is consistent). If it is not the case, second reconcile is expected to be
     // triggered after changes are made. For that one the state is supposed to
     // be already consistent.
-    DCHECK(!AccountsNeedUpdate(parameters_for_multilogin, gaia_accounts));
+    DCHECK(!CookieNeedsUpdate(parameters_for_multilogin, gaia_accounts));
     std::string first_gaia_account_after_reconcile =
         PickFirstGaiaAccount(parameters_for_multilogin, gaia_accounts);
     delegate_->OnReconcileFinished(first_gaia_account_after_reconcile,
@@ -684,6 +674,8 @@ void AccountReconcilor::FinishReconcile(
     std::vector<gaia::ListedAccount>&& gaia_accounts) {
   VLOG(1) << "AccountReconcilor::FinishReconcile";
   DCHECK(add_to_cookie_.empty());
+  DCHECK(delegate_->IsUnknownInvalidAccountInCookieAllowed())
+      << "Only supported in UPDATE mode";
 
   size_t number_gaia_accounts = gaia_accounts.size();
   // If there are any accounts in the gaia cookie but not in chrome, then
@@ -969,4 +961,37 @@ bool AccountReconcilor::IsMultiloginEndpointEnabled() const {
     return true;  // Mice is only implemented with multilogin.
 #endif
   return base::FeatureList::IsEnabled(kUseMultiloginEndpoint);
+}
+
+bool AccountReconcilor::CookieNeedsUpdate(
+    const signin::MultiloginParameters& parameters,
+    const std::vector<gaia::ListedAccount>& existing_accounts) {
+  bool should_remove_unknown_account =
+      !delegate_->IsUnknownInvalidAccountInCookieAllowed() &&
+      HasUnknownInvalidAccountInCookie(identity_manager_, existing_accounts);
+  if (should_remove_unknown_account) {
+    // Removing unknown accounts in the cookie is only supported for UPDATE
+    // mode.
+    DCHECK_EQ(parameters.mode,
+              gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER);
+    return true;
+  }
+
+  if (parameters.mode ==
+          gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER &&
+      !existing_accounts.empty() && !parameters.accounts_to_send.empty() &&
+      existing_accounts[0].id != parameters.accounts_to_send[0]) {
+    // In UPDATE mode update is needed if first accounts don't match.
+    return true;
+  }
+
+  // Maybe some accounts in cookies are not valid and need refreshing.
+  std::set<std::string> accounts_to_send_set(
+      parameters.accounts_to_send.begin(), parameters.accounts_to_send.end());
+  std::set<std::string> existing_accounts_set;
+  for (const gaia::ListedAccount& account : existing_accounts) {
+    if (account.valid)
+      existing_accounts_set.insert(account.id);
+  }
+  return (existing_accounts_set != accounts_to_send_set);
 }

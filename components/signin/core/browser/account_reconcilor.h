@@ -142,6 +142,7 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestTable, TableRowTest);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestDiceMultilogin, TableRowTest);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestMirrorMultilogin, TableRowTest);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestMiceMultilogin, TableRowTest);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
                            DiceTokenServiceRegistration);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
@@ -305,6 +306,13 @@ class AccountReconcilor : public KeyedService,
 
   // Returns true is multilogin endpoint can be enabled.
   bool IsMultiloginEndpointEnabled() const;
+
+  // Returns true if current array of existing accounts in cookie is different
+  // from the desired one. If this returns false, the multilogin call would be a
+  // no-op.
+  bool CookieNeedsUpdate(
+      const signin::MultiloginParameters& parameters,
+      const std::vector<gaia::ListedAccount>& existing_accounts);
 
   std::unique_ptr<signin::AccountReconcilorDelegate> delegate_;
 
