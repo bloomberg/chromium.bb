@@ -36,9 +36,7 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     model->StartFlow(std::move(transport_availability), base::nullopt, nullptr);
 
     // The dialog should immediately close as soon as it is displayed.
-    if (name == "closed") {
-      model->SetCurrentStep(AuthenticatorRequestDialogModel::Step::kClosed);
-    } else if (name == "transports") {
+    if (name == "transports") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kTransportSelection);
     } else if (name == "activate_usb") {
@@ -100,10 +98,6 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
 //   --gtest_filter=BrowserUiTest.Invoke --test-launcher-interactive \
 //   --ui=AuthenticatorDialogTest.InvokeUi_default
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_default) {
-  ShowAndVerifyUi();
-}
-
-IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_closed) {
   ShowAndVerifyUi();
 }
 

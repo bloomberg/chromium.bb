@@ -57,6 +57,7 @@ AuthenticatorRequestDialogView::AuthenticatorRequestDialogView(
     : content::WebContentsObserver(web_contents),
       model_(std::move(model)),
       sheet_(nullptr) {
+  DCHECK(!model_->should_dialog_be_closed());
   model_->AddObserver(this);
 
   // Currently, all sheets have a label on top and controls at the bottom.
@@ -229,13 +230,12 @@ void AuthenticatorRequestDialogView::OnModelDestroyed() {
 }
 
 void AuthenticatorRequestDialogView::OnStepTransition() {
-  ReplaceCurrentSheetWith(CreateSheetViewForCurrentStepOf(model_.get()));
-
   if (model_->should_dialog_be_closed()) {
-    if (!GetWidget())
-      return;
-    GetWidget()->Close();
+    if (GetWidget())
+      GetWidget()->Close();
+    return;
   }
+  ReplaceCurrentSheetWith(CreateSheetViewForCurrentStepOf(model_.get()));
 }
 
 void AuthenticatorRequestDialogView::OnSheetModelChanged() {
