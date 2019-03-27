@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/win/scoped_safearray.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/ax_platform_node_textrangeprovider_win.h"
@@ -49,7 +50,78 @@ HRESULT AXPlatformNodeTextProviderWin::Create(ui::AXPlatformNodeWin* owner,
 STDMETHODIMP AXPlatformNodeTextProviderWin::GetSelection(
     SAFEARRAY** selection) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXT_GETSELECTION);
-  return E_NOTIMPL;
+  UIA_VALIDATE_TEXTPROVIDER_CALL();
+
+  *selection = nullptr;
+
+  AXPlatformNodeDelegate* delegate = owner()->GetDelegate();
+
+  AXPlatformNode* anchor_object =
+      delegate->GetFromNodeID(delegate->GetTreeData().sel_anchor_object_id);
+  AXPlatformNode* focus_object =
+      delegate->GetFromNodeID(delegate->GetTreeData().sel_focus_object_id);
+
+  // If there's no selected object (or the selected object is not in the
+  // subtree), return success and don't fill the SAFEARRAY
+  //
+  // Note that if a selection spans multiple elements, this will report
+  // that no selection took place. This is expected for this API, rather
+  // than returning the subset of the selection within this node, because
+  // subsequently expanding the ITextRange wouldn't  expand to the full
+  // selection.
+  if (!anchor_object || !focus_object || (anchor_object != focus_object) ||
+      (!anchor_object->IsDescendantOf(owner())))
+    return S_OK;
+
+  // sel_anchor_offset corresponds to the selection start index
+  // and sel_focus_offset is where the selection ends.
+  // If they are equal, that indicates a caret on editable text,
+  // which should return a degenerate (empty) text range.
+  auto start_offset = delegate->GetTreeData().sel_anchor_offset;
+  auto end_offset = delegate->GetTreeData().sel_focus_offset;
+
+  // Reverse start and end if the selection goes backwards
+  if (start_offset > end_offset)
+    std::swap(start_offset, end_offset);
+
+  AXNodePosition::AXPositionInstance start =
+      anchor_object->GetDelegate()->CreateTextPositionAt(start_offset);
+  AXNodePosition::AXPositionInstance end =
+      anchor_object->GetDelegate()->CreateTextPositionAt(end_offset);
+
+  DCHECK(!start->IsNullPosition());
+  DCHECK(!end->IsNullPosition());
+
+  CComPtr<ITextRangeProvider> text_range_provider;
+  HRESULT hr = AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+      owner_, std::move(start), std::move(end), &text_range_provider);
+
+  DCHECK(SUCCEEDED(hr));
+  if (FAILED(hr))
+    return E_FAIL;
+
+  // Since we don't support disjoint text ranges, the SAFEARRAY returned
+  // will always have one element
+  base::win::ScopedSafearray selections_to_return(
+      SafeArrayCreateVector(VT_UNKNOWN /* element type */, 0 /* lower bound */,
+                            1 /* number of elements */));
+
+  if (!selections_to_return.Get())
+    return E_OUTOFMEMORY;
+
+  long index = 0;
+  hr = SafeArrayPutElement(selections_to_return.Get(), &index,
+                           text_range_provider);
+  DCHECK(SUCCEEDED(hr));
+
+  // Since DCHECK only happens in debug builds, return immediately to ensure
+  // that we're not leaking the SAFEARRAY on release builds
+  if (FAILED(hr))
+    return E_FAIL;
+
+  *selection = selections_to_return.Release();
+
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextProviderWin::GetVisibleRanges(

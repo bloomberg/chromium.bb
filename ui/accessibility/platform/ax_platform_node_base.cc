@@ -130,6 +130,20 @@ AXPlatformNodeDelegate* AXPlatformNodeBase::GetDelegate() const {
   return delegate_;
 }
 
+bool AXPlatformNodeBase::IsDescendantOf(AXPlatformNode* ancestor) const {
+  if (!ancestor)
+    return false;
+
+  if (this == ancestor)
+    return true;
+
+  AXPlatformNodeBase* parent = FromNativeViewAccessible(GetParent());
+  if (!parent)
+    return false;
+
+  return parent->IsDescendantOf(ancestor);
+}
+
 // Helpers.
 
 AXPlatformNodeBase* AXPlatformNodeBase::GetPreviousSibling() {
@@ -593,20 +607,6 @@ bool AXPlatformNodeBase::HasCaret() {
     return false;
 
   return focus_object->IsDescendantOf(this);
-}
-
-bool AXPlatformNodeBase::IsDescendantOf(AXPlatformNodeBase* ancestor) {
-  if (!ancestor)
-    return false;
-
-  if (this == ancestor)
-    return true;
-
-  AXPlatformNodeBase* parent = FromNativeViewAccessible(GetParent());
-  if (!parent)
-    return false;
-
-  return parent->IsDescendantOf(ancestor);
 }
 
 bool AXPlatformNodeBase::IsLeaf() {

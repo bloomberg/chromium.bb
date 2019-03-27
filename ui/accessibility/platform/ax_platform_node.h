@@ -102,6 +102,9 @@ class AX_EXPORT AXPlatformNode {
   // Return this object's delegate.
   virtual AXPlatformNodeDelegate* GetDelegate() const = 0;
 
+  // Return true if this object is equal to or a descendant of |ancestor|.
+  virtual bool IsDescendantOf(AXPlatformNode* ancestor) const = 0;
+
   // Return the unique ID
   int32_t GetUniqueId() const;
 
