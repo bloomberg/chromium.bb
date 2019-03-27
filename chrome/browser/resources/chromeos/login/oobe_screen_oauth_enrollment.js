@@ -457,8 +457,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     setAdJoinConfiguration: function(options) {
       this.offlineAdUi_.disabled = false;
-      this.offlineAdUi_.unlockPasswordStep = false;
       this.offlineAdUi_.setJoinConfigurationOptions(options);
+      this.offlineAdUi_.unlockPasswordStep = false;
     },
 
     /**
