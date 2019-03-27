@@ -56,6 +56,7 @@ class LevelTest
                                   ::libaom_test::Encoder *encoder) {
     if (video->frame() == 0) {
       encoder->Control(AOME_SET_CPUUSED, cpu_used_);
+      encoder->Control(AV1E_SET_TARGET_SEQ_LEVEL_IDX, target_level_);
       if (encoding_mode_ != ::libaom_test::kRealTime) {
         encoder->Control(AOME_SET_ENABLEAUTOALTREF, 1);
         encoder->Control(AOME_SET_ARNR_MAXFRAMES, 7);
@@ -90,6 +91,15 @@ TEST_P(LevelTest, TestTargetLevelApi) {
     }
   }
   EXPECT_EQ(AOM_CODEC_OK, aom_codec_destroy(&enc));
+}
+
+TEST_P(LevelTest, TestTargetLevel19) {
+  std::unique_ptr<libaom_test::VideoSource> video;
+  video.reset(new libaom_test::Y4mVideoSource("park_joy_90p_8_420.y4m", 0, 10));
+  ASSERT_TRUE(video.get() != NULL);
+  // Level index 19 corresponding to level 6.3.
+  target_level_ = 19;
+  ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
 }
 
 AV1_INSTANTIATE_TEST_CASE(LevelTest,
