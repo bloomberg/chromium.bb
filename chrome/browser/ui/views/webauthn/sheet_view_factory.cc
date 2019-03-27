@@ -70,6 +70,16 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
           std::make_unique<AuthenticatorAlreadyRegisteredErrorModel>(
               dialog_model));
       break;
+    case Step::kMissingResidentKeys:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          AuthenticatorGenericErrorSheetModel::ForMissingResidentKeysSupport(
+              dialog_model));
+      break;
+    case Step::kMissingUserVerification:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          AuthenticatorGenericErrorSheetModel::
+              ForMissingUserVerificationSupport(dialog_model));
+      break;
     case Step::kErrorInternalUnrecognized:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           std::make_unique<AuthenticatorInternalUnrecognizedErrorSheetModel>(

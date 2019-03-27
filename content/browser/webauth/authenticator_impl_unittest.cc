@@ -2602,6 +2602,8 @@ class PINTestAuthenticatorContentBrowserClient : public ContentBrowserClient {
   base::Optional<InterestingFailureReason> failure_reason;
 };
 
+static constexpr char kTestPIN[] = "1234";
+
 class PINAuthenticatorImplTest : public UVAuthenticatorImplTest {
  public:
   PINAuthenticatorImplTest() = default;
@@ -2625,6 +2627,43 @@ class PINAuthenticatorImplTest : public UVAuthenticatorImplTest {
  protected:
   PINTestAuthenticatorContentBrowserClient test_client_;
 
+  // An enumerate of outcomes for PIN tests.
+  enum {
+    kFailure,
+    kNoPIN,
+    kSetPIN,
+    kUsePIN,
+  };
+
+  void ConfigureVirtualDevice(int support_level) {
+    device::VirtualCtap2Device::Config config;
+    switch (support_level) {
+      case 0:
+        // No support.
+        config.pin_support = false;
+        break;
+
+      case 1:
+        // PIN supported, but no PIN set.
+        config.pin_support = true;
+        virtual_device_.mutable_state()->pin = "";
+        virtual_device_.mutable_state()->retries = 0;
+        break;
+
+      case 2:
+        // PIN set.
+        config.pin_support = true;
+        virtual_device_.mutable_state()->pin = kTestPIN;
+        virtual_device_.mutable_state()->retries = 8;
+        break;
+
+      default:
+        NOTREACHED();
+    }
+
+    virtual_device_.SetCtap2Config(config);
+  }
+
  private:
   ContentBrowserClient* old_client_ = nullptr;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -2632,56 +2671,89 @@ class PINAuthenticatorImplTest : public UVAuthenticatorImplTest {
   DISALLOW_COPY_AND_ASSIGN(PINAuthenticatorImplTest);
 };
 
-static constexpr char kTestPIN[] = "1234";
+static constexpr blink::mojom::UserVerificationRequirement kUVLevel[3] = {
+    blink::mojom::UserVerificationRequirement::DISCOURAGED,
+    blink::mojom::UserVerificationRequirement::PREFERRED,
+    blink::mojom::UserVerificationRequirement::REQUIRED,
+};
 
-TEST_F(PINAuthenticatorImplTest, MakeCredentialSet) {
+static const char* kUVDescription[3] = {"discouraged", "preferred", "required"};
+
+static const char* kPINSupportDescription[3] = {"no PIN support", "PIN not set",
+                                                "PIN set"};
+
+TEST_F(PINAuthenticatorImplTest, MakeCredential) {
   TestServiceManagerContext smc;
-  test_client_.expected = {{base::nullopt, kTestPIN}};
+  // clang-format off
+  const int kExpected[3][3] = {
+    //                   discouraged | preferred | required
+    /* No support */  {    kNoPIN,      kNoPIN,     kFailure },
+    /* PIN not set */ {    kNoPIN,      kNoPIN,     kSetPIN  },
+    /* PIN set */     {    kUsePIN,     kUsePIN,    kUsePIN  },
+    //                        ^
+    //                        |
+    //            VirtualCtap2Device cannot fall back to U2F.
+  };
+  // clang-format on
 
-  AuthenticatorPtr authenticator = ConnectToAuthenticator();
-  TestMakeCredentialCallback callback_receiver;
-  authenticator->MakeCredential(make_credential_options(),
-                                callback_receiver.callback());
-  callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
-  EXPECT_EQ(kTestPIN, virtual_device_.mutable_state()->pin);
-  EXPECT_TRUE(HasUV(callback_receiver));
-}
+  for (int support_level = 0; support_level <= 2; support_level++) {
+    SCOPED_TRACE(kPINSupportDescription[support_level]);
+    ConfigureVirtualDevice(support_level);
 
-TEST_F(PINAuthenticatorImplTest, MakeCredentialNoPIN) {
-  TestServiceManagerContext smc;
+    for (int uv_level = 0; uv_level <= 2; uv_level++) {
+      SCOPED_TRACE(kUVDescription[uv_level]);
 
-  for (const auto uv : {blink::mojom::UserVerificationRequirement::DISCOURAGED,
-                        blink::mojom::UserVerificationRequirement::PREFERRED}) {
-    // If no PIN is configured, then even "preferring" does not trigger setting
-    // a PIN.
-    test_client_.expected.clear();
+      switch (kExpected[support_level][uv_level]) {
+        case kNoPIN:
+        case kFailure:
+          // There shouldn't be any PIN prompts.
+          test_client_.expected.clear();
+          break;
 
-    AuthenticatorPtr authenticator = ConnectToAuthenticator();
-    TestMakeCredentialCallback callback_receiver;
-    authenticator->MakeCredential(make_credential_options(uv),
-                                  callback_receiver.callback());
-    callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
-    EXPECT_EQ("", virtual_device_.mutable_state()->pin);
-    EXPECT_FALSE(HasUV(callback_receiver));
+        case kSetPIN:
+          // A single PIN prompt to set a PIN is expected.
+          test_client_.expected = {{base::nullopt, kTestPIN}};
+          break;
+
+        case kUsePIN:
+          // A single PIN prompt to get the PIN is expected.
+          test_client_.expected = {{8, kTestPIN}};
+          break;
+
+        default:
+          NOTREACHED();
+      }
+
+      AuthenticatorPtr authenticator = ConnectToAuthenticator();
+      TestMakeCredentialCallback callback_receiver;
+      authenticator->MakeCredential(make_credential_options(kUVLevel[uv_level]),
+                                    callback_receiver.callback());
+      callback_receiver.WaitForCallback();
+
+      switch (kExpected[support_level][uv_level]) {
+        case kFailure:
+          EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+                    callback_receiver.status());
+          break;
+
+        case kNoPIN:
+          EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+          EXPECT_EQ("", virtual_device_.mutable_state()->pin);
+          EXPECT_FALSE(HasUV(callback_receiver));
+          break;
+
+        case kSetPIN:
+        case kUsePIN:
+          EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+          EXPECT_EQ(kTestPIN, virtual_device_.mutable_state()->pin);
+          EXPECT_TRUE(HasUV(callback_receiver));
+          break;
+
+        default:
+          NOTREACHED();
+      }
+    }
   }
-}
-
-TEST_F(PINAuthenticatorImplTest, MakeCredentialUse) {
-  TestServiceManagerContext smc;
-  virtual_device_.mutable_state()->pin = kTestPIN;
-  virtual_device_.mutable_state()->retries = 8;
-
-  test_client_.expected = {{8, "wrong"}, {7, kTestPIN}};
-  AuthenticatorPtr authenticator = ConnectToAuthenticator();
-  TestMakeCredentialCallback callback_receiver;
-  authenticator->MakeCredential(make_credential_options(),
-                                callback_receiver.callback());
-  callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
-  EXPECT_EQ(8, virtual_device_.mutable_state()->retries);
-  EXPECT_TRUE(HasUV(callback_receiver));
 }
 
 TEST_F(PINAuthenticatorImplTest, MakeCredentialSoftLock) {
@@ -2723,43 +2795,69 @@ TEST_F(PINAuthenticatorImplTest, MakeCredentialHardLock) {
 
 TEST_F(PINAuthenticatorImplTest, GetAssertion) {
   TestServiceManagerContext smc;
-  virtual_device_.mutable_state()->pin = kTestPIN;
-  virtual_device_.mutable_state()->retries = 8;
+  // clang-format off
+  const int kExpected[3][3] = {
+    //                   discouraged | preferred | required
+    /* No support */  {    kNoPIN,      kNoPIN,     kFailure },
+    /* PIN not set */ {    kNoPIN,      kNoPIN,     kFailure  },
+    /* PIN set */     {    kNoPIN,      kUsePIN,    kUsePIN  },
+  };
+  // clang-format on
 
-  PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
+  PublicKeyCredentialRequestOptionsPtr dummy_options = get_credential_options();
   ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
-      options->allow_credentials[0]->id, kTestRelyingPartyId));
+      dummy_options->allow_credentials[0]->id, kTestRelyingPartyId));
 
-  test_client_.expected = {{8, "wrong"}, {7, kTestPIN}};
-  AuthenticatorPtr authenticator = ConnectToAuthenticator();
-  TestGetAssertionCallback callback_receiver;
-  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
-  callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
-  EXPECT_EQ(8, virtual_device_.mutable_state()->retries);
-  EXPECT_TRUE(HasUV(callback_receiver));
-}
+  for (int support_level = 0; support_level <= 2; support_level++) {
+    SCOPED_TRACE(kPINSupportDescription[support_level]);
+    ConfigureVirtualDevice(support_level);
 
-TEST_F(PINAuthenticatorImplTest, GetAssertionNoPIN) {
-  TestServiceManagerContext smc;
-  ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
-      get_credential_options()->allow_credentials[0]->id, kTestRelyingPartyId));
+    for (int uv_level = 0; uv_level <= 2; uv_level++) {
+      SCOPED_TRACE(kUVDescription[uv_level]);
 
-  for (const auto uv : {blink::mojom::UserVerificationRequirement::DISCOURAGED,
-                        blink::mojom::UserVerificationRequirement::PREFERRED}) {
-    SCOPED_TRACE(UVToString(uv));
+      switch (kExpected[support_level][uv_level]) {
+        case kNoPIN:
+        case kFailure:
+          // No PIN prompts are expected.
+          test_client_.expected.clear();
+          break;
 
-    // Requests should succeed but not return UV and no PIN prompts are
-    // expected.
-    test_client_.expected.clear();
-    AuthenticatorPtr authenticator = ConnectToAuthenticator();
-    TestGetAssertionCallback callback_receiver;
-    authenticator->GetAssertion(get_credential_options(uv),
-                                callback_receiver.callback());
-    callback_receiver.WaitForCallback();
+        case kUsePIN:
+          // A single prompt to get the PIN is expected.
+          test_client_.expected = {{8, kTestPIN}};
+          break;
 
-    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
-    EXPECT_FALSE(HasUV(callback_receiver));
+        default:
+          NOTREACHED();
+      }
+
+      AuthenticatorPtr authenticator = ConnectToAuthenticator();
+      TestGetAssertionCallback callback_receiver;
+      authenticator->GetAssertion(get_credential_options(kUVLevel[uv_level]),
+                                  callback_receiver.callback());
+      callback_receiver.WaitForCallback();
+
+      switch (kExpected[support_level][uv_level]) {
+        case kFailure:
+          EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
+                    callback_receiver.status());
+          break;
+
+        case kNoPIN:
+          EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+          EXPECT_FALSE(HasUV(callback_receiver));
+          break;
+
+        case kUsePIN:
+          EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+          EXPECT_EQ(kTestPIN, virtual_device_.mutable_state()->pin);
+          EXPECT_TRUE(HasUV(callback_receiver));
+          break;
+
+        default:
+          NOTREACHED();
+      }
+    }
   }
 }
 

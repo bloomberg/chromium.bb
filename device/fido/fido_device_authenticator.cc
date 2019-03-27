@@ -186,29 +186,99 @@ void FidoDeviceAuthenticator::ChangePIN(const std::string& old_pin,
 AuthenticatorSupportedOptions::ClientPinAvailability
 FidoDeviceAuthenticator::WillNeedPINToMakeCredential(const
     CtapMakeCredentialRequest& request) {
-  if (request.user_verification() != UserVerificationRequirement::kRequired ||
-      Options()->user_verification_availability ==
-          AuthenticatorSupportedOptions::UserVerificationAvailability::
-              kSupportedAndConfigured) {
-    return AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported;
+  using ClientPinAvailability =
+      AuthenticatorSupportedOptions::ClientPinAvailability;
+
+  // Authenticators with built-in UV can use that. (Fallback to PIN is not yet
+  // implemented.)
+  if (Options()->user_verification_availability ==
+      AuthenticatorSupportedOptions::UserVerificationAvailability::
+          kSupportedAndConfigured) {
+    return ClientPinAvailability::kNotSupported;
   }
 
-  return Options()->client_pin_availability;
+  // CTAP 2.0 requires a PIN for credential creation once a PIN has been set.
+  // Thus, if fallback to U2F isn't possible, a PIN will be needed if set.
+  const bool supports_u2f =
+      device()->device_info() &&
+      device()->device_info()->versions().contains(ProtocolVersion::kU2f);
+  if (Options()->client_pin_availability ==
+          ClientPinAvailability::kSupportedAndPinSet &&
+      !supports_u2f) {
+    return ClientPinAvailability::kSupportedAndPinSet;
+  }
+
+  // If UV is required and a PIN can be set, set it during the MakeCredential
+  // process.
+  if (Options()->client_pin_availability ==
+          ClientPinAvailability::kSupportedButPinNotSet &&
+      request.user_verification() == UserVerificationRequirement::kRequired) {
+    return ClientPinAvailability::kSupportedButPinNotSet;
+  }
+
+  // If discouraged, then either a PIN isn't set (thus we don't use one), or
+  // else the device supports U2F (because the alternative was handled above)
+  // and we'll use a U2F fallback to create a credential without a PIN.
+  DCHECK(Options()->client_pin_availability !=
+             ClientPinAvailability::kSupportedAndPinSet ||
+         supports_u2f);
+  // TODO(agl): perhaps CTAP2 is indicated when, for example, hmac-secret is
+  // requested?
+  if (request.user_verification() ==
+      UserVerificationRequirement::kDiscouraged) {
+    return ClientPinAvailability::kNotSupported;
+  }
+
+  // Otherwise, a PIN will be used only if set.
+  if (Options()->client_pin_availability ==
+      ClientPinAvailability::kSupportedAndPinSet) {
+    return ClientPinAvailability::kSupportedAndPinSet;
+  }
+
+  return ClientPinAvailability::kNotSupported;
 }
 
-bool FidoDeviceAuthenticator::WillNeedPINToGetAssertion(
+FidoAuthenticator::GetAssertionPINDisposition
+FidoDeviceAuthenticator::WillNeedPINToGetAssertion(
     const CtapGetAssertionRequest& request) {
-  if (request.user_verification() ==
-          UserVerificationRequirement::kDiscouraged ||
-      Options()->user_verification_availability ==
-          AuthenticatorSupportedOptions::UserVerificationAvailability::
-              kSupportedAndConfigured) {
-    return false;
+  // Authenticators with built-in UV can use that. (Fallback to PIN is not yet
+  // implemented.)
+  if (Options()->user_verification_availability ==
+      AuthenticatorSupportedOptions::UserVerificationAvailability::
+          kSupportedAndConfigured) {
+    return GetAssertionPINDisposition::kNoPIN;
   }
 
-  return Options()->client_pin_availability ==
-         AuthenticatorSupportedOptions::ClientPinAvailability::
-             kSupportedAndPinSet;
+  const bool pin_set = (Options()->client_pin_availability ==
+                        AuthenticatorSupportedOptions::ClientPinAvailability::
+                            kSupportedAndPinSet);
+  const bool resident_key_request =
+      !request.allow_list() || request.allow_list()->empty();
+
+  if (resident_key_request) {
+    if (pin_set) {
+      return GetAssertionPINDisposition::kUsePIN;
+    } else {
+      return GetAssertionPINDisposition::kUnsatisfiable;
+    }
+  }
+
+  // If UV is required then the PIN must be used if set, or else this request
+  // cannot be satisfied.
+  if (request.user_verification() == UserVerificationRequirement::kRequired) {
+    if (pin_set) {
+      return GetAssertionPINDisposition::kUsePIN;
+    }
+    return GetAssertionPINDisposition::kUnsatisfiable;
+  }
+
+  // If UV is preferred and a PIN is set, use it.
+  if (request.user_verification() == UserVerificationRequirement::kPreferred &&
+      pin_set) {
+    return GetAssertionPINDisposition::kUsePIN;
+  }
+
+  return GetAssertionPINDisposition::kNoPIN;
 }
 
 void FidoDeviceAuthenticator::Reset(ResetCallback callback) {

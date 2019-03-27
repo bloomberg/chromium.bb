@@ -847,6 +847,26 @@ AuthenticatorGenericErrorSheetModel::ForClientPinErrorAuthenticatorRemoved(
           IDS_WEBAUTHN_CLIENT_PIN_AUTHENTICATOR_REMOVED_DESCRIPTION)));
 }
 
+// static
+std::unique_ptr<AuthenticatorGenericErrorSheetModel>
+AuthenticatorGenericErrorSheetModel::ForMissingResidentKeysSupport(
+    AuthenticatorRequestDialogModel* dialog_model) {
+  return base::WrapUnique(new AuthenticatorGenericErrorSheetModel(
+      dialog_model,
+      l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_TITLE),
+      l10n_util::GetStringUTF16(IDS_WEBAUTHN_MISSING_RESIDENT_KEYS_DESC)));
+}
+
+// static
+std::unique_ptr<AuthenticatorGenericErrorSheetModel>
+AuthenticatorGenericErrorSheetModel::ForMissingUserVerificationSupport(
+    AuthenticatorRequestDialogModel* dialog_model) {
+  return base::WrapUnique(new AuthenticatorGenericErrorSheetModel(
+      dialog_model,
+      l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_TITLE),
+      l10n_util::GetStringUTF16(IDS_WEBAUTHN_MISSING_USER_VERIFICATION_DESC)));
+}
+
 AuthenticatorGenericErrorSheetModel::AuthenticatorGenericErrorSheetModel(
     AuthenticatorRequestDialogModel* dialog_model,
     base::string16 title,

@@ -56,9 +56,10 @@ FidoAuthenticator::WillNeedPINToMakeCredential(const CtapMakeCredentialRequest&
   return AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported;
 }
 
-bool FidoAuthenticator::WillNeedPINToGetAssertion(const
-    CtapGetAssertionRequest& request) {
-  return false;
+FidoAuthenticator::GetAssertionPINDisposition
+FidoAuthenticator::WillNeedPINToGetAssertion(
+    const CtapGetAssertionRequest& request) {
+  return GetAssertionPINDisposition::kNoPIN;
 }
 
 void FidoAuthenticator::Reset(ResetCallback callback) {

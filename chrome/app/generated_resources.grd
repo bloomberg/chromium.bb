@@ -9435,6 +9435,15 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_SELECT_ACCOUNT_DESC" desc="The description on a dialog where the user is expected to select an account from a list. For example, the list may include several identities, e.g. joe@gmail.com, mary@gmail.com, and the user has to select one to login as.">
         Select an account to log in with:
       </message>
+      <message name="IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_TITLE" desc="Title of the dialog informing the user that the security key (an external physical device for user authentication) that they selected does not support some capability that the site requested.">
+        Security key does not support requested feature.
+      </message>
+      <message name="IDS_WEBAUTHN_MISSING_RESIDENT_KEYS_DESC" desc="The description on a dialog informing the user that the security key (an external physical device for user authentication) that they selected does not support storing credentials, but the website demanded this feature">
+        That security key does not support internal storage of credentials, but that feature was requested.
+      </message>
+      <message name="IDS_WEBAUTHN_MISSING_USER_VERIFICATION_DESC" desc="The description on a dialog informing the user that the security key (an external physical device for user authentication) that they selected does not support any methods of identifying its owner, e.g. a fingerprint reader or a secret code (PIN).">
+        That security key does not support any method of personal identification (e.g. a fingerprint reader, or PIN entry), but that feature was requested.
+      </message>
    </if>
    <if expr="is_macosx">
      <message name="IDS_WEBAUTHN_TOUCH_ID_TITLE" desc="Title of the dialog shown when the user tries to sign in with Touch ID." meaning="'Touch ID' is the fingerprint recognition feature in macOS. Try to refer Apple support documentation in the target language for the appropriate product name translation.">
