@@ -37,15 +37,12 @@
 // Bookkeeping for the top-most view controller.
 @property(nonatomic, strong) UIViewController* topViewController;
 
+// Sign-in completion.
+@property(nonatomic, copy) signin_ui::CompletionCallback signinCompletion;
+
 @end
 
 @implementation SigninInteractionCoordinator
-@synthesize alertCoordinator = _alertCoordinator;
-@synthesize browserState = _browserState;
-@synthesize controller = _controller;
-@synthesize dispatcher = _dispatcher;
-@synthesize presentingViewController = _presentingViewController;
-@synthesize topViewController = _topViewController;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                           dispatcher:(id<ApplicationCommands>)dispatcher {
@@ -70,11 +67,11 @@
 
   [self setupForSigninOperationWithAccessPoint:accessPoint
                                    promoAction:promoAction
-                      presentingViewController:viewController];
+                      presentingViewController:viewController
+                                    completion:completion];
 
-  [self.controller
-      signInWithIdentity:identity
-              completion:[self callbackToClearStateWithCompletion:completion]];
+  [self.controller signInWithIdentity:identity
+                           completion:[self callbackToClearState]];
 }
 
 - (void)reAuthenticateWithAccessPoint:(signin_metrics::AccessPoint)accessPoint
@@ -89,10 +86,10 @@
 
   [self setupForSigninOperationWithAccessPoint:accessPoint
                                    promoAction:promoAction
-                      presentingViewController:viewController];
+                      presentingViewController:viewController
+                                    completion:completion];
 
-  [self.controller reAuthenticateWithCompletion:
-                       [self callbackToClearStateWithCompletion:completion]];
+  [self.controller reAuthenticateWithCompletion:[self callbackToClearState]];
 }
 
 - (void)addAccountWithAccessPoint:(signin_metrics::AccessPoint)accessPoint
@@ -106,10 +103,10 @@
 
   [self setupForSigninOperationWithAccessPoint:accessPoint
                                    promoAction:promoAction
-                      presentingViewController:viewController];
+                      presentingViewController:viewController
+                                    completion:completion];
 
-  [self.controller addAccountWithCompletion:
-                       [self callbackToClearStateWithCompletion:completion]];
+  [self.controller addAccountWithCompletion:[self callbackToClearState]];
 }
 
 - (void)cancel {
@@ -171,16 +168,6 @@
   self.alertCoordinator = nil;
 }
 
-- (void)showAccountsSettings {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    [self.dispatcher showGoogleServicesSettingsFromViewController:
-                         self.presentingViewController];
-  } else {
-    [self.dispatcher
-        showAccountsSettingsFromViewController:self.presentingViewController];
-  }
-}
-
 - (BOOL)isPresenting {
   return self.presentingViewController.presentedViewController != nil;
 }
@@ -188,12 +175,17 @@
 #pragma mark - Private Methods
 
 // Sets up relevant instance variables for a sign in operation.
-- (void)
-setupForSigninOperationWithAccessPoint:(signin_metrics::AccessPoint)accessPoint
-                           promoAction:(signin_metrics::PromoAction)promoAction
-              presentingViewController:
-                  (UIViewController*)presentingViewController {
+- (void)setupForSigninOperationWithAccessPoint:
+            (signin_metrics::AccessPoint)accessPoint
+                                   promoAction:
+                                       (signin_metrics::PromoAction)promoAction
+                      presentingViewController:
+                          (UIViewController*)presentingViewController
+                                    completion:(signin_ui::CompletionCallback)
+                                                   completion {
   DCHECK(![self isPresenting]);
+  DCHECK(!self.signinCompletion);
+  self.signinCompletion = completion;
   self.presentingViewController = presentingViewController;
   self.topViewController = presentingViewController;
 
@@ -207,19 +199,40 @@ setupForSigninOperationWithAccessPoint:(signin_metrics::AccessPoint)accessPoint
 
 // Returns a callback that clears the state of the coordinator and runs
 // |completion|.
-- (signin_ui::CompletionCallback)callbackToClearStateWithCompletion:
-    (signin_ui::CompletionCallback)completion {
+- (SigninInteractionControllerCompletionCallback)callbackToClearState {
   __weak SigninInteractionCoordinator* weakSelf = self;
-  signin_ui::CompletionCallback completionCallback = ^(BOOL success) {
-    weakSelf.controller = nil;
-    weakSelf.presentingViewController = nil;
-    weakSelf.topViewController = nil;
-    weakSelf.alertCoordinator = nil;
-    if (completion) {
-      completion(success);
-    }
-  };
+  SigninInteractionControllerCompletionCallback completionCallback =
+      ^(SigninResult signinResult) {
+        [weakSelf
+            signinInteractionControllerCompletionWithSigninResult:signinResult];
+      };
   return completionCallback;
+}
+
+// Called when SigninInteractionController is completed.
+- (void)signinInteractionControllerCompletionWithSigninResult:
+    (SigninResult)signinResult {
+  self.controller = nil;
+  self.topViewController = nil;
+  self.alertCoordinator = nil;
+  if (signinResult == SigninResultSignedInnAndOpennSettings) {
+    [self showAccountsSettings];
+  }
+  if (self.signinCompletion) {
+    self.signinCompletion(signinResult != SigninResultCanceled);
+    self.signinCompletion = nil;
+  }
+}
+
+// Shows the accounts settings UI.
+- (void)showAccountsSettings {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    [self.dispatcher showGoogleServicesSettingsFromViewController:
+                         self.presentingViewController];
+  } else {
+    [self.dispatcher
+        showAccountsSettingsFromViewController:self.presentingViewController];
+  }
 }
 
 @end
