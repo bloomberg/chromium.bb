@@ -13,21 +13,17 @@
 #endif
 
 @interface OmniboxPopupTruncatingLabel ()
-- (void)setup;
-- (UIImage*)getLinearGradient:(CGRect)rect;
+
+// Gradient used to create fade effect. Changes based on view.frame size.
+@property(nonatomic, strong) UIImage* gradient;
+
 @end
 
-@implementation OmniboxPopupTruncatingLabel {
-  // Gradient used to create fade effect. Changes based on view.frame size.
-  UIImage* gradient_;
-}
-
-@synthesize truncateMode = truncateMode_;
-@synthesize displayAsURL = displayAsURL_;
+@implementation OmniboxPopupTruncatingLabel
 
 - (void)setup {
   self.backgroundColor = [UIColor clearColor];
-  truncateMode_ = OmniboxPopupTruncatingTail;
+  _truncateMode = OmniboxPopupTruncatingTail;
 }
 
 - (id)initWithFrame:(CGRect)frame {
@@ -44,14 +40,16 @@
   [self setup];
 }
 
-- (void)setFrame:(CGRect)frame {
-  [super setFrame:frame];
+- (void)layoutSubviews {
+  [super layoutSubviews];
 
-  // Cache the fade gradient when the frame changes.
-  if (!CGRectIsEmpty(frame) &&
-      (!gradient_ || !CGSizeEqualToSize([gradient_ size], frame.size))) {
-    CGRect rect = CGRectMake(0, 0, frame.size.width, frame.size.height);
-    gradient_ = [self getLinearGradient:rect];
+  // Cache the fade gradient when the bounds change.
+  if (!CGRectIsEmpty(self.bounds) &&
+      (!self.gradient ||
+       !CGSizeEqualToSize([self.gradient size], self.bounds.size))) {
+    CGRect rect =
+        CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height);
+    self.gradient = [self getLinearGradient:rect];
   }
 }
 
@@ -61,7 +59,7 @@
   CGContextSaveGState(context);
 
   if ([self.attributedText size].width > requestedRect.size.width)
-    CGContextClipToMask(context, self.bounds, [gradient_ CGImage]);
+    CGContextClipToMask(context, self.bounds, [self.gradient CGImage]);
 
   // Add the specified line break and alignment attributes to attributedText and
   // draw the result.
@@ -95,7 +93,7 @@
   }
 
   if (textAlignment != self.textAlignment)
-    gradient_ = nil;
+    self.gradient = nil;
 
   [super setTextAlignment:textAlignment];
 }
