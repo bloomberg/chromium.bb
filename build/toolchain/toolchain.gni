@@ -24,10 +24,6 @@ declare_args() {
 
   # Used for binary size analysis.
   generate_linker_map = is_android && is_official_build
-
-  # Use absolute file paths in the compiler diagnostics and __FILE__ macro
-  # if needed.
-  msvc_use_absolute_paths = false
 }
 
 if (generate_linker_map) {

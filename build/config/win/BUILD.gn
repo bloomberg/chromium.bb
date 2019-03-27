@@ -45,6 +45,12 @@ declare_args() {
   #  and with this switch, clang emits it like this:
   #    foo/bar.cc:12:34: error: something went wrong
   use_clang_diagnostics_format = false
+
+  # Use absolute file paths in the compiler diagnostics and (for non-clang)
+  # __FILE__ macro if needed. Note that enabling this makes your build
+  # dependent your checkout's path, which means you won't get to use goma's
+  # global cache, and without clang your builds won't be deterministic.
+  msvc_use_absolute_paths = false
 }
 
 # This is included by reference in the //build/config/compiler config that
@@ -66,6 +72,7 @@ config("compiler") {
     "/Gy",  # Enable function-level linking.
     "/FS",  # Preserve previous PDB behavior.
     "/bigobj",  # Some of our files are bigger than the regular limits.
+    "/utf-8",  # Assume UTF-8 by default to avoid code page dependencies.
   ]
 
   # Force C/C++ mode for the given GN detected file type. This is necessary
@@ -79,7 +86,28 @@ config("compiler") {
     "/Zc:sizedDealloc-",
   ]
 
+  if (msvc_use_absolute_paths) {
+    # Pass /FC flag to the compiler if needed.
+    cflags += "/FC "
+
+    # Print absolute paths in diagnostics. There is no precedent for doing this
+    # on Linux/Mac (GCC doesn't support it), but MSVC does this with /FC and
+    # Windows developers rely on it (crbug.com/636109) so only do this on
+    # Windows.
+    # TODO(thakis): This comment no longer really make sense after
+    # https://chromium-review.googlesource.com/c/chromium/src/+/558871/
+    # See if we can remove msvc_use_absolute_paths. See also discussion in
+    # https://reviews.llvm.org/D23816
+    if (is_clang) {
+      cflags += [ "-fdiagnostics-absolute-paths" ]
+    }
+  }
+
   if (is_clang) {
+    # Don't look for includes in %INCLUDE%.
+    cflags += [ "/X" ]
+
+    # Tell clang which version of MSVC to emulate.
     cflags += [ "-fmsc-version=1911" ]
 
     if (is_component_build) {
