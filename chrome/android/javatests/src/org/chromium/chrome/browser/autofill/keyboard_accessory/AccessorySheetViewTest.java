@@ -38,7 +38,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -47,6 +46,7 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessory
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ViewUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.DeferredViewStubInflationProvider;
 import org.chromium.ui.ViewProvider;
 import org.chromium.ui.modelutil.LazyConstructionPropertyMcp;
@@ -73,7 +73,7 @@ public class AccessorySheetViewTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ViewStub viewStub = mActivityTestRule.getActivity().findViewById(
                     R.id.keyboard_accessory_sheet_stub);
             int height = mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
@@ -103,12 +103,12 @@ public class AccessorySheetViewTest {
         assertNull(mViewPager.poll());
 
         // After setting the visibility to true, the view should exist and be visible.
-        ThreadUtils.runOnUiThreadBlocking(() -> { mModel.set(VISIBLE, true); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mModel.set(VISIBLE, true); });
         AccessorySheetView viewPager = mViewPager.take();
         assertEquals(viewPager.getVisibility(), View.VISIBLE);
 
         // After hiding the view, the view should still exist but be invisible.
-        ThreadUtils.runOnUiThreadBlocking(() -> { mModel.set(VISIBLE, false); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mModel.set(VISIBLE, false); });
         assertNotEquals(viewPager.getVisibility(), View.VISIBLE);
     }
 
@@ -136,7 +136,7 @@ public class AccessorySheetViewTest {
         assertNull(mViewPager.poll());
 
         // Setting visibility should cause the Tab to be rendered.
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true));
+        TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true));
         assertNotNull(mViewPager.take());
 
         onView(withText(kSampleAction)).check(matches(isDisplayed()));
@@ -150,11 +150,11 @@ public class AccessorySheetViewTest {
         mModel.get(TABS).add(createTestTabWithTextView(kFirstTab));
         mModel.get(TABS).add(createTestTabWithTextView(kSecondTab));
         mModel.set(ACTIVE_TAB_INDEX, 0);
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true)); // Render view.
+        TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true)); // Render view.
 
         onView(withText(kFirstTab)).check(matches(isDisplayed()));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.set(ACTIVE_TAB_INDEX, 1));
+        TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(ACTIVE_TAB_INDEX, 1));
 
         onView(isRoot()).check((r, e) -> waitForView((ViewGroup) r, withText(kSecondTab)));
     }
@@ -167,11 +167,12 @@ public class AccessorySheetViewTest {
         mModel.get(TABS).add(createTestTabWithTextView(kFirstTab));
         mModel.get(TABS).add(createTestTabWithTextView(kSecondTab));
         mModel.set(ACTIVE_TAB_INDEX, 0);
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true)); // Render view.
+        TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true)); // Render view.
 
         onView(withText(kFirstTab)).check(matches(isDisplayed()));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.get(TABS).remove(mModel.get(TABS).get(0)));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mModel.get(TABS).remove(mModel.get(TABS).get(0)));
 
         onView(withText(kFirstTab)).check(doesNotExist());
     }
@@ -182,17 +183,17 @@ public class AccessorySheetViewTest {
         final String kFirstTab = "First Tab";
         mModel.get(TABS).add(createTestTabWithTextView(kFirstTab));
         mModel.set(ACTIVE_TAB_INDEX, 0);
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true)); // Render view.
+        TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true)); // Render view.
 
         // Remove the last tab.
         onView(withText(kFirstTab)).check(matches(isDisplayed()));
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mModel.get(TABS).remove(mModel.get(TABS).get(0)); });
         onView(withText(kFirstTab)).check(doesNotExist());
 
         // Add a new first tab.
         final String kSecondTab = "Second Tab";
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.get(TABS).add(createTestTabWithTextView(kSecondTab));
             mModel.set(ACTIVE_TAB_INDEX, 0);
         });
@@ -204,16 +205,16 @@ public class AccessorySheetViewTest {
     public void testTopShadowVisiblitySetByModel() {
         mModel.get(TABS).add(createTestTabWithTextView("SomeTab"));
         mModel.set(TOP_SHADOW_VISIBLE, false);
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true)); // Render view.
+        TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true)); // Render view.
         onView(isRoot()).check((r, e) -> {
             waitForView(
                     (ViewGroup) r, withId(R.id.accessory_sheet_shadow), ViewUtils.VIEW_INVISIBLE);
         });
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.set(TOP_SHADOW_VISIBLE, true));
+        TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(TOP_SHADOW_VISIBLE, true));
         onView(withId(R.id.accessory_sheet_shadow)).check(matches(isDisplayed()));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.set(TOP_SHADOW_VISIBLE, false));
+        TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(TOP_SHADOW_VISIBLE, false));
         onView(isRoot()).check((r, e) -> {
             waitForView(
                     (ViewGroup) r, withId(R.id.accessory_sheet_shadow), ViewUtils.VIEW_INVISIBLE);

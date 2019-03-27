@@ -14,7 +14,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
@@ -27,6 +26,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;
@@ -67,7 +67,7 @@ public class TabUmaTest {
     @MediumTest
     @Feature({"Uma"})
     public void testTabStatusWhenSwitchedToLazyLoads() throws ExecutionException {
-        final Tab tab = ThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
+        final Tab tab = TestThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
             @Override
             public Tab call() {
                 Tab bgTab = TabBuilder.createForLazyLoad(new LoadUrlParams(mTestUrl))
@@ -85,21 +85,11 @@ public class TabUmaTest {
         Assert.assertEquals(0, lazyLoadCount.getDelta()); // Sanity check.
 
         // Show the tab and verify that one sample was recorded in the lazy load bucket.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                tab.show(TabSelectionType.FROM_USER);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { tab.show(TabSelectionType.FROM_USER); });
         Assert.assertEquals(1, lazyLoadCount.getDelta());
 
         // Show the tab again and verify that we didn't record another sample.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                tab.show(TabSelectionType.FROM_USER);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { tab.show(TabSelectionType.FROM_USER); });
         Assert.assertEquals(1, lazyLoadCount.getDelta());
     }
 
@@ -122,7 +112,7 @@ public class TabUmaTest {
         Assert.assertEquals(0, skippedLoadCount.getDelta());
 
         // Test a live tab created in background and shown.
-        final Tab liveBgTab = ThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
+        final Tab liveBgTab = TestThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
             @Override
             public Tab call() {
                 Tab bgTab = TabBuilder.createLiveTab(true)
@@ -140,7 +130,7 @@ public class TabUmaTest {
         Assert.assertEquals(0, skippedLoadCount.getDelta());
 
         // Test a live tab killed in background before shown.
-        final Tab killedBgTab = ThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
+        final Tab killedBgTab = TestThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
             @Override
             public Tab call() {
                 Tab bgTab = TabBuilder.createLiveTab(true)
@@ -160,7 +150,7 @@ public class TabUmaTest {
         Assert.assertEquals(0, skippedLoadCount.getDelta());
 
         // Test a tab created in background but not loaded eagerly.
-        final Tab frozenBgTab = ThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
+        final Tab frozenBgTab = TestThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
             @Override
             public Tab call() {
                 Tab bgTab = TabBuilder.createForLazyLoad(new LoadUrlParams(mTestUrl))
@@ -178,13 +168,10 @@ public class TabUmaTest {
 
         // Show every tab again and make sure we didn't record more samples - this metric should be
         // recorded only on first display.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                liveBgTab.show(TabSelectionType.FROM_USER);
-                killedBgTab.show(TabSelectionType.FROM_USER);
-                frozenBgTab.show(TabSelectionType.FROM_USER);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            liveBgTab.show(TabSelectionType.FROM_USER);
+            killedBgTab.show(TabSelectionType.FROM_USER);
+            frozenBgTab.show(TabSelectionType.FROM_USER);
         });
         Assert.assertEquals(1, shownLoadCount.getDelta());
         Assert.assertEquals(1, lostLoadCount.getDelta());

@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 
 import org.junit.Assert;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -32,6 +31,7 @@ import org.chromium.chrome.browser.vr.VrViewContainer;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.File;
 import java.lang.annotation.Retention;
@@ -425,7 +425,7 @@ public class NativeUiUtils {
         operationData.timeoutMs = DEFAULT_UI_QUIESCENCE_TIMEOUT_MS;
         // Run on the UI thread to prevent issues with registering a new callback before
         // ReportUiOperationResultForTesting has finished.
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         action.run();
 
@@ -458,7 +458,7 @@ public class NativeUiUtils {
             resultLatch.countDown();
         };
         operationData.timeoutMs = DEFAULT_UI_QUIESCENCE_TIMEOUT_MS;
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         // Catch the interrupted exception so we don't have to try/catch anytime we chain multiple
         // actions.
@@ -498,7 +498,7 @@ public class NativeUiUtils {
         operationData.visibility = visible;
         // Run on the UI thread to prevent issues with registering a new callback before
         // ReportUiOperationResultForTesting has finished.
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         action.run();
 
@@ -569,7 +569,7 @@ public class NativeUiUtils {
 
         // Run on the UI thread to prevent issues with registering a new callback before
         // ReportUiOperationResultForTesting has finished.
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         instance.saveNextFrameBufferToDiskForTesting(filepathBase);
         resultLatch.await();

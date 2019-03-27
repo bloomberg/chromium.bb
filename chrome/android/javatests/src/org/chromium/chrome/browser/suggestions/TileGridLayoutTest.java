@@ -56,6 +56,7 @@ import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.ui.modelutil.ListObservable;
 
@@ -203,7 +204,7 @@ public class TileGridLayoutTest {
     private void setOrientation(final int requestedOrientation, final Activity activity) {
         if (orientationMatchesRequest(activity, requestedOrientation)) return;
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> activity.setRequestedOrientation(requestedOrientation));
 
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -261,7 +262,7 @@ public class TileGridLayoutTest {
         FrameLayout contentView = new FrameLayout(activity);
         UiConfig uiConfig = new UiConfig(contentView);
 
-        return ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
             activity.setContentView(contentView);
 
             SiteSectionViewHolder viewHolder = SiteSection.createViewHolder(

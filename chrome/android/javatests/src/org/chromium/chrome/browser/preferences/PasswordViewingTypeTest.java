@@ -19,7 +19,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences;
@@ -30,6 +29,7 @@ import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests for verifying whether users are presented with the correct option of viewing
@@ -77,7 +77,7 @@ public class PasswordViewingTypeTest {
 
     @After
     public void tearDown() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
+        TestThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
     }
 
     /**
@@ -107,12 +107,8 @@ public class PasswordViewingTypeTest {
                 return true;
             }
         }
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ProfileSyncService.overrideForTests(new FakeProfileSyncService());
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { ProfileSyncService.overrideForTests(new FakeProfileSyncService()); });
     }
 
     /**
@@ -145,12 +141,9 @@ public class PasswordViewingTypeTest {
         setSyncability(true);
         overrideProfileSyncService(false);
         Assert.assertTrue(AndroidSyncSettings.get().isSyncEnabled());
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertTrue(ProfileSyncService.get().isEngineInitialized());
-                Assert.assertFalse(ProfileSyncService.get().isUsingSecondaryPassphrase());
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue(ProfileSyncService.get().isEngineInitialized());
+            Assert.assertFalse(ProfileSyncService.get().isUsingSecondaryPassphrase());
         });
         Assert.assertEquals(
                 SavePasswordsPreferences.class.getCanonicalName(), mPasswordsPref.getFragment());

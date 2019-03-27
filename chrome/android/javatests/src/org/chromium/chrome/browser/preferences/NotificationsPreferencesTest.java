@@ -18,7 +18,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
@@ -34,6 +33,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests for the NotificationsPreferences.
@@ -68,29 +68,26 @@ public class NotificationsPreferencesTest {
         final ChromeSwitchPreference toggle = (ChromeSwitchPreference) fragment.findPreference(
                 NotificationsPreferences.PREF_SUGGESTIONS);
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // Make sure the toggle reflects the state correctly.
-                boolean initiallyChecked = toggle.isChecked();
-                Assert.assertEquals(toggle.isChecked(),
-                        SnippetsBridge.areContentSuggestionsNotificationsEnabled());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Make sure the toggle reflects the state correctly.
+            boolean initiallyChecked = toggle.isChecked();
+            Assert.assertEquals(
+                    toggle.isChecked(), SnippetsBridge.areContentSuggestionsNotificationsEnabled());
 
-                // Make sure we can change the state.
-                PreferencesTest.clickPreference(fragment, toggle);
-                Assert.assertEquals(toggle.isChecked(), !initiallyChecked);
-                Assert.assertEquals(toggle.isChecked(),
-                        SnippetsBridge.areContentSuggestionsNotificationsEnabled());
+            // Make sure we can change the state.
+            PreferencesTest.clickPreference(fragment, toggle);
+            Assert.assertEquals(toggle.isChecked(), !initiallyChecked);
+            Assert.assertEquals(
+                    toggle.isChecked(), SnippetsBridge.areContentSuggestionsNotificationsEnabled());
 
-                // Make sure we can change it back.
-                PreferencesTest.clickPreference(fragment, toggle);
-                Assert.assertEquals(toggle.isChecked(), initiallyChecked);
-                Assert.assertEquals(toggle.isChecked(),
-                        SnippetsBridge.areContentSuggestionsNotificationsEnabled());
+            // Make sure we can change it back.
+            PreferencesTest.clickPreference(fragment, toggle);
+            Assert.assertEquals(toggle.isChecked(), initiallyChecked);
+            Assert.assertEquals(
+                    toggle.isChecked(), SnippetsBridge.areContentSuggestionsNotificationsEnabled());
 
-                // Click it one last time so we're in a toggled state for the UI Capture.
-                PreferencesTest.clickPreference(fragment, toggle);
-            }
+            // Click it one last time so we're in a toggled state for the UI Capture.
+            PreferencesTest.clickPreference(fragment, toggle);
         });
 
         mScreenShooter.shoot("ContentSuggestionsToggle");
@@ -127,15 +124,12 @@ public class NotificationsPreferencesTest {
     public void testLinkToWebsiteNotifications() {
         // clang-format on
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
-                Preference fromWebsites =
-                        fragment.findPreference(NotificationsPreferences.PREF_FROM_WEBSITES);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
+            Preference fromWebsites =
+                    fragment.findPreference(NotificationsPreferences.PREF_FROM_WEBSITES);
 
-                PreferencesTest.clickPreference(fragment, fromWebsites);
-            }
+            PreferencesTest.clickPreference(fragment, fromWebsites);
         });
 
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -172,19 +166,16 @@ public class NotificationsPreferencesTest {
         final Preference fromWebsites =
                 fragment.findPreference(NotificationsPreferences.PREF_FROM_WEBSITES);
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                PrefServiceBridge.getInstance().setCategoryEnabled(
-                        ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS, false);
-                fragment.onResume();
-                Assert.assertEquals(fromWebsites.getSummary(), getNotificationsSummary(false));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PrefServiceBridge.getInstance().setCategoryEnabled(
+                    ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS, false);
+            fragment.onResume();
+            Assert.assertEquals(fromWebsites.getSummary(), getNotificationsSummary(false));
 
-                PrefServiceBridge.getInstance().setCategoryEnabled(
-                        ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS, true);
-                fragment.onResume();
-                Assert.assertEquals(fromWebsites.getSummary(), getNotificationsSummary(true));
-            }
+            PrefServiceBridge.getInstance().setCategoryEnabled(
+                    ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS, true);
+            fragment.onResume();
+            Assert.assertEquals(fromWebsites.getSummary(), getNotificationsSummary(true));
         });
     }
 

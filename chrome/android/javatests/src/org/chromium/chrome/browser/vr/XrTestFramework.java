@@ -10,7 +10,6 @@ import android.view.View;
 import org.junit.Assert;
 
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.SadTab;
@@ -22,6 +21,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.RenderFrameHostTestExt;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 
 import java.lang.annotation.Retention;
@@ -347,13 +347,13 @@ public abstract class XrTestFramework {
 
     private static String runJavaScriptInFrameInternal(
             String js, int timeout, final WebContents webContents, boolean failOnTimeout) {
-        RenderFrameHostTestExt rfh = ThreadUtils.runOnUiThreadBlockingNoException(
+        RenderFrameHostTestExt rfh = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> new RenderFrameHostTestExt(WebContentsUtils.getFocusedFrame(webContents)));
         Assert.assertTrue("Did not get a focused frame", rfh != null);
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<String> result = new AtomicReference<String>();
         // The JS execution needs to be started on the UI thread to avoid hitting a DCHECK.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             rfh.executeJavaScript(js, (String r) -> {
                 result.set(r);
                 latch.countDown();
@@ -531,7 +531,7 @@ public abstract class XrTestFramework {
 
     public void simulateRendererKilled() {
         final Tab tab = getRule().getActivity().getActivityTab();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> ChromeTabUtils.simulateRendererKilledForTesting(tab, true));
 
         CriteriaHelper.pollUiThread(
@@ -539,7 +539,7 @@ public abstract class XrTestFramework {
     }
 
     public void openIncognitoTab(final String url) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mRule.getActivity()
                     .getTabCreator(true /* incognito */)
                     .launchUrl(url, TabLaunchType.FROM_LINK);

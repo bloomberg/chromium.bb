@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
@@ -50,6 +49,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 
 import java.util.List;
@@ -234,7 +234,7 @@ public class WebXrVrInputTest {
 
     private long sendScreenTouchDown(final View view, final int x, final int y) {
         long downTime = SystemClock.uptimeMillis();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             view.dispatchTouchEvent(
                     MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, x, y, 0));
         });
@@ -242,7 +242,7 @@ public class WebXrVrInputTest {
     }
 
     private void sendScreenTouchUp(final View view, final int x, final int y, final long downTime) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             long now = SystemClock.uptimeMillis();
             view.dispatchTouchEvent(
                     MotionEvent.obtain(downTime, now, MotionEvent.ACTION_UP, x, y, 0));
@@ -481,7 +481,7 @@ public class WebXrVrInputTest {
 
         NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
         Assert.assertFalse("App button left Chrome",
-                ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+                TestThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
                     @Override
                     public Boolean call() throws Exception {
                         return mockApi.getExitFromVrCalled()
@@ -514,7 +514,7 @@ public class WebXrVrInputTest {
                 },
                 "DisplayActivate was never registered", POLL_TIMEOUT_LONG_MS,
                 POLL_CHECK_INTERVAL_SHORT_MS);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ViewEventSink.from(mTestRule.getWebContents()).onPauseForTesting();
             Assert.assertFalse(
                     "VR Shell is listening for headset insertion after WebContents paused",

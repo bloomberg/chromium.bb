@@ -17,7 +17,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
@@ -31,6 +30,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -113,7 +113,7 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     public void testLaunchingActivity() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(() -> { setUpUi(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { setUpUi(); });
 
         onView(withText("page 1")).check(matches(isDisplayed()));
         onView(withText("page 2")).check(matches(isDisplayed()));

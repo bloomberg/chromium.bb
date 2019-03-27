@@ -31,7 +31,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.task.PostTask;
@@ -60,6 +59,7 @@ import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.net.test.util.TestWebServer;
@@ -113,7 +113,7 @@ public class TrustedCdnPublisherUrlTest {
 
     @Before
     public void setUp() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
+        TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
 
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
@@ -126,7 +126,7 @@ public class TrustedCdnPublisherUrlTest {
 
     @After
     public void tearDown() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
+        TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
 
         mWebServer.shutdown();
     }
@@ -298,7 +298,7 @@ public class TrustedCdnPublisherUrlTest {
         final ChromeActivity newActivity = (ChromeActivity) activity;
         CriteriaHelper.pollUiThread(() -> newActivity.getActivityTab() == tab, "Tab did not load");
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { Assert.assertNull(TrustedCdn.getPublisherUrl(tab)); });
 
         String testUrl = mWebServer.getResponseUrl("/test.html");
@@ -322,10 +322,11 @@ public class TrustedCdnPublisherUrlTest {
         runTrustedCdnPublisherUrlTest(
                 publisherUrl, "com.example.test", "example.com", R.drawable.omnibox_https_valid);
 
-        OfflinePageBridge offlinePageBridge = ThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            Profile profile = Profile.getLastUsedProfile();
-            return OfflinePageBridge.getForProfile(profile);
-        });
+        OfflinePageBridge offlinePageBridge =
+                TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+                    Profile profile = Profile.getLastUsedProfile();
+                    return OfflinePageBridge.getForProfile(profile);
+                });
 
         // Wait until the offline page model has been loaded.
         CallbackHelper callback = new CallbackHelper();
@@ -360,7 +361,7 @@ public class TrustedCdnPublisherUrlTest {
         });
         callback2.waitForCallback(0);
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { NetworkChangeNotifier.forceConnectivityState(false); });
 
         // Load the URL in the same tab. With no connectivity, loading the offline page should

@@ -18,7 +18,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -35,6 +34,7 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 
 import java.util.concurrent.ExecutionException;
@@ -115,11 +115,11 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
 
         // Cancel the Payment Request.
         int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 (Runnable) () -> mPaymentRequestTestRule.getPaymentRequestUI()
-                        .getDialogForTest()
-                        .findViewById(R.id.button_secondary)
-                        .performClick());
+                                   .getDialogForTest()
+                                   .findViewById(R.id.button_secondary)
+                                   .performClick());
         mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
@@ -180,9 +180,10 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
 
         // Press the back button.
         int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> mPaymentRequestTestRule.getPaymentRequestUI().getDialogForTest()
-                        .onBackPressed());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mPaymentRequestTestRule.getPaymentRequestUI()
+                                   .getDialogForTest()
+                                   .onBackPressed());
         mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 

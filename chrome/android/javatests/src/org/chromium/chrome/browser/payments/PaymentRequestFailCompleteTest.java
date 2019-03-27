@@ -11,7 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -23,6 +22,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 
 import java.util.concurrent.ExecutionException;
@@ -69,11 +69,11 @@ public class PaymentRequestFailCompleteTest implements MainActivityStartCallback
 
         // Dismiss the error message overlay.
         int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
-        ThreadUtils.runOnUiThreadBlocking((Runnable) ()
-                                                  -> mPaymentRequestTestRule.getPaymentRequestUI()
-                                                             .getDialogForTest()
-                                                             .findViewById(R.id.ok_button)
-                                                             .performClick());
+        TestThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> mPaymentRequestTestRule.getPaymentRequestUI()
+                                   .getDialogForTest()
+                                   .findViewById(R.id.ok_button)
+                                   .performClick());
         mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
 
         mPaymentRequestTestRule.expectResultContains(new String[] {"Transaction failed"});

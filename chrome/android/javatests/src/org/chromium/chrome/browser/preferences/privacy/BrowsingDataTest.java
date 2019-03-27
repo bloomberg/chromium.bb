@@ -13,7 +13,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -24,6 +23,7 @@ import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.Arrays;
@@ -55,7 +55,7 @@ public class BrowsingDataTest {
     private void clearBrowsingData(int dataType, int timePeriod)
             throws InterruptedException, TimeoutException {
         CallbackHelper helper = new CallbackHelper();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             BrowsingDataBridge.getInstance().clearBrowsingData(
                     helper::notifyCalled, new int[] {dataType}, timePeriod);
         });
@@ -71,7 +71,7 @@ public class BrowsingDataTest {
             out[0] = result;
             helper.notifyCalled();
         };
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             counter[0] = new BrowsingDataCounterBridge(
                     callback, BrowsingDataType.COOKIES, ClearBrowsingDataTab.ADVANCED);
         });

@@ -12,7 +12,6 @@ import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
@@ -30,6 +29,7 @@ import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -122,12 +122,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
     }
 
     public void startSync() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mProfileSyncService.requestStart();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mProfileSyncService.requestStart(); });
     }
 
     public void startSyncAndWait() {
@@ -136,17 +131,12 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
     }
 
     public void stopSync() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mProfileSyncService.requestStop();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mProfileSyncService.requestStop(); });
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     public void signIn(final Account account) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             SigninManager.get().signIn(account, null, null);
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
                 // Outside of tests, URL-keyed anonymized data collection is enabled by sign-in UI.
@@ -162,16 +152,13 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
 
     public void signOut() throws InterruptedException {
         final Semaphore s = new Semaphore(0);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                SigninManager.get().signOut(SignoutReason.SIGNOUT_TEST, new Runnable() {
-                    @Override
-                    public void run() {
-                        s.release();
-                    }
-                });
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            SigninManager.get().signOut(SignoutReason.SIGNOUT_TEST, new Runnable() {
+                @Override
+                public void run() {
+                    s.release();
+                }
+            });
         });
         Assert.assertTrue(s.tryAcquire(SyncTestUtil.TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertNull(SigninTestUtil.getCurrentAccount());
@@ -193,7 +180,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
      * Enables the |modelType| Sync data type, which must be in USER_SELECTABLE_TYPES.
      */
     public void enableDataType(final int modelType) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Set<Integer> chosenTypes = mProfileSyncService.getChosenDataTypes();
             chosenTypes.add(modelType);
             mProfileSyncService.setChosenDataTypes(false, chosenTypes);
@@ -204,13 +191,10 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
      * Disables the |modelType| Sync data type, which must be in USER_SELECTABLE_TYPES.
      */
     public void disableDataType(final int modelType) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Set<Integer> chosenTypes = mProfileSyncService.getChosenDataTypes();
-                chosenTypes.remove(modelType);
-                mProfileSyncService.setChosenDataTypes(false, chosenTypes);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Set<Integer> chosenTypes = mProfileSyncService.getChosenDataTypes();
+            chosenTypes.remove(modelType);
+            mProfileSyncService.setChosenDataTypes(false, chosenTypes);
         });
     }
 
@@ -229,21 +213,14 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
                 startMainActivityForSyncTest();
                 mContext = InstrumentationRegistry.getTargetContext();
 
-                ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Ensure SyncController is registered with the new AndroidSyncSettings.
-                        AndroidSyncSettings.get().registerObserver(SyncController.get(mContext));
-                        mFakeServerHelper = FakeServerHelper.get();
-                    }
+                TestThreadUtils.runOnUiThreadBlocking(() -> {
+                    // Ensure SyncController is registered with the new AndroidSyncSettings.
+                    AndroidSyncSettings.get().registerObserver(SyncController.get(mContext));
+                    mFakeServerHelper = FakeServerHelper.get();
                 });
                 FakeServerHelper.useFakeServer(mContext);
-                ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                    @Override
-                    public void run() {
-                        mProfileSyncService = ProfileSyncService.get();
-                    }
-                });
+                TestThreadUtils.runOnUiThreadBlocking(
+                        () -> { mProfileSyncService = ProfileSyncService.get(); });
 
                 UniqueIdentificationGeneratorFactory.registerGenerator(
                         UuidBasedUniqueIdentificationGenerator.GENERATOR_ID,
@@ -280,12 +257,9 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
     }
 
     private void ruleTearDown() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mProfileSyncService.requestStop();
-                FakeServerHelper.deleteFakeServer();
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mProfileSyncService.requestStop();
+            FakeServerHelper.deleteFakeServer();
         });
         SigninTestUtil.tearDownAuthForTest();
     }

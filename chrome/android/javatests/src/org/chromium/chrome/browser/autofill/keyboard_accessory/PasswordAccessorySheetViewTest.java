@@ -25,7 +25,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -36,6 +35,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.DeferredViewStubInflationProvider;
 
 import java.util.concurrent.ExecutionException;
@@ -62,7 +62,7 @@ public class PasswordAccessorySheetViewTest {
      */
     private void openLayoutInAccessorySheet(
             @LayoutRes int layout, KeyboardAccessoryData.Tab.Listener listener) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             AccessorySheetCoordinator accessorySheet = new AccessorySheetCoordinator(
                     new DeferredViewStubInflationProvider<>(
                             mActivityTestRule.getActivity().findViewById(
@@ -106,7 +106,7 @@ public class PasswordAccessorySheetViewTest {
     public void testAddingCaptionsToTheModelRendersThem() {
         assertThat(mView.get().getChildCount(), is(0));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.add(
                     new AccessorySheetDataPiece("Passwords", AccessorySheetDataPiece.Type.TITLE));
         });
@@ -129,7 +129,7 @@ public class PasswordAccessorySheetViewTest {
                 "Name Suggestion", "Name Suggestion", false, item -> clicked.set(true)));
         testInfo.addField(new UserInfo.Field(
                 "Password Suggestion", "Password Suggestion", true, item -> clicked.set(true)));
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.add(new AccessorySheetDataPiece(
                     testInfo, AccessorySheetDataPiece.Type.PASSWORD_INFO));
         });
@@ -141,10 +141,10 @@ public class PasswordAccessorySheetViewTest {
         assertThat(getPasswordSuggestion().getTransformationMethod(),
                 instanceOf(PasswordTransformationMethod.class));
 
-        ThreadUtils.runOnUiThreadBlocking(getNameSuggestion()::performClick);
+        TestThreadUtils.runOnUiThreadBlocking(getNameSuggestion()::performClick);
         assertThat(clicked.get(), is(true));
         clicked.set(false);
-        ThreadUtils.runOnUiThreadBlocking(getPasswordSuggestion()::performClick);
+        TestThreadUtils.runOnUiThreadBlocking(getPasswordSuggestion()::performClick);
         assertThat(clicked.get(), is(true));
     }
 

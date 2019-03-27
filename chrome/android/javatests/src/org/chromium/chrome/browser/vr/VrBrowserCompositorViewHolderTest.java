@@ -14,7 +14,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
@@ -24,6 +23,7 @@ import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -56,7 +56,7 @@ public class VrBrowserCompositorViewHolderTest {
         final int testHeight = 456;
         final WebContents webContents = mVrTestRule.getWebContents();
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             CompositorViewHolder compositorViewHolder =
                     (CompositorViewHolder) mVrTestRule.getActivity().findViewById(
                             R.id.compositor_view_holder);
@@ -77,7 +77,7 @@ public class VrBrowserCompositorViewHolderTest {
                     == testWidth;
         }, "CompositorViewHolder width did not match the requested layout width");
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(
                     "Viewport width changed when resizing a detached CompositorViewHolder",
                     webContents.getWidth(), oldWidth.get());

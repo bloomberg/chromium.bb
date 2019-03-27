@@ -13,7 +13,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
@@ -22,6 +21,7 @@ import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.File;
@@ -64,7 +64,7 @@ public class DownloadMediaParserTest {
         MediaParserResult result = new MediaParserResult();
 
         // The native DownloadMediaParser needs to be created on UI thread.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             DownloadMediaParserBridge parser = new DownloadMediaParserBridge(
                     mimeType, filePath, (DownloadMediaData mediaData) -> {
                         result.mediaData = mediaData;

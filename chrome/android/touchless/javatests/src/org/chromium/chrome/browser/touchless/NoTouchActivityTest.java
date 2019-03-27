@@ -14,7 +14,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.MockSafeBrowsingApiHandler;
@@ -25,6 +24,7 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 /**
@@ -71,7 +71,7 @@ public class NoTouchActivityTest {
     @MediumTest
     public void testRecreateWithTabHistory() throws Throwable {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PATH));
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(mActivity.getActivityTab().getWebContents().getLastCommittedUrl(),
                     mTestServer.getURL(TEST_PATH));
         });
@@ -80,7 +80,7 @@ public class NoTouchActivityTest {
         mActivityTestRule.waitForActivityNativeInitializationComplete();
         ChromeTabUtils.waitForTabPageLoaded(
                 mActivity.getActivityTab(), mTestServer.getURL(TEST_PATH));
-        ThreadUtils.runOnUiThreadBlocking(() -> mActivity.onBackPressed());
+        TestThreadUtils.runOnUiThreadBlocking(() -> mActivity.onBackPressed());
         CriteriaHelper.pollUiThread(
                 () -> mActivity.getActivityTab().getNativePage() instanceof TouchlessNewTabPage);
     }
@@ -95,7 +95,7 @@ public class NoTouchActivityTest {
                 new MockSafeBrowsingApiHandler().getClass());
         final String url = mTestServer.getURL(TEST_PATH);
         MockSafeBrowsingApiHandler.addMockResponse(url, "{\"matches\":[{\"threat_type\":\"5\"}]}");
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivity.getActivityTab().loadUrl(new LoadUrlParams(url)));
         // TODO(carlosil): For now, we check the presence of an interstitial through the title since
         // isShowingInterstitialPage does not work with committed interstitials. Once we fully

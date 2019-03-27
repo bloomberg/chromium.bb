@@ -28,7 +28,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -49,6 +48,7 @@ import org.chromium.chrome.test.util.OmniboxTestUtils.StubAutocompleteController
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.KeyUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 
 import java.util.concurrent.Callable;
@@ -94,24 +94,21 @@ public class UrlBarTest {
     private void toggleFocusAndIgnoreImeOperations(final UrlBar urlBar, final boolean gainFocus) {
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, gainFocus);
         if (gainFocus) {
-            ThreadUtils.runOnUiThreadBlocking(() -> startIgnoringImeUntilRestart(urlBar));
+            TestThreadUtils.runOnUiThreadBlocking(() -> startIgnoringImeUntilRestart(urlBar));
             CriteriaHelper.pollUiThread(() -> urlBar.getInputConnection() != null,
                     "Input connection never initialized for URL bar.");
         }
     }
 
     private void runInputConnectionMethodOnUiThreadBlocking(final Runnable runnable) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                UrlBar urlBar = getUrlBar();
-                // Note: in order for this to work correctly, the following conditions should be met
-                // 1) Unset and set ignoreImeForTest within one UI loop.
-                // 2) Do not restartInput() in between.
-                urlBar.setIgnoreImeForTest(false);
-                runnable.run();
-                urlBar.setIgnoreImeForTest(true);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            UrlBar urlBar = getUrlBar();
+            // Note: in order for this to work correctly, the following conditions should be met
+            // 1) Unset and set ignoreImeForTest within one UI loop.
+            // 2) Do not restartInput() in between.
+            urlBar.setIgnoreImeForTest(false);
+            runnable.run();
+            urlBar.setIgnoreImeForTest(true);
         });
     }
 
@@ -124,15 +121,12 @@ public class UrlBarTest {
     }
 
     private void setAutocompleteController(final AutocompleteController controller) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                LocationBarLayout locationBar =
-                        (LocationBarLayout) mActivityTestRule.getActivity().findViewById(
-                                R.id.location_bar);
-                locationBar.getAutocompleteCoordinator().cancelPendingAutocompleteStart();
-                locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            LocationBarLayout locationBar =
+                    (LocationBarLayout) mActivityTestRule.getActivity().findViewById(
+                            R.id.location_bar);
+            locationBar.getAutocompleteCoordinator().cancelPendingAutocompleteStart();
+            locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
         });
     }
 
@@ -151,7 +145,7 @@ public class UrlBarTest {
     }
 
     private Editable getUrlBarText(final UrlBar urlBar) throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<Editable>() {
+        return TestThreadUtils.runOnUiThreadBlocking(new Callable<Editable>() {
             @Override
             public Editable call() throws Exception {
                 return urlBar.getText();
@@ -165,14 +159,11 @@ public class UrlBarTest {
         final AtomicReference<String> textWithoutAutocomplete = new AtomicReference<String>();
         final AtomicReference<String> textWithAutocomplete = new AtomicReference<String>();
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                if (action != null) action.run();
-                textWithoutAutocomplete.set(urlBar.getTextWithoutAutocomplete());
-                textWithAutocomplete.set(urlBar.getTextWithAutocomplete());
-                hasAutocomplete.set(urlBar.hasAutocomplete());
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            if (action != null) action.run();
+            textWithoutAutocomplete.set(urlBar.getTextWithoutAutocomplete());
+            textWithAutocomplete.set(urlBar.getTextWithAutocomplete());
+            hasAutocomplete.set(urlBar.hasAutocomplete());
         });
 
         return new AutocompleteState(
@@ -430,29 +421,23 @@ public class UrlBarTest {
 
         // Add "a" to the omnibox and leave the cursor at the end of the new
         // text.
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    urlBar.getInputConnection().commitText("a", 1);
-                });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { urlBar.getInputConnection().commitText("a", 1); });
         autocompleteHelper.waitForCallback(0);
         // omnmibox text: a|
         Assert.assertEquals(1, cursorPositionUsed.get());
 
         // Append "cd" to the omnibox and leave the cursor at the end of the new
         // text.
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    urlBar.getInputConnection().commitText("cd", 1);
-                });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { urlBar.getInputConnection().commitText("cd", 1); });
         autocompleteHelper.waitForCallback(1);
         // omnmibox text: acd|
         Assert.assertEquals(3, cursorPositionUsed.get());
 
         // Move the cursor.
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    urlBar.getInputConnection().setSelection(1, 1);
-                });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { urlBar.getInputConnection().setSelection(1, 1); });
         // omnmibox text: a|cd
         // Moving the cursor shouldn't have caused a new call.
         Assert.assertEquals(2, autocompleteHelper.getCallCount());
@@ -461,28 +446,22 @@ public class UrlBarTest {
 
         // Insert "b" at the current cursor position and leave the cursor at
         // the end of the new text.
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    urlBar.getInputConnection().commitText("b", 1);
-                });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { urlBar.getInputConnection().commitText("b", 1); });
         autocompleteHelper.waitForCallback(2);
         // omnmibox text: ab|cd
         Assert.assertEquals(2, cursorPositionUsed.get());
 
         // Delete the character before the cursor.
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    urlBar.getInputConnection().deleteSurroundingText(1, 0);
-                });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { urlBar.getInputConnection().deleteSurroundingText(1, 0); });
         autocompleteHelper.waitForCallback(3);
         // omnmibox text: a|cd
         Assert.assertEquals(1, cursorPositionUsed.get());
 
         // Delete the character before the cursor (again).
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    urlBar.getInputConnection().deleteSurroundingText(1, 0);
-                });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { urlBar.getInputConnection().deleteSurroundingText(1, 0); });
         autocompleteHelper.waitForCallback(4);
         // omnmibox text: |cd
         Assert.assertEquals(0, cursorPositionUsed.get());
@@ -525,12 +504,8 @@ public class UrlBarTest {
         final UrlBar urlBar = getUrlBar();
         toggleFocusAndIgnoreImeOperations(urlBar, true);
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                urlBar.getInputConnection().commitText(textToBeEntered, 1);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { urlBar.getInputConnection().commitText(textToBeEntered, 1); });
         autocompleteHelper.waitForCallback(0);
         Assert.assertFalse(
                 "Inline autocomplete incorrectly prevented.", didPreventInlineAutocomplete.get());
@@ -608,23 +583,15 @@ public class UrlBarTest {
         setTextAndVerifyNoAutocomplete(urlBar, "test");
         setAutocomplete(urlBar, "test", "ing is fun");
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                urlBar.getInputConnection().beginBatchEdit();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { urlBar.getInputConnection().beginBatchEdit(); });
         // Ensure the autocomplete is not modified if in batch mode.
         AutocompleteState state = setSelection(urlBar, 1, 1);
         Assert.assertTrue(state.hasAutocomplete);
         Assert.assertEquals("test", state.textWithoutAutocomplete);
         Assert.assertEquals("testing is fun", state.textWithAutocomplete);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                urlBar.getInputConnection().endBatchEdit();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { urlBar.getInputConnection().endBatchEdit(); });
         // Ensure that after batch mode has ended that the autocomplete is cleared due to the
         // invalid selection range.
         state = getAutocompleteState(urlBar, null);
@@ -657,24 +624,12 @@ public class UrlBarTest {
         setTextAndVerifyNoAutocomplete(urlBar, "test");
         setAutocomplete(urlBar, "test", "ing is fun");
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                urlBar.getInputConnection().beginBatchEdit();
-            }
-        });
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                urlBar.getInputConnection().commitText("y", 1);
-            }
-        });
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                urlBar.getInputConnection().endBatchEdit();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { urlBar.getInputConnection().beginBatchEdit(); });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { urlBar.getInputConnection().commitText("y", 1); });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { urlBar.getInputConnection().endBatchEdit(); });
 
         CriteriaHelper.pollUiThread(Criteria.equals("testy", new Callable<String>() {
             @Override
@@ -776,14 +731,11 @@ public class UrlBarTest {
         setTextAndVerifyNoAutocomplete(urlBar, "a");
         setAutocomplete(urlBar, "a", "mazon.com");
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                urlBar.getInputConnection().beginBatchEdit();
-                urlBar.getInputConnection().commitText("l", 1);
-                urlBar.getInputConnection().setComposingText("", 1);
-                urlBar.getInputConnection().endBatchEdit();
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            urlBar.getInputConnection().beginBatchEdit();
+            urlBar.getInputConnection().commitText("l", 1);
+            urlBar.getInputConnection().setComposingText("", 1);
+            urlBar.getInputConnection().endBatchEdit();
         });
 
         CriteriaHelper.pollUiThread(Criteria.equals("al", new Callable<String>() {
@@ -1031,7 +983,7 @@ public class UrlBarTest {
      * or android.R.id.cut.
      */
     private String copyUrlToClipboard(final int action) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
             @Override
             public String call() {
                 ClipboardManager clipboardManager =

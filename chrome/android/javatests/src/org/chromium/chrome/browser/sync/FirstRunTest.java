@@ -20,7 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -39,6 +38,7 @@ import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.TimeoutException;
 
@@ -71,12 +71,9 @@ public class FirstRunTest {
             final ActivityMonitor freMonitor =
                     new ActivityMonitor(FirstRunActivity.class.getName(), null, false);
             instrumentation.addMonitor(freMonitor);
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    FirstRunFlowSequencer.launch(context, intent, false /* requiresBroadcast */,
-                            false /* preferLightweightFre */);
-                }
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                FirstRunFlowSequencer.launch(context, intent, false /* requiresBroadcast */,
+                        false /* preferLightweightFre */);
             });
 
             // Wait for the FRE to be ready to use.
@@ -221,11 +218,6 @@ public class FirstRunTest {
     }
 
     private void processFirstRunOnUiThread() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                FirstRunSignInProcessor.start(mActivity);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { FirstRunSignInProcessor.start(mActivity); });
     }
 }

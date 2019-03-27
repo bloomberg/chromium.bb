@@ -14,7 +14,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -24,6 +23,7 @@ import org.chromium.chrome.browser.offlinepages.OfflineTestUtil;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -49,14 +49,14 @@ public class PrefetchConfigurationTest {
         AtomicBoolean isFlagEnabled = new AtomicBoolean();
         AtomicBoolean isEnabled = new AtomicBoolean();
         OfflineTestUtil.setPrefetchingEnabledByServer(true);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             isFlagEnabled.set(PrefetchConfiguration.isPrefetchingFlagEnabled());
             isEnabled.set(PrefetchConfiguration.isPrefetchingEnabled());
         });
         assertTrue(isFlagEnabled.get());
         assertTrue(isEnabled.get());
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Disable prefetching user setting.
             PrefetchConfiguration.setPrefetchingEnabledInSettings(false);
             isFlagEnabled.set(PrefetchConfiguration.isPrefetchingFlagEnabled());
@@ -65,7 +65,7 @@ public class PrefetchConfigurationTest {
         assertTrue(isFlagEnabled.get());
         assertFalse(isEnabled.get());
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Re-enable prefetching user setting.
             PrefetchConfiguration.setPrefetchingEnabledInSettings(true);
             isFlagEnabled.set(PrefetchConfiguration.isPrefetchingFlagEnabled());
@@ -83,14 +83,14 @@ public class PrefetchConfigurationTest {
         AtomicBoolean isFlagEnabled = new AtomicBoolean();
         AtomicBoolean isEnabled = new AtomicBoolean();
         OfflineTestUtil.setPrefetchingEnabledByServer(true);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             isFlagEnabled.set(PrefetchConfiguration.isPrefetchingFlagEnabled());
             isEnabled.set(PrefetchConfiguration.isPrefetchingEnabled());
         });
         assertFalse(isFlagEnabled.get());
         assertFalse(isEnabled.get());
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Disable prefetching user setting.
             PrefetchConfiguration.setPrefetchingEnabledInSettings(false);
             isFlagEnabled.set(PrefetchConfiguration.isPrefetchingFlagEnabled());
@@ -99,7 +99,7 @@ public class PrefetchConfigurationTest {
         assertFalse(isFlagEnabled.get());
         assertFalse(isEnabled.get());
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Re-enable prefetching user setting.
             PrefetchConfiguration.setPrefetchingEnabledInSettings(true);
             isFlagEnabled.set(PrefetchConfiguration.isPrefetchingFlagEnabled());

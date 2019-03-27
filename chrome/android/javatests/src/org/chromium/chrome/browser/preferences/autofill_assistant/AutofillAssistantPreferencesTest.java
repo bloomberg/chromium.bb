@@ -20,7 +20,6 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -33,6 +32,7 @@ import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests for the "Autofill Assisatnt" settings screen.
@@ -93,50 +93,39 @@ public class AutofillAssistantPreferencesTest {
     @Feature({"Preferences"})
     @EnableFeatures(ChromeFeatureList.AUTOFILL_ASSISTANT)
     public void testAutofillAssistantSwitch() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                setAutofillAssistantSwitch(true);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { setAutofillAssistantSwitch(true); });
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         AutofillAssistantPreferences.class.getName());
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                AutofillAssistantPreferences autofillAssistantPrefs =
-                        (AutofillAssistantPreferences) preferences.getFragmentForTest();
-                ChromeSwitchPreference onOffSwitch =
-                        (ChromeSwitchPreference) autofillAssistantPrefs.findPreference(
-                                AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH);
-                Assert.assertTrue(onOffSwitch.isChecked());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AutofillAssistantPreferences autofillAssistantPrefs =
+                    (AutofillAssistantPreferences) preferences.getFragmentForTest();
+            ChromeSwitchPreference onOffSwitch =
+                    (ChromeSwitchPreference) autofillAssistantPrefs.findPreference(
+                            AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH);
+            Assert.assertTrue(onOffSwitch.isChecked());
 
-                PreferencesTest.clickPreference(autofillAssistantPrefs, onOffSwitch);
-                Assert.assertFalse(getAutofillAssistantSwitch(true));
-                PreferencesTest.clickPreference(autofillAssistantPrefs, onOffSwitch);
-                Assert.assertTrue(getAutofillAssistantSwitch(false));
+            PreferencesTest.clickPreference(autofillAssistantPrefs, onOffSwitch);
+            Assert.assertFalse(getAutofillAssistantSwitch(true));
+            PreferencesTest.clickPreference(autofillAssistantPrefs, onOffSwitch);
+            Assert.assertTrue(getAutofillAssistantSwitch(false));
 
-                preferences.finish();
-                setAutofillAssistantSwitch(false);
-            }
+            preferences.finish();
+            setAutofillAssistantSwitch(false);
         });
 
         final Preferences preferences2 =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         AutofillAssistantPreferences.class.getName());
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                AutofillAssistantPreferences autofillAssistantPrefs =
-                        (AutofillAssistantPreferences) preferences2.getFragmentForTest();
-                ChromeSwitchPreference onOffSwitch =
-                        (ChromeSwitchPreference) autofillAssistantPrefs.findPreference(
-                                AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH);
-                Assert.assertFalse(onOffSwitch.isChecked());
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AutofillAssistantPreferences autofillAssistantPrefs =
+                    (AutofillAssistantPreferences) preferences2.getFragmentForTest();
+            ChromeSwitchPreference onOffSwitch =
+                    (ChromeSwitchPreference) autofillAssistantPrefs.findPreference(
+                            AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH);
+            Assert.assertFalse(onOffSwitch.isChecked());
         });
     }
 
@@ -154,13 +143,10 @@ public class AutofillAssistantPreferencesTest {
         // Note: |PREF_AUTOFILL_ASSISTANT_SWITCH| is cleared in setUp().
         final Preferences preferences = PreferencesTest.startPreferences(
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                MainPreferences mainPrefs = (MainPreferences) preferences.getFragmentForTest();
-                Assert.assertThat(mainPrefs.findPreference(MainPreferences.PREF_AUTOFILL_ASSISTANT),
-                        is(nullValue()));
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            MainPreferences mainPrefs = (MainPreferences) preferences.getFragmentForTest();
+            Assert.assertThat(mainPrefs.findPreference(MainPreferences.PREF_AUTOFILL_ASSISTANT),
+                    is(nullValue()));
         });
     }
 
@@ -178,13 +164,10 @@ public class AutofillAssistantPreferencesTest {
         setAutofillAssistantSwitch(false);
         final Preferences preferences = PreferencesTest.startPreferences(
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                MainPreferences mainPrefs = (MainPreferences) preferences.getFragmentForTest();
-                Assert.assertThat(mainPrefs.findPreference(MainPreferences.PREF_AUTOFILL_ASSISTANT),
-                        is(not(nullValue())));
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            MainPreferences mainPrefs = (MainPreferences) preferences.getFragmentForTest();
+            Assert.assertThat(mainPrefs.findPreference(MainPreferences.PREF_AUTOFILL_ASSISTANT),
+                    is(not(nullValue())));
         });
     }
 
@@ -199,13 +182,10 @@ public class AutofillAssistantPreferencesTest {
         final Preferences preferences = PreferencesTest.startPreferences(
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                MainPreferences mainPrefs = (MainPreferences) preferences.getFragmentForTest();
-                Assert.assertThat(mainPrefs.findPreference(MainPreferences.PREF_AUTOFILL_ASSISTANT),
-                        is(nullValue()));
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            MainPreferences mainPrefs = (MainPreferences) preferences.getFragmentForTest();
+            Assert.assertThat(mainPrefs.findPreference(MainPreferences.PREF_AUTOFILL_ASSISTANT),
+                    is(nullValue()));
         });
     }
 }

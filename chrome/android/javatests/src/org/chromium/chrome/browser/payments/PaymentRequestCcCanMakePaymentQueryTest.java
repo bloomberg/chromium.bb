@@ -11,7 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -23,6 +22,7 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -98,7 +98,7 @@ public class PaymentRequestCcCanMakePaymentQueryTest implements MainActivityStar
     @Feature({"Payments"})
     public void testCanMakePaymentDisabled()
             throws InterruptedException, ExecutionException, TimeoutException {
-        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> {
+        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> {
             PrefServiceBridge.getInstance().setBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED, false);
         });
 

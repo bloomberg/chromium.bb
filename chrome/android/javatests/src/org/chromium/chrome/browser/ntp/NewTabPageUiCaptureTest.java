@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -31,6 +30,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.compositor.layouts.DisableChromeAnimations;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Capture the New Tab Page UI for UX review.
@@ -73,7 +73,7 @@ public class NewTabPageUiCaptureTest {
         // effects other elements of the UI - it moves the Learn More link into the Context Menu.
         // Removing the ScrollToLoad listener from the RecyclerView allows us to prevent scroll to
         // load triggering while maintaining the UI otherwise.
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> mNtp.getNewTabPageView().getRecyclerView().clearScrollToLoadListener());
     }
 
@@ -91,18 +91,19 @@ public class NewTabPageUiCaptureTest {
         final int subsequentScrollHeight = mNtp.getView().getHeight()
                 - mActivityTestRule.getActivity().getToolbarManager().getToolbar().getHeight();
 
-        ThreadUtils.runOnUiThreadBlocking(() -> { recyclerView.scrollBy(0, firstScrollHeight); });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { recyclerView.scrollBy(0, firstScrollHeight); });
         RecyclerViewTestUtils.waitForStableRecyclerView(recyclerView);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         shoot("New Tab Page scrolled");
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { recyclerView.scrollBy(0, subsequentScrollHeight); });
         RecyclerViewTestUtils.waitForStableRecyclerView(recyclerView);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         shoot("New Tab Page scrolled twice");
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { recyclerView.scrollBy(0, subsequentScrollHeight); });
         RecyclerViewTestUtils.waitForStableRecyclerView(recyclerView);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();

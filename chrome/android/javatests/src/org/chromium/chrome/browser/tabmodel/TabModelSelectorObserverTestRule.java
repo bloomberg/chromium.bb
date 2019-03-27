@@ -10,11 +10,11 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.HashSet;
@@ -59,12 +59,7 @@ public class TabModelSelectorObserverTestRule extends ChromeBrowserTestRule {
     }
 
     private void setUp() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                initialize();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { initialize(); });
     }
 
     private void initialize() {

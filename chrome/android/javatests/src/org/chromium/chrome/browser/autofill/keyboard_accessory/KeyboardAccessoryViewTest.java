@@ -37,7 +37,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -50,6 +49,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.autofill.AutofillSuggestion;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.DeferredViewStubInflationProvider;
 import org.chromium.ui.DropdownItem;
 import org.chromium.ui.ViewProvider;
@@ -77,7 +77,7 @@ public class KeyboardAccessoryViewTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel =
                     KeyboardAccessoryProperties.defaultModelBuilder()
                             .with(TAB_LAYOUT_ITEM,
@@ -109,12 +109,12 @@ public class KeyboardAccessoryViewTest {
         assertNull(mKeyboardAccessoryView.poll());
 
         // After setting the visibility to true, the view should exist and be visible.
-        ThreadUtils.runOnUiThreadBlocking(() -> { mModel.set(VISIBLE, true); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mModel.set(VISIBLE, true); });
         KeyboardAccessoryView view = mKeyboardAccessoryView.take();
         assertEquals(view.getVisibility(), View.VISIBLE);
 
         // After hiding the view, the view should still exist but be invisible.
-        ThreadUtils.runOnUiThreadBlocking(() -> { mModel.set(VISIBLE, false); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mModel.set(VISIBLE, false); });
         assertNotEquals(view.getVisibility(), View.VISIBLE);
     }
 
@@ -126,7 +126,7 @@ public class KeyboardAccessoryViewTest {
                 new KeyboardAccessoryData.Action("Test Button", GENERATE_PASSWORD_AUTOMATIC,
                         action -> buttonClicked.set(true)));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.set(VISIBLE, true);
             mModel.get(BAR_ITEMS).add(testItem);
         });
@@ -140,7 +140,7 @@ public class KeyboardAccessoryViewTest {
     @Test
     @MediumTest
     public void testCanAddSingleButtons() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.set(VISIBLE, true);
             mModel.get(BAR_ITEMS).set(
                     new BarItem[] {new BarItem(BarItem.Type.ACTION_BUTTON,
@@ -155,7 +155,7 @@ public class KeyboardAccessoryViewTest {
         onView(withText("First")).check(matches(isDisplayed()));
         onView(withText("Second")).check(matches(isDisplayed()));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.get(BAR_ITEMS).add(new BarItem(BarItem.Type.ACTION_BUTTON,
                     new KeyboardAccessoryData.Action(
                             "Third", GENERATE_PASSWORD_AUTOMATIC, action -> {})));
@@ -170,7 +170,7 @@ public class KeyboardAccessoryViewTest {
     @Test
     @MediumTest
     public void testCanRemoveSingleButtons() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.set(VISIBLE, true);
             mModel.get(BAR_ITEMS).set(
                     new BarItem[] {new BarItem(BarItem.Type.ACTION_BUTTON,
@@ -189,7 +189,7 @@ public class KeyboardAccessoryViewTest {
         onView(withText("Second")).check(matches(isDisplayed()));
         onView(withText("Third")).check(matches(isDisplayed()));
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> mModel.get(BAR_ITEMS).remove(mModel.get(BAR_ITEMS).get(1)));
 
         onView(isRoot()).check((root, e)
@@ -207,7 +207,7 @@ public class KeyboardAccessoryViewTest {
         AtomicReference<Boolean> clickRecorded = new AtomicReference<>();
         KeyboardAccessoryData.Action action = new KeyboardAccessoryData.Action(
                 "Unused", AUTOFILL_SUGGESTION, result -> clickRecorded.set(true));
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.set(VISIBLE, true);
             mModel.get(BAR_ITEMS).set(new BarItem[] {
                     new AutofillBarItem(
