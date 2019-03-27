@@ -18,7 +18,6 @@
 #include "media/base/test_data_util.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
-#include "third_party/libaom/av1_buildflags.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"

@@ -16,7 +16,7 @@
 #include "media/filters/gpu_video_decoder.h"
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
-#include "third_party/libaom/av1_buildflags.h"
+#include "third_party/libaom/libaom_buildflags.h"
 
 #if !defined(OS_ANDROID)
 #include "media/filters/decrypting_audio_decoder.h"
@@ -27,7 +27,7 @@
 #include "media/filters/fuchsia/fuchsia_video_decoder.h"
 #endif
 
-#if BUILDFLAG(ENABLE_AV1_DECODER)
+#if BUILDFLAG(ENABLE_LIBAOM_DECODER)
 #include "media/filters/aom_video_decoder.h"
 #endif
 
@@ -123,11 +123,11 @@ void DefaultDecoderFactory::CreateVideoDecoders(
 #if BUILDFLAG(ENABLE_DAV1D_DECODER)
   if (base::FeatureList::IsEnabled(kDav1dVideoDecoder))
     video_decoders->push_back(std::make_unique<Dav1dVideoDecoder>(media_log));
-#if BUILDFLAG(ENABLE_AV1_DECODER)
+#if BUILDFLAG(ENABLE_LIBAOM_DECODER)
   else
     video_decoders->push_back(std::make_unique<AomVideoDecoder>(media_log));
 #endif
-#elif BUILDFLAG(ENABLE_AV1_DECODER)
+#elif BUILDFLAG(ENABLE_LIBAOM_DECODER)
   video_decoders->push_back(std::make_unique<AomVideoDecoder>(media_log));
 #endif
 
