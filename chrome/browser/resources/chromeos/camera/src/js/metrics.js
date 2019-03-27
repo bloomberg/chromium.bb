@@ -42,7 +42,7 @@ analytics.EventBuilder.prototype.dimen = function(i, v) {
  * @private
  */
 cca.metrics.ga_ = (function() {
-  const id = 'UA-134822711-2';  // TODO(yuli): Use prod id.
+  const id = 'UA-134822711-1';
   const service = analytics.getService('chrome-camera-app');
 
   var getConfig = () =>
