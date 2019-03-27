@@ -15,6 +15,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
@@ -95,6 +96,7 @@ UpdateScreen::UpdateScreen(BaseScreenDelegate* base_screen_delegate,
                            UpdateView* view,
                            const ScreenExitCallback& exit_callback)
     : BaseScreen(OobeScreen::SCREEN_OOBE_UPDATE),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       reboot_check_delay_(kWaitForRebootTimeSec),
       base_screen_delegate_(base_screen_delegate),
       view_(view),
@@ -186,7 +188,7 @@ void UpdateScreen::UpdateStatusChanged(
         // Because update engine doesn't send UPDATE_STATUS_UPDATE_AVAILABLE
         // we need to is update critical on first downloading notification.
         is_downloading_update_ = true;
-        download_start_time_ = download_last_time_ = base::Time::Now();
+        download_start_time_ = download_last_time_ = tick_clock_->NowTicks();
         download_start_progress_ = status.download_progress;
         download_last_progress_ = status.download_progress;
         is_download_average_speed_computed_ = false;
@@ -334,9 +336,12 @@ void UpdateScreen::CancelUpdate() {
   ExitUpdate(Result::UPDATE_NOT_REQUIRED);
 }
 
-// TODO(jdufault): This should return a pointer. See crbug.com/672142.
-base::OneShotTimer& UpdateScreen::GetErrorMessageTimerForTesting() {
-  return error_message_timer_;
+base::OneShotTimer* UpdateScreen::GetErrorMessageTimerForTesting() {
+  return &error_message_timer_;
+}
+
+base::OneShotTimer* UpdateScreen::GetRebootTimerForTesting() {
+  return &reboot_timer_;
 }
 
 void UpdateScreen::Show() {
@@ -406,7 +411,7 @@ void UpdateScreen::RetryUpdateWithUpdateOverCellularPermissionSet(
 
 void UpdateScreen::UpdateDownloadingStats(
     const UpdateEngineClient::Status& status) {
-  base::Time download_current_time = base::Time::Now();
+  base::TimeTicks download_current_time = tick_clock_->NowTicks();
   if (download_current_time >=
       download_last_time_ +
           base::TimeDelta::FromSeconds(kMinTimeStepInSeconds)) {
@@ -456,7 +461,7 @@ void UpdateScreen::UpdateDownloadingStats(
 }
 
 bool UpdateScreen::HasCriticalUpdate() {
-  if (is_ignore_update_deadlines_)
+  if (ignore_update_deadlines_)
     return true;
 
   std::string deadline;

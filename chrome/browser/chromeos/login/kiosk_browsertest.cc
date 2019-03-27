@@ -993,8 +993,11 @@ IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_LaunchAppNetworkPortal) {
 
   // Start app launch with network portal state.
   StartAppLaunchFromLoginScreen(SimulateNetworkPortalClosure());
-  OobeScreenWaiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH)
-      .WaitNoAssertCurrentScreen();
+
+  OobeScreenWaiter app_splash_waiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
+  app_splash_waiter.set_no_assert_last_screen();
+  app_splash_waiter.Wait();
+
   WaitForAppLaunchNetworkTimeout();
 
   // Network error should show up automatically since this test does not
