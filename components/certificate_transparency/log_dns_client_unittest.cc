@@ -1029,18 +1029,19 @@ TEST_P(LogDnsClientTest, SecureDnsMode_Secure) {
       CreateRuleBasedLogDnsClient(std::move(rules));
 
   std::unique_ptr<LogDnsClient::AuditProofQuery> query;
-  net::TestCompletionCallback callback;
+  net::TestCompletionCallback callback1;
   ASSERT_THAT(log_client->QueryAuditProof("ct.test", kLeafHashes[0],
                                           false /* lookup_securely */, 999999,
-                                          &query, callback.callback()),
+                                          &query, callback1.callback()),
               IsError(net::ERR_IO_PENDING));
-  EXPECT_THAT(callback.WaitForResult(), IsError(net::ERR_NAME_NOT_RESOLVED));
+  EXPECT_THAT(callback1.WaitForResult(), IsError(net::ERR_NAME_NOT_RESOLVED));
 
+  net::TestCompletionCallback callback2;
   ASSERT_THAT(log_client->QueryAuditProof("ct.test", kLeafHashes[0],
                                           true /* lookup_securely */, 999999,
-                                          &query, callback.callback()),
+                                          &query, callback2.callback()),
               IsError(net::ERR_IO_PENDING));
-  EXPECT_THAT(callback.WaitForResult(), IsOk());
+  EXPECT_THAT(callback2.WaitForResult(), IsOk());
 }
 
 TEST_P(LogDnsClientTest, SecureDnsMode_Insecure) {
@@ -1077,18 +1078,19 @@ TEST_P(LogDnsClientTest, SecureDnsMode_Insecure) {
       CreateRuleBasedLogDnsClient(std::move(rules));
 
   std::unique_ptr<LogDnsClient::AuditProofQuery> query;
-  net::TestCompletionCallback callback;
+  net::TestCompletionCallback callback1;
   ASSERT_THAT(log_client->QueryAuditProof("ct.test", kLeafHashes[0],
                                           false /* lookup_securely */, 999999,
-                                          &query, callback.callback()),
+                                          &query, callback1.callback()),
               IsError(net::ERR_IO_PENDING));
-  EXPECT_THAT(callback.WaitForResult(), IsOk());
+  EXPECT_THAT(callback1.WaitForResult(), IsOk());
 
+  net::TestCompletionCallback callback2;
   ASSERT_THAT(log_client->QueryAuditProof("ct.test", kLeafHashes[0],
                                           true /* lookup_securely */, 999999,
-                                          &query, callback.callback()),
+                                          &query, callback2.callback()),
               IsError(net::ERR_IO_PENDING));
-  EXPECT_THAT(callback.WaitForResult(), IsError(net::ERR_NAME_NOT_RESOLVED));
+  EXPECT_THAT(callback2.WaitForResult(), IsError(net::ERR_NAME_NOT_RESOLVED));
 }
 
 INSTANTIATE_TEST_SUITE_P(ReadMode,
