@@ -397,7 +397,7 @@ void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
 }
 
 void WindowPerformance::AddElementTiming(const AtomicString& name,
-                                         const IntRect& rect,
+                                         const FloatRect& rect,
                                          TimeTicks start_time,
                                          TimeTicks response_end,
                                          const AtomicString& identifier) {

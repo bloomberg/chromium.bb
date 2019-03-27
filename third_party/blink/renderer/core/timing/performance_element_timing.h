@@ -21,13 +21,13 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
 
  public:
   static PerformanceElementTiming* Create(const AtomicString& name,
-                                          const IntRect& intersection_rect,
+                                          const FloatRect& intersection_rect,
                                           DOMHighResTimeStamp start_time,
                                           DOMHighResTimeStamp response_end,
                                           const AtomicString& identifier);
 
   PerformanceElementTiming(const AtomicString& name,
-                           const IntRect& intersection_rect,
+                           const FloatRect& intersection_rect,
                            DOMHighResTimeStamp start_time,
                            DOMHighResTimeStamp response_end,
                            const AtomicString& identifier);

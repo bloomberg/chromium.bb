@@ -170,14 +170,12 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
 
   DrawingRecorder recorder(context, layout_image_, paint_info.phase);
   DCHECK(paint_info.PaintContainer());
-  PaintIntoRect(context, paint_rect, content_rect,
-                paint_info.PaintContainer()->Layer());
+  PaintIntoRect(context, paint_rect, content_rect);
 }
 
 void ImagePainter::PaintIntoRect(GraphicsContext& context,
                                  const LayoutRect& dest_rect,
-                                 const LayoutRect& content_rect,
-                                 const PaintLayer* painting_layer) {
+                                 const LayoutRect& content_rect) {
   if (!layout_image_.ImageResource()->HasImage() ||
       layout_image_.ImageResource()->ErrorOccurred())
     return;  // FIXME: should we just ASSERT these conditions? (audit all
@@ -246,7 +244,8 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
     LocalDOMWindow* window = layout_image_.GetDocument().domWindow();
     DCHECK(window);
     ImageElementTiming::From(*window).NotifyImagePainted(
-        &layout_image_, layout_image_.CachedImage(), painting_layer);
+        &layout_image_, layout_image_.CachedImage(),
+        context.GetPaintController().CurrentPaintChunkProperties());
   }
 
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {

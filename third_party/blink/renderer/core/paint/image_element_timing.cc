@@ -10,12 +10,12 @@
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
-#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -46,7 +46,7 @@ ImageElementTiming::ImageElementTiming(LocalDOMWindow& window)
 void ImageElementTiming::NotifyImagePainted(
     const LayoutObject* layout_object,
     const ImageResourceContent* cached_image,
-    const PaintLayer* painting_layer) {
+    const PropertyTreeState& current_paint_chunk_properties) {
   auto result = images_notified_.insert(layout_object);
   if (!result.is_new_entry || !cached_image)
     return;
@@ -56,12 +56,12 @@ void ImageElementTiming::NotifyImagePainted(
   if (!frame)
     return;
 
-  IntRect intersection_rect =
-      ComputeIntersectionRect(frame, layout_object, painting_layer);
+  FloatRect intersection_rect = ComputeIntersectionRect(
+      frame, layout_object, current_paint_chunk_properties);
   const Element* element = ToElement(layout_object->GetNode());
   const AtomicString attr =
       element->FastGetAttribute(html_names::kElementtimingAttr);
-  if (!ShouldReportElement(attr, intersection_rect))
+  if (!ShouldReportElement(frame, attr, intersection_rect))
     return;
 
   DCHECK(GetSupplementable()->document() == &layout_object->GetDocument());
@@ -101,39 +101,36 @@ void ImageElementTiming::NotifyImagePainted(
   }
 }
 
-IntRect ImageElementTiming::ComputeIntersectionRect(
+FloatRect ImageElementTiming::ComputeIntersectionRect(
     const LocalFrame* frame,
     const LayoutObject* layout_object,
-    const PaintLayer* painting_layer) {
-  viewport_ = frame->View()->LayoutViewport()->VisibleContentRect();
-
+    const PropertyTreeState& current_paint_chunk_properties) {
   // Compute the visible part of the image rect.
   LayoutRect image_visual_rect = layout_object->FirstFragment().VisualRect();
-  const auto& local_transform = painting_layer->GetLayoutObject()
-                                    .FirstFragment()
-                                    .LocalBorderBoxProperties()
-                                    .Transform();
-  const auto& ancestor_transform = painting_layer->GetLayoutObject()
-                                       .View()
-                                       ->FirstFragment()
-                                       .LocalBorderBoxProperties()
-                                       .Transform();
-  FloatRect new_visual_rect_abs = FloatRect(image_visual_rect);
-  GeometryMapper::SourceToDestinationRect(local_transform, ancestor_transform,
-                                          new_visual_rect_abs);
-  IntRect visible_new_visual_rect = RoundedIntRect(new_visual_rect_abs);
-  visible_new_visual_rect.Intersect(viewport_);
-  return visible_new_visual_rect;
+
+  FloatClipRect visual_rect = FloatClipRect(FloatRect(image_visual_rect));
+  GeometryMapper::LocalToAncestorVisualRect(current_paint_chunk_properties,
+                                            frame->View()
+                                                ->GetLayoutView()
+                                                ->FirstFragment()
+                                                .LocalBorderBoxProperties(),
+                                            visual_rect);
+  return visual_rect.Rect();
 }
 
 bool ImageElementTiming::ShouldReportElement(
+    const LocalFrame* frame,
     const AtomicString& element_timing,
-    const IntRect& intersection_rect) const {
-  // Do not create an entry if 'elementtiming' is not present or the image is
-  // below a certain size threshold.
+    const FloatRect& intersection_rect) const {
+  // Create an entry if 'elementtiming' is present or if the fraction of the
+  // viewport occupied by the image is above a certain size threshold.
   return !element_timing.IsEmpty() ||
-         intersection_rect.Size().Area() >
-             viewport_.Size().Area() * kImageTimingSizeThreshold;
+         intersection_rect.Size().Area() > frame->View()
+                                                   ->LayoutViewport()
+                                                   ->VisibleContentRect()
+                                                   .Size()
+                                                   .Area() *
+                                               kImageTimingSizeThreshold;
 }
 
 void ImageElementTiming::ReportImagePaintSwapTime(WebLayerTreeView::SwapResult,
