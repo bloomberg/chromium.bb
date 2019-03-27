@@ -35,6 +35,16 @@ suite('ExtensionsActivityLogHistoryTest', function() {
         time: 1541203131994.837
       },
       {
+        activityId: '308',
+        activityType: 'dom_access',
+        apiCall: 'Storage.setItem',
+        args: 'null',
+        count: 10,
+        extensionId: EXTENSION_ID,
+        pageUrl: `chrome-extension://${EXTENSION_ID}/index.html`,
+        time: 1541203131994.837
+      },
+      {
         activityId: '301',
         activityType: 'api_call',
         apiCall: 'i18n.getUILanguage',
@@ -142,6 +152,12 @@ suite('ExtensionsActivityLogHistoryTest', function() {
         'activity-log-history-item');
   }
 
+  // We know an item is expanded if its iron-collapse is opened.
+  function getExpandedItems() {
+    return Array.from(getHistoryItems())
+        .filter(item => item.$$('iron-collapse').opened);
+  }
+
   test('activities are present for extension', function() {
     proxyDelegate.testActivities = testActivities;
 
@@ -154,7 +170,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
       testVisible('.activity-table-headings', true);
 
       const activityLogItems = getHistoryItems();
-      expectEquals(activityLogItems.length, 2);
+      expectEquals(activityLogItems.length, 3);
 
       // Test the order of the activity log items here. This test is in this
       // file because the logic to group activity log items by their API call
@@ -167,6 +183,10 @@ suite('ExtensionsActivityLogHistoryTest', function() {
       expectEquals(
           activityLogItems[1].$$('#activity-key').innerText, 'Storage.getItem');
       expectEquals(activityLogItems[1].$$('#activity-count').innerText, '35');
+
+      expectEquals(
+          activityLogItems[2].$$('#activity-key').innerText, 'Storage.setItem');
+      expectEquals(activityLogItems[2].$$('#activity-count').innerText, '10');
     });
   });
 
@@ -216,7 +236,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
           })
           .then(() => {
             Polymer.dom.flush();
-            expectEquals(2, getHistoryItems().length);
+            expectEquals(3, getHistoryItems().length);
           });
     });
   });
@@ -267,6 +287,36 @@ suite('ExtensionsActivityLogHistoryTest', function() {
     });
   });
 
+  test('expand/collapse all', function() {
+    proxyDelegate.testActivities = testActivities;
+
+    return setupActivityLogHistory().then(() => {
+      Polymer.dom.flush();
+
+      const expandableItems =
+          Array.from(getHistoryItems())
+              .filter(item => item.$$('cr-expand-button:not([hidden])'));
+      expectEquals(2, expandableItems.length);
+
+      // All items should be collapsed by default.
+      expectEquals(0, getExpandedItems().length);
+
+      // Click the dropdown toggle, then expand all.
+      activityLogHistory.$$('#more-actions').click();
+      activityLogHistory.$$('#expand-all-button').click();
+
+      Polymer.dom.flush();
+      expectEquals(2, getExpandedItems().length);
+
+      // Collapse all items.
+      activityLogHistory.$$('#more-actions').click();
+      activityLogHistory.$$('#collapse-all-button').click();
+
+      Polymer.dom.flush();
+      expectEquals(0, getExpandedItems().length);
+    });
+  });
+
   test(
       'clicking on the delete button for an activity row deletes that row',
       function() {
@@ -276,7 +326,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
           Polymer.dom.flush();
           const activityLogItems = getHistoryItems();
 
-          expectEquals(activityLogItems.length, 2);
+          expectEquals(activityLogItems.length, 3);
           proxyDelegate.resetResolver('getExtensionActivityLog');
           activityLogItems[0].$$('#activity-delete-button').click();
 
@@ -286,7 +336,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
               .then(() => proxyDelegate.whenCalled('getExtensionActivityLog'))
               .then(() => {
                 Polymer.dom.flush();
-                expectEquals(1, getHistoryItems().length);
+                expectEquals(2, getHistoryItems().length);
               });
         });
       });
@@ -327,7 +377,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
     return setupActivityLogHistory().then(() => {
       Polymer.dom.flush();
 
-      expectEquals(2, getHistoryItems().length);
+      expectEquals(3, getHistoryItems().length);
       activityLogHistory.$$('.clear-activities-button').click();
       return proxyDelegate.whenCalled('deleteActivitiesFromExtension')
           .then(() => {
