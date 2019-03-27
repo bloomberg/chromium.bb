@@ -19,6 +19,14 @@
 
 namespace {
 
+// Document the assumptions made on the ProcessType enum in order to convert
+// them to bits.
+static_assert(content::PROCESS_TYPE_UNKNOWN == 1,
+              "assumes unknown process type has value 1");
+static_assert(content::PROCESS_TYPE_BROWSER == 2,
+              "assumes browser process type has value 2");
+constexpr uint32_t kFirstValidProcessType = content::PROCESS_TYPE_BROWSER;
+
 // Using the module path, populates |inspection_result| with information
 // available via the file on disk. For example, this includes the description
 // and the certificate information.
@@ -118,6 +126,27 @@ uint32_t CalculateTimeStamp(base::Time time) {
 std::string GenerateCodeId(const ModuleInfoKey& module_key) {
   return base::StringPrintf("%08X%x", module_key.module_time_date_stamp,
                             module_key.module_size);
+}
+
+uint32_t ProcessTypeToBit(content::ProcessType process_type) {
+  uint32_t bit_index =
+      static_cast<uint32_t>(process_type) - kFirstValidProcessType;
+  DCHECK_GE(31u, bit_index);
+  uint32_t bit = (1 << bit_index);
+  return bit;
+}
+
+content::ProcessType BitIndexToProcessType(uint32_t bit_index) {
+  DCHECK_GE(31u, bit_index);
+  return static_cast<content::ProcessType>(bit_index + kFirstValidProcessType);
+}
+
+bool IsBlockingEnabledInProcessTypes(uint32_t process_types) {
+  uint64_t process_types_mask =
+      ProcessTypeToBit(content::PROCESS_TYPE_BROWSER) |
+      ProcessTypeToBit(content::PROCESS_TYPE_RENDERER);
+
+  return (process_types & process_types_mask) != 0;
 }
 
 namespace internal {

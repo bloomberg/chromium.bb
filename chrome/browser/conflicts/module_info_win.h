@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
+#include "content/public/common/process_type.h"
 
 // ModuleInfoKey and ModuleInfoData are used in pair by the ModuleDatabase to
 // maintain information about a module, usually in a std::map.
@@ -123,6 +124,18 @@ uint32_t CalculateTimeStamp(base::Time time);
 
 // Generate the code id of a module.
 std::string GenerateCodeId(const ModuleInfoKey& module_key);
+
+// Converts a valid |process_type| to a bit for use in a bitmask of process
+// values. Exposed in the header for testing.
+uint32_t ProcessTypeToBit(content::ProcessType process_type);
+
+// Converts a |bit_index| (which maps to the bit 1 << bit_index) to the
+// corresponding process type. Exposed in the header for testing.
+content::ProcessType BitIndexToProcessType(uint32_t bit_index);
+
+// Returns true if |process_types| has at least one bit corresponding to a
+// process type where the blocking of third-party modules is enabled.
+bool IsBlockingEnabledInProcessTypes(uint32_t process_types);
 
 namespace internal {
 

@@ -24,10 +24,31 @@
 
 namespace {
 
+// Converts the process_types bit field to a simple string representation where
+// each process type is represented by a letter. E.g. B for browser process.
+// Full process names are not used in order to save horizontal space in the
+// conflicts UI.
+std::string GetProcessTypesString(const ModuleInfoData& module_data) {
+  uint32_t process_types = module_data.process_types;
+
+  if (!process_types)
+    return "None";
+
+  std::string result;
+  if (process_types & ProcessTypeToBit(content::PROCESS_TYPE_BROWSER))
+    result.append("B");
+  if (process_types & ProcessTypeToBit(content::PROCESS_TYPE_RENDERER))
+    result.append("R");
+  // TODO(pmonette): Add additional process types as more get supported.
+
+  return result;
+}
+
 #if defined(GOOGLE_CHROME_BUILD)
 
 // Strings used twice.
 constexpr char kNotLoaded[] = "Not loaded";
+constexpr char kAllowedInProcessType[] = "Allowed - Loaded in allowed process";
 constexpr char kAllowedInputMethodEditor[] = "Allowed - Input method editor";
 constexpr char kAllowedMatchingCertificate[] = "Allowed - Matching certificate";
 constexpr char kAllowedMicrosoftModule[] = "Allowed - Microsoft module";
@@ -86,6 +107,10 @@ std::string GetBlockingDecisionString(
     case BlockingDecision::kUnknown:
       NOTREACHED();
       break;
+    case BlockingDecision::kNotLoaded:
+      return kNotLoaded;
+    case BlockingDecision::kAllowedInProcessType:
+      return kAllowedInProcessType;
     case BlockingDecision::kAllowedIME:
       return kAllowedInputMethodEditor;
     case BlockingDecision::kAllowedSameCertificate:
@@ -129,6 +154,8 @@ std::string GetModuleWarningDecisionString(
   switch (warning_decision) {
     case WarningDecision::kNotLoaded:
       return kNotLoaded;
+    case WarningDecision::kAllowedInProcessType:
+      return kAllowedInProcessType;
     case WarningDecision::kAllowedIME:
       return kAllowedInputMethodEditor;
     case WarningDecision::kAllowedShellExtension:
@@ -446,6 +473,7 @@ void ConflictsDataFetcher::OnNewModuleFound(const ModuleInfoKey& module_key,
   data->SetString("version", inspection_result.version);
   data->SetString("digital_signer", inspection_result.certificate_info.subject);
   data->SetString("code_id", GenerateCodeId(module_key));
+  data->SetString("process_types", GetProcessTypesString(module_data));
 
   module_list_->Append(std::move(data));
 }
