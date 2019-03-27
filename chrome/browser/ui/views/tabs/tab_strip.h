@@ -655,6 +655,9 @@ class TabStrip : public views::AccessiblePaneView,
   // The view tracker is used to keep track of if the hover card has been
   // destroyed by its widget.
   TabHoverCardBubbleView* hover_card_ = nullptr;
+#if defined(USE_AURA)
+  std::unique_ptr<ui::EventHandler> hover_card_event_sniffer_;
+#endif
 
   std::unique_ptr<TabStripController> controller_;
 
