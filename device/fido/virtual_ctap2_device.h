@@ -34,6 +34,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
 
     bool pin_support = false;
     bool internal_uv_support = false;
+    bool resident_key_support = false;
+    // resident_credential_storage is the number of resident credentials that
+    // the device will store before returning KEY_STORE_FULL.
+    size_t resident_credential_storage = 3;
     // return_immediate_invalid_credential_error causes an INVALID_CREDENTIAL
     // error to be returned from GetAssertion, before getting a touch, when no
     // credentials are recognised. This behaviour is exhibited by some CTAP2
@@ -56,10 +60,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
  private:
   CtapDeviceResponseCode OnMakeCredential(base::span<const uint8_t> request,
                                           std::vector<uint8_t>* response);
-
   CtapDeviceResponseCode OnGetAssertion(base::span<const uint8_t> request,
                                         std::vector<uint8_t>* response);
-
+  CtapDeviceResponseCode OnGetNextAssertion(base::span<const uint8_t> request,
+                                            std::vector<uint8_t>* response);
   CtapDeviceResponseCode OnPINCommand(base::span<const uint8_t> request,
                                       std::vector<uint8_t>* response);
 
