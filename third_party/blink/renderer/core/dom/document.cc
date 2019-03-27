@@ -757,7 +757,7 @@ Document::Document(const DocumentInit& initializer,
   // Since CSSFontSelector requires Document::fetcher_ and StyleEngine owns
   // CSSFontSelector, need to initialize |style_engine_| after initializing
   // |fetcher_|.
-  style_engine_ = StyleEngine::Create(*this);
+  style_engine_ = MakeGarbageCollected<StyleEngine>(*this);
 
   // The parent's parser should be suspended together with all the other
   // objects, else this new Document would have a new ExecutionContext which
@@ -7447,7 +7447,7 @@ void Document::SetShadowCascadeOrder(ShadowCascadeOrder order) {
 PropertyRegistry* Document::GetPropertyRegistry() {
   // TODO(timloh): When the flag is removed, return a reference instead.
   if (!property_registry_ && RuntimeEnabledFeatures::CSSVariables2Enabled())
-    property_registry_ = PropertyRegistry::Create();
+    property_registry_ = MakeGarbageCollected<PropertyRegistry>();
   return property_registry_;
 }
 

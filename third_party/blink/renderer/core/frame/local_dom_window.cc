@@ -959,7 +959,7 @@ Document* LocalDOMWindow::document() const {
 
 StyleMedia* LocalDOMWindow::styleMedia() const {
   if (!media_)
-    media_ = StyleMedia::Create(GetFrame());
+    media_ = MakeGarbageCollected<StyleMedia>(GetFrame());
   return media_.Get();
 }
 

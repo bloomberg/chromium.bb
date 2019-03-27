@@ -77,8 +77,8 @@ void FontFaceCacheTest::AppendTestFaceForCapabilities(const CSSValue& stretch,
   font_face_descriptor->SetProperty(CSSPropertyID::kFontStyle, style);
   font_face_descriptor->SetProperty(CSSPropertyID::kFontWeight, weight);
 
-  StyleRuleFontFace* style_rule_font_face =
-      StyleRuleFontFace::Create(font_face_descriptor);
+  auto* style_rule_font_face =
+      MakeGarbageCollected<StyleRuleFontFace>(font_face_descriptor);
   FontFace* font_face = FontFace::Create(&GetDocument(), style_rule_font_face);
   CHECK(font_face);
   cache_.Add(style_rule_font_face, font_face);

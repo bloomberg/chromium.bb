@@ -63,10 +63,6 @@ class CORE_EXPORT StyleResolver final
     : public GarbageCollectedFinalized<StyleResolver> {
 
  public:
-  static StyleResolver* Create(Document& document) {
-    return MakeGarbageCollected<StyleResolver>(document);
-  }
-
   explicit StyleResolver(Document&);
   ~StyleResolver();
   void Dispose();

@@ -114,9 +114,9 @@ void CSSDefaultStyleSheets::PrepareForLeakDetection() {
 
 void CSSDefaultStyleSheets::InitializeDefaultStyles() {
   // This must be called only from constructor / PrepareForLeakDetection.
-  default_style_ = RuleSet::Create();
-  default_print_style_ = RuleSet::Create();
-  default_quirks_style_ = RuleSet::Create();
+  default_style_ = MakeGarbageCollected<RuleSet>();
+  default_print_style_ = MakeGarbageCollected<RuleSet>();
+  default_quirks_style_ = MakeGarbageCollected<RuleSet>();
 
   default_style_->AddRulesFromSheet(DefaultStyleSheet(), ScreenEval());
   default_print_style_->AddRulesFromSheet(DefaultStyleSheet(), PrintEval());
@@ -125,7 +125,7 @@ void CSSDefaultStyleSheets::InitializeDefaultStyles() {
 
 RuleSet* CSSDefaultStyleSheets::DefaultViewSourceStyle() {
   if (!default_view_source_style_) {
-    default_view_source_style_ = RuleSet::Create();
+    default_view_source_style_ = MakeGarbageCollected<RuleSet>();
     // Loaded stylesheet is leaked on purpose.
     StyleSheetContents* stylesheet =
         ParseUASheet(GetDataResourceAsASCIIString("view-source.css"));

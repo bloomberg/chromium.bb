@@ -170,8 +170,6 @@ static_assert(sizeof(RuleData) == sizeof(SameSizeAsRuleData),
 // ElementRuleCollector::CollectMatchingRules.
 class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
  public:
-  static RuleSet* Create() { return MakeGarbageCollected<RuleSet>(); }
-
   RuleSet() : rule_count_(0) {}
 
   void AddRulesFromSheet(StyleSheetContents*,
@@ -307,10 +305,6 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
 
   class PendingRuleMaps : public GarbageCollected<PendingRuleMaps> {
    public:
-    static PendingRuleMaps* Create() {
-      return MakeGarbageCollected<PendingRuleMaps>();
-    }
-
     PendingRuleMaps() = default;
 
     PendingRuleMap id_rules;
@@ -323,7 +317,7 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
 
   PendingRuleMaps* EnsurePendingRules() {
     if (!pending_rules_)
-      pending_rules_ = PendingRuleMaps::Create();
+      pending_rules_ = MakeGarbageCollected<PendingRuleMaps>();
     return pending_rules_.Get();
   }
 
