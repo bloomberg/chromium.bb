@@ -4520,7 +4520,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "EnabledCopyIcon",
+                    "params": {
+                        "variation": "copy_icon"
+                    },
                     "enable_features": [
                         "SearchReadyOmnibox"
                     ]
