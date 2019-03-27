@@ -1,6 +1,6 @@
 [document web]
-++[table] name='Browser and Engine' cols=2 headers=('Browser', 'Engine'); rows=3 headers=(NONE); caption=true; spans=(all: 1x1)
-++++[caption]
+++[table] name='Browser and Engine' labelled-by cols=2 headers=('Browser', 'Engine'); rows=3 headers=(NONE); caption=true; spans=(all: 1x1)
+++++[caption] label-for
 ++++++[text] name='Browser and Engine'
 ++++[table row]
 ++++++[column header] name='Browser' (row=0, col=0, row_span=1, col_span=1 n_row_headers=0, n_col_headers=0)

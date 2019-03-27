@@ -2744,6 +2744,15 @@ void AXPlatformNodeAuraLinux::AddAccessibilityTreeProperties(
   }
   dict->Set("states", std::move(states));
 
+  AtkRelationSet* relation_set = atk_object_ref_relation_set(atk_object_);
+  auto relations = std::make_unique<base::ListValue>();
+  for (int i = ATK_RELATION_NULL; i < ATK_RELATION_LAST_DEFINED; i++) {
+    AtkRelationType relation_type = static_cast<AtkRelationType>(i);
+    if (atk_relation_set_contains(relation_set, relation_type))
+      relations->AppendString(atk_relation_type_get_name(relation_type));
+  }
+  dict->Set("relations", std::move(relations));
+
   AtkAttributeSet* attributes = atk_object_get_attributes(atk_object_);
   for (AtkAttributeSet* attr = attributes; attr; attr = attr->next) {
     AtkAttribute* attribute = static_cast<AtkAttribute*>(attr->data);

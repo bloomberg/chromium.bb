@@ -319,6 +319,18 @@ base::string16 AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
       WriteAttribute(false, state_value, &line);
   }
 
+  const base::ListValue* relations_value;
+  node.GetList("relations", &relations_value);
+  for (auto it = relations_value->begin(); it != relations_value->end(); ++it) {
+    std::string relation_value;
+    if (it->GetAsString(&relation_value)) {
+      // By default, exclude embedded-by because that should appear on every
+      // top-level document object. The other relation types are less common
+      // and thus almost always of interest when testing.
+      WriteAttribute(relation_value != "embedded-by", relation_value, &line);
+    }
+  }
+
   for (const char* attribute_name : ATK_OBJECT_ATTRIBUTES) {
     std::string attribute_value;
     if (node.GetString(attribute_name, &attribute_value)) {
