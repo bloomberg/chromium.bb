@@ -51,10 +51,6 @@ class ScopedStyleResolver final
     : public GarbageCollectedFinalized<ScopedStyleResolver> {
 
  public:
-  static ScopedStyleResolver* Create(TreeScope& scope) {
-    return MakeGarbageCollected<ScopedStyleResolver>(scope);
-  }
-
   explicit ScopedStyleResolver(TreeScope& scope) : scope_(scope) {}
 
   const TreeScope& GetTreeScope() const { return *scope_; }
@@ -116,12 +112,6 @@ class ScopedStyleResolver final
 
   class RuleSubSet final : public GarbageCollected<RuleSubSet> {
    public:
-    static RuleSubSet* Create(CSSStyleSheet* sheet,
-                              unsigned index,
-                              RuleSet* rules) {
-      return MakeGarbageCollected<RuleSubSet>(sheet, index, rules);
-    }
-
     RuleSubSet(CSSStyleSheet* sheet, unsigned index, RuleSet* rules)
         : parent_style_sheet_(sheet), parent_index_(index), rule_set_(rules) {}
 

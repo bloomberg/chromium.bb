@@ -102,7 +102,7 @@ void TreeScope::SetParentTreeScope(TreeScope& new_parent_scope) {
 ScopedStyleResolver& TreeScope::EnsureScopedStyleResolver() {
   CHECK(this);
   if (!scoped_style_resolver_)
-    scoped_style_resolver_ = ScopedStyleResolver::Create(*this);
+    scoped_style_resolver_ = MakeGarbageCollected<ScopedStyleResolver>(*this);
   return *scoped_style_resolver_;
 }
 

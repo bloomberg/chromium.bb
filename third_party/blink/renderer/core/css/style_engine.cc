@@ -87,7 +87,7 @@ StyleEngine::StyleEngine(Document& document)
     font_selector_->RegisterForInvalidationCallbacks(this);
   }
   if (document.IsInMainFrame())
-    viewport_resolver_ = ViewportStyleResolver::Create(document);
+    viewport_resolver_ = MakeGarbageCollected<ViewportStyleResolver>(document);
   if (IsMaster())
     global_rule_set_ = MakeGarbageCollected<CSSGlobalRuleSet>();
   // Document is initially style dirty.
@@ -576,7 +576,7 @@ RuleSet* StyleEngine::RuleSetForSheet(CSSStyleSheet& sheet) {
 }
 
 void StyleEngine::CreateResolver() {
-  resolver_ = StyleResolver::Create(*document_);
+  resolver_ = MakeGarbageCollected<StyleResolver>(*document_);
   resolver_->SetRuleUsageTracker(tracker_);
 }
 

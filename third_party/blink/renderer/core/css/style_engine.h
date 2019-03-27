@@ -100,11 +100,7 @@ class CORE_EXPORT StyleEngine final
     base::AutoReset<bool> in_removal_;
   };
 
-  static StyleEngine* Create(Document& document) {
-    return MakeGarbageCollected<StyleEngine>(document);
-  }
-
-  StyleEngine(Document&);
+  explicit StyleEngine(Document&);
   ~StyleEngine() override;
 
   const HeapVector<TraceWrapperMember<StyleSheet>>&

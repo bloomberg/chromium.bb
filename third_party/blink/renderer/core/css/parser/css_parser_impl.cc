@@ -594,7 +594,7 @@ StyleRuleBase* CSSParserImpl::ConsumeQualifiedRule(
     if (prelude_invalid)
       return nullptr;
     ConsumeDeclarationList(stream, StyleRule::kFontFace);
-    return StyleRuleFontFace::Create(
+    return MakeGarbageCollected<StyleRuleFontFace>(
         CreateCSSPropertyValueSet(parsed_properties_, kCSSFontFaceRuleMode));
   }
 
@@ -684,7 +684,7 @@ StyleRuleMedia* CSSParserImpl::ConsumeMediaRule(
   if (observer_)
     observer_->EndRuleBody(block.Offset());
 
-  return StyleRuleMedia::Create(media, rules);
+  return MakeGarbageCollected<StyleRuleMedia>(media, rules);
 }
 
 StyleRuleSupports* CSSParserImpl::ConsumeSupportsRule(
@@ -761,7 +761,7 @@ StyleRuleFontFace* CSSParserImpl::ConsumeFontFaceRule(
     style_sheet_->SetHasFontFaceRule();
 
   ConsumeDeclarationList(stream, StyleRule::kFontFace);
-  return StyleRuleFontFace::Create(
+  return MakeGarbageCollected<StyleRuleFontFace>(
       CreateCSSPropertyValueSet(parsed_properties_, kCSSFontFaceRuleMode));
 }
 
@@ -857,7 +857,7 @@ StyleRulePage* CSSParserImpl::ConsumePageRule(const CSSParserTokenRange prelude,
 
   ConsumeDeclarationList(block, StyleRule::kStyle);
 
-  return StyleRulePage::Create(
+  return MakeGarbageCollected<StyleRulePage>(
       std::move(selector_list),
       CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
 }

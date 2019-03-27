@@ -184,13 +184,6 @@ class CORE_EXPORT StyleRuleFontFace : public StyleRuleBase {
 
 class StyleRulePage : public StyleRuleBase {
  public:
-  // Adopts the selector list
-  static StyleRulePage* Create(CSSSelectorList selector_list,
-                               CSSPropertyValueSet* properties) {
-    return MakeGarbageCollected<StyleRulePage>(std::move(selector_list),
-                                               properties);
-  }
-
   StyleRulePage(CSSSelectorList, CSSPropertyValueSet*);
   StyleRulePage(const StyleRulePage&);
   ~StyleRulePage();
@@ -252,12 +245,6 @@ class CORE_EXPORT StyleRuleCondition : public StyleRuleGroup {
 
 class CORE_EXPORT StyleRuleMedia : public StyleRuleCondition {
  public:
-  static StyleRuleMedia* Create(
-      scoped_refptr<MediaQuerySet> media,
-      HeapVector<Member<StyleRuleBase>>& adopt_rules) {
-    return MakeGarbageCollected<StyleRuleMedia>(media, adopt_rules);
-  }
-
   StyleRuleMedia(scoped_refptr<MediaQuerySet>,
                  HeapVector<Member<StyleRuleBase>>& adopt_rules);
   StyleRuleMedia(const StyleRuleMedia&);

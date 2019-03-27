@@ -601,7 +601,7 @@ void StyleSheetContents::ClearReferencedFromResource() {
 RuleSet& StyleSheetContents::EnsureRuleSet(const MediaQueryEvaluator& medium,
                                            AddRuleFlags add_rule_flags) {
   if (!rule_set_) {
-    rule_set_ = RuleSet::Create();
+    rule_set_ = MakeGarbageCollected<RuleSet>();
     rule_set_->AddRulesFromSheet(this, medium, add_rule_flags);
   }
   return *rule_set_.Get();

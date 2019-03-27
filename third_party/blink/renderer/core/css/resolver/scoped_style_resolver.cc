@@ -317,7 +317,7 @@ void ScopedStyleResolver::AddTreeBoundaryCrossingRules(
   if (!author_rules.DeepCombinatorOrShadowPseudoRules().IsEmpty())
     has_deep_or_shadow_selector_ = true;
 
-  RuleSet* rule_set_for_scope = RuleSet::Create();
+  auto* rule_set_for_scope = MakeGarbageCollected<RuleSet>();
   AddRules(rule_set_for_scope,
            author_rules.DeepCombinatorOrShadowPseudoRules());
 
@@ -331,8 +331,8 @@ void ScopedStyleResolver::AddTreeBoundaryCrossingRules(
         GetTreeScope());
   }
 
-  tree_boundary_crossing_rule_set_->push_back(
-      RuleSubSet::Create(parent_style_sheet, sheet_index, rule_set_for_scope));
+  tree_boundary_crossing_rule_set_->push_back(MakeGarbageCollected<RuleSubSet>(
+      parent_style_sheet, sheet_index, rule_set_for_scope));
 }
 
 void ScopedStyleResolver::V0ShadowAddedOnV1Document() {
@@ -357,7 +357,7 @@ void ScopedStyleResolver::AddSlottedRules(const RuleSet& author_rules,
   if (is_document_scope || author_rules.SlottedPseudoElementRules().IsEmpty())
     return;
 
-  RuleSet* slotted_rule_set = RuleSet::Create();
+  auto* slotted_rule_set = MakeGarbageCollected<RuleSet>();
   AddRules(slotted_rule_set, author_rules.SlottedPseudoElementRules());
 
   // In case ::slotted rule is used in V0/V1 mixed document, put ::slotted
@@ -378,13 +378,14 @@ void ScopedStyleResolver::AddSlottedRules(const RuleSet& author_rules,
           .AddTreeBoundaryCrossingScope(GetTreeScope());
     }
     tree_boundary_crossing_rule_set_->push_back(
-        RuleSubSet::Create(parent_style_sheet, sheet_index, slotted_rule_set));
+        MakeGarbageCollected<RuleSubSet>(parent_style_sheet, sheet_index,
+                                         slotted_rule_set));
     return;
   }
   if (!slotted_rule_set_)
     slotted_rule_set_ = MakeGarbageCollected<CSSStyleSheetRuleSubSet>();
-  slotted_rule_set_->push_back(
-      RuleSubSet::Create(parent_style_sheet, sheet_index, slotted_rule_set));
+  slotted_rule_set_->push_back(MakeGarbageCollected<RuleSubSet>(
+      parent_style_sheet, sheet_index, slotted_rule_set));
 }
 
 void ScopedStyleResolver::RuleSubSet::Trace(blink::Visitor* visitor) {
