@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/string_resource.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "v8/include/v8.h"
 
@@ -29,10 +28,8 @@ namespace blink {
 namespace {
 
 // Web platform tests test ReadableStream more thoroughly from scripts.
-class ReadableStreamTest : public testing::TestWithParam<bool> {
+class ReadableStreamTest : public testing::Test {
  public:
-  ReadableStreamTest() : feature_(GetParam()) {}
-
   base::Optional<String> ReadAll(V8TestingScope& scope,
                                  ReadableStream* stream) {
     ScriptState* script_state = scope.GetScriptState();
@@ -92,12 +89,9 @@ readAll(stream);
     NOTREACHED();
     return base::nullopt;
   }
-
- private:
-  ScopedStreamsNativeForTest feature_;
 };
 
-TEST_P(ReadableStreamTest, CreateWithoutArguments) {
+TEST_F(ReadableStreamTest, CreateWithoutArguments) {
   V8TestingScope scope;
 
   ReadableStream* stream =
@@ -106,7 +100,7 @@ TEST_P(ReadableStreamTest, CreateWithoutArguments) {
   ASSERT_FALSE(scope.GetExceptionState().HadException());
 }
 
-TEST_P(ReadableStreamTest, CreateWithUnderlyingSourceOnly) {
+TEST_F(ReadableStreamTest, CreateWithUnderlyingSourceOnly) {
   V8TestingScope scope;
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(scope.GetScriptState());
@@ -125,7 +119,7 @@ TEST_P(ReadableStreamTest, CreateWithUnderlyingSourceOnly) {
   EXPECT_TRUE(underlying_source->IsStartCalled());
 }
 
-TEST_P(ReadableStreamTest, CreateWithFullArguments) {
+TEST_F(ReadableStreamTest, CreateWithFullArguments) {
   V8TestingScope scope;
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(scope.GetScriptState());
@@ -143,7 +137,7 @@ TEST_P(ReadableStreamTest, CreateWithFullArguments) {
   EXPECT_TRUE(underlying_source->IsStartCalled());
 }
 
-TEST_P(ReadableStreamTest, CreateWithPathologicalStrategy) {
+TEST_F(ReadableStreamTest, CreateWithPathologicalStrategy) {
   V8TestingScope scope;
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(scope.GetScriptState());
@@ -164,7 +158,7 @@ TEST_P(ReadableStreamTest, CreateWithPathologicalStrategy) {
 }
 
 // Testing getReader, locked, IsLocked and IsDisturbed.
-TEST_P(ReadableStreamTest, GetReader) {
+TEST_F(ReadableStreamTest, GetReader) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
 
@@ -216,7 +210,7 @@ TEST_P(ReadableStreamTest, GetReader) {
             base::make_optional(true));
 }
 
-TEST_P(ReadableStreamTest, Cancel) {
+TEST_F(ReadableStreamTest, Cancel) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
 
@@ -241,7 +235,7 @@ TEST_P(ReadableStreamTest, Cancel) {
   EXPECT_FALSE(underlying_source->IsCancelledWithNull());
 }
 
-TEST_P(ReadableStreamTest, CancelWithNull) {
+TEST_F(ReadableStreamTest, CancelWithNull) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
 
@@ -271,13 +265,7 @@ TEST_P(ReadableStreamTest, CancelWithNull) {
 
 // TODO(yhirano): Write tests for pipeThrough and pipeTo.
 
-TEST_P(ReadableStreamTest, Tee) {
-  if (GetParam()) {
-    // This test is temporarily disabled with the new implementation until Tee()
-    // is implemented.
-    // TODO(ricea): Turn this back on.
-    return;
-  }
+TEST_F(ReadableStreamTest, Tee) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
 
@@ -330,7 +318,7 @@ TEST_P(ReadableStreamTest, Tee) {
   EXPECT_EQ(*result2, "hello, bye");
 }
 
-TEST_P(ReadableStreamTest, Close) {
+TEST_F(ReadableStreamTest, Close) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
   ExceptionState& exception_state = scope.GetExceptionState();
@@ -359,7 +347,7 @@ TEST_P(ReadableStreamTest, Close) {
             base::make_optional(false));
 }
 
-TEST_P(ReadableStreamTest, Error) {
+TEST_F(ReadableStreamTest, Error) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
   ExceptionState& exception_state = scope.GetExceptionState();
@@ -389,7 +377,7 @@ TEST_P(ReadableStreamTest, Error) {
             base::make_optional(true));
 }
 
-TEST_P(ReadableStreamTest, LockAndDisturb) {
+TEST_F(ReadableStreamTest, LockAndDisturb) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
   ExceptionState& exception_state = scope.GetExceptionState();
@@ -415,13 +403,7 @@ TEST_P(ReadableStreamTest, LockAndDisturb) {
             base::make_optional(true));
 }
 
-TEST_P(ReadableStreamTest, Serialize) {
-  if (GetParam()) {
-    // Serialize() is not yet supported in the C++ implementation.
-    return;
-  }
-
-  ScopedTransferableStreamsForTest enabled(true);
+TEST_F(ReadableStreamTest, Serialize) {
   RuntimeEnabledFeatures::SetTransferableStreamsEnabled(true);
 
   V8TestingScope scope;
@@ -452,7 +434,7 @@ TEST_P(ReadableStreamTest, Serialize) {
             base::make_optional<String>("hello, bye"));
 }
 
-TEST_P(ReadableStreamTest, GetReadHandle) {
+TEST_F(ReadableStreamTest, GetReadHandle) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
   auto* isolate = scope.GetIsolate();
@@ -531,8 +513,6 @@ TEST_P(ReadableStreamTest, GetReadHandle) {
       script_state, iterator->V8Value().As<v8::Object>(), &done);
   EXPECT_TRUE(done);
 }
-
-INSTANTIATE_TEST_SUITE_P(, ReadableStreamTest, ::testing::Values(false, true));
 
 }  // namespace
 

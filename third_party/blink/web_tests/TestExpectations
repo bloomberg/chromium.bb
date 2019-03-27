@@ -3233,7 +3233,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-variables/variable-exponential-blo
 crbug.com/626703 [ Mac10.13 ] external/wpt/preload/dynamic-adding-preload-imagesrcset.tentative.html [ Timeout ]
 crbug.com/906369 external/wpt/css/css-text/text-transform/text-transform-capitalize-033.html [ Failure ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/content-type/response.window.html [ Timeout ]
-crbug.com/626703 virtual/streams-native/external/wpt/fetch/content-type/response.window.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/mimesniff/mime-types/parsing.any.worker.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/mimesniff/mime-types/parsing.any.worker.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Failure Timeout ]
@@ -3571,7 +3570,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-column-row-gap-002.html [ Failure ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/api/request/request-keepalive-quota.html?include=slow-2 [ Timeout ]
 crbug.com/626703 external/wpt/fetch/api/request/request-keepalive-quota.html?include=slow-2 [ Timeout ]
-crbug.com/626703 virtual/streams-native/external/wpt/fetch/api/request/request-keepalive-quota.html?include=slow-2 [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/preload/link-header-preload.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/preload/onerror-event.html [ Timeout ]
 crbug.com/626703 external/wpt/svg/painting/reftests/paint-context-001.svg [ Failure ]
@@ -3591,7 +3589,6 @@ crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-enco
 crbug.com/626703 external/wpt/css/css-transforms/transform-box/view-box-mutation.html [ Failure ]
 crbug.com/626703 external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
-crbug.com/626703 virtual/streams-native/external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/domxpath/xml_xpath_runner.html [ Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-024.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-ellipse-048.html [ Failure ]
@@ -3680,7 +3677,6 @@ crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-009.html [ Failure ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
 crbug.com/626703 external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
-crbug.com/626703 virtual/streams-native/external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-fonts/font-feature-settings-descriptor-01.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
@@ -5733,23 +5729,6 @@ crbug.com/915862 [ Android ] webmidi/permission.html [ Pass Failure ]
 
 crbug.com/919272 external/wpt/resource-timing/resource-timing.html [ Skip ]
 
-### virtual/streams-native/http/tests/streams/transferable/
-crbug.com/902633 virtual/streams-native/http/tests/streams/transferable/writable-stream.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/http/tests/streams/transferable/shared-worker.html [ Pass Failure ]
-crbug.com/902633 virtual/streams-native/http/tests/streams/transferable/worker.html [ Pass Failure ]
-
-# PipeTo() and Tee() are currently disabled in the StreamsNative implementation
-# of streams, which causes these timeouts.
-### virtual/streams-native/external/wpt/fetch/api/basic/
-crbug.com/902633 virtual/streams-native/external/wpt/fetch/api/basic/error-after-response.html [ Timeout ]
-
-### virtual/streams-native/external/wpt/fetch/api/request/
-crbug.com/902633 virtual/streams-native/external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/fetch/api/request/request-keepalive-quota.html [ Timeout ]
-
-### virtual/streams-native/external/wpt/fetch/api/response/
-crbug.com/902633 virtual/streams-native/external/wpt/fetch/api/response/response-stream-with-broken-then.any.worker.html [ Timeout ]
-
 ### virtual/streams-native/external/wpt/streams/piping/
 crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/abort.any.html [ Timeout ]
 crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/abort.any.serviceworker.html [ Timeout ]
@@ -5773,6 +5752,10 @@ crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/then-interce
 
 ### virtual/streams-native/http/tests/streams/chromium/
 crbug.com/902633 virtual/streams-native/http/tests/streams/chromium/touching-global-object.html [ Timeout ]
+
+### virtual/streams-native/http/tests/streams/transferable/
+crbug.com/902633 virtual/streams-native/http/tests/streams/transferable/writable-stream.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/http/tests/streams/transferable/window.html [ Timeout ]
 
 # Sheriff 2019-01-03
 crbug.com/918905 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1b.html [ Pass Failure ]

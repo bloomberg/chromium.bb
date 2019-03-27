@@ -18,8 +18,6 @@ blink_core_sources("streams") {
     "readable_stream_default_controller_interface.h",
     "readable_stream_default_reader.cc",
     "readable_stream_default_reader.h",
-    "readable_stream_native.cc",
-    "readable_stream_native.h",
     "readable_stream_operations.cc",
     "readable_stream_operations.h",
     "readable_stream_wrapper.cc",
