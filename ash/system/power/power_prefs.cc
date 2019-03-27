@@ -239,6 +239,9 @@ void PowerPrefs::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
                                 -1, PrefRegistry::PUBLIC);
   registry->RegisterDictionaryPref(prefs::kDevicePowerPeakShiftDayConfig,
                                    PrefRegistry::PUBLIC);
+
+  registry->RegisterBooleanPref(prefs::kDeviceBootOnAcEnabled, false,
+                                PrefRegistry::PUBLIC);
 }
 
 // static

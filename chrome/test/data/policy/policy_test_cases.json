@@ -4367,6 +4367,17 @@
     ]
   },
 
+  "DeviceBootOnAcEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceBootOnAcEnabled": true },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.boot_on_ac_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {
