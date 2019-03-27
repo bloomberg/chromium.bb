@@ -11,6 +11,7 @@ import datetime
 import getpass
 import glob
 import os
+import shutil
 import subprocess
 import sys
 import tarfile
@@ -26,7 +27,7 @@ GSUTIL = os.path.join(
 
 def ProcessCrashreport(base, source):
   """Zip up all files belonging to a crash base name and upload them to GCS."""
-  sys.stdout.write('Processing %s... ' % base)
+  sys.stdout.write('processing %s... ' % base)
   sys.stdout.flush()
 
   # Note that this will include the .sh and other files:
@@ -47,7 +48,7 @@ def ProcessCrashreport(base, source):
       GCS_BUCKET, now.year, now.month, now.day, source, base)
 
   # zipfile.ZipFile() defaults to Z_DEFAULT_COMPRESSION (6) and that can't
-  # be overriden until Python 3.7. tarfile always uses compression level 9,
+  # be overridden until Python 3.7. tarfile always uses compression level 9,
   # so use tarfile.
   tmp_name = None
   try:
@@ -67,8 +68,26 @@ def ProcessCrashreport(base, source):
       os.remove(tmp_name)
 
 
+def DeleteCrashFiles():
+  for root, dirs, files in os.walk(CRASHREPORTS_DIR, topdown=True):
+    for d in dirs:
+      print 'removing dir', d
+      shutil.rmtree(os.path.join(root, d))
+    for f in files:
+      if f != '.gitignore':
+        print 'removing', f
+        os.remove(os.path.join(root, f))
+    del dirs[:]  # Abort os.walk() after one level.
+
+
 def main():
   parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('--delete', dest='delete', action='store_true',
+                      help='Delete all crashreports after processing them '
+                           '(default)')
+  parser.add_argument('--no-delete', dest='delete', action='store_false',
+                      help='Do not delete crashreports after processing them')
+  parser.set_defaults(delete=True)
   parser.add_argument('--source',  default='user-' + getpass.getuser(),
                       help='Source of the crash -- usually a bot name. '
                            'Leave empty to use your username.')
@@ -86,6 +105,9 @@ def main():
     base = os.path.splitext(os.path.basename(reproducer))[0]
     ProcessCrashreport(base, args.source)
 
+
+  if args.delete:
+    DeleteCrashFiles()
 
 if __name__ == '__main__':
   try:
