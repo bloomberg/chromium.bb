@@ -175,7 +175,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     '''
     example_value = policy['example_value']
     self.AddElement(parent, 'dt', {}, 'Mac:')
-    mac = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre'])
+    mac = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre-wrap'])
 
     mac_text = ['<array>']
     for item in example_value:
@@ -197,7 +197,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     os_header = self._GetLocalizedMessage('win_example_value') if is_win else \
                 self._GetLocalizedMessage('chrome_os_example_value')
     self.AddElement(parent, 'dt', {}, os_header)
-    element = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre'])
+    element = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre-wrap'])
     element_text = []
     cnt = 1
     key_name = self._GetRegistryKeyName(policy, is_win)
@@ -225,7 +225,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     '''
     example_value = policy['example_value']
     self.AddElement(parent, 'dt', {}, 'Android/Linux:')
-    element = self._AddStyledElement(parent, 'dd', ['.monospace'])
+    element = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre-wrap'])
     text = []
     for item in example_value:
       text.append('"%s"' % item)
@@ -309,7 +309,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     '''
     example_value = policy['example_value']
     self.AddElement(parent, 'dt', {}, 'Mac:')
-    mac = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre'])
+    mac = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre-wrap'])
     mac_text = ['<key>%s</key>' % (policy['name'])]
     mac_text += self._PythonObjectToPlist(example_value)
     self.AddText(mac, '\n'.join(mac_text))
@@ -326,7 +326,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     os_header = self._GetLocalizedMessage('win_example_value') if is_win else \
                 self._GetLocalizedMessage('chrome_os_example_value')
     self.AddElement(parent, 'dt', {}, os_header)
-    element = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre'])
+    element = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre-wrap'])
     key_name = self._GetRegistryKeyName(policy, is_win)
     example = json.dumps(policy['example_value'])
     self.AddText(element, '%s\\%s = %s' % (key_name, policy['name'], example))
@@ -341,7 +341,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
         is generated.
     '''
     self.AddElement(parent, 'dt', {}, 'Android/Linux:')
-    element = self._AddStyledElement(parent, 'dd', ['.monospace'])
+    element = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre-wrap'])
     example = json.dumps(policy['example_value'])
     self.AddText(element, '%s: %s' % (policy['name'], example))
 
@@ -795,7 +795,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
         'dt': 'font-weight: bold;',
         'dd dl': 'margin-top: 0px; margin-bottom: 0px;',
         '.monospace': 'font-family: monospace;',
-        '.pre': 'white-space: pre;',
+        '.pre-wrap': 'white-space: pre-wrap;',
         'div.note': 'border: 2px solid black; padding: 5px; margin: 5px;',
         'div.group_desc': 'margin-top: 20px; margin-bottom: 20px;',
         'ul': 'padding-left: 0px; margin-left: 0px;'
