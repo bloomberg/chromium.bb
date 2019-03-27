@@ -167,13 +167,6 @@ const base::Feature kFontCacheScaling{"FontCacheScaling",
 const base::Feature kFontSrcLocalMatching{"FontSrcLocalMatching",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables a security restriction on iframes navigating their top frame.
-// When enabled, the navigation will only be permitted if the iframe is
-// same-origin to the top frame, or if a user gesture is being processed.
-const base::Feature kFramebustingNeedsSameOriginOrUserGesture{
-    "FramebustingNeedsSameOriginOrUserGesture",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables freezing frame support based on feature policies.
 const base::Feature kFreezeFramesOnVisibility{
     "FreezeFramesOnVisibility", base::FEATURE_DISABLED_BY_DEFAULT};

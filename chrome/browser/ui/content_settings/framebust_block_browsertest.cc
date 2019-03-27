@@ -47,10 +47,7 @@ const int kDisallowRadioButtonIndex = 1;
 class FramebustBlockBrowserTest : public InProcessBrowserTest,
                                   public UrlListManager::Observer {
  public:
-  FramebustBlockBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kFramebustingNeedsSameOriginOrUserGesture);
-  }
+  FramebustBlockBrowserTest() = default;
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
@@ -103,7 +100,6 @@ class FramebustBlockBrowserTest : public InProcessBrowserTest,
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::Optional<GURL> clicked_url_;
   base::Optional<size_t> clicked_index_;
 
