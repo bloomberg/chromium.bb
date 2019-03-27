@@ -103,6 +103,7 @@
                 android:layout_marginStart="16dp"
                 android:ems="5"
                 android:imeOptions="actionDone"
+                android:imeActionLabel="@string/autofill_save_card_prompt_confirm"
                 android:hint="@string/card_unmask_input_hint" />
 
             <ImageView
