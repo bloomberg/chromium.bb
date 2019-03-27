@@ -129,6 +129,7 @@ class AssistantManagerServiceImpl
       mojom::AssistantFeedbackPtr assistant_feedback) override;
 
   // AssistantActionObserver overrides:
+  void OnScheduleWait(int id, int time_ms) override;
   void OnShowContextualQueryFallback() override;
   void OnShowHtml(const std::string& html,
                   const std::string& fallback) override;

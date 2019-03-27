@@ -545,11 +545,31 @@ void AssistantInteractionController::OnTtsStarted(bool due_to_error) {
   }
 
   model_.pending_response()->set_has_tts(true);
+
   // We have an agreement with the server that TTS will always be the last part
   // of an interaction to be processed. To be timely in updating UI, we use
   // this as an opportunity to begin processing the Assistant response.
   // TODO(xiaohuic): sometimes we actually do receive additional TTS responses,
   // need to properly handle those cases.
+  OnProcessPendingResponse();
+}
+
+void AssistantInteractionController::OnWaitStarted() {
+  if (model_.interaction_state() != InteractionState::kActive)
+    return;
+
+  // Commit the pending query in whatever state it's in. Note that the server
+  // guarantees that if a wait occurs, it is as part of a routine's execution
+  // and it will be the last event prior to the current interaction being
+  // finished and the response will not contain any TTS. Upon finishing
+  // execution of the current interaction, a new interaction will automatically
+  // be started for the next leg of the routine's execution.
+  if (model_.pending_query().type() != AssistantQueryType::kNull)
+    model_.CommitPendingQuery();
+
+  // Finalize the pending response so that the UI is flushed to the screen while
+  // the wait occurs, giving the user time to digest the current response before
+  // the routine begins its next leg in the next interaction.
   OnProcessPendingResponse();
 }
 
