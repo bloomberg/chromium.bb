@@ -81,6 +81,17 @@ class AccessibilityActionBrowserTest : public ContentBrowserTest {
 
 }  // namespace
 
+// Canvas tests rely on the harness producing pixel output in order to read back
+// pixels from a canvas element. So we have to override the setup function.
+class AccessibilityCanvasActionBrowserTest
+    : public AccessibilityActionBrowserTest {
+ public:
+  void SetUp() override {
+    EnablePixelOutput();
+    ContentBrowserTest::SetUp();
+  }
+};
+
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusAction) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
@@ -197,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, Scroll) {
   EXPECT_GT(y_after, y_before);
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, CanvasGetImage) {
+IN_PROC_BROWSER_TEST_F(AccessibilityCanvasActionBrowserTest, CanvasGetImage) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
@@ -248,7 +259,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, CanvasGetImage) {
   EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(3, 1));
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, CanvasGetImageScale) {
+IN_PROC_BROWSER_TEST_F(AccessibilityCanvasActionBrowserTest,
+                       CanvasGetImageScale) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
