@@ -57,8 +57,10 @@ ProtoMapToArray(
 
 std::unique_ptr<protocol::BackgroundService::BackgroundServiceEvent>
 ToBackgroundServiceEvent(const devtools::proto::BackgroundServiceEvent& event) {
+  base::Time timestamp = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(event.timestamp()));
   return protocol::BackgroundService::BackgroundServiceEvent::Create()
-      .SetTimestamp(event.timestamp() / 1'000'000)  // microseconds -> seconds
+      .SetTimestamp(timestamp.ToJsTime() / 1'000)  // milliseconds -> seconds
       .SetOrigin(event.origin())
       .SetServiceWorkerRegistrationId(
           base::NumberToString(event.service_worker_registration_id()))

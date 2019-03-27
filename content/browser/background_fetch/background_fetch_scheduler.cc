@@ -542,9 +542,11 @@ void BackgroundFetchScheduler::LogBackgroundFetchEventForDevTools(
   // Include common request metadata.
   if (request_info) {
     metadata["url"] = request_info->fetch_request()->url.spec();
-    metadata["request index"] = request_info->request_index();
+    metadata["request index"] =
+        base::NumberToString(request_info->request_index());
     if (request_info->request_body_size())
-      metadata["upload size (bytes)"] = request_info->request_body_size();
+      metadata["upload size (bytes)"] =
+          base::NumberToString(request_info->request_body_size());
   }
 
   devtools_context_->LogBackgroundServiceEvent(
