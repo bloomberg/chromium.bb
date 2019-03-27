@@ -71,6 +71,8 @@ constexpr base::Feature kChromeOSAssistantDogfood{
 constexpr char kServersideDogfoodExperimentId[] = "20347368";
 constexpr char kServersideOpenAppExperimentId[] = "39651593";
 
+constexpr char kPlayMediaClientOp[] = "media.PLAY_MEDIA";
+
 // The screen context query is locale independent. That is the same query
 // applies to all locales.
 constexpr char kScreenContextQuery[] = "screen context";
@@ -207,17 +209,9 @@ void AssistantManagerServiceImpl::RegisterFallbackMediaHandler() {
   // Register handler for media actions.
   assistant_manager_internal_->RegisterFallbackMediaHandler(
       [this](std::string action_name, std::string media_action_args_proto) {
-        std::unique_ptr<action::AndroidAppInfo> android_app_info =
-            GetAndroidAppInfoFromMediaArgs(media_action_args_proto);
-        if (android_app_info) {
-          OnOpenMediaAndroidIntent(media_action_args_proto,
-                                   android_app_info.get());
-        } else {
-          std::string url = GetWebUrlFromMediaArgs(media_action_args_proto);
-          // Fallack to web URL.
-          if (!url.empty())
-            OnOpenUrl(url);
-        }
+        if (action_name == kPlayMediaClientOp)
+          OnPlayMedia(media_action_args_proto);
+        // TODO(llin): Handle other media actions.
       });
 }
 
@@ -543,12 +537,9 @@ void AssistantManagerServiceImpl::OnVerifyAndroidApp(
           weak_factory_.GetWeakPtr(), interaction));
 }
 
-void AssistantManagerServiceImpl::OnOpenMediaAndroidIntent(
+void AssistantManagerServiceImpl::OnOpenMediaAndroidIntentOnMainThread(
     const std::string play_media_args_proto,
     action::AndroidAppInfo* android_app_info) {
-  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnOpenMediaAndroidIntent,
-                     play_media_args_proto, android_app_info);
-
   // Handle android media playback intent.
   mojom::AndroidAppInfoPtr app_info_ptr = mojom::AndroidAppInfo::New();
   app_info_ptr->package_name = android_app_info->package_name;
@@ -566,6 +557,24 @@ void AssistantManagerServiceImpl::OnOpenMediaAndroidIntent(
       base::BindOnce(
           &AssistantManagerServiceImpl::HandleLaunchMediaIntentResponse,
           weak_factory_.GetWeakPtr()));
+}
+
+void AssistantManagerServiceImpl::OnPlayMedia(
+    const std::string play_media_args_proto) {
+  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnPlayMedia,
+                     play_media_args_proto);
+
+  std::unique_ptr<action::AndroidAppInfo> android_app_info =
+      GetAndroidAppInfoFromMediaArgs(play_media_args_proto);
+  if (android_app_info) {
+    OnOpenMediaAndroidIntentOnMainThread(play_media_args_proto,
+                                         android_app_info.get());
+  } else {
+    std::string url = GetWebUrlFromMediaArgs(play_media_args_proto);
+    // Fallack to web URL.
+    if (!url.empty())
+      OnOpenUrlOnMainThread(url);
+  }
 }
 
 void AssistantManagerServiceImpl::OnRecognitionStateChanged(

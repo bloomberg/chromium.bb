@@ -219,8 +219,10 @@ class AssistantManagerServiceImpl
   void OnRespondingStartedOnMainThread(bool is_error_response);
   void OnSpeechLevelUpdatedOnMainThread(const float speech_level);
   void OnModifySettingsAction(const std::string& modify_setting_args_proto);
-  void OnOpenMediaAndroidIntent(const std::string play_media_args_proto,
-                                action::AndroidAppInfo* android_app_info);
+  void OnOpenMediaAndroidIntentOnMainThread(
+      const std::string play_media_args_proto,
+      action::AndroidAppInfo* android_app_info);
+  void OnPlayMedia(const std::string play_media_args_proto);
 
   void RegisterFallbackMediaHandler();
 
