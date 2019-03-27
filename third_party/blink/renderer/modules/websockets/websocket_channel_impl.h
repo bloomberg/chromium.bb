@@ -36,7 +36,6 @@
 #include <utility>
 #include "base/memory/scoped_refptr.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
-#include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -62,10 +61,8 @@ class WebSocketHandshakeThrottle;
 // This is an implementation of WebSocketChannel. This is created on the main
 // thread for Document, or on the worker thread for WorkerGlobalScope. All
 // functions must be called on the execution context's thread.
-class MODULES_EXPORT WebSocketChannelImpl final
-    : public WebSocketChannel,
-      public WebSocketHandleClient,
-      public WebCallbacks<void, const WebString&> {
+class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel,
+                                                  public WebSocketHandleClient {
  public:
   // You can specify the source file and the line number information
   // explicitly by passing the last parameter.
@@ -115,6 +112,16 @@ class MODULES_EXPORT WebSocketChannelImpl final
   void Trace(blink::Visitor*) override;
 
  private:
+  friend class WebSocketChannelImplHandshakeThrottleTest;
+  FRIEND_TEST_ALL_PREFIXES(WebSocketChannelImplHandshakeThrottleTest,
+                           ThrottleSucceedsFirst);
+  FRIEND_TEST_ALL_PREFIXES(WebSocketChannelImplHandshakeThrottleTest,
+                           HandshakeSucceedsFirst);
+  FRIEND_TEST_ALL_PREFIXES(WebSocketChannelImplHandshakeThrottleTest,
+                           ThrottleReportsErrorBeforeConnect);
+  FRIEND_TEST_ALL_PREFIXES(WebSocketChannelImplHandshakeThrottleTest,
+                           ThrottleReportsErrorAfterConnect);
+
   class BlobLoader;
   class Message;
   struct ConnectInfo;
@@ -170,10 +177,8 @@ class MODULES_EXPORT WebSocketChannelImpl final
   void DidReceiveFlowControl(WebSocketHandle*, int64_t quota) override;
   void DidStartClosingHandshake(WebSocketHandle*) override;
 
-  // WebCallbacks<void, const WebString&> functions. These are called with the
-  // results of throttling.
-  void OnSuccess() override;
-  void OnError(const WebString& console_message) override;
+  // Completion callback. It is called with the results of throttling.
+  void OnCompletion(const base::Optional<WebString>& error);
 
   // Methods for BlobLoader.
   void DidFinishLoadingBlob(DOMArrayBuffer*);
