@@ -9,11 +9,13 @@
 
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/focus_cycler.h"
+#include "ash/keyboard/keyboard_util.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/screen_util.h"
@@ -597,6 +599,17 @@ void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     overflow_bubble_->Hide();
 }
 
+bool ShelfView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (event.IsControlDown() &&
+      ash::keyboard_util::IsArrowKeyCode(event.key_code())) {
+    bool swap_with_next = (event.key_code() == ui::VKEY_DOWN ||
+                           event.key_code() == ui::VKEY_RIGHT);
+    SwapButtons(focused_button_, swap_with_next);
+    return true;
+  }
+  return views::View::OnKeyPressed(event);
+}
+
 views::FocusTraversable* ShelfView::GetPaneFocusTraversable() {
   return this;
 }
@@ -1013,6 +1026,45 @@ bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
   if (index == -1)
     return false;
   return !IsRepostEvent(event) || last_pressed_index_ != index;
+}
+
+void ShelfView::SwapButtons(ShelfButton* button_to_swap, bool with_next) {
+  if (!button_to_swap)
+    return;
+  // We don't allow reordering of buttons that aren't app buttons.
+  if (button_to_swap->GetClassName() != ShelfAppButton::kViewClassName)
+    return;
+
+  // Find the index of the button to swap in the view model.
+  int src_index = -1;
+  for (int i = 0; i < view_model_->view_size(); ++i) {
+    View* view = view_model_->view_at(i);
+    if (view == button_to_swap) {
+      src_index = i;
+      break;
+    }
+  }
+
+  const int target_index = with_next ? src_index + 1 : src_index - 1;
+  const int first_swappable_index =
+      std::max(first_visible_index_, kAppListButtonIndex + 1);
+  const int last_swappable_index = last_visible_index_;
+  if (src_index == -1 || (target_index > last_swappable_index) ||
+      (target_index < first_swappable_index)) {
+    return;
+  }
+
+  // Only allow swapping two pinned apps or two unpinned apps.
+  if (!SamePinState(model_->items()[src_index].type,
+                    model_->items()[target_index].type)) {
+    return;
+  }
+
+  // Swapping items in the model is sufficient, everything will then be
+  // reflected in the views.
+  model_->Move(src_index, target_index);
+  AnimateToIdealBounds();
+  // TODO(manucornet): Announce the swap to screen readers.
 }
 
 void ShelfView::PointerPressedOnButton(views::View* view,
