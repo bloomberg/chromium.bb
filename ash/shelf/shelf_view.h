@@ -151,6 +151,8 @@ class ASH_EXPORT ShelfView : public views::View,
     owner_overflow_bubble_ = owner;
   }
 
+  void set_focused_button(ShelfButton* focused) { focused_button_ = focused; }
+
   AppListButton* GetAppListButton() const;
   BackButton* GetBackButton() const;
   OverflowButton* GetOverflowButton() const;
@@ -180,6 +182,8 @@ class ASH_EXPORT ShelfView : public views::View,
   gfx::Size CalculatePreferredSize() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   FocusTraversable* GetPaneFocusTraversable() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
 
@@ -229,6 +233,10 @@ class ASH_EXPORT ShelfView : public views::View,
   // Returns true if |event| on the shelf item is going to activate the item.
   // Used to determine whether a pending ink drop should be shown or not.
   bool ShouldEventActivateButton(views::View* view, const ui::Event& event);
+
+  // Swaps the given button with the next one if |with_next| is true, or with
+  // the previous one if |with_next| is false.
+  void SwapButtons(ShelfButton* button_to_swap, bool with_next);
 
   // The shelf buttons use the Pointer interface to enable item reordering.
   enum Pointer { NONE, DRAG_AND_DROP, MOUSE, TOUCH };
@@ -603,6 +611,10 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // The timestamp of the event which closed the last menu - or 0.
   base::TimeTicks closing_event_time_;
+
+  // The button that is currently focused for keyboard navigation, or null
+  // if nothing is focused.
+  ShelfButton* focused_button_ = nullptr;
 
   // True if a drag and drop operation created/pinned the item in the launcher
   // and it needs to be deleted/unpinned again if the operation gets cancelled.

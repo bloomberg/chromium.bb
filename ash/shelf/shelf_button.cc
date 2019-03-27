@@ -29,6 +29,10 @@ ShelfButton::~ShelfButton() = default;
 ////////////////////////////////////////////////////////////////////////////////
 // views::View
 
+const char* ShelfButton::GetClassName() const {
+  return "ash/ShelfButton";
+}
+
 bool ShelfButton::OnMousePressed(const ui::MouseEvent& event) {
   Button::OnMousePressed(event);
   shelf_view_->PointerPressedOnButton(this, ShelfView::MOUSE, event);
@@ -66,6 +70,16 @@ void ShelfButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(title.empty() ? GetAccessibleName() : title);
 }
 
+void ShelfButton::OnFocus() {
+  shelf_view_->set_focused_button(this);
+  Button::OnFocus();
+}
+
+void ShelfButton::OnBlur() {
+  shelf_view_->set_focused_button(nullptr);
+  Button::OnBlur();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // views::Button
 
@@ -87,10 +101,6 @@ std::unique_ptr<views::InkDrop> ShelfButton::CreateInkDrop() {
       Button::CreateDefaultInkDropImpl();
   ink_drop->SetShowHighlightOnHover(false);
   return std::move(ink_drop);
-}
-
-const char* ShelfButton::GetClassName() const {
-  return "ash/ShelfButton";
 }
 
 }  // namespace ash

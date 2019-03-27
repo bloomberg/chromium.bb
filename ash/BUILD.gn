@@ -339,6 +339,8 @@ component("ash") {
     "keyboard/ash_keyboard_controller.h",
     "keyboard/ash_keyboard_ui.cc",
     "keyboard/ash_keyboard_ui.h",
+    "keyboard/keyboard_util.cc",
+    "keyboard/keyboard_util.h",
     "keyboard/virtual_keyboard_container_layout_manager.cc",
     "keyboard/virtual_keyboard_container_layout_manager.h",
     "keyboard/virtual_keyboard_controller.cc",
