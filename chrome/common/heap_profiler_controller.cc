@@ -53,12 +53,18 @@ class SampleMetadataRecorder : public metrics::MetadataRecorder {
  private:
   const uint64_t field_hash_;
   size_t current_sample_size_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(SampleMetadataRecorder);
 };
 
 }  // namespace
 
-HeapProfilerController::HeapProfilerController() = default;
-HeapProfilerController::~HeapProfilerController() = default;
+HeapProfilerController::HeapProfilerController()
+    : stopped_(base::MakeRefCounted<StoppedFlag>()) {}
+
+HeapProfilerController::~HeapProfilerController() {
+  stopped_->data.Set();
+}
 
 void HeapProfilerController::StartIfEnabled() {
   DCHECK(!started_);
@@ -89,26 +95,37 @@ void HeapProfilerController::StartIfEnabled() {
   profiler->SetSamplingInterval(sampling_rate_kb * 1024);
   profiler->Start();
 
-  ScheduleNextSnapshot();
+  ScheduleNextSnapshot(task_runner_ ? std::move(task_runner_)
+                                    : base::CreateTaskRunnerWithTraits(
+                                          {base::TaskPriority::BEST_EFFORT}),
+                       stopped_);
 }
 
-void HeapProfilerController::ScheduleNextSnapshot() {
-  if (!task_runner_) {
-    task_runner_ =
-        base::CreateTaskRunnerWithTraits({base::TaskPriority::BEST_EFFORT});
-  }
-  task_runner_->PostDelayedTask(
+// static
+void HeapProfilerController::ScheduleNextSnapshot(
+    scoped_refptr<base::TaskRunner> task_runner,
+    scoped_refptr<StoppedFlag> stopped) {
+  // TODO(https://crbug.com/946657): Remove the task_runner and replace the call
+  // with base::PostDelayedTaskWithTraits once test::ScopedTaskEnvironment
+  // supports mock time in thread pools.
+  task_runner->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&HeapProfilerController::TakeSnapshot,
-                     weak_factory_.GetWeakPtr()),
+                     std::move(task_runner), std::move(stopped)),
       RandomInterval(kHeapCollectionInterval));
 }
 
-void HeapProfilerController::TakeSnapshot() {
+// static
+void HeapProfilerController::TakeSnapshot(
+    scoped_refptr<base::TaskRunner> task_runner,
+    scoped_refptr<StoppedFlag> stopped) {
+  if (stopped->data.IsSet())
+    return;
   RetrieveAndSendSnapshot();
-  ScheduleNextSnapshot();
+  ScheduleNextSnapshot(std::move(task_runner), std::move(stopped));
 }
 
+// static
 void HeapProfilerController::RetrieveAndSendSnapshot() {
   std::vector<base::SamplingHeapProfiler::Sample> samples =
       base::SamplingHeapProfiler::Get()->GetSamples(0);
