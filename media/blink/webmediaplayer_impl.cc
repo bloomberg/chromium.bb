@@ -1852,6 +1852,10 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
   if (!HasVideo())
     return;
 
+  // Only record stats from the local pipeline.
+  if (is_flinging_ || is_remote_rendering_ || using_media_player_renderer_)
+    return;
+
   // Stats reporter requires a valid config. We may not have one for HLS cases
   // where URL demuxer doesn't know details of the stream.
   if (!pipeline_metadata_.video_decoder_config.IsValidConfig())
@@ -3318,6 +3322,10 @@ void WebMediaPlayerImpl::ReportTimeFromForegroundToFirstFrame(
 void WebMediaPlayerImpl::SwitchToRemoteRenderer(
     const std::string& remote_device_friendly_name) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  DCHECK(!is_remote_rendering_);
+  is_remote_rendering_ = true;
+
   DCHECK(!disable_pipeline_auto_suspend_);
   disable_pipeline_auto_suspend_ = true;
 
@@ -3336,8 +3344,11 @@ void WebMediaPlayerImpl::SwitchToRemoteRenderer(
 void WebMediaPlayerImpl::SwitchToLocalRenderer(
     MediaObserverClient::ReasonToSwitchToLocal reason) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (!disable_pipeline_auto_suspend_)
+  if (!is_remote_rendering_)
     return;  // Is currently with local renderer.
+  is_remote_rendering_ = false;
+
+  DCHECK(disable_pipeline_auto_suspend_);
   disable_pipeline_auto_suspend_ = false;
 
   // Capabilities reporting may resume now that playback is local.

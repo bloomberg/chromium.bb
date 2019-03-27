@@ -737,6 +737,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // IsRemote().
   bool is_flinging_ = false;
 
+  // Tracks if we are currently using a remote renderer. See
+  // SwitchToRemoteRenderer().
+  bool is_remote_rendering_ = false;
+
   // The last volume received by setVolume() and the last volume multiplier from
   // OnVolumeMultiplierUpdate().  The multiplier is typical 1.0, but may be less
   // if the WebMediaPlayerDelegate has requested a volume reduction (ducking)
