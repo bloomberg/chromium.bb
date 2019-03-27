@@ -63,10 +63,6 @@ void TrackEventJSONExporter::ProcessPackets(
       current_state_.incomplete = true;
     }
 
-    if (current_state_.incomplete) {
-      continue;
-    }
-
     // Now we process the data from the packet. First by getting the interned
     // strings out and processed.
     if (packet.has_interned_data()) {
@@ -85,10 +81,9 @@ void TrackEventJSONExporter::ProcessPackets(
     } else if (packet.has_trace_stats()) {
       SetTraceStatsMetadata(packet.trace_stats());
     } else {
+      // If none of the above matched, this packet was emitted by the service
+      // and has no equivalent in the old trace format. We thus ignore it.
     }
-    // If none of the above matched this packet was emitted by the service or
-    // some other producer. And as a result has no equivalent in the old trace
-    // format so we ignore it.
   }
 }
 
@@ -154,6 +149,12 @@ base::Optional<int64_t> TrackEventJSONExporter::ComputeThreadTimeUs(
 void TrackEventJSONExporter::HandleInternedData(
     const ChromeTracePacket& packet) {
   DCHECK(packet.has_interned_data());
+
+  // InternedData is only emitted on sequences with incremental state.
+  if (current_state_.incomplete) {
+    return;
+  }
+
   const auto& data = packet.interned_data();
   // Even if the interned data was reset we should not change the values in the
   // interned data.
@@ -188,6 +189,11 @@ void TrackEventJSONExporter::HandleProcessDescriptor(
   const auto& process = packet.process_descriptor();
   // Save the current state we need for future packets.
   current_state_.pid = process.pid();
+
+  // ProcessDescriptor is only emitted on sequences with incremental state.
+  if (current_state_.incomplete) {
+    return;
+  }
 
   // If we aren't outputting traceEvents then we don't need to look at the
   // metadata that might need to be emitted.
@@ -259,6 +265,12 @@ void TrackEventJSONExporter::HandleProcessDescriptor(
 void TrackEventJSONExporter::HandleThreadDescriptor(
     const ChromeTracePacket& packet) {
   DCHECK(packet.has_thread_descriptor());
+
+  // ThreadDescriptor is only emitted on sequences with incremental state.
+  if (current_state_.incomplete) {
+    return;
+  }
+
   const auto& thread = packet.thread_descriptor();
   // Save the current state we need for future packets.
   current_state_.pid = thread.pid();
@@ -333,6 +345,11 @@ void TrackEventJSONExporter::HandleChromeEvents(
 
 void TrackEventJSONExporter::HandleTrackEvent(const ChromeTracePacket& packet) {
   DCHECK(packet.has_track_event());
+
+  // TrackEvents need incremental state.
+  if (current_state_.incomplete) {
+    return;
+  }
 
   // If we aren't outputting traceEvents nothing in a TrackEvent currently will
   // be needed so just return early.

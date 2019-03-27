@@ -1582,7 +1582,6 @@ TEST_F(TrackEventJsonExporterTest, TestMetadata) {
   std::vector<perfetto::protos::TracePacket> trace_packet_protos;
 
   trace_packet_protos.emplace_back();
-  trace_packet_protos.back().set_incremental_state_cleared(true);
   {
     auto* new_metadata =
         trace_packet_protos.back().mutable_chrome_events()->add_metadata();
@@ -1630,7 +1629,6 @@ TEST_F(TrackEventJsonExporterTest, TestLegacySystemFtrace) {
   trace_packet_protos.emplace_back();
   trace_packet_protos.back().mutable_chrome_events()->add_legacy_ftrace_output(
       ftrace);
-  trace_packet_protos.back().set_incremental_state_cleared(true);
   FinalizePackets(trace_packet_protos);
 
   auto* sys_trace = parsed_trace_data()->FindKey("systemTraceEvents");
@@ -1642,7 +1640,6 @@ TEST_F(TrackEventJsonExporterTest, TestLegacySystemTraceEvents) {
   std::vector<perfetto::protos::TracePacket> trace_packet_protos;
 
   trace_packet_protos.emplace_back();
-  trace_packet_protos.back().set_incremental_state_cleared(true);
   auto* json_trace = trace_packet_protos.back()
                          .mutable_chrome_events()
                          ->add_legacy_json_trace();
@@ -1669,7 +1666,6 @@ TEST_F(TrackEventJsonExporterTest, TestLegacyUserTrace) {
   std::vector<perfetto::protos::TracePacket> trace_packet_protos;
 
   trace_packet_protos.emplace_back();
-  trace_packet_protos.back().set_incremental_state_cleared(true);
   auto* json_trace = trace_packet_protos.back()
                          .mutable_chrome_events()
                          ->add_legacy_json_trace();
@@ -1699,7 +1695,6 @@ TEST_F(TrackEventJsonExporterTest, TestTraceStats) {
   std::vector<perfetto::protos::TracePacket> trace_packet_protos;
 
   trace_packet_protos.emplace_back();
-  trace_packet_protos.back().set_incremental_state_cleared(true);
   // We are just checking that we correctly called the function provided by the
   // base class. See json_trace_exporter_unittest for a more complete test.
   trace_packet_protos.back().mutable_trace_stats();
@@ -1757,9 +1752,16 @@ TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {
   track_event->set_thread_time_delta_us(3);
   *track_event->mutable_legacy_event() =
       CreateLegacyEvent(/* name_iid = */ 2, kLegacyFlags, kLegacyPhase);
+
   // This event will be dropped.
   trace_packet_protos.push_back(trace_packet_protos.back());
   trace_packet_protos.back().set_previous_packet_dropped(true);
+
+  // Add a TraceStats packet, which shouldn't be dropped even though the
+  // incremental state was not cleared yet.
+  trace_packet_protos.emplace_back();
+  trace_packet_protos.back().mutable_trace_stats();
+
   // Reset the state.
   AddThreadDescriptorPacket(
       /* sort_index = */ base::nullopt, ThreadDescriptor::THREAD_UNSPECIFIED,
@@ -1823,6 +1825,10 @@ TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {
                     &events));
   EXPECT_EQ(kReferenceTimeUs + 4, events[0]->timestamp);
   EXPECT_EQ(kReferenceThreadTimeUs + 3, events[0]->thread_timestamp);
+
+  // We only verify that the TraceStats packet was not dropped.
+  EXPECT_THAT(unparsed_trace_data_,
+              testing::HasSubstr("\"perfetto_trace_stats\""));
 }
 }  // namespace
 }  // namespace tracing
