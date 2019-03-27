@@ -93,7 +93,7 @@
 
     'chromium.chrome': {
       'chromeos-amd64-generic-google-rel': 'official_cros_chrome_sdk',
-      'linux-chromeos-google-rel': 'official_goma_chromeos',
+      'linux-chromeos-google-rel': 'official_goma_chromeos_minimal_symbols',
       'linux-google-rel': 'official_goma',
       'mac-google-rel': 'official_goma',
       'win-google-rel': 'official_goma_x86',
@@ -673,7 +673,7 @@
     },
 
     'tryserver.chromium.chrome': {
-      'linux-chromeos-chrome': 'official_goma_chromeos_no_symbols',
+      'linux-chromeos-chrome': 'official_goma_chromeos_minimal_symbols',
     },
 
     'tryserver.chromium.chromiumos': {
@@ -1679,12 +1679,8 @@
       'official', 'goma', 'no_gnome_keyring',
     ],
 
-    'official_goma_chromeos': [
-      'official', 'goma', 'chromeos',
-    ],
-
-    'official_goma_chromeos_no_symbols': [
-      'official', 'goma', 'chromeos', 'no_symbols',
+    'official_goma_chromeos_minimal_symbols': [
+      'official', 'goma', 'chromeos', 'minimal_symbols',
     ],
 
     'official_goma_minimal_symbols_android': [
