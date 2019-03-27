@@ -142,7 +142,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kIntentBlockExternalFormRedirectsNoGesture,
     &kJellyBeanSupported,
     &kLanguagesPreference,
-    &kModalPermissionDialogView,
     &kNewPhotoPicker,
     &kNoCreditCardAbort,
     &kNTPButton,
@@ -405,9 +404,6 @@ const base::Feature kJellyBeanSupported{"JellyBeanSupported",
 
 const base::Feature kLanguagesPreference{"LanguagesPreference",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kModalPermissionDialogView{
-    "ModalPermissionDialogView", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSearchEnginePromoExistingDevice{
     "SearchEnginePromo.ExistingDevice", base::FEATURE_ENABLED_BY_DEFAULT};

@@ -157,8 +157,7 @@ public class NotificationPlatformBridgeTest {
         // showing a dialog.
         runJavaScript("Notification.requestPermission(sendToTest)");
         waitForTitle("denied");
-        Assert.assertEquals(
-                null, PermissionDialogController.getInstance().getCurrentDialogForTesting());
+        Assert.assertFalse(PermissionDialogController.getInstance().isDialogShownForTest());
 
         // Notifications permission should still be denied.
         Assert.assertEquals("\"denied\"", runJavaScript("Notification.permission"));

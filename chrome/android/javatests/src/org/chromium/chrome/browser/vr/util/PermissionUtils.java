@@ -4,11 +4,10 @@
 
 package org.chromium.chrome.browser.vr.util;
 
-import android.content.DialogInterface;
-
 import org.chromium.chrome.browser.permissions.PermissionDialogController;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
 
 /**
  * Utility class for interacting with permission prompts outside of the VR Browser. For interaction
@@ -20,7 +19,7 @@ public class PermissionUtils {
      */
     public static void waitForPermissionPrompt() {
         CriteriaHelper.pollUiThread(() -> {
-            return PermissionDialogController.getInstance().getCurrentDialogForTesting() != null;
+            return PermissionDialogController.getInstance().isDialogShownForTest();
         }, "Permission prompt did not appear in allotted time");
     }
 
@@ -29,10 +28,8 @@ public class PermissionUtils {
      */
     public static void acceptPermissionPrompt() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PermissionDialogController.getInstance()
-                    .getCurrentDialogForTesting()
-                    .getButton(DialogInterface.BUTTON_POSITIVE)
-                    .performClick();
+            PermissionDialogController.getInstance().clickButtonForTest(
+                    ModalDialogProperties.ButtonType.POSITIVE);
         });
     }
 
@@ -41,10 +38,8 @@ public class PermissionUtils {
      */
     public static void denyPermissionPrompt() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PermissionDialogController.getInstance()
-                    .getCurrentDialogForTesting()
-                    .getButton(DialogInterface.BUTTON_NEGATIVE)
-                    .performClick();
+            PermissionDialogController.getInstance().clickButtonForTest(
+                    ModalDialogProperties.ButtonType.NEGATIVE);
         });
     }
 }
