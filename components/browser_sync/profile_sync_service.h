@@ -306,8 +306,9 @@ class ProfileSyncService : public syncer::SyncService,
   void AccountStateChanged();
   void CredentialsChanged();
 
-  // Callback for SyncPrefs.
+  // Callbacks for SyncUserSettingsImpl.
   void SyncAllowedByPlatformChanged(bool allowed);
+  bool IsEncryptEverythingAllowed() const;
 
   bool IsEngineAllowedToStart() const;
 

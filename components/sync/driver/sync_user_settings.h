@@ -57,7 +57,6 @@ class SyncUserSettings : public syncer::DataTypeEncryptionHandler {
   // Whether the user is allowed to encrypt all their Sync data. For example,
   // child accounts are not allowed to encrypt their data.
   virtual bool IsEncryptEverythingAllowed() const = 0;
-  virtual void SetEncryptEverythingAllowed(bool allowed) = 0;
   // Whether we are currently set to encrypt all the Sync data.
   virtual bool IsEncryptEverythingEnabled() const = 0;
   // Turns on encryption for all data. Callers must call SetChosenDataTypes()

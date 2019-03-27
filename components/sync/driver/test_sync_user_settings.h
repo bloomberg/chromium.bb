@@ -34,7 +34,6 @@ class TestSyncUserSettings : public SyncUserSettings {
   void SetChosenDataTypes(bool sync_everything, ModelTypeSet types) override;
 
   bool IsEncryptEverythingAllowed() const override;
-  void SetEncryptEverythingAllowed(bool allowed) override;
   bool IsEncryptEverythingEnabled() const override;
   void EnableEncryptEverything() override;
 
@@ -49,6 +48,7 @@ class TestSyncUserSettings : public SyncUserSettings {
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
 
   void SetFirstSetupComplete(bool first_setup_complete);
+  void SetEncryptEverythingAllowed(bool allowed);
   void SetPassphraseRequired(bool required);
   void SetPassphraseRequiredForDecryption(bool required);
   void SetIsUsingSecondaryPassphrase(bool enabled);

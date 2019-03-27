@@ -247,6 +247,8 @@ void ProfileSyncService::Initialize() {
   user_settings_ = std::make_unique<syncer::SyncUserSettingsImpl>(
       &crypto_, &sync_prefs_, GetRegisteredDataTypes(),
       base::BindRepeating(&ProfileSyncService::SyncAllowedByPlatformChanged,
+                          base::Unretained(this)),
+      base::BindRepeating(&ProfileSyncService::IsEncryptEverythingAllowed,
                           base::Unretained(this)));
 
   sync_prefs_.AddSyncPrefObserver(this);
@@ -1309,6 +1311,17 @@ void ProfileSyncService::SyncAllowedByPlatformChanged(bool allowed) {
     // also similar comment in OnSyncRequestedPrefChange().
     startup_controller_->TryStart(/*force_immediate=*/false);
   }
+}
+
+bool ProfileSyncService::IsEncryptEverythingAllowed() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (const syncer::SyncTypePreferenceProvider* provider :
+       preference_providers_) {
+    if (!provider->IsEncryptEverythingAllowed()) {
+      return false;
+    }
+  }
+  return true;
 }
 
 void ProfileSyncService::ConfigureDataTypeManager(

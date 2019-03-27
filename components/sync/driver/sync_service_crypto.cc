@@ -160,7 +160,6 @@ bool SyncServiceCrypto::IsUsingSecondaryPassphrase() const {
 
 void SyncServiceCrypto::EnableEncryptEverything() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsEncryptEverythingAllowed());
   DCHECK(state_.engine);
 
   // TODO(atwilson): Persist the encryption_pending flag to address the various
@@ -251,17 +250,6 @@ PassphraseType SyncServiceCrypto::GetPassphraseType() const {
   return state_.cached_passphrase_type;
 }
 
-bool SyncServiceCrypto::IsEncryptEverythingAllowed() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return state_.encrypt_everything_allowed;
-}
-
-void SyncServiceCrypto::SetEncryptEverythingAllowed(bool allowed) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(allowed || !state_.engine || !IsEncryptEverythingEnabled());
-  state_.encrypt_everything_allowed = allowed;
-}
-
 ModelTypeSet SyncServiceCrypto::GetEncryptedDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(state_.encrypted_types.Has(PASSWORDS));
@@ -323,7 +311,6 @@ void SyncServiceCrypto::OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   state_.encrypted_types = encrypted_types;
   state_.encrypt_everything = encrypt_everything;
-  DCHECK(state_.encrypt_everything_allowed || !state_.encrypt_everything);
   DVLOG(1) << "Encrypted types changed to "
            << ModelTypeSetToString(state_.encrypted_types)
            << " (encrypt everything is set to "
