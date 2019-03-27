@@ -84,9 +84,22 @@ cr.define('settings.printing', function() {
     return !!((manufacturer && model) || ppdPath);
   }
 
+  /**
+   * Returns the base name of a filepath.
+   * @param {string} path The full path of the file
+   * @return {string} The base name of the file
+   */
+  function getBaseName(path) {
+    if (path && path.length > 0) {
+      return path.substring(path.lastIndexOf('/') + 1);
+    }
+    return '';
+  }
+
   return {
     isNetworkProtocol: isNetworkProtocol,
     isNameAndAddressValid: isNameAndAddressValid,
     isPPDInfoValid: isPPDInfoValid,
+    getBaseName: getBaseName,
   };
 });

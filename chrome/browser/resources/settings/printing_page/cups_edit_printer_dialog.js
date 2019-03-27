@@ -12,10 +12,15 @@ Polymer({
 
   behaviors: [
     CrScrollableBehavior,
-    SetManufacturerModelBehavior,
   ],
 
   properties: {
+    /** @type {!CupsPrinterInfo} */
+    activePrinter: {
+      type: Object,
+      notify: true,
+    },
+
     /**
      * If the printer needs to be re-configured.
      * @private {boolean}
@@ -43,10 +48,32 @@ Polymer({
       type: Boolean,
       computed: 'isNetworkProtocol_(activePrinter.printerProtocol)',
     },
+
+    /** @type {?Array<string>} */
+    manufacturerList: Array,
+
+    /** @type {?Array<string>} */
+    modelList: Array,
+
+    /**
+     * Whether the user selected PPD file is valid.
+     * @private
+     */
+    invalidPPD_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * The base name of a newly selected PPD file.
+     * @private
+     */
+    newUserPPD_: String,
   },
 
   observers: [
-    'printerPathChanged_(activePrinter.*)',
+    'onPrinterInfoChanged_(activePrinter.*)',
+    'selectedEditManufacturerChanged_(activePrinter.ppdManufacturer)',
   ],
 
   /** @override */
@@ -56,7 +83,11 @@ Polymer({
         .then(
             this.onGetPrinterPpdManufacturerAndModel_.bind(this),
             this.onGetPrinterPpdManufacturerAndModelFailed_.bind(this));
-    const basename = this.getBaseName(this.activePrinter.printerPPDPath);
+    settings.CupsPrintersBrowserProxyImpl.getInstance()
+        .getCupsPrinterManufacturersList()
+        .then(this.manufacturerListChanged_.bind(this));
+    const basename =
+        settings.printing.getBaseName(this.activePrinter.printerPPDPath);
     if (basename) {
       this.existingUserPPDMessage_ =
           loadTimeData.getStringF('currentPpdMessage', basename);
@@ -164,5 +195,64 @@ Polymer({
          settings.printing.isPPDInfoValid(
              this.activePrinter.ppdManufacturer, this.activePrinter.ppdModel,
              this.activePrinter.printerPPDPath));
+  },
+
+  /**
+   * @param {string} manufacturer The manufacturer for which we are retrieving
+   *     models.
+   * @private
+   */
+  selectedEditManufacturerChanged_: function(manufacturer) {
+    // Reset model if manufacturer is changed.
+    this.set('activePrinter.ppdModel', '');
+    this.modelList = [];
+    if (!!manufacturer && manufacturer.length != 0) {
+      settings.CupsPrintersBrowserProxyImpl.getInstance()
+          .getCupsPrinterModelsList(manufacturer)
+          .then(this.modelListChanged_.bind(this));
+    }
+  },
+
+  /** @private */
+  onBrowseFile_: function() {
+    settings.CupsPrintersBrowserProxyImpl.getInstance()
+        .getCupsPrinterPPDPath()
+        .then(this.printerPPDPathChanged_.bind(this));
+  },
+
+  /**
+   * @param {!ManufacturersInfo} manufacturersInfo
+   * @private
+   */
+  manufacturerListChanged_: function(manufacturersInfo) {
+    if (!manufacturersInfo.success) {
+      return;
+    }
+    this.manufacturerList = manufacturersInfo.manufacturers;
+    if (this.activePrinter.ppdManufacturer.length != 0) {
+      settings.CupsPrintersBrowserProxyImpl.getInstance()
+          .getCupsPrinterModelsList(this.activePrinter.ppdManufacturer)
+          .then(this.modelListChanged_.bind(this));
+    }
+  },
+
+  /**
+   * @param {!ModelsInfo} modelsInfo
+   * @private
+   */
+  modelListChanged_: function(modelsInfo) {
+    if (modelsInfo.success) {
+      this.modelList = modelsInfo.models;
+    }
+  },
+
+  /**
+   * @param {string} path The full path to the selected PPD file
+   * @private
+   */
+  printerPPDPathChanged_: function(path) {
+    this.set('activePrinter.printerPPDPath', path);
+    this.invalidPPD_ = !path;
+    this.newUserPPD_ = settings.printing.getBaseName(path);
   },
 });

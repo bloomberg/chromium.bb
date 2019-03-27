@@ -14,7 +14,6 @@ js_type_check("closure_compile") {
     ":cups_printers",
     ":cups_printers_browser_proxy",
     ":cups_printers_list",
-    ":cups_set_manufacturer_model_behavior",
     ":printing_browser_proxy",
     ":printing_page",
   ]
@@ -29,7 +28,6 @@ js_library("cloud_printers") {
 js_library("cups_add_printer_dialog") {
   deps = [
     ":cups_printers_browser_proxy",
-    ":cups_set_manufacturer_model_behavior",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
@@ -49,7 +47,6 @@ js_library("cups_printer_dialog_util") {
 
 js_library("cups_edit_printer_dialog") {
   deps = [
-    ":cups_set_manufacturer_model_behavior",
     "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
   ]
 }
@@ -78,12 +75,6 @@ js_library("cups_printers_list") {
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:icon",
-  ]
-}
-
-js_library("cups_set_manufacturer_model_behavior") {
-  deps = [
-    ":cups_printers_browser_proxy",
   ]
 }
 
