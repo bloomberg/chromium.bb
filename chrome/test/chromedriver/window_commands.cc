@@ -567,6 +567,9 @@ Status ExecuteExecuteScript(Session* session,
     const base::ListValue* args;
     if (!params.GetList("args", &args))
       return Status(kInvalidArgument, "'args' must be a list");
+    // Need to support line oriented comment
+    if (script.find("//") != std::string::npos)
+      script = script + "\n";
 
     return web_view->CallFunction(session->GetCurrentFrameId(),
                                   "function(){" + script + "}", *args, value);
