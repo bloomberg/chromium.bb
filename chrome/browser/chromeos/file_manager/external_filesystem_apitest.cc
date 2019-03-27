@@ -908,14 +908,8 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDriveFileSystemExtensionApiTest,
 
 //
 // LocalAndDriveFileSystemExtensionApiTests.
-#if defined(ADDRESS_SANITIZER) || defined(DEBUG) || defined(MEMORY_SANITIZER)
-#define MAYBE_AppFileHandlerMulti AppFileHandlerMulti
-#else
-// http://crbug.com/946025 flaky in RELEASE.
-#define MAYBE_AppFileHandlerMulti DISABLED_AppFileHandlerMulti
-#endif
 IN_PROC_BROWSER_TEST_F(LocalAndDriveFileSystemExtensionApiTest,
-                       MAYBE_AppFileHandlerMulti) {
+                       AppFileHandlerMulti) {
   EXPECT_TRUE(
       RunFileSystemExtensionApiTest("file_browser/app_file_handler_multi",
                                     FILE_PATH_LITERAL("manifest.json"),
