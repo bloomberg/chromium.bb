@@ -171,7 +171,7 @@ void NavigationBodyLoader::StartLoadingBody(
   client_ = client;
 
   NotifyResourceResponseReceived(render_frame_id_, resource_load_info_.get(),
-                                 head_);
+                                 head_, content::PREVIEWS_OFF);
 
   if (use_isolated_code_cache) {
     code_cache_loader_ = std::make_unique<CodeCacheLoaderImpl>();

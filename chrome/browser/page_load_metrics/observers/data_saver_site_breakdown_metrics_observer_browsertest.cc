@@ -9,10 +9,13 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
@@ -23,10 +26,14 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "components/prefs/pref_service.h"
+#include "components/previews/core/previews_features.h"
+#include "components/previews/core/previews_switches.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -51,9 +58,11 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
     : public InProcessBrowserTest {
  protected:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        data_reduction_proxy::features::
-            kDataSaverSiteBreakdownUsingPageLoadMetrics);
+    scoped_feature_list_.InitWithFeatures(
+        {data_reduction_proxy::features::
+             kDataSaverSiteBreakdownUsingPageLoadMetrics,
+         previews::features::kClientLoFi},
+        {});
     InProcessBrowserTest::SetUp();
   }
 
@@ -68,6 +77,7 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         data_reduction_proxy::switches::kEnableDataReductionProxy);
+    command_line->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
   }
 
   // Gets the data usage recorded against the host the embedded server runs on.
@@ -81,6 +91,21 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
     const auto& it = data_usage_map.find(host);
     if (it != data_usage_map.end())
       return it->second->data_used();
+    return 0;
+  }
+
+  // Gets the data savings recorded against the host the embedded server runs
+  // on.
+  int64_t GetDataSavings(const std::string& host) {
+    const auto& data_usage_map =
+        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+            browser()->profile())
+            ->data_reduction_proxy_service()
+            ->compression_stats()
+            ->DataUsageMapForTesting();
+    const auto& it = data_usage_map.find(host);
+    if (it != data_usage_map.end())
+      return it->second->original_size() - it->second->data_used();
     return 0;
   }
 
@@ -149,4 +174,52 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
   // Choose reasonable maximum (500 is the most we expect from headers).
   EXPECT_GE(500u, GetDataUsage(test_url.HostNoBrackets()) -
                       data_usage_before_navigation);
+}
+
+IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+                       LoFiTest) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {previews::features::kPreviews,
+       data_reduction_proxy::features::
+           kDataReductionProxyEnabledWithNetworkService},
+      {});
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  g_browser_process->network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  GURL test_url(
+      embedded_test_server()->GetURL("/drag_and_drop/image_source.html"));
+
+  // Check that LoFi has data savings.
+  uint64_t data_usage_before_navigation =
+      GetDataUsage(test_url.HostNoBrackets());
+
+  ui_test_utils::NavigateToURL(browser(), test_url);
+  base::RunLoop().RunUntilIdle();
+
+  // Navigate away to force the histogram recording.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  // Choose reasonable minimum, any savings is indicative of the mechanism
+  // working.
+  EXPECT_LE(10u, GetDataSavings(test_url.HostNoBrackets()) -
+                     data_usage_before_navigation);
+
+  // Repeat the test, but this time reload the LoFi images.
+  data_usage_before_navigation = GetDataUsage(test_url.HostNoBrackets());
+
+  ui_test_utils::NavigateToURL(browser(), test_url);
+  base::RunLoop().RunUntilIdle();
+
+  browser()->tab_strip_model()->GetActiveWebContents()->ReloadLoFiImages();
+
+  // Navigate away to force the histogram recording.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  EXPECT_LE(10u, data_usage_before_navigation -
+                     GetDataSavings(test_url.HostNoBrackets()));
 }

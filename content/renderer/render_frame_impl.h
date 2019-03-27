@@ -979,7 +979,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidStartResponse(const GURL& response_url,
                         int request_id,
                         const network::ResourceResponseHead& response_head,
-                        content::ResourceType resource_type);
+                        content::ResourceType resource_type,
+                        PreviewsState previews_state);
   void DidCompleteResponse(int request_id,
                            const network::URLLoaderCompletionStatus& status);
   void DidCancelResponse(int request_id);

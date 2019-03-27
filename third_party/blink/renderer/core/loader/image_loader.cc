@@ -547,6 +547,12 @@ void ImageLoader::DoUpdateFromElement(
       }
     }
 
+    // If the image was previously set to full image, it is a full load of a
+    // placeholder image.
+    if (lazy_image_load_state_ == LazyImageLoadState::kFullImage) {
+      params.SetLazyImageAutoReload();
+    }
+
     new_image_content = ImageResourceContent::Fetch(params, document.Fetcher());
 
     // If this load is starting while navigating away, treat it as an auditing

@@ -51,7 +51,8 @@ class MetricsRenderFrameObserver
   void DidStartResponse(const GURL& response_url,
                         int request_id,
                         const network::ResourceResponseHead& response_head,
-                        content::ResourceType resource_type) override;
+                        content::ResourceType resource_type,
+                        content::PreviewsState previews_state) override;
   void DidReceiveTransferSizeUpdate(int request_id,
                                     int received_data_length) override;
   void DidCompleteResponse(
