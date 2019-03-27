@@ -528,6 +528,9 @@ void OverviewGrid::Shutdown() {
       overview_session_->enter_exit_overview_type();
   overview_session_ = nullptr;
 
+  while (!window_list_.empty())
+    RemoveItem(window_list_.back().get(), /*reposition=*/false);
+
   // HomeLauncherGestureHandler will handle fading/sliding |shield_widget_| in
   // this exit mode.
   if (exit_overview_session_type ==
@@ -742,15 +745,19 @@ void OverviewGrid::AddItem(aura::Window* window,
 }
 
 void OverviewGrid::RemoveItem(OverviewItem* overview_item, bool reposition) {
-  auto iter = GetOverviewItemIterContainingWindow(overview_item->GetWindow());
-  if (iter != window_list_.end()) {
-    window_observer_.Remove(overview_item->GetWindow());
-    window_state_observer_.Remove(
-        wm::GetWindowState(overview_item->GetWindow()));
+  auto* window = overview_item->GetWindow();
+  // Use reverse iterator to be efficiently when removing all.
+  auto iter = std::find_if(window_list_.rbegin(), window_list_.rend(),
+                           [window](std::unique_ptr<OverviewItem>& item) {
+                             return item->GetWindow() == window;
+                           });
+  if (iter != window_list_.rend()) {
+    window_observer_.Remove(window);
+    window_state_observer_.Remove(wm::GetWindowState(window));
     // Erase from the list first because deleting OverviewItem can lead to
     // iterating through the |window_list_|.
     std::unique_ptr<OverviewItem> tmp = std::move(*iter);
-    window_list_.erase(iter);
+    window_list_.erase(std::next(iter).base());
   }
 
   if (reposition)
