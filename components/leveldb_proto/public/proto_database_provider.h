@@ -62,14 +62,11 @@ class ProtoDatabaseProvider : public KeyedService {
   base::FilePath profile_dir_;
   scoped_refptr<SharedProtoDatabase> db_;
   base::Lock get_db_lock_;
-  // The SequencedTaskRunner used to ensure thread-safe behaviour for
-  // GetSharedDBInstance when called from multiple clients.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  // We store the creation sequence because we want to use that to make requests
-  // to the main provider that rely on WeakPtrs from this, so they're all
-  // invalidated/checked on the same sequence.
-  scoped_refptr<base::SequencedTaskRunner> creation_sequence_;
+  // We store the creation sequence because the SharedProtoDatabaseProvider uses
+  // it to make requests to the main provider that rely on WeakPtrs from here,
+  // so they're all invalidated/checked on the same sequence.
+  scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
 
   base::WeakPtrFactory<ProtoDatabaseProvider> weak_factory_;
 
@@ -84,7 +81,7 @@ std::unique_ptr<ProtoDatabase<P, T>> ProtoDatabaseProvider::GetDB(
   return base::WrapUnique(new ProtoDatabaseImpl<P, T>(
       db_type, unique_db_dir, task_runner,
       base::WrapUnique(new SharedProtoDatabaseProvider(
-          creation_sequence_, weak_factory_.GetWeakPtr()))));
+          client_task_runner_, weak_factory_.GetWeakPtr()))));
 }
 
 }  // namespace leveldb_proto
