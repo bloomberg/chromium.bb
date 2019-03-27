@@ -15,7 +15,6 @@
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/result_receiver.h"
-#include "fuchsia/engine/test/test_common.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "fuchsia/runners/cast/cast_channel_bindings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -96,7 +95,10 @@ class CastChannelBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
     connected_channel_->ReceiveMessage(
         cr_fuchsia::CallbackToFitFunction(message.GetReceiveCallback()));
     run_loop.Run();
-    return cr_fuchsia::StringFromMemBufferOrDie(message->data);
+
+    std::string data;
+    CHECK(cr_fuchsia::StringFromMemBuffer(message->data, &data));
+    return data;
   }
 
   void CheckLoadUrl(const std::string& url,
@@ -135,7 +137,6 @@ IN_PROC_BROWSER_TEST_F(CastChannelBindingsTest, CastChannelBufferedInput) {
   chromium::web::NavigationControllerPtr controller;
   frame_->GetNavigationController(controller.NewRequest());
 
-  testing::InSequence seq;
   CastChannelBindings cast_channel_instance(
       frame_.get(), connector_.get(), receiver_binding_.NewBinding().Bind(),
       base::MakeExpectedNotRunClosure(FROM_HERE));
@@ -162,7 +163,6 @@ IN_PROC_BROWSER_TEST_F(CastChannelBindingsTest, CastChannelReconnect) {
   chromium::web::NavigationControllerPtr controller;
   frame_->GetNavigationController(controller.NewRequest());
 
-  testing::InSequence seq;
   CastChannelBindings cast_channel_instance(
       frame_.get(), connector_.get(), receiver_binding_.NewBinding().Bind(),
       base::MakeExpectedNotRunClosure(FROM_HERE));

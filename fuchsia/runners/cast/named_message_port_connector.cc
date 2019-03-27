@@ -16,7 +16,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
-#include "fuchsia/runners/cast/injected_bindings_registry.h"
+#include "fuchsia/runners/cast/cast_platform_bindings_ids.h"
 
 namespace {
 

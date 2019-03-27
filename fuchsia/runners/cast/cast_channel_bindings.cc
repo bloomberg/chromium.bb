@@ -16,7 +16,7 @@
 #include "base/path_service.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "fuchsia/base/mem_buffer_util.h"
-#include "fuchsia/runners/cast/injected_bindings_registry.h"
+#include "fuchsia/runners/cast/cast_platform_bindings_ids.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
 
 // Unique identifier of the Cast Channel message port, used by the JavaScript

@@ -47,11 +47,16 @@ source_set("test_support") {
     "fake_component_context.h",
     "fit_adapter.h",
     "result_receiver.h",
+    "test_navigation_observer.cc",
+    "test_navigation_observer.h",
   ]
   public_deps = [
+    ":base",
     ":modular",
     "//base",
+    "//fuchsia:web_fidl",
     "//third_party/fuchsia-sdk/sdk:modular",
+    "//url",
   ]
 }
 

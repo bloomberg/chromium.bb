@@ -16,6 +16,7 @@
 
 #include "base/macros.h"
 #include "base/memory/platform_shared_memory_region.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "fuchsia/engine/browser/discarding_event_filter.h"
@@ -117,6 +118,10 @@ class FrameImpl : public chromium::web::Frame,
   // Release the resources associated with the View, if one is active.
   void TearDownView();
 
+  // Processes the most recent changes to the browser's navigation state and
+  // triggers the publishing of change events.
+  void OnNavigationEntryChanged(content::NavigationEntry* entry);
+
   // Sends |pending_navigation_event_| to the observer if there are any changes
   // to be reported.
   void MaybeSendNavigationEvent();
@@ -154,6 +159,7 @@ class FrameImpl : public chromium::web::Frame,
                      const GURL& validated_url) override;
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void TitleWasSet(content::NavigationEntry* entry) override;
 
   std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
   std::unique_ptr<content::WebContents> web_contents_;
@@ -174,6 +180,8 @@ class FrameImpl : public chromium::web::Frame,
 
   fidl::Binding<chromium::web::Frame> binding_;
   fidl::BindingSet<chromium::web::NavigationController> controller_bindings_;
+
+  base::WeakPtrFactory<FrameImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameImpl);
 };

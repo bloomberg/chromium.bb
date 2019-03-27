@@ -19,8 +19,6 @@ source_set("test_support") {
   sources = [
     "test/fake_context.cc",
     "test/fake_context.h",
-    "test/test_common.cc",
-    "test/test_common.h",
   ]
   deps = [
     "//base",
