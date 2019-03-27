@@ -41,6 +41,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['android'], bug=808744)
     self.Skip('WebglExtension_KHR_parallel_shader_compile',
         ['no_passthrough'], bug=849576)
+    self.Skip('WebglExtension_EXT_float_blend',
+        ['android'], bug=945970)
 
     # ========================
     # Conformance expectations
@@ -1379,7 +1381,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['android', 'qualcomm'], bug=906740)
     self.Fail('deqp/functional/gles3/shaderderivate_dfdy.html',
         ['android', 'qualcomm'], bug=906745)
-    self.Flaky('deqp/functional/gles3/shaderbuiltinvar.html',
+    # This test is flaky but can fail three times in a row so it must be
+    # marked as Fail instead of Flaky.
+    self.Fail('deqp/functional/gles3/shaderbuiltinvar.html',
         ['android', 'qualcomm'], bug=946177)
 
     # Nvidia (Shield TV) failures
