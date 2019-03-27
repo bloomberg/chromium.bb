@@ -116,7 +116,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
                        int line_number,
                        int column_number,
                        const blink::WebString& source_url) override;
-  void ReportConsoleMessage(int source,
+  void ReportConsoleMessage(blink::mojom::ConsoleMessageSource source,
                             blink::mojom::ConsoleMessageLevel level,
                             const blink::WebString& message,
                             int line_number,

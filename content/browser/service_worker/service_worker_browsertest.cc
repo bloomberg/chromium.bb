@@ -490,7 +490,7 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
 
 class ConsoleListener : public EmbeddedWorkerInstance::Listener {
  public:
-  void OnReportConsoleMessage(int source_identifier,
+  void OnReportConsoleMessage(blink::mojom::ConsoleMessageSource source,
                               blink::mojom::ConsoleMessageLevel message_level,
                               const base::string16& message,
                               int line_number,

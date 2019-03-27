@@ -287,7 +287,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
     args.push_back(std::make_unique<Value>(partition_id_));
     args.push_back(std::make_unique<Value>(base::NumberToString(version_id)));
     auto value = std::make_unique<DictionaryValue>();
-    value->SetInteger("sourceIdentifier", message.source_identifier);
+    value->SetInteger("sourceIdentifier", static_cast<int>(message.source));
     value->SetInteger("message_level", static_cast<int>(message.message_level));
     value->SetString("message", message.message);
     value->SetInteger("lineNumber", message.line_number);

@@ -618,9 +618,8 @@ void ServiceWorkerGlobalScopeProxy::ReportConsoleMessage(
     const String& message,
     SourceLocation* location) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  // TODO(crbug.com/941871): Remove static_cast and use ConsoleMessageSource.
-  Client().ReportConsoleMessage(static_cast<int>(source), level, message,
-                                location->LineNumber(), location->Url());
+  Client().ReportConsoleMessage(source, level, message, location->LineNumber(),
+                                location->Url());
 }
 
 void ServiceWorkerGlobalScopeProxy::WillInitializeWorkerContext() {

@@ -171,7 +171,7 @@ interface EmbeddedWorkerInstanceHost {
                     int32 column_number, url.mojom.Url source_url);
 
   // Reports that a console message was emitted to the worker's console.
-  OnReportConsoleMessage(int32 source_identifier,
+  OnReportConsoleMessage(ConsoleMessageSource source,
                          ConsoleMessageLevel message_level,
                          mojo_base.mojom.String16 message, int32 line_number,
                          url.mojom.Url source_url);
