@@ -22,6 +22,7 @@
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_util_win.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
@@ -205,11 +206,8 @@ ModuleBlacklistCacheUpdater::~ModuleBlacklistCacheUpdater() {
 }
 
 // static
-bool ModuleBlacklistCacheUpdater::IsThirdPartyModuleBlockingEnabled() {
-  // The ThirdPartyConflictsManager can exist even if the blocking is disabled
-  // because that class also controls the warning of incompatible applications.
-  return ModuleDatabase::GetInstance() &&
-         ModuleDatabase::GetInstance()->third_party_conflicts_manager() &&
+bool ModuleBlacklistCacheUpdater::IsBlockingEnabled() {
+  return base::win::GetVersion() >= base::win::VERSION_WIN8 &&
          base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking);
 }
 

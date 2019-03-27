@@ -10,7 +10,6 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -30,7 +29,6 @@
 #include "chrome/browser/conflicts/module_info_util_win.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome_elf/third_party_dlls/packed_list_format.h"
@@ -267,7 +265,7 @@ void ThirdPartyConflictsManager::OnModuleDatabaseIdle() {
 
   // And the initial blacklisted modules are only needed for the third-party
   // modules blocking.
-  if (base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking)) {
+  if (ModuleBlacklistCacheUpdater::IsBlockingEnabled()) {
     base::PostTaskAndReplyWithResult(
         background_sequence_.get(), FROM_HERE,
         base::BindOnce(&ReadInitialBlacklistedModules),
@@ -409,13 +407,13 @@ void ThirdPartyConflictsManager::InitializeIfReady() {
   }
 
   // And the dependency needed only for the ThirdPartyModulesBlocking feature.
-  if (base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking) &&
+  if (ModuleBlacklistCacheUpdater::IsBlockingEnabled() &&
       !initial_blacklisted_modules_) {
     return;
   }
 
   // Now both features are ready to be initialized.
-  if (base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking)) {
+  if (ModuleBlacklistCacheUpdater::IsBlockingEnabled()) {
     // It is safe to use base::Unretained() since the callback will not be
     // invoked if the updater is freed.
     module_blacklist_cache_updater_ =
@@ -433,7 +431,7 @@ void ThirdPartyConflictsManager::InitializeIfReady() {
   // ModuleBlacklistCacheUpdater instance. This way, it knows about which
   // modules were added to the module blacklist cache so that it's possible to
   // not warn about them.
-  if (installed_applications_) {
+  if (IncompatibleApplicationsUpdater::IsWarningEnabled()) {
     incompatible_applications_updater_ =
         std::make_unique<IncompatibleApplicationsUpdater>(
             module_database_event_source_, *exe_certificate_info_,

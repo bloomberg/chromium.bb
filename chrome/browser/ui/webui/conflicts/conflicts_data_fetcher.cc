@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/task/post_task.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/conflicts/module_database_win.h"
@@ -19,7 +18,6 @@
 #include "base/win/win_util.h"
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_updater_win.h"
-#include "chrome/common/chrome_features.h"
 #endif
 
 namespace {
@@ -223,6 +221,8 @@ std::string GetModuleStatusString(
 enum ThirdPartyFeaturesStatus {
   // The third-party features are not available in non-Google Chrome builds.
   kNonGoogleChromeBuild,
+  // The third-party features are not available on Windows 7.
+  kNotAvailableWin7,
   // The third-party features are temporarily disabled on domain-joined
   // machines because of a known issue with third-party blocking and the
   // IAttachmentExecute::Save() API (https://crbug.com/870998).
@@ -272,11 +272,14 @@ ThirdPartyFeaturesStatus GetThirdPartyFeaturesStatus(
   }
 
   // Figure out why the manager instance doesn't exist.
+  if (base::win::GetVersion() <= base::win::VERSION_WIN7)
+    return kNotAvailableWin7;
+
   if (!ModuleDatabase::IsThirdPartyBlockingPolicyEnabled())
     return kPolicyDisabled;
 
-  if (!base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking) &&
-      !IncompatibleApplicationsUpdater::IsWarningEnabled()) {
+  if (!IncompatibleApplicationsUpdater::IsWarningEnabled() &&
+      !ModuleBlacklistCacheUpdater::IsBlockingEnabled()) {
     return kFeatureDisabled;
   }
 
@@ -300,6 +303,8 @@ std::string GetThirdPartyFeaturesStatusString(ThirdPartyFeaturesStatus status) {
     case ThirdPartyFeaturesStatus::kNonGoogleChromeBuild:
       return "The third-party features are not available in non-Google Chrome "
              "builds.";
+    case ThirdPartyFeaturesStatus::kNotAvailableWin7:
+      return "The third-party features are not available on Windows 7.";
     case ThirdPartyFeaturesStatus::kEnterpriseManaged:
       return "The third-party features are temporarily disabled for clients on "
              "domain-joined machines.";

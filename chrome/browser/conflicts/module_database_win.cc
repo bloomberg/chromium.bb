@@ -447,7 +447,7 @@ void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager(
     return;
 
   if (IncompatibleApplicationsUpdater::IsWarningEnabled() ||
-      base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking)) {
+      ModuleBlacklistCacheUpdater::IsBlockingEnabled()) {
     third_party_conflicts_manager_ =
         std::make_unique<ThirdPartyConflictsManager>(this);
 
