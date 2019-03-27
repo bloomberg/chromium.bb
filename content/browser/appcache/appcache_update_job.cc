@@ -21,7 +21,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
-#include "storage/browser/quota/padding_key.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/origin.h"
@@ -94,18 +93,6 @@ bool CanUseExistingResource(const net::HttpResponseInfo* http_info) {
 }
 
 void EmptyCompletionCallback(int result) {}
-
-int64_t ComputeAppCacheResponsePadding(const GURL& response_url,
-                                       const GURL& manifest_url) {
-  // All cross-origin resources should have their size padded in response to
-  // queries regarding quota usage.
-  if (response_url.GetOrigin() == manifest_url.GetOrigin())
-    return 0;
-
-  return storage::ComputeResponsePadding(response_url.spec(),
-                                         storage::GetDefaultPaddingKey(),
-                                         /*has_metadata=*/false);
-}
 
 }  // namespace
 
@@ -520,9 +507,7 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLFetcher* fetcher,
     // Associate storage with the new entry.
     DCHECK(fetcher->response_writer());
     entry.set_response_id(fetcher->response_writer()->response_id());
-    entry.SetResponseAndPaddingSizes(
-        fetcher->response_writer()->amount_written(),
-        ComputeAppCacheResponsePadding(url, manifest_url_));
+    entry.set_response_size(fetcher->response_writer()->amount_written());
     if (!inprogress_cache_->AddOrModifyEntry(url, entry))
       duplicate_response_ids_.push_back(entry.response_id());
 
@@ -543,9 +528,7 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLFetcher* fetcher,
       if (response_code == 304 && fetcher->existing_entry().has_response_id()) {
         // Keep the existing response.
         entry.set_response_id(fetcher->existing_entry().response_id());
-        entry.SetResponseAndPaddingSizes(
-            fetcher->existing_entry().response_size(),
-            fetcher->existing_entry().padding_size());
+        entry.set_response_size(fetcher->existing_entry().response_size());
         inprogress_cache_->AddOrModifyEntry(url, entry);
       } else {
         const char kFormatString[] = "Resource fetch failed (%d) %s";
@@ -590,9 +573,7 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLFetcher* fetcher,
       // but the old resource may or may not be compatible with the new contents
       // of the cache. Impossible to know one way or the other.
       entry.set_response_id(fetcher->existing_entry().response_id());
-      entry.SetResponseAndPaddingSizes(
-          fetcher->existing_entry().response_size(),
-          fetcher->existing_entry().padding_size());
+      entry.set_response_size(fetcher->existing_entry().response_size());
       inprogress_cache_->AddOrModifyEntry(url, entry);
     }
   }
@@ -629,11 +610,9 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLFetcher* fetcher,
     AppCache* cache = inprogress_cache_.get() ? inprogress_cache_.get()
                                               : group_->newest_complete_cache();
     DCHECK(fetcher->response_writer());
-    // Master entries cannot be cross-origin by definition, so they do not
-    // require padding.
-    AppCacheEntry master_entry(
-        AppCacheEntry::MASTER, fetcher->response_writer()->response_id(),
-        fetcher->response_writer()->amount_written(), /*padding_size=*/0);
+    AppCacheEntry master_entry(AppCacheEntry::MASTER,
+                               fetcher->response_writer()->response_id(),
+                               fetcher->response_writer()->amount_written());
     if (cache->AddOrModifyEntry(url, master_entry))
       added_master_entries_.push_back(url);
     else
@@ -771,12 +750,9 @@ void AppCacheUpdateJob::OnManifestInfoWriteComplete(int result) {
 
 void AppCacheUpdateJob::OnManifestDataWriteComplete(int result) {
   if (result > 0) {
-    // The manifest determines the cache's origin, so the manifest entry is
-    // always same-origin, and thus does not require padding.
     AppCacheEntry entry(AppCacheEntry::MANIFEST,
-                        manifest_response_writer_->response_id(),
-                        manifest_response_writer_->amount_written(),
-                        /*padding_size=*/0);
+        manifest_response_writer_->response_id(),
+        manifest_response_writer_->amount_written());
     if (!inprogress_cache_->AddOrModifyEntry(manifest_url_, entry))
       duplicate_response_ids_.push_back(entry.response_id());
     StoreGroupAndCache();
@@ -1236,8 +1212,7 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
     DCHECK(it != url_file_list_.end());
     AppCacheEntry& entry = it->second;
     entry.set_response_id(response_id);
-    entry.SetResponseAndPaddingSizes(copy_me->response_size(),
-                                     copy_me->padding_size());
+    entry.set_response_size(copy_me->response_size());
     inprogress_cache_->AddOrModifyEntry(url, entry);
     NotifyAllProgress(url);
     ++url_fetches_completed_;

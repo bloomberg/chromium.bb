@@ -10,7 +10,6 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -43,9 +42,7 @@ FORWARD_DECLARE_TEST(AppCacheDatabaseTest, OnlineWhiteListRecords);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, ReCreate);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, DeletableResponseIds);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, OriginUsage);
-FORWARD_DECLARE_TEST(AppCacheDatabaseTest,
-                     UpgradeSchemaForVersionsWithoutSupportedMigrations);
-FORWARD_DECLARE_TEST(AppCacheDatabaseTest, UpgradeSchemaFrom7to8);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, UpgradeSchemaNukesDeprecatedVersion);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, WasCorrutionDetected);
 class AppCacheDatabaseTest;
 class AppCacheStorageImplTest;
@@ -76,23 +73,16 @@ class CONTENT_EXPORT AppCacheDatabase {
     bool online_wildcard;
     base::Time update_time;
     int64_t cache_size;  // the sum of all response sizes in this cache
-    int64_t padding_size;  // the sum of all padding sizes in this cache
   };
 
   struct EntryRecord {
-    EntryRecord()
-        : cache_id(0),
-          flags(0),
-          response_id(0),
-          response_size(0),
-          padding_size(0) {}
+    EntryRecord() : cache_id(0), flags(0), response_id(0), response_size(0) {}
 
     int64_t cache_id;
     GURL url;
     int flags;
     int64_t response_id;
     int64_t response_size;
-    int64_t padding_size;  // space added to obfuscate quota used by this entry
   };
 
   struct CONTENT_EXPORT NamespaceRecord {
@@ -269,9 +259,7 @@ class CONTENT_EXPORT AppCacheDatabase {
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, DeletableResponseIds);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, OriginUsage);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest,
-                           UpgradeSchemaForVersionsWithoutSupportedMigrations);
-  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest,
-                           UpgradeSchemaFrom7to8);
+                           UpgradeSchemaNukesDeprecatedVersion);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, WasCorrutionDetected);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheDatabase);
