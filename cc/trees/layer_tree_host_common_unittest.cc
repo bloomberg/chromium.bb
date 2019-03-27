@@ -4660,6 +4660,13 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   EXPECT_EQ(expect_lcd_text, root_->CanUseLCDText());
   EXPECT_EQ(expect_lcd_text, child_->CanUseLCDText());
   EXPECT_EQ(expect_lcd_text, grand_child_->CanUseLCDText());
+
+  // Case 11: will-change: transform
+  child_->SetHasWillChangeTransformHint(true);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, nullptr, nullptr, nullptr);
+  EXPECT_EQ(expect_lcd_text, root_->CanUseLCDText());
+  EXPECT_EQ(expect_not_lcd_text, child_->CanUseLCDText());
+  EXPECT_EQ(expect_lcd_text, grand_child_->CanUseLCDText());
 }
 
 TEST_P(LCDTextTest, CanUseLCDTextWithAnimation) {

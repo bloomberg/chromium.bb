@@ -864,6 +864,9 @@ bool LayerImpl::CanUseLCDText() const {
   if (static_cast<int>(offset_to_transform_parent().y()) !=
       offset_to_transform_parent().y())
     return false;
+
+  if (has_will_change_transform_hint())
+    return false;
   return true;
 }
 
