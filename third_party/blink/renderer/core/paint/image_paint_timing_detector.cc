@@ -106,7 +106,11 @@ static bool LargeImageFirst(const base::WeakPtr<ImageRecord>& a,
                             const base::WeakPtr<ImageRecord>& b) {
   DCHECK(a);
   DCHECK(b);
-  return a->first_size > b->first_size;
+  if (a->first_size != b->first_size)
+    return a->first_size > b->first_size;
+  // This make sure that two different nodes with the same |first_size| wouldn't
+  // be merged in the set.
+  return a->node_id > b->node_id;
 }
 
 ImagePaintTimingDetector::ImagePaintTimingDetector(LocalFrameView* frame_view)
@@ -355,12 +359,9 @@ void ImagePaintTimingDetector::StopRecordEntries() {
 }
 
 ImageRecord* ImagePaintTimingDetector::FindLargestPaintCandidate() {
-  return FindCandidate(size_ordered_set_);
-}
-
-ImageRecord* ImagePaintTimingDetector::FindCandidate(
-    ImageRecordSet& ordered_set) {
-  for (auto it = ordered_set.begin(); it != ordered_set.end(); ++it) {
+  DCHECK_EQ(id_record_map_.size(), size_ordered_set_.size());
+  for (auto it = size_ordered_set_.begin(); it != size_ordered_set_.end();
+       ++it) {
     if (detached_ids_.Contains((*it)->node_id))
       continue;
     DCHECK(id_record_map_.Contains((*it)->node_id));

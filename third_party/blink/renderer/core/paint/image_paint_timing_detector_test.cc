@@ -86,6 +86,12 @@ class ImagePaintTimingDetectorTest
         .id_record_map_.size();
   }
 
+  size_t CountRankingSetRecords() {
+    return GetPaintTimingDetector()
+        .GetImagePaintTimingDetector()
+        .size_ordered_set_.size();
+  }
+
   void Analyze() {
     return GetPaintTimingDetector().GetImagePaintTimingDetector().Analyze();
   }
@@ -214,17 +220,6 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_Largest) {
 
   SetImageAndPaint("larger", 9, 9);
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
-  // record = FindLargestPaintCandidate();
-  // EXPECT_TRUE(record);
-  // EXPECT_EQ(record->first_size, 81ul);
-  // EXPECT_TRUE(record->loaded);
-
-  // SetImageAndPaint("medium", 7, 7);
-  // UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
-  // record = FindLargestPaintCandidate();
-  // EXPECT_TRUE(record);
-  // EXPECT_EQ(record->first_size, 81ul);
-  // EXPECT_TRUE(record->loaded);
 }
 
 TEST_F(ImagePaintTimingDetectorTest,
@@ -584,6 +579,20 @@ TEST_F(ImagePaintTimingDetectorTest, Iframe_HalfClippedByMainFrameViewport) {
                            .FindLargestPaintCandidate();
   EXPECT_TRUE(image);
   EXPECT_LT(image->first_size, 100ul);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, SameSizeShouldNotBeIgnored) {
+  SetBodyInnerHTML(R"HTML(
+    <style>img { display:block }</style>
+    <img id='1'></img>
+    <img id='2'></img>
+    <img id='3'></img>
+  )HTML");
+  SetImageAndPaint("1", 5, 5);
+  SetImageAndPaint("2", 5, 5);
+  SetImageAndPaint("3", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  EXPECT_EQ(CountRankingSetRecords(), 3u);
 }
 
 }  // namespace blink

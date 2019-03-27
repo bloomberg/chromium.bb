@@ -46,6 +46,12 @@ class TextPaintTimingDetectorTest
                .records_manager_.detached_ids_.size();
   }
 
+  unsigned CountRankingSetSize() {
+    return GetPaintTimingDetector()
+        .GetTextPaintTimingDetector()
+        .records_manager_.size_ordered_set_.size();
+  }
+
   unsigned CountDetachedTexts() {
     return GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
@@ -508,6 +514,17 @@ TEST_F(TextPaintTimingDetectorTest, Iframe_ClippedByViewport) {
   DCHECK_EQ(GetViewportRect(GetChildFrameView()).Height(), 100);
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(CountPendingSwapTime(GetChildFrameView()), 0u);
+}
+
+TEST_F(TextPaintTimingDetectorTest, SameSizeShouldNotBeIgnored) {
+  SetBodyInnerHTML(R"HTML(
+    <div>text</div>
+    <div>text</div>
+    <div>text</div>
+    <div>text</div>
+  )HTML");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(CountRankingSetSize(), 4u);
 }
 
 }  // namespace blink
