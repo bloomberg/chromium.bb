@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/login/auth/authpolicy_login_helper.h"
+#include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
 
 #include "base/bind.h"
 #include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
@@ -55,11 +55,11 @@ class MockAuthPolicyClient : public FakeAuthPolicyClient {
 }  // namespace
 
 // Check that helper calls RefreshDevicePolicy after JoinAdDomain.
-TEST(AuthPolicyLoginHelper, JoinFollowedByRefreshDevicePolicy) {
+TEST(AuthPolicyHelper, JoinFollowedByRefreshDevicePolicy) {
   auto* mock_client = new MockAuthPolicyClient;
   CryptohomeClient::InitializeFake();
 
-  AuthPolicyLoginHelper helper;
+  AuthPolicyHelper helper;
   helper.set_dm_token(kDMToken);
   helper.JoinAdDomain(std::string(), std::string(),
                       authpolicy::KerberosEncryptionTypes(), std::string(),
