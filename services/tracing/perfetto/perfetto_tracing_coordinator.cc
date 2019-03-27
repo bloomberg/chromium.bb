@@ -9,13 +9,16 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
+#include "components/tracing/common/tracing_switches.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/tracing/perfetto/chrome_event_bundle_json_exporter.h"
 #include "services/tracing/perfetto/perfetto_service.h"
+#include "services/tracing/perfetto/track_event_json_exporter.h"
 #include "services/tracing/public/cpp/trace_event_args_whitelist.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
@@ -35,6 +38,7 @@ namespace tracing {
 class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
  public:
   TracingSession(const base::trace_event::TraceConfig& chrome_config,
+                 bool use_chrome_proto,
                  base::OnceClosure tracing_over_callback)
       : tracing_over_callback_(std::move(tracing_over_callback)) {
     // In legacy backend, the trace event agent sets the predicate used by
@@ -50,13 +54,20 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
           base::BindRepeating(&IsMetadataWhitelisted));
     }
 
-    json_trace_exporter_ = std::make_unique<ChromeEventBundleJsonExporter>(
+    auto arg_filter_predicate =
         chrome_config.IsArgumentFilterEnabled()
             ? base::trace_event::TraceLog::GetInstance()
                   ->GetArgumentFilterPredicate()
-            : JSONTraceExporter::ArgumentFilterPredicate(),
-        base::BindRepeating(&TracingSession::OnJSONTraceEventCallback,
-                            base::Unretained(this)));
+            : JSONTraceExporter::ArgumentFilterPredicate();
+    auto json_event_callback = base::BindRepeating(
+        &TracingSession::OnJSONTraceEventCallback, base::Unretained(this));
+    if (use_chrome_proto) {
+      json_trace_exporter_ = std::make_unique<ChromeEventBundleJsonExporter>(
+          std::move(arg_filter_predicate), std::move(json_event_callback));
+    } else {
+      json_trace_exporter_ = std::make_unique<TrackEventJSONExporter>(
+          std::move(arg_filter_predicate), std::move(json_event_callback));
+    }
     perfetto::TracingService* service =
         PerfettoService::GetInstance()->GetService();
     consumer_endpoint_ = service->ConnectConsumer(this, /*uid=*/0);
@@ -259,6 +270,8 @@ PerfettoTracingCoordinator::PerfettoTracingCoordinator(
     base::RepeatingClosure on_disconnect_callback)
     : Coordinator(agent_registry, std::move(on_disconnect_callback)),
       binding_(this),
+      use_chrome_proto_(!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPerfettoUseNewProtos)),
       weak_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -299,7 +312,7 @@ void PerfettoTracingCoordinator::StartTracing(const std::string& config,
   parsed_config_ = new_parsed_config;
   if (!tracing_session_) {
     tracing_session_ = std::make_unique<TracingSession>(
-        parsed_config_,
+        parsed_config_, use_chrome_proto_,
         base::BindOnce(&PerfettoTracingCoordinator::OnTracingOverCallback,
                        weak_factory_.GetWeakPtr()));
   } else {
