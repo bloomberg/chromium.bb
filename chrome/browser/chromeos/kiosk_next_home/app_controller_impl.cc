@@ -4,11 +4,14 @@
 
 #include "chrome/browser/chromeos/kiosk_next_home/app_controller_impl.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -16,15 +19,22 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/arc/common/app.mojom.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event_constants.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 namespace kiosk_next_home {
 
 AppControllerImpl::AppControllerImpl(Profile* profile)
     : profile_(profile),
-      app_service_proxy_(apps::AppServiceProxy::Get(profile)) {
+      app_service_proxy_(apps::AppServiceProxy::Get(profile)),
+      url_prefix_(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          chromeos::switches::kKioskNextHomeUrlPrefix)) {
   app_service_proxy_->AppRegistryCache().AddObserver(this);
 }
 
@@ -73,6 +83,35 @@ void AppControllerImpl::GetArcAndroidId(
         std::move(callback).Run(success, base::NumberToString(android_id));
       },
       std::move(callback)));
+}
+
+void AppControllerImpl::LaunchHomeUrl(const std::string& suffix,
+                                      LaunchHomeUrlCallback callback) {
+  if (url_prefix_.empty()) {
+    std::move(callback).Run(false, "No URL prefix.");
+    return;
+  }
+
+  GURL url(url_prefix_ + suffix);
+  if (!url.is_valid()) {
+    std::move(callback).Run(false, "Invalid URL.");
+    return;
+  }
+
+  arc::mojom::AppInstance* app_instance =
+      arc::ArcServiceManager::Get()
+          ? ARC_GET_INSTANCE_FOR_METHOD(
+                arc::ArcServiceManager::Get()->arc_bridge_service()->app(),
+                LaunchIntent)
+          : nullptr;
+
+  if (!app_instance) {
+    std::move(callback).Run(false, "ARC bridge not available.");
+    return;
+  }
+
+  app_instance->LaunchIntent(url.spec(), display::kDefaultDisplayId);
+  std::move(callback).Run(true, base::nullopt);
 }
 
 void AppControllerImpl::OnAppUpdate(const apps::AppUpdate& update) {

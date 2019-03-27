@@ -443,6 +443,9 @@ const char kHomedir[] = "homedir";
 const char kIgnoreUserProfileMappingForTests[] =
     "ignore-user-profile-mapping-for-tests";
 
+// URL prefix that can be launched by Kiosk Next Home.
+const char kKioskNextHomeUrlPrefix[] = "kiosk-next-home-url-prefix";
+
 // Enables Chrome-as-a-login-manager behavior.
 const char kLoginManager[] = "login-manager";
 
