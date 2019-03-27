@@ -33,6 +33,8 @@ public class LazySubscriptionsManager {
     private static final String HAS_PERSISTED_MESSAGES_KEY = "has_persisted_messages";
     private static final String PREF_PACKAGE =
             "org.chromium.components.gcm_driver.lazy_subscriptions";
+    private static final String INVALIDATION_APP_ID = "com.google.chrome.fcm.invalidations";
+    private static final String INVALIDATION_SENDER_ID = "8181035976";
 
     // The max number of most recent messages queued per lazy subscription until
     // Chrome is foregrounded.
@@ -78,7 +80,11 @@ public class LazySubscriptionsManager {
      * @return The unique identifier for the subscription.
      */
     public static String buildSubscriptionUniqueId(final String appId, final String senderId) {
-        return appId + senderId;
+        if (appId.equals(INVALIDATION_APP_ID)) {
+            return appId + INVALIDATION_SENDER_ID;
+        } else {
+            return appId + senderId;
+        }
     }
 
     /**

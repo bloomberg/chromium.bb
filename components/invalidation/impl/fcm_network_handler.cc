@@ -93,6 +93,9 @@ FCMNetworkHandler::~FCMNetworkHandler() {
 }
 
 void FCMNetworkHandler::StartListening() {
+  if (IsListening()) {
+    StopListening();
+  }
   // Adding ourselves as Handler means start listening.
   // Being the listener is pre-requirement for token operations.
   gcm_driver_->AddAppHandler(app_id_, this);

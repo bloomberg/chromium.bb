@@ -38,6 +38,12 @@ const char kPayload2[] = "payload2";
 const int64_t kVersion1 = 1LL;
 const int64_t kVersion2 = 2LL;
 
+class TestFCMSyncNetworkChannel : public FCMSyncNetworkChannel {
+ public:
+  void StartListening() override {}
+  void StopListening() override {}
+};
+
 // Fake delegate that keeps track of invalidation counts, payloads,
 // and state.
 class FakeDelegate : public FCMInvalidationListener::Delegate {
@@ -173,7 +179,7 @@ class FCMInvalidationListenerTest : public testing::Test {
         kPreferencesTopic_("PREFERENCE"),
         kExtensionsTopic_("EXTENSION"),
         kAppsTopic_("APP"),
-        fcm_sync_network_channel_(new FCMSyncNetworkChannel()),
+        fcm_sync_network_channel_(new TestFCMSyncNetworkChannel()),
         listener_(base::WrapUnique(fcm_sync_network_channel_)),
         fake_delegate_(&listener_) {}
 
