@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill;
+package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -13,19 +13,16 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ResourceId;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingCoordinator;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.PropertyProvider;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.ui.DropdownItem;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
-* JNI call glue for AutofillExternalDelagate C++ and Java objects.
-* This provides an alternative UI for Autofill suggestions, and replaces AutofillPopupBridge when
-* --enable-autofill-keyboard-accessory-view is passed on the command line.
-*/
+ * JNI call glue for AutofillExternalDelagate C++ and Java objects.
+ * This provides an alternative UI for Autofill suggestions, and replaces AutofillPopupBridge when
+ * --enable-autofill-keyboard-accessory-view is passed on the command line.
+ */
 @JNINamespace("autofill")
 public class AutofillKeyboardAccessoryBridge
         implements AutofillDelegate, DialogInterface.OnClickListener {
@@ -35,8 +32,7 @@ public class AutofillKeyboardAccessoryBridge
     private PropertyProvider<AutofillSuggestion[]> mChipProvider =
             new PropertyProvider<>(AccessoryAction.AUTOFILL_SUGGESTION);
 
-    private AutofillKeyboardAccessoryBridge() {
-    }
+    private AutofillKeyboardAccessoryBridge() {}
 
     @CalledByNative
     private static AutofillKeyboardAccessoryBridge create() {

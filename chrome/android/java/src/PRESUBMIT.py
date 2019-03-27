@@ -143,7 +143,7 @@ def _CheckAlertDialogBuilder(input_api, output_api):
       'chrome/android/java/src/org/chromium/chrome/browser/preferences/website/'
           'SingleCategoryPreferences.java',
       'chrome/android/java/src/org/chromium/chrome/browser/autofill/'
-          'AutofillKeyboardAccessoryBridge.java',
+          'keyboard_accessory/AutofillKeyboardAccessoryBridge.java',
       'chrome/android/java/src/org/chromium/chrome/browser/preferences/website/'
           'AddExceptionPreference.java',
       'chrome/android/java/src/org/chromium/chrome/browser/preferences/website/'
