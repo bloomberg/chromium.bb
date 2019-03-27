@@ -10,7 +10,6 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "url/gurl.h"
 
@@ -46,14 +45,10 @@ class SystemWebAppManager {
       base::flat_map<SystemAppType, GURL> system_app_urls);
 
  private:
-  void StartAppInstallation();
-
   base::flat_map<SystemAppType, GURL> system_app_urls_;
 
   // Used to install, uninstall, and update apps. Should outlive this class.
   PendingAppManager* pending_app_manager_;
-
-  base::WeakPtrFactory<SystemWebAppManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SystemWebAppManager);
 };
