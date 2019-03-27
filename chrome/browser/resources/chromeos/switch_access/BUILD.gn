@@ -39,6 +39,7 @@ run_jsbundler("switch_access_copied_files") {
     "icons/decrement.svg",
     "icons/dictation.svg",
     "icons/increment.svg",
+    "icons/keyboard.svg",
     "icons/options.svg",
     "icons/scrollDownOrForward.svg",
     "icons/scrollLeft.svg",

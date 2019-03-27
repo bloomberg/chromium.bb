@@ -7,6 +7,9 @@
  */
 
 class BackButtonManager {
+  /**
+   * @param {!NavigationManager} navigationManager
+   */
   constructor(navigationManager) {
     /**
      * Keeps track of when the back button is open.
@@ -51,6 +54,9 @@ class BackButtonManager {
   select() {
     if (!this.backButtonOpen_)
       return false;
+
+    if (this.navigationManager_.leaveKeyboardIfNeeded())
+      return true;
 
     this.navigationManager_.exitCurrentScope();
     return true;
