@@ -132,6 +132,11 @@ class WebState : public base::SupportsUserData {
   virtual void WasShown() = 0;
   virtual void WasHidden() = 0;
 
+  // When |true|, attempt to prevent the WebProcess from suspending. Embedder
+  // must override WebClient::GetWindowedContainer to maintain this
+  // functionality.
+  virtual void SetKeepRenderProcessAlive(bool keep_alive) = 0;
+
   // Gets the BrowserState associated with this WebState. Can never return null.
   virtual BrowserState* GetBrowserState() const = 0;
 

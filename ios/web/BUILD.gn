@@ -605,6 +605,7 @@ test("ios_web_inttests") {
     "web_state/error_page_inttest.mm",
     "web_state/favicon_callbacks_inttest.mm",
     "web_state/http_auth_inttest.mm",
+    "web_state/keep_render_process_alive_inttest.mm",
     "web_state/web_frame_impl_inttest.mm",
     "web_state/web_frame_web_state_observer_inttest.mm",
     "web_state/web_frames_manager_inttest.mm",

@@ -414,6 +414,7 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
     loadParams.user_agent_override_option =
         web::NavigationManager::UserAgentOverrideOption::DESKTOP;
   }
+  webState_->SetKeepRenderProcessAlive(true);
   webState_->GetNavigationManager()->LoadURLWithParams(loadParams);
 
   // LoadIfNecessary is needed because the view is not created (but needed) when

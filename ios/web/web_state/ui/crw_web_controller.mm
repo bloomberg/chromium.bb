@@ -1435,6 +1435,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return [_containerView nativeController];
 }
 
+- (void)setKeepsRenderProcessAlive:(BOOL)keepsRenderProcessAlive {
+  _keepsRenderProcessAlive = keepsRenderProcessAlive;
+  [_containerView
+      updateWebViewContentViewForContainerWindow:_containerView.window];
+}
+
 - (void)didFinishGoToIndexSameDocumentNavigationWithType:
             (web::NavigationInitiationType)type
                                           hasUserGesture:(BOOL)hasUserGesture {
@@ -2659,6 +2665,16 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (UIEdgeInsets)nativeContentInsetsForContainerView:
     (CRWWebControllerContainerView*)containerView {
   return [self.nativeProvider nativeContentInsetForWebState:self.webState];
+}
+
+- (BOOL)shouldKeepRenderProcessAliveForContainerView:
+    (CRWWebControllerContainerView*)containerView {
+  return self.shouldKeepRenderProcessAlive;
+}
+
+- (void)containerView:(CRWWebControllerContainerView*)containerView
+    storeWebViewInWindow:(UIView*)viewToStash {
+  [web::GetWebClient()->GetWindowedContainer() addSubview:viewToStash];
 }
 
 #pragma mark - JavaScript message Helpers (Private)

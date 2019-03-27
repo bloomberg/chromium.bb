@@ -171,6 +171,10 @@ UIImage* BlurImage(UIImage* image,
 // output image's alpha is scaled by the color's alpha value.
 UIImage* TintImage(UIImage* image, UIColor* color);
 
+// Returns the first responder in the subviews of |view|, or nil if no view in
+// the subtree is the first responder.
+UIView* GetFirstResponderSubview(UIView* view);
+
 // Returns a cropped image using |cropRect| on |image|.
 UIImage* CropImage(UIImage* image, const CGRect& cropRect);
 

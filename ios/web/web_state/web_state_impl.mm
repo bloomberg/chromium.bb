@@ -586,6 +586,10 @@ void WebStateImpl::WasHidden() {
     observer.WasHidden(this);
 }
 
+void WebStateImpl::SetKeepRenderProcessAlive(bool keep_alive) {
+  [web_controller_ setKeepsRenderProcessAlive:keep_alive];
+}
+
 BrowserState* WebStateImpl::GetBrowserState() const {
   return navigation_manager_->GetBrowserState();
 }

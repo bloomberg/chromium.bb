@@ -190,6 +190,9 @@ class WebClient {
   // second flag arises before clean up, consider generalizing to an experiment
   // flags struct instead of adding a bool method for each experiment.
   virtual bool IsSlimNavigationManagerEnabled() const;
+
+  // Instructs the embedder to return a container that is attached to a window.
+  virtual UIView* GetWindowedContainer();
 };
 
 }  // namespace web

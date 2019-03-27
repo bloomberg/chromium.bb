@@ -235,6 +235,7 @@ source_set("web_internal") {
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/ssl",
+    "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/voice",

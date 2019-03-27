@@ -26,6 +26,15 @@
 - (UIEdgeInsets)nativeContentInsetsForContainerView:
     (CRWWebControllerContainerView*)containerView;
 
+// Returns |YES| if the delegate wants to keep the render process alive.
+- (BOOL)shouldKeepRenderProcessAliveForContainerView:
+    (CRWWebControllerContainerView*)containerView;
+
+// Instructs the delegate to add the |viewToStash| to the view hieararchy to
+// keep the render process alive.
+- (void)containerView:(CRWWebControllerContainerView*)containerView
+    storeWebViewInWindow:(UIView*)viewToStash;
+
 @end
 
 // Container view class that manages the display of content within
@@ -71,6 +80,12 @@
 
 // Removes the transient content view, if one is displayed.
 - (void)clearTransientContentView;
+
+// Updates the |webViewContentView|'s view hierarchy status based on the the
+// container view window status. If the current webView is active but the window
+// is nil, store the webView in the view hierarchy keyWindow so WKWebView
+// doesn't suspend it's counterpart process.
+- (void)updateWebViewContentViewForContainerWindow:(UIWindow*)window;
 
 @end
 
