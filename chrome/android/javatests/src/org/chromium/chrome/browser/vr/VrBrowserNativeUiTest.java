@@ -771,6 +771,8 @@ public class VrBrowserNativeUiTest {
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
                 mVrBrowserTestFramework.getEmbeddedServerUrlForHtmlTestFile("2d_permission_page"),
                 PAGE_LOAD_TIMEOUT_S);
+        // Wait for any residual animations from navigating.
+        NativeUiUtils.waitForUiQuiescence();
         // Display and accept the permission.
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
             NativeUiUtils.performActionAndWaitForVisibilityStatus(
