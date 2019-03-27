@@ -26,6 +26,9 @@ class AsyncCallbackHelper {
   template <typename CallbackParam, typename V8Callback>
   static base::OnceCallback<void(CallbackParam*)> SuccessCallback(
       V8Callback* success_callback) {
+    if (!success_callback)
+      return base::OnceCallback<void(CallbackParam*)>();
+
     auto success_callback_wrapper = WTF::Bind(
         [](V8PersistentCallbackInterface<V8Callback>* persistent_callback,
            CallbackParam* param) {
@@ -74,6 +77,9 @@ class AsyncCallbackHelper {
   // VoidCallbacks.
   static base::OnceCallback<void()> VoidSuccessCallback(
       V8VoidCallback* success_callback) {
+    if (!success_callback)
+      return VoidCallbacks::SuccessCallback();
+
     auto success_callback_wrapper = WTF::Bind(
         [](V8PersistentCallbackInterface<V8VoidCallback>* persistent_callback) {
           persistent_callback->InvokeAndReportException(nullptr);
