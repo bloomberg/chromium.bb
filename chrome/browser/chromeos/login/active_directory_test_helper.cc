@@ -11,13 +11,13 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/authpolicy/active_directory_info.pb.h"
 #include "chromeos/dbus/cryptohome/tpm_util.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
-#include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -40,7 +40,7 @@ void PrepareLogin(const std::string& user_principal_name) {
   chromeos::UpstartClient::Get()->StartAuthPolicyService();
 
   // Join the AD domain.
-  chromeos::AuthPolicyLoginHelper helper;
+  chromeos::AuthPolicyHelper helper;
   {
     base::RunLoop loop;
     helper.set_dm_token(kDmToken);

@@ -529,7 +529,7 @@ void EnrollmentScreen::JoinDomain(const std::string& dm_token,
                                   const std::string& domain_join_config,
                                   OnDomainJoinedCallback on_joined_callback) {
   if (!authpolicy_login_helper_)
-    authpolicy_login_helper_ = std::make_unique<AuthPolicyLoginHelper>();
+    authpolicy_login_helper_ = std::make_unique<AuthPolicyHelper>();
   authpolicy_login_helper_->set_dm_token(dm_token);
   on_joined_callback_ = std::move(on_joined_callback);
   view_->ShowActiveDirectoryScreen(

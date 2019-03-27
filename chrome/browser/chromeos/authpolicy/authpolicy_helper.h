@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_LOGIN_AUTH_AUTHPOLICY_LOGIN_HELPER_H_
-#define CHROMEOS_LOGIN_AUTH_AUTHPOLICY_LOGIN_HELPER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_AUTHPOLICY_AUTHPOLICY_HELPER_H_
+#define CHROME_BROWSER_CHROMEOS_AUTHPOLICY_AUTHPOLICY_HELPER_H_
 
 #include <string>
 
 #include "base/callback.h"
-#include "base/component_export.h"
-#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/auth_policy/auth_policy_client.h"
@@ -20,15 +18,15 @@ namespace chromeos {
 // authenticate users this class should be used instead of AuthPolicyClient.
 // Allows canceling all pending calls and restarting AuthPolicy service. Used
 // for enrollment and login UI to proper cancel the flows.
-class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthPolicyLoginHelper {
+class AuthPolicyHelper {
  public:
   using AuthCallback = AuthPolicyClient::AuthCallback;
   using JoinCallback = AuthPolicyClient::JoinCallback;
   using OnDecryptedCallback =
       base::OnceCallback<void(std::string decrypted_data)>;
 
-  AuthPolicyLoginHelper();
-  ~AuthPolicyLoginHelper();
+  AuthPolicyHelper();
+  ~AuthPolicyHelper();
 
   // Try to get Kerberos TGT. To get an error code of this call one should use
   // last_auth_error_ returned from AuthPolicyClient::GetUserStatus afterwards.
@@ -101,10 +99,10 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthPolicyLoginHelper {
 
   std::string dm_token_;
 
-  base::WeakPtrFactory<AuthPolicyLoginHelper> weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(AuthPolicyLoginHelper);
+  base::WeakPtrFactory<AuthPolicyHelper> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(AuthPolicyHelper);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_LOGIN_AUTH_AUTHPOLICY_LOGIN_HELPER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_AUTHPOLICY_AUTHPOLICY_HELPER_H_

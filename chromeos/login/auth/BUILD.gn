@@ -43,8 +43,6 @@ component("auth") {
     "auth_status_consumer.h",
     "authenticator.cc",
     "authenticator.h",
-    "authpolicy_login_helper.cc",
-    "authpolicy_login_helper.h",
     "cryptohome_authenticator.cc",
     "cryptohome_authenticator.h",
     "extended_authenticator.cc",
@@ -119,7 +117,6 @@ source_set("unit_tests") {
     "//third_party/icu",
   ]
   sources = [
-    "authpolicy_login_helper_unittest.cc",
     "key_unittest.cc",
   ]
 }

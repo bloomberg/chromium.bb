@@ -321,7 +321,7 @@ class ExistingUserController
 
   // Restart authpolicy daemon in case of Active Directory authentication.
   // Used to prevent data from leaking from one user session into another.
-  // Should be called to cancel AuthPolicyLoginHelper::TryAuthenticateUser call.
+  // Should be called to cancel AuthPolicyHelper::TryAuthenticateUser call.
   void ClearActiveDirectoryState();
 
   // Public session auto-login timer.

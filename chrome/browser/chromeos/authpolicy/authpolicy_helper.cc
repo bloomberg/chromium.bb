@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/login/auth/authpolicy_login_helper.h"
+#include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -19,7 +19,6 @@
 #include "crypto/symmetric_key.h"
 
 namespace chromeos {
-
 
 namespace {
 
@@ -138,12 +137,12 @@ std::string DoDecrypt(const std::string& encrypted_data,
 
 }  // namespace
 
-AuthPolicyLoginHelper::AuthPolicyLoginHelper() : weak_factory_(this) {}
+AuthPolicyHelper::AuthPolicyHelper() : weak_factory_(this) {}
 
 // static
-void AuthPolicyLoginHelper::TryAuthenticateUser(const std::string& username,
-                                                const std::string& object_guid,
-                                                const std::string& password) {
+void AuthPolicyHelper::TryAuthenticateUser(const std::string& username,
+                                           const std::string& object_guid,
+                                           const std::string& password) {
   authpolicy::AuthenticateUserRequest request;
   request.set_user_principal_name(username);
   request.set_account_id(object_guid);
@@ -152,25 +151,25 @@ void AuthPolicyLoginHelper::TryAuthenticateUser(const std::string& username,
 }
 
 // static
-void AuthPolicyLoginHelper::Restart() {
+void AuthPolicyHelper::Restart() {
   chromeos::UpstartClient::Get()->RestartAuthPolicyService();
 }
 
 // static
-void AuthPolicyLoginHelper::DecryptConfiguration(const std::string& blob,
-                                                 const std::string& password,
-                                                 OnDecryptedCallback callback) {
+void AuthPolicyHelper::DecryptConfiguration(const std::string& blob,
+                                            const std::string& password,
+                                            OnDecryptedCallback callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&DoDecrypt, blob, password), std::move(callback));
 }
 
-void AuthPolicyLoginHelper::JoinAdDomain(const std::string& machine_name,
-                                         const std::string& distinguished_name,
-                                         int encryption_types,
-                                         const std::string& username,
-                                         const std::string& password,
-                                         JoinCallback callback) {
+void AuthPolicyHelper::JoinAdDomain(const std::string& machine_name,
+                                    const std::string& distinguished_name,
+                                    int encryption_types,
+                                    const std::string& username,
+                                    const std::string& password,
+                                    JoinCallback callback) {
   DCHECK(!tpm_util::IsActiveDirectoryLocked());
   DCHECK(!weak_factory_.HasWeakPtrs()) << "Another operation is in progress";
   authpolicy::JoinDomainRequest request;
@@ -191,44 +190,44 @@ void AuthPolicyLoginHelper::JoinAdDomain(const std::string& machine_name,
 
   AuthPolicyClient::Get()->JoinAdDomain(
       request, GetDataReadPipe(password).get(),
-      base::BindOnce(&AuthPolicyLoginHelper::OnJoinCallback,
+      base::BindOnce(&AuthPolicyHelper::OnJoinCallback,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void AuthPolicyLoginHelper::AuthenticateUser(const std::string& username,
-                                             const std::string& object_guid,
-                                             const std::string& password,
-                                             AuthCallback callback) {
+void AuthPolicyHelper::AuthenticateUser(const std::string& username,
+                                        const std::string& object_guid,
+                                        const std::string& password,
+                                        AuthCallback callback) {
   DCHECK(!weak_factory_.HasWeakPtrs()) << "Another operation is in progress";
   authpolicy::AuthenticateUserRequest request;
   request.set_user_principal_name(username);
   request.set_account_id(object_guid);
   AuthPolicyClient::Get()->AuthenticateUser(
       request, GetDataReadPipe(password).get(),
-      base::BindOnce(&AuthPolicyLoginHelper::OnAuthCallback,
+      base::BindOnce(&AuthPolicyHelper::OnAuthCallback,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void AuthPolicyLoginHelper::CancelRequestsAndRestart() {
+void AuthPolicyHelper::CancelRequestsAndRestart() {
   weak_factory_.InvalidateWeakPtrs();
   dm_token_.clear();
-  AuthPolicyLoginHelper::Restart();
+  AuthPolicyHelper::Restart();
 }
 
-void AuthPolicyLoginHelper::OnJoinCallback(JoinCallback callback,
-                                           authpolicy::ErrorType error,
-                                           const std::string& machine_domain) {
+void AuthPolicyHelper::OnJoinCallback(JoinCallback callback,
+                                      authpolicy::ErrorType error,
+                                      const std::string& machine_domain) {
   DCHECK(!tpm_util::IsActiveDirectoryLocked());
   if (error != authpolicy::ERROR_NONE) {
     std::move(callback).Run(error, machine_domain);
     return;
   }
   AuthPolicyClient::Get()->RefreshDevicePolicy(base::BindOnce(
-      &AuthPolicyLoginHelper::OnFirstPolicyRefreshCallback,
+      &AuthPolicyHelper::OnFirstPolicyRefreshCallback,
       weak_factory_.GetWeakPtr(), std::move(callback), machine_domain));
 }
 
-void AuthPolicyLoginHelper::OnFirstPolicyRefreshCallback(
+void AuthPolicyHelper::OnFirstPolicyRefreshCallback(
     JoinCallback callback,
     const std::string& machine_domain,
     authpolicy::ErrorType error) {
@@ -242,13 +241,13 @@ void AuthPolicyLoginHelper::OnFirstPolicyRefreshCallback(
   std::move(callback).Run(error, machine_domain);
 }
 
-void AuthPolicyLoginHelper::OnAuthCallback(
+void AuthPolicyHelper::OnAuthCallback(
     AuthCallback callback,
     authpolicy::ErrorType error,
     const authpolicy::ActiveDirectoryAccountInfo& account_info) {
   std::move(callback).Run(error, account_info);
 }
 
-AuthPolicyLoginHelper::~AuthPolicyLoginHelper() = default;
+AuthPolicyHelper::~AuthPolicyHelper() = default;
 
 }  // namespace chromeos

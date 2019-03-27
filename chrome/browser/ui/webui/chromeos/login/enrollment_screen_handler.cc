@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/login/localized_values_builder.h"
@@ -836,7 +836,7 @@ void EnrollmentScreenHandler::HandleAdCompleteLogin(
 
 void EnrollmentScreenHandler::HandleAdUnlockConfiguration(
     const std::string& password) {
-  AuthPolicyLoginHelper::DecryptConfiguration(
+  AuthPolicyHelper::DecryptConfiguration(
       active_directory_domain_join_config_, password,
       base::BindOnce(&EnrollmentScreenHandler::OnAdConfigurationUnlocked,
                      weak_ptr_factory_.GetWeakPtr()));
