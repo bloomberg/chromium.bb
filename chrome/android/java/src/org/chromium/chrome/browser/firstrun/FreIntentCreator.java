@@ -42,57 +42,59 @@ public class FreIntentCreator {
                 ? fromIntent
                 : WebappLauncherActivity.createRelaunchWebApkIntent(fromIntent, webApkInfo);
 
+        Intent result = createInternal(caller, fromIntent, preferLightweightFre, webApkInfo);
+        addPendingIntent(caller, result, intentToLaunchAfterFreComplete, requiresBroadcast);
+        return result;
+    }
+
+    /**
+     * Selects one specific FRE implementation and creates an intent to launch this implementation.
+     * Called by {@link #create} that also adds some final touches to the returned intent.
+     *
+     * @param caller               Activity instance that is requesting the first run.
+     * @param fromIntent           Intent used to launch the caller.
+     * @param preferLightweightFre Whether to prefer the Lightweight First Run Experience.
+     * @param webApkInfo           An optional WebApkInfo if this FRE flow was triggered
+     *                             by launching a WebAPK.
+     * @return Intent to launch First Run Experience.
+     */
+    protected Intent createInternal(Context caller, Intent fromIntent, boolean preferLightweightFre,
+            @Nullable WebApkInfo webApkInfo) {
         // Launch the Generic First Run Experience if it was previously active.
         boolean isGenericFreActive = checkIsGenericFreActive();
         if (preferLightweightFre && !isGenericFreActive) {
-            return createLightweightFirstRunIntent(caller, fromIntent, webApkInfo,
-                    intentToLaunchAfterFreComplete, requiresBroadcast);
+            return createLightweightFirstRunIntent(caller, webApkInfo);
         } else {
-            return createGenericFirstRunIntent(
-                    caller, fromIntent, intentToLaunchAfterFreComplete, requiresBroadcast);
+            return createGenericFirstRunIntent(caller, fromIntent);
         }
     }
 
     /**
      * Returns an intent to show the lightweight first run activity.
      * @param context                        The context.
-     * @param fromIntent                     The intent that was used to launch Chrome.
      * @param webApkInfo                     An optional WebApkInfo if this FRE flow was triggered
      *                                       by launching a WebAPK.
-     * @param intentToLaunchAfterFreComplete The intent to launch when the user completes the FRE.
-     * @param requiresBroadcast              Whether the relaunch intent must be broadcasted.
      */
-    private static Intent createLightweightFirstRunIntent(Context context, Intent fromIntent,
-            @Nullable WebApkInfo webApkInfo, Intent intentToLaunchAfterFreComplete,
-            boolean requiresBroadcast) {
-        Intent intent = new Intent();
-        intent.setClassName(context, LightweightFirstRunActivity.class.getName());
+    private static Intent createLightweightFirstRunIntent(
+            Context context, @Nullable WebApkInfo webApkInfo) {
+        Intent intent = new Intent(context, LightweightFirstRunActivity.class);
         String webApkShortName = webApkInfo == null ? null : webApkInfo.shortName();
         if (webApkShortName != null) {
             intent.putExtra(LightweightFirstRunActivity.EXTRA_ASSOCIATED_APP_NAME, webApkShortName);
         }
-        addPendingIntent(context, intent, intentToLaunchAfterFreComplete, requiresBroadcast);
         return intent;
     }
 
     /**
-     * @return A generic intent to show the First Run Activity.
+     * Returns a generic intent to show the First Run Activity.
      * @param context                        The context.
      * @param fromIntent                     The intent that was used to launch Chrome.
-     * @param intentToLaunchAfterFreComplete The intent to launch when the user completes the FRE.
-     * @param requiresBroadcast              Whether the relaunch intent must be broadcasted.
      */
-    private static Intent createGenericFirstRunIntent(Context context, Intent fromIntent,
-            Intent intentToLaunchAfterFreComplete, boolean requiresBroadcast) {
-        final Class<?> activityClass;
-        if (shouldSwitchToTabbedMode(context)) {
-            activityClass = TabbedModeFirstRunActivity.class;
-        } else {
-            activityClass = FirstRunActivity.class;
-        }
-
-        Intent intent = new Intent();
-        intent.setClass(context, activityClass);
+    private static Intent createGenericFirstRunIntent(Context context, Intent fromIntent) {
+        Class<?> activityClass = shouldSwitchToTabbedMode(context)
+                ? TabbedModeFirstRunActivity.class
+                : FirstRunActivity.class;
+        Intent intent = new Intent(context, activityClass);
         intent.putExtra(FirstRunActivity.EXTRA_COMING_FROM_CHROME_ICON,
                 TextUtils.equals(fromIntent.getAction(), Intent.ACTION_MAIN));
         intent.putExtra(FirstRunActivity.EXTRA_CHROME_LAUNCH_INTENT_IS_CCT,
@@ -105,8 +107,6 @@ public class FreIntentCreator {
             Bundle copiedFromExtras = new Bundle(fromIntentExtras);
             intent.putExtra(FirstRunActivity.EXTRA_CHROME_LAUNCH_INTENT_EXTRAS, copiedFromExtras);
         }
-
-        addPendingIntent(context, intent, intentToLaunchAfterFreComplete, requiresBroadcast);
 
         return intent;
     }
