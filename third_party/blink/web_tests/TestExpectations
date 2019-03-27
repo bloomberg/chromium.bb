@@ -3141,6 +3141,7 @@ crbug.com/626703 [ Retina ] virtual/feature-policy-permissions/external/wpt/medi
 crbug.com/626703 crbug.com/930297 [ Linux ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1251.html [ Timeout Pass Failure Crash ]
 crbug.com/626703 [ Win7 ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1251.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-007v.html [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-cyclic-invalid.html [ Pass Failure Timeout ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/mimesniff/mime-types/parsing.any.html [ Timeout ]
 crbug.com/626703 crbug.com/930297 [ Linux ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-8.html [ Timeout Pass Failure Crash ]
 crbug.com/626703 [ Win7 ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-8.html [ Failure Timeout ]
