@@ -310,6 +310,13 @@ test("gl_tests") {
       "//ui/platform_window:platform_impls",
     ]
   }
+
+  if (use_dawn) {
+    deps += [
+      "//third_party/dawn:libdawn_native",
+      "//third_party/dawn/src/dawn:libdawn",
+    ]
+  }
 }
 
 test("gpu_unittests") {

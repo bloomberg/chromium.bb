@@ -288,6 +288,7 @@ target(link_target_type, "gles2_sources") {
     "//gpu/command_buffer/common:raster_sources",
     "//gpu/command_buffer/common:webgpu_sources",
     "//skia",
+    "//third_party/dawn/src/dawn:dawn_headers",
   ]
   deps = [
     ":disk_cache_proto",
@@ -311,6 +312,7 @@ target(link_target_type, "gles2_sources") {
     "//ui/gfx/geometry",
     "//ui/gfx/ipc/color",
     "//ui/gl",
+    "//ui/gl:buildflags",
     "//ui/gl/init",
   ]
 
