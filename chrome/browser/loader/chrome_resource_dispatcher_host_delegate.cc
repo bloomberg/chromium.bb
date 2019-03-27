@@ -89,6 +89,7 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
@@ -434,6 +435,12 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
     target_info.extension_id = extension_id;
     target_info.view_id = base::GenerateGUID();
     *payload = target_info.view_id;
+    // Provide the MimeHandlerView code a chance to override the payload. This
+    // is the case where the resource is handled by frame-based MimeHandlerView.
+    uint32_t unused_data_pipe_size;
+    extensions::MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
+        info->GetFrameTreeNodeId(), request->url(), mime_type,
+        target_info.view_id, payload, &unused_data_pipe_size);
     stream_target_info_[request] = target_info;
     return true;
   }

@@ -29,6 +29,7 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_stream_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 #include "extensions/browser/process_manager.h"
@@ -44,6 +45,7 @@
 #include "url/url_constants.h"
 
 using extensions::ExtensionsAPIClient;
+using extensions::MimeHandlerStreamManager;
 using extensions::MimeHandlerViewGuest;
 using extensions::TestMimeHandlerViewGuest;
 using guest_view::GuestViewManager;
@@ -368,6 +370,20 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, PostMessage) {
 
 IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Basic) {
   RunTest("testBasic.csv");
+  // Verify that for a navigation to a MimeHandlerView MIME type, exactly one
+  // stream is intercepted. This means :
+  // a- For BrowserPlugin-based MHV the PluginDocument passes the |view_id| to
+  //    MimeHandlerViewContainer (so a new request is not sent).
+  // b- For frame-based MimeHandlerView we do not create a PluginDocument. If a
+  //    PluginDocument was created here, the |view_id| associated with the
+  //    stream intercepted from navigation response would be lost (
+  //    PluginDocument does not talk to a MimeHandlerViewFrameContainer). Then,
+  //    the newly added <embed> by the PluginDocument would send its own request
+  //    leading to a total of 2 intercepted streams. The first one (from
+  //    navigation) would never be released.
+  EXPECT_EQ(0U, MimeHandlerStreamManager::Get(
+                    GetEmbedderWebContents()->GetBrowserContext())
+                    ->streams_.size());
 }
 
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Iframe) {
