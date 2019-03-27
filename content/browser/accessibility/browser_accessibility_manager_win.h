@@ -52,6 +52,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
                           BrowserAccessibility* node) override;
 
+  void OnFocusLost(BrowserAccessibility* node) override;
+
   void FireWinAccessibilityEvent(LONG win_event, BrowserAccessibility* node);
   void FireUiaAccessibilityEvent(LONG uia_event, BrowserAccessibility* node);
   void FireUiaPropertyChangedEvent(LONG uia_property,

@@ -128,13 +128,20 @@ void AccessibilityEventRecorderUia::Thread::ThreadMain() {
   uia_event_handler_->AddRef();
   uia_event_handler_->Init(this, root_);
 
+  // Create a cache request to avoid cross-thread issues when logging.
+  CHECK(SUCCEEDED(uia_->CreateCacheRequest(&cache_request_)));
+  CHECK(cache_request_.Get());
+  CHECK(SUCCEEDED(cache_request_->AddProperty(UIA_NamePropertyId)));
+  CHECK(SUCCEEDED(cache_request_->AddProperty(UIA_AriaRolePropertyId)));
+
   // Subscribe to the shutdown sentinel event
-  uia_->AddAutomationEventHandler(shutdown_sentinel_, root_.Get(),
-                                  TreeScope::TreeScope_Subtree, nullptr,
-                                  uia_event_handler_.Get());
+  uia_->AddAutomationEventHandler(
+      shutdown_sentinel_, root_.Get(), TreeScope::TreeScope_Subtree,
+      cache_request_.Get(), uia_event_handler_.Get());
 
   // Subscribe to focus events
-  uia_->AddFocusChangedEventHandler(nullptr, uia_event_handler_.Get());
+  uia_->AddFocusChangedEventHandler(cache_request_.Get(),
+                                    uia_event_handler_.Get());
 
   // Subscribe to all property-change events
   static const PROPERTYID kMinProp = UIA_RuntimeIdPropertyId;
@@ -142,16 +149,16 @@ void AccessibilityEventRecorderUia::Thread::ThreadMain() {
   std::array<PROPERTYID, (kMaxProp - kMinProp) + 1> property_list;
   std::iota(property_list.begin(), property_list.end(), kMinProp);
   uia_->AddPropertyChangedEventHandlerNativeArray(
-      root_.Get(), TreeScope::TreeScope_Subtree, nullptr,
+      root_.Get(), TreeScope::TreeScope_Subtree, cache_request_.Get(),
       uia_event_handler_.Get(), &property_list[0], property_list.size());
 
   // Subscribe to all automation events
   static const EVENTID kMinEvent = UIA_ToolTipOpenedEventId;
   static const EVENTID kMaxEvent = UIA_NotificationEventId;
   for (EVENTID event_id = kMinEvent; event_id <= kMaxEvent; ++event_id) {
-    uia_->AddAutomationEventHandler(event_id, root_.Get(),
-                                    TreeScope::TreeScope_Subtree, nullptr,
-                                    uia_event_handler_.Get());
+    uia_->AddAutomationEventHandler(
+        event_id, root_.Get(), TreeScope::TreeScope_Subtree,
+        cache_request_.Get(), uia_event_handler_.Get());
   }
 
   // Signal that initialization is complete; this will wake the main thread to
@@ -229,6 +236,7 @@ void AccessibilityEventRecorderUia::Thread::ThreadMain() {
   uia_->RemoveAllEventHandlers();
   uia_event_handler_->CleanUp();
   uia_event_handler_.Reset();
+  cache_request_.Reset();
   root_.Reset();
   uia_.Reset();
 
@@ -356,8 +364,8 @@ std::string AccessibilityEventRecorderUia::Thread::EventHandler::GetSenderInfo(
     }
   };
 
-  append_property("role", &IUIAutomationElement::get_CurrentAriaRole);
-  append_property("name", &IUIAutomationElement::get_CurrentName);
+  append_property("role", &IUIAutomationElement::get_CachedAriaRole);
+  append_property("name", &IUIAutomationElement::get_CachedName);
 
   if (!sender_info.empty())
     sender_info = "on " + sender_info;
