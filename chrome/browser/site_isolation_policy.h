@@ -18,6 +18,12 @@ class SiteIsolationPolicy {
   // enter passwords is enabled.
   static bool IsIsolationForPasswordSitesEnabled();
 
+  // Returns true if Site Isolation related enterprise policies should take
+  // effect (e.g. such policies might not be applicable to low-end Android
+  // devices because of 1) performance impact and 2) infeasibility of
+  // Spectre-like attacks on such devices).
+  static bool IsEnterprisePolicyApplicable();
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SiteIsolationPolicy);
 };

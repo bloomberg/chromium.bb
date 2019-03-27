@@ -62,12 +62,11 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // called once on browser startup.
   static void StartRecordingSiteIsolationFlagUsage();
 
- private:
-  SiteIsolationPolicy();  // Not instantiable.
-
   // Parses |arg| into a list of origins.
   static std::vector<url::Origin> ParseIsolatedOrigins(base::StringPiece arg);
-  FRIEND_TEST_ALL_PREFIXES(SiteIsolationPolicyTest, ParseIsolatedOrigins);
+
+ private:
+  SiteIsolationPolicy();  // Not instantiable.
 
   // Gets isolated origins from cmdline and/or from field trial param.
   static std::vector<url::Origin> GetIsolatedOriginsFromEnvironment();

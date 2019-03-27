@@ -94,6 +94,7 @@
 #include "chrome/browser/resource_coordinator/render_process_probe.h"
 #include "chrome/browser/sessions/chrome_serialized_navigation_driver.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/site_isolation_policy.h"
 #include "chrome/browser/tracing/background_tracing_field_trial.h"
 #include "chrome/browser/tracing/navigation_tracing.h"
 #include "chrome/browser/tracing/trace_event_system_stats_monitor.h"
@@ -593,19 +594,6 @@ bool IsWebDriverOverridingPolicy(PrefService* local_state) {
                 prefs::kWebDriverOverridesIncompatiblePolicies)));
 }
 
-bool IsSiteIsolationEnterprisePolicyApplicable() {
-#if defined(OS_ANDROID)
-  // https://crbug.com/844118: Limiting policy to devices with > 1GB RAM.
-  // Using 1077 rather than 1024 because 1) it helps ensure that devices with
-  // exactly 1GB of RAM won't get included because of inaccuracies or off-by-one
-  // errors and 2) this is the bucket boundary in Memory.Stats.Win.TotalPhys2.
-  bool have_enough_memory = base::SysInfo::AmountOfPhysicalMemoryMB() > 1077;
-  return have_enough_memory;
-#else
-  return true;
-#endif
-}
-
 // Sets up the ThreadProfiler for the browser process, runs it, and returns the
 // profiler.
 std::unique_ptr<ThreadProfiler> CreateAndStartBrowserMainThreadProfiler() {
@@ -1098,23 +1086,12 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     auto* command_line = base::CommandLine::ForCurrentProcess();
     // Add Site Isolation switches as dictated by policy.
     if (local_state->GetBoolean(prefs::kSitePerProcess) &&
-        IsSiteIsolationEnterprisePolicyApplicable() &&
+        SiteIsolationPolicy::IsEnterprisePolicyApplicable() &&
         !command_line->HasSwitch(switches::kSitePerProcess)) {
       command_line->AppendSwitch(switches::kSitePerProcess);
     }
-    // We apply the flag always when it differs from the command line state,
-    // because we don't want the command-line switch to take precedence over
-    // enterprise policy. (This behavior is in harmony with other enterprise
-    // policy settings.)
-    if (local_state->HasPrefPath(prefs::kIsolateOrigins) &&
-        IsSiteIsolationEnterprisePolicyApplicable() &&
-        (!command_line->HasSwitch(switches::kIsolateOrigins) ||
-         command_line->GetSwitchValueASCII(switches::kIsolateOrigins) !=
-             local_state->GetString(prefs::kIsolateOrigins))) {
-      command_line->AppendSwitchASCII(
-          switches::kIsolateOrigins,
-          local_state->GetString(prefs::kIsolateOrigins));
-    }
+    // IsolateOrigins policy is taken care of through SiteIsolationPrefsObserver
+    // (constructed and owned by BrowserProcessImpl).
   }
 
   // The admin should also be able to use these policies to force Site Isolation
