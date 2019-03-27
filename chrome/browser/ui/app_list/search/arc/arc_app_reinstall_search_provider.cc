@@ -465,10 +465,12 @@ void ArcAppReinstallSearchProvider::OnVisibilityChanged(const std::string& id,
   const base::TimeDelta now = base::Time::Now().ToDeltaSinceWindowsEpoch();
   base::TimeDelta latest_impression;
   int64_t impression_count;
+  if (!GetStateInt64(profile_, id, kImpressionCount, &impression_count)) {
+    impression_count = 0;
+  }
   // Get impression count and time. If neither is set, set them.
   // If they're set, update if appropriate.
   if (!GetStateTime(profile_, id, kImpressionTime, &latest_impression) ||
-      !GetStateInt64(profile_, id, kImpressionCount, &impression_count) ||
       impression_count == 0 ||
       (now - latest_impression >
        base::TimeDelta::FromSeconds(kNewImpressionTime.Get()))) {
