@@ -276,6 +276,9 @@ class AppListBackgroundShieldView : public views::View {
   ~AppListBackgroundShieldView() override = default;
 
   void UpdateColor(SkColor color) {
+    if (color_ == color)
+      return;
+
     color_ = color;
     if (layer()->type() == ui::LAYER_SOLID_COLOR)
       layer()->SetColor(color);
@@ -284,6 +287,9 @@ class AppListBackgroundShieldView : public views::View {
   }
 
   void UpdateCornerRadius(int corner_radius) {
+    if (corner_radius_ == corner_radius)
+      return;
+
     corner_radius_ = corner_radius;
     if (!layer())
       SchedulePaint();
@@ -771,8 +777,6 @@ void AppListView::StartDrag(const gfx::Point& location) {
   initial_drag_point_ = location;
   ConvertPointToScreen(this, &initial_drag_point_);
   initial_window_bounds_ = fullscreen_widget_->GetWindowBoundsInScreen();
-  if (app_list_state_ == AppListViewState::PEEKING)
-    drag_started_from_peeking_ = true;
 }
 
 void AppListView::UpdateDrag(const gfx::Point& location) {
@@ -904,7 +908,6 @@ void AppListView::EndDrag(const gfx::Point& location) {
         break;
     }
   }
-  drag_started_from_peeking_ = false;
   UpdateChildViewsYPositionAndOpacity();
   initial_drag_point_ = gfx::Point();
 }
