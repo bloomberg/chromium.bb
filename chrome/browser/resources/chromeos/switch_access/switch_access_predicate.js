@@ -81,10 +81,11 @@ const SwitchAccessPredicate = {
       return true;
     }
 
-    // Focusable items should be surfaced as either groups or actionable.
+    // Focusable items should be surfaced as either groups or actionable. So
+    // should menu items.
     // Current heuristic is to show as actionble any focusable item where no
     // child is an interesting subtree.
-    if (state[StateType.FOCUSABLE])
+    if (state[StateType.FOCUSABLE] || role === RoleType.MENU_ITEM)
       return !node.children.some(SwitchAccessPredicate.isInterestingSubtree);
 
     return false;

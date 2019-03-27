@@ -68,6 +68,12 @@ class NavigationManager {
     this.visitingScopeAsActionable_ = false;
 
     /**
+     * Keeps track of if we are currently in a system menu.
+     * @private {boolean}
+     */
+    this.inSystemMenu_ = false;
+
+    /**
      * @private {chrome.accessibilityPrivate.FocusRingInfo}
      */
     this.primaryFocusRing_ = {
@@ -273,6 +279,8 @@ class NavigationManager {
   exitCurrentScope(opt_newNode) {
     if (this.scopeStack_.length === 0)
       return;
+    if (this.inSystemMenu_)
+      this.closeSystemMenu_();
 
     this.node_ = opt_newNode || this.scope_;
     // Find a previous scope that is still valid. The stack here always has
@@ -358,6 +366,20 @@ class NavigationManager {
   }
 
   /**
+   * Closes a system menu when the back button is pressed.
+   */
+  closeSystemMenu_() {
+    chrome.accessibilityPrivate.sendSyntheticKeyEvent({
+      type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYDOWN,
+      keyCode: 27  // Esc
+    });
+    chrome.accessibilityPrivate.sendSyntheticKeyEvent({
+      type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYUP,
+      keyCode: 27  // Esc
+    });
+  }
+
+  /**
    * When an interesting element gains focus on the page, move to it. If an
    * element gains focus but is not interesting, move to the next interesting
    * node after it.
@@ -380,6 +402,16 @@ class NavigationManager {
       this.updateFocusRings_();
     else
       this.moveForward();
+  }
+
+  /**
+   * When a menu is opened, jump focus to the menu.
+   * @param {!chrome.automation.AutomationEvent} event
+   * @private
+   */
+  onMenuStart_(event) {
+    this.setScope_(event.target);
+    this.inSystemMenu_ = true;
   }
 
   /**
@@ -422,6 +454,9 @@ class NavigationManager {
   init_() {
     this.desktop_.addEventListener(
         chrome.automation.EventType.FOCUS, this.onFocusChange_.bind(this),
+        false);
+    this.desktop_.addEventListener(
+        chrome.automation.EventType.MENU_START, this.onMenuStart_.bind(this),
         false);
 
     // TODO(elichtenberg): Use a more specific filter than ALL_TREE_CHANGES.
