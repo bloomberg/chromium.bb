@@ -183,14 +183,6 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
   friend class ModuleDatabaseTest;
   friend class ModuleEventSinkImplTest;
 
-  // Converts a valid |process_type| to a bit for use in a bitmask of process
-  // values. Exposed in the header for testing.
-  static uint32_t ProcessTypeToBit(content::ProcessType process_type);
-
-  // Converts a |bit_index| (which maps to the bit 1 << bit_index) to the
-  // corresponding process type. Exposed in the header for testing.
-  static content::ProcessType BitIndexToProcessType(uint32_t bit_index);
-
   ModuleInfo* CreateModuleInfo(const base::FilePath& module_path,
                                uint32_t module_size,
                                uint32_t module_time_date_stamp);

@@ -337,6 +337,13 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
     return;
   }
 
+  // Don't check modules if they were never loaded in a process where blocking
+  // is enabled.
+  if (!IsBlockingEnabledInProcessTypes(module_data.process_types)) {
+    warning_decision = ModuleWarningDecision::kAllowedInProcessType;
+    return;
+  }
+
   // New modules should not cause a warning when the module analysis is
   // disabled.
   if (module_analysis_disabled_) {

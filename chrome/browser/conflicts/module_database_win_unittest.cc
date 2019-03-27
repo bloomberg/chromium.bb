@@ -10,6 +10,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
+#include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -55,10 +56,6 @@ class ModuleDatabaseTest : public testing::Test {
   }
 
   ModuleDatabase* module_database() { return module_database_.get(); }
-
-  static uint32_t ProcessTypeToBit(content::ProcessType process_type) {
-    return ModuleDatabase::ProcessTypeToBit(process_type);
-  }
 
   void RunSchedulerUntilIdle() { test_browser_thread_bundle_.RunUntilIdle(); }
 

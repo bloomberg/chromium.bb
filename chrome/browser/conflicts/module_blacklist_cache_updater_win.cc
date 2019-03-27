@@ -155,6 +155,8 @@ bool ShouldInsertInBlacklistCache(ModuleBlockingDecision blocking_decision) {
       break;
 
     // All of these are reasons that allow the module to be loaded.
+    case ModuleBlockingDecision::kNotLoaded:
+    case ModuleBlockingDecision::kAllowedInProcessType:
     case ModuleBlockingDecision::kAllowedIME:
     case ModuleBlockingDecision::kAllowedSameCertificate:
     case ModuleBlockingDecision::kAllowedSameDirectory:
@@ -330,6 +332,17 @@ ModuleBlacklistCacheUpdater::DetermineModuleBlockingDecision(
     const ModuleInfoKey& module_key,
     const ModuleInfoData& module_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Don't analyze unloaded modules.
+  if ((module_data.module_properties & ModuleInfoData::kPropertyLoadedModule) ==
+      0) {
+    return ModuleBlockingDecision::kNotLoaded;
+  }
+
+  // Don't add modules to the blacklist if they were never loaded in a process
+  // where blocking is enabled.
+  if (!IsBlockingEnabledInProcessTypes(module_data.process_types))
+    return ModuleBlockingDecision::kAllowedInProcessType;
 
   // New modules should not be added to the cache when the module analysis is
   // disabled.

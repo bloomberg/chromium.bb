@@ -38,6 +38,9 @@ class IncompatibleApplicationsUpdater : public ModuleDatabaseObserver {
     kUnknown = 0,
     // A shell extension or IME that is not loaded in the process yet.
     kNotLoaded,
+    // A module that is loaded into a process type where third-party modules are
+    // explicitly allowed.
+    kAllowedInProcessType,
     // Input method editors are allowed.
     kAllowedIME,
     // Shell extensions are unwanted, but does not cause trigger a warning.
