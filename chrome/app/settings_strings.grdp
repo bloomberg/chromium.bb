@@ -503,6 +503,9 @@
     <message name="IDS_SETTINGS_CROSTINI_REMOVE" desc="Label for the row to open a dialog confirming removal of Crostini.">
       Remove Linux Apps for <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
     </message>
+    <message name="IDS_SETTINGS_CROSTINI_REMOVE_BUTTON" desc="Label for the button to open a dialog confirming removal of Crostini.">
+      Remove
+    </message>
     <message name="IDS_SETTINGS_CROSTINI_SHARED_PATHS" desc="Label for managing shared folders in Crostini.">
       Manage shared files &amp; folders
     </message>

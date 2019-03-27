@@ -46,12 +46,11 @@
       </div>
     </template>
     <template is="dom-if" if="[[!hideCrostiniUninstall_]]">
-      <div id="remove" class="settings-box"
-           actionable on-click="onRemoveTap_">
+      <div id="remove" class="settings-box">
         <div class="start">$i18n{crostiniRemove}</div>
-        <paper-icon-button-light class="subpage-arrow">
-          <button aria-label="$i18n{crostiniRemove}"></button>
-        </paper-icon-button-light>
+        <paper-button on-click="onRemoveTap_">
+           $i18n{crostiniRemoveButton}
+        </paper-button>
       </div>
     </template>
   </template>

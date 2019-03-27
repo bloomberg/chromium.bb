@@ -134,8 +134,8 @@ suite('CrostiniPageTests', function() {
     });
 
     test('Remove', function() {
-      assertTrue(!!subpage.$$('#remove .subpage-arrow'));
-      subpage.$$('#remove .subpage-arrow').click();
+      assertTrue(!!subpage.$$('#remove paper-button'));
+      subpage.$$('#remove paper-button').click();
       setCrostiniPrefs(crostiniBrowserProxy.enabled);
       assertFalse(crostiniPage.prefs.crostini.enabled.value);
       return whenPopState().then(function() {
