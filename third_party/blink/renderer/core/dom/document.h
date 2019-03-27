@@ -1491,7 +1491,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void IncrementNumberOfCanvases();
 
   void ProcessJavaScriptUrl(const KURL&, ContentSecurityPolicyDisposition);
-  void CancelPendingJavaScriptUrl();
+  void CancelPendingJavaScriptUrls();
 
   // Functions to keep count of display locks in this document.
   void AddActivationBlockingDisplayLock();
@@ -1599,7 +1599,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void UpdateBaseURL();
 
   void ExecuteScriptsWaitingForResources();
-  void ExecuteJavaScriptUrl(const KURL&, ContentSecurityPolicyDisposition);
+  void ExecuteJavaScriptUrls();
 
   void LoadEventDelayTimerFired(TimerBase*);
   void PluginLoadingTimerFired(TimerBase*);
@@ -1712,6 +1712,15 @@ class CORE_EXPORT Document : public ContainerNode,
 
   TaskHandle execute_scripts_waiting_for_resources_task_handle_;
   TaskHandle javascript_url_task_handle_;
+  struct PendingJavascriptUrl {
+   public:
+    PendingJavascriptUrl(const KURL& input_url,
+                         ContentSecurityPolicyDisposition input_disposition)
+        : url(input_url), disposition(input_disposition) {}
+    KURL url;
+    ContentSecurityPolicyDisposition disposition;
+  };
+  Vector<PendingJavascriptUrl> pending_javascript_urls_;
 
   bool has_autofocused_;
   WebFocusType last_focus_type_;

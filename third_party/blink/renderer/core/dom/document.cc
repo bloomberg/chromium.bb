@@ -3076,7 +3076,7 @@ void Document::open() {
     if (frame_ && frame_->Client())
       frame_->Client()->AbortClientNavigation();
   }
-  javascript_url_task_handle_.Cancel();
+  CancelPendingJavaScriptUrls();
 
   // For each shadow-including inclusive descendant |node| of |document|, erase
   // all event listeners and handlers given |node|.
@@ -3119,7 +3119,7 @@ void Document::CancelParsing() {
   SetReadyState(kComplete);
   if (!LoadEventFinished())
     load_event_progress_ = kLoadEventCompleted;
-  javascript_url_task_handle_.Cancel();
+  CancelPendingJavaScriptUrls();
 }
 
 DocumentParser* Document::OpenForNavigation(
@@ -7793,13 +7793,18 @@ int Document::LockedDisplayLockCount() const {
   return locked_display_lock_count_;
 }
 
-void Document::ExecuteJavaScriptUrl(
-    const KURL& url,
-    ContentSecurityPolicyDisposition disposition) {
+void Document::ExecuteJavaScriptUrls() {
   if (!frame_)
     return;
-  frame_->GetScriptController().ExecuteScriptIfJavaScriptURL(url, nullptr,
-                                                             disposition);
+  Vector<PendingJavascriptUrl> urls_to_execute;
+  urls_to_execute.swap(pending_javascript_urls_);
+
+  for (auto& url_to_execute : urls_to_execute) {
+    frame_->GetScriptController().ExecuteScriptIfJavaScriptURL(
+        url_to_execute.url, nullptr, url_to_execute.disposition);
+    if (!frame_)
+      break;
+  }
   CheckCompleted();
 }
 
@@ -7819,18 +7824,23 @@ void Document::ProcessJavaScriptUrl(
   // hacky.
   if (frame_->Loader().StateMachine()->IsDisplayingInitialEmptyDocument() &&
       (url == "javascript:''" || url == "javascript:\"\"")) {
-    ExecuteJavaScriptUrl(url, disposition);
+    frame_->GetScriptController().ExecuteScriptIfJavaScriptURL(url, nullptr,
+                                                               disposition);
+    CheckCompleted();
     return;
   }
-  javascript_url_task_handle_ = PostCancellableTask(
-      *GetTaskRunner(TaskType::kNetworking), FROM_HERE,
-      WTF::Bind(&Document::ExecuteJavaScriptUrl, WrapWeakPersistent(this), url,
-                disposition));
+  pending_javascript_urls_.push_back(PendingJavascriptUrl(url, disposition));
+  if (!javascript_url_task_handle_.IsActive()) {
+    javascript_url_task_handle_ = PostCancellableTask(
+        *GetTaskRunner(TaskType::kNetworking), FROM_HERE,
+        WTF::Bind(&Document::ExecuteJavaScriptUrls, WrapWeakPersistent(this)));
+  }
 }
 
-void Document::CancelPendingJavaScriptUrl() {
+void Document::CancelPendingJavaScriptUrls() {
   if (javascript_url_task_handle_.IsActive())
     javascript_url_task_handle_.Cancel();
+  pending_javascript_urls_.clear();
 }
 
 bool Document::IsInWebAppScope() const {
