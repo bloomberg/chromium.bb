@@ -140,8 +140,6 @@ class AURA_EXPORT TopLevelAllocator : public MusLsiAllocator,
   const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation() override;
 
  private:
-  void NotifyServerOfLocalSurfaceId();
-
   // ui::CompositorObserver:
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;
   void DidGenerateLocalSurfaceIdAllocation(
