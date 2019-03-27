@@ -33,6 +33,7 @@ class ExceptionState;
 class ExecutionContext;
 class PaymentAddress;
 class PaymentDetailsInit;
+class PaymentRequestUpdateEvent;
 class PaymentResponse;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -140,6 +141,10 @@ class MODULES_EXPORT PaymentRequest final
   // The pending promise can be [[acceptPromise]] or [[retryPromise]] in the
   // spec.
   ScriptPromiseResolver* GetPendingAcceptPromiseResolver() const;
+
+  // Implements the PaymentRequest updated algorithm.
+  // https://w3c.github.io/payment-request/#paymentrequest-updated-algorithm
+  void DispatchPaymentRequestUpdateEvent(PaymentRequestUpdateEvent* event);
 
   Member<const PaymentOptions> options_;
   Member<PaymentAddress> shipping_address_;

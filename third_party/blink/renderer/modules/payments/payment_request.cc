@@ -1214,21 +1214,7 @@ void PaymentRequest::OnPaymentMethodChange(const String& method_name,
 
   PaymentRequestUpdateEvent* event = PaymentMethodChangeEvent::Create(
       script_state, event_type_names::kPaymentmethodchange, init);
-  event->SetTarget(this);
-  event->SetPaymentDetailsUpdater(this);
-  DispatchEvent(*event);
-  if (!event->is_waiting_for_update()) {
-    // DispatchEvent runs synchronously. The method is_waiting_for_update()
-    // returns true if the merchant called event.updateWith() within the event
-    // handler. Calling this method is optional. If the method is not called,
-    // the renderer sends a message to the browser to re-enable UI interactions.
-    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kJavaScript,
-        mojom::ConsoleMessageLevel::kWarning,
-        "No updateWith() call in 'paymentmethodchange' event handler. User "
-        "may see outdated line items and total."));
-    payment_provider_->NoUpdatedPaymentDetails();
-  }
+  DispatchPaymentRequestUpdateEvent(event);
 }
 
 void PaymentRequest::OnShippingAddressChange(PaymentAddressPtr address) {
@@ -1247,21 +1233,7 @@ void PaymentRequest::OnShippingAddressChange(PaymentAddressPtr address) {
 
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
       GetExecutionContext(), event_type_names::kShippingaddresschange);
-  event->SetTarget(this);
-  event->SetPaymentDetailsUpdater(this);
-  DispatchEvent(*event);
-  if (!event->is_waiting_for_update()) {
-    // DispatchEvent runs synchronously. The method is_waiting_for_update()
-    // returns true if the merchant called event.updateWith() within the event
-    // handler. Calling this method is optional. If the method is not called,
-    // the renderer sends a message to the browser to re-enable UI interactions.
-    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kJavaScript,
-        mojom::ConsoleMessageLevel::kWarning,
-        "No updateWith() call in 'shippingaddresschange' event handler. User "
-        "may see outdated line items and total."));
-    payment_provider_->NoUpdatedPaymentDetails();
-  }
+  DispatchPaymentRequestUpdateEvent(event);
 }
 
 void PaymentRequest::OnShippingOptionChange(const String& shipping_option_id) {
@@ -1271,21 +1243,7 @@ void PaymentRequest::OnShippingOptionChange(const String& shipping_option_id) {
 
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
       GetExecutionContext(), event_type_names::kShippingoptionchange);
-  event->SetTarget(this);
-  event->SetPaymentDetailsUpdater(this);
-  DispatchEvent(*event);
-  if (!event->is_waiting_for_update()) {
-    // DispatchEvent runs synchronously. The method is_waiting_for_update()
-    // returns true if the merchant called event.updateWith() within the event
-    // handler. Calling this method is optional. If the method is not called,
-    // the renderer sends a message to the browser to re-enable UI interactions.
-    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kJavaScript,
-        mojom::ConsoleMessageLevel::kWarning,
-        "No updateWith() call in 'shippingoptionchange' event handler. User "
-        "may see outdated line items and total."));
-    payment_provider_->NoUpdatedPaymentDetails();
-  }
+  DispatchPaymentRequestUpdateEvent(event);
 }
 
 void PaymentRequest::OnPayerDetailChange(
@@ -1577,6 +1535,31 @@ void PaymentRequest::ClearResolversAndCloseMojoConnection() {
 
 ScriptPromiseResolver* PaymentRequest::GetPendingAcceptPromiseResolver() const {
   return retry_resolver_ ? retry_resolver_.Get() : accept_resolver_.Get();
+}
+
+void PaymentRequest::DispatchPaymentRequestUpdateEvent(
+    PaymentRequestUpdateEvent* event) {
+  event->SetTarget(this);
+  event->SetPaymentDetailsUpdater(this);
+  DispatchEvent(*event);
+  if (!event->is_waiting_for_update()) {
+    // DispatchEvent runs synchronously. The method is_waiting_for_update()
+    // returns true if the merchant called event.updateWith() within the event
+    // handler. Calling this method is optional. If the method is not called,
+    // the renderer sends a message to the browser to re-enable UI interactions.
+    const String& message = String::Format(
+        "No updateWith() call in '%s' event handler. User "
+        "may see outdated line items and total.",
+        event->type().Ascii().data());
+    GetExecutionContext()->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning, message));
+    payment_provider_->NoUpdatedPaymentDetails();
+    // Make sure that updateWith() is only allowed to be called within the same
+    // event loop as the event dispatch. See
+    // https://w3c.github.io/payment-request/#paymentrequest-updated-algorithm
+    event->start_waiting_for_update(true);
+  }
 }
 
 }  // namespace blink

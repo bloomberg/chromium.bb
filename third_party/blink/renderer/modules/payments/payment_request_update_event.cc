@@ -112,14 +112,14 @@ void PaymentRequestUpdateEvent::updateWith(ScriptState* script_state,
     return;
   }
 
-  if (!updater_)
-    return;
-
   if (wait_for_update_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot update details twice");
     return;
   }
+
+  if (!updater_)
+    return;
 
   stopPropagation();
   stopImmediatePropagation();
