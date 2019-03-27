@@ -424,9 +424,6 @@ void CourierRenderer::OnReceivedRpc(std::unique_ptr<pb::RpcMessage> message) {
       VLOG(2) << __func__ << ": Received RPC_RC_ONWAITINGFORDECRYPTIONKEY.";
       client_->OnWaiting(WaitingReason::kNoDecryptionKey);
       break;
-    case pb::RpcMessage::RPC_RC_ONDURATIONCHANGE:
-      OnDurationChange(std::move(message));
-      break;
 
     default:
       VLOG(1) << "Unknown RPC: " << message->proc();
@@ -700,18 +697,6 @@ void CourierRenderer::OnStatisticsUpdate(
   }
   UpdateVideoStatsQueue(stats.video_frames_decoded, stats.video_frames_dropped);
   client_->OnStatisticsUpdate(stats);
-}
-
-void CourierRenderer::OnDurationChange(
-    std::unique_ptr<pb::RpcMessage> message) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-  DCHECK(message);
-  VLOG(2) << __func__ << ": Received RPC_RC_ONDURATIONCHANGE with usec="
-          << message->integer64_value();
-  if (message->integer64_value() < 0)
-    return;
-  client_->OnDurationChange(
-      base::TimeDelta::FromMicroseconds(message->integer64_value()));
 }
 
 void CourierRenderer::OnFatalError(StopTrigger stop_trigger) {

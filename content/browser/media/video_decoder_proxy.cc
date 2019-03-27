@@ -9,6 +9,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "media/mojo/interfaces/constants.mojom.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
+#include "media/mojo/interfaces/renderer_extensions.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
@@ -51,7 +52,10 @@ void VideoDecoderProxy::CreateFlingingRenderer(
     media::mojom::RendererRequest request) {}
 
 void VideoDecoderProxy::CreateMediaPlayerRenderer(
-    media::mojom::RendererRequest request) {}
+    media::mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
+    media::mojom::RendererRequest request,
+    media::mojom::MediaPlayerRendererExtensionRequest
+        renderer_extension_request) {}
 #endif  // defined(OS_ANDROID)
 
 void VideoDecoderProxy::CreateCdm(

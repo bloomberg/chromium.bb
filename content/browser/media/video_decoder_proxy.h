@@ -32,7 +32,11 @@ class VideoDecoderProxy : public media::mojom::InterfaceFactory {
   void CreateDefaultRenderer(const std::string& audio_device_id,
                              media::mojom::RendererRequest request) final;
 #if defined(OS_ANDROID)
-  void CreateMediaPlayerRenderer(media::mojom::RendererRequest request) final;
+  void CreateMediaPlayerRenderer(
+      media::mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
+      media::mojom::RendererRequest request,
+      media::mojom::MediaPlayerRendererExtensionRequest
+          renderer_extension_request) final;
   void CreateFlingingRenderer(const std::string& presentation_id,
                               media::mojom::RendererRequest request) final;
 #endif  // defined(OS_ANDROID)

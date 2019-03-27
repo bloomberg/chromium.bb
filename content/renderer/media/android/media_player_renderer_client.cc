@@ -4,12 +4,16 @@
 
 #include "content/renderer/media/android/media_player_renderer_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 
 namespace content {
 
 MediaPlayerRendererClient::MediaPlayerRendererClient(
+    RendererExtentionPtr renderer_extension_ptr,
+    ClientExtentionRequest client_extension_request,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
     std::unique_ptr<media::MojoRenderer> mojo_renderer,
@@ -21,6 +25,11 @@ MediaPlayerRendererClient::MediaPlayerRendererClient(
       sink_(sink),
       media_task_runner_(std::move(media_task_runner)),
       compositor_task_runner_(std::move(compositor_task_runner)),
+      delayed_bind_client_extension_request_(
+          std::move(client_extension_request)),
+      delayed_bind_renderer_extention_ptr_info_(
+          renderer_extension_ptr.PassInterface()),
+      client_extension_binding_(this),
       weak_factory_(this) {}
 
 MediaPlayerRendererClient::~MediaPlayerRendererClient() {
@@ -38,6 +47,14 @@ void MediaPlayerRendererClient::Initialize(
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(!init_cb_);
 
+  // Consume and bind the delayed Request and PtrInfo now that we are on
+  // |media_task_runner_|.
+  renderer_extension_ptr_.Bind(
+      std::move(delayed_bind_renderer_extention_ptr_info_), media_task_runner_);
+  client_extension_binding_.Bind(
+      std::move(delayed_bind_client_extension_request_), media_task_runner_);
+
+  media_resource_ = media_resource;
   client_ = client;
   init_cb_ = init_cb;
 
@@ -74,7 +91,7 @@ void MediaPlayerRendererClient::OnStreamTextureWrapperInitialized(
   }
 
   MojoRendererWrapper::Initialize(
-      media_resource, this,
+      media_resource, client_,
       base::Bind(&MediaPlayerRendererClient::OnRemoteRendererInitialized,
                  weak_factory_.GetWeakPtr()));
 }
@@ -97,11 +114,10 @@ void MediaPlayerRendererClient::OnRemoteRendererInitialized(
   if (status == media::PIPELINE_OK) {
     // TODO(tguilbert): Measure and smooth out the initialization's ordering to
     // have the lowest total initialization time.
-    mojo_renderer_->InitiateScopedSurfaceRequest(
+    renderer_extension_ptr_->InitiateScopedSurfaceRequest(
         base::Bind(&MediaPlayerRendererClient::OnScopedSurfaceRequested,
                    weak_factory_.GetWeakPtr()));
   }
-
   base::ResetAndReturn(&init_cb_).Run(status);
 }
 
@@ -110,55 +126,15 @@ void MediaPlayerRendererClient::OnFrameAvailable() {
   sink_->PaintSingleFrame(stream_texture_wrapper_->GetCurrentFrame(), true);
 }
 
-void MediaPlayerRendererClient::OnError(media::PipelineStatus status) {
-  client_->OnError(status);
-}
-
-void MediaPlayerRendererClient::OnEnded() {
-  client_->OnEnded();
-}
-
-void MediaPlayerRendererClient::OnStatisticsUpdate(
-    const media::PipelineStatistics& stats) {
-  client_->OnStatisticsUpdate(stats);
-}
-
-void MediaPlayerRendererClient::OnBufferingStateChange(
-    media::BufferingState state) {
-  client_->OnBufferingStateChange(state);
-}
-
-void MediaPlayerRendererClient::OnWaiting(media::WaitingReason reason) {
-  client_->OnWaiting(reason);
-}
-
-void MediaPlayerRendererClient::OnAudioConfigChange(
-    const media::AudioDecoderConfig& config) {
-  client_->OnAudioConfigChange(config);
-}
-void MediaPlayerRendererClient::OnVideoConfigChange(
-    const media::VideoDecoderConfig& config) {
-  client_->OnVideoConfigChange(config);
-}
-
-void MediaPlayerRendererClient::OnVideoNaturalSizeChange(
-    const gfx::Size& size) {
+void MediaPlayerRendererClient::OnVideoSizeChange(const gfx::Size& size) {
   stream_texture_wrapper_->UpdateTextureSize(size);
   client_->OnVideoNaturalSizeChange(size);
 }
 
-void MediaPlayerRendererClient::OnVideoOpacityChange(bool opaque) {
-  client_->OnVideoOpacityChange(opaque);
-}
-
 void MediaPlayerRendererClient::OnDurationChange(base::TimeDelta duration) {
-  client_->OnDurationChange(duration);
-}
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-void MediaPlayerRendererClient::OnRemotePlayStateChange(
-    media::MediaStatus::State state) {
-  // Only used with the FlingingRenderer.
-  NOTREACHED();
+  media_resource_->ForwardDurationChangeToDemuxerHost(duration);
 }
 
 }  // namespace content

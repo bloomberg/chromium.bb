@@ -52,7 +52,11 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
 #if defined(OS_ANDROID)
   void CreateFlingingRenderer(const std::string& presentation_id,
                               media::mojom::RendererRequest request) final;
-  void CreateMediaPlayerRenderer(media::mojom::RendererRequest request) final;
+  void CreateMediaPlayerRenderer(
+      media::mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
+      media::mojom::RendererRequest request,
+      media::mojom::MediaPlayerRendererExtensionRequest
+          renderer_extension_request) final;
 #endif  // defined(OS_ANDROID)
   void CreateCdm(const std::string& key_system,
                  media::mojom::ContentDecryptionModuleRequest request) final;

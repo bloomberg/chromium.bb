@@ -37,9 +37,17 @@ std::string MediaUrlDemuxer::GetDisplayName() const {
   return "MediaUrlDemuxer";
 }
 
+void MediaUrlDemuxer::ForwardDurationChangeToDemuxerHost(
+    base::TimeDelta duration) {
+  DCHECK(host_);
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  host_->SetDuration(duration);
+}
+
 void MediaUrlDemuxer::Initialize(DemuxerHost* host,
                                  const PipelineStatusCB& status_cb) {
   DVLOG(1) << __func__;
+  host_ = host;
   task_runner_->PostTask(FROM_HERE, base::BindOnce(status_cb, PIPELINE_OK));
 }
 
