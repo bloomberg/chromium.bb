@@ -115,13 +115,11 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   DrawQuadParams CalculateDrawQuadParams(const DrawQuad* quad,
                                          const gfx::QuadF* draw_region);
-  // In most cases alpha should be params.opacity, but some quad types apply
-  // transparency at a different point in the rendering.
   SkCanvas::ImageSetEntry MakeEntry(const DrawQuadParams& params,
                                     const SkImage* image,
                                     const gfx::RectF& src,
                                     int matrix_index,
-                                    float alpha);
+                                    bool use_opacity = true);
 
   bool MustFlushBatchedQuads(const DrawQuad* new_quad,
                              const DrawQuadParams& params);
@@ -129,6 +127,13 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                       const SkImage* image,
                       const gfx::RectF& tex_coords);
   void FlushBatchedQuads();
+
+  // Utility to make a single ImageSetEntry and draw it with the complex paint.
+  // Assumes the paint applies the param's opacity.
+  void DrawSingleImage(const DrawQuadParams& params,
+                       const SkImage* image,
+                       const gfx::RectF& src,
+                       const SkPaint* paint);
 
   // DebugBorder, Picture, RPDQ, and SolidColor quads cannot be batched. They
   // either are not textures (debug, picture, solid color), or it's very likely
@@ -141,9 +146,10 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                                   SkPaint* paint);
 
   void DrawSolidColorQuad(const SolidColorDrawQuad* quad, SkPaint* paint);
-  void DrawTextureQuad(const TextureDrawQuad* quad, SkPaint* paint);
   void DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                            const DrawQuadParams& params);
+  void DrawTextureQuad(const TextureDrawQuad* quad,
+                       const DrawQuadParams& params);
   void DrawTileDrawQuad(const TileDrawQuad* quad, const DrawQuadParams& params);
   void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
                         const DrawQuadParams& params);

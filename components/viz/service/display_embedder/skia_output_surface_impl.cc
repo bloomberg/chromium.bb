@@ -66,7 +66,7 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
     auto* helper = new PromiseTextureHelper(
         impl->impl_on_gpu_->weak_ptr(), metadata.size, metadata.resource_format,
         metadata.mailbox_holder, metadata.color_space.ToSkColorSpace(),
-        metadata.alpha_type);
+        metadata.alpha_type, metadata.origin);
     return helper->MakePromiseSkImage(impl);
   }
 
@@ -108,14 +108,16 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
                        ResourceFormat resource_format,
                        const gpu::MailboxHolder& mailbox_holder,
                        sk_sp<SkColorSpace> color_space,
-                       SkAlphaType alpha_type)
+                       SkAlphaType alpha_type,
+                       GrSurfaceOrigin origin)
       : impl_on_gpu_(impl_on_gpu),
         size_(size),
         resource_format_(resource_format),
         render_pass_id_(0u),
         mailbox_holder_(mailbox_holder),
         color_space_(std::move(color_space)),
-        alpha_type_(alpha_type) {}
+        alpha_type_(alpha_type),
+        origin_(origin) {}
   ~PromiseTextureHelper() = default;
 
   sk_sp<SkImage> MakePromiseSkImage(SkiaOutputSurfaceImpl* impl) {
@@ -125,9 +127,8 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
         resource_format_,
         render_pass_id_ ? GL_TEXTURE_2D : mailbox_holder_.texture_target);
     return impl->recorder_->makePromiseTexture(
-        backend_format, size_.width(), size_.height(), mipmap_,
-        kTopLeft_GrSurfaceOrigin /* origin */, color_type, alpha_type_,
-        color_space_, PromiseTextureHelper::Fulfill,
+        backend_format, size_.width(), size_.height(), mipmap_, origin_,
+        color_type, alpha_type_, color_space_, PromiseTextureHelper::Fulfill,
         PromiseTextureHelper::Release, PromiseTextureHelper::Done, this);
   }
 
@@ -174,6 +175,7 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
   const GrMipMapped mipmap_ = GrMipMapped::kNo;
   const sk_sp<SkColorSpace> color_space_;
   const SkAlphaType alpha_type_ = kPremul_SkAlphaType;
+  const GrSurfaceOrigin origin_ = kTopLeft_GrSurfaceOrigin;
 
   // If non-null, an outstanding SharedImageRepresentation that must be freed on
   // Release. Only written / read from GPU thread.
@@ -212,6 +214,7 @@ class SkiaOutputSurfaceImpl::YUVAPromiseTextureHelper {
     // called. It will delete contexts.
     const auto process_planar = [&](size_t i, ResourceFormat resource_format) {
       auto& metadata = metadatas[i];
+      DCHECK(metadata.origin == kTopLeft_GrSurfaceOrigin);
       metadata.resource_format = resource_format;
       formats[i] = impl->GetGrBackendFormatForTexture(
           resource_format, metadata.mailbox_holder.texture_target);
@@ -219,7 +222,8 @@ class SkiaOutputSurfaceImpl::YUVAPromiseTextureHelper {
       contexts[i] = new PromiseTextureHelper(
           impl->impl_on_gpu_->weak_ptr(), metadata.size,
           metadata.resource_format, metadata.mailbox_holder,
-          nullptr /* color_space */, metadata.alpha_type);
+          nullptr /* color_space */, metadata.alpha_type,
+          kTopLeft_GrSurfaceOrigin);
     };
 
     if (is_i420) {
