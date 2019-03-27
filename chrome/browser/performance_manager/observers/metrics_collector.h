@@ -39,15 +39,12 @@ class MetricsCollector : public GraphObserver {
   bool ShouldObserve(const NodeBase* node) override;
   void OnNodeAdded(NodeBase* node) override;
   void OnBeforeNodeRemoved(NodeBase* node) override;
-  void OnPagePropertyChanged(
-      PageNodeImpl* page_node,
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) override;
   void OnFrameEventReceived(FrameNodeImpl* frame_node,
                             resource_coordinator::mojom::Event event) override;
   void OnPageEventReceived(PageNodeImpl* page_node,
                            resource_coordinator::mojom::Event event) override;
   void OnIsVisibleChanged(PageNodeImpl* page_node) override;
+  void OnUkmSourceIdChanged(PageNodeImpl* page_node) override;
   void OnExpectedTaskQueueingDurationSample(
       ProcessNodeImpl* process_node) override;
 
@@ -55,7 +52,7 @@ class MetricsCollector : public GraphObserver {
   struct MetricsReportRecord {
     MetricsReportRecord();
     MetricsReportRecord(const MetricsReportRecord& other);
-    void UpdateUKMSourceID(int64_t ukm_source_id);
+    void UpdateUkmSourceID(ukm::SourceId ukm_source_id);
     void Reset();
     BackgroundMetricsReporter<
         ukm::builders::TabManager_Background_FirstFaviconUpdated,

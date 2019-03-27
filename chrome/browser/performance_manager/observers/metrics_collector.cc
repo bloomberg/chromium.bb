@@ -76,21 +76,6 @@ void MetricsCollector::OnBeforeNodeRemoved(NodeBase* node) {
   }
 }
 
-void MetricsCollector::OnPagePropertyChanged(
-    PageNodeImpl* page_node,
-    resource_coordinator::mojom::PropertyType property_type,
-    int64_t value) {
-  if (property_type ==
-      resource_coordinator::mojom::PropertyType::kUKMSourceId) {
-    auto page_node_id = page_node->id();
-    ukm::SourceId ukm_source_id = value;
-    UpdateUkmSourceIdForPage(page_node_id, ukm_source_id);
-    MetricsReportRecord& record =
-        metrics_report_record_map_.find(page_node_id)->second;
-    record.UpdateUKMSourceID(ukm_source_id);
-  }
-}
-
 void MetricsCollector::OnFrameEventReceived(
     FrameNodeImpl* frame_node,
     resource_coordinator::mojom::Event event) {
@@ -139,6 +124,15 @@ void MetricsCollector::OnIsVisibleChanged(PageNodeImpl* page_node) {
   // report metrics when page becomes invisible next time.
   if (page_node->is_visible())
     ResetMetricsReportRecord(page_node->id());
+}
+
+void MetricsCollector::OnUkmSourceIdChanged(PageNodeImpl* page_node) {
+  auto page_node_id = page_node->id();
+  ukm::SourceId ukm_source_id = page_node->ukm_source_id();
+  UpdateUkmSourceIdForPage(page_node_id, ukm_source_id);
+  MetricsReportRecord& record =
+      metrics_report_record_map_.find(page_node_id)->second;
+  record.UpdateUkmSourceID(ukm_source_id);
 }
 
 void MetricsCollector::OnExpectedTaskQueueingDurationSample(
@@ -206,11 +200,11 @@ MetricsCollector::MetricsReportRecord::MetricsReportRecord() = default;
 MetricsCollector::MetricsReportRecord::MetricsReportRecord(
     const MetricsReportRecord& other) = default;
 
-void MetricsCollector::MetricsReportRecord::UpdateUKMSourceID(
-    int64_t ukm_source_id) {
-  first_favicon_updated.SetUKMSourceID(ukm_source_id);
-  first_non_persistent_notification_created.SetUKMSourceID(ukm_source_id);
-  first_title_updated.SetUKMSourceID(ukm_source_id);
+void MetricsCollector::MetricsReportRecord::UpdateUkmSourceID(
+    ukm::SourceId ukm_source_id) {
+  first_favicon_updated.SetUkmSourceID(ukm_source_id);
+  first_non_persistent_notification_created.SetUkmSourceID(ukm_source_id);
+  first_title_updated.SetUkmSourceID(ukm_source_id);
 }
 
 void MetricsCollector::MetricsReportRecord::Reset() {

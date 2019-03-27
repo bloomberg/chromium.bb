@@ -48,36 +48,31 @@ void CoordinationUnitIntrospectorImpl::GetProcessToURLMap(
   std::vector<resource_coordinator::mojom::ProcessInfoPtr> process_infos;
   std::vector<ProcessNodeImpl*> process_nodes = graph_->GetAllProcessNodes();
   for (auto* process_node : process_nodes) {
-    int64_t pid;
-    if (!process_node->GetProperty(
-            resource_coordinator::mojom::PropertyType::kPID, &pid))
+    if (process_node->process_id() == base::kNullProcessId)
       continue;
 
     resource_coordinator::mojom::ProcessInfoPtr process_info(
         resource_coordinator::mojom::ProcessInfo::New());
-    process_info->pid = base::checked_cast<base::ProcessId>(pid);
-    DCHECK_NE(base::kNullProcessId, process_info->pid);
+    process_info->pid = process_node->process_id();
     process_info->launch_time = process_node->launch_time();
 
     std::set<PageNodeImpl*> page_nodes =
         process_node->GetAssociatedPageCoordinationUnits();
     for (PageNodeImpl* page_node : page_nodes) {
-      int64_t ukm_source_id;
-      if (page_node->GetProperty(
-              resource_coordinator::mojom::PropertyType::kUKMSourceId,
-              &ukm_source_id)) {
-        resource_coordinator::mojom::PageInfoPtr page_info(
-            resource_coordinator::mojom::PageInfo::New());
-        page_info->ukm_source_id = ukm_source_id;
-        page_info->tab_id = page_node->id().id;
-        page_info->hosts_main_frame = HostsMainFrame(process_node, page_node);
-        page_info->is_visible = page_node->is_visible();
-        page_info->time_since_last_visibility_change =
-            page_node->TimeSinceLastVisibilityChange();
-        page_info->time_since_last_navigation =
-            page_node->TimeSinceLastNavigation();
-        process_info->page_infos.push_back(std::move(page_info));
-      }
+      if (page_node->ukm_source_id() == ukm::kInvalidSourceId)
+        continue;
+
+      resource_coordinator::mojom::PageInfoPtr page_info(
+          resource_coordinator::mojom::PageInfo::New());
+      page_info->ukm_source_id = page_node->ukm_source_id();
+      page_info->tab_id = page_node->id().id;
+      page_info->hosts_main_frame = HostsMainFrame(process_node, page_node);
+      page_info->is_visible = page_node->is_visible();
+      page_info->time_since_last_visibility_change =
+          page_node->TimeSinceLastVisibilityChange();
+      page_info->time_since_last_navigation =
+          page_node->TimeSinceLastNavigation();
+      process_info->page_infos.push_back(std::move(page_info));
     }
     process_infos.push_back(std::move(process_info));
   }

@@ -158,49 +158,28 @@ TEST_F(PageNodeImplTest, IsLoading) {
 }
 
 TEST_F(PageNodeImplTest, OnAllFramesInPageFrozen) {
-  const int64_t kRunning = static_cast<int64_t>(
-      resource_coordinator::mojom::LifecycleState::kRunning);
-  const int64_t kFrozen = static_cast<int64_t>(
-      resource_coordinator::mojom::LifecycleState::kFrozen);
+  const auto kRunning = resource_coordinator::mojom::LifecycleState::kRunning;
+  const auto kFrozen = resource_coordinator::mojom::LifecycleState::kFrozen;
 
   MockSinglePageWithMultipleProcessesGraph mock_graph(graph());
 
-  EXPECT_EQ(kRunning,
-            mock_graph.page->GetPropertyOrDefault(
-                resource_coordinator::mojom::PropertyType::kLifecycleState,
-                kRunning));
+  EXPECT_EQ(kRunning, mock_graph.page->lifecycle_state());
 
   // 1/2 frames in the page is frozen. Expect the page to still be running.
-  mock_graph.frame->SetLifecycleState(
-      resource_coordinator::mojom::LifecycleState::kFrozen);
-  EXPECT_EQ(kRunning,
-            mock_graph.page->GetPropertyOrDefault(
-                resource_coordinator::mojom::PropertyType::kLifecycleState,
-                kRunning));
+  mock_graph.frame->SetLifecycleState(kFrozen);
+  EXPECT_EQ(kRunning, mock_graph.page->lifecycle_state());
 
   // 2/2 frames in the process are frozen. We expect the page to be frozen.
-  mock_graph.child_frame->SetLifecycleState(
-      resource_coordinator::mojom::LifecycleState::kFrozen);
-  EXPECT_EQ(kFrozen,
-            mock_graph.page->GetPropertyOrDefault(
-                resource_coordinator::mojom::PropertyType::kLifecycleState,
-                kRunning));
+  mock_graph.child_frame->SetLifecycleState(kFrozen);
+  EXPECT_EQ(kFrozen, mock_graph.page->lifecycle_state());
 
   // Unfreeze a frame and expect the page to be running again.
-  mock_graph.frame->SetLifecycleState(
-      resource_coordinator::mojom::LifecycleState::kRunning);
-  EXPECT_EQ(kRunning,
-            mock_graph.page->GetPropertyOrDefault(
-                resource_coordinator::mojom::PropertyType::kLifecycleState,
-                kRunning));
+  mock_graph.frame->SetLifecycleState(kRunning);
+  EXPECT_EQ(kRunning, mock_graph.page->lifecycle_state());
 
   // Refreeze that frame and expect the page to be frozen again.
-  mock_graph.frame->SetLifecycleState(
-      resource_coordinator::mojom::LifecycleState::kFrozen);
-  EXPECT_EQ(kFrozen,
-            mock_graph.page->GetPropertyOrDefault(
-                resource_coordinator::mojom::PropertyType::kLifecycleState,
-                kRunning));
+  mock_graph.frame->SetLifecycleState(kFrozen);
+  EXPECT_EQ(kFrozen, mock_graph.page->lifecycle_state());
 }
 
 namespace {

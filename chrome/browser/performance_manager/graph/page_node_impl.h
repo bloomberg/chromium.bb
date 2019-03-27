@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace performance_manager {
 
@@ -20,6 +21,8 @@ class ProcessNodeImpl;
 
 class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
  public:
+  using LifecycleState = resource_coordinator::mojom::LifecycleState;
+
   static constexpr resource_coordinator::CoordinationUnitType Type() {
     return resource_coordinator::CoordinationUnitType::kPage;
   }
@@ -29,7 +32,7 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
 
   void SetIsLoading(bool is_loading);
   void SetIsVisible(bool is_visible);
-  void SetUKMSourceId(int64_t ukm_source_id);
+  void SetUkmSourceId(ukm::SourceId ukm_source_id);
   void OnFaviconUpdated();
   void OnTitleUpdated();
   void OnMainFrameNavigationCommitted(base::TimeTicks navigation_committed_time,
@@ -40,6 +43,11 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   // frames are accessible by both processes and frames, so we find all of the
   // processes that are reachable from the pages's accessible frames.
   std::set<ProcessNodeImpl*> GetAssociatedProcessCoordinationUnits() const;
+
+  // Returns the average CPU usage that can be attributed to this page over the
+  // last measurement period. CPU usage is expressed as the average percentage
+  // of cores occupied over the last measurement interval. One core fully
+  // occupied would be 100, while two cores at 5% each would be 10.
   double GetCPUUsage() const;
 
   // Returns 0 if no navigation has happened, otherwise returns the time since
@@ -59,6 +67,8 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   // Accessors.
   bool is_visible() const { return is_visible_; }
   bool is_loading() const { return is_loading_; }
+  ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
+  LifecycleState lifecycle_state() const { return lifecycle_state_; }
   base::TimeTicks usage_estimate_time() const { return usage_estimate_time_; }
   void set_usage_estimate_time(base::TimeTicks usage_estimate_time) {
     usage_estimate_time_ = usage_estimate_time;
@@ -86,9 +96,8 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   int64_t navigation_id() const { return navigation_id_; }
 
   // Invoked when the state of a frame in this page changes.
-  void OnFrameLifecycleStateChanged(
-      FrameNodeImpl* frame_node,
-      resource_coordinator::mojom::LifecycleState old_state);
+  void OnFrameLifecycleStateChanged(FrameNodeImpl* frame_node,
+                                    LifecycleState old_state);
 
   void OnFrameInterventionPolicyChanged(
       FrameNodeImpl* frame,
@@ -135,9 +144,6 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
 
   // CoordinationUnitInterface implementation.
   void OnEventReceived(resource_coordinator::mojom::Event event) override;
-  void OnPropertyChanged(
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) override;
 
   // This is called whenever |num_frozen_frames_| changes, or whenever
   // a frame is added to or removed from this page. It is used to synthesize the
@@ -231,6 +237,11 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   // The loading state. This is driven by instrumentation in the browser
   // process.
   bool is_loading_ = false;
+  // The UKM source ID associated with the URL of the main frame of this page.
+  ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
+  // The lifecycle state of this page. This is aggregated from the lifecycle
+  // state of each frame in the frame tree.
+  LifecycleState lifecycle_state_ = LifecycleState::kRunning;
 
   // Storage for PageAlmostIdle user data.
   std::unique_ptr<NodeAttachedData> page_almost_idle_data_;

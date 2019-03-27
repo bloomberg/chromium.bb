@@ -39,13 +39,6 @@ class NodeBase {
   void AddObserver(GraphObserver* observer);
   void RemoveObserver(GraphObserver* observer);
 
-  bool GetProperty(
-      const resource_coordinator::mojom::PropertyType property_type,
-      int64_t* result) const;
-  int64_t GetPropertyOrDefault(
-      const resource_coordinator::mojom::PropertyType property_type,
-      int64_t default_value) const;
-
   // May be called on any sequence.
   const resource_coordinator::CoordinationUnitID& id() const { return id_; }
   // May be called on any sequence.
@@ -53,15 +46,6 @@ class NodeBase {
 
   const base::ObserverList<GraphObserver>::Unchecked& observers() const {
     return observers_;
-  }
-
-  void SetPropertyForTesting(int64_t value) {
-    SetProperty(resource_coordinator::mojom::PropertyType::kTest, value);
-  }
-
-  const std::map<resource_coordinator::mojom::PropertyType, int64_t>&
-  properties_for_testing() const {
-    return properties_;
   }
 
  protected:
@@ -112,13 +96,8 @@ class NodeBase {
   }
 
   virtual void OnEventReceived(resource_coordinator::mojom::Event event);
-  virtual void OnPropertyChanged(
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value);
 
   void SendEvent(resource_coordinator::mojom::Event event);
-  void SetProperty(resource_coordinator::mojom::PropertyType property_type,
-                   int64_t value);
 
   Graph* const graph_;
   const resource_coordinator::CoordinationUnitID id_;
@@ -127,7 +106,6 @@ class NodeBase {
 
  private:
   base::ObserverList<GraphObserver>::Unchecked observers_;
-  std::map<resource_coordinator::mojom::PropertyType, int64_t> properties_;
 
   DISALLOW_COPY_AND_ASSIGN(NodeBase);
 };

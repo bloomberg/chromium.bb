@@ -86,9 +86,6 @@ class FrameNodeImpl
 
   // CoordinationUnitInterface implementation.
   void OnEventReceived(resource_coordinator::mojom::Event event) override;
-  void OnPropertyChanged(
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) override;
 
   bool HasFrameNodeInAncestors(FrameNodeImpl* frame_node) const;
   bool HasFrameNodeInDescendants(FrameNodeImpl* frame_node) const;

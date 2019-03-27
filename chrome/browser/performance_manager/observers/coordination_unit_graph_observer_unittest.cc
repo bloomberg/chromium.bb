@@ -24,14 +24,10 @@ class GraphObserverTest : public GraphTestHarness {};
 
 class TestGraphObserver : public GraphObserver {
  public:
-  TestGraphObserver()
-      : node_created_count_(0u),
-        node_destroyed_count_(0u),
-        property_changed_count_(0u) {}
+  TestGraphObserver() : node_created_count_(0u), node_destroyed_count_(0u) {}
 
   size_t node_created_count() { return node_created_count_; }
   size_t node_destroyed_count() { return node_destroyed_count_; }
-  size_t property_changed_count() { return property_changed_count_; }
 
   // Overridden from GraphObserver.
   bool ShouldObserve(const NodeBase* node) override {
@@ -40,17 +36,10 @@ class TestGraphObserver : public GraphObserver {
   }
   void OnNodeAdded(NodeBase* node) override { ++node_created_count_; }
   void OnBeforeNodeRemoved(NodeBase* node) override { ++node_destroyed_count_; }
-  void OnFramePropertyChanged(
-      FrameNodeImpl* frame_node,
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) override {
-    ++property_changed_count_;
-  }
 
  private:
   size_t node_created_count_;
   size_t node_destroyed_count_;
-  size_t property_changed_count_;
 };
 
 }  // namespace
@@ -71,14 +60,6 @@ TEST_F(GraphObserverTest, CallbacksInvoked) {
         CreateNode<FrameNodeImpl>(page_node.get(), root_frame_node.get());
 
     EXPECT_EQ(2u, observer->node_created_count());
-
-    // The registered observer will only observe the events that happen to
-    // |root_frame_node| and |frame_node| because
-    // they are resource_coordinator::CoordinationUnitType::kFrame, so
-    // OnPropertyChanged will only be called for |root_frame_node|.
-    root_frame_node->SetPropertyForTesting(42);
-    process_node->SetPropertyForTesting(42);
-    EXPECT_EQ(1u, observer->property_changed_count());
   }
 
   EXPECT_EQ(2u, observer->node_destroyed_count());

@@ -29,8 +29,7 @@ void ProcessNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
 }
 
 void ProcessNodeImpl::SetCPUUsage(double cpu_usage) {
-  SetProperty(resource_coordinator::mojom::PropertyType::kCPUUsage,
-              cpu_usage * 1000);
+  cpu_usage_ = cpu_usage;
 }
 
 void ProcessNodeImpl::SetExpectedTaskQueueingDuration(
@@ -48,9 +47,9 @@ void ProcessNodeImpl::SetLaunchTime(base::Time launch_time) {
 
 void ProcessNodeImpl::SetMainThreadTaskLoadIsLow(
     bool main_thread_task_load_is_low) {
-  SetProperty(
-      resource_coordinator::mojom::PropertyType::kMainThreadTaskLoadIsLow,
-      main_thread_task_load_is_low);
+  SetPropertyAndNotifyObserversIfChanged(
+      &GraphObserver::OnMainThreadTaskLoadIsLow, main_thread_task_load_is_low,
+      this, &main_thread_task_load_is_low_);
 }
 
 void ProcessNodeImpl::SetPID(base::ProcessId pid) {
@@ -72,8 +71,6 @@ void ProcessNodeImpl::SetPID(base::ProcessId pid) {
   // process.
   private_footprint_kb_ = 0;
   cumulative_cpu_usage_ = base::TimeDelta();
-
-  SetProperty(resource_coordinator::mojom::PropertyType::kPID, pid);
 }
 
 void ProcessNodeImpl::SetProcessExitStatus(int32_t exit_status) {
@@ -137,14 +134,6 @@ void ProcessNodeImpl::OnEventReceived(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnProcessEventReceived(this, event);
-}
-
-void ProcessNodeImpl::OnPropertyChanged(
-    const resource_coordinator::mojom::PropertyType property_type,
-    int64_t value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : observers())
-    observer.OnProcessPropertyChanged(this, property_type, value);
 }
 
 void ProcessNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {

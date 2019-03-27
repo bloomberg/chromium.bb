@@ -45,6 +45,9 @@ class ProcessNodeImpl
   void SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low) override;
   void OnRendererIsBloated() override;
 
+  // CPU usage is expressed as the average percentage of cores occupied over the
+  // last measurement interval. One core fully occupied would be 100, while two
+  // cores at 5% each would be 10.
   void SetCPUUsage(double cpu_usage);
   void SetLaunchTime(base::Time launch_time);
   void SetPID(base::ProcessId pid);
@@ -71,6 +74,12 @@ class ProcessNodeImpl
     return expected_task_queueing_duration_;
   }
 
+  bool main_thread_task_load_is_low() const {
+    return main_thread_task_load_is_low_;
+  }
+
+  double cpu_usage() const { return cpu_usage_; }
+
   // Add |frame_node| to this process.
   void AddFrame(FrameNodeImpl* frame_node);
   // Removes |frame_node| from the set of frames hosted by this process. Invoked
@@ -87,9 +96,6 @@ class ProcessNodeImpl
 
   // CoordinationUnitInterface implementation.
   void OnEventReceived(resource_coordinator::mojom::Event event) override;
-  void OnPropertyChanged(
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) override;
 
   void DecrementNumFrozenFrames();
   void IncrementNumFrozenFrames();
@@ -102,6 +108,8 @@ class ProcessNodeImpl
   base::Optional<int32_t> exit_status_;
 
   base::TimeDelta expected_task_queueing_duration_;
+  bool main_thread_task_load_is_low_ = false;
+  double cpu_usage_ = 0;
 
   std::set<FrameNodeImpl*> frame_nodes_;
 
