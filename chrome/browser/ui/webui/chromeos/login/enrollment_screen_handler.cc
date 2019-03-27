@@ -140,21 +140,21 @@ constexpr struct {
      IDS_AD_ENCRYPTION_LEGACY_SUBTITLE,
      authpolicy::KerberosEncryptionTypes::ENC_TYPES_LEGACY}};
 
-std::unique_ptr<base::ListValue> GetEncryptionTypesList() {
+base::ListValue GetEncryptionTypesList() {
   const authpolicy::KerberosEncryptionTypes default_types =
       authpolicy::KerberosEncryptionTypes::ENC_TYPES_STRONG;
-  auto encryption_list = std::make_unique<base::ListValue>();
+  base::ListValue encryption_list;
   for (const auto& enc_types : kEncryptionTypes) {
-    auto enc_option = std::make_unique<base::DictionaryValue>();
-    enc_option->SetKey(
+    base::DictionaryValue enc_option;
+    enc_option.SetKey(
         "title", base::Value(l10n_util::GetStringUTF16(enc_types.title_id)));
-    enc_option->SetKey(
+    enc_option.SetKey(
         "subtitle",
         base::Value(l10n_util::GetStringUTF16(enc_types.subtitle_id)));
-    enc_option->SetKey("value", base::Value(enc_types.id));
-    enc_option->SetKey(
-        "selected", base::Value(default_types == enc_types.encryption_types));
-    encryption_list->Append(std::move(enc_option));
+    enc_option.SetKey("value", base::Value(enc_types.id));
+    enc_option.SetKey("selected",
+                      base::Value(default_types == enc_types.encryption_types));
+    encryption_list.GetList().emplace_back(std::move(enc_option));
   }
   return encryption_list;
 }
@@ -263,7 +263,6 @@ void EnrollmentScreenHandler::ShowActiveDirectoryScreen(
 
   if (!domain_join_config.empty()) {
     active_directory_domain_join_config_ = domain_join_config;
-    show_unlock_password_ = true;
     active_directory_join_type_ =
         ActiveDirectoryDomainJoinType::NOT_USING_CONFIGURATION;
   }
@@ -272,7 +271,8 @@ void EnrollmentScreenHandler::ShowActiveDirectoryScreen(
       CallJS("login.OAuthEnrollmentScreen.setAdJoinParams",
              std::string() /* machineName */, std::string() /* userName */,
              static_cast<int>(ActiveDirectoryErrorState::NONE),
-             show_unlock_password_);
+             !active_directory_domain_join_config_
+                  .empty() /* show_unlock_password */);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     }
@@ -285,28 +285,28 @@ void EnrollmentScreenHandler::ShowActiveDirectoryScreen(
       CallJS("login.OAuthEnrollmentScreen.setAdJoinParams", machine_name,
              username,
              static_cast<int>(ActiveDirectoryErrorState::BAD_USERNAME),
-             show_unlock_password_);
+             false /* show_unlock_password */);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     case authpolicy::ERROR_BAD_PASSWORD:
       CallJS("login.OAuthEnrollmentScreen.setAdJoinParams", machine_name,
              username,
              static_cast<int>(ActiveDirectoryErrorState::BAD_AUTH_PASSWORD),
-             show_unlock_password_);
+             false /* show_unlock_password */);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     case authpolicy::ERROR_MACHINE_NAME_TOO_LONG:
       CallJS("login.OAuthEnrollmentScreen.setAdJoinParams", machine_name,
              username,
              static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_TOO_LONG),
-             show_unlock_password_);
+             false /* show_unlock_password */);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     case authpolicy::ERROR_INVALID_MACHINE_NAME:
       CallJS("login.OAuthEnrollmentScreen.setAdJoinParams", machine_name,
              username,
              static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_INVALID),
-             show_unlock_password_);
+             false /* show_unlock_password */);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     case authpolicy::ERROR_PASSWORD_EXPIRED:
@@ -620,7 +620,7 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
 
 void EnrollmentScreenHandler::GetAdditionalParameters(
     base::DictionaryValue* parameters) {
-  parameters->Set("encryptionTypesList", GetEncryptionTypesList());
+  parameters->SetKey("encryptionTypesList", GetEncryptionTypesList());
 }
 
 bool EnrollmentScreenHandler::IsOnEnrollmentScreen() const {
@@ -638,17 +638,18 @@ void EnrollmentScreenHandler::OnAdConfigurationUnlocked(
     CallJS("login.OAuthEnrollmentScreen.setAdJoinParams",
            std::string() /* machineName */, std::string() /* userName */,
            static_cast<int>(ActiveDirectoryErrorState::BAD_UNLOCK_PASSWORD),
-           show_unlock_password_);
+           true /* show_unlock_password */);
     return;
   }
-  std::unique_ptr<base::ListValue> options =
-      base::ListValue::From(base::JSONReader::ReadDeprecated(
-          unlocked_data, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS));
-  if (!options) {
+  active_directory_domain_join_config_.clear();
+  base::Optional<base::Value> options = base::JSONReader::Read(
+      unlocked_data, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
+  if (!options || !options->is_list()) {
     ShowError(IDS_AD_JOIN_CONFIG_NOT_PARSED, true);
-    show_unlock_password_ = false;
-    CallJS("login.OAuthEnrollmentScreen.setAdJoinConfiguration",
-           base::ListValue());
+    CallJS("login.OAuthEnrollmentScreen.setAdJoinParams",
+           std::string() /* machineName */, std::string() /* userName */,
+           static_cast<int>(ActiveDirectoryErrorState::NONE),
+           false /* show_unlock_password */);
     return;
   }
   base::DictionaryValue custom;
@@ -656,7 +657,6 @@ void EnrollmentScreenHandler::OnAdConfigurationUnlocked(
       "name",
       base::Value(l10n_util::GetStringUTF8(IDS_AD_CONFIG_SELECTION_CUSTOM)));
   options->GetList().push_back(std::move(custom));
-  show_unlock_password_ = false;
   active_directory_join_type_ =
       ActiveDirectoryDomainJoinType::USING_CONFIGURATION;
   CallJS("login.OAuthEnrollmentScreen.setAdJoinConfiguration", *options);
@@ -828,7 +828,6 @@ void EnrollmentScreenHandler::HandleAdCompleteLogin(
     const std::string& user_name,
     const std::string& password) {
   observe_network_failure_ = false;
-  show_unlock_password_ = false;
   DCHECK(controller_);
   controller_->OnActiveDirectoryCredsProvided(
       machine_name, distinguished_name,

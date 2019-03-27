@@ -104,7 +104,7 @@
         </div>
         <div class="vertical layout">
           <cr-input slot="inputs" id="machineNameInput" required
-              hidden="[[!isDomainJoin]]" value="[[machineName]]"
+              hidden="[[!isDomainJoin]]" value="{{machineName}}"
               disabled="[[disabled]]" invalid="[[machineNameInvalid]]"
               pattern="[[machineNameInputPattern_]]"
               label="[[i18nDynamic(locale, 'oauthEnrollAdMachineNameInput')]]"

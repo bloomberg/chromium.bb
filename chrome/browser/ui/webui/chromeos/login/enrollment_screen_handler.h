@@ -170,9 +170,6 @@ class EnrollmentScreenHandler
   ActiveDirectoryDomainJoinType active_directory_join_type_ =
       ActiveDirectoryDomainJoinType::COUNT;
 
-  // Whether unlock password input step should be shown.
-  bool show_unlock_password_ = false;
-
   // True if screen was not shown yet.
   bool first_show_ = true;
 
