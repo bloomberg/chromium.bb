@@ -86,8 +86,8 @@
       <template is="dom-if" if="[[hasChildFolder_]]">
         <cr-icon-button id="arrow" iron-icon="cr:arrow-drop-down"
             on-click="toggleFolder_" on-mousedown="preventDefault_"
-            tabindex="-1" aria-label$="[[getButtonAriaLabel_(isOpen, item_)]]"
-            is-open$="[[isOpen]]" noink></cr-icon-button>
+            tabindex="-1" is-open$="[[isOpen]]" noink aria-hidden="true">
+        </cr-icon-button>
       </template>
       <div id="folder-label" class="v-centered">
         <div class="folder-icon"

@@ -122,10 +122,6 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
                      IDS_BOOKMARK_MANAGER_SEARCH_BUTTON);
   AddLocalizedString(source, "sidebarAxLabel",
                      IDS_BOOKMARK_MANAGER_SIDEBAR_AX_LABEL);
-  AddLocalizedString(source, "sidebarNodeCollapseAxLabel",
-                     IDS_BOOKMARK_MANAGER_SIDEBAR_NODE_COLLAPSE_AX_LABEL);
-  AddLocalizedString(source, "sidebarNodeExpandAxLabel",
-                     IDS_BOOKMARK_MANAGER_SIDEBAR_NODE_EXPAND_AX_LABEL);
   AddLocalizedString(source, "searchCleared", IDS_SEARCH_CLEARED);
   AddLocalizedString(source, "searchResults", IDS_SEARCH_RESULTS);
   AddLocalizedString(source, "saveEdit", IDS_SAVE);
