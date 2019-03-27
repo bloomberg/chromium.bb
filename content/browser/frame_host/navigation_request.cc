@@ -169,16 +169,16 @@ bool NeedsHTTPOrigin(net::HttpRequestHeaders* headers,
 
 // TODO(clamy): This should match what's happening in
 // blink::FrameFetchContext::addAdditionalRequestHeaders.
-void AddAdditionalRequestHeaders(
-    net::HttpRequestHeaders* headers,
-    const GURL& url,
-    FrameMsg_Navigate_Type::Value navigation_type,
-    BrowserContext* browser_context,
-    const std::string& method,
-    const std::string user_agent_override,
-    bool has_user_gesture,
-    base::Optional<url::Origin> initiator_origin,
-    FrameTreeNode* frame_tree_node) {
+void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
+                                 const GURL& url,
+                                 FrameMsg_Navigate_Type::Value navigation_type,
+                                 ui::PageTransition transition,
+                                 BrowserContext* browser_context,
+                                 const std::string& method,
+                                 const std::string user_agent_override,
+                                 bool has_user_gesture,
+                                 base::Optional<url::Origin> initiator_origin,
+                                 FrameTreeNode* frame_tree_node) {
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
 
@@ -210,7 +210,15 @@ void AddAdditionalRequestHeaders(
   // Blink and //content.
   if (IsSecMetadataEnabled() && IsOriginSecure(url)) {
     std::string site_value = "cross-site";
-    if (initiator_origin) {
+    std::string user_value = has_user_gesture ? "?T" : "?F";
+
+    // Navigations that aren't triggerable from the web (e.g. typing in the
+    // address bar, or clicking a bookmark) are labeled as 'none'. Webby
+    // navigations compare the |initiator_origin| to the navigation target.
+    if (!PageTransitionIsWebTriggerable(transition)) {
+      site_value = "none";
+      user_value = "?T";
+    } else if (initiator_origin) {
       url::Origin target_origin = url::Origin::Create(url);
       if (initiator_origin->IsSameOriginWith(target_origin)) {
         site_value = "same-origin";
@@ -247,8 +255,7 @@ void AddAdditionalRequestHeaders(
     headers->SetHeaderIfMissing("Sec-Fetch-Dest", destination.c_str());
     headers->SetHeaderIfMissing("Sec-Fetch-Mode", mode.c_str());
     headers->SetHeaderIfMissing("Sec-Fetch-Site", site_value.c_str());
-    headers->SetHeaderIfMissing("Sec-Fetch-User",
-                                has_user_gesture ? "?T" : "?F");
+    headers->SetHeaderIfMissing("Sec-Fetch-User", user_value.c_str());
   }
 
   // Ask whether we should request a policy.
@@ -592,6 +599,7 @@ NavigationRequest::NavigationRequest(
     headers.AddHeadersFromString(begin_params_->headers);
     AddAdditionalRequestHeaders(
         &headers, common_params_.url, common_params_.navigation_type,
+        common_params_.transition,
         frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
         common_params.method, user_agent_override,
         common_params_.has_user_gesture, common_params.initiator_origin,
