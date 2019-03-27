@@ -105,6 +105,12 @@ bool ExecutionContext::FeatureEnabled(OriginTrialFeature feature) const {
   return context && context->IsFeatureEnabled(feature);
 }
 
+void ExecutionContext::AddConsoleMessage(mojom::ConsoleMessageSource source,
+                                         mojom::ConsoleMessageLevel level,
+                                         const String& message) {
+  AddConsoleMessage(ConsoleMessage::Create(source, level, message));
+}
+
 void ExecutionContext::DispatchErrorEvent(
     ErrorEvent* error_event,
     SanitizeScriptErrors sanitize_script_errors) {
@@ -256,7 +262,7 @@ void ExecutionContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_exceptions_);
   visitor->Trace(csp_delegate_);
   ContextLifecycleNotifier::Trace(visitor);
-  ConsoleLoggerImplBase::Trace(visitor);
+  ConsoleLogger::Trace(visitor);
   Supplementable<ExecutionContext>::Trace(visitor);
 }
 

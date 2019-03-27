@@ -413,19 +413,11 @@ class ResourceFetcher::DetachableConsoleLogger final
   void Detach() { logger_ = nullptr; }
 
   // ConsoleLogger implementation.
-  void AddInfoMessage(Source source, const String& message) override {
+  void AddConsoleMessage(mojom::ConsoleMessageSource source,
+                         mojom::ConsoleMessageLevel level,
+                         const String& message) override {
     if (logger_) {
-      logger_->AddInfoMessage(source, message);
-    }
-  }
-  void AddWarningMessage(Source source, const String& message) override {
-    if (logger_) {
-      logger_->AddWarningMessage(source, message);
-    }
-  }
-  void AddErrorMessage(Source source, const String& message) override {
-    if (logger_) {
-      logger_->AddErrorMessage(source, message);
+      logger_->AddConsoleMessage(source, level, message);
     }
   }
   void Trace(Visitor* visitor) override {
@@ -1323,7 +1315,8 @@ void ResourceFetcher::PrintPreloadWarning(Resource* resource,
       builder.Append("due to different image placeholder policies.");
       break;
   }
-  console_logger_->AddWarningMessage(ConsoleLogger::Source::kOther,
+  console_logger_->AddConsoleMessage(mojom::ConsoleMessageSource::kOther,
+                                     mojom::ConsoleMessageLevel::kWarning,
                                      builder.ToString());
 }
 

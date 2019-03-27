@@ -39,6 +39,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/public/platform/code_cache_loader.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
@@ -1183,8 +1184,9 @@ void ResourceLoader::HandleError(const ResourceError& error) {
     return;
   }
   if (error.CorsErrorStatus()) {
-    fetcher_->GetConsoleLogger().AddErrorMessage(
-        ConsoleLogger::Source::kScript,
+    fetcher_->GetConsoleLogger().AddConsoleMessage(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kError,
         cors::GetErrorString(
             *error.CorsErrorStatus(), resource_->GetResourceRequest().Url(),
             resource_->LastResourceRequest().Url(), *resource_->GetOrigin(),
@@ -1401,8 +1403,9 @@ ResourceLoader::CheckResponseNosniff(mojom::RequestContextType request_context,
   String mime_type = response.HttpContentType();
   if (request_context == mojom::RequestContextType::STYLE &&
       !MIMETypeRegistry::IsSupportedStyleSheetMIMEType(mime_type)) {
-    fetcher_->GetConsoleLogger().AddErrorMessage(
-        ConsoleLogger::Source::kSecurity,
+    fetcher_->GetConsoleLogger().AddConsoleMessage(
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError,
         "Refused to apply style from '" +
             response.CurrentRequestUrl().ElidedString() +
             "' because its MIME type ('" + mime_type + "') " +

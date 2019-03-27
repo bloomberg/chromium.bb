@@ -190,8 +190,9 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
   if (is_top_level_script_) {
     String error = CheckSameOriginEnforcement(url_, response);
     if (!error.IsNull()) {
-      fetch_client_settings_object_fetcher_->GetConsoleLogger().AddErrorMessage(
-          ConsoleLogger::Source::kSecurity, error);
+      fetch_client_settings_object_fetcher_->GetConsoleLogger()
+          .AddConsoleMessage(mojom::ConsoleMessageSource::kSecurity,
+                             mojom::ConsoleMessageLevel::kError, error);
       NotifyError();
       return;
     }

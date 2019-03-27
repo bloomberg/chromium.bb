@@ -742,8 +742,8 @@ void ResourceLoadScheduler::ShowConsoleMessageIfNeeded() {
     // last 1 minutes, or there is no pending requests in the inactive queue.
     return;
   }
-  console_logger_->AddInfoMessage(
-      ConsoleLogger::Source::kOther,
+  console_logger_->AddConsoleMessage(
+      mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kInfo,
       "Some resource load requests were throttled while the tab was in "
       "background, and no request was sent from the queue in the last 1 "
       "minute. This means previously requested in-flight requests haven't "
