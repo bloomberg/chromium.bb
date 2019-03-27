@@ -409,7 +409,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("renameNewFolderDrive").EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
-    ContextMenu, /* context_menu.js */
+    ContextMenu, /* context_menu.js for file list */
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("checkDeleteEnabledForReadWriteFile").DisableDriveFs(),
@@ -443,17 +443,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkNewFolderEnabledInsideReadWriteFolder").DisableDriveFs(),
         TestCase("checkNewFolderDisabledInsideReadOnlyFolder").DisableDriveFs(),
         TestCase("checkPasteEnabledInsideReadWriteFolder").DisableDriveFs(),
-        TestCase("checkPasteDisabledInsideReadOnlyFolder").DisableDriveFs(),
-        TestCase("checkCopyEnabledForReadWriteFolderInTree").DisableDriveFs(),
-        TestCase("checkCopyEnabledForReadOnlyFolderInTree").DisableDriveFs(),
-        TestCase("checkCutEnabledForReadWriteFolderInTree").DisableDriveFs(),
-        TestCase("checkCutDisabledForReadOnlyFolderInTree").DisableDriveFs(),
-        TestCase("checkPasteEnabledForReadWriteFolderInTree").DisableDriveFs(),
-        TestCase("checkPasteDisabledForReadOnlyFolderInTree").DisableDriveFs(),
-        TestCase("checkContextMenuForTeamDriveRoot").DisableDriveFs()));
+        TestCase("checkPasteDisabledInsideReadOnlyFolder").DisableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
-    ContextMenu2, /* context_menu.js */
+    ContextMenu2, /* context_menu.js for file list */
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("checkDeleteEnabledForReadWriteFile").EnableDriveFs(),
@@ -486,21 +479,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkNewFolderDisabledInsideReadOnlyFolder").EnableDriveFs(),
         TestCase("checkPasteEnabledInsideReadWriteFolder").EnableDriveFs(),
         TestCase("checkPasteDisabledInsideReadOnlyFolder").EnableDriveFs(),
-        TestCase("checkCopyEnabledForReadWriteFolderInTree").EnableDriveFs(),
-        TestCase("checkCopyEnabledForReadOnlyFolderInTree").EnableDriveFs(),
-        TestCase("checkCutEnabledForReadWriteFolderInTree").EnableDriveFs(),
-        TestCase("checkCutDisabledForReadOnlyFolderInTree").EnableDriveFs(),
-        TestCase("checkPasteEnabledForReadWriteFolderInTree").EnableDriveFs(),
-        TestCase("checkPasteDisabledForReadOnlyFolderInTree").EnableDriveFs(),
-        TestCase("checkContextMenuForTeamDriveRoot").EnableDriveFs(),
         TestCase("checkDownloadsContextMenu").EnableMyFilesVolume(),
         TestCase("checkPlayFilesContextMenu"),
         TestCase("checkPlayFilesContextMenu").EnableMyFilesVolume(),
         TestCase("checkLinuxFilesContextMenu"),
-        TestCase("checkLinuxFilesContextMenu").EnableMyFilesVolume(),
-        TestCase("checkRemovableRootContextMenu"),
-        TestCase("checkUsbContextMenu"),
-        TestCase("checkPartitionContextMenu")));
+        TestCase("checkLinuxFilesContextMenu").EnableMyFilesVolume()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Delete, /* delete.js */
@@ -602,6 +585,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirContextMenuUsbDcim"),
         TestCase("dirContextMenuMtp"),
         TestCase("dirContextMenuMediaView").EnableArc(),
+        TestCase("dirContextMenuMyDrive"),
+        TestCase("dirContextMenuSharedDrive"),
+        TestCase("dirContextMenuSharedWithMe"),
+        TestCase("dirContextMenuOffline"),
         TestCase("dirContextMenuShortcut")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(

@@ -177,6 +177,7 @@ const SHARED_DRIVE_ENTRY_SET = [
   ENTRIES.teamDriveAHostedFile,
   ENTRIES.teamDriveB,
   ENTRIES.teamDriveBFile,
+  ENTRIES.teamDriveBDirectory,
 ];
 
 /**
