@@ -472,6 +472,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
   // navigation just committed.
   navigation_request->state_ = RESPONSE_STARTED;
   navigation_request->render_frame_host_ = render_frame_host;
+  navigation_request->VerifyLoaderAndRenderFrameHostExpectations();
   navigation_request->CreateNavigationHandle(true);
   DCHECK(navigation_request->navigation_handle());
   return navigation_request;
@@ -769,6 +770,7 @@ void NavigationRequest::BeginNavigation() {
   // Select an appropriate RenderFrameHost.
   render_frame_host_ =
       frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+  VerifyLoaderAndRenderFrameHostExpectations();
   NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(render_frame_host_,
                                                            common_params_.url);
 
@@ -1191,6 +1193,7 @@ void NavigationRequest::OnResponseStarted(
   if (response_should_be_rendered_) {
     render_frame_host_ =
         frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+    VerifyLoaderAndRenderFrameHostExpectations();
     NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
         render_frame_host_, common_params_.url);
   } else {
@@ -1399,6 +1402,7 @@ void NavigationRequest::OnRequestFailedInternal(
   if (render_frame_host_ && render_frame_host_ != render_frame_host)
     base::debug::DumpWithoutCrashing();
   render_frame_host_ = render_frame_host;
+  VerifyLoaderAndRenderFrameHostExpectations();
 
   DCHECK(render_frame_host_);
 
@@ -1628,6 +1632,7 @@ void NavigationRequest::OnStartChecksComplete(
       std::move(navigation_ui_data),
       navigation_handle_->service_worker_handle(),
       navigation_handle_->appcache_handle(), this);
+  VerifyLoaderAndRenderFrameHostExpectations();
 }
 
 void NavigationRequest::OnRedirectChecksComplete(
@@ -2200,6 +2205,18 @@ void NavigationRequest::IgnoreCommitInterfaceDisconnection() {
 
 bool NavigationRequest::IsSameDocument() const {
   return FrameMsg_Navigate_Type::IsSameDocument(common_params_.navigation_type);
+}
+
+void NavigationRequest::VerifyLoaderAndRenderFrameHostExpectations() {
+  if (!loader_ || !render_frame_host_)
+    return;
+  FrameMsg_Navigate_Type::Value navigation_type =
+      common_params_.navigation_type;
+  base::debug::Alias(&navigation_type);
+  NavigationState state = state_;
+  base::debug::Alias(&state);
+  DEBUG_ALIAS_FOR_GURL(url, common_params_.url);
+  base::debug::DumpWithoutCrashing();
 }
 
 }  // namespace content

@@ -413,6 +413,13 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // Inform the RenderProcessHost to no longer expect a navigation.
   void ResetExpectedProcess();
 
+  // https://crbug.com/936962 happens when a |render_frame_host_| has been
+  // selected and the |loader_| calls OnRequestFailed(). This shouldn't be
+  // possible, because |render_frame_host_| and |loader_| can't be non-null at
+  // the same time.
+  // TODO(https://crbug.com/936962): Remove this when the bug is fixed.
+  void VerifyLoaderAndRenderFrameHostExpectations();
+
   FrameTreeNode* frame_tree_node_;
 
   RenderFrameHostImpl* render_frame_host_ = nullptr;
