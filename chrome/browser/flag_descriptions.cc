@@ -2255,11 +2255,6 @@ const char kClearOldBrowsingDataDescription[] =
     "Enables clearing of browsing data which is older than a given time "
     "period.";
 
-const char kContentSuggestionsCategoryOrderName[] =
-    "Default content suggestions category order (e.g. on NTP)";
-const char kContentSuggestionsCategoryOrderDescription[] =
-    "Set default order of content suggestion categories (e.g. on the NTP).";
-
 const char kContentSuggestionsCategoryRankerName[] =
     "Content suggestions category ranker (e.g. on NTP)";
 const char kContentSuggestionsCategoryRankerDescription[] =

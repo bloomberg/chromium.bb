@@ -577,28 +577,6 @@ const FeatureEntry::Choice kSchedulerConfigurationChoices[] = {
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
-    kContentSuggestionsCategoryOrderFeatureVariationGeneral[] = {
-        {ntp_snippets::kCategoryOrderParameter,
-         ntp_snippets::kCategoryOrderGeneral},
-};
-
-const FeatureEntry::FeatureParam
-    kContentSuggestionsCategoryOrderFeatureVariationEMOriented[] = {
-        {ntp_snippets::kCategoryOrderParameter,
-         ntp_snippets::kCategoryOrderEmergingMarketsOriented},
-};
-
-const FeatureEntry::FeatureVariation
-    kContentSuggestionsCategoryOrderFeatureVariations[] = {
-        {"(general)", kContentSuggestionsCategoryOrderFeatureVariationGeneral,
-         base::size(kContentSuggestionsCategoryOrderFeatureVariationGeneral),
-         nullptr},
-        {"(emerging markets oriented)",
-         kContentSuggestionsCategoryOrderFeatureVariationEMOriented,
-         base::size(kContentSuggestionsCategoryOrderFeatureVariationEMOriented),
-         nullptr}};
-
-const FeatureEntry::FeatureParam
     kContentSuggestionsCategoryRankerFeatureVariationConstant[] = {
         {ntp_snippets::kCategoryRankerParameter,
          ntp_snippets::kCategoryRankerConstantRanker},
@@ -2130,13 +2108,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kKeepPrefetchedContentSuggestionsDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(ntp_snippets::kKeepPrefetchedContentSuggestions)},
-    {"content-suggestions-category-order",
-     flag_descriptions::kContentSuggestionsCategoryOrderName,
-     flag_descriptions::kContentSuggestionsCategoryOrderDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         ntp_snippets::kCategoryOrder,
-         kContentSuggestionsCategoryOrderFeatureVariations,
-         "ContentSuggestionsCategoryOrder")},
     {"content-suggestions-category-ranker",
      flag_descriptions::kContentSuggestionsCategoryRankerName,
      flag_descriptions::kContentSuggestionsCategoryRankerDescription,

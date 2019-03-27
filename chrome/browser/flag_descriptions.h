@@ -1340,9 +1340,6 @@ extern const char kChromeDuetDescription[];
 extern const char kClearOldBrowsingDataName[];
 extern const char kClearOldBrowsingDataDescription[];
 
-extern const char kContentSuggestionsCategoryOrderName[];
-extern const char kContentSuggestionsCategoryOrderDescription[];
-
 extern const char kContentSuggestionsCategoryRankerName[];
 extern const char kContentSuggestionsCategoryRankerDescription[];
 

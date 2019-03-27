@@ -278,17 +278,6 @@ ClickBasedCategoryRanker::GetDebugData() {
   result.push_back(
       CategoryRanker::DebugDataItem("Type", "ClickBasedCategoryRanker"));
 
-  std::string initial_order_type;
-  CategoryOrderChoice choice = GetSelectedCategoryOrder();
-  if (choice == CategoryOrderChoice::GENERAL) {
-    initial_order_type = "GENERAL";
-  }
-  if (choice == CategoryOrderChoice::EMERGING_MARKETS_ORIENTED) {
-    initial_order_type = "EMERGING_MARKETS_ORIENTED;";
-  }
-  result.push_back(
-      CategoryRanker::DebugDataItem("Initial order type", initial_order_type));
-
   std::vector<std::string> category_strings;
   for (const auto& ranked_category : ordered_categories_) {
     category_strings.push_back(base::ReplaceStringPlaceholders(
