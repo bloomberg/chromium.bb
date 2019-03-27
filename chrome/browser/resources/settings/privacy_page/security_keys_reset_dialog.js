@@ -35,6 +35,11 @@ Polymer({
       type: String,
       value: 'initial',
     },
+
+    /**
+     * @private
+     */
+    title_: String,
   },
 
   /** @private {?settings.SecurityKeysBrowserProxy} */
@@ -42,6 +47,7 @@ Polymer({
 
   /** @override */
   attached: function() {
+    this.title_ = this.i18n('securityKeysResetTitle');
     this.browserProxy_ = settings.SecurityKeysBrowserProxyImpl.getInstance();
     this.$.dialog.showModal();
 
@@ -56,8 +62,10 @@ Polymer({
         this.shown_ = 'resetFailed';
         this.finish_();
       } else {
+        this.title_ = this.i18n('securityKeysResetConfirmTitle');
         this.shown_ = 'reset2';
         this.browserProxy_.completeReset().then(code => {
+          this.title_ = this.i18n('securityKeysResetTitle');
           if (code == 0 /* SUCCESS */) {
             this.shown_ = 'resetSuccess';
           } else if (code == 48 /* NOT_ALLOWED */) {

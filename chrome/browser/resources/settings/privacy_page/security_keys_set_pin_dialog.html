@@ -31,11 +31,10 @@
 
     <cr-dialog id="dialog" close-text="$i18n{close}" ignore-popstate
         on-close="closeDialog_">
-      <div slot="title">$i18n{securityKeysSetPIN}</div>
+      <div slot="title">[[title_]]</div>
       <div slot="body">
         <iron-pages attr-for-selected="id" selected="[[shown_]]">
           <div id="initial">
-            <p>$i18n{securityKeysPINDesc}</p>
             <p>$i18n{securityKeysPINTouch}</p>
             <paper-spinner-lite active></paper-spinner-lite>
           </div>
@@ -99,7 +98,7 @@
         <paper-button id="pinSubmit" class="action-button"
             on-click="pinSubmitNew_" disabled="[[!setPINButtonValid_]]"
             hidden="[[complete_]]">
-          $i18n{securityKeysSetPIN}
+          $i18n{securityKeysSetPINConfirm}
         </paper-button>
       </div>
     </cr-dialog>

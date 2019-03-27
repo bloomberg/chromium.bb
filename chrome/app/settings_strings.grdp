@@ -4655,34 +4655,43 @@
 
   <!-- Security Keys -->
   <message name="IDS_SETTINGS_SECURITY_KEYS_TITLE" desc="Headline in the Settings UI for the subpage handling security keys. Security keys are external physcial devices for user authentication and the translation should match that used in, for example, IDS_WEBAUTHN_USB_ACTIVATE_DESCRIPTION.">
-      Security Keys
+    Manage security keys
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_DESC" desc="Description in the Settings UI for the subpage handling security keys. Security keys are external physcial devices for user authentication.">
-      Reset devices, set &amp; change PINs.
+    Reset security keys and create PINs
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_SET_PIN" desc="A header that appears in the Settings subpage for security keys (which are external devices for user authentication). PINs are often four-digit codes, commonly used to authorise the use of ATM cards. A similar mechanism can be used with security keys and this is the heading for the section about settings them.">
-      Set PIN
+    Create a PIN
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_SET_PIN_DESC" desc="A description that appears in the Settings subpage for security keys (which are external devices for user authentication). PINs are often four-digit codes, commonly used to authorise the use of ATM cards. A similar mechanism can be used with security keys and this is the description for the section about settings them.">
-      Set a PIN on a security key to identify yourself
+    A PIN protects your security key
+  </message>
+  <message name="IDS_SETTINGS_SECURITY_KEYS_SET_PIN_INITIAL_TITLE" desc="The title of a dialog for setting the PIN of a security key (which are external devices for user authentication). PINs are often four-digit codes, commonly used to authorise the use of ATM cards. A similar mechanism can be used with security keys and this is the heading for the section about settings them.">
+    Create a PIN
+  </message>
+  <message name="IDS_SETTINGS_SECURITY_KEYS_SET_PIN_CREATE_TITLE" desc="The title of a dialog for creating a PIN on a security key (which are external devices for user authentication). PINs are often four-digit codes, commonly used to authorise the use of ATM cards. A similar mechanism can be used with security keys and this is the heading for the section about settings them.">
+    Create a PIN
+  </message>
+  <message name="IDS_SETTINGS_SECURITY_KEYS_SET_PIN_CHANGE_TITLE" desc="The title of a dialog for changing the PIN of a security key (which are external devices for user authentication). PINs are often four-digit codes, commonly used to authorise the use of ATM cards. A similar mechanism can be used with security keys and this is the heading for the section about settings them.">
+    Change a PIN
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_RESET" desc="A header that appears in the Settings subpage for security keys (which are external devices for user authentication). This is the heading for the section about resetting them to factory settings.">
-      Reset
+    Reset your security key
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_DESC" desc="A header that appears in the Settings subpage for security keys (which are external devices for user authentication). This is the description for the section about resetting them to factory settings.">
-      Factory-reset a security key
+    This will erase all data on the security key, including its PIN
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_TITLE" desc="The title of a dialog for factory-resetting security keys (which are external devices for user authentication). Resetting in this context means erasing a security key and returning it to an initial, blank state.">
-    Reset Security Key
+    Reset your security key
   </message>
-  <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_INTRO" desc="A description of resetting security keys (which are external devices for user authentication). Resetting in this context means erasing a security key and returning it to an initial, blank state.">
-    Resetting a Security Key will erase all keys associated with the device and clear all configured PINs.
+  <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_CONFIRM_TITLE" desc="The title of a dialog for factory-resetting security keys (which are external devices for user authentication). Resetting in this context means erasing a security key and returning it to an initial, blank state.">
+    Confirm reset
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_STEP1" desc="An instruction to a user to physically unplug a security key from their computer, reinsert it, and then touch the activation button that's on the device.">
-    Please remove, reinsert, and then touch your security key to begin the reset process.
+    Remove your security key from your device, then reinsert and touch it.
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_STEP2" desc="An instruction to a user to press the activation button on their security key a second time to confirm that they wish to reset (i.e. erase) their security key (which is an external device for user authentication).">
-    Please touch the same security key again to confirm the reset. This will erase all credentials stored on the security key and remove any configured PIN.
+    To confirm you want to reset your security key, touch it again. All credentials stored on the security key and its PIN will be erased.
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_NO_RESET" desc="A failure message reporting to the user that it is not possible to reset the security key that they selected because the device does not support that operation.">
     That security key does not support being reset.
@@ -4696,17 +4705,14 @@
   <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_NOTALLOWED" desc="A mesasge to the user that an attempt to reset (i.e. erase) their security key (an external device for user authentication) failed because the security key refused to be reset. This is usually caused because a reset is only allowed within the first few seconds after being plugged in, so the user has to perform the operation quickly.">
     Reset was not permitted. Some security keys may only allow a reset within the first few seconds after being inserted—you may wish to reattempt the process more quickly.
   </message>
-  <message name="IDS_SETTINGS_SECURITY_KEYS_PINS_DESC" desc="A description of PINs for security keys. PINs are often four-digit codes, commonly used to authorise the use of ATM cards. Security keys are external devices for user authentication">
-    A PIN consists of four or more characters and serves to prove that the owner of a security key is present during certain operations. Once set, a PIN can be changed but cannot be removed without fully resetting the security key.
-  </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_PIN_TOUCH" desc="An instruction to a user to physically the activation button on their security key (which is an external device for user authentication).">
-    Please insert and touch your security key to begin setting or changing a PIN
+    Insert and touch your security key to create or change a PIN.
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_NO_PIN" desc="A failure message shown to a user when they attempt to set a PIN on a security key that does not support PINs. PINs, in this context, are short, often numeric codes that are often used with, for example, ATM cards. Security keys are external devices used to authenticate people.">
     That security key does not support setting a PIN.
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_CURRENT_PIN_INTRO" desc="A message shown when a user is trying to change the PIN on a security key to prompt the user to enter the current PIN for the device. PINs, in this context, are short, often numeric codes that are often used with, for example, ATM cards. Security keys are external devices used to authenticate people.">
-    Enter your &lt;i&gt;current&lt;/i&gt; PIN to change it. If you do not know the current PIN then the token has to be reset to clear it.
+    Enter your &lt;i&gt;current&lt;/i&gt; PIN to change it. If you do not know the current PIN then the security key has to be reset to clear it.
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_PIN_INCORRECT" desc="A message shown to the user when they enter an incorrect PIN for a security key. PINs, in this context, are short, often numeric codes that are often used with, for example, ATM cards. Security keys are external devices used to authenticate people.">
     PIN incorrect.
@@ -4718,7 +4724,10 @@
     You have only one attempt remaining!
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_NEW_PIN" desc="A message shown when a user is trying to set a PIN on a security key. PINs, in this context, are short, often numeric codes that are often used with, for example, ATM cards. Security keys are external devices used to authenticate people.">
-    Enter new PIN. A PIN must be at least four characters long and can contain letters, numbers, and other characters.
+    Enter your new PIN. A PIN must be at least four characters long and can contain letters, numbers, and other characters.
+  </message>
+  <message name="IDS_SETTINGS_SECURITY_KEYS_SET_PIN_CONFIRM" desc="The label of the button shown when a user is trying to set a PIN on a security key. PINs, in this context, are short, often numeric codes that are often used with, for example, ATM cards. Security keys are external devices used to authenticate people.">
+    Save
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_CURRENT_PIN" desc="A label shown above a text box where the user is expected to enter the current PIN for a security key. PINs, in this context, are short, often numeric codes that are often used with, for example, ATM cards. Security keys are external devices used to authenticate people.">
     Current PIN
