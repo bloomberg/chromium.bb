@@ -33,7 +33,7 @@ constexpr char kFakeFtlAuthToken[] = "Dummy FTL Token";
 using PullMessagesCallback =
     FtlGrpcContext::RpcCallback<ftl::PullMessagesResponse>;
 using IncomingMessageCallback =
-    GrpcAsyncDispatcher::RpcStreamCallback<ftl::ReceiveMessagesResponse>;
+    GrpcAsyncExecutor::RpcStreamCallback<ftl::ReceiveMessagesResponse>;
 using PullMessagesResponder =
     test::GrpcServerResponder<ftl::PullMessagesResponse>;
 using ReceiveMessagesResponder =
@@ -62,7 +62,7 @@ class FtlGrpcContextTest : public testing::Test {
   void SendFakeReceiveMessagesRequest(
       FtlGrpcContext::StreamStartedCallback on_stream_started,
       const IncomingMessageCallback& on_incoming_msg,
-      GrpcAsyncDispatcher::RpcChannelClosedCallback on_channel_closed);
+      GrpcAsyncExecutor::RpcChannelClosedCallback on_channel_closed);
   std::unique_ptr<PullMessagesResponder> HandlePullMessages(
       ftl::PullMessagesRequest* request);
   std::unique_ptr<ReceiveMessagesResponder> HandleReceiveMessages(
@@ -107,7 +107,7 @@ void FtlGrpcContextTest::SendFakePullMessagesRequest(
 void FtlGrpcContextTest::SendFakeReceiveMessagesRequest(
     FtlGrpcContext::StreamStartedCallback on_stream_started,
     const IncomingMessageCallback& on_incoming_msg,
-    GrpcAsyncDispatcher::RpcChannelClosedCallback on_channel_closed) {
+    GrpcAsyncExecutor::RpcChannelClosedCallback on_channel_closed) {
   context_->ExecuteServerStreamingRpc(
       base::BindOnce(&Messaging::Stub::AsyncReceiveMessages,
                      base::Unretained(stub_.get())),

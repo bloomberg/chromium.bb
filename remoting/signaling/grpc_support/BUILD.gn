@@ -6,16 +6,16 @@ import("//third_party/grpc/grpc_library.gni")
 
 static_library("grpc_support") {
   public = [
-    "grpc_async_dispatcher.h",
+    "grpc_async_executor.h",
     "scoped_grpc_server_stream.h",
   ]
   sources = [
-    "grpc_async_call_data.cc",
-    "grpc_async_call_data.h",
-    "grpc_async_dispatcher.cc",
-    "grpc_async_server_streaming_call_data.cc",
-    "grpc_async_server_streaming_call_data.h",
-    "grpc_async_unary_call_data.h",
+    "grpc_async_executor.cc",
+    "grpc_async_request.cc",
+    "grpc_async_request.h",
+    "grpc_async_server_streaming_request.cc",
+    "grpc_async_server_streaming_request.h",
+    "grpc_async_unary_request.h",
     "scoped_grpc_server_stream.cc",
   ]
 
@@ -27,7 +27,7 @@ static_library("grpc_support") {
 
 cc_grpc_library("unit_tests_grpc_library") {
   sources = [
-    "grpc_async_dispatcher_test_services.proto",
+    "grpc_support_test_services.proto",
   ]
 }
 
@@ -51,7 +51,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "grpc_async_dispatcher_unittest.cc",
+    "grpc_async_executor_unittest.cc",
   ]
   deps = [
     ":grpc_support",

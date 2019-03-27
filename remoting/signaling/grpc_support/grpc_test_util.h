@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "remoting/signaling/grpc_support/grpc_async_dispatcher.h"
+#include "remoting/signaling/grpc_support/grpc_async_executor.h"
 #include "third_party/grpc/src/include/grpcpp/grpcpp.h"
 
 namespace base {
@@ -31,10 +31,10 @@ void WaitForCompletionAndAssertOk(const base::Location& from_here,
                                   grpc::CompletionQueue* completion_queue,
                                   void* expected_tag);
 
-GrpcAsyncDispatcher::RpcChannelClosedCallback
-CheckStatusThenQuitRunLoopCallback(const base::Location& from_here,
-                                   grpc::StatusCode expected_status_code,
-                                   base::RunLoop* run_loop);
+GrpcAsyncExecutor::RpcChannelClosedCallback CheckStatusThenQuitRunLoopCallback(
+    const base::Location& from_here,
+    grpc::StatusCode expected_status_code,
+    base::RunLoop* run_loop);
 
 // Helper class for responding to an async server request.
 template <typename ResponseType>
