@@ -28,6 +28,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/updater/configurator.h"
+#include "chrome/updater/crash_client.h"
+#include "chrome/updater/crash_reporter.h"
+#include "chrome/updater/updater_constants.h"
+#include "chrome/updater/updater_version.h"
+#include "chrome/updater/util.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/services/patch/public/cpp/manifest.h"
 #include "components/services/patch/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/public/cpp/manifest.h"
@@ -132,37 +138,69 @@ class Observer : public update_client::UpdateClient::Observer {
   DISALLOW_COPY_AND_ASSIGN(Observer);
 };
 
+// The log file is created in DIR_LOCAL_APP_DATA or DIR_APP_DATA.
 void InitLogging(const base::CommandLine& command_line) {
   logging::LoggingSettings settings;
+  base::FilePath log_dir;
+  GetProductDirectory(&log_dir);
+  const auto log_file = log_dir.Append(FILE_PATH_LITERAL("updater.log"));
+  settings.log_file = log_file.value().c_str();
   settings.logging_dest = logging::LOG_TO_ALL;
-  settings.log_file = FILE_PATH_LITERAL("updater.log");
   logging::InitLogging(settings);
   logging::SetLogItems(true,    // enable_process_id
                        true,    // enable_thread_id
                        true,    // enable_timestamp
                        false);  // enable_tickcount
+  VLOG(1) << "Log file " << settings.log_file;
+}
+
+void InitializeUpdaterMain() {
+  crash_reporter::InitializeCrashKeys();
+
+  static crash_reporter::CrashKeyString<16> crash_key_process_type(
+      "process_type");
+  crash_key_process_type.Set("updater");
+
+  if (CrashClient::GetInstance()->InitializeCrashReporting()) {
+    VLOG(1) << "Crash reporting initialized.";
+  } else {
+    VLOG(1) << "Crash reporting is not available.";
+  }
+  StartCrashReporter(UPDATER_VERSION_STRING);
+
+  base::DisallowBlocking();
+
+  mojo::core::Init();
+  TaskSchedulerStart();
+}
+
+void TerminateUpdaterMain() {
+  TaskSchedulerStop();
 }
 
 }  // namespace
 
 int UpdaterMain(int argc, const char* const* argv) {
-  base::CommandLine::Init(argc, argv);
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch("test"))
-    return 0;
+  base::PlatformThread::SetName("UpdaterMain");
+  base::AtExitManager exit_manager;
 
-  base::DisallowBlocking();
+  base::CommandLine::Init(argc, argv);
+  const auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kTestSwitch))
+    return 0;
 
   InitLogging(*command_line);
 
-  base::PlatformThread::SetName("UpdaterMain");
+  if (command_line->HasSwitch(kCrashHandlerSwitch)) {
+    return CrashReporterMain();
+  }
 
-  base::AtExitManager exit_manager;
+  InitializeUpdaterMain();
 
-  mojo::core::Init();
-
-  TaskSchedulerStart();
+  if (command_line->HasSwitch(kCrashMeSwitch)) {
+    int* ptr = nullptr;
+    return *ptr;
+  }
 
   base::MessageLoopForUI message_loop;
   base::RunLoop runloop;
@@ -202,7 +240,8 @@ int UpdaterMain(int argc, const char* const* argv) {
 
   update_client->RemoveObserver(&observer);
   update_client = nullptr;
-  TaskSchedulerStop();
+
+  TerminateUpdaterMain();
   return 0;
 }
 

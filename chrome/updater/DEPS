@@ -1,7 +1,9 @@
 include_rules = [
+  "+components/crash/core/common",
   "+components/services/patch",
   "+components/services/unzip",
   "+components/update_client",
   "+components/version_info",
   "+mojo",
+  "+third_party/crashpad",
 ]
