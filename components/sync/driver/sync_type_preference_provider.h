@@ -12,6 +12,7 @@ namespace syncer {
 class SyncTypePreferenceProvider {
  public:
   virtual ModelTypeSet GetForcedDataTypes() const = 0;
+  virtual bool IsEncryptEverythingAllowed() const = 0;
 
  protected:
   virtual ~SyncTypePreferenceProvider() {}

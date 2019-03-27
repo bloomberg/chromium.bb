@@ -175,6 +175,7 @@ class SupervisedUserService : public KeyedService,
 
   // SyncTypePreferenceProvider implementation:
   syncer::ModelTypeSet GetForcedDataTypes() const override;
+  bool IsEncryptEverythingAllowed() const override;
 
 #if !defined(OS_ANDROID)
   // BrowserListObserver implementation:

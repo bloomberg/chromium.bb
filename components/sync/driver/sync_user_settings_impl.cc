@@ -14,11 +14,13 @@ SyncUserSettingsImpl::SyncUserSettingsImpl(
     SyncServiceCrypto* crypto,
     SyncPrefs* prefs,
     ModelTypeSet registered_types,
-    const base::RepeatingCallback<void(bool)>& sync_allowed_by_platform_changed)
+    const base::RepeatingCallback<void(bool)>& sync_allowed_by_platform_changed,
+    const base::RepeatingCallback<bool()>& is_encrypt_everything_allowed)
     : crypto_(crypto),
       prefs_(prefs),
       registered_types_(registered_types),
-      sync_allowed_by_platform_changed_cb_(sync_allowed_by_platform_changed) {
+      sync_allowed_by_platform_changed_cb_(sync_allowed_by_platform_changed),
+      is_encrypt_everything_allowed_cb_(is_encrypt_everything_allowed) {
   DCHECK(crypto_);
   DCHECK(prefs_);
 }
@@ -73,11 +75,7 @@ void SyncUserSettingsImpl::SetChosenDataTypes(bool sync_everything,
 }
 
 bool SyncUserSettingsImpl::IsEncryptEverythingAllowed() const {
-  return crypto_->IsEncryptEverythingAllowed();
-}
-
-void SyncUserSettingsImpl::SetEncryptEverythingAllowed(bool allowed) {
-  crypto_->SetEncryptEverythingAllowed(allowed);
+  return is_encrypt_everything_allowed_cb_.Run();
 }
 
 bool SyncUserSettingsImpl::IsEncryptEverythingEnabled() const {
@@ -85,6 +83,7 @@ bool SyncUserSettingsImpl::IsEncryptEverythingEnabled() const {
 }
 
 void SyncUserSettingsImpl::EnableEncryptEverything() {
+  DCHECK(IsEncryptEverythingAllowed());
   crypto_->EnableEncryptEverything();
 }
 

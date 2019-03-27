@@ -396,10 +396,6 @@ void SupervisedUserService::SetActive(bool active) {
     theme_service->UseDefaultTheme();
 #endif
 
-  syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  sync_service->GetUserSettings()->SetEncryptEverythingAllowed(!active_);
-
   GetSettingsService()->SetActive(active_);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -998,6 +994,10 @@ syncer::ModelTypeSet SupervisedUserService::GetForcedDataTypes() const {
   result.Put(syncer::APP_SETTINGS);
   result.Put(syncer::APP_LIST);
   return result;
+}
+
+bool SupervisedUserService::IsEncryptEverythingAllowed() const {
+  return !active_;
 }
 
 #if !defined(OS_ANDROID)
