@@ -159,9 +159,10 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
       bool module_analysis_disabled);
   ~ModuleBlacklistCacheUpdater() override;
 
-  // Returns true if the blocking of third-party modules is enabled. The return
-  // value will not change throughout the lifetime of the process.
-  static bool IsThirdPartyModuleBlockingEnabled();
+  // Returns true if the blocking of third-party modules is enabled. Can be
+  // called on any thread. Notably does not check the ThirdPartyBlockingEnabled
+  // group policy.
+  static bool IsBlockingEnabled();
 
   // Returns the path to the module blacklist cache.
   static base::FilePath GetModuleBlacklistCachePath();

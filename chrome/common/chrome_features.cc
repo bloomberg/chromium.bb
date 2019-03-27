@@ -148,7 +148,9 @@ const base::Feature kTabMetricsLogging{"TabMetricsLogging",
 #endif
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-// Enables the blocking of third-party modules.
+// Enables the blocking of third-party modules. This feature requires Windows 8
+// or higher because it depends on the ProcessExtensionPointDisablePolicy
+// mitigation, which was not available on Windows 7.
 // Note: Due to a limitation in the implementation of this feature, it is
 // required to start the browser two times to fully enable or disable it.
 const base::Feature kThirdPartyModulesBlocking{
@@ -364,6 +366,8 @@ const base::Feature kLookalikeUrlNavigationSuggestionsUI{
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 // A feature that controls whether Chrome warns about incompatible applications.
+// This feature requires Windows 10 or higher to work because it depends on
+// the "Apps & Features" system settings.
 const base::Feature kIncompatibleApplicationsWarning{
     "IncompatibleApplicationsWarning", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif

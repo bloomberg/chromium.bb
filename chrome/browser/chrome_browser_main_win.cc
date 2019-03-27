@@ -561,7 +561,7 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
   // cache must be deleted and the browser relaunched.
   if (base::IsMachineExternallyManaged() ||
       !ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() ||
-      !base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking))
+      !ModuleBlacklistCacheUpdater::IsBlockingEnabled())
     ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking(
         base::CreateTaskRunnerWithTraits(
             {base::TaskPriority::BEST_EFFORT,
