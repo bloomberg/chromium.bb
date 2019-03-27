@@ -264,6 +264,30 @@ bool IsAAForcedOff(const DrawQuad* quad) {
   }
 }
 
+SkFilterQuality GetFilterQuality(const DrawQuad* quad) {
+  bool nearest_neighbor;
+  switch (quad->material) {
+    case DrawQuad::PICTURE_CONTENT:
+      nearest_neighbor = PictureDrawQuad::MaterialCast(quad)->nearest_neighbor;
+      break;
+    case DrawQuad::TEXTURE_CONTENT:
+      nearest_neighbor = TextureDrawQuad::MaterialCast(quad)->nearest_neighbor;
+      break;
+    case DrawQuad::TILED_CONTENT:
+      nearest_neighbor = TileDrawQuad::MaterialCast(quad)->nearest_neighbor;
+      break;
+    default:
+      // Other quad types do not expose filter quality, so default to bilinear
+      // TODO(penghuang): figure out how to set correct filter quality for YUV
+      // and video stream quads.
+      // TODO(michaelludwig): use kMedium for RPDQs that ask for mipmaps
+      nearest_neighbor = false;
+      break;
+  }
+
+  return nearest_neighbor ? kNone_SkFilterQuality : kLow_SkFilterQuality;
+}
+
 }  // namespace
 
 // Parameters needed to draw a RenderPassDrawQuad.
@@ -290,6 +314,7 @@ struct SkiaRenderer::DrawQuadParams {
                  unsigned aa_flags,
                  SkBlendMode blend_mode,
                  float opacity,
+                 SkFilterQuality filter_quality,
                  const gfx::QuadF* draw_region,
                  bool enable_scissor_rect);
 
@@ -304,6 +329,8 @@ struct SkiaRenderer::DrawQuadParams {
   SkBlendMode blend_mode;
   // Final opacity of quad
   float opacity;
+  // Resolved filter quality from quad settings
+  SkFilterQuality filter_quality;
   // Optional restricted draw geometry, will point to a length 4 SkPoint array
   // with its points in CW order matching Skia's vertex/edge expectations.
   base::Optional<SkDrawRegion> draw_region;
@@ -318,6 +345,7 @@ SkiaRenderer::DrawQuadParams::DrawQuadParams(const gfx::Transform& cdt,
                                              unsigned aa_flags,
                                              SkBlendMode blend_mode,
                                              float opacity,
+                                             SkFilterQuality filter_quality,
                                              const gfx::QuadF* draw_region,
                                              bool has_scissor_rect)
     : content_device_transform(cdt),
@@ -325,6 +353,7 @@ SkiaRenderer::DrawQuadParams::DrawQuadParams(const gfx::Transform& cdt,
       aa_flags(aa_flags),
       blend_mode(blend_mode),
       opacity(opacity),
+      filter_quality(filter_quality),
       has_scissor_rect(has_scissor_rect) {
   if (draw_region) {
     this->draw_region.emplace(*draw_region);
@@ -703,7 +732,6 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
   if (!current_canvas_)
     return;
   TRACE_EVENT0("viz", "SkiaRenderer::DoDrawQuad");
-
   DrawQuadParams params = CalculateDrawQuadParams(quad, draw_region);
   if (MustFlushBatchedQuads(quad, params)) {
     FlushBatchedQuads();
@@ -715,11 +743,31 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
     case DrawQuad::TILED_CONTENT:
       DrawTileDrawQuad(TileDrawQuad::MaterialCast(quad), params);
       break;
+    case DrawQuad::YUV_VIDEO_CONTENT:
+      DrawYUVVideoQuad(YUVVideoDrawQuad::MaterialCast(quad), params);
+      break;
     default:
       // If we've reached here, the quad's type hasn't been updated to be
       // batch aware yet.
       DoSingleDrawQuad(quad, draw_region);
       break;
+  }
+}
+
+void SkiaRenderer::PrepareCanvas(const gfx::Rect* scissor_rect,
+                                 const gfx::Transform* cdt) {
+  // Scissor is applied in the device space (CTM == I) and since no changes
+  // to the canvas persist, CTM should already be the identity
+  DCHECK(current_canvas_->getTotalMatrix() == SkMatrix::I());
+
+  if (scissor_rect) {
+    current_canvas_->clipRect(gfx::RectToSkRect(*scissor_rect));
+  }
+
+  if (cdt) {
+    SkMatrix m;
+    gfx::TransformToFlattenedSkMatrix(*cdt, &m);
+    current_canvas_->concat(m);
   }
 }
 
@@ -731,7 +779,7 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
           quad->shared_quad_state->quad_to_target_transform,
       gfx::RectF(quad->visible_rect), SkCanvas::kNone_QuadAAFlags,
       quad->shared_quad_state->blend_mode, quad->shared_quad_state->opacity,
-      draw_region, is_scissor_enabled_);
+      GetFilterQuality(quad), draw_region, is_scissor_enabled_);
 
   params.content_device_transform.FlattenTo2d();
 
@@ -778,6 +826,17 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
   return params;
 }
 
+SkCanvas::ImageSetEntry SkiaRenderer::MakeEntry(const DrawQuadParams& params,
+                                                const SkImage* image,
+                                                const gfx::RectF& src,
+                                                int matrix_index,
+                                                float alpha) {
+  return SkCanvas::ImageSetEntry({sk_ref_sp(image), gfx::RectFToSkRect(src),
+                                  gfx::RectFToSkRect(params.visible_rect),
+                                  matrix_index, alpha, params.aa_flags,
+                                  params.draw_region.has_value()});
+}
+
 bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
                                          const DrawQuadParams& params) {
   if (batched_quads_.empty())
@@ -788,7 +847,8 @@ bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
   if (new_quad->material != DrawQuad::TILED_CONTENT)
     return true;
 
-  if (batched_quad_state_.blend_mode != params.blend_mode)
+  if (batched_quad_state_.blend_mode != params.blend_mode ||
+      batched_quad_state_.filter_quality != params.filter_quality)
     return true;
 
   bool no_scissor =
@@ -800,18 +860,11 @@ bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
   if (!no_scissor && !same_scissor)
     return true;
 
-  // TODO(michaelludwig) - Would be nice if the batchable tiles could expose
-  // filter quality in a shared parent class
-  if (TileDrawQuad::MaterialCast(new_quad)->nearest_neighbor !=
-      batched_quad_state_.is_nearest_neighbor)
-    return true;
-
   return false;
 }
 
-void SkiaRenderer::AddQuadToBatch(const DrawQuad* quad,
-                                  const DrawQuadParams& params,
-                                  sk_sp<SkImage> image,
+void SkiaRenderer::AddQuadToBatch(const DrawQuadParams& params,
+                                  const SkImage* image,
                                   const gfx::RectF& tex_coords) {
   // Configure batch state if it's the first
   if (batched_quads_.empty()) {
@@ -823,14 +876,7 @@ void SkiaRenderer::AddQuadToBatch(const DrawQuad* quad,
     }
 
     batched_quad_state_.blend_mode = params.blend_mode;
-    if (quad->material == DrawQuad::TILED_CONTENT) {
-      batched_quad_state_.is_nearest_neighbor =
-          TileDrawQuad::MaterialCast(quad)->nearest_neighbor;
-    } else {
-      // TODO(michaelludwig) Implement this for the batchable quad types that
-      // have filter quality settings
-      batched_quad_state_.is_nearest_neighbor = false;
-    }
+    batched_quad_state_.filter_quality = params.filter_quality;
   }
 
   // Add entry, with optional clip quad and shared transform
@@ -846,32 +892,23 @@ void SkiaRenderer::AddQuadToBatch(const DrawQuad* quad,
   if (cdts.empty() || cdts[cdts.size() - 1] != m) {
     cdts.push_back(m);
   }
-  int matrixIndex = cdts.size() - 1;
+  int matrix_index = cdts.size() - 1;
 
-  batched_quads_.push_back({std::move(image), gfx::RectFToSkRect(tex_coords),
-                            gfx::RectFToSkRect(params.visible_rect),
-                            matrixIndex, params.opacity, params.aa_flags,
-                            params.draw_region.has_value()});
+  batched_quads_.push_back(
+      MakeEntry(params, image, tex_coords, matrix_index, params.opacity));
 }
 
 void SkiaRenderer::FlushBatchedQuads() {
   TRACE_EVENT0("viz", "SkiaRenderer::FlushBatchedQuads");
 
   SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
-  // Every batch entry's transform represents the entire transform to device
-  // space, so make sure the canvas isn't doing anything else.
-  current_canvas_->setMatrix(SkMatrix::I());
+  PrepareCanvas(batched_quad_state_.has_scissor_rect
+                    ? &batched_quad_state_.scissor_rect
+                    : nullptr,
+                nullptr);
 
-  if (batched_quad_state_.has_scissor_rect) {
-    current_canvas_->clipRect(
-        gfx::RectToSkRect(batched_quad_state_.scissor_rect));
-  }
-
-  SkFilterQuality filter_quality = batched_quad_state_.is_nearest_neighbor
-                                       ? kNone_SkFilterQuality
-                                       : kLow_SkFilterQuality;
   SkPaint paint;
-  paint.setFilterQuality(filter_quality);
+  paint.setFilterQuality(batched_quad_state_.filter_quality);
   paint.setBlendMode(batched_quad_state_.blend_mode);
   current_canvas_->experimental_DrawEdgeAAImageSet(
       &batched_quads_.front(), batched_quads_.size(),
@@ -899,7 +936,55 @@ void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,
 
   gfx::RectF vis_tex_coords = cc::MathUtil::ScaleRectProportional(
       quad->tex_coord_rect, gfx::RectF(quad->rect), params.visible_rect);
-  AddQuadToBatch(quad, params, sk_ref_sp(image), vis_tex_coords);
+  AddQuadToBatch(params, image, vis_tex_coords);
+}
+
+void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
+                                    const DrawQuadParams& params) {
+  // Since YUV quads always use a color filter, they require a complex skPaint
+  // that precludes batching. If this changes, we could add YUV quads that don't
+  // require a filter to the batch instead of drawing one at a time.
+  DCHECK(batched_quads_.empty());
+  if (draw_mode_ != DrawMode::DDL) {
+    NOTIMPLEMENTED();
+    return;
+  }
+
+  gfx::ColorSpace src_color_space = quad->video_color_space;
+  // Invalid or unspecified color spaces should be treated as REC709.
+  if (!src_color_space.IsValid())
+    src_color_space = gfx::ColorSpace::CreateREC709();
+  gfx::ColorSpace dst_color_space =
+      current_frame()->current_render_pass->color_space;
+  sk_sp<SkColorFilter> color_filter =
+      GetColorFilter(src_color_space, dst_color_space);
+
+  DCHECK(resource_provider_);
+  ScopedYUVSkImageBuilder builder(this, quad, dst_color_space.ToSkColorSpace(),
+                                  !!color_filter);
+  const SkImage* image = builder.sk_image();
+  if (!image)
+    return;
+
+  gfx::RectF visible_tex_coord_rect = cc::MathUtil::ScaleRectProportional(
+      quad->ya_tex_coord_rect, gfx::RectF(quad->rect),
+      gfx::RectF(quad->visible_rect));
+
+  SkPaint paint;
+  paint.setFilterQuality(params.filter_quality);
+  paint.setBlendMode(params.blend_mode);
+  if (color_filter)
+    paint.setColorFilter(color_filter);
+
+  SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
+  PrepareCanvas(params.has_scissor_rect ? &scissor_rect_ : nullptr,
+                &params.content_device_transform);
+  SkCanvas::ImageSetEntry entry =
+      MakeEntry(params, image, visible_tex_coord_rect, -1, params.opacity);
+  current_canvas_->experimental_DrawEdgeAAImageSet(
+      &entry, 1,
+      params.draw_region.has_value() ? params.draw_region->points : nullptr,
+      nullptr, &paint);
 }
 
 void SkiaRenderer::DoSingleDrawQuad(const DrawQuad* quad,
@@ -956,7 +1041,7 @@ void SkiaRenderer::DoSingleDrawQuad(const DrawQuad* quad,
       NOTREACHED();
       break;
     case DrawQuad::YUV_VIDEO_CONTENT:
-      DrawYUVVideoQuad(YUVVideoDrawQuad::MaterialCast(quad), &paint);
+      NOTREACHED();
       break;
     case DrawQuad::STREAM_VIDEO_CONTENT:
       DrawStreamVideoQuad(StreamVideoDrawQuad::MaterialCast(quad), &paint);
@@ -1171,42 +1256,6 @@ void main(inout half4 color) {
             .make(SkData::MakeEmpty());
   }
   return color_filter;
-}
-
-void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
-                                    SkPaint* paint) {
-  DCHECK(paint);
-  if (draw_mode_ != DrawMode::DDL) {
-    NOTIMPLEMENTED();
-    return;
-  }
-
-  gfx::ColorSpace src_color_space = quad->video_color_space;
-  // Invalid or unspecified color spaces should be treated as REC709.
-  if (!src_color_space.IsValid())
-    src_color_space = gfx::ColorSpace::CreateREC709();
-  gfx::ColorSpace dst_color_space =
-      current_frame()->current_render_pass->color_space;
-  sk_sp<SkColorFilter> color_filter =
-      GetColorFilter(src_color_space, dst_color_space);
-
-  DCHECK(resource_provider_);
-  ScopedYUVSkImageBuilder builder(this, quad, dst_color_space.ToSkColorSpace(),
-                                  !!color_filter);
-  const SkImage* image = builder.sk_image();
-  if (!image)
-    return;
-  gfx::RectF visible_tex_coord_rect = cc::MathUtil::ScaleRectProportional(
-      quad->ya_tex_coord_rect, gfx::RectF(quad->rect),
-      gfx::RectF(quad->visible_rect));
-
-  SkRect uv_rect = gfx::RectFToSkRect(visible_tex_coord_rect);
-  // TODO(penghuang): figure out how to set correct filter quality.
-  paint->setFilterQuality(kLow_SkFilterQuality);
-  if (color_filter)
-    paint->setColorFilter(color_filter);
-  current_canvas_->drawImageRect(image, uv_rect,
-                                 gfx::RectToSkRect(quad->visible_rect), paint);
 }
 
 bool SkiaRenderer::CalculateRPDQParams(sk_sp<SkImage> content,
