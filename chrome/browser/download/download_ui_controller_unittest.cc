@@ -205,7 +205,8 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyReadyOnCreate) {
 }
 
 // The UI shouldn't be notified of downloads that were restored from history.
-TEST_F(DownloadUIControllerTest, DownloadUIController_HistoryDownload) {
+TEST_F(DownloadUIControllerTest,
+       DISABLED_DownloadUIController_HistoryDownload) {
   DownloadUIController controller(notifier(), GetTestDelegate(),
                                   GetDownloadProvider());
 
