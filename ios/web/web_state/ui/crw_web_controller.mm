@@ -5040,6 +5040,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // item will be committed when the native content or webUI is displayed.
   if (!context->IsPlaceholderNavigation()) {
     self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem());
+    if (web::features::StorePendingItemInContext() &&
+        context->IsLoadingHtmlString()) {
+      self.navigationManagerImpl->GetLastCommittedItem()->SetURL(
+          context->GetUrl());
+    }
     // If a SafeBrowsing warning is currently displayed, the user has tapped
     // the button on the warning page to proceed to the site, the site has
     // started loading, and the warning is about to be removed. In this case,
