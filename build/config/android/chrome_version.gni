@@ -36,7 +36,7 @@ _version_code += _arch_preference
 
 if (!public_android_sdk) {
   # Match downstream logic for next builds
-  _version_code += 5
+  _version_code += 100005
 }
 
 webview_version_code = "$_version_code"
