@@ -311,9 +311,68 @@ void GetAssertionRequestHandler::HandleResponse(
   }
 
   SetCredentialIdForResponseWithEmptyCredential(request_, *response);
-  std::vector<AuthenticatorGetAssertionResponse> responses;
-  responses.emplace_back(std::move(*response));
-  OnAuthenticatorResponse(authenticator, response_code, std::move(responses));
+  const size_t num_responses = response->num_credentials().value_or(1);
+  if (num_responses == 0 || (num_responses > 1 && request_.allow_list() &&
+                             !request_.allow_list()->empty())) {
+    OnAuthenticatorResponse(
+        authenticator, CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
+    return;
+  }
+
+  DCHECK(responses_.empty());
+  responses_.emplace_back(std::move(*response));
+  if (num_responses > 1) {
+    // Multiple responses. Need to read them all.
+    state_ = State::kReadingMultipleResponses;
+    remaining_responses_ = num_responses - 1;
+    authenticator->GetNextAssertion(
+        base::BindOnce(&GetAssertionRequestHandler::HandleNextResponse,
+                       weak_factory_.GetWeakPtr(), authenticator));
+    return;
+  }
+
+  OnAuthenticatorResponse(authenticator, response_code, std::move(responses_));
+}
+
+void GetAssertionRequestHandler::HandleNextResponse(
+    FidoAuthenticator* authenticator,
+    CtapDeviceResponseCode status,
+    base::Optional<AuthenticatorGetAssertionResponse> response) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+  DCHECK_EQ(State::kReadingMultipleResponses, state_);
+  DCHECK_LT(0u, remaining_responses_);
+
+  state_ = State::kFinished;
+  if (status == CtapDeviceResponseCode::kSuccess && !response) {
+    status = CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
+  }
+
+  if (status != CtapDeviceResponseCode::kSuccess) {
+    OnAuthenticatorResponse(authenticator, status, base::nullopt);
+    return;
+  }
+
+  if (!request_.CheckResponseRpIdHash(response->GetRpIdHash()) ||
+      !CheckResponseCredentialIdMatchesRequestAllowList(*authenticator,
+                                                        request_, *response) ||
+      !CheckRequirementsOnResponseUserEntity(request_, *response)) {
+    OnAuthenticatorResponse(
+        authenticator, CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
+    return;
+  }
+
+  DCHECK(!responses_.empty());
+  responses_.emplace_back(std::move(*response));
+  remaining_responses_--;
+  if (remaining_responses_ > 0) {
+    state_ = State::kReadingMultipleResponses;
+    authenticator->GetNextAssertion(
+        base::BindOnce(&GetAssertionRequestHandler::HandleNextResponse,
+                       weak_factory_.GetWeakPtr(), authenticator));
+    return;
+  }
+
+  OnAuthenticatorResponse(authenticator, status, std::move(responses_));
 }
 
 void GetAssertionRequestHandler::HandleTouch(FidoAuthenticator* authenticator) {

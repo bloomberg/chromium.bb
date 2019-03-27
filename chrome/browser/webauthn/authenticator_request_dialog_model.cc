@@ -508,6 +508,28 @@ void AuthenticatorRequestDialogModel::UpdateAuthenticatorReferencePairingMode(
                                                        is_in_pairing_mode);
 }
 
+// SelectAccount is called to trigger an account selection dialog.
+void AuthenticatorRequestDialogModel::SelectAccount(
+    std::vector<device::AuthenticatorGetAssertionResponse> responses,
+    base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
+        callback) {
+  responses_ = std::move(responses);
+  selection_callback_ = std::move(callback);
+  SetCurrentStep(Step::kSelectAccount);
+}
+
+void AuthenticatorRequestDialogModel::OnAccountSelected(size_t index) {
+  if (!selection_callback_) {
+    // It's possible that the user could activate the dialog more than once
+    // before the Webauthn request is completed and its torn down.
+    return;
+  }
+
+  auto selected = std::move(responses_[index]);
+  responses_.clear();
+  std::move(selection_callback_).Run(std::move(selected));
+}
+
 void AuthenticatorRequestDialogModel::SetSelectedAuthenticatorForTesting(
     AuthenticatorReference test_authenticator) {
   selected_authenticator_id_ = test_authenticator.authenticator_id();

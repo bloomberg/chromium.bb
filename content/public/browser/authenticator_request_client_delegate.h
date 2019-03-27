@@ -83,6 +83,25 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   virtual void ShouldReturnAttestation(const std::string& relying_party_id,
                                        base::OnceCallback<void(bool)> callback);
 
+  // SupportsResidentKeys returns true if this implementation of
+  // |AuthenticatorRequestClientDelegate| supports resident keys. If false then
+  // requests to create or get assertions will be immediately rejected and
+  // |SelectAccount| will never be called.
+  virtual bool SupportsResidentKeys();
+
+  // SelectAccount is called to allow the embedder to select between one or more
+  // accounts. This is triggered when the web page requests an unspecified
+  // credential (by passing an empty allow-list). In this case, any accounts
+  // will come from the authenticator's storage and the user should confirm the
+  // use of any specific account before it is returned. The callback takes the
+  // selected account, or else |cancel_callback| can be called.
+  //
+  // This is only called if |SupportsResidentKeys| returns true.
+  virtual void SelectAccount(
+      std::vector<device::AuthenticatorGetAssertionResponse> responses,
+      base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
+          callback);
+
   // Returns whether the WebContents corresponding to |render_frame_host| is the
   // active tab in the focused window. We do not want to allow
   // authenticatorMakeCredential operations to be triggered by background tabs.

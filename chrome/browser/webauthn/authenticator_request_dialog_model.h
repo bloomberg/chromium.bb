@@ -87,6 +87,9 @@ class AuthenticatorRequestDialogModel {
     kClientPinErrorSoftBlock,
     kClientPinErrorHardBlock,
     kClientPinErrorAuthenticatorRemoved,
+
+    // Account selection,
+    kSelectAccount,
   };
 
   // Implemented by the dialog to observe this model and show the UI panels
@@ -306,6 +309,17 @@ class AuthenticatorRequestDialogModel {
       base::StringPiece authenticator_id,
       bool is_in_pairing_mode);
 
+  // SelectAccount is called to trigger an account selection dialog.
+  void SelectAccount(
+      std::vector<device::AuthenticatorGetAssertionResponse> responses,
+      base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
+          callback);
+
+  // OnAccountSelected is called when one of the accounts from |SelectAccount|
+  // has been picked. |index| is the index of the selected account in
+  // |responses()|.
+  void OnAccountSelected(size_t index);
+
   void SetSelectedAuthenticatorForTesting(AuthenticatorReference authenticator);
 
   ObservableAuthenticatorList& saved_authenticators() {
@@ -320,6 +334,10 @@ class AuthenticatorRequestDialogModel {
                   base::OnceCallback<void(std::string)> provide_pin_cb);
   bool has_attempted_pin_entry() const { return has_attempted_pin_entry_; }
   base::Optional<int> pin_attempts() const { return pin_attempts_; }
+
+  const std::vector<device::AuthenticatorGetAssertionResponse>& responses() {
+    return responses_;
+  }
 
  private:
   void DispatchRequestAsync(AuthenticatorReference* authenticator,
@@ -364,6 +382,11 @@ class AuthenticatorRequestDialogModel {
   base::OnceCallback<void(std::string)> pin_callback_;
   bool has_attempted_pin_entry_ = false;
   base::Optional<int> pin_attempts_;
+
+  // responses_ contains possible accounts to select between.
+  std::vector<device::AuthenticatorGetAssertionResponse> responses_;
+  base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
+      selection_callback_;
 
   base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_;
 

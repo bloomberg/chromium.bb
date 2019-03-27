@@ -69,6 +69,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
                               MakeCredentialCallback callback) = 0;
   virtual void GetAssertion(CtapGetAssertionRequest request,
                             GetAssertionCallback callback) = 0;
+  // GetNextAssertion fetches the next assertion from a device that indicated in
+  // the response to |GetAssertion| that multiple results were available.
+  virtual void GetNextAssertion(GetAssertionCallback callback);
   // GetTouch causes an (external) authenticator to flash and wait for a touch.
   virtual void GetTouch(base::OnceCallback<void()> callback);
   // GetRetries gets the number of PIN attempts remaining before an

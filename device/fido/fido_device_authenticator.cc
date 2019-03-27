@@ -71,6 +71,18 @@ void FidoDeviceAuthenticator::GetAssertion(CtapGetAssertionRequest request,
                                              std::move(callback));
 }
 
+void FidoDeviceAuthenticator::GetNextAssertion(GetAssertionCallback callback) {
+  DCHECK(device_->SupportedProtocolIsInitialized())
+      << "InitializeAuthenticator() must be called first.";
+
+  operation_ =
+      std::make_unique<Ctap2DeviceOperation<CtapGetNextAssertionRequest,
+                                            AuthenticatorGetAssertionResponse>>(
+          device_.get(), CtapGetNextAssertionRequest(), std::move(callback),
+          base::BindOnce(&ReadCTAPGetAssertionResponse));
+  operation_->Start();
+}
+
 void FidoDeviceAuthenticator::GetTouch(base::OnceCallback<void()> callback) {
   MakeCredential(
       MakeCredentialTask::GetTouchRequest(device()),

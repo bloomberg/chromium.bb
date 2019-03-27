@@ -876,3 +876,68 @@ base::string16 AuthenticatorGenericErrorSheetModel::GetStepTitle() const {
 base::string16 AuthenticatorGenericErrorSheetModel::GetStepDescription() const {
   return description_;
 }
+
+// AuthenticatorSelectAccountSheetModel ---------------------------------------
+
+AuthenticatorSelectAccountSheetModel::AuthenticatorSelectAccountSheetModel(
+    AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model) {}
+
+AuthenticatorSelectAccountSheetModel::~AuthenticatorSelectAccountSheetModel() =
+    default;
+
+void AuthenticatorSelectAccountSheetModel::SetCurrentSelection(int selected) {
+  DCHECK_LE(0, selected);
+  DCHECK_LT(static_cast<size_t>(selected), dialog_model()->responses().size());
+  selected_ = selected;
+}
+
+void AuthenticatorSelectAccountSheetModel::OnAccept() {
+  dialog_model()->OnAccountSelected(selected_);
+}
+
+gfx::ImageSkia* AuthenticatorSelectAccountSheetModel::GetStepIllustration()
+    const {
+  // TODO: this is likely the wrong image.
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_WELCOME);
+}
+
+base::string16 AuthenticatorSelectAccountSheetModel::GetStepTitle() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_SELECT_ACCOUNT);
+}
+
+base::string16 AuthenticatorSelectAccountSheetModel::GetStepDescription()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_SELECT_ACCOUNT_DESC);
+}
+
+bool AuthenticatorSelectAccountSheetModel::IsAcceptButtonVisible() const {
+  return true;
+}
+
+bool AuthenticatorSelectAccountSheetModel::IsAcceptButtonEnabled() const {
+  return true;
+}
+
+base::string16 AuthenticatorSelectAccountSheetModel::GetAcceptButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_WELCOME_SCREEN_NEXT);
+}
+
+int AuthenticatorSelectAccountSheetModel::RowCount() {
+  return dialog_model()->responses().size();
+}
+
+base::string16 AuthenticatorSelectAccountSheetModel::GetText(int row,
+                                                             int column_id) {
+  const auto user = dialog_model()->responses()[row].user_entity();
+
+  if (column_id == IDS_WEBAUTHN_ACCOUNT_COLUMN) {
+    return base::UTF8ToUTF16(user->user_name().value_or(""));
+  } else {
+    return base::UTF8ToUTF16(user->user_display_name().value_or(""));
+  }
+}
+
+void AuthenticatorSelectAccountSheetModel::SetObserver(
+    ui::TableModelObserver* observer) {}
