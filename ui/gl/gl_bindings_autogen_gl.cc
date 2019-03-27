@@ -304,6 +304,8 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       gfx::HasExtension(extensions, "GL_ARB_ES2_compatibility");
   ext.b_GL_ARB_blend_func_extended =
       gfx::HasExtension(extensions, "GL_ARB_blend_func_extended");
+  ext.b_GL_ARB_clear_texture =
+      gfx::HasExtension(extensions, "GL_ARB_clear_texture");
   ext.b_GL_ARB_draw_buffers =
       gfx::HasExtension(extensions, "GL_ARB_draw_buffers");
   ext.b_GL_ARB_draw_instanced =
@@ -352,6 +354,8 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       gfx::HasExtension(extensions, "GL_CHROMIUM_path_rendering");
   ext.b_GL_EXT_blend_func_extended =
       gfx::HasExtension(extensions, "GL_EXT_blend_func_extended");
+  ext.b_GL_EXT_clear_texture =
+      gfx::HasExtension(extensions, "GL_EXT_clear_texture");
   ext.b_GL_EXT_debug_marker =
       gfx::HasExtension(extensions, "GL_EXT_debug_marker");
   ext.b_GL_EXT_direct_state_access =
@@ -622,6 +626,22 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   if (ver->IsAtLeastGL(4u, 1u) || ver->is_es) {
     fn.glClearDepthfFn =
         reinterpret_cast<glClearDepthfProc>(GetGLProcAddress("glClearDepthf"));
+  }
+
+  if (ver->IsAtLeastGL(4u, 4u) || ext.b_GL_ARB_clear_texture) {
+    fn.glClearTexImageFn = reinterpret_cast<glClearTexImageProc>(
+        GetGLProcAddress("glClearTexImage"));
+  } else if (ext.b_GL_EXT_clear_texture) {
+    fn.glClearTexImageFn = reinterpret_cast<glClearTexImageProc>(
+        GetGLProcAddress("glClearTexImageEXT"));
+  }
+
+  if (ver->IsAtLeastGL(4u, 4u) || ext.b_GL_EXT_clear_texture) {
+    fn.glClearTexSubImageFn = reinterpret_cast<glClearTexSubImageProc>(
+        GetGLProcAddress("glClearTexSubImage"));
+  } else if (ext.b_GL_EXT_clear_texture) {
+    fn.glClearTexSubImageFn = reinterpret_cast<glClearTexSubImageProc>(
+        GetGLProcAddress("glClearTexSubImageEXT"));
   }
 
   if (ver->IsAtLeastGL(3u, 2u) || ver->IsAtLeastGLES(3u, 0u) ||
@@ -2989,6 +3009,29 @@ void GLApiBase::glClearDepthfFn(GLclampf depth) {
 
 void GLApiBase::glClearStencilFn(GLint s) {
   driver_->fn.glClearStencilFn(s);
+}
+
+void GLApiBase::glClearTexImageFn(GLuint texture,
+                                  GLint level,
+                                  GLenum format,
+                                  GLenum type,
+                                  const GLvoid* data) {
+  driver_->fn.glClearTexImageFn(texture, level, format, type, data);
+}
+
+void GLApiBase::glClearTexSubImageFn(GLuint texture,
+                                     GLint level,
+                                     GLint xoffset,
+                                     GLint yoffset,
+                                     GLint zoffset,
+                                     GLint width,
+                                     GLint height,
+                                     GLint depth,
+                                     GLenum format,
+                                     GLenum type,
+                                     const GLvoid* data) {
+  driver_->fn.glClearTexSubImageFn(texture, level, xoffset, yoffset, zoffset,
+                                   width, height, depth, format, type, data);
 }
 
 GLenum GLApiBase::glClientWaitSyncFn(GLsync sync,
@@ -6176,6 +6219,31 @@ void TraceGLApi::glClearDepthfFn(GLclampf depth) {
 void TraceGLApi::glClearStencilFn(GLint s) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glClearStencil")
   gl_api_->glClearStencilFn(s);
+}
+
+void TraceGLApi::glClearTexImageFn(GLuint texture,
+                                   GLint level,
+                                   GLenum format,
+                                   GLenum type,
+                                   const GLvoid* data) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glClearTexImage")
+  gl_api_->glClearTexImageFn(texture, level, format, type, data);
+}
+
+void TraceGLApi::glClearTexSubImageFn(GLuint texture,
+                                      GLint level,
+                                      GLint xoffset,
+                                      GLint yoffset,
+                                      GLint zoffset,
+                                      GLint width,
+                                      GLint height,
+                                      GLint depth,
+                                      GLenum format,
+                                      GLenum type,
+                                      const GLvoid* data) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glClearTexSubImage")
+  gl_api_->glClearTexSubImageFn(texture, level, xoffset, yoffset, zoffset,
+                                width, height, depth, format, type, data);
 }
 
 GLenum TraceGLApi::glClientWaitSyncFn(GLsync sync,
@@ -9941,6 +10009,41 @@ void DebugGLApi::glClearStencilFn(GLint s) {
   GL_SERVICE_LOG("glClearStencil"
                  << "(" << s << ")");
   gl_api_->glClearStencilFn(s);
+}
+
+void DebugGLApi::glClearTexImageFn(GLuint texture,
+                                   GLint level,
+                                   GLenum format,
+                                   GLenum type,
+                                   const GLvoid* data) {
+  GL_SERVICE_LOG("glClearTexImage"
+                 << "(" << texture << ", " << level << ", "
+                 << GLEnums::GetStringEnum(format) << ", "
+                 << GLEnums::GetStringEnum(type) << ", "
+                 << static_cast<const void*>(data) << ")");
+  gl_api_->glClearTexImageFn(texture, level, format, type, data);
+}
+
+void DebugGLApi::glClearTexSubImageFn(GLuint texture,
+                                      GLint level,
+                                      GLint xoffset,
+                                      GLint yoffset,
+                                      GLint zoffset,
+                                      GLint width,
+                                      GLint height,
+                                      GLint depth,
+                                      GLenum format,
+                                      GLenum type,
+                                      const GLvoid* data) {
+  GL_SERVICE_LOG("glClearTexSubImage"
+                 << "(" << texture << ", " << level << ", " << xoffset << ", "
+                 << yoffset << ", " << zoffset << ", " << width << ", "
+                 << height << ", " << depth << ", "
+                 << GLEnums::GetStringEnum(format) << ", "
+                 << GLEnums::GetStringEnum(type) << ", "
+                 << static_cast<const void*>(data) << ")");
+  gl_api_->glClearTexSubImageFn(texture, level, xoffset, yoffset, zoffset,
+                                width, height, depth, format, type, data);
 }
 
 GLenum DebugGLApi::glClientWaitSyncFn(GLsync sync,
@@ -14701,6 +14804,28 @@ void NoContextGLApi::glClearDepthfFn(GLclampf depth) {
 
 void NoContextGLApi::glClearStencilFn(GLint s) {
   NoContextHelper("glClearStencil");
+}
+
+void NoContextGLApi::glClearTexImageFn(GLuint texture,
+                                       GLint level,
+                                       GLenum format,
+                                       GLenum type,
+                                       const GLvoid* data) {
+  NoContextHelper("glClearTexImage");
+}
+
+void NoContextGLApi::glClearTexSubImageFn(GLuint texture,
+                                          GLint level,
+                                          GLint xoffset,
+                                          GLint yoffset,
+                                          GLint zoffset,
+                                          GLint width,
+                                          GLint height,
+                                          GLint depth,
+                                          GLenum format,
+                                          GLenum type,
+                                          const GLvoid* data) {
+  NoContextHelper("glClearTexSubImage");
 }
 
 GLenum NoContextGLApi::glClientWaitSyncFn(GLsync sync,

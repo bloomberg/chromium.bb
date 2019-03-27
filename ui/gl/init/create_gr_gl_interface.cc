@@ -156,11 +156,8 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fClear = gl->glClearFn;
   functions->fClearColor = gl->glClearColorFn;
   functions->fClearStencil = gl->glClearStencilFn;
-
-  // Not used
-  // functions->fClearTexImage = nullptr;
-  // functions->fClearTexSubImage = nullptr;
-
+  functions->fClearTexImage = gl->glClearTexImageFn;
+  functions->fClearTexSubImage = gl->glClearTexSubImageFn;
   functions->fColorMask = gl->glColorMaskFn;
   functions->fCompileShader =
       bind_slow(gl->glCompileShaderFn, progress_reporter);

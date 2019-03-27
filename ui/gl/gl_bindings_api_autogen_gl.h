@@ -111,6 +111,22 @@ void glClearColorFn(GLclampf red,
 void glClearDepthFn(GLclampd depth) override;
 void glClearDepthfFn(GLclampf depth) override;
 void glClearStencilFn(GLint s) override;
+void glClearTexImageFn(GLuint texture,
+                       GLint level,
+                       GLenum format,
+                       GLenum type,
+                       const GLvoid* data) override;
+void glClearTexSubImageFn(GLuint texture,
+                          GLint level,
+                          GLint xoffset,
+                          GLint yoffset,
+                          GLint zoffset,
+                          GLint width,
+                          GLint height,
+                          GLint depth,
+                          GLenum format,
+                          GLenum type,
+                          const GLvoid* data) override;
 GLenum glClientWaitSyncFn(GLsync sync,
                           GLbitfield flags,
                           GLuint64 timeout) override;
