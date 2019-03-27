@@ -131,8 +131,10 @@ class TestWebUIControllerFactory : public WebUIIOSControllerFactory {
     return std::make_unique<TestUI>(web_ui, ui_handler_);
   }
 
-  bool HasWebUIIOSControllerForURL(const GURL& url) const override {
-    return url.SchemeIs(kTestWebUIScheme);
+  NSInteger GetErrorCodeForWebUIURL(const GURL& url) const override {
+    if (url.SchemeIs(kTestWebUIScheme))
+      return 0;
+    return NSURLErrorUnknown;
   }
 
  private:

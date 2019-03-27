@@ -19,7 +19,7 @@ class WebUIIOSControllerFactoryRegistry : public WebUIIOSControllerFactory {
  public:
   static WebUIIOSControllerFactoryRegistry* GetInstance();
 
-  bool HasWebUIIOSControllerForURL(const GURL& url) const override;
+  NSInteger GetErrorCodeForWebUIURL(const GURL& url) const override;
 
   // WebUIIOSControllerFactory implementation. Each method loops through the
   // same method on all the factories.

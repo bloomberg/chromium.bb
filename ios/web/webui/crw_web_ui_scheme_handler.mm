@@ -15,6 +15,16 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Returns the error code associated with |URL|.
+NSInteger GetErrorCodeForUrl(const GURL& URL) {
+  web::WebUIIOSControllerFactory* factory =
+      web::WebUIIOSControllerFactoryRegistry::GetInstance();
+  return factory ? factory->GetErrorCodeForWebUIURL(URL)
+                 : NSURLErrorUnsupportedURL;
+}
+}  // namespace
+
 @implementation CRWWebUISchemeHandler {
   scoped_refptr<network::SharedURLLoaderFactory> _URLLoaderFactory;
 
@@ -37,15 +47,14 @@
     startURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask
     API_AVAILABLE(ios(11.0)) {
   GURL URL = net::GURLWithNSURL(urlSchemeTask.request.URL);
-  web::WebUIIOSControllerFactory* factory =
-      web::WebUIIOSControllerFactoryRegistry::GetInstance();
   // Check the mainDocumentURL as the URL might be one of the subresource, so
   // not a WebUI URL itself.
-  if (!factory || !factory->HasWebUIIOSControllerForURL(net::GURLWithNSURL(
-                      urlSchemeTask.request.mainDocumentURL))) {
+  NSInteger errorCode = GetErrorCodeForUrl(
+      net::GURLWithNSURL(urlSchemeTask.request.mainDocumentURL));
+  if (errorCode != 0) {
     NSError* error =
         [NSError errorWithDomain:NSURLErrorDomain
-                            code:NSURLErrorUnsupportedURL
+                            code:errorCode
                         userInfo:@{
                           NSURLErrorKey : urlSchemeTask.request.URL,
                           NSURLErrorFailingURLStringErrorKey :

@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 
+#import <Foundation/Foundation.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -103,9 +105,14 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(const GURL& url) {
 
 }  // namespace
 
-bool ChromeWebUIIOSControllerFactory::HasWebUIIOSControllerForURL(
+NSInteger ChromeWebUIIOSControllerFactory::GetErrorCodeForWebUIURL(
     const GURL& url) const {
-  return GetWebUIIOSFactoryFunction(url);
+  if (url.host() == kChromeUIDinoHost) {
+    return NSURLErrorNotConnectedToInternet;
+  }
+  if (GetWebUIIOSFactoryFunction(url))
+    return 0;
+  return NSURLErrorUnsupportedURL;
 }
 
 std::unique_ptr<WebUIIOSController>

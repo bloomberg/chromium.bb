@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_WEBUI_WEB_UI_IOS_CONTROLLER_FACTORY_H_
 #define IOS_WEB_PUBLIC_WEBUI_WEB_UI_IOS_CONTROLLER_FACTORY_H_
 
+#import <Foundation/Foundation.h>
+
 #include <memory>
 
 #include "ios/web/public/webui/web_ui_ios.h"
@@ -27,8 +29,9 @@ class WebUIIOSControllerFactory {
   // Call to deregister a factory.
   static void DeregisterFactory(WebUIIOSControllerFactory* factory);
 
-  // Returns whether |url| has an associated WebUI URL controller.
-  virtual bool HasWebUIIOSControllerForURL(const GURL& url) const = 0;
+  // Returns 0 if there is a controller associated with |url|. Otherwise,
+  // returns an error code in NSURLErrorDomain associated with this |url|.
+  virtual NSInteger GetErrorCodeForWebUIURL(const GURL& url) const = 0;
 
   // Returns a WebUIIOSController instance for the given URL, or NULL if the URL
   // doesn't correspond to a WebUIIOS.
