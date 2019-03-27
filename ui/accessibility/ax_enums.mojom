@@ -348,6 +348,8 @@ enum Action {
   // Gets the bounding rect for a range of text.
   kGetTextLocation,
 
+  kHideTooltip,
+
    // Given a point, find the object it corresponds to and fire a
    // |AXActionData.hit_test_event_to_fire| event on it in response.
   kHitTest,
@@ -402,6 +404,7 @@ enum Action {
 
    // Send an event signaling the end of a test.
   kSignalEndOfTest,
+  kShowTooltip,
 };
 
 enum ActionFlags {

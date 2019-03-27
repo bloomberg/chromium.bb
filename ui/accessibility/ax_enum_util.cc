@@ -1107,6 +1107,10 @@ const char* ToString(ax::mojom::Action action) {
       return "annotatePageImages";
     case ax::mojom::Action::kSignalEndOfTest:
       return "signalEndOfTest";
+    case ax::mojom::Action::kShowTooltip:
+      return "showTooltip";
+    case ax::mojom::Action::kHideTooltip:
+      return "hideTooltip";
   }
 
   return "";
@@ -1171,6 +1175,10 @@ ax::mojom::Action ParseAction(const char* action) {
     return ax::mojom::Action::kShowContextMenu;
   if (0 == strcmp(action, "signalEndOfTest"))
     return ax::mojom::Action::kSignalEndOfTest;
+  if (0 == strcmp(action, "showTooltip"))
+    return ax::mojom::Action::kShowTooltip;
+  if (0 == strcmp(action, "hideTooltip"))
+    return ax::mojom::Action::kHideTooltip;
   return ax::mojom::Action::kNone;
 }
 
