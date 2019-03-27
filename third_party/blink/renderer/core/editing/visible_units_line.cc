@@ -38,8 +38,11 @@
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
 namespace blink {
 
@@ -167,13 +170,39 @@ Node* NextLeafWithGivenEditability(Node* node,
   return nullptr;
 }
 
+struct VisualOrdering;
+
 template <typename Strategy, typename Ordering>
 PositionWithAffinityTemplate<Strategy> StartPositionForLine(
     const PositionWithAffinityTemplate<Strategy>& c) {
   if (c.IsNull())
     return PositionWithAffinityTemplate<Strategy>();
+  const PositionWithAffinityTemplate<Strategy> adjusted =
+      ComputeInlineAdjustedPosition(c);
 
-  const InlineBox* inline_box = ComputeInlineBoxPosition(c).inline_box;
+  if (const LayoutBlockFlow* context =
+          NGInlineFormattingContextOf(adjusted.GetPosition())) {
+    DCHECK((std::is_same<Ordering, VisualOrdering>::value) ||
+           !RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
+        << "Logical line boundary for BidiCaretAffinity is not implemented yet";
+
+    const NGCaretPosition caret_position = ComputeNGCaretPosition(adjusted);
+    DCHECK(caret_position.fragment);
+    DCHECK(caret_position.fragment->ContainerLineBox());
+    const NGPaintFragment* line_box_paint =
+        caret_position.fragment->ContainerLineBox();
+    const NGPhysicalLineBoxFragment& line_box =
+        To<NGPhysicalLineBoxFragment>(line_box_paint->PhysicalFragment());
+    const NGPhysicalOffset start_point = line_box.LineStartPoint();
+    return FromPositionInDOMTree<Strategy>(
+        line_box_paint->PositionForPoint(start_point));
+  }
+
+  const InlineBox* inline_box =
+      adjusted.IsNotNull()
+          ? ComputeInlineBoxPositionForInlineAdjustedPosition(adjusted)
+                .inline_box
+          : nullptr;
   if (!inline_box) {
     // There are VisiblePositions at offset 0 in blocks without
     // RootInlineBoxes, like empty editable blocks and bordered blocks.
@@ -426,8 +455,29 @@ static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
     const PositionWithAffinityTemplate<Strategy>& c) {
   if (c.IsNull())
     return PositionWithAffinityTemplate<Strategy>();
+  const PositionWithAffinityTemplate<Strategy> adjusted =
+      ComputeInlineAdjustedPosition(c);
 
-  const InlineBox* inline_box = ComputeInlineBoxPosition(c).inline_box;
+  if (const LayoutBlockFlow* context =
+          NGInlineFormattingContextOf(adjusted.GetPosition())) {
+    DCHECK((std::is_same<Ordering, VisualOrdering>::value) ||
+           !RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
+        << "Logical line boundary for BidiCaretAffinity is not implemented yet";
+
+    const NGCaretPosition caret_position = ComputeNGCaretPosition(adjusted);
+    DCHECK(caret_position.fragment);
+    DCHECK(caret_position.fragment->ContainerLineBox());
+    const NGPaintFragment* line_box_paint =
+        caret_position.fragment->ContainerLineBox();
+    const NGPhysicalLineBoxFragment& line_box =
+        To<NGPhysicalLineBoxFragment>(line_box_paint->PhysicalFragment());
+    const NGPhysicalOffset end_point = line_box.LineEndPoint();
+    return FromPositionInDOMTree<Strategy>(
+        line_box_paint->PositionForPoint(end_point));
+  }
+
+  const InlineBox* inline_box =
+      adjusted.IsNotNull() ? ComputeInlineBoxPosition(c).inline_box : nullptr;
   if (!inline_box) {
     // There are VisiblePositions at offset 0 in blocks without
     // RootInlineBoxes, like empty editable blocks and bordered blocks.

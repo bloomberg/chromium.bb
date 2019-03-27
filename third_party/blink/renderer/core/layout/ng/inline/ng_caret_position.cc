@@ -349,14 +349,16 @@ PositionWithAffinity NGCaretPosition::ToPositionInDOMTreeWithAffinity() const {
       DCHECK(text_offset.has_value());
       const NGOffsetMapping* mapping =
           NGOffsetMapping::GetFor(fragment->GetLayoutObject());
-      const Position position = mapping->GetFirstPosition(*text_offset);
-      if (position.IsNull())
-        return PositionWithAffinity();
       const auto& text_fragment =
           To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
       const TextAffinity affinity = *text_offset == text_fragment.EndOffset()
                                         ? TextAffinity::kUpstreamIfPossible
                                         : TextAffinity::kDownstream;
+      const Position position = affinity == TextAffinity::kDownstream
+                                    ? mapping->GetLastPosition(*text_offset)
+                                    : mapping->GetFirstPosition(*text_offset);
+      if (position.IsNull())
+        return PositionWithAffinity();
       return PositionWithAffinity(position, affinity);
   }
   NOTREACHED();

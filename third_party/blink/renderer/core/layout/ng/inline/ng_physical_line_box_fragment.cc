@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
@@ -127,6 +128,22 @@ const NGPhysicalFragment* NGPhysicalLineBoxFragment::LastLogicalLeaf() const {
 bool NGPhysicalLineBoxFragment::HasSoftWrapToNextLine() const {
   const auto& break_token = To<NGInlineBreakToken>(*BreakToken());
   return !break_token.IsFinished() && !break_token.IsForcedBreak();
+}
+
+NGPhysicalOffset NGPhysicalLineBoxFragment::LineStartPoint() const {
+  const NGLogicalOffset logical_start;  // (0, 0)
+  const NGPhysicalSize pixel_size(LayoutUnit(1), LayoutUnit(1));
+  return logical_start.ConvertToPhysical(Style().GetWritingMode(),
+                                         BaseDirection(), Size(), pixel_size);
+}
+
+NGPhysicalOffset NGPhysicalLineBoxFragment::LineEndPoint() const {
+  const LayoutUnit inline_size =
+      NGFragment(Style().GetWritingMode(), *this).InlineSize();
+  const NGLogicalOffset logical_end(inline_size, LayoutUnit());
+  const NGPhysicalSize pixel_size(LayoutUnit(1), LayoutUnit(1));
+  return logical_end.ConvertToPhysical(Style().GetWritingMode(),
+                                       BaseDirection(), Size(), pixel_size);
 }
 
 }  // namespace blink

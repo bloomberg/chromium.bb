@@ -72,6 +72,11 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   const NGPhysicalFragment* FirstLogicalLeaf() const;
   const NGPhysicalFragment* LastLogicalLeaf() const;
 
+  // Returns a point at the visual start/end of the line.
+  // Encapsulates the handling of text direction and writing mode.
+  NGPhysicalOffset LineStartPoint() const;
+  NGPhysicalOffset LineEndPoint() const;
+
   // Whether the content soft-wraps to the next line.
   bool HasSoftWrapToNextLine() const;
 
