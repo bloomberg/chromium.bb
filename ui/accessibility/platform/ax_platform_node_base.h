@@ -71,6 +71,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 #endif
 
   AXPlatformNodeDelegate* GetDelegate() const override;
+  bool IsDescendantOf(AXPlatformNode* ancestor) const override;
 
   // Helpers.
   AXPlatformNodeBase* GetPreviousSibling();
@@ -169,9 +170,6 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // Returns true if either a descendant has selection (sel_focus_object_id) or
   // if this node is a simple text element and has text selection attributes.
   bool HasCaret();
-
-  // Return true if this object is equal to or a descendant of |ancestor|.
-  bool IsDescendantOf(AXPlatformNodeBase* ancestor);
 
   // Returns true if an ancestor of this node (not including itself) is a
   // leaf node, meaning that this node is not actually exposed to the
