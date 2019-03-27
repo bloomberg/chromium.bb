@@ -59,6 +59,11 @@ class AutoclickMenuView : public views::View, public views::ButtonListener {
   AutoclickMenuButton* pause_button_;
   AutoclickMenuButton* position_button_;
 
+  // The most recently selected event_type_ excluding kNoAction. This is used
+  // when the pause button is selected in order to unpause and reset to the
+  // previous state.
+  mojom::AutoclickEventType event_type_ = mojom::AutoclickEventType::kLeftClick;
+
   DISALLOW_COPY_AND_ASSIGN(AutoclickMenuView);
 };
 

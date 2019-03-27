@@ -65,6 +65,8 @@ class AutoclickMenuButton : public TopShortcutButton {
     SchedulePaint();
   }
 
+  bool IsToggled() { return toggled_; }
+
   // TopShortcutButton:
   void PaintButtonContents(gfx::Canvas* canvas) override {
     gfx::Rect rect(GetContentsBounds());
@@ -209,6 +211,8 @@ void AutoclickMenuView::UpdateEventType(mojom::AutoclickEventType type) {
                                    mojom::AutoclickEventType::kDoubleClick);
   drag_button_->SetToggled(type == mojom::AutoclickEventType::kDragAndDrop);
   pause_button_->SetToggled(type == mojom::AutoclickEventType::kNoAction);
+  if (type != mojom::AutoclickEventType::kNoAction)
+    event_type_ = type;
 }
 
 void AutoclickMenuView::UpdatePosition(mojom::AutoclickMenuPosition position) {
@@ -254,18 +258,24 @@ void AutoclickMenuView::ButtonPressed(views::Button* sender,
     return;
   }
   mojom::AutoclickEventType type;
-  if (sender == left_click_button_)
+  if (sender == left_click_button_) {
     type = mojom::AutoclickEventType::kLeftClick;
-  else if (sender == right_click_button_)
+  } else if (sender == right_click_button_) {
     type = mojom::AutoclickEventType::kRightClick;
-  else if (sender == double_click_button_)
+  } else if (sender == double_click_button_) {
     type = mojom::AutoclickEventType::kDoubleClick;
-  else if (sender == drag_button_)
+  } else if (sender == drag_button_) {
     type = mojom::AutoclickEventType::kDragAndDrop;
-  else if (sender == pause_button_)
-    type = mojom::AutoclickEventType::kNoAction;
-  else
+  } else if (sender == pause_button_) {
+    // If the pause button was already selected, tapping it again turns off
+    // pause and returns to the previous type.
+    if (pause_button_->IsToggled())
+      type = event_type_;
+    else
+      type = mojom::AutoclickEventType::kNoAction;
+  } else {
     return;
+  }
 
   Shell::Get()->accessibility_controller()->SetAutoclickEventType(type);
   UMA_HISTOGRAM_ENUMERATION("Accessibility.CrosAutoclick.TrayMenu.ChangeAction",
