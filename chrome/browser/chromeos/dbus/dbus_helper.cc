@@ -4,7 +4,11 @@
 
 #include "chrome/browser/chromeos/dbus/dbus_helper.h"
 
+#include "base/path_service.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/common/chrome_paths.h"
+#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/biod/biod_client.h"
@@ -18,9 +22,23 @@
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/tpm/install_attributes.h"
 
+namespace {
+
+void OverrideStubPathsIfNeeded() {
+  base::FilePath user_data_dir;
+  if (!base::SysInfo::IsRunningOnChromeOS() &&
+      base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+    chromeos::RegisterStubPathOverrides(user_data_dir);
+  }
+}
+
+}  // namespace
+
 namespace chromeos {
 
 void InitializeDBus() {
+  OverrideStubPathsIfNeeded();
+
   SystemSaltGetter::Initialize();
 
   // Initialize DBusThreadManager for the browser.

@@ -23,7 +23,6 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -156,6 +155,8 @@ class UserAffiliationBrowserTest
   // InProcessBrowserTest
   void SetUpInProcessBrowserTestFixture() override {
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+    // Some DBus services rely on paths, so override it here.
+    chromeos::active_directory_test_helper::OverridePaths();
     chromeos::FakeSessionManagerClient* fake_session_manager_client =
         new chromeos::FakeSessionManagerClient;
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
@@ -171,10 +172,6 @@ class UserAffiliationBrowserTest
       chromeos::AuthPolicyClient::InitializeFake();
       fake_auth_policy_client = chromeos::FakeAuthPolicyClient::Get();
       fake_auth_policy_client->DisableOperationDelayForTesting();
-      // PrepareLogin requires a message loop, which isn't available yet here.
-      base::MessageLoop message_loop;
-      chromeos::active_directory_test_helper::PrepareLogin(
-          account_id_.GetUserEmail());
     }
 
     DevicePolicyCrosTestHelper test_helper;
@@ -291,6 +288,10 @@ class UserAffiliationBrowserTest
 
 IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, PRE_PRE_TestAffiliation) {
   AffiliationTestHelper::PreLoginUser(account_id_);
+  if (GetParam().active_directory) {
+    chromeos::active_directory_test_helper::PrepareLogin(
+        account_id_.GetUserEmail());
+  }
 }
 
 // This part of the test performs a regular sign-in through the login manager.

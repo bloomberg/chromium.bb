@@ -61,7 +61,6 @@ void PrepareLogin(const std::string& user_principal_name) {
 
   // Lock the device to AD mode. Paths need to be set here, so install attribs
   // can be saved to disk.
-  OverridePaths();
   ASSERT_TRUE(
       tpm_util::LockDeviceActiveDirectoryForTesting(user_and_domain[1]));
 
