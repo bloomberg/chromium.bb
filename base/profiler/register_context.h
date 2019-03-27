@@ -9,29 +9,13 @@
 #ifndef BASE_PROFILER_REGISTER_CONTEXT_H_
 #define BASE_PROFILER_REGISTER_CONTEXT_H_
 
-#include <type_traits>
-
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_MACOSX)
-#include <mach/machine/thread_status.h>
 #endif
 
-// Helper function to account for the fact that platform-specific register state
-// types may be unsigned and of the same size as uintptr_t, but not of the same
-// type -- e.g. unsigned int vs. unsigned long on 32-bit Windows and unsigned
-// long vs. unsigned long long on Mac.
-template <typename T>
-uintptr_t& AsUintPtr(T* value) {
-  static_assert(std::is_unsigned<T>::value && sizeof(T) == sizeof(uintptr_t),
-                "register state type must be equivalent to uintptr_t");
-  return *reinterpret_cast<uintptr_t*>(value);
-}
-
 #if defined(OS_WIN)
-
 using RegisterContext = ::CONTEXT;
 
 inline uintptr_t& RegisterContextStackPointer(::CONTEXT* context) {
@@ -40,7 +24,10 @@ inline uintptr_t& RegisterContextStackPointer(::CONTEXT* context) {
 #elif defined(ARCH_CPU_ARM64)
   return context->Sp;
 #else
-  return AsUintPtr(&context->Esp);
+  // The reinterpret_cast accounts for the fact that Esp is a DWORD, which is an
+  // unsigned long, while uintptr_t is an unsigned int. The two types have the
+  // same representation on Windows, but C++ treats them as different.
+  return *reinterpret_cast<uintptr_t*>(&context->Esp);
 #endif
 }
 
@@ -50,24 +37,13 @@ inline uintptr_t& RegisterContextFramePointer(::CONTEXT* context) {
 #elif defined(ARCH_CPU_ARM64)
   return context->Fp;
 #else
-  return AsUintPtr(&context->Ebp);
+  // The reinterpret_cast accounts for the fact that Ebp is a DWORD, which is an
+  // unsigned long, while uintptr_t is an unsigned int. The two types have the
+  // same representation on Windows, but C++ treats them as different.
+  return *reinterpret_cast<uintptr_t*>(&context->Ebp);
 #endif
 }
-
-#elif defined(OS_MACOSX)  // #if defined(OS_WIN)
-
-using RegisterContext = x86_thread_state64_t;
-
-inline uintptr_t& RegisterContextStackPointer(x86_thread_state64_t* context) {
-  return AsUintPtr(&context->__rsp);
-}
-
-inline uintptr_t& RegisterContextFramePointer(x86_thread_state64_t* context) {
-  return AsUintPtr(&context->__rbp);
-}
-
-#else  // #if defined(OS_WIN)
-
+#else   // #if defined(OS_WIN)
 // Placeholders for other platforms.
 struct RegisterContext {
   uintptr_t stack_pointer;
@@ -81,7 +57,6 @@ inline uintptr_t& RegisterContextStackPointer(RegisterContext* context) {
 inline uintptr_t& RegisterContextFramePointer(RegisterContext* context) {
   return context->frame_pointer;
 }
-
 #endif  // #if defined(OS_WIN)
 
 #endif  // BASE_PROFILER_REGISTER_CONTEXT_H_
