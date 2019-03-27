@@ -93,8 +93,9 @@ LayoutUnit ComputeFloatAncestorInlineEndSize(const NGConstraintSpace& space,
                                              const Vector<NGInlineItem>& items,
                                              wtf_size_t item_index) {
   LayoutUnit inline_end_size;
-  while (item_index < items.size()) {
-    const NGInlineItem& item = items[item_index++];
+  for (const NGInlineItem *cur = items.begin() + item_index, *end = items.end();
+       cur != end; ++cur) {
+    const NGInlineItem& item = *cur;
 
     if (item.Type() == NGInlineItem::kCloseTag) {
       if (item.HasEndEdge())
