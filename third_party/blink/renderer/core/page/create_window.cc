@@ -440,16 +440,7 @@ DOMWindow* CreateWindow(const String& url_string,
                                                      completed_url))
     return window_features.noopener ? nullptr : new_frame->DomWindow();
 
-  // TODO(dcheng): Special case for window.open("about:blank") to ensure it
-  // loads synchronously into a new window. This is our historical behavior, and
-  // it's consistent with the creation of a new iframe with src="about:blank".
-  // Perhaps we could get rid of this if we started reporting the initial empty
-  // document's url as about:blank? See crbug.com/471239.
-  // TODO(japhet): This special case is also necessary for behavior asserted by
-  // some extensions tests.  Using NavigationScheduler::scheduleNavigationChange
-  // causes the navigation to be flagged as a client redirect, which is
-  // observable via the webNavigation extension api.
-  if (created) {
+  if (created || !url_string.IsEmpty()) {
     FrameLoadRequest request(incumbent_window.document(),
                              ResourceRequest(completed_url));
     request.GetResourceRequest().SetHasUserGesture(has_user_gesture);
@@ -457,11 +448,6 @@ DOMWindow* CreateWindow(const String& url_string,
       request.SetInputStartTime(input_event->TimeStamp());
     }
     new_frame->Navigate(request, WebFrameLoadType::kStandard);
-  } else if (!url_string.IsEmpty()) {
-    new_frame->ScheduleNavigation(*incumbent_window.document(), completed_url,
-                                  WebFrameLoadType::kStandard,
-                                  has_user_gesture ? UserGestureStatus::kActive
-                                                   : UserGestureStatus::kNone);
   }
   return window_features.noopener ? nullptr : new_frame->DomWindow();
 }

@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/hash_change_event.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
@@ -1477,9 +1478,12 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
     if (url_string.IsEmpty())
       return target_frame->DomWindow();
 
-    target_frame->ScheduleNavigation(*active_document, completed_url,
-                                     WebFrameLoadType::kStandard,
-                                     UserGestureStatus::kNone);
+    FrameLoadRequest request(active_document, ResourceRequest(completed_url));
+    request.GetResourceRequest().SetHasUserGesture(
+        LocalFrame::HasTransientUserActivation(GetFrame()));
+    if (const WebInputEvent* input_event = CurrentInputEvent::Get())
+      request.SetInputStartTime(input_event->TimeStamp());
+    target_frame->Navigate(request, WebFrameLoadType::kStandard);
     return target_frame->DomWindow();
   }
 
