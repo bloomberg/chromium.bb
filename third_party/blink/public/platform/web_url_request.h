@@ -106,7 +106,10 @@ class WebURLRequest {
                                    // to a Lite Page server.
     kLazyImageLoadDeferred = 1 << 10,  // Request the placeholder version of an
                                        // image that was deferred by lazyload.
-    kPreviewsStateLast = kLazyImageLoadDeferred
+    kLazyImageAutoReload = 1 << 11,    // Request the full version of an image
+                                       // that was previously fetched as a
+                                       // placeholder by lazyload.
+    kPreviewsStateLast = kLazyImageAutoReload
   };
 
   class ExtraData {

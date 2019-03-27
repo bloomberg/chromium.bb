@@ -130,15 +130,23 @@ void FetchParameters::SetLazyImageDeferred() {
   image_request_optimization_ = kDeferImageLoad;
 }
 
+void FetchParameters::SetLazyImageAutoReload() {
+  resource_request_.SetPreviewsState(resource_request_.GetPreviewsState() |
+                                     WebURLRequest::kLazyImageAutoReload);
+}
+
 void FetchParameters::SetAllowImagePlaceholder() {
   DCHECK_EQ(kNone, image_request_optimization_);
   if (!resource_request_.Url().ProtocolIsInHTTPFamily() ||
       resource_request_.HttpMethod() != "GET" ||
       !resource_request_.HttpHeaderField("range").IsNull()) {
-    // Make sure that the request isn't marked as using Client Lo-Fi, since
-    // without loading an image placeholder, Client Lo-Fi isn't really in use.
-    resource_request_.SetPreviewsState(resource_request_.GetPreviewsState() &
-                                       ~(WebURLRequest::kClientLoFiOn));
+    // Make sure that the request isn't marked as using an image preview type,
+    // since without loading an image placeholder, Client Lo-Fi isn't really
+    // in use.
+    resource_request_.SetPreviewsState(
+        resource_request_.GetPreviewsState() &
+        ~(WebURLRequest::kClientLoFiOn |
+          WebURLRequest::kLazyImageLoadDeferred));
     return;
   }
 

@@ -107,7 +107,8 @@ void MetricsRenderFrameObserver::DidStartResponse(
     const GURL& response_url,
     int request_id,
     const network::ResourceResponseHead& response_head,
-    content::ResourceType resource_type) {
+    content::ResourceType resource_type,
+    content::PreviewsState previews_state) {
   if (provisional_frame_resource_data_use_ &&
       content::IsResourceTypeFrame(resource_type)) {
     // TODO(rajendrant): This frame request might start before the provisional
@@ -115,10 +116,10 @@ void MetricsRenderFrameObserver::DidStartResponse(
     // case. There should be a guarantee that DidStartProvisionalLoad be called
     // before DidStartResponse for the frame request.
     provisional_frame_resource_data_use_->DidStartResponse(
-        response_url, request_id, response_head, resource_type);
+        response_url, request_id, response_head, resource_type, previews_state);
   } else if (page_timing_metrics_sender_) {
-    page_timing_metrics_sender_->DidStartResponse(response_url, request_id,
-                                                  response_head, resource_type);
+    page_timing_metrics_sender_->DidStartResponse(
+        response_url, request_id, response_head, resource_type, previews_state);
     UpdateResourceMetadata(request_id);
   }
 }

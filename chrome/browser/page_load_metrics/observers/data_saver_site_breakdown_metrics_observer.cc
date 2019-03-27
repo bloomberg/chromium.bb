@@ -61,9 +61,19 @@ void DataSaverSiteBreakdownMetricsObserver::OnResourceDataUseObserved(
     int64_t data_reduction_proxy_bytes_saved = 0;
     for (auto const& resource : resources) {
       received_data_length += resource->delta_bytes;
+
+      // Estimate savings based on network bytes used.
       data_reduction_proxy_bytes_saved +=
           resource->delta_bytes *
           (resource->data_reduction_proxy_compression_ratio_estimate - 1.0);
+
+      if (resource->is_complete) {
+        // Record the actual data savings based on body length. Remove
+        // previously added savings from network usage.
+        data_reduction_proxy_bytes_saved +=
+            (resource->encoded_body_length - resource->received_data_length) *
+            (resource->data_reduction_proxy_compression_ratio_estimate - 1.0);
+      }
     }
     data_reduction_proxy_settings->data_reduction_proxy_service()
         ->UpdateDataUseForHost(

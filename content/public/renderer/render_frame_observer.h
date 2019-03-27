@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -173,11 +174,14 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // Notification when the renderer a response started, completed or canceled.
   // Complete or Cancel is guaranteed to be called for a response that started.
   // |request_id| uniquely identifies the request within this render frame.
+  // |previews_state| is the PreviewsState if the request is a sub-resource. For
+  // Document resources, |previews_state| should be reported as PREVIEWS_OFF.
   virtual void DidStartResponse(
       const GURL& response_url,
       int request_id,
       const network::ResourceResponseHead& response_head,
-      content::ResourceType resource_type) {}
+      content::ResourceType resource_type,
+      PreviewsState previews_state) {}
   virtual void DidCompleteResponse(
       int request_id,
       const network::URLLoaderCompletionStatus& status) {}

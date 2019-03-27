@@ -172,9 +172,9 @@ void ResourceDispatcher::OnReceivedResponse(
   if (!GetPendingRequestInfo(request_id))
     return;
 
-  NotifyResourceResponseReceived(request_info->render_frame_id,
-                                 request_info->resource_load_info.get(),
-                                 response_head_copy);
+  NotifyResourceResponseReceived(
+      request_info->render_frame_id, request_info->resource_load_info.get(),
+      response_head_copy, request_info->previews_state);
 }
 
 void ResourceDispatcher::OnReceivedCachedMetadata(
@@ -530,6 +530,8 @@ int ResourceDispatcher::StartAsync(
   pending_request->resource_load_info = NotifyResourceLoadInitiated(
       request->render_frame_id, request_id, request->url, request->method,
       request->referrer, pending_request->resource_type);
+
+  pending_request->previews_state = request->previews_state;
 
   if (override_url_loader) {
     DCHECK(request->resource_type == RESOURCE_TYPE_WORKER ||
