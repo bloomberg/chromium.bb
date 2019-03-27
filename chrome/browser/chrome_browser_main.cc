@@ -60,7 +60,6 @@
 #include "chrome/browser/component_updater/optimization_hints_component_installer.h"
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/pepper_flash_component_installer.h"
-#include "chrome/browser/component_updater/recovery_improved_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_installer.h"
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
@@ -263,6 +262,12 @@
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/browser/component_updater/recovery_improved_component_installer.h"
+#else
+#include "chrome/browser/component_updater/recovery_component_installer.h"
+#endif  // defined(OS_WIN)
+
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 #include "chrome/browser/background/background_mode_manager.h"
 #endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
@@ -446,7 +451,12 @@ OSStatus KeychainCallback(SecKeychainEvent keychain_event,
 void RegisterComponentsForUpdate(PrefService* profile_prefs) {
   auto* const cus = g_browser_process->component_updater();
 
+#if defined(OS_WIN)
   RegisterRecoveryImprovedComponent(cus, g_browser_process->local_state());
+#else
+  // TODO(crbug.com/687231): Implement the Improved component on Mac, etc.
+  RegisterRecoveryComponent(cus, g_browser_process->local_state());
+#endif  // defined(OS_WIN)
 
 #if !defined(OS_ANDROID)
   RegisterPepperFlashComponent(cus);
