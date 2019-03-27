@@ -29,10 +29,12 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
 
     /**
      * Creates an instance of a {@link LayoutManagerChromePhone}.
-     * @param host            A {@link LayoutManagerHost} instance.
+     * @param host                A {@link LayoutManagerHost} instance.
+     * @param swipeDownDelegate   OverviewModeController to delegate tab switcher behavior.
      */
-    public LayoutManagerChromePhone(LayoutManagerHost host) {
-        super(host, true);
+    public LayoutManagerChromePhone(
+            LayoutManagerHost host, OverviewModeController swipeDownDelegate) {
+        super(host, true, swipeDownDelegate);
         Context context = host.getContext();
         LayoutRenderHost renderHost = host.getLayoutRenderHost();
 
@@ -108,7 +110,7 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
         if (nextTab != null) nextTab.requestFocus();
         boolean animate = !tabRemoved && animationsEnabled();
         if (getActiveLayout() != overviewLayout && showOverview && !animate) {
-            startShowing(overviewLayout, false);
+            mOverviewModeDelegate.showOverview(false);
         }
     }
 

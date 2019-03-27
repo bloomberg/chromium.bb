@@ -118,13 +118,13 @@ public class BottomControlsCoordinator {
             IncognitoStateProvider incognitoStateProvider, ViewGroup topToolbarRoot) {
         mMediator.setLayoutManager(layoutManager);
         mMediator.setResourceManager(resourceManager);
-        mMediator.setToolbarSwipeHandler(layoutManager.getToolbarSwipeHandler());
         mMediator.setWindowAndroid(windowAndroid);
 
         if (mBottomToolbarCoordinator != null) {
             mBottomToolbarCoordinator.initializeWithNative(tabSwitcherListener, newTabClickListener,
                     closeTabsClickListener, menuButtonHelper, overviewModeBehavior,
                     tabCountProvider, incognitoStateProvider, topToolbarRoot);
+            mMediator.setToolbarSwipeHandler(layoutManager.getToolbarSwipeHandler());
         }
 
         if (mTabGroupUi != null) {
