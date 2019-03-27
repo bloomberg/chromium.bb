@@ -1351,6 +1351,12 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
     return nullptr;
   }
 
+  if (source &&
+      (nav_params.disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
+       nav_params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)) {
+    nav_params.group = tab_strip_model()->GetTabGroupForTab(
+        tab_strip_model()->GetIndexOfWebContents(source));
+  }
   Navigate(&nav_params);
 
   if (is_popup && nav_params.navigated_or_inserted_contents) {
