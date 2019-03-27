@@ -6,6 +6,8 @@ static_library("browser") {
   sources = [
     "baseline_language_model.cc",
     "baseline_language_model.h",
+    "fluent_language_model.cc",
+    "fluent_language_model.h",
     "heuristic_language_model.cc",
     "heuristic_language_model.h",
     "language_model.cc",
@@ -37,6 +39,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "baseline_language_model_unittest.cc",
+    "fluent_language_model_unittest.cc",
     "heuristic_language_model_unittest.cc",
     "language_prefs_unittest.cc",
     "url_language_histogram_unittest.cc",
@@ -48,6 +51,7 @@ source_set("unit_tests") {
     "//components/prefs",
     "//components/prefs:test_support",
     "//components/sync_preferences:test_support",
+    "//components/translate/core/browser",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",

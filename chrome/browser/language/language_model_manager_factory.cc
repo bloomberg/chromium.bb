@@ -15,6 +15,7 @@
 #include "components/language/content/browser/geo_language_model.h"
 #include "components/language/content/browser/geo_language_provider.h"
 #include "components/language/core/browser/baseline_language_model.h"
+#include "components/language/core/browser/fluent_language_model.h"
 #include "components/language/core/browser/heuristic_language_model.h"
 #include "components/language/core/browser/language_model_manager.h"
 #include "components/language/core/browser/pref_names.h"
@@ -46,6 +47,13 @@ void PrepareLanguageModels(Profile* const profile,
                           language::GeoLanguageProvider::GetInstance()));
   }
 
+  if (override_model_mode == language::OverrideLanguageModel::FLUENT) {
+    manager->AddModel(
+        language::LanguageModelManager::ModelType::FLUENT,
+        std::make_unique<language::FluentLanguageModel>(
+            profile->GetPrefs(), language::prefs::kAcceptLanguages));
+  }
+
   if (override_model_mode == language::OverrideLanguageModel::DEFAULT) {
     manager->AddModel(
         language::LanguageModelManager::ModelType::BASELINE,
@@ -56,6 +64,10 @@ void PrepareLanguageModels(Profile* const profile,
 
   // Set the primary Language Model to use based on the state of experiments.
   switch (override_model_mode) {
+    case language::OverrideLanguageModel::FLUENT:
+      manager->SetPrimaryModel(
+          language::LanguageModelManager::ModelType::FLUENT);
+      break;
     case language::OverrideLanguageModel::HEURISTIC:
       manager->SetPrimaryModel(
           language::LanguageModelManager::ModelType::HEURISTIC);
