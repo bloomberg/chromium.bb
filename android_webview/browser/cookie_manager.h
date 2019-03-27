@@ -117,6 +117,13 @@ class CookieManager {
                             bool* result,
                             const net::CookieList& cookies);
 
+  void AllowFileSchemeCookiesAsyncHelper(bool accept,
+                                         bool* result,
+                                         base::OnceClosure complete);
+  void AllowFileSchemeCookiesCompleted(base::OnceClosure complete,
+                                       bool* result,
+                                       bool value);
+
   // This protects the following two bools, as they're used on multiple threads.
   base::Lock accept_file_scheme_cookies_lock_;
   // True if cookies should be allowed for file URLs. Can only be changed prior

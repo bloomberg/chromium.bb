@@ -1434,7 +1434,10 @@ TEST_F(CookieMonsterTest, SetCookieableSchemes) {
   // Only cm_foo should allow foo:// cookies.
   std::vector<std::string> schemes;
   schemes.push_back("foo");
-  cm_foo->SetCookieableSchemes(schemes);
+  ResultSavingCookieCallback<bool> cookie_scheme_callback;
+  cm_foo->SetCookieableSchemes(schemes, cookie_scheme_callback.MakeCallback());
+  cookie_scheme_callback.WaitUntilDone();
+  EXPECT_TRUE(cookie_scheme_callback.result());
 
   GURL foo_url("foo://host/path");
   GURL http_url("http://host/path");

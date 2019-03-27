@@ -13,6 +13,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
@@ -206,6 +207,19 @@ void CookieManager::CloneInterface(mojom::CookieManagerRequest new_interface) {
 void CookieManager::FlushCookieStore(FlushCookieStoreCallback callback) {
   // Flushes the backing store (if any) to disk.
   cookie_store_->FlushStore(std::move(callback));
+}
+
+void CookieManager::AllowFileSchemeCookies(
+    bool allow,
+    AllowFileSchemeCookiesCallback callback) {
+  std::vector<std::string> cookieable_schemes(
+      net::CookieMonster::kDefaultCookieableSchemes,
+      net::CookieMonster::kDefaultCookieableSchemes +
+          net::CookieMonster::kDefaultCookieableSchemesCount);
+  if (allow) {
+    cookieable_schemes.push_back(url::kFileScheme);
+  }
+  cookie_store_->SetCookieableSchemes(cookieable_schemes, std::move(callback));
 }
 
 void CookieManager::SetForceKeepSessionState() {

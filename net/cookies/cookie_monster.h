@@ -174,11 +174,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void FlushStore(base::OnceClosure callback) override;
   void SetForceKeepSessionState() override;
   CookieChangeDispatcher& GetChangeDispatcher() override;
-
-  // Resets the list of cookieable schemes to the supplied schemes. Does
-  // nothing if called after first use of the instance (i.e. after the
-  // instance initialization process).
-  void SetCookieableSchemes(const std::vector<std::string>& schemes);
+  void SetCookieableSchemes(const std::vector<std::string>& schemes,
+                            SetCookieableSchemesCallback callback) override;
 
   // Enables writing session cookies into the cookie database. If this this
   // method is called, it must be called before first use of the instance
