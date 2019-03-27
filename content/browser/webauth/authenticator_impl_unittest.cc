@@ -4,6 +4,7 @@
 
 #include "content/browser/webauth/authenticator_impl.h"
 
+#include <algorithm>
 #include <list>
 #include <memory>
 #include <string>
@@ -15,6 +16,8 @@
 #include "base/json/json_parser.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -3005,5 +3008,196 @@ TEST_F(InternalUVAuthenticatorImplTest, GetAssertion) {
     }
   }
 }
+
+// ResidentKeyTestAuthenticatorRequestDelegate is a delegate that:
+//   a) always returns |kTestPIN| when asked for a PIN.
+//   b) sorts potential resident-key accounts by user ID, maps them to a string
+//      form ("<hex user ID>:<user name>:<display name>"), joins the strings
+//      with "/", and compares the result against |expected_accounts|.
+//   c) auto-selects the account with the user ID matching |selected_user_id|.
+class ResidentKeyTestAuthenticatorRequestDelegate
+    : public AuthenticatorRequestClientDelegate {
+ public:
+  ResidentKeyTestAuthenticatorRequestDelegate(
+      std::string expected_accounts,
+      std::vector<uint8_t> selected_user_id)
+      : expected_accounts_(expected_accounts),
+        selected_user_id_(selected_user_id) {}
+
+  void CollectPIN(
+      base::Optional<int> attempts,
+      base::OnceCallback<void(std::string)> provide_pin_cb) override {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(provide_pin_cb), kTestPIN));
+  }
+
+  bool SupportsResidentKeys() override { return true; }
+
+  void SelectAccount(
+      std::vector<device::AuthenticatorGetAssertionResponse> responses,
+      base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
+          callback) override {
+    std::sort(responses.begin(), responses.end(),
+              [](const device::AuthenticatorGetAssertionResponse& a,
+                 const device::AuthenticatorGetAssertionResponse& b) {
+                return a.user_entity()->user_id() < b.user_entity()->user_id();
+              });
+
+    std::vector<std::string> string_reps;
+    std::transform(
+        responses.begin(), responses.end(), std::back_inserter(string_reps),
+        [](const device::AuthenticatorGetAssertionResponse& response) {
+          const device::PublicKeyCredentialUserEntity& user =
+              response.user_entity().value();
+          return base::HexEncode(user.user_id().data(), user.user_id().size()) +
+                 ":" + user.user_name().value_or("") + ":" +
+                 user.user_display_name().value_or("");
+        });
+
+    EXPECT_EQ(expected_accounts_, base::JoinString(string_reps, "/"));
+
+    const auto selected = std::find_if(
+        responses.begin(), responses.end(),
+        [this](const device::AuthenticatorGetAssertionResponse& response) {
+          return response.user_entity()->user_id() == selected_user_id_;
+        });
+    ASSERT_TRUE(selected != responses.end());
+
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(*selected)));
+  }
+
+ private:
+  const std::string expected_accounts_;
+  const std::vector<uint8_t> selected_user_id_;
+  DISALLOW_COPY_AND_ASSIGN(ResidentKeyTestAuthenticatorRequestDelegate);
+};
+
+class ResidentKeyTestAuthenticatorContentBrowserClient
+    : public ContentBrowserClient {
+ public:
+  std::unique_ptr<AuthenticatorRequestClientDelegate>
+  GetWebAuthenticationRequestDelegate(
+      RenderFrameHost* render_frame_host) override {
+    return std::make_unique<ResidentKeyTestAuthenticatorRequestDelegate>(
+        expected_accounts, selected_user_id);
+  }
+
+  std::string expected_accounts;
+  std::vector<uint8_t> selected_user_id;
+};
+
+class ResidentKeyAuthenticatorImplTest : public UVAuthenticatorImplTest {
+ public:
+  ResidentKeyAuthenticatorImplTest() = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {device::kWebAuthPINSupport, device::kWebAuthResidentKeys}, {});
+
+    UVAuthenticatorImplTest::SetUp();
+    old_client_ = SetBrowserClientForTesting(&test_client_);
+    device::VirtualCtap2Device::Config config;
+    config.pin_support = true;
+    config.resident_key_support = true;
+    virtual_device_.SetCtap2Config(config);
+    virtual_device_.mutable_state()->pin = kTestPIN;
+    virtual_device_.mutable_state()->retries = 8;
+    NavigateAndCommit(GURL(kTestOrigin1));
+  }
+
+  void TearDown() override {
+    SetBrowserClientForTesting(old_client_);
+    AuthenticatorImplTest::TearDown();
+  }
+
+ protected:
+  ResidentKeyTestAuthenticatorContentBrowserClient test_client_;
+
+  static PublicKeyCredentialCreationOptionsPtr make_credential_options() {
+    PublicKeyCredentialCreationOptionsPtr options =
+        UVAuthenticatorImplTest::make_credential_options();
+    options->authenticator_selection->require_resident_key = true;
+    options->user->id = {1, 2, 3, 4};
+    return options;
+  }
+
+  static PublicKeyCredentialRequestOptionsPtr get_credential_options() {
+    PublicKeyCredentialRequestOptionsPtr options =
+        UVAuthenticatorImplTest::get_credential_options();
+    options->allow_credentials.clear();
+    return options;
+  }
+
+ private:
+  ContentBrowserClient* old_client_ = nullptr;
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResidentKeyAuthenticatorImplTest);
+};
+
+TEST_F(ResidentKeyAuthenticatorImplTest, MakeCredential) {
+  TestServiceManagerContext smc;
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  TestMakeCredentialCallback callback_receiver;
+  authenticator->MakeCredential(make_credential_options(),
+                                callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+
+  EXPECT_TRUE(HasUV(callback_receiver));
+  ASSERT_EQ(1u, virtual_device_.mutable_state()->registrations.size());
+  const device::VirtualFidoDevice::RegistrationData& registration =
+      virtual_device_.mutable_state()->registrations.begin()->second;
+  EXPECT_TRUE(registration.is_resident);
+  ASSERT_TRUE(registration.user.has_value());
+  const auto options = make_credential_options();
+  EXPECT_EQ(options->user->name, registration.user->user_name());
+  EXPECT_EQ(options->user->display_name,
+            registration.user->user_display_name());
+  EXPECT_EQ(options->user->id, registration.user->user_id());
+  EXPECT_EQ(options->user->icon, registration.user->user_icon_url());
+}
+
+TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionSingle) {
+  ASSERT_TRUE(virtual_device_.mutable_state()->InjectResidentKey(
+      /*credential_id=*/{4, 3, 2, 1}, kTestRelyingPartyId,
+      /*user_id=*/{1, 2, 3, 4}, "test@example.com", "Test User"));
+
+  TestServiceManagerContext smc;
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  TestGetAssertionCallback callback_receiver;
+  test_client_.expected_accounts = "01020304:test@example.com:Test User";
+  test_client_.selected_user_id = {1, 2, 3, 4};
+  authenticator->GetAssertion(get_credential_options(),
+                              callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  EXPECT_TRUE(HasUV(callback_receiver));
+}
+
+TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionMulti) {
+  ASSERT_TRUE(virtual_device_.mutable_state()->InjectResidentKey(
+      /*credential_id=*/{4, 3, 2, 1}, kTestRelyingPartyId,
+      /*user_id=*/{1, 2, 3, 4}, "test@example.com", "Test User"));
+  ASSERT_TRUE(virtual_device_.mutable_state()->InjectResidentKey(
+      /*credential_id=*/{4, 3, 2, 2}, kTestRelyingPartyId,
+      /*user_id=*/{5, 6, 7, 8}, "test2@example.com", "Test User 2"));
+
+  TestServiceManagerContext smc;
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  TestGetAssertionCallback callback_receiver;
+  test_client_.expected_accounts =
+      "01020304:test@example.com:Test User/"
+      "05060708:test2@example.com:Test User 2";
+  test_client_.selected_user_id = {1, 2, 3, 4};
+  authenticator->GetAssertion(get_credential_options(),
+                              callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  EXPECT_TRUE(HasUV(callback_receiver));
+}
+
+// TODO(agl): test resident-key storage exhaustion.
 
 }  // namespace content

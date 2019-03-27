@@ -229,20 +229,6 @@ std::vector<uint8_t> ConstructMakeCredentialResponse(
   return GetSerializedCtapDeviceResponse(make_credential_response);
 }
 
-std::vector<uint8_t> ConstructGetAssertionResponse(
-    AuthenticatorData authenticator_data,
-    base::span<const uint8_t> signature,
-    base::span<const uint8_t> key_handle) {
-  AuthenticatorGetAssertionResponse response(
-      std::move(authenticator_data),
-      fido_parsing_utils::Materialize(signature));
-
-  response.SetCredential({CredentialType::kPublicKey,
-                          fido_parsing_utils::Materialize(key_handle)});
-  response.SetNumCredentials(1);
-  return GetSerializedCtapDeviceResponse(response);
-}
-
 bool IsMakeCredentialOptionMapFormatCorrect(
     const cbor::Value::MapValue& option_map) {
   return std::all_of(
@@ -454,6 +440,11 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
     }
   }
 
+  if (config.resident_key_support) {
+    options_updated = true;
+    options.supports_resident_key = true;
+  }
+
   if (options_updated) {
     device_info_->SetOptions(options);
   }
@@ -492,6 +483,9 @@ void VirtualCtap2Device::DeviceTransact(std::vector<uint8_t> command,
       break;
     case CtapRequestCommand::kAuthenticatorGetAssertion:
       response_code = OnGetAssertion(request_bytes, &response_data);
+      break;
+    case CtapRequestCommand::kAuthenticatorGetNextAssertion:
+      response_code = OnGetNextAssertion(request_bytes, &response_data);
       break;
     case CtapRequestCommand::kAuthenticatorClientPin:
       response_code = OnPINCommand(request_bytes, &response_data);
@@ -628,8 +622,36 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
 
   *response = ConstructMakeCredentialResponse(std::move(attestation_cert), sig,
                                               std::move(authenticator_data));
+  RegistrationData registration(std::move(private_key), rp_id_hash,
+                                1 /* signature counter */);
 
-  StoreNewKey(rp_id_hash, key_handle, std::move(private_key));
+  if (request.resident_key_required()) {
+    // If there's already a registration for this RP and user ID, delete it.
+    for (const auto& registration : mutable_state()->registrations) {
+      if (registration.second.is_resident &&
+          rp_id_hash == registration.second.application_parameter &&
+          registration.second.user->user_id() == request.user().user_id()) {
+        mutable_state()->registrations.erase(registration.first);
+        break;
+      }
+    }
+
+    size_t num_resident_keys = 0;
+    for (const auto& registration : mutable_state()->registrations) {
+      if (registration.second.is_resident) {
+        num_resident_keys++;
+      }
+    }
+
+    if (num_resident_keys >= config_.resident_credential_storage) {
+      return CtapDeviceResponseCode::kCtap2ErrKeyStoreFull;
+    }
+
+    registration.is_resident = true;
+    registration.user = request.user();
+  }
+
+  StoreNewKey(key_handle, std::move(registration));
   return CtapDeviceResponseCode::kSuccess;
 }
 
@@ -659,25 +681,42 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
   }
 
   // Resident keys are not supported.
-  if (!request.allow_list() || request.allow_list()->empty()) {
-    DLOG(ERROR) << "Allowed credential list is empty, but Virtual CTAP2 device "
-                   "does not support resident keys.";
+  if (!config_.resident_key_support &&
+      (!request.allow_list() || request.allow_list()->empty())) {
     return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
   }
 
   const auto rp_id_hash = fido_parsing_utils::CreateSHA256Hash(request.rp_id());
 
-  RegistrationData* found_data = nullptr;
-  base::span<const uint8_t> credential_id;
-  for (const auto& allowed_credential : *request.allow_list()) {
-    if ((found_data =
-             FindRegistrationData(allowed_credential.id(), rp_id_hash))) {
-      credential_id = allowed_credential.id();
-      break;
+  std::vector<std::pair<base::span<const uint8_t>, RegistrationData*>>
+      found_registrations;
+
+  if (request.allow_list()) {
+    // An empty allow_list could be considered to be a resident-key request, but
+    // some authenticators in practice don't take it that way. Thus this code
+    // mirrors that to better reflect reality. CTAP 2.0 leaves it as undefined
+    // behaviour.
+    for (const auto& allowed_credential : *request.allow_list()) {
+      RegistrationData* found =
+          FindRegistrationData(allowed_credential.id(), rp_id_hash);
+      if (found) {
+        found_registrations.emplace_back(allowed_credential.id(), found);
+        break;
+      }
+    }
+  } else {
+    DCHECK(config_.resident_key_support);
+    for (auto& registration : mutable_state()->registrations) {
+      if (registration.second.is_resident &&
+          registration.second.application_parameter == rp_id_hash) {
+        found_registrations.emplace_back(registration.first,
+                                         &registration.second);
+      }
     }
   }
 
-  if (config_.return_immediate_invalid_credential_error && !found_data) {
+  if (config_.return_immediate_invalid_credential_error &&
+      found_registrations.empty()) {
     return CtapDeviceResponseCode::kCtap2ErrInvalidCredential;
   }
 
@@ -693,25 +732,72 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
   }
 
   // Step 8.
-  if (!found_data) {
+  if (found_registrations.empty()) {
     return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
   }
 
-  found_data->counter++;
-  auto authenticator_data =
-      ConstructAuthenticatorData(rp_id_hash, user_verified, found_data->counter,
-                                 base::nullopt, base::nullopt);
-  auto signature_buffer =
-      ConstructSignatureBuffer(authenticator_data, client_data_hash);
+  // This implementation does not sort credentials by creation time as the spec
+  // requires.
 
-  // Sign with the private key of the received key handle.
-  std::vector<uint8_t> sig;
-  auto* private_key = found_data->private_key.get();
-  bool status = Sign(private_key, std::move(signature_buffer), &sig);
-  DCHECK(status);
+  mutable_state()->pending_assertions.clear();
+  bool done_first = false;
+  for (const auto& registration : found_registrations) {
+    registration.second->counter++;
+    auto authenticator_data = ConstructAuthenticatorData(
+        rp_id_hash, user_verified, registration.second->counter, base::nullopt,
+        base::nullopt);
+    auto signature_buffer =
+        ConstructSignatureBuffer(authenticator_data, client_data_hash);
 
-  *response = ConstructGetAssertionResponse(std::move(authenticator_data),
-                                            std::move(sig), credential_id);
+    std::vector<uint8_t> signature;
+    auto* private_key = registration.second->private_key.get();
+    bool status = Sign(private_key, std::move(signature_buffer), &signature);
+    DCHECK(status);
+
+    AuthenticatorGetAssertionResponse assertion(
+        std::move(authenticator_data),
+        fido_parsing_utils::Materialize(signature));
+
+    assertion.SetCredential(
+        {CredentialType::kPublicKey,
+         fido_parsing_utils::Materialize(registration.first)});
+    if (registration.second->is_resident) {
+      assertion.SetUserEntity(registration.second->user.value());
+    }
+
+    if (!done_first) {
+      if (found_registrations.size() > 1) {
+        DCHECK_LT(found_registrations.size(), 256u);
+        assertion.SetNumCredentials(found_registrations.size());
+      }
+      *response = GetSerializedCtapDeviceResponse(assertion);
+      done_first = true;
+    } else {
+      // These replies will be returned in response to a GetNextAssertion
+      // request.
+      mutable_state()->pending_assertions.emplace_back(
+          GetSerializedCtapDeviceResponse(assertion));
+    }
+  }
+
+  return CtapDeviceResponseCode::kSuccess;
+}
+
+CtapDeviceResponseCode VirtualCtap2Device::OnGetNextAssertion(
+    base::span<const uint8_t> request_bytes,
+    std::vector<uint8_t>* response) {
+  if (!request_bytes.empty() && !cbor::Reader::Read(request_bytes)) {
+    return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+  }
+
+  auto& pending_assertions = mutable_state()->pending_assertions;
+  if (pending_assertions.empty()) {
+    return CtapDeviceResponseCode::kCtap2ErrNotAllowed;
+  }
+
+  *response = std::move(pending_assertions.back());
+  pending_assertions.pop_back();
+
   return CtapDeviceResponseCode::kSuccess;
 }
 
