@@ -481,6 +481,7 @@ TEST_F(ServiceWorkerProviderHostTest, Controller) {
   FinishNavigation(host.get());
   host->SetControllerRegistration(registration1_,
                                   false /* notify_controllerchange */);
+  remote_endpoints_.back().host_ptr()->get()->OnExecutionReady();
   base::RunLoop().RunUntilIdle();
 
   // The page should be controlled since there was an active version at the
