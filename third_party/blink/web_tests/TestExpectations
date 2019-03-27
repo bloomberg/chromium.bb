@@ -3029,7 +3029,7 @@ crbug.com/626703 [ Mac10.10 ] external/wpt/content-security-policy/frame-ancesto
 crbug.com/626703 [ Mac10.11 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
 crbug.com/626703 external/wpt/media-source/mediasource-correct-frames-after-reappend.html [ Pass Failure Timeout ]
-crbug.com/626703 external/wpt/media-source/mediasource-correct-frames.html [ Pass Timeout ]
+crbug.com/626703 external/wpt/media-source/mediasource-correct-frames.html [ Pass Failure Timeout ]
 crbug.com/626703 external/wpt/payment-method-basic-card/steps_for_selecting_the_payment_handler.html [ Timeout ]
 crbug.com/626703 external/wpt/payment-method-basic-card/apply_the_modifiers.html [ Timeout ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/tables/table-border-3s.html [ Failure ]
