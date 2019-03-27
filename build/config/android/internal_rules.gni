@@ -456,6 +456,18 @@ template("write_build_config") {
           rebase_path(invoker.proguard_configs, root_build_dir)
       args += [ "--proguard-configs=$_rebased_proguard_configs" ]
     }
+    if (defined(invoker.static_library_dependent_targets)) {
+      _dependent_configs = []
+      foreach(d, invoker.static_library_dependent_targets) {
+        _target_label = get_label_info(d, "label_no_toolchain")
+        deps += [ "$_target_label$build_config_target_suffix" ]
+        _dep_gen_dir = get_label_info(d, "target_gen_dir")
+        _dep_name = get_label_info(d, "name")
+        _dependent_configs += [ "$_dep_gen_dir/$_dep_name.build_config" ]
+      }
+      _rebased_depdent_configs = rebase_path(_dependent_configs, root_build_dir)
+      args += [ "--static-library-dependent-configs=$_rebased_depdent_configs" ]
+    }
     if (defined(invoker.gradle_treat_as_prebuilt) &&
         invoker.gradle_treat_as_prebuilt) {
       args += [ "--gradle-treat-as-prebuilt" ]
@@ -3318,6 +3330,7 @@ if (enable_java_templates) {
               "secondary_abi_shared_libraries_runtime_deps_file",
               "secondary_native_lib_placeholders",
               "shared_libraries_runtime_deps_file",
+              "static_library_dependent_targets",
               "uncompress_shared_libraries",
             ])
       }
