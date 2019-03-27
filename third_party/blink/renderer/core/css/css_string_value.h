@@ -13,10 +13,6 @@ namespace blink {
 
 class CSSStringValue : public CSSValue {
  public:
-  static CSSStringValue* Create(const String& str) {
-    return MakeGarbageCollected<CSSStringValue>(str);
-  }
-
   CSSStringValue(const String&);
 
   String Value() const { return string_; }

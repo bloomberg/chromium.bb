@@ -35,10 +35,6 @@ namespace cssvalue {
 
 class CSSUnicodeRangeValue : public CSSValue {
  public:
-  static CSSUnicodeRangeValue* Create(UChar32 from, UChar32 to) {
-    return MakeGarbageCollected<CSSUnicodeRangeValue>(from, to);
-  }
-
   CSSUnicodeRangeValue(UChar32 from, UChar32 to)
       : CSSValue(kUnicodeRangeClass), from_(from), to_(to) {}
 

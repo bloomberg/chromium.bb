@@ -113,8 +113,8 @@ CSSValue* ConsumeBaselineKeyword(CSSParserTokenRange& range) {
   if (!baseline)
     return nullptr;
   if (preference && preference->GetValueID() == CSSValueID::kLast) {
-    return CSSValuePair::Create(preference, baseline,
-                                CSSValuePair::kDropIdenticalValues);
+    return MakeGarbageCollected<CSSValuePair>(
+        preference, baseline, CSSValuePair::kDropIdenticalValues);
   }
   return baseline;
 }
@@ -191,7 +191,8 @@ CSSValue* ConsumeCubicBezier(CSSParserTokenRange& range) {
       css_property_parser_helpers::ConsumeCommaIncludingWhitespace(args) &&
       css_property_parser_helpers::ConsumeNumberRaw(args, y2) && args.AtEnd()) {
     range = range_copy;
-    return CSSCubicBezierTimingFunctionValue::Create(x1, y1, x2, y2);
+    return MakeGarbageCollected<CSSCubicBezierTimingFunctionValue>(x1, y1, x2,
+                                                                   y2);
   }
 
   return nullptr;
@@ -340,18 +341,18 @@ CSSBasicShapeInsetValue* ConsumeBasicShapeInset(
     if (!ConsumeRadii(horizontal_radii, vertical_radii, args, context.Mode(),
                       false))
       return nullptr;
-    shape->SetTopLeftRadius(
-        CSSValuePair::Create(horizontal_radii[0], vertical_radii[0],
-                             CSSValuePair::kDropIdenticalValues));
-    shape->SetTopRightRadius(
-        CSSValuePair::Create(horizontal_radii[1], vertical_radii[1],
-                             CSSValuePair::kDropIdenticalValues));
-    shape->SetBottomRightRadius(
-        CSSValuePair::Create(horizontal_radii[2], vertical_radii[2],
-                             CSSValuePair::kDropIdenticalValues));
-    shape->SetBottomLeftRadius(
-        CSSValuePair::Create(horizontal_radii[3], vertical_radii[3],
-                             CSSValuePair::kDropIdenticalValues));
+    shape->SetTopLeftRadius(MakeGarbageCollected<CSSValuePair>(
+        horizontal_radii[0], vertical_radii[0],
+        CSSValuePair::kDropIdenticalValues));
+    shape->SetTopRightRadius(MakeGarbageCollected<CSSValuePair>(
+        horizontal_radii[1], vertical_radii[1],
+        CSSValuePair::kDropIdenticalValues));
+    shape->SetBottomRightRadius(MakeGarbageCollected<CSSValuePair>(
+        horizontal_radii[2], vertical_radii[2],
+        CSSValuePair::kDropIdenticalValues));
+    shape->SetBottomLeftRadius(MakeGarbageCollected<CSSValuePair>(
+        horizontal_radii[3], vertical_radii[3],
+        CSSValuePair::kDropIdenticalValues));
   }
   return shape;
 }
@@ -469,8 +470,8 @@ CSSValue* ConsumeSelfPositionOverflowPosition(
   CSSIdentifierValue* self_position =
       css_property_parser_helpers::ConsumeIdent(range);
   if (overflow_position) {
-    return CSSValuePair::Create(overflow_position, self_position,
-                                CSSValuePair::kDropIdenticalValues);
+    return MakeGarbageCollected<CSSValuePair>(
+        overflow_position, self_position, CSSValuePair::kDropIdenticalValues);
   }
   return self_position;
 }
@@ -698,8 +699,8 @@ CSSValue* ConsumeBackgroundSize(CSSParserTokenRange& range,
   }
   if (!vertical)
     return horizontal;
-  return CSSValuePair::Create(horizontal, vertical,
-                              CSSValuePair::kKeepIdenticalValues);
+  return MakeGarbageCollected<CSSValuePair>(horizontal, vertical,
+                                            CSSValuePair::kKeepIdenticalValues);
 }
 
 bool ConsumeBackgroundPosition(
@@ -1043,8 +1044,8 @@ CSSValue* ConsumeBorderImageRepeat(CSSParserTokenRange& range) {
   CSSIdentifierValue* vertical = ConsumeBorderImageRepeatKeyword(range);
   if (!vertical)
     vertical = horizontal;
-  return CSSValuePair::Create(horizontal, vertical,
-                              CSSValuePair::kDropIdenticalValues);
+  return MakeGarbageCollected<CSSValuePair>(horizontal, vertical,
+                                            CSSValuePair::kDropIdenticalValues);
 }
 
 CSSValue* ConsumeBorderImageSlice(CSSParserTokenRange& range,
@@ -1142,8 +1143,8 @@ CSSValue* ParseBorderRadiusCorner(CSSParserTokenRange& range,
       range, context.Mode(), kValueRangeNonNegative);
   if (!parsed_value2)
     parsed_value2 = parsed_value1;
-  return CSSValuePair::Create(parsed_value1, parsed_value2,
-                              CSSValuePair::kDropIdenticalValues);
+  return MakeGarbageCollected<CSSValuePair>(parsed_value1, parsed_value2,
+                                            CSSValuePair::kDropIdenticalValues);
 }
 
 CSSValue* ParseBorderWidthSide(CSSParserTokenRange& range,
@@ -1289,7 +1290,7 @@ CSSValue* ConsumeCounter(CSSParserTokenRange& range,
     if (CSSPrimitiveValue* counter_value =
             css_property_parser_helpers::ConsumeInteger(range))
       value = clampTo<int>(counter_value->GetDoubleValue());
-    list->Append(*CSSValuePair::Create(
+    list->Append(*MakeGarbageCollected<CSSValuePair>(
         counter_name,
         CSSPrimitiveValue::Create(value, CSSPrimitiveValue::UnitType::kInteger),
         CSSValuePair::kDropIdenticalValues));

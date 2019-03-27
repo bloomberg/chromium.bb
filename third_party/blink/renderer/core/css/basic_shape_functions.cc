@@ -87,7 +87,7 @@ static CSSValue* ValueForCenterCoordinate(
                            ? CSSValueID::kRight
                            : CSSValueID::kBottom;
 
-  return CSSValuePair::Create(
+  return MakeGarbageCollected<CSSValuePair>(
       CSSIdentifierValue::Create(keyword),
       CSSValue::Create(center.length(), style.EffectiveZoom()),
       CSSValuePair::kDropIdenticalValues);
@@ -95,7 +95,7 @@ static CSSValue* ValueForCenterCoordinate(
 
 static CSSValuePair* ValueForLengthSize(const LengthSize& length_size,
                                         const ComputedStyle& style) {
-  return CSSValuePair::Create(
+  return MakeGarbageCollected<CSSValuePair>(
       CSSValue::Create(length_size.Width(), style.EffectiveZoom()),
       CSSValue::Create(length_size.Height(), style.EffectiveZoom()),
       CSSValuePair::kKeepIdenticalValues);

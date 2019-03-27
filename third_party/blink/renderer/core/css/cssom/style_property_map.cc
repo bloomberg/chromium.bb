@@ -72,7 +72,8 @@ const CSSVariableReferenceValue* CreateVariableReferenceValue(
   CSSParserTokenRange range(tokens);
   scoped_refptr<CSSVariableData> variable_data = CSSVariableData::Create(
       range, false, false, context.BaseURL(), context.Charset());
-  return CSSVariableReferenceValue::Create(variable_data, context);
+  return MakeGarbageCollected<CSSVariableReferenceValue>(variable_data,
+                                                         context);
 }
 
 const CSSVariableReferenceValue* CreateVariableReferenceValue(
@@ -152,8 +153,8 @@ const CSSValue* StyleValueToCSSValue(
       // expects pairs.
       const auto* value = style_value.ToCSSValue();
       if (value->IsPrimitiveValue()) {
-        return CSSValuePair::Create(value, value,
-                                    CSSValuePair::kDropIdenticalValues);
+        return MakeGarbageCollected<CSSValuePair>(
+            value, value, CSSValuePair::kDropIdenticalValues);
       }
       break;
     }

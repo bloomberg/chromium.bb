@@ -30,8 +30,8 @@ const CSSValue* ScrollSnapType::ParseSingleValue(
       strictness_id != CSSValueID::kMandatory)
     return axis_value;
   CSSValue* strictness_value = css_property_parser_helpers::ConsumeIdent(range);
-  CSSValuePair* pair = CSSValuePair::Create(axis_value, strictness_value,
-                                            CSSValuePair::kDropIdenticalValues);
+  auto* pair = MakeGarbageCollected<CSSValuePair>(
+      axis_value, strictness_value, CSSValuePair::kDropIdenticalValues);
   return pair;
 }
 

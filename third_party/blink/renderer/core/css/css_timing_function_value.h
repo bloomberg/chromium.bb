@@ -37,14 +37,6 @@ namespace cssvalue {
 
 class CSSCubicBezierTimingFunctionValue : public CSSValue {
  public:
-  static CSSCubicBezierTimingFunctionValue* Create(double x1,
-                                                   double y1,
-                                                   double x2,
-                                                   double y2) {
-    return MakeGarbageCollected<CSSCubicBezierTimingFunctionValue>(x1, y1, x2,
-                                                                   y2);
-  }
-
   CSSCubicBezierTimingFunctionValue(double x1, double y1, double x2, double y2)
       : CSSValue(kCubicBezierTimingFunctionClass),
         x1_(x1),

@@ -194,7 +194,8 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSStyleSheet* parent_sheet,
                                                 parent_sheet);
       break;
     case kSupports:
-      rule = CSSSupportsRule::Create(To<StyleRuleSupports>(self), parent_sheet);
+      rule = MakeGarbageCollected<CSSSupportsRule>(To<StyleRuleSupports>(self),
+                                                   parent_sheet);
       break;
     case kImport:
       rule = MakeGarbageCollected<CSSImportRule>(To<StyleRuleImport>(self),
@@ -209,7 +210,8 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSStyleSheet* parent_sheet,
           To<StyleRuleNamespace>(self), parent_sheet);
       break;
     case kViewport:
-      rule = CSSViewportRule::Create(To<StyleRuleViewport>(self), parent_sheet);
+      rule = MakeGarbageCollected<CSSViewportRule>(To<StyleRuleViewport>(self),
+                                                   parent_sheet);
       break;
     case kFontFeatureValues:
       rule = MakeGarbageCollected<CSSFontFeatureValuesRule>(
