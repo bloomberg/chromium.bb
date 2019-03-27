@@ -38,12 +38,20 @@ def AddCommonArgs(arg_parser):
                            help='Run on hardware device instead of QEMU.')
   common_args.add_argument('--host', help='The IP of the target device. ' +
                            'Optional.')
+  common_args.add_argument('--node-name',
+                           help='The node-name of the device to boot or deploy '
+                                'to. Optional, will use the first discovered '
+                                'device if omitted.')
   common_args.add_argument('--port', '-p', type=int, default=22,
                            help='The port of the SSH service running on the ' +
                                 'device. Optional.')
   common_args.add_argument('--ssh-config', '-F',
                            help='The path to the SSH configuration used for '
                                 'connecting to the target device.')
+  common_args.add_argument('--fuchsia-out-dir',
+                           help='Path to a Fuchsia build output directory. '
+                                'Equivalent to setting --ssh_config and '
+                                '---os-check=ignore')
   common_args.add_argument('--system-log-file',
                            help='File to write system logs to. Specify - to '
                                 'log to stdout.')
@@ -60,6 +68,13 @@ def AddCommonArgs(arg_parser):
   common_args.add_argument('--qemu-require-kvm', action='store_true',
                            help='Disables fall-back to emulated CPU if the '
                            'host system does not support KVM acceleration.'),
+  common_args.add_argument(
+      '--os_check', choices=['check', 'update', 'ignore'],
+      default='update',
+      help='Sets the OS version enforcement policy. If \'check\', then the '
+           'deployment process will halt if the target\'s version doesn\'t '
+           'match. If \'update\', then the target device will automatically '
+           'be repaved. If \'ignore\', then the OS version won\'t be checked.')
 
 
 def ConfigureLogging(args):
@@ -91,9 +106,18 @@ def GetDeploymentTargetForArgs(args):
     system_log_file = None
 
   if not args.device:
-    return QemuTarget(args.output_directory, args.target_cpu,
-                      args.qemu_cpu_cores, system_log_file,
-                      args.qemu_require_kvm)
+    return QemuTarget(output_dir=args.output_directory,
+                      target_cpu=args.target_cpu,
+                      cpu_cores=args.qemu_cpu_cores,
+                      system_log_file=system_log_file,
+                      require_kvm=args.qemu_require_kvm)
   else:
-    return DeviceTarget(args.output_directory, args.target_cpu, args.host,
-                        args.port, args.ssh_config, system_log_file)
+    return DeviceTarget(output_dir=args.output_directory,
+                        target_cpu=args.target_cpu,
+                        host=args.host,
+                        node_name=args.node_name,
+                        port=args.port,
+                        ssh_config=args.ssh_config,
+                        fuchsia_out_dir=args.fuchsia_out_dir,
+                        system_log_file=system_log_file,
+                        os_check=args.os_check)
