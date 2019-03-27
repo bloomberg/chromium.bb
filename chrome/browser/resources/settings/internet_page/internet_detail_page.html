@@ -224,8 +224,7 @@
       <template is="dom-if" if="[[showCellularSim_(networkProperties_)]]"
           restamp>
         <div class="settings-box single-column stretch">
-          <network-siminfo
-              editable on-siminfo-change="onNetworkPropertyChange_"
+          <network-siminfo on-siminfo-change="onNetworkPropertyChange_"
               network-properties="[[networkProperties_]]"
               networking-private="[[networkingPrivate]]">
           </network-siminfo>
@@ -309,7 +308,7 @@
 
             <!-- APN -->
             <template is="dom-if" if="[[isCellular_(networkProperties_)]]">
-              <network-apnlist editable on-apn-change="onNetworkPropertyChange_"
+              <network-apnlist on-apn-change="onNetworkPropertyChange_"
                   network-properties="[[networkProperties_]]">
               </network-apnlist>
             </template>
@@ -317,11 +316,10 @@
             <!-- IP Config, Nameservers -->
             <template is="dom-if"
                 if="[[isRememberedOrConnected_(networkProperties_)]]">
-              <network-ip-config editable on-ip-change="onIPConfigChange_"
+              <network-ip-config on-ip-change="onIPConfigChange_"
                   network-properties="[[networkProperties_]]">
               </network-ip-config>
-              <network-nameservers editable
-                  on-nameservers-change="onIPConfigChange_"
+              <network-nameservers on-nameservers-change="onIPConfigChange_"
                   network-properties="[[networkProperties_]]">
               </network-nameservers>
             </template>

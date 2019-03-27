@@ -103,8 +103,8 @@
             <template is="dom-repeat" items="[[nameservers_]]">
               <cr-input id="nameserver[[index]]" value="[[item]]"
                   on-change="onValueChange_"
-                  disabled="[[!canEditCustomNameServers_(editable,
-                      nameserversType_, networkProperties)]]">
+                  disabled="[[!canEditCustomNameServers_(nameserversType_,
+                      networkProperties)]]">
               </cr-input>
             </template>
           </div>

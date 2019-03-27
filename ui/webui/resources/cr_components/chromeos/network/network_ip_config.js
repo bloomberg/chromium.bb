@@ -4,8 +4,7 @@
 
 /**
  * @fileoverview Polymer element for displaying the IP Config properties for
- * a network state. TODO(stevenjb): Allow editing of static IP configurations
- * when 'editable' is true.
+ * a network state.
  */
 Polymer({
   is: 'network-ip-config',
@@ -21,14 +20,6 @@ Polymer({
     networkProperties: {
       type: Object,
       observer: 'networkPropertiesChanged_',
-    },
-
-    /**
-     * Whether or not the IP Address can be edited.
-     */
-    editable: {
-      type: Boolean,
-      value: false,
     },
 
     /**
@@ -112,16 +103,12 @@ Polymer({
 
   /**
    * Checks whether IP address config type can be changed.
-   * @param {boolean} editable
    * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean} true only if 'IPAddressConfigType' as well as all other
    * IP address config related fields are editable.
    * @private
    */
-  canChangeIPConfigType_: function(editable, networkProperties) {
-    if (!editable) {
-      return false;
-    }
+  canChangeIPConfigType_: function(networkProperties) {
     const controlledProps = [
       'IPAddressConfigType', 'StaticIPConfig.IPAddress',
       'StaticIPConfig.RoutingPrefix', 'StaticIPConfig.Gateway'
@@ -226,7 +213,7 @@ Polymer({
    * @private
    */
   getIPEditFields_: function() {
-    if (!this.editable || this.automatic_) {
+    if (this.automatic_) {
       return {};
     }
     return {
