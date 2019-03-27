@@ -264,7 +264,6 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   bool has_incompatible_applications =
-      IncompatibleApplicationsUpdater::IsWarningEnabled() &&
       IncompatibleApplicationsUpdater::HasCachedApplications();
   html_source->AddBoolean("showIncompatibleApplications",
                           has_incompatible_applications);

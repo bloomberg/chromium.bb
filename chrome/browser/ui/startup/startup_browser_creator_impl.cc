@@ -575,7 +575,6 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
     // Check if there are any incompatible applications cached from the last
     // Chrome run.
     has_incompatible_applications =
-        IncompatibleApplicationsUpdater::IsWarningEnabled() &&
         IncompatibleApplicationsUpdater::HasCachedApplications();
   }
 #endif
