@@ -4,9 +4,16 @@
 
 #include "components/viz/service/display_embedder/skia_output_device.h"
 
+#include <utility>
+
+#include "third_party/skia/include/core/SkSurface.h"
+#include "ui/gfx/presentation_feedback.h"
+
 namespace viz {
 
-SkiaOutputDevice::SkiaOutputDevice() = default;
+SkiaOutputDevice::SkiaOutputDevice(
+    DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
+    : did_swap_buffer_complete_callback_(did_swap_buffer_complete_callback) {}
 
 SkiaOutputDevice::~SkiaOutputDevice() = default;
 
@@ -14,9 +21,45 @@ bool SkiaOutputDevice::SupportPostSubBuffer() {
   return false;
 }
 
-gfx::SwapResult SkiaOutputDevice::PostSubBuffer(const gfx::Rect& rect) {
+gfx::SwapResponse SkiaOutputDevice::PostSubBuffer(
+    const gfx::Rect& rect,
+    BufferPresentedCallback feedback) {
   NOTREACHED();
-  return gfx::SwapResult::SWAP_FAILED;
+  StartSwapBuffers(std::move(feedback));
+  return FinishSwapBuffers(gfx::SwapResult::SWAP_FAILED);
+}
+
+void SkiaOutputDevice::StartSwapBuffers(
+    base::Optional<BufferPresentedCallback> feedback) {
+  DCHECK(!feedback_);
+  DCHECK(!params_);
+
+  feedback_ = std::move(feedback);
+  params_.emplace();
+  params_->swap_response.swap_id = ++swap_id_;
+  params_->swap_response.swap_start = base::TimeTicks::Now();
+}
+
+gfx::SwapResponse SkiaOutputDevice::FinishSwapBuffers(gfx::SwapResult result) {
+  DCHECK(params_);
+
+  params_->swap_response.result = result;
+  params_->swap_response.swap_end = base::TimeTicks::Now();
+  if (feedback_) {
+    std::move(*feedback_)
+        .Run(gfx::PresentationFeedback(
+            params_->swap_response.swap_start, base::TimeDelta() /* interval */,
+            params_->swap_response.result == gfx::SwapResult::SWAP_ACK
+                ? 0
+                : gfx::PresentationFeedback::Flags::kFailure));
+  }
+  did_swap_buffer_complete_callback_.Run(
+      *params_, gfx::Size(draw_surface_->width(), draw_surface_->height()));
+
+  feedback_.reset();
+  auto response = params_->swap_response;
+  params_.reset();
+  return response;
 }
 
 }  // namespace viz
