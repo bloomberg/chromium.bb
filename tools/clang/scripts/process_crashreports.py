@@ -63,6 +63,7 @@ def ProcessCrashreport(base, source):
     sys.stdout.flush()
     subprocess.check_call([sys.executable, GSUTIL, '-q', 'cp', tmp_name, dest])
     print 'done'
+    print '    %s' % dest
   finally:
     if tmp_name:
       os.remove(tmp_name)
