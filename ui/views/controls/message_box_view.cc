@@ -145,7 +145,7 @@ void MessageBoxView::SetLink(const base::string16& text,
 }
 
 void MessageBoxView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kAlert;
+  node_data->role = ax::mojom::Role::kAlertDialog;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

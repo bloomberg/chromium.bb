@@ -141,6 +141,15 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
   view_->GetAccessibleNodeData(data);
   if (custom_data_.role != ax::mojom::Role::kUnknown)
     data->role = custom_data_.role;
+  if (data->role == ax::mojom::Role::kAlertDialog) {
+    // When an alert dialog is used, indicate this with xml-roles. This helps
+    // JAWS understand that it's a dialog and not just an ordinary alert, even
+    // though xml-roles is normally used to expose ARIA roles in web content.
+    // Specifically, this enables the JAWS Insert+T read window title command.
+    // Note: if an alert has focusable descendants such as buttons, it should
+    // use kAlertDialog, not kAlert.
+    data->AddStringAttribute(ax::mojom::StringAttribute::kRole, "alertdialog");
+  }
 
   if (custom_data_.HasStringAttribute(ax::mojom::StringAttribute::kName)) {
     data->SetName(
