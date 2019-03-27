@@ -7,6 +7,7 @@
 #include <utility>
 #include "base/version.h"
 #include "build/build_config.h"
+#include "chrome/updater/updater_constants.h"
 #include "components/update_client/network.h"
 #include "components/update_client/protocol_handler.h"
 #include "components/version_info/version_info.h"
@@ -22,9 +23,6 @@ namespace {
 // Default time constants.
 const int kDelayOneMinute = 60;
 const int kDelayOneHour = kDelayOneMinute * 60;
-
-const char kUpdaterJSONDefaultUrl[] =
-    "https://update.googleapis.com/service/update2/json";
 
 }  // namespace
 
