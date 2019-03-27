@@ -25,8 +25,15 @@ class AddressFormLabelFormatter : public LabelFormatter {
 
   ~AddressFormLabelFormatter() override;
 
-  std::vector<base::string16> GetLabels(
-      const std::vector<AutofillProfile*>& profiles) const override;
+  base::string16 GetLabelForFocusedGroup(const AutofillProfile& profile,
+                                         FieldTypeGroup group) const override;
+
+ private:
+  // True if this formatter's associated form has a street address field. A
+  // form may have an address-related field, e.g. zip code, without having a
+  // street address field. If a form does not include a street address field,
+  // street addresses should not appear in labels.
+  bool form_has_street_address_;
 };
 
 }  // namespace autofill

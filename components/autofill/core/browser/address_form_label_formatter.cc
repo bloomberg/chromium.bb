@@ -12,22 +12,26 @@ AddressFormLabelFormatter::AddressFormLabelFormatter(
     const std::string& app_locale,
     ServerFieldType focused_field_type,
     const std::vector<ServerFieldType>& field_types)
-    : LabelFormatter(app_locale, focused_field_type, field_types) {}
+    : LabelFormatter(app_locale, focused_field_type, field_types),
+      form_has_street_address_(HasStreetAddress(field_types_for_labels())) {}
 
 AddressFormLabelFormatter::~AddressFormLabelFormatter() {}
 
-std::vector<base::string16> AddressFormLabelFormatter::GetLabels(
-    const std::vector<AutofillProfile*>& profiles) const {
-  std::vector<base::string16> labels;
-  for (const AutofillProfile* profile : profiles) {
-    if (GetFocusedGroup() == ADDRESS_HOME) {
-      labels.push_back(GetLabelName(*profile, app_locale()));
-    } else {
-      labels.push_back(GetLabelNationalAddress(*profile, app_locale(),
-                                               field_types_for_labels()));
-    }
+base::string16 AddressFormLabelFormatter::GetLabelForFocusedGroup(
+    const AutofillProfile& profile,
+    FieldTypeGroup group) const {
+  if (group != ADDRESS_HOME) {
+    return GetLabelNationalAddress(profile, app_locale(),
+                                   field_types_for_labels());
+  } else {
+    std::vector<base::string16> label_parts;
+    AddLabelPartIfNotEmpty(GetLabelName(profile, app_locale()), &label_parts);
+    AddLabelPartIfNotEmpty(GetLabelForFocusedAddress(
+                               focused_field_type(), form_has_street_address_,
+                               profile, app_locale(), field_types_for_labels()),
+                           &label_parts);
+    return ConstructLabelLine(label_parts);
   }
-  return labels;
 }
 
 }  // namespace autofill

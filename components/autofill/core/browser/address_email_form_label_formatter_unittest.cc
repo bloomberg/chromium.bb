@@ -10,13 +10,11 @@
 
 #include "base/guid.h"
 #include "base/strings/string16.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/label_formatter_test_utils.h"
-#include "components/autofill/core/browser/label_formatter_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,8 +40,7 @@ TEST(AddressEmailFormLabelFormatterTest, GetLabelsWithMissingProfiles) {
   EXPECT_TRUE(formatter->GetLabels(std::vector<AutofillProfile*>()).empty());
 }
 
-TEST(AddressEmailFormLabelFormatterTest,
-     GetLabelsForUSProfilesAndFocusedNonAddressNonEmail) {
+TEST(AddressEmailFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedName) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "John", "F", "Kennedy", "jfk@gmail.com", "",
@@ -146,8 +143,7 @@ TEST(AddressEmailFormLabelFormatterTest,
                   base::ASCIIToUTF16("141 Franklin St")));
 }
 
-TEST(AddressEmailFormLabelFormatterTest,
-     GetLabelsForBRProfilesAndFocusedNonAddressNonEmail) {
+TEST(AddressEmailFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedName) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Tarsila", "do", "Amaral", "tarsila@aol.com",

@@ -10,18 +10,13 @@
 
 #include "base/guid.h"
 #include "base/strings/string16.h"
-#include "base/strings/string_piece.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/label_formatter_utils.h"
-#include "components/grit/components_scaled_resources.h"
-#include "components/strings/grit/components_strings.h"
+#include "components/autofill/core/browser/label_formatter_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using testing::ElementsAre;
 
@@ -32,21 +27,13 @@ std::vector<ServerFieldType> GetNamePhoneAndEmailFieldTypes() {
   return {NAME_FIRST, NAME_LAST, PHONE_HOME_WHOLE_NUMBER, EMAIL_ADDRESS};
 }
 
-base::string16 FormatExpectedLabel(base::StringPiece label_part1,
-                                   base::StringPiece label_part2) {
-  return l10n_util::GetStringFUTF16(IDS_AUTOFILL_SUGGESTION_LABEL,
-                                    base::UTF8ToUTF16(label_part1),
-                                    base::UTF8ToUTF16(label_part2));
-}
-
 TEST(ContactFormLabelFormatterTest, GetLabelsWithMissingProfiles) {
   const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
       "en-US", NAME_FIRST, GetNamePhoneAndEmailFieldTypes());
   EXPECT_TRUE(formatter->GetLabels(std::vector<AutofillProfile*>()).empty());
 }
 
-TEST(ContactFormLabelFormatterTest,
-     GetLabelsForUSProfilesAndFocusedNonEmailNonPhone) {
+TEST(ContactFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedName) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "John", "F", "Kennedy", "jfk@gmail.com", "",
@@ -150,8 +137,7 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedPhone) {
                   base::ASCIIToUTF16("Paul Revere"), base::string16()));
 }
 
-TEST(ContactFormLabelFormatterTest,
-     GetLabelsForBRProfilesAndFocusedNonEmailNonPhone) {
+TEST(ContactFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedName) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Tarsila", "do", "Amaral", "tarsila@aol.com",
@@ -223,8 +209,7 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedPhone) {
                   FormatExpectedLabel("Artur Avila", "aavila@uol.com.br")));
 }
 
-TEST(ContactFormLabelFormatterTest,
-     GetLabelsForNameAndPhoneWithFocusedNonPhone) {
+TEST(ContactFormLabelFormatterTest, GetLabelsForNameAndPhoneWithFocusedName) {
   AutofillProfile profile =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "John", "F", "Kennedy", "jfk@gmail.com", "",
@@ -257,8 +242,7 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForNameAndPhoneWithFocusedPhone) {
               ElementsAre(base::ASCIIToUTF16("John F Kennedy")));
 }
 
-TEST(ContactFormLabelFormatterTest,
-     GetLabelsForNameAndEmailWithFocusedNonEmail) {
+TEST(ContactFormLabelFormatterTest, GetLabelsForNameAndEmailWithFocusedName) {
   AutofillProfile profile =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "John", "F", "Kennedy", "jfk@gmail.com", "",

@@ -14,11 +14,11 @@ AddressContactFormLabelFormatter::AddressContactFormLabelFormatter(
 
 AddressContactFormLabelFormatter::~AddressContactFormLabelFormatter() {}
 
-std::vector<base::string16> AddressContactFormLabelFormatter::GetLabels(
-    const std::vector<AutofillProfile*>& profiles) const {
-  // TODO(crbug.com/936168): Implement GetLabels().
-  std::vector<base::string16> labels;
-  return labels;
+base::string16 AddressContactFormLabelFormatter::GetLabelForFocusedGroup(
+    const AutofillProfile& profile,
+    FieldTypeGroup group) const {
+  // TODO(crbug.com/936168): Implement GetLabelForFocusedGroup().
+  return base::string16();
 }
 
 }  // namespace autofill

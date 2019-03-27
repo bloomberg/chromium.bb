@@ -26,24 +26,10 @@ class AddressEmailFormLabelFormatter : public LabelFormatter {
 
   ~AddressEmailFormLabelFormatter() override;
 
-  std::vector<base::string16> GetLabels(
-      const std::vector<AutofillProfile*>& profiles) const override;
+  base::string16 GetLabelForFocusedGroup(const AutofillProfile& profile,
+                                         FieldTypeGroup group) const override;
 
  private:
-  // Returns a label to show the user when the focused field is related to
-  // addresses.
-  base::string16 GetLabelForFocusedAddress(
-      const AutofillProfile& profile) const;
-
-  // Returns a label to show the user when the focused field is related to
-  // email addresses.
-  base::string16 GetLabelForFocusedEmail(const AutofillProfile& profile) const;
-
-  // Returns a label to show the user when the focused field is related to
-  // neither email addresses nor addresses. This is used, for example, when the
-  // user focuses on a name-related field.
-  base::string16 GetLabelDefault(const AutofillProfile& profile) const;
-
   // True if this formatter's associated form has a street address field. A
   // form may have an address-related field, e.g. zip code, without having a
   // street address field. If a form does not include a street address field,

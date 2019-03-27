@@ -23,10 +23,10 @@ class LabelFormatter {
                  const std::vector<ServerFieldType>& field_types);
   virtual ~LabelFormatter();
 
-  // Returns a collection of |labels| formed by extracting useful disambiguating
+  // Returns a collection of labels formed by extracting useful disambiguating
   // information from a collection of |profiles|.
-  virtual std::vector<base::string16> GetLabels(
-      const std::vector<AutofillProfile*>& profiles) const = 0;
+  std::vector<base::string16> GetLabels(
+      const std::vector<AutofillProfile*>& profiles) const;
 
   // Creates a form-specific LabelFormatter according to |field_types|. If the
   // given |field_types| do not correspond to a LabelFormatter, then nullptr
@@ -37,16 +37,26 @@ class LabelFormatter {
       const std::vector<ServerFieldType>& field_types);
 
  protected:
+  // Returns a label to show the user. The elements of the label and their
+  // ordering depend on the kind of LabelFormatter, the data in |profile|, and
+  // on the focused |group|.
+  virtual base::string16 GetLabelForFocusedGroup(
+      const AutofillProfile& profile,
+      FieldTypeGroup group) const = 0;
+
+  // Returns the FieldTypeGroup with which focused_field_type_ is associated.
+  // Billing field types are mapped to their corresponding home address field
+  // types. For example, if focused_field_type_ is ADDRESS_BILLING_ZIP, then
+  // the resulting FieldTypeGroup is ADDRESS_HOME instead of ADDRESS_BILLING.
+  FieldTypeGroup GetFocusedNonBillingGroup() const;
+
   const std::string& app_locale() const { return app_locale_; }
+
   ServerFieldType focused_field_type() const { return focused_field_type_; }
+
   const std::vector<ServerFieldType>& field_types_for_labels() const {
     return field_types_for_labels_;
   }
-  // Returns the FieldTypeGroup with which |focused_field_type_| is associated.
-  // Billing field types are mapped to their corresponding home address field
-  // types. For example, if |focused_field_type_| is ADDRESS_BILLING_ZIP, then
-  // the resulting FieldTypeGroup is ADDRESS_HOME instead of ADDRESS_BILLING.
-  FieldTypeGroup GetFocusedGroup() const;
 
  private:
   // The locale for which to generate labels. This reflects the language and
@@ -58,8 +68,8 @@ class LabelFormatter {
   ServerFieldType focused_field_type_;
 
   // A collection of field types that can be used to make labels. It includes
-  // types related to names, addresses, email addresses, and phone numbers.
-  // It excludes types related to countries and to focused_group_.
+  // only types related to names, addresses, email addresses, and phone
+  // numbers. It excludes types related to countries.
   std::vector<ServerFieldType> field_types_for_labels_;
 };
 

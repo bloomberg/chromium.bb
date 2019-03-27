@@ -17,54 +17,29 @@ AddressEmailFormLabelFormatter::AddressEmailFormLabelFormatter(
 
 AddressEmailFormLabelFormatter::~AddressEmailFormLabelFormatter() {}
 
-std::vector<base::string16> AddressEmailFormLabelFormatter::GetLabels(
-    const std::vector<AutofillProfile*>& profiles) const {
-  std::vector<base::string16> labels;
+// Note that the order--name, address, and email--in which parts of the label
+// are added ensures that the label is formatted correctly for |group| and for
+// this kind of formatter.
+base::string16 AddressEmailFormLabelFormatter::GetLabelForFocusedGroup(
+    const AutofillProfile& profile,
+    FieldTypeGroup group) const {
+  std::vector<base::string16> label_parts;
 
-  for (const AutofillProfile* profile : profiles) {
-    switch (GetFocusedGroup()) {
-      case ADDRESS_HOME:
-        labels.push_back(GetLabelForFocusedAddress(*profile));
-        break;
-
-      case EMAIL:
-        labels.push_back(GetLabelForFocusedEmail(*profile));
-        break;
-
-      default:
-        labels.push_back(GetLabelDefault(*profile));
-    }
+  if (group != NAME) {
+    AddLabelPartIfNotEmpty(GetLabelName(profile, app_locale()), &label_parts);
   }
-  return labels;
-}
 
-base::string16 AddressEmailFormLabelFormatter::GetLabelForFocusedAddress(
-    const AutofillProfile& profile) const {
-  std::vector<base::string16> label_parts;
-  AddLabelPartIfNotEmpty(GetLabelName(profile, app_locale()), &label_parts);
-  AddLabelPartIfNotEmpty(GetLabelEmail(profile, app_locale()), &label_parts);
-  return ConstructLabelLine(label_parts);
-}
+  if (group != ADDRESS_HOME) {
+    AddLabelPartIfNotEmpty(
+        GetLabelAddress(form_has_street_address_, profile, app_locale(),
+                        field_types_for_labels()),
+        &label_parts);
+  }
 
-base::string16 AddressEmailFormLabelFormatter::GetLabelForFocusedEmail(
-    const AutofillProfile& profile) const {
-  std::vector<base::string16> label_parts;
-  AddLabelPartIfNotEmpty(GetLabelName(profile, app_locale()), &label_parts);
-  AddLabelPartIfNotEmpty(
-      GetLabelAddress(form_has_street_address_, profile, app_locale(),
-                      field_types_for_labels()),
-      &label_parts);
-  return ConstructLabelLine(label_parts);
-}
+  if (group != EMAIL) {
+    AddLabelPartIfNotEmpty(GetLabelEmail(profile, app_locale()), &label_parts);
+  }
 
-base::string16 AddressEmailFormLabelFormatter::GetLabelDefault(
-    const AutofillProfile& profile) const {
-  std::vector<base::string16> label_parts;
-  AddLabelPartIfNotEmpty(
-      GetLabelAddress(form_has_street_address_, profile, app_locale(),
-                      field_types_for_labels()),
-      &label_parts);
-  AddLabelPartIfNotEmpty(GetLabelEmail(profile, app_locale()), &label_parts);
   return ConstructLabelLine(label_parts);
 }
 

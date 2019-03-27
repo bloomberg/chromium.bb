@@ -17,15 +17,6 @@ AddressPhoneFormLabelFormatter::AddressPhoneFormLabelFormatter(
 
 AddressPhoneFormLabelFormatter::~AddressPhoneFormLabelFormatter() {}
 
-std::vector<base::string16> AddressPhoneFormLabelFormatter::GetLabels(
-    const std::vector<AutofillProfile*>& profiles) const {
-  std::vector<base::string16> labels;
-  for (const AutofillProfile* profile : profiles) {
-    labels.push_back(GetLabelForFocusedGroup(*profile, GetFocusedGroup()));
-  }
-  return labels;
-}
-
 // Note that the order--phone, name, and address--in which parts of the label
 // are added ensures that the label is formatted correctly for the focused
 // group.
@@ -38,7 +29,7 @@ base::string16 AddressPhoneFormLabelFormatter::GetLabelForFocusedGroup(
     AddLabelPartIfNotEmpty(GetLabelPhone(profile, app_locale()), &label_parts);
   }
 
-  if (group == PHONE_HOME || group == ADDRESS_HOME) {
+  if (group != NAME) {
     AddLabelPartIfNotEmpty(GetLabelName(profile, app_locale()), &label_parts);
   }
 
