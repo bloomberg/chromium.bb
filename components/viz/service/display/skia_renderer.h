@@ -110,15 +110,23 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
       const gfx::QuadF* draw_region,
       const gfx::Rect* scissor_rect,
       base::Optional<SkAutoCanvasRestore>* auto_canvas_restore);
+  // Callers should init an SkAutoCanvasRestore before calling this function.
+  void PrepareCanvas(const gfx::Rect* scissor_rect, const gfx::Transform* cdt);
 
   DrawQuadParams CalculateDrawQuadParams(const DrawQuad* quad,
                                          const gfx::QuadF* draw_region);
+  // In most cases alpha should be params.opacity, but some quad types apply
+  // transparency at a different point in the rendering.
+  SkCanvas::ImageSetEntry MakeEntry(const DrawQuadParams& params,
+                                    const SkImage* image,
+                                    const gfx::RectF& src,
+                                    int matrix_index,
+                                    float alpha);
 
   bool MustFlushBatchedQuads(const DrawQuad* new_quad,
                              const DrawQuadParams& params);
-  void AddQuadToBatch(const DrawQuad* quad,
-                      const DrawQuadParams& params,
-                      sk_sp<SkImage> image,
+  void AddQuadToBatch(const DrawQuadParams& params,
+                      const SkImage* image,
                       const gfx::RectF& tex_coords);
   void FlushBatchedQuads();
 
@@ -136,7 +144,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void DrawTextureQuad(const TextureDrawQuad* quad, SkPaint* paint);
   void DrawStreamVideoQuad(const StreamVideoDrawQuad* quad, SkPaint* paint);
   void DrawTileDrawQuad(const TileDrawQuad* quad, const DrawQuadParams& params);
-  void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad, SkPaint* paint);
+  void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
+                        const DrawQuadParams& params);
   void DrawUnsupportedQuad(const DrawQuad* quad, SkPaint* paint);
   bool CalculateRPDQParams(sk_sp<SkImage> src_image,
                            const RenderPassDrawQuad* quad,
@@ -208,7 +217,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   struct BatchedQuadState {
     gfx::Rect scissor_rect;
     SkBlendMode blend_mode;
-    bool is_nearest_neighbor;
+    SkFilterQuality filter_quality;
     bool has_scissor_rect;
   };
   BatchedQuadState batched_quad_state_;
