@@ -189,7 +189,13 @@ PrintPreviewSettingsSelectTest = class extends NewPrintPreviewTest {
   }
 };
 
-TEST_F('PrintPreviewSettingsSelectTest', 'All', function() {
+// TODO(https://crbug.com/945846): Flaky on Mac.
+GEN('#if defined(OS_MACOSX)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+TEST_F('PrintPreviewSettingsSelectTest', 'MAYBE_All', function() {
   mocha.run();
 });
 
