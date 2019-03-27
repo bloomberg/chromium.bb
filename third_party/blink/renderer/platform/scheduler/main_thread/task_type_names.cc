@@ -131,6 +131,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "InternalTranslation";
     case TaskType::kInternalContentCapture:
       return "InternalContentCapture";
+    case TaskType::kInternalNavigation:
+      return "InternalNavigation";
     case TaskType::kCount:
       return "Count";
   }

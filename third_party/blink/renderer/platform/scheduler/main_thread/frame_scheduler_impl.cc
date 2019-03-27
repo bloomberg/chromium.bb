@@ -458,6 +458,9 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
       return UnpausableTaskQueueTraits();
     case TaskType::kInternalTranslation:
       return ForegroundOnlyTaskQueueTraits();
+    // Navigation IPCs do not run using virtual time to avoid hanging.
+    case TaskType::kInternalNavigation:
+      return DoesNotUseVirtualTimeTaskQueueTraits();
     case TaskType::kDeprecatedNone:
     case TaskType::kMainThreadTaskQueueV8:
     case TaskType::kMainThreadTaskQueueCompositor:
@@ -1078,6 +1081,11 @@ FrameSchedulerImpl::UnpausableTaskQueueTraits() {
 MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::ForegroundOnlyTaskQueueTraits() {
   return ThrottleableTaskQueueTraits().SetCanRunInBackground(false);
+}
+
+MainThreadTaskQueue::QueueTraits
+FrameSchedulerImpl::DoesNotUseVirtualTimeTaskQueueTraits() {
+  return UnpausableTaskQueueTraits().SetShouldUseVirtualTime(false);
 }
 
 }  // namespace scheduler

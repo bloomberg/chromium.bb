@@ -202,6 +202,9 @@ enum class TaskType : unsigned {
   // Task used for ContentCapture.
   kInternalContentCapture = 61,
 
+  // Task used for Navigations.
+  kInternalNavigation = 63,
+
   ///////////////////////////////////////
   // The following task types are only for thread-local queues.
   ///////////////////////////////////////
@@ -221,7 +224,7 @@ enum class TaskType : unsigned {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 63,
+  kCount = 64,
 };
 
 }  // namespace blink

@@ -166,6 +166,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kInternalInspector:
     case TaskType::kInternalWorker:
     case TaskType::kInternalTest:
+    case TaskType::kInternalNavigation:
       // UnthrottledTaskRunner is generally discouraged in future.
       // TODO(nhiroki): Identify which tasks can be throttled / suspendable and
       // move them into other task runners. See also comments in

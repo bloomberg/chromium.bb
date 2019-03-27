@@ -59,7 +59,7 @@ void NavigationClient::CommitFailedNavigation(
 void NavigationClient::Bind(mojom::NavigationClientAssociatedRequest request) {
   navigation_client_binding_.Bind(
       std::move(request),
-      render_frame_->GetTaskRunner(blink::TaskType::kInternalIPC));
+      render_frame_->GetTaskRunner(blink::TaskType::kInternalNavigation));
   SetDisconnectionHandler();
 }
 
