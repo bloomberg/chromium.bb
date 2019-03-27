@@ -570,6 +570,8 @@ IFACEMETHODIMP BrowserAccessibilityComWin::setSelection(LONG selection_index,
   return S_OK;
 }
 
+// IAccessibleText::get_attributes()
+// Returns text attributes -- not HTML attributes!
 IFACEMETHODIMP BrowserAccessibilityComWin::get_attributes(
     LONG offset,
     LONG* start_offset,
@@ -598,15 +600,8 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_attributes(
   const std::vector<base::string16>& attributes =
       offset_to_text_attributes().find(*start_offset)->second;
 
-  for (const base::string16& attribute : attributes) {
-    // Work around JAWS crash in JAWS <= 17, and unpatched versions of JAWS
-    // 2018/2019.
-    // TODO(accessibility) Remove once JAWS <= 17 is longer a concern.
-    // Wait until 2021 for this, as JAWS users are slow to update.
-    if (attribute == L"srcdoc" || attribute == L"data-srcdoc")
-      continue;
+  for (const base::string16& attribute : attributes)
     attributes_str += attribute + L';';
-  }
 
   // Returning an empty string is valid and indicates no attributes.
   // This is better than returning S_FALSE which the screen reader
@@ -1124,6 +1119,8 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_nodeInfo(
   return S_OK;
 }
 
+// ISimpleDOMNode::get_attributes()
+// Returns HTML attributes -- not text attributes!
 IFACEMETHODIMP BrowserAccessibilityComWin::get_attributes(USHORT max_attribs,
                                                           BSTR* attrib_names,
                                                           SHORT* name_space_id,
@@ -1142,8 +1139,15 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_attributes(USHORT max_attribs,
     *num_attribs = owner()->GetHtmlAttributes().size();
 
   for (USHORT i = 0; i < *num_attribs; ++i) {
-    attrib_names[i] = SysAllocString(
-        base::UTF8ToUTF16(owner()->GetHtmlAttributes()[i].first).c_str());
+    const std::string& attribute = owner()->GetHtmlAttributes()[i].first;
+    // Work around JAWS crash in JAWS <= 17, and unpatched versions of JAWS
+    // 2018/2019.
+    // TODO(accessibility) Remove once JAWS <= 17 is no longer a concern.
+    // Wait until 2021 for this, as JAWS users are slow to update.
+    if (attribute == "srcdoc" || attribute == "data-srcdoc")
+      continue;
+
+    attrib_names[i] = SysAllocString(base::UTF8ToUTF16(attribute).c_str());
     name_space_id[i] = 0;
     attrib_values[i] = SysAllocString(
         base::UTF8ToUTF16(owner()->GetHtmlAttributes()[i].second).c_str());
@@ -1151,6 +1155,8 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_attributes(USHORT max_attribs,
   return S_OK;
 }
 
+// ISimpleDOMNode::get_attributesForNames()
+// Returns HTML attributes -- not text attributes!
 IFACEMETHODIMP BrowserAccessibilityComWin::get_attributesForNames(
     USHORT num_attribs,
     BSTR* attrib_names,
