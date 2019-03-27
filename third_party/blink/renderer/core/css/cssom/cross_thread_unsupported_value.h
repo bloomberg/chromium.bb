@@ -25,6 +25,7 @@ class CORE_EXPORT CrossThreadUnsupportedValue final
     return StyleValueType::kUnknownType;
   }
   CSSStyleValue* ToCSSStyleValue() override;
+  std::unique_ptr<CrossThreadStyleValue> IsolatedCopy() const override;
 
   bool operator==(const CrossThreadStyleValue&) const override;
 

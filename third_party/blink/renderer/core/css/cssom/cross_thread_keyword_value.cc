@@ -19,4 +19,10 @@ bool CrossThreadKeywordValue::operator==(
   return false;
 }
 
+std::unique_ptr<CrossThreadStyleValue> CrossThreadKeywordValue::IsolatedCopy()
+    const {
+  return std::make_unique<CrossThreadKeywordValue>(
+      keyword_value_.IsolatedCopy());
+}
+
 }  // namespace blink

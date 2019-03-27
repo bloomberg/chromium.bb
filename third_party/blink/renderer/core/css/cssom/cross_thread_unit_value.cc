@@ -19,4 +19,9 @@ bool CrossThreadUnitValue::operator==(
   return false;
 }
 
+std::unique_ptr<CrossThreadStyleValue> CrossThreadUnitValue::IsolatedCopy()
+    const {
+  return std::make_unique<CrossThreadUnitValue>(value_, unit_);
+}
+
 }  // namespace blink
