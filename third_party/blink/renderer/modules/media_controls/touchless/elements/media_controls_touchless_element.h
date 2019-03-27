@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_NON_TOUCH_ELEMENTS_MEDIA_CONTROLS_NON_TOUCH_ELEMENT_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_NON_TOUCH_ELEMENTS_MEDIA_CONTROLS_NON_TOUCH_ELEMENT_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_TOUCHLESS_ELEMENTS_MEDIA_CONTROLS_TOUCHLESS_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_TOUCHLESS_ELEMENTS_MEDIA_CONTROLS_TOUCHLESS_ELEMENT_H_
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/modules/media_controls/non_touch/media_controls_non_touch_media_event_listener_observer.h"
+#include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_media_event_listener_observer.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
 
-class MediaControlsNonTouchImpl;
+class MediaControlsTouchlessImpl;
 
-class MediaControlsNonTouchElement
-    : public MediaControlsNonTouchMediaEventListenerObserver {
+class MediaControlsTouchlessElement
+    : public MediaControlsTouchlessMediaEventListenerObserver {
  public:
   void Trace(blink::Visitor* visitor) override;
 
@@ -31,14 +31,14 @@ class MediaControlsNonTouchElement
   void OnKeyUp(KeyboardEvent* event) override {}
 
  protected:
-  MediaControlsNonTouchElement(MediaControlsNonTouchImpl& media_controls);
+  MediaControlsTouchlessElement(MediaControlsTouchlessImpl& media_controls);
 
  private:
-  Member<MediaControlsNonTouchImpl> media_controls_;
+  Member<MediaControlsTouchlessImpl> media_controls_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaControlsNonTouchElement);
+  DISALLOW_COPY_AND_ASSIGN(MediaControlsTouchlessElement);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_NON_TOUCH_ELEMENTS_MEDIA_CONTROLS_NON_TOUCH_ELEMENT_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_TOUCHLESS_ELEMENTS_MEDIA_CONTROLS_TOUCHLESS_ELEMENT_H_

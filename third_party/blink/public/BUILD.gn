@@ -627,7 +627,7 @@ group("scaled_resources") {
   ]
 
   if (is_android && notouch_build) {
-    public_deps += [ "//third_party/blink/renderer/modules/media_controls:media_controls_non_touch_resources" ]
+    public_deps += [ "//third_party/blink/renderer/modules/media_controls:media_controls_touchless_resources" ]
   }
 }
 
@@ -638,7 +638,7 @@ repack("scaled_resources_100_percent") {
     "$root_gen_dir/third_party/blink/renderer/modules/media_controls/resources/media_controls_resources_100_percent.pak",
   ]
   if (is_android && notouch_build) {
-    sources += [ "$root_gen_dir/third_party/blink/renderer/modules/media_controls/non_touch/resources/media_controls_non_touch_resources.pak" ]
+    sources += [ "$root_gen_dir/third_party/blink/renderer/modules/media_controls/touchless/resources/media_controls_touchless_resources.pak" ]
   }
   deps = [
     ":scaled_resources",
@@ -652,7 +652,7 @@ repack("scaled_resources_200_percent") {
     "$root_gen_dir/third_party/blink/renderer/modules/media_controls/resources/media_controls_resources_200_percent.pak",
   ]
   if (is_android && notouch_build) {
-    sources += [ "$root_gen_dir/third_party/blink/renderer/modules/media_controls/non_touch/resources/media_controls_non_touch_resources.pak" ]
+    sources += [ "$root_gen_dir/third_party/blink/renderer/modules/media_controls/touchless/resources/media_controls_touchless_resources.pak" ]
   }
   deps = [
     ":scaled_resources",

@@ -370,7 +370,7 @@
   "third_party/blink/public/blink_resources.grd": {
     "includes": [25500],
   },
-  "third_party/blink/renderer/modules/media_controls/non_touch/resources/media_controls_non_touch_resources.grd": {
+  "third_party/blink/renderer/modules/media_controls/touchless/resources/media_controls_touchless_resources.grd": {
     "structures": [25590],
   },
   "third_party/blink/renderer/modules/media_controls/resources/media_controls_resources.grd": {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/media_controls/non_touch/media_controls_non_touch_impl.h"
+#include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_impl.h"
 
 #include <memory>
 
@@ -26,7 +26,7 @@ namespace blink {
 
 namespace {
 
-class MockWebMediaPlayerForNonTouchImpl : public EmptyWebMediaPlayer {
+class MockWebMediaPlayerForTouchlessImpl : public EmptyWebMediaPlayer {
  public:
   WebTimeRanges Seekable() const override { return seekable_; }
   bool HasVideo() const override { return true; }
@@ -34,9 +34,9 @@ class MockWebMediaPlayerForNonTouchImpl : public EmptyWebMediaPlayer {
   WebTimeRanges seekable_;
 };
 
-class MockChromeClientForNonTouchImpl : public EmptyChromeClient {
+class MockChromeClientForTouchlessImpl : public EmptyChromeClient {
  public:
-  explicit MockChromeClientForNonTouchImpl()
+  explicit MockChromeClientForTouchlessImpl()
       : orientation_(kWebScreenOrientationPortraitPrimary) {}
 
   WebScreenInfo GetScreenInfo() const override {
@@ -53,31 +53,31 @@ class MockChromeClientForNonTouchImpl : public EmptyChromeClient {
   WebScreenOrientationType orientation_;
 };
 
-class MediaControlsNonTouchImplTest : public PageTestBase {
+class MediaControlsTouchlessImplTest : public PageTestBase {
  protected:
   void SetUp() override { InitializePage(); }
 
   void InitializePage() {
     Page::PageClients clients;
     FillWithEmptyClients(clients);
-    chrome_client_ = MakeGarbageCollected<MockChromeClientForNonTouchImpl>();
+    chrome_client_ = MakeGarbageCollected<MockChromeClientForTouchlessImpl>();
     clients.chrome_client = chrome_client_;
     SetupPageWithClients(
         &clients, test::MediaStubLocalFrameClient::Create(
-                      std::make_unique<MockWebMediaPlayerForNonTouchImpl>()));
+                      std::make_unique<MockWebMediaPlayerForTouchlessImpl>()));
 
     GetDocument().write("<video>");
     HTMLMediaElement& video =
         ToHTMLVideoElement(*GetDocument().QuerySelector("video"));
-    media_controls_ = MediaControlsNonTouchImpl::Create(
+    media_controls_ = MediaControlsTouchlessImpl::Create(
         video, video.EnsureUserAgentShadowRoot());
   }
 
-  MediaControlsNonTouchImpl& MediaControls() { return *media_controls_; }
+  MediaControlsTouchlessImpl& MediaControls() { return *media_controls_; }
   HTMLMediaElement& MediaElement() { return MediaControls().MediaElement(); }
 
-  MockWebMediaPlayerForNonTouchImpl* WebMediaPlayer() {
-    return static_cast<MockWebMediaPlayerForNonTouchImpl*>(
+  MockWebMediaPlayerForTouchlessImpl* WebMediaPlayer() {
+    return static_cast<MockWebMediaPlayerForTouchlessImpl*>(
         MediaElement().GetWebMediaPlayer());
   }
 
@@ -139,23 +139,23 @@ class MediaControlsNonTouchImplTest : public PageTestBase {
   }
 
  private:
-  Persistent<MediaControlsNonTouchImpl> media_controls_;
-  Persistent<MockChromeClientForNonTouchImpl> chrome_client_;
+  Persistent<MediaControlsTouchlessImpl> media_controls_;
+  Persistent<MockChromeClientForTouchlessImpl> chrome_client_;
 };
 
-class MediaControlsNonTouchImplTestWithMockScheduler
-    : public MediaControlsNonTouchImplTest {
+class MediaControlsTouchlessImplTestWithMockScheduler
+    : public MediaControlsTouchlessImplTest {
  public:
-  MediaControlsNonTouchImplTestWithMockScheduler() { EnablePlatform(); }
+  MediaControlsTouchlessImplTestWithMockScheduler() { EnablePlatform(); }
 
  protected:
   void SetUp() override {
     platform()->AdvanceClockSeconds(1);
-    MediaControlsNonTouchImplTest::SetUp();
+    MediaControlsTouchlessImplTest::SetUp();
   }
 };
 
-TEST_F(MediaControlsNonTouchImplTest, PlayPause) {
+TEST_F(MediaControlsTouchlessImplTest, PlayPause) {
   MediaElement().SetFocused(true, WebFocusType::kWebFocusTypeNone);
   MediaElement().Play();
   ASSERT_FALSE(MediaElement().paused());
@@ -169,7 +169,7 @@ TEST_F(MediaControlsNonTouchImplTest, PlayPause) {
   ASSERT_FALSE(MediaElement().paused());
 }
 
-TEST_F(MediaControlsNonTouchImplTest, HandlesOrientationForArrowInput) {
+TEST_F(MediaControlsTouchlessImplTest, HandlesOrientationForArrowInput) {
   MediaElement().SetFocused(true, WebFocusType::kWebFocusTypeNone);
 
   SetScreenOrientation(kWebScreenOrientationPortraitPrimary);
@@ -185,7 +185,7 @@ TEST_F(MediaControlsNonTouchImplTest, HandlesOrientationForArrowInput) {
   CheckControlKeys(VKEY_UP, VKEY_DOWN, VKEY_LEFT, VKEY_RIGHT);
 }
 
-TEST_F(MediaControlsNonTouchImplTest, ArrowInputEdgeCaseHandling) {
+TEST_F(MediaControlsTouchlessImplTest, ArrowInputEdgeCaseHandling) {
   const double duration = 100;
 
   LoadMediaWithDuration(duration);
@@ -212,11 +212,11 @@ TEST_F(MediaControlsNonTouchImplTest, ArrowInputEdgeCaseHandling) {
   ASSERT_EQ(MediaElement().volume(), 1);
 }
 
-TEST_F(MediaControlsNonTouchImplTest, PlayPauseIcon) {
+TEST_F(MediaControlsTouchlessImplTest, PlayPauseIcon) {
   MediaElement().SetFocused(true, WebFocusType::kWebFocusTypeNone);
 
   Element* play_button = GetControlByShadowPseudoId(
-      "-internal-media-controls-non-touch-play-button");
+      "-internal-media-controls-touchless-play-button");
   ASSERT_NE(nullptr, play_button);
 
   MediaElement().pause();
@@ -232,7 +232,7 @@ TEST_F(MediaControlsNonTouchImplTest, PlayPauseIcon) {
   ASSERT_FALSE(play_button->classList().contains("playing"));
 }
 
-TEST_F(MediaControlsNonTouchImplTestWithMockScheduler, ControlsShowAndHide) {
+TEST_F(MediaControlsTouchlessImplTestWithMockScheduler, ControlsShowAndHide) {
   // Controls should starts hidden.
   ASSERT_FALSE(IsControlsVisible());
 

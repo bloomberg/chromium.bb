@@ -2,33 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/media_controls/non_touch/media_controls_non_touch_media_event_listener.h"
+#include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_media_event_listener.h"
 
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
-#include "third_party/blink/renderer/modules/media_controls/non_touch/media_controls_non_touch_media_event_listener_observer.h"
+#include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_media_event_listener_observer.h"
 
 namespace blink {
 
-MediaControlsNonTouchMediaEventListener::
-    MediaControlsNonTouchMediaEventListener(HTMLMediaElement& media_element)
+MediaControlsTouchlessMediaEventListener::
+    MediaControlsTouchlessMediaEventListener(HTMLMediaElement& media_element)
     : media_element_(media_element) {
   if (media_element.isConnected())
     Attach();
 }
 
-void MediaControlsNonTouchMediaEventListener::AddObserver(
-    MediaControlsNonTouchMediaEventListenerObserver* observer) {
+void MediaControlsTouchlessMediaEventListener::AddObserver(
+    MediaControlsTouchlessMediaEventListenerObserver* observer) {
   observers_.insert(observer);
 }
 
-void MediaControlsNonTouchMediaEventListener::RemoveObserver(
-    MediaControlsNonTouchMediaEventListenerObserver* observer) {
+void MediaControlsTouchlessMediaEventListener::RemoveObserver(
+    MediaControlsTouchlessMediaEventListenerObserver* observer) {
   observers_.erase(observer);
 }
 
-void MediaControlsNonTouchMediaEventListener::Attach() {
+void MediaControlsTouchlessMediaEventListener::Attach() {
   DCHECK(media_element_->isConnected());
 
   media_element_->addEventListener(event_type_names::kFocusin, this, false);
@@ -48,11 +48,11 @@ void MediaControlsNonTouchMediaEventListener::Attach() {
   media_element_->addEventListener(event_type_names::kKeyup, this, false);
 }
 
-void MediaControlsNonTouchMediaEventListener::Detach() {
+void MediaControlsTouchlessMediaEventListener::Detach() {
   DCHECK(!media_element_->isConnected());
 }
 
-void MediaControlsNonTouchMediaEventListener::Invoke(
+void MediaControlsTouchlessMediaEventListener::Invoke(
     ExecutionContext* execution_context,
     Event* event) {
   if (event->type() == event_type_names::kFocusin) {
@@ -107,7 +107,7 @@ void MediaControlsNonTouchMediaEventListener::Invoke(
   }
 }
 
-void MediaControlsNonTouchMediaEventListener::Trace(blink::Visitor* visitor) {
+void MediaControlsTouchlessMediaEventListener::Trace(blink::Visitor* visitor) {
   NativeEventListener::Trace(visitor);
   visitor->Trace(media_element_);
   visitor->Trace(observers_);
