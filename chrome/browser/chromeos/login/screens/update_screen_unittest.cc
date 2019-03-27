@@ -52,7 +52,7 @@ class UpdateScreenUnitTest : public testing::Test {
     if (critical) {
       ASSERT_TRUE(available) << "Does not make sense for an update to be "
                                 "critical if one is not even available.";
-      update_screen->is_ignore_update_deadlines_ = true;
+      update_screen->set_ignore_update_deadlines_for_testing(true);
     }
     update_engine_status.status =
         available ? UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE

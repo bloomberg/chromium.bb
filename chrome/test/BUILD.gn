@@ -1896,6 +1896,8 @@ test("browser_tests") {
         "../browser/chromeos/login/test/local_policy_test_server_mixin.h",
         "../browser/chromeos/login/test/login_screen_tester.cc",
         "../browser/chromeos/login/test/login_screen_tester.h",
+        "../browser/chromeos/login/test/network_portal_detector_mixin.cc",
+        "../browser/chromeos/login/test/network_portal_detector_mixin.h",
         "../browser/chromeos/login/test/oobe_base_test.cc",
         "../browser/chromeos/login/test/oobe_base_test.h",
         "../browser/chromeos/login/ui/captive_portal_window_browsertest.cc",
