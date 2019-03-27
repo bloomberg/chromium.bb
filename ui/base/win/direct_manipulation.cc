@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/direct_manipulation_win.h"
+#include "ui/base/win/direct_manipulation.h"
 
 #include <objbase.h>
 #include <cmath>
@@ -15,7 +15,8 @@
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace content {
+namespace ui {
+namespace win {
 
 namespace {
 
@@ -41,7 +42,7 @@ void DebugLogging(const std::string& s, HRESULT hr) {
 // static
 std::unique_ptr<DirectManipulationHelper>
 DirectManipulationHelper::CreateInstance(HWND window,
-                                         ui::WindowEventTarget* event_target) {
+                                         WindowEventTarget* event_target) {
   if (!::IsWindow(window))
     return nullptr;
 
@@ -65,7 +66,7 @@ DirectManipulationHelper::CreateInstance(HWND window,
 // static
 std::unique_ptr<DirectManipulationHelper>
 DirectManipulationHelper::CreateInstanceForTesting(
-    ui::WindowEventTarget* event_target,
+    WindowEventTarget* event_target,
     Microsoft::WRL::ComPtr<IDirectManipulationViewport> viewport) {
   if (!base::FeatureList::IsEnabled(features::kPrecisionTouchpad))
     return nullptr;
@@ -77,9 +78,8 @@ DirectManipulationHelper::CreateInstanceForTesting(
   std::unique_ptr<DirectManipulationHelper> instance =
       base::WrapUnique(new DirectManipulationHelper());
 
-  instance->event_handler_ =
-      Microsoft::WRL::Make<DirectManipulationHandler>(instance.get());
-  instance->event_handler_->SetWindowEventTarget(event_target);
+  instance->event_handler_ = Microsoft::WRL::Make<DirectManipulationHandler>(
+      instance.get(), event_target);
 
   instance->viewport_ = viewport;
 
@@ -93,7 +93,7 @@ DirectManipulationHelper::~DirectManipulationHelper() {
 
 DirectManipulationHelper::DirectManipulationHelper() {}
 
-bool DirectManipulationHelper::Initialize(ui::WindowEventTarget* event_target) {
+bool DirectManipulationHelper::Initialize(WindowEventTarget* event_target) {
   // IDirectManipulationUpdateManager is the first COM object created by the
   // application to retrieve other objects in the Direct Manipulation API.
   // It also serves to activate and deactivate Direct Manipulation functionality
@@ -144,8 +144,8 @@ bool DirectManipulationHelper::Initialize(ui::WindowEventTarget* event_target) {
     return false;
   }
 
-  event_handler_ = Microsoft::WRL::Make<DirectManipulationHandler>(this);
-  event_handler_->SetWindowEventTarget(event_target);
+  event_handler_ =
+      Microsoft::WRL::Make<DirectManipulationHandler>(this, event_target);
 
   // We got Direct Manipulation transform from
   // IDirectManipulationViewportEventHandler.
@@ -230,7 +230,7 @@ void DirectManipulationHelper::SetSize(const gfx::Size& size) {
 
 bool DirectManipulationHelper::OnPointerHitTest(
     WPARAM w_param,
-    ui::WindowEventTarget* event_target) {
+    WindowEventTarget* event_target) {
   // Update the device scale factor.
   event_handler_->SetDeviceScaleFactor(
       display::win::ScreenWin::GetScaleFactorForHWND(window_));
@@ -296,8 +296,9 @@ DirectManipulationHandler::DirectManipulationHandler() {
 }
 
 DirectManipulationHandler::DirectManipulationHandler(
-    DirectManipulationHelper* helper)
-    : helper_(helper) {}
+    DirectManipulationHelper* helper,
+    WindowEventTarget* event_target)
+    : helper_(helper), event_target_(event_target) {}
 
 DirectManipulationHandler::~DirectManipulationHandler() {}
 
@@ -564,7 +565,7 @@ HRESULT DirectManipulationHandler::OnContentUpdated(
 }
 
 void DirectManipulationHandler::SetWindowEventTarget(
-    ui::WindowEventTarget* event_target) {
+    WindowEventTarget* event_target) {
   if (!event_target && LoggingEnabled()) {
     DebugLogging("Event target is null.", S_OK);
     if (event_target_) {
@@ -581,4 +582,5 @@ void DirectManipulationHandler::SetDeviceScaleFactor(
   device_scale_factor_ = device_scale_factor;
 }
 
-}  // namespace content
+}  // namespace win
+}  // namespace ui
