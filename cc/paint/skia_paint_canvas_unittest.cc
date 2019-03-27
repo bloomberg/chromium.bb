@@ -8,7 +8,6 @@
 #include "cc/test/test_skcanvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
 using ::testing::_;
 using ::testing::StrictMock;
@@ -21,8 +20,7 @@ namespace cc {
 // only case where the context is accessed.
 
 TEST(SkiaPaintCanvasTest, ContextFlushesDirect) {
-  sk_sp<const GrGLInterface> gl_interface(GrGLCreateNullInterface());
-  auto context = GrContext::MakeGL(std::move(gl_interface));
+  auto context = GrContext::MakeMock(nullptr);
   StrictMock<MockCanvas> mock_canvas;
   EXPECT_CALL(mock_canvas, getGrContext())
       .Times(2)
@@ -40,8 +38,7 @@ TEST(SkiaPaintCanvasTest, ContextFlushesDirect) {
 }
 
 TEST(SkiaPaintCanvasTest, ContextFlushesRecording) {
-  sk_sp<const GrGLInterface> gl_interface(GrGLCreateNullInterface());
-  auto context = GrContext::MakeGL(std::move(gl_interface));
+  auto context = GrContext::MakeMock(nullptr);
   StrictMock<MockCanvas> mock_canvas;
   EXPECT_CALL(mock_canvas, getGrContext())
       .Times(2)
