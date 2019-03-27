@@ -42,10 +42,6 @@ class TabletModeWindowState : public wm::WindowState::State {
   // Leaves the tablet mode by reverting to previous state object.
   void LeaveTabletMode(wm::WindowState* window_state, bool was_in_overview);
 
-  // Sets whether to ignore bounds updates. If set to false, immediately does a
-  // bounds update as the current window bounds may no longer be correct.
-  void SetDeferBoundsUpdates(bool defer_bounds_updates);
-
   // WindowState::State overrides:
   void OnWMEvent(wm::WindowState* window_state,
                  const wm::WMEvent* event) override;
@@ -58,8 +54,6 @@ class TabletModeWindowState : public wm::WindowState::State {
   wm::WindowState::State* old_state() { return old_state_.get(); }
 
  private:
-  friend class TabletModeControllerTestApi;
-
   // Updates the window to |new_state_type| and resulting bounds:
   // Either full screen, maximized centered or minimized. If the state does not
   // change, only the bounds will be changed. If |animate| is set, the bound
@@ -109,9 +103,6 @@ class TabletModeWindowState : public wm::WindowState::State {
   // The current state type. Due to the nature of this state, this can only be
   // WM_STATE_TYPE{NORMAL, MINIMIZED, MAXIMIZED}.
   mojom::WindowStateType current_state_type_;
-
-  // If true, do not update bounds.
-  bool defer_bounds_updates_ = false;
 
   // If true, the state will not process events.
   bool ignore_wm_events_ = false;

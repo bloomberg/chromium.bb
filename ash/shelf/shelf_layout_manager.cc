@@ -249,9 +249,9 @@ gfx::Rect ShelfLayoutManager::GetIdealBounds() const {
 }
 
 void ShelfLayoutManager::UpdateVisibilityState() {
-  // Bail out early after shelf is destroyed.
+  // Bail out early after shelf is destroyed or update is suspended.
   aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
-  if (in_shutdown_ || !shelf_window)
+  if (in_shutdown_ || !shelf_window || suspend_visibility_update_)
     return;
 
   wm::WorkspaceWindowState window_state(
@@ -518,13 +518,24 @@ void ShelfLayoutManager::OnSplitViewModeEnded() {
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
 }
 
+void ShelfLayoutManager::OnOverviewModeStarting() {
+  suspend_visibility_update_ = true;
+}
+
 void ShelfLayoutManager::OnOverviewModeStartingAnimationComplete(
     bool canceled) {
+  suspend_visibility_update_ = false;
   UpdateVisibilityState();
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
 }
 
+void ShelfLayoutManager::OnOverviewModeEnding(
+    OverviewSession* overview_session) {
+  suspend_visibility_update_ = true;
+}
+
 void ShelfLayoutManager::OnOverviewModeEndingAnimationComplete(bool canceled) {
+  suspend_visibility_update_ = false;
   UpdateVisibilityState();
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
 }

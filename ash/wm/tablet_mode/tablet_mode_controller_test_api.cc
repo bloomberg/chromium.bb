@@ -5,8 +5,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 
 #include "ash/shell.h"
-#include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
-#include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "base/run_loop.h"
 #include "base/time/default_tick_clock.h"
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
@@ -83,16 +81,6 @@ void TabletModeControllerTestApi::SetTabletMode(bool on) {
       on ? chromeos::PowerManagerClient::TabletMode::ON
          : chromeos::PowerManagerClient::TabletMode::OFF,
       tick_clock()->NowTicks());
-}
-
-bool TabletModeControllerTestApi::GetDeferBoundsUpdates(aura::Window* window) {
-  TabletModeWindowManager* window_manager = tablet_mode_window_manager();
-  if (window_manager == nullptr)
-    return false;
-  TabletModeWindowManager::WindowToState window_state_map =
-      window_manager->window_state_map_;
-  auto iter = window_state_map.find(window);
-  return iter != window_state_map.end() && iter->second->defer_bounds_updates_;
 }
 
 }  // namespace ash

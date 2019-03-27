@@ -127,7 +127,9 @@ class ASH_EXPORT ShelfLayoutManager
   void OnSplitViewModeEnded() override;
 
   // OverviewObserver:
+  void OnOverviewModeStarting() override;
   void OnOverviewModeStartingAnimationComplete(bool canceled) override;
+  void OnOverviewModeEnding(OverviewSession* overview_session) override;
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
   // AppListControllerObserver:
@@ -399,6 +401,9 @@ class ASH_EXPORT ShelfLayoutManager
   // Whether the HomeLauncher is shown. This is maintained by
   // OnHomeLauncherAnimationComplete.
   bool is_home_launcher_shown_ = false;
+
+  // True to skip updating shelf visibility state.
+  bool suspend_visibility_update_ = false;
 
   base::OneShotTimer auto_hide_timer_;
 

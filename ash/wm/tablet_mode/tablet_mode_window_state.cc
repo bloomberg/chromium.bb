@@ -202,15 +202,6 @@ void TabletModeWindowState::LeaveTabletMode(wm::WindowState* window_state,
       window_state->SetStateObject(std::move(old_state_));
 }
 
-void TabletModeWindowState::SetDeferBoundsUpdates(bool defer_bounds_updates) {
-  if (defer_bounds_updates_ == defer_bounds_updates)
-    return;
-
-  defer_bounds_updates_ = defer_bounds_updates;
-  if (!defer_bounds_updates_)
-    UpdateBounds(wm::GetWindowState(window_), true /* animated */);
-}
-
 void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
                                       const wm::WMEvent* event) {
   // Ignore events that are sent during the exit transition.
@@ -447,9 +438,6 @@ mojom::WindowStateType TabletModeWindowState::GetSnappedWindowStateType(
 
 void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
                                          bool animated) {
-  if (defer_bounds_updates_)
-    return;
-
   // Do not update window's bounds if it's in tab-dragging process. The bounds
   // will be updated later when the drag ends.
   if (wm::IsDraggingTabs(window_state->window()))
