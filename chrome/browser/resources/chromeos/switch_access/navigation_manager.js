@@ -326,7 +326,7 @@ class NavigationManager {
    * @param {!chrome.automation.AutomationEvent} event
    * @private
    */
-  handleFocusChange_(event) {
+  onFocusChange_(event) {
     if (this.node_ === event.target)
       return;
 
@@ -349,7 +349,7 @@ class NavigationManager {
    * @param {!chrome.automation.TreeChange} treeChange
    * @private
    */
-  handleNodeRemoved_(treeChange) {
+  onNodeRemoved_(treeChange) {
     // TODO(elichtenberg): Only listen to NODE_REMOVED callbacks. Don't need
     // any others.
     if (treeChange.type !== chrome.automation.TreeChangeType.NODE_REMOVED)
@@ -382,13 +382,13 @@ class NavigationManager {
    */
   init_() {
     this.desktop_.addEventListener(
-        chrome.automation.EventType.FOCUS, this.handleFocusChange_.bind(this),
+        chrome.automation.EventType.FOCUS, this.onFocusChange_.bind(this),
         false);
 
     // TODO(elichtenberg): Use a more specific filter than ALL_TREE_CHANGES.
     chrome.automation.addTreeChangeObserver(
         chrome.automation.TreeChangeObserverFilter.ALL_TREE_CHANGES,
-        this.handleNodeRemoved_.bind(this));
+        this.onNodeRemoved_.bind(this));
   }
 
   /**
