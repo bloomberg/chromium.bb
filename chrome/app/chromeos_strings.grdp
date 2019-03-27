@@ -1387,9 +1387,6 @@
   </message>
 
   <!-- Misc settings related strings -->
-  <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION" desc="In the settings tab, the text next to the timezone combobox.">
-    Time zone:
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DISPLAY_TEMPLATE" desc="In the settings tab, the display template of a timezone in the pull-down list of timezones">
     (<ph name="UTCOffset">$1<ex>UTC-8:00</ex></ph>) <ph name="LongTZName">$2<ex>Pacific Standard Time</ex></ph> (<ph name="ExemplarCity">$3<ex>Los Angeles</ex></ph>)
   </message>
@@ -2750,19 +2747,13 @@
   <message name="IDS_SET_TIME_PROMPT" desc="Text prompting the user to check and set the system time.">
     Chrome was unable to set the system time. Please check the time below and correct it if needed.
   </message>
-  <message name="IDS_SET_TIME_DATE_LABEL" desc="Label for the date input element.">
-    System date
-  </message>
-  <message name="IDS_SET_TIME_TIME_LABEL" desc="Label for the time input element.">
-    System time
-  </message>
-  <message name="IDS_MD_SET_TIME_DATE_LABEL" desc="Label for the Material Design date input element.">
+  <message name="IDS_SET_TIME_DATE_LABEL" desc="Label for the set time dialog date input element.">
     Date
   </message>
-  <message name="IDS_MD_SET_TIME_TIME_LABEL" desc="Label for the Material Design time input element.">
+  <message name="IDS_SET_TIME_TIME_LABEL" desc="Label for the set time dialog time input element.">
     Time
   </message>
-  <message name="IDS_MD_SET_TIME_TIMEZONE_LABEL" desc="Label for the Material Design timezone select element.">
+  <message name="IDS_SET_TIME_TIMEZONE_LABEL" desc="Label for the set time dialog timezone select element.">
     Timezone
   </message>
 

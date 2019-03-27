@@ -21,7 +21,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/strings/grit/components_strings.h"
@@ -72,10 +71,7 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
 
   // SystemClockClient::Observer:
   void SystemClockUpdated() override {
-    if (chromeos::features::IsSetTimeDialogMd())
-      FireWebUIListener("system-clock-updated");
-    else
-      CallJavascriptFunction("settime.TimeSetter.updateTime");
+    FireWebUIListener("system-clock-updated");
   }
 
   // UI actually shows real device timezone, but only allows changing the user
@@ -85,10 +81,7 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
   // system::TimezoneSettings::Observer:
   void TimezoneChanged(const icu::TimeZone& timezone) override {
     base::Value timezone_id(system::TimezoneSettings::GetTimezoneID(timezone));
-    if (chromeos::features::IsSetTimeDialogMd())
-      FireWebUIListener("system-timezone-changed", timezone_id);
-    else
-      CallJavascriptFunction("settime.TimeSetter.setTimezone", timezone_id);
+    FireWebUIListener("system-timezone-changed", timezone_id);
   }
 
   // Handler for Javascript call to set the system clock when the user sets a
@@ -138,16 +131,9 @@ SetTimeUI::SetTimeUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
 
   source->AddLocalizedString("setTimeTitle", IDS_SET_TIME_TITLE);
   source->AddLocalizedString("prompt", IDS_SET_TIME_PROMPT);
-  if (chromeos::features::IsSetTimeDialogMd()) {
-    source->AddLocalizedString("timezoneLabel", IDS_MD_SET_TIME_TIMEZONE_LABEL);
-    source->AddLocalizedString("dateLabel", IDS_MD_SET_TIME_DATE_LABEL);
-    source->AddLocalizedString("timeLabel", IDS_MD_SET_TIME_TIME_LABEL);
-  } else {
-    source->AddLocalizedString("timezone",
-                               IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION);
-    source->AddLocalizedString("dateLabel", IDS_SET_TIME_DATE_LABEL);
-    source->AddLocalizedString("timeLabel", IDS_SET_TIME_TIME_LABEL);
-  }
+  source->AddLocalizedString("timezoneLabel", IDS_SET_TIME_TIMEZONE_LABEL);
+  source->AddLocalizedString("dateLabel", IDS_SET_TIME_DATE_LABEL);
+  source->AddLocalizedString("timeLabel", IDS_SET_TIME_TIME_LABEL);
   source->AddLocalizedString("doneButton", IDS_DONE);
 
   base::DictionaryValue values;
@@ -165,19 +151,13 @@ SetTimeUI::SetTimeUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   source->AddLocalizedStrings(values);
   source->SetJsonPath("strings.js");
 
-  if (chromeos::features::IsSetTimeDialogMd()) {
-    source->UseGzip();
-    source->AddResourcePath("set_time_browser_proxy.html",
-                            IDR_MD_SET_TIME_BROWSER_PROXY_HTML);
-    source->AddResourcePath("set_time_browser_proxy.js",
-                            IDR_MD_SET_TIME_BROWSER_PROXY_JS);
-    source->AddResourcePath("set_time.js", IDR_MD_SET_TIME_JS);
-    source->SetDefaultResource(IDR_MD_SET_TIME_HTML);
-  } else {
-    source->AddResourcePath("set_time.css", IDR_SET_TIME_CSS);
-    source->AddResourcePath("set_time.js", IDR_SET_TIME_JS);
-    source->SetDefaultResource(IDR_SET_TIME_HTML);
-  }
+  source->UseGzip();
+  source->AddResourcePath("set_time_browser_proxy.html",
+                          IDR_SET_TIME_BROWSER_PROXY_HTML);
+  source->AddResourcePath("set_time_browser_proxy.js",
+                          IDR_SET_TIME_BROWSER_PROXY_JS);
+  source->AddResourcePath("set_time.js", IDR_SET_TIME_JS);
+  source->SetDefaultResource(IDR_SET_TIME_HTML);
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }

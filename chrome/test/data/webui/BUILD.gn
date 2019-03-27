@@ -93,7 +93,6 @@ js2gtest("browser_tests_js_webui") {
     sources += [
       "../../../browser/ui/webui/chromeos/bluetooth_pairing_dialog_browsertest.js",
       "../../../browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js",
-      "../../../browser/ui/webui/chromeos/set_time_ui_browsertest.js",
       "../chromeos/oobe_webui_browsertest.js",
       "certificate_viewer_dialog_test.js",
       "md_set_time_browsertest.js",

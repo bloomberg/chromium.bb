@@ -7,29 +7,25 @@ const ROOT_PATH = '../../../../';
 
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
-GEN('#include "chromeos/constants/chromeos_features.h"');
 
 /**
- * MdSetTimeBrowserTest tests loading and interacting with the Material Design
- * version of the "Set Time" web UI, which is normally shown as a dialog.
+ * SetTimeBrowserTest tests the "Set Time" web UI dialog.
  * @constructor
  * @extends {PolymerTest}
  */
-function MdSetTimeBrowserTest() {}
+function SetTimeBrowserTest() {}
 
-MdSetTimeBrowserTest.prototype = {
+SetTimeBrowserTest.prototype = {
   __proto__: PolymerTest.prototype,
 
   browsePreload: 'chrome://set-time/',
-
-  featureList: ['chromeos::features::kSetTimeDialogMd', ''],
 
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     ROOT_PATH + 'chrome/test/data/webui/test_browser_proxy.js',
   ]),
 };
 
-TEST_F('MdSetTimeBrowserTest', 'All', function() {
+TEST_F('SetTimeBrowserTest', 'All', function() {
   suite('SetTime', function() {
     let setTimeElement = null;
     let testBrowserProxy = null;
