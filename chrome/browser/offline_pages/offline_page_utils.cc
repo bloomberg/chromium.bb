@@ -328,7 +328,8 @@ void OfflinePageUtils::ScheduleDownload(content::WebContents* web_contents,
                                         const GURL& url,
                                         DownloadUIActionFlags ui_action,
                                         const std::string& request_origin) {
-  DCHECK(web_contents);
+  if (!web_contents)
+    return;
 
   // Ensure that the storage permission is granted since the archive file is
   // going to be placed in the public directory.
