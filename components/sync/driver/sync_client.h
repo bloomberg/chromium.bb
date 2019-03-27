@@ -27,6 +27,7 @@ class DeviceInfoSyncService;
 class SyncApiComponentFactory;
 class SyncableService;
 class SyncService;
+class SyncTypePreferenceProvider;
 
 // Interface for clients of the Sync API to plumb through necessary dependent
 // components. This interface is purely for abstracting dependencies, and
@@ -72,6 +73,9 @@ class SyncClient {
 
   // Returns the current SyncApiComponentFactory instance.
   virtual SyncApiComponentFactory* GetSyncApiComponentFactory() = 0;
+
+  // Returns the preference provider, or null if none exists.
+  virtual SyncTypePreferenceProvider* GetPreferenceProvider() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncClient);

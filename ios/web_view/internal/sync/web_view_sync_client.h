@@ -62,6 +62,7 @@ class WebViewSyncClient : public browser_sync::BrowserSyncClient {
   scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
       syncer::ModelSafeGroup group) override;
   syncer::SyncApiComponentFactory* GetSyncApiComponentFactory() override;
+  syncer::SyncTypePreferenceProvider* GetPreferenceProvider() override;
 
  private:
   WebViewBrowserState* browser_state_ = nullptr;

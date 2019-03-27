@@ -61,17 +61,6 @@ bool FakeSyncService::HasObserver(const SyncServiceObserver* observer) const {
   return false;
 }
 
-void FakeSyncService::AddPreferenceProvider(
-    SyncTypePreferenceProvider* provider) {}
-
-void FakeSyncService::RemovePreferenceProvider(
-    SyncTypePreferenceProvider* provider) {}
-
-bool FakeSyncService::HasPreferenceProvider(
-    SyncTypePreferenceProvider* provider) const {
-  return false;
-}
-
 void FakeSyncService::StopAndClear() {}
 
 void FakeSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {}

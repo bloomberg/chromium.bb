@@ -144,6 +144,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(SendTabToSelfSyncServiceFactory::GetInstance());
   DependsOn(SpellcheckServiceFactory::GetInstance());
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  DependsOn(SupervisedUserServiceFactory::GetInstance());
   DependsOn(SupervisedUserSettingsServiceFactory::GetInstance());
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
   DependsOn(SessionSyncServiceFactory::GetInstance());
