@@ -36,7 +36,12 @@
 #include "sandbox/linux/system_headers/linux_time.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include <sys/system_properties.h>
+
+#include "base/android/build_info.h"
+#include "base/strings/string_number_conversions.h"
+#else
 #include "third_party/lss/linux_syscall_support.h"  // for MAKE_PROCESS_CPUCLOCK
 #endif
 
@@ -415,11 +420,33 @@ class PtraceTestHarness {
   DISALLOW_COPY_AND_ASSIGN(PtraceTestHarness);
 };
 
-// Fails on Android L and M.
-// See https://crbug.com/934930
+static bool IsAndroidLessThanN() {
+#if defined(OS_ANDROID)
+  static const int sdk_int = []() -> int {
+    char sdk_version[PROP_VALUE_MAX];
+    if (__system_property_get("ro.build.version.sdk", sdk_version) > 0) {
+      int sdk_int;
+      if (base::StringToInt(sdk_version, &sdk_int))
+        return sdk_int;
+    }
+    return -1;
+  }();
+  return sdk_int < base::android::SDK_VERSION_NOUGAT;
+#else
+  return false;
+#endif
+}
+
 BPF_TEST_C(ParameterRestrictions,
-           DISABLED_ptrace_getregs_allowed,
+           ptrace_getregs_allowed,
            RestrictPtracePolicy) {
+  if (IsAndroidLessThanN()) {
+    // On 32-bit kernel Android devices, these tests hang for reasons unknown
+    // (https://crbug.com/934930). While Android N does not require a 64-bit
+    // kernel, all Pixel devices do have them starting with N.
+    return;
+  }
+
   auto tracer = [](pid_t pid) {
 #if defined(__arm__)
     user_regs regs;
@@ -437,11 +464,16 @@ BPF_TEST_C(ParameterRestrictions,
   PtraceTestHarness(tracer, false).Run();
 }
 
-// Fails on Android L and M.
-// See https://crbug.com/934930
 BPF_TEST_C(ParameterRestrictions,
-           DISABLED_ptrace_syscall_blocked,
+           ptrace_syscall_blocked,
            RestrictPtracePolicy) {
+  if (IsAndroidLessThanN()) {
+    // On 32-bit kernel Android devices, these tests hang for reasons unknown
+    // (https://crbug.com/934930). While Android N does not require a 64-bit
+    // kernel, all Pixel devices do have them starting with N.
+    return;
+  }
+
   auto tracer = [](pid_t pid) {
     // The tracer is about to die. Make sure the tracee is not stopped so it
     // can reap it and inspect its death signal.
