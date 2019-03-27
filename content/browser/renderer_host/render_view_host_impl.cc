@@ -102,7 +102,7 @@
 #if defined(OS_WIN)
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/dip_util.h"
-#include "ui/gfx/platform_font_win.h"
+#include "ui/gfx/system_fonts_win.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -129,10 +129,10 @@ base::LazyInstance<RoutingIDViewMap>::Leaky g_routing_id_view_map =
 
 #if defined(OS_WIN)
 // Fetches the name and font size of a particular Windows system font.
-void GetFontInfo(gfx::PlatformFontWin::SystemFont system_font,
+void GetFontInfo(gfx::win::SystemFont system_font,
                  base::string16* name,
                  int32_t* size) {
-  const gfx::Font& font = gfx::PlatformFontWin::GetSystemFont(system_font);
+  const gfx::Font& font = gfx::win::GetSystemFont(system_font);
   *name = base::UTF8ToUTF16(font.GetFontName());
   *size = font.GetFontSize();
 }
@@ -143,17 +143,17 @@ void GetPlatformSpecificPrefs(blink::mojom::RendererPreferences* prefs) {
   // Note that what is called "height" in this struct is actually the font size;
   // font "height" typically includes ascender, descender, and padding and is
   // often a third or so larger than the given font size.
-  GetFontInfo(gfx::PlatformFontWin::SystemFont::kCaption,
-              &prefs->caption_font_family_name, &prefs->caption_font_height);
-  GetFontInfo(gfx::PlatformFontWin::SystemFont::kSmallCaption,
+  GetFontInfo(gfx::win::SystemFont::kCaption, &prefs->caption_font_family_name,
+              &prefs->caption_font_height);
+  GetFontInfo(gfx::win::SystemFont::kSmallCaption,
               &prefs->small_caption_font_family_name,
               &prefs->small_caption_font_height);
-  GetFontInfo(gfx::PlatformFontWin::SystemFont::kMenu,
-              &prefs->menu_font_family_name, &prefs->menu_font_height);
-  GetFontInfo(gfx::PlatformFontWin::SystemFont::kMessage,
-              &prefs->message_font_family_name, &prefs->message_font_height);
-  GetFontInfo(gfx::PlatformFontWin::SystemFont::kStatus,
-              &prefs->status_font_family_name, &prefs->status_font_height);
+  GetFontInfo(gfx::win::SystemFont::kMenu, &prefs->menu_font_family_name,
+              &prefs->menu_font_height);
+  GetFontInfo(gfx::win::SystemFont::kMessage, &prefs->message_font_family_name,
+              &prefs->message_font_height);
+  GetFontInfo(gfx::win::SystemFont::kStatus, &prefs->status_font_family_name,
+              &prefs->status_font_height);
 
   prefs->vertical_scroll_bar_width_in_dips =
       display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXVSCROLL);

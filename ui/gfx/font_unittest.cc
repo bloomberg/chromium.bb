@@ -14,6 +14,7 @@
 
 #if defined(OS_WIN)
 #include "ui/gfx/platform_font_win.h"
+#include "ui/gfx/system_fonts_win.h"
 #endif
 
 namespace gfx {
@@ -116,7 +117,7 @@ TEST_F(FontTest, DeriveFont) {
 #if defined(OS_WIN)
 TEST_F(FontTest, DeriveResizesIfSizeTooSmall) {
   Font cf(kTestFontName, 8);
-  PlatformFontWin::SetGetMinimumFontSizeCallback([] { return 5; });
+  gfx::win::SetGetMinimumFontSizeCallback([] { return 5; });
 
   Font derived_font = cf.Derive(-4, cf.GetStyle(), cf.GetWeight());
   EXPECT_EQ(5, derived_font.GetFontSize());
@@ -124,7 +125,7 @@ TEST_F(FontTest, DeriveResizesIfSizeTooSmall) {
 
 TEST_F(FontTest, DeriveKeepsOriginalSizeIfHeightOk) {
   Font cf(kTestFontName, 8);
-  PlatformFontWin::SetGetMinimumFontSizeCallback([] { return 5; });
+  gfx::win::SetGetMinimumFontSizeCallback([] { return 5; });
 
   Font derived_font = cf.Derive(-2, cf.GetStyle(), cf.GetWeight());
   EXPECT_EQ(6, derived_font.GetFontSize());

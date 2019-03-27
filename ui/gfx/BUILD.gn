@@ -157,6 +157,8 @@ jumbo_component("gfx") {
     "skbitmap_operations.h",
     "sys_color_change_listener.cc",
     "sys_color_change_listener.h",
+    "system_fonts_win.cc",
+    "system_fonts_win.h",
     "text_constants.h",
     "text_elider.cc",
     "text_elider.h",
@@ -767,6 +769,7 @@ test("gfx_unittests") {
       "icon_util_unittests_resource.h",
       "path_win_unittest.cc",
       "platform_font_win_unittest.cc",
+      "system_fonts_win_unittest.cc",
       "win/text_analysis_source_unittest.cc",
     ]
 
