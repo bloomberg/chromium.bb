@@ -26,7 +26,6 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/tpm_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/auth/authpolicy_login_helper.h"
@@ -44,7 +43,7 @@ namespace {
 
 const char kPassword[] = "password";
 
-constexpr char kGaiaSigninId[] = "signin-frame";
+constexpr char kGaiaSigninId[] = "signin-frame-dialog";
 constexpr char kAdOfflineAuthId[] = "offline-ad-auth";
 
 constexpr char kTestActiveDirectoryUser[] = "test-user";
@@ -88,9 +87,6 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     // other ChromeBrowserMain initialization occurs.
     AuthPolicyClient::InitializeFake();
     FakeAuthPolicyClient::Get()->DisableOperationDelayForTesting();
-
-    // Note: FakeCryptohomeClient needs paths to be set to load install attribs.
-    active_directory_test_helper::OverridePaths();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -325,6 +321,7 @@ class ActiveDirectoryLoginAutocompleteTest : public ActiveDirectoryLoginTest {
 
 // Test successful Active Directory login.
 IN_PROC_BROWSER_TEST_F_WITH_PRE(ActiveDirectoryLoginTest, LoginSuccess) {
+  ASSERT_TRUE(tpm_util::IsActiveDirectoryLocked());
   TestNoError();
   TestDomainHidden();
   content::WindowedNotificationObserver session_start_waiter(
@@ -336,6 +333,7 @@ IN_PROC_BROWSER_TEST_F_WITH_PRE(ActiveDirectoryLoginTest, LoginSuccess) {
 
 // Test different UI errors for Active Directory login.
 IN_PROC_BROWSER_TEST_F_WITH_PRE(ActiveDirectoryLoginTest, LoginErrors) {
+  ASSERT_TRUE(tpm_util::IsActiveDirectoryLocked());
   SetupActiveDirectoryJSNotifications();
   TestNoError();
   TestDomainHidden();
@@ -379,6 +377,7 @@ IN_PROC_BROWSER_TEST_F_WITH_PRE(ActiveDirectoryLoginTest, LoginErrors) {
 // Test successful Active Directory login from the password change screen.
 IN_PROC_BROWSER_TEST_F_WITH_PRE(ActiveDirectoryLoginTest,
                                 PasswordChange_LoginSuccess) {
+  ASSERT_TRUE(tpm_util::IsActiveDirectoryLocked());
   TestLoginVisible();
   TestDomainHidden();
 
@@ -397,6 +396,7 @@ IN_PROC_BROWSER_TEST_F_WITH_PRE(ActiveDirectoryLoginTest,
 // Test different UI errors for Active Directory password change screen.
 IN_PROC_BROWSER_TEST_F_WITH_PRE(ActiveDirectoryLoginTest,
                                 PasswordChange_UIErrors) {
+  ASSERT_TRUE(tpm_util::IsActiveDirectoryLocked());
   TestLoginVisible();
   TestDomainHidden();
 
@@ -429,6 +429,7 @@ IN_PROC_BROWSER_TEST_F_WITH_PRE(ActiveDirectoryLoginTest,
 // Test reopening Active Directory password change screen clears errors.
 IN_PROC_BROWSER_TEST_F_WITH_PRE(ActiveDirectoryLoginTest,
                                 PasswordChange_ReopenClearErrors) {
+  ASSERT_TRUE(tpm_util::IsActiveDirectoryLocked());
   TestLoginVisible();
   TestDomainHidden();
 
@@ -446,6 +447,7 @@ IN_PROC_BROWSER_TEST_F_WITH_PRE(ActiveDirectoryLoginTest,
 // Tests that autocomplete works. Submits username without domain.
 IN_PROC_BROWSER_TEST_F_WITH_PRE(ActiveDirectoryLoginAutocompleteTest,
                                 LoginSuccess) {
+  ASSERT_TRUE(tpm_util::IsActiveDirectoryLocked());
   TestNoError();
   TestDomainVisible();
 
@@ -459,6 +461,7 @@ IN_PROC_BROWSER_TEST_F_WITH_PRE(ActiveDirectoryLoginAutocompleteTest,
 // Tests that user could override autocomplete domain.
 IN_PROC_BROWSER_TEST_F_WITH_PRE(ActiveDirectoryLoginAutocompleteTest,
                                 TestAutocomplete) {
+  ASSERT_TRUE(tpm_util::IsActiveDirectoryLocked());
   SetupActiveDirectoryJSNotifications();
 
   TestLoginVisible();
