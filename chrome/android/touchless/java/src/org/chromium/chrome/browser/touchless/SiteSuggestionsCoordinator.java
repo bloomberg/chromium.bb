@@ -57,8 +57,9 @@ class SiteSuggestionsCoordinator {
                 context, LinearLayoutManager.HORIZONTAL, /* reverseLayout= */ false);
         RecyclerView recyclerView =
                 suggestionsView.findViewById(R.id.most_likely_launcher_recycler);
-        SiteSuggestionsAdapter adapterDelegate = new SiteSuggestionsAdapter(
-                model, iconGenerator, navigationDelegate, contextMenuManager);
+        SiteSuggestionsAdapter adapterDelegate = new SiteSuggestionsAdapter(model, iconGenerator,
+                navigationDelegate, contextMenuManager, layoutManager,
+                suggestionsView.findViewById(R.id.most_likely_web_title_text));
 
         RecyclerViewAdapter<SiteSuggestionsViewHolderFactory.SiteSuggestionsViewHolder, PropertyKey>
                 adapter = new RecyclerViewAdapter<>(

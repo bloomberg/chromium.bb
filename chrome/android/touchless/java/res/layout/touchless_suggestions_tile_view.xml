@@ -5,8 +5,9 @@
 
 <org.chromium.chrome.browser.touchless.SiteSuggestionsTileView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="@dimen/tile_view_width"
-    android:layout_height="wrap_content" >
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="@dimen/most_likely_tile_horizontal_spacer">
     <include
         layout="@layout/tile_no_text_view_condensed"
         android:layout_width="match_parent"

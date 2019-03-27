@@ -14,7 +14,6 @@
     <dimen name="notouch_key_functions_tooltip_item_image_vertical_padding">5dp</dimen>
     <dimen name="notouch_key_functions_tooltip_item_horizontal_margin">4dp</dimen>
 
-
     <!-- Open last tab placeholder dimensions. -->
     <dimen name="open_last_tab_placeholder_image_size">24dp</dimen>
     <dimen name="open_last_tab_placeholder_image_margin_bottom">13dp</dimen>
@@ -27,4 +26,8 @@
     <dimen name="open_last_tab_primary_text_margin_left">8dp</dimen>
     <dimen name="open_last_tab_timestamp_min_width">105dp</dimen>
 
+    <!-- Most likely carousel dimensions. -->
+    <dimen name="most_likely_tile_horizontal_spacer">6dp</dimen>
+    <dimen name="most_likely_carousel_edge_spacer">8dp</dimen>
+    <dimen name="most_likely_carousel_vertical_spacer">16dp</dimen>
 </resources>

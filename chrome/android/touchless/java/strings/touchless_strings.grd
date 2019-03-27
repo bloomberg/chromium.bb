@@ -122,6 +122,9 @@
       <message name="IDS_OPEN_LAST_TAB_JUST_NOW" desc="The present time or moment (noun). Used instead of a timestamp when the site was visited less than a minute ago. [CHAR_LIMIT=12]">
         Now
       </message>
+      <message name="IDS_NTP_ALL_APPS" desc="Text to accompany icon that will navigate to a page showing a categorized view of different applications or sites">
+        All apps
+      </message>
     </messages>
   </release>
 </grit>
