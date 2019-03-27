@@ -45,8 +45,7 @@ void WaylandConnectionConnector::OnGpuProcessLaunched(
     const base::RepeatingCallback<void(IPC::Message*)>& send_callback) {}
 
 void WaylandConnectionConnector::OnChannelDestroyed(int host_id) {
-  // TODO(msisov): Handle restarting.
-  NOTIMPLEMENTED();
+  connection_->OnChannelDestroyed();
 }
 
 void WaylandConnectionConnector::OnMessageReceived(
