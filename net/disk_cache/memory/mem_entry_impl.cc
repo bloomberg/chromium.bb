@@ -138,8 +138,7 @@ int MemEntryImpl::GetStorageSize() const {
 }
 
 void MemEntryImpl::UpdateStateOnUse(EntryModified modified_enum) {
-  // !doomed_ implies backend_ != null as ~MemBackendImpl dooms everything.
-  if (!doomed_)
+  if (!doomed_ && backend_)
     backend_->OnEntryUpdated(this);
 
   last_used_ = Time::Now();
@@ -148,10 +147,10 @@ void MemEntryImpl::UpdateStateOnUse(EntryModified modified_enum) {
 }
 
 void MemEntryImpl::Doom() {
-  // !doomed_ implies backend_ != null as ~MemBackendImpl dooms everything.
   if (!doomed_) {
     doomed_ = true;
-    backend_->OnEntryDoomed(this);
+    if (backend_)
+      backend_->OnEntryDoomed(this);
     net_log_.AddEvent(net::NetLogEventType::ENTRY_DOOM);
   }
   if (!ref_count_)
