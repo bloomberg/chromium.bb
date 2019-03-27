@@ -43,6 +43,8 @@ const base::Feature kTranslateCompactUI{"TranslateCompactUI",
 const size_t TranslateInfoBarDelegate::kNoIndex = TranslateUIDelegate::kNoIndex;
 
 TranslateInfoBarDelegate::~TranslateInfoBarDelegate() {
+  if (observer_)
+    observer_->OnTranslateInfoBarDelegateDestroyed(this);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
