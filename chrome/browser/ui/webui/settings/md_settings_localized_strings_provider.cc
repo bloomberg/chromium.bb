@@ -17,7 +17,6 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
@@ -2420,6 +2419,11 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsSensorsAllow", IDS_SETTINGS_SITE_SETTINGS_SENSORS_ALLOW},
     {"siteSettingsSensorsBlock", IDS_SETTINGS_SITE_SETTINGS_SENSORS_BLOCK},
     {"siteSettingsFlash", IDS_SETTINGS_SITE_SETTINGS_FLASH},
+    {"siteSettingsFlashAskFirst", IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST},
+    {"siteSettingsFlashAskFirstRecommended",
+     IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST_RECOMMENDED},
+    {"siteSettingsFlashPermissionsEphemeral",
+     IDS_SETTINGS_SITE_SETTINGS_FLASH_PERMISSIONS_ARE_EPHEMERAL},
     {"siteSettingsPdfDocuments", IDS_SETTINGS_SITE_SETTINGS_PDF_DOCUMENTS},
     {"siteSettingsPdfDownloadPdfs",
      IDS_SETTINGS_SITE_SETTINGS_PDF_DOWNLOAD_PDFS},
@@ -2661,29 +2665,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
       "enableExperimentalWebPlatformFeatures",
       cmd.HasSwitch(::switches::kEnableExperimentalWebPlatformFeatures));
 
-  if (PluginUtils::ShouldPreferHtmlOverPlugins(
-          HostContentSettingsMapFactory::GetForProfile(profile))) {
-    static constexpr LocalizedString kFlashStrings[] = {
-        {"siteSettingsFlashAskFirst", IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST},
-        {"siteSettingsFlashAskFirstRecommended",
-         IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST_RECOMMENDED},
-        {"siteSettingsFlashPermissionsEphemeral",
-         IDS_SETTINGS_SITE_SETTINGS_FLASH_PERMISSIONS_ARE_EPHEMERAL},
-    };
-    AddLocalizedStringsBulk(html_source, kFlashStrings,
-                            base::size(kFlashStrings));
-  } else {
-    static constexpr LocalizedString kFlashStrings[] = {
-        {"siteSettingsFlashAskFirst",
-         IDS_SETTINGS_SITE_SETTINGS_FLASH_DETECT_IMPORTANT},
-        {"siteSettingsFlashAskFirstRecommended",
-         IDS_SETTINGS_SITE_SETTINGS_FLASH_DETECT_IMPORTANT_RECOMMENDED},
-        {"siteSettingsFlashPermissionsEphemeral",
-         IDS_SETTINGS_SITE_SETTINGS_FLASH_PERMISSIONS_ARE_EPHEMERAL},
-    };
-    AddLocalizedStringsBulk(html_source, kFlashStrings,
-                            base::size(kFlashStrings));
-  }
 }
 
 #if defined(OS_CHROMEOS)

@@ -46,10 +46,11 @@ class ProfileContentSettingObserver : public content_settings::Observer {
     if (content_type != CONTENT_SETTINGS_TYPE_PLUGINS)
       return;
 
+    // We must purge the plugin list cache when the plugin content setting
+    // changes, because the content setting affects the visibility of Flash.
     HostContentSettingsMap* map =
         HostContentSettingsMapFactory::GetForProfile(profile_);
-    if (PluginUtils::ShouldPreferHtmlOverPlugins(map))
-      PluginService::GetInstance()->PurgePluginListCache(profile_, false);
+    PluginService::GetInstance()->PurgePluginListCache(profile_, false);
 
     const GURL primary(primary_pattern.ToString());
     if (primary.is_valid()) {
@@ -197,11 +198,8 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
   if (!context_info->plugin_prefs.get()->IsPluginEnabled(*plugin))
     return false;
 
-  // If PreferHtmlOverPlugins is enabled and the plugin is Flash, we do
-  // additional checks.
-  if (plugin->name == base::ASCIIToUTF16(content::kFlashPluginName) &&
-      PluginUtils::ShouldPreferHtmlOverPlugins(
-          context_info->host_content_settings_map.get())) {
+  // Do additional checks for Flash.
+  if (plugin->name == base::ASCIIToUTF16(content::kFlashPluginName)) {
     // Check the content setting first, and always respect the ALLOW or BLOCK
     // state. When IsPluginAvailable() is called to check whether a plugin
     // should be advertised, |url| has the same origin as |main_frame_origin|.

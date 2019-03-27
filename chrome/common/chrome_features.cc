@@ -517,11 +517,6 @@ const base::Feature kPrerenderFallbackToPreconnect{
 // https://crbug.com/918428
 const base::Feature kFlashDeprecationWarning{"FlashDeprecationWarning",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Prefer HTML content by hiding Flash from the list of plugins.
-// https://crbug.com/626728
-const base::Feature kPreferHtmlOverPlugins{"PreferHtmlOverPlugins",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

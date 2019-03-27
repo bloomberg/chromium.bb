@@ -13,7 +13,6 @@
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/permissions/permission_util.h"
-#include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -194,13 +193,11 @@ ContentSetting GetEffectiveSetting(Profile* profile,
   effective_setting = PluginsFieldTrial::EffectiveContentSetting(
       host_content_settings_map, type, effective_setting);
 
-  // Display the UI string for ASK instead of DETECT for HTML5 by Default.
-  // TODO(tommycli): Once HTML5 by Default is shipped and the feature flag
-  // is removed, just migrate the actual content setting to ASK.
-  if (PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map) &&
-      effective_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT) {
+  // Display the UI string for ASK instead of DETECT for Flash.
+  // TODO(tommycli): Just migrate the actual content setting to ASK.
+  if (effective_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT)
     effective_setting = CONTENT_SETTING_ASK;
-  }
+
 #endif
   return effective_setting;
 }

@@ -101,9 +101,6 @@ bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
     const GURL& source_url,
     const GURL& target_url,
     bool has_user_gesture) {
-  if (!PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map))
-    return false;
-
   if (!has_user_gesture)
     return false;
 

@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/page_info/permission_menu_model.h"
 
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/common/chrome_features.h"
 #include "components/strings/grit/components_strings.h"
@@ -50,16 +49,6 @@ PermissionMenuModel::PermissionMenuModel(Profile* profile,
         profile, permission_.type, CONTENT_SETTING_ALLOW,
         effective_default_setting, permission_.source);
     AddCheckItem(CONTENT_SETTING_ALLOW, label);
-  }
-
-  // TODO(tommycli): With the HTML5 by Default feature, Flash is treated the
-  // same as any other permission with ASK, i.e. there is no ASK exception.
-  // Once the feature flag is gone, remove this block of code entirely.
-  if (permission_.type == CONTENT_SETTINGS_TYPE_PLUGINS &&
-      !PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map_)) {
-    label = l10n_util::GetStringUTF16(
-        IDS_PAGE_INFO_MENU_ITEM_DETECT_IMPORTANT_CONTENT);
-    AddCheckItem(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, label);
   }
 
   // Retrieve the string to show for blocking the permission.

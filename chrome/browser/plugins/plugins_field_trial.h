@@ -16,6 +16,8 @@ class PluginsFieldTrial {
  public:
   // Returns the effective content setting for plugins. Passes non-plugin
   // content settings through without modification.
+  // TODO(tommycli): Eliminate this method and fold the logic into
+  // HostContentSettingsMap.
   static ContentSetting EffectiveContentSetting(
       const HostContentSettingsMap* host_content_settings_map,
       ContentSettingsType type,

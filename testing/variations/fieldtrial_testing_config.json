@@ -2296,24 +2296,6 @@
             ]
         }
     ],
-    "Html5ByDefault": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PreferHtmlOverPlugins"
-                    ]
-                }
-            ]
-        }
-    ],
     "IDBTombstoneSweeper": [
         {
             "platforms": [

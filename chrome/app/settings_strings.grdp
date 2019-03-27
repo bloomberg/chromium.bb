@@ -3029,12 +3029,6 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_FLASH_PERMISSIONS_ARE_EPHEMERAL" desc="The notice that Flash permissions are ephemeral, at the top of the Flash settings page.">
     Your Flash settings will be kept until you quit Chrome.
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_FLASH_DETECT_IMPORTANT_RECOMMENDED" desc="The 'detect and run important content' label in site settings (with the 'recommended' suffix).">
-    Run only important content (recommended)
-  </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_FLASH_DETECT_IMPORTANT" desc="The 'detect and run important content' label in site settings.">
-    Run only important content
-  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ALLOW_RECENTLY_CLOSED_SITES" desc="The allow label for background sync in site settings.">
     Allow recently closed sites to finish sending and receiving data
   </message>
