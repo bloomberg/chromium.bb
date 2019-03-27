@@ -22,7 +22,7 @@ option go_package = "power_manager_proto";
 // opposed to continuing to use a value set by a previous message).  An
 // empty message will restore all settings to their defaults.
 //
-// Next ID to use: 21
+// Next ID to use: 22
 message PowerManagementPolicy {
 
   enum Action {
@@ -193,6 +193,9 @@ message PowerManagementPolicy {
     // Next value to use: 5
   }
   repeated PeakShiftDayConfig peak_shift_day_configs = 20;
+
+  // If true, boot on AC will be enabled.
+  optional bool boot_on_ac = 21;
 }
 
 // Message included in IdleActionImminent signals.
