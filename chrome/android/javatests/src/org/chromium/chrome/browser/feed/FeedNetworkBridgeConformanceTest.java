@@ -22,10 +22,10 @@ import org.junit.Rule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.FutureTask;
@@ -89,7 +89,8 @@ public final class FeedNetworkBridgeConformanceTest extends NetworkClientConform
             HttpRequest testServerRequest = new HttpRequest(
                     uri, request.getMethod(), request.getHeaders(), request.getBody());
             TestConsumer testConsumer = new TestConsumer(responseConsumer);
-            ThreadUtils.runOnUiThreadBlocking(() -> super.send(testServerRequest, testConsumer));
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> super.send(testServerRequest, testConsumer));
             // TODO(aluo): remove once b/79753857 is fixed
             // Need convert the send into a sync call due to
             // NetworkClientConformanceTest not waiting before checking that
@@ -121,12 +122,12 @@ public final class FeedNetworkBridgeConformanceTest extends NetworkClientConform
     @Before
     public void setUp() throws Exception {
         createAndStartTestServer();
-        ThreadUtils.runOnUiThreadBlocking(() -> createNetworkClient());
+        TestThreadUtils.runOnUiThreadBlocking(() -> createNetworkClient());
     }
 
     @After
     public void tearDown() {
-        ThreadUtils.runOnUiThreadBlocking(() -> destroyNetworkClient());
+        TestThreadUtils.runOnUiThreadBlocking(() -> destroyNetworkClient());
         stopAndDestroyTestServer();
     }
 }

@@ -17,7 +17,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -29,6 +28,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
 /**
@@ -71,7 +71,7 @@ public class HomeSheetUiCaptureTest {
     @Feature({"UiCatalogue"})
     public void testAllDismissed() {
         NewTabPageAdapter adapter = mActivityRule.getAdapter();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             int signInPromoPosition = adapter.getFirstPositionForType(ItemViewType.PROMO);
             assertNotEquals(signInPromoPosition, RecyclerView.NO_POSITION);
             adapter.dismissItem(signInPromoPosition, ignored -> { });

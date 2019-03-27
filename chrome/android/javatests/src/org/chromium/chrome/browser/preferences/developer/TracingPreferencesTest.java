@@ -31,7 +31,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
@@ -50,6 +49,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.File;
 import java.util.Arrays;
@@ -117,7 +117,7 @@ public class TracingPreferencesTest {
                 fragment.findPreference(TracingPreferences.UI_PREF_START_RECORDING);
 
         CallbackHelper callbackHelper = new CallbackHelper();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             if (TracingController.getInstance().getState()
                     == TracingController.State.INITIALIZING) {
                 // Controls should be disabled while initializing.
@@ -161,7 +161,7 @@ public class TracingPreferencesTest {
         Assert.assertEquals(0, mMockNotificationManager.getNotifications().size());
 
         CallbackHelper callbackHelper = new CallbackHelper();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(
                     TracingController.State.IDLE, TracingController.getInstance().getState());
             Assert.assertTrue(startTracingButton.isEnabled());
@@ -282,7 +282,7 @@ public class TracingPreferencesTest {
 
         waitForTracingControllerInitialization(fragment);
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertTrue(defaultCategoriesPref.isEnabled());
             Assert.assertTrue(nonDefaultCategoriesPref.isEnabled());
         });
@@ -319,7 +319,7 @@ public class TracingPreferencesTest {
             Assert.assertEquals(originallyEnabled, sampleCategoryPref.isChecked());
 
             // Simulate selecting / deselecting the category.
-            ThreadUtils.runOnUiThreadBlocking(() -> {
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
                 PreferencesTest.clickPreference(categoriesFragment, sampleCategoryPref);
             });
             Assert.assertNotEquals(originallyEnabled, sampleCategoryPref.isChecked());
@@ -342,7 +342,7 @@ public class TracingPreferencesTest {
 
         waitForTracingControllerInitialization(fragment);
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertTrue(modePref.isEnabled());
 
             // By default, the "record-until-full" mode is selected.

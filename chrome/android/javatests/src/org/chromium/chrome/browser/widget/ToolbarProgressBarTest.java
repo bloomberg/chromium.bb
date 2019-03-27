@@ -18,7 +18,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -33,6 +32,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestWebContentsObserver;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
@@ -77,7 +77,7 @@ public class ToolbarProgressBarTest {
             }
         });
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mProgressBar.finish(false));
+        TestThreadUtils.runOnUiThreadBlocking(() -> mProgressBar.finish(false));
     }
 
     /**
@@ -85,7 +85,7 @@ public class ToolbarProgressBarTest {
      * @return The current progress displayed by the progress bar.
      */
     private float getProgress() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Float>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Float>() {
             @Override
             public Float call() {
                 return mProgressBar.getProgress();
@@ -98,7 +98,7 @@ public class ToolbarProgressBarTest {
      * @return The current progress displayed by the progress bar.
      */
     private boolean isProgressBarVisible() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return mProgressBar.getVisibility() == View.VISIBLE;
@@ -168,10 +168,10 @@ public class ToolbarProgressBarTest {
 
         int currentVisibilityCallCount = mProgressVisibilityHelper.getCallCount();
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mProgressBar.start());
+        TestThreadUtils.runOnUiThreadBlocking(() -> mProgressBar.start());
         assertFalse("Indeterminate animation should not be running.", progressAnimator.isRunning());
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mProgressBar.startIndeterminateAnimationForTesting();
             mProgressBar.setProgress(0.5f);
         });
@@ -189,7 +189,7 @@ public class ToolbarProgressBarTest {
             currentProgressCallCount++;
         }
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mProgressBar.finish(true));
+        TestThreadUtils.runOnUiThreadBlocking(() -> mProgressBar.finish(true));
 
         // Wait for progress updates to reach 100%.
         currentProgressCallCount = mProgressUpdateHelper.getCallCount();
@@ -221,7 +221,7 @@ public class ToolbarProgressBarTest {
         int currentVisibilityCallCount = mProgressVisibilityHelper.getCallCount();
         int currentProgressCallCount = mProgressUpdateHelper.getCallCount();
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mProgressBar.start();
             mProgressBar.setProgress(0.5f);
         });
@@ -236,7 +236,7 @@ public class ToolbarProgressBarTest {
         assertEquals("Progress should have reached 50%.", 0.5f, getProgress(), MathUtils.EPSILON);
 
         currentProgressCallCount = mProgressUpdateHelper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(() -> mProgressBar.finish(true));
+        TestThreadUtils.runOnUiThreadBlocking(() -> mProgressBar.finish(true));
 
         // Wait for progress updates to reach 100%.
         mProgressUpdateHelper.waitForCallback(currentProgressCallCount, 1);
@@ -264,10 +264,10 @@ public class ToolbarProgressBarTest {
 
         int currentVisibilityCallCount = mProgressVisibilityHelper.getCallCount();
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mProgressBar.start());
+        TestThreadUtils.runOnUiThreadBlocking(() -> mProgressBar.start());
         assertFalse("Indeterminate animation should not be running.", progressAnimator.isRunning());
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mProgressBar.startIndeterminateAnimationForTesting();
             mProgressBar.setProgress(0.5f);
         });
@@ -286,7 +286,7 @@ public class ToolbarProgressBarTest {
         }
 
         // Finish progress with no delay.
-        ThreadUtils.runOnUiThreadBlocking(() -> mProgressBar.finish(false));
+        TestThreadUtils.runOnUiThreadBlocking(() -> mProgressBar.finish(false));
 
         // The progress bar should immediately be invisible.
         assertFalse("Progress bar should be invisible.", isProgressBarVisible());
@@ -307,10 +307,10 @@ public class ToolbarProgressBarTest {
 
         int currentVisibilityCallCount = mProgressVisibilityHelper.getCallCount();
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mProgressBar.start());
+        TestThreadUtils.runOnUiThreadBlocking(() -> mProgressBar.start());
         assertFalse("Indeterminate animation should not be running.", progressAnimator.isRunning());
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mProgressBar.startIndeterminateAnimationForTesting();
             mProgressBar.setProgress(0.5f);
         });
@@ -330,7 +330,7 @@ public class ToolbarProgressBarTest {
 
         // Restart the progress bar.
         currentProgressCallCount = mProgressUpdateHelper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(() -> mProgressBar.start());
+        TestThreadUtils.runOnUiThreadBlocking(() -> mProgressBar.start());
 
         // Wait for progress update.
         mProgressUpdateHelper.waitForCallback(currentProgressCallCount, 1);

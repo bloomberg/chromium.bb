@@ -19,7 +19,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -48,6 +47,7 @@ import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_pages.core.prefetch.proto.StatusOuterClass;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.net.NetworkChangeNotifierAutoDetect;
 import org.chromium.net.test.util.WebServer;
@@ -124,7 +124,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
     // Helper for checking isPrefetchingEnabledByServer().
     private boolean isEnabledByServer() {
         final AtomicBoolean isEnabled = new AtomicBoolean();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { isEnabled.set(PrefetchConfiguration.isPrefetchingEnabledByServer()); });
         return isEnabled.get();
     }
@@ -180,7 +180,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
         mActivityTestRule.startMainActivityOnBlankPage();
 
         // Register Offline Page observer and enable limitless prefetching.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mProfile = mActivityTestRule.getActivity().getActivityTab().getProfile();
             OfflinePageBridge.getForProfile(mProfile).addObserver(
                     new OfflinePageBridge.OfflinePageModelObserver() {
@@ -233,7 +233,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
     private Bitmap findVisuals(ContentId id) throws InterruptedException, TimeoutException {
         final CallbackHelper finished = new CallbackHelper();
         final AtomicReference<Bitmap> result = new AtomicReference<Bitmap>();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             offlineContentProvider().getVisualsForItem(id, (resultId, visuals) -> {
                 if (visuals != null) {
                     result.set(visuals.icon);
@@ -248,7 +248,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
     private void runAndWaitForBackgroundTask() throws Throwable {
         final CallbackHelper finished = new CallbackHelper();
         PrefetchBackgroundTask task = new PrefetchBackgroundTask();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             TaskParameters.Builder builder =
                     TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID)
                             .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(
@@ -289,7 +289,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
     /** Trigger conditions required to load NTP snippets. */
     private void forceLoadSnippets() throws Throwable {
         // NTP suggestions require a connection and an accepted EULA.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             NetworkChangeNotifier.forceConnectivityState(true);
             PrefServiceBridge.getInstance().setEulaAccepted();
         });
@@ -308,7 +308,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
     public void testPrefetchSinglePageSuccess() throws Throwable {
         // TODO(crbug.com/845310): Expand this test. There's some important flows missing and
         // systems missing.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefetchTestBridge.insertIntoCachedImageFetcher(THUMBNAIL_URL1, testImageData());
         });
 

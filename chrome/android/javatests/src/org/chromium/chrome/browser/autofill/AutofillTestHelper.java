@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.autofill;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -27,28 +27,28 @@ public class AutofillTestHelper {
     }
 
     void setRequestTimeoutForTesting() {
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().setRequestTimeoutForTesting(0));
     }
 
     void setSyncServiceForTesting() {
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().setSyncServiceForTesting());
     }
 
     AutofillProfile getProfile(final String guid) throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().getProfile(guid));
     }
 
     List<AutofillProfile> getProfilesToSuggest(final boolean includeNameInLabel) throws
             ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().getProfilesToSuggest(includeNameInLabel));
     }
 
     List<AutofillProfile> getProfilesForSettings() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().getProfilesForSettings());
     }
 
@@ -63,7 +63,7 @@ public class AutofillTestHelper {
     public String setProfile(final AutofillProfile profile) throws InterruptedException,
             ExecutionException, TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
-        String guid = ThreadUtils.runOnUiThreadBlocking(
+        String guid = TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().setProfile(profile));
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
         return guid;
@@ -71,25 +71,25 @@ public class AutofillTestHelper {
 
     public void deleteProfile(final String guid) throws InterruptedException, TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().deleteProfile(guid));
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
     }
 
     public CreditCard getCreditCard(final String guid) throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().getCreditCard(guid));
     }
 
     List<CreditCard> getCreditCardsToSuggest() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> PersonalDataManager.getInstance().getCreditCardsToSuggest(
                                 /*includeServerCards=*/true));
     }
 
     List<CreditCard> getCreditCardsForSettings() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().getCreditCardsForSettings());
     }
 
@@ -104,7 +104,7 @@ public class AutofillTestHelper {
     public String setCreditCard(final CreditCard card) throws InterruptedException,
             ExecutionException, TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
-        String guid = ThreadUtils.runOnUiThreadBlocking(
+        String guid = TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().setCreditCard(card));
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
         return guid;
@@ -113,14 +113,14 @@ public class AutofillTestHelper {
     public void addServerCreditCard(final CreditCard card)
             throws InterruptedException, ExecutionException, TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().addServerCreditCardForTest(card));
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
     }
 
     void deleteCreditCard(final String guid) throws InterruptedException, TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().deleteCreditCard(guid));
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
     }
@@ -134,7 +134,7 @@ public class AutofillTestHelper {
      */
     void recordAndLogProfileUse(final String guid) throws InterruptedException, TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().recordAndLogProfileUse(guid));
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
     }
@@ -153,7 +153,7 @@ public class AutofillTestHelper {
     public void setProfileUseStatsForTesting(final String guid, final int count, final long date)
             throws InterruptedException, TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().setProfileUseStatsForTesting(guid, count,
                         date));
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
@@ -167,7 +167,7 @@ public class AutofillTestHelper {
      */
     public int getProfileUseCountForTesting(final String guid) throws InterruptedException,
             ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().getProfileUseCountForTesting(guid));
     }
 
@@ -181,7 +181,7 @@ public class AutofillTestHelper {
      */
     public long getProfileUseDateForTesting(final String guid) throws InterruptedException,
             ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().getProfileUseDateForTesting(guid));
     }
 
@@ -195,7 +195,7 @@ public class AutofillTestHelper {
     public void recordAndLogCreditCardUse(final String guid) throws InterruptedException,
             TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().recordAndLogCreditCardUse(guid));
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
     }
@@ -214,7 +214,7 @@ public class AutofillTestHelper {
     public void setCreditCardUseStatsForTesting(final String guid, final int count, final long date)
             throws InterruptedException, TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().setCreditCardUseStatsForTesting(
                         guid, count, date));
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
@@ -228,7 +228,7 @@ public class AutofillTestHelper {
      */
     public int getCreditCardUseCountForTesting(final String guid) throws InterruptedException,
             ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().getCreditCardUseCountForTesting(guid));
     }
 
@@ -242,7 +242,7 @@ public class AutofillTestHelper {
      */
     public long getCreditCardUseDateForTesting(final String guid) throws InterruptedException,
             ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().getCreditCardUseDateForTesting(guid));
     }
 
@@ -254,14 +254,14 @@ public class AutofillTestHelper {
      *         For more details see the comment header in time.h.
      */
     public long getCurrentDateForTesting() throws InterruptedException, ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().getCurrentDateForTesting());
     }
 
     private void registerDataObserver() {
         try {
             int callCount = mOnPersonalDataChangedHelper.getCallCount();
-            boolean isDataLoaded = ThreadUtils.runOnUiThreadBlocking(
+            boolean isDataLoaded = TestThreadUtils.runOnUiThreadBlocking(
                     () -> PersonalDataManager.getInstance().registerDataObserver(
                             () -> mOnPersonalDataChangedHelper.notifyCalled()));
             if (isDataLoaded) return;

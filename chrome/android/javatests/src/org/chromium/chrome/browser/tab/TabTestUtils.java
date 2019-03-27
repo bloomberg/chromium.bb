@@ -8,7 +8,7 @@ import android.view.View;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
-import org.chromium.base.ThreadUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Exposes helper functions to be used in tests to instrument tab interaction.
@@ -73,7 +73,7 @@ public class TabTestUtils {
                     return new View(tab.getThemedApplicationContext());
                 }
             };
-            ThreadUtils.runOnUiThreadBlocking(() -> {
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
                 SadTab.initForTesting(tab, sadTab);
                 sadTab.show();
             });

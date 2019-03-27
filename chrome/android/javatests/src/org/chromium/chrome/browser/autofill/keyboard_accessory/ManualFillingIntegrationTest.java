@@ -35,7 +35,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
@@ -55,6 +54,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.DropdownPopupWindowInterface;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -278,9 +278,9 @@ public class ManualFillingIntegrationTest {
         mHelper.waitForKeyboardToDisappear();
         whenDisplayed(withChild(withId(R.id.keyboard_accessory_sheet)));
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivityTestRule.getActivity().getLayoutManager().showOverview(false); });
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivityTestRule.getActivity().getLayoutManager().hideOverview(false); });
 
         waitToBeHidden(withChild(withId(R.id.keyboard_accessory_sheet)));
@@ -303,7 +303,7 @@ public class ManualFillingIntegrationTest {
         whenDisplayed(withChild(withId(R.id.keyboard_accessory_sheet)));
 
         // Simulate backgrounding the main activity.
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivityTestRule.getActivity().onPauseWithNative(); });
 
         // This should completely dismiss any input method.
@@ -312,7 +312,7 @@ public class ManualFillingIntegrationTest {
         mHelper.waitForKeyboardAccessoryToDisappear();
 
         // Simulate foregrounding the main activity.
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivityTestRule.getActivity().onResumeWithNative(); });
 
         // Clicking the field should bring the accessory back up.
@@ -376,7 +376,7 @@ public class ManualFillingIntegrationTest {
         assertThat(mActivityTestRule.getInfoBarContainer().getVisibility(), is(not(View.VISIBLE)));
 
         // Close the keyboard to bring back the InfoBar.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivityTestRule.getKeyboardDelegate().hideKeyboard(
                     mActivityTestRule.getActivity().getCurrentFocus());
             mActivityTestRule.getInfoBarContainer().requestLayout();
@@ -421,7 +421,7 @@ public class ManualFillingIntegrationTest {
         // Reopen the keyboard, then close it.
         whenDisplayed(withId(R.id.show_keyboard)).perform(click());
         mHelper.waitForKeyboardAccessoryToBeShown();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivityTestRule.getKeyboardDelegate().hideKeyboard(
                     mActivityTestRule.getActivity().getCurrentFocus());
             mActivityTestRule.getInfoBarContainer().requestLayout();

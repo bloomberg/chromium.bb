@@ -35,7 +35,6 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.Assert;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -53,6 +52,7 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestInputMethodManagerWrapper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.DropdownItem;
 import org.chromium.ui.DropdownPopupWindowInterface;
@@ -100,7 +100,7 @@ public class ManualFillingTestHelper {
         ChromeWindow.setKeyboardVisibilityDelegateFactory(FakeKeyboard::new);
         mActivityTestRule.startMainActivityWithURL(mEmbeddedTestServer.getURL(url));
         setRtlForTesting(isRtl);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ChromeTabbedActivity activity = mActivityTestRule.getActivity();
             mWebContentsRef.set(activity.getActivityTab().getWebContents());
             activity.getManualFillingController()
@@ -136,7 +136,7 @@ public class ManualFillingTestHelper {
 
     public void focusPasswordField() throws TimeoutException, InterruptedException {
         DOMUtils.focusNode(mActivityTestRule.getWebContents(), PASSWORD_NODE_ID);
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivityTestRule.getWebContents().scrollFocusedEditableNodeIntoView(); });
         getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
     }
@@ -150,7 +150,7 @@ public class ManualFillingTestHelper {
         // TODO(fhorschig): This should be |focusNode|. Change with autofill popup deprecation.
         DOMUtils.clickNode(mWebContentsRef.get(), USERNAME_NODE_ID);
         if (forceAccessory) {
-            ThreadUtils.runOnUiThreadBlocking(() -> {
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
                 mActivityTestRule.getActivity()
                         .getManualFillingController()
                         .getMediatorForTesting()
@@ -220,7 +220,7 @@ public class ManualFillingTestHelper {
         // Wait for InputConnection to be ready and fill the filterInput. Then wait for the anchor.
         CriteriaHelper.pollUiThread(
                 Criteria.equals(1, () -> mInputMethodManagerWrapper.getShowSoftInputCounter()));
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ImeAdapter.fromWebContents(webContents).setComposingTextForTest(filterInput, 4);
         });
         CriteriaHelper.pollUiThread(new Criteria("Autofill Popup anchor view was never added.") {
@@ -275,7 +275,7 @@ public class ManualFillingTestHelper {
      * @param passwords {@link String}s to be used as display text for password chips.
      */
     public void cacheCredentials(String[] usernames, String[] passwords) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ManualFillingBridge.cachePasswordSheetData(
                     mActivityTestRule.getWebContents(), usernames, passwords);
         });
@@ -405,7 +405,7 @@ public class ManualFillingTestHelper {
                 new PropertyProvider<>(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
         mActivityTestRule.getActivity().getManualFillingController().registerActionProvider(
                 generationActionProvider);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             generationActionProvider.notifyObservers(new KeyboardAccessoryData.Action[] {
                     new KeyboardAccessoryData.Action("Generate Password",
                             AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, result -> {})});
@@ -428,7 +428,7 @@ public class ManualFillingTestHelper {
                     @Override
                     public void accessibilityFocusCleared() {}
                 });
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             suggestionProvider.notifyObservers(new AutofillSuggestion[] {
                     new AutofillSuggestion("Johnathan", "Smithonian-Jackson", DropdownItem.NO_ICON,
                             false, 0, false, false, false),

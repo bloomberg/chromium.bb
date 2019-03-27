@@ -39,7 +39,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
@@ -70,6 +69,7 @@ import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.HashMap;
@@ -137,7 +137,7 @@ public class DownloadActivityTest {
         Editor editor = ContextUtils.getAppSharedPreferences().edit();
         editor.putBoolean(PREF_SHOW_STORAGE_INFO_HEADER, true).apply();
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge.getInstance().setPromptForDownloadAndroid(
                     DownloadPromptStatus.DONT_SHOW);
         });
@@ -704,7 +704,7 @@ public class DownloadActivityTest {
         Assert.assertTrue(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
 
         int callCount = mAdapterObserver.onSelectionCallback.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 (Runnable) () -> toolbar.getMenu().performIdentifierAction(R.id.search_menu_id, 0));
 
         // The selection should be cleared when a search is started.

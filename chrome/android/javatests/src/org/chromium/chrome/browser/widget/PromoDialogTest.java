@@ -20,7 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
@@ -28,6 +27,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.widget.PromoDialog.DialogParams;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.Callable;
 
@@ -57,7 +57,7 @@ public class PromoDialogTest {
         PromoDialogWrapper(final Activity activity, final DialogParams dialogParams)
                 throws Exception {
             mDialogParams = dialogParams;
-            dialog = ThreadUtils.runOnUiThreadBlocking(new Callable<PromoDialog>() {
+            dialog = TestThreadUtils.runOnUiThreadBlocking(new Callable<PromoDialog>() {
                 @Override
                 public PromoDialog call() throws Exception {
                     PromoDialog dialog = new PromoDialog(activity) {
@@ -82,7 +82,7 @@ public class PromoDialogTest {
                     return dialog;
                 }
             });
-            dialogLayout = ThreadUtils.runOnUiThreadBlocking(new Callable<PromoDialogLayout>() {
+            dialogLayout = TestThreadUtils.runOnUiThreadBlocking(new Callable<PromoDialogLayout>() {
                 @Override
                 public PromoDialogLayout call() throws Exception {
                     PromoDialogLayout promoDialogLayout =
@@ -99,14 +99,10 @@ public class PromoDialogTest {
          * Trigger a {@link View#measure(int, int)} on the promo dialog layout.
          */
         public void triggerDialogLayoutMeasure(final int width, final int height) {
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    int widthMeasureSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY);
-                    int heightMeasureSpec =
-                            MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY);
-                    dialogLayout.measure(widthMeasureSpec, heightMeasureSpec);
-                }
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                int widthMeasureSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY);
+                int heightMeasureSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY);
+                dialogLayout.measure(widthMeasureSpec, heightMeasureSpec);
             });
         }
     }
@@ -185,24 +181,18 @@ public class PromoDialogTest {
                 (LinearLayout) promoDialogLayout.findViewById(R.id.full_promo_content);
 
         // Tall screen should keep the illustration above everything else.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                int widthMeasureSpec = MeasureSpec.makeMeasureSpec(500, MeasureSpec.EXACTLY);
-                int heightMeasureSpec = MeasureSpec.makeMeasureSpec(1000, MeasureSpec.EXACTLY);
-                promoDialogLayout.measure(widthMeasureSpec, heightMeasureSpec);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            int widthMeasureSpec = MeasureSpec.makeMeasureSpec(500, MeasureSpec.EXACTLY);
+            int heightMeasureSpec = MeasureSpec.makeMeasureSpec(1000, MeasureSpec.EXACTLY);
+            promoDialogLayout.measure(widthMeasureSpec, heightMeasureSpec);
         });
         Assert.assertEquals(LinearLayout.VERTICAL, flippableLayout.getOrientation());
 
         // Wide screen should move the image left.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                int widthMeasureSpec = MeasureSpec.makeMeasureSpec(1000, MeasureSpec.EXACTLY);
-                int heightMeasureSpec = MeasureSpec.makeMeasureSpec(500, MeasureSpec.EXACTLY);
-                promoDialogLayout.measure(widthMeasureSpec, heightMeasureSpec);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            int widthMeasureSpec = MeasureSpec.makeMeasureSpec(1000, MeasureSpec.EXACTLY);
+            int heightMeasureSpec = MeasureSpec.makeMeasureSpec(500, MeasureSpec.EXACTLY);
+            promoDialogLayout.measure(widthMeasureSpec, heightMeasureSpec);
         });
         Assert.assertEquals(LinearLayout.HORIZONTAL, flippableLayout.getOrientation());
     }
@@ -224,22 +214,14 @@ public class PromoDialogTest {
         Assert.assertEquals(0, wrapper.secondaryCallback.getCallCount());
 
         // Only the primary button should register a click.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                promoDialogLayout.findViewById(R.id.button_primary).performClick();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { promoDialogLayout.findViewById(R.id.button_primary).performClick(); });
         Assert.assertEquals(1, wrapper.primaryCallback.getCallCount());
         Assert.assertEquals(0, wrapper.secondaryCallback.getCallCount());
 
         // Only the secondary button should register a click.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                promoDialogLayout.findViewById(R.id.button_secondary).performClick();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { promoDialogLayout.findViewById(R.id.button_secondary).performClick(); });
         Assert.assertEquals(1, wrapper.primaryCallback.getCallCount());
         Assert.assertEquals(1, wrapper.secondaryCallback.getCallCount());
     }

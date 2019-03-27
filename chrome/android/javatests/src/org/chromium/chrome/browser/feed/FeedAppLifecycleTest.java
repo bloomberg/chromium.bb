@@ -27,7 +27,6 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
@@ -51,6 +50,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiDisableIf;
 
 import java.util.Map;
@@ -86,7 +86,7 @@ public class FeedAppLifecycleTest {
         MockitoAnnotations.initMocks(this);
         when(mMockFeatureList.get(anyString())).thenReturn(true);
         ChromeFeatureList.setTestFeatures(mMockFeatureList);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             try {
                 ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
             } catch (ProcessInitException e) {
@@ -288,7 +288,7 @@ public class FeedAppLifecycleTest {
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
     public void testClearDataAfterDisablingDoesNotCrash() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             FeedProcessScopeFactory.clearFeedProcessScopeForTesting();
             PrefServiceBridge.getInstance().setBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED, false);
             FeedLifecycleBridge.onCachedDataCleared();

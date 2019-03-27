@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.vr.util;
 
 import android.content.DialogInterface;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.permissions.PermissionDialogController;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Utility class for interacting with permission prompts outside of the VR Browser. For interaction
@@ -28,7 +28,7 @@ public class PermissionUtils {
      * Accepts the currently displayed permission prompt.
      */
     public static void acceptPermissionPrompt() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             PermissionDialogController.getInstance()
                     .getCurrentDialogForTesting()
                     .getButton(DialogInterface.BUTTON_POSITIVE)
@@ -40,7 +40,7 @@ public class PermissionUtils {
      * Denies the currently displayed permission prompt.
      */
     public static void denyPermissionPrompt() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             PermissionDialogController.getInstance()
                     .getCurrentDialogForTesting()
                     .getButton(DialogInterface.BUTTON_NEGATIVE)

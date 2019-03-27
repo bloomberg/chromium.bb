@@ -14,7 +14,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
@@ -26,6 +25,7 @@ import org.chromium.chrome.browser.download.DownloadTestRule.CustomMainActivityS
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
 
@@ -94,14 +94,11 @@ public class MHTMLPageTest implements CustomMainActivityStart {
         final Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         final Semaphore semaphore = new Semaphore(0);
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                DownloadController.setDownloadNotificationService(
-                        new TestDownloadNotificationService(semaphore));
-                tab.loadUrl(new LoadUrlParams(
-                        url, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR));
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            DownloadController.setDownloadNotificationService(
+                    new TestDownloadNotificationService(semaphore));
+            tab.loadUrl(
+                    new LoadUrlParams(url, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR));
         });
 
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -116,14 +113,11 @@ public class MHTMLPageTest implements CustomMainActivityStart {
         final Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         final Semaphore semaphore = new Semaphore(0);
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                DownloadController.setDownloadNotificationService(
-                        new TestDownloadNotificationService(semaphore));
-                tab.loadUrl(new LoadUrlParams(
-                        url, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR));
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            DownloadController.setDownloadNotificationService(
+                    new TestDownloadNotificationService(semaphore));
+            tab.loadUrl(
+                    new LoadUrlParams(url, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR));
         });
 
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));

@@ -13,7 +13,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -24,6 +23,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -86,7 +86,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
         mHelper.waitForKeyboardAccessoryToBeShown();
 
         // Scroll to the second position and check it actually happened.
-        ThreadUtils.runOnUiThreadBlocking(() -> getSuggestionsComponent().scrollToPosition(2));
+        TestThreadUtils.runOnUiThreadBlocking(() -> getSuggestionsComponent().scrollToPosition(2));
         CriteriaHelper.pollUiThread(() -> {
             return getSuggestionsComponent().computeHorizontalScrollOffset() > 0;
         }, "Should keep the manual scroll position.");
@@ -110,12 +110,12 @@ public class AutofillKeyboardAccessoryIntegrationTest {
         mHelper.clickNodeAndShowKeyboard("NAME_FIRST");
         mHelper.waitForKeyboardAccessoryToBeShown();
 
-        ThreadUtils.runOnUiThreadBlocking(() -> getFirstSuggestion().performClick());
+        TestThreadUtils.runOnUiThreadBlocking(() -> getFirstSuggestion().performClick());
         mHelper.waitForKeyboardAccessoryToDisappear();
     }
 
     private RecyclerView getSuggestionsComponent() {
-        final ViewGroup keyboardAccessory = ThreadUtils.runOnUiThreadBlockingNoException(
+        final ViewGroup keyboardAccessory = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory));
         assert keyboardAccessory != null;
         return (RecyclerView) keyboardAccessory.findViewById(R.id.bar_items_view);

@@ -13,7 +13,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -25,6 +24,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -89,7 +89,7 @@ public class PaymentRequestCardEditorAutoAdvanceTest implements MainActivityStar
         Assert.assertTrue(mPaymentRequestTestRule.getCardEditorFocusedView() != focusedChildView);
 
         // Request focus to card number field after auto advancing above.
-        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> focusedChildView.requestFocus());
+        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> focusedChildView.requestFocus());
         mPaymentRequestTestRule.setTextInCardEditorAndWait(
                 new String[] {"3056 9309 0259 041"}, mPaymentRequestTestRule.getEditorTextUpdate());
         Assert.assertTrue(mPaymentRequestTestRule.getCardEditorFocusedView() == focusedChildView);
@@ -124,7 +124,7 @@ public class PaymentRequestCardEditorAutoAdvanceTest implements MainActivityStar
         Assert.assertTrue(mPaymentRequestTestRule.getCardEditorFocusedView() != focusedChildView);
 
         // Request focus to card number field after auto advancing above.
-        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> focusedChildView.requestFocus());
+        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> focusedChildView.requestFocus());
         mPaymentRequestTestRule.setTextInCardEditorAndWait(new String[] {"3782 822463 10005 1"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         Assert.assertTrue(mPaymentRequestTestRule.getCardEditorFocusedView() == focusedChildView);
@@ -169,7 +169,7 @@ public class PaymentRequestCardEditorAutoAdvanceTest implements MainActivityStar
         Assert.assertTrue(mPaymentRequestTestRule.getCardEditorFocusedView() != focusedChildView);
 
         // Request focus to card number field after auto advancing above.
-        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> focusedChildView.requestFocus());
+        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> focusedChildView.requestFocus());
         mPaymentRequestTestRule.setTextInCardEditorAndWait(new String[] {"4012 8888 8888 1881 1"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         Assert.assertTrue(mPaymentRequestTestRule.getCardEditorFocusedView() == focusedChildView);
@@ -213,7 +213,7 @@ public class PaymentRequestCardEditorAutoAdvanceTest implements MainActivityStar
         Assert.assertTrue(mPaymentRequestTestRule.getCardEditorFocusedView() != focusedChildView);
 
         // Request focus to card number field after auto advancing above.
-        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> focusedChildView.requestFocus());
+        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> focusedChildView.requestFocus());
         mPaymentRequestTestRule.setTextInCardEditorAndWait(
                 new String[] {"6212 3456 7890 0000 0031"},
                 mPaymentRequestTestRule.getEditorTextUpdate());

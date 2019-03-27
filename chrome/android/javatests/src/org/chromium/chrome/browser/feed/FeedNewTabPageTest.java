@@ -32,7 +32,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
@@ -58,6 +57,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiDisableIf;
 
@@ -132,14 +132,14 @@ public class FeedNewTabPageTest {
         // Prioritize RecyclerView's focusability so that the sign-in promo button and the action
         // button don't get focused initially to avoid flakiness.
         int descendantFocusability = recyclerView.getDescendantFocusability();
-        ThreadUtils.runOnUiThreadBlocking((() -> {
+        TestThreadUtils.runOnUiThreadBlocking((() -> {
             recyclerView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
             recyclerView.requestFocus();
         }));
 
         // Simulate sign in, scroll to the position where sign-in promo could be placed, and verify
         // that sign-in promo is not shown.
-        ThreadUtils.runOnUiThreadBlocking(signinObserver::onSignedIn);
+        TestThreadUtils.runOnUiThreadBlocking(signinObserver::onSignedIn);
         RecyclerViewTestUtils.waitForStableRecyclerView(recyclerView);
         onView(instanceOf(RecyclerView.class))
                 .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
@@ -147,7 +147,7 @@ public class FeedNewTabPageTest {
 
         // Simulate sign out, scroll to the position where sign-in promo could be placed, and verify
         // that sign-in promo is shown.
-        ThreadUtils.runOnUiThreadBlocking(signinObserver::onSignedOut);
+        TestThreadUtils.runOnUiThreadBlocking(signinObserver::onSignedOut);
         RecyclerViewTestUtils.waitForStableRecyclerView(recyclerView);
         onView(instanceOf(RecyclerView.class))
                 .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
@@ -162,7 +162,7 @@ public class FeedNewTabPageTest {
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
 
         // Reset states.
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> recyclerView.setDescendantFocusability(descendantFocusability));
     }
 
@@ -260,7 +260,7 @@ public class FeedNewTabPageTest {
     @MediumTest
     @Feature({"FeedNewTabPage"})
     public void testFeedDisabledByPolicy() throws Exception {
-        final boolean pref = ThreadUtils.runOnUiThreadBlocking(
+        final boolean pref = TestThreadUtils.runOnUiThreadBlocking(
                 () -> PrefServiceBridge.getInstance().getBoolean(
                         Pref.NTP_ARTICLES_SECTION_ENABLED));
 
@@ -274,7 +274,7 @@ public class FeedNewTabPageTest {
 
         // Simulate that policy is enabled. Verify the NTP root view contains only the view for
         // policy as child.
-        ThreadUtils.runOnUiThreadBlocking(() -> PrefServiceBridge.getInstance().setBoolean(
+        TestThreadUtils.runOnUiThreadBlocking(() -> PrefServiceBridge.getInstance().setBoolean(
                 Pref.NTP_ARTICLES_SECTION_ENABLED, false));
         Assert.assertNotNull(mNtp.getScrollViewForPolicy());
         Assert.assertNull(mNtp.getStream());
@@ -294,7 +294,7 @@ public class FeedNewTabPageTest {
 
         // Simulate that policy is disabled. Verify the NTP root view is the view for policy. We
         // don't re-enable the Feed until the next restart.
-        ThreadUtils.runOnUiThreadBlocking(() -> PrefServiceBridge.getInstance().setBoolean(
+        TestThreadUtils.runOnUiThreadBlocking(() -> PrefServiceBridge.getInstance().setBoolean(
                 Pref.NTP_ARTICLES_SECTION_ENABLED, true));
         Assert.assertNotNull(ntp2.getScrollViewForPolicy());
         Assert.assertNull(ntp2.getStream());
@@ -309,7 +309,7 @@ public class FeedNewTabPageTest {
         Assert.assertEquals(mNtp.getScrollViewForPolicy(), rootView.getChildAt(0));
 
         // Reset state.
-        ThreadUtils.runOnUiThreadBlocking(() -> PrefServiceBridge.getInstance().setBoolean(
+        TestThreadUtils.runOnUiThreadBlocking(() -> PrefServiceBridge.getInstance().setBoolean(
                 Pref.NTP_ARTICLES_SECTION_ENABLED, pref));
     }
 
@@ -329,7 +329,7 @@ public class FeedNewTabPageTest {
     }
 
     private boolean getPreferenceForArticleSectionHeader() throws Exception {
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE));
     }
 }
