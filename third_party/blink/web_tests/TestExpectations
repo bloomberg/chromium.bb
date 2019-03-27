@@ -6160,7 +6160,7 @@ crbug.com/919789 images/image-zoom-to-500.html [ Pass Timeout ]
 crbug.com/919789 media/controls/overflow-menu-hide-on-resize.html [ Pass Timeout ]
 crbug.com/919789 virtual/video-surface-layer/media/controls/overflow-menu-hide-on-resize.html [ Pass Timeout ]
 crbug.com/919789 paint/invalidation/resize-iframe-text.html [ Pass Timeout ]
-crbug.com/919789 paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ Pass Timeout ]
+crbug.com/919789 paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ Pass Failure Timeout ]
 crbug.com/919789 paint/invalidation/window-resize/ [ Pass Timeout ]
 
 # Sheriff 2019-03-27
