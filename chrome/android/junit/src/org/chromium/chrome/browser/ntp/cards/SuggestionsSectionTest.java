@@ -334,7 +334,7 @@ public class SuggestionsSectionTest {
         Callback<String> callback = mock(Callback.class);
         section.dismissItem(1, callback);
         verify(mDelegate).dismissSection(section);
-        verify(callback).onResult(section.getHeaderText());
+        verify(callback).onResult(section.getCategoryInfo().getTitle());
     }
 
     @Test

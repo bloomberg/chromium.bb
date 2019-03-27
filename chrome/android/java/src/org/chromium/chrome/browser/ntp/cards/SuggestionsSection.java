@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
@@ -56,7 +57,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
             new PropertyListModel<>();
 
     // Children
-    private final SectionHeader mHeader;
+    private final @Nullable SectionHeader mHeader;
     private final @Nullable SignInPromo mSigninPromo;
     private final SuggestionsList mSuggestionsList;
     private final StatusItem mStatus;
@@ -103,9 +104,16 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         boolean isExpandable = getCategory() == KnownCategories.ARTICLES;
         boolean isExpanded =
                 PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE);
-        mHeader = isExpandable ? new SectionHeader(info.getTitle(), isExpanded,
-                                         this::updateSuggestionsVisibilityForExpandableHeader)
-                               : new SectionHeader(info.getTitle());
+        // No header when touchless. The header allows users to choose to collapse/hide suggestions,
+        // but when touchless collapsing the suggestions shouldn't be necessary. There is no omnibox
+        // to distract from.
+        if (SuggestionsConfig.isTouchless()) {
+            mHeader = isExpandable ? new SectionHeader(info.getTitle(), isExpanded,
+                              this::updateSuggestionsVisibilityForExpandableHeader)
+                                   : new SectionHeader(info.getTitle());
+        } else {
+            mHeader = null;
+        }
 
         if (isExpandable && SignInPromo.shouldCreatePromo()) {
             mSigninPromo = new SignInPromo();
@@ -120,7 +128,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
 
         mStatus = StatusItem.createNoSuggestionsItem(info);
         mStatus.setVisible(shouldShowStatusItem());
-        addChildren(mHeader);
+        if (mHeader != null) addChildren(mHeader);
         if (mSigninPromo != null) addChildren(mSigninPromo);
         addChildren(mSuggestionsList, mStatus, mMoreButton);
 
@@ -215,7 +223,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
     public void dismissItem(int position, Callback<String> itemRemovedCallback) {
         if (getSectionDismissalRange().contains(position)) {
             mDelegate.dismissSection(this);
-            itemRemovedCallback.onResult(getHeaderText());
+            itemRemovedCallback.onResult(mCategoryInfo.getTitle());
             return;
         }
         super.dismissItem(position, itemRemovedCallback);
@@ -524,15 +532,21 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         return super.getItemDismissalGroup(position);
     }
 
-    /** Sets the visibility of this section's header. */
+    /**
+     * Sets the visibility of this section's header. Note this will not work when header is not
+     * added to view hierarchy as a result of {@link SuggestionsConfig#isTouchless(boolean)}.
+     */
     public void setHeaderVisibility(boolean headerVisibility) {
-        mHeader.setVisible(headerVisibility);
+        if (mHeader != null) {
+            mHeader.setVisible(headerVisibility);
+        }
     }
 
     /**
      * @return Whether or not the suggestions should be shown in this section.
      */
     private boolean shouldShowSuggestions() {
+        if (mHeader == null) return true;
         return !mHeader.isExpandable() || mHeader.isExpanded();
     }
 
@@ -562,10 +576,10 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
      * happen when the preference is updated by a user click on another new tab page.
      */
     void updateExpandableHeader() {
-        if (mHeader.isExpandable()
+        if (mHeader != null && mHeader.isExpandable()
                 && mHeader.isExpanded()
                         != PrefServiceBridge.getInstance().getBoolean(
-                                   Pref.NTP_ARTICLES_LIST_VISIBLE)) {
+                                Pref.NTP_ARTICLES_LIST_VISIBLE)) {
             mHeader.toggleHeader();
         }
     }
@@ -575,6 +589,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
      * called when the section header is toggled.
      */
     private void updateSuggestionsVisibilityForExpandableHeader() {
+        assert mHeader != null;
         assert mHeader.isExpandable();
         PrefServiceBridge.getInstance().setBoolean(
                 Pref.NTP_ARTICLES_LIST_VISIBLE, mHeader.isExpanded());
@@ -586,10 +601,6 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
 
     public SuggestionsCategoryInfo getCategoryInfo() {
         return mCategoryInfo;
-    }
-
-    public String getHeaderText() {
-        return mHeader.getHeaderText();
     }
 
     ActionItem getActionItemForTesting() {
