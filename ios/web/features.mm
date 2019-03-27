@@ -46,6 +46,9 @@ const base::Feature kBlockUniversalLinksInOffTheRecordMode{
 const base::Feature kWebUISchemeHandling{"WebUISchemeHandling",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kKeepsRenderProcessAlive{"KeepsRenderProcessAlive",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool WebUISchemeHandlingEnabled() {
   return base::FeatureList::IsEnabled(web::features::kWebUISchemeHandling);
 }

@@ -188,6 +188,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   UIView* GetView() override;
   void WasShown() override;
   void WasHidden() override;
+  void SetKeepRenderProcessAlive(bool keep_alive) override;
   BrowserState* GetBrowserState() const override;
   void OpenURL(const WebState::OpenURLParams& params) override;
   void Stop() override;

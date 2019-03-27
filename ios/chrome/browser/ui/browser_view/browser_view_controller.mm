@@ -1649,8 +1649,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self updateBroadcastState];
   web::WebState* activeWebState =
       self.tabModel.webStateList->GetActiveWebState();
-  if (activeWebState)
+  if (activeWebState) {
     activeWebState->WasHidden();
+    if (!self.presentedViewController)
+      activeWebState->SetKeepRenderProcessAlive(false);
+  }
   [_bookmarkInteractionController dismissSnackbar];
   [super viewWillDisappear:animated];
 }
@@ -2391,6 +2394,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)displayTab:(Tab*)tab {
   DCHECK(tab);
   [self loadViewIfNeeded];
+
+  // Set this before triggering any of the possible page loads below.
+  tab.webState->SetKeepRenderProcessAlive(true);
 
   if (!self.inNewTabAnimation) {
     // Hide findbar.  |updateToolbar| will restore the findbar later.
@@ -4376,6 +4382,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                atIndex:(NSUInteger)index {
   if (previousTab) {
     previousTab.webState->WasHidden();
+    previousTab.webState->SetKeepRenderProcessAlive(false);
     [self dismissPopups];
   }
 
@@ -4467,6 +4474,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     didRemoveTab:(Tab*)tab
          atIndex:(NSUInteger)index {
   tab.webState->WasHidden();
+  tab.webState->SetKeepRenderProcessAlive(false);
 
   [self uninstallDelegatesForTab:tab];
 

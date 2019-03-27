@@ -24,6 +24,7 @@
 #include "ios/chrome/browser/reading_list/features.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
+#import "ios/chrome/browser/ui/elements/windowed_container_view.h"
 #include "ios/chrome/browser/web/chrome_overlay_manifests.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/public/provider/chrome/browser/browser_url_rewriter_provider.h"
@@ -238,6 +239,13 @@ std::unique_ptr<service_manager::Service> ChromeWebClient::HandleServiceRequest(
   }
 
   return nullptr;
+}
+
+UIView* ChromeWebClient::GetWindowedContainer() {
+  if (!windowed_container_) {
+    windowed_container_ = [[WindowedContainerView alloc] init];
+  }
+  return windowed_container_;
 }
 
 std::string ChromeWebClient::GetProduct() const {

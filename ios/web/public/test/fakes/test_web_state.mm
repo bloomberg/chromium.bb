@@ -91,6 +91,8 @@ void TestWebState::WasHidden() {
     observer.WasHidden(this);
 }
 
+void TestWebState::SetKeepRenderProcessAlive(bool keep_alive) {}
+
 const NavigationManager* TestWebState::GetNavigationManager() const {
   return navigation_manager_.get();
 }

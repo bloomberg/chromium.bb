@@ -112,4 +112,8 @@ void WebClient::PrepareErrorPage(WebState* web_state,
   *error_html = error.localizedDescription;
 }
 
+UIView* WebClient::GetWindowedContainer() {
+  return nullptr;
+}
+
 }  // namespace web

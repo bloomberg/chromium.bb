@@ -102,6 +102,10 @@ class WebStateImpl;
 @property(nonatomic, strong, readonly)
     CRWJSInjectionReceiver* jsInjectionReceiver;
 
+// Whether the WebController should attempt to keep the render process alive.
+@property(nonatomic, assign, getter=shouldKeepRenderProcessAlive)
+    BOOL keepsRenderProcessAlive;
+
 // Designated initializer. Initializes web controller with |webState|. The
 // calling code must retain the ownership of |webState|.
 - (instancetype)initWithWebState:(web::WebStateImpl*)webState;
