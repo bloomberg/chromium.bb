@@ -90,6 +90,8 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
 
   void OnRuleTriggered(const BackgroundTracingRule* triggered_rule,
                        StartedFinalizingCallback callback);
+  bool HasTraceToUpload() override;
+  std::string GetLatestTraceToUpload() override;
 
   // Add/remove EnabledStateObserver.
   CONTENT_EXPORT void AddEnabledStateObserver(EnabledStateObserver* observer);
@@ -114,6 +116,9 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   CONTENT_EXPORT void InvalidateTriggerHandlesForTesting();
   CONTENT_EXPORT bool IsTracingForTesting();
   void WhenIdle(IdleCallback idle_callback) override;
+
+  CONTENT_EXPORT void SetTraceToUploadForTesting(
+      base::StringPiece data) override;
 
  private:
   friend class base::NoDestructor<BackgroundTracingManagerImpl>;
@@ -142,6 +147,8 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
 
   IdleCallback idle_callback_;
   base::RepeatingClosure tracing_enabled_callback_for_testing_;
+  // This field contains serialized trace log proto.
+  std::string trace_to_upload_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundTracingManagerImpl);
 };

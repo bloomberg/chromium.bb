@@ -161,6 +161,22 @@ bool BackgroundTracingManagerImpl::HasActiveScenario() {
   return !!active_scenario_;
 }
 
+bool BackgroundTracingManagerImpl::HasTraceToUpload() {
+  // TODO(oysteine): This should return the collected trace once we have the new
+  // coordinator API to collect protos. https://crbug.com/925142.
+  // Note: This can be called on any thread and needs to be thread safe.
+  return !trace_to_upload_for_testing_.empty();
+}
+
+std::string BackgroundTracingManagerImpl::GetLatestTraceToUpload() {
+  // TODO(oysteine): This should return the collected trace once we have the new
+  // coordinator API to collect protos. https://crbug.com/925142.
+  // Note: This can be called on any thread and needs to be thread safe.
+  std::string ret;
+  ret.swap(trace_to_upload_for_testing_);
+  return ret;
+}
+
 void BackgroundTracingManagerImpl::AddEnabledStateObserver(
     EnabledStateObserver* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -222,6 +238,11 @@ BackgroundTracingManagerImpl::GetActiveScenarioForTesting() {
 bool BackgroundTracingManagerImpl::IsTracingForTesting() {
   return active_scenario_ && (active_scenario_->state() ==
                               BackgroundTracingActiveScenario::State::kTracing);
+}
+
+void BackgroundTracingManagerImpl::SetTraceToUploadForTesting(
+    base::StringPiece data) {
+  trace_to_upload_for_testing_ = data.data();
 }
 
 void BackgroundTracingManagerImpl::ValidateStartupScenario() {

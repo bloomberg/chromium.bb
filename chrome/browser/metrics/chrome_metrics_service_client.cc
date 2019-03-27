@@ -51,6 +51,7 @@
 #include "chrome/browser/safe_browsing/certificate_reporting_metrics_provider.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/tracing/background_tracing_metrics_provider.h"
 #include "chrome/browser/translate/translate_ranker_metrics_provider.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/buildflags.h"
@@ -627,6 +628,9 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::ComponentMetricsProvider>(
           g_browser_process->component_updater()));
+
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<tracing::BackgroundTracingMetricsProvider>());
 
 #if defined(OS_ANDROID)
   metrics_service_->RegisterMetricsProvider(
