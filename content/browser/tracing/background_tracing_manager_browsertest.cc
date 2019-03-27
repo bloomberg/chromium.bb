@@ -436,8 +436,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 // the full WaitForTracingEnabled() callback (background tracing will directly
 // enable the TraceLog so we get events prior to waiting for the whole IPC
 // sequence to enable tracing coming back from the tracing service).
+// TODO(https://crbug.com/945484): This tracing test is flaky.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       EarlyTraceEventsInTrace) {
+                       DISABLED_EarlyTraceEventsInTrace) {
   TestTraceReceiverHelper trace_receiver_helper;
   TestBackgroundTracingHelper background_tracing_helper;
 
