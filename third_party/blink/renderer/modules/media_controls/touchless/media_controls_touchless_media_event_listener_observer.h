@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_NON_TOUCH_MEDIA_CONTROLS_NON_TOUCH_MEDIA_EVENT_LISTENER_OBSERVER_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_NON_TOUCH_MEDIA_CONTROLS_NON_TOUCH_MEDIA_EVENT_LISTENER_OBSERVER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_TOUCHLESS_MEDIA_CONTROLS_TOUCHLESS_MEDIA_EVENT_LISTENER_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_TOUCHLESS_MEDIA_CONTROLS_TOUCHLESS_MEDIA_EVENT_LISTENER_OBSERVER_H_
 
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
@@ -11,7 +11,7 @@ namespace blink {
 
 class KeyboardEvent;
 
-class MediaControlsNonTouchMediaEventListenerObserver
+class MediaControlsTouchlessMediaEventListenerObserver
     : public GarbageCollectedMixin {
  public:
   virtual void OnFocusIn() = 0;
@@ -28,4 +28,4 @@ class MediaControlsNonTouchMediaEventListenerObserver
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_NON_TOUCH_MEDIA_CONTROLS_NON_TOUCH_MEDIA_EVENT_LISTENER_OBSERVER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_TOUCHLESS_MEDIA_CONTROLS_TOUCHLESS_MEDIA_EVENT_LISTENER_OBSERVER_H_

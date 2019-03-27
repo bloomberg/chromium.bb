@@ -103,24 +103,24 @@ blink_modules_sources("media_controls") {
 
   if (is_android && notouch_build) {
     sources += [
-      "non_touch/elements/media_controls_non_touch_element.cc",
-      "non_touch/elements/media_controls_non_touch_element.h",
-      "non_touch/elements/media_controls_non_touch_overlay_element.cc",
-      "non_touch/elements/media_controls_non_touch_overlay_element.h",
-      "non_touch/elements/media_controls_non_touch_play_button_element.cc",
-      "non_touch/elements/media_controls_non_touch_play_button_element.h",
-      "non_touch/elements/media_controls_non_touch_seek_button_element.cc",
-      "non_touch/elements/media_controls_non_touch_seek_button_element.h",
-      "non_touch/elements/media_controls_non_touch_volume_button_element.cc",
-      "non_touch/elements/media_controls_non_touch_volume_button_element.h",
-      "non_touch/media_controls_non_touch_impl.cc",
-      "non_touch/media_controls_non_touch_impl.h",
-      "non_touch/media_controls_non_touch_media_event_listener.cc",
-      "non_touch/media_controls_non_touch_media_event_listener.h",
-      "non_touch/media_controls_non_touch_media_event_listener_observer.h",
+      "touchless/elements/media_controls_touchless_element.cc",
+      "touchless/elements/media_controls_touchless_element.h",
+      "touchless/elements/media_controls_touchless_overlay_element.cc",
+      "touchless/elements/media_controls_touchless_overlay_element.h",
+      "touchless/elements/media_controls_touchless_play_button_element.cc",
+      "touchless/elements/media_controls_touchless_play_button_element.h",
+      "touchless/elements/media_controls_touchless_seek_button_element.cc",
+      "touchless/elements/media_controls_touchless_seek_button_element.h",
+      "touchless/elements/media_controls_touchless_volume_button_element.cc",
+      "touchless/elements/media_controls_touchless_volume_button_element.h",
+      "touchless/media_controls_touchless_impl.cc",
+      "touchless/media_controls_touchless_impl.h",
+      "touchless/media_controls_touchless_media_event_listener.cc",
+      "touchless/media_controls_touchless_media_event_listener.h",
+      "touchless/media_controls_touchless_media_event_listener_observer.h",
     ]
 
-    deps += [ ":media_controls_non_touch_resources" ]
+    deps += [ ":media_controls_touchless_resources" ]
   }
 }
 
@@ -135,12 +135,12 @@ grit("media_controls_resources") {
 }
 
 if (is_android && notouch_build) {
-  grit("media_controls_non_touch_resources") {
-    output_dir = "$blink_modules_output_dir/media_controls/non_touch/resources/"
-    source = "non_touch/resources/media_controls_non_touch_resources.grd"
+  grit("media_controls_touchless_resources") {
+    output_dir = "$blink_modules_output_dir/media_controls/touchless/resources/"
+    source = "touchless/resources/media_controls_touchless_resources.grd"
     outputs = [
-      "grit/media_controls_non_touch_resources.h",
-      "media_controls_non_touch_resources.pak",
+      "grit/media_controls_touchless_resources.h",
+      "media_controls_touchless_resources.pak",
     ]
   }
 }

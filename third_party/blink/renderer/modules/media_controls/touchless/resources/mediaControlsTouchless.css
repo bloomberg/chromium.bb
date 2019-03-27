@@ -2,7 +2,7 @@
    Use of this source code is governed by a BSD-style license that can be
    found in the LICENSE file. */
 
-video::-internal-media-controls-non-touch {
+video::-internal-media-controls-touchless {
   position: relative;
   direction: ltr;
   display: flex;
@@ -15,12 +15,12 @@ video::-internal-media-controls-non-touch {
   margin-bottom: env(safe-area-inset-bottom);
 }
 
-video::-internal-media-controls-non-touch.transparent {
+video::-internal-media-controls-touchless.transparent {
   opacity: 0;
   transition: opacity .5s;
 }
 
-video::-internal-media-controls-non-touch-overlay {
+video::-internal-media-controls-touchless-overlay {
   width: 104px;
   height: 104px;
   background-color: rgba(32, 33, 36, .9);
@@ -33,7 +33,7 @@ video::-internal-media-controls-non-touch-overlay {
   border-radius: 24px;
 }
 
-video::-internal-media-controls-non-touch-volume-up-button {
+video::-internal-media-controls-touchless-volume-up-button {
   width: 30px;
   height: 30px;
   margin-left: 37px /* (overlay width -width) / 2 */;
@@ -44,7 +44,7 @@ video::-internal-media-controls-non-touch-volume-up-button {
 }
 
 
-video::-internal-media-controls-non-touch-seek-backward-button {
+video::-internal-media-controls-touchless-seek-backward-button {
   width: 30px;
   height: 30px;
   margin-top: 7px /* (play button height + (2*play button border) - height) / 2 */;
@@ -56,7 +56,7 @@ video::-internal-media-controls-non-touch-seek-backward-button {
 }
 
 
-video::-internal-media-controls-non-touch-play-button {
+video::-internal-media-controls-touchless-play-button {
   width: 40px;
   height: 40px;
   border: 2px solid white;
@@ -67,15 +67,15 @@ video::-internal-media-controls-non-touch-play-button {
   float: left;
 }
 
-video::-internal-media-controls-non-touch-play-button.playing {
+video::-internal-media-controls-touchless-play-button.playing {
   background-image: -webkit-image-set(url(ic_pause.svg) 1x);
 }
 
-video::-internal-media-controls-non-touch-play-button.paused {
+video::-internal-media-controls-touchless-play-button.paused {
   background-image: -webkit-image-set(url(ic_play_arrow.svg) 1x);
 }
 
-video::-internal-media-controls-non-touch-seek-forward-button {
+video::-internal-media-controls-touchless-seek-forward-button {
   width: 30px;
   height: 30px;
   margin-top: 7px /* (play button height + (2*play button border) - height) / 2 */;
@@ -86,7 +86,7 @@ video::-internal-media-controls-non-touch-seek-forward-button {
   background-repeat: no-repeat;
 }
 
-video::-internal-media-controls-non-touch-volume-down-button {
+video::-internal-media-controls-touchless-volume-down-button {
   width: 30px;
   height: 30px;
   margin-left: 37px /* (overlay width -width) / 2 */;
