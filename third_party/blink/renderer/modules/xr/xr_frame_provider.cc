@@ -415,8 +415,12 @@ void XRFrameProvider::ProcessScheduledFrame(
     }
 #endif
     if (frame_data && (frame_data->left_eye || frame_data->right_eye)) {
-      immersive_session_->UpdateDisplayInfo(frame_data->left_eye,
-                                            frame_data->right_eye);
+      immersive_session_->UpdateEyeParameters(frame_data->left_eye,
+                                              frame_data->right_eye);
+    }
+
+    if (frame_data && frame_data->stage_parameters_updated) {
+      immersive_session_->UpdateStageParameters(frame_data->stage_parameters);
     }
     immersive_session_->OnFrame(high_res_now_ms, std::move(pose_matrix),
                                 buffer_mailbox_holder_, base::nullopt,

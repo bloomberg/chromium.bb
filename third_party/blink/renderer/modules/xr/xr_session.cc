@@ -208,12 +208,21 @@ void XRSession::updateRenderState(XRRenderStateInit* init,
   pending_render_state_.push_back(init);
 }
 
-void XRSession::UpdateDisplayInfo(
+void XRSession::UpdateEyeParameters(
     const device::mojom::blink::VREyeParametersPtr& left_eye,
     const device::mojom::blink::VREyeParametersPtr& right_eye) {
   auto display_info = display_info_.Clone();
   display_info->leftEye = left_eye.Clone();
   display_info->rightEye = right_eye.Clone();
+  SetXRDisplayInfo(std::move(display_info));
+}
+
+void XRSession::UpdateStageParameters(
+    const device::mojom::blink::VRStageParametersPtr& stage_parameters) {
+  auto display_info = display_info_.Clone();
+  display_info->stageParameters = stage_parameters.Clone();
+
+  // TODO(https://crbug.com/922175): Should bubble up to other events
   SetXRDisplayInfo(std::move(display_info));
 }
 

@@ -41,6 +41,9 @@ namespace WFC = ABI::Windows::Foundation::Collections;
 namespace WFN = ABI::Windows::Foundation::Numerics;
 namespace WInput = ABI::Windows::UI::Input::Spatial;
 
+using ABI::Windows::Foundation::IReference;
+using ABI::Windows::Foundation::Numerics::Matrix4x4;
+
 class MixedRealityWindow : public gfx::WindowImpl {
  public:
   MixedRealityWindow() : gfx::WindowImpl() { set_window_style(WS_OVERLAPPED); }
@@ -63,8 +66,27 @@ BOOL MixedRealityWindow::ProcessWindowMessage(HWND window,
 }
 
 namespace {
-mojom::VRFieldOfViewPtr ParseProjection(
-    const ABI::Windows::Foundation::Numerics::Matrix4x4& projection) {
+// This enum is used in TRACE_EVENTs.  Try to keep enum values the same to make
+// analysis easier across builds.
+enum class ErrorLocation {
+  kAcquireCurrentStage = 1,
+  kStationaryReferenceCreation = 2,
+  kGetTransformBetweenOrigins = 3,
+};
+
+void TraceError(ErrorLocation location, HRESULT hr) {
+  TRACE_EVENT_INSTANT2("xr", "WMRRenderLoopError", TRACE_EVENT_SCOPE_THREAD,
+                       "ErrorLocation", location, "hr", hr);
+}
+
+std::vector<float> ConvertToStandingTransform(const Matrix4x4& transform) {
+  return {transform.M11, transform.M12, transform.M13, transform.M14,
+          transform.M21, transform.M22, transform.M23, transform.M24,
+          transform.M31, transform.M32, transform.M33, transform.M34,
+          transform.M41, transform.M42, transform.M43, transform.M44};
+}
+
+mojom::VRFieldOfViewPtr ParseProjection(const Matrix4x4& projection) {
   gfx::Transform proj(
       projection.M11, projection.M21, projection.M31, projection.M41,
       projection.M12, projection.M22, projection.M32, projection.M42,
@@ -248,6 +270,7 @@ void MixedRealityRenderLoop::StopRuntime() {
     ShowWindow(window_->hwnd(), SW_HIDE);
   holographic_space_ = nullptr;
   origin_ = nullptr;
+  stage_origin_ = nullptr;
 
   holographic_frame_ = nullptr;
   timestamp_ = nullptr;
@@ -267,32 +290,16 @@ void MixedRealityRenderLoop::StopRuntime() {
 
 void MixedRealityRenderLoop::InitializeOrigin() {
   TRACE_EVENT0("xr", "InitializeOrigin");
-  // Try to use a SpatialStageFrameOfReference.
-  ComPtr<ISpatialStageFrameOfReferenceStatics> spatial_stage_statics;
-  base::win::ScopedHString spatial_stage_string =
-      base::win::ScopedHString::Create(
-          RuntimeClass_Windows_Perception_Spatial_SpatialStageFrameOfReference);
-  HRESULT hr = base::win::RoGetActivationFactory(
-      spatial_stage_string.get(), IID_PPV_ARGS(&spatial_stage_statics));
-  if (SUCCEEDED(hr)) {
-    TRACE_EVENT0("xr", "StageOrigin");
-    ComPtr<ISpatialStageFrameOfReference> spatial_stage;
-    hr = spatial_stage_statics->get_Current(&spatial_stage);
-    if (SUCCEEDED(hr) && spatial_stage) {
-      hr = spatial_stage->get_CoordinateSystem(&origin_);
-      if (SUCCEEDED(hr)) {
-        return;
-      }
-    }
-  }
 
-  TRACE_EVENT0("xr", "StationaryOrigin");
-  // Failed to get a Stage frame of reference - try to get a stationary frame.
+  stage_transform_needs_updating_ = true;
+
+  // Try to get a stationary frame.  We'll hand out all of our poses in this
+  // space.
   ComPtr<ISpatialLocatorStatics> spatial_locator_statics;
   base::win::ScopedHString spatial_locator_string =
       base::win::ScopedHString::Create(
           RuntimeClass_Windows_Perception_Spatial_SpatialLocator);
-  hr = base::win::RoGetActivationFactory(
+  HRESULT hr = base::win::RoGetActivationFactory(
       spatial_locator_string.get(), IID_PPV_ARGS(&spatial_locator_statics));
   if (FAILED(hr))
     return;
@@ -305,8 +312,10 @@ void MixedRealityRenderLoop::InitializeOrigin() {
   ComPtr<ISpatialStationaryFrameOfReference> stationary_frame;
   hr = locator->CreateStationaryFrameOfReferenceAtCurrentLocation(
       &stationary_frame);
-  if (FAILED(hr))
+  if (FAILED(hr)) {
+    TraceError(ErrorLocation::kStationaryReferenceCreation, hr);
     return;
+  }
 
   hr = stationary_frame->get_CoordinateSystem(&origin_);
   if (FAILED(hr))
@@ -316,10 +325,38 @@ void MixedRealityRenderLoop::InitializeOrigin() {
   // orientation-only experiences.
 }
 
+void MixedRealityRenderLoop::InitializeStageOrigin() {
+  TRACE_EVENT0("xr", "InitializeStageOrigin");
+  stage_transform_needs_updating_ = true;
+
+  // Try to get a SpatialStageFrameOfReference.  We'll use this to calculate
+  // the transform between the poses we're handing out and where the floor is.
+  ComPtr<ISpatialStageFrameOfReferenceStatics> spatial_stage_statics;
+  base::win::ScopedHString spatial_stage_string =
+      base::win::ScopedHString::Create(
+          RuntimeClass_Windows_Perception_Spatial_SpatialStageFrameOfReference);
+  HRESULT hr = base::win::RoGetActivationFactory(
+      spatial_stage_string.get(), IID_PPV_ARGS(&spatial_stage_statics));
+  if (FAILED(hr))
+    return;
+
+  ComPtr<ISpatialStageFrameOfReference> spatial_stage;
+  hr = spatial_stage_statics->get_Current(&spatial_stage);
+  if (FAILED(hr) || !spatial_stage) {
+    TraceError(ErrorLocation::kAcquireCurrentStage, hr);
+    return;
+  }
+
+  spatial_stage->get_CoordinateSystem(&stage_origin_);
+}
+
 void MixedRealityRenderLoop::OnSessionStart() {
-  // Each session should start with a new origin.
+  // Each session should start with new origins.
   origin_ = nullptr;
   InitializeOrigin();
+
+  stage_origin_ = nullptr;
+  InitializeStageOrigin();
 
   StartPresenting();
 }
@@ -532,6 +569,10 @@ void MixedRealityRenderLoop::UpdateWMRDataForNextFrame() {
     InitializeOrigin();
   }
 
+  // Make sure we have a stage origin.
+  if (!stage_origin_)
+    InitializeStageOrigin();
+
   if (FAILED(pose_->get_HolographicCamera(&camera_)))
     return;
 }
@@ -618,7 +659,50 @@ bool MixedRealityRenderLoop::UpdateDisplayInfo() {
     }
   }
 
-  // TODO(billorr): Need to set stageParameters.
+  return changed;
+}
+
+bool MixedRealityRenderLoop::UpdateStageParameters() {
+  // TODO(https://crbug.com/945408): We should consider subscribing to
+  // SpatialStageFrameOfReference.CurrentChanged to also re-calculate this.
+  bool changed = false;
+  if (stage_transform_needs_updating_) {
+    if (!(stage_origin_ && origin_) && current_display_info_->stageParameters) {
+      changed = true;
+      current_display_info_->stageParameters = nullptr;
+    } else if (stage_origin_ && origin_) {
+      changed = true;
+      current_display_info_->stageParameters = nullptr;
+
+      mojom::VRStageParametersPtr stage_parameters =
+          mojom::VRStageParameters::New();
+
+      ComPtr<IReference<Matrix4x4>> origin_to_stage_ref;
+      HRESULT hr =
+          origin_->TryGetTransformTo(stage_origin_.Get(), &origin_to_stage_ref);
+      if (FAILED(hr) || !origin_to_stage_ref) {
+        TraceError(ErrorLocation::kGetTransformBetweenOrigins, hr);
+
+        // We failed to get a transform between the two, so force a
+        // recalculation of the stage origin.
+        stage_origin_ = nullptr;
+        return changed;
+      }
+
+      Matrix4x4 origin_to_stage;
+      hr = origin_to_stage_ref->get_Value(&origin_to_stage);
+      DCHECK(SUCCEEDED(hr));
+
+      stage_parameters->standingTransform =
+          ConvertToStandingTransform(origin_to_stage);
+
+      current_display_info_->stageParameters = std::move(stage_parameters);
+    }
+
+    stage_transform_needs_updating_ = false;
+  }
+
+  // TODO(https://crbug.com/945420): Calculate and Expose Boundary Sizes
   return changed;
 }
 
@@ -653,6 +737,10 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
     TRACE_EVENT_INSTANT0("xr", "Failed to locate origin",
                          TRACE_EVENT_SCOPE_THREAD);
     origin_ = nullptr;
+
+    // TODO(https://crbug.com/945408): Determine whether StageOrigin should only
+    // be nulled out when we get the changed event.
+    stage_origin_ = nullptr;
     return ret;
   }
 
@@ -692,11 +780,20 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
     }
   }
 
+  // The only display info we've updated so far is the eye info.
   if (send_new_display_info) {
     // Update the eye info for this frame.
     ret->left_eye = current_display_info_->leftEye.Clone();
     ret->right_eye = current_display_info_->rightEye.Clone();
+  }
 
+  bool stage_parameters_updated = UpdateStageParameters();
+  if (stage_parameters_updated) {
+    ret->stage_parameters_updated = true;
+    ret->stage_parameters = current_display_info_->stageParameters.Clone();
+  }
+
+  if (send_new_display_info || stage_parameters_updated) {
     // Notify the device about the display info change.
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(on_display_info_changed_,
