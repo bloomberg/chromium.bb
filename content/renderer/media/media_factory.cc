@@ -542,12 +542,6 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
     const cc::LayerTreeSettings& settings) {
   RenderThreadImpl* const render_thread = RenderThreadImpl::current();
 
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner =
-      render_thread->compositor_task_runner();
-  if (!compositor_task_runner.get())
-    compositor_task_runner =
-        render_frame_->GetTaskRunner(blink::TaskType::kInternalMediaRealTime);
-
   scoped_refptr<base::SingleThreadTaskRunner>
       video_frame_compositor_task_runner;
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter =
