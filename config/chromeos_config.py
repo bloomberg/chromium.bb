@@ -3193,6 +3193,7 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
       (ACTIVE, 'firmware-octopus-11297.B', ['octopus']),
       (ACTIVE, 'firmware-kalista-11343.B', ['kalista']),
       (ACTIVE, 'firmware-atlas-11827.B', ['atlas']),
+      (ACTIVE, 'firmware-atlas-11827.12.B', ['atlas']),
   ]
 
   for interval, branch, boards in firmware_branch_builders:
