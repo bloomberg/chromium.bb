@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_CALL_DATA_H_
-#define REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_CALL_DATA_H_
+#ifndef REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_REQUEST_H_
+#define REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_REQUEST_H_
 
 #include <memory>
 #include <utility>
@@ -20,12 +20,12 @@ class ClientContext;
 namespace remoting {
 namespace internal {
 
-// The GrpcAsyncCallData base class that holds logic invariant to the response
+// The GrpcAsyncRequest base class that holds logic invariant to the response
 // type.
 //
-// The lifetime of GrpcAsyncCallData is bound to the completion queue. A
+// The lifetime of GrpcAsyncRequest is bound to the completion queue. A
 // subclass may enqueue itself multiple times into the completion queue, and
-// GrpcAsyncDispatcher will dequeue it and call OnDequeuedOnDispatcherThread()
+// GrpcAsyncExecutor will dequeue it and call OnDequeuedOnDispatcherThread()
 // on a background thread when the event is handled. If the subclass won't
 // re-enqueue itself, OnDequeuedOnDispatcherThread() should return false, which
 // will delete the call data by calling DeleteOnCallerThread().
@@ -35,10 +35,10 @@ namespace internal {
 //
 // Ctor, dtor, and methods except OnDequeuedOnDispatcherThread() will be called
 // from the same thread (caller_task_runner_).
-class GrpcAsyncCallData {
+class GrpcAsyncRequest {
  public:
-  explicit GrpcAsyncCallData(std::unique_ptr<grpc::ClientContext> context);
-  virtual ~GrpcAsyncCallData();
+  explicit GrpcAsyncRequest(std::unique_ptr<grpc::ClientContext> context);
+  virtual ~GrpcAsyncRequest();
 
   // Force dequeues any pending request.
   void CancelRequest();
@@ -81,10 +81,10 @@ class GrpcAsyncCallData {
   bool is_get_event_tag_allowed_ = false;
   std::unique_ptr<grpc::ClientContext> context_;
 
-  DISALLOW_COPY_AND_ASSIGN(GrpcAsyncCallData);
+  DISALLOW_COPY_AND_ASSIGN(GrpcAsyncRequest);
 };
 
 }  // namespace internal
 }  // namespace remoting
 
-#endif  // REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_CALL_DATA_H_
+#endif  // REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_REQUEST_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/signaling/grpc_support/grpc_async_dispatcher.h"
+#include "remoting/signaling/grpc_support/grpc_async_executor.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -10,15 +10,14 @@
 
 namespace remoting {
 
-GrpcAsyncDispatcher::GrpcAsyncDispatcher() {
+GrpcAsyncExecutor::GrpcAsyncExecutor() {
   dispatcher_thread_.Start();
   dispatcher_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&GrpcAsyncDispatcher::RunQueueOnDispatcherThread,
-                     base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&GrpcAsyncExecutor::RunQueueOnDispatcherThread,
+                                base::Unretained(this)));
 }
 
-GrpcAsyncDispatcher::~GrpcAsyncDispatcher() {
+GrpcAsyncExecutor::~GrpcAsyncExecutor() {
   {
     base::AutoLock autolock(pending_rpcs_lock_);
     VLOG(0) << "# of pending RPCs at destruction: " << pending_rpcs_.size();
@@ -31,14 +30,14 @@ GrpcAsyncDispatcher::~GrpcAsyncDispatcher() {
   DCHECK_EQ(0u, pending_rpcs_.size());
 }
 
-void GrpcAsyncDispatcher::RunQueueOnDispatcherThread() {
+void GrpcAsyncExecutor::RunQueueOnDispatcherThread() {
   void* event_tag;
   bool operation_succeeded = false;
 
   // completion_queue_.Next() blocks until a response is received.
   while (completion_queue_.Next(&event_tag, &operation_succeeded)) {
-    internal::GrpcAsyncCallData* rpc_data =
-        reinterpret_cast<internal::GrpcAsyncCallData*>(event_tag);
+    internal::GrpcAsyncRequest* rpc_data =
+        reinterpret_cast<internal::GrpcAsyncRequest*>(event_tag);
     {
       base::AutoLock autolock(pending_rpcs_lock_);
       if (!rpc_data->OnDequeuedOnDispatcherThread(operation_succeeded)) {
@@ -53,8 +52,8 @@ void GrpcAsyncDispatcher::RunQueueOnDispatcherThread() {
   }
 }
 
-void GrpcAsyncDispatcher::RegisterRpcData(
-    std::unique_ptr<internal::GrpcAsyncCallData> rpc_data) {
+void GrpcAsyncExecutor::RegisterRpcData(
+    std::unique_ptr<internal::GrpcAsyncRequest> rpc_data) {
   VLOG(0) << "Enqueuing RPC: " << rpc_data.get();
   base::AutoLock autolock(pending_rpcs_lock_);
   DCHECK(pending_rpcs_.find(rpc_data.get()) == pending_rpcs_.end());

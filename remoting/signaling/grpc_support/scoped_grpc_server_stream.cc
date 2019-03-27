@@ -4,12 +4,12 @@
 
 #include "remoting/signaling/grpc_support/scoped_grpc_server_stream.h"
 
-#include "remoting/signaling/grpc_support/grpc_async_server_streaming_call_data.h"
+#include "remoting/signaling/grpc_support/grpc_async_server_streaming_request.h"
 
 namespace remoting {
 
 ScopedGrpcServerStream::ScopedGrpcServerStream(
-    base::WeakPtr<internal::GrpcAsyncServerStreamingCallDataBase> call_data)
+    base::WeakPtr<internal::GrpcAsyncServerStreamingRequestBase> call_data)
     : call_data_(call_data) {}
 
 ScopedGrpcServerStream::~ScopedGrpcServerStream() {

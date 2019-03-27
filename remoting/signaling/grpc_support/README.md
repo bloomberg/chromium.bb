@@ -1,4 +1,4 @@
-## Using GrpcAsyncDispatcher
+## Using GrpcAsyncExecutor
 
 gRPC++ uses
 [completion queue](https://grpc.io/docs/tutorials/async/helloasync-cpp.html)
@@ -6,7 +6,7 @@ to handle async operations. It doesn't fit well with Chromium's callback-based
 async handling paradigm, and it is technically still a blocking API unless you
 create a new thread to run the queue. gRPC is working on adding callback-based
 APIs but it won't be ready to use in the near future, so we created a
-GrpcAsyncDispatcher class to help adapting gRPC's completion queue logic into
+GrpcAsyncExecutor class to help adapting gRPC's completion queue logic into
 Chromium's callback paradigm.
 
 ### Basic usage
@@ -69,7 +69,7 @@ class MyClass {
   }
 
   std::unique_ptr<HelloService::Stub> stub_;
-  GrpcAsyncDispatcher dispatcher_;
+  GrpcAsyncExecutor dispatcher_;
   std::unique_ptr<ScopedGrpcServerStream> scoped_hello_stream_;
 };
 ```

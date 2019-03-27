@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/signaling/grpc_support/grpc_async_dispatcher.h"
+#include "remoting/signaling/grpc_support/grpc_async_executor.h"
 
 #include <memory>
 #include <string>
@@ -15,8 +15,8 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "remoting/signaling/grpc_support/grpc_async_dispatcher_test_services.grpc.pb.h"
 #include "remoting/signaling/grpc_support/grpc_async_test_server.h"
+#include "remoting/signaling/grpc_support/grpc_support_test_services.grpc.pb.h"
 #include "remoting/signaling/grpc_support/grpc_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,19 +49,18 @@ EchoResponse ResponseForText(const std::string& text) {
 
 }  // namespace
 
-class GrpcAsyncDispatcherTest : public testing::Test {
+class GrpcAsyncExecutorTest : public testing::Test {
  public:
   void SetUp() override;
   void TearDown() override;
 
  protected:
   void AsyncSendText(const std::string& text,
-                     GrpcAsyncDispatcher::RpcCallback<EchoResponse> callback);
+                     GrpcAsyncExecutor::RpcCallback<EchoResponse> callback);
   std::unique_ptr<ScopedGrpcServerStream> StartEchoStream(
       const std::string& request_text,
-      const GrpcAsyncDispatcher::RpcStreamCallback<EchoResponse>
-          on_incoming_msg,
-      GrpcAsyncDispatcher::RpcChannelClosedCallback on_channel_closed);
+      const GrpcAsyncExecutor::RpcStreamCallback<EchoResponse> on_incoming_msg,
+      GrpcAsyncExecutor::RpcChannelClosedCallback on_channel_closed);
 
  protected:
   void HandleOneEchoRequest();
@@ -71,54 +70,53 @@ class GrpcAsyncDispatcherTest : public testing::Test {
       const base::Location& from_here,
       const std::string& expected_request_text);
 
-  std::unique_ptr<GrpcAsyncDispatcher> dispatcher_;
+  std::unique_ptr<GrpcAsyncExecutor> dispatcher_;
 
  private:
   base::MessageLoop message_loop_;
-  std::unique_ptr<GrpcAsyncDispatcherTestService::Stub> stub_;
+  std::unique_ptr<GrpcAsyncExecutorTestService::Stub> stub_;
   std::unique_ptr<test::GrpcAsyncTestServer> server_;
 };
 
-void GrpcAsyncDispatcherTest::SetUp() {
-  dispatcher_ = std::make_unique<GrpcAsyncDispatcher>();
+void GrpcAsyncExecutorTest::SetUp() {
+  dispatcher_ = std::make_unique<GrpcAsyncExecutor>();
   server_ = std::make_unique<test::GrpcAsyncTestServer>(
-      std::make_unique<GrpcAsyncDispatcherTestService::AsyncService>());
-  stub_ = GrpcAsyncDispatcherTestService::NewStub(
-      server_->CreateInProcessChannel());
+      std::make_unique<GrpcAsyncExecutorTestService::AsyncService>());
+  stub_ =
+      GrpcAsyncExecutorTestService::NewStub(server_->CreateInProcessChannel());
 }
 
-void GrpcAsyncDispatcherTest::TearDown() {
+void GrpcAsyncExecutorTest::TearDown() {
   server_.reset();
   dispatcher_.reset();
   stub_.reset();
 }
 
-void GrpcAsyncDispatcherTest::AsyncSendText(
+void GrpcAsyncExecutorTest::AsyncSendText(
     const std::string& text,
-    GrpcAsyncDispatcher::RpcCallback<EchoResponse> callback) {
+    GrpcAsyncExecutor::RpcCallback<EchoResponse> callback) {
   EchoRequest request;
   request.set_text(text);
   dispatcher_->ExecuteAsyncRpc(
-      base::BindOnce(&GrpcAsyncDispatcherTestService::Stub::AsyncEcho,
+      base::BindOnce(&GrpcAsyncExecutorTestService::Stub::AsyncEcho,
                      base::Unretained(stub_.get())),
       std::make_unique<grpc::ClientContext>(), request, std::move(callback));
 }
 
-std::unique_ptr<ScopedGrpcServerStream>
-GrpcAsyncDispatcherTest::StartEchoStream(
+std::unique_ptr<ScopedGrpcServerStream> GrpcAsyncExecutorTest::StartEchoStream(
     const std::string& request_text,
-    const GrpcAsyncDispatcher::RpcStreamCallback<EchoResponse> on_incoming_msg,
-    GrpcAsyncDispatcher::RpcChannelClosedCallback on_channel_closed) {
+    const GrpcAsyncExecutor::RpcStreamCallback<EchoResponse> on_incoming_msg,
+    GrpcAsyncExecutor::RpcChannelClosedCallback on_channel_closed) {
   EchoRequest request;
   request.set_text(request_text);
   return dispatcher_->ExecuteAsyncServerStreamingRpc(
-      base::BindOnce(&GrpcAsyncDispatcherTestService::Stub::AsyncStreamEcho,
+      base::BindOnce(&GrpcAsyncExecutorTestService::Stub::AsyncStreamEcho,
                      base::Unretained(stub_.get())),
       std::make_unique<grpc::ClientContext>(), request, on_incoming_msg,
       std::move(on_channel_closed));
 }
 
-void GrpcAsyncDispatcherTest::HandleOneEchoRequest() {
+void GrpcAsyncExecutorTest::HandleOneEchoRequest() {
   EchoRequest request;
   auto responder = GetResponderAndFillEchoRequest(&request);
   EchoResponse response;
@@ -127,26 +125,25 @@ void GrpcAsyncDispatcherTest::HandleOneEchoRequest() {
 }
 
 std::unique_ptr<test::GrpcServerResponder<EchoResponse>>
-GrpcAsyncDispatcherTest::GetResponderAndFillEchoRequest(EchoRequest* request) {
+GrpcAsyncExecutorTest::GetResponderAndFillEchoRequest(EchoRequest* request) {
   return server_->HandleRequest(
-      &GrpcAsyncDispatcherTestService::AsyncService::RequestEcho, request);
+      &GrpcAsyncExecutorTestService::AsyncService::RequestEcho, request);
 }
 
-std::unique_ptr<EchoStreamResponder> GrpcAsyncDispatcherTest::HandleEchoStream(
+std::unique_ptr<EchoStreamResponder> GrpcAsyncExecutorTest::HandleEchoStream(
     const base::Location& from_here,
     const std::string& expected_request_text) {
   EchoRequest request;
   auto responder = server_->HandleStreamRequest(
-      &GrpcAsyncDispatcherTestService::AsyncService::RequestStreamEcho,
-      &request);
+      &GrpcAsyncExecutorTestService::AsyncService::RequestStreamEcho, &request);
   EXPECT_EQ(expected_request_text, request.text())
       << "Request text mismatched. Location: " << from_here.ToString();
   return responder;
 }
 
-TEST_F(GrpcAsyncDispatcherTest, DoNothing) {}
+TEST_F(GrpcAsyncExecutorTest, DoNothing) {}
 
-TEST_F(GrpcAsyncDispatcherTest, SendOneTextAndRespond) {
+TEST_F(GrpcAsyncExecutorTest, SendOneTextAndRespond) {
   base::RunLoop run_loop;
   AsyncSendText("Hello",
                 base::BindLambdaForTesting([&](const grpc::Status& status,
@@ -159,7 +156,7 @@ TEST_F(GrpcAsyncDispatcherTest, SendOneTextAndRespond) {
   run_loop.Run();
 }
 
-TEST_F(GrpcAsyncDispatcherTest, SendTwoTextsAndRespondOneByOne) {
+TEST_F(GrpcAsyncExecutorTest, SendTwoTextsAndRespondOneByOne) {
   base::RunLoop run_loop_1;
   AsyncSendText("Hello 1",
                 base::BindLambdaForTesting([&](const grpc::Status& status,
@@ -183,7 +180,7 @@ TEST_F(GrpcAsyncDispatcherTest, SendTwoTextsAndRespondOneByOne) {
   run_loop_2.Run();
 }
 
-TEST_F(GrpcAsyncDispatcherTest, SendTwoTextsAndRespondTogether) {
+TEST_F(GrpcAsyncExecutorTest, SendTwoTextsAndRespondTogether) {
   base::RunLoop run_loop;
   size_t response_count = 0;
   auto on_received_one_response = [&]() {
@@ -211,7 +208,7 @@ TEST_F(GrpcAsyncDispatcherTest, SendTwoTextsAndRespondTogether) {
   run_loop.Run();
 }
 
-TEST_F(GrpcAsyncDispatcherTest,
+TEST_F(GrpcAsyncExecutorTest,
        ControlGroup_RpcChannelStillOpenAfterRunLoopQuit) {
   base::RunLoop run_loop;
   AsyncSendText("Hello", base::BindLambdaForTesting(
@@ -224,7 +221,7 @@ TEST_F(GrpcAsyncDispatcherTest,
   ASSERT_TRUE(responder->Respond(EchoResponse(), grpc::Status::OK));
 }
 
-TEST_F(GrpcAsyncDispatcherTest, RpcCanceledOnDestruction) {
+TEST_F(GrpcAsyncExecutorTest, RpcCanceledOnDestruction) {
   base::RunLoop run_loop;
   AsyncSendText("Hello", base::BindLambdaForTesting(
                              [&](const grpc::Status&, const EchoResponse&) {
@@ -237,7 +234,7 @@ TEST_F(GrpcAsyncDispatcherTest, RpcCanceledOnDestruction) {
   ASSERT_FALSE(responder->Respond(EchoResponse(), grpc::Status::OK));
 }
 
-TEST_F(GrpcAsyncDispatcherTest, ServerStreamNotAcceptedByServer) {
+TEST_F(GrpcAsyncExecutorTest, ServerStreamNotAcceptedByServer) {
   base::RunLoop run_loop;
   auto scoped_stream = StartEchoStream(
       "Hello", NotReachedStreamingCallback(),
@@ -250,7 +247,7 @@ TEST_F(GrpcAsyncDispatcherTest, ServerStreamNotAcceptedByServer) {
   run_loop.Run();
 }
 
-TEST_F(GrpcAsyncDispatcherTest, ServerStreamImmediatelyClosedByServer) {
+TEST_F(GrpcAsyncExecutorTest, ServerStreamImmediatelyClosedByServer) {
   base::RunLoop run_loop;
   auto scoped_stream =
       StartEchoStream("Hello", NotReachedStreamingCallback(),
@@ -262,8 +259,7 @@ TEST_F(GrpcAsyncDispatcherTest, ServerStreamImmediatelyClosedByServer) {
   run_loop.Run();
 }
 
-TEST_F(GrpcAsyncDispatcherTest,
-       ServerStreamImmediatelyClosedByServerWithError) {
+TEST_F(GrpcAsyncExecutorTest, ServerStreamImmediatelyClosedByServerWithError) {
   base::RunLoop run_loop;
   auto scoped_stream = StartEchoStream(
       "Hello", NotReachedStreamingCallback(),
@@ -277,7 +273,7 @@ TEST_F(GrpcAsyncDispatcherTest,
   run_loop.Run();
 }
 
-TEST_F(GrpcAsyncDispatcherTest, ServerStreamsOneMessageThenClosedByServer) {
+TEST_F(GrpcAsyncExecutorTest, ServerStreamsOneMessageThenClosedByServer) {
   base::RunLoop run_loop;
   std::unique_ptr<EchoStreamResponder> responder;
   auto scoped_stream = StartEchoStream(
@@ -292,7 +288,7 @@ TEST_F(GrpcAsyncDispatcherTest, ServerStreamsOneMessageThenClosedByServer) {
   run_loop.Run();
 }
 
-TEST_F(GrpcAsyncDispatcherTest, ServerStreamsTwoMessagesThenClosedByServer) {
+TEST_F(GrpcAsyncExecutorTest, ServerStreamsTwoMessagesThenClosedByServer) {
   base::RunLoop run_loop;
   std::unique_ptr<EchoStreamResponder> responder;
 
@@ -320,7 +316,7 @@ TEST_F(GrpcAsyncDispatcherTest, ServerStreamsTwoMessagesThenClosedByServer) {
   run_loop.Run();
 }
 
-TEST_F(GrpcAsyncDispatcherTest,
+TEST_F(GrpcAsyncExecutorTest,
        ControlGroup_ServerStreamStillOpenAfterRunLoopQuit) {
   base::RunLoop run_loop;
   auto scoped_stream = StartEchoStream("Hello", NotReachedStreamingCallback(),
@@ -333,8 +329,7 @@ TEST_F(GrpcAsyncDispatcherTest,
   ASSERT_TRUE(responder->SendMessage(ResponseForText("Echo 1")));
 }
 
-TEST_F(GrpcAsyncDispatcherTest,
-       ServerStreamOpenThenClosedByClientAtDestruction) {
+TEST_F(GrpcAsyncExecutorTest, ServerStreamOpenThenClosedByClientAtDestruction) {
   base::RunLoop run_loop;
   auto scoped_stream = StartEchoStream("Hello", NotReachedStreamingCallback(),
                                        NotReachedStatusCallback());
@@ -348,7 +343,7 @@ TEST_F(GrpcAsyncDispatcherTest,
   ASSERT_FALSE(responder->SendMessage(ResponseForText("Echo 1")));
 }
 
-TEST_F(GrpcAsyncDispatcherTest, ServerStreamClosedByStreamHolder) {
+TEST_F(GrpcAsyncExecutorTest, ServerStreamClosedByStreamHolder) {
   base::RunLoop run_loop;
   auto scoped_stream = StartEchoStream("Hello", NotReachedStreamingCallback(),
                                        NotReachedStatusCallback());
@@ -362,8 +357,7 @@ TEST_F(GrpcAsyncDispatcherTest, ServerStreamClosedByStreamHolder) {
   ASSERT_FALSE(responder->SendMessage(ResponseForText("Echo 1")));
 }
 
-TEST_F(GrpcAsyncDispatcherTest,
-       ServerStreamsOneMessageThenClosedByStreamHolder) {
+TEST_F(GrpcAsyncExecutorTest, ServerStreamsOneMessageThenClosedByStreamHolder) {
   base::RunLoop run_loop;
   std::unique_ptr<ScopedGrpcServerStream> scoped_stream = StartEchoStream(
       "Hello", base::BindLambdaForTesting([&](const EchoResponse& response) {

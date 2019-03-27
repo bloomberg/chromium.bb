@@ -16,7 +16,7 @@ message EchoResponse {
   string text = 1;
 }
 
-service GrpcAsyncDispatcherTestService {
+service GrpcAsyncExecutorTestService {
   rpc Echo(EchoRequest) returns (EchoResponse) {}
   rpc StreamEcho(EchoRequest) returns (stream EchoResponse) {}
 }
