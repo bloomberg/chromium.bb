@@ -165,11 +165,4 @@ blink::WebFrame* MimeHandlerViewFrameContainer::GetContentFrame() const {
   return GetEmbedderRenderFrame()->GetWebFrame()->FirstChild();
 }
 
-// mime_handler::BeforeUnloadControl implementation.
-void MimeHandlerViewFrameContainer::SetShowBeforeUnloadDialog(
-    bool show_dialog,
-    SetShowBeforeUnloadDialogCallback callback) {
-  // TODO(ekaramad): Implement.
-}
-
 }  // namespace extensions

@@ -29,6 +29,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_associated_url_loader.h"
 #include "third_party/blink/public/web/web_associated_url_loader_options.h"
+#include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_remote_frame.h"
@@ -397,6 +398,17 @@ void MimeHandlerViewContainerBase::SetEmbeddedLoader(
   // the MHVCB is of the frame type and the associated plugin element does not
   // have a content frame).
   CreateMimeHandlerViewGuestIfNecessary();
+}
+
+void MimeHandlerViewContainerBase::SetShowBeforeUnloadDialog(
+    bool show_dialog,
+    SetShowBeforeUnloadDialogCallback callback) {
+  DCHECK(!is_embedded_);
+  GetEmbedderRenderFrame()
+      ->GetWebFrame()
+      ->GetDocument()
+      .SetShowBeforeUnloadDialog(show_dialog);
+  std::move(callback).Run();
 }
 
 v8::Local<v8::Object> MimeHandlerViewContainerBase::GetScriptableObject(

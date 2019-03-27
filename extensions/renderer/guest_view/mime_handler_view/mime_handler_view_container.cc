@@ -136,16 +136,4 @@ gfx::Size MimeHandlerViewContainer::GetElementSize() const {
   return *element_size_;
 }
 
-void MimeHandlerViewContainer::SetShowBeforeUnloadDialog(
-    bool show_dialog,
-    SetShowBeforeUnloadDialogCallback callback) {
-  DCHECK(!is_embedded_);
-  render_frame()
-      ->GetWebFrame()
-      ->GetDocument()
-      .To<blink::WebPluginDocument>()
-      .SetShowBeforeUnloadDialog(show_dialog);
-  std::move(callback).Run();
-}
-
 }  // namespace extensions

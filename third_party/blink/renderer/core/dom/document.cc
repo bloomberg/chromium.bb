@@ -90,6 +90,7 @@
 #include "third_party/blink/renderer/core/css/style_sheet_list.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
+#include "third_party/blink/renderer/core/dom/beforeunload_event_listener.h"
 #include "third_party/blink/renderer/core/dom/cdata_section.h"
 #include "third_party/blink/renderer/core/dom/comment.h"
 #include "third_party/blink/renderer/core/dom/context_features.h"
@@ -106,6 +107,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
@@ -2838,6 +2840,8 @@ void Document::Shutdown() {
     // Ensure |ukm_recorder_| and |ukm_source_id_|.
     UkmRecorder();
   }
+
+  mime_handler_view_before_unload_event_listener_ = nullptr;
 
   // This is required, as our LocalFrame might delete itself as soon as it
   // detaches us. However, this violates Node::detachLayoutTree() semantics, as
@@ -7628,6 +7632,7 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(isolated_world_csp_map_);
   visitor->Trace(find_in_page_root_);
   visitor->Trace(computed_node_mapping_);
+  visitor->Trace(mime_handler_view_before_unload_event_listener_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
@@ -7901,6 +7906,21 @@ ComputedAccessibleNode* Document::GetOrCreateComputedAccessibleNode(
     computed_node_mapping_.insert(ax_id, node);
   }
   return computed_node_mapping_.at(ax_id);
+}
+
+void Document::SetShowBeforeUnloadDialog(bool show_dialog) {
+  if (!mime_handler_view_before_unload_event_listener_) {
+    if (!show_dialog)
+      return;
+
+    mime_handler_view_before_unload_event_listener_ =
+        BeforeUnloadEventListener::Create(this);
+    domWindow()->addEventListener(
+        event_type_names::kBeforeunload,
+        mime_handler_view_before_unload_event_listener_, false);
+  }
+  mime_handler_view_before_unload_event_listener_->SetShowBeforeUnloadDialog(
+      show_dialog);
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;

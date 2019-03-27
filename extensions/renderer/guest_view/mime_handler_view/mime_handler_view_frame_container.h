@@ -79,11 +79,6 @@ class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
 
   blink::WebFrame* GetContentFrame() const;
 
-  // mime_handler::BeforeUnloadControl implementation.
-  void SetShowBeforeUnloadDialog(
-      bool show_dialog,
-      SetShowBeforeUnloadDialogCallback callback) override;
-
   void OnMessageReceived(const IPC::Message& message);
 
   blink::WebElement plugin_element_;
