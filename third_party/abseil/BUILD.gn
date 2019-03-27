@@ -7,6 +7,8 @@ config("abseil_config") {
 }
 
 source_set("abseil") {
+  cflags_cc = [ "-Wno-sign-compare" ]
+
   sources = [
     "src/absl/base/attributes.h",
     "src/absl/base/config.h",
@@ -27,8 +29,18 @@ source_set("abseil") {
     "src/absl/meta/type_traits.h",
     "src/absl/strings/ascii.cc",
     "src/absl/strings/ascii.h",
+    "src/absl/strings/internal/charconv_bigint.cc",
+    "src/absl/strings/internal/charconv_bigint.h",
+    "src/absl/strings/internal/charconv_parse.cc",
+    "src/absl/strings/internal/charconv_parse.h",
     "src/absl/strings/internal/memutil.cc",
     "src/absl/strings/internal/memutil.h",
+    "src/absl/strings/charconv.cc",
+    "src/absl/strings/charconv.h",
+    "src/absl/strings/match.cc",
+    "src/absl/strings/match.h",
+    "src/absl/strings/numbers.cc",
+    "src/absl/strings/numbers.h",
     "src/absl/strings/string_view.cc",
     "src/absl/strings/string_view.h",
     "src/absl/types/bad_optional_access.cc",
