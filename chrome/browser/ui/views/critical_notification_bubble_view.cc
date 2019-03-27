@@ -144,7 +144,7 @@ void CriticalNotificationBubbleView::Init() {
 
 void CriticalNotificationBubbleView::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kAlert;
+  node_data->role = ax::mojom::Role::kAlertDialog;
 }
 
 void CriticalNotificationBubbleView::ViewHierarchyChanged(
