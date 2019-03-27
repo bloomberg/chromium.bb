@@ -21,6 +21,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
@@ -30,6 +31,7 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.common.ContentProcessInfo;
 
 import java.io.FileInputStream;
@@ -317,7 +319,7 @@ public class ChromeBackupAgent extends BackupAgent {
         // if it were called from the UI thread the broadcast would not be received until after it
         // exited.
         final CountDownLatch latch = new CountDownLatch(1);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
             // Chrome library loading depends on PathUtils.
             PathUtils.setPrivateDataDirectorySuffix(
                     ChromeBrowserInitializer.PRIVATE_DATA_DIRECTORY_SUFFIX);
@@ -356,7 +358,7 @@ public class ChromeBackupAgent extends BackupAgent {
         }
 
         // Restore the native preferences on the UI thread
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
             ArrayList<String> nativeBackupNames = new ArrayList<>();
             boolean[] nativeBackupValues = new boolean[backupNames.size()];
             int count = 0;
