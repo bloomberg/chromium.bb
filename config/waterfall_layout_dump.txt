@@ -595,6 +595,7 @@
     enguarde-release
     eve-arcnext-release
     eve-arcvm-release
+    eve-arm64-release
     eve-campfire-release
     eve-kvm-release
     eve-release
@@ -604,6 +605,7 @@
     falco-release
     falco_li-release
     fizz-accelerator-release
+    fizz-labstation-release
     fizz-moblab-release
     fizz-release
     flapjack-release
@@ -1524,6 +1526,18 @@
   eve-arcvm-tot-chromium-pfq-informational-tryjob
   eve-arcvm-unittest-stress
   eve-arcvm-vmpi-android-pfq-tryjob
+  eve-arm64-chromium-pfq-tryjob
+  eve-arm64-compile-only-pre-cq
+  eve-arm64-full-tryjob
+  eve-arm64-llvm-next-toolchain-tryjob
+  eve-arm64-llvm-toolchain-tryjob
+  eve-arm64-no-vmtest-pre-cq
+  eve-arm64-paladin-tryjob
+  eve-arm64-postsubmit-tryjob
+  eve-arm64-pre-cq
+  eve-arm64-release-tryjob
+  eve-arm64-tot-chromium-pfq-informational-tryjob
+  eve-arm64-unittest-stress
   eve-campfire-chrome-pfq-tryjob
   eve-campfire-chromium-pfq-tryjob
   eve-campfire-compile-only-pre-cq
@@ -1869,6 +1883,18 @@
   fizz-compile-only-pre-cq
   fizz-factory-fizz-10167.B-factorybranch-tryjob
   fizz-full-tryjob
+  fizz-labstation-chromium-pfq-tryjob
+  fizz-labstation-compile-only-pre-cq
+  fizz-labstation-full-tryjob
+  fizz-labstation-llvm-next-toolchain-tryjob
+  fizz-labstation-llvm-toolchain-tryjob
+  fizz-labstation-no-vmtest-pre-cq
+  fizz-labstation-paladin-tryjob
+  fizz-labstation-postsubmit-tryjob
+  fizz-labstation-pre-cq
+  fizz-labstation-release-tryjob
+  fizz-labstation-tot-chromium-pfq-informational-tryjob
+  fizz-labstation-unittest-stress
   fizz-llvm-next-toolchain-tryjob
   fizz-llvm-toolchain-tryjob
   fizz-moblab-chrome-pfq-tryjob
@@ -2849,6 +2875,7 @@
     enguarde-release-tryjob
     eve-arcnext-release-tryjob
     eve-arcvm-release-tryjob
+    eve-arm64-release-tryjob
     eve-campfire-release-tryjob
     eve-kvm-release-tryjob
     eve-release-tryjob
@@ -2858,6 +2885,7 @@
     falco-release-tryjob
     falco_li-release-tryjob
     fizz-accelerator-release-tryjob
+    fizz-labstation-release-tryjob
     fizz-moblab-release-tryjob
     fizz-release-tryjob
     flapjack-release-tryjob

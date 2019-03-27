@@ -458,6 +458,18 @@
       ]
     },
     {
+      "name": "eve-arm64",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "eve-campfire",
       "configs": [
         {
@@ -537,6 +549,18 @@
           "experimental": false,
           "leader_board": false,
           "board_group": "slippy",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
+      "name": "fizz-labstation",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
           "arch": "X86_INTERNAL"
         }
       ]
