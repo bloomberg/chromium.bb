@@ -104,31 +104,39 @@ Example: To run the web tests with a debug build of `content_shell`, but only
 test the SVG tests and run pixel tests, you would run:
 
 ```bash
-python third_party/blink/tools/run_web_tests.py -t Default svg
+[python] third_party/blink/tools/run_web_tests.py -t Default svg
 ```
 ***
 
 As a final quick-but-less-robust alternative, you can also just use the
-content_shell executable to run specific tests by using (for Windows):
+content_shell executable to run specific tests by using (example on Windows):
 
 ```bash
-out/Default/content_shell.exe --run-web-tests --no-sandbox full_test_source_path
+out/Default/content_shell.exe --run-web-tests <url>|<full_test_source_path>|<relative_test_path>
 ```
 
 as in:
 
 ```bash
-out/Default/content_shell.exe --run-web-tests --no-sandbox \
+out/Default/content_shell.exe --run-web-tests \
     c:/chrome/src/third_party/blink/web_tests/fast/forms/001.html
+```
+or
+
+```bash
+out/Default/content_shell.exe --run-web-tests fast/forms/001.html
 ```
 
 but this requires a manual diff against expected results, because the shell
-doesn't do it for you.
+doesn't do it for you. It also just dumps the text result only (as the dump of
+pixels and audio binary data is not human readable).
+See [Running Web Tests Using the Content Shell](web_tests_in_content_shell.md]
+for more details of running `content_shell`.
 
 To see a complete list of arguments supported, run:
 
 ```bash
-python run_web_tests.py --help
+python third_party/blink/tools/run_web_tests.py --help
 ```
 
 *** note

@@ -249,6 +249,9 @@ Same as Blink web tests, you can use
 
 One thing to note is that glob patterns for WPT tests are not yet supported.
 
+See [Running WPT tests in Content Shell](web_tests_in_content_shell.md#Running-WPT-Tests-in-Content-Shell)
+for debugging etc.
+
 ## Reviewing tests
 
 Anyone who can review code and tests in Chromium can also review changes in
