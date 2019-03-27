@@ -87,6 +87,7 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   void RecordUserAction(mojom::AutoclickEventType event_type) const;
   bool DragInProgress() const;
   void CreateMenuBubbleController();
+  bool AutoclickMenuContainsPoint(const gfx::Point& point) const;
 
   // ui::EventHandler overrides:
   void OnMouseEvent(ui::MouseEvent* event) override;

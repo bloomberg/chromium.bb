@@ -144,10 +144,10 @@ AutoclickMenuView::AutoclickMenuView(mojom::AutoclickEventType type,
           new AutoclickMenuButton(this,
                                   kAutoclickDragIcon,
                                   IDS_ASH_AUTOCLICK_OPTION_DRAG_AND_DROP)),
-      pause_button_(new AutoclickMenuButton(
-          this,
-          kAutoclickPauseIcon,
-          IDS_ASH_STATUS_TRAY_AUTOCLICK_OPTION_NO_ACTION)),
+      pause_button_(
+          new AutoclickMenuButton(this,
+                                  kAutoclickPauseIcon,
+                                  IDS_ASH_AUTOCLICK_OPTION_NO_ACTION)),
       position_button_(
           new AutoclickMenuButton(this,
                                   kAutoclickPositionBottomLeftIcon,

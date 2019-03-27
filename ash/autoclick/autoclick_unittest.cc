@@ -5,9 +5,8 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/shell.h"
-#include "ash/system/accessibility/autoclick_tray.h"
-#include "ash/system/status_area_widget.h"
-#include "ash/system/status_area_widget_test_helper.h"
+#include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
+#include "ash/system/accessibility/autoclick_menu_view.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -137,15 +136,10 @@ class AutoclickTest : public AshTestBase {
     return full_delay;
   }
 
-  AutoclickTray* GetAutoclickTray() {
-    return StatusAreaWidgetTestHelper::GetStatusAreaWidget()->autoclick_tray();
-  }
-
-  TrayBubbleWrapper* GetAutoclickTrayBubble() {
-    AutoclickTray* tray = GetAutoclickTray();
-    if (!tray)
-      return nullptr;
-    return tray->bubble_.get();
+  AutoclickMenuView* GetAutoclickMenuView() {
+    return GetAutoclickController()
+        ->GetMenuBubbleControllerForTesting()
+        ->menu_view_;
   }
 
   void ClearMouseEvents() { mouse_event_capturer_.Reset(); }
@@ -606,63 +600,51 @@ TEST_F(AutoclickTest, WaitsToDrawAnimationAfterDwellBegins) {
   EXPECT_EQ(gfx::Point(105, 105), events[0].location());
 }
 
-TEST_F(AutoclickTest, LeftClicksOnTrayButtonWhenInDifferentModes) {
-  // Enable autoclick from the accessibility controller so that the tray is
+TEST_F(AutoclickTest, LeftClicksOnBubbleWhenInDifferentModes) {
+  // Enable autoclick from the accessibility controller so that the bubble is
   // constructed too.
   Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
   GetAutoclickController()->set_revert_to_left_click(false);
   GetAutoclickController()->SetAutoclickEventType(
       mojom::AutoclickEventType::kRightClick);
+  Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
+      mojom::AutoclickMenuPosition::kBottomRight);
   std::vector<ui::MouseEvent> events;
 
-  AutoclickTray* tray = GetAutoclickTray();
-  ASSERT_TRUE(tray);
+  AutoclickMenuView* menu = GetAutoclickMenuView();
+  ASSERT_TRUE(menu);
 
-  // Outside of the tray, a right-click still occurs.
+  // Outside of the bubble, a right-click still occurs.
   GetEventGenerator()->MoveMouseTo(30, 30);
   events = WaitForMouseEvents();
   ASSERT_EQ(2u, events.size());
   EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[0].flags());
   EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[1].flags());
 
-  // But over the tray, we get a left click.
-  GetEventGenerator()->MoveMouseTo(tray->GetBoundsInScreen().origin());
+  // But over the bubble, we get a left click.
+  GetEventGenerator()->MoveMouseTo(menu->GetBoundsInScreen().origin());
   events = WaitForMouseEvents();
   ASSERT_EQ(2u, events.size());
   EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[0].flags());
   EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[1].flags());
 
-  // Open the bubble.
-  ui::GestureEvent tap_event = ui::GestureEvent(
-      0, 0, 0, base::TimeTicks(), ui::GestureEventDetails(ui::ET_GESTURE_TAP));
-  tray->PerformAction(tap_event);
-
-  // And over the bubble we also get a left click.
-  GetEventGenerator()->MoveMouseTo(
-      GetAutoclickTrayBubble()->bubble_view()->GetBoundsInScreen().origin());
-  events = WaitForMouseEvents();
-  ASSERT_EQ(2u, events.size());
-  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[0].flags());
-  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[1].flags());
-
-  // Close the bubble and try again with pause.
-  tray->PerformAction(tap_event);
+  // Change to a pause action type.
   GetAutoclickController()->SetAutoclickEventType(
       mojom::AutoclickEventType::kNoAction);
 
-  // Outside the tray, no action occurs.
+  // Outside the bubble, no action occurs.
   GetEventGenerator()->MoveMouseTo(30, 30);
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
 
-  // If we move over the tray button than a click occurs.
-  GetEventGenerator()->MoveMouseTo(tray->GetBoundsInScreen().origin());
+  // If we move over the bubble than a click occurs.
+  GetEventGenerator()->MoveMouseTo(menu->GetBoundsInScreen().origin());
   events = WaitForMouseEvents();
   ASSERT_EQ(2u, events.size());
   EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[0].flags());
   EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[1].flags());
 
-  // But leaving the tray button we are still paused.
+  // But leaving the bubble we are still paused.
   GetEventGenerator()->MoveMouseTo(60, 60);
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
@@ -672,23 +654,25 @@ TEST_F(AutoclickTest, LeftClicksOnTrayButtonWhenInDifferentModes) {
 }
 
 TEST_F(AutoclickTest,
-       StartsGestureOnTrayButtonButDoesNotClickIfMouseMovedWhenPaused) {
+       StartsGestureOnBubbleButDoesNotClickIfMouseMovedWhenPaused) {
   Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
   GetAutoclickController()->set_revert_to_left_click(false);
   GetAutoclickController()->SetAutoclickEventType(
       mojom::AutoclickEventType::kNoAction);
+  Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
+      mojom::AutoclickMenuPosition::kBottomRight);
 
   int animation_delay = 5;
   int full_delay = UpdateAnimationDelayAndGetFullDelay(animation_delay);
 
   std::vector<ui::MouseEvent> events;
-  AutoclickTray* tray = GetAutoclickTray();
-  ASSERT_TRUE(tray);
+  AutoclickMenuView* menu = GetAutoclickMenuView();
+  ASSERT_TRUE(menu);
 
-  // Start a dwell over the tray.
-  GetEventGenerator()->MoveMouseTo(tray->GetBoundsInScreen().origin());
+  // Start a dwell over the bubble.
+  GetEventGenerator()->MoveMouseTo(menu->GetBoundsInScreen().origin());
 
-  // Move back off the tray before anything happens.
+  // Move back off the bubble before anything happens.
   FastForwardBy(animation_delay - 1);
   GetEventGenerator()->MoveMouseTo(30, 30);
 
@@ -697,12 +681,12 @@ TEST_F(AutoclickTest,
   events = GetMouseEvents();
   ASSERT_EQ(0u, events.size());
 
-  // This time, dwell over the tray long enough for the animation to begin.
+  // This time, dwell over the bubble long enough for the animation to begin.
   // No action should occur if we move off during the dwell.
-  GetEventGenerator()->MoveMouseTo(tray->GetBoundsInScreen().origin());
+  GetEventGenerator()->MoveMouseTo(menu->GetBoundsInScreen().origin());
 
-  // Move back off the tray after the animation begins, but before a click would
-  // occur.
+  // Move back off the bubble after the animation begins, but before a click
+  // would occur.
   FastForwardBy(animation_delay + 1);
   GetEventGenerator()->MoveMouseTo(30, 30);
 
