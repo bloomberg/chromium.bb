@@ -204,6 +204,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                     const blink::WebString& sample) override;
   void RecordRapporURL(const char* metric, const blink::WebURL& url) override;
   blink::WebPushProvider* PushProvider() override;
+  blink::WebTransmissionEncodingInfoHandler* TransmissionEncodingInfoHandler()
+      override;
+
   std::unique_ptr<blink::WebDedicatedWorkerHostFactoryClient>
   CreateDedicatedWorkerHostFactoryClient(
       blink::WebDedicatedWorker*,
@@ -304,6 +307,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   blink::mojom::CodeCacheHostPtrInfo code_cache_host_info_;
   scoped_refptr<blink::mojom::ThreadSafeCodeCacheHostPtr> code_cache_host_;
+
+  std::unique_ptr<blink::WebTransmissionEncodingInfoHandler>
+      web_transmission_encoding_info_handler_;
 
 #if defined(OS_LINUX)
   sk_sp<font_service::FontLoader> font_loader_;

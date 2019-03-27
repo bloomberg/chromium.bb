@@ -55,6 +55,7 @@
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
+#include "content/renderer/media/webrtc/transmission_encoding_info_handler.h"
 #include "content/renderer/media_capture_from_element/canvas_capture_handler.h"
 #include "content/renderer/media_capture_from_element/html_audio_element_capturer_source.h"
 #include "content/renderer/media_capture_from_element/html_video_element_capturer_source.h"
@@ -138,8 +139,8 @@ using blink::WebMediaStreamCenter;
 using blink::WebMediaStreamTrack;
 using blink::WebRTCPeerConnectionHandler;
 using blink::WebRTCPeerConnectionHandlerClient;
-using blink::WebStorageNamespace;
 using blink::WebSize;
+using blink::WebStorageNamespace;
 using blink::WebString;
 using blink::WebURL;
 using blink::WebVector;
@@ -1063,6 +1064,17 @@ blink::InterfaceProvider* RendererBlinkPlatformImpl::GetInterfaceProvider() {
 
 blink::WebPushProvider* RendererBlinkPlatformImpl::PushProvider() {
   return PushProvider::ThreadSpecificInstance(default_task_runner_);
+}
+
+//------------------------------------------------------------------------------
+
+blink::WebTransmissionEncodingInfoHandler*
+RendererBlinkPlatformImpl::TransmissionEncodingInfoHandler() {
+  if (!web_transmission_encoding_info_handler_) {
+    web_transmission_encoding_info_handler_.reset(
+        new content::TransmissionEncodingInfoHandler());
+  }
+  return web_transmission_encoding_info_handler_.get();
 }
 
 //------------------------------------------------------------------------------

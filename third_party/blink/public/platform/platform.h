@@ -130,6 +130,7 @@ class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebStorageNamespace;
 class WebThemeEngine;
+class WebTransmissionEncodingInfoHandler;
 class WebURLLoaderMockFactory;
 class WebURLResponse;
 class WebURLResponse;
@@ -709,6 +710,11 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Media Capabilities --------------------------------------------------
 
   virtual WebMediaCapabilitiesClient* MediaCapabilitiesClient() {
+    return nullptr;
+  }
+
+  virtual WebTransmissionEncodingInfoHandler*
+  TransmissionEncodingInfoHandler() {
     return nullptr;
   }
 
