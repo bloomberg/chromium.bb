@@ -64,14 +64,6 @@ void RemoteFrame::ScheduleNavigation(Document& origin_document,
                                      const KURL& url,
                                      WebFrameLoadType frame_load_type,
                                      UserGestureStatus user_gesture_status) {
-  if (!origin_document.GetSecurityOrigin()->CanDisplay(url)) {
-    origin_document.AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
-        "Not allowed to load local resource: " + url.ElidedString()));
-    return;
-  }
-
   FrameLoadRequest frame_request(&origin_document, ResourceRequest(url));
   frame_request.GetResourceRequest().SetHasUserGesture(
       user_gesture_status == UserGestureStatus::kActive);
@@ -87,6 +79,16 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
     return;
 
   FrameLoadRequest frame_request(passed_request);
+
+  const KURL& url = frame_request.GetResourceRequest().Url();
+  if (frame_request.OriginDocument() &&
+      !frame_request.OriginDocument()->GetSecurityOrigin()->CanDisplay(url)) {
+    frame_request.OriginDocument()->AddConsoleMessage(ConsoleMessage::Create(
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError,
+        "Not allowed to load local resource: " + url.ElidedString()));
+    return;
+  }
 
   // The process where this frame actually lives won't have sufficient
   // information to determine correct referrer and upgrade the url, since it
