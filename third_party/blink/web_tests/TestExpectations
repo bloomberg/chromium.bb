@@ -398,8 +398,6 @@ crbug.com/836886 compositing/scrollbars/nested-overlay-scrollbars.html [ Failure
 # Flaky subpixel AA difference (not necessarily incorrect, but flaky)
 crbug.com/921105 virtual/threaded/animations/skew-notsequential-compositor.html [ Failure Pass ]
 crbug.com/921105 virtual/disable-blink-gen-property-trees/animations/skew-notsequential-compositor.html [ Skip ]
-# Occasionally timeout, but the test coverage is still good
-crbug.com/919789 paint/invalidation/window-resize/ [ Timeout Pass ]
 
 # ====== Paint team owned tests to here ======
 
@@ -4608,13 +4606,6 @@ crbug.com/725542 [ Debug ] editing/selection/doubleclick-beside-cr-span.html [ P
 # Sheriff failures 2017-05-23
 crbug.com/725470 editing/shadow/doubleclick-on-meter-in-shadow-crash.html [ Crash Failure Pass ]
 
-crbug.com/731509 [ Win ] css3/viewport-percentage-lengths/viewport-percentage-lengths-resize.html [ Failure Pass Timeout ]
-
-crbug.com/731535 [ Mac ] fast/dom/Window/window-resize-contents.html [ Failure Pass ]
-crbug.com/731535 [ Win7 ] fast/dom/Window/window-resize-contents.html [ Failure Pass ]
-crbug.com/731535 [ Mac ] virtual/user-activation-v2/fast/dom/Window/window-resize-contents.html [ Failure Pass ]
-crbug.com/731535 [ Win7 ] virtual/user-activation-v2/fast/dom/Window/window-resize-contents.html [ Failure Pass ]
-
 # Sheriff failures 2017-06-14
 crbug.com/737959 http/tests/misc/object-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
 
@@ -4730,7 +4721,6 @@ crbug.com/757165 [ Win ] http/tests/misc/client-hints-accept-meta-preloader.html
 crbug.com/757165 [ Win ] inspector-protocol/debugger/debugger-evaluate-in-worker-while-pause-in-page.js [ Skip ]
 crbug.com/757165 [ Win ] paint/invalidation/filters/filter-repaint-accelerated-child-with-filter-child.html [ Skip ]
 crbug.com/757165 [ Win ] paint/invalidation/filters/filter-repaint-on-accelerated-layer.html [ Skip ]
-crbug.com/757165 [ Win ] paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-filter-modified-save-restore.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-filter-modified.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/threaded/animations/svg/animated-filter-svg-element.html [ Skip ]
@@ -5655,7 +5645,6 @@ crbug.com/900326 [ Win7 ] http/tests/devtools/network/preview-searchable.js [ Ti
 crbug.com/900326 [ Win7 ] virtual/binary-for-devtools/http/tests/devtools/network/preview-searchable.js [ Timeout Pass ]
 crbug.com/900326 [ Mac10.12 ] http/tests/devtools/network/preview-searchable.js [ Timeout Pass ]
 crbug.com/900326 [ Mac10.12 ] virtual/binary-for-devtools/http/tests/devtools/network/preview-searchable.js [ Timeout Pass ]
-crbug.com/874695 crbug.com/900641 crbug.com/913865 [ Linux Mac ] compositing/transitions/transform-on-large-layer.html [ Timeout Pass Crash ]
 crbug.com/900730 [ Mac ] rootscroller/gesture-scroll-document-not-root-scroller.html [ Pass Failure Timeout Crash ]
 
 # ecosystem-infra sheriff 2018-11-02, 2019-03-18
@@ -5724,7 +5713,6 @@ crbug.com/913170 compositing/layer-creation/fixed-position-in-fixed-overflow.htm
 crbug.com/913173 fast/backgrounds/background-svg-scaling-zoom.html [ Failure Pass ]
 
 # Sheriff 2018-12-13
-crbug.com/878226 fast/dynamic/window-resize-scrollbars-test.html [ Pass Timeout ]
 crbug.com/910452 media/controls/buttons-after-reset.html [ Pass Failure ]
 crbug.com/910452 virtual/video-surface-layer/media/controls/buttons-after-reset.html [ Pass Failure ]
 crbug.com/914782 [ Linux ] fast/scrolling/no-hover-during-scroll.html [ Pass Failure ]
@@ -5988,7 +5976,6 @@ crbug.com/934818 virtual/threaded/http/tests/devtools/tracing/decode-resize.js [
 
 # Sheriff 2019-02-25
 crbug.com/935587 [ Mac ] virtual/video-surface-layer/media/stable/video-object-fit-stable.html [ Failure Pass ]
-crbug.com/935638 fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Timeout Pass ]
 crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/symbols-function-invalid.html [ Failure Pass ]
 crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-additive-invalid.html [ Failure Pass ]
 crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-fixed-invalid.html [ Failure Pass ]
@@ -6129,13 +6116,32 @@ crbug.com/945629 http/tests/devtools/network/network-filters.js [ Pass Failure T
 crbug.com/945629 virtual/binary-for-devtools/http/tests/devtools/network/network-filters.js [ Pass Failure Timeout ]
 crbug.com/945832 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Failure Timeout Crash ]
 
-
 # Sheriff 2019-03-26
 crbug.com/945774 [ Mac10.13 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
 crbug.com/945845 http/tests/security/inactive-document-with-empty-security-origin.html [ Timeout ]
 crbug.com/945845 virtual/outofblink-cors/http/tests/security/inactive-document-with-empty-security-origin.html [ Timeout ]
-crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/window-resize-background-image-fixed-centered.html [ Failure Pass ]
-crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/window-resize-background-image-fixed-centered-composited.html [ Failure Pass ]
-crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/window-resize-background-image-fixed-generated.html [ Failure Pass ]
-crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/window-resize-background-image-fixed-scrolling-contents.html [ Failure Pass ]
-crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/window-resize-background-image-non-fixed.html [ Failure Pass ]
+
+# Tests using testRunner.useUnfortunateSynchronousResizeMode occasionally timeout,
+# but the test coverage is still good.
+crbug.com/919789 css3/viewport-percentage-lengths/viewport-percentage-lengths-resize.html [ Pass Timeout ]
+crbug.com/919789 compositing/transitions/transform-on-large-layer.html [ Pass Timeout ]
+crbug.com/919789 compositing/transitions/transform-on-large-layer-expected.html [ Pass Timeout ]
+crbug.com/919789 fast/autoresize/turn-off-autoresize.html [ Pass Timeout ]
+crbug.com/919789 fast/autoresize/basic.html [ Pass Timeout ]
+crbug.com/919789 fast/dom/viewport/resize-event-fired-window-resized.html [ Pass Timeout ]
+crbug.com/919789 fast/dom/Window/window-resize-contents.html [ Pass Timeout ]
+crbug.com/919789 virtual/user-activation-v2/fast/dom/Window/window-resize-contents.html [ Pass Timeout ]
+crbug.com/919789 fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Pass Timeout ]
+crbug.com/919789 fast/dynamic/window-resize-scrollbars-test.html [ Pass Timeout ]
+crbug.com/919789 fast/events/resize-events-count.html [ Pass Timeout ]
+crbug.com/919789 fast/css-grid-layout/flex-content-sized-columns-resize.html [ Pass Timeout ]
+crbug.com/919789 fast/css-grid-layout/flex-content-sized-columns-resize-expected.html [ Pass Timeout ]
+crbug.com/919789 fast/text/line-break-between-text-nodes-with-inline-blocks.html [ Pass Timeout ]
+crbug.com/919789 images/image-click-scale-restore-zoomed-image.html [ Pass Timeout ]
+crbug.com/919789 images/image-zoom-to-25.html [ Pass Timeout ]
+crbug.com/919789 images/image-zoom-to-500.html [ Pass Timeout ]
+crbug.com/919789 media/controls/overflow-menu-hide-on-resize.html [ Pass Timeout ]
+crbug.com/919789 virtual/video-surface-layer/media/controls/overflow-menu-hide-on-resize.html [ Pass Timeout ]
+crbug.com/919789 paint/invalidation/resize-iframe-text.html [ Pass Timeout ]
+crbug.com/919789 paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ Pass Timeout ]
+crbug.com/919789 paint/invalidation/window-resize/ [ Pass Timeout ]
