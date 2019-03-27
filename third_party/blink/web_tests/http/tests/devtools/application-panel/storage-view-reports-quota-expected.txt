@@ -10,3 +10,7 @@ Running: Now with data
 Usage breakdown:
 IndexedDB: --.- KB
 
+Running: Clear again with ActionDelegate
+-- B used out of -- storage quota. 
+Usage breakdown:
+
