@@ -11,8 +11,6 @@ import("//testing/test.gni")
 # Files common to both cast_runner and web_runner targets.
 source_set("common") {
   sources = [
-    "common/javascript_injection.cc",
-    "common/javascript_injection.h",
     "common/web_component.cc",
     "common/web_component.h",
     "common/web_content_runner.cc",
@@ -40,6 +38,7 @@ source_set("cast_runner_core") {
     "cast/cast_component.h",
     "cast/cast_runner.cc",
     "cast/cast_runner.h",
+    "cast/injected_bindings_registry.h",
     "cast/named_message_port_connector.cc",
     "cast/named_message_port_connector.h",
     "cast/not_implemented_api_bindings.cc",

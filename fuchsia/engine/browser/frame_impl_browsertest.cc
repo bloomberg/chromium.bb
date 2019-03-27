@@ -45,6 +45,7 @@ const char kPage2Title[] = "title 2";
 const char kDataUrl[] =
     "data:text/html;base64,PGI+SGVsbG8sIHdvcmxkLi4uPC9iPg==";
 const char kTestServerRoot[] = FILE_PATH_LITERAL("fuchsia/engine/test/data");
+const int64_t kOnLoadScriptId = 0;
 
 MATCHER(IsSet, "Checks if an optional field is set.") {
   return !arg.is_null();
@@ -411,6 +412,142 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NoNavigationObserverAttached) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoad) {
+  constexpr int64_t kBindingsId = 1234;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
+  chromium::web::FramePtr frame = CreateFrame();
+
+  frame->AddJavaScriptBindings(
+      kBindingsId, {url.GetOrigin().spec()},
+      cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
+      [](bool success) { EXPECT_TRUE(success); });
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  CheckLoadUrl(url.spec(), "hello", chromium::web::LoadUrlParams(),
+               controller.get());
+}
+
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptLegacyOnLoad) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
+  chromium::web::FramePtr frame = CreateFrame();
+
+  frame->ExecuteJavaScript(
+      {url.GetOrigin().spec()},
+      cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
+      chromium::web::ExecuteMode::ON_PAGE_LOAD,
+      [](bool success) { EXPECT_TRUE(success); });
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  CheckLoadUrl(url.spec(), "hello", chromium::web::LoadUrlParams(),
+               controller.get());
+}
+
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptUpdatedOnLoad) {
+  constexpr int64_t kBindingsId = 1234;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
+  chromium::web::FramePtr frame = CreateFrame();
+
+  frame->AddJavaScriptBindings(
+      kBindingsId, {url.GetOrigin().spec()},
+      cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
+      [](bool success) { EXPECT_TRUE(success); });
+
+  // Verify that this script clobbers the previous script, as opposed to being
+  // injected alongside it. (The latter would result in the title being
+  // "helloclobber").
+  frame->AddJavaScriptBindings(
+      kBindingsId, {url.GetOrigin().spec()},
+      cr_fuchsia::MemBufferFromString(
+          "stashed_title = document.title + 'clobber';"),
+      [](bool success) { EXPECT_TRUE(success); });
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  CheckLoadUrl(url.spec(), "clobber", chromium::web::LoadUrlParams(),
+               controller.get());
+}
+
+// Verifies that bindings are injected in order by producing a cumulative,
+// non-commutative result.
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadOrdered) {
+  constexpr int64_t kBindingsId1 = 1234;
+  constexpr int64_t kBindingsId2 = 5678;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
+  chromium::web::FramePtr frame = CreateFrame();
+
+  frame->AddJavaScriptBindings(
+      kBindingsId1, {url.GetOrigin().spec()},
+      cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
+      [](bool success) { EXPECT_TRUE(success); });
+  frame->AddJavaScriptBindings(
+      kBindingsId2, {url.GetOrigin().spec()},
+      cr_fuchsia::MemBufferFromString("stashed_title += ' there';"),
+      [](bool success) { EXPECT_TRUE(success); });
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  CheckLoadUrl(url.spec(), "hello there", chromium::web::LoadUrlParams(),
+               controller.get());
+}
+
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadRemoved) {
+  constexpr int64_t kBindingsId1 = 1234;
+  constexpr int64_t kBindingsId2 = 5678;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
+  chromium::web::FramePtr frame = CreateFrame();
+
+  frame->AddJavaScriptBindings(
+      kBindingsId1, {url.GetOrigin().spec()},
+      cr_fuchsia::MemBufferFromString("stashed_title = 'foo';"),
+      [](bool success) { EXPECT_TRUE(success); });
+
+  // Add a script which clobbers "foo".
+  frame->AddJavaScriptBindings(
+      kBindingsId2, {url.GetOrigin().spec()},
+      cr_fuchsia::MemBufferFromString("stashed_title = 'bar';"),
+      [](bool success) { EXPECT_TRUE(success); });
+
+  // Deletes the clobbering script.
+  frame->RemoveJavaScriptBindings(kBindingsId2,
+                                  [](bool removed) { EXPECT_TRUE(removed); });
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  CheckLoadUrl(url.spec(), "foo", chromium::web::LoadUrlParams(),
+               controller.get());
+}
+
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptRemoveInvalidId) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(kPage1Path));
+  chromium::web::FramePtr frame = CreateFrame();
+
+  base::RunLoop remove_loop;
+  cr_fuchsia::ResultReceiver<bool> remove_result(remove_loop.QuitClosure());
+
+  frame->RemoveJavaScriptBindings(
+      kOnLoadScriptId,
+      cr_fuchsia::CallbackToFitFunction(remove_result.GetReceiveCallback()));
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  CheckLoadUrl(url.spec(), kPage1Title, chromium::web::LoadUrlParams(),
+               controller.get());
+
+  EXPECT_FALSE(*remove_result);
+}
+
 // Test JS injection by using Javascript to trigger document navigation.
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptImmediate) {
   chromium::web::FramePtr frame = CreateFrame();
@@ -423,10 +560,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptImmediate) {
   frame->GetNavigationController(controller.NewRequest());
   CheckLoadUrl(title1.spec(), kPage1Title, chromium::web::LoadUrlParams(),
                controller.get());
-  std::vector<std::string> origins = {title1.GetOrigin().spec()};
 
   frame->ExecuteJavaScript(
-      std::move(origins),
+      {title1.GetOrigin().spec()},
       cr_fuchsia::MemBufferFromString("window.location.href = \"" +
                                       title2.spec() + "\";"),
       chromium::web::ExecuteMode::IMMEDIATE_ONCE,
@@ -441,36 +577,14 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptImmediate) {
   run_loop.Run();
 }
 
-IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoad) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
-  chromium::web::FramePtr frame = CreateFrame();
-
-  std::vector<std::string> origins = {url.GetOrigin().spec()};
-
-  frame->ExecuteJavaScript(
-      std::move(origins),
-      cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
-      chromium::web::ExecuteMode::ON_PAGE_LOAD,
-      [](bool success) { EXPECT_TRUE(success); });
-
-  chromium::web::NavigationControllerPtr controller;
-  frame->GetNavigationController(controller.NewRequest());
-  CheckLoadUrl(url.spec(), "hello", chromium::web::LoadUrlParams(),
-               controller.get());
-}
-
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadVmoDestroyed) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   chromium::web::FramePtr frame = CreateFrame();
 
-  std::vector<std::string> origins = {url.GetOrigin().spec()};
-
-  frame->ExecuteJavaScript(
-      std::move(origins),
+  frame->AddJavaScriptBindings(
+      kOnLoadScriptId, {url.GetOrigin().spec()},
       cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
-      chromium::web::ExecuteMode::ON_PAGE_LOAD,
       [](bool success) { EXPECT_TRUE(success); });
 
   chromium::web::NavigationControllerPtr controller;
@@ -484,12 +598,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavascriptOnLoadWrongOrigin) {
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   chromium::web::FramePtr frame = CreateFrame();
 
-  std::vector<std::string> origins = {"http://example.com"};
-
-  frame->ExecuteJavaScript(
-      std::move(origins),
+  frame->AddJavaScriptBindings(
+      kOnLoadScriptId, {"http://example.com"},
       cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
-      chromium::web::ExecuteMode::ON_PAGE_LOAD,
       [](bool success) { EXPECT_TRUE(success); });
 
   chromium::web::NavigationControllerPtr controller;
@@ -506,12 +617,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadWildcardOrigin) {
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   chromium::web::FramePtr frame = CreateFrame();
 
-  std::vector<std::string> origins = {"*"};
-
-  frame->ExecuteJavaScript(
-      std::move(origins),
+  frame->AddJavaScriptBindings(
+      kOnLoadScriptId, {"*"},
       cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
-      chromium::web::ExecuteMode::ON_PAGE_LOAD,
       [](bool success) { EXPECT_TRUE(success); });
 
   // Test script injection for the origin 127.0.0.1.
@@ -533,19 +641,18 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadWildcardOrigin) {
 // Test that consecutive scripts are executed in order by computing a cumulative
 // result.
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteMultipleJavaScriptsOnLoad) {
+  constexpr int64_t kOnLoadScriptId2 = kOnLoadScriptId + 1;
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   chromium::web::FramePtr frame = CreateFrame();
 
-  std::vector<std::string> origins = {url.GetOrigin().spec()};
-  frame->ExecuteJavaScript(
-      origins, cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
-      chromium::web::ExecuteMode::ON_PAGE_LOAD,
+  frame->AddJavaScriptBindings(
+      kOnLoadScriptId, {url.GetOrigin().spec()},
+      cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
       [](bool success) { EXPECT_TRUE(success); });
-  frame->ExecuteJavaScript(
-      std::move(origins),
+  frame->AddJavaScriptBindings(
+      kOnLoadScriptId2, {url.GetOrigin().spec()},
       cr_fuchsia::MemBufferFromString("stashed_title += ' there';"),
-      chromium::web::ExecuteMode::ON_PAGE_LOAD,
       [](bool success) { EXPECT_TRUE(success); });
 
   chromium::web::NavigationControllerPtr controller;
@@ -556,15 +663,15 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteMultipleJavaScriptsOnLoad) {
 
 // Test that we can inject scripts before and after RenderFrame creation.
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteOnLoadEarlyAndLateRegistrations) {
+  constexpr int64_t kOnLoadScriptId2 = kOnLoadScriptId + 1;
+
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   chromium::web::FramePtr frame = CreateFrame();
 
-  std::vector<std::string> origins = {url.GetOrigin().spec()};
-
-  frame->ExecuteJavaScript(
-      origins, cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
-      chromium::web::ExecuteMode::ON_PAGE_LOAD,
+  frame->AddJavaScriptBindings(
+      kOnLoadScriptId, {url.GetOrigin().spec()},
+      cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
       [](bool success) { EXPECT_TRUE(success); });
 
   chromium::web::NavigationControllerPtr controller;
@@ -572,10 +679,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteOnLoadEarlyAndLateRegistrations) {
   CheckLoadUrl(url.spec(), "hello", chromium::web::LoadUrlParams(),
                controller.get());
 
-  frame->ExecuteJavaScript(
-      std::move(origins),
+  frame->AddJavaScriptBindings(
+      kOnLoadScriptId2, {url.GetOrigin().spec()},
       cr_fuchsia::MemBufferFromString("stashed_title += ' there';"),
-      chromium::web::ExecuteMode::ON_PAGE_LOAD,
       [](bool success) { EXPECT_TRUE(success); });
 
   // Navigate away to clean the slate.
@@ -601,9 +707,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptBadEncoding) {
   base::RunLoop run_loop;
 
   // 0xFE is an illegal UTF-8 byte; it should cause UTF-8 conversion to fail.
-  std::vector<std::string> origins = {url.host()};
   frame->ExecuteJavaScript(
-      std::move(origins), cr_fuchsia::MemBufferFromString("true;\xfe"),
+      {url.host()}, cr_fuchsia::MemBufferFromString("true;\xfe"),
       chromium::web::ExecuteMode::IMMEDIATE_ONCE, [&run_loop](bool success) {
         EXPECT_FALSE(success);
         run_loop.Quit();

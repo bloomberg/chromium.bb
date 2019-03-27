@@ -16,8 +16,8 @@
 #include "base/path_service.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "fuchsia/base/mem_buffer_util.h"
+#include "fuchsia/runners/cast/injected_bindings_registry.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
-#include "fuchsia/runners/common/javascript_injection.h"
 
 // Unique identifier of the Cast Channel message port, used by the JavaScript
 // API to connect to the port.
@@ -48,9 +48,13 @@ CastChannelBindings::CastChannelBindings(
 
   base::FilePath assets_path;
   CHECK(base::PathService::Get(base::DIR_ASSETS, &assets_path));
-  InjectJavaScriptFileIntoFrame(
-      assets_path.AppendASCII("fuchsia/runners/cast/cast_channel_bindings.js"),
-      frame_);
+  frame_->AddJavaScriptBindings(
+      static_cast<uint64_t>(CastPlatformBindingsId::CAST_CHANNEL), {"*"},
+      cr_fuchsia::MemBufferFromFile(
+          base::File(assets_path.AppendASCII(
+                         "fuchsia/runners/cast/cast_channel_bindings.js"),
+                     base::File::FLAG_OPEN | base::File::FLAG_READ)),
+      [](bool success) { CHECK(success) << "JavaScript injection error."; });
 }
 
 CastChannelBindings::~CastChannelBindings() {

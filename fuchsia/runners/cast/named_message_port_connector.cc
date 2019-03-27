@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -15,6 +16,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
+#include "fuchsia/runners/cast/injected_bindings_registry.h"
 
 namespace {
 
@@ -111,9 +113,10 @@ void NamedMessagePortConnector::InjectBindings(chromium::web::Frame* frame) {
   DCHECK(frame);
 
   std::vector<std::string> origins = {"*"};
-  frame->ExecuteJavaScript(
+  frame->AddJavaScriptBindings(
+      static_cast<uint64_t>(
+          CastPlatformBindingsId::NAMED_MESSAGE_PORT_CONNECTOR),
       std::move(origins), cr_fuchsia::CloneBuffer(bindings_script_),
-      chromium::web::ExecuteMode::ON_PAGE_LOAD,
       [](bool success) { CHECK(success) << "Couldn't inject bindings."; });
 }
 
