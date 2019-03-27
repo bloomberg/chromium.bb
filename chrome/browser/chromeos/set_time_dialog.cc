@@ -7,7 +7,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"
 #include "chrome/common/url_constants.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -15,11 +14,8 @@ namespace chromeos {
 
 namespace {
 
-const int kDefaultWidth = 490;
-const int kDefaultHeight = 235;
-
-// Material design dialog width and height in DIPs.
-const int kDefaultWidthMd = 530;
+// Dialog width and height in DIPs.
+const int kDefaultWidth = 530;
 const int kDefaultHeightWithTimezone = 286;
 const int kDefaultHeightWithoutTimezone = 228;
 
@@ -46,13 +42,9 @@ SetTimeDialog::SetTimeDialog()
 SetTimeDialog::~SetTimeDialog() = default;
 
 void SetTimeDialog::GetDialogSize(gfx::Size* size) const {
-  if (features::IsSetTimeDialogMd()) {
-    size->SetSize(kDefaultWidthMd, ShouldShowTimezone()
-                                       ? kDefaultHeightWithTimezone
-                                       : kDefaultHeightWithoutTimezone);
-  } else {
-    size->SetSize(kDefaultWidth, kDefaultHeight);
-  }
+  size->SetSize(kDefaultWidth, ShouldShowTimezone()
+                                   ? kDefaultHeightWithTimezone
+                                   : kDefaultHeightWithoutTimezone);
 }
 
 }  // namespace chromeos

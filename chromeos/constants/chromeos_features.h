@@ -40,8 +40,6 @@ extern const base::Feature kImeServiceConnectable;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kInstantTethering;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kSetTimeDialogMd;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kVideoPlayerNativeControls;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUseMessagesGoogleComDomain;
@@ -51,9 +49,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUserActivityPrediction;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUserActivityPredictionMlService;
-
-// Returns whether the settings Set Time dialog uses Material Design.
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSetTimeDialogMd();
 
 }  // namespace features
 

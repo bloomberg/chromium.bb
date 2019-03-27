@@ -652,13 +652,10 @@
         <include name="IDR_DEVICE_EMULATOR_SHARED_STYLES_HTML" file="resources\chromeos\emulator\shared_styles.html" type="BINDATA" />
       </if>
       <if expr="chromeos">
-        <include name="IDR_SET_TIME_HTML" file="resources\chromeos\set_time\set_time.html" type="BINDATA" />
-        <include name="IDR_SET_TIME_CSS" file="resources\chromeos\set_time\set_time.css" type="BINDATA" />
-        <include name="IDR_SET_TIME_JS" file="resources\chromeos\set_time\set_time.js" type="BINDATA" />
-        <include name="IDR_MD_SET_TIME_HTML" file="resources\chromeos\md_set_time\set_time.html" type="BINDATA" compress="gzip" />
-        <include name="IDR_MD_SET_TIME_JS" file="resources\chromeos\md_set_time\set_time.js" type="BINDATA" compress="gzip" />
-        <include name="IDR_MD_SET_TIME_BROWSER_PROXY_HTML" file="resources\chromeos\md_set_time\set_time_browser_proxy.html" type="BINDATA" compress="gzip" />
-        <include name="IDR_MD_SET_TIME_BROWSER_PROXY_JS" file="resources\chromeos\md_set_time\set_time_browser_proxy.js" type="BINDATA" compress="gzip" />
+        <include name="IDR_SET_TIME_HTML" file="resources\chromeos\md_set_time\set_time.html" type="BINDATA" compress="gzip" />
+        <include name="IDR_SET_TIME_JS" file="resources\chromeos\md_set_time\set_time.js" type="BINDATA" compress="gzip" />
+        <include name="IDR_SET_TIME_BROWSER_PROXY_HTML" file="resources\chromeos\md_set_time\set_time_browser_proxy.html" type="BINDATA" compress="gzip" />
+        <include name="IDR_SET_TIME_BROWSER_PROXY_JS" file="resources\chromeos\md_set_time\set_time_browser_proxy.js" type="BINDATA" compress="gzip" />
       </if>
       <if expr="chromeos">
         <if expr="_google_chrome">

@@ -69,12 +69,6 @@ const base::Feature kImeServiceConnectable{"ImeServiceConnectable",
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the Material Design version of the settings Set Time dialog.
-// TODO: When this becomes the default the JS "i18n-options" attribute can be
-// deleted.
-const base::Feature kSetTimeDialogMd{"SetTimeDialogMd",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable or disable native controls in video player on Chrome OS.
 const base::Feature kVideoPlayerNativeControls{
     "VideoPlayerNativeControls", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -100,10 +94,6 @@ const base::Feature kUserActivityPrediction{"UserActivityPrediction",
 // for the Smart Dim feature on Chrome OS.
 const base::Feature kUserActivityPredictionMlService{
     "UserActivityPredictionMlService", base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool IsSetTimeDialogMd() {
-  return base::FeatureList::IsEnabled(kSetTimeDialogMd);
-}
 
 }  // namespace features
 
