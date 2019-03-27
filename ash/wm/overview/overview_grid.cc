@@ -21,6 +21,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/drop_target_view.h"
@@ -44,12 +45,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -73,6 +77,16 @@ constexpr float kOverviewInsetRatio = 0.05f;
 
 // Additional vertical inset reserved for windows in overview mode.
 constexpr float kOverviewVerticalInset = 0.1f;
+
+// Values for the no items indicator which appears when opening overview mode
+// with no opened windows.
+constexpr int kNoItemsIndicatorHeightDp = 32;
+constexpr int kNoItemsIndicatorHorizontalPaddingDp = 16;
+constexpr int kNoItemsIndicatorRoundingDp = 16;
+constexpr int kNoItemsIndicatorVerticalPaddingDp = 8;
+constexpr SkColor kNoItemsIndicatorBackgroundColor = SK_ColorBLACK;
+constexpr SkColor kNoItemsIndicatorTextColor = SK_ColorWHITE;
+constexpr float kNoItemsIndicatorBackgroundOpacity = 0.8f;
 
 // Histogram names for overview enter/exit smoothness in clamshell,
 // tablet mode and splitview.
@@ -251,12 +265,38 @@ gfx::Rect GetGridBoundsInScreenDuringDragging(aura::Window* dragged_window,
 
 }  // namespace
 
-// ShieldView takes care of disabling overview mode on gesture tap or mouse
-// release. It also shows the virtual desks ui if the feature is enabled.
-// TODO(sammiequon): Move disabling to WallpaperView or OverviewSession.
+// ShieldView contains the background for overview mode. It also contains text
+// which is shown if there are no windows to be displayed.
+// This view also takes care of disabling overview mode on:
+//   - Gesture tap.
+//   - Mouse release.
 class OverviewGrid::ShieldView : public views::View {
  public:
-  ShieldView() = default;
+  ShieldView() {
+    label_ = new views::Label(
+        l10n_util::GetStringUTF16(IDS_ASH_OVERVIEW_NO_RECENT_ITEMS),
+        views::style::CONTEXT_LABEL);
+    label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    label_->SetEnabledColor(kNoItemsIndicatorTextColor);
+    label_->SetBackgroundColor(kNoItemsIndicatorBackgroundColor);
+
+    // |label_container_| is the parent of |label_| which allows the text to
+    // have padding and rounded edges.
+    label_container_ = new RoundedRectView(kNoItemsIndicatorRoundingDp,
+                                           kNoItemsIndicatorBackgroundColor);
+    label_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kVertical,
+        gfx::Insets(kNoItemsIndicatorVerticalPaddingDp,
+                    kNoItemsIndicatorHorizontalPaddingDp)));
+    label_container_->AddChildView(label_);
+    label_container_->SetPaintToLayer();
+    label_container_->layer()->SetFillsBoundsOpaquely(false);
+    label_container_->layer()->SetOpacity(kNoItemsIndicatorBackgroundOpacity);
+    label_container_->SetVisible(false);
+
+    AddChildView(label_container_);
+  }
+
   ~ShieldView() override = default;
 
   const DesksBarView* desks_bar_view() const { return desks_bar_view_; }
@@ -273,12 +313,29 @@ class OverviewGrid::ShieldView : public views::View {
     desks_bar_view_->Init();
   }
 
+  void SetLabelVisibility(bool visible) {
+    label_container_->SetVisible(visible);
+  }
+
+  gfx::Rect GetLabelBounds() const {
+    return label_container_->GetBoundsInScreen();
+  }
+
   // ShieldView takes up the whole workspace since it changes opacity of the
   // whole wallpaper. The bounds of the grid may be smaller in some cases of
-  // splitview.
+  // splitview. The label should be centered in the bounds of the grid.
   void SetGridBounds(const gfx::Rect& bounds) {
+    const int label_width = label_->GetPreferredSize().width() +
+                            2 * kNoItemsIndicatorHorizontalPaddingDp;
+    gfx::Rect label_container_bounds = bounds;
+    label_container_bounds.ClampToCenteredSize(
+        gfx::Size(label_width, kNoItemsIndicatorHeightDp));
+    label_container_->SetBoundsRect(label_container_bounds);
+
     UpdateDesksBarBounds();
   }
+
+  bool IsLabelVisible() const { return label_container_->visible(); }
 
  protected:
   // views::View:
@@ -333,6 +390,8 @@ class OverviewGrid::ShieldView : public views::View {
   }
 
   // Owned by views heirarchy.
+  RoundedRectView* label_container_ = nullptr;
+  views::Label* label_ = nullptr;
   DesksBarView* desks_bar_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ShieldView);
@@ -512,6 +571,7 @@ void OverviewGrid::PositionWindows(
     aura::Window* widget_window = shield_widget_->GetNativeWindow();
     const gfx::Rect bounds = widget_window->parent()->bounds();
     widget_window->SetBounds(bounds);
+    ShowNoRecentsWindowMessage(window_list_.empty());
   }
 
   if (window_list_.empty())
@@ -718,6 +778,15 @@ void OverviewGrid::SetSelectionWidgetVisibility(bool visible) {
     selection_widget_->Show();
   else
     selection_widget_->Hide();
+}
+
+void OverviewGrid::ShowNoRecentsWindowMessage(bool visible) {
+  // Only show the warning on the grid associated with primary root.
+  if (root_window_ != Shell::GetPrimaryRootWindow())
+    return;
+
+  if (shield_view_)
+    shield_view_->SetLabelVisibility(visible);
 }
 
 void OverviewGrid::UpdateCannotSnapWarningVisibility() {
@@ -1027,8 +1096,10 @@ void OverviewGrid::OnStartingAnimationComplete(bool canceled) {
   if (canceled)
     return;
 
-  if (!shield_widget_)
+  if (!shield_widget_) {
     InitShieldWidget(/*animate=*/true);
+    ShowNoRecentsWindowMessage(window_list_.empty());
+  }
 
   for (auto& window : window_list())
     window->OnStartingAnimationComplete();
@@ -1048,6 +1119,17 @@ bool OverviewGrid::ShouldAnimateWallpaper() const {
   }
 
   return true;
+}
+
+bool OverviewGrid::IsNoItemsIndicatorLabelVisibleForTesting() {
+  return shield_view_ && shield_view_->IsLabelVisible();
+}
+
+gfx::Rect OverviewGrid::GetNoItemsIndicatorLabelBoundsForTesting() const {
+  if (!shield_view_)
+    return gfx::Rect();
+
+  return shield_view_->GetLabelBounds();
 }
 
 void OverviewGrid::CalculateWindowListAnimationStates(
@@ -1365,7 +1447,7 @@ void OverviewGrid::InitShieldWidget(bool animate) {
   // own widgets.
   if (animate) {
     shield_widget_->SetOpacity(initial_opacity);
-    ScopedOverviewAnimationSettings settings(OVERVIEW_ANIMATION_NO_RECENTS_FADE,
+    ScopedOverviewAnimationSettings settings(OVERVIEW_ANIMATION_SHIELD_FADE,
                                              shield_widget_->GetNativeWindow());
     shield_widget_->SetOpacity(1.f);
   } else {
