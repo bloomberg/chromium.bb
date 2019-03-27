@@ -28,6 +28,10 @@ base::WeakPtr<CupsPrintJob> CupsPrintJob::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+bool CupsPrintJob::IsExpired() const {
+  return error_code_ == ErrorCode::PRINTER_UNREACHABLE;
+}
+
 // static
 std::string CupsPrintJob::CreateUniqueId(const std::string& printer_id,
                                          int job_id) {
