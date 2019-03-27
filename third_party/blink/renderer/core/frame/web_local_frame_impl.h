@@ -380,7 +380,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void DidChangeContentsSize(const IntSize&);
 
   bool HasDevToolsOverlays() const;
-  void UpdateDevToolsOverlays();
+  void UpdateDevToolsOverlaysPrePaint();
   void PaintDevToolsOverlays(GraphicsContext&);  // For CompositeAfterPaint.
 
   void CreateFrameView();

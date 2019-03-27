@@ -1861,9 +1861,9 @@ bool WebLocalFrameImpl::HasDevToolsOverlays() const {
   return dev_tools_agent_ && dev_tools_agent_->HasOverlays();
 }
 
-void WebLocalFrameImpl::UpdateDevToolsOverlays() {
+void WebLocalFrameImpl::UpdateDevToolsOverlaysPrePaint() {
   if (dev_tools_agent_)
-    dev_tools_agent_->UpdateOverlays();
+    dev_tools_agent_->UpdateOverlaysPrePaint();
 }
 
 void WebLocalFrameImpl::PaintDevToolsOverlays(GraphicsContext& context) {

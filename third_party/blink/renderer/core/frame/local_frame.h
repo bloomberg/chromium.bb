@@ -424,7 +424,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Overlays a color on top of this LocalFrameView if it is associated with
   // a subframe. Should not have multiple consumers.
   void SetSubframeColorOverlay(SkColor color);
-  void PaintFrameColorOverlay();
+  void UpdateFrameColorOverlayPrePaint();
 
   // For CompositeAfterPaint.
   void PaintFrameColorOverlay(GraphicsContext&);

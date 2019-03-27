@@ -73,6 +73,7 @@
 #include "third_party/blink/renderer/core/editing/spellcheck/idle_spell_check_controller.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_check_requester.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -268,6 +269,8 @@ void Internals::ResetToConsistentState(Page* page) {
   // call.
   page->SetDefaultPageScaleLimits(1, 4);
   page->SetPageScaleFactor(1);
+  page->GetChromeClient().GetWebView()->SetDeviceEmulationTransform(
+      TransformationMatrix());
 
   // Ensure timers are reset so timers such as EventHandler's |hover_timer_| do
   // not cause additional lifecycle updates.
@@ -3514,6 +3517,21 @@ String Internals::resolveModuleSpecifier(const String& specifier,
   }
 
   return result.GetString();
+}
+
+void Internals::setDeviceEmulationScale(float scale,
+                                        ExceptionState& exception_state) {
+  if (scale <= 0)
+    return;
+  auto* page = document_->GetPage();
+  if (!page) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidAccessError,
+        "The document's page cannot be retrieved.");
+    return;
+  }
+  page->GetChromeClient().GetWebView()->SetDeviceEmulationTransform(
+      TransformationMatrix().Scale(scale));
 }
 
 }  // namespace blink

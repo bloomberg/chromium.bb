@@ -6128,8 +6128,6 @@ crbug.com/945507 [ Win ] fast/url/standard-url.html [ Pass Failure ]
 crbug.com/945629 http/tests/devtools/network/network-filters.js [ Pass Failure Timeout ]
 crbug.com/945629 virtual/binary-for-devtools/http/tests/devtools/network/network-filters.js [ Pass Failure Timeout ]
 
-crbug.com/945470 [ Mac ] fast/forms/validation-bubble-appearance-escape.html [ Pass Failure ]
-
 # Failing on: https://ci.chromium.org/buildbot/chromium.mac/Mac10.13%20Tests/11291
 crbug.com/945832 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Failure Timeout Crash ]
 

@@ -76,8 +76,9 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
-#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "v8/include/v8.h"
 
@@ -223,6 +224,8 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
     if (!overlay_->inspect_tool_)
       return;
 
+    overlay_->UpdateOverlayPage();
+
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       layer_->SetBounds(gfx::Size(frame_overlay.Size()));
       RecordForeignLayer(graphics_context,
@@ -231,8 +234,19 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
       return;
     }
 
+    if (DrawingRecorder::UseCachedDrawingIfPossible(
+            graphics_context, frame_overlay, DisplayItem::kFrameOverlay))
+      return;
+    DrawingRecorder recorder(graphics_context, frame_overlay,
+                             DisplayItem::kFrameOverlay);
     LocalFrameView* view = overlay_->OverlayMainFrame()->View();
-    view->PaintOutsideOfLifecycle(graphics_context, kGlobalPaintNormalPhase);
+    // The overlay frame is has a standalone paint property tree. Paint it in
+    // its root space into a paint record, then draw the record into the proper
+    // target space in the overlaid frame.
+    PaintRecordBuilder paint_record_builder(nullptr, &graphics_context);
+    view->PaintOutsideOfLifecycle(paint_record_builder.Context(),
+                                  kGlobalPaintNormalPhase);
+    graphics_context.DrawRecord(paint_record_builder.EndRecording());
   }
 
   void Invalidate() override {
@@ -295,8 +309,6 @@ class InspectorOverlayAgent::InspectorOverlayChromeClient final
     client_->SetToolTip(*overlay_->GetFrame(), tooltip, direction);
   }
 
-  void InvalidateRect(const IntRect&) override { overlay_->Invalidate(); }
-
  private:
   Member<ChromeClient> client_;
   Member<InspectorOverlayAgent> overlay_;
@@ -315,7 +327,6 @@ InspectorOverlayAgent::InspectorOverlayAgent(
           this,
           &InspectorOverlayAgent::OnTimer),
       disposed_(false),
-      in_layout_(false),
       needs_update_(false),
       v8_session_(v8_session),
       dom_agent_(dom_agent),
@@ -604,7 +615,19 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
   return Response::OK();
 }
 
-void InspectorOverlayAgent::Invalidate() {
+void InspectorOverlayAgent::UpdateOverlayPage() {
+  if (!inspect_tool_)
+    return;
+
+  if (needs_update_) {
+    needs_update_ = false;
+    RebuildOverlayPage();
+  }
+  OverlayMainFrame()->View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kOther);
+}
+
+void InspectorOverlayAgent::UpdatePrePaint() {
   if (!inspect_tool_)
     return;
 
@@ -612,29 +635,7 @@ void InspectorOverlayAgent::Invalidate() {
     frame_overlay_ = std::make_unique<FrameOverlay>(
         GetFrame(), std::make_unique<InspectorPageOverlayDelegate>(*this));
   }
-
-  frame_overlay_->Update();
-  if (auto* frame_view = frame_impl_->GetFrameView())
-    frame_view->SetPaintArtifactCompositorNeedsUpdate();
-}
-
-void InspectorOverlayAgent::UpdateAllOverlayLifecyclePhases() {
-  if (frame_overlay_)
-    frame_overlay_->Update();
-
-  if (inspect_tool_) {
-    base::AutoReset<bool> scoped(&in_layout_, true);
-    if (needs_update_) {
-      needs_update_ = false;
-      RebuildOverlayPage();
-    }
-    OverlayMainFrame()->View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kOther);
-  }
-
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && frame_overlay_ &&
-      frame_overlay_->GetGraphicsLayer())
-    frame_overlay_->GetGraphicsLayer()->Paint();
+  frame_overlay_->UpdatePrePaint();
 }
 
 void InspectorOverlayAgent::PaintOverlay(GraphicsContext& context) {
