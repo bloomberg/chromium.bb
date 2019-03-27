@@ -118,11 +118,21 @@ LayoutUnit NGLineTruncator::TruncateLine(
 void NGLineTruncator::HideChild(NGLineBoxFragmentBuilder::Child* child) {
   DCHECK(child->HasInFlowFragment());
 
+  const NGPhysicalFragment* fragment = nullptr;
+  if (const NGLayoutResult* layout_result = child->layout_result.get()) {
+    // Need to propagate OOF descendants in this inline-block child.
+    if (!layout_result->OutOfFlowPositionedDescendants().IsEmpty()) {
+      return;
+    }
+    fragment = layout_result->PhysicalFragment();
+  } else {
+    fragment = child->fragment.get();
+  }
+  DCHECK(fragment);
+
   // If this child has self painting layer, not producing fragments will not
   // suppress painting because layers are painted separately. Move it out of the
   // clipping area.
-  const NGPhysicalFragment* fragment = child->PhysicalFragment();
-  DCHECK(fragment);
   if (fragment->HasSelfPaintingLayer()) {
     // |available_width_| may not be enough when the containing block has
     // paddings, because clipping is at the content box but ellipsizing is at
