@@ -17,19 +17,12 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 
-namespace {
-
-const char kJsScreenPath[] = "login.KioskEnableScreen";
-
-}  // namespace
-
 namespace chromeos {
 
 KioskEnableScreenHandler::KioskEnableScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container),
       weak_ptr_factory_(this) {
-  set_call_js_prefix(kJsScreenPath);
 }
 
 KioskEnableScreenHandler::~KioskEnableScreenHandler() {

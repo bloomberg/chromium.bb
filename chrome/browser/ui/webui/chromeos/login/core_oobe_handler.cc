@@ -62,8 +62,6 @@ namespace chromeos {
 
 namespace {
 
-const char kJsScreenPath[] = "cr.ui.Oobe";
-
 bool IsRemoraRequisition() {
   policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
       g_browser_process->platform_part()
@@ -94,7 +92,6 @@ CoreOobeHandler::CoreOobeHandler(JSCallsContainer* js_calls_container)
       version_info_updater_(this),
       weak_ptr_factory_(this) {
   DCHECK(js_calls_container);
-  set_call_js_prefix(kJsScreenPath);
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
   CHECK(accessibility_manager);
   accessibility_subscription_ = accessibility_manager->RegisterCallback(

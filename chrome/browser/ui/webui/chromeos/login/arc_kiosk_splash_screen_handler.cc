@@ -16,18 +16,11 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace {
-
-constexpr char kJsScreenPath[] = "login.ArcKioskSplashScreen";
-}
-
 namespace chromeos {
 
 ArcKioskSplashScreenHandler::ArcKioskSplashScreenHandler(
     JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_call_js_prefix(kJsScreenPath);
-}
+    : BaseScreenHandler(kScreenId, js_calls_container) {}
 
 ArcKioskSplashScreenHandler::~ArcKioskSplashScreenHandler() {
   if (delegate_)

@@ -35,12 +35,6 @@
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
-namespace {
-
-const char kJsScreenPath[] = "login.WelcomeScreen";
-
-}  // namespace
-
 namespace chromeos {
 
 // WelcomeScreenHandler, public: -----------------------------------------------
@@ -49,7 +43,6 @@ WelcomeScreenHandler::WelcomeScreenHandler(JSCallsContainer* js_calls_container,
                                            CoreOobeView* core_oobe_view)
     : BaseScreenHandler(kScreenId, js_calls_container),
       core_oobe_view_(core_oobe_view) {
-  set_call_js_prefix(kJsScreenPath);
   set_user_acted_method_path("login.WelcomeScreen.userActed");
   DCHECK(core_oobe_view_);
 }

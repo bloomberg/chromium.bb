@@ -43,12 +43,6 @@ using ArcPlayTermsOfServiceConsent =
 
 using sync_pb::UserConsentTypes;
 
-namespace {
-
-const char kJsScreenPath[] = "login.ArcTermsOfServiceScreen";
-
-}  // namespace
-
 namespace chromeos {
 
 ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler(
@@ -56,7 +50,6 @@ ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler(
     : BaseScreenHandler(kScreenId, js_calls_container),
       is_child_account_(
           user_manager::UserManager::Get()->IsLoggedInAsChildUser()) {
-  set_call_js_prefix(kJsScreenPath);
   set_user_acted_method_path("login.ArcTermsOfServiceScreen.userActed");
 }
 

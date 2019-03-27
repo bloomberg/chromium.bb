@@ -25,10 +25,6 @@
 #include "rlz/buildflags/buildflags.h"
 #include "url/gurl.h"
 
-namespace {
-constexpr char kJsScreenPath[] = "login.EulaScreen";
-}
-
 namespace chromeos {
 
 EulaScreenHandler::EulaScreenHandler(JSCallsContainer* js_calls_container,
@@ -36,7 +32,6 @@ EulaScreenHandler::EulaScreenHandler(JSCallsContainer* js_calls_container,
     : BaseScreenHandler(kScreenId, js_calls_container),
       core_oobe_view_(core_oobe_view),
       weak_factory_(this) {
-  set_call_js_prefix(kJsScreenPath);
   set_user_acted_method_path("login.EulaScreen.userActed");
 }
 

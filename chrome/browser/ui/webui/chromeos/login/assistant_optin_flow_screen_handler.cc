@@ -31,7 +31,6 @@ namespace chromeos {
 
 namespace {
 
-constexpr char kJsScreenPath[] = "login.AssistantOptInFlowScreen";
 constexpr char kSkipPressed[] = "skip-pressed";
 constexpr char kNextPressed[] = "next-pressed";
 constexpr char kRecordPressed[] = "record-pressed";
@@ -46,7 +45,6 @@ AssistantOptInFlowScreenHandler::AssistantOptInFlowScreenHandler(
     : BaseScreenHandler(kScreenId, js_calls_container),
       client_binding_(this),
       weak_factory_(this) {
-  set_call_js_prefix(kJsScreenPath);
   set_user_acted_method_path("login.AssistantOptInFlowScreen.userActed");
 }
 

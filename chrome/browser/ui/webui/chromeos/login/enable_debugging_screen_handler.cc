@@ -29,19 +29,12 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace {
-
-const char kJsScreenPath[] = "login.EnableDebuggingScreen";
-
-}  // namespace
-
 namespace chromeos {
 
 EnableDebuggingScreenHandler::EnableDebuggingScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container),
       weak_ptr_factory_(this) {
-  set_call_js_prefix(kJsScreenPath);
 }
 
 EnableDebuggingScreenHandler::~EnableDebuggingScreenHandler() {
