@@ -119,7 +119,8 @@ class CustomCountHistogram;
   auto scoped_ukm_hierarchical_timer =                 \
       aggregator.GetScopedTimer(static_cast<size_t>(ukm_enum));
 
-class CORE_EXPORT LocalFrameUkmAggregator {
+class CORE_EXPORT LocalFrameUkmAggregator
+    : public RefCounted<LocalFrameUkmAggregator> {
  public:
   // Changing these values requires changing the names of metrics specified
   // below. For every metric name added here, add an entry in the
@@ -182,9 +183,10 @@ class CORE_EXPORT LocalFrameUkmAggregator {
    private:
     friend class LocalFrameUkmAggregator;
 
-    ScopedUkmHierarchicalTimer(LocalFrameUkmAggregator*, size_t metric_index);
+    ScopedUkmHierarchicalTimer(scoped_refptr<LocalFrameUkmAggregator>,
+                               size_t metric_index);
 
-    LocalFrameUkmAggregator* aggregator_;
+    scoped_refptr<LocalFrameUkmAggregator> aggregator_;
     const size_t metric_index_;
     const TimeTicks start_time_;
 
