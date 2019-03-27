@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_EXTERNAL_FILE_REMOVER_FACTORY_H_
-#define IOS_CHROME_BROWSER_UI_EXTERNAL_FILE_REMOVER_FACTORY_H_
+#ifndef IOS_CHROME_BROWSER_EXTERNAL_FILES_EXTERNAL_FILE_REMOVER_FACTORY_H_
+#define IOS_CHROME_BROWSER_EXTERNAL_FILES_EXTERNAL_FILE_REMOVER_FACTORY_H_
 
 #include <memory>
 
@@ -38,4 +38,4 @@ class ExternalFileRemoverFactory : public BrowserStateKeyedServiceFactory {
   DISALLOW_COPY_AND_ASSIGN(ExternalFileRemoverFactory);
 };
 
-#endif  // IOS_CHROME_BROWSER_UI_EXTERNAL_FILE_REMOVER_FACTORY_H_
+#endif  // IOS_CHROME_BROWSER_EXTERNAL_FILES_EXTERNAL_FILE_REMOVER_FACTORY_H_

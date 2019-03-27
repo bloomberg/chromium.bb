@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_EXTERNAL_FILE_REMOVER_H_
-#define IOS_CHROME_BROWSER_UI_EXTERNAL_FILE_REMOVER_H_
+#ifndef IOS_CHROME_BROWSER_EXTERNAL_FILES_EXTERNAL_FILE_REMOVER_H_
+#define IOS_CHROME_BROWSER_EXTERNAL_FILES_EXTERNAL_FILE_REMOVER_H_
 
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -23,4 +23,4 @@ class ExternalFileRemover : public KeyedService {
   DISALLOW_COPY_AND_ASSIGN(ExternalFileRemover);
 };
 
-#endif  // IOS_CHROME_BROWSER_UI_EXTERNAL_FILE_REMOVER_H_
+#endif  // IOS_CHROME_BROWSER_EXTERNAL_FILES_EXTERNAL_FILE_REMOVER_H_
