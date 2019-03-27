@@ -109,6 +109,7 @@
     'chromium.chromiumos': {
       'Linux ChromiumOS Full': 'chromeos_with_codecs_release_bot',
 
+      'chromeos-amd64-generic-asan-rel': 'cros_chrome_sdk_asan',
       'chromeos-amd64-generic-cfi-thin-lto-rel': 'cros_chrome_sdk_headless_ozone_cfi_thin_lto',
       'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone',
       'chromeos-daisy-rel': 'cros_chrome_sdk',
@@ -1331,6 +1332,10 @@
     # wrapper and need to be looked at specially.
     'cros_chrome_sdk': [
       'cros_chrome_sdk',
+    ],
+
+    'cros_chrome_sdk_asan': [
+      'cros_chrome_sdk', 'asan',
     ],
 
     'cros_chrome_sdk_dchecks_always_on': [
