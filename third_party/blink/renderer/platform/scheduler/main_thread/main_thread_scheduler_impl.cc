@@ -729,7 +729,8 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTaskQueue(
   // they're not supposed to.
   if (queue_class == MainThreadTaskQueue::QueueClass::kTimer &&
       main_thread_only().virtual_time_stopped &&
-      main_thread_only().use_virtual_time) {
+      main_thread_only().use_virtual_time &&
+      task_queue->ShouldUseVirtualTime()) {
     task_queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
   }
 
@@ -1788,6 +1789,8 @@ void MainThreadSchedulerImpl::SetVirtualTimeStopped(bool virtual_time_stopped) {
 
 void MainThreadSchedulerImpl::VirtualTimePaused() {
   for (const auto& pair : task_runners_) {
+    if (!pair.first->ShouldUseVirtualTime())
+      return;
     if (pair.first->queue_class() == MainThreadTaskQueue::QueueClass::kTimer) {
       DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
       pair.first->InsertFence(TaskQueue::InsertFencePosition::kNow);
@@ -1797,6 +1800,8 @@ void MainThreadSchedulerImpl::VirtualTimePaused() {
 
 void MainThreadSchedulerImpl::VirtualTimeResumed() {
   for (const auto& pair : task_runners_) {
+    if (!pair.first->ShouldUseVirtualTime())
+      return;
     if (pair.first->queue_class() == MainThreadTaskQueue::QueueClass::kTimer) {
       DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
       DCHECK(pair.first->HasActiveFence());
@@ -2022,7 +2027,7 @@ bool MainThreadSchedulerImpl::TaskQueuePolicy::IsQueueEnabled(
 MainThreadSchedulerImpl::TimeDomainType
 MainThreadSchedulerImpl::TaskQueuePolicy::GetTimeDomainType(
     MainThreadTaskQueue* task_queue) const {
-  if (use_virtual_time)
+  if (use_virtual_time && task_queue->ShouldUseVirtualTime())
     return TimeDomainType::kVirtual;
   return TimeDomainType::kReal;
 }
