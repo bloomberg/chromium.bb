@@ -472,9 +472,9 @@ String WebDevToolsAgentImpl::EvaluateInOverlayForTesting(const String& script) {
   return result;
 }
 
-void WebDevToolsAgentImpl::UpdateOverlays() {
+void WebDevToolsAgentImpl::UpdateOverlaysPrePaint() {
   for (auto& it : overlay_agents_)
-    it.value->UpdateAllOverlayLifecyclePhases();
+    it.value->UpdatePrePaint();
 }
 
 void WebDevToolsAgentImpl::PaintOverlays(GraphicsContext& context) {

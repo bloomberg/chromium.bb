@@ -1762,30 +1762,17 @@ void LocalFrame::SetFrameColorOverlay(SkColor color) {
 
   frame_color_overlay_ = std::make_unique<FrameOverlay>(
       this, std::make_unique<FrameColorOverlay>(this, color));
-
-  // Update compositing which will create graphics layers so the page color
-  // update below will be able to attach to the root graphics layer.
-  if (View()) {
-    View()->UpdateLifecycleToCompositingCleanPlusScrolling();
-    frame_color_overlay_->Update();
-  }
 }
 
-void LocalFrame::PaintFrameColorOverlay() {
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  if (!frame_color_overlay_)
-    return;
-  frame_color_overlay_->Update();
-  if (frame_color_overlay_->GetGraphicsLayer())
-    frame_color_overlay_->GetGraphicsLayer()->Paint();
+void LocalFrame::UpdateFrameColorOverlayPrePaint() {
+  if (frame_color_overlay_)
+    frame_color_overlay_->UpdatePrePaint();
 }
 
 void LocalFrame::PaintFrameColorOverlay(GraphicsContext& context) {
   DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  if (!frame_color_overlay_)
-    return;
-  frame_color_overlay_->Update();
-  frame_color_overlay_->Paint(context);
+  if (frame_color_overlay_)
+    frame_color_overlay_->Paint(context);
 }
 
 void LocalFrame::ForciblyPurgeV8Memory() {
