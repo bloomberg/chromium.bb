@@ -68,15 +68,7 @@ bool MimeHandlerViewFrameContainer::Create(
 v8::Local<v8::Object> MimeHandlerViewFrameContainer::GetScriptableObject(
     const blink::WebElement& plugin_element,
     v8::Isolate* isolate) {
-  auto containers = FromRenderFrame(content::RenderFrame::FromWebFrame(
-      plugin_element.GetDocument().GetFrame()));
-  for (auto* container : containers) {
-    auto* frame_container =
-        static_cast<MimeHandlerViewFrameContainer*>(container);
-    if (frame_container->plugin_element_ != plugin_element)
-      continue;
-    return frame_container->GetScriptableObjectInternal(isolate);
-  }
+  // TODO(ekaramad): Implement.
   return v8::Local<v8::Object>();
 }
 
