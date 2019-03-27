@@ -597,11 +597,6 @@
       name: "FractionalScrollOffsets",
     },
     {
-      name: "FramebustingNeedsSameOriginOrUserGesture",
-      settable_from_internals: true,
-      status: "stable",
-    },
-    {
       name: "FramesTimingFunction",
       status: "experimental",
     },

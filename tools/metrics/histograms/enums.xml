@@ -24021,6 +24021,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="FramebustPermissions">
+  <obsolete>
+    Deprecated as of March 2019.
+  </obsolete>
   <int value="0"
       label="Only permitted for framebusting, no user gesture, not an ad
              frame"/>
@@ -24031,6 +24034,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="FramebustPermissionsPlusAds">
+  <obsolete>
+    Deprecated as of March 2019.
+  </obsolete>
   <int value="0"
       label="Only permitted for framebusting, no user gesture, not an ad
              frame"/>

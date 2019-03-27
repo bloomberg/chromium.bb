@@ -1145,11 +1145,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-framebusting-needs-sameorigin-or-usergesture",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-fs-nosymfollow",
     "owners": [ "mortonm@chromium.org" ],
     "expiry_milestone": 76

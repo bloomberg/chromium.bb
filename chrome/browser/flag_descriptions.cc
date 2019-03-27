@@ -1110,12 +1110,6 @@ const char kForceUiDirectionDescription[] =
     "Explicitly force the UI to left-to-right (LTR) or right-to-left (RTL) "
     "mode, overriding the default direction of the UI language.";
 
-const char kFramebustingName[] =
-    "Framebusting requires same-origin or a user gesture";
-const char kFramebustingDescription[] =
-    "Don't permit an iframe to navigate the top level browsing context unless "
-    "they are same-origin or the iframe is processing a user gesture.";
-
 const char kGpuRasterizationName[] = "GPU rasterization";
 const char kGpuRasterizationDescription[] =
     "Use GPU to rasterize web content. Requires impl-side painting.";

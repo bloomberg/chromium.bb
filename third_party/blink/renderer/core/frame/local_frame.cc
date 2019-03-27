@@ -1053,19 +1053,6 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
   if (target_frame != this &&
       !GetSecurityContext()->IsSandboxed(kSandboxTopNavigation) &&
       target_frame == Tree().Top()) {
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, framebust_histogram,
-                        ("WebCore.Framebust2", 8));
-    const unsigned kUserGestureBit = 0x1;
-    const unsigned kAllowedBit = 0x2;
-    const unsigned kAdBit = 0x4;
-    unsigned framebust_params = 0;
-
-    if (has_user_gesture)
-      framebust_params |= kUserGestureBit;
-
-    if (IsAdSubframe())
-      framebust_params |= kAdBit;
-
     UseCounter::Count(GetDocument(), WebFeature::kTopNavigationFromSubFrame);
     if (sandboxed) {  // Sandboxed with 'allow-top-navigation'.
       UseCounter::Count(GetDocument(), WebFeature::kTopNavInSandboxWithPerm);
@@ -1074,10 +1061,6 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
                           WebFeature::kTopNavInSandboxWithPermButNoGesture);
       }
     }
-
-    if (is_allowed_navigation)
-      framebust_params |= kAllowedBit;
-    framebust_histogram.Count(framebust_params);
 
     if (has_user_gesture || is_allowed_navigation ||
         target_frame.GetSecurityContext()->GetSecurityOrigin()->CanAccess(
@@ -1098,37 +1081,9 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     // Frame-busting used to be generally allowed in most situations, but may
     // now blocked if the document initiating the navigation has never received
     // a user gesture and the navigation isn't same-origin with the target.
-    //
-    // TODO(csharrison,japhet): Consider not logging an error message if the
-    // user has allowed popups/redirects.
-    bool allow_popups_and_redirects = false;
     if (auto* settings_client = Client()->GetContentSettingsClient()) {
-      allow_popups_and_redirects =
-          settings_client->AllowPopupsAndRedirects(allow_popups_and_redirects);
-    }
-    if (!RuntimeEnabledFeatures::
-            FramebustingNeedsSameOriginOrUserGestureEnabled() ||
-        allow_popups_and_redirects) {
-      auto* target_local_frame = DynamicTo<LocalFrame>(&target_frame);
-      String target_frame_description =
-          target_local_frame
-              ? "with URL '" +
-                    target_local_frame->GetDocument()->Url().GetString() + "'"
-              : "with origin '" +
-                    target_frame.GetSecurityContext()
-                        ->GetSecurityOrigin()
-                        ->ToString() +
-                    "'";
-      String message = "Frame with URL '" + GetDocument()->Url().GetString() +
-                       "' attempted to navigate its top-level window " +
-                       target_frame_description +
-                       ". Navigating the top-level window from a cross-origin "
-                       "iframe will soon require that the iframe has received "
-                       "a user gesture. See "
-                       "https://www.chromestatus.com/features/"
-                       "5851021045661696.";
-      PrintNavigationWarning(message);
-      return true;
+      if (settings_client->AllowPopupsAndRedirects(false /* default_value*/))
+        return true;
     }
     error_reason =
         "The frame attempting navigation is targeting its top-level window, "

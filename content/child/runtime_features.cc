@@ -246,11 +246,6 @@ void SetIndividualRuntimeFeatures(
       "FontSrcLocalMatching",
       base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
 
-  WebRuntimeFeatures::EnableFeatureFromString(
-      "FramebustingNeedsSameOriginOrUserGesture",
-      base::FeatureList::IsEnabled(
-          features::kFramebustingNeedsSameOriginOrUserGesture));
-
   if (command_line.HasSwitch(switches::kDisableBackgroundTimerThrottling))
     WebRuntimeFeatures::EnableTimerThrottlingForBackgroundTabs(false);
 
