@@ -52,6 +52,9 @@ class ChromiumDepGraph {
             url: "https://github.com/google-ar/arcore-android-sdk",
             licenseUrl: "https://raw.githubusercontent.com/google-ar/arcore-android-sdk/master/LICENSE",
             licenseName: "Apache 2.0"),
+        'net_sf_kxml_kxml2': new DependencyDescription(
+            licenseUrl: "https://raw.githubusercontent.com/stefanhaustein/kxml2/master/license.txt",
+            licenseName: "MIT"),
     ]
 
     Project project
