@@ -30,6 +30,7 @@
 #include "ios/chrome/browser/ui/translate/language_selection_view_controller.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_coordinator.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_view.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
@@ -552,8 +553,12 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       @"A language has been detected");
 }
 
+// TODO:(crbug.com/946533) fix and reenable for iPads.
 // Tests that history.pushState triggers a new detection.
 - (void)testLanguageDetectionWithPushState {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
   const GURL URL = web::test::HttpServer::MakeUrl(
       "http://scenarioLanguageDetectionPushState");
   std::map<GURL, std::string> responses;
@@ -879,9 +884,13 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       assertWithMatcher:ElementIsSelected(NO)];
 }
 
+// TODO:(crbug.com/946533) fix and reenable for iPads.
 // Tests that translation occurs automatically on second navigation to an
 // already translated page.
 - (void)testInfobarAutoTranslate {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
