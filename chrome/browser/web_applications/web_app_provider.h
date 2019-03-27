@@ -100,8 +100,7 @@ class WebAppProvider : public WebAppProviderBase,
 
   void Reset();
 
-  void OnScanForExternalWebApps(
-      std::vector<web_app::PendingAppManager::AppInfo>);
+  void OnScanForExternalWebApps(std::vector<InstallOptions>);
 
   // New extension-independent subsystems:
   std::unique_ptr<WebAppAudioFocusIdMap> audio_focus_id_map_;

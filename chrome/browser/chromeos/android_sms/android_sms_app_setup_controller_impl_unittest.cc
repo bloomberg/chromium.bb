@@ -19,6 +19,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/test_pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/test/base/testing_profile.h"
@@ -40,14 +41,13 @@ const char kTestUrl1[] = "https://test-url-1.com/";
 const char kTestInstallUrl1[] = "https://test-url-1.com/install";
 const char kTestUrl2[] = "https://test-url-2.com/";
 
-web_app::PendingAppManager::AppInfo GetAppInfoForUrl(const GURL& url) {
-  web_app::PendingAppManager::AppInfo info(url,
-                                           web_app::LaunchContainer::kWindow,
-                                           web_app::InstallSource::kInternal);
-  info.override_previous_user_uninstall = true;
-  info.bypass_service_worker_check = true;
-  info.require_manifest = true;
-  return info;
+web_app::InstallOptions GetInstallOptionsForUrl(const GURL& url) {
+  web_app::InstallOptions options(url, web_app::LaunchContainer::kWindow,
+                                  web_app::InstallSource::kInternal);
+  options.override_previous_user_uninstall = true;
+  options.bypass_service_worker_check = true;
+  options.require_manifest = true;
+  return options;
 }
 
 class FakeCookieManager : public network::TestCookieManager {
@@ -226,7 +226,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     // install it.
     if (!test_pwa_delegate_->GetPwaForUrl(install_url, &profile_)) {
       EXPECT_EQ(num_install_requests_before_call + 1u, install_requests.size());
-      EXPECT_EQ(GetAppInfoForUrl(install_url), install_requests.back());
+      EXPECT_EQ(GetInstallOptionsForUrl(install_url), install_requests.back());
 
       EXPECT_EQ(ContentSetting::CONTENT_SETTING_ALLOW,
                 GetNotificationSetting(app_url));

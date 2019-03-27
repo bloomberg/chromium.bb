@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -196,19 +197,19 @@ void AndroidSmsAppSetupControllerImpl::OnDeleteMigrationCookieResult(
     return;
   }
 
-  web_app::PendingAppManager::AppInfo info(install_url,
-                                           web_app::LaunchContainer::kWindow,
-                                           web_app::InstallSource::kInternal);
-  info.override_previous_user_uninstall = true;
+  web_app::InstallOptions options(install_url,
+                                  web_app::LaunchContainer::kWindow,
+                                  web_app::InstallSource::kInternal);
+  options.override_previous_user_uninstall = true;
   // The ServiceWorker does not load in time for the installability check, so
   // bypass it as a workaround.
-  info.bypass_service_worker_check = true;
-  info.require_manifest = true;
+  options.bypass_service_worker_check = true;
+  options.require_manifest = true;
 
   PA_LOG(VERBOSE) << "AndroidSmsAppSetupControllerImpl::OnSetCookieResult(): "
                   << "Installing PWA for " << install_url << ".";
   pending_app_manager_->Install(
-      std::move(info),
+      std::move(options),
       base::BindOnce(&AndroidSmsAppSetupControllerImpl::OnAppInstallResult,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      app_url));

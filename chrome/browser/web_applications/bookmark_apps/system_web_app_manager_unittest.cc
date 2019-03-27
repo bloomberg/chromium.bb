@@ -38,13 +38,13 @@ const char kAppUrl1[] = "chrome://system-app1";
 const char kAppUrl2[] = "chrome://system-app2";
 const char kAppUrl3[] = "chrome://system-app3";
 
-PendingAppManager::AppInfo GetWindowedAppInfo() {
-  PendingAppManager::AppInfo info(GURL(kAppUrl1), LaunchContainer::kWindow,
-                                  InstallSource::kSystemInstalled);
-  info.create_shortcuts = false;
-  info.bypass_service_worker_check = true;
-  info.always_update = true;
-  return info;
+InstallOptions GetWindowedInstallOptions() {
+  InstallOptions options(GURL(kAppUrl1), LaunchContainer::kWindow,
+                         InstallSource::kSystemInstalled);
+  options.create_shortcuts = false;
+  options.bypass_service_worker_check = true;
+  options.always_update = true;
+  return options;
 }
 
 }  // namespace
@@ -163,10 +163,10 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   base::RunLoop().RunUntilIdle();
 
   // We should only try to install the app in the System App list.
-  std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
-  expected_apps_to_install.push_back(GetWindowedAppInfo());
+  std::vector<InstallOptions> expected_install_options_list;
+  expected_install_options_list.push_back(GetWindowedInstallOptions());
   EXPECT_EQ(pending_app_manager()->install_requests(),
-            expected_apps_to_install);
+            expected_install_options_list);
 
   // We should try to uninstall the app that is no longer in the System App
   // list.

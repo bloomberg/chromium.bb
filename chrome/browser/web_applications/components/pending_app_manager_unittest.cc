@@ -19,13 +19,13 @@ class PendingAppManagerTest : public testing::Test {
   void Sync(std::vector<GURL> urls) {
     pending_app_manager_.ResetCounts();
 
-    std::vector<PendingAppManager::AppInfo> app_infos;
+    std::vector<InstallOptions> install_options_list;
     for (const auto& url : urls) {
-      app_infos.emplace_back(url, LaunchContainer::kWindow,
-                             InstallSource::kInternal);
+      install_options_list.emplace_back(url, LaunchContainer::kWindow,
+                                        InstallSource::kInternal);
     }
-    pending_app_manager_.SynchronizeInstalledApps(std::move(app_infos),
-                                                  InstallSource::kInternal);
+    pending_app_manager_.SynchronizeInstalledApps(
+        std::move(install_options_list), InstallSource::kInternal);
   }
 
   void Expect(int deduped_install_count,

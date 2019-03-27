@@ -24,31 +24,31 @@ void TestPendingAppManager::SimulatePreviouslyInstalledApp(
   installed_apps_[url] = install_source;
 }
 
-void TestPendingAppManager::Install(AppInfo app_to_install,
+void TestPendingAppManager::Install(InstallOptions install_options,
                                     OnceInstallCallback callback) {
   // TODO(nigeltao): Add error simulation when error codes are added to the API.
 
-  auto i = installed_apps_.find(app_to_install.url);
+  auto i = installed_apps_.find(install_options.url);
   if (i == installed_apps_.end()) {
-    installed_apps_[app_to_install.url] = app_to_install.install_source;
+    installed_apps_[install_options.url] = install_options.install_source;
     deduped_install_count_++;
   }
 
-  install_requests_.push_back(std::move(app_to_install));
+  install_requests_.push_back(std::move(install_options));
   std::move(callback).Run(install_requests().back().url,
                           InstallResultCode::kSuccess);
 }
 
 void TestPendingAppManager::InstallApps(
-    std::vector<AppInfo> apps_to_install,
+    std::vector<InstallOptions> install_options_list,
     const RepeatingInstallCallback& callback) {
-  for (auto& app : apps_to_install)
-    Install(std::move(app), callback);
+  for (auto& install_options : install_options_list)
+    Install(std::move(install_options), callback);
 }
 
-void TestPendingAppManager::UninstallApps(std::vector<GURL> urls_to_uninstall,
+void TestPendingAppManager::UninstallApps(std::vector<GURL> uninstall_urls,
                                           const UninstallCallback& callback) {
-  for (auto& url : urls_to_uninstall) {
+  for (auto& url : uninstall_urls) {
     auto i = installed_apps_.find(url);
     if (i != installed_apps_.end()) {
       installed_apps_.erase(i);
