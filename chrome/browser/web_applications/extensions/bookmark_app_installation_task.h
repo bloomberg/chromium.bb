@@ -60,19 +60,18 @@ class BookmarkAppInstallationTask {
   static void CreateTabHelpers(content::WebContents* web_contents);
 
   // Constructs a task that will install a BookmarkApp-based Shortcut or Web App
-  // for |profile|. |app_info| will be used to decide some of the
+  // for |profile|. |install_options| will be used to decide some of the
   // properties of the installed app e.g. open in a tab vs. window, installed by
   // policy, etc.
-  explicit BookmarkAppInstallationTask(
-      Profile* profile,
-      web_app::PendingAppManager::AppInfo app_info);
+  explicit BookmarkAppInstallationTask(Profile* profile,
+                                       web_app::InstallOptions install_options);
 
   virtual ~BookmarkAppInstallationTask();
 
   virtual void Install(content::WebContents* web_contents,
                        ResultCallback callback);
 
-  const web_app::PendingAppManager::AppInfo& app_info() { return app_info_; }
+  const web_app::InstallOptions& install_options() { return install_options_; }
 
   void SetBookmarkAppHelperFactoryForTesting(
       BookmarkAppHelperFactory helper_factory);
@@ -92,7 +91,7 @@ class BookmarkAppInstallationTask {
 
   web_app::ExtensionIdsMap extension_ids_map_;
 
-  const web_app::PendingAppManager::AppInfo app_info_;
+  const web_app::InstallOptions install_options_;
 
   // We temporarily use a BookmarkAppHelper until the WebApp and WebShortcut
   // installation tasks reach feature parity with BookmarkAppHelper.

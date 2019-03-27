@@ -35,15 +35,15 @@ base::flat_map<SystemAppType, GURL> CreateSystemWebApps() {
   return urls;
 }
 
-PendingAppManager::AppInfo CreateAppInfoForSystemApp(const GURL& url) {
+InstallOptions CreateInstallOptionsForSystemApp(const GURL& url) {
   DCHECK_EQ(content::kChromeUIScheme, url.scheme());
 
-  web_app::PendingAppManager::AppInfo app_info(url, LaunchContainer::kWindow,
-                                               InstallSource::kSystemInstalled);
-  app_info.create_shortcuts = false;
-  app_info.bypass_service_worker_check = true;
-  app_info.always_update = true;
-  return app_info;
+  web_app::InstallOptions install_options(url, LaunchContainer::kWindow,
+                                          InstallSource::kSystemInstalled);
+  install_options.create_shortcuts = false;
+  install_options.bypass_service_worker_check = true;
+  install_options.always_update = true;
+  return install_options;
 }
 
 }  // namespace
@@ -83,15 +83,17 @@ bool SystemWebAppManager::IsEnabled() {
 }
 
 void SystemWebAppManager::StartAppInstallation() {
-  std::vector<PendingAppManager::AppInfo> apps_to_install;
+  std::vector<InstallOptions> install_options_list;
   if (IsEnabled()) {
     // Skipping this will uninstall all System Apps currently installed.
-    for (const auto& app : system_app_urls_)
-      apps_to_install.push_back(CreateAppInfoForSystemApp(app.second));
+    for (const auto& app : system_app_urls_) {
+      install_options_list.push_back(
+          CreateInstallOptionsForSystemApp(app.second));
+    }
   }
 
   pending_app_manager_->SynchronizeInstalledApps(
-      std::move(apps_to_install), InstallSource::kSystemInstalled);
+      std::move(install_options_list), InstallSource::kSystemInstalled);
 }
 
 }  // namespace web_app

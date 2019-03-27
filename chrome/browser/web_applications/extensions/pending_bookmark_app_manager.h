@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
@@ -42,18 +43,19 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
  public:
   using WebContentsFactory =
       base::RepeatingCallback<std::unique_ptr<content::WebContents>(Profile*)>;
-  using TaskFactory = base::RepeatingCallback<
-      std::unique_ptr<BookmarkAppInstallationTask>(Profile*, AppInfo)>;
+  using TaskFactory = base::RepeatingCallback<std::unique_ptr<
+      BookmarkAppInstallationTask>(Profile*, web_app::InstallOptions)>;
 
   explicit PendingBookmarkAppManager(Profile* profile,
                                      web_app::AppRegistrar* registrar_);
   ~PendingBookmarkAppManager() override;
 
   // web_app::PendingAppManager
-  void Install(AppInfo app_to_install, OnceInstallCallback callback) override;
-  void InstallApps(std::vector<AppInfo> apps_to_install,
+  void Install(web_app::InstallOptions install_options,
+               OnceInstallCallback callback) override;
+  void InstallApps(std::vector<web_app::InstallOptions> install_options_list,
                    const RepeatingInstallCallback& callback) override;
-  void UninstallApps(std::vector<GURL> apps_to_uninstall,
+  void UninstallApps(std::vector<GURL> uninstall_urls,
                      const UninstallCallback& callback) override;
   std::vector<GURL> GetInstalledAppUrls(
       web_app::InstallSource install_source) const override;

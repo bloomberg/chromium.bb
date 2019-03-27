@@ -24,7 +24,7 @@ class TestPendingAppManager : public PendingAppManager {
   // InstallApps or UninstallApps arguments do. The deduped_foo_count methods
   // only count new installs or new uninstalls.
 
-  const std::vector<AppInfo>& install_requests() const {
+  const std::vector<InstallOptions>& install_requests() const {
     return install_requests_;
   }
   const std::vector<GURL>& uninstall_requests() const {
@@ -43,17 +43,18 @@ class TestPendingAppManager : public PendingAppManager {
                                       InstallSource install_source);
 
   // PendingAppManager:
-  void Install(AppInfo app_to_install, OnceInstallCallback callback) override;
-  void InstallApps(std::vector<AppInfo> apps_to_install,
+  void Install(InstallOptions install_options,
+               OnceInstallCallback callback) override;
+  void InstallApps(std::vector<InstallOptions> install_options_list,
                    const RepeatingInstallCallback& callback) override;
-  void UninstallApps(std::vector<GURL> urls_to_uninstall,
+  void UninstallApps(std::vector<GURL> uninstall_urls,
                      const UninstallCallback& callback) override;
   std::vector<GURL> GetInstalledAppUrls(
       InstallSource install_source) const override;
   base::Optional<std::string> LookupAppId(const GURL& url) const override;
 
  private:
-  std::vector<AppInfo> install_requests_;
+  std::vector<InstallOptions> install_requests_;
   std::vector<GURL> uninstall_requests_;
 
   int deduped_install_count_;

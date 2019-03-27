@@ -56,10 +56,10 @@ void BookmarkAppInstallationTask::CreateTabHelpers(
 
 BookmarkAppInstallationTask::BookmarkAppInstallationTask(
     Profile* profile,
-    web_app::PendingAppManager::AppInfo app_info)
+    web_app::InstallOptions install_options)
     : profile_(profile),
       extension_ids_map_(profile_->GetPrefs()),
-      app_info_(std::move(app_info)),
+      install_options_(std::move(install_options)),
       helper_factory_(base::BindRepeating(&BookmarkAppHelperCreateWrapper)),
       data_retriever_(std::make_unique<web_app::WebAppDataRetriever>()) {}
 
@@ -97,7 +97,7 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
   }
 
   auto install_source = WebappInstallSource::COUNT;
-  switch (app_info_.install_source) {
+  switch (install_options_.install_source) {
     case web_app::InstallSource::kInternal:
       install_source = WebappInstallSource::INTERNAL_DEFAULT;
       break;
@@ -117,7 +117,7 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
   helper_ = helper_factory_.Run(profile_, *web_app_info, web_contents,
                                 install_source);
 
-  switch (app_info_.launch_container) {
+  switch (install_options_.launch_container) {
     case web_app::LaunchContainer::kDefault:
       break;
     case web_app::LaunchContainer::kTab:
@@ -128,7 +128,7 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
       break;
   }
 
-  switch (app_info_.install_source) {
+  switch (install_options_.install_source) {
     // TODO(nigeltao/ortuno): should these two cases lead to different
     // Manifest::Location values: INTERNAL vs EXTERNAL_PREF_DOWNLOAD?
     case web_app::InstallSource::kInternal:
@@ -146,13 +146,13 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
       break;
   }
 
-  if (!app_info_.create_shortcuts)
+  if (!install_options_.create_shortcuts)
     helper_->set_skip_shortcut_creation();
 
-  if (app_info_.bypass_service_worker_check)
+  if (install_options_.bypass_service_worker_check)
     helper_->set_bypass_service_worker_check();
 
-  if (app_info_.require_manifest)
+  if (install_options_.require_manifest)
     helper_->set_require_manifest();
 
   helper_->Create(base::Bind(&BookmarkAppInstallationTask::OnInstalled,
@@ -165,8 +165,8 @@ void BookmarkAppInstallationTask::OnInstalled(
     const Extension* extension,
     const WebApplicationInfo& web_app_info) {
   if (extension) {
-    extension_ids_map_.Insert(app_info_.url, extension->id(),
-                              app_info_.install_source);
+    extension_ids_map_.Insert(install_options_.url, extension->id(),
+                              install_options_.install_source);
     std::move(result_callback)
         .Run(Result(web_app::InstallResultCode::kSuccess, extension->id()));
     return;

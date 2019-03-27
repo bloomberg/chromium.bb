@@ -229,9 +229,9 @@ void WebAppProvider::Reset() {
 }
 
 void WebAppProvider::OnScanForExternalWebApps(
-    std::vector<web_app::PendingAppManager::AppInfo> app_infos) {
+    std::vector<InstallOptions> desired_apps_install_options) {
   pending_app_manager_->SynchronizeInstalledApps(
-      std::move(app_infos), InstallSource::kExternalDefault);
+      std::move(desired_apps_install_options), InstallSource::kExternalDefault);
 }
 
 }  // namespace web_app

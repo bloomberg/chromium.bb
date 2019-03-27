@@ -40,13 +40,13 @@ void NavigateToURLAndWait(Browser* browser, const GURL& url) {
 
 // TODO(loyso): Merge this with PendingBookmarkAppManagerBrowserTest's
 // implementation in some test_support library.
-web_app::PendingAppManager::AppInfo CreateAppInfo(const GURL& url) {
-  web_app::PendingAppManager::AppInfo app_info(
-      url, web_app::LaunchContainer::kWindow,
-      web_app::InstallSource::kInternal);
+web_app::InstallOptions CreateInstallOptions(const GURL& url) {
+  web_app::InstallOptions install_options(url,
+                                          web_app::LaunchContainer::kWindow,
+                                          web_app::InstallSource::kInternal);
   // Avoid creating real shortcuts in tests.
-  app_info.create_shortcuts = false;
-  return app_info;
+  install_options.create_shortcuts = false;
+  return install_options;
 }
 
 GURL GetUrlForSuffix(const std::string& prefix, int suffix) {
@@ -195,13 +195,12 @@ class BookmarkAppTest : public extensions::ExtensionBrowserTest {
   // TODO(loyso): Merge this method with
   // PendingBookmarkAppManagerBrowserTest::InstallApp in some
   // test_support library.
-  void InstallDefaultAppAndCountApps(
-      web_app::PendingAppManager::AppInfo app_info) {
+  void InstallDefaultAppAndCountApps(web_app::InstallOptions install_options) {
     base::RunLoop run_loop;
 
     web_app::WebAppProvider::Get(browser()->profile())
         ->pending_app_manager()
-        .Install(std::move(app_info),
+        .Install(std::move(install_options),
                  base::BindLambdaForTesting(
                      [this, &run_loop](const GURL& provided_url,
                                        web_app::InstallResultCode code) {
@@ -399,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramDefaultApp) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL example_url(
       embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
-  InstallDefaultAppAndCountApps(CreateAppInfo(example_url));
+  InstallDefaultAppAndCountApps(CreateInstallOptions(example_url));
   ASSERT_EQ(web_app::InstallResultCode::kSuccess, result_code_.value());
 
   const extensions::Extension* app = extensions::util::GetInstalledPwaForUrl(

@@ -9,6 +9,8 @@ source_set("components") {
     "install_manager.cc",
     "install_manager.h",
     "install_manager_observer.h",
+    "install_options.cc",
+    "install_options.h",
     "pending_app_manager.cc",
     "pending_app_manager.h",
     "web_app_audio_focus_id_map.cc",

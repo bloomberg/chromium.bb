@@ -58,7 +58,7 @@ void WebAppPolicyManager::InitChangeRegistrarAndRefreshPolicyInstalledApps() {
 void WebAppPolicyManager::RefreshPolicyInstalledApps() {
   const base::Value* web_apps =
       pref_service_->GetList(prefs::kWebAppInstallForceList);
-  std::vector<PendingAppManager::AppInfo> apps_to_install;
+  std::vector<InstallOptions> install_options_list;
   for (const base::Value& info : web_apps->GetList()) {
     const base::Value& url = *info.FindKey(kUrlKey);
     const base::Value* launch_container = info.FindKey(kLaunchContainerKey);
@@ -75,17 +75,17 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
     else
       container = LaunchContainer::kTab;
 
-    web_app::PendingAppManager::AppInfo app_info(
+    web_app::InstallOptions install_options(
         GURL(std::move(url.GetString())), container,
         web_app::InstallSource::kExternalPolicy);
-    app_info.create_shortcuts = false;
+    install_options.create_shortcuts = false;
 
     // There is a separate policy to create shortcuts/pin apps to shelf.
-    apps_to_install.push_back(std::move(app_info));
+    install_options_list.push_back(std::move(install_options));
   }
 
   pending_app_manager_->SynchronizeInstalledApps(
-      std::move(apps_to_install), InstallSource::kExternalPolicy);
+      std::move(install_options_list), InstallSource::kExternalPolicy);
 }
 
 }  // namespace web_app

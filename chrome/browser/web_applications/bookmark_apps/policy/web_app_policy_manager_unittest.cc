@@ -46,11 +46,11 @@ base::Value GetWindowedItem() {
   return item;
 }
 
-PendingAppManager::AppInfo GetWindowedAppInfo() {
-  PendingAppManager::AppInfo info(GURL(kWindowedUrl), LaunchContainer::kWindow,
-                                  InstallSource::kExternalPolicy);
-  info.create_shortcuts = false;
-  return info;
+InstallOptions GetWindowedInstallOptions() {
+  InstallOptions options(GURL(kWindowedUrl), LaunchContainer::kWindow,
+                         InstallSource::kExternalPolicy);
+  options.create_shortcuts = false;
+  return options;
 }
 
 base::Value GetTabbedItem() {
@@ -60,11 +60,11 @@ base::Value GetTabbedItem() {
   return item;
 }
 
-PendingAppManager::AppInfo GetTabbedAppInfo() {
-  PendingAppManager::AppInfo info(GURL(kTabbedUrl), LaunchContainer::kTab,
-                                  InstallSource::kExternalPolicy);
-  info.create_shortcuts = false;
-  return info;
+InstallOptions GetTabbedInstallOptions() {
+  InstallOptions options(GURL(kTabbedUrl), LaunchContainer::kTab,
+                         InstallSource::kExternalPolicy);
+  options.create_shortcuts = false;
+  return options;
 }
 
 base::Value GetDefaultContainerItem() {
@@ -73,12 +73,11 @@ base::Value GetDefaultContainerItem() {
   return item;
 }
 
-PendingAppManager::AppInfo GetDefaultContainerAppInfo() {
-  PendingAppManager::AppInfo info(GURL(kDefaultContainerUrl),
-                                  LaunchContainer::kDefault,
-                                  InstallSource::kExternalPolicy);
-  info.create_shortcuts = false;
-  return info;
+InstallOptions GetDefaultContainerInstallOptions() {
+  InstallOptions options(GURL(kDefaultContainerUrl), LaunchContainer::kDefault,
+                         InstallSource::kExternalPolicy);
+  options.create_shortcuts = false;
+  return options;
 }
 
 }  // namespace
@@ -144,8 +143,8 @@ TEST_F(WebAppPolicyManagerTest, NoForceInstalledAppsPrefValue) {
 
   base::RunLoop().RunUntilIdle();
 
-  const auto& apps_to_install = pending_app_manager()->install_requests();
-  EXPECT_TRUE(apps_to_install.empty());
+  const auto& install_requests = pending_app_manager()->install_requests();
+  EXPECT_TRUE(install_requests.empty());
 }
 
 TEST_F(WebAppPolicyManagerTest, NoForceInstalledApps) {
@@ -155,8 +154,8 @@ TEST_F(WebAppPolicyManagerTest, NoForceInstalledApps) {
   policy_manager()->Start();
   base::RunLoop().RunUntilIdle();
 
-  const auto& apps_to_install = pending_app_manager()->install_requests();
-  EXPECT_TRUE(apps_to_install.empty());
+  const auto& install_requests = pending_app_manager()->install_requests();
+  EXPECT_TRUE(install_requests.empty());
 }
 
 TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
@@ -169,13 +168,13 @@ TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
   policy_manager()->Start();
   base::RunLoop().RunUntilIdle();
 
-  const auto& apps_to_install = pending_app_manager()->install_requests();
+  const auto& install_requests = pending_app_manager()->install_requests();
 
-  std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
-  expected_apps_to_install.push_back(GetWindowedAppInfo());
-  expected_apps_to_install.push_back(GetTabbedAppInfo());
+  std::vector<InstallOptions> expected_install_options_list;
+  expected_install_options_list.push_back(GetWindowedInstallOptions());
+  expected_install_options_list.push_back(GetTabbedInstallOptions());
 
-  EXPECT_EQ(apps_to_install, expected_apps_to_install);
+  EXPECT_EQ(install_requests, expected_install_options_list);
 }
 
 TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithNoForcedLaunchContainer) {
@@ -186,12 +185,12 @@ TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithNoForcedLaunchContainer) {
   policy_manager()->Start();
   base::RunLoop().RunUntilIdle();
 
-  const auto& apps_to_install = pending_app_manager()->install_requests();
+  const auto& install_requests = pending_app_manager()->install_requests();
 
-  std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
-  expected_apps_to_install.push_back(GetDefaultContainerAppInfo());
+  std::vector<InstallOptions> expected_install_options_list;
+  expected_install_options_list.push_back(GetDefaultContainerInstallOptions());
 
-  EXPECT_EQ(apps_to_install, expected_apps_to_install);
+  EXPECT_EQ(install_requests, expected_install_options_list);
 }
 
 TEST_F(WebAppPolicyManagerTest, DynamicRefresh) {
@@ -203,12 +202,12 @@ TEST_F(WebAppPolicyManagerTest, DynamicRefresh) {
   policy_manager()->Start();
   base::RunLoop().RunUntilIdle();
 
-  const auto& apps_to_install = pending_app_manager()->install_requests();
+  const auto& install_requests = pending_app_manager()->install_requests();
 
-  std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
-  expected_apps_to_install.push_back(GetWindowedAppInfo());
+  std::vector<InstallOptions> expected_install_options_list;
+  expected_install_options_list.push_back(GetWindowedInstallOptions());
 
-  EXPECT_EQ(apps_to_install, expected_apps_to_install);
+  EXPECT_EQ(install_requests, expected_install_options_list);
 
   base::Value second_list(base::Value::Type::LIST);
   second_list.GetList().push_back(GetTabbedItem());
@@ -217,9 +216,9 @@ TEST_F(WebAppPolicyManagerTest, DynamicRefresh) {
 
   base::RunLoop().RunUntilIdle();
 
-  expected_apps_to_install.push_back(GetTabbedAppInfo());
+  expected_install_options_list.push_back(GetTabbedInstallOptions());
 
-  EXPECT_EQ(apps_to_install, expected_apps_to_install);
+  EXPECT_EQ(install_requests, expected_install_options_list);
 }
 
 TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
@@ -242,10 +241,10 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
   base::RunLoop().RunUntilIdle();
 
   // We should only try to install the app in the policy.
-  std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
-  expected_apps_to_install.push_back(GetWindowedAppInfo());
+  std::vector<InstallOptions> expected_install_options_list;
+  expected_install_options_list.push_back(GetWindowedInstallOptions());
   EXPECT_EQ(pending_app_manager()->install_requests(),
-            expected_apps_to_install);
+            expected_install_options_list);
 
   // We should try to uninstall the app that is no longer in the policy.
   EXPECT_EQ(std::vector<GURL>({GURL(kTabbedUrl)}),
@@ -266,13 +265,13 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInCurrentSession) {
                              std::move(first_list));
   base::RunLoop().RunUntilIdle();
 
-  const auto& apps_to_install = pending_app_manager()->install_requests();
+  const auto& install_requests = pending_app_manager()->install_requests();
 
-  std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
-  expected_apps_to_install.push_back(GetWindowedAppInfo());
-  expected_apps_to_install.push_back(GetTabbedAppInfo());
+  std::vector<InstallOptions> expected_install_options_list;
+  expected_install_options_list.push_back(GetWindowedInstallOptions());
+  expected_install_options_list.push_back(GetTabbedInstallOptions());
 
-  EXPECT_EQ(apps_to_install, expected_apps_to_install);
+  EXPECT_EQ(install_requests, expected_install_options_list);
 
   // Push a new policy without the tabbed site.
   base::Value second_list(base::Value::Type::LIST);
@@ -283,9 +282,9 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInCurrentSession) {
 
   // We'll try to install the app again but PendingAppManager will handle
   // not re-installing the app.
-  expected_apps_to_install.push_back(GetWindowedAppInfo());
+  expected_install_options_list.push_back(GetWindowedInstallOptions());
 
-  EXPECT_EQ(apps_to_install, expected_apps_to_install);
+  EXPECT_EQ(install_requests, expected_install_options_list);
 
   EXPECT_EQ(std::vector<GURL>({GURL(kTabbedUrl)}),
             pending_app_manager()->uninstall_requests());
