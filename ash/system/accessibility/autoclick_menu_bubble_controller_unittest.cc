@@ -115,6 +115,36 @@ TEST_F(AutoclickMenuBubbleControllerTest, CanSelectAutoclickTypeFromBubble) {
   }
 }
 
+TEST_F(AutoclickMenuBubbleControllerTest, UnpausesWhenPauseAlreadySelected) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  views::View* pause_button =
+      GetMenuButton(AutoclickMenuView::ButtonId::kPause);
+  ui::GestureEvent event = CreateTapEvent();
+
+  const struct {
+    mojom::AutoclickEventType event_type;
+  } kTestCases[]{
+      {mojom::AutoclickEventType::kRightClick},
+      {mojom::AutoclickEventType::kLeftClick},
+      {mojom::AutoclickEventType::kDoubleClick},
+      {mojom::AutoclickEventType::kDragAndDrop},
+  };
+
+  for (const auto& test : kTestCases) {
+    controller->SetAutoclickEventType(test.event_type);
+
+    // First tap pauses
+    pause_button->OnGestureEvent(&event);
+    EXPECT_EQ(mojom::AutoclickEventType::kNoAction,
+              controller->GetAutoclickEventType());
+
+    // Second tap unpauses and reverts to previous state.
+    pause_button->OnGestureEvent(&event);
+    EXPECT_EQ(test.event_type, controller->GetAutoclickEventType());
+  }
+}
+
 TEST_F(AutoclickMenuBubbleControllerTest, CanChangePosition) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
