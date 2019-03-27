@@ -403,48 +403,10 @@ bool NewPasswordFormManager::IsPendingCredentialsPublicSuffixMatch() const {
 
 void NewPasswordFormManager::PresaveGeneratedPassword(
     const PasswordForm& form) {
-  std::unique_ptr<PasswordForm> parsed_form =
-      ParseFormAndMakeLogging(form.form_data, FormDataParser::Mode::kSaving);
-
-  if (!parsed_form) {
-    // Use the old parser result if parsing fails.
-    // TODO(https://crbug.com/831123). Make it work without the old parser.
-    parsed_form.reset(new PasswordForm(form));
-  }
-
-  if (!HasGeneratedPassword()) {
-    votes_uploader_.set_generated_password_changed(false);
-    metrics_recorder_->SetGeneratedPasswordStatus(
-        PasswordFormMetricsRecorder::GeneratedPasswordStatus::
-            kPasswordAccepted);
-  } else {
-    // If the password is already generated and new value to presave differs
-    // from the presaved one, then mark that the generated password was changed.
-    // If a user recovers the original generated password, it will be recorded
-    // as a password change.
-    if (generated_password_ != form.password_value) {
-      votes_uploader_.set_generated_password_changed(true);
-      metrics_recorder_->SetGeneratedPasswordStatus(
-          PasswordFormMetricsRecorder::GeneratedPasswordStatus::
-              kPasswordEdited);
-    }
-  }
-  votes_uploader_.set_has_generated_password(true);
-
   // TODO(https://crbug.com/831123). Propagate generated password independently
   // of PasswordForm when PasswordForm goes away from the renderer process.
-  generated_password_ = form.password_value;
-
-  // Set |password_value| to the generated password in order to ensure that the
-  // generated password is saved.
-  parsed_form->password_value = generated_password_;
-
-  // Clear the username value if there are already saved credentials with
-  // the same username in order to prevent overwriting.
-  if (base::ContainsKey(best_matches_, parsed_form->username_value))
-    parsed_form->username_value.clear();
-
-  form_saver_->PresaveGeneratedPassword(*parsed_form);
+  PresaveGeneratedPasswordInternal(form.form_data,
+                                   form.password_value /*generated_password*/);
 }
 
 void NewPasswordFormManager::PasswordNoLongerGenerated() {
@@ -499,6 +461,43 @@ NewPasswordFormManager::GetDrivers() const {
 const PasswordForm* NewPasswordFormManager::GetSubmittedForm() const {
   return parsed_submitted_form_.get();
 }
+
+#if defined(OS_IOS)
+void NewPasswordFormManager::PresaveGeneratedPassword(
+    PasswordManagerDriver* driver,
+    const FormData& form,
+    const base::string16& generated_password,
+    const base::string16& generation_element) {
+  observed_form_ = form;
+  PresaveGeneratedPasswordInternal(form, generated_password);
+  votes_uploader_.set_generation_element(generation_element);
+  generation_element_ = generation_element;
+}
+
+bool NewPasswordFormManager::UpdateGeneratedPasswordOnUserInput(
+    const base::string16& form_identifier,
+    const base::string16& field_identifier,
+    const base::string16& field_value) {
+  if (observed_form_.name != form_identifier)
+    return false;
+  bool form_data_changed = false;
+  for (FormFieldData& field : observed_form_.fields) {
+    if (field.name == field_identifier) {
+      field.value = field_value;
+      form_data_changed = true;
+      break;
+    }
+  }
+  base::string16 generated_password = generated_password_;
+  if (generation_element_ == field_identifier) {
+    generated_password = field_value;
+    form_data_changed = true;
+  }
+  if (form_data_changed)
+    PresaveGeneratedPasswordInternal(observed_form_, generated_password);
+  return true;
+}
+#endif  // defined(OS_IOS)
 
 std::unique_ptr<NewPasswordFormManager> NewPasswordFormManager::Clone() {
   // Fetcher is cloned to avoid re-fetching data from PasswordStore.
@@ -1132,6 +1131,51 @@ std::unique_ptr<PasswordForm> NewPasswordFormManager::ParseFormAndMakeLogging(
                              *password_form);
   }
   return password_form;
+}
+
+void NewPasswordFormManager::PresaveGeneratedPasswordInternal(
+    const FormData& form,
+    const base::string16& generated_password) {
+  std::unique_ptr<PasswordForm> parsed_form =
+      ParseFormAndMakeLogging(form, FormDataParser::Mode::kSaving);
+
+  if (!parsed_form) {
+    // Create a password form with a minimum data.
+    parsed_form.reset(new PasswordForm());
+    parsed_form->origin = form.origin;
+    parsed_form->signon_realm = GetSignonRealm(form.origin);
+  }
+
+  if (!HasGeneratedPassword()) {
+    votes_uploader_.set_generated_password_changed(false);
+    metrics_recorder_->SetGeneratedPasswordStatus(
+        PasswordFormMetricsRecorder::GeneratedPasswordStatus::
+            kPasswordAccepted);
+  } else {
+    // If the password is already generated and a new value to presave differs
+    // from the presaved one, then mark that the generated password was changed.
+    // If a user recovers the original generated password, it will be recorded
+    // as a password change.
+    if (generated_password_ != generated_password) {
+      votes_uploader_.set_generated_password_changed(true);
+      metrics_recorder_->SetGeneratedPasswordStatus(
+          PasswordFormMetricsRecorder::GeneratedPasswordStatus::
+              kPasswordEdited);
+    }
+  }
+  votes_uploader_.set_has_generated_password(true);
+  generated_password_ = generated_password;
+
+  // Set |password_value| to the generated password in order to ensure that the
+  // generated password is saved.
+  parsed_form->password_value = generated_password_;
+
+  // Clear the username value if there are already saved credentials with
+  // the same username in order to prevent overwriting.
+  if (base::ContainsKey(best_matches_, parsed_form->username_value))
+    parsed_form->username_value.clear();
+
+  form_saver_->PresaveGeneratedPassword(*parsed_form);
 }
 
 void NewPasswordFormManager::CalculateFillingAssistanceMetric(

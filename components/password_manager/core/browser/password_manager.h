@@ -206,15 +206,13 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   void PresaveGeneratedPassword(PasswordManagerDriver* driver,
                                 const autofill::FormData& form,
                                 const base::string16& generated_password,
-                                const base::string16& generation_element,
-                                bool is_manually_triggered);
+                                const base::string16& generation_element);
 
   // Updates the presaved credential with the generated password when the user
   // types in field with |field_identifier|, which is in form with
   // |form_identifier| and the field value is |field_value|. |driver|
   // corresponds to the form parent frame.
   void UpdateGeneratedPasswordOnUserInput(
-      PasswordManagerDriver* driver,
       const base::string16& form_identifier,
       const base::string16& field_identifier,
       const base::string16& field_value);

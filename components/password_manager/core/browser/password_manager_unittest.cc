@@ -51,6 +51,7 @@ using base::TestMockTimeTaskRunner;
 using testing::_;
 using testing::AnyNumber;
 using testing::IsNull;
+using testing::Mock;
 using testing::NotNull;
 using testing::Return;
 using testing::ReturnRef;
@@ -60,6 +61,10 @@ using testing::WithArg;
 namespace password_manager {
 
 namespace {
+
+MATCHER_P2(FormUsernamePasswordAre, username, password, "") {
+  return arg.username_value == username && arg.password_value == password;
+}
 
 class MockStoreResultFilter : public StubCredentialsFilter {
  public:
@@ -555,6 +560,129 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSubmitEmptyStore) {
     EXPECT_EQ(form.new_password_value, form_to_save.password_value);
   }
 }
+
+#if defined(OS_IOS)
+TEST_F(PasswordManagerTest, EditingGeneratedPasswordOnIOS) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  TurnOnNewParsingForSaving(&scoped_feature_list, true);
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
+      .WillRepeatedly(Return(true));
+
+  PasswordForm form = MakeSimpleForm();
+  base::string16 username = form.username_value;
+  base::string16 generated_password = form.password_value + ASCIIToUTF16("1");
+  const base::string16 username_element = form.username_element;
+  const base::string16 generation_element = form.password_element;
+
+  // A form is found by PasswordManager.
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  manager()->OnPasswordFormsParsed(&driver_, {form});
+
+  // The user is generating the password. The password has to be presaved.
+  PasswordForm presaved_form;
+  EXPECT_CALL(*store_, AddLogin(FormUsernamePasswordAre(form.username_value,
+                                                        generated_password)))
+      .WillOnce(SaveArg<0>(&presaved_form));
+  manager()->PresaveGeneratedPassword(&driver_, form.form_data,
+                                      generated_password, generation_element);
+  Mock::VerifyAndClearExpectations(store_.get());
+
+  // Test when the user is changing the generated password, presaved credential
+  // is updated.
+  generated_password += ASCIIToUTF16("1");
+  EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(
+                           FormUsernamePasswordAre(form.username_value,
+                                                   generated_password),
+                           presaved_form))
+      .WillOnce(SaveArg<0>(&presaved_form));
+
+  manager()->UpdateGeneratedPasswordOnUserInput(
+      form.form_data.name, generation_element, generated_password);
+  Mock::VerifyAndClearExpectations(store_.get());
+
+  // Test when the user is changing the username, presaved credential is
+  // updated.
+  username += ASCIIToUTF16("1");
+  EXPECT_CALL(*store_,
+              UpdateLoginWithPrimaryKey(
+                  FormUsernamePasswordAre(username, generated_password),
+                  presaved_form));
+
+  manager()->UpdateGeneratedPasswordOnUserInput(form.form_data.name,
+                                                username_element, username);
+}
+
+TEST_F(PasswordManagerTest, SavingGeneratedPasswordOnIOS) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  TurnOnNewParsingForSaving(&scoped_feature_list, true);
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
+      .WillRepeatedly(Return(true));
+
+  PasswordForm form = MakeSimpleForm();
+  const base::string16 username = form.username_value;
+  base::string16 generated_password = form.password_value + ASCIIToUTF16("1");
+  const base::string16 generation_element = form.password_element;
+
+  // A form is found by PasswordManager.
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  manager()->OnPasswordFormsParsed(&driver_, {form});
+
+  // The user is generating the password.
+  EXPECT_CALL(*store_, AddLogin(_));
+  generated_password += ASCIIToUTF16("1");
+  manager()->PresaveGeneratedPassword(&driver_, form.form_data,
+                                      generated_password, generation_element);
+
+  EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, _));
+  // Test when the user is changing the generated password.
+  manager()->UpdateGeneratedPasswordOnUserInput(
+      form.form_data.name, generation_element, generated_password);
+
+  // The user is submitting the form.
+  form.form_data.fields[0].value = username;
+  form.form_data.fields[1].value = generated_password;
+  OnPasswordFormSubmitted(form);
+
+  // Test that generated passwords are stored without asking the user.
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
+  EXPECT_CALL(*store_,
+              UpdateLoginWithPrimaryKey(
+                  FormUsernamePasswordAre(username, generated_password), _));
+  EXPECT_CALL(*store_, IsAbleToSavePasswords()).WillRepeatedly(Return(true));
+  EXPECT_CALL(client_, AutomaticPasswordSaveIndicator());
+
+  // Now the password manager waits for the navigation to complete.
+  manager()->OnPasswordFormsRendered(&driver_, {}, true);
+}
+
+TEST_F(PasswordManagerTest, PasswordNoLongerGeneratedOnIOS) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  TurnOnNewParsingForSaving(&scoped_feature_list, true);
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
+      .WillRepeatedly(Return(true));
+
+  PasswordForm form = MakeSimpleForm();
+  const base::string16 generated_password = form.password_value;
+  const base::string16 generation_element = form.password_element;
+
+  // A form is found by PasswordManager.
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  manager()->OnPasswordFormsParsed(&driver_, {form});
+
+  // The user is generating the password.
+  PasswordForm presaved_form;
+  EXPECT_CALL(*store_, AddLogin(_)).WillOnce(SaveArg<0>(&presaved_form));
+  manager()->PresaveGeneratedPassword(&driver_, form.form_data,
+                                      generated_password, generation_element);
+
+  // The user is removing password. Check that it is removed from the store.
+  EXPECT_CALL(*store_, RemoveLogin(presaved_form));
+  manager()->OnPasswordNoLongerGenerated(&driver_);
+}
+#endif
 
 TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
   // When the password store already contains credentials for a given form, new
