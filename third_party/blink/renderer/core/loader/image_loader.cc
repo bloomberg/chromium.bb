@@ -102,13 +102,14 @@ bool CheckForOptimizedImagePolicy(const Document& document,
                                   ImageResourceContent* new_image) {
   if (!new_image)
     return false;
+  bool is_legacy_format_or_unoptimized_image = false;
   // Render the image as a placeholder image if the document does not have the
   // 'legacy-image-formats' feature enabled, and the image is not one of the
   // allowed formats.
   if (!new_image->IsAcceptableContentType()) {
     // If the image violates the 'legacy-image-formats' policy, record violation
     // Blink.UseCounter.FeaturePolicy.PotentialVioation. Note that violation
-    // report is up to once per page load.
+    // report is up to once per page load).
     document.CountPotentialFeaturePolicyViolation(
         mojom::FeaturePolicyFeature::kLegacyImageFormats);
     // Check if 'legacy-image-formats' policy is disallowed by feature policy.
@@ -116,19 +117,27 @@ bool CheckForOptimizedImagePolicy(const Document& document,
         !document.IsFeatureEnabled(
             mojom::FeaturePolicyFeature::kLegacyImageFormats,
             ReportOptions::kReportOnFailure)) {
-      return true;
+      is_legacy_format_or_unoptimized_image = true;
     }
   }
-
-  // Render the image as a placeholder image if the image is not sufficiently
-  // well-compressed, according to the unoptimized image feature policies on
-  // |document|.
-  if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-      !new_image->IsAcceptableCompressionRatio(document)) {
-    return true;
+  // Render the image as a placeholder image if the document does not have the
+  // 'unoptimized-images' feature enabled and the image is not
+  // sufficiently-well-compressed.
+  if (!new_image->IsAcceptableCompressionRatio()) {
+    // If the image violates the 'unoptimized-images' policy, record violation
+    // Blink.UseCounter.FeaturePolicy.PotentialVioation. Note that violation
+    // report is up to once per page load).
+    document.CountPotentialFeaturePolicyViolation(
+        mojom::FeaturePolicyFeature::kUnoptimizedImages);
+    // Check if 'unoptimized-images' policy is disallowed by feature policy.
+    if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
+        !document.IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kUnoptimizedImages,
+            ReportOptions::kReportOnFailure)) {
+      is_legacy_format_or_unoptimized_image = true;
+    }
   }
-
-  return false;
+  return is_legacy_format_or_unoptimized_image;
 }
 
 }  // namespace

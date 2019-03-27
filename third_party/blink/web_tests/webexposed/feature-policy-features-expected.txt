@@ -35,7 +35,7 @@ speaker
 sync-script
 sync-xhr
 top-navigation
-unoptimized-lossy-images
+unoptimized-images
 unsized-media
 usb
 vertical-scroll
