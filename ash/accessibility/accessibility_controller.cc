@@ -991,12 +991,26 @@ void AccessibilityController::UpdateAutoclickMovementThresholdFromPref() {
 }
 
 void AccessibilityController::UpdateAutoclickMenuPositionFromPref() {
-  DCHECK(active_user_prefs_);
-  mojom::AutoclickMenuPosition menu_position =
-      static_cast<mojom::AutoclickMenuPosition>(active_user_prefs_->GetInteger(
-          prefs::kAccessibilityAutoclickMenuPosition));
+  Shell::Get()->autoclick_controller()->SetMenuPosition(
+      GetAutoclickMenuPosition());
+}
 
-  Shell::Get()->autoclick_controller()->SetMenuPosition(menu_position);
+void AccessibilityController::SetAutoclickMenuPosition(
+    mojom::AutoclickMenuPosition position) {
+  if (!active_user_prefs_)
+    return;
+  active_user_prefs_->SetInteger(prefs::kAccessibilityAutoclickMenuPosition,
+                                 static_cast<int>(position));
+  active_user_prefs_->CommitPendingWrite();
+  Shell::Get()->autoclick_controller()->SetMenuPosition(position);
+}
+
+mojom::AutoclickMenuPosition
+AccessibilityController::GetAutoclickMenuPosition() {
+  DCHECK(active_user_prefs_);
+  return static_cast<mojom::AutoclickMenuPosition>(
+      active_user_prefs_->GetInteger(
+          prefs::kAccessibilityAutoclickMenuPosition));
 }
 
 void AccessibilityController::UpdateCaretHighlightFromPref() {
