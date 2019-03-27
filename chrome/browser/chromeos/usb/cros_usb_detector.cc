@@ -289,7 +289,8 @@ bool CrosUsbDetector::IsDeviceSharable(
   if (device::UsbDeviceFilterMatches(*adb_device_filter_, device_info)) {
     return true;
   }
-  return !device::UsbDeviceFilterMatchesAny(guest_os_classes_blocked_,
+  return base::FeatureList::IsEnabled(features::kCrostiniUsbAllowUnsupported) &&
+         !device::UsbDeviceFilterMatchesAny(guest_os_classes_blocked_,
                                             device_info);
 }
 

@@ -129,8 +129,10 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::features::kCrostiniUsbSupport);
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::features::kCrostiniUsbSupport,
+         chromeos::features::kCrostiniUsbAllowUnsupported},
+        {});
     profile_manager()->SetLoggedIn(true);
     chromeos::ProfileHelper::Get()->SetActiveUserIdForTesting(kProfileName);
     TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
