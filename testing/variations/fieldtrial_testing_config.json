@@ -2933,10 +2933,10 @@
             ],
             "experiments": [
                 {
-                    "name": "AppsEmailThenNTPLaunched-002",
+                    "name": "AppsEmailBackgroundUS-005",
                     "params": {
-                        "new-user-modules": "nux-google-apps,nux-email,nux-set-as-default,signin-view",
-                        "onboarding-group": "AppsEmailThenNTPLaunchedSynthetic-002",
+                        "new-user-modules": "nux-google-apps,nux-email,nux-ntp-background,nux-set-as-default,signin-view",
+                        "onboarding-group": "AppsEmailBackgroundUSSynthetic-005",
                         "returning-user-modules": "nux-set-as-default",
                         "show-email-interstitial": "false"
                     },
