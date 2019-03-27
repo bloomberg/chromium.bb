@@ -14,10 +14,12 @@
 #include <string>
 #include <vector>
 
+#include "third_party/abseil/src/absl/strings/numbers.h"
 #include "third_party/abseil/src/absl/strings/string_view.h"
 #include "third_party/abseil/src/absl/types/optional.h"
 
-CddlType::CddlType() : map(nullptr) {}
+CddlType::CddlType()
+    : map(nullptr), op(CddlType::Op::kNone), constraint_type(nullptr) {}
 CddlType::~CddlType() {
   switch (which) {
     case CddlType::Which::kDirectChoice:
@@ -105,6 +107,10 @@ void CppType::InitDiscriminatedUnion() {
   new (&discriminated_union) DiscriminatedUnion();
 }
 
+void CppType::InitBytes() {
+  which = Which::kBytes;
+}
+
 void InitString(std::string* s, absl::string_view value) {
   new (s) std::string(value);
 }
@@ -180,8 +186,112 @@ CddlType* AnalyzeType2(CddlSymbolTable* table, const AstNode& type2) {
   return nullptr;
 }
 
+CddlType::Op AnalyzeRangeop(const AstNode& rangeop) {
+  if (rangeop.text == "..") {
+    return CddlType::Op::kInclusiveRange;
+  } else if (rangeop.text == "...") {
+    return CddlType::Op::kExclusiveRange;
+  } else {
+    dprintf(STDERR_FILENO, "Unsupported '%s' range operator.\n",
+            rangeop.text.c_str());
+    return CddlType::Op::kNone;
+  }
+}
+
+CddlType::Op AnalyzeCtlop(const AstNode& ctlop) {
+  if (!ctlop.children) {
+    dprintf(STDERR_FILENO, "Missing id for control operator '%s'.\n",
+            ctlop.text.c_str());
+    return CddlType::Op::kNone;
+  }
+  const std::string& id = ctlop.children->text;
+  if (id == "size") {
+    return CddlType::Op::kSize;
+  } else if (id == "bits") {
+    return CddlType::Op::kBits;
+  } else if (id == "regexp") {
+    return CddlType::Op::kRegexp;
+  } else if (id == "cbor") {
+    return CddlType::Op::kCbor;
+  } else if (id == "cborseq") {
+    return CddlType::Op::kCborseq;
+  } else if (id == "within") {
+    return CddlType::Op::kWithin;
+  } else if (id == "and") {
+    return CddlType::Op::kAnd;
+  } else if (id == "lt") {
+    return CddlType::Op::kLess;
+  } else if (id == "le") {
+    return CddlType::Op::kLessOrEqual;
+  } else if (id == "gt") {
+    return CddlType::Op::kGreater;
+  } else if (id == "ge") {
+    return CddlType::Op::kGreaterOrEqual;
+  } else if (id == "eq") {
+    return CddlType::Op::kEqual;
+  } else if (id == "ne") {
+    return CddlType::Op::kNotEqual;
+  } else if (id == "default") {
+    return CddlType::Op::kDefault;
+  } else {
+    dprintf(STDERR_FILENO, "Unsupported '%s' control operator.\n",
+            ctlop.text.c_str());
+    return CddlType::Op::kNone;
+  }
+}
+
+// Produces CddlType by analyzing AST parsed from type1 rule
+// ABNF rule: type1 = type2 [S (rangeop / ctlop) S type2]
 CddlType* AnalyzeType1(CddlSymbolTable* table, const AstNode& type1) {
-  return AnalyzeType2(table, *type1.children);
+  if (!type1.children) {
+    dprintf(STDERR_FILENO, "Missing type2 in type1 '%s'.\n",
+            type1.text.c_str());
+    return nullptr;
+  }
+  const AstNode& target_type = *type1.children;
+  CddlType* analyzed_type = AnalyzeType2(table, target_type);
+  if (!analyzed_type) {
+    dprintf(STDERR_FILENO, "Invalid type2 '%s' in type1 '%s'.\n",
+            target_type.text.c_str(), type1.text.c_str());
+    return nullptr;
+  }
+  if (!target_type.sibling) {
+    // No optional range or control operator, return type as-is
+    return analyzed_type;
+  }
+  const AstNode& operator_type = *target_type.sibling;
+  CddlType::Op op;
+  if (operator_type.type == AstNode::Type::kRangeop) {
+    op = AnalyzeRangeop(operator_type);
+  } else if (operator_type.type == AstNode::Type::kCtlop) {
+    op = AnalyzeCtlop(operator_type);
+  } else {
+    op = CddlType::Op::kNone;
+  }
+  if (op == CddlType::Op::kNone) {
+    dprintf(STDERR_FILENO,
+            "Unsupported or missing operator '%s' in type1 '%s'.\n",
+            operator_type.text.c_str(), type1.text.c_str());
+    return nullptr;
+  }
+  if (!operator_type.sibling) {
+    dprintf(STDERR_FILENO,
+            "Missing controller type for operator '%s' in type1 '%s'.\n",
+            operator_type.text.c_str(), type1.text.c_str());
+    return nullptr;
+  }
+  const AstNode& controller_type = *operator_type.sibling;
+  CddlType* constraint_type = AnalyzeType2(table, controller_type);
+  if (!constraint_type) {
+    dprintf(STDERR_FILENO,
+            "Invalid controller type '%s' for operator '%s' in type1 '%s'.\n",
+            controller_type.text.c_str(), operator_type.text.c_str(),
+            type1.text.c_str());
+    return nullptr;
+  }
+  analyzed_type->op = op;
+  analyzed_type->constraint_type = constraint_type;
+  return analyzed_type;
 }
 
 CddlType* AnalyzeType(CddlSymbolTable* table, const AstNode& type) {
@@ -268,7 +378,6 @@ bool AnalyzeGroupEntry(CddlSymbolTable* table,
       }
 
       int upper_bound = CddlGroup::Entry::kOccurrenceMaxUnbounded;
-
       std::string second_half =
           index >= node->text.length() ? "" : node->text.substr(index + 1);
       if ((second_half.length() != 1 || second_half.at(0) != '0') &&
@@ -579,7 +688,14 @@ CppType* MakeCppType(CppSymbolTable* table,
         cpp_type->which = CppType::Which::kString;
       } else if (type.id == "bytes") {
         cpp_type = GetCppType(table, name);
-        cpp_type->which = CppType::Which::kBytes;
+        cpp_type->InitBytes();
+        if (type.op == CddlType::Op::kSize) {
+          size_t size = 0;
+          if (!absl::SimpleAtoi(type.constraint_type->value, &size)) {
+            return nullptr;
+          }
+          cpp_type->bytes_type.fixed_size = size;
+        }
       } else {
         cpp_type = GetCppType(table, type.id);
       }

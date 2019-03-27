@@ -30,6 +30,25 @@ struct CddlType {
     kGroupnameChoice,
     kTaggedType,
   };
+  enum class Op {
+    kNone,            // not specified
+    kInclusiveRange,  // ..
+    kExclusiveRange,  // ...
+    kSize,            // .size
+    kBits,            // .bits
+    kRegexp,          // .regexp
+    kCbor,            // .cbor
+    kCborseq,         // .cborseq
+    kWithin,          // .within
+    kAnd,             // .and
+    kLess,            // .lt
+    kLessOrEqual,     // .lt
+    kGreater,         // .gt
+    kGreaterOrEqual,  // .ge
+    kEqual,           // .eq
+    kNotEqual,        // .ne
+    kDefault,         // .default
+  };
   struct TaggedType {
     uint64_t tag_value;
     CddlType* type;
@@ -60,6 +79,9 @@ struct CddlType {
     CddlGroup* group_choice;
     TaggedType tagged_type;
   };
+
+  Op op;
+  CddlType* constraint_type;
 };
 
 // Represets a group defined in CDDL.
@@ -206,6 +228,10 @@ struct CppType {
     std::vector<CppType*> members;
   };
 
+  struct Bytes {
+    absl::optional<size_t> fixed_size;
+  };
+
   struct TaggedType {
     uint64_t tag;
     CppType* real_type;
@@ -218,6 +244,7 @@ struct CppType {
   void InitEnum();
   void InitStruct();
   void InitDiscriminatedUnion();
+  void InitBytes();
 
   Which which = Which::kUninitialized;
   std::string name;
@@ -227,6 +254,7 @@ struct CppType {
     Struct struct_type;
     CppType* optional_type;
     DiscriminatedUnion discriminated_union;
+    Bytes bytes_type;
     TaggedType tagged_type;
   };
 };
