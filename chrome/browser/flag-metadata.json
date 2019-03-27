@@ -1577,8 +1577,8 @@
   },
   {
     "name": "enable-resource-load-scheduler",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "toyoshim" ],
+    "expiry_milestone": 78
   },
   {
     "name": "enable-resource-loading-hints",
