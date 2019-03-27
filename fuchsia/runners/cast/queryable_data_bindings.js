@@ -9,8 +9,9 @@ if (!cast.__platform__)
   cast.__platform__ = new Object;
 
 cast.__platform__.__queryPlatformValueStore__ = new class {
-  initialize(values) {
-    this.values_ = values;
+  mergeValues(values) {
+    for (var key in values)
+      this.values_[key] = values[key];
   }
 
   getValue(key) {

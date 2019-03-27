@@ -17,8 +17,8 @@
 #include "fuchsia/base/agent_impl.h"
 #include "fuchsia/base/fake_component_context.h"
 #include "fuchsia/base/fit_adapter.h"
+#include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/result_receiver.h"
-#include "fuchsia/engine/test/test_common.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "fuchsia/runners/cast/cast_runner.h"
 #include "fuchsia/runners/cast/fake_application_config_manager.h"
@@ -342,7 +342,9 @@ TEST_F(CastRunnerIntegrationTest, CastChannel) {
         cr_fuchsia::CallbackToFitFunction(message.GetReceiveCallback()));
     run_loop.Run();
 
-    EXPECT_EQ(cr_fuchsia::StringFromMemBufferOrDie(message->data), expected);
+    std::string data;
+    ASSERT_TRUE(cr_fuchsia::StringFromMemBuffer(message->data, &data));
+    EXPECT_EQ(data, expected);
   }
 
   // Shutdown the component and wait for the teardown of its state.

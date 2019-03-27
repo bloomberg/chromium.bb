@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigation_entry.h"
@@ -185,7 +186,8 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
                      fidl::InterfaceRequest<chromium::web::Frame> frame_request)
     : web_contents_(std::move(web_contents)),
       context_(context),
-      binding_(this, std::move(frame_request)) {
+      binding_(this, std::move(frame_request)),
+      weak_factory_(this) {
   web_contents_->SetDelegate(this);
   Observe(web_contents_.get());
   binding_.set_error_handler([this](zx_status_t status) {
@@ -477,6 +479,17 @@ void FrameImpl::TearDownView() {
   }
 }
 
+void FrameImpl::OnNavigationEntryChanged(content::NavigationEntry* entry) {
+  chromium::web::NavigationEntry entry_converted =
+      ConvertContentNavigationEntry(entry);
+  pending_navigation_event_is_dirty_ |= ComputeNavigationEvent(
+      cached_navigation_state_, entry_converted, &pending_navigation_event_);
+  cached_navigation_state_ = std::move(entry_converted);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FrameImpl::MaybeSendNavigationEvent,
+                                weak_factory_.GetWeakPtr()));
+}
+
 void FrameImpl::MaybeSendNavigationEvent() {
   if (!navigation_observer_)
     return;
@@ -496,6 +509,8 @@ void FrameImpl::MaybeSendNavigationEvent() {
         waiting_for_navigation_event_ack_ = false;
         MaybeSendNavigationEvent();
       });
+
+  pending_navigation_event_ = {};
 }
 
 void FrameImpl::LoadUrl(std::string url, chromium::web::LoadUrlParams params) {
@@ -575,15 +590,7 @@ void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
     return;
   }
 
-  chromium::web::NavigationEntry current_navigation_state =
-      ConvertContentNavigationEntry(
-          web_contents_->GetController().GetVisibleEntry());
-  pending_navigation_event_is_dirty_ |=
-      ComputeNavigationEvent(cached_navigation_state_, current_navigation_state,
-                             &pending_navigation_event_);
-  cached_navigation_state_ = std::move(current_navigation_state);
-
-  MaybeSendNavigationEvent();
+  OnNavigationEntryChanged(web_contents_->GetController().GetVisibleEntry());
 }
 
 void FrameImpl::ReadyToCommitNavigation(
@@ -610,6 +617,10 @@ void FrameImpl::ReadyToCommitNavigation(
           mojo::WrapReadOnlySharedMemoryRegion(script.script().Duplicate()));
     }
   }
+}
+
+void FrameImpl::TitleWasSet(content::NavigationEntry* entry) {
+  OnNavigationEntryChanged(entry);
 }
 
 bool FrameImpl::DidAddMessageToConsole(content::WebContents* source,
