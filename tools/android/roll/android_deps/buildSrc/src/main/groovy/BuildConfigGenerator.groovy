@@ -155,7 +155,11 @@ class BuildConfigGenerator extends DefaultTask {
                 throw new IllegalStateException("Dependency type should be JAR or AAR")
             }
 
-            if (!dependency.visible) sb.append("  visibility = [ \":*\" ]\n")
+            if (!dependency.visible) {
+              sb.append("  # To remove visibility constraint, add this dependency to\n")
+              sb.append("  # //tools/android/roll/android_deps/build.gradle.\n")
+              sb.append("  visibility = [ \":*\" ]\n")
+            }
             if (dependency.testOnly) sb.append("  testonly = true\n")
             if (!depsStr.empty) sb.append("  deps = [${depsStr}]\n")
             addSpecialTreatment(sb, dependency.id)
