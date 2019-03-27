@@ -860,10 +860,10 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
 bool ServiceWorkerProviderHost::IsControllerDecided() const {
   DCHECK(IsProviderForClient());
 
-  if (is_response_committed())
+  if (is_execution_ready())
     return true;
 
-  // TODO(falken): This function just becomes |is_response_committed()|
+  // TODO(falken): This function just becomes |is_execution_ready()|
   // when NetworkService is enabled, so remove/simplify it when
   // non-NetworkService code is removed.
 
@@ -1203,17 +1203,6 @@ void ServiceWorkerProviderHost::OnProviderCreated() {
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
 
   TransitionToClientPhase(ClientPhase::kResponseCommitted);
-
-  // Now that there is a connection with the renderer-side provider, initialize
-  // the handle for ServiceWorkerContainer#controller, and send the controller
-  // info to the renderer if needed.
-  if (!controller_)
-    return;
-
-  // The controller is already sent in navigation commit, but we still need this
-  // for setting the use counter correctly.
-  // TODO(kinuko): Stop doing this.
-  SendSetControllerServiceWorker(false /* notify_controllerchange */);
 }
 
 void ServiceWorkerProviderHost::OnExecutionReady() {
@@ -1226,6 +1215,15 @@ void ServiceWorkerProviderHost::OnExecutionReady() {
     mojo::ReportBadMessage("SWPH_OER_ALREADY_READY");
     return;
   }
+
+  // The controller was sent on navigation commit but we must send it again here
+  // because 1) the controller might have changed since navigation commit due to
+  // skipWaiting(), and 2) the UseCounter might have changed since navigation
+  // commit, in such cases the updated information was prevented being sent due
+  // to false IsControllerDecided().
+  // TODO(leonhsl): Create some layout tests covering the above case 1), in
+  // which case we may also need to set |notify_controllerchange| correctly.
+  SendSetControllerServiceWorker(false /* notify_controllerchange */);
 
   SetExecutionReady();
 }
