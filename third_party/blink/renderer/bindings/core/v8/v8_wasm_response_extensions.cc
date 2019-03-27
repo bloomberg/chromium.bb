@@ -104,12 +104,31 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
     return AbortCompilation();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(consumer_);
     visitor->Trace(client_);
     visitor->Trace(script_state_);
     FetchDataLoader::Trace(visitor);
     BytesConsumer::Client::Trace(visitor);
+  }
+
+  void AbortFromClient() {
+    auto* exception = DOMException::Create(DOMExceptionCode::kAbortError);
+    ScriptState::Scope scope(script_state_);
+
+    // Calling ToV8 in a ScriptForbiddenScope will trigger a CHECK and
+    // cause a crash. ToV8 just invokes a constructor for wrapper creation,
+    // which is safe (no author script can be run). Adding AllowUserAgentScript
+    // directly inside createWrapper could cause a perf impact (calling
+    // isMainThread() every time a wrapper is created is expensive). Ideally,
+    // resolveOrReject shouldn't be called inside a ScriptForbiddenScope.
+    {
+      ScriptForbiddenScope::AllowUserAgentScript allow_script;
+      v8::Local<v8::Value> v8_exception =
+          ToV8(exception, script_state_->GetContext()->Global(),
+               script_state_->GetIsolate());
+      streaming_->Abort(v8_exception);
+    }
   }
 
  private:
@@ -144,17 +163,19 @@ class WasmDataLoaderClient final
   USING_GARBAGE_COLLECTED_MIXIN(WasmDataLoaderClient);
 
  public:
-  WasmDataLoaderClient() = default;
+  explicit WasmDataLoaderClient(FetchDataLoaderForWasmStreaming* loader)
+      : loader_(loader) {}
   void DidFetchDataLoadedCustomFormat() override {}
   void DidFetchDataLoadFailed() override { NOTREACHED(); }
-  void Abort() override {
-    // TODO(ricea): This should probably cause the promise owned by
-    // v8::WasmModuleObjectBuilderStreaming to reject with an AbortError
-    // DOMException. As it is, the cancellation will cause it to reject with a
-    // TypeError later.
+  void Abort() override { loader_->AbortFromClient(); }
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(loader_);
+    FetchDataLoader::Client::Trace(visitor);
   }
 
  private:
+  Member<FetchDataLoaderForWasmStreaming> loader_;
   DISALLOW_COPY_AND_ASSIGN(WasmDataLoaderClient);
 };
 
@@ -256,7 +277,7 @@ class WasmStreamingClient : public v8::WasmStreaming::Client {
       return;
 
     Platform::Current()->CacheMetadata(
-        blink::mojom::CodeCacheType::kWebAssembly, response_url_,
+        mojom::CodeCacheType::kWebAssembly, response_url_,
         response_time_, serialized_data.data(), serialized_data.size());
   }
 
@@ -362,7 +383,8 @@ void StreamFromResponseCallback(
       MakeGarbageCollected<FetchDataLoaderForWasmStreaming>(streaming,
                                                             script_state);
   response->BodyBuffer()->StartLoading(
-      loader, MakeGarbageCollected<WasmDataLoaderClient>(), exception_state);
+      loader, MakeGarbageCollected<WasmDataLoaderClient>(loader),
+      exception_state);
 }
 
 }  // namespace
