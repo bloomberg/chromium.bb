@@ -1085,12 +1085,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFSpellCheckTest) {
 // Tests that after disabling spellchecking, spelling in new out-of-process
 // subframes is not checked. See crbug.com/789273 for details.
 // https://crbug.com/944428
-#if defined(OS_MACOSX)
-#define MAYBE_OOPIFDisabledSpellCheckTest DISABLED_OOPIFDisabledSpellCheckTest
-#else
-#define MAYBE_OOPIFDisabledSpellCheckTest OOPIFDisabledSpellCheckTest
-#endif
-IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, MAYBE_OOPIFDisabledSpellCheckTest) {
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFDisabledSpellCheckTest) {
   TestBrowserClientForSpellCheck browser_client;
   content::ContentBrowserClient* old_browser_client =
       content::SetBrowserClientForTesting(&browser_client);
@@ -1120,19 +1115,9 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, MAYBE_OOPIFDisabledSpellCheckTe
       browser_client.GetSpellCheckHostForProcess(
           cross_site_subframe->GetProcess());
 
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  // With browser spellchecker, a SpellCheckHost can still be bound via
-  // SpellCheckProvider::FocusedNodeChanged(). However, no spellcheck request
-  // should be made.
-  EXPECT_TRUE(spell_check_host);
-  spell_check_host->WaitUntilTimeout();
-  EXPECT_FALSE(spell_check_host->HasReceivedText());
-#else
-  // Without browser spellchecker, the renderer makes no
-  // SpellCheckHostRequest at all, in which case no SpellCheckHost is bound,
-  // no spellchecking will be done, and the test succeeds.
+  // The renderer makes no SpellCheckHostRequest at all, in which case no
+  // SpellCheckHost is bound and no spellchecking will be done.
   EXPECT_FALSE(spell_check_host);
-#endif
 
   content::SetBrowserClientForTesting(old_browser_client);
   prefs->SetBoolean(spellcheck::prefs::kSpellCheckEnable, true);
