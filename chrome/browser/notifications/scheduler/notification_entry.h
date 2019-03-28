@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/browser/notifications/scheduler/notification_data.h"
+#include "chrome/browser/notifications/scheduler/notification_scheduler_types.h"
 #include "chrome/browser/notifications/scheduler/schedule_params.h"
 
 namespace notifications {
@@ -15,8 +16,11 @@ namespace notifications {
 // Represents the in-memory counterpart of scheduled notification database
 // record.
 struct NotificationEntry {
-  explicit NotificationEntry(const std::string& guid);
+  NotificationEntry(SchedulerClientType type, const std::string& guid);
   ~NotificationEntry();
+
+  // The type of the notification.
+  SchedulerClientType type;
 
   // The unique id of the notification database entry.
   std::string guid;
