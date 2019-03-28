@@ -431,7 +431,6 @@ android_library("chrome_java") {
     deps += [
       ":chrome_vr_java_resources",
       "//device/vr:java",
-      "//third_party/gvr-android-keyboard:kb_java",
     ]
   }
   srcjar_deps += [ ":chrome_vr_android_java_enums_srcjar" ]
