@@ -870,8 +870,8 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
   InstallNewDocument(Url(), initiator_origin, owner_document,
                      GetFrameLoader().ShouldReuseDefaultView(
                          Url(), content_security_policy_.Get())
-                         ? WebGlobalObjectReusePolicy::kUseExisting
-                         : WebGlobalObjectReusePolicy::kCreateNew,
+                         ? GlobalObjectReusePolicy::kUseExisting
+                         : GlobalObjectReusePolicy::kCreateNew,
                      mime_type, encoding, InstallNewDocumentReason::kNavigation,
                      parsing_policy, overriding_url);
   parser_->SetDocumentWasLoadedAsPartOfNavigation();
@@ -1300,7 +1300,7 @@ void DocumentLoader::WillCommitNavigation() {
 }
 
 void DocumentLoader::DidCommitNavigation(
-    WebGlobalObjectReusePolicy global_object_reuse_policy) {
+    GlobalObjectReusePolicy global_object_reuse_policy) {
   if (GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
     return;
 
@@ -1400,7 +1400,7 @@ void DocumentLoader::InstallNewDocument(
     const KURL& url,
     const scoped_refptr<const SecurityOrigin> initiator_origin,
     Document* owner_document,
-    WebGlobalObjectReusePolicy global_object_reuse_policy,
+    GlobalObjectReusePolicy global_object_reuse_policy,
     const AtomicString& mime_type,
     const AtomicString& encoding,
     InstallNewDocumentReason reason,
@@ -1426,7 +1426,7 @@ void DocumentLoader::InstallNewDocument(
   // commits. To make that happen, we "securely transition" the existing
   // LocalDOMWindow to the Document that results from the network load. See also
   // Document::IsSecureTransitionTo.
-  if (global_object_reuse_policy != WebGlobalObjectReusePolicy::kUseExisting)
+  if (global_object_reuse_policy != GlobalObjectReusePolicy::kUseExisting)
     frame_->SetDOMWindow(LocalDOMWindow::Create(*frame_));
 
   if (reason == InstallNewDocumentReason::kNavigation)
@@ -1570,7 +1570,7 @@ const AtomicString& DocumentLoader::MimeType() const {
 void DocumentLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
     const KURL& url,
     Document* owner_document,
-    WebGlobalObjectReusePolicy global_object_reuse_policy,
+    GlobalObjectReusePolicy global_object_reuse_policy,
     const String& source) {
   InstallNewDocument(url, nullptr, owner_document, global_object_reuse_policy,
                      MimeType(), response_.TextEncodingName(),

@@ -443,7 +443,7 @@ void LocalFrameClientImpl::DispatchDidChangeIcons(IconType type) {
 void LocalFrameClientImpl::DispatchDidCommitLoad(
     HistoryItem* item,
     WebHistoryCommitType commit_type,
-    WebGlobalObjectReusePolicy global_object_reuse_policy) {
+    GlobalObjectReusePolicy global_object_reuse_policy) {
   if (!web_frame_->Parent()) {
     web_frame_->ViewImpl()->DidCommitLoad(commit_type == kWebStandardCommit,
                                           false);
@@ -452,8 +452,7 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
   if (web_frame_->Client()) {
     mojom::blink::DocumentInterfaceBrokerRequest
         document_interface_broker_request;
-    if (global_object_reuse_policy !=
-        WebGlobalObjectReusePolicy::kUseExisting) {
+    if (global_object_reuse_policy != GlobalObjectReusePolicy::kUseExisting) {
       document_interface_broker_request =
           mojo::MakeRequest(&document_interface_broker_);
     }

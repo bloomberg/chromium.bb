@@ -74,6 +74,8 @@
 
 namespace blink {
 
+enum class GlobalObjectReusePolicy;
+
 class CORE_EXPORT EmptyChromeClient : public ChromeClient {
  public:
   static EmptyChromeClient* Create() {
@@ -271,7 +273,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void DispatchDidChangeIcons(IconType) override {}
   void DispatchDidCommitLoad(HistoryItem*,
                              WebHistoryCommitType,
-                             WebGlobalObjectReusePolicy) override {}
+                             GlobalObjectReusePolicy) override {}
   void DispatchDidFailProvisionalLoad(const ResourceError&,
                                       WebHistoryCommitType) override {}
   void DispatchDidFailLoad(const ResourceError&,
