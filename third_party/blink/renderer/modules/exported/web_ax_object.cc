@@ -1434,6 +1434,13 @@ bool WebAXObject::ScrollToGlobalPoint(const WebPoint& point) const {
   return private_->RequestScrollToGlobalPointAction(point);
 }
 
+WebString WebAXObject::ToString() const {
+  if (IsDetached())
+    return WebString();
+
+  return private_->ToString();
+}
+
 WebAXObject::WebAXObject(AXObject* object) : private_(object) {}
 
 WebAXObject& WebAXObject::operator=(AXObject* object) {
