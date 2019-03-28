@@ -11,9 +11,9 @@
 #include <string>
 #include <unordered_map>
 
+#include "base/hash/sha1.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "base/sha1.h"
 #include "gpu/command_buffer/common/gl2_types.h"
 #include "gpu/gpu_gles2_export.h"
 
