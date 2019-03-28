@@ -1188,24 +1188,25 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
                       self._driver.FindElement('tag name', 'body'))
 
   def testWindowPosition(self):
-    position = self._driver.GetWindowPosition()
-    self._driver.SetWindowPosition(position[0], position[1])
-    self.assertEquals(position, self._driver.GetWindowPosition())
+    rect = self._driver.GetWindowRect()
+    self._driver.SetWindowRect(None, None, rect[2], rect[3])
+    self.assertEquals(rect, self._driver.GetWindowRect())
 
     # Resize so the window isn't moved offscreen.
     # See https://bugs.chromium.org/p/chromedriver/issues/detail?id=297.
-    self._driver.SetWindowSize(300, 300)
+    self._driver.SetWindowRect(640, 400, None, None)
 
-    self._driver.SetWindowPosition(100, 200)
-    self.assertEquals([100, 200], self._driver.GetWindowPosition())
+    self._driver.SetWindowRect(None, None, 100, 200)
+    self.assertEquals([640, 400, 100, 200], self._driver.GetWindowRect())
 
   def testWindowSize(self):
-    size = self._driver.GetWindowSize()
-    self._driver.SetWindowSize(size[0], size[1])
-    self.assertEquals(size, self._driver.GetWindowSize())
+    rect = self._driver.GetWindowRect()
+    self._driver.SetWindowRect(rect[0], rect[1], None, None)
+    self.assertEquals(rect, self._driver.GetWindowRect())
 
-    self._driver.SetWindowSize(640, 400)
-    self.assertEquals([640, 400], self._driver.GetWindowSize())
+    self._driver.SetWindowRect(640, 400, None, None)
+    self.assertEquals([640, 400, rect[2], rect[3]],
+                      self._driver.GetWindowRect())
 
   def testWindowRect(self):
     old_window_rect = self._driver.GetWindowRect()
@@ -2664,7 +2665,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
                          'ld/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chr'
                          'ome/18.0.1025.166 Mobile Safari/535.19'
             })
-    driver.SetWindowSize(600, 400)
+    driver.SetWindowRect(600, 400, None, None)
     driver.Load(self._http_server.GetUrl() + '/userAgent')
     self.assertTrue(driver.capabilities['mobileEmulationEnabled'])
     self.assertEqual(360, driver.ExecuteScript('return window.screen.width'))
