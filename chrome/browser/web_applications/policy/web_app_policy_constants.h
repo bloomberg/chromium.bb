@@ -9,9 +9,10 @@ namespace web_app {
 
 // Keys and values for the WebAppInstallForceList preference.
 extern const char kUrlKey[];
-extern const char kLaunchContainerKey[];
-extern const char kLaunchContainerWindowValue[];
-extern const char kLaunchContainerTabValue[];
+extern const char kDefaultLaunchContainerKey[];
+extern const char kDefaultLaunchContainerWindowValue[];
+extern const char kDefaultLaunchContainerTabValue[];
+extern const char kCreateDesktopShorcutKey[];
 
 }  // namespace web_app
 
