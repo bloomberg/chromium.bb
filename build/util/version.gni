@@ -43,6 +43,7 @@ if (target_os == "mac") {
       "chrome_modern_version_code = \"@CHROME_MODERN_VERSION_CODE@\" " +
       "monochrome_version_code = \"@MONOCHROME_VERSION_CODE@\" " +
       "trichrome_version_code = \"@TRICHROME_VERSION_CODE@\" " +
+      "notouch_chrome_version_code = \"@NOTOUCH_CHROME_VERSION_CODE@\" " +
       "webview_version_code = \"@WEBVIEW_VERSION_CODE@\" "
 
   _script_arguments += [
@@ -91,8 +92,20 @@ if (target_os == "mac") {
                            "chrome_modern_version_code",
                            "monochrome_version_code",
                            "trichrome_version_code",
+                           "notouch_chrome_version_code",
                            "webview_version_code",
                          ])
 
   chrome_version_name = chrome_version_full
+
+  write_file("$root_out_dir/chrome_versions.txt",
+             [
+               "VersionName=$chrome_version_name",
+               "Chrome=$chrome_version_code",
+               "ChromeModern=$chrome_modern_version_code",
+               "Monochrome=$monochrome_version_code",
+               "TrichromeChrome=$trichrome_version_code",
+               "NoTouchChrome=$notouch_chrome_version_code",
+               "Webview=$webview_version_code",
+             ])
 }

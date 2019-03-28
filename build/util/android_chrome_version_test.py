@@ -54,6 +54,17 @@ class _VersionTest(unittest.TestCase):
 
     self.assertEqual(trichrome_version_code, '372000003')
 
+
+  def testGenerateVersionCodesAndroidNoTouch(self):
+    """Assert it gives correct values for standard/example inputs"""
+    output = GenerateVersionCodes(
+        self.EXAMPLE_VERSION_VALUES, arch='arm', is_next_build=False)
+
+    notouch_chrome_version_code = output['NOTOUCH_CHROME_VERSION_CODE']
+
+    self.assertEqual(notouch_chrome_version_code, '372000004')
+
+
   def testGenerateVersionCodesAndroidWebview(self):
     """Assert it gives correct values for standard/example inputs"""
     output = GenerateVersionCodes(
