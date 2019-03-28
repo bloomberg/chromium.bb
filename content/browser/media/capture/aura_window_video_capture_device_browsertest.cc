@@ -226,8 +226,14 @@ IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
 // Tests that the device starts, captures a frame, and then gracefully
 // errors-out because the target window is destroyed before the device is
 // stopped.
+#if defined(OS_LINUX)
+#define MAYBE_ErrorsOutWhenWindowIsDestroyed \
+  DISABLED_ErrorsOutWhenWindowIsDestroyed
+#else
+#define MAYBE_ErrorsOutWhenWindowIsDestroyed ErrorsOutWhenWindowIsDestroyed
+#endif
 IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
-                       ErrorsOutWhenWindowIsDestroyed) {
+                       MAYBE_ErrorsOutWhenWindowIsDestroyed) {
   // TODO(crbug.com/877172): CopyOutputRequests not allowed.
   if (features::IsSingleProcessMash())
     return;
@@ -251,8 +257,13 @@ IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
 // Tests that the device stops delivering frames while suspended. When resumed,
 // any content changes that occurred during the suspend should cause a new frame
 // to be delivered, to ensure the client is up-to-date.
+#if defined(OS_LINUX)
+#define MAYBE_SuspendsAndResumes DISABLED_SuspendsAndResumes
+#else
+#define MAYBE_SuspendsAndResumes SuspendsAndResumes
+#endif
 IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
-                       SuspendsAndResumes) {
+                       MAYBE_SuspendsAndResumes) {
   // TODO(crbug.com/877172): CopyOutputRequests not allowed.
   if (features::IsSingleProcessMash())
     return;
@@ -288,8 +299,14 @@ IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
 
 // Tests that the device delivers refresh frames when asked, while the source
 // content is not changing.
+#if defined(OS_LINUX)
+#define MAYBE_DeliversRefreshFramesUponRequest \
+  DISABLED_DeliversRefreshFramesUponRequest
+#else
+#define MAYBE_DeliversRefreshFramesUponRequest DeliversRefreshFramesUponRequest
+#endif
 IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
-                       DeliversRefreshFramesUponRequest) {
+                       MAYBE_DeliversRefreshFramesUponRequest) {
   // TODO(crbug.com/877172): CopyOutputRequests not allowed.
   if (features::IsSingleProcessMash())
     return;
