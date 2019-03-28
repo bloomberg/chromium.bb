@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -16,8 +17,11 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/separator.h"
 
 namespace {
+
+ProfileMenuViewBase* g_profile_bubble_ = nullptr;
 
 // Helpers --------------------------------------------------------------------
 
@@ -29,6 +33,22 @@ constexpr int kMinimumScrollableContentHeight = 40;
 
 // ProfileMenuViewBase ---------------------------------------------------------
 
+// static
+bool ProfileMenuViewBase::IsShowing() {
+  return g_profile_bubble_ != nullptr;
+}
+
+// static
+void ProfileMenuViewBase::Hide() {
+  if (g_profile_bubble_)
+    g_profile_bubble_->GetWidget()->Close();
+}
+
+// static
+ProfileMenuViewBase* ProfileMenuViewBase::GetBubbleForTesting() {
+  return g_profile_bubble_;
+}
+
 ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
                                          const gfx::Rect& anchor_rect,
                                          gfx::NativeView parent_window,
@@ -38,6 +58,8 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
       menu_width_(0),
       anchor_button_(anchor_button),
       close_bubble_helper_(this, browser) {
+  DCHECK(!g_profile_bubble_);
+  g_profile_bubble_ = this;
   // TODO(sajadm): Remove when fixing https://crbug.com/822075
   // The sign in webview will be clipped on the bottom corners without these
   // margins, see related bug <http://crbug.com/593203>.
@@ -55,7 +77,12 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
   AddAccelerator(ui::Accelerator(ui::VKEY_UP, ui::EF_NONE));
 }
 
-ProfileMenuViewBase::~ProfileMenuViewBase() = default;
+ProfileMenuViewBase::~ProfileMenuViewBase() {
+  // Items stored for menu generation are removed after menu is finalized, hence
+  // it's not expected to have while destroying the object.
+  DCHECK(g_profile_bubble_ != this);
+  DCHECK(menu_item_groups_.empty());
+}
 
 ax::mojom::Role ProfileMenuViewBase::GetAccessibleWindowRole() const {
   // Return |ax::mojom::Role::kDialog| which will make screen readers announce
@@ -63,10 +90,6 @@ ax::mojom::Role ProfileMenuViewBase::GetAccessibleWindowRole() const {
   // the title of the dialog, labels (if any), the focused View within the
   // dialog (if any)
   return ax::mojom::Role::kDialog;
-}
-
-void ProfileMenuViewBase::ShowMenu() {
-  views::BubbleDialogDelegateView::CreateBubble(this)->Show();
 }
 
 void ProfileMenuViewBase::OnNativeThemeChanged(
@@ -99,6 +122,13 @@ bool ProfileMenuViewBase::HandleContextMenu(
   return true;
 }
 
+void ProfileMenuViewBase::WindowClosing() {
+  DCHECK_EQ(g_profile_bubble_, this);
+  if (anchor_button())
+    anchor_button()->AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
+  g_profile_bubble_ = nullptr;
+}
+
 void ProfileMenuViewBase::StyledLabelLinkClicked(views::StyledLabel* label,
                                                  const gfx::Range& range,
                                                  int event_flags) {
@@ -120,12 +150,55 @@ int ProfileMenuViewBase::GetMaxHeight() const {
   return std::max(kMinimumScrollableContentHeight, available_space);
 }
 
-void ProfileMenuViewBase::SetContentsView(std::unique_ptr<views::View> view,
-                                          int width_override) {
+void ProfileMenuViewBase::ResetMenu() {
+  menu_item_groups_.clear();
+}
+
+void ProfileMenuViewBase::AddMenuItems(MenuItems& menu_items, bool new_group) {
+  if (new_group || menu_item_groups_.empty())
+    menu_item_groups_.emplace_back();
+
+  auto& last_group = menu_item_groups_.back();
+  for (auto& item : menu_items)
+    last_group.push_back(std::move(item));
+}
+
+void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
   RemoveAllChildViews(true);
-  if (width_override == -1)
-    width_override = menu_width_;
-  views::GridLayout* layout = CreateSingleColumnLayout(this, width_override);
+
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  int border_insets =
+      provider->GetDistanceMetric(DISTANCE_CONTENT_LIST_VERTICAL_SINGLE);
+
+  std::unique_ptr<views::View> main_view = std::make_unique<views::View>();
+  main_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(border_insets, 0),
+      border_insets));
+
+  for (size_t i = 0; i < menu_item_groups_.size(); i++) {
+    if (i == 0)
+      main_view->AddChildView(new views::Separator());
+
+    views::View* sub_view = new views::View();
+    sub_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kVertical, gfx::Insets(i ? border_insets : 0, 0)));
+
+    for (std::unique_ptr<views::View>& item : menu_item_groups_[i])
+      sub_view->AddChildView(std::move(item));
+
+    main_view->AddChildView(sub_view);
+  }
+
+  menu_item_groups_.clear();
+
+  // TODO(https://crbug.com/934689): Simplify. This part is only done to set
+  // the menu width.
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+  views::ColumnSet* columns = layout->AddColumnSet(0);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                     views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                     menu_width_, menu_width_);
 
   views::ScrollView* scroll_view = new views::ScrollView;
   scroll_view->set_hide_horizontal_scrollbar(true);
@@ -133,7 +206,7 @@ void ProfileMenuViewBase::SetContentsView(std::unique_ptr<views::View> view,
   // TODO(https://crbug.com/871762): it's a workaround for the crash.
   scroll_view->set_draw_overflow_indicator(false);
   scroll_view->ClipHeightTo(0, GetMaxHeight());
-  scroll_view->SetContents(std::move(view));
+  scroll_view->SetContents(std::move(main_view));
 
   layout->StartRow(1.0, 0);
   layout->AddView(scroll_view);
@@ -142,21 +215,4 @@ void ProfileMenuViewBase::SetContentsView(std::unique_ptr<views::View> view,
     // SizeToContents() will perform a layout, but only if the size changed.
     Layout();
   }
-}
-
-views::GridLayout* ProfileMenuViewBase::CreateSingleColumnLayout(
-    views::View* view,
-    int width) {
-  // TODO(https://crbug.com/934689):
-  // DEPRECATED: New user menu components should use views::BoxLayout instead.
-  // Creates a GridLayout with a single column. This ensures that all the child
-  // views added get auto-expanded to fill the full width of the bubble.
-  views::GridLayout* layout =
-      view->SetLayoutManager(std::make_unique<views::GridLayout>(view));
-
-  views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                     views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                     width, width);
-  return layout;
 }
