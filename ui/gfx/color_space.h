@@ -18,12 +18,24 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/color_space_export.h"
 
+// These forward declarations are used to give IPC code friend access to private
+// fields of gfx::ColorSpace for the purpose of serialization and
+// deserialization.
 namespace IPC {
 template <class P>
 struct ParamTraits;
 }  // namespace IPC
 
+namespace mojo {
+template <class T, class U>
+struct StructTraits;
+}  // namespace mojo
+
 namespace gfx {
+
+namespace mojom {
+class ColorSpaceDataView;
+}  // namespace mojom
 
 class ICCProfile;
 
@@ -283,6 +295,8 @@ class COLOR_SPACE_EXPORT ColorSpace {
   friend class ColorTransformInternal;
   friend class ColorSpaceWin;
   friend struct IPC::ParamTraits<ColorSpace>;
+  friend struct mojo::StructTraits<gfx::mojom::ColorSpaceDataView,
+                                   gfx::ColorSpace>;
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, GetColorSpace);
 };
 

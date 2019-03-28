@@ -6,6 +6,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/gfx/mojo/color_space_mojom_traits.h"
 
 namespace mojo {
 

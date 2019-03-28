@@ -13,6 +13,7 @@
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
+#include "ui/gfx/mojo/color_space_mojom_traits.h"
 
 namespace mojo {
 
