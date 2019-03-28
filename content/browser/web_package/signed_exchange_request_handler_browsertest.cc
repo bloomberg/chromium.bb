@@ -897,8 +897,6 @@ class SignedExchangeAcceptHeaderBrowserTest
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, Simple) {
   const GURL test_url = https_server_.GetURL("/sxg/test.html");
-  EXPECT_EQ(IsSignedExchangeEnabled(),
-            signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   NavigateAndWaitForTitle(test_url, test_url.spec());
   CheckNavigationAcceptHeader({test_url});
 }

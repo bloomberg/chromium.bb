@@ -2594,6 +2594,9 @@ const char kTabLifecyclesEnabled[] = "tab_lifecycles_enabled";
 const char kEnterpriseHardwarePlatformAPIEnabled[] =
     "enterprise_hardware_platform_api.enabled";
 
+// Boolean that specifies whether Signed HTTP Exchange (SXG) loading is enabled.
+const char kSignedHTTPExchangeEnabled[] = "web_package.signed_exchange.enabled";
+
 // Boolean that allows a page to show popups during its unloading.
 // TODO(https://crbug.com/937569): Remove this in Chrome 82.
 const char kAllowPopupsDuringPageUnload[] = "allow_popups_during_page_unload";

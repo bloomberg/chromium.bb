@@ -215,14 +215,6 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->headers.AddHeadersFromString(
       request_info->begin_params->headers);
 
-  std::string accept_value = network::kFrameAcceptHeader;
-  if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
-    DCHECK(!accept_value.empty());
-    accept_value.append(kAcceptHeaderSignedExchangeSuffix);
-  }
-
-  new_request->headers.SetHeader(network::kAcceptHeader, accept_value);
-
   new_request->resource_type = request_info->is_main_frame
                                    ? RESOURCE_TYPE_MAIN_FRAME
                                    : RESOURCE_TYPE_SUB_FRAME;
@@ -620,6 +612,13 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       network::mojom::URLLoaderFactoryPtrInfo factory_for_webui,
       net::URLRequestContextGetter* url_request_context_getter,
       std::string accept_langs) {
+    std::string accept_value = network::kFrameAcceptHeader;
+    if (signed_exchange_utils::IsSignedExchangeHandlingEnabled(
+            resource_context_)) {
+      accept_value.append(kAcceptHeaderSignedExchangeSuffix);
+    }
+    resource_request_->headers.SetHeader(network::kAcceptHeader, accept_value);
+
     // NetworkService cases only.
     // Requests to WebUI scheme won't get redirected to/from other schemes
     // or be intercepted, so we just let it go here.
@@ -673,7 +672,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
 
     // Set-up an interceptor for SignedExchange handling if it is enabled.
-    if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
+    if (signed_exchange_utils::IsSignedExchangeHandlingEnabled(
+            resource_context_)) {
       auto network_loader_factory = network_loader_factory_;
       if (!network_loader_factory) {
         DCHECK(

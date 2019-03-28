@@ -202,7 +202,6 @@ SignedExchangeHandler::SignedExchangeHandler(
       reporter_(reporter),
       frame_tree_node_id_getter_(frame_tree_node_id_getter),
       weak_factory_(this) {
-  DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeHandler::SignedExchangeHandler");
 

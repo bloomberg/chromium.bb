@@ -3511,6 +3511,12 @@
     "pref_mappings": [{ "pref": "settings.voice_interaction.hotword.enabled" }]
   },
 
+  "SignedHTTPExchangeEnabled": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "SignedHTTPExchangeEnabled": false },
+    "pref_mappings": [{ "pref": "web_package.signed_exchange.enabled" }]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

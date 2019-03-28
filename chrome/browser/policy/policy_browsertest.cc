@@ -201,6 +201,7 @@
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/network_service_test_helper.h"
+#include "content/public/test/signed_exchange_browser_test_helper.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -6782,5 +6783,99 @@ INSTANTIATE_TEST_SUITE_P(,
                                            BooleanPolicy::kFalse,
                                            BooleanPolicy::kTrue));
 #endif  // !defined(OS_ANDROID)
+
+class SignedExchangePolicyTest : public PolicyTest {
+ public:
+  SignedExchangePolicyTest() {}
+  ~SignedExchangePolicyTest() override {}
+
+  void SetUp() override {
+    embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+    embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
+        &SignedExchangePolicyTest::MonitorRequest, base::Unretained(this)));
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    sxg_test_helper_.SetUp();
+    PolicyTest::SetUp();
+  }
+
+  void TearDownOnMainThread() override {
+    PolicyTest::TearDownOnMainThread();
+    sxg_test_helper_.TearDownOnMainThread();
+  }
+
+ protected:
+  void SetSignedExchangePolicy(bool enabled) {
+    PolicyMap policies;
+    policies.Set(key::kSignedHTTPExchangeEnabled, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(enabled), nullptr);
+    UpdateProviderPolicy(policies);
+  }
+
+  void InstallUrlInterceptor(const GURL& url, const std::string& data_path) {
+    sxg_test_helper_.InstallUrlInterceptor(url, data_path);
+  }
+
+  bool HadSignedExchangeInAcceptHeader(const GURL& url) const {
+    const auto it = url_accept_header_map_.find(url);
+    if (it == url_accept_header_map_.end())
+      return false;
+    return it->second.find("application/signed-exchange") != std::string::npos;
+  }
+
+ private:
+  void MonitorRequest(const net::test_server::HttpRequest& request) {
+    const auto it = request.headers.find("Accept");
+    if (it == request.headers.end())
+      return;
+    url_accept_header_map_[request.base_url.Resolve(request.relative_url)] =
+        it->second;
+  }
+
+  content::SignedExchangeBrowserTestHelper sxg_test_helper_;
+  std::map<GURL, std::string> url_accept_header_map_;
+};
+
+IN_PROC_BROWSER_TEST_F(SignedExchangePolicyTest, SignedExchangeDisabled) {
+  SetSignedExchangePolicy(false);
+
+  content::DownloadTestObserverTerminal download_observer(
+      content::BrowserContext::GetDownloadManager(browser()->profile()), 1,
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_DENY);
+
+  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  download_observer.WaitForFinished();
+
+  // Check that the SXG file was not loaded as a page, but downloaded.
+  std::vector<download::DownloadItem*> downloads;
+  content::BrowserContext::GetDownloadManager(browser()->profile())
+      ->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+  EXPECT_EQ(downloads[0]->GetURL(), url);
+
+  ASSERT_FALSE(HadSignedExchangeInAcceptHeader(url));
+}
+
+IN_PROC_BROWSER_TEST_F(SignedExchangePolicyTest, SignedExchangeEnabled) {
+  SetSignedExchangePolicy(true);
+
+  InstallUrlInterceptor(GURL("https://test.example.org/test/"),
+                        "content/test/data/sxg/fallback.html");
+
+  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
+  base::string16 title = base::ASCIIToUTF16("Fallback URL response");
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), title);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Check that the SXG file was handled as a Signed Exchange, and the
+  // navigation was redirected to the SXG's fallback URL.
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+
+  ASSERT_TRUE(HadSignedExchangeInAcceptHeader(url));
+}
 
 }  // namespace policy

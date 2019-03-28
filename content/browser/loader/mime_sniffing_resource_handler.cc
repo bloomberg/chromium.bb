@@ -469,7 +469,9 @@ bool MimeSniffingResourceHandler::MaybeStartInterception() {
   if (!must_download) {
     if (blink::IsSupportedMimeType(mime_type))
       return true;
-    if (signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
+    if (signed_exchange_utils::IsSignedExchangeHandlingEnabled(
+            info->GetContext()) &&
+        signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
             request()->url(), response_->head)) {
       return true;
     }

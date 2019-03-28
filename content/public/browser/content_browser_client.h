@@ -551,6 +551,12 @@ class CONTENT_EXPORT ContentBrowserClient {
                                  int render_process_id,
                                  int render_frame_id);
 
+  // Allows the embedder to control whether Signed HTTP Exchanges (SXG) can be
+  // loaded. This is called on the IO thread.
+  // Relying on ResourceContext to access preferences on IO thread until we move
+  // the call sites out of the IO thread. See crbug.com/908955 for more context.
+  virtual bool AllowSignedExchange(ResourceContext* context);
+
   virtual bool IsDataSaverEnabled(BrowserContext* context);
 
   // Updates the given prefs for Service Worker and Shared Worker. The prefs

@@ -134,7 +134,6 @@ scoped_refptr<ResourceRequesterInfo>
 ResourceRequesterInfo::CreateForCertificateFetcherForSignedExchange(
     const GetContextsCallback& get_contexts_callback) {
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   return scoped_refptr<ResourceRequesterInfo>(new ResourceRequesterInfo(
       RequesterType::CERTIFICATE_FETCHER_FOR_SIGNED_EXCHANGE,
       ChildProcessHost::kInvalidUniqueID, nullptr /* appcache_service */,

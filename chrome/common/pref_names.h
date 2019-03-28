@@ -918,6 +918,8 @@ extern const char kTabLifecyclesEnabled[];
 
 extern const char kEnterpriseHardwarePlatformAPIEnabled[];
 
+extern const char kSignedHTTPExchangeEnabled[];
+
 extern const char kAllowPopupsDuringPageUnload[];
 
 #if defined(OS_ANDROID)
