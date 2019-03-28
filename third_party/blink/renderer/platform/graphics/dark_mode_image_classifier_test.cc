@@ -48,7 +48,6 @@ class DarkModeImageClassifierTest : public testing::Test {
                                     std::vector<float>* features) {
     SCOPED_TRACE(file_name);
     scoped_refptr<BitmapImage> image = LoadImage(file_name);
-    classifier_.SetRandomGeneratorForTesting();
     classifier_.ComputeImageFeaturesForTesting(*image.get(), features);
     return classifier_.ShouldApplyDarkModeFilterToImage(
         *image.get(), FloatRect(0, 0, image->width(), image->height()));
@@ -94,18 +93,18 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
                                            &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             DarkModeClassification::kApplyDarkModeFilter);
-  AssertFeaturesEqual(features, {0.0f, 0.1875f, 0.0f, 0.1f});
+  AssertFeaturesEqual(features, {0.0f, 0.1875f, 0.0f, 0.0f});
 
   // Test Case 2:
   // Grayscale
   // Color Buckets Ratio: Medium
   // Decision Tree: Can't Decide
   // Neural Network: Apply
-  EXPECT_TRUE(GetFeaturesAndClassification("/images/resources/apng08-ref.png",
-                                           &features));
+  EXPECT_FALSE(GetFeaturesAndClassification("/images/resources/apng08-ref.png",
+                                            &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             DarkModeClassification::kNotClassified);
-  AssertFeaturesEqual(features, {0.0f, 0.8125f, 0.409f, 0.59f});
+  AssertFeaturesEqual(features, {0.0f, 0.8125f, 0.446667f, 0.03f});
 
   // Test Case 3:
   // Color
@@ -116,7 +115,7 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
       "/images/resources/count-down-color-test.png", &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             DarkModeClassification::kApplyDarkModeFilter);
-  AssertFeaturesEqual(features, {1.0f, 0.0134277f, 0.0f, 0.43f});
+  AssertFeaturesEqual(features, {1.0f, 0.0078125f, 0.0f, 0.0f});
 
   // Test Case 4:
   // Color
@@ -127,18 +126,18 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
       "/images/resources/blue-wheel-srgb-color-profile.png", &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             DarkModeClassification::kDoNotApplyDarkModeFilter);
-  AssertFeaturesEqual(features, {1.0f, 0.03027f, 0.0f, 0.24f});
+  AssertFeaturesEqual(features, {1.0f, 0.032959f, 0.0f, 0.0f});
 
   // Test Case 5:
   // Color
   // Color Buckets Ratio: Medium
-  // Decision Tree: Can't Decide
-  // Neural Network: Apply.
+  // Decision Tree: Apply
+  // Neural Network: NA.
   EXPECT_TRUE(GetFeaturesAndClassification(
       "/images/resources/ycbcr-444-float.jpg", &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
-            DarkModeClassification::kNotClassified);
-  AssertFeaturesEqual(features, {1.0f, 0.0166016f, 0.0f, 0.59f});
+            DarkModeClassification::kApplyDarkModeFilter);
+  AssertFeaturesEqual(features, {1.0f, 0.0151367f, 0.0f, 0.0f});
 }
 
 TEST_F(DarkModeImageClassifierTest, Caching) {
