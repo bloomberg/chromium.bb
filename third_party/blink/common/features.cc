@@ -38,6 +38,11 @@ const base::Feature kFirstContentfulPaintPlusPlus{
 const base::Feature kFreezePurgeMemoryAllPagesFrozen{
     "FreezePurgeMemoryAllPagesFrozen", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether or not the font cache is invalidated when a critical memory
+// pressure signal is sent.
+const base::Feature kInvalidateFontCacheOnPurge{
+    "InvalidateFontCacheOnPurge", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables the experimental sweep-line algorithm for tracking "jank" from
 // layout objects changing their visual location between animation frames.
 const base::Feature kJankTrackingSweepLine{"JankTrackingSweepLine",
