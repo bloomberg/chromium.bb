@@ -1400,9 +1400,6 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_DATA_REDUCTION_PROMO_INFOBAR_TEXT" desc="Text to be displayed in the data reduction promo infobar">
         Google servers will optimize the pages you visit.
       </message>
-      <message name="IDS_DATA_REDUCTION_PROMO_INFOBAR_BUTTON" desc="Text to be displayed in the data reduction promo infobar confirm button">
-        Turn on Data Saver
-      </message>
       <message name="IDS_DATA_REDUCTION_MILESTONE_PROMO_TEXT_MB" desc="Text to be displayed in the data reduction promo message that lets the user know they saved a certain amount of data in MB">
         Chrome has saved you <ph name="megabytes">%1$d<ex>100</ex></ph> MB
       </message>
