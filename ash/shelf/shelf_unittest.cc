@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
@@ -17,6 +18,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/session_manager/session_manager_types.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
@@ -143,6 +145,32 @@ TEST_F(ShelfTest, ShelfHiddenOnScreenOnSecondaryDisplay) {
     EXPECT_EQ(SHELF_VISIBLE, GetPrimaryShelf()->GetVisibilityState());
     EXPECT_EQ(SHELF_HIDDEN, GetSecondaryShelf()->GetVisibilityState());
   }
+}
+
+using NoSessionShelfTest = NoSessionAshTestBase;
+
+// Regression test for crash in Shelf::SetAlignment(). https://crbug.com/937495
+TEST_F(NoSessionShelfTest, SetAlignmentDuringDisplayDisconnect) {
+  UpdateDisplay("1024x768,800x600");
+  base::RunLoop().RunUntilIdle();
+
+  // The task indirectly triggers Shelf::SetAlignment() via a SessionObserver.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](TestSessionControllerClient* session) {
+            session->SetSessionState(session_manager::SessionState::ACTIVE);
+          },
+          GetSessionControllerClient()));
+
+  // Remove the secondary display.
+  UpdateDisplay("1280x1024");
+
+  // The session activation task runs before the RootWindowController and the
+  // Shelf are deleted.
+  base::RunLoop().RunUntilIdle();
+
+  // No crash.
 }
 
 }  // namespace
