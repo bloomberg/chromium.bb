@@ -5,10 +5,7 @@
 // Custom bindings for the automation API.
 var AutomationNode = require('automationNode').AutomationNode;
 var AutomationRootNode = require('automationNode').AutomationRootNode;
-var automationInternal =
-    getInternalApi ?
-        getInternalApi('automationInternal') :
-        require('binding').Binding.create('automationInternal').generate();
+var automationInternal = getInternalApi('automationInternal');
 var exceptionHandler = require('uncaught_exception_handler');
 var logging = requireNative('logging');
 var nativeAutomationInternal = requireNative('automationInternal');
