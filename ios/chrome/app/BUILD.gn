@@ -114,7 +114,6 @@ compile_entitlements("entitlements") {
 source_set("app_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "application_mode.h",
     "chrome_overlay_window.h",
     "chrome_overlay_window.mm",
     "firebase_utils.h",
@@ -134,6 +133,7 @@ source_set("app_internal") {
   deps = [
     ":app",
     ":firebase_buildflags",
+    ":mode",
     ":tests_hook",
     "//base",
     "//components/bookmarks/browser",
@@ -263,6 +263,17 @@ source_set("app_internal") {
 
   allow_circular_includes_from =
       [ "//ios/chrome/app/application_delegate:application_delegate_internal" ]
+}
+
+source_set("mode") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "application_mode.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
 }
 
 source_set("main") {
