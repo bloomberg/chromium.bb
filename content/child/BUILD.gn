@@ -137,7 +137,7 @@ target(link_target_type, "child") {
   }
 
   if (is_android) {
-    deps += [ "//third_party/android_tools:cpu_features" ]
+    deps += [ "//third_party/android_sdk:cpu_features" ]
   }
 
   if (is_linux) {

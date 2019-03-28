@@ -21,7 +21,7 @@ android_library("glue") {
   srcjar_deps = [ ":glue_resource_rewriter" ]
 
   alternative_android_sdk_dep =
-      "//third_party/android_system_sdk:public_framework_system_java"
+      "//third_party/android_sdk:public_framework_system_java"
 
   java_files = [
     "java/src/com/android/webview/chromium/CallbackConverter.java",
