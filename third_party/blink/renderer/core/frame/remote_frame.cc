@@ -34,7 +34,7 @@ inline RemoteFrame::RemoteFrame(RemoteFrameClient* client,
             page,
             owner,
             MakeGarbageCollected<RemoteWindowProxyManager>(*this)),
-      security_context_(RemoteSecurityContext::Create()) {
+      security_context_(MakeGarbageCollected<RemoteSecurityContext>()) {
   dom_window_ = RemoteDOMWindow::Create(*this);
   UpdateInertIfPossible();
   UpdateInheritedEffectiveTouchActionIfPossible();

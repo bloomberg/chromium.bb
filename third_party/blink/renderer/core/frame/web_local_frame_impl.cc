@@ -1725,7 +1725,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(
     mojo::ScopedMessagePipeHandle document_interface_broker_handle)
     : WebNavigationControl(scope),
       client_(client),
-      local_frame_client_(LocalFrameClientImpl::Create(
+      local_frame_client_(MakeGarbageCollected<LocalFrameClientImpl>(
           this,
           std::move(document_interface_broker_handle))),
       autofill_client_(nullptr),

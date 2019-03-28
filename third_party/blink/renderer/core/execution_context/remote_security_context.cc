@@ -23,10 +23,6 @@ RemoteSecurityContext::RemoteSecurityContext() : SecurityContext() {
   // grantUniversalAccess().
 }
 
-RemoteSecurityContext* RemoteSecurityContext::Create() {
-  return MakeGarbageCollected<RemoteSecurityContext>();
-}
-
 void RemoteSecurityContext::Trace(blink::Visitor* visitor) {
   SecurityContext::Trace(visitor);
 }

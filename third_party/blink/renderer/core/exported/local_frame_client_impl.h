@@ -52,9 +52,6 @@ struct WebScrollIntoViewParams;
 
 class LocalFrameClientImpl final : public LocalFrameClient {
  public:
-  static LocalFrameClientImpl* Create(WebLocalFrameImpl*,
-                                      mojo::ScopedMessagePipeHandle);
-
   LocalFrameClientImpl(WebLocalFrameImpl*, mojo::ScopedMessagePipeHandle);
   ~LocalFrameClientImpl() override;
 

@@ -171,13 +171,6 @@ LocalFrameClientImpl::LocalFrameClientImpl(
       mojom::blink::DocumentInterfaceBroker::Version_));
 }
 
-LocalFrameClientImpl* LocalFrameClientImpl::Create(
-    WebLocalFrameImpl* frame,
-    mojo::ScopedMessagePipeHandle document_interface_broker_handle) {
-  return MakeGarbageCollected<LocalFrameClientImpl>(
-      frame, std::move(document_interface_broker_handle));
-}
-
 LocalFrameClientImpl::~LocalFrameClientImpl() = default;
 
 void LocalFrameClientImpl::Trace(blink::Visitor* visitor) {
@@ -866,8 +859,8 @@ WebPluginContainerImpl* LocalFrameClientImpl::CreatePlugin(
     return nullptr;
 
   // The container takes ownership of the WebPlugin.
-  WebPluginContainerImpl* container =
-      WebPluginContainerImpl::Create(element, web_plugin);
+  auto* container =
+      MakeGarbageCollected<WebPluginContainerImpl>(element, web_plugin);
 
   if (!web_plugin->Initialize(container))
     return nullptr;
