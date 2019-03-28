@@ -537,12 +537,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     return;
   }
 
-  CGFloat scale = [UIScreen mainScreen].scale;
-  CGFloat desiredFaviconSizeInPixel =
-      scale * [BookmarkHomeSharedState desiredFaviconSizePt];
-  CGFloat minFaviconSizeInPixel =
-      scale * [BookmarkHomeSharedState minFaviconSizePt];
-
   // Start loading a favicon.
   __weak BookmarkHomeViewController* weakSelf = self;
   GURL blockURL(node->url());
@@ -562,8 +556,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     [URLCell.faviconView configureWithAttributes:attributes];
   };
 
+  CGFloat desiredFaviconSizeInPoints =
+      [BookmarkHomeSharedState desiredFaviconSizePt];
+  CGFloat minFaviconSizeInPoints = [BookmarkHomeSharedState minFaviconSizePt];
+
   FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForUrl(
-      blockURL, desiredFaviconSizeInPixel, minFaviconSizeInPixel,
+      blockURL, desiredFaviconSizeInPoints, minFaviconSizeInPoints,
       /*fallback_to_google_server=*/fallbackToGoogleServer, faviconLoadedBlock);
   DCHECK(cachedAttributes);
   faviconLoadedBlock(cachedAttributes);
