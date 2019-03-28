@@ -1976,6 +1976,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lakitu-st',
       'lasilla-ground',
       'leon',
+      'littlejoe',
       'moblab-generic-vm',
       'monroe',
       'nami',
@@ -2013,6 +2014,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_rialto',
       'veyron_speedy',
       'veyron_tiger',
+      'viking',
       'whirlwind',
       'winky',
       'wizpig',
@@ -2041,8 +2043,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # _paladin_hwtest_assignments table further down this script.
   _paladin_new_boards = frozenset([
       'atlas',
-      'littlejoe',
-      'viking',
   ])
 
   # Paladin configs that exist and should stay as experimental until further

@@ -482,6 +482,7 @@
     lars-postsubmit
     lasilla-ground-postsubmit
     leon-postsubmit
+    littlejoe-postsubmit
     lulu-postsubmit
     mccloud-postsubmit
     moblab-generic-vm-postsubmit
@@ -541,6 +542,7 @@
     veyron_rialto-postsubmit
     veyron_speedy-postsubmit
     veyron_tiger-postsubmit
+    viking-postsubmit
     whirlwind-postsubmit
     winky-postsubmit
     wizpig-postsubmit
@@ -2789,6 +2791,7 @@
     lars-postsubmit-tryjob
     lasilla-ground-postsubmit-tryjob
     leon-postsubmit-tryjob
+    littlejoe-postsubmit-tryjob
     lulu-postsubmit-tryjob
     mccloud-postsubmit-tryjob
     moblab-generic-vm-postsubmit-tryjob
@@ -2848,6 +2851,7 @@
     veyron_rialto-postsubmit-tryjob
     veyron_speedy-postsubmit-tryjob
     veyron_tiger-postsubmit-tryjob
+    viking-postsubmit-tryjob
     whirlwind-postsubmit-tryjob
     winky-postsubmit-tryjob
     wizpig-postsubmit-tryjob
