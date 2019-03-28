@@ -25,14 +25,13 @@ ExtensionsMenuView::ExtensionsMenuView(views::View* anchor_view,
       model_(ToolbarActionsModel::Get(browser_->profile())),
       model_observer_(this) {
   model_observer_.Add(model_);
+  set_margins(gfx::Insets(0));
 
   AddAccelerator(ui::Accelerator(ui::VKEY_DOWN, ui::EF_NONE));
   AddAccelerator(ui::Accelerator(ui::VKEY_UP, ui::EF_NONE));
 
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(0),
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          DISTANCE_UNRELATED_CONTROL_HORIZONTAL)));
+  SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   Repopulate();
 }
 
@@ -41,7 +40,9 @@ ExtensionsMenuView::~ExtensionsMenuView() {
   g_extensions_dialog = nullptr;
 }
 
-base::string16 ExtensionsMenuView::GetWindowTitle() const {
+base::string16 ExtensionsMenuView::GetAccessibleWindowTitle() const {
+  // TODO(pbos): Revisit this when subpanes exist so that the title read by a11y
+  // tools are in sync with the current visuals.
   return l10n_util::GetStringUTF16(IDS_EXTENSIONS_MENU_TITLE);
 }
 
@@ -60,11 +61,25 @@ int ExtensionsMenuView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
+bool ExtensionsMenuView::ShouldSnapFrameWidth() const {
+  return true;
+}
+
 void ExtensionsMenuView::Repopulate() {
+  // TODO(pbos): Add a header that displays the menu title. This cannot use
+  // ::GetWindowTitle() as we need it to belong to the displayed panel and not
+  // the BubbleFrameView.
   RemoveAllChildViews(true);
   for (auto action_id : model_->action_ids()) {
     AddChildView(std::make_unique<ExtensionsMenuButton>(
         browser_, model_->CreateActionForId(browser_, nullptr, action_id)));
+  }
+
+  // TODO(pbos): This is a placeholder until we have proper UI treatment of the
+  // no-extensions case.
+  if (model_->action_ids().empty()) {
+    AddChildView(std::make_unique<views::Label>(
+        l10n_util::GetStringUTF16(IDS_EXTENSIONS_MENU_TITLE)));
   }
 }
 

@@ -27,9 +27,10 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
   static ExtensionsMenuView* GetExtensionsMenuViewForTesting();
 
   // views::BubbleDialogDelegateView:
-  base::string16 GetWindowTitle() const override;
+  base::string16 GetAccessibleWindowTitle() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   int GetDialogButtons() const override;
+  bool ShouldSnapFrameWidth() const override;
 
   // ToolbarActionsModel::Observer:
   void OnToolbarActionAdded(const ToolbarActionsModel::ActionId& item,
