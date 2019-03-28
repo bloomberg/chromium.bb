@@ -24,6 +24,10 @@ NSString* TitleForCollectionShortcutType(NTPCollectionShortcutType type) {
       return l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS);
     case NTPCollectionShortcutTypeHistory:
       return l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_HISTORY);
+    case NTPCollectionShortcutTypeCount:
+      NOTREACHED();
+      return @"";
+      break;
   }
 }
 
@@ -42,6 +46,9 @@ UIImage* ImageForCollectionShortcutType(NTPCollectionShortcutType type) {
       break;
     case NTPCollectionShortcutTypeHistory:
       imageName = @"ntp_history_icon";
+      break;
+    case NTPCollectionShortcutTypeCount:
+      NOTREACHED();
       break;
   }
   return [[UIImage imageNamed:imageName]
