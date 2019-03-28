@@ -389,7 +389,7 @@ bool UtilityProcessHost::StartProcess() {
       switches::kProxyServer,
       switches::kDisableAcceleratedMjpegDecode,
       switches::kUseFakeDeviceForMediaStream,
-      switches::kUseFakeJpegDecodeAccelerator,
+      switches::kUseFakeMjpegDecodeAccelerator,
       switches::kUseFileForFakeVideoCapture,
       switches::kUseMockCertVerifierForTesting,
       switches::kUtilityStartupDialog,

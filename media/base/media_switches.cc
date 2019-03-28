@@ -96,10 +96,11 @@ const char kUseFileForFakeVideoCapture[] = "use-file-for-fake-video-capture";
 // or <path>%noloop to stop after playing the file to completion.
 const char kUseFileForFakeAudioCapture[] = "use-file-for-fake-audio-capture";
 
-// Use fake device for accelerated decoding of JPEG. This allows, for example,
-// testing of the communication to the GPU service without requiring actual
-// accelerator hardware to be present.
-const char kUseFakeJpegDecodeAccelerator[] = "use-fake-jpeg-decode-accelerator";
+// Use a fake device for accelerated decoding of MJPEG. This allows, for
+// example, testing of the communication to the GPU service without requiring
+// actual accelerator hardware to be present.
+const char kUseFakeMjpegDecodeAccelerator[] =
+    "use-fake-mjpeg-decode-accelerator";
 
 // Disable hardware acceleration of mjpeg decode for captured frame, where
 // available.
@@ -500,7 +501,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
     return false;
   }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseFakeJpegDecodeAccelerator)) {
+          switches::kUseFakeMjpegDecodeAccelerator)) {
     return true;
   }
 #if defined(OS_CHROMEOS)
