@@ -351,14 +351,14 @@ void FeedLoggingMetrics::OnTokenCompleted(bool was_synthetic,
                                           int token_count) {
   if (was_synthetic) {
     UMA_HISTOGRAM_EXACT_LINEAR(
-        "ContentSuggestions.Feed.TokenCompleted.ContentCount.Synthetic",
-        content_count, kMaxFailureCount);
+        "ContentSuggestions.Feed.TokenCompleted.ContentCount2.Synthetic",
+        content_count, kMaxContentCount);
     UMA_HISTOGRAM_EXACT_LINEAR(
         "ContentSuggestions.Feed.TokenCompleted.TokenCount.Synthetic",
         token_count, kMaxTokenCount);
   } else {
     UMA_HISTOGRAM_EXACT_LINEAR(
-        "ContentSuggestions.Feed.TokenCompleted.ContentCount.Nonsynthetic",
+        "ContentSuggestions.Feed.TokenCompleted.ContentCount2.Nonsynthetic",
         content_count, kMaxContentCount);
     UMA_HISTOGRAM_EXACT_LINEAR(
         "ContentSuggestions.Feed.TokenCompleted.TokenCount.Nonsynthetic",
