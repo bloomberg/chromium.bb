@@ -23,6 +23,7 @@ typedef struct {
   int max_h_size;
   int max_v_size;
   int max_header_rate;
+  int max_tile_rate;
   int max_tiles;
   int max_tile_cols;
   int64_t max_display_rate;
@@ -38,6 +39,7 @@ typedef struct {
   int64_t ts_end;
   int pic_size;
   int frame_header_count;
+  int tiles;
   int show_frame;
   int show_existing_frame;
 } FrameRecord;

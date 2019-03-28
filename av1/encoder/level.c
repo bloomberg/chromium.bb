@@ -223,6 +223,7 @@ typedef enum {
   LUMA_PIC_V_SIZE_TOO_LARGE,
   TOO_MANY_TILE_COLUMNS,
   TOO_MANY_TILES,
+  TILE_RATE_TOO_HIGH,
   TILE_TOO_LARGE,
   CROPPED_TILE_WIDTH_TOO_SMALL,
   CROPPED_TILE_HEIGHT_TOO_SMALL,
@@ -242,14 +243,15 @@ static const char *level_fail_messages[TARGET_LEVEL_FAIL_IDS] = {
   "The picture height is too large.",
   "Too many tile columns are used.",
   "Too many tiles are used.",
+  "The tile rate is too high.",
   "The tile size is too large.",
-  "The cropped tile width is less than 8",
-  "The cropped tile height is less than 8",
-  "The tile width is invalid",
-  "The frame header rate is too high",
-  "The display luma sample rate is too high",
-  "The decoded luma sample rate is too high",
-  "The compression ratio is too small",
+  "The cropped tile width is less than 8.",
+  "The cropped tile height is less than 8.",
+  "The tile width is invalid.",
+  "The frame header rate is too high.",
+  "The display luma sample rate is too high.",
+  "The decoded luma sample rate is too high.",
+  "The compression ratio is too small.",
 };
 
 static double get_min_cr(const AV1LevelSpec *const level_spec, int tier,
@@ -307,6 +309,11 @@ static TARGET_LEVEL_FAIL_ID check_level_constraints(
 
     if (level_spec->max_decode_rate > target_level_spec->max_decode_rate) {
       fail_id = DECODE_RATE_TOO_HIGH;
+      break;
+    }
+
+    if (level_spec->max_tile_rate > target_level_spec->max_tiles * 120) {
+      fail_id = TILE_RATE_TOO_HIGH;
       break;
     }
 
@@ -393,7 +400,7 @@ static void get_tile_stats(const AV1_COMP *const cpi, int *max_tile_size,
 }
 
 static int store_frame_record(int64_t ts_start, int64_t ts_end, int pic_size,
-                              int frame_header_count, int show_frame,
+                              int frame_header_count, int tiles, int show_frame,
                               int show_existing_frame,
                               FrameWindowBuffer *const buffer) {
   if (buffer->num < FRAME_WINDOW_SIZE) {
@@ -407,6 +414,7 @@ static int store_frame_record(int64_t ts_start, int64_t ts_end, int pic_size,
   record->ts_end = ts_end;
   record->pic_size = pic_size;
   record->frame_header_count = frame_header_count;
+  record->tiles = tiles;
   record->show_frame = show_frame;
   record->show_existing_frame = show_existing_frame;
 
@@ -443,6 +451,7 @@ static void scan_past_frames(const FrameWindowBuffer *const buffer,
   const int num_frames_in_buffer = buffer->num;
   int index = (buffer->start + num_frames_in_buffer - 1) % FRAME_WINDOW_SIZE;
   int frame_headers = 0;
+  int tiles = 0;
   int64_t display_samples = 0;
   int64_t decoded_samples = 0;
   for (int i = 0; i < AOMMIN(num_frames_in_buffer, num_frames_to_scan); ++i) {
@@ -454,6 +463,7 @@ static void scan_past_frames(const FrameWindowBuffer *const buffer,
     if (record->show_frame) {
       display_samples += record->pic_size;
     }
+    tiles += record->tiles;
     --index;
     if (index < 0) index = FRAME_WINDOW_SIZE - 1;
   }
@@ -463,6 +473,7 @@ static void scan_past_frames(const FrameWindowBuffer *const buffer,
       AOMMAX(level_spec->max_display_rate, display_samples);
   level_spec->max_decode_rate =
       AOMMAX(level_spec->max_decode_rate, decoded_samples);
+  level_spec->max_tile_rate = AOMMAX(level_spec->max_tile_rate, tiles);
 }
 
 void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
@@ -480,7 +491,7 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
 
   // Store info. of current frame into FrameWindowBuffer.
   FrameWindowBuffer *const buffer = &cpi->frame_window_buffer;
-  store_frame_record(ts_start, ts_end, luma_pic_size, frame_header_count,
+  store_frame_record(ts_start, ts_end, luma_pic_size, frame_header_count, tiles,
                      show_frame, show_existing_frame, buffer);
   // Count the number of frames encoded in the past 1 second.
   const int encoded_frames_in_last_second =
