@@ -16,6 +16,10 @@
 #include "ui/aura/window_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
+namespace arc {
+class ArcGraphicsJankDetector;
+}  // namespace arc
+
 namespace base {
 class ListValue;
 class RefCountedString;
@@ -27,8 +31,6 @@ class WMHelper;
 }  // namespace exo
 
 namespace chromeos {
-
-class ArcGraphicsJankDetector;
 
 class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
                                   public wm::ActivationChangeObserver,
@@ -75,7 +77,7 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
   void OnCommit(exo::Surface* surface);
 
   // Called in case jank is detected in active ARC window.
-  void OnJankDetected();
+  void OnJankDetected(const base::Time& timestamp);
 
   // Indicates that tracing was initiated by this handler.
   bool tracing_active_ = false;
@@ -95,7 +97,7 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
   int active_task_id_ = -1;
 
   // Used to detect janks for the currently active ARC++ window.
-  std::unique_ptr<ArcGraphicsJankDetector> jank_detector_;
+  std::unique_ptr<arc::ArcGraphicsJankDetector> jank_detector_;
 
   // Information about tasks, title and icon.
   base::DictionaryValue tasks_info_;

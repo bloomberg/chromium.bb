@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/arc_graphics_tracing/arc_graphics_jank_detector.h"
+#include "chrome/browser/chromeos/arc/tracing/arc_graphics_jank_detector.h"
 
 #include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace arc {
 
 class ArcGraphicsJankDetectorTest : public testing::Test {
  public:
@@ -21,7 +21,10 @@ class ArcGraphicsJankDetectorTest : public testing::Test {
 TEST_F(ArcGraphicsJankDetectorTest, Generic) {
   int jank_count = 0;
   ArcGraphicsJankDetector detector(base::BindRepeating(
-      [](int* out_jank_count) { *out_jank_count += 1; }, &jank_count));
+      [](int* out_jank_count, const base::Time& timestamp) {
+        *out_jank_count += 1;
+      },
+      &jank_count));
 
   base::Time now = base::Time::Now();
 
@@ -91,4 +94,45 @@ TEST_F(ArcGraphicsJankDetectorTest, Generic) {
   EXPECT_EQ(1, jank_count);
 }
 
-}  // namespace chromeos
+TEST_F(ArcGraphicsJankDetectorTest, FixedRate) {
+  int jank_count = 0;
+  ArcGraphicsJankDetector detector(base::BindRepeating(
+      [](int* out_jank_count, const base::Time& timestamp) {
+        *out_jank_count += 1;
+      },
+      &jank_count));
+
+  base::Time now = base::Time::Now();
+
+  const base::TimeDelta period =
+      ArcGraphicsJankDetector::kPauseDetectionThreshold / 4;
+
+  EXPECT_EQ(ArcGraphicsJankDetector::Stage::kWarmUp, detector.stage());
+
+  // Detector with fixed period is always in active state.
+  detector.SetPeriodFixed(period);
+  EXPECT_EQ(ArcGraphicsJankDetector::Stage::kActive, detector.stage());
+  EXPECT_EQ(0, jank_count);
+
+  detector.OnSample(now);
+  now += period;
+  detector.OnSample(now);
+
+  EXPECT_EQ(ArcGraphicsJankDetector::Stage::kActive, detector.stage());
+  EXPECT_EQ(0, jank_count);
+
+  // Simulate jank.
+  now += period * 2;
+  detector.OnSample(now);
+  EXPECT_EQ(ArcGraphicsJankDetector::Stage::kActive, detector.stage());
+  EXPECT_EQ(1, jank_count);
+
+  // Long intervals do not cause jank triggering and detector stays in active
+  // state.
+  now += ArcGraphicsJankDetector::kPauseDetectionThreshold;
+  detector.OnSample(now);
+  EXPECT_EQ(ArcGraphicsJankDetector::Stage::kActive, detector.stage());
+  EXPECT_EQ(1, jank_count);
+}
+
+}  // namespace arc

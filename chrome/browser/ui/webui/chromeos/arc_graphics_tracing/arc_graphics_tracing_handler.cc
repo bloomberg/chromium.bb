@@ -14,11 +14,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/arc/tracing/arc_graphics_jank_detector.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_graphics_model.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
-#include "chrome/browser/ui/webui/chromeos/arc_graphics_tracing/arc_graphics_jank_detector.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
@@ -107,7 +107,7 @@ void ArcGraphicsTracingHandler::OnWindowActivated(ActivationReason reason,
   // Limit tracing by newly activated window.
   tracing_time_min_ = TRACE_TIME_TICKS_NOW();
   jank_detector_ =
-      std::make_unique<ArcGraphicsJankDetector>(base::BindRepeating(
+      std::make_unique<arc::ArcGraphicsJankDetector>(base::BindRepeating(
           &ArcGraphicsTracingHandler::OnJankDetected, base::Unretained(this)));
 
   UpdateActiveArcWindowInfo();
@@ -123,7 +123,8 @@ void ArcGraphicsTracingHandler::OnCommit(exo::Surface* surface) {
   jank_detector_->OnSample();
 }
 
-void ArcGraphicsTracingHandler::OnJankDetected() {
+void ArcGraphicsTracingHandler::OnJankDetected(const base::Time& timestamp) {
+  VLOG(1) << "Jank detected " << timestamp;
   StopTracing();
 }
 

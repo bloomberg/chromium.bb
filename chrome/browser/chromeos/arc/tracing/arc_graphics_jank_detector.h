@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_ARC_GRAPHICS_TRACING_ARC_GRAPHICS_JANK_DETECTOR_H_
-#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_ARC_GRAPHICS_TRACING_ARC_GRAPHICS_JANK_DETECTOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ARC_TRACING_ARC_GRAPHICS_JANK_DETECTOR_H_
+#define CHROME_BROWSER_CHROMEOS_ARC_TRACING_ARC_GRAPHICS_JANK_DETECTOR_H_
 
 #include <vector>
 
@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 
-namespace chromeos {
+namespace arc {
 
 // Detector is used to determine janks in the sequence of periodic samples that
 // have a timestamp. It conceptually has the following phases:
@@ -27,8 +27,13 @@ namespace chromeos {
 //               jank.
 // In case the next sample appears after a long interval this is not considered
 // as a jank and detector switches to warm-up stage.
+// Detector may work in fixed mode, activated by |SetPeriodFixed| call. In this
+// mode detector skips kWarmUp and kRateDetection and always watches for janks.
 class ArcGraphicsJankDetector {
  public:
+  using JankCallback =
+      base::RepeatingCallback<void(const base::Time& timestamp)>;
+
   enum class Stage {
     kWarmUp,         // ignore any update
     kRateDetection,  // detect the update rate
@@ -50,8 +55,13 @@ class ArcGraphicsJankDetector {
   // jank if its duration longer than this threshold.
   static constexpr int kJankDetectionThresholdPercent = 190;
 
-  explicit ArcGraphicsJankDetector(const base::RepeatingClosure& callback);
+  explicit ArcGraphicsJankDetector(const JankCallback& callback);
   ~ArcGraphicsJankDetector();
+
+  // Sets the expected refresh rate. This disables |Stage::kWarmUp| and
+  // |Stage::kRateDetection| stages and keeps detector in |Stage::kActive|
+  // stage.
+  void SetPeriodFixed(const base::TimeDelta& period);
 
   // Notifies about the next sample. Used in runtime and timestamp is considered
   // as now time.
@@ -65,7 +75,7 @@ class ArcGraphicsJankDetector {
 
  private:
   // Once jank is detected |callback_| is fired.
-  base::RepeatingClosure callback_;
+  JankCallback callback_;
 
   Stage stage_;
   base::Time last_sample_time_;
@@ -73,10 +83,12 @@ class ArcGraphicsJankDetector {
   std::vector<base::TimeDelta> intervals_;
   // Considered as normal period.
   base::TimeDelta period_;
+  // Period fixed.
+  bool period_fixed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ArcGraphicsJankDetector);
 };
 
-}  // namespace chromeos
+}  // namespace arc
 
-#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_ARC_GRAPHICS_TRACING_ARC_GRAPHICS_JANK_DETECTOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_ARC_TRACING_ARC_GRAPHICS_JANK_DETECTOR_H_

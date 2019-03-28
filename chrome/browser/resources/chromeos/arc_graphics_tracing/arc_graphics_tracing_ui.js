@@ -34,6 +34,8 @@ var eventAttributes = {
   104: {color: '#66ffcc', name: 'use buffer'},
   // kBufferQueueReleased
   105: {color: unusedColor, name: 'buffer released'},
+  // kBufferFillJank
+  106: {color: '#ff0000', name: 'buffer filling jank', width: 1.0},
 
   // kExoSurfaceAttach.
   200: {color: '#99ccff', name: 'surface attach'},
@@ -45,6 +47,8 @@ var eventAttributes = {
   203: {color: '#00ff99', name: 'pending query'},
   // kExoReleased
   204: {color: unusedColor, name: 'released'},
+  // kExoJank
+  205: {color: '#ff0000', name: 'surface attach jank', width: 1.0},
 
   // kChromeBarrierOrder.
   300: {color: '#ff9933', name: 'barrier order'},
@@ -52,7 +56,7 @@ var eventAttributes = {
   301: {color: unusedColor, name: 'barrier flush'},
 
   // kVsync
-  400: {color: '#ff3300', name: 'vsync'},
+  400: {color: '#ff3300', name: 'vsync', width: 0.5},
   // kSurfaceFlingerInvalidationStart
   401: {color: '#ff9933', name: 'invalidation start'},
   // kSurfaceFlingerInvalidationDone
@@ -61,6 +65,8 @@ var eventAttributes = {
   403: {color: '#3399ff', name: 'composition start'},
   // kSurfaceFlingerCompositionDone
   404: {color: unusedColor, name: 'composition done'},
+  // kSurfaceFlingerCompositionJank
+  405: {color: '#ff0000', name: 'Android composition jank', width: 1.0},
 
   // kChromeOSDraw
   500: {color: '#3399ff', name: 'draw'},
@@ -72,6 +78,8 @@ var eventAttributes = {
   503: {color: '#ffbf00', name: 'presentation done'},
   // kChromeOSSwapDone
   504: {color: '#65f441', name: 'swap done'},
+  // kChromeOSJank
+  505: {color: '#ff0000', name: 'Chrome composition jank', width: 1.0},
 };
 
 /**
@@ -149,14 +157,14 @@ class SVG {
   }
 
   // Creates line element in the |svg| with provided attributes.
-  static addLine(svg, x1, y1, x2, y2, color) {
+  static addLine(svg, x1, y1, x2, y2, color, width) {
     var line = document.createElementNS(svgNS, 'line');
     line.setAttributeNS(null, 'x1', x1);
     line.setAttributeNS(null, 'y1', y1);
     line.setAttributeNS(null, 'x2', x2);
     line.setAttributeNS(null, 'y2', y2);
     line.setAttributeNS(null, 'stroke', color);
-    line.setAttributeNS(null, 'stroke-width', 0.5);
+    line.setAttributeNS(null, 'stroke-width', width);
     svg.appendChild(line);
   }
 
@@ -238,6 +246,7 @@ class EventBands {
   constructor(title, className, duration) {
     // Keep information about bands and their bounds.
     this.bands = [];
+    this.globalEvents = [];
     this.duration = duration;
     this.width = timestampToOffset(duration);
     this.height = 0;
@@ -315,8 +324,10 @@ class EventBands {
       var event = events.events[eventIndex];
       var attributes = events.getEventAttributes(eventIndex);
       var x = timestampToOffset(event[1]);
-      SVG.addLine(this.svg, x, 0, x, this.height, attributes.color);
+      SVG.addLine(
+          this.svg, x, 0, x, this.height, attributes.color, attributes.width);
     }
+    this.globalEvents.push(events);
   }
 
   /** Initializes tooltip support by observing mouse events */
@@ -335,6 +346,31 @@ class EventBands {
   /** Hides the tooltip. */
   hideToolTip_() {
     this.tooltip.classList.remove('active');
+  }
+
+  /**
+   * Finds the global event that is closest to the |timestamp| and not farther
+   * than |distance|.
+   *
+   * @param {number} timestamp to search.
+   * @param {number} distance to search.
+   */
+  findGlobalEvent_(timestamp, distance) {
+    var bestDistance = distance;
+    var bestEvent = null;
+    for (var i = 0; i < this.globalEvents.length; ++i) {
+      var globalEvents = this.globalEvents[i];
+      var closestIndex = this.globalEvents[i].getClosest(timestamp);
+      if (closestIndex >= 0) {
+        var testEvent = this.globalEvents[i].events[closestIndex];
+        var testDistance = Math.abs(testEvent[1] - timestamp);
+        if (testDistance < bestDistance) {
+          bestDistance = testDistance;
+          bestEvent = testEvent;
+        }
+      }
+    }
+    return bestEvent;
   }
 
   /**
@@ -389,9 +425,17 @@ class EventBands {
     }
     var index = eventBand.getNextEvent(nextIndex, -1 /* direction */);
 
-    // In case cursor points to idle event, show its interval. Otherwise
-    // show the sequence of non-idle events.
-    if (index < 0 || eventBand.isEndOfSequence(index)) {
+    // Try to find closest global event in the range -200..200 mcs from
+    // |eventTimestamp|.
+    var globalEvent = this.findGlobalEvent_(eventTimestamp, 200 /* distance */);
+    if (globalEvent) {
+      // Show the global event info.
+      var attributes = eventAttributes[global_event[0]];
+      SVG.addText(
+          this.tooltip, horizontalGap, yOffset, 12,
+          attributes.name + ' ' + timestempToMsText(globalEvent[1]) + ' ms.');
+    } else if (index < 0 || eventBand.isEndOfSequence(index)) {
+      // In case cursor points to idle event, show its interval.
       var startIdle = index < 0 ? 0 : eventBand.events[index][1];
       var endIdle = index < 0 ? this.duration : eventBand.events[nextIndex][1];
       SVG.addText(
@@ -400,6 +444,7 @@ class EventBands {
               timestempToMsText(endIdle) + ' ms.');
       yOffset += lineHeight;
     } else {
+      // Show the sequence of non-idle events.
       // Find the start of the non-idle sequence.
       while (true) {
         var prevIndex = eventBand.getNextEvent(index, -1 /* direction */);
@@ -537,6 +582,53 @@ class Events {
     }
     return nextEventTypes.includes(this.events[nextIndex][0]);
   }
+
+  /**
+   * Returns the index of closest event to the requested |timestamp|.
+   *
+   * @param {number} timestamp to search.
+   */
+  getClosest(timestamp) {
+    if (this.events.length == 0) {
+      return -1;
+    }
+    if (this.events[0][1] >= timestamp) {
+      return this.getNextEvent(-1 /* index */, 1 /* direction */);
+    }
+    if (this.events[this.events.length - 1][1] <= timestamp) {
+      return this.getNextEvent(
+          this.events.length /* index */, -1 /* direction */);
+    }
+    // At this moment |firstBefore| and |firstAfter| points to any event.
+    var firstBefore = 0;
+    var firstAfter = this.events.length - 1;
+    while (firstBefore + 1 != firstAfter) {
+      var candidateIndex = Math.ceil((firstBefore + firstAfter) / 2);
+      if (this.events[candidateIndex][1] < timestamp) {
+        firstBefore = candidateIndex;
+      } else {
+        firstAfter = candidateIndex;
+      }
+    }
+    // Point |firstBefore| and |firstAfter| to the supported event types.
+    firstBefore =
+        this.getNextEvent(firstBefore + 1 /* index */, -1 /* direction */);
+    firstAfter =
+        this.getNextEvent(firstAfter - 1 /* index */, 1 /* direction */);
+    if (firstBefore < 0) {
+      return firstAfter;
+    } else if (firstAfter < 0) {
+      return firstBefore;
+    } else {
+      var diffBefore = timestamp - this.events[firstBefore][1];
+      var diffAfter = this.events[firstAfter][1] - timestamp;
+      if (diffBefore < diffAfter) {
+        return firstBefore;
+      } else {
+        return firstAfter;
+      }
+    }
+  }
 }
 
 /**
@@ -548,25 +640,32 @@ function setGraphicBuffersModel(model) {
   // Clear previous content.
   $('arc-event-bands').textContent = '';
 
-  var vsyncEvents =
-      new Events(model.android, 400 /* kVsync */, 400 /* kVsync */);
+  var vsyncEvents = new Events(
+      model.android.global_events, 400 /* kVsync */, 400 /* kVsync */);
 
   var chromeTitle = new EventBandTitle('Chrome');
   var chromeBands =
       new EventBands(chromeTitle, 'arc-events-top-band', model.duration);
-  for (i = 0; i < model.chrome.length; i++) {
+  for (i = 0; i < model.chrome.buffers.length; i++) {
     chromeBands.addBand(
-        new Events(model.chrome[i], 500, 504), 20 /* height */,
+        new Events(model.chrome.buffers[i], 500, 599), 20 /* height */,
         4 /* padding */);
   }
+  chromeBands.addGlobal(new Events(
+      model.chrome.global_events, 505 /* kChromeOSJank */,
+      505 /* kChromeOSJank */));
 
   var androidTitle = new EventBandTitle('Android');
   var androidBands =
       new EventBands(androidTitle, 'arc-events-top-band', model.duration);
   androidBands.addBand(
-      new Events(model.android, 401, 504), 20 /* height */, 0 /* padding */);
+      new Events(model.android.buffers[0], 400, 499), 20 /* height */,
+      0 /* padding */);
   // Add vsync events
   androidBands.addGlobal(vsyncEvents);
+  androidBands.addGlobal(new Events(
+      model.android.global_events, 405 /* kSurfaceFlingerCompositionJank */,
+      405 /* kSurfaceFlingerCompositionJank */));
 
   for (i = 0; i < model.views.length; i++) {
     var view = model.views[i];
@@ -587,18 +686,21 @@ function setGraphicBuffersModel(model) {
           activityTitle, 'arc-events-inner-band', model.duration, 14);
       // Android buffer events.
       activityBands.addBand(
-          new Events(view.buffers[j], 100, 105), 14 /* height */,
+          new Events(view.buffers[j], 100, 199), 14 /* height */,
           4 /* padding */);
       // exo events.
       activityBands.addBand(
-          new Events(view.buffers[j], 200, 204), 14 /* height */,
+          new Events(view.buffers[j], 200, 299), 14 /* height */,
           4 /* padding */);
       // Chrome buffer events.
       activityBands.addBand(
-          new Events(view.buffers[j], 300, 301), 14 /* height */,
+          new Events(view.buffers[j], 300, 399), 14 /* height */,
           12 /* padding */);
     }
     // Add vsync events
     activityBands.addGlobal(vsyncEvents);
+    activityBands.addGlobal(new Events(
+        view.global_events, 106 /* kBufferFillJank */,
+        106 /* kBufferFillJank */));
   }
 }
