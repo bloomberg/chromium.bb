@@ -5,6 +5,7 @@
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.h"
 
 #include <algorithm>
+#include <limits>
 #include <string>
 #include <utility>
 
@@ -688,9 +689,11 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging(
         ad_frame_data.visibility() != visibility)
       continue;
 
+    int frame_area = ad_frame_data.frame_size().GetCheckedArea().ValueOrDefault(
+        std::numeric_limits<int>::max());
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.SqrtNumberOfPixels",
                   UMA_HISTOGRAM_COUNTS_10000, visibility,
-                  std::sqrt(ad_frame_data.frame_size().GetArea()));
+                  std::sqrt(frame_area));
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.SmallestDimension",
                   UMA_HISTOGRAM_COUNTS_10000, visibility,
                   std::min(ad_frame_data.frame_size().width(),
