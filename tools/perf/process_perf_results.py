@@ -591,6 +591,7 @@ def print_duration(step, start, end):
 
 def main():
   """ See collect_task.collect_task for more on the merge script API. """
+  print sys.argv
   parser = argparse.ArgumentParser()
   # configuration-name (previously perf-id) is the name of bot the tests run on
   # For example, buildbot-test is the name of the android-go-perf bot
