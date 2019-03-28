@@ -423,7 +423,7 @@ void MultipleFieldsTemporalInputTypeView::HandleFocusInEvent(
       GetElement().GetDocument().GetPage()->GetFocusController().AdvanceFocus(
           type);
   } else if (type == kWebFocusTypeNone || type == kWebFocusTypeMouse ||
-             type == kWebFocusTypePage) {
+             type == kWebFocusTypePage || type == kWebFocusTypeAccessKey) {
     edit->FocusByOwner(old_focused_element);
   } else {
     edit->FocusByOwner();
