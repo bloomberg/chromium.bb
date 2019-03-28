@@ -2186,6 +2186,11 @@ void Document::UpdateStyleAndLayoutTree() {
   // NeedsLayoutTreeUpdate().
   GetSlotAssignmentEngine().RecalcSlotAssignments();
 
+  // We can call FlatTreeTraversal::AssertFlatTreeNodeDataUpdated just after
+  // calling RecalcSlotAssignments(), however, it would be better to call it at
+  // least after InStyleRecalc() check below in order to avoid superfluous
+  // check, which would be the cause of web tests timeout when dcheck is on.
+
   SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(*this);
 
   if (!NeedsLayoutTreeUpdate()) {
@@ -2202,6 +2207,18 @@ void Document::UpdateStyleAndLayoutTree() {
 
   if (InStyleRecalc())
     return;
+
+#if DCHECK_IS_ON()
+  if (RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled()) {
+    int assigned_nodes_in_slot_count = 0;
+    int nodes_which_have_assigned_slot_count = 0;
+    FlatTreeTraversal::AssertFlatTreeNodeDataUpdated(
+        *this, assigned_nodes_in_slot_count,
+        nodes_which_have_assigned_slot_count);
+    DCHECK_EQ(assigned_nodes_in_slot_count,
+              nodes_which_have_assigned_slot_count);
+  }
+#endif
 
   // Entering here from inside layout, paint etc. would be catastrophic since
   // recalcStyle can tear down the layout tree or (unfortunately) run
