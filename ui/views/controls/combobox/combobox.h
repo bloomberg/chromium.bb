@@ -132,9 +132,6 @@ class VIEWS_EXPORT Combobox : public View,
   // Called when the selection is changed by the user.
   void OnPerformAction();
 
-  // Returns the size of the disclosure arrow.
-  gfx::Size ArrowSize() const;
-
   // Finds the size of the largest menu label.
   gfx::Size GetContentSize() const;
 
@@ -142,9 +139,6 @@ class VIEWS_EXPORT Combobox : public View,
   void HandleClickEvent();
 
   PrefixSelector* GetPrefixSelector();
-
-  // Returns the width of the combobox's arrow container.
-  int GetArrowContainerWidth() const;
 
   // Returns the color to use for the combobox's focus ring.
   SkColor GetFocusRingColor() const;

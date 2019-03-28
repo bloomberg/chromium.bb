@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/text_input_type.h"
@@ -23,24 +24,88 @@
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/render_text.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop.h"
+#include "ui/views/animation/ink_drop_host_view.h"
+#include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_ripple.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/combobox/combobox_util.h"
 #include "ui/views/controls/editable_combobox/editable_combobox_listener.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_manager.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
+
+namespace {
+
+class Arrow : public Button {
+ public:
+  Arrow(const SkColor color, ButtonListener* listener)
+      : Button(listener), color_(color) {
+    // Similar to Combobox's TransparentButton.
+    SetFocusBehavior(FocusBehavior::NEVER);
+    set_notify_action(PlatformStyle::kMenuNotifyActivationAction);
+
+    SetInkDropMode(InkDropMode::ON);
+    set_has_ink_drop_action_on_click(true);
+  }
+  ~Arrow() override = default;
+
+  double GetAnimationValue() const {
+    return hover_animation().GetCurrentValue();
+  }
+
+  // Overridden from InkDropHost:
+  // Similar to Combobox's TransparentButton.
+  std::unique_ptr<InkDrop> CreateInkDrop() override {
+    std::unique_ptr<views::InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
+    ink_drop->SetShowHighlightOnHover(false);
+    return std::move(ink_drop);
+  }
+
+  // Similar to Combobox's TransparentButton.
+  std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override {
+    return std::make_unique<views::FloodFillInkDropRipple>(
+        size(), GetInkDropCenterBasedOnLastEvent(),
+        GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_LabelEnabledColor),
+        ink_drop_visible_opacity());
+  }
+
+ private:
+  void PaintButtonContents(gfx::Canvas* canvas) override {
+    gfx::ScopedCanvas scoped_canvas(canvas);
+    canvas->ClipRect(GetContentsBounds());
+    gfx::Rect arrow_bounds = GetLocalBounds();
+    arrow_bounds.ClampToCenteredSize(ComboboxArrowSize());
+    PaintComboboxArrow(color_, arrow_bounds, canvas);
+  }
+
+  const SkColor color_;
+
+  DISALLOW_COPY_AND_ASSIGN(Arrow);
+};
+
+}  // namespace
 
 // static
 const char EditableCombobox::kViewClassName[] = "EditableCombobox";
@@ -183,7 +248,8 @@ EditableCombobox::EditableCombobox(
     const bool show_on_empty,
     const Type type,
     const int text_context,
-    const int text_style)
+    const int text_style,
+    const bool display_arrow)
     : textfield_(new Textfield()),
       combobox_model_(std::move(combobox_model)),
       menu_model_(
@@ -194,7 +260,6 @@ EditableCombobox::EditableCombobox(
       text_context_(text_context),
       text_style_(text_style),
       type_(type),
-      listener_(nullptr),
       showing_password_text_(type != Type::kPassword) {
   textfield_->AddObserver(this);
   textfield_->set_controller(this);
@@ -203,6 +268,13 @@ EditableCombobox::EditableCombobox(
                                    ? ui::TEXT_INPUT_TYPE_PASSWORD
                                    : ui::TEXT_INPUT_TYPE_TEXT);
   AddChildView(textfield_);
+  if (display_arrow) {
+    textfield_->SetExtraInsets(gfx::Insets(
+        /*top=*/0, /*left=*/0, /*bottom=*/0,
+        /*right=*/kComboboxArrowContainerWidth - kComboboxArrowPaddingWidth));
+    arrow_ = new Arrow(textfield_->GetTextColor(), this);
+    AddChildView(arrow_);
+  }
   SetLayoutManager(std::make_unique<views::FillLayout>());
 }
 
@@ -261,6 +333,15 @@ const char* EditableCombobox::GetClassName() const {
   return kViewClassName;
 }
 
+void EditableCombobox::Layout() {
+  View::Layout();
+  if (arrow_) {
+    gfx::Rect arrow_bounds(/*x=*/width() - kComboboxArrowContainerWidth,
+                           /*y=*/0, kComboboxArrowContainerWidth, height());
+    arrow_->SetBoundsRect(arrow_bounds);
+  }
+}
+
 void EditableCombobox::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   textfield_->OnNativeThemeChanged(theme);
 }
@@ -280,6 +361,23 @@ void EditableCombobox::OnViewBlurred(View* observed_view) {
 
 void EditableCombobox::OnViewFocused(View* observed_view) {
   ShowDropDownMenu();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// EditableCombobox, ButtonListener overrides:
+
+void EditableCombobox::ButtonPressed(Button* sender, const ui::Event& event) {
+  if (menu_runner_ && menu_runner_->IsRunning()) {
+    menu_runner_.reset();
+    return;
+  }
+  textfield_->RequestFocus();
+  ui::MenuSourceType source_type = ui::MENU_SOURCE_MOUSE;
+  if (event.IsKeyEvent())
+    source_type = ui::MENU_SOURCE_KEYBOARD;
+  else if (event.IsGestureEvent() || event.IsTouchEvent())
+    source_type = ui::MENU_SOURCE_TOUCH;
+  ShowDropDownMenu(source_type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
@@ -23,6 +24,7 @@ class FontList;
 
 namespace ui {
 class ComboboxModel;
+class Event;
 class NativeTheme;
 }  // namespace ui
 
@@ -35,7 +37,8 @@ class Textfield;
 // Textfield that also shows a drop-down list with suggestions.
 class VIEWS_EXPORT EditableCombobox : public View,
                                       public TextfieldController,
-                                      public ViewObserver {
+                                      public ViewObserver,
+                                      public ButtonListener {
  public:
   enum class Type {
     kRegular,
@@ -53,12 +56,17 @@ class VIEWS_EXPORT EditableCombobox : public View,
   // completions of the current textfield content.
   // |show_on_empty|: Whether to show the drop-down list when there is no
   // textfield content.
-  explicit EditableCombobox(std::unique_ptr<ui::ComboboxModel> combobox_model,
-                            bool filter_on_edit,
-                            bool show_on_empty,
-                            Type type = Type::kRegular,
-                            int text_context = kDefaultTextContext,
-                            int text_style = kDefaultTextStyle);
+  // |type|: The EditableCombobox type.
+  // |text_context| and |text_style|: Together these indicate the font to use.
+  // |display_arrow|: Whether to display an arrow in the combobox to indicate
+  // that there is a drop-down list.
+  EditableCombobox(std::unique_ptr<ui::ComboboxModel> combobox_model,
+                   bool filter_on_edit,
+                   bool show_on_empty,
+                   Type type = Type::kRegular,
+                   int text_context = kDefaultTextContext,
+                   int text_style = kDefaultTextStyle,
+                   bool display_arrow = true);
 
   ~EditableCombobox() override;
 
@@ -108,6 +116,7 @@ class VIEWS_EXPORT EditableCombobox : public View,
 
   // Overridden from View:
   const char* GetClassName() const override;
+  void Layout() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // Overridden from TextfieldController:
@@ -118,7 +127,12 @@ class VIEWS_EXPORT EditableCombobox : public View,
   void OnViewFocused(View* observed_view) override;
   void OnViewBlurred(View* observed_view) override;
 
+  // Overridden from ButtonListener:
+  void ButtonPressed(Button* sender, const ui::Event& event) override;
+
   Textfield* textfield_;
+
+  Button* arrow_ = nullptr;
 
   std::unique_ptr<ui::ComboboxModel> combobox_model_;
 
@@ -139,7 +153,7 @@ class VIEWS_EXPORT EditableCombobox : public View,
   std::unique_ptr<MenuRunner> menu_runner_;
 
   // Our listener. Not owned. Notified when the selected index changes.
-  EditableComboboxListener* listener_;
+  EditableComboboxListener* listener_ = nullptr;
 
   // Whether we are currently showing the passwords for type
   // Type::kPassword.
