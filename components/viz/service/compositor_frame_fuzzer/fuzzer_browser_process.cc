@@ -30,7 +30,7 @@ constexpr FrameSinkId kRootFrameSinkId(1, 1);
 FuzzerBrowserProcess::FuzzerBrowserProcess(
     base::Optional<base::FilePath> png_dir_path)
     : root_local_surface_id_(1, 1, base::UnguessableToken::Create()),
-      display_provider_(std::move(png_dir_path)),
+      display_provider_(&shared_bitmap_manager_, std::move(png_dir_path)),
       frame_sink_manager_(&shared_bitmap_manager_,
                           base::nullopt,
                           &display_provider_) {
@@ -77,13 +77,18 @@ void FuzzerBrowserProcess::EmbedFuzzedCompositorFrame(
       BuildBrowserUICompositorFrame(embedded_surface_id);
   root_compositor_frame_sink_ptr_->SubmitCompositorFrame(
       root_local_surface_id_, std::move(browser_frame), base::nullopt, 0);
+
+  // run queued messages (memory allocation and frame submission)
+  base::RunLoop().RunUntilIdle();
+
   display_private_->ForceImmediateDrawAndSwapIfPossible();
 
   for (auto& fuzzed_bitmap : allocated_bitmaps) {
     sink_ptr->DidDeleteSharedBitmap(fuzzed_bitmap.id);
   }
 
-  base::RunLoop().RunUntilIdle();  // needed to actually run queued messages
+  // run queued messages (memory deallocation)
+  base::RunLoop().RunUntilIdle();
 
   frame_sink_manager_.DestroyCompositorFrameSink(kEmbeddedFrameSinkId,
                                                  base::DoNothing());

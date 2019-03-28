@@ -22,7 +22,8 @@ namespace viz {
 // ignoring the BeginFrameSource parameters passed to CreateDisplay.
 class FuzzerSoftwareDisplayProvider : public DisplayProvider {
  public:
-  explicit FuzzerSoftwareDisplayProvider(
+  FuzzerSoftwareDisplayProvider(
+      ServerSharedBitmapManager* server_shared_bitmap_manager,
       base::Optional<base::FilePath> png_dir_path);
   ~FuzzerSoftwareDisplayProvider() override;
 
@@ -39,8 +40,8 @@ class FuzzerSoftwareDisplayProvider : public DisplayProvider {
   uint32_t GetRestartId() const override;
 
  private:
+  ServerSharedBitmapManager* const shared_bitmap_manager_;
   base::Optional<base::FilePath> png_dir_path_;
-  ServerSharedBitmapManager shared_bitmap_manager_;
   std::unique_ptr<StubBeginFrameSource> begin_frame_source_;
 
   DISALLOW_COPY_AND_ASSIGN(FuzzerSoftwareDisplayProvider);
