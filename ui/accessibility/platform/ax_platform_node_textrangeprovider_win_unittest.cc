@@ -10,6 +10,7 @@
 #include "base/win/atl.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_safearray.h"
+#include "base/win/scoped_variant.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_textrangeprovider_win.h"
@@ -79,6 +80,14 @@ namespace ui {
       EXPECT_EQ(array_data[i].Get(), expected_property_values[i].Get()); \
     }                                                                    \
     EXPECT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(safearray));        \
+  }
+
+#define EXPECT_UIA_TEXTATTRIBUTE_EQ(provider, attribute, variant)          \
+  {                                                                        \
+    base::win::ScopedVariant scoped_variant;                               \
+    EXPECT_HRESULT_SUCCEEDED(                                              \
+        provider->GetAttributeValue(attribute, scoped_variant.Receive())); \
+    EXPECT_EQ(0, scoped_variant.Compare(variant));                         \
   }
 
 class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
@@ -1204,6 +1213,78 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetChildren) {
   EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
 
   AXNodePosition::SetTreeForTesting(nullptr);
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderGetAttributeValue) {
+  ui::AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.SetName("some text");
+
+  ui::AXNodeData more_text_data;
+  more_text_data.id = 3;
+  more_text_data.role = ax::mojom::Role::kStaticText;
+  more_text_data.AddState(ax::mojom::State::kInvisible);
+  more_text_data.SetName("more text");
+
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+  root_data.child_ids = {2, 3};
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes.push_back(root_data);
+  update.nodes.push_back(text_data);
+  update.nodes.push_back(more_text_data);
+
+  Init(update);
+
+  AXNodePosition::SetTreeForTesting(tree_.get());
+
+  AXNode* text_node = GetRootNode()->children()[0];
+
+  ComPtr<ITextProvider> document_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      GetRootIRawElementProviderSimple()->GetPatternProvider(
+          UIA_TextPatternId, &document_provider));
+
+  ComPtr<ITextProvider> text_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      QueryInterfaceFromNode<IRawElementProviderSimple>(text_node)
+          ->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+  ComPtr<ITextRangeProvider> document_range_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      document_provider->get_DocumentRange(&document_range_provider));
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+
+  base::win::ScopedVariant expected_mixed_variant;
+  {
+    VARIANT var;
+    V_VT(&var) = VT_UNKNOWN;
+    EXPECT_HRESULT_SUCCEEDED(
+        ::UiaGetReservedMixedAttributeValue(&V_UNKNOWN(&var)));
+    expected_mixed_variant.Reset(var);
+  }
+
+  base::win::ScopedVariant expected_variant;
+
+  expected_variant.Set(false);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_IsHiddenAttributeId,
+                              expected_variant);
+  expected_variant.Reset();
+
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(document_range_provider, UIA_IsHiddenAttributeId,
+                              expected_mixed_variant);
 }
 
 }  // namespace ui

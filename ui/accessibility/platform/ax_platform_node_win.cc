@@ -4079,6 +4079,32 @@ IFACEMETHODIMP AXPlatformNodeWin::QueryService(REFGUID guidService,
   return E_FAIL;
 }
 
+HRESULT AXPlatformNodeWin::GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
+                                                 VARIANT* result) {
+  // Text attributes of kInlineTextBox nodes are stored on the parent node
+  // (which is typically a kStaticText or kLineBreak node).
+  if (GetData().role == ax::mojom::Role::kInlineTextBox) {
+    AXPlatformNodeWin* parent_platform_node =
+        static_cast<AXPlatformNodeWin*>(FromNativeViewAccessible(GetParent()));
+    if (!parent_platform_node)
+      return UIA_E_ELEMENTNOTAVAILABLE;
+
+    return parent_platform_node->GetTextAttributeValue(attribute_id, result);
+  }
+
+  switch (attribute_id) {
+    case UIA_IsHiddenAttributeId:
+      V_VT(result) = VT_BOOL;
+      V_BOOL(result) = IsInvisibleOrIgnored() ? VARIANT_TRUE : VARIANT_FALSE;
+      break;
+    default:
+      V_VT(result) = VT_UNKNOWN;
+      return ::UiaGetReservedNotSupportedValue(&V_UNKNOWN(result));
+  }
+
+  return S_OK;
+}
+
 //
 // Private member functions.
 //
