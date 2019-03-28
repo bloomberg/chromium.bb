@@ -81,8 +81,8 @@ class TestMenuControllerDelegate : public internal::MenuControllerDelegate {
   }
 
   // On a subsequent call to OnMenuClosed |controller| will be deleted.
-  void set_on_menu_closed_callback(const base::RepeatingClosure& callback) {
-    on_menu_closed_callback_ = callback;
+  void set_on_menu_closed_callback(base::RepeatingClosure callback) {
+    on_menu_closed_callback_ = std::move(callback);
   }
 
   // internal::MenuControllerDelegate:
@@ -175,8 +175,9 @@ class GestureTestWidget : public Widget {
 // callback is triggered during StartDragAndDrop in order to allow testing.
 class TestDragDropClient : public aura::client::DragDropClient {
  public:
-  explicit TestDragDropClient(const base::RepeatingClosure& callback)
-      : start_drag_and_drop_callback_(callback), drag_in_progress_(false) {}
+  explicit TestDragDropClient(base::RepeatingClosure callback)
+      : start_drag_and_drop_callback_(std::move(callback)),
+        drag_in_progress_(false) {}
   ~TestDragDropClient() override = default;
 
   // aura::client::DragDropClient:
@@ -229,9 +230,8 @@ class DestructingTestViewsDelegate : public TestViewsDelegate {
   DestructingTestViewsDelegate() = default;
   ~DestructingTestViewsDelegate() override = default;
 
-  void set_release_ref_callback(
-      const base::RepeatingClosure& release_ref_callback) {
-    release_ref_callback_ = release_ref_callback;
+  void set_release_ref_callback(base::RepeatingClosure release_ref_callback) {
+    release_ref_callback_ = std::move(release_ref_callback);
   }
 
   // TestViewsDelegate:

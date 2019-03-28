@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -241,9 +243,9 @@ void ShowInactiveSync(Widget* widget) {
 // Wait until |callback| returns |expected_value|, but no longer than 1 second.
 class PropertyWaiter {
  public:
-  PropertyWaiter(const base::RepeatingCallback<bool(void)>& callback,
+  PropertyWaiter(base::RepeatingCallback<bool(void)> callback,
                  bool expected_value)
-      : callback_(callback), expected_value_(expected_value) {}
+      : callback_(std::move(callback)), expected_value_(expected_value) {}
 
   bool Wait() {
     if (callback_.Run() == expected_value_) {

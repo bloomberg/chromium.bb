@@ -661,7 +661,7 @@ std::string NativeWidgetMac::GetName() const {
 
 // static
 void NativeWidgetMac::SetInitNativeWidgetCallback(
-    const base::RepeatingCallback<void(NativeWidgetMac*)>& callback) {
+    base::RepeatingCallback<void(NativeWidgetMac*)> callback) {
   DCHECK(!g_init_native_widget_callback || callback.is_null());
   if (callback.is_null()) {
     if (g_init_native_widget_callback) {
@@ -671,7 +671,7 @@ void NativeWidgetMac::SetInitNativeWidgetCallback(
     return;
   }
   g_init_native_widget_callback =
-      new base::RepeatingCallback<void(NativeWidgetMac*)>(callback);
+      new base::RepeatingCallback<void(NativeWidgetMac*)>(std::move(callback));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
