@@ -261,8 +261,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
 
   bool is_in_drag() const { return is_in_drag_; }
 
-  bool drag_started_from_peeking() const { return drag_started_from_peeking_; }
-
   void set_onscreen_keyboard_shown(bool onscreen_keyboard_shown) {
     onscreen_keyboard_shown_ = onscreen_keyboard_shown;
   }
@@ -429,9 +427,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
 
   // For UMA and testing. If non-null, triggered when the app list is painted.
   base::Closure next_paint_callback_;
-
-  // True if the dragging started from PEEKING state.
-  bool drag_started_from_peeking_ = false;
 
   // Metric reporter for state change animations.
   const std::unique_ptr<ui::AnimationMetricsReporter>
