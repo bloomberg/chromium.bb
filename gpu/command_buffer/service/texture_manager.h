@@ -260,7 +260,9 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   // Set the ImageState for the image bound to the given level.
   void SetLevelImageState(GLenum target, GLint level, ImageState state);
 
-  bool CompatibleWithSamplerUniformType(GLenum type) const;
+  bool CompatibleWithSamplerUniformType(
+      GLenum type,
+      const SamplerState& sampler_state) const;
 
   // Get the image associated with a particular level. Returns NULL if level
   // does not exist.
