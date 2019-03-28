@@ -41,6 +41,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "base/logging.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
@@ -104,10 +105,13 @@ bool IsTabletModeEnabled() {
       ->IsTabletModeWindowManagerEnabled();
 }
 
-bool IsHomeLauncherEnabledInTabletMode() {
-  // Home launcher flag is enabled by default and removed, so this is the same
-  // as checking tablet mode state.
-  return IsTabletModeEnabled();
+bool IsHomeScreenAvailable() {
+  // Shell could be destroying. Shell destroys HomeScreenController before
+  // closing all windows.
+  if (!Shell::Get()->home_screen_controller())
+    return false;
+
+  return Shell::Get()->home_screen_controller()->IsHomeScreenAvailable();
 }
 
 }  // namespace
@@ -183,7 +187,8 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
   DCHECK(shelf_);
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->overview_controller()->AddObserver(this);
-  Shell::Get()->app_list_controller()->AddObserver(this);
+  if (Shell::Get()->app_list_controller())
+    Shell::Get()->app_list_controller()->AddObserver(this);
   Shell::Get()
       ->home_screen_controller()
       ->home_launcher_gesture_handler()
@@ -437,12 +442,12 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   }
 
   if (is_app_list_visible_) {
-    if (!IsHomeLauncherEnabledInTabletMode())
+    if (!IsHomeScreenAvailable())
       return SHELF_BACKGROUND_APP_LIST;
 
-    // In tablet mode, the app list(now referred to as Home Launcher) is always
-    // visible. If the Home Launcher is either fullscreen or being animated or
-    // dragged, show the transparent background.
+    // When the home screen is available, it is always visible. If the home
+    // screen is either fullscreen or being animated or dragged, show the
+    // transparent background.
     if (is_home_launcher_shown_ || is_home_launcher_target_position_shown_)
       return SHELF_BACKGROUND_DEFAULT;
   }
@@ -1151,7 +1156,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (shelf_->auto_hide_lock())
     return state_.auto_hide_state;
 
-  if (shelf_widget_->IsShowingAppList() && !IsHomeLauncherEnabledInTabletMode())
+  if (shelf_widget_->IsShowingAppList() && !IsHomeScreenAvailable())
     return SHELF_AUTO_HIDE_SHOWN;
 
   if (shelf_widget_->status_area_widget() &&
@@ -1287,8 +1292,10 @@ float ShelfLayoutManager::ComputeTargetOpacity(const State& state) const {
 }
 
 bool ShelfLayoutManager::IsShelfHiddenForFullscreen() const {
-  if (Shell::Get()->app_list_controller()->GetTargetVisibility() &&
-      !IsHomeLauncherEnabledInTabletMode()) {
+  // If the non-fullscreen app list should be shown, the shelf should not be
+  // hidden.
+  if (!IsHomeScreenAvailable() &&
+      Shell::Get()->app_list_controller()->GetTargetVisibility()) {
     return false;
   }
 
@@ -1324,6 +1331,9 @@ bool ShelfLayoutManager::StartGestureDrag(
     const gfx::Rect shelf_bounds = GetIdealBounds();
     shelf_background_type_before_drag_ = shelf_background_type_;
     gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
+
+    // TODO(michaelpg): Simplify gesture drag logic and remove these DCHECKs.
+    DCHECK(Shell::Get()->app_list_controller());
     Shell::Get()->app_list_controller()->Show(
         display::Screen::GetScreen()
             ->GetDisplayNearestWindow(shelf_widget_->GetNativeWindow())
@@ -1352,7 +1362,7 @@ bool ShelfLayoutManager::StartGestureDrag(
   }
 
   // Disable the shelf dragging if the fullscreen app list is opened.
-  if (is_app_list_visible_ && !IsHomeLauncherEnabledInTabletMode())
+  if (is_app_list_visible_ && !IsHomeScreenAvailable())
     return false;
 
   // Also disable shelf drags until the overflow shelf is closed.
@@ -1383,6 +1393,7 @@ void ShelfLayoutManager::UpdateGestureDrag(
   if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS) {
     // Dismiss the app list if the shelf changed to vertical alignment during
     // dragging.
+    DCHECK(Shell::Get()->app_list_controller());
     if (!shelf_->IsHorizontalAlignment()) {
       Shell::Get()->app_list_controller()->DismissAppList();
       launcher_above_shelf_bottom_amount_ = 0.f;
@@ -1442,6 +1453,7 @@ void ShelfLayoutManager::CompleteAppListDrag(
     gesture_drag_status_ = GESTURE_DRAG_NONE;
     return;
   }
+  DCHECK(Shell::Get()->app_list_controller());
 
   using app_list::AppListViewState;
   AppListViewState app_list_state =
@@ -1463,8 +1475,10 @@ void ShelfLayoutManager::CancelGestureDrag() {
     DCHECK(home_launcher_handler);
     if (home_launcher_handler->IsDragInProgress())
       home_launcher_handler->Cancel();
-    else
+    else {
+      DCHECK(Shell::Get()->app_list_controller());
       Shell::Get()->app_list_controller()->DismissAppList();
+    }
   } else {
     // Set |gesture_drag_status_| to GESTURE_DRAG_CANCEL_IN_PROGRESS to set the
     // auto hide state to |gesture_drag_auto_hide_state_|, which is the
@@ -1477,6 +1491,11 @@ void ShelfLayoutManager::CancelGestureDrag() {
 
 bool ShelfLayoutManager::CanStartFullscreenAppListDrag(
     float scroll_y_hint) const {
+  // If the home screen is available, dragging is handled by
+  // HomeLauncherGestureHandler.
+  if (IsHomeScreenAvailable())
+    return false;
+
   // Fullscreen app list can only be dragged from bottom alignment shelf.
   if (!shelf_->IsHorizontalAlignment())
     return false;
@@ -1497,12 +1516,6 @@ bool ShelfLayoutManager::CanStartFullscreenAppListDrag(
 
   // Swipes down on shelf should hide the shelf.
   if (scroll_y_hint >= 0)
-    return false;
-
-  // In overview mode, app list for tablet mode is hidden temporarily and will
-  // be shown automatically after overview mode ends. So prevent opening it
-  // here.
-  if (IsHomeLauncherEnabledInTabletMode())
     return false;
 
   return true;

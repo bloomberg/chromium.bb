@@ -262,7 +262,8 @@ bool Shelf::ProcessGestureEvent(const ui::GestureEvent& event) {
 }
 
 void Shelf::ProcessMouseWheelEvent(const ui::MouseWheelEvent& event) {
-  Shell::Get()->app_list_controller()->ProcessMouseWheelEvent(event);
+  if (Shell::Get()->app_list_controller())
+    Shell::Get()->app_list_controller()->ProcessMouseWheelEvent(event);
 }
 
 void Shelf::AddObserver(ShelfObserver* observer) {

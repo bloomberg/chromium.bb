@@ -26,7 +26,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
-#include "ui/gfx/geometry/vector2d_conversions.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/transient_window_manager.h"
@@ -35,28 +35,8 @@
 namespace app_list {
 namespace {
 
-// The y offset for app list animation when overview mode toggles.
-constexpr int kOverviewAnimationYOffset = 100;
-
-// The duration in milliseconds for app list animation when overview mode
-// toggles.
-constexpr base::TimeDelta kOverviewAnimationDuration =
-    base::TimeDelta::FromMilliseconds(250);
-
 inline ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
-}
-
-void UpdateOverviewSettings(ui::AnimationMetricsReporter* reporter,
-                            ui::ScopedLayerAnimationSettings* settings,
-                            bool observe) {
-  settings->SetTransitionDuration(kOverviewAnimationDuration);
-  settings->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-  settings->SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-
-  DCHECK(reporter);
-  settings->SetAnimationMetricsReporter(reporter);
 }
 
 // Callback from the compositor when it presented a valid frame. Used to
@@ -79,37 +59,9 @@ void DidPresentCompositorFrame(base::TimeTicks event_time_stamp,
 
 }  // namespace
 
-class AppListPresenterImpl::OverviewAnimationMetricsReporter
-    : public ui::AnimationMetricsReporter {
- public:
-  OverviewAnimationMetricsReporter() = default;
-  ~OverviewAnimationMetricsReporter() override = default;
-
-  void Start(bool enter) {
-    enter_ = enter;
-  }
-
-  void Report(int value) override {
-    if (enter_) {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "Apps.StateTransition.AnimationSmoothness.EnterOverview", value);
-    } else {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "Apps.StateTransition.AnimationSmoothness.ExitOverview", value);
-    }
-  }
-
- private:
-  bool enter_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(OverviewAnimationMetricsReporter);
-};
-
 AppListPresenterImpl::AppListPresenterImpl(
     std::unique_ptr<AppListPresenterDelegate> delegate)
-    : delegate_(std::move(delegate)),
-      overview_animation_metrics_reporter_(
-          std::make_unique<OverviewAnimationMetricsReporter>()) {
+    : delegate_(std::move(delegate)) {
   DCHECK(delegate_);
   delegate_->SetPresenter(this);
 }
@@ -305,23 +257,6 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
 
   // Update child views' y positions to target state to avoid stale positions.
   view_->app_list_main_view()->contents_view()->UpdateYPositionAndOpacity();
-}
-
-void AppListPresenterImpl::ScheduleOverviewModeAnimation(bool start,
-                                                         bool animate) {
-  // If animating, set the source parameters.
-  if (animate) {
-    UpdateYPositionAndOpacityForHomeLauncher(
-        start ? 0 : kOverviewAnimationYOffset, start ? 1.f : 0.f,
-        base::NullCallback());
-
-    overview_animation_metrics_reporter_->Start(start);
-  }
-  UpdateYPositionAndOpacityForHomeLauncher(
-      start ? kOverviewAnimationYOffset : 0, start ? 0.f : 1.f,
-      animate ? base::BindRepeating(&UpdateOverviewSettings,
-                                    overview_animation_metrics_reporter_.get())
-              : base::NullCallback());
 }
 
 void AppListPresenterImpl::ShowEmbeddedAssistantUI(bool show) {

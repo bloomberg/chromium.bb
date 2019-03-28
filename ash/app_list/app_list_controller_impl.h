@@ -214,8 +214,6 @@ class ASH_EXPORT AppListControllerImpl
 
   // OverviewObserver:
   void OnOverviewModeStarting() override;
-  void OnOverviewModeEnding(OverviewSession* overview_session) override;
-  void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
@@ -249,7 +247,7 @@ class ASH_EXPORT AppListControllerImpl
   void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id) override;
 
   // HomeScreenDelegate:
-  void ShowHomeScreen() override;
+  void ShowHomeScreenView() override;
   aura::Window* GetHomeScreenWindow() override;
   void UpdateYPositionAndOpacityForHomeLauncher(
       int y_position_in_screen,
@@ -305,6 +303,9 @@ class ASH_EXPORT AppListControllerImpl
   // Returns the length of the most recent query.
   int GetLastQueryLength();
 
+  // Shuts down the AppListControllerImpl, removing itself as an observer.
+  void Shutdown();
+
   base::string16 last_raw_query_;
 
   mojom::AppListClientPtr client_;
@@ -322,10 +323,8 @@ class ASH_EXPORT AppListControllerImpl
   // Whether the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;
 
-  // Each time overview mode is exited, set this variable based on whether
-  // overview mode is sliding out, so the home launcher knows what to do when
-  // overview mode exit animations are finished.
-  bool use_slide_to_exit_overview_ = false;
+  // True if Shutdown() has been called.
+  bool is_shutdown_ = false;
 
   base::ObserverList<AppListControllerObserver> observers_;
 

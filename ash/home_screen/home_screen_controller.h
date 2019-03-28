@@ -8,20 +8,21 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/home_screen/home_screen_presenter.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
 
 namespace ash {
 
 class HomeLauncherGestureHandler;
 class HomeScreenDelegate;
-class WallpaperController;
 
 // HomeScreenController handles the home launcher (e.g., tablet-mode app list)
 // and owns the HomeLauncherGestureHandler that transitions the launcher window
 // and other windows when the launcher is shown, hidden or animated.
-class ASH_EXPORT HomeScreenController : public WallpaperControllerObserver {
+class ASH_EXPORT HomeScreenController : public OverviewObserver,
+                                        public WallpaperControllerObserver {
  public:
   HomeScreenController();
   ~HomeScreenController() override;
@@ -53,6 +54,11 @@ class ASH_EXPORT HomeScreenController : public WallpaperControllerObserver {
   HomeScreenDelegate* delegate() { return delegate_; }
 
  private:
+  // OverviewObserver:
+  void OnOverviewModeStarting() override;
+  void OnOverviewModeEnding(OverviewSession* overview_session) override;
+  void OnOverviewModeEndingAnimationComplete(bool canceled) override;
+
   // WallpaperControllerObserver:
   void OnWallpaperPreviewStarted() override;
   void OnWallpaperPreviewEnded() override;
@@ -75,8 +81,13 @@ class ASH_EXPORT HomeScreenController : public WallpaperControllerObserver {
   // launcher.
   std::unique_ptr<HomeLauncherGestureHandler> home_launcher_gesture_handler_;
 
-  ScopedObserver<WallpaperController, WallpaperControllerObserver>
-      wallpaper_controller_observer_{this};
+  // Presenter that manages home screen animations.
+  HomeScreenPresenter home_screen_presenter_{this};
+
+  // Each time overview mode is exited, set this variable based on whether
+  // overview mode is sliding out, so the home launcher knows what to do when
+  // overview mode exit animations are finished.
+  bool use_slide_to_exit_overview_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(HomeScreenController);
 };

@@ -80,7 +80,11 @@ void BindAccessibilityFocusRingControllerRequestOnMainThread(
 
 void BindAppListControllerRequestOnMainThread(
     mojom::AppListControllerRequest request) {
-  Shell::Get()->app_list_controller()->BindRequest(std::move(request));
+  // The AppListController is not available in KioskNext sessions.
+  // TODO(michaelpg): Also disable the Chrome AppList client in KioskNext
+  // sessions.
+  if (Shell::Get()->app_list_controller())
+    Shell::Get()->app_list_controller()->BindRequest(std::move(request));
 }
 
 void BindArcCustomTabControllerRequestOnMainThread(

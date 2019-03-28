@@ -96,7 +96,12 @@ AppListControllerImpl::AppListControllerImpl()
       this);
 }
 
-AppListControllerImpl::~AppListControllerImpl() = default;
+AppListControllerImpl::~AppListControllerImpl() {
+  // If this is being destroyed before the Shell starts shutting down, first
+  // remove this from objects it's observing.
+  if (!is_shutdown_)
+    Shutdown();
+}
 
 void AppListControllerImpl::SetClient(mojom::AppListClientPtr client_ptr) {
   client_ = std::move(client_ptr);
@@ -521,65 +526,15 @@ void AppListControllerImpl::FlushForTesting() {
   bindings_.FlushForTesting();
 }
 
-// Stop observing at the beginning of ~Shell to avoid unnecessary work during
-// Shell shutdown.
 void AppListControllerImpl::OnShellDestroying() {
-  Shell* shell = Shell::Get();
-  shell->home_screen_controller()
-      ->home_launcher_gesture_handler()
-      ->RemoveObserver(this);
-  if (app_list_features::IsEmbeddedAssistantUIEnabled())
-    shell->assistant_controller()->ui_controller()->RemoveModelObserver(this);
-  shell->mru_window_tracker()->RemoveObserver(this);
-  shell->window_tree_host_manager()->RemoveObserver(this);
-  shell->voice_interaction_controller()->RemoveLocalObserver(this);
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
-  shell->overview_controller()->RemoveObserver(this);
-  shell->RemoveShellObserver(this);
-  shell->wallpaper_controller()->RemoveObserver(this);
-  shell->tablet_mode_controller()->RemoveObserver(this);
-  shell->session_controller()->RemoveObserver(this);
-  model_->RemoveObserver(this);
+  // Stop observing at the beginning of ~Shell to avoid unnecessary work during
+  // Shell shutdown.
+  Shutdown();
 }
 
 void AppListControllerImpl::OnOverviewModeStarting() {
-  if (!IsHomeScreenAvailable()) {
-    DismissAppList();
-    return;
-  }
-
-  // Only animate the app list when overview mode is using slide animation.
-  presenter_.ScheduleOverviewModeAnimation(
-      /*start=*/true,
-      Shell::Get()
-              ->overview_controller()
-              ->overview_session()
-              ->enter_exit_overview_type() ==
-          OverviewSession::EnterExitOverviewType::kWindowsMinimized);
-}
-
-void AppListControllerImpl::OnOverviewModeEnding(
-    OverviewSession* overview_session) {
   if (!IsHomeScreenAvailable())
-    return;
-
-  // Animate the launcher if overview mode is sliding out. Let
-  // OnOverviewModeEndingAnimationComplete handle showing the launcher after
-  // overview mode finishes animating. Overview however is nullptr by the
-  // time the animations are finished, so we need to check the animation type
-  // here.
-  use_slide_to_exit_overview_ =
-      overview_session->enter_exit_overview_type() ==
-      OverviewSession::EnterExitOverviewType::kWindowsMinimized;
-}
-
-void AppListControllerImpl::OnOverviewModeEndingAnimationComplete(
-    bool canceled) {
-  if (!IsHomeScreenAvailable() || canceled)
-    return;
-
-  presenter_.ScheduleOverviewModeAnimation(/*start=*/false,
-                                           use_slide_to_exit_overview_);
+    DismissAppList();
 }
 
 void AppListControllerImpl::OnTabletModeStarted() {
@@ -695,7 +650,7 @@ void AppListControllerImpl::OnHomeLauncherAnimationComplete(
                          : AssistantExitPoint::kLauncherClose);
 }
 
-void AppListControllerImpl::ShowHomeScreen() {
+void AppListControllerImpl::ShowHomeScreenView() {
   DCHECK(IsTabletMode());
 
   Show(GetDisplayIdToShowAppListOn(), app_list::kTabletMode, base::TimeTicks());
@@ -1182,6 +1137,28 @@ void AppListControllerImpl::UpdateLauncherContainer() {
 
 int AppListControllerImpl::GetLastQueryLength() {
   return search_model_.search_box()->text().length();
+}
+
+void AppListControllerImpl::Shutdown() {
+  DCHECK(!is_shutdown_);
+  is_shutdown_ = true;
+
+  Shell* shell = Shell::Get();
+  shell->home_screen_controller()
+      ->home_launcher_gesture_handler()
+      ->RemoveObserver(this);
+  if (app_list_features::IsEmbeddedAssistantUIEnabled())
+    shell->assistant_controller()->ui_controller()->RemoveModelObserver(this);
+  shell->mru_window_tracker()->RemoveObserver(this);
+  shell->window_tree_host_manager()->RemoveObserver(this);
+  shell->voice_interaction_controller()->RemoveLocalObserver(this);
+  keyboard::KeyboardController::Get()->RemoveObserver(this);
+  shell->overview_controller()->RemoveObserver(this);
+  shell->RemoveShellObserver(this);
+  shell->wallpaper_controller()->RemoveObserver(this);
+  shell->tablet_mode_controller()->RemoveObserver(this);
+  shell->session_controller()->RemoveObserver(this);
+  model_->RemoveObserver(this);
 }
 
 }  // namespace ash
