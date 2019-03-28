@@ -198,8 +198,8 @@ double XRWebGLLayer::getNativeFramebufferScaleFactor(XRSession* session) {
 }
 
 void XRWebGLLayer::UpdateViewports() {
-  long framebuffer_width = framebufferWidth();
-  long framebuffer_height = framebufferHeight();
+  uint32_t framebuffer_width = framebufferWidth();
+  uint32_t framebuffer_height = framebufferHeight();
 
   viewports_dirty_ = false;
 

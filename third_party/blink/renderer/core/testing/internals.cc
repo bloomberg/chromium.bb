@@ -3134,7 +3134,7 @@ ScriptPromise Internals::addOneToPromise(ScriptState* script_state,
 }
 
 ScriptPromise Internals::promiseCheck(ScriptState* script_state,
-                                      long arg1,
+                                      int32_t arg1,
                                       bool arg2,
                                       const ScriptValue& arg3,
                                       const String& arg4,
@@ -3158,7 +3158,7 @@ ScriptPromise Internals::promiseCheckWithoutExceptionState(
 }
 
 ScriptPromise Internals::promiseCheckRange(ScriptState* script_state,
-                                           long arg1) {
+                                           int32_t arg1) {
   return ScriptPromise::Cast(script_state,
                              V8String(script_state->GetIsolate(), "done"));
 }
@@ -3177,8 +3177,8 @@ ScriptPromise Internals::promiseCheckOverload(ScriptState* script_state,
 
 ScriptPromise Internals::promiseCheckOverload(ScriptState* script_state,
                                               Location*,
-                                              long,
-                                              long) {
+                                              int32_t,
+                                              int32_t) {
   return ScriptPromise::Cast(script_state,
                              V8String(script_state->GetIsolate(), "done"));
 }

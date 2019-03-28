@@ -1646,9 +1646,9 @@ bool XMLDocumentParser::AppendFragmentSource(const String& chunk) {
   // XMLDocumentParserQt has a similar check (m_stream.error() ==
   // QXmlStreamReader::PrematureEndOfDocumentError) in doEnd(). Check if all
   // the chunk has been processed.
-  long bytes_processed = xmlByteConsumed(Context());
+  int64_t bytes_processed = xmlByteConsumed(Context());
   if (bytes_processed == -1 ||
-      static_cast<wtf_size_t>(bytes_processed) != chunk_as_utf8.length()) {
+      bytes_processed != static_cast<int64_t>(chunk_as_utf8.length())) {
     // FIXME: I don't believe we can hit this case without also having seen
     // an error or a null byte. If we hit this DCHECK, we've found a test
     // case which demonstrates the need for this code.
