@@ -15,6 +15,9 @@ component("common") {
 
     # Actual client code
     "//media/capabilities",
+
+    # Test code
+    "//media/mojo/services:unit_tests",
   ]
 
   defines = [ "IS_LEARNING_COMMON_IMPL" ]

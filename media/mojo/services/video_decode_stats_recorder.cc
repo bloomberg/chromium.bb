@@ -34,8 +34,10 @@ void VideoDecodeStatsRecorder::StartNewRecord(
   DCHECK_GT(features->frames_per_sec, 0);
   DCHECK(features->video_size.width() > 0 && features->video_size.height() > 0);
 
-  features_ = *features;
+  // DO THIS FIRST! Finalize existing stats with the current state.
   FinalizeRecord();
+
+  features_ = *features;
 
   DVLOG(2) << __func__ << "profile: " << features_.profile
            << " sz:" << features_.video_size.ToString()
