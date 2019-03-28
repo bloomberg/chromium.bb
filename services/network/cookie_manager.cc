@@ -85,9 +85,8 @@ void CookieManager::GetCookieList(const GURL& url,
     base::Process::TerminateCurrentProcessImmediately(1);
 #endif
 
-  cookie_store_->GetCookieListWithOptionsAsync(
-      url, cookie_options,
-      net::cookie_util::IgnoreCookieStatusList(std::move(callback)));
+  cookie_store_->GetCookieListWithOptionsAsync(url, cookie_options,
+                                               std::move(callback));
 }
 
 void CookieManager::SetCanonicalCookie(const net::CanonicalCookie& cookie,
@@ -96,8 +95,7 @@ void CookieManager::SetCanonicalCookie(const net::CanonicalCookie& cookie,
                                        SetCanonicalCookieCallback callback) {
   cookie_store_->SetCanonicalCookieAsync(
       std::make_unique<net::CanonicalCookie>(cookie), source_scheme,
-      cookie_options,
-      net::cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback)));
+      cookie_options, std::move(callback));
 }
 
 void CookieManager::DeleteCanonicalCookie(

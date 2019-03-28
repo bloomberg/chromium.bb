@@ -372,7 +372,7 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   // Callback for CookieManager::SetCanonicalCookie.
   void OnCookieSet(const std::string& cookie_name,
                    const std::string& cookie_domain,
-                   bool success);
+                   net::CanonicalCookie::CookieInclusionStatus status);
 
   // Final call in the Setting accounts in cookie procedure. Virtual for testing
   // purposes.

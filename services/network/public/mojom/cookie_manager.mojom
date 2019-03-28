@@ -206,17 +206,24 @@ interface CookieManager {
 
   // Get all cookies for the specified URL and cookie options.
   // Returned cookie list is sorted first by path length (longest first)
-  // and second by creation time.
-  GetCookieList(url.mojom.Url url, CookieOptions cookie_options) =>
-      (array<CanonicalCookie> cookies);
+  // and second by creation time. If the |return_excluded_cookies| option is set
+  // in the options, |excluded_cookies| with be a list of cookies that were
+  // blocked from being sent along with the reason each cookie was blocked. By
+  // default, that option is not set and |excluded_cookies| is an empty list.
+  GetCookieList(url.mojom.Url url, CookieOptions cookie_options)
+      => (array<CanonicalCookie> cookies,
+          array<CookieWithStatus> excluded_cookies);
 
   // Set a cookie.  |source_scheme| is used to check whether existing secure
   // cookies can be overwritten (secure cookies may be created from a
   // non-secure source), and whether the scheme is permitted to use cookies in
   // the first place.  |cookie_options| indicates whether http_only
-  // or SameSite cookies may be overwritten.
+  // or SameSite cookies may be overwritten. If a cookie is not permitted to be
+  // set, |status| will indicate why it was blocked. If the cookie is permitted,
+  // |status| will be set to INCLUDE.
   SetCanonicalCookie(CanonicalCookie cookie, string source_scheme,
-                     CookieOptions cookie_options) => (bool success);
+                     CookieOptions cookie_options)
+      => (CookieInclusionStatus status);
 
   // Delete a cookie. Returns true if a cookie was deleted.
   DeleteCanonicalCookie(CanonicalCookie cookie) => (bool success);

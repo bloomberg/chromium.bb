@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -803,7 +804,8 @@ void EnrollmentScreenHandler::HandleCompleteLogin(const std::string& user) {
 
 void EnrollmentScreenHandler::OnGetCookiesForCompleteLogin(
     const std::string& user,
-    const std::vector<net::CanonicalCookie>& cookies) {
+    const std::vector<net::CanonicalCookie>& cookies,
+    const net::CookieStatusList& excluded_cookies) {
   std::string auth_code;
   for (const auto& cookie : cookies) {
     if (cookie.Name() == "oauth_code") {

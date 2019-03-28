@@ -129,7 +129,8 @@ void GaiaAuthFetcherIOSNSURLSessionBridge::SetCanonicalCookiesFromResponse(
 }
 
 void GaiaAuthFetcherIOSNSURLSessionBridge::FetchPendingRequestWithCookies(
-    const std::vector<net::CanonicalCookie>& cookies) {
+    const std::vector<net::CanonicalCookie>& cookies,
+    const net::CookieStatusList& excluded_cookies) {
   DCHECK(!url_session_);
   url_session_ = CreateNSURLSession(url_session_delegate_);
   url_session_delegate_.requestSession = url_session_;

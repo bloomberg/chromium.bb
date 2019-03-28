@@ -159,8 +159,8 @@ void AndroidSmsAppSetupControllerImpl::OnSetRememberDeviceByDefaultCookieResult(
     const GURL& app_url,
     const GURL& install_url,
     SuccessCallback callback,
-    bool succeeded) {
-  if (!succeeded) {
+    net::CanonicalCookie::CookieInclusionStatus status) {
+  if (status != net::CanonicalCookie::CookieInclusionStatus::INCLUDE) {
     PA_LOG(WARNING)
         << "AndroidSmsAppSetupControllerImpl::"
         << "OnSetRememberDeviceByDefaultCookieResult(): Failed to set "
@@ -292,8 +292,8 @@ void AndroidSmsAppSetupControllerImpl::OnAppUninstallResult(
 void AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult(
     const GURL& app_url,
     SuccessCallback callback,
-    bool succeeded) {
-  if (!succeeded) {
+    net::CanonicalCookie::CookieInclusionStatus status) {
+  if (status != net::CanonicalCookie::CookieInclusionStatus::INCLUDE) {
     PA_LOG(ERROR)
         << "AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult(): "
         << "Failed to set migration cookie for " << app_url << ". Proceeding "

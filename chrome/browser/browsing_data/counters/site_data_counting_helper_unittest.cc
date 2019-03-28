@@ -60,10 +60,11 @@ class SiteDataCountingHelperTest : public testing::Test {
       options.set_include_httponly();
       cookie_manager->SetCanonicalCookie(
           *cookie, url.scheme(), options,
-          base::BindLambdaForTesting([&](bool result) {
-            if (--tasks == 0)
-              run_loop.Quit();
-          }));
+          base::BindLambdaForTesting(
+              [&](net::CanonicalCookie::CookieInclusionStatus status) {
+                if (--tasks == 0)
+                  run_loop.Quit();
+              }));
     }
 
     run_loop.Run();

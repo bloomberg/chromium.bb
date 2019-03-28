@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_GAIA_SCREEN_HANDLER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -76,9 +77,10 @@ class GaiaScreenHandler : public BaseScreenHandler,
                              const std::string& partition_name);
 
   // Called after the GAPS cookie, if present, is added to the cookie store.
-  void OnSetCookieForLoadGaiaWithPartition(const GaiaContext& context,
-                                           const std::string& partition_name,
-                                           bool success);
+  void OnSetCookieForLoadGaiaWithPartition(
+      const GaiaContext& context,
+      const std::string& partition_name,
+      net::CanonicalCookie::CookieInclusionStatus status);
 
   // Callback that loads GAIA after version and stat consent information has
   // been retrieved.
@@ -126,7 +128,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
       const std::string& password,
       bool using_saml,
       const ::login::StringList& services,
-      const std::vector<net::CanonicalCookie>& cookies);
+      const std::vector<net::CanonicalCookie>& cookies,
+      const net::CookieStatusList& excluded_cookies);
   void HandleCompleteLogin(const std::string& gaia_id,
                            const std::string& typed_email,
                            const std::string& password,

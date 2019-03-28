@@ -242,7 +242,8 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, LoadAfterPrefetch) {
 }
 
 void GetCookieCallback(base::RepeatingClosure callback,
-                       const net::CookieList& cookie_list) {
+                       const net::CookieList& cookie_list,
+                       const net::CookieStatusList& excluded_cookies) {
   bool found_chocolate = false;
   bool found_oatmeal = false;
   for (const auto& c : cookie_list) {

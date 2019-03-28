@@ -57,7 +57,8 @@ bool IsGAIACookie(const net::CanonicalCookie& cookie) {
                                          google_util::ALLOW_NON_STANDARD_PORTS);
 }
 
-void OnCookieSet(base::RepeatingClosure completion_callback, bool result) {
+void OnCookieSet(base::RepeatingClosure completion_callback,
+                 net::CanonicalCookie::CookieInclusionStatus status) {
   completion_callback.Run();
 }
 

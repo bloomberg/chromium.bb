@@ -97,9 +97,6 @@ class CookieManager {
                               net::CookieList* result,
                               const net::CookieList& value,
                               const net::CookieStatusList& excluded_cookies);
-  void GetCookieListCompleted2(base::OnceClosure complete,
-                               net::CookieList* result,
-                               const net::CookieList& value);
 
   void RemoveSessionCookiesHelper(base::RepeatingCallback<void(bool)> callback);
   void RemoveAllCookiesHelper(base::RepeatingCallback<void(bool)> callback);

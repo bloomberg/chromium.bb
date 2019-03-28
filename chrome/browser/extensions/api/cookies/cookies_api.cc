@@ -212,7 +212,9 @@ ExtensionFunction::ResponseAction CookiesGetFunction::Run() {
   return RespondLater();
 }
 
-void CookiesGetFunction::GetCookieCallback(const net::CookieList& cookie_list) {
+void CookiesGetFunction::GetCookieCallback(
+    const net::CookieList& cookie_list,
+    const net::CookieStatusList& excluded_cookies) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (const net::CanonicalCookie& cookie : cookie_list) {
     // Return the first matching cookie. Relies on the fact that the
@@ -267,7 +269,8 @@ ExtensionFunction::ResponseAction CookiesGetAllFunction::Run() {
 }
 
 void CookiesGetAllFunction::GetAllCookiesCallback(
-    const net::CookieList& cookie_list) {
+    const net::CookieList& cookie_list,
+    const net::CookieStatusList& excluded_cookies) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ResponseValue response;
   if (extension()) {
@@ -361,7 +364,7 @@ ExtensionFunction::ResponseAction CookiesSetFunction::Run() {
     // is generated.
     success_ = false;
     state_ = SET_COMPLETED;
-    GetCookieListCallback(net::CookieList());
+    GetCookieListCallback(net::CookieList(), net::CookieStatusList());
     return AlreadyResponded();
   }
 
@@ -383,15 +386,18 @@ ExtensionFunction::ResponseAction CookiesSetFunction::Run() {
   return RespondLater();
 }
 
-void CookiesSetFunction::SetCanonicalCookieCallback(bool set_cookie_result) {
+void CookiesSetFunction::SetCanonicalCookieCallback(
+    net::CanonicalCookie::CookieInclusionStatus set_cookie_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(NO_RESPONSE, state_);
   state_ = SET_COMPLETED;
-  success_ = set_cookie_result;
+  success_ = (set_cookie_result ==
+              net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
 }
 
 void CookiesSetFunction::GetCookieListCallback(
-    const net::CookieList& cookie_list) {
+    const net::CookieList& cookie_list,
+    const net::CookieStatusList& excluded_cookies) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(SET_COMPLETED, state_);
   state_ = GET_COMPLETED;

@@ -73,7 +73,8 @@ class CookiesGetFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void GetCookieCallback(const net::CookieList& cookie_list);
+  void GetCookieCallback(const net::CookieList& cookie_list,
+                         const net::CookieStatusList& excluded_cookies);
 
   GURL url_;
   network::mojom::CookieManagerPtr store_browser_cookie_manager_;
@@ -94,7 +95,8 @@ class CookiesGetAllFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void GetAllCookiesCallback(const net::CookieList& cookie_list);
+  void GetAllCookiesCallback(const net::CookieList& cookie_list,
+                             const net::CookieStatusList& excluded_cookies);
 
   GURL url_;
   network::mojom::CookieManagerPtr store_browser_cookie_manager_;
@@ -113,8 +115,10 @@ class CookiesSetFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void SetCanonicalCookieCallback(bool set_cookie_);
-  void GetCookieListCallback(const net::CookieList& cookie_list);
+  void SetCanonicalCookieCallback(
+      net::CanonicalCookie::CookieInclusionStatus set_cookie_result);
+  void GetCookieListCallback(const net::CookieList& cookie_list,
+                             const net::CookieStatusList& excluded_cookies);
 
   enum { NO_RESPONSE, SET_COMPLETED, GET_COMPLETED } state_;
   GURL url_;
