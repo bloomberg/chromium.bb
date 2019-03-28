@@ -32,10 +32,12 @@ class Event {
   DISALLOW_COPY_AND_ASSIGN(Event);
 };
 
-// Pull ScopedAllowBaseSyncPrimitives into the rtc namespace.
+// Pull ScopedAllowBaseSyncPrimitives(ForTesting) into the rtc namespace.
 // Managing what types in WebRTC are allowed to use
 // ScopedAllowBaseSyncPrimitives, is done via thread_restrictions.h.
-using base::ScopedAllowBaseSyncPrimitives;
+using ScopedAllowBaseSyncPrimitives = base::ScopedAllowBaseSyncPrimitives;
+using ScopedAllowBaseSyncPrimitivesForTesting =
+    base::ScopedAllowBaseSyncPrimitivesForTesting;
 
 }  // namespace rtc
 
