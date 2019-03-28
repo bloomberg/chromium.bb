@@ -284,6 +284,8 @@ jumbo_source_set("browser") {
     "$target_gen_dir/devtools/protocol/tracing.h",
     "../common/service_manager/child_connection.cc",
     "../common/service_manager/child_connection.h",
+    "about_url_loader_factory.cc",
+    "about_url_loader_factory.h",
     "accessibility/accessibility_tree_formatter.cc",
     "accessibility/accessibility_tree_formatter.h",
     "accessibility/accessibility_tree_formatter_blink.cc",
