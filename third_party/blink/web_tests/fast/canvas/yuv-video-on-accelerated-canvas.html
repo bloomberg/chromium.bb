@@ -31,10 +31,8 @@
     <source src="resources/canvas_video.ogv"  type='video/ogg' />
   </video>
   <script>
-  if (window.testRunner) {
-    testRunner.dumpAsTextWithPixelResults();
+  if (window.testRunner)
     testRunner.waitUntilDone();
-  }
   if (window.internals)
     internals.settings.setMinimumAccelerated2dCanvasSize(257*256);
 

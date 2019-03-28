@@ -33,20 +33,13 @@
     </style>
     <script src="../../resources/run-after-layout-and-paint.js"></script>
     <script type="text/javascript" charset="utf-8">
-      if (window.testRunner) {
-        testRunner.dumpAsTextWithPixelResults();
-        testRunner.waitUntilDone();
-      }
-
       function doTest()
       {
         window.scrollBy(0,-2048);
         window.scrollBy(0,160);
         runAfterLayoutAndPaint(function() {
           window.scrollBy(0,-96);
-          if (window.testRunner)
-            testRunner.notifyDone();
-        });
+        }, true);
       }
       window.addEventListener('load', doTest, false);
     </script>
