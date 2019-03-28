@@ -21,7 +21,7 @@ class HeapProfilerController {
   ~HeapProfilerController();
 
   // Starts periodic heap snapshot collection.
-  void StartIfEnabled();
+  void Start();
 
   void SetTaskRunnerForTest(scoped_refptr<base::TaskRunner> task_runner) {
     task_runner_ = std::move(task_runner);
@@ -36,7 +36,6 @@ class HeapProfilerController {
                            scoped_refptr<StoppedFlag> stopped);
   static void RetrieveAndSendSnapshot();
 
-  bool started_ = false;
   scoped_refptr<base::TaskRunner> task_runner_;
   scoped_refptr<StoppedFlag> stopped_;
 
