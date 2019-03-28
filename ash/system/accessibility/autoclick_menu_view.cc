@@ -11,6 +11,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -254,7 +255,8 @@ void AutoclickMenuView::ButtonPressed(views::Button* sender,
     }
     Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
         new_position);
-    // TODO(katie): Log UMA.
+    base::RecordAction(base::UserMetricsAction(
+        "Accessibility.CrosAutoclick.TrayMenu.ChangePosition"));
     return;
   }
   mojom::AutoclickEventType type;
