@@ -123,6 +123,13 @@ namespace {
 // V1 saw errors of ~0.065 between computed window and content widths.
 const float kMobileViewportWidthEpsilon = 0.15f;
 
+// In BuildHitTestData we iterate all layers to find all layers that overlap
+// OOPIFs, but when the number of layers is greater than
+// |kAssumeOverlapThreshold|, it can be inefficient to accumulate layer bounds
+// for overlap checking. As a result, we are conservative and make OOPIFs
+// kHitTestAsk after the threshold is reached.
+const size_t kAssumeOverlapThreshold = 100;
+
 bool HasFixedPageScale(LayerTreeImpl* active_tree) {
   return active_tree->min_page_scale_factor() ==
          active_tree->max_page_scale_factor();
@@ -2612,6 +2619,11 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
   float device_scale_factor = active_tree()->device_scale_factor();
 
   Region overlapping_region;
+  size_t num_iterated_layers = 0;
+  // If the layer tree contains more than 100 layers, we stop accumulating
+  // layers in |overlapping_region| to save compositor frame submitting time, as
+  // a result we do async hit test on any surface layers that
+  bool assume_overlap = false;
   for (const auto* layer : base::Reversed(*active_tree())) {
     if (!layer->ShouldHitTest())
       continue;
@@ -2624,7 +2636,7 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
       if (!surface_layer->surface_hit_testable()) {
         // We collect any overlapped regions that does not have pointer-events:
         // none.
-        if (!surface_layer->has_pointer_events_none()) {
+        if (!surface_layer->has_pointer_events_none() && !assume_overlap) {
           overlapping_region.Union(MathUtil::MapEnclosingClippedRect(
               layer->ScreenSpaceTransform(),
               gfx::Rect(surface_layer->bounds())));
@@ -2644,7 +2656,8 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
           viz::AsyncHitTestReasons::kNotAsyncHitTest;
       if (surface_layer->has_pointer_events_none())
         flag |= viz::HitTestRegionFlags::kHitTestIgnore;
-      if (overlapping_region.Intersects(layer_screen_space_rect)) {
+      if (assume_overlap ||
+          overlapping_region.Intersects(layer_screen_space_rect)) {
         flag |= viz::HitTestRegionFlags::kHitTestAsk;
         async_hit_test_reasons |= viz::AsyncHitTestReasons::kOverlappedRegion;
       }
@@ -2678,8 +2691,13 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
     }
     // TODO(sunxd): Submit all overlapping layer bounds as hit test regions.
     // Also investigate if we can use visible layer rect as overlapping regions.
-    overlapping_region.Union(MathUtil::MapEnclosingClippedRect(
-        layer->ScreenSpaceTransform(), gfx::Rect(layer->bounds())));
+    num_iterated_layers++;
+    if (num_iterated_layers > kAssumeOverlapThreshold)
+      assume_overlap = true;
+    if (!assume_overlap) {
+      overlapping_region.Union(MathUtil::MapEnclosingClippedRect(
+          layer->ScreenSpaceTransform(), gfx::Rect(layer->bounds())));
+    }
   }
 
   return hit_test_region_list;

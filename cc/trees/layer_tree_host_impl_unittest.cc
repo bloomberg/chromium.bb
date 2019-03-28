@@ -14262,6 +14262,87 @@ TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, PointerEvents) {
             hit_test_region_list->regions[0].rect.ToString());
 }
 
+TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, ComplexPage) {
+  // Setup surface layers in LayerTreeHostImpl.
+  host_impl_->CreatePendingTree();
+  host_impl_->ActivateSyncTree();
+
+  // The structure of the layer tree:
+  // +-Root (1024x768)
+  // +---surface_child (0, 0), 100x100
+  // +---100x non overlapping layers (110, 110), 1x1
+  std::unique_ptr<SurfaceLayerImpl> surface_child =
+      SurfaceLayerImpl::Create(host_impl_->active_tree(), 2);
+
+  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(1024, 768));
+
+  surface_child->test_properties()->position = gfx::PointF(0, 0);
+  surface_child->SetBounds(gfx::Size(100, 100));
+  surface_child->SetDrawsContent(true);
+  surface_child->SetSurfaceHitTestable(true);
+  surface_child->SetHasPointerEventsNone(false);
+
+  viz::LocalSurfaceId child_local_surface_id(2,
+                                             base::UnguessableToken::Create());
+  viz::FrameSinkId frame_sink_id(2, 0);
+  viz::SurfaceId child_surface_id(frame_sink_id, child_local_surface_id);
+  surface_child->SetRange(viz::SurfaceRange(base::nullopt, child_surface_id),
+                          base::nullopt);
+
+  std::unique_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl_->active_tree(), 1);
+  host_impl_->active_tree()->SetRootLayerForTesting(std::move(root));
+  host_impl_->active_tree()
+      ->root_layer_for_testing()
+      ->test_properties()
+      ->AddChild(std::move(surface_child));
+
+  // Create 101 non overlapping layers.
+  for (size_t i = 0; i <= 100; ++i) {
+    std::unique_ptr<LayerImpl> layer =
+        LayerImpl::Create(host_impl_->active_tree(), i + 3);
+    layer->test_properties()->position = gfx::PointF(110, 110);
+    layer->SetBounds(gfx::Size(1, 1));
+    layer->SetDrawsContent(true);
+    host_impl_->active_tree()
+        ->root_layer_for_testing()
+        ->test_properties()
+        ->AddChild(std::move(layer));
+  }
+
+  constexpr gfx::Rect kFrameRect(0, 0, 1024, 768);
+
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  host_impl_->active_tree()->UpdateDrawProperties();
+  base::Optional<viz::HitTestRegionList> hit_test_region_list =
+      host_impl_->BuildHitTestData();
+  // Generating HitTestRegionList should have been enabled for this test.
+  ASSERT_TRUE(hit_test_region_list);
+
+  uint32_t expected_flags = viz::HitTestRegionFlags::kHitTestMouse |
+                            viz::HitTestRegionFlags::kHitTestTouch |
+                            viz::HitTestRegionFlags::kHitTestMine;
+  EXPECT_EQ(expected_flags, hit_test_region_list->flags);
+  EXPECT_EQ(kFrameRect, hit_test_region_list->bounds);
+  EXPECT_EQ(1u, hit_test_region_list->regions.size());
+
+  EXPECT_EQ(child_surface_id.frame_sink_id(),
+            hit_test_region_list->regions[0].frame_sink_id);
+  // Since the layer count is greater than 100, in order to save time, we do not
+  // check whether each layer overlaps the surface layer, instead, we are being
+  // conservative and make the surface layer slow hit testing.
+  expected_flags = viz::HitTestRegionFlags::kHitTestMouse |
+                   viz::HitTestRegionFlags::kHitTestTouch |
+                   viz::HitTestRegionFlags::kHitTestChildSurface |
+                   viz::HitTestRegionFlags::kHitTestAsk;
+  EXPECT_EQ(expected_flags, hit_test_region_list->regions[0].flags);
+  gfx::Transform child1_transform;
+  EXPECT_TRUE(child1_transform.ApproximatelyEqual(
+      hit_test_region_list->regions[0].transform));
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
+            hit_test_region_list->regions[0].rect.ToString());
+}
+
 TEST_F(LayerTreeHostImplTest, ImplThreadPhaseUponImplSideInvalidation) {
   LayerTreeSettings settings = DefaultSettings();
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
