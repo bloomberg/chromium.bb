@@ -9,7 +9,7 @@
 #include <algorithm>
 
 #include "base/files/file_util.h"
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "printing/metafile.h"

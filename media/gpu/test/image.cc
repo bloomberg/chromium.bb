@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/files/file_util.h"
+#include "base/hash/md5.h"
 #include "base/json/json_reader.h"
-#include "base/md5.h"
 #include "base/values.h"
 #include "media/base/test_data_util.h"
 

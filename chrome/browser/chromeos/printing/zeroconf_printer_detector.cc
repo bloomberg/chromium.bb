@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"

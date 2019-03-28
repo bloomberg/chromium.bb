@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 

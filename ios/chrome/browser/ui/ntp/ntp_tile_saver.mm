@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/ui/ntp/ntp_tile_saver.h"
 
 #include "base/bind.h"
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"

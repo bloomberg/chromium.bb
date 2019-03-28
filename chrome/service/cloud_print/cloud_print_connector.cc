@@ -12,8 +12,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/hash/md5.h"
 #include "base/location.h"
-#include "base/md5.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"

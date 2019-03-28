@@ -11,8 +11,8 @@
 #include <set>
 #include <string>
 
+#include "base/hash/md5.h"
 #include "base/macros.h"
-#include "base/md5.h"
 #include "base/strings/string16.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 

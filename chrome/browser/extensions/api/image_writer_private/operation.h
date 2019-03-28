@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
