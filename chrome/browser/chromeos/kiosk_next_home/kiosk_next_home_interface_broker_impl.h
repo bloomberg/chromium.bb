@@ -24,8 +24,6 @@ class Connector;
 namespace chromeos {
 namespace kiosk_next_home {
 
-class AppControllerImpl;
-
 // Implementation of interface responsible for brokering other interfaces needed
 // to support Kiosk Next Home functionality.
 class KioskNextHomeInterfaceBrokerImpl
@@ -44,11 +42,11 @@ class KioskNextHomeInterfaceBrokerImpl
   void GetAppController(mojom::AppControllerRequest request) override;
 
  private:
+  content::BrowserContext* context_;
   mojo::BindingSet<mojom::KioskNextHomeInterfaceBroker> bindings_;
   // Clone of BrowserContext's Connector, which allows binding to other
   // services.
   std::unique_ptr<service_manager::Connector> connector_;
-  std::unique_ptr<AppControllerImpl> app_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskNextHomeInterfaceBrokerImpl);
 };
