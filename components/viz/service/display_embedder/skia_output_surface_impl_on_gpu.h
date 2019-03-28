@@ -69,7 +69,7 @@ struct RenderPassGeometry;
 
 // The SkiaOutputSurface implementation running on the GPU thread. This class
 // should be created, used and destroyed on the GPU thread.
-class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
+class SkiaOutputSurfaceImplOnGpu {
  public:
   using DidSwapBufferCompleteCallback =
       base::RepeatingCallback<void(gpu::SwapBuffersCompleteParams,
@@ -98,7 +98,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
       const BufferPresentedCallback& buffer_presented_callback,
       const ContextLostCallback& context_lost_callback);
 
-  ~SkiaOutputSurfaceImplOnGpu() override;
+  ~SkiaOutputSurfaceImplOnGpu();
 
   gpu::CommandBufferId command_buffer_id() const {
     return sync_point_client_state_->command_buffer_id();
@@ -160,32 +160,10 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
       const OutputSurface::Capabilities& capabilities);
 
  private:
-// gpu::ImageTransportSurfaceDelegate implementation:
-#if defined(OS_WIN)
-  void DidCreateAcceleratedSurfaceChildWindow(
-      gpu::SurfaceHandle parent_window,
-      gpu::SurfaceHandle child_window) override;
-#endif
-  void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params) override;
-  const gpu::gles2::FeatureInfo* GetFeatureInfo() const override;
-  const gpu::GpuPreferences& GetGpuPreferences() const override;
-  void BufferPresented(const gfx::PresentationFeedback& feedback) override;
-  void AddFilter(IPC::MessageFilter* message_filter) override;
-  int32_t GetRouteID() const override;
-
-  void InitializeForGL();
   void InitializeForGLWithGpuService(GpuServiceImpl* gpu_service);
-  void InitializeForGLWithTaskExecutor(
-      gpu::CommandBufferTaskExecutor* task_executor,
-      scoped_refptr<gl::GLSurface> gl_surface);
   void InitializeForVulkan(GpuServiceImpl* gpu_service);
 
   void BindOrCopyTextureIfNecessary(gpu::TextureBase* texture_base);
-
-  // Generage the next swap ID and push it to our pending swap ID queues.
-  void OnSwapBuffers();
-
-  void CreateSkSurfaceForGL();
 
   // Make context current for GL, and return false if the context is lost.
   // It will do nothing when Vulkan is used.
@@ -252,12 +230,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
     sk_sp<SkPromiseImageTexture> promise_texture_;
   };
   base::flat_map<RenderPassId, OffscreenSurface> offscreen_surfaces_;
-
-  // Params are pushed each time we begin a swap, and popped each time we
-  // present or complete a swap.
-  base::circular_deque<std::pair<uint64_t, gfx::Size>>
-      pending_swap_completed_params_;
-  uint64_t swap_id_ = 0;
 
   ui::LatencyTracker latency_tracker_;
 

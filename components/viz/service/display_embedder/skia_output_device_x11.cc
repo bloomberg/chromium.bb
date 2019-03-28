@@ -4,6 +4,8 @@
 
 #include "components/viz/service/display_embedder/skia_output_device_x11.h"
 
+#include <utility>
+
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/vk/GrVkTypes.h"
@@ -13,11 +15,14 @@
 
 namespace viz {
 
-SkiaOutputDeviceX11::SkiaOutputDeviceX11(GrContext* gr_context,
-                                         gfx::AcceleratedWidget widget)
+SkiaOutputDeviceX11::SkiaOutputDeviceX11(
+    GrContext* gr_context,
+    gfx::AcceleratedWidget widget,
+    DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : SkiaOutputDeviceOffscreen(gr_context,
                                 false /* flipped */,
-                                true /* has_alpha */),
+                                true /* has_alpha */,
+                                did_swap_buffer_complete_callback),
       display_(gfx::GetXDisplay()),
       widget_(widget),
       gc_(XCreateGC(display_, widget_, 0, nullptr)) {
@@ -32,23 +37,33 @@ SkiaOutputDeviceX11::~SkiaOutputDeviceX11() {
   XFreeGC(display_, gc_);
 }
 
-void SkiaOutputDeviceX11::Reshape(const gfx::Size& size) {
-  SkiaOutputDeviceOffscreen::Reshape(size);
+void SkiaOutputDeviceX11::Reshape(const gfx::Size& size,
+                                  float device_scale_factor,
+                                  const gfx::ColorSpace& color_space,
+                                  bool has_alpha) {
+  SkiaOutputDeviceOffscreen::Reshape(size, device_scale_factor, color_space,
+                                     has_alpha);
   auto ii =
       SkImageInfo::MakeN32(size.width(), size.height(), kOpaque_SkAlphaType);
   pixels_.reserve(ii.computeMinByteSize());
 }
 
-gfx::SwapResult SkiaOutputDeviceX11::SwapBuffers() {
+gfx::SwapResponse SkiaOutputDeviceX11::SwapBuffers(
+    BufferPresentedCallback feedback) {
   return PostSubBuffer(
-      gfx::Rect(0, 0, draw_surface_->width(), draw_surface_->height()));
+      gfx::Rect(0, 0, draw_surface_->width(), draw_surface_->height()),
+      std::move(feedback));
 }
 
 bool SkiaOutputDeviceX11::SupportPostSubBuffer() {
   return true;
 }
 
-gfx::SwapResult SkiaOutputDeviceX11::PostSubBuffer(const gfx::Rect& rect) {
+gfx::SwapResponse SkiaOutputDeviceX11::PostSubBuffer(
+    const gfx::Rect& rect,
+    BufferPresentedCallback feedback) {
+  StartSwapBuffers(std::move(feedback));
+
   auto ii =
       SkImageInfo::MakeN32(rect.width(), rect.height(), kOpaque_SkAlphaType);
   DCHECK_GE(pixels_.capacity(), ii.computeMinByteSize());
@@ -114,7 +129,7 @@ gfx::SwapResult SkiaOutputDeviceX11::PostSubBuffer(const gfx::Rect& rect) {
     NOTIMPLEMENTED();
   }
   XFlush(display_);
-  return gfx::SwapResult::SWAP_ACK;
+  return FinishSwapBuffers(gfx::SwapResult::SWAP_ACK);
 }
 
 }  // namespace viz
