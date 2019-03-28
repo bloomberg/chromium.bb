@@ -215,6 +215,55 @@ bool ConvertPseudoType(const PseudoType pseudo_type,
 }
 }  // namespace
 
+class WebController::Worker {
+ public:
+  Worker();
+  virtual ~Worker();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Worker);
+};
+WebController::Worker::Worker() = default;
+WebController::Worker::~Worker() = default;
+
+class WebController::ElementPositionGetter : public WebController::Worker {
+ public:
+  ElementPositionGetter();
+  ~ElementPositionGetter() override;
+
+  // |devtools_client| must be valid for the lifetime of the instance, which is
+  // guaranteed since workers are owned by WebController.
+  void Start(content::RenderFrameHost* frame_host,
+             DevtoolsClient* devtools_client,
+             std::string element_object_id,
+             ElementPositionCallback callback);
+
+ private:
+  void OnVisualStateUpdatedCallback(bool success);
+  void GetAndWaitBoxModelStable();
+  void OnGetBoxModelForStableCheck(
+      std::unique_ptr<dom::GetBoxModelResult> result);
+  void OnScrollIntoView(std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnResult(int x, int y);
+  void OnError();
+
+  DevtoolsClient* devtools_client_ = nullptr;
+  std::string object_id_;
+  int remaining_rounds_ = 0;
+  ElementPositionCallback callback_;
+  bool visual_state_updated_ = false;
+
+  // If |has_point_| is true, |point_x_| and |point_y_| contain the last
+  // computed center of the element, in viewport coordinates. Note that
+  // negative coordinates are valid, in case the element is above or to the
+  // left of the viewport.
+  bool has_point_ = false;
+  int point_x_ = 0;
+  int point_y_ = 0;
+
+  base::WeakPtrFactory<ElementPositionGetter> weak_ptr_factory_;
+};
+
 WebController::ElementPositionGetter::ElementPositionGetter()
     : weak_ptr_factory_(this) {}
 WebController::ElementPositionGetter::~ElementPositionGetter() = default;
@@ -356,6 +405,293 @@ void WebController::ElementPositionGetter::OnError() {
   }
 }
 
+class WebController::ElementFinder : public WebController::Worker {
+ public:
+  // |devtools_client| and |web_contents| must be valid for the lifetime of the
+  // instance, which is guaranteed since workers are owned by WebController.
+  ElementFinder(content::WebContents* web_contents_,
+                DevtoolsClient* devtools_client,
+                const Selector& selector,
+                bool strict);
+  ~ElementFinder() override;
+
+  // Finds the element and call the callback.
+  void Start(FindElementCallback callback_);
+
+ private:
+  void SendResult();
+  void OnGetDocumentElement(std::unique_ptr<runtime::EvaluateResult> result);
+  void RecursiveFindElement(const std::string& object_id, size_t index);
+  void OnQuerySelectorAll(
+      size_t index,
+      std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnDescribeNodeForPseudoElement(
+      dom::PseudoType pseudo_type,
+      std::unique_ptr<dom::DescribeNodeResult> result);
+  void OnResolveNodeForPseudoElement(
+      std::unique_ptr<dom::ResolveNodeResult> result);
+  void OnDescribeNode(const std::string& object_id,
+                      size_t index,
+                      std::unique_ptr<dom::DescribeNodeResult> result);
+  void OnResolveNode(size_t index,
+                     std::unique_ptr<dom::ResolveNodeResult> result);
+  content::RenderFrameHost* FindCorrespondingRenderFrameHost(
+      std::string name,
+      std::string document_url);
+
+  content::WebContents* const web_contents_;
+  DevtoolsClient* const devtools_client_;
+  const Selector selector_;
+  const bool strict_;
+  FindElementCallback callback_;
+  std::unique_ptr<FindElementResult> element_result_;
+
+  base::WeakPtrFactory<ElementFinder> weak_ptr_factory_;
+};
+
+WebController::ElementFinder::ElementFinder(content::WebContents* web_contents,
+                                            DevtoolsClient* devtools_client,
+                                            const Selector& selector,
+                                            bool strict)
+    : web_contents_(web_contents),
+      devtools_client_(devtools_client),
+      selector_(selector),
+      strict_(strict),
+      element_result_(std::make_unique<FindElementResult>()),
+      weak_ptr_factory_(this) {}
+
+WebController::ElementFinder::~ElementFinder() = default;
+
+void WebController::ElementFinder::Start(FindElementCallback callback) {
+  callback_ = std::move(callback);
+
+  devtools_client_->GetRuntime()->Evaluate(
+      std::string(kGetDocumentElement),
+      base::BindOnce(&WebController::ElementFinder::OnGetDocumentElement,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WebController::ElementFinder::SendResult() {
+  DCHECK(callback_);
+  DCHECK(element_result_);
+  std::move(callback_).Run(std::move(element_result_));
+}
+
+void WebController::ElementFinder::OnGetDocumentElement(
+    std::unique_ptr<runtime::EvaluateResult> result) {
+  element_result_->container_frame_host = web_contents_->GetMainFrame();
+  element_result_->container_frame_selector_index = 0;
+  element_result_->object_id = "";
+  if (!result || !result->GetResult() || !result->GetResult()->HasObjectId()) {
+    DVLOG(1) << __func__ << " Failed to get document root element.";
+    SendResult();
+    return;
+  }
+
+  RecursiveFindElement(result->GetResult()->GetObjectId(), 0);
+}
+
+void WebController::ElementFinder::RecursiveFindElement(
+    const std::string& object_id,
+    size_t index) {
+  std::vector<std::unique_ptr<runtime::CallArgument>> argument;
+  argument.emplace_back(runtime::CallArgument::Builder()
+                            .SetValue(base::Value::ToUniquePtrValue(
+                                base::Value(selector_.selectors[index])))
+                            .Build());
+  argument.emplace_back(
+      runtime::CallArgument::Builder()
+          .SetValue(base::Value::ToUniquePtrValue(base::Value(strict_)))
+          .Build());
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(object_id)
+          .SetArguments(std::move(argument))
+          .SetFunctionDeclaration(std::string(kQuerySelectorAll))
+          .Build(),
+      base::BindOnce(&WebController::ElementFinder::OnQuerySelectorAll,
+                     weak_ptr_factory_.GetWeakPtr(), index));
+}
+
+void WebController::ElementFinder::OnQuerySelectorAll(
+    size_t index,
+    std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  if (!result || !result->GetResult() || !result->GetResult()->HasObjectId()) {
+    SendResult();
+    return;
+  }
+
+  if (selector_.selectors.size() == index + 1) {
+    // The pseudo type is associated to the final element matched by
+    // |selector_|, which means that we currently don't handle matching an
+    // element inside a pseudo element.
+    if (selector_.pseudo_type == PseudoType::UNDEFINED) {
+      // Return object id of the element.
+      element_result_->object_id = result->GetResult()->GetObjectId();
+      SendResult();
+      return;
+    }
+
+    // We are looking for a pseudo element associated with this element.
+    dom::PseudoType pseudo_type;
+    if (!ConvertPseudoType(selector_.pseudo_type, &pseudo_type)) {
+      // Return empty result.
+      SendResult();
+      return;
+    }
+
+    devtools_client_->GetDOM()->DescribeNode(
+        dom::DescribeNodeParams::Builder()
+            .SetObjectId(result->GetResult()->GetObjectId())
+            .Build(),
+        base::BindOnce(
+            &WebController::ElementFinder::OnDescribeNodeForPseudoElement,
+            weak_ptr_factory_.GetWeakPtr(), pseudo_type));
+    return;
+  }
+
+  devtools_client_->GetDOM()->DescribeNode(
+      dom::DescribeNodeParams::Builder()
+          .SetObjectId(result->GetResult()->GetObjectId())
+          .Build(),
+      base::BindOnce(&WebController::ElementFinder::OnDescribeNode,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     result->GetResult()->GetObjectId(), index));
+}
+
+void WebController::ElementFinder::OnDescribeNodeForPseudoElement(
+    dom::PseudoType pseudo_type,
+    std::unique_ptr<dom::DescribeNodeResult> result) {
+  if (!result || !result->GetNode()) {
+    DVLOG(1) << __func__ << " Failed to describe the node for pseudo element.";
+    SendResult();
+    return;
+  }
+
+  auto* node = result->GetNode();
+  if (node->HasPseudoElements()) {
+    for (const auto& pseudo_element : *(node->GetPseudoElements())) {
+      if (pseudo_element->HasPseudoType() &&
+          pseudo_element->GetPseudoType() == pseudo_type) {
+        devtools_client_->GetDOM()->ResolveNode(
+            dom::ResolveNodeParams::Builder()
+                .SetBackendNodeId(pseudo_element->GetBackendNodeId())
+                .Build(),
+            base::BindOnce(
+                &WebController::ElementFinder::OnResolveNodeForPseudoElement,
+                weak_ptr_factory_.GetWeakPtr()));
+        return;
+      }
+    }
+  }
+
+  // Failed to find the pseudo element: run the callback with empty result.
+  SendResult();
+}
+
+void WebController::ElementFinder::OnResolveNodeForPseudoElement(
+    std::unique_ptr<dom::ResolveNodeResult> result) {
+  if (result && result->GetObject() && result->GetObject()->HasObjectId()) {
+    element_result_->object_id = result->GetObject()->GetObjectId();
+  }
+
+  SendResult();
+}
+
+void WebController::ElementFinder::OnDescribeNode(
+    const std::string& object_id,
+    size_t index,
+    std::unique_ptr<dom::DescribeNodeResult> result) {
+  if (!result || !result->GetNode()) {
+    DVLOG(1) << __func__ << " Failed to describe the node.";
+    SendResult();
+    return;
+  }
+
+  auto* node = result->GetNode();
+  std::vector<int> backend_ids;
+  if (node->HasContentDocument()) {
+    backend_ids.emplace_back(node->GetContentDocument()->GetBackendNodeId());
+
+    element_result_->container_frame_selector_index = index;
+
+    // Find out the corresponding render frame host through document url and
+    // name.
+    // TODO(crbug.com/806868): Use more attributes to find out the render frame
+    // host if name and document url are not enough to uniquely identify it.
+    std::string frame_name;
+    if (node->HasAttributes()) {
+      const std::vector<std::string>* attributes = node->GetAttributes();
+      for (size_t i = 0; i < attributes->size();) {
+        if ((*attributes)[i] == "name") {
+          frame_name = (*attributes)[i + 1];
+          break;
+        }
+        // Jump two positions since attribute name and value are always paired.
+        i = i + 2;
+      }
+    }
+    element_result_->container_frame_host = FindCorrespondingRenderFrameHost(
+        frame_name, node->GetContentDocument()->GetDocumentURL());
+    if (!element_result_->container_frame_host) {
+      DVLOG(1) << __func__ << " Failed to find corresponding owner frame.";
+      SendResult();
+      return;
+    }
+  } else if (node->HasFrameId()) {
+    // TODO(crbug.com/806868): Support out-of-process iframe.
+    DVLOG(3) << "Warning (unsupported): the element is inside an OOPIF.";
+    SendResult();
+    return;
+  }
+
+  if (node->HasShadowRoots()) {
+    // TODO(crbug.com/806868): Support multiple shadow roots.
+    backend_ids.emplace_back(
+        node->GetShadowRoots()->front()->GetBackendNodeId());
+  }
+
+  if (!backend_ids.empty()) {
+    devtools_client_->GetDOM()->ResolveNode(
+        dom::ResolveNodeParams::Builder()
+            .SetBackendNodeId(backend_ids[0])
+            .Build(),
+        base::BindOnce(&WebController::ElementFinder::OnResolveNode,
+                       weak_ptr_factory_.GetWeakPtr(), index));
+    return;
+  }
+
+  RecursiveFindElement(object_id, ++index);
+}
+
+void WebController::ElementFinder::OnResolveNode(
+    size_t index,
+    std::unique_ptr<dom::ResolveNodeResult> result) {
+  if (!result || !result->GetObject() || !result->GetObject()->HasObjectId()) {
+    DVLOG(1) << __func__ << " Failed to resolve object id from backend id.";
+    SendResult();
+    return;
+  }
+
+  RecursiveFindElement(result->GetObject()->GetObjectId(), ++index);
+}
+
+content::RenderFrameHost*
+WebController::ElementFinder::FindCorrespondingRenderFrameHost(
+    std::string name,
+    std::string document_url) {
+  content::RenderFrameHost* ret_frame = nullptr;
+  for (auto* frame : web_contents_->GetAllFrames()) {
+    if (frame->GetFrameName() == name &&
+        frame->GetLastCommittedURL().spec() == document_url) {
+      DCHECK(!ret_frame);
+      ret_frame = frame;
+    }
+  }
+
+  return ret_frame;
+}
+
 // static
 std::unique_ptr<WebController> WebController::CreateForWebContents(
     content::WebContents* web_contents) {
@@ -477,23 +813,27 @@ void WebController::OnScrollIntoView(
     return;
   }
 
-  ElementPositionGetter* element_position_checker = new ElementPositionGetter();
-  element_position_checker->Start(
-      target_element->container_frame_host, devtools_client_.get(),
-      target_element->object_id,
-      base::BindOnce(&WebController::TapOrClickOnCoordinates,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::WrapUnique(element_position_checker),
-                     std::move(callback), is_a_click));
+  std::unique_ptr<ElementPositionGetter> getter =
+      std::make_unique<ElementPositionGetter>();
+  ElementPositionGetter* getter_ptr = getter.get();
+  pending_workers_[getter_ptr] = std::move(getter);
+  getter_ptr->Start(target_element->container_frame_host,
+                    devtools_client_.get(), target_element->object_id,
+                    base::BindOnce(&WebController::TapOrClickOnCoordinates,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   base::Unretained(getter_ptr),
+                                   std::move(callback), is_a_click));
 }
 
 void WebController::TapOrClickOnCoordinates(
-    std::unique_ptr<ElementPositionGetter> element_position_getter,
+    ElementPositionGetter* getter_to_release,
     base::OnceCallback<void(bool)> callback,
     bool is_a_click,
     bool has_coordinates,
     int x,
     int y) {
+  pending_workers_.erase(getter_to_release);
+
   if (!has_coordinates) {
     DVLOG(1) << __func__ << " Failed to get element position.";
     OnResult(false, std::move(callback));
@@ -627,260 +967,20 @@ void WebController::OnGetBoxModelForVisible(
 void WebController::FindElement(const Selector& selector,
                                 bool strict_mode,
                                 FindElementCallback callback) {
-  devtools_client_->GetRuntime()->Evaluate(
-      std::string(kGetDocumentElement),
-      base::BindOnce(&WebController::OnGetDocumentElement,
-                     weak_ptr_factory_.GetWeakPtr(), selector, strict_mode,
-                     std::move(callback)));
+  auto finder = std::make_unique<ElementFinder>(
+      web_contents_, devtools_client_.get(), selector, strict_mode);
+  ElementFinder* ptr = finder.get();
+  pending_workers_[ptr] = std::move(finder);
+  ptr->Start(base::BindOnce(&WebController::OnFindElementResult,
+                            base::Unretained(this), ptr, std::move(callback)));
 }
 
-void WebController::OnGetDocumentElement(
-    const Selector& selector,
-    bool strict_mode,
+void WebController::OnFindElementResult(
+    ElementFinder* finder_to_release,
     FindElementCallback callback,
-    std::unique_ptr<runtime::EvaluateResult> result) {
-  std::unique_ptr<FindElementResult> element_result =
-      std::make_unique<FindElementResult>();
-  element_result->container_frame_host = web_contents_->GetMainFrame();
-  element_result->container_frame_selector_index = 0;
-  element_result->object_id = "";
-  if (!result || !result->GetResult() || !result->GetResult()->HasObjectId()) {
-    DVLOG(1) << __func__ << " Failed to get document root element.";
-    std::move(callback).Run(std::move(element_result));
-    return;
-  }
-
-  RecursiveFindElement(result->GetResult()->GetObjectId(), 0, selector,
-                       strict_mode, std::move(element_result),
-                       std::move(callback));
-}
-
-void WebController::RecursiveFindElement(
-    const std::string& object_id,
-    size_t index,
-    const Selector& selector,
-    bool strict_mode,
-    std::unique_ptr<FindElementResult> element_result,
-    FindElementCallback callback) {
-  std::vector<std::unique_ptr<runtime::CallArgument>> argument;
-  argument.emplace_back(runtime::CallArgument::Builder()
-                            .SetValue(base::Value::ToUniquePtrValue(
-                                base::Value(selector.selectors[index])))
-                            .Build());
-  argument.emplace_back(
-      runtime::CallArgument::Builder()
-          .SetValue(base::Value::ToUniquePtrValue(base::Value(strict_mode)))
-          .Build());
-  devtools_client_->GetRuntime()->CallFunctionOn(
-      runtime::CallFunctionOnParams::Builder()
-          .SetObjectId(object_id)
-          .SetArguments(std::move(argument))
-          .SetFunctionDeclaration(std::string(kQuerySelectorAll))
-          .Build(),
-      base::BindOnce(&WebController::OnQuerySelectorAll,
-                     weak_ptr_factory_.GetWeakPtr(), index, selector,
-                     strict_mode, std::move(element_result),
-                     std::move(callback)));
-}
-
-void WebController::OnQuerySelectorAll(
-    size_t index,
-    const Selector& selector,
-    bool strict_mode,
-    std::unique_ptr<FindElementResult> element_result,
-    FindElementCallback callback,
-    std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  if (!result || !result->GetResult() || !result->GetResult()->HasObjectId()) {
-    std::move(callback).Run(std::move(element_result));
-    return;
-  }
-
-  if (selector.selectors.size() == index + 1) {
-    // The pseudo type is associated to the final element matched by
-    // |selector|, which means that we currently don't handle matching an
-    // element inside a pseudo element.
-    if (selector.pseudo_type == PseudoType::UNDEFINED) {
-      // Return object id of the element.
-      element_result->object_id = result->GetResult()->GetObjectId();
-      std::move(callback).Run(std::move(element_result));
-      return;
-    }
-
-    // We are looking for a pseudo element associated with this element.
-    dom::PseudoType pseudo_type;
-    if (!ConvertPseudoType(selector.pseudo_type, &pseudo_type)) {
-      // Return empty result.
-      std::move(callback).Run(std::move(element_result));
-      return;
-    }
-
-    devtools_client_->GetDOM()->DescribeNode(
-        dom::DescribeNodeParams::Builder()
-            .SetObjectId(result->GetResult()->GetObjectId())
-            .Build(),
-        base::BindOnce(&WebController::OnDescribeNodeForPseudoElement,
-                       weak_ptr_factory_.GetWeakPtr(), pseudo_type,
-                       std::move(element_result), std::move(callback)));
-    return;
-  }
-
-  devtools_client_->GetDOM()->DescribeNode(
-      dom::DescribeNodeParams::Builder()
-          .SetObjectId(result->GetResult()->GetObjectId())
-          .Build(),
-      base::BindOnce(
-          &WebController::OnDescribeNode, weak_ptr_factory_.GetWeakPtr(),
-          result->GetResult()->GetObjectId(), index, selector, strict_mode,
-          std::move(element_result), std::move(callback)));
-}
-
-void WebController::OnDescribeNodeForPseudoElement(
-    dom::PseudoType pseudo_type,
-    std::unique_ptr<FindElementResult> element_result,
-    FindElementCallback callback,
-    std::unique_ptr<dom::DescribeNodeResult> result) {
-  if (!result || !result->GetNode()) {
-    DVLOG(1) << __func__ << " Failed to describe the node for pseudo element.";
-    std::move(callback).Run(std::move(element_result));
-    return;
-  }
-
-  auto* node = result->GetNode();
-  if (node->HasPseudoElements()) {
-    for (const auto& pseudo_element : *(node->GetPseudoElements())) {
-      if (pseudo_element->HasPseudoType() &&
-          pseudo_element->GetPseudoType() == pseudo_type) {
-        devtools_client_->GetDOM()->ResolveNode(
-            dom::ResolveNodeParams::Builder()
-                .SetBackendNodeId(pseudo_element->GetBackendNodeId())
-                .Build(),
-            base::BindOnce(&WebController::OnResolveNodeForPseudoElement,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           std::move(element_result), std::move(callback)));
-        return;
-      }
-    }
-  }
-
-  // Failed to find the pseudo element: run the callback with empty result.
-  std::move(callback).Run(std::move(element_result));
-}
-
-void WebController::OnResolveNodeForPseudoElement(
-    std::unique_ptr<FindElementResult> element_result,
-    FindElementCallback callback,
-    std::unique_ptr<dom::ResolveNodeResult> result) {
-  if (result && result->GetObject() && result->GetObject()->HasObjectId()) {
-    element_result->object_id = result->GetObject()->GetObjectId();
-  }
-
-  std::move(callback).Run(std::move(element_result));
-}
-
-void WebController::OnDescribeNode(
-    const std::string& object_id,
-    size_t index,
-    const Selector& selector,
-    bool strict_mode,
-    std::unique_ptr<FindElementResult> element_result,
-    FindElementCallback callback,
-    std::unique_ptr<dom::DescribeNodeResult> result) {
-  if (!result || !result->GetNode()) {
-    DVLOG(1) << __func__ << " Failed to describe the node.";
-    std::move(callback).Run(std::move(element_result));
-    return;
-  }
-
-  auto* node = result->GetNode();
-  std::vector<int> backend_ids;
-  if (node->HasContentDocument()) {
-    backend_ids.emplace_back(node->GetContentDocument()->GetBackendNodeId());
-
-    element_result->container_frame_selector_index = index;
-
-    // Find out the corresponding render frame host through document url and
-    // name.
-    // TODO(crbug.com/806868): Use more attributes to find out the render frame
-    // host if name and document url are not enough to uniquely identify it.
-    std::string frame_name;
-    if (node->HasAttributes()) {
-      const std::vector<std::string>* attributes = node->GetAttributes();
-      for (size_t i = 0; i < attributes->size();) {
-        if ((*attributes)[i] == "name") {
-          frame_name = (*attributes)[i + 1];
-          break;
-        }
-        // Jump two positions since attribute name and value are always paired.
-        i = i + 2;
-      }
-    }
-    element_result->container_frame_host = FindCorrespondingRenderFrameHost(
-        frame_name, node->GetContentDocument()->GetDocumentURL());
-    if (!element_result->container_frame_host) {
-      DVLOG(1) << __func__ << " Failed to find corresponding owner frame.";
-      std::move(callback).Run(std::move(element_result));
-      return;
-    }
-  } else if (node->HasFrameId()) {
-    // TODO(crbug.com/806868): Support out-of-process iframe.
-    DVLOG(3) << "Warning (unsupported): the element is inside an OOPIF.";
-    std::move(callback).Run(std::move(element_result));
-    return;
-  }
-
-  if (node->HasShadowRoots()) {
-    // TODO(crbug.com/806868): Support multiple shadow roots.
-    backend_ids.emplace_back(
-        node->GetShadowRoots()->front()->GetBackendNodeId());
-  }
-
-  if (!backend_ids.empty()) {
-    devtools_client_->GetDOM()->ResolveNode(
-        dom::ResolveNodeParams::Builder()
-            .SetBackendNodeId(backend_ids[0])
-            .Build(),
-        base::BindOnce(&WebController::OnResolveNode,
-                       weak_ptr_factory_.GetWeakPtr(), index, selector,
-                       strict_mode, std::move(element_result),
-                       std::move(callback)));
-    return;
-  }
-
-  RecursiveFindElement(object_id, ++index, selector, strict_mode,
-                       std::move(element_result), std::move(callback));
-}
-
-void WebController::OnResolveNode(
-    size_t index,
-    const Selector& selector,
-    bool strict_mode,
-    std::unique_ptr<FindElementResult> element_result,
-    FindElementCallback callback,
-    std::unique_ptr<dom::ResolveNodeResult> result) {
-  if (!result || !result->GetObject() || !result->GetObject()->HasObjectId()) {
-    DVLOG(1) << __func__ << " Failed to resolve object id from backend id.";
-    std::move(callback).Run(std::move(element_result));
-    return;
-  }
-
-  RecursiveFindElement(result->GetObject()->GetObjectId(), ++index, selector,
-                       strict_mode, std::move(element_result),
-                       std::move(callback));
-}
-
-content::RenderFrameHost* WebController::FindCorrespondingRenderFrameHost(
-    std::string name,
-    std::string document_url) {
-  content::RenderFrameHost* ret_frame = nullptr;
-  for (auto* frame : web_contents_->GetAllFrames()) {
-    if (frame->GetFrameName() == name &&
-        frame->GetLastCommittedURL().spec() == document_url) {
-      DCHECK(!ret_frame);
-      ret_frame = frame;
-    }
-  }
-
-  return ret_frame;
+    std::unique_ptr<FindElementResult> result) {
+  pending_workers_.erase(finder_to_release);
+  std::move(callback).Run(std::move(result));
 }
 
 void WebController::OnResult(bool result,
