@@ -543,6 +543,13 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'vm_tests':[],
       },
 
+      'fizz-labstation-release': {
+          'hw_tests': [],
+          'image_test':False,
+          'signer_tests':False,
+          'vm_tests':[],
+      },
+
       'chell-chrome-pfq': {
           'hw_tests': [hw_test_list.AFDORecordTest()]
       },

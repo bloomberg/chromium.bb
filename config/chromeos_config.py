@@ -3669,6 +3669,12 @@ def ApplyCustomOverrides(site_config):
           'paygen': False,
       },
 
+      'fizz-labstation-release': {
+          'hwqual': False,
+          'images': ['base', 'test'],
+          'paygen': False,
+      },
+
       'peach_pit-release': {
           'useflags': config_lib.append_useflags(['cfi']),
       },

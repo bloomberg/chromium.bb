@@ -108,6 +108,7 @@ x86_internal_release_boards = frozenset([
     'fizz',
     'fizz-accelerator',
     'fizz-moblab',
+    'fizz-labstation',
     'gandof',
     'glados',
     'glimmer',

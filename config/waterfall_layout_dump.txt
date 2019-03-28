@@ -1885,6 +1885,7 @@
   fizz-compile-only-pre-cq
   fizz-factory-fizz-10167.B-factorybranch-tryjob
   fizz-full-tryjob
+  fizz-labstation-chrome-pfq-tryjob
   fizz-labstation-chromium-pfq-tryjob
   fizz-labstation-compile-only-pre-cq
   fizz-labstation-full-tryjob
@@ -1892,9 +1893,14 @@
   fizz-labstation-llvm-toolchain-tryjob
   fizz-labstation-no-vmtest-pre-cq
   fizz-labstation-paladin-tryjob
+  fizz-labstation-payloads-tryjob
   fizz-labstation-postsubmit-tryjob
   fizz-labstation-pre-cq
+  fizz-labstation-release-afdo-generate-tryjob
+  fizz-labstation-release-afdo-tryjob
+  fizz-labstation-release-afdo-use-tryjob
   fizz-labstation-release-tryjob
+  fizz-labstation-tot-chrome-pfq-informational-tryjob
   fizz-labstation-tot-chromium-pfq-informational-tryjob
   fizz-labstation-unittest-stress
   fizz-llvm-next-toolchain-tryjob
