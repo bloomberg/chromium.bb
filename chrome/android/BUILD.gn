@@ -452,6 +452,10 @@ android_library("chrome_java") {
   if (async_ar) {
     proguard_configs = [ "//chrome/android/features/ar/proguard_async.flags" ]
   }
+
+  processor_args_javac = [
+    "dagger.fastInit=enabled"
+  ]
 }
 
 # This is a list of all base module java dependencies. New features should be
