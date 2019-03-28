@@ -2478,6 +2478,8 @@ void AppsGridView::SetViewHidden(AppListItemView* view,
   animator.SetPreemptionStrategy(
       immediate ? ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET
                 : ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+  if (immediate)
+    animator.SetTransitionDuration(base::TimeDelta::FromMilliseconds(0));
   view->layer()->SetOpacity(hide ? 0 : 1);
 }
 
