@@ -297,7 +297,7 @@ TEST_F(WebViewUnitTest, TestWebViewAttachDetachWebContents) {
 // capture.
 TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_Layout) {
   web_view()->SetEmbedFullscreenWidgetMode(true);
-  ASSERT_EQ(1, web_view()->child_count());
+  ASSERT_EQ(1u, web_view()->children().size());
 
   const std::unique_ptr<content::WebContents> web_contents(CreateWebContents());
   WebViewTestWebContentsDelegate delegate;
@@ -360,7 +360,7 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_Layout) {
 // them is embedding a fullscreen widget during WebContents screen capture.
 TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_Switching) {
   web_view()->SetEmbedFullscreenWidgetMode(true);
-  ASSERT_EQ(1, web_view()->child_count());
+  ASSERT_EQ(1u, web_view()->children().size());
   const gfx::NativeView unset_native_view = holder()->native_view();
 
   // Create two WebContentses to switch between.
@@ -424,7 +424,7 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_ClickToFocus) {
   top_level_widget()->GetContentsView()->AddChildView(something_to_focus);
 
   web_view()->SetEmbedFullscreenWidgetMode(true);
-  ASSERT_EQ(1, web_view()->child_count());
+  ASSERT_EQ(1u, web_view()->children().size());
 
   const std::unique_ptr<content::WebContents> web_contents(CreateWebContents());
   WebViewTestWebContentsDelegate delegate;

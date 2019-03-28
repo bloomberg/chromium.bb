@@ -119,9 +119,7 @@ class MenuModelBase : public ui::MenuModel {
     bool visible;
   };
 
-  const Item& GetItemDefinition(int index) {
-    return items_[index];
-  }
+  const Item& GetItemDefinition(size_t index) { return items_[index]; }
 
   // Access index argument to ActivatedAt().
   int last_activation() const { return last_activation_; }
@@ -192,28 +190,26 @@ void CheckSubmenu(const RootModel& model,
                   views::MenuItemView* menu,
                   views::MenuModelAdapter* delegate,
                   int submenu_id,
-                  int expected_children,
+                  size_t expected_children,
                   int submenu_model_index,
-                  int id_base) {
+                  int id) {
   views::MenuItemView* submenu = menu->GetMenuItemByID(submenu_id);
   views::SubmenuView* subitem_container = submenu->GetSubmenu();
-  EXPECT_EQ(expected_children, subitem_container->child_count());
+  EXPECT_EQ(expected_children, subitem_container->children().size());
 
-  for (int i = 0; i < subitem_container->child_count(); ++i) {
-    MenuModelBase* submodel = static_cast<MenuModelBase*>(
-        model.GetSubmenuModelAt(submenu_model_index));
-    EXPECT_TRUE(submodel);
-
+  MenuModelBase* submodel =
+      static_cast<MenuModelBase*>(model.GetSubmenuModelAt(submenu_model_index));
+  EXPECT_TRUE(submodel);
+  for (size_t i = 0; i < subitem_container->children().size(); ++i, ++id) {
     const MenuModelBase::Item& model_item = submodel->GetItemDefinition(i);
 
-    const int id = i + id_base;
     views::MenuItemView* item = menu->GetMenuItemByID(id);
     if (!item) {
       EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR, model_item.type);
       continue;
     }
     // Check placement.
-    EXPECT_EQ(i, submenu->GetSubmenu()->GetIndexOf(item));
+    EXPECT_EQ(i, size_t{submenu->GetSubmenu()->GetIndexOf(item)});
 
     // Check type.
     switch (model_item.type) {
@@ -248,7 +244,7 @@ void CheckSubmenu(const RootModel& model,
 
     // Check activation.
     static_cast<views::MenuDelegate*>(delegate)->ExecuteCommand(id);
-    EXPECT_EQ(i, submodel->last_activation());
+    EXPECT_EQ(i, size_t{submodel->last_activation()});
     submodel->set_last_activation(-1);
   }
 }
@@ -274,12 +270,12 @@ TEST_F(MenuModelAdapterTest, BasicTest) {
 
   // Check top level menu items.
   views::SubmenuView* item_container = menu->GetSubmenu();
-  EXPECT_EQ(6, item_container->child_count());
+  EXPECT_EQ(6u, item_container->children().size());
 
-  for (int i = 0; i < item_container->child_count(); ++i) {
+  int id = kRootIdBase;
+  for (size_t i = 0; i < item_container->children().size(); ++i, ++id) {
     const MenuModelBase::Item& model_item = model.GetItemDefinition(i);
 
-    const int id = i + kRootIdBase;
     MenuItemView* item = menu->GetMenuItemByID(id);
     if (!item) {
       EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR, model_item.type);
@@ -287,7 +283,7 @@ TEST_F(MenuModelAdapterTest, BasicTest) {
     }
 
     // Check placement.
-    EXPECT_EQ(i, menu->GetSubmenu()->GetIndexOf(item));
+    EXPECT_EQ(i, size_t{menu->GetSubmenu()->GetIndexOf(item)});
 
     // Check type.
     switch (model_item.type) {
@@ -322,7 +318,7 @@ TEST_F(MenuModelAdapterTest, BasicTest) {
 
     // Check activation.
     static_cast<views::MenuDelegate*>(&delegate)->ExecuteCommand(id);
-    EXPECT_EQ(i, model.last_activation());
+    EXPECT_EQ(i, size_t{model.last_activation()});
     model.set_last_activation(-1);
   }
 

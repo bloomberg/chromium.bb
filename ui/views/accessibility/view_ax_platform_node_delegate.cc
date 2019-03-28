@@ -267,12 +267,13 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
     return child_widgets[0]->GetRootView()->GetNativeViewAccessible();
   }
 
-  if (index < view()->child_count())
-    return view()->child_at(index)->GetNativeViewAccessible();
+  size_t child_index = size_t{index};
+  if (child_index < view()->children().size())
+    return view()->children()[child_index]->GetNativeViewAccessible();
 
-  index -= view()->child_count();
-  if (index < static_cast<int>(child_widgets.size()))
-    return child_widgets[index]->GetRootView()->GetNativeViewAccessible();
+  child_index -= view()->children().size();
+  if (child_index < child_widgets_result.child_widgets.size())
+    return child_widgets[child_index]->GetRootView()->GetNativeViewAccessible();
 
   return nullptr;
 }

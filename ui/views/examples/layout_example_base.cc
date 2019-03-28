@@ -47,7 +47,7 @@ class FullPanel : public View {
 };
 
 void FullPanel::Layout() {
-  DCHECK_EQ(child_count(), 2);
+  DCHECK_EQ(2u, children().size());
   View* left_panel = child_at(0);
   View* right_panel = child_at(1);
   gfx::Rect bounds = GetContentsBounds();

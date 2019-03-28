@@ -44,7 +44,7 @@ View* ViewTargeterDelegate::TargetForRect(View* root, const gfx::Rect& rect) {
   View* point_view = nullptr;
 
   View::Views children = root->GetChildrenInZOrder();
-  DCHECK_EQ(root->child_count(), static_cast<int>(children.size()));
+  DCHECK_EQ(root->children().size(), children.size());
   for (auto* child : base::Reversed(children)) {
     if (!child->CanProcessEventsWithinSubtree())
       continue;

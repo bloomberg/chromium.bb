@@ -2278,14 +2278,14 @@ class NativeWidgetMacViewsOrderTest : public WidgetTest {
     native_host_parent_ = new View();
     widget_->GetContentsView()->AddChildView(native_host_parent_);
 
-    const int kNativeViewCount = 3;
-    for (int i = 0; i < kNativeViewCount; ++i) {
+    const size_t kNativeViewCount = 3;
+    for (size_t i = 0; i < kNativeViewCount; ++i) {
       auto holder = std::make_unique<NativeHostHolder>();
       native_host_parent_->AddChildView(holder->host());
       holder->AttachNativeView();
       hosts_.push_back(std::move(holder));
     }
-    EXPECT_EQ(kNativeViewCount, native_host_parent_->child_count());
+    EXPECT_EQ(kNativeViewCount, native_host_parent_->children().size());
     EXPECT_NSEQ([widget_->GetNativeView().GetNativeNSView() subviews],
                 ([GetStartingSubviews() arrayByAddingObjectsFromArray:@[
                   hosts_[0]->view(), hosts_[1]->view(), hosts_[2]->view()
