@@ -470,25 +470,25 @@ const size_t kDiskWeightedIOTime = 13;
 
 std::unique_ptr<DictionaryValue> SystemMemoryInfoKB::ToValue() const {
   auto res = std::make_unique<DictionaryValue>();
-  res->SetInteger("total", total);
-  res->SetInteger("free", free);
-  res->SetInteger("available", available);
-  res->SetInteger("buffers", buffers);
-  res->SetInteger("cached", cached);
-  res->SetInteger("active_anon", active_anon);
-  res->SetInteger("inactive_anon", inactive_anon);
-  res->SetInteger("active_file", active_file);
-  res->SetInteger("inactive_file", inactive_file);
-  res->SetInteger("swap_total", swap_total);
-  res->SetInteger("swap_free", swap_free);
-  res->SetInteger("swap_used", swap_total - swap_free);
-  res->SetInteger("dirty", dirty);
-  res->SetInteger("reclaimable", reclaimable);
+  res->SetIntKey("total", total);
+  res->SetIntKey("free", free);
+  res->SetIntKey("available", available);
+  res->SetIntKey("buffers", buffers);
+  res->SetIntKey("cached", cached);
+  res->SetIntKey("active_anon", active_anon);
+  res->SetIntKey("inactive_anon", inactive_anon);
+  res->SetIntKey("active_file", active_file);
+  res->SetIntKey("inactive_file", inactive_file);
+  res->SetIntKey("swap_total", swap_total);
+  res->SetIntKey("swap_free", swap_free);
+  res->SetIntKey("swap_used", swap_total - swap_free);
+  res->SetIntKey("dirty", dirty);
+  res->SetIntKey("reclaimable", reclaimable);
 #ifdef OS_CHROMEOS
-  res->SetInteger("shmem", shmem);
-  res->SetInteger("slab", slab);
-  res->SetInteger("gem_objects", gem_objects);
-  res->SetInteger("gem_size", gem_size);
+  res->SetIntKey("shmem", shmem);
+  res->SetIntKey("slab", slab);
+  res->SetIntKey("gem_objects", gem_objects);
+  res->SetIntKey("gem_size", gem_size);
 #endif
 
   return res;
@@ -635,9 +635,9 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
 
 std::unique_ptr<DictionaryValue> VmStatInfo::ToValue() const {
   auto res = std::make_unique<DictionaryValue>();
-  res->SetInteger("pswpin", pswpin);
-  res->SetInteger("pswpout", pswpout);
-  res->SetInteger("pgmajfault", pgmajfault);
+  res->SetIntKey("pswpin", pswpin);
+  res->SetIntKey("pswpout", pswpout);
+  res->SetIntKey("pgmajfault", pgmajfault);
   return res;
 }
 
