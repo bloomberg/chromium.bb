@@ -5,12 +5,8 @@
 #include "ash/media/media_notification_background.h"
 
 #include <algorithm>
-#include <vector>
 
-#include "skia/ext/image_operations.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_analysis.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/view.h"
 
@@ -20,66 +16,7 @@ namespace {
 
 constexpr int kMediaImageGradientWidth = 40;
 
-constexpr SkColor kMediaNotificationDefaultBackgroundColor = SK_ColorWHITE;
-
-// The ratio for a background color option to be considered very popular.
-constexpr double kMediaNotificationBackgroundColorVeryPopularRatio = 2.5;
-
-bool IsNearlyWhiteOrBlack(SkColor color) {
-  color_utils::HSL hsl;
-  color_utils::SkColorToHSL(color, &hsl);
-  return hsl.l >= 0.9 || hsl.l <= 0.08;
-}
-
-base::Optional<SkColor> GetNotificationBackgroundColor(const SkBitmap* source) {
-  if (!source || source->empty())
-    return base::nullopt;
-
-  std::vector<color_utils::Swatch> swatches =
-      color_utils::CalculateColorSwatches(
-          *source, 16, gfx::Rect(source->width() / 2, source->height()),
-          false /* exclude_uninteresting */);
-
-  if (swatches.empty())
-    return base::nullopt;
-
-  base::Optional<color_utils::Swatch> most_popular;
-  base::Optional<color_utils::Swatch> non_white_black;
-
-  // Find the most popular color with the most weight and the color which
-  // is the color with the most weight that is not white or black.
-  for (auto& swatch : swatches) {
-    if (!IsNearlyWhiteOrBlack(swatch.color) &&
-        (!non_white_black || swatch.population > non_white_black->population)) {
-      non_white_black = swatch;
-    }
-
-    if (most_popular && swatch.population < most_popular->population)
-      continue;
-
-    most_popular = swatch;
-  }
-
-  DCHECK(most_popular);
-
-  // If the most popular color is not white or black then we should use that.
-  if (!IsNearlyWhiteOrBlack(most_popular->color))
-    return most_popular->color;
-
-  // If we could not find a color that is not white or black then we should
-  // use the most popular color.
-  if (!non_white_black)
-    return most_popular->color;
-
-  // If the most popular color is very popular then we should use that color.
-  if (static_cast<double>(most_popular->population) /
-          non_white_black->population >
-      kMediaNotificationBackgroundColorVeryPopularRatio) {
-    return most_popular->color;
-  }
-
-  return non_white_black->color;
-}
+constexpr SkColor kMediaNotificationBackgroundColor = SK_ColorWHITE;
 
 }  // namespace
 
@@ -94,8 +31,6 @@ MediaNotificationBackground::MediaNotificationBackground(
       artwork_max_width_pct_(artwork_max_width_pct) {
   DCHECK(owner);
 }
-
-MediaNotificationBackground::~MediaNotificationBackground() = default;
 
 void MediaNotificationBackground::Paint(gfx::Canvas* canvas,
                                         views::View* view) const {
@@ -135,16 +70,18 @@ void MediaNotificationBackground::Paint(gfx::Canvas* canvas,
 
   // Draw a filled rectangle which will act as the main background of the
   // notification. This may cover up some of the artwork.
-  const SkColor background_color =
-      background_color_.value_or(kMediaNotificationDefaultBackgroundColor);
-  canvas->FillRect(GetFilledBackgroundBounds(bounds), background_color);
+  canvas->FillRect(GetFilledBackgroundBounds(bounds),
+                   kMediaNotificationBackgroundColor);
 
   {
     // Draw a gradient to fade the color background and the image together.
     gfx::Rect draw_bounds = GetGradientBounds(bounds);
 
-    const SkColor colors[2] = {
-        background_color, SkColorSetA(background_color, SK_AlphaTRANSPARENT)};
+    const SkColor transparent =
+        SkColorSetA(kMediaNotificationBackgroundColor, 0);
+
+    const SkColor colors[2] = {kMediaNotificationBackgroundColor, transparent};
+
     const SkPoint points[2] = {gfx::PointToSkPoint(draw_bounds.left_center()),
                                gfx::PointToSkPoint(draw_bounds.right_center())};
 
@@ -163,7 +100,6 @@ void MediaNotificationBackground::UpdateArtwork(const gfx::ImageSkia& image) {
     return;
 
   artwork_ = image;
-  background_color_ = GetNotificationBackgroundColor(artwork_.bitmap());
   owner_->SchedulePaint();
 }
 

@@ -16,10 +16,6 @@
 
 class SkBitmap;
 
-namespace gfx {
-class Rect;
-}  // namespace gfx
-
 namespace color_utils {
 
 struct HSL;
@@ -139,35 +135,6 @@ struct ColorProfile {
   LumaRange luma = LumaRange::DARK;
   SaturationRange saturation = SaturationRange::MUTED;
 };
-
-// A color value with an associated weight.
-struct Swatch {
-  Swatch(SkColor color, size_t population)
-      : color(color), population(population) {}
-
-  SkColor color;
-
-  // The population correlates to a count, so it should be 1 or greater.
-  size_t population;
-
-  bool operator==(const Swatch& other) const {
-    return color == other.color && population == other.population;
-  }
-};
-
-// Returns a vector of |Swatch| that represent the prominent colors of the
-// bitmap within |region|. The |max_swatches| is the maximum number of swatches.
-// For landscapes, good values are in the range 12-16. For images which are
-// largely made up of people's faces then this value should be increased to
-// 24-32. |exclude_uninteresting| will exclude colors that are not interesting
-// (e.g. too white or black).
-// This is an implementation of the Android Palette API:
-// https://developer.android.com/reference/android/support/v7/graphics/Palette
-GFX_EXPORT std::vector<Swatch> CalculateColorSwatches(
-    const SkBitmap& bitmap,
-    size_t max_swatches,
-    const gfx::Rect& region,
-    bool exclude_uninteresting);
 
 // Returns a vector of RGB colors that represents the bitmap based on the
 // |color_profiles| provided. For each value, if a value is succesfully
