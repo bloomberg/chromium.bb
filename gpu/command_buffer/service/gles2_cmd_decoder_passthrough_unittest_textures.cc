@@ -51,7 +51,8 @@ class TestSharedImageBackingPassthrough : public SharedImageBacking {
                            size,
                            color_space,
                            usage,
-                           0 /* estimated_size */) {
+                           0 /* estimated_size */,
+                           false /* is_thread_safe */) {
     texture_passthrough_ =
         base::MakeRefCounted<TexturePassthrough>(texture_id, GL_TEXTURE_2D);
   }

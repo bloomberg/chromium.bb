@@ -87,8 +87,8 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Basic) {
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
 
-  auto backing = backing_factory_->CreateSharedImage(mailbox, format, size,
-                                                     color_space, usage);
+  auto backing = backing_factory_->CreateSharedImage(
+      mailbox, format, size, color_space, usage, false /* is_thread_safe */);
   EXPECT_TRUE(backing);
 
   // Check clearing.
@@ -166,8 +166,8 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, GL_SkiaGL) {
   gfx::Size size(1, 1);
   auto color_space = gfx::ColorSpace::CreateSRGB();
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
-  auto backing = backing_factory_->CreateSharedImage(mailbox, format, size,
-                                                     color_space, usage);
+  auto backing = backing_factory_->CreateSharedImage(
+      mailbox, format, size, color_space, usage, false /* is_thread_safe */);
   EXPECT_TRUE(backing);
 
   GLenum expected_target = GL_TEXTURE_RECTANGLE;

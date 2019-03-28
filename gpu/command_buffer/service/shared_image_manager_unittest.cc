@@ -54,7 +54,8 @@ class MockSharedImageBacking : public SharedImageBacking {
                            size,
                            color_space,
                            usage,
-                           estimated_size) {}
+                           estimated_size,
+                           false /* is_thread_safe */) {}
 
   MOCK_CONST_METHOD0(IsCleared, bool());
   MOCK_METHOD0(SetCleared, void());

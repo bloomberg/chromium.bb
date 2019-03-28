@@ -239,13 +239,15 @@ class SharedImageBackingWithReadAccess : public SharedImageBacking {
                                    const gfx::Size& size,
                                    const gfx::ColorSpace& color_space,
                                    uint32_t usage,
-                                   size_t estimated_size)
+                                   size_t estimated_size,
+                                   bool is_thread_safe)
       : SharedImageBacking(mailbox,
                            format,
                            size,
                            color_space,
                            usage,
-                           estimated_size) {}
+                           estimated_size,
+                           is_thread_safe) {}
   ~SharedImageBackingWithReadAccess() override = default;
 
   virtual void BeginReadAccess() = 0;
@@ -353,7 +355,8 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
                                          size,
                                          color_space,
                                          usage,
-                                         texture->estimated_size()),
+                                         texture->estimated_size(),
+                                         false /* is_thread_safe */),
         texture_(texture),
         attribs_(attribs) {
     DCHECK(texture_);
@@ -551,7 +554,8 @@ class SharedImageBackingPassthroughGLTexture
                                          size,
                                          color_space,
                                          usage,
-                                         passthrough_texture->estimated_size()),
+                                         passthrough_texture->estimated_size(),
+                                         false /* is_thread_safe */),
         texture_passthrough_(std::move(passthrough_texture)),
         is_cleared_(is_cleared) {
     DCHECK(texture_passthrough_);
@@ -754,7 +758,9 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
-    uint32_t usage) {
+    uint32_t usage,
+    bool is_thread_safe) {
+  DCHECK(!is_thread_safe);
   return CreateSharedImage(mailbox, format, size, color_space, usage,
                            base::span<const uint8_t>());
 }

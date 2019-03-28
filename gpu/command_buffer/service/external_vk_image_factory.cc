@@ -36,7 +36,9 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
-    uint32_t usage) {
+    uint32_t usage,
+    bool is_thread_safe) {
+  DCHECK(!is_thread_safe);
   VkDevice device = context_state_->vk_context_provider()
                         ->GetDeviceQueue()
                         ->GetVulkanDevice();
@@ -143,7 +145,8 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
     return nullptr;
   }
 
-  auto backing = CreateSharedImage(mailbox, format, size, color_space, usage);
+  auto backing = CreateSharedImage(mailbox, format, size, color_space, usage,
+                                   false /* is_thread_safe */);
 
   if (!backing)
     return nullptr;
