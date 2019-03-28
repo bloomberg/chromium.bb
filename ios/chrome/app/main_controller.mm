@@ -489,10 +489,6 @@ enum class EnterTabSwitcherSnapshotResult {
 - (void)finishDismissingTabSwitcher;
 // Opens an url from a link in the settings UI.
 - (void)openUrlFromSettings:(OpenNewTabCommand*)command;
-// Switches to show either regular or incognito tabs, and then opens
-// a new oen of those tabs. |newTabCommand|'s |incognito| property inidcates
-// the type of tab to open.
-- (void)switchModesAndOpenNewTab:(OpenNewTabCommand*)command;
 // Switch all global states for the given mode (normal or incognito).
 - (void)switchGlobalStateToMode:(ApplicationMode)mode;
 // Updates the local storage, cookie store, and sets the global state.
@@ -1571,51 +1567,14 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)openURLInNewTab:(OpenNewTabCommand*)command {
-  if (command.URL.is_valid()) {
-    if ([command fromChrome]) {
-      [self dismissModalsAndOpenSelectedTabInMode:ApplicationMode::NORMAL
-                                          withURL:[command URL]
-                                       virtualURL:[command virtualURL]
-                                   dismissOmnibox:YES
-                                       transition:ui::PAGE_TRANSITION_TYPED
-                                       completion:nil];
-    } else {
-      ApplicationMode mode = command.inIncognito ? ApplicationMode::INCOGNITO
-                                                 : ApplicationMode::NORMAL;
-      [self
-          dismissModalDialogsWithCompletion:^{
-            [self setCurrentInterfaceForMode:mode];
-            // TODO(crbug.com/907527): Refactor to use Load().
-            [UrlLoadingServiceFactory::GetForBrowserState(
-                 [self.currentBVC browserState])
-                    ->GetUrlLoader() webPageOrderedOpen:command];
-          }
-                             dismissOmnibox:YES];
-    }
-
-  } else {
-    if (self.currentBrowserState->IsOffTheRecord() != command.inIncognito) {
-      // Must take a snapshot of the tab before we switch the incognito mode
-      // because the currentTab will change after the switch.
-      Tab* currentTab = self.currentTabModel.currentTab;
-      if (currentTab) {
-        SnapshotTabHelper::FromWebState(currentTab.webState)
-            ->UpdateSnapshotWithCallback(nil);
-      }
-      // Not for this browser state, send it on its way.
-      [self switchModesAndOpenNewTab:command];
-      return;
-    }
-
-    // Either send or don't send the "New Tab Opened" or "Incognito Tab Opened"
-    // events to the feature_engagement::Tracker based on
-    // |command.userInitiated| and |command.incognito|.
-    feature_engagement::NotifyNewTabEventForCommand(self.currentBrowserState,
-                                                    command);
-
-    [self.currentBVC openNewTabFromOriginPoint:command.originPoint
-                                  focusOmnibox:command.shouldFocusOmnibox];
-  }
+  UrlLoadParams* params = UrlLoadParams::InNewTab(
+      command.URL, command.virtualURL, command.referrer, command.inIncognito,
+      command.inBackground, command.appendTo);
+  params->origin_point = command.originPoint;
+  params->from_chrome = command.fromChrome;
+  params->user_initiated = command.userInitiated;
+  params->should_focus_omnibox = command.shouldFocusOmnibox;
+  _appURLLoadingService->LoadUrlInNewTab(params);
 }
 
 // TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
@@ -1811,6 +1770,21 @@ enum class EnterTabSwitcherSnapshotResult {
   [self openURLInNewTab:command];
 }
 
+- (void)expectNewForegroundTabForMode:(ApplicationMode)targetMode {
+  id<BrowserInterface> interface =
+      targetMode == ApplicationMode::INCOGNITO
+          ? self.interfaceProvider.incognitoInterface
+          : self.interfaceProvider.mainInterface;
+  DCHECK(interface);
+  [interface.bvc expectNewForegroundTab];
+}
+
+- (void)openNewTabFromOriginPoint:(CGPoint)originPoint
+                     focusOmnibox:(BOOL)focusOmnibox {
+  [self.currentBVC openNewTabFromOriginPoint:originPoint
+                                focusOmnibox:focusOmnibox];
+}
+
 #pragma mark - ApplicationCommands helpers
 
 - (void)openUrlFromSettings:(OpenNewTabCommand*)command {
@@ -1977,18 +1951,6 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 #pragma mark - Mode Switching
-
-- (void)switchModesAndOpenNewTab:(OpenNewTabCommand*)command {
-  id<BrowserInterface> interface =
-      command.inIncognito ? self.interfaceProvider.incognitoInterface
-                          : self.interfaceProvider.mainInterface;
-  DCHECK(interface);
-  [interface.bvc expectNewForegroundTab];
-  [self setCurrentInterfaceForMode:command.inIncognito
-                                       ? ApplicationMode::INCOGNITO
-                                       : ApplicationMode::NORMAL];
-  [self openURLInNewTab:command];
-}
 
 - (void)startVoiceSearch {
   if (!_isProcessingTabSwitcherCommand) {
