@@ -590,6 +590,7 @@ test("ios_web_inttests") {
     "//services/service_manager/public/cpp",
     "//testing/gtest",
     "//ui/base:test_support",
+    "//ui/resources",
   ]
   sources = [
     "browser_state_web_view_partition_inttest.mm",

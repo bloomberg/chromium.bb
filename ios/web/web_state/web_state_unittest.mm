@@ -648,7 +648,7 @@ TEST_P(WebStateTest, LoadChromeThenHTML) {
   // Wait for the error loading.
   std::string error;
   if (features::WebUISchemeHandlingEnabled()) {
-    error = "NSURLErrorDomain error -1000.";
+    error = "NSURLErrorDomain error -1002.";
   } else {
     error = "unsupported URL";
   }
@@ -677,7 +677,7 @@ TEST_P(WebStateTest, LoadChromeThenWaitThenHTMLThenReload) {
   }));
   std::string error;
   if (features::WebUISchemeHandlingEnabled()) {
-    error = "NSURLErrorDomain error -1000.";
+    error = "NSURLErrorDomain error -1002.";
   } else {
     error = "unsupported URL";
   }

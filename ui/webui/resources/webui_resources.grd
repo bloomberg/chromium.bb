@@ -529,8 +529,11 @@ without changes to the corresponding grd file. -->
                  compress="gzip" />
 
       <if expr="is_ios">
-        <structure name="IDR_WEBUI_JS_WEB_UI"
+        <structure name="IDR_WEBUI_JS_IOS_WEB_UI"
                    file="js/ios/web_ui.js" type="chrome_html"
+                   compress="gzip" />
+        <structure name="IDR_WEBUI_JS_IOS_MOJO_API"
+                   file="js/ios/mojo_api.js" type="chrome_html"
                    compress="gzip" />
       </if>
 

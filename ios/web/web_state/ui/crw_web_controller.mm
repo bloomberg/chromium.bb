@@ -3954,7 +3954,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                         completionHandler:
                             (void (^)(NSString* result))completionHandler {
   GURL origin(web::GURLOriginWithWKSecurityOrigin(frame.securityOrigin));
-  if (web::GetWebClient()->IsAppSpecificURL(origin) && _webUIManager) {
+  if (web::GetWebClient()->IsAppSpecificURL(origin) &&
+      (_webUIManager || web::features::WebUISchemeHandlingEnabled())) {
     std::string mojoResponse =
         self.mojoFacade->HandleMojoMessage(base::SysNSStringToUTF8(prompt));
     completionHandler(base::SysUTF8ToNSString(mojoResponse));
