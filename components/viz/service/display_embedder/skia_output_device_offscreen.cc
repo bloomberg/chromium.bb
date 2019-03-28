@@ -4,28 +4,22 @@
 
 #include "components/viz/service/display_embedder/skia_output_device_offscreen.h"
 
-#include <utility>
-
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace viz {
 
-SkiaOutputDeviceOffscreen::SkiaOutputDeviceOffscreen(
-    GrContext* gr_context,
-    bool flipped,
-    bool has_alpha,
-    DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(did_swap_buffer_complete_callback),
-      gr_context_(gr_context),
-      flipped_(flipped),
-      has_alpha_(has_alpha) {}
+SkiaOutputDeviceOffscreen::SkiaOutputDeviceOffscreen(GrContext* gr_context,
+                                                     bool flipped,
+                                                     bool has_alpha)
+    : gr_context_(gr_context), flipped_(flipped), has_alpha_(has_alpha) {}
 
 SkiaOutputDeviceOffscreen::~SkiaOutputDeviceOffscreen() = default;
 
-void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size,
-                                        float device_scale_factor,
-                                        const gfx::ColorSpace& color_space,
-                                        bool has_alpha) {
+sk_sp<SkSurface> SkiaOutputDeviceOffscreen::DrawSurface() {
+  return draw_surface_;
+}
+
+void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size) {
   auto image_info = SkImageInfo::Make(
       size.width(), size.height(),
       has_alpha_ ? kRGBA_8888_SkColorType : kRGB_888x_SkColorType,
@@ -36,13 +30,10 @@ void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size,
       nullptr /* surfaceProps */);
 }
 
-gfx::SwapResponse SkiaOutputDeviceOffscreen::SwapBuffers(
-    BufferPresentedCallback feedback) {
+gfx::SwapResult SkiaOutputDeviceOffscreen::SwapBuffers() {
   // Reshape should have been called first.
   DCHECK(draw_surface_);
-
-  StartSwapBuffers(std::move(feedback));
-  return FinishSwapBuffers(gfx::SwapResult::SWAP_ACK);
+  return gfx::SwapResult::SWAP_ACK;
 }
 
 }  // namespace viz

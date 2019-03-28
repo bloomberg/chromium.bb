@@ -4,8 +4,6 @@
 
 #include "components/viz/service/display_embedder/skia_output_device_vulkan.h"
 
-#include <utility>
-
 #include "build/build_config.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
@@ -19,21 +17,19 @@ namespace viz {
 
 SkiaOutputDeviceVulkan::SkiaOutputDeviceVulkan(
     VulkanContextProvider* context_provider,
-    gpu::SurfaceHandle surface_handle,
-    DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(did_swap_buffer_complete_callback),
-      context_provider_(context_provider),
-      surface_handle_(surface_handle) {}
+    gpu::SurfaceHandle surface_handle)
+    : context_provider_(context_provider), surface_handle_(surface_handle) {}
 
 SkiaOutputDeviceVulkan::~SkiaOutputDeviceVulkan() {
   if (vulkan_surface_)
     vulkan_surface_->Destroy();
 }
 
-void SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
-                                     float device_scale_factor,
-                                     const gfx::ColorSpace& color_space,
-                                     bool has_alpha) {
+sk_sp<SkSurface> SkiaOutputDeviceVulkan::DrawSurface() {
+  return draw_surface_;
+}
+
+void SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size) {
   if (!vulkan_surface_)
     CreateVulkanSurface();
 
@@ -49,13 +45,11 @@ void SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
   UpdateDrawSurface();
 }
 
-gfx::SwapResponse SkiaOutputDeviceVulkan::SwapBuffers(
-    BufferPresentedCallback feedback) {
+gfx::SwapResult SkiaOutputDeviceVulkan::SwapBuffers() {
   // Reshape should have been called first.
   DCHECK(vulkan_surface_);
   DCHECK(draw_surface_);
 
-  StartSwapBuffers(std::move(feedback));
   auto backend = draw_surface_->getBackendRenderTarget(
       SkSurface::kFlushRead_BackendHandleAccess);
   GrVkImageInfo vk_image_info;
@@ -63,11 +57,11 @@ gfx::SwapResponse SkiaOutputDeviceVulkan::SwapBuffers(
     NOTREACHED() << "Failed to get the image info.";
   vulkan_surface_->GetSwapChain()->SetCurrentImageLayout(
       vk_image_info.fImageLayout);
-  auto response = FinishSwapBuffers(vulkan_surface_->SwapBuffers());
+  auto result = vulkan_surface_->SwapBuffers();
 
   UpdateDrawSurface();
 
-  return response;
+  return result;
 }
 
 void SkiaOutputDeviceVulkan::CreateVulkanSurface() {

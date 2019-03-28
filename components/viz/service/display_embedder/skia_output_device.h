@@ -5,66 +5,35 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_H_
 
-#include "base/callback.h"
 #include "base/macros.h"
-#include "base/optional.h"
-#include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/swap_result.h"
 
 class SkSurface;
-
-namespace gfx {
-class ColorSpace;
-class Rect;
-class Size;
-struct PresentationFeedback;
-}  // namespace gfx
 
 namespace viz {
 
 class SkiaOutputDevice {
  public:
-  using BufferPresentedCallback =
-      base::OnceCallback<void(const gfx::PresentationFeedback& feedback)>;
-  using DidSwapBufferCompleteCallback =
-      base::RepeatingCallback<void(gpu::SwapBuffersCompleteParams,
-                                   const gfx::Size& pixel_size)>;
-  explicit SkiaOutputDevice(
-      DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
+  SkiaOutputDevice();
   virtual ~SkiaOutputDevice();
 
   // SkSurface that can be drawn to.
-  sk_sp<SkSurface> DrawSurface() { return draw_surface_; }
+  virtual sk_sp<SkSurface> DrawSurface() = 0;
 
   // Changes the size of draw surface and invalidates it's contents.
-  virtual void Reshape(const gfx::Size& size,
-                       float device_scale_factor,
-                       const gfx::ColorSpace& color_space,
-                       bool has_alpha) = 0;
+  virtual void Reshape(const gfx::Size& size) = 0;
 
   // Presents DrawSurface.
-  virtual gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) = 0;
+  virtual gfx::SwapResult SwapBuffers() = 0;
 
   virtual bool SupportPostSubBuffer();
 
-  virtual gfx::SwapResponse PostSubBuffer(const gfx::Rect& rect,
-                                          BufferPresentedCallback feedback);
-
- protected:
-  void StartSwapBuffers(base::Optional<BufferPresentedCallback> feedback);
-  gfx::SwapResponse FinishSwapBuffers(gfx::SwapResult result);
-
-  sk_sp<SkSurface> draw_surface_;
+  virtual gfx::SwapResult PostSubBuffer(const gfx::Rect& rect);
 
  private:
-  uint64_t swap_id_ = 0;
-  DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
-
-  // Only valid between StartSwapBuffers and FinishSwapBuffers.
-  base::Optional<BufferPresentedCallback> feedback_;
-  base::Optional<gpu::SwapBuffersCompleteParams> params_;
-
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDevice);
 };
 

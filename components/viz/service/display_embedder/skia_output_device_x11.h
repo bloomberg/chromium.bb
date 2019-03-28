@@ -17,20 +17,13 @@ namespace viz {
 
 class SkiaOutputDeviceX11 final : public SkiaOutputDeviceOffscreen {
  public:
-  SkiaOutputDeviceX11(
-      GrContext* gr_context,
-      gfx::AcceleratedWidget widget,
-      DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
+  SkiaOutputDeviceX11(GrContext* gr_context, gfx::AcceleratedWidget widget);
   ~SkiaOutputDeviceX11() override;
 
-  void Reshape(const gfx::Size& size,
-               float device_scale_factor,
-               const gfx::ColorSpace& color_space,
-               bool has_alpha) override;
-  gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) override;
+  void Reshape(const gfx::Size& size) override;
+  gfx::SwapResult SwapBuffers() override;
   bool SupportPostSubBuffer() override;
-  gfx::SwapResponse PostSubBuffer(const gfx::Rect& rect,
-                                  BufferPresentedCallback feedback) override;
+  gfx::SwapResult PostSubBuffer(const gfx::Rect& rect) override;
 
  private:
   XDisplay* const display_;

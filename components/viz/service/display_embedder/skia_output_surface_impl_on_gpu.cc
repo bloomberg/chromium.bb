@@ -18,7 +18,6 @@
 #include "components/viz/service/display/texture_deleter.h"
 #include "components/viz/service/display_embedder/direct_context_provider.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
-#include "components/viz/service/display_embedder/skia_output_device_gl.h"
 #include "components/viz/service/display_embedder/skia_output_device_offscreen.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -357,13 +356,45 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
         base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(event)));
   }
 
-  if (!MakeCurrent(surface_handle_ /* need_fbo0 */))
-    return;
-
-  size_ = size;
-  color_space_ = color_space;
-  output_device_->Reshape(size_, device_scale_factor, color_space, has_alpha);
-  sk_surface_ = output_device_->DrawSurface();
+  if (!is_using_vulkan()) {
+    if (!MakeCurrent(surface_handle_ /* need_fbo0 */))
+      return;
+    size_ = size;
+    color_space_ = color_space;
+    if (output_device_) {
+      output_device_->Reshape(size_);
+      sk_surface_ = output_device_->DrawSurface();
+    } else {
+      // Conversion to GLSurface's color space follows the same logic as in
+      // gl::GetGLColorSpace().
+      gl::GLSurface::ColorSpace surface_color_space =
+          color_space.IsHDR() ? gl::GLSurface::ColorSpace::SCRGB_LINEAR
+                              : gl::GLSurface::ColorSpace::UNSPECIFIED;
+      if (!gl_surface_->Resize(size, device_scale_factor, surface_color_space,
+                               has_alpha)) {
+        LOG(FATAL) << "Failed to resize.";
+        // TODO(penghuang): Handle the failure.
+      }
+      CreateSkSurfaceForGL();
+    }
+  } else {
+#if BUILDFLAG(ENABLE_VULKAN)
+    if (!output_device_) {
+      if (surface_handle_ == gpu::kNullSurfaceHandle) {
+        output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
+            gr_context(), false /* flipped */,
+            renderer_settings_.requires_alpha_channel);
+      } else {
+        output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
+            vulkan_context_provider_, surface_handle_);
+      }
+    }
+    output_device_->Reshape(size);
+    sk_surface_ = output_device_->DrawSurface();
+#else
+    NOTREACHED();
+#endif
+  }
 
   if (characterization) {
     sk_surface_->characterize(characterization);
@@ -426,26 +457,37 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
   if (!MakeCurrent(surface_handle_ /* need_fbo0 */))
     return;
 
-  DCHECK(output_device_);
-  gfx::SwapResponse response;
-  if (capabilities_.supports_post_sub_buffer) {
-    DCHECK(frame.sub_buffer_rect);
-    DCHECK(!frame.sub_buffer_rect->IsEmpty());
-    if (!capabilities_.flipped_output_surface)
-      frame.sub_buffer_rect->set_y(size_.height() - frame.sub_buffer_rect->y() -
-                                   frame.sub_buffer_rect->height());
-    response = output_device_->PostSubBuffer(*frame.sub_buffer_rect,
-                                             buffer_presented_callback_);
-  } else {
-    response = output_device_->SwapBuffers(buffer_presented_callback_);
-  }
-  sk_surface_ = output_device_->DrawSurface();
+  base::TimeTicks swap_start = base::TimeTicks::Now();
+  OnSwapBuffers();
 
+  base::TimeTicks swap_end;
+  if (output_device_) {
+    gpu::SwapBuffersCompleteParams params;
+    params.swap_response.swap_start = swap_start;
+    if (capabilities_.supports_post_sub_buffer) {
+      DCHECK(frame.sub_buffer_rect);
+      DCHECK(!frame.sub_buffer_rect->IsEmpty());
+      params.swap_response.result =
+          output_device_->PostSubBuffer(*frame.sub_buffer_rect);
+    } else {
+      params.swap_response.result = output_device_->SwapBuffers();
+    }
+    swap_end = params.swap_response.swap_end = base::TimeTicks::Now();
+    sk_surface_ = output_device_->DrawSurface();
+    DidSwapBuffersComplete(params);
+    buffer_presented_callback_.Run(gfx::PresentationFeedback(
+        params.swap_response.swap_end, base::TimeDelta(), 0 /* flag */));
+
+  } else {
+    DCHECK(!is_using_vulkan());
+    gl_surface_->SwapBuffers(buffer_presented_callback_);
+    swap_end = base::TimeTicks::Now();
+  }
   for (auto& latency : frame.latency_info) {
     latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, response.swap_start, 1);
+        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, swap_start, 1);
     latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, response.swap_end, 1);
+        ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, swap_end, 1);
   }
   latency_tracker_.OnGpuSwapBuffersCompleted(frame.latency_info);
 }
@@ -749,17 +791,96 @@ void SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting(
   capabilities_ = capabilities;
   output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
       gr_context(), capabilities_.flipped_output_surface,
-      renderer_settings_.requires_alpha_channel,
-      did_swap_buffer_complete_callback_);
+      renderer_settings_.requires_alpha_channel);
+}
+
+#if defined(OS_WIN)
+void SkiaOutputSurfaceImplOnGpu::DidCreateAcceleratedSurfaceChildWindow(
+    gpu::SurfaceHandle parent_window,
+    gpu::SurfaceHandle child_window) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  NOTIMPLEMENTED();
+}
+#endif
+
+void SkiaOutputSurfaceImplOnGpu::DidSwapBuffersComplete(
+    gpu::SwapBuffersCompleteParams params) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  params.swap_response.swap_id = pending_swap_completed_params_.front().first;
+  gfx::Size pixel_size = pending_swap_completed_params_.front().second;
+  pending_swap_completed_params_.pop_front();
+  did_swap_buffer_complete_callback_.Run(params, pixel_size);
+}
+
+const gpu::gles2::FeatureInfo* SkiaOutputSurfaceImplOnGpu::GetFeatureInfo()
+    const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return feature_info_.get();
+}
+
+const gpu::GpuPreferences& SkiaOutputSurfaceImplOnGpu::GetGpuPreferences()
+    const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  NOTIMPLEMENTED();
+  return gpu_preferences_;
+}
+
+void SkiaOutputSurfaceImplOnGpu::BufferPresented(
+    const gfx::PresentationFeedback& feedback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+}
+
+void SkiaOutputSurfaceImplOnGpu::AddFilter(IPC::MessageFilter* message_filter) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  NOTIMPLEMENTED();
+}
+
+int32_t SkiaOutputSurfaceImplOnGpu::GetRouteID() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+void SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
+  if (!MakeCurrent(true /* need_fbo0 */))
+    return;
+
+  auto* context = context_state_->real_context();
+  auto* current_gl = context->GetCurrentGL();
+  api_ = current_gl->Api;
+  gl_version_info_ = context->GetVersionInfo();
+
+  if (surface_handle_) {
+    capabilities_.flipped_output_surface = gl_surface_->FlipsVertically();
+
+    // Get alpha and stencil bits from the default frame buffer.
+    api_->glBindFramebufferEXTFn(GL_FRAMEBUFFER, 0);
+    gr_context()->resetContext(kRenderTarget_GrGLBackendState);
+    const auto* version = current_gl->Version;
+    GLint stencil_bits = 0;
+    GLint alpha_bits = 0;
+    if (version->is_desktop_core_profile) {
+      api_->glGetFramebufferAttachmentParameterivEXTFn(
+          GL_FRAMEBUFFER, GL_STENCIL, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE,
+          &stencil_bits);
+      api_->glGetFramebufferAttachmentParameterivEXTFn(
+          GL_FRAMEBUFFER, GL_BACK_LEFT, GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE,
+          &alpha_bits);
+    } else {
+      api_->glGetIntegervFn(GL_STENCIL_BITS, &stencil_bits);
+      api_->glGetIntegervFn(GL_ALPHA_BITS, &alpha_bits);
+    }
+    CHECK_GL_ERROR();
+    capabilities_.supports_stencil = stencil_bits > 0;
+    supports_alpha_ = alpha_bits > 0;
+  }
 }
 
 void SkiaOutputSurfaceImplOnGpu::InitializeForGLWithGpuService(
     GpuServiceImpl* gpu_service) {
-  std::unique_ptr<SkiaOutputDeviceGL> onscreen_device;
   if (surface_handle_) {
-    onscreen_device = std::make_unique<SkiaOutputDeviceGL>(
-        surface_handle_, feature_info_, did_swap_buffer_complete_callback_);
-    gl_surface_ = onscreen_device->gl_surface();
+    gl_surface_ = gpu::ImageTransportSurface::CreateNativeSurface(
+        weak_ptr_factory_.GetWeakPtr(), surface_handle_, gl::GLSurfaceFormat());
   } else {
     gl_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
   }
@@ -770,33 +891,15 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGLWithGpuService(
     LOG(FATAL) << "Failed to create GrContext";
     // TODO(penghuang): handle the failure.
   }
-
-  auto* context = context_state_->real_context();
-  auto* current_gl = context->GetCurrentGL();
-  api_ = current_gl->Api;
-  gl_version_info_ = context->GetVersionInfo();
-
-  if (onscreen_device) {
-    if (!MakeCurrent(true /* need_fbo0 */)) {
-      LOG(FATAL) << "Failed to make current during initialization.";
-      return;
-    }
-    onscreen_device->Initialize(gr_context(), context);
-    capabilities_.flipped_output_surface = gl_surface_->FlipsVertically();
-    capabilities_.supports_stencil = onscreen_device->supports_stencil();
-    supports_alpha_ = onscreen_device->supports_alpha();
-    output_device_ = std::move(onscreen_device);
-  } else {
+  if (!surface_handle_) {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
         gr_context(), true /* flipped */,
-        renderer_settings_.requires_alpha_channel,
-        did_swap_buffer_complete_callback_);
+        renderer_settings_.requires_alpha_channel);
     capabilities_.flipped_output_surface = true;
     capabilities_.supports_stencil = false;
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
   }
-  capabilities_.supports_post_sub_buffer =
-      output_device_->SupportPostSubBuffer();
+  InitializeForGL();
 }
 
 void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan(
@@ -808,24 +911,21 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan(
   if (surface_handle_ == gpu::kNullSurfaceHandle) {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
         gr_context(), false /* flipped */,
-        renderer_settings_.requires_alpha_channel,
-        did_swap_buffer_complete_callback_);
+        renderer_settings_.requires_alpha_channel);
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
   } else {
 #if defined(USE_X11)
     supports_alpha_ = true;
     if (gpu_preferences_.disable_vulkan_surface) {
-      output_device_ = std::make_unique<SkiaOutputDeviceX11>(
-          gr_context(), surface_handle_, did_swap_buffer_complete_callback_);
+      output_device_ =
+          std::make_unique<SkiaOutputDeviceX11>(gr_context(), surface_handle_);
     } else {
       output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
-          vulkan_context_provider_, surface_handle_,
-          did_swap_buffer_complete_callback_);
+          vulkan_context_provider_, surface_handle_);
     }
 #else
     output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
-        vulkan_context_provider_, surface_handle_,
-        did_swap_buffer_complete_callback_);
+        vulkan_context_provider_, surface_handle_);
 #endif
   }
   capabilities_.supports_post_sub_buffer =
@@ -858,6 +958,32 @@ void SkiaOutputSurfaceImplOnGpu::BindOrCopyTextureIfNecessary(
         LOG(ERROR) << "Failed to copy a gl image to texture.";
     }
   }
+}
+
+void SkiaOutputSurfaceImplOnGpu::OnSwapBuffers() {
+  uint64_t swap_id = swap_id_++;
+  gfx::Size pixel_size(sk_surface_->width(), sk_surface_->height());
+  pending_swap_completed_params_.emplace_back(swap_id, pixel_size);
+}
+
+void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForGL() {
+  SkSurfaceProps surface_props =
+      SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
+
+  GrGLFramebufferInfo framebuffer_info;
+  framebuffer_info.fFBOID = gl_surface_->GetBackingFramebufferObject();
+  framebuffer_info.fFormat = supports_alpha_ ? GL_RGBA8 : GL_RGB8_OES;
+  GrBackendRenderTarget render_target(size_.width(), size_.height(), 0, 8,
+                                      framebuffer_info);
+  auto origin = capabilities_.flipped_output_surface
+                    ? kTopLeft_GrSurfaceOrigin
+                    : kBottomLeft_GrSurfaceOrigin;
+  auto color_type =
+      supports_alpha_ ? kRGBA_8888_SkColorType : kRGB_888x_SkColorType;
+  sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
+      gr_context(), render_target, origin, color_type,
+      color_space_.ToSkColorSpace(), &surface_props);
+  DCHECK(sk_surface_);
 }
 
 bool SkiaOutputSurfaceImplOnGpu::MakeCurrent(bool need_fbo0) {
