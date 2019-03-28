@@ -113,7 +113,7 @@ class AnimationGallery : public View,
       animated_image_view_->SetImageSize(gfx::Size(size_, size_));
     else
       animated_image_view_->ResetImageSize();
-    Layout();
+    InvalidateLayout();
   }
 
   AnimatedImageView* animated_image_view_;

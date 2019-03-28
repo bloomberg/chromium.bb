@@ -29,6 +29,7 @@
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
+#include "ui/views/view_test_api.h"
 #include "ui/views/widget/widget_utils.h"
 
 using base::ASCIIToUTF16;
@@ -459,12 +460,16 @@ TEST_F(LabelButtonTest, ChangeTextSize) {
   // The button preferred size and the label size increase when the text size
   // is increased.
   button_->SetText(longer_text);
+  EXPECT_TRUE(ViewTestApi(button_).needs_layout());
+  button_->Layout();
   EXPECT_GT(button_->label()->bounds().width(), original_label_width * 2);
   EXPECT_GT(button_->GetPreferredSize().width(), original_width * 2);
 
   // The button and the label view return to its original size when the original
   // text is restored.
   button_->SetText(text);
+  EXPECT_TRUE(ViewTestApi(button_).needs_layout());
+  button_->Layout();
   EXPECT_EQ(original_label_width, button_->label()->bounds().width());
   EXPECT_EQ(original_width, button_->GetPreferredSize().width());
 }

@@ -632,6 +632,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // redrawn.
   virtual void SchedulePaintInRect(const gfx::Rect& rect);
 
+  // Schedule a layout to occur. This is called by RootView, client code should
+  // not need to call this.
+  void ScheduleLayout();
+
   // Sets the currently visible cursor. If |cursor| is NULL, the cursor used
   // before the current is restored.
   void SetCursor(gfx::NativeCursor cursor);
@@ -853,6 +857,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
       gfx::NativeView child,
       ui::Layer* child_layer,
       const gfx::Point& location) override;
+  void LayoutRootViewIfNecessary() override;
 
   // Overridden from ui::EventSource:
   ui::EventSink* GetEventSink() override;
@@ -883,8 +888,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual void OnDragComplete();
 
  private:
-  friend class ComboboxTest;
   friend class ButtonTest;
+  friend class ComboboxTest;
   friend class TextfieldTest;
   friend class ViewAuraTest;
   friend void DisableActivationChangeHandlingForTests();

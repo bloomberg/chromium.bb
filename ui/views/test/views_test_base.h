@@ -140,6 +140,20 @@ class ViewsTestBase : public PlatformTest {
   DISALLOW_COPY_AND_ASSIGN(ViewsTestBase);
 };
 
+class ViewsTestBaseWithNativeWidgetType
+    : public ViewsTestBase,
+      public testing::WithParamInterface<ViewsTestBase::NativeWidgetType> {
+ public:
+  ViewsTestBaseWithNativeWidgetType() = default;
+  ~ViewsTestBaseWithNativeWidgetType() override = default;
+
+  // ViewsTestBase:
+  void SetUp() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ViewsTestBaseWithNativeWidgetType);
+};
+
 // A helper that makes it easier to declare basic views tests that want to test
 // desktop native widgets. See |ViewsTestBase::native_wiget_type_| and
 // |ViewsTestBase::CreateNativeWidgetForTest|. In short, for Aura, this will

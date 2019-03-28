@@ -27,6 +27,7 @@
 #include "ui/views/test/test_views.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
+#include "ui/views/view_test_api.h"
 
 #if defined(OS_MACOSX)
 #include "ui/base/test/scoped_preferred_scroller_style_mac.h"
@@ -567,6 +568,8 @@ TEST_F(ScrollViewTest, Header) {
 
   // Get the header a height of 20.
   header->SetPreferredSize(gfx::Size(10, 20));
+  EXPECT_TRUE(ViewTestApi(scroll_view_.get()).needs_layout());
+  scroll_view_->Layout();
   EXPECT_EQ("0,0 100x20", header->parent()->bounds().ToString());
   EXPECT_EQ("0,20 100x80", contents->parent()->bounds().ToString());
   if (contents->layer()) {
@@ -989,6 +992,8 @@ TEST_F(ScrollViewTest, CocoaOverlayScrollBars) {
   // Switch to the non-overlay style and check that the ViewPort is now sized
   // to be smaller, and ScrollbarWidth and ScrollbarHeight are non-zero.
   SetOverlayScrollersEnabled(false);
+  EXPECT_TRUE(ViewTestApi(scroll_view_.get()).needs_layout());
+  scroll_view_->Layout();
   EXPECT_EQ(100 - VerticalScrollBarWidth(), contents->parent()->width());
   EXPECT_EQ(100 - HorizontalScrollBarHeight(), contents->parent()->height());
   EXPECT_NE(0, VerticalScrollBarWidth());

@@ -133,7 +133,7 @@ void LabelExample::ButtonPressed(Button* button, const ui::Event& event) {
   } else if (button == selectable_) {
     custom_label_->SetSelectable(selectable_->checked());
   }
-  custom_label_->parent()->parent()->Layout();
+  custom_label_->parent()->parent()->InvalidateLayout();
   custom_label_->SchedulePaint();
 }
 
@@ -150,7 +150,7 @@ void LabelExample::OnPerformAction(Combobox* combobox) {
 void LabelExample::ContentsChanged(Textfield* sender,
                                    const base::string16& new_contents) {
   custom_label_->SetText(new_contents);
-  custom_label_->parent()->parent()->Layout();
+  custom_label_->parent()->parent()->InvalidateLayout();
 }
 
 void LabelExample::AddCustomLabel(View* container) {
