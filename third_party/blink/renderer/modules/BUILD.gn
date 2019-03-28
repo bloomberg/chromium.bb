@@ -31,6 +31,10 @@ config("modules_implementation") {
   defines = [ "BLINK_MODULES_IMPLEMENTATION=1" ]
 }
 
+config("notouch_config") {
+  defines = [ "TOUCHLESS_MEDIA_CONTROLS" ]
+}
+
 make_names("module_names") {
   in_files = [ "indexeddb/indexed_db_names.json5" ]
   output_dir = blink_modules_output_dir
@@ -181,6 +185,10 @@ target("jumbo_" + modules_target_type, "modules") {
 
   configs -= [ "//build/config/compiler:default_symbols" ]
   configs += blink_symbols_config
+
+  if (is_android && notouch_build) {
+    configs += [ ":notouch_config" ]
+  }
 }
 
 jumbo_source_set("modules_testing") {

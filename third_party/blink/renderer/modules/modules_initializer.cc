@@ -94,6 +94,10 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+#if defined(TOUCHLESS_MEDIA_CONTROLS)
+#include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_impl.h"
+#endif
+
 namespace blink {
 
 void ModulesInitializer::Initialize() {
@@ -203,7 +207,11 @@ void ModulesInitializer::ProvideIndexedDBClientToWorker(
 MediaControls* ModulesInitializer::CreateMediaControls(
     HTMLMediaElement& media_element,
     ShadowRoot& shadow_root) const {
+#if defined(TOUCHLESS_MEDIA_CONTROLS)
+  return MediaControlsTouchlessImpl::Create(media_element, shadow_root);
+#else
   return MediaControlsImpl::Create(media_element, shadow_root);
+#endif
 }
 
 PictureInPictureController*
