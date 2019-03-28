@@ -941,13 +941,15 @@ if (!is_ios) {
     group("webdriver_wpt_tests") {
       testonly = true
       data = [
+        "//chrome/test/chromedriver/chrome_paths.py",
+        "//chrome/test/chromedriver/server/server.py",
+        "//chrome/test/chromedriver/test/run_webdriver_tests.py",
+        "//chrome/test/chromedriver/util.py",
+        "//testing/xvfb.py",
         "//third_party/blink/tools/blinkpy/",
         "//third_party/blink/web_tests/external/wpt/webdriver/",
-        "//chrome/test/chromedriver/test/run_webdriver_tests.py",
-        "//chrome/test/chromedriver/server/server.py",
-        "//chrome/test/chromedriver/util.py",
-        "//chrome/test/chromedriver/chrome_paths.py",
-        "//testing/xvfb.py",
+        "//third_party/blink/web_tests/VirtualTestSuites",
+        "//third_party/blink/web_tests/WebDriverExpectations",
         "//third_party/pywebsocket/src/mod_pywebsocket/",
       ]
       data_deps = [
