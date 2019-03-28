@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEB_CONTROLLER_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEB_CONTROLLER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -179,57 +180,18 @@ class WebController {
   // of the element in viewport coordinates.
   using ElementPositionCallback = base::OnceCallback<void(bool, int, int)>;
 
-  // Helper class to get element's position in viewport coordinates when is
+  // Superclass for workers that execute complex operation and keep a pointer to
+  // this controller or the devtools client. Workers are owned by
+  // pending_workers_ and are removed once the operation is finished.
+  class Worker;
+
+  // Worker class to get element's position in viewport coordinates when is
   // stable and the frame it belongs finished visual update.
-  class ElementPositionGetter {
-   public:
-    ElementPositionGetter();
-    ~ElementPositionGetter();
+  class ElementPositionGetter;
 
-    // |devtools_client| must outlive this class which is guarantteed by the
-    // owner of this class.
-    void Start(content::RenderFrameHost* frame_host,
-               DevtoolsClient* devtools_client,
-               std::string element_object_id,
-               ElementPositionCallback callback);
-
-   private:
-    void OnVisualStateUpdatedCallback(bool success);
-    void GetAndWaitBoxModelStable();
-    void OnGetBoxModelForStableCheck(
-        std::unique_ptr<dom::GetBoxModelResult> result);
-    void OnScrollIntoView(
-        std::unique_ptr<runtime::CallFunctionOnResult> result);
-    void OnResult(int x, int y);
-    void OnError();
-
-    DevtoolsClient* devtools_client_ = nullptr;
-    std::string object_id_;
-    int remaining_rounds_ = 0;
-    ElementPositionCallback callback_;
-    bool visual_state_updated_ = false;
-
-    // If |has_point_| is true, |point_x_| and |point_y_| contain the last
-    // computed center of the element, in viewport coordinates. Note that
-    // negative coordinates are valid, in case the element is above or to the
-    // left of the viewport.
-    bool has_point_ = false;
-    int point_x_ = 0;
-    int point_y_ = 0;
-
-    base::WeakPtrFactory<ElementPositionGetter> weak_ptr_factory_;
-    DISALLOW_COPY_AND_ASSIGN(ElementPositionGetter);
-  };
-
-  // Perform a mouse left button click on the element given by |selector| and
-  // return the result through callback.
-  void ClickElement(const Selector& selector,
-                    base::OnceCallback<void(bool)> callback);
-
-  // Perform a touch tap on the element given by |selector| and return the
-  // result through callback.
-  void TapElement(const Selector& selector,
-                  base::OnceCallback<void(bool)> callback);
+  // Worker class to find element(s) matching a selector. Returns
+  // FindElementResult.
+  class ElementFinder;
 
   struct FindElementResult {
     FindElementResult() = default;
@@ -262,6 +224,16 @@ class WebController {
     base::string16 cvc;
   };
 
+  // Perform a mouse left button click on the element given by |selector| and
+  // return the result through callback.
+  void ClickElement(const Selector& selector,
+                    base::OnceCallback<void(bool)> callback);
+
+  // Perform a touch tap on the element given by |selector| and return the
+  // result through callback.
+  void TapElement(const Selector& selector,
+                  base::OnceCallback<void(bool)> callback);
+
   void OnFindElementForClickOrTap(base::OnceCallback<void(bool)> callback,
                                   bool is_a_click,
                                   std::unique_ptr<FindElementResult> result);
@@ -279,13 +251,12 @@ class WebController {
                         base::OnceCallback<void(bool)> callback,
                         bool is_a_click,
                         std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void TapOrClickOnCoordinates(
-      std::unique_ptr<ElementPositionGetter> element_position_getter,
-      base::OnceCallback<void(bool)> callback,
-      bool is_a_click,
-      bool has_coordinates,
-      int x,
-      int y);
+  void TapOrClickOnCoordinates(ElementPositionGetter* getter_to_release,
+                               base::OnceCallback<void(bool)> callback,
+                               bool is_a_click,
+                               bool has_coordinates,
+                               int x,
+                               int y);
   void OnDispatchPressMouseEvent(
       base::OnceCallback<void(bool)> callback,
       int x,
@@ -312,48 +283,9 @@ class WebController {
   void FindElement(const Selector& selector,
                    bool strict_mode,
                    FindElementCallback callback);
-  void OnGetDocumentElement(const Selector& selector,
-                            bool strict_mode,
-                            FindElementCallback callback,
-                            std::unique_ptr<runtime::EvaluateResult> result);
-  void RecursiveFindElement(const std::string& object_id,
-                            size_t index,
-                            const Selector& selector,
-                            bool strict_mode,
-                            std::unique_ptr<FindElementResult> element_result,
-                            FindElementCallback callback);
-  void OnQuerySelectorAll(
-      size_t index,
-      const Selector& selector,
-      bool strict_mode,
-      std::unique_ptr<FindElementResult> element_result,
-      FindElementCallback callback,
-      std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void OnDescribeNodeForPseudoElement(
-      dom::PseudoType pseudo_type,
-      std::unique_ptr<FindElementResult> element_result,
-      FindElementCallback callback,
-      std::unique_ptr<dom::DescribeNodeResult> result);
-  void OnResolveNodeForPseudoElement(
-      std::unique_ptr<FindElementResult> element_result,
-      FindElementCallback callback,
-      std::unique_ptr<dom::ResolveNodeResult> result);
-  void OnDescribeNode(const std::string& object_id,
-                      size_t index,
-                      const Selector& selector,
-                      bool strict_mode,
-                      std::unique_ptr<FindElementResult> element_result,
-                      FindElementCallback callback,
-                      std::unique_ptr<dom::DescribeNodeResult> result);
-  void OnResolveNode(size_t index,
-                     const Selector& selector,
-                     bool strict_mode,
-                     std::unique_ptr<FindElementResult> element_result,
-                     FindElementCallback callback,
-                     std::unique_ptr<dom::ResolveNodeResult> result);
-  content::RenderFrameHost* FindCorrespondingRenderFrameHost(
-      std::string name,
-      std::string document_url);
+  void OnFindElementResult(ElementFinder* finder_to_release,
+                           FindElementCallback callback,
+                           std::unique_ptr<FindElementResult> result);
   void OnResult(bool result, base::OnceCallback<void(bool)> callback);
   void OnResult(bool exists,
                 const std::string& result,
@@ -477,6 +409,9 @@ class WebController {
   // is guaranteed by the owner of this object.
   content::WebContents* web_contents_;
   std::unique_ptr<DevtoolsClient> devtools_client_;
+
+  // Workers currently running and using |devtools_client_|.
+  std::map<Worker*, std::unique_ptr<Worker>> pending_workers_;
 
   base::WeakPtrFactory<WebController> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(WebController);
