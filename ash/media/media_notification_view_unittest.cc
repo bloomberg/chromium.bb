@@ -687,6 +687,7 @@ TEST_F(MediaNotificationViewTest, UpdateArtworkFromItem) {
 
   SkBitmap image;
   image.allocN32Pixels(10, 10);
+  image.eraseColor(SK_ColorWHITE);
 
   EXPECT_TRUE(GetArtworkImage().isNull());
 
