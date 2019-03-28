@@ -50,6 +50,8 @@ bool CreateOfflinePagesTable(sql::Database* db) {
       " access_count INTEGER NOT NULL,"
       " system_download_id INTEGER NOT NULL DEFAULT 0,"
       " file_missing_time INTEGER NOT NULL DEFAULT 0,"
+      // upgrade_attempt is deprecated, and should be removed next time the
+      // schema needs to be updated.
       " upgrade_attempt INTEGER NOT NULL DEFAULT 0,"
       " client_namespace VARCHAR NOT NULL,"
       " client_id VARCHAR NOT NULL,"
@@ -246,23 +248,9 @@ bool UpgradeFromLegacyVersion(sql::Database* db) {
 
 bool UpgradeFromVersion1ToVersion2(sql::Database* db,
                                    sql::MetaTable* meta_table) {
-  sql::Transaction transaction(db);
-  if (!transaction.Begin())
-    return false;
-
-  static const char kSql[] = "UPDATE " OFFLINE_PAGES_TABLE_NAME
-                             " SET upgrade_attempt = 5 "
-                             " WHERE client_namespace = 'async_loading'"
-                             " OR client_namespace = 'download'"
-                             " OR client_namespace = 'ntp_suggestions'"
-                             " OR client_namespace = 'browser_actions'";
-
-  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
-  if (!statement.Run())
-    return false;
-
   meta_table->SetVersionNumber(2);
-  return transaction.Commit();
+  // No actual changes necessary, because upgrade_attempt was deprecated.
+  return true;
 }
 
 bool UpgradeFromVersion2ToVersion3(sql::Database* db,

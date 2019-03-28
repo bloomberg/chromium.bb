@@ -170,10 +170,6 @@ void OnUpdateFilePathDone(PublishPageCallback publish_done_callback,
 }  // namespace
 
 // static
-constexpr base::TimeDelta
-    OfflinePageModelTaskified::kInitialUpgradeSelectionDelay;
-
-// static
 constexpr base::TimeDelta OfflinePageModelTaskified::kMaintenanceTasksDelay;
 
 // static
@@ -195,8 +191,6 @@ OfflinePageModelTaskified::OfflinePageModelTaskified(
       weak_ptr_factory_(this) {
   DCHECK_LT(kMaintenanceTasksDelay, OfflinePageMetadataStore::kClosingDelay);
   CreateArchivesDirectoryIfNeeded();
-  // TODO(fgorski): Call from here, when upgrade task is available:
-  // PostSelectItemsMarkedForUpgrade();
 }
 
 OfflinePageModelTaskified::~OfflinePageModelTaskified() {}
@@ -766,33 +760,6 @@ void OfflinePageModelTaskified::OnClearCachedPagesDone(
     UMA_HISTOGRAM_COUNTS_1M("OfflinePages.ClearTemporaryPages.BatchSize",
                             deleted_page_count);
   }
-}
-
-void OfflinePageModelTaskified::PostSelectItemsMarkedForUpgrade() {
-  // TODO(fgorski): Make storage permission check. Here or later?
-  // TODO(fgorski): Check disk space here.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindRepeating(
-          &OfflinePageModelTaskified::SelectItemsMarkedForUpgrade,
-          weak_ptr_factory_.GetWeakPtr()),
-      kInitialUpgradeSelectionDelay);
-}
-
-void OfflinePageModelTaskified::SelectItemsMarkedForUpgrade() {
-  // TODO(fgorski): Add legacy Persistent path in archive manager to know which
-  // files still need upgrade.
-  auto task = GetPagesTask::CreateTaskSelectingItemsMarkedForUpgrade(
-      store_.get(),
-      base::BindRepeating(
-          &OfflinePageModelTaskified::OnSelectItemsMarkedForUpgradeDone,
-          weak_ptr_factory_.GetWeakPtr()));
-  task_queue_.AddTask(std::move(task));
-}
-
-void OfflinePageModelTaskified::OnSelectItemsMarkedForUpgradeDone(
-    const MultipleOfflinePageItemResult& pages_for_upgrade) {
-  // TODO(fgorski): Save the list of ID to feed them into the upgrade task.
 }
 
 void OfflinePageModelTaskified::RemovePagesMatchingUrlAndNamespace(

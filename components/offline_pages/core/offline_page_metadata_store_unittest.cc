@@ -379,8 +379,8 @@ void InjectItemInM62Store(sql::Database* db, const OfflinePageItem& item) {
       "last_access_time, access_count, client_namespace, "
       "client_id, online_url, file_path, title, original_url, "
       "request_origin, system_download_id, file_missing_time, "
-      "upgrade_attempt, digest) "
-      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+      "digest) "
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
   statement.BindInt64(0, item.offline_id);
   statement.BindInt(1, store_utils::ToDatabaseTime(item.creation_time));
   statement.BindInt64(2, item.file_size);
@@ -395,8 +395,7 @@ void InjectItemInM62Store(sql::Database* db, const OfflinePageItem& item) {
   statement.BindString(11, item.request_origin);
   statement.BindInt64(12, item.system_download_id);
   statement.BindInt(13, store_utils::ToDatabaseTime(item.file_missing_time));
-  statement.BindInt(14, item.upgrade_attempt);
-  statement.BindString(15, item.digest);
+  statement.BindString(14, item.digest);
   ASSERT_TRUE(statement.Run());
   ASSERT_TRUE(db->CommitTransaction());
 }
@@ -495,7 +494,7 @@ OfflinePageItem MakeOfflinePageItem(sql::Statement* statement) {
   int64_t system_download_id = statement->ColumnInt64(5);
   base::Time file_missing_time =
       store_utils::FromDatabaseTime(statement->ColumnInt64(6));
-  int upgrade_attempt = statement->ColumnInt(7);
+  // Column 7 is deprecated 'upgrade_attempt'.
   ClientId client_id(statement->ColumnString(8), statement->ColumnString(9));
   GURL url(statement->ColumnString(10));
   base::FilePath path(
@@ -513,7 +512,6 @@ OfflinePageItem MakeOfflinePageItem(sql::Statement* statement) {
   item.request_origin = request_origin;
   item.system_download_id = system_download_id;
   item.file_missing_time = file_missing_time;
-  item.upgrade_attempt = upgrade_attempt;
   item.digest = digest;
   return item;
 }
@@ -645,12 +643,6 @@ class OfflinePageMetadataStoreTest : public testing::Test {
         kAsyncNamespace, kDownloadNamespace, kBrowserActionsNamespace,
         kNTPSuggestionsNamespace};
 
-    for (const OfflinePageItem& page : pages) {
-      if (upgradeable_namespaces.count(page.client_id.name_space) > 0)
-        EXPECT_EQ(5, page.upgrade_attempt);
-      else
-        EXPECT_EQ(0, page.upgrade_attempt);
-    }
     CheckThatPageThumbnailCanBeSaved((OfflinePageMetadataStore*)store.get());
     CheckThatOfflinePageCanBeSaved(std::move(store));
     VerifyMetaVersions();
@@ -693,13 +685,13 @@ class OfflinePageMetadataStoreTest : public testing::Test {
       // causes debug builds to DLOG.
       static const char kSql[] =
           "INSERT OR IGNORE INTO " OFFLINE_PAGES_TABLE_V1
-          " (offline_id, online_url, client_namespace, client_id, "
-          "file_path, "
-          "file_size, creation_time, last_access_time, access_count, "
-          "title, original_url, request_origin, system_download_id, "
-          "file_missing_time, upgrade_attempt, digest)"
+          " (offline_id,online_url,client_namespace,client_id,"
+          "file_path,"
+          "file_size,creation_time,last_access_time,access_count,"
+          "title,original_url,request_origin,system_download_id,"
+          "file_missing_time,digest)"
           " VALUES "
-          " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+          "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
       sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
       statement.BindInt64(0, item.offline_id);
@@ -718,8 +710,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
       statement.BindInt64(12, item.system_download_id);
       statement.BindInt64(13,
                           store_utils::ToDatabaseTime(item.file_missing_time));
-      statement.BindInt(14, item.upgrade_attempt);
-      statement.BindString(15, item.digest);
+      statement.BindString(14, item.digest);
 
       if (!statement.Run())
         return ItemActionStatus::STORE_ERROR;
@@ -915,6 +906,7 @@ TEST_F(OfflinePageMetadataStoreTest, AddRemoveMultipleOfflinePages) {
   pages = GetOfflinePages(store.get());
   ASSERT_EQ(2U, pages.size());
   EXPECT_EQ(offline_page_2, pages[0]);
+  EXPECT_EQ(offline_page_2.offline_id, pages[0].offline_id);
 }
 
 TEST_F(OfflinePageMetadataStoreTest, StoreCloses) {
