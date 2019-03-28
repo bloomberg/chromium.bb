@@ -11,13 +11,14 @@
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "remoting/signaling/ftl_services.grpc.pb.h"
 
 namespace remoting {
 
-class FtlGrpcContext;
+class GrpcExecutor;
 class MessageReceptionChannel;
+class OAuthTokenGetter;
+class RegistrationManager;
 class ScopedGrpcServerStream;
 
 // A class for sending and receiving messages via the FTL API.
@@ -31,7 +32,9 @@ class FtlMessagingClient final {
                               const std::string&)>::Subscription;
   using DoneCallback = base::OnceCallback<void(const grpc::Status& status)>;
 
-  explicit FtlMessagingClient(FtlGrpcContext* context);
+  // |token_getter| and |registration_manager| must outlive |this|.
+  FtlMessagingClient(OAuthTokenGetter* token_getter,
+                     RegistrationManager* registration_manager);
   ~FtlMessagingClient();
 
   // Registers a callback which is run for each new message received.
@@ -59,12 +62,15 @@ class FtlMessagingClient final {
   // Stops the stream for continuously receiving new messages.
   void StopReceivingMessages();
 
-  void SetMessageReceptionChannelForTesting(
-      std::unique_ptr<MessageReceptionChannel> channel);
-
  private:
   using Messaging =
       google::internal::communications::instantmessaging::v1::Messaging;
+
+  friend class FtlMessagingClientTest;
+
+  FtlMessagingClient(std::unique_ptr<GrpcExecutor> executor,
+                     RegistrationManager* registration_manager,
+                     std::unique_ptr<MessageReceptionChannel> channel);
 
   void OnPullMessagesResponse(DoneCallback on_done,
                               const grpc::Status& status,
@@ -81,9 +87,7 @@ class FtlMessagingClient final {
                              const grpc::Status& status,
                              const ftl::AckMessagesResponse& response);
 
-  void OpenReceiveMessagesStream(
-      base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>
-          on_stream_started,
+  std::unique_ptr<ScopedGrpcServerStream> OpenReceiveMessagesStream(
       const base::RepeatingCallback<void(const ftl::ReceiveMessagesResponse&)>&
           on_incoming_msg,
       base::OnceCallback<void(const grpc::Status&)> on_channel_closed);
@@ -92,13 +96,13 @@ class FtlMessagingClient final {
 
   void OnMessageReceived(const ftl::InboxMessage& message);
 
-  FtlGrpcContext* context_;
+  std::unique_ptr<GrpcExecutor> executor_;
+  RegistrationManager* registration_manager_;
   std::unique_ptr<Messaging::Stub> messaging_stub_;
   std::unique_ptr<MessageReceptionChannel> reception_channel_;
   base::CallbackList<void(const std::string&, const std::string&)>
       callback_list_;
 
-  base::WeakPtrFactory<FtlMessagingClient> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(FtlMessagingClient);
 };
 

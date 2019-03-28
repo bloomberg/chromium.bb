@@ -6,10 +6,12 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/guid.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "google_apis/google_api_keys.h"
+#include "third_party/grpc/src/include/grpcpp/channel.h"
+#include "third_party/grpc/src/include/grpcpp/client_context.h"
 #include "third_party/grpc/src/include/grpcpp/grpcpp.h"
 
 namespace remoting {
@@ -21,6 +23,8 @@ constexpr char kChromotingAppIdentifier[] = "CRD";
 // TODO(yuweih): We should target different service environments.
 constexpr char kFtlServerEndpoint[] = "instantmessaging-pa.googleapis.com";
 
+static base::NoDestructor<GrpcChannelSharedPtr> g_channel_for_testing;
+
 }  // namespace
 
 // static
@@ -29,7 +33,7 @@ std::string FtlGrpcContext::GetChromotingAppIdentifier() {
 }
 
 // static
-ftl::Id FtlGrpcContext::BuildIdFromString(const std::string& ftl_id) {
+ftl::Id FtlGrpcContext::CreateIdFromString(const std::string& ftl_id) {
   ftl::Id id;
   id.set_id(ftl_id);
   id.set_app(GetChromotingAppIdentifier());
@@ -38,52 +42,12 @@ ftl::Id FtlGrpcContext::BuildIdFromString(const std::string& ftl_id) {
   return id;
 }
 
-FtlGrpcContext::FtlGrpcContext(OAuthTokenGetter* token_getter)
-    : weak_factory_(this) {
-  DCHECK(token_getter);
-  token_getter_ = token_getter;
-  auto channel_creds = grpc::SslCredentials(grpc::SslCredentialsOptions());
-  channel_ = grpc::CreateChannel(kFtlServerEndpoint, channel_creds);
-}
-
-FtlGrpcContext::~FtlGrpcContext() = default;
-
-void FtlGrpcContext::SetAuthToken(const std::string& auth_token) {
-  DCHECK(!auth_token.empty());
-  auth_token_ = auth_token;
-}
-
-void FtlGrpcContext::SetChannelForTesting(
-    std::shared_ptr<grpc::ChannelInterface> channel) {
-  channel_ = channel;
-}
-
-void FtlGrpcContext::GetOAuthTokenAndExecuteRpc(
-    std::unique_ptr<GrpcAsyncRequest> request,
-    base::OnceClosure on_stream_started) {
-  token_getter_->CallWithToken(
-      base::BindOnce(&FtlGrpcContext::ExecuteRpcWithFetchedOAuthToken,
-                     weak_factory_.GetWeakPtr(), std::move(request),
-                     std::move(on_stream_started)));
-}
-
-void FtlGrpcContext::ExecuteRpcWithFetchedOAuthToken(
-    std::unique_ptr<GrpcAsyncRequest> request,
-    base::OnceClosure on_stream_started,
-    OAuthTokenGetter::Status status,
-    const std::string& user_email,
-    const std::string& access_token) {
-  if (status != OAuthTokenGetter::Status::SUCCESS) {
-    LOG(ERROR) << "Failed to fetch access token. Status: " << status;
+// static
+GrpcChannelSharedPtr FtlGrpcContext::CreateChannel() {
+  if (*g_channel_for_testing) {
+    return *g_channel_for_testing;
   }
-  if (status == OAuthTokenGetter::Status::SUCCESS && !access_token.empty()) {
-    request->context()->set_credentials(
-        grpc::AccessTokenCredentials(access_token));
-  } else {
-    LOG(WARNING) << "Attempting to execute RPC without access token.";
-  }
-  executor_.ExecuteRpc(std::move(request));
-  std::move(on_stream_started).Run();
+  return CreateSslChannelForEndpoint(kFtlServerEndpoint);
 }
 
 // static
@@ -93,14 +57,16 @@ std::unique_ptr<grpc::ClientContext> FtlGrpcContext::CreateClientContext() {
   return context;
 }
 
-std::unique_ptr<ftl::RequestHeader> FtlGrpcContext::BuildRequestHeader() {
-  auto header = std::make_unique<ftl::RequestHeader>();
-  header->set_request_id(base::GenerateGUID());
-  header->set_app(kChromotingAppIdentifier);
-  if (!auth_token_.empty()) {
-    header->set_auth_token_payload(auth_token_);
+// static
+ftl::RequestHeader FtlGrpcContext::CreateRequestHeader(
+    const std::string& ftl_auth_token) {
+  ftl::RequestHeader header;
+  header.set_request_id(base::GenerateGUID());
+  header.set_app(kChromotingAppIdentifier);
+  if (!ftl_auth_token.empty()) {
+    header.set_auth_token_payload(ftl_auth_token);
   }
-  ftl::ClientInfo* client_info = header->mutable_client_info();
+  ftl::ClientInfo* client_info = header.mutable_client_info();
   client_info->set_api_version(ftl::ApiVersion_Value_V4);
   client_info->set_version_major(VERSION_MAJOR);
   // Chrome's version has four number components, and the VERSION_MINOR is
@@ -118,6 +84,11 @@ std::unique_ptr<ftl::RequestHeader> FtlGrpcContext::BuildRequestHeader() {
 #endif
   client_info->set_platform_type(platform_type);
   return header;
+}
+
+// static
+void FtlGrpcContext::SetChannelForTesting(GrpcChannelSharedPtr channel) {
+  *g_channel_for_testing = channel;
 }
 
 }  // namespace remoting

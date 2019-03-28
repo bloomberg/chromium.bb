@@ -12,9 +12,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/base/oauth_token_getter.h"
-#include "remoting/signaling/ftl_grpc_context.h"
 #include "remoting/signaling/ftl_messaging_client.h"
 #include "remoting/signaling/ftl_registration_manager.h"
+#include "remoting/signaling/grpc_support/grpc_authenticated_executor.h"
 
 namespace remoting {
 
@@ -76,14 +76,14 @@ class FtlSignalingPlayground {
   std::unique_ptr<test::TestTokenStorage> storage_;
   std::unique_ptr<TestOAuthTokenGetterFactory> token_getter_factory_;
   std::unique_ptr<OAuthTokenGetter> token_getter_;
-  std::unique_ptr<FtlGrpcContext> ftl_context_;
+  std::unique_ptr<GrpcAuthenticatedExecutor> executor_;
+
+  std::unique_ptr<FtlRegistrationManager> registration_manager_;
 
   // Subscription must be deleted before |messaging_client_|.
   std::unique_ptr<FtlMessagingClient> messaging_client_;
   std::unique_ptr<FtlMessagingClient::MessageCallbackSubscription>
       message_subscription_;
-
-  std::unique_ptr<FtlRegistrationManager> registration_manager_;
 
   std::unique_ptr<PeerToPeer::Stub> peer_to_peer_stub_;
 

@@ -13,6 +13,11 @@
 #include "base/time/time.h"
 #include "remoting/signaling/ftl_grpc_context.h"
 #include "remoting/signaling/ftl_message_reception_channel.h"
+#include "remoting/signaling/grpc_support/grpc_async_server_streaming_request.h"
+#include "remoting/signaling/grpc_support/grpc_async_unary_request.h"
+#include "remoting/signaling/grpc_support/grpc_authenticated_executor.h"
+#include "remoting/signaling/grpc_support/grpc_executor.h"
+#include "remoting/signaling/registration_manager.h"
 
 namespace remoting {
 
@@ -30,16 +35,30 @@ constexpr base::TimeDelta kInboxMessageTtl = base::TimeDelta::FromMinutes(1);
 
 }  // namespace
 
-FtlMessagingClient::FtlMessagingClient(FtlGrpcContext* context)
-    : weak_factory_(this) {
-  context_ = context;
-  messaging_stub_ = Messaging::NewStub(context_->channel());
-  reception_channel_ = std::make_unique<FtlMessageReceptionChannel>();
+FtlMessagingClient::FtlMessagingClient(
+    OAuthTokenGetter* token_getter,
+    RegistrationManager* registration_manager)
+    : FtlMessagingClient(
+          std::make_unique<GrpcAuthenticatedExecutor>(token_getter),
+          registration_manager,
+          std::make_unique<FtlMessageReceptionChannel>()) {}
+
+FtlMessagingClient::FtlMessagingClient(
+    std::unique_ptr<GrpcExecutor> executor,
+    RegistrationManager* registration_manager,
+    std::unique_ptr<MessageReceptionChannel> channel) {
+  DCHECK(executor);
+  DCHECK(registration_manager);
+  DCHECK(channel);
+  executor_ = std::move(executor);
+  registration_manager_ = registration_manager;
+  messaging_stub_ = Messaging::NewStub(FtlGrpcContext::CreateChannel());
+  reception_channel_ = std::move(channel);
   reception_channel_->Initialize(
       base::BindRepeating(&FtlMessagingClient::OpenReceiveMessagesStream,
-                          weak_factory_.GetWeakPtr()),
+                          base::Unretained(this)),
       base::BindRepeating(&FtlMessagingClient::OnMessageReceived,
-                          weak_factory_.GetWeakPtr()));
+                          base::Unretained(this)));
 }
 
 FtlMessagingClient::~FtlMessagingClient() = default;
@@ -50,12 +69,16 @@ FtlMessagingClient::RegisterMessageCallback(const MessageCallback& callback) {
 }
 
 void FtlMessagingClient::PullMessages(DoneCallback on_done) {
-  context_->ExecuteRpc(
+  ftl::PullMessagesRequest request;
+  *request.mutable_header() = FtlGrpcContext::CreateRequestHeader(
+      registration_manager_->GetFtlAuthToken());
+  auto grpc_request = CreateGrpcAsyncUnaryRequest(
       base::BindOnce(&Messaging::Stub::AsyncPullMessages,
                      base::Unretained(messaging_stub_.get())),
-      ftl::PullMessagesRequest(),
+      FtlGrpcContext::CreateClientContext(), request,
       base::BindOnce(&FtlMessagingClient::OnPullMessagesResponse,
-                     weak_factory_.GetWeakPtr(), std::move(on_done)));
+                     base::Unretained(this), std::move(on_done)));
+  executor_->ExecuteRpc(std::move(grpc_request));
 }
 
 void FtlMessagingClient::SendMessage(
@@ -64,9 +87,11 @@ void FtlMessagingClient::SendMessage(
     const std::string& message_text,
     DoneCallback on_done) {
   ftl::InboxSendRequest request;
+  *request.mutable_header() = FtlGrpcContext::CreateRequestHeader(
+      registration_manager_->GetFtlAuthToken());
   request.set_time_to_live(kInboxMessageTtl.InMicroseconds());
   // TODO(yuweih): See if we need to set requester_id
-  (*request.mutable_dest_id()) = FtlGrpcContext::BuildIdFromString(destination);
+  *request.mutable_dest_id() = FtlGrpcContext::CreateIdFromString(destination);
 
   ftl::ChromotingMessage crd_message;
   crd_message.set_message(message_text);
@@ -84,12 +109,13 @@ void FtlMessagingClient::SendMessage(
     request.add_dest_registration_ids(destination_registration_id);
   }
 
-  context_->ExecuteRpc(
+  auto grpc_request = CreateGrpcAsyncUnaryRequest(
       base::BindOnce(&Messaging::Stub::AsyncSendMessage,
                      base::Unretained(messaging_stub_.get())),
-      request,
+      FtlGrpcContext::CreateClientContext(), request,
       base::BindOnce(&FtlMessagingClient::OnSendMessageResponse,
-                     weak_factory_.GetWeakPtr(), std::move(on_done)));
+                     base::Unretained(this), std::move(on_done)));
+  executor_->ExecuteRpc(std::move(grpc_request));
 }
 
 void FtlMessagingClient::StartReceivingMessages(DoneCallback on_done) {
@@ -98,16 +124,6 @@ void FtlMessagingClient::StartReceivingMessages(DoneCallback on_done) {
 
 void FtlMessagingClient::StopReceivingMessages() {
   reception_channel_->StopReceivingMessages();
-}
-
-void FtlMessagingClient::SetMessageReceptionChannelForTesting(
-    std::unique_ptr<MessageReceptionChannel> channel) {
-  reception_channel_ = std::move(channel);
-  reception_channel_->Initialize(
-      base::BindRepeating(&FtlMessagingClient::OpenReceiveMessagesStream,
-                          weak_factory_.GetWeakPtr()),
-      base::BindRepeating(&FtlMessagingClient::OnMessageReceived,
-                          weak_factory_.GetWeakPtr()));
 }
 
 void FtlMessagingClient::OnPullMessagesResponse(
@@ -123,6 +139,8 @@ void FtlMessagingClient::OnPullMessagesResponse(
   }
 
   ftl::AckMessagesRequest ack_request;
+  *ack_request.mutable_header() = FtlGrpcContext::CreateRequestHeader(
+      registration_manager_->GetFtlAuthToken());
   for (const auto& message : response.messages()) {
     RunMessageCallbacks(message);
     AddMessageToAckRequest(message, &ack_request);
@@ -148,12 +166,13 @@ void FtlMessagingClient::OnSendMessageResponse(
 
 void FtlMessagingClient::AckMessages(const ftl::AckMessagesRequest& request,
                                      DoneCallback on_done) {
-  context_->ExecuteRpc(
+  auto grpc_request = CreateGrpcAsyncUnaryRequest(
       base::BindOnce(&Messaging::Stub::AsyncAckMessages,
                      base::Unretained(messaging_stub_.get())),
-      request,
+      FtlGrpcContext::CreateClientContext(), request,
       base::BindOnce(&FtlMessagingClient::OnAckMessagesResponse,
-                     weak_factory_.GetWeakPtr(), std::move(on_done)));
+                     base::Unretained(this), std::move(on_done)));
+  executor_->ExecuteRpc(std::move(grpc_request));
 }
 
 void FtlMessagingClient::OnAckMessagesResponse(
@@ -164,17 +183,22 @@ void FtlMessagingClient::OnAckMessagesResponse(
   std::move(on_done).Run(status);
 }
 
-void FtlMessagingClient::OpenReceiveMessagesStream(
-    base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>
-        on_stream_started,
+std::unique_ptr<ScopedGrpcServerStream>
+FtlMessagingClient::OpenReceiveMessagesStream(
     const base::RepeatingCallback<void(const ftl::ReceiveMessagesResponse&)>&
         on_incoming_msg,
     base::OnceCallback<void(const grpc::Status&)> on_channel_closed) {
-  context_->ExecuteServerStreamingRpc(
+  ftl::ReceiveMessagesRequest request;
+  *request.mutable_header() = FtlGrpcContext::CreateRequestHeader(
+      registration_manager_->GetFtlAuthToken());
+  std::unique_ptr<ScopedGrpcServerStream> stream;
+  auto grpc_request = CreateGrpcAsyncServerStreamingRequest(
       base::BindOnce(&Messaging::Stub::AsyncReceiveMessages,
                      base::Unretained(messaging_stub_.get())),
-      ftl::ReceiveMessagesRequest(), std::move(on_stream_started),
-      on_incoming_msg, std::move(on_channel_closed));
+      FtlGrpcContext::CreateClientContext(), request, on_incoming_msg,
+      std::move(on_channel_closed), &stream);
+  executor_->ExecuteRpc(std::move(grpc_request));
+  return stream;
 }
 
 void FtlMessagingClient::RunMessageCallbacks(const ftl::InboxMessage& message) {
@@ -194,6 +218,8 @@ void FtlMessagingClient::RunMessageCallbacks(const ftl::InboxMessage& message) {
 void FtlMessagingClient::OnMessageReceived(const ftl::InboxMessage& message) {
   RunMessageCallbacks(message);
   ftl::AckMessagesRequest ack_request;
+  *ack_request.mutable_header() = FtlGrpcContext::CreateRequestHeader(
+      registration_manager_->GetFtlAuthToken());
   AddMessageToAckRequest(message, &ack_request);
   AckMessages(ack_request, base::DoNothing());
 }

@@ -10,34 +10,31 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "remoting/signaling/ftl_services.grpc.pb.h"
+#include "remoting/signaling/registration_manager.h"
 
 namespace remoting {
 
 class FtlDeviceIdProvider;
-class FtlGrpcContext;
+class GrpcExecutor;
+class OAuthTokenGetter;
 
 // Class for registering the user with FTL service.
 // TODO(yuweih): Add unittest
-class FtlRegistrationManager final {
+class FtlRegistrationManager final : public RegistrationManager {
  public:
-  using DoneCallback = base::OnceCallback<void(const grpc::Status& status)>;
-
+  // |token_getter| must outlive |this|.
   FtlRegistrationManager(
-      FtlGrpcContext* context,
+      OAuthTokenGetter* token_getter,
       std::unique_ptr<FtlDeviceIdProvider> device_id_provider);
-  ~FtlRegistrationManager();
+  ~FtlRegistrationManager() override;
 
-  // Performs a SignInGaia call for this device. |on_done| is called once it has
-  // successfully signed in or failed to sign in.
-  void SignInGaia(DoneCallback on_done);
-
-  bool IsSignedIn() const;
-
-  // Returns empty string if user hasn't been signed in.
-  const std::string& registration_id() const { return registration_id_; }
+  // RegistrationManager implementations.
+  void SignInGaia(DoneCallback on_done) override;
+  bool IsSignedIn() const override;
+  std::string GetRegistrationId() const override;
+  std::string GetFtlAuthToken() const override;
 
  private:
   using Registration =
@@ -47,13 +44,13 @@ class FtlRegistrationManager final {
                             const grpc::Status& status,
                             const ftl::SignInGaiaResponse& response);
 
-  FtlGrpcContext* context_;
+  std::unique_ptr<GrpcExecutor> executor_;
   std::unique_ptr<FtlDeviceIdProvider> device_id_provider_;
   std::unique_ptr<Registration::Stub> registration_stub_;
   base::OneShotTimer sign_in_refresh_timer_;
   std::string registration_id_;
+  std::string ftl_auth_token_;
 
-  base::WeakPtrFactory<FtlRegistrationManager> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(FtlRegistrationManager);
 };
 

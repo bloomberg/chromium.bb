@@ -21,12 +21,11 @@ class ScopedGrpcServerStream;
 // FTL backend.
 class MessageReceptionChannel {
  public:
-  using StreamOpener = base::RepeatingCallback<void(
-      base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>
-          on_stream_started,
-      const base::RepeatingCallback<void(const ftl::ReceiveMessagesResponse&)>&
-          on_incoming_msg,
-      base::OnceCallback<void(const grpc::Status&)> on_channel_closed)>;
+  using StreamOpener =
+      base::RepeatingCallback<std::unique_ptr<ScopedGrpcServerStream>(
+          const base::RepeatingCallback<void(
+              const ftl::ReceiveMessagesResponse&)>& on_incoming_msg,
+          base::OnceCallback<void(const grpc::Status&)> on_channel_closed)>;
   using MessageCallback =
       base::RepeatingCallback<void(const ftl::InboxMessage&)>;
   using DoneCallback = base::OnceCallback<void(const grpc::Status& status)>;

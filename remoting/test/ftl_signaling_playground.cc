@@ -24,7 +24,9 @@
 #include "remoting/base/fake_oauth_token_getter.h"
 #include "remoting/base/oauth_token_getter_impl.h"
 #include "remoting/signaling/ftl_device_id_provider.h"
+#include "remoting/signaling/ftl_grpc_context.h"
 #include "remoting/signaling/ftl_services.grpc.pb.h"
+#include "remoting/signaling/grpc_support/grpc_async_unary_request.h"
 #include "remoting/test/test_oauth_token_factory.h"
 #include "remoting/test/test_token_storage.h"
 
@@ -116,7 +118,7 @@ void FtlSignalingPlayground::StartAndAuthenticate() {
   DCHECK(!storage_);
   DCHECK(!token_getter_factory_);
   DCHECK(!token_getter_);
-  DCHECK(!ftl_context_);
+  DCHECK(!executor_);
 
   token_getter_factory_ = std::make_unique<TestOAuthTokenGetterFactory>();
 
@@ -181,17 +183,19 @@ void FtlSignalingPlayground::StartLoop() {
 }
 
 void FtlSignalingPlayground::ResetServices() {
-  ftl_context_ = std::make_unique<FtlGrpcContext>(token_getter_.get());
-  peer_to_peer_stub_ = PeerToPeer::NewStub(ftl_context_->channel());
+  executor_ = std::make_unique<GrpcAuthenticatedExecutor>(token_getter_.get());
+  peer_to_peer_stub_ = PeerToPeer::NewStub(FtlGrpcContext::CreateChannel());
+
+  registration_manager_ = std::make_unique<FtlRegistrationManager>(
+      token_getter_.get(),
+      std::make_unique<FtlDeviceIdProvider>(storage_.get()));
 
   message_subscription_.reset();
-  messaging_client_ = std::make_unique<FtlMessagingClient>(ftl_context_.get());
+  messaging_client_ = std::make_unique<FtlMessagingClient>(
+      token_getter_.get(), registration_manager_.get());
   message_subscription_ = messaging_client_->RegisterMessageCallback(
       base::BindRepeating(&FtlSignalingPlayground::OnMessageReceived,
                           weak_factory_.GetWeakPtr()));
-  registration_manager_ = std::make_unique<FtlRegistrationManager>(
-      ftl_context_.get(),
-      std::make_unique<FtlDeviceIdProvider>(storage_.get()));
 }
 
 void FtlSignalingPlayground::AuthenticateAndResetServices() {
@@ -241,12 +245,15 @@ void FtlSignalingPlayground::OnAccessToken(base::OnceClosure on_done,
 void FtlSignalingPlayground::GetIceServer(base::OnceClosure on_done) {
   DCHECK(peer_to_peer_stub_);
   VLOG(0) << "Running GetIceServer...";
-  ftl_context_->ExecuteRpc(
+  ftl::GetICEServerRequest request;
+  *request.mutable_header() = FtlGrpcContext::CreateRequestHeader();
+  auto grpc_request = CreateGrpcAsyncUnaryRequest(
       base::BindOnce(&PeerToPeer::Stub::AsyncGetICEServer,
                      base::Unretained(peer_to_peer_stub_.get())),
-      ftl::GetICEServerRequest(),
+      FtlGrpcContext::CreateClientContext(), request,
       base::BindOnce(&FtlSignalingPlayground::OnGetIceServerResponse,
                      weak_factory_.GetWeakPtr(), std::move(on_done)));
+  executor_->ExecuteRpc(std::move(grpc_request));
 }
 
 void FtlSignalingPlayground::OnGetIceServerResponse(
@@ -288,7 +295,7 @@ void FtlSignalingPlayground::OnSignInGaiaResponse(base::OnceClosure on_done,
                                                   const grpc::Status& status) {
   if (status.ok()) {
     std::string registration_id_base64;
-    base::Base64Encode(registration_manager_->registration_id(),
+    base::Base64Encode(registration_manager_->GetRegistrationId(),
                        &registration_id_base64);
     printf("Service signed in. registration_id(base64)=%s\n",
            registration_id_base64.c_str());

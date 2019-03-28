@@ -78,3 +78,9 @@ class MyClass {
   std::unique_ptr<ScopedGrpcServerStream> scoped_hello_stream_;
 };
 ```
+
+## Using GrpcAuthenticatedExecutor
+
+GrpcAuthenticatedExecutor allows you to execute RPCs and authenticate them
+with `remoting::OAuthTokenGetter`. The usage is basically the same as
+`GrpcAsyncExecutor`.

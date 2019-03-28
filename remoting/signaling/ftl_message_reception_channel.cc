@@ -91,11 +91,6 @@ FtlMessageReceptionChannel::GetReconnectRetryBackoffEntryForTesting() const {
   return reconnect_retry_backoff_;
 }
 
-void FtlMessageReceptionChannel::OnReceiveMessagesStreamStarted(
-    std::unique_ptr<ScopedGrpcServerStream> stream) {
-  receive_messages_stream_ = std::move(stream);
-}
-
 void FtlMessageReceptionChannel::OnReceiveMessagesStreamClosed(
     const grpc::Status& status) {
   if (state_ == State::STOPPED) {
@@ -170,10 +165,7 @@ void FtlMessageReceptionChannel::RetryStartReceivingMessages() {
 void FtlMessageReceptionChannel::StartReceivingMessagesInternal() {
   DCHECK_EQ(State::STOPPED, state_);
   state_ = State::STARTING;
-  stream_opener_.Run(
-      base::BindOnce(
-          &FtlMessageReceptionChannel::OnReceiveMessagesStreamStarted,
-          weak_factory_.GetWeakPtr()),
+  receive_messages_stream_ = stream_opener_.Run(
       base::BindRepeating(&FtlMessageReceptionChannel::OnMessageReceived,
                           weak_factory_.GetWeakPtr()),
       base::BindOnce(&FtlMessageReceptionChannel::OnReceiveMessagesStreamClosed,
