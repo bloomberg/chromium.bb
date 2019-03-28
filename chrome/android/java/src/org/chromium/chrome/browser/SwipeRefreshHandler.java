@@ -147,7 +147,11 @@ public class SwipeRefreshHandler
             if (isForward) {
                 mTab.goForward();
             } else {
-                mTab.goBack();
+                if (canNavigate(/* forward= */ false)) {
+                    mTab.goBack();
+                } else {
+                    mTab.getActivity().onBackPressed();
+                }
             }
             cancelStopNavigatingRunnable();
             mSideSlideLayout.post(getStopNavigatingRunnable());
@@ -216,9 +220,11 @@ public class SwipeRefreshHandler
             return mSwipeRefreshLayout.start();
         } else if (type == OverscrollAction.HISTORY_NAVIGATION && mNavigationEnabled) {
             if (mSideSlideLayout == null) initSideSlideLayout();
-            boolean shouldStart = navigateForward ? mTab.canGoForward() : mTab.canGoBack();
+            boolean navigable = canNavigate(navigateForward);
+            boolean shouldStart = navigable || !navigateForward;
             if (shouldStart) {
                 mSideSlideLayout.setDirection(navigateForward);
+                mSideSlideLayout.setEnableCloseIndicator(!navigable);
                 attachSideSlideLayoutIfNecessary();
                 mSideSlideLayout.start();
             }
@@ -226,6 +232,10 @@ public class SwipeRefreshHandler
         }
         mSwipeType = OverscrollAction.NONE;
         return false;
+    }
+
+    private boolean canNavigate(boolean forward) {
+        return forward ? mTab.canGoForward() : mTab.canGoBack();
     }
 
     @Override
