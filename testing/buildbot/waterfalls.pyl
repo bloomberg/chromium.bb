@@ -623,6 +623,31 @@
           'chrome',
         ],
       },
+      'linux-chromeos-google-rel': {
+        'additional_compile_targets': [
+          'chrome',
+          'chrome_sandbox',
+          'linux_symbols',
+          'symupload'
+        ],
+      },
+      'linux-google-rel': {
+        'additional_compile_targets': [
+          'chrome',
+          'chrome/installer/linux',
+        ],
+      },
+      'mac-google-rel': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+      },
+      'win-google-rel': {
+        'additional_compile_targets': [
+          'chrome',
+          'chrome_official_builder',
+        ],
+      },
     },
   },
   {
