@@ -636,6 +636,8 @@ void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
                                          bool cache_shaders_on_disk,
                                          EstablishGpuChannelCallback callback) {
   if (gpu::IsReservedClientId(client_id)) {
+    // This returns a null handle, which is treated by the client as a failure
+    // case.
     std::move(callback).Run(mojo::ScopedMessagePipeHandle());
     return;
   }
@@ -659,6 +661,12 @@ void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
   gpu::GpuChannel* gpu_channel = gpu_channel_manager_->EstablishChannel(
       client_id, client_tracing_id, is_gpu_host, cache_shaders_on_disk);
 
+  if (!gpu_channel) {
+    // This returns a null handle, which is treated by the client as a failure
+    // case.
+    std::move(callback).Run(mojo::ScopedMessagePipeHandle());
+    return;
+  }
   mojo::MessagePipe pipe;
   gpu_channel->Init(pipe.handle0.release(), shutdown_event_);
 

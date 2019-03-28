@@ -22,8 +22,10 @@ class SharedImageStub : public IPC::Listener,
                         public MemoryTracker,
                         public base::trace_event::MemoryDumpProvider {
  public:
-  SharedImageStub(GpuChannel* channel, int32_t route_id);
   ~SharedImageStub() override;
+
+  static std::unique_ptr<SharedImageStub> Create(GpuChannel* channel,
+                                                 int32_t route_id);
 
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& msg) override;
@@ -42,6 +44,8 @@ class SharedImageStub : public IPC::Listener,
   SequenceId sequence() const { return sequence_; }
 
  private:
+  SharedImageStub(GpuChannel* channel, int32_t route_id);
+
   void OnCreateSharedImage(
       const GpuChannelMsg_CreateSharedImage_Params& params);
   void OnCreateSharedImageWithData(
@@ -51,7 +55,7 @@ class SharedImageStub : public IPC::Listener,
   void OnDestroySharedImage(const Mailbox& mailbox);
   void OnRegisterSharedImageUploadBuffer(base::ReadOnlySharedMemoryRegion shm);
   bool MakeContextCurrent();
-  bool MakeContextCurrentAndCreateFactory();
+  ContextResult MakeContextCurrentAndCreateFactory();
   void OnError();
 
   GpuChannel* channel_;

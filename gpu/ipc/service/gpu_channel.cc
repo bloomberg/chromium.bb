@@ -389,14 +389,6 @@ GpuChannel::GpuChannel(
   DCHECK(client_id_);
   filter_ = new GpuChannelMessageFilter(
       this, scheduler, image_decode_accelerator_worker, task_runner);
-  // SharedImageInterfaceProxy/Stub is a singleton per channel, using a reserved
-  // route.
-  const int32_t shared_image_route_id =
-      static_cast<int32_t>(GpuChannelReservedRoutes::kSharedImageInterface);
-  shared_image_stub_ =
-      std::make_unique<SharedImageStub>(this, shared_image_route_id);
-  filter_->AddRoute(shared_image_route_id, shared_image_stub_->sequence());
-  router_.AddRoute(shared_image_route_id, shared_image_stub_.get());
 }
 
 GpuChannel::~GpuChannel() {
@@ -408,6 +400,30 @@ GpuChannel::~GpuChannel() {
 
   for (const auto& kv : stream_sequences_)
     scheduler_->DestroySequence(kv.second);
+}
+
+std::unique_ptr<GpuChannel> GpuChannel::Create(
+    GpuChannelManager* gpu_channel_manager,
+    Scheduler* scheduler,
+    SyncPointManager* sync_point_manager,
+    scoped_refptr<gl::GLShareGroup> share_group,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    int32_t client_id,
+    uint64_t client_tracing_id,
+    bool is_gpu_host,
+    ImageDecodeAcceleratorWorker* image_decode_accelerator_worker) {
+  auto gpu_channel = base::WrapUnique(
+      new GpuChannel(gpu_channel_manager, scheduler, sync_point_manager,
+                     std::move(share_group), std::move(task_runner),
+                     std::move(io_task_runner), client_id, client_tracing_id,
+                     is_gpu_host, image_decode_accelerator_worker));
+
+  if (!gpu_channel->CreateSharedImageStub()) {
+    LOG(ERROR) << "GpuChannel: Failed to create SharedImageStub";
+    return nullptr;
+  }
+  return gpu_channel;
 }
 
 void GpuChannel::Init(IPC::ChannelHandle channel_handle,
@@ -555,6 +571,20 @@ void GpuChannel::HandleMessage(const IPC::Message& msg) {
 void GpuChannel::HandleMessageForTesting(const IPC::Message& msg) {
   // Message filter gets message first on IO thread.
   filter_->OnMessageReceived(msg);
+}
+
+bool GpuChannel::CreateSharedImageStub() {
+  // SharedImageInterfaceProxy/Stub is a singleton per channel, using a reserved
+  // route.
+  const int32_t shared_image_route_id =
+      static_cast<int32_t>(GpuChannelReservedRoutes::kSharedImageInterface);
+  shared_image_stub_ = SharedImageStub::Create(this, shared_image_route_id);
+  if (!shared_image_stub_)
+    return false;
+
+  filter_->AddRoute(shared_image_route_id, shared_image_stub_->sequence());
+  router_.AddRoute(shared_image_route_id, shared_image_stub_.get());
+  return true;
 }
 
 void GpuChannel::HandleMessageHelper(const IPC::Message& msg) {
