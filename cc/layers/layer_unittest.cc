@@ -524,6 +524,41 @@ TEST_F(LayerTest, AddSameChildTwice) {
   EXPECT_EQ(parent.get(), child->parent());
 }
 
+TEST_F(LayerTest, ReorderChildren) {
+  EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(AtLeast(1));
+
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> child1 = Layer::Create();
+  scoped_refptr<Layer> child2 = Layer::Create();
+  scoped_refptr<Layer> child3 = Layer::Create();
+
+  layer_tree_host_->SetRootLayer(parent);
+
+  parent->AddChild(child1);
+  parent->AddChild(child2);
+  parent->AddChild(child3);
+  EXPECT_EQ(child1, parent->children()[0]);
+  EXPECT_EQ(child2, parent->children()[1]);
+  EXPECT_EQ(child3, parent->children()[2]);
+
+  layer_tree_host_->ClearLayersThatShouldPushProperties();
+
+  LayerList new_children_order;
+  new_children_order.emplace_back(child3);
+  new_children_order.emplace_back(child1);
+  new_children_order.emplace_back(child2);
+  parent->ReorderChildren(&new_children_order);
+  EXPECT_EQ(child3, parent->children()[0]);
+  EXPECT_EQ(child1, parent->children()[1]);
+  EXPECT_EQ(child2, parent->children()[2]);
+
+  for (const auto& child : parent->children()) {
+    EXPECT_FALSE(base::ContainsKey(
+        layer_tree_host_->LayersThatShouldPushProperties(), child.get()));
+    EXPECT_TRUE(child->subtree_property_changed());
+  }
+}
+
 TEST_F(LayerTest, InsertChild) {
   scoped_refptr<Layer> parent = Layer::Create();
   scoped_refptr<Layer> child1 = Layer::Create();

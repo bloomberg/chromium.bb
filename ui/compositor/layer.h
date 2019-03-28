@@ -351,6 +351,12 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Show a solid color instead of delegated or surface contents.
   void SetShowSolidColorContent();
 
+  // Reorder the children to have all children inside |new_leading_children| to
+  // be at the front of the children vector, and the remaining children will
+  // stay in their relative order. |this| must be a parent of all the Layer*
+  // inside |new_leading_children|.
+  void StackChildrenAtBottom(const std::vector<Layer*>& new_leading_children);
+
   // Sets the layer's fill color.  May only be called for LAYER_SOLID_COLOR.
   void SetColor(SkColor color);
   SkColor GetTargetColor() const;

@@ -1017,6 +1017,37 @@ void Layer::CompleteAllAnimations() {
   }
 }
 
+void Layer::StackChildrenAtBottom(
+    const std::vector<Layer*>& new_leading_children) {
+  std::vector<Layer*> new_children_order;
+  new_children_order.reserve(children_.size());
+
+  cc::LayerList new_cc_children_order;
+  new_cc_children_order.reserve(cc_layer_->children().size());
+
+  for (Layer* leading_child : new_leading_children) {
+    DCHECK_EQ(leading_child->cc_layer_->parent(), cc_layer_);
+    DCHECK_EQ(leading_child->parent(), this);
+    new_children_order.emplace_back(leading_child);
+    new_cc_children_order.emplace_back(
+        scoped_refptr<cc::Layer>(leading_child->cc_layer_));
+  }
+
+  base::flat_set<Layer*> reordered_children(new_children_order);
+
+  const cc::LayerList& old_cc_children_order = cc_layer_->children();
+
+  for (size_t i = 0; i < children_.size(); ++i) {
+    if (reordered_children.count(children_.at(i)) > 0)
+      continue;
+    new_children_order.emplace_back(children_.at(i));
+    new_cc_children_order.emplace_back(old_cc_children_order.at(i));
+  }
+
+  children_ = std::move(new_children_order);
+  cc_layer_->ReorderChildren(&new_cc_children_order);
+}
+
 void Layer::SuppressPaint() {
   if (!delegate_)
     return;
