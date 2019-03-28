@@ -20,6 +20,7 @@
 #include "ui/android/display_android_manager.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/android/window_android_observer.h"
+#include "ui/base/ui_base_features.h"
 
 namespace ui {
 
@@ -191,20 +192,29 @@ WindowAndroid* WindowAndroid::FromJavaWindowAndroid(
       AttachCurrentThread(), jwindow_android));
 }
 
-WindowAndroid::WindowAndroid(JNIEnv* env,
-                             jobject obj,
-                             int display_id,
-                             float scroll_factor,
-                             bool window_is_wide_color_gamut)
+WindowAndroid::WindowAndroid(
+    JNIEnv* env,
+    jobject obj,
+    int display_id,
+    float scroll_factor,
+    bool window_is_wide_color_gamut,
+    float current_refresh_rate,
+    const base::android::JavaParamRef<jfloatArray>& supported_refresh_rates)
     : display_id_(display_id),
       window_is_wide_color_gamut_(window_is_wide_color_gamut),
       compositor_(NULL),
       begin_frame_source_(new WindowBeginFrameSource(this)),
-      needs_begin_frames_(false) {
+      needs_begin_frames_(false),
+      current_refresh_rate_(current_refresh_rate) {
   java_window_.Reset(env, obj);
   mouse_wheel_scroll_factor_ =
       scroll_factor > 0 ? scroll_factor
                         : kDefaultMouseWheelTickMultiplier * GetDipScale();
+
+  if (supported_refresh_rates) {
+    base::android::JavaFloatArrayToFloatVector(env, supported_refresh_rates,
+                                               &supported_refresh_rates_);
+  }
 }
 
 void WindowAndroid::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -275,8 +285,7 @@ void WindowAndroid::RequestVSyncUpdate() {
 }
 
 float WindowAndroid::GetRefreshRate() {
-  JNIEnv* env = AttachCurrentThread();
-  return Java_WindowAndroid_getRefreshRate(env, GetJavaObject());
+  return current_refresh_rate_;
 }
 
 void WindowAndroid::SetNeedsBeginFrames(bool needs_begin_frames) {
@@ -353,8 +362,56 @@ void WindowAndroid::OnUpdateRefreshRate(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     float refresh_rate) {
+  current_refresh_rate_ = refresh_rate;
   if (compositor_)
     compositor_->OnUpdateRefreshRate(refresh_rate);
+  Force60HzRefreshRateIfNeeded();
+}
+
+void WindowAndroid::OnSupportedRefreshRatesUpdated(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const JavaParamRef<jfloatArray>& supported_refresh_rates) {
+  base::android::JavaFloatArrayToFloatVector(env, supported_refresh_rates,
+                                             &supported_refresh_rates_);
+  Force60HzRefreshRateIfNeeded();
+}
+
+void WindowAndroid::SetForce60HzRefreshRate() {
+  if (force_60hz_refresh_rate_)
+    return;
+
+  force_60hz_refresh_rate_ = true;
+  Force60HzRefreshRateIfNeeded();
+}
+
+void WindowAndroid::Force60HzRefreshRateIfNeeded() {
+  if (!force_60hz_refresh_rate_)
+    return;
+
+  // Arbitrary error margin to account for cases where the display's refresh
+  // rate might not be exactly 60.
+  constexpr float kEpsilon = 2.f;
+  constexpr float k60HzRefreshRate = 60.f;
+
+  float target_refresh_rate_delta = std::numeric_limits<float>::max();
+  float target_refresh_rate = 0.f;
+  for (auto refresh_rate : supported_refresh_rates_) {
+    float refresh_rate_delta = fabs(refresh_rate - k60HzRefreshRate);
+    if (refresh_rate_delta < target_refresh_rate_delta) {
+      target_refresh_rate = refresh_rate;
+      target_refresh_rate_delta = refresh_rate_delta;
+    }
+  }
+
+  if (current_refresh_rate_ == target_refresh_rate ||
+      target_refresh_rate_delta > kEpsilon) {
+    return;
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+  Java_WindowAndroid_setPreferredRefreshRate(env, GetJavaObject(),
+                                             target_refresh_rate);
 }
 
 bool WindowAndroid::HasPermission(const std::string& permission) {
@@ -395,13 +452,17 @@ display::Display WindowAndroid::GetDisplayWithWindowColorSpace() {
 // Native JNI methods
 // ----------------------------------------------------------------------------
 
-jlong JNI_WindowAndroid_Init(JNIEnv* env,
-                             const JavaParamRef<jobject>& obj,
-                             jint sdk_display_id,
-                             jfloat scroll_factor,
-                             jboolean window_is_wide_color_gamut) {
+jlong JNI_WindowAndroid_Init(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint sdk_display_id,
+    jfloat scroll_factor,
+    jboolean window_is_wide_color_gamut,
+    jfloat refresh_rate,
+    const base::android::JavaParamRef<jfloatArray>& supported_refresh_rates) {
   WindowAndroid* window = new WindowAndroid(
-      env, obj, sdk_display_id, scroll_factor, window_is_wide_color_gamut);
+      env, obj, sdk_display_id, scroll_factor, window_is_wide_color_gamut,
+      refresh_rate, supported_refresh_rates);
   return reinterpret_cast<intptr_t>(window);
 }
 

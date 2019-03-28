@@ -684,6 +684,10 @@ const base::Feature kBackgroundMediaRendererHasModerateBinding{
 const base::Feature kWarmUpNetworkProcess{"WarmUpNetworkProcess",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Force display to tick at ~60Hz refresh rate.
+const base::Feature kForce60HzRefreshRate{"Force60HzRefreshRate",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the WebNFC API is enabled:
 // https://w3c.github.io/web-nfc/
 const base::Feature kWebNfc{"WebNFC", base::FEATURE_DISABLED_BY_DEFAULT};

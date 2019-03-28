@@ -21,8 +21,10 @@ import android.os.IBinder;
 import android.os.Process;
 import android.util.SparseArray;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 
 import org.chromium.base.ActivityState;
@@ -45,8 +47,10 @@ import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * The window base class that has the minimum functionality.
@@ -123,6 +127,9 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     // clients may pause VSync before the native WindowAndroid is created.
     private boolean mPendingVSyncRequest;
     private boolean mVSyncPaused;
+
+    // List of display modes with the same dimensions as the current mode but varying refresh rate.
+    private List<Display.Mode> mSupportedRefreshRateModes;
 
     /**
      * An interface to notify listeners that a context menu is closed.
@@ -230,6 +237,10 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         mIntentErrors = new HashMap<>();
         mDisplayAndroid = display;
         mDisplayAndroid.addObserver(this);
+
+        // Multiple refresh rate support is only available on M+.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) recomputeSupportedRefreshRates();
+
         // Temporary solution for flaky tests, see https://crbug.com/767624 for context
         try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
             mVSyncMonitor =
@@ -650,7 +661,9 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     private long getNativePointer() {
         if (mNativeWindowAndroid == 0) {
             mNativeWindowAndroid = nativeInit(mDisplayAndroid.getDisplayId(),
-                    getMouseWheelScrollFactor(), getWindowIsWideColorGamut());
+                    getMouseWheelScrollFactor(), getWindowIsWideColorGamut(), getRefreshRate(),
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? getSupportedRefreshRates()
+                                                                   : null);
             nativeSetVSyncPaused(mNativeWindowAndroid, mVSyncPaused);
         }
         return mNativeWindowAndroid;
@@ -847,13 +860,90 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         if (mNativeWindowAndroid != 0) nativeOnUpdateRefreshRate(mNativeWindowAndroid, refreshRate);
     }
 
-    @CalledByNative
+    @Override
+    @TargetApi(Build.VERSION_CODES.M)
+    public void onCurrentModeChanged(Display.Mode currentMode) {
+        recomputeSupportedRefreshRates();
+    }
+
+    @Override
+    @TargetApi(Build.VERSION_CODES.M)
+    public void onDisplayModesChanged(List<Display.Mode> supportedModes) {
+        recomputeSupportedRefreshRates();
+    }
+
+    @SuppressLint("NewApi") // This should only be called if Display.Mode is available.
+    @TargetApi(Build.VERSION_CODES.M)
+    private void recomputeSupportedRefreshRates() {
+        Display.Mode currentMode = mDisplayAndroid.getCurrentMode();
+        assert currentMode != null;
+
+        List<Display.Mode> supportedModes = mDisplayAndroid.getSupportedModes();
+        assert supportedModes != null;
+        assert supportedModes.size() > 0;
+
+        List<Display.Mode> supportedRefreshRateModes = new ArrayList<Display.Mode>();
+        for (int i = 0; i < supportedModes.size(); ++i) {
+            if (currentMode.equals(supportedModes.get(i))) {
+                supportedRefreshRateModes.add(supportedModes.get(i));
+                continue;
+            }
+
+            // Only advertise refresh rates which wouldn't change other configurations on the
+            // Display.
+            if (currentMode.getPhysicalWidth() == supportedModes.get(i).getPhysicalWidth()
+                    && currentMode.getPhysicalHeight() == supportedModes.get(i).getPhysicalHeight()
+                    && currentMode.getRefreshRate() != supportedModes.get(i).getRefreshRate()) {
+                supportedRefreshRateModes.add(supportedModes.get(i));
+                continue;
+            }
+        }
+
+        boolean changed = !supportedRefreshRateModes.equals(mSupportedRefreshRateModes);
+        if (changed) {
+            mSupportedRefreshRateModes = supportedRefreshRateModes;
+            if (mNativeWindowAndroid != 0) {
+                nativeOnSupportedRefreshRatesUpdated(
+                        mNativeWindowAndroid, getSupportedRefreshRates());
+            }
+        }
+    }
+
     private float getRefreshRate() {
         return mDisplayAndroid.getRefreshRate();
     }
 
-    private native long nativeInit(
-            int displayId, float scrollFactor, boolean windowIsWideColorGamut);
+    @SuppressLint("NewApi")
+    // mSupportedRefreshRateModes should only be set if Display.Mode is available.
+    @TargetApi(Build.VERSION_CODES.M)
+    private float[] getSupportedRefreshRates() {
+        if (mSupportedRefreshRateModes == null) return null;
+
+        float[] supportedRefreshRates = new float[mSupportedRefreshRateModes.size()];
+        for (int i = 0; i < mSupportedRefreshRateModes.size(); ++i)
+            supportedRefreshRates[i] = mSupportedRefreshRateModes.get(i).getRefreshRate();
+        return supportedRefreshRates;
+    }
+
+    @SuppressLint("NewApi") // This should only be called if Display.Mode is available.
+    @CalledByNative
+    private void setPreferredRefreshRate(float preferredRefreshRate) {
+        for (int i = 0; i < mSupportedRefreshRateModes.size(); ++i) {
+            if (preferredRefreshRate != mSupportedRefreshRateModes.get(i).getRefreshRate())
+                continue;
+
+            Window window = getWindow();
+            WindowManager.LayoutParams params = window.getAttributes();
+            params.preferredDisplayModeId = mSupportedRefreshRateModes.get(i).getModeId();
+            window.setAttributes(params);
+            return;
+        }
+
+        assert false : "Must use one of the supported refresh rates";
+    }
+
+    private native long nativeInit(int displayId, float scrollFactor,
+            boolean windowIsWideColorGamut, float refreshRate, float[] supportedRefreshRates);
     private native void nativeOnVSync(long nativeWindowAndroid,
                                       long vsyncTimeMicros,
                                       long vsyncPeriodMicros);
@@ -863,5 +953,6 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     private native void nativeSetVSyncPaused(long nativeWindowAndroid, boolean paused);
     private native void nativeOnUpdateRefreshRate(long nativeWindowAndroid, float refreshRate);
     private native void nativeDestroy(long nativeWindowAndroid);
-
+    private native void nativeOnSupportedRefreshRatesUpdated(
+            long nativeWindowAndroid, float[] supportedRefreshRates);
 }
