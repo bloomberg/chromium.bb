@@ -512,10 +512,13 @@ class GitWrapper(SCMWrapper):
       verbose = ['--verbose']
       printed_path = True
 
-    if revision.startswith('refs/branch-heads'):
-      options.with_branch_heads = True
-    if revision.startswith('refs/tags'):
-      options.with_tags = True
+    revision_ref = revision
+    if ':' in revision:
+      revision_ref, _, revision = revision.partition(':')
+
+    mirror = self._GetMirror(url, options, revision_ref)
+    if mirror:
+      url = mirror.mirror_path
 
     remote_ref = scm.GIT.RefToRemoteRef(revision, self.remote)
     if remote_ref:
@@ -529,10 +532,6 @@ class GitWrapper(SCMWrapper):
     else:
       # hash is also a tag, only make a distinction at checkout
       rev_type = "hash"
-
-    mirror = self._GetMirror(url, options)
-    if mirror:
-      url = mirror.mirror_path
 
     # If we are going to introduce a new project, there is a possibility that
     # we are syncing back to a state where the project was originally a
@@ -955,7 +954,7 @@ class GitWrapper(SCMWrapper):
     return os.path.join(self._root_dir,
                         'old_' + self.relpath.replace(os.sep, '_')) + '.git'
 
-  def _GetMirror(self, url, options):
+  def _GetMirror(self, url, options, revision_ref=None):
     """Get a git_cache.Mirror object for the argument url."""
     if not self.cache_dir:
       return None
@@ -965,8 +964,12 @@ class GitWrapper(SCMWrapper):
     }
     if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
       mirror_kwargs['refs'].append('refs/branch-heads/*')
+    elif revision_ref and revision_ref.startswith('refs/branch-heads/'):
+      mirror_kwargs['refs'].append(revision_ref)
     if hasattr(options, 'with_tags') and options.with_tags:
       mirror_kwargs['refs'].append('refs/tags/*')
+    elif revision_ref and revision_ref.startswith('refs/tags/'):
+      mirror_kwargs['refs'].append(revision_ref)
     return git_cache.Mirror(url, **mirror_kwargs)
 
   def _UpdateMirrorIfNotContains(self, mirror, options, rev_type, revision):
@@ -1307,6 +1310,10 @@ class GitWrapper(SCMWrapper):
       # refs/changes/xx ref.
       if ':' not in refspec:
         refspec += ':' + refspec
+    if (refspec and refspec.startswith('refs/remotes/branch-heads')
+        and not getattr(options, 'with_branch_heads', False)):
+      refspec = '%s:%s' % (refspec.replace('/remotes', '', 1), refspec)
+
     fetch_cmd =  cfg + [
         'fetch',
         remote or self.remote,
