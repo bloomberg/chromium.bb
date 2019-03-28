@@ -6,6 +6,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
+    ":multidevice_setup_first_run",
     ":offline_ad_login",
     ":oobe_change_picture",
     ":oobe_select",
@@ -39,3 +40,12 @@ js_library("oobe_change_picture") {
     "//ui/webui/resources/js:util",
   ]
 }
+
+js_library("multidevice_setup_first_run") {
+  deps = [
+    "//ui/webui/resources/cr_components/chromeos/multidevice_setup:mojo_api",
+    "//ui/webui/resources/cr_components/chromeos/multidevice_setup:multidevice_setup",
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
