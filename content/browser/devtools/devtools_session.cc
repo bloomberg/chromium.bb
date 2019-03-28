@@ -141,6 +141,18 @@ void DevToolsSession::MojoConnectionDestroyed() {
 // The client of the devtools session will call this method to send a message
 // to handlers / agents that the session is connected with.
 bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
+  // If the session is in proxy mode, then |message| will be sent to
+  // an external session, so it needs to be sent as JSON.
+  // TODO(dgozman): revisit the proxy delegate.
+  if (proxy_delegate_) {
+    if (client_->UsesBinaryProtocol()) {
+      DCHECK(IsCBOR(message));
+      proxy_delegate_->SendMessageToBackend(this, ConvertCBORToJSON(message));
+      return true;
+    }
+    proxy_delegate_->SendMessageToBackend(this, message);
+    return true;
+  }
   std::string converted_cbor_message;
   const std::string* message_to_send = &message;
   if (EnableInternalDevToolsBinaryProtocol()) {
@@ -153,15 +165,6 @@ bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
       message_to_send = &converted_cbor_message;
     }
   }
-  if (proxy_delegate_) {
-    // TODO(dgozman): revisit the proxy delegate.
-    // TODO(johannes): Should we send CBOR to an external backend? Maybe not!
-    // Revisit this when EnableInternalDevToolsBinaryProtocol() is on
-    // unconditionally.  Note: we assume that child sessions are not forwarding.
-    proxy_delegate_->SendMessageToBackend(this, *message_to_send);
-    return true;
-  }
-
   std::unique_ptr<protocol::DictionaryValue> value =
       protocol::DictionaryValue::cast(protocol::StringUtil::parseMessage(
           message, client_->UsesBinaryProtocol()));
@@ -345,7 +348,20 @@ void DevToolsSession::DispatchProtocolNotification(
 }
 
 void DevToolsSession::DispatchOnClientHost(const std::string& message) {
-  client_->DispatchProtocolMessage(agent_host_, message);
+  if (!EnableInternalDevToolsBinaryProtocol()) {
+    client_->DispatchProtocolMessage(agent_host_, message);
+    return;
+  }
+  // |message| either comes from a web socket, in which case it's JSON.
+  // Or it comes from another devtools_session, in which case it may be CBOR
+  // already. We auto-detect and convert to what the client wants as needed.
+  if (client_->UsesBinaryProtocol()) {
+    client_->DispatchProtocolMessage(
+        agent_host_, IsCBOR(message) ? message : ConvertJSONToCBOR(message));
+  } else {
+    client_->DispatchProtocolMessage(
+        agent_host_, !IsCBOR(message) ? message : ConvertCBORToJSON(message));
+  }
   // |this| may be deleted at this point.
 }
 
