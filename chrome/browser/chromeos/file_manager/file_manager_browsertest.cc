@@ -589,6 +589,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirContextMenuSharedDrive"),
         TestCase("dirContextMenuSharedWithMe"),
         TestCase("dirContextMenuOffline"),
+        TestCase("dirContextMenuComputers"),
         TestCase("dirContextMenuShortcut")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
