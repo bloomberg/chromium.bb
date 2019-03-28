@@ -292,7 +292,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // for new code.
   template <typename T>
   T* AddChildView(T* view) {
-    AddChildViewAtImpl(view, child_count());
+    AddChildViewAtImpl(view, int{children_.size()});
     return view;
   }
   template <typename T>
@@ -321,7 +321,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Returns the child view at |index|.
   const View* child_at(int index) const {
     DCHECK_GE(index, 0);
-    DCHECK_LT(index, child_count());
+    DCHECK_LT(size_t{index}, children_.size());
     return children_[index];
   }
   View* child_at(int index) {

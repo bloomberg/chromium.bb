@@ -913,7 +913,7 @@ View* View::GetTooltipHandlerForPoint(const gfx::Point& point) {
   // Walk the child Views recursively looking for the View that most
   // tightly encloses the specified point.
   View::Views children = GetChildrenInZOrder();
-  DCHECK_EQ(child_count(), static_cast<int>(children.size()));
+  DCHECK_EQ(children_.size(), children.size());
   for (auto* child : base::Reversed(children)) {
     if (!child->visible())
       continue;
@@ -1696,7 +1696,7 @@ void View::ReorderChildLayers(ui::Layer* parent_layer) {
     // which is further to the back is stacked above one which is further to
     // the front.
     View::Views children = GetChildrenInZOrder();
-    DCHECK_EQ(child_count(), static_cast<int>(children.size()));
+    DCHECK_EQ(children_.size(), children.size());
     for (auto* child : base::Reversed(children))
       child->ReorderChildLayers(parent_layer);
   }
@@ -1856,7 +1856,7 @@ void View::SetUpTransformRecorderForPainting(
 void View::RecursivePaintHelper(void (View::*func)(const PaintInfo&),
                                 const PaintInfo& info) {
   View::Views children = GetChildrenInZOrder();
-  DCHECK_EQ(child_count(), static_cast<int>(children.size()));
+  DCHECK_EQ(children_.size(), children.size());
   for (auto* child : children) {
     if (!child->layer())
       (child->*func)(info);
@@ -1916,7 +1916,7 @@ void View::PaintDebugRects(const PaintInfo& parent_paint_info) {
 void View::AddChildViewAtImpl(View* view, int index) {
   CHECK_NE(view, this) << "You cannot add a view as its own child";
   DCHECK_GE(index, 0);
-  DCHECK_LE(index, child_count());
+  DCHECK_LE(size_t{index}, children_.size());
 
   // TODO(https://crbug.com/942298): Should just DCHECK(!view->parent_);.
   View* parent = view->parent_;

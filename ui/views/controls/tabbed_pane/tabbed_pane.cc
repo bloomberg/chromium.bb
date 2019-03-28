@@ -778,7 +778,7 @@ View* TabbedPane::GetSelectedTabContentView() {
 }
 
 bool TabbedPane::MoveSelectionBy(int delta) {
-  if (contents_->child_count() <= 1)
+  if (contents_->children().size() <= 1)
     return false;
   SelectTab(tab_strip_->GetTabAtDeltaFromSelected(delta));
   return true;

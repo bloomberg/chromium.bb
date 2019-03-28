@@ -400,7 +400,7 @@ void BubbleFrameView::ViewHierarchyChanged(
     OnThemeChanged();
 
   if (!details.is_add && details.parent == footnote_container_ &&
-      footnote_container_->child_count() == 1 &&
+      footnote_container_->children().size() == 1 &&
       details.child == footnote_container_->child_at(0)) {
     // Setting the footnote_container_ to be hidden and null it. This will
     // remove update the bubble to have no placeholder for the footnote and

@@ -73,7 +73,7 @@ void FootnoteContainerView::SetCornerRadius(float corner_radius) {
 }
 
 void FootnoteContainerView::ChildVisibilityChanged(View* child) {
-  DCHECK_EQ(child_count(), 1);
+  DCHECK_EQ(1u, children().size());
   SetVisible(child->visible());
 }
 

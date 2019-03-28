@@ -3487,9 +3487,9 @@ TEST_F(ViewTest, RemoveAllChildViews) {
   for (int i = 0; i < 3; ++i)
     foo->AddChildView(new View);
 
-  EXPECT_EQ(3, root.child_count());
-  EXPECT_EQ(1, child1->child_count());
-  EXPECT_EQ(3, foo->child_count());
+  EXPECT_EQ(3u, root.children().size());
+  EXPECT_EQ(1u, child1->children().size());
+  EXPECT_EQ(3u, foo->children().size());
 
   // Now remove all child views from root.
   root.RemoveAllChildViews(true);

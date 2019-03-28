@@ -274,7 +274,7 @@ MenuItemView* MenuItemView::AddMenuItemAt(
   DCHECK_GE(index, 0);
   if (!submenu_)
     CreateSubmenu();
-  DCHECK_LE(index, submenu_->child_count());
+  DCHECK_LE(size_t{index}, submenu_->children().size());
   if (type == SEPARATOR) {
     submenu_->AddChildViewAt(new MenuSeparator(separator_style), index);
     return nullptr;
@@ -305,7 +305,7 @@ MenuItemView* MenuItemView::AddMenuItemAt(
 void MenuItemView::RemoveMenuItemAt(int index) {
   DCHECK(submenu_);
   DCHECK_GE(index, 0);
-  DCHECK_LT(index, submenu_->child_count());
+  DCHECK_LT(size_t{index}, submenu_->children().size());
 
   View* item = submenu_->child_at(index);
   DCHECK(item);
@@ -385,7 +385,7 @@ MenuItemView* MenuItemView::AppendMenuItemImpl(
     const gfx::ImageSkia& icon,
     Type type,
     ui::MenuSeparatorType separator_style) {
-  const int index = submenu_ ? submenu_->child_count() : 0;
+  const int index = submenu_ ? int{submenu_->children().size()} : 0;
   return AddMenuItemAt(index, item_id, label, sublabel, minor_text, minor_icon,
                        icon, type, separator_style);
 }
@@ -1357,9 +1357,7 @@ gfx::Insets MenuItemView::GetContainerMargins() const {
 }
 
 int MenuItemView::NonIconChildViewsCount() const {
-  // Note that what child_count() returns is the number of children,
-  // not the number of menu items.
-  return child_count() - (icon_view_ ? 1 : 0) -
+  return int{children().size()} - (icon_view_ ? 1 : 0) -
          (radio_check_image_view_ ? 1 : 0) -
          (submenu_arrow_image_view_ ? 1 : 0) - (vertical_separator_ ? 1 : 0);
 }

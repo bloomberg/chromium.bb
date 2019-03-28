@@ -711,7 +711,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     MenuItemView* menu = part.menu;
     // |menu| is null means this event is from an empty menu or a separator.
     // If it is from an empty menu, use parent context menu instead of that.
-    if (!menu && part.submenu->child_count() == 1 &&
+    if (!menu && part.submenu->children().size() == 1 &&
         part.submenu->child_at(0)->id() == MenuItemView::kEmptyMenuItemViewID) {
       menu = part.parent;
     }
@@ -1984,9 +1984,9 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
   // TODO(oshima|sky): Don't show the menu if drag is in progress and
   // this menu doesn't support drag drop. See crbug.com/110495.
   if (show) {
-    int old_count = item->GetSubmenu()->child_count();
+    size_t old_num_children = item->GetSubmenu()->children().size();
     item->GetDelegate()->WillShowMenu(item);
-    if (old_count != item->GetSubmenu()->child_count()) {
+    if (old_num_children != item->GetSubmenu()->children().size()) {
       // If the number of children changed then we may need to add empty items.
       item->RemoveEmptyMenus();
       item->AddEmptyMenus();
