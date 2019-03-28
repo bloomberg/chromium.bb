@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
@@ -25,6 +26,9 @@
 #include "ui/strings/grit/ui_strings.h"
 
 namespace send_tab_to_self {
+namespace {
+const char kDesktopNotificationSharedPrefix[] = "shared";
+}  // namespace
 
 DesktopNotificationHandler::DesktopNotificationHandler(Profile* profile)
     : profile_(profile) {}
@@ -64,9 +68,11 @@ void DesktopNotificationHandler::OnClose(Profile* profile,
                                          const std::string& notification_id,
                                          bool by_user,
                                          base::OnceClosure completed_closure) {
-  SendTabToSelfSyncServiceFactory::GetForProfile(profile)
-      ->GetSendTabToSelfModel()
-      ->DismissEntry(notification_id);
+  if (notification_id.find(kDesktopNotificationSharedPrefix)) {
+    SendTabToSelfSyncServiceFactory::GetForProfile(profile)
+        ->GetSendTabToSelfModel()
+        ->DismissEntry(notification_id);
+  }
   std::move(completed_closure).Run();
 }
 
@@ -77,30 +83,32 @@ void DesktopNotificationHandler::OnClick(
     const base::Optional<int>& action_index,
     const base::Optional<base::string16>& reply,
     base::OnceClosure completed_closure) {
-  // Launch a new tab for the notification's |origin|,
-  // and close the activated notification.
-  NavigateParams params(profile, origin, ui::PAGE_TRANSITION_LINK);
-  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  params.window_action = NavigateParams::SHOW_WINDOW;
-  Navigate(&params);
-  NotificationDisplayServiceFactory::GetForProfile(profile)->Close(
-      NotificationHandler::Type::SEND_TAB_TO_SELF, notification_id);
-  // Delete the entry in SendTabToSelfModel
-  SendTabToSelfSyncServiceFactory::GetForProfile(profile)
-      ->GetSendTabToSelfModel()
-      ->DeleteEntry(notification_id);
+  if (notification_id.find(kDesktopNotificationSharedPrefix)) {
+    // Launch a new tab for the notification's |origin|,
+    // and close the activated notification.
+    NavigateParams params(profile, origin, ui::PAGE_TRANSITION_LINK);
+    params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+    params.window_action = NavigateParams::SHOW_WINDOW;
+    Navigate(&params);
+    NotificationDisplayServiceFactory::GetForProfile(profile)->Close(
+        NotificationHandler::Type::SEND_TAB_TO_SELF, notification_id);
+    // Delete the entry in SendTabToSelfModel
+    SendTabToSelfSyncServiceFactory::GetForProfile(profile)
+        ->GetSendTabToSelfModel()
+        ->DeleteEntry(notification_id);
+  }
   std::move(completed_closure).Run();
 }
 
 void DesktopNotificationHandler::DisplaySendingConfirmation(
-    const SendTabToSelfEntry* entry) {
-  const GURL& url = entry->GetURL();
-  // Declare a notification
+    const SendTabToSelfEntry& entry) {
+  const GURL& url = entry.GetURL();
   message_center::Notification notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, entry->GetGUID(),
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      kDesktopNotificationSharedPrefix + entry.GetGUID(),
       l10n_util::GetStringUTF16(
           IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_CONFIRMATION_SUCCESS),
-      base::UTF8ToUTF16(entry->GetTitle()), gfx::Image(),
+      base::UTF8ToUTF16(entry.GetTitle()), gfx::Image(),
       base::UTF8ToUTF16(url.host()), url, message_center::NotifierId(url),
       message_center::RichNotificationData(), /*delegate=*/nullptr);
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
@@ -108,9 +116,20 @@ void DesktopNotificationHandler::DisplaySendingConfirmation(
       /*metadata=*/nullptr);
 }
 
-void DesktopNotificationHandler::DisplayFailureMessage() {
-  // TODO(crbug/942206): implement after the design has been finalized
-  NOTIMPLEMENTED();
+void DesktopNotificationHandler::DisplayFailureMessage(const GURL& url) {
+  message_center::Notification notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      kDesktopNotificationSharedPrefix + base::GenerateGUID(),
+      l10n_util::GetStringUTF16(
+          IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_CONFIRMATION_FAILURE_TITLE),
+      l10n_util::GetStringUTF16(
+          IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_CONFIRMATION_FAILURE_MESSAGE),
+      gfx::Image(), base::UTF8ToUTF16(url.host()), url,
+      message_center::NotifierId(url), message_center::RichNotificationData(),
+      /*delegate=*/nullptr);
+  NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
+      NotificationHandler::Type::SEND_TAB_TO_SELF, notification,
+      /*metadata=*/nullptr);
 }
 
 }  // namespace send_tab_to_self
