@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PAGE_NODE_IMPL_H_
 
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/macros.h"
@@ -59,12 +60,16 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   // PageCoordinationUnit.
   base::TimeDelta TimeSinceLastVisibilityChange() const;
 
+  // Get all frames associated with this page.
   std::vector<FrameNodeImpl*> GetFrameNodes() const;
 
   // Returns the main frame CU or nullptr if this page has no main frame.
   FrameNodeImpl* GetMainFrameNode() const;
 
   // Accessors.
+  const std::set<FrameNodeImpl*>& main_frame_nodes() const {
+    return main_frame_nodes_;
+  }
   bool is_visible() const { return is_visible_; }
   bool is_loading() const { return is_loading_; }
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
