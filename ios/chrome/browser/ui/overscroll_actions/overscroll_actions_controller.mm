@@ -15,7 +15,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
-#import "ios/chrome/browser/ui/location_bar_notification_names.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_notification_names.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_gesture_recognizer.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_view.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"

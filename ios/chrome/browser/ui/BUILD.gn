@@ -188,15 +188,6 @@ bundle_data("resources") {
   ]
 }
 
-# TODO(crbug.com/778008): Remove this target.
-source_set("notifications") {
-  sources = [
-    "location_bar_notification_names.h",
-    "location_bar_notification_names.mm",
-  ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
 bundle_data("resources_unit_tests") {
   visibility = [ ":unit_tests" ]
   testonly = true
