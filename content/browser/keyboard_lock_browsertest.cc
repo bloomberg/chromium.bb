@@ -294,8 +294,7 @@ void KeyboardLockBrowserTest::SetUpOnMainThread() {
   web_contents()->SetDelegate(&web_contents_delegate_);
 
   // KeyboardLock requires a secure context (HTTPS).
-  https_test_server()->AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  https_test_server()->AddDefaultHandlers(GetTestDataFilePath());
   host_resolver()->AddRule("*", "127.0.0.1");
   SetupCrossSiteRedirector(https_test_server());
   ASSERT_TRUE(https_test_server()->Start());

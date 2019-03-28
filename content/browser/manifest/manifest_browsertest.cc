@@ -57,7 +57,7 @@ class ManifestBrowserTest : public ContentBrowserTest,
   ManifestBrowserTest() : console_error_count_(0) {
     cors_embedded_test_server_.reset(new net::EmbeddedTestServer);
     cors_embedded_test_server_->ServeFilesFromSourceDirectory(
-        "content/test/data");
+        GetTestDataFilePath());
   }
 
   ~ManifestBrowserTest() override {}
@@ -388,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CorsManifestWithAcessControls) {
 IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, MixedContentManifest) {
   std::unique_ptr<net::EmbeddedTestServer> https_server(
       new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
-  https_server->ServeFilesFromSourceDirectory("content/test/data");
+  https_server->ServeFilesFromSourceDirectory(GetTestDataFilePath());
 
   ASSERT_TRUE(https_server->Start());
 

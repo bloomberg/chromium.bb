@@ -1036,8 +1036,7 @@ void PostRequestMonitor(int* post_counter,
 // Verifies form submits and resubmits work.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, POSTNavigation) {
   net::EmbeddedTestServer http_server;
-  base::FilePath content_test_data(FILE_PATH_LITERAL("content/test/data"));
-  http_server.AddDefaultHandlers(content_test_data);
+  http_server.AddDefaultHandlers(GetTestDataFilePath());
   int post_counter = 0;
   http_server.RegisterRequestMonitor(
       base::Bind(&PostRequestMonitor, &post_counter));

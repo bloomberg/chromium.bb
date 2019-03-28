@@ -160,7 +160,7 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
-    https_server_->ServeFilesFromSourceDirectory("content/test/data");
+    https_server_->ServeFilesFromSourceDirectory(GetTestDataFilePath());
     ASSERT_TRUE(https_server_->Start());
 
     SetIncognitoMode(false);
@@ -314,7 +314,7 @@ bool BackgroundSyncBrowserTest::RegisterFromCrossOriginFrame(
     std::string* script_result) {
   // Start a second https server to use as a second origin.
   net::EmbeddedTestServer alt_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  alt_server.ServeFilesFromSourceDirectory("content/test/data");
+  alt_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
   EXPECT_TRUE(alt_server.Start());
 
   GURL url = alt_server.GetURL(frame_url);

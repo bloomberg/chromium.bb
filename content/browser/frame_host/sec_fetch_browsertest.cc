@@ -33,8 +33,7 @@ class SecFetchBrowserTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
-    https_test_server_.AddDefaultHandlers(
-        base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+    https_test_server_.AddDefaultHandlers(GetTestDataFilePath());
     https_test_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
     ASSERT_TRUE(https_test_server_.Start());
 
