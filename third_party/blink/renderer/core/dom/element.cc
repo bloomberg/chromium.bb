@@ -406,8 +406,8 @@ Attr* Element::DetachAttribute(wtf_size_t index) {
   if (attr_node) {
     DetachAttrNodeAtIndex(attr_node, index);
   } else {
-    attr_node =
-        Attr::Create(GetDocument(), attribute.GetName(), attribute.Value());
+    attr_node = MakeGarbageCollected<Attr>(GetDocument(), attribute.GetName(),
+                                           attribute.Value());
     RemoveAttributeInternal(index, kNotInSynchronizationOfLazyAttribute);
   }
   return attr_node;
@@ -3093,8 +3093,8 @@ Attr* Element::setAttributeNode(Attr* attr_node,
       // Attribute's for the replaced Attr is compatible with
       // all but Gecko (and, arguably, the DOM Level1 spec text.)
       // Consider switching.
-      old_attr_node = Attr::Create(GetDocument(), attr_node->GetQualifiedName(),
-                                   attr.Value());
+      old_attr_node = MakeGarbageCollected<Attr>(
+          GetDocument(), attr_node->GetQualifiedName(), attr.Value());
     }
   }
 
@@ -4423,7 +4423,7 @@ Element* Element::closest(const AtomicString& selectors) {
 DOMTokenList& Element::classList() {
   ElementRareData& rare_data = EnsureElementRareData();
   if (!rare_data.GetClassList()) {
-    DOMTokenList* class_list = DOMTokenList::Create(*this, kClassAttr);
+    auto* class_list = MakeGarbageCollected<DOMTokenList>(*this, kClassAttr);
     class_list->DidUpdateAttributeValue(g_null_atom, getAttribute(kClassAttr));
     rare_data.SetClassList(class_list);
   }
@@ -4433,7 +4433,7 @@ DOMTokenList& Element::classList() {
 DOMStringMap& Element::dataset() {
   ElementRareData& rare_data = EnsureElementRareData();
   if (!rare_data.Dataset())
-    rare_data.SetDataset(DatasetDOMStringMap::Create(this));
+    rare_data.SetDataset(MakeGarbageCollected<DatasetDOMStringMap>(this));
   return *rare_data.Dataset();
 }
 
@@ -4874,7 +4874,7 @@ Attr* Element::AttrIfExists(const QualifiedName& name) {
 Attr* Element::EnsureAttr(const QualifiedName& name) {
   Attr* attr_node = AttrIfExists(name);
   if (!attr_node) {
-    attr_node = Attr::Create(*this, name);
+    attr_node = MakeGarbageCollected<Attr>(*this, name);
     GetTreeScope().AdoptIfNeeded(*attr_node);
     EnsureElementRareData().AddAttr(attr_node);
   }
@@ -5022,7 +5022,7 @@ void Element::CloneAttributesFrom(const Element& other) {
 
 void Element::CreateUniqueElementData() {
   if (!element_data_) {
-    element_data_ = UniqueElementData::Create();
+    element_data_ = MakeGarbageCollected<UniqueElementData>();
   } else {
     DCHECK(!IsA<UniqueElementData>(element_data_.Get()));
     element_data_ =
@@ -5367,7 +5367,7 @@ DOMTokenList& Element::part() {
   ElementRareData& rare_data = EnsureElementRareData();
   DOMTokenList* part = rare_data.GetPart();
   if (!part) {
-    part = DOMTokenList::Create(*this, kPartAttr);
+    part = MakeGarbageCollected<DOMTokenList>(*this, kPartAttr);
     rare_data.SetPart(part);
   }
   return *part;

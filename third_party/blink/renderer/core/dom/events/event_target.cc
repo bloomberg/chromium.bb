@@ -204,7 +204,7 @@ ServiceWorker* EventTarget::ToServiceWorker() {
 // currently derived from EventTarget.
 // Spec: https://dom.spec.whatwg.org/#dom-eventtarget-eventtarget
 EventTarget* EventTarget::Create(ScriptState* script_state) {
-  return EventTargetImpl::Create(script_state);
+  return MakeGarbageCollected<EventTargetImpl>(script_state);
 }
 
 inline LocalDOMWindow* EventTarget::ExecutingWindow() {
@@ -371,8 +371,8 @@ bool EventTarget::addEventListener(
   }
 
   if (options_union.IsAddEventListenerOptions()) {
-    AddEventListenerOptionsResolved* resolved_options =
-        AddEventListenerOptionsResolved::Create();
+    auto* resolved_options =
+        MakeGarbageCollected<AddEventListenerOptionsResolved>();
     AddEventListenerOptions* options =
         options_union.GetAsAddEventListenerOptions();
     if (options->hasPassive())
@@ -390,8 +390,7 @@ bool EventTarget::addEventListener(
 bool EventTarget::addEventListener(const AtomicString& event_type,
                                    EventListener* listener,
                                    bool use_capture) {
-  AddEventListenerOptionsResolved* options =
-      AddEventListenerOptionsResolved::Create();
+  auto* options = MakeGarbageCollected<AddEventListenerOptionsResolved>();
   options->setCapture(use_capture);
   SetDefaultAddEventListenerOptions(event_type, listener, options);
   return AddEventListenerInternal(event_type, listener, options);

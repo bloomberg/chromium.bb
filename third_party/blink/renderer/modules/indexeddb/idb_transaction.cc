@@ -85,8 +85,9 @@ IDBTransaction::IDBTransaction(
       database_(db),
       mode_(mode),
       scope_(scope),
-      event_queue_(EventQueue::Create(ExecutionContext::From(script_state),
-                                      TaskType::kDatabaseAccess)) {
+      event_queue_(
+          MakeGarbageCollected<EventQueue>(ExecutionContext::From(script_state),
+                                           TaskType::kDatabaseAccess)) {
   DCHECK(database_);
   DCHECK(!scope_.IsEmpty()) << "Non-versionchange transactions must operate "
                                "on a well-defined set of stores";
@@ -118,7 +119,8 @@ IDBTransaction::IDBTransaction(
       state_(kInactive),
       old_database_metadata_(old_metadata),
       event_queue_(
-          EventQueue::Create(execution_context, TaskType::kDatabaseAccess)) {
+          MakeGarbageCollected<EventQueue>(execution_context,
+                                           TaskType::kDatabaseAccess)) {
   DCHECK(database_);
   DCHECK(open_db_request_);
   DCHECK(scope_.IsEmpty());
@@ -491,7 +493,7 @@ DOMStringList* IDBTransaction::objectStoreNames() const {
   if (IsVersionChange())
     return database_->objectStoreNames();
 
-  DOMStringList* object_store_names = DOMStringList::Create();
+  auto* object_store_names = MakeGarbageCollected<DOMStringList>();
   for (const String& object_store_name : scope_)
     object_store_names->Append(object_store_name);
   object_store_names->Sort();

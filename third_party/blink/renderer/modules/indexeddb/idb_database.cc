@@ -106,7 +106,8 @@ IDBDatabase::IDBDatabase(ExecutionContext* context,
                          v8::Isolate* isolate)
     : ContextLifecycleObserver(context),
       backend_(std::move(backend)),
-      event_queue_(EventQueue::Create(context, TaskType::kDatabaseAccess)),
+      event_queue_(
+          MakeGarbageCollected<EventQueue>(context, TaskType::kDatabaseAccess)),
       database_callbacks_(callbacks),
       isolate_(isolate) {
   database_callbacks_->Connect(this);
@@ -216,7 +217,7 @@ void IDBDatabase::OnChanges(
 }
 
 DOMStringList* IDBDatabase::objectStoreNames() const {
-  DOMStringList* object_store_names = DOMStringList::Create();
+  auto* object_store_names = MakeGarbageCollected<DOMStringList>();
   for (const auto& it : metadata_.object_stores)
     object_store_names->Append(it.value->name);
   object_store_names->Sort();

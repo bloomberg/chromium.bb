@@ -45,7 +45,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
     DCHECK(ThreadState::Current()->IsGCForbidden());
     if (child_node_list_)
       return ToChildNodeList(child_node_list_);
-    ChildNodeList* list = ChildNodeList::Create(node);
+    auto* list = MakeGarbageCollected<ChildNodeList>(node);
     child_node_list_ = list;
     return list;
   }
@@ -54,7 +54,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
     DCHECK(ThreadState::Current()->IsGCForbidden());
     if (child_node_list_)
       return ToEmptyNodeList(child_node_list_);
-    EmptyNodeList* list = EmptyNodeList::Create(node);
+    auto* list = MakeGarbageCollected<EmptyNodeList>(node);
     child_node_list_ = list;
     return list;
   }

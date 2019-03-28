@@ -136,8 +136,9 @@ IDBRequest::IDBRequest(ScriptState* script_state,
       isolate_(script_state->GetIsolate()),
       metrics_(std::move(metrics)),
       source_(source),
-      event_queue_(EventQueue::Create(ExecutionContext::From(script_state),
-                                      TaskType::kDatabaseAccess)) {}
+      event_queue_(
+          MakeGarbageCollected<EventQueue>(ExecutionContext::From(script_state),
+                                           TaskType::kDatabaseAccess)) {}
 
 IDBRequest::~IDBRequest() {
   DCHECK((ready_state_ == DONE && metrics_.IsEmpty()) ||
@@ -425,7 +426,7 @@ void IDBRequest::EnqueueResponse(const Vector<String>& string_list) {
     return;
   }
 
-  DOMStringList* dom_string_list = DOMStringList::Create();
+  auto* dom_string_list = MakeGarbageCollected<DOMStringList>();
   for (const auto& item : string_list)
     dom_string_list->Append(item);
   EnqueueResultInternal(IDBAny::Create(dom_string_list));

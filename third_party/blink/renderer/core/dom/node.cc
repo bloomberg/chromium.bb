@@ -354,7 +354,8 @@ Node::~Node() {
 
 NodeRareData& Node::CreateRareData() {
   if (IsElementNode()) {
-    data_.rare_data_ = ElementRareData::Create(data_.node_layout_data_);
+    data_.rare_data_ =
+        MakeGarbageCollected<ElementRareData>(data_.node_layout_data_);
   } else {
     data_.rare_data_ =
         MakeGarbageCollected<NodeRareData>(data_.node_layout_data_);

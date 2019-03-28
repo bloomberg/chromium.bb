@@ -96,7 +96,7 @@ String Location::origin() const {
 }
 
 DOMStringList* Location::ancestorOrigins() const {
-  DOMStringList* origins = DOMStringList::Create();
+  auto* origins = MakeGarbageCollected<DOMStringList>();
   if (!IsAttached())
     return origins;
   for (Frame* frame = dom_window_->GetFrame()->Tree().Parent(); frame;

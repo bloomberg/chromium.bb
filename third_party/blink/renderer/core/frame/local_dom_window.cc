@@ -1175,8 +1175,9 @@ void LocalDOMWindow::resizeTo(int width, int height) const {
 }
 
 int LocalDOMWindow::requestAnimationFrame(V8FrameRequestCallback* callback) {
-  FrameRequestCallbackCollection::V8FrameCallback* frame_callback =
-      FrameRequestCallbackCollection::V8FrameCallback::Create(callback);
+  auto* frame_callback =
+      MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
+          callback);
   frame_callback->SetUseLegacyTimeBase(false);
   if (Document* doc = document())
     return doc->RequestAnimationFrame(frame_callback);
@@ -1185,8 +1186,9 @@ int LocalDOMWindow::requestAnimationFrame(V8FrameRequestCallback* callback) {
 
 int LocalDOMWindow::webkitRequestAnimationFrame(
     V8FrameRequestCallback* callback) {
-  FrameRequestCallbackCollection::V8FrameCallback* frame_callback =
-      FrameRequestCallbackCollection::V8FrameCallback::Create(callback);
+  auto* frame_callback =
+      MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
+          callback);
   frame_callback->SetUseLegacyTimeBase(true);
   if (Document* document = this->document())
     return document->RequestAnimationFrame(frame_callback);

@@ -244,7 +244,7 @@ DOMWebSocket::DOMWebSocket(ExecutionContext* context)
       binary_type_(kBinaryTypeBlob),
       subprotocol_(""),
       extensions_(""),
-      event_queue_(EventQueue::Create(this)),
+      event_queue_(MakeGarbageCollected<EventQueue>(this)),
       buffered_amount_update_task_pending_(false),
       was_autoupgraded_to_wss_(false) {}
 

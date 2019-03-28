@@ -328,8 +328,10 @@ int VRDisplay::requestAnimationFrame(V8FrameRequestCallback* callback) {
 
   RequestVSync();
 
-  FrameRequestCallbackCollection::V8FrameCallback* frame_callback =
-      FrameRequestCallbackCollection::V8FrameCallback::Create(callback);
+  auto* frame_callback =
+      MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
+          callback);
+
   frame_callback->SetUseLegacyTimeBase(false);
   return EnsureScriptedAnimationController(doc).RegisterCallback(
       frame_callback);

@@ -55,10 +55,6 @@ class ResizeObserver;
 
 class ElementRareData : public NodeRareData {
  public:
-  static ElementRareData* Create(NodeRenderingData* node_layout_data) {
-    return MakeGarbageCollected<ElementRareData>(node_layout_data);
-  }
-
   explicit ElementRareData(NodeRenderingData*);
   ~ElementRareData();
 

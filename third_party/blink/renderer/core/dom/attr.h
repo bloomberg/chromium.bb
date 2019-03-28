@@ -37,11 +37,6 @@ class CORE_EXPORT Attr final : public Node {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Attr* Create(Element&, const QualifiedName&);
-  static Attr* Create(Document&,
-                      const QualifiedName&,
-                      const AtomicString& value);
-
   Attr(Element&, const QualifiedName&);
   Attr(Document&, const QualifiedName&, const AtomicString& value);
   ~Attr() override;

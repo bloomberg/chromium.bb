@@ -87,11 +87,6 @@ CORE_EXPORT void ProvideContextFeaturesTo(
     std::unique_ptr<ContextFeaturesClient>);
 void ProvideContextFeaturesToDocumentFrom(Document&, Page&);
 
-inline ContextFeatures* ContextFeatures::Create(
-    std::unique_ptr<ContextFeaturesClient> client) {
-  return MakeGarbageCollected<ContextFeatures>(std::move(client));
-}
-
 inline bool ContextFeatures::IsEnabled(Document* document,
                                        FeatureType type,
                                        bool default_value) const {
