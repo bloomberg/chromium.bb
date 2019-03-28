@@ -430,7 +430,7 @@ class EventBands {
     var globalEvent = this.findGlobalEvent_(eventTimestamp, 200 /* distance */);
     if (globalEvent) {
       // Show the global event info.
-      var attributes = eventAttributes[global_event[0]];
+      var attributes = eventAttributes[globalEvent[0]];
       SVG.addText(
           this.tooltip, horizontalGap, yOffset, 12,
           attributes.name + ' ' + timestempToMsText(globalEvent[1]) + ' ms.');

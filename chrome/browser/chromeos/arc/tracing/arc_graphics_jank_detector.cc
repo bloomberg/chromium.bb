@@ -10,21 +10,27 @@ namespace arc {
 constexpr base::TimeDelta ArcGraphicsJankDetector::kPauseDetectionThreshold;
 
 ArcGraphicsJankDetector::ArcGraphicsJankDetector(const JankCallback& callback)
-    : callback_(callback),
-      stage_(Stage::kWarmUp),
-      last_sample_time_(base::Time::Now()),
-      warm_up_sample_cnt_(kWarmUpSamples) {}
+    : callback_(callback) {
+  Reset();
+}
 
 ArcGraphicsJankDetector::~ArcGraphicsJankDetector() = default;
 
-void ArcGraphicsJankDetector::OnSample() {
-  OnSample(base::Time::Now());
+void ArcGraphicsJankDetector::Reset() {
+  stage_ = Stage::kWarmUp;
+  last_sample_time_ = base::Time::Now();
+  warm_up_sample_cnt_ = kWarmUpSamples;
+  period_fixed_ = false;
 }
 
 void ArcGraphicsJankDetector::SetPeriodFixed(const base::TimeDelta& period) {
   period_ = period;
   period_fixed_ = true;
   stage_ = Stage::kActive;
+}
+
+void ArcGraphicsJankDetector::OnSample() {
+  OnSample(base::Time::Now());
 }
 
 void ArcGraphicsJankDetector::OnSample(const base::Time& timestamp) {

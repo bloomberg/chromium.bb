@@ -58,6 +58,11 @@ class ArcGraphicsJankDetector {
   explicit ArcGraphicsJankDetector(const JankCallback& callback);
   ~ArcGraphicsJankDetector();
 
+  // Resets detector to its initial state, stage is set to |Stage::kWarmUp| with
+  // the initial number of warm up samples. Fixed period is discarded if it was
+  // set.
+  void Reset();
+
   // Sets the expected refresh rate. This disables |Stage::kWarmUp| and
   // |Stage::kRateDetection| stages and keeps detector in |Stage::kActive|
   // stage.
