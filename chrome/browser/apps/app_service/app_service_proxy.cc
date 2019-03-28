@@ -175,9 +175,12 @@ void AppServiceProxy::OpenNativeSettings(const std::string& app_id) {
   }
 }
 
-void AppServiceProxy::OverrideInnerIconLoaderForTesting(
+apps::IconLoader* AppServiceProxy::OverrideInnerIconLoaderForTesting(
     apps::IconLoader* icon_loader) {
+  apps::IconLoader* old =
+      inner_icon_loader_.overriding_icon_loader_for_testing_;
   inner_icon_loader_.overriding_icon_loader_for_testing_ = icon_loader;
+  return old;
 }
 
 void AppServiceProxy::Shutdown() {

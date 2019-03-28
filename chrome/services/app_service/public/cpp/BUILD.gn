@@ -28,6 +28,17 @@ source_set("icon_loader") {
   ]
 }
 
+source_set("icon_loader_test_support") {
+  sources = [
+    "stub_icon_loader.cc",
+    "stub_icon_loader.h",
+  ]
+
+  deps = [
+    ":icon_loader",
+  ]
+}
+
 source_set("manifest") {
   sources = [
     "manifest.cc",
