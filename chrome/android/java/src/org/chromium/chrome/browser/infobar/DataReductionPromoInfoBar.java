@@ -15,6 +15,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.datareduction.DataReductionBrandingResourceProvider;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.omaha.VersionNumberGetter;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -114,7 +115,9 @@ public class DataReductionPromoInfoBar extends ConfirmInfoBar {
                     BitmapFactory.decodeResource(context.getResources(), R.drawable.infobar_chrome),
                     context.getString(R.string.data_reduction_promo_infobar_title),
                     context.getString(R.string.data_reduction_promo_infobar_text),
-                    context.getString(R.string.data_reduction_promo_infobar_button),
+                    context.getString(
+                            DataReductionBrandingResourceProvider.getDataSaverBrandedString(
+                                    R.string.data_reduction_enable_button)),
                     context.getString(R.string.no_thanks));
 
             return true;
