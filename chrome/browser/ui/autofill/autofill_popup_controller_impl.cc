@@ -190,8 +190,12 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
   elided_labels_.insert(elided_labels_.begin(), values.size(),
                         base::string16());
   for (size_t i = 0; i < values.size(); i++) {
+    // A suggestion's label has one line of disambiguating information to show
+    // to the user. However, when the two-line suggestion display experiment is
+    // enabled on desktop, label is replaced by additional label.
     suggestions_[i].value = values[i];
     suggestions_[i].label = labels[i];
+    suggestions_[i].additional_label = labels[i];
     suggestions_[i].frontend_id = POPUP_ITEM_ID_DATALIST_ENTRY;
 
     // TODO(brettw) it looks like these should be elided.
