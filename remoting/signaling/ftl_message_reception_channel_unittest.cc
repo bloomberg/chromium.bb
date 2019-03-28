@@ -17,6 +17,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "remoting/signaling/ftl.pb.h"
 #include "remoting/signaling/grpc_support/grpc_test_util.h"
 #include "remoting/signaling/grpc_support/scoped_grpc_server_stream.h"
@@ -32,6 +33,10 @@ using ::testing::Expectation;
 using ::testing::Invoke;
 using ::testing::Property;
 using ::testing::Return;
+
+using ReceiveMessagesResponseCallback =
+    base::RepeatingCallback<void(const ftl::ReceiveMessagesResponse&)>;
+using StatusCallback = base::OnceCallback<void(const grpc::Status&)>;
 
 // Fake stream implementation to allow probing if a stream is closed by client.
 class FakeScopedGrpcServerStream : public ScopedGrpcServerStream {
@@ -62,6 +67,34 @@ ftl::ReceiveMessagesResponse CreateStartOfBatchResponse() {
 base::OnceCallback<void(const grpc::Status& status)> AssertOkCallback() {
   return base::BindOnce(
       [](const grpc::Status& status) { ASSERT_TRUE(status.ok()); });
+}
+
+// Creates a gmock EXPECT_CALL action that:
+//   1. Creates a fake server stream and returns it as the start stream result
+//   2. Posts a task to call |on_stream_opened| at the end of current sequence
+//   3. Writes the WeakPtr to the fake server stream to |optional_out_stream|
+//      if it is provided.
+template <typename OnStreamOpenedLambda>
+decltype(auto) StartStream(
+    OnStreamOpenedLambda on_stream_opened,
+    base::WeakPtr<FakeScopedGrpcServerStream>* optional_out_stream) {
+  return [=](const ReceiveMessagesResponseCallback& on_incoming_msg,
+             StatusCallback on_channel_closed) {
+    auto fake_stream = CreateFakeServerStream();
+    if (optional_out_stream) {
+      *optional_out_stream = fake_stream->GetWeakPtr();
+    }
+    auto on_stream_opened_cb = base::BindLambdaForTesting(on_stream_opened);
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(on_stream_opened_cb, on_incoming_msg,
+                                  std::move(on_channel_closed)));
+    return fake_stream;
+  };
+}
+
+template <typename OnStreamOpenedLambda>
+decltype(auto) StartStream(OnStreamOpenedLambda on_stream_opened) {
+  return StartStream(on_stream_opened, nullptr);
 }
 
 }  // namespace
@@ -108,14 +141,10 @@ TEST_F(FtlMessageReceptionChannelTest,
        TestStartReceivingMessages_StoppedImmediately) {
   base::RunLoop run_loop;
 
-  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
-      .WillOnce(Invoke(
-          [&](base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>
-                  on_stream_started,
-              const base::RepeatingCallback<void(
-                  const ftl::ReceiveMessagesResponse&)>& on_incoming_msg,
-              base::OnceCallback<void(const grpc::Status&)> on_channel_closed) {
-            std::move(on_stream_started).Run(CreateFakeServerStream());
+  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+      .WillOnce(StartStream(
+          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+              StatusCallback on_channel_closed) {
             channel_->StopReceivingMessages();
           }));
 
@@ -129,14 +158,10 @@ TEST_F(FtlMessageReceptionChannelTest,
        TestStartReceivingMessages_NotAuthenticated) {
   base::RunLoop run_loop;
 
-  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
-      .WillOnce(Invoke(
-          [&](base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>
-                  on_stream_started,
-              const base::RepeatingCallback<void(
-                  const ftl::ReceiveMessagesResponse&)>& on_incoming_msg,
-              base::OnceCallback<void(const grpc::Status&)> on_channel_closed) {
-            std::move(on_stream_started).Run(CreateFakeServerStream());
+  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+      .WillOnce(StartStream(
+          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+              StatusCallback on_channel_closed) {
             std::move(on_channel_closed)
                 .Run(grpc::Status(grpc::StatusCode::UNAUTHENTICATED, ""));
           }));
@@ -151,14 +176,10 @@ TEST_F(FtlMessageReceptionChannelTest,
        TestStartReceivingMessages_StreamStarted) {
   base::RunLoop run_loop;
 
-  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
-      .WillOnce(Invoke(
-          [&](base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>
-                  on_stream_started,
-              const base::RepeatingCallback<void(
-                  const ftl::ReceiveMessagesResponse&)>& on_incoming_msg,
-              base::OnceCallback<void(const grpc::Status&)> on_channel_closed) {
-            std::move(on_stream_started).Run(CreateFakeServerStream());
+  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+      .WillOnce(StartStream(
+          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+              StatusCallback on_channel_closed) {
             on_incoming_msg.Run(CreateStartOfBatchResponse());
           }));
 
@@ -173,18 +194,11 @@ TEST_F(FtlMessageReceptionChannelTest,
   base::RunLoop run_loop;
 
   base::WeakPtr<FakeScopedGrpcServerStream> old_stream;
-  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
-      .WillOnce(Invoke(
-          [&](base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>
-                  on_stream_started,
-              const base::RepeatingCallback<void(
-                  const ftl::ReceiveMessagesResponse&)>& on_incoming_msg,
-              base::OnceCallback<void(const grpc::Status&)> on_channel_closed) {
+  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+      .WillOnce(StartStream(
+          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+              StatusCallback on_channel_closed) {
             // The first open stream attempt fails with UNAVAILABLE error.
-            auto fake_server_stream = CreateFakeServerStream();
-            old_stream = fake_server_stream->GetWeakPtr();
-            std::move(on_stream_started).Run(std::move(fake_server_stream));
-
             ASSERT_EQ(0, GetRetryFailureCount());
 
             std::move(on_channel_closed)
@@ -197,20 +211,17 @@ TEST_F(FtlMessageReceptionChannelTest,
 
             // This will make the channel reopen the stream.
             scoped_task_environment_.FastForwardBy(GetTimeUntilRetry());
-          }))
-      .WillOnce(Invoke(
-          [&](base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>
-                  on_stream_started,
-              const base::RepeatingCallback<void(
-                  const ftl::ReceiveMessagesResponse&)>& on_incoming_msg,
-              base::OnceCallback<void(const grpc::Status&)> on_channel_closed) {
+          },
+          &old_stream))
+      .WillOnce(StartStream(
+          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+              StatusCallback on_channel_closed) {
             // Second open stream attempt succeeds.
 
             // Assert old stream closed.
             ASSERT_FALSE(old_stream);
 
             // Send a StartOfBatch and verify it resets the failure counter.
-            std::move(on_stream_started).Run(CreateFakeServerStream());
             on_incoming_msg.Run(CreateStartOfBatchResponse());
 
             ASSERT_EQ(0, GetRetryFailureCount());
@@ -236,14 +247,10 @@ TEST_F(FtlMessageReceptionChannelTest,
       .WillOnce(Return())
       .WillOnce(Invoke([&](const grpc::Status& status) { run_loop.Quit(); }));
 
-  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
-      .WillOnce(Invoke(
-          [&](base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>
-                  on_stream_started,
-              const base::RepeatingCallback<void(
-                  const ftl::ReceiveMessagesResponse&)>& on_incoming_msg,
-              base::OnceCallback<void(const grpc::Status&)> on_channel_closed) {
-            std::move(on_stream_started).Run(CreateFakeServerStream());
+  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+      .WillOnce(StartStream(
+          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+              StatusCallback on_channel_closed) {
             on_incoming_msg.Run(CreateStartOfBatchResponse());
           }));
 
@@ -272,15 +279,10 @@ TEST_F(FtlMessageReceptionChannelTest, StreamsTwoMessages) {
               Run(Property(&ftl::InboxMessage::message_id, kMessage2Id)))
       .WillOnce(Invoke([&](const ftl::InboxMessage&) { run_loop.Quit(); }));
 
-  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
-      .WillOnce(Invoke(
-          [&](base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>
-                  on_stream_started,
-              const base::RepeatingCallback<void(
-                  const ftl::ReceiveMessagesResponse&)>& on_incoming_msg,
-              base::OnceCallback<void(const grpc::Status&)> on_channel_closed) {
-            std::move(on_stream_started).Run(CreateFakeServerStream());
-
+  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+      .WillOnce(StartStream(
+          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+              StatusCallback on_channel_closed) {
             on_incoming_msg.Run(CreateStartOfBatchResponse());
 
             ftl::ReceiveMessagesResponse response;
@@ -304,16 +306,10 @@ TEST_F(FtlMessageReceptionChannelTest, NoPongWithinTimeout_ResetsStream) {
   base::RunLoop run_loop;
 
   base::WeakPtr<FakeScopedGrpcServerStream> old_stream;
-  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
-      .WillOnce(Invoke(
-          [&](base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>
-                  on_stream_started,
-              const base::RepeatingCallback<void(
-                  const ftl::ReceiveMessagesResponse&)>& on_incoming_msg,
-              base::OnceCallback<void(const grpc::Status&)> on_channel_closed) {
-            auto fake_server_stream = CreateFakeServerStream();
-            old_stream = fake_server_stream->GetWeakPtr();
-            std::move(on_stream_started).Run(std::move(fake_server_stream));
+  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+      .WillOnce(StartStream(
+          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+              StatusCallback on_channel_closed) {
             on_incoming_msg.Run(CreateStartOfBatchResponse());
             scoped_task_environment_.FastForwardBy(
                 FtlMessageReceptionChannel::kPongTimeout);
@@ -325,19 +321,15 @@ TEST_F(FtlMessageReceptionChannelTest, NoPongWithinTimeout_ResetsStream) {
 
             // This will make the channel reopen the stream.
             scoped_task_environment_.FastForwardBy(GetTimeUntilRetry());
-          }))
-      .WillOnce(Invoke(
-          [&](base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>
-                  on_stream_started,
-              const base::RepeatingCallback<void(
-                  const ftl::ReceiveMessagesResponse&)>& on_incoming_msg,
-              base::OnceCallback<void(const grpc::Status&)> on_channel_closed) {
+          },
+          &old_stream))
+      .WillOnce(StartStream(
+          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+              StatusCallback on_channel_closed) {
             // Stream is reopened.
 
             // Assert old stream closed.
             ASSERT_FALSE(old_stream);
-
-            std::move(on_stream_started).Run(CreateFakeServerStream());
 
             // Sends a StartOfBatch and verify that it resets the failure
             // counter.
@@ -354,17 +346,12 @@ TEST_F(FtlMessageReceptionChannelTest, NoPongWithinTimeout_ResetsStream) {
 TEST_F(FtlMessageReceptionChannelTest, LifetimeExceeded_ResetsStream) {
   base::RunLoop run_loop;
 
-  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
-      .WillOnce(Invoke(
-          [&](base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>
-                  on_stream_started,
-              const base::RepeatingCallback<void(
-                  const ftl::ReceiveMessagesResponse&)>& on_incoming_msg,
-              base::OnceCallback<void(const grpc::Status&)> on_channel_closed) {
+  base::WeakPtr<FakeScopedGrpcServerStream> old_stream;
+  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+      .WillOnce(StartStream(
+          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+              StatusCallback on_channel_closed) {
             auto fake_server_stream = CreateFakeServerStream();
-            base::WeakPtr<FakeScopedGrpcServerStream> old_stream =
-                fake_server_stream->GetWeakPtr();
-            std::move(on_stream_started).Run(std::move(fake_server_stream));
             on_incoming_msg.Run(CreateStartOfBatchResponse());
 
             // Keep sending pong until lifetime exceeded.
@@ -379,17 +366,15 @@ TEST_F(FtlMessageReceptionChannelTest, LifetimeExceeded_ResetsStream) {
               scoped_task_environment_.FastForwardBy(pong_period);
               ticked_time += pong_period;
             }
+          },
+          &old_stream))
+      .WillOnce(StartStream(
+          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+              StatusCallback on_channel_closed) {
             ASSERT_FALSE(old_stream);
-          }))
-      .WillOnce(Invoke(
-          [&](base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>
-                  on_stream_started,
-              const base::RepeatingCallback<void(
-                  const ftl::ReceiveMessagesResponse&)>& on_incoming_msg,
-              base::OnceCallback<void(const grpc::Status&)> on_channel_closed) {
-            // Reopening the stream. Send StartOfBatch and verify that it resets
-            // the failure counter.
-            std::move(on_stream_started).Run(CreateFakeServerStream());
+
+            // The stream is reopened. Send StartOfBatch and verify that it
+            // resets the failure counter.
             on_incoming_msg.Run(CreateStartOfBatchResponse());
             ASSERT_EQ(0, GetRetryFailureCount());
             run_loop.Quit();
@@ -405,15 +390,10 @@ TEST_F(FtlMessageReceptionChannelTest, TimeoutIncreasesToMaximum) {
 
   int failure_count = 0;
   int hitting_max_delay_count = 0;
-  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
-      .WillRepeatedly(Invoke(
-          [&](base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>
-                  on_stream_started,
-              const base::RepeatingCallback<void(
-                  const ftl::ReceiveMessagesResponse&)>& on_incoming_msg,
-              base::OnceCallback<void(const grpc::Status&)> on_channel_closed) {
-            std::move(on_stream_started).Run(CreateFakeServerStream());
-
+  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+      .WillRepeatedly(StartStream(
+          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+              StatusCallback on_channel_closed) {
             // Quit if delay is ~kBackoffMaxDelay three times.
             if (hitting_max_delay_count == 3) {
               on_incoming_msg.Run(CreateStartOfBatchResponse());

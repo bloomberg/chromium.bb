@@ -13,9 +13,14 @@ static_library("grpc_support") {
     "grpc_async_server_streaming_request.cc",
     "grpc_async_server_streaming_request.h",
     "grpc_async_unary_request.h",
+    "grpc_authenticated_executor.cc",
+    "grpc_authenticated_executor.h",
+    "grpc_channel.cc",
+    "grpc_channel.h",
     "grpc_executor.h",
     "scoped_grpc_server_stream.cc",
     "scoped_grpc_server_stream.h",
+    "using_grpc_channel_shared_ptr.inc",
   ]
 
   deps = [
@@ -51,6 +56,7 @@ source_set("unit_tests") {
 
   sources = [
     "grpc_async_executor_unittest.cc",
+    "grpc_authenticated_executor_unittest.cc",
   ]
   deps = [
     ":grpc_support",

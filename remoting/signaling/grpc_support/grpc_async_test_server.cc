@@ -31,7 +31,7 @@ GrpcAsyncTestServer::~GrpcAsyncTestServer() {
   }
 }
 
-std::shared_ptr<grpc::Channel> GrpcAsyncTestServer::CreateInProcessChannel() {
+GrpcChannelSharedPtr GrpcAsyncTestServer::CreateInProcessChannel() {
   return server_->InProcessChannel(grpc::ChannelArguments());
 }
 

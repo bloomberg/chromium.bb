@@ -18,12 +18,14 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
-#include "remoting/signaling/ftl_grpc_test_environment.h"
+#include "remoting/signaling/ftl_grpc_context.h"
 #include "remoting/signaling/ftl_services.grpc.pb.h"
+#include "remoting/signaling/grpc_support/grpc_async_executor.h"
 #include "remoting/signaling/grpc_support/grpc_async_test_server.h"
 #include "remoting/signaling/grpc_support/grpc_test_util.h"
 #include "remoting/signaling/grpc_support/scoped_grpc_server_stream.h"
 #include "remoting/signaling/message_reception_channel.h"
+#include "remoting/signaling/registration_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -99,6 +101,17 @@ class MockMessageReceptionChannel : public MessageReceptionChannel {
   DISALLOW_COPY_AND_ASSIGN(MockMessageReceptionChannel);
 };
 
+class MockRegistrationManager : public RegistrationManager {
+ public:
+  MockRegistrationManager() = default;
+  ~MockRegistrationManager() override = default;
+
+  MOCK_METHOD1(SignInGaia, void(DoneCallback));
+  MOCK_CONST_METHOD0(IsSignedIn, bool());
+  MOCK_CONST_METHOD0(GetRegistrationId, std::string());
+  MOCK_CONST_METHOD0(GetFtlAuthToken, std::string());
+};
+
 }  // namespace
 
 class FtlMessagingClientTest : public testing::Test {
@@ -127,8 +140,8 @@ class FtlMessagingClientTest : public testing::Test {
   MockMessageReceptionChannel* mock_message_reception_channel_;
 
  private:
-  std::unique_ptr<test::FtlGrpcTestEnvironment> test_environment_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  MockRegistrationManager mock_registration_manager_;
 };
 
 void FtlMessagingClientTest::SetUp() {
@@ -136,18 +149,19 @@ void FtlMessagingClientTest::SetUp() {
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
   server_ = std::make_unique<test::GrpcAsyncTestServer>(
       std::make_unique<Messaging::AsyncService>());
-  test_environment_ = std::make_unique<test::FtlGrpcTestEnvironment>(
-      server_->CreateInProcessChannel());
-  messaging_client_ =
-      std::make_unique<FtlMessagingClient>(test_environment_->context());
+  FtlGrpcContext::SetChannelForTesting(server_->CreateInProcessChannel());
+  EXPECT_CALL(mock_registration_manager_, GetFtlAuthToken())
+      .WillRepeatedly(Return("fake_auth_token"));
   auto channel = std::make_unique<MockMessageReceptionChannel>();
   mock_message_reception_channel_ = channel.get();
-  messaging_client_->SetMessageReceptionChannelForTesting(std::move(channel));
+  messaging_client_ = std::unique_ptr<FtlMessagingClient>(
+      new FtlMessagingClient(std::make_unique<GrpcAsyncExecutor>(),
+                             &mock_registration_manager_, std::move(channel)));
 }
 
 void FtlMessagingClientTest::TearDown() {
   messaging_client_.reset();
-  test_environment_.reset();
+  FtlGrpcContext::SetChannelForTesting(nullptr);
   server_task_runner_->DeleteSoon(FROM_HERE, std::move(server_));
 }
 
@@ -423,11 +437,7 @@ TEST_F(FtlMessagingClientTest,
         exit_runloop_when_called_twice.Get().Run();
       });
 
-  mock_message_reception_channel_->stream_opener()->Run(
-      base::BindLambdaForTesting(
-          [&](std::unique_ptr<ScopedGrpcServerStream> stream) {
-            scoped_stream = std::move(stream);
-          }),
+  scoped_stream = mock_message_reception_channel_->stream_opener()->Run(
       mock_on_incoming_msg.Get(),
       base::BindOnce([](const grpc::Status&) { NOTREACHED(); }));
 

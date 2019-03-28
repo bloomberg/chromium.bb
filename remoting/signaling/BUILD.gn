@@ -27,6 +27,7 @@ static_library("signaling") {
     "message_reception_channel.h",
     "push_notification_subscriber.cc",
     "push_notification_subscriber.h",
+    "registration_manager.h",
     "server_log_entry.cc",
     "server_log_entry.h",
     "signal_strategy.h",
@@ -100,8 +101,6 @@ static_library("test_support") {
   sources = [
     "fake_signal_strategy.cc",
     "fake_signal_strategy.h",
-    "ftl_grpc_test_environment.cc",
-    "ftl_grpc_test_environment.h",
     "mock_signal_strategy.cc",
     "mock_signal_strategy.h",
   ]
@@ -116,7 +115,6 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "ftl_grpc_context_unittest.cc",
     "ftl_message_reception_channel_unittest.cc",
     "ftl_messaging_client_unittest.cc",
     "iq_sender_unittest.cc",

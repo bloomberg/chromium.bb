@@ -12,6 +12,9 @@
 #include "base/time/time.h"
 #include "remoting/signaling/ftl_device_id_provider.h"
 #include "remoting/signaling/ftl_grpc_context.h"
+#include "remoting/signaling/grpc_support/grpc_async_unary_request.h"
+#include "remoting/signaling/grpc_support/grpc_authenticated_executor.h"
+#include "remoting/signaling/grpc_support/grpc_executor.h"
 
 namespace remoting {
 
@@ -28,20 +31,19 @@ constexpr base::TimeDelta kRefreshBufferTime = base::TimeDelta::FromHours(1);
 }  // namespace
 
 FtlRegistrationManager::FtlRegistrationManager(
-    FtlGrpcContext* context,
+    OAuthTokenGetter* token_getter,
     std::unique_ptr<FtlDeviceIdProvider> device_id_provider)
-    : context_(context),
-      device_id_provider_(std::move(device_id_provider)),
-      weak_factory_(this) {
-  DCHECK(context_);
+    : executor_(std::make_unique<GrpcAuthenticatedExecutor>(token_getter)),
+      device_id_provider_(std::move(device_id_provider)) {
   DCHECK(device_id_provider_);
-  registration_stub_ = Registration::NewStub(context_->channel());
+  registration_stub_ = Registration::NewStub(FtlGrpcContext::CreateChannel());
 }
 
 FtlRegistrationManager::~FtlRegistrationManager() = default;
 
 void FtlRegistrationManager::SignInGaia(DoneCallback on_done) {
   ftl::SignInGaiaRequest request;
+  *request.mutable_header() = FtlGrpcContext::CreateRequestHeader();
   request.set_app(FtlGrpcContext::GetChromotingAppIdentifier());
   request.set_mode(ftl::SignInGaiaMode_Value_DEFAULT_CREATE_ACCOUNT);
 
@@ -56,16 +58,24 @@ void FtlRegistrationManager::SignInGaia(DoneCallback on_done) {
     request.mutable_register_data()->add_caps(kFtlCapabilities[i]);
   }
 
-  context_->ExecuteRpc(
+  auto grpc_request = CreateGrpcAsyncUnaryRequest(
       base::BindOnce(&Registration::Stub::AsyncSignInGaia,
                      base::Unretained(registration_stub_.get())),
-      request,
+      FtlGrpcContext::CreateClientContext(), request,
       base::BindOnce(&FtlRegistrationManager::OnSignInGaiaResponse,
-                     weak_factory_.GetWeakPtr(), std::move(on_done)));
+                     base::Unretained(this), std::move(on_done)));
+  executor_->ExecuteRpc(std::move(grpc_request));
 }
 
 bool FtlRegistrationManager::IsSignedIn() const {
-  return !registration_id_.empty();
+  return !ftl_auth_token_.empty();
+}
+
+std::string FtlRegistrationManager::GetRegistrationId() const {
+  return registration_id_;
+}
+std::string FtlRegistrationManager::GetFtlAuthToken() const {
+  return ftl_auth_token_;
 }
 
 void FtlRegistrationManager::OnSignInGaiaResponse(
@@ -90,7 +100,7 @@ void FtlRegistrationManager::OnSignInGaiaResponse(
   }
 
   // TODO(yuweih): Consider caching auth token.
-  context_->SetAuthToken(response.auth_token().payload());
+  ftl_auth_token_ = response.auth_token().payload();
   VLOG(0) << "Auth token set on FtlClient";
   base::TimeDelta refresh_delay =
       base::TimeDelta::FromMicroseconds(response.auth_token().expires_in());

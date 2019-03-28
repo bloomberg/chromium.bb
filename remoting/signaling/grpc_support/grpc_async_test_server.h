@@ -8,13 +8,13 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "remoting/signaling/grpc_support/grpc_channel.h"
 #include "remoting/signaling/grpc_support/grpc_test_util.h"
 #include "third_party/grpc/src/include/grpcpp/impl/codegen/service_type.h"
 #include "third_party/grpc/src/include/grpcpp/server.h"
 
 namespace grpc {
 
-class Channel;
 class ServerCompletionQueue;
 class Service;
 
@@ -51,7 +51,7 @@ class GrpcAsyncTestServer {
   explicit GrpcAsyncTestServer(std::unique_ptr<grpc::Service> async_service);
   virtual ~GrpcAsyncTestServer();
 
-  std::shared_ptr<grpc::Channel> CreateInProcessChannel();
+  GrpcChannelSharedPtr CreateInProcessChannel();
 
   // Accepts a request by calling |request_func|, writes the request to
   // |out_request|, and returns a responder for sending response to the client.
