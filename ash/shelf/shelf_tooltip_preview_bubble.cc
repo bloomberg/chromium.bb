@@ -5,6 +5,7 @@
 #include "ash/shelf/shelf_tooltip_preview_bubble.h"
 
 #include "ash/shelf/shelf_widget.h"
+#include "ash/wm/pip/pip_positioner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 
@@ -41,6 +42,8 @@ ShelfTooltipPreviewBubble::ShelfTooltipPreviewBubble(
   }
 
   CreateBubble();
+  PipPositioner::MarkWindowAsIgnoredForCollisionDetection(
+      GetWidget()->GetNativeWindow());
 }
 
 ShelfTooltipPreviewBubble::~ShelfTooltipPreviewBubble() = default;
