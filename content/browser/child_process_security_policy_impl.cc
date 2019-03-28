@@ -148,9 +148,6 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
          iter != filesystem_permissions_.end(); ++iter) {
       isolated_context->RemoveReference(iter->first);
     }
-    UMA_HISTOGRAM_COUNTS_1M(
-        "ChildProcessSecurityPolicy.PerChildFilePermissions",
-        file_permissions_.size());
   }
 
   // Grant permission to request and commit URLs with the specified origin.
@@ -182,9 +179,6 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   void GrantPermissionsForFile(const base::FilePath& file, int permissions) {
     base::FilePath stripped = file.StripTrailingSeparators();
     file_permissions_[stripped] |= permissions;
-    UMA_HISTOGRAM_COUNTS_1M(
-        "ChildProcessSecurityPolicy.FilePermissionPathLength",
-        stripped.value().size());
   }
 
   // Grant navigation to a file but not the file:// scheme in general.
