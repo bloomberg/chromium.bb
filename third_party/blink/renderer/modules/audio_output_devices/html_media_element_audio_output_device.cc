@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/modules/audio_output_devices/set_sink_id_callbacks.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 
@@ -35,10 +34,11 @@ class SetSinkIdResolver : public ScriptPromiseResolver {
   void Trace(blink::Visitor*) override;
 
  private:
-  void DoSetSinkId();
+  void TimerFired(TimerBase*);
 
   Member<HTMLMediaElement> element_;
   String sink_id_;
+  TaskRunnerTimer<SetSinkIdResolver> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SetSinkIdResolver);
 };
@@ -57,23 +57,24 @@ SetSinkIdResolver::SetSinkIdResolver(ScriptState* script_state,
                                      const String& sink_id)
     : ScriptPromiseResolver(script_state),
       element_(element),
-      sink_id_(sink_id) {}
+      sink_id_(sink_id),
+      timer_(ExecutionContext::From(script_state)
+                 ->GetTaskRunner(TaskType::kMiscPlatformAPI),
+             this,
+             &SetSinkIdResolver::TimerFired) {}
 
 void SetSinkIdResolver::StartAsync() {
-  ExecutionContext* context = GetExecutionContext();
-  if (!context)
-    return;
-  context->GetTaskRunner(TaskType::kInternalMedia)
-      ->PostTask(FROM_HERE, WTF::Bind(&SetSinkIdResolver::DoSetSinkId,
-                                      WrapWeakPersistent(this)));
+  timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
-void SetSinkIdResolver::DoSetSinkId() {
+void SetSinkIdResolver::TimerFired(TimerBase* timer) {
   ExecutionContext* context = GetExecutionContext();
   std::unique_ptr<SetSinkIdCallbacks> callbacks =
       std::make_unique<SetSinkIdCallbacks>(this, *element_, sink_id_);
   WebMediaPlayer* web_media_player = element_->GetWebMediaPlayer();
   if (web_media_player) {
+    // Using release() to transfer ownership because |webMediaPlayer| is a
+    // platform object that takes raw pointers.
     web_media_player->SetSinkId(sink_id_, std::move(callbacks));
     return;
   }
@@ -92,15 +93,8 @@ void SetSinkIdResolver::DoSetSinkId() {
   auto& document = To<Document>(*context);
   WebLocalFrameImpl* web_frame =
       WebLocalFrameImpl::FromFrame(document.GetFrame());
-  if (web_frame && web_frame->Client()) {
-    web_frame->Client()->CheckIfAudioSinkExistsAndIsAuthorized(
-        sink_id_, std::move(callbacks));
-  } else {
-    Reject(DOMException::Create(
-        DOMExceptionCode::kSecurityError,
-        "Impossible to authorize device if there is no frame"));
-    return;
-  }
+  web_frame->Client()->CheckIfAudioSinkExistsAndIsAuthorized(
+      sink_id_, std::move(callbacks));
 }
 
 void SetSinkIdResolver::Trace(blink::Visitor* visitor) {
