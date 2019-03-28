@@ -271,10 +271,6 @@ class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
  protected:
   class MockEventListener final : public NativeEventListener {
    public:
-    static MockEventListener* Create() {
-      return MakeGarbageCollected<MockEventListener>();
-    }
-
     MOCK_METHOD2(Invoke, void(ExecutionContext* executionContext, Event*));
   };
 
@@ -309,7 +305,7 @@ class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
       Persistent<Element> element_;
     } const listeners_cleaner(&element);
 
-    MockEventListener* event_handler = MockEventListener::Create();
+    auto* event_handler = MakeGarbageCollected<MockEventListener>();
     element.addEventListener(double_click_event ? event_type_names::kDblclick
                                                 : event_type_names::kClick,
                              event_handler);

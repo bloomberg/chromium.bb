@@ -23,8 +23,6 @@ class SpellCheckRequester;
 class ColdModeSpellCheckRequester
     : public GarbageCollected<ColdModeSpellCheckRequester> {
  public:
-  static ColdModeSpellCheckRequester* Create(LocalFrame&);
-
   explicit ColdModeSpellCheckRequester(LocalFrame&);
 
   void SetNeedsMoreInvocationForTesting() {

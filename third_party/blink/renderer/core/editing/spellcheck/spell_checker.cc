@@ -78,10 +78,6 @@ bool IsAmbiguousBoundaryCharacter(UChar character) {
 
 }  // namespace
 
-SpellChecker* SpellChecker::Create(LocalFrame& frame) {
-  return MakeGarbageCollected<SpellChecker>(frame);
-}
-
 static WebSpellCheckPanelHostClient& GetEmptySpellCheckPanelHostClient() {
   DEFINE_STATIC_LOCAL(EmptySpellCheckPanelHostClient, client, ());
   return client;
@@ -104,7 +100,7 @@ WebTextCheckClient* SpellChecker::GetTextCheckerClient() const {
 
 SpellChecker::SpellChecker(LocalFrame& frame)
     : frame_(&frame),
-      spell_check_requester_(SpellCheckRequester::Create(frame)),
+      spell_check_requester_(MakeGarbageCollected<SpellCheckRequester>(frame)),
       idle_spell_check_controller_(IdleSpellCheckController::Create(frame)) {}
 
 bool SpellChecker::IsSpellCheckingEnabled() const {

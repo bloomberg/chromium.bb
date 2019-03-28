@@ -147,7 +147,7 @@ constexpr TimeDelta kMinimumActiveInterval = TimeDelta::FromSecondsD(0.15);
 
 EventHandler::EventHandler(LocalFrame& frame)
     : frame_(frame),
-      selection_controller_(SelectionController::Create(frame)),
+      selection_controller_(MakeGarbageCollected<SelectionController>(frame)),
       hover_timer_(frame.GetTaskRunner(TaskType::kUserInteraction),
                    this,
                    &EventHandler::HoverTimerFired),

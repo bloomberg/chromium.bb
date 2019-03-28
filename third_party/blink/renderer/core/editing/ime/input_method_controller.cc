@@ -365,10 +365,6 @@ int ComputeAutocapitalizeFlags(const Element* element) {
 
 enum class InputMethodController::TypingContinuation { kContinue, kEnd };
 
-InputMethodController* InputMethodController::Create(LocalFrame& frame) {
-  return MakeGarbageCollected<InputMethodController>(frame);
-}
-
 InputMethodController::InputMethodController(LocalFrame& frame)
     : frame_(&frame), has_composition_(false) {}
 

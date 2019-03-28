@@ -82,10 +82,6 @@ class CORE_EXPORT SpellCheckRequest
 class CORE_EXPORT SpellCheckRequester final
     : public GarbageCollectedFinalized<SpellCheckRequester> {
  public:
-  static SpellCheckRequester* Create(LocalFrame& frame) {
-    return MakeGarbageCollected<SpellCheckRequester>(frame);
-  }
-
   explicit SpellCheckRequester(LocalFrame&);
   ~SpellCheckRequester();
   void Trace(Visitor*);
