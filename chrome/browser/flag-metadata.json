@@ -1635,7 +1635,7 @@
   {
     "name": "enable-site-isolation-for-password-sites",
     "owners": [ "site-isolation-dev", "alexmos", "lukasza" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 79
   },
   {
     "name": "enable-site-per-process",
@@ -2194,6 +2194,11 @@
     "name": "interest-feed-content-suggestions",
     "owners": [ "//chrome/android/feed/OWNERS" ],
     "expiry_milestone": 76
+  },
+  {
+    "name": "isolate-origins",
+    "owners": [ "site-isolation-dev", "alexmos", "creis", "lukasza" ],
+    "expiry_milestone": 79
   },
   {
     "name": "language-settings",

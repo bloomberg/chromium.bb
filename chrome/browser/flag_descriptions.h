@@ -1063,6 +1063,9 @@ extern const char kSignedHTTPExchangeDescription[];
 extern const char kSimplifyHttpsIndicatorName[];
 extern const char kSimplifyHttpsIndicatorDescription[];
 
+extern const char kIsolateOriginsName[];
+extern const char kIsolateOriginsDescription[];
+
 extern const char kSiteIsolationOptOutName[];
 extern const char kSiteIsolationOptOutDescription[];
 extern const char kSiteIsolationOptOutChoiceDefault[];

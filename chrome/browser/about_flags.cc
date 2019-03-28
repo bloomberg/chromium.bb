@@ -1699,6 +1699,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kStrictSiteIsolationDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kSitePerProcess)},
 #endif
+    {"isolate-origins", flag_descriptions::kIsolateOriginsName,
+     flag_descriptions::kIsolateOriginsDescription, kOsAll,
+     ORIGIN_LIST_VALUE_TYPE(switches::kIsolateOrigins, "")},
     {"site-isolation-trial-opt-out",
      flag_descriptions::kSiteIsolationOptOutName,
      flag_descriptions::kSiteIsolationOptOutDescription, kOsAll,
