@@ -4,9 +4,11 @@
 
 #include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 
+#include "base/feature_list.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/fonts/font_global_context.h"
@@ -126,7 +128,8 @@ void MemoryPressureListenerRegistry::OnPurgeMemory() {
 void MemoryPressureListenerRegistry::ClearMemory() {
   // TODO(tasak|bashi): Make FontCache a MemoryPressureListener rather than
   // clearing caches here.
-  FontGlobalContext::ClearMemory();
+  if (base::FeatureList::IsEnabled(features::kInvalidateFontCacheOnPurge))
+    FontGlobalContext::ClearMemory();
 }
 
 void MemoryPressureListenerRegistry::ClearThreadSpecificMemory() {
