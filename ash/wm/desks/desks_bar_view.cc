@@ -8,14 +8,18 @@
 #include <iterator>
 #include <utility>
 
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_mini_view_animations.h"
 #include "ash/wm/desks/new_desk_button.h"
 #include "base/stl_util.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 
@@ -59,6 +63,32 @@ DesksBarView::~DesksBarView() {
 // static
 int DesksBarView::GetBarHeight() {
   return kBarHeight;
+}
+
+// static
+std::unique_ptr<views::Widget> DesksBarView::CreateDesksWidget(
+    aura::Window* root,
+    const gfx::Rect& bounds) {
+  DCHECK(root);
+  DCHECK(root->IsRootWindow());
+
+  auto widget = std::make_unique<views::Widget>();
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.accept_events = true;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  // Use the wallpaper container similar to all background widgets created in
+  // overview mode.
+  params.parent = root->GetChildById(kShellWindowId_WallpaperContainer);
+  params.bounds = bounds;
+  params.name = "VirtualDesksWidget";
+  widget->Init(params);
+  ::wm::SetWindowVisibilityAnimationTransition(widget->GetNativeWindow(),
+                                               ::wm::ANIMATE_NONE);
+
+  return widget;
 }
 
 void DesksBarView::Init() {

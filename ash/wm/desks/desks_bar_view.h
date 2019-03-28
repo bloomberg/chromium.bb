@@ -30,6 +30,13 @@ class ASH_EXPORT DesksBarView : public views::View,
   // The height of the desk bar view.
   static int GetBarHeight();
 
+  // Creates and returns the widget that contains the DeskBarView in overview
+  // mode. The returned widget has no content view yet, and hasn't been shown
+  // yet.
+  static std::unique_ptr<views::Widget> CreateDesksWidget(
+      aura::Window* root,
+      const gfx::Rect& bounds);
+
   views::View* backgroud_view() const { return backgroud_view_; }
 
   NewDeskButton* new_desk_button() const { return new_desk_button_; }

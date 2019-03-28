@@ -263,6 +263,11 @@ gfx::Rect GetGridBoundsInScreenDuringDragging(aura::Window* dragged_window,
   }
 }
 
+gfx::Rect GetDesksWidgetBounds(aura::Window* root, int overview_grid_width) {
+  return screen_util::SnapBoundsToDisplayEdge(
+      gfx::Rect(overview_grid_width, DesksBarView::GetBarHeight()), root);
+}
+
 }  // namespace
 
 // ShieldView contains the background for overview mode. It also contains text
@@ -299,20 +304,6 @@ class OverviewGrid::ShieldView : public views::View {
 
   ~ShieldView() override = default;
 
-  const DesksBarView* desks_bar_view() const { return desks_bar_view_; }
-
-  // Call this only after this view has been added to a widget. This is needed
-  // because the desks mini views need to access the widget to get the
-  // root window in order to know how to layout themselves.
-  void MaybeInitVirtualDesksBar() {
-    if (!features::IsVirtualDesksEnabled())
-      return;
-
-    desks_bar_view_ = new DesksBarView;
-    AddChildView(desks_bar_view_);
-    desks_bar_view_->Init();
-  }
-
   void SetLabelVisibility(bool visible) {
     label_container_->SetVisible(visible);
   }
@@ -331,17 +322,9 @@ class OverviewGrid::ShieldView : public views::View {
     label_container_bounds.ClampToCenteredSize(
         gfx::Size(label_width, kNoItemsIndicatorHeightDp));
     label_container_->SetBoundsRect(label_container_bounds);
-
-    UpdateDesksBarBounds();
   }
 
   bool IsLabelVisible() const { return label_container_->visible(); }
-
- protected:
-  // views::View:
-  void Layout() override {
-    UpdateDesksBarBounds();
-  }
 
  private:
   // ui::EventHandler:
@@ -378,21 +361,9 @@ class OverviewGrid::ShieldView : public views::View {
     event->StopPropagation();
   }
 
-  void UpdateDesksBarBounds() {
-    if (!desks_bar_view_)
-      return;
-
-    // TODO: Make the ShieldView's bounds match the overview grid bounds rather
-    // than the entire screen?
-    const auto bar_bounds =
-        gfx::Rect{bounds().width(), DesksBarView::GetBarHeight()};
-    desks_bar_view_->SetBoundsRect(bar_bounds);
-  }
-
   // Owned by views heirarchy.
   RoundedRectView* label_container_ = nullptr;
   views::Label* label_ = nullptr;
-  DesksBarView* desks_bar_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ShieldView);
 };
@@ -547,8 +518,10 @@ void OverviewGrid::Shutdown() {
 }
 
 void OverviewGrid::PrepareForOverview() {
-  if (!ShouldAnimateWallpaper())
+  if (!ShouldAnimateWallpaper()) {
     InitShieldWidget(/*animate=*/false);
+    MaybeInitDesksWidget();
+  }
 
   for (const auto& window : window_list_)
     window->PrepareForOverview();
@@ -774,6 +747,10 @@ void OverviewGrid::SetBoundsAndUpdatePositionsIgnoringWindow(
   bounds_ = bounds;
   if (shield_view_)
     shield_view_->SetGridBounds(bounds_);
+  if (desks_widget_) {
+    desks_widget_->SetBounds(
+        GetDesksWidgetBounds(root_window_, bounds_.width()));
+  }
   PositionWindows(/*animate=*/true, ignored_item);
 }
 
@@ -1108,6 +1085,8 @@ void OverviewGrid::OnStartingAnimationComplete(bool canceled) {
     ShowNoRecentsWindowMessage(window_list_.empty());
   }
 
+  MaybeInitDesksWidget();
+
   for (auto& window : window_list())
     window->OnStartingAnimationComplete();
 }
@@ -1408,10 +1387,6 @@ aura::Window* OverviewGrid::GetTargetWindowOnLocation(
   return (iter != window_list_.end()) ? (*iter)->GetWindow() : nullptr;
 }
 
-const DesksBarView* OverviewGrid::GetDesksBarViewForTesting() const {
-  return shield_view_->desks_bar_view();
-}
-
 bool OverviewGrid::IsDesksBarViewActive() const {
   DCHECK(features::IsVirtualDesksEnabled());
 
@@ -1419,8 +1394,7 @@ bool OverviewGrid::IsDesksBarViewActive() const {
   // overview is started. Once there are more than one desk, it should stay
   // active even if the 2nd to last desk is deleted.
   return DesksController::Get()->desks().size() > 1 ||
-         (shield_view_ &&
-          !shield_view_->desks_bar_view()->mini_views().empty());
+         (desks_bar_view_ && !desks_bar_view_->mini_views().empty());
 }
 
 void OverviewGrid::InitShieldWidget(bool animate) {
@@ -1446,7 +1420,6 @@ void OverviewGrid::InitShieldWidget(bool animate) {
   // Create |shield_view_| and animate its background and label if needed.
   shield_view_ = new ShieldView();
   shield_widget_->SetContentsView(shield_view_);
-  shield_view_->MaybeInitVirtualDesksBar();
   shield_view_->SetGridBounds(bounds_);
 
   // TODO(sammiequon): The shield widget is not anymore in most cases. Remove
@@ -1460,6 +1433,24 @@ void OverviewGrid::InitShieldWidget(bool animate) {
   } else {
     shield_widget_->SetOpacity(1.f);
   }
+}
+
+void OverviewGrid::MaybeInitDesksWidget() {
+  if (!features::IsVirtualDesksEnabled() || desks_widget_)
+    return;
+
+  desks_widget_ = DesksBarView::CreateDesksWidget(
+      root_window_, GetDesksWidgetBounds(root_window_, bounds_.width()));
+  desks_bar_view_ = new DesksBarView;
+
+  // The following order of function calls is significant: SetContentsView()
+  // must be called before DesksBarView:: Init(). This is needed because the
+  // desks mini views need to access the widget to get the root window in order
+  // to know how to layout themselves.
+  desks_widget_->SetContentsView(desks_bar_view_);
+  desks_bar_view_->Init();
+
+  desks_widget_->Show();
 }
 
 void OverviewGrid::InitSelectionWidget(OverviewSession::Direction direction) {
