@@ -188,7 +188,7 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
             PropertyModel model, OmniboxSuggestion suggestion, SuggestionViewDelegate delegate) {
         SuggestionAnswer answer = suggestion.getAnswer();
         AnswerText[] details = AnswerTextNewLayout.from(
-                mContext, suggestion, mUrlBarEditingTextProvider.getTextWithAutocomplete());
+                mContext, suggestion, mUrlBarEditingTextProvider.getTextWithoutAutocomplete());
 
         model.set(AnswerSuggestionViewProperties.DELEGATE, delegate);
 
