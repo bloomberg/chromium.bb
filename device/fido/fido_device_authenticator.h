@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "device/fido/ctap2_device_operation.h"
 #include "device/fido/fido_authenticator.h"
+#include "device/fido/fido_request_handler_base.h"
 
 namespace device {
 
@@ -59,14 +60,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
                  const std::string& new_pin,
                  pin::KeyAgreementResponse& peer_key,
                  SetPINCallback callback) override;
-  AuthenticatorSupportedOptions::ClientPinAvailability
-    WillNeedPINToMakeCredential(
-      const CtapMakeCredentialRequest& request) override;
+  MakeCredentialPINDisposition WillNeedPINToMakeCredential(
+      const CtapMakeCredentialRequest& request,
+      const FidoRequestHandlerBase::Observer* observer) override;
 
   // WillNeedPINToGetAssertion returns whether a PIN prompt will be needed to
   // serve the given request on this authenticator.
   GetAssertionPINDisposition WillNeedPINToGetAssertion(
-      const CtapGetAssertionRequest& request) override;
+      const CtapGetAssertionRequest& request,
+      const FidoRequestHandlerBase::Observer* observer) override;
 
   void Reset(ResetCallback callback) override;
   void Cancel() override;

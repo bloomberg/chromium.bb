@@ -25,6 +25,8 @@ namespace device {
 
 using ClientPinAvailability =
     AuthenticatorSupportedOptions::ClientPinAvailability;
+using MakeCredentialPINDisposition =
+    FidoAuthenticator::MakeCredentialPINDisposition;
 
 namespace {
 
@@ -56,14 +58,10 @@ bool IsCandidateAuthenticatorPreTouch(
 // IsCandidateAuthenticatorPostTouch returns a value other than |kSuccess| if
 // the given authenticator cannot handle a request.
 FidoReturnCode IsCandidateAuthenticatorPostTouch(
+    const CtapMakeCredentialRequest& request,
     FidoAuthenticator* authenticator,
     const AuthenticatorSelectionCriteria& authenticator_selection_criteria,
-    bool have_observer) {
-  using UvAvailability =
-      AuthenticatorSupportedOptions::UserVerificationAvailability;
-  const bool pin_support =
-      base::FeatureList::IsEnabled(device::kWebAuthPINSupport) && have_observer;
-
+    const FidoRequestHandlerBase::Observer* observer) {
   const auto& opt_options = authenticator->Options();
   if (!opt_options) {
     // This authenticator doesn't know its capabilities yet, so we need
@@ -77,12 +75,8 @@ FidoReturnCode IsCandidateAuthenticatorPostTouch(
     return FidoReturnCode::kAuthenticatorMissingResidentKeys;
   }
 
-  if (authenticator_selection_criteria.user_verification_requirement() ==
-          UserVerificationRequirement::kRequired &&
-      opt_options->user_verification_availability !=
-          UvAvailability::kSupportedAndConfigured &&
-      (!pin_support || opt_options->client_pin_availability ==
-                           ClientPinAvailability::kNotSupported)) {
+  if (authenticator->WillNeedPINToMakeCredential(request, observer) ==
+      MakeCredentialPINDisposition::kUnsatisfiable) {
     return FidoReturnCode::kAuthenticatorMissingUserVerification;
   }
 
@@ -166,8 +160,8 @@ void MakeCredentialRequestHandler::DispatchRequest(
   }
 
   if (IsCandidateAuthenticatorPostTouch(
-          authenticator, authenticator_selection_criteria_, observer()) !=
-      FidoReturnCode::kSuccess) {
+          request_, authenticator, authenticator_selection_criteria_,
+          observer()) != FidoReturnCode::kSuccess) {
     if (!base::FeatureList::IsEnabled(device::kWebAuthPINSupport)) {
       // Don't flash authenticator without PIN support. This maintains previous
       // behaviour and avoids adding UI unprotected by a feature flag without
@@ -177,6 +171,7 @@ void MakeCredentialRequestHandler::DispatchRequest(
                          "support is not enabled";
       return;
     }
+
     // This authenticator does not meet requirements, but make it flash anyway
     // so the user understands that it's functional. A descriptive error message
     // will be shown if the user selects it.
@@ -186,15 +181,25 @@ void MakeCredentialRequestHandler::DispatchRequest(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
-      authenticator->WillNeedPINToMakeCredential(request_) !=
-          ClientPinAvailability::kNotSupported) {
-    // A PIN will be needed. Just request a touch to let the user select this
-    // authenticator if they wish.
-    authenticator->GetTouch(
-        base::BindOnce(&MakeCredentialRequestHandler::HandleTouch,
-                       weak_factory_.GetWeakPtr(), authenticator));
-    return;
+  if (base::FeatureList::IsEnabled(device::kWebAuthPINSupport)) {
+    switch (authenticator->WillNeedPINToMakeCredential(request_, observer())) {
+      case MakeCredentialPINDisposition::kUsePIN:
+      case MakeCredentialPINDisposition::kSetPIN:
+        // A PIN will be needed. Just request a touch to let the user select
+        // this authenticator if they wish.
+        authenticator->GetTouch(
+            base::BindOnce(&MakeCredentialRequestHandler::HandleTouch,
+                           weak_factory_.GetWeakPtr(), authenticator));
+        return;
+
+      case MakeCredentialPINDisposition::kNoPIN:
+        break;
+
+      case MakeCredentialPINDisposition::kUnsatisfiable:
+        // |IsCandidateAuthenticatorPostTouch| should have handled this case.
+        NOTREACHED();
+        return;
+    }
   }
 
   CtapMakeCredentialRequest request(request_);
@@ -246,8 +251,8 @@ void MakeCredentialRequestHandler::HandleResponse(
   // Requests that require a PIN should follow the |GetTouch| path initially.
   DCHECK(state_ == State::kWaitingForSecondTouch ||
          !base::FeatureList::IsEnabled(device::kWebAuthPINSupport) ||
-         authenticator->WillNeedPINToMakeCredential(request_) ==
-             ClientPinAvailability::kNotSupported);
+         authenticator->WillNeedPINToMakeCredential(request_, observer()) ==
+             MakeCredentialPINDisposition::kNoPIN);
 
   state_ = State::kFinished;
   if (response_code != CtapDeviceResponseCode::kSuccess) {
@@ -275,8 +280,8 @@ void MakeCredentialRequestHandler::HandleTouch(
 
   DCHECK(base::FeatureList::IsEnabled(device::kWebAuthPINSupport));
 
-  switch (authenticator->WillNeedPINToMakeCredential(request_)) {
-    case ClientPinAvailability::kSupportedAndPinSet:
+  switch (authenticator->WillNeedPINToMakeCredential(request_, observer())) {
+    case MakeCredentialPINDisposition::kUsePIN:
       // Will need to get PIN to handle this request.
       DCHECK(observer());
       CancelActiveAuthenticators(authenticator->GetId());
@@ -287,7 +292,7 @@ void MakeCredentialRequestHandler::HandleTouch(
                          weak_factory_.GetWeakPtr()));
       return;
 
-    case ClientPinAvailability::kSupportedButPinNotSet:
+    case MakeCredentialPINDisposition::kSetPIN:
       // Will need to set a PIN to handle this request.
       DCHECK(observer());
       CancelActiveAuthenticators(authenticator->GetId());
@@ -299,7 +304,8 @@ void MakeCredentialRequestHandler::HandleTouch(
                          weak_factory_.GetWeakPtr()));
       return;
 
-    case ClientPinAvailability::kNotSupported:
+    case MakeCredentialPINDisposition::kNoPIN:
+    case MakeCredentialPINDisposition::kUnsatisfiable:
       // No PIN needed for this request.
       NOTREACHED();
       break;
@@ -310,7 +316,7 @@ void MakeCredentialRequestHandler::HandleInapplicableAuthenticator(
     FidoAuthenticator* authenticator) {
   // User touched an authenticator that cannot handle this request.
   const FidoReturnCode capability_error = IsCandidateAuthenticatorPostTouch(
-      authenticator, authenticator_selection_criteria_, observer());
+      request_, authenticator, authenticator_selection_criteria_, observer());
   DCHECK_NE(capability_error, FidoReturnCode::kSuccess);
   std::move(completion_callback_)
       .Run(capability_error, base::nullopt, base::nullopt);

@@ -223,7 +223,7 @@ void GetAssertionRequestHandler::DispatchRequest(
   }
 
   if (base::FeatureList::IsEnabled(device::kWebAuthPINSupport)) {
-    switch (authenticator->WillNeedPINToGetAssertion(request_)) {
+    switch (authenticator->WillNeedPINToGetAssertion(request_, observer())) {
       case FidoAuthenticator::GetAssertionPINDisposition::kUsePIN:
         // A PIN will be needed. Just request a touch to let the user select
         // this authenticator if they wish.
@@ -306,7 +306,7 @@ void GetAssertionRequestHandler::HandleResponse(
   // Requests that require a PIN should follow the |GetTouch| path initially.
   DCHECK(state_ == State::kWaitingForSecondTouch ||
          !base::FeatureList::IsEnabled(device::kWebAuthPINSupport) ||
-         authenticator->WillNeedPINToGetAssertion(request_) ==
+         authenticator->WillNeedPINToGetAssertion(request_, observer()) ==
              FidoAuthenticator::GetAssertionPINDisposition::kNoPIN);
 
   state_ = State::kFinished;
@@ -400,7 +400,7 @@ void GetAssertionRequestHandler::HandleTouch(FidoAuthenticator* authenticator) {
   }
 
   DCHECK(base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
-         authenticator->WillNeedPINToGetAssertion(request_) !=
+         authenticator->WillNeedPINToGetAssertion(request_, observer()) !=
              FidoAuthenticator::GetAssertionPINDisposition::kNoPIN);
 
   DCHECK(observer());

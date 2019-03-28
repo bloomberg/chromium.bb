@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
@@ -155,6 +156,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
                                   std::string new_authenticator_id) override;
   void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
                                            bool is_in_pairing_mode) override;
+  bool SupportsPIN() const override;
   void CollectPIN(
       base::Optional<int> attempts,
       base::OnceCallback<void(std::string)> provide_pin_cb) override;

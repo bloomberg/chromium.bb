@@ -36,6 +36,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "device/fido/fido_authenticator.h"
 
 #if defined(OS_MACOSX)
 #include "device/fido/mac/credential_metadata.h"
@@ -422,6 +423,10 @@ void ChromeAuthenticatorRequestDelegate::BluetoothAdapterPowerChanged(
     return;
 
   weak_dialog_model_->OnBluetoothPoweredStateChanged(is_powered_on);
+}
+
+bool ChromeAuthenticatorRequestDelegate::SupportsPIN() const {
+  return true;
 }
 
 void ChromeAuthenticatorRequestDelegate::CollectPIN(

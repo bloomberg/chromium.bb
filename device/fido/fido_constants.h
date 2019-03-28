@@ -33,6 +33,9 @@ enum class FidoReturnCode : uint8_t {
   kSoftPINBlock,
   kHardPINBlock,
   kAuthenticatorMissingResidentKeys,
+  // TODO(agl): kAuthenticatorMissingUserVerification can also be returned when
+  // the authenticator supports UV, but there's no UI support for collecting
+  // a PIN. This could be clearer.
   kAuthenticatorMissingUserVerification,
 };
 
