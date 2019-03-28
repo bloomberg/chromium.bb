@@ -8,6 +8,8 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <utility>
+#include <vector>
 
 #include "base/atomic_sequence_num.h"
 #include "base/location.h"
@@ -270,6 +272,27 @@ void Layer::RemoveChildOrDependent(Layer* child) {
     SetNeedsFullTreeSync();
     return;
   }
+}
+
+void Layer::ReorderChildren(LayerList* new_children_order) {
+#if DCHECK_IS_ON()
+  base::flat_set<Layer*> children_set;
+  for (const auto& child : *new_children_order) {
+    DCHECK_EQ(child->parent(), this);
+    children_set.insert(child.get());
+  }
+  for (const auto& child : inputs_.children)
+    DCHECK_GT(children_set.count(child.get()), 0u);
+#endif
+  inputs_.children = std::move(*new_children_order);
+
+  // We do not need to call SetSubtreePropertyChanged for each child here
+  // since SetSubtreePropertyChanged includes SetNeedsPushProperties, but this
+  // change is not included in properties pushing.
+  for (const auto& child : inputs_.children)
+    child->subtree_property_changed_ = true;
+
+  SetNeedsFullTreeSync();
 }
 
 void Layer::ReplaceChild(Layer* reference, scoped_refptr<Layer> new_layer) {

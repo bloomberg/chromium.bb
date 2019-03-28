@@ -175,6 +175,12 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetPosition(const gfx::PointF& position);
   const gfx::PointF& position() const { return inputs_.position; }
 
+  // Reorder the entirety of the children() vector to follow new_children_order.
+  // All elements inside new_children_order must be inside children(), and vice
+  // versa. Will empty the |new_children_order| LayerList passed into this
+  // method.
+  void ReorderChildren(LayerList* new_children_order);
+
   // Set and get the layers bounds. This is specified in layer space, which
   // excludes device scale and page scale factors, and ignoring transforms for
   // this layer or ancestor layers.

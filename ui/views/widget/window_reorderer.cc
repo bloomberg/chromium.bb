@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <map>
 #include <vector>
 
@@ -161,6 +162,8 @@ void WindowReorderer::ReorderChildWindows() {
   GetOrderOfViewsWithLayers(root_view_, parent_window_->layer(), hosted_windows,
       &view_with_layer_order);
 
+  std::vector<ui::Layer*> children_layer_order;
+
   // For the sake of simplicity, reorder both the layers owned by views and the
   // layers of windows associated with a view. Iterate through
   // |view_with_layer_order| backwards and stack windows at the bottom so that
@@ -181,8 +184,10 @@ void WindowReorderer::ReorderChildWindows() {
     DCHECK(layer);
     if (window)
       parent_window_->StackChildAtBottom(window);
-    parent_window_->layer()->StackAtBottom(layer);
+    children_layer_order.emplace_back(layer);
   }
+  std::reverse(children_layer_order.begin(), children_layer_order.end());
+  parent_window_->layer()->StackChildrenAtBottom(children_layer_order);
 }
 
 void WindowReorderer::OnWindowAdded(aura::Window* new_window) {

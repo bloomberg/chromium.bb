@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -1334,6 +1335,34 @@ TEST_F(LayerWithNullDelegateTest, Stacking) {
 
   root->StackBelow(l3.get(), l1.get());
   EXPECT_EQ("2 3 1", test::ChildLayerNamesAsString(*root.get()));
+
+  std::vector<Layer*> child_bottom_stack;
+  child_bottom_stack.emplace_back(l1.get());
+  root->StackChildrenAtBottom(child_bottom_stack);
+  EXPECT_EQ("1 2 3", test::ChildLayerNamesAsString(*root.get()));
+
+  child_bottom_stack.clear();
+  child_bottom_stack.emplace_back(l3.get());
+  child_bottom_stack.emplace_back(l2.get());
+  root->StackChildrenAtBottom(child_bottom_stack);
+  EXPECT_EQ("3 2 1", test::ChildLayerNamesAsString(*root.get()));
+
+  child_bottom_stack.clear();
+  child_bottom_stack.emplace_back(l2.get());
+  child_bottom_stack.emplace_back(l1.get());
+  root->StackChildrenAtBottom(child_bottom_stack);
+  EXPECT_EQ("2 1 3", test::ChildLayerNamesAsString(*root.get()));
+
+  child_bottom_stack.clear();
+  child_bottom_stack.emplace_back(l3.get());
+  child_bottom_stack.emplace_back(l1.get());
+  child_bottom_stack.emplace_back(l2.get());
+  root->StackChildrenAtBottom(child_bottom_stack);
+  EXPECT_EQ("3 1 2", test::ChildLayerNamesAsString(*root.get()));
+
+  child_bottom_stack.clear();
+  root->StackChildrenAtBottom(child_bottom_stack);
+  EXPECT_EQ("3 1 2", test::ChildLayerNamesAsString(*root.get()));
 }
 
 // Verifies SetBounds triggers the appropriate painting/drawing.
