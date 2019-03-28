@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <numeric>
 #include <string>
 #include <utility>
 #include <vector>
@@ -233,10 +234,9 @@ int ChildViewSpacing::GetLeadingSpace(size_t view_index) const {
 }
 
 int ChildViewSpacing::GetTotalSpace() const {
-  int space = trailing_space_;
-  for (auto& pr : leading_spacings_)
-    space += pr.second;
-  return space;
+  return std::accumulate(
+      leading_spacings_.cbegin(), leading_spacings_.cend(), trailing_space_,
+      [](int total, const auto& value) { return total + value.second; });
 }
 
 int ChildViewSpacing::GetAddDelta(size_t view_index) const {
@@ -640,11 +640,11 @@ void FlexLayoutInternal::AllocateFlexSpace(
     // reasonable margins and by using flex order).
 
     // Flex children at this priority order.
-    int flex_total = 0;
-    std::for_each(flex_it->second.begin(), flex_it->second.end(),
-                  [&](size_t index) {
-                    flex_total += layout->child_layouts[index].flex.weight();
-                  });
+    int flex_total = std::accumulate(
+        flex_it->second.begin(), flex_it->second.end(), 0,
+        [layout](int total, size_t index) {
+          return total + layout->child_layouts[index].flex.weight();
+        });
 
     // Note: because the child views are evaluated in order, if preferred
     // minimum sizes are not consistent across a single priority expanding

@@ -125,7 +125,7 @@ class SubmenuViewShown : public SubmenuView {
  public:
   using SubmenuView::SubmenuView;
   ~SubmenuViewShown() override = default;
-  bool IsShowing() override { return true; }
+  bool IsShowing() const override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SubmenuViewShown);
