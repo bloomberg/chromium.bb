@@ -618,7 +618,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 
   web::NavigationItem* item =
       webState->GetNavigationManager()->GetVisibleItem();
-  if (item && UseNativeSwipe(item)) {
+  if (UseNativeSwipe(item)) {
     self.leadingEdgeNavigationEnabled = YES;
     self.trailingEdgeNavigationEnabled = YES;
   }
