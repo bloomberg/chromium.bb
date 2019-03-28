@@ -39,7 +39,6 @@ class HoverButton;
 class ProfileChooserView : public ProfileMenuViewBase,
                            public AvatarMenuObserver,
                            public views::ButtonListener,
-                           public views::LinkListener,
                            public identity::IdentityManager::Observer {
  public:
   // Shows the bubble if one is not already showing.  This allows us to easily
@@ -59,8 +58,6 @@ class ProfileChooserView : public ProfileMenuViewBase,
       const gfx::Rect& anchor_rect,
       Browser* browser,
       bool is_source_keyboard);
-  static bool IsShowing();
-  static void Hide();
 
  private:
   friend class ProfileChooserViewExtensionsTest;
@@ -74,13 +71,11 @@ class ProfileChooserView : public ProfileMenuViewBase,
                      Browser* browser,
                      profiles::BubbleViewMode view_mode,
                      signin::GAIAServiceType service_type,
-                     signin_metrics::AccessPoint access_point,
-                     bool is_source_keyboard);
+                     signin_metrics::AccessPoint access_point);
   ~ProfileChooserView() override;
 
   // views::BubbleDialogDelegateView:
   void Init() override;
-  void WindowClosing() override;
   void OnWidgetClosing(views::Widget* widget) override;
   views::View* GetInitiallyFocusedView() override;
   base::string16 GetAccessibleWindowTitle() const override;
@@ -88,17 +83,12 @@ class ProfileChooserView : public ProfileMenuViewBase,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // views::LinkListener:
-  void LinkClicked(views::Link* sender, int event_flags) override;
-
   // AvatarMenuObserver:
   void OnAvatarMenuChanged(AvatarMenu* avatar_menu) override;
 
   // identity::IdentityManager::Observer overrides.
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
-
-  static ProfileChooserView* profile_bubble_;
 
   // We normally close the bubble any time it becomes inactive but this can lead
   // to flaky tests where unexpected UI events are triggering this behavior.
@@ -110,43 +100,42 @@ class ProfileChooserView : public ProfileMenuViewBase,
   // Shows the bubble with the |view_to_display|.
   void ShowView(profiles::BubbleViewMode view_to_display,
                 AvatarMenu* avatar_menu);
-  void ShowViewFromMode(profiles::BubbleViewMode mode);
+  // Shows the bubble view or opens a tab based on given |mode|.
+  void ShowViewOrOpenTab(profiles::BubbleViewMode mode);
 
   // Focuses the first profile button in the menu list.
   void FocusFirstProfileButton();
 
-  // Creates the profile chooser view.
-  std::unique_ptr<views::View> CreateProfileChooserView(
-      AvatarMenu* avatar_menu);
+  // Adds the profile chooser view.
+  void AddProfileChooserView(AvatarMenu* avatar_menu);
 
-  // Creates the incognito window count view.
-  std::unique_ptr<views::View> CreateIncognitoWindowCountView();
+  // Adds the incognito window count view.
+  void AddIncognitoWindowCountView();
 
-  // Creates the main profile card for the profile |avatar_item|. |is_guest|
-  // is used to determine whether to show any Sign in/Sign out/Manage accounts
+  // Adds the main profile card for the profile |avatar_item|. |is_guest| is
+  // used to determine whether to show any Sign in/Sign out/Manage accounts
   // links.
-  views::View* CreateCurrentProfileView(
-      const AvatarMenu::Item& avatar_item,
-      bool is_guest);
-  views::View* CreateGuestProfileView();
-  views::View* CreateOptionsView(bool display_lock, AvatarMenu* avatar_menu);
-  views::View* CreateSupervisedUserDisclaimerView();
-  views::View* CreateAutofillHomeView();
+  void AddCurrentProfileView(const AvatarMenu::Item& avatar_item,
+                             bool is_guest);
+  void AddGuestProfileView();
+  void AddOptionsView(bool display_lock, AvatarMenu* avatar_menu);
+  void AddSupervisedUserDisclaimerView();
+  // If |as_new_group| is true, a separator will be added before this view.
+  void AddAutofillHomeView(bool as_new_group);
 
-  // Creates the DICE UI view to sign in and turn on sync. It includes an
+  // Adds the DICE UI view to sign in and turn on sync. It includes an
   // illustration, a promo and a button.
-  views::View* CreateDiceSigninView();
+  void AddDiceSigninView();
 
-  // Creates a header for signin and sync error surfacing for the user menu.
-  views::View* CreateSyncErrorViewIfNeeded(const AvatarMenu::Item& avatar_item);
+  // Adds a header for signin and sync error surfacing for the user menu.
+  // Returns true if header is created.
+  bool AddSyncErrorViewIfNeeded(const AvatarMenu::Item& avatar_item);
 
-  // Creates a view showing the profile associated with |avatar_item| and an
-  // error button below.
-  views::View* CreateDiceSyncErrorView(const AvatarMenu::Item& avatar_item,
-                                       sync_ui_util::AvatarSyncErrorType error,
-                                       int button_string_id);
-
-  bool ShouldShowGoIncognito() const;
+  // Adds a view showing the profile associated with |avatar_item| and an error
+  // button below.
+  void AddDiceSyncErrorView(const AvatarMenu::Item& avatar_item,
+                            sync_ui_util::AvatarSyncErrorType error,
+                            int button_string_id);
 
   // Clean-up done after an action was performed in the ProfileChooser.
   void PostActionPerformed(ProfileMetrics::ProfileDesktopMenu action_performed);
@@ -183,10 +172,8 @@ class ProfileChooserView : public ProfileMenuViewBase,
   views::LabelButton* first_profile_button_;
   views::LabelButton* guest_profile_button_;
   views::LabelButton* users_button_;
-  views::LabelButton* go_incognito_button_;
   views::LabelButton* lock_button_;
   views::LabelButton* close_all_windows_button_;
-  views::Link* add_account_link_;
   views::LabelButton* passwords_button_;
   views::LabelButton* credit_cards_button_;
   views::LabelButton* addresses_button_;

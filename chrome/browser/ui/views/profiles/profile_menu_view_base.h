@@ -20,10 +20,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/styled_label_listener.h"
-
-namespace views {
-class GridLayout;
-}
+#include "ui/views/layout/box_layout.h"
 
 class Browser;
 
@@ -36,6 +33,14 @@ class Browser;
 class ProfileMenuViewBase : public content::WebContentsDelegate,
                             public views::BubbleDialogDelegateView,
                             public views::StyledLabelListener {
+ public:
+  static bool IsShowing();
+  static void Hide();
+
+  static ProfileMenuViewBase* GetBubbleForTesting();
+
+  typedef std::vector<std::unique_ptr<views::View>> MenuItems;
+
  protected:
   ProfileMenuViewBase(views::Button* anchor_button,
                       const gfx::Rect& anchor_rect,
@@ -43,19 +48,15 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
                       Browser* browser);
   ~ProfileMenuViewBase() override;
 
-  // views::BubbleDialogDelegateView
-  ax::mojom::Role GetAccessibleWindowRole() const override;
-
-  void ShowMenu();
-  void SetContentsView(std::unique_ptr<views::View> view, int width_override);
+  void ResetMenu();
+  // Adds a set of menu items, either as a |new_group| (using a separator) or
+  // appended to the last added items. Takes ownership of the items and passes
+  // them to the underlying view when menu is built using
+  // |RepopulateViewFromMenuItems|.
+  void AddMenuItems(MenuItems& menu_items, bool new_group);
+  void RepopulateViewFromMenuItems();
 
   Browser* browser() const { return browser_; }
-
-  // TODO(https://crbug.com/934689):
-  // DEPRECATED: New user menu components should use views::BoxLayout instead.
-  // Creates a GridLayout with a single column. This ensures that all the child
-  // views added get auto-expanded to fill the full width of the bubble.
-  views::GridLayout* CreateSingleColumnLayout(views::View* view, int width);
 
   // Return maximal height for the view after which it becomes scrollable.
   // TODO(crbug.com/870303): remove when a general solution is available.
@@ -72,9 +73,11 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   friend class ProfileChooserViewExtensionsTest;
 
   // views::BubbleDialogDelegateView:
+  void WindowClosing() override;
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   int GetDialogButtons() const override;
+  ax::mojom::Role GetAccessibleWindowRole() const override;
 
   // content::WebContentsDelegate:
   bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
@@ -88,6 +91,10 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   Browser* const browser_;
 
   int menu_width_;
+
+  // ProfileMenuViewBase takes ownership of all menu_items and passes it to the
+  // underlying view when it is created.
+  std::vector<MenuItems> menu_item_groups_;
 
   views::Button* const anchor_button_;
 

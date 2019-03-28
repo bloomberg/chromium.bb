@@ -190,14 +190,14 @@ class ProfileChooserViewExtensionsTest
   }
 
   AvatarMenu* GetProfileChooserViewAvatarMenu() {
-    return ProfileChooserView::profile_bubble_->avatar_menu_.get();
+    return current_profile_bubble()->avatar_menu_.get();
   }
 
   void ClickProfileChooserViewLockButton() {
     ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                      ui::EventTimeForNow(), 0, 0);
-    ProfileChooserView::profile_bubble_->ButtonPressed(
-        ProfileChooserView::profile_bubble_->lock_button_, e);
+    current_profile_bubble()->ButtonPressed(
+        current_profile_bubble()->lock_button_, e);
   }
 
   // Access the registry that has been prepared with at least one extension.
@@ -219,11 +219,12 @@ class ProfileChooserViewExtensionsTest
   }
 
   ProfileChooserView* current_profile_bubble() {
-    return ProfileChooserView::profile_bubble_;
+    return static_cast<ProfileChooserView*>(
+        ProfileChooserView::GetBubbleForTesting());
   }
 
   views::LabelButton* signin_current_profile_button() {
-    return ProfileChooserView::profile_bubble_->signin_current_profile_button_;
+    return current_profile_bubble()->signin_current_profile_button_;
   }
 
   int GetDiceSigninPromoShowCount() {
