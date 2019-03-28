@@ -36,8 +36,8 @@ constexpr int kDefaultTotalPages = kDefaultMaxMetadata * 2;
 #endif
 
 constexpr int kDefaultAllocationSamplingFrequency = 1000;
-constexpr double kDefaultProcessSamplingProbability = 1.0;
-constexpr int kDefaultIncreasedMemoryMultiplier = 4;
+constexpr double kDefaultProcessSamplingProbability = 0.2;
+constexpr int kDefaultProcessSamplingBoost = 4;
 
 const base::Feature kGwpAsan{"GwpAsanMalloc",
                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -59,12 +59,46 @@ const base::FeatureParam<double> kProcessSamplingParam{
     &kGwpAsan, "ProcessSamplingProbability",
     kDefaultProcessSamplingProbability};
 
-// The multiplier to increase MaxAllocations/MaxMetadata/TotalPages in scenarios
-// where we want to perform additional testing (e.g. on canary/dev builds or in
-// the browser process.) The multiplier increase is cumulative when multiple
+// The multiplier to increase the ProcessSamplingProbability in scenarios where
+// we want to perform additional testing (e.g. on canary/dev builds or in the
+// browser process.) The multiplier increase is cumulative when multiple
 // conditions apply.
-const base::FeatureParam<int> kIncreasedMemoryMultiplierParam{
-    &kGwpAsan, "IncreasedMemoryMultiplier", kDefaultIncreasedMemoryMultiplier};
+const base::FeatureParam<int> kProcessSamplingBoostParam{
+    &kGwpAsan, "ProcessSamplingBoost", kDefaultProcessSamplingBoost};
+
+// Returns whether this process should be sampled to enable GWP-ASan.
+bool SampleProcess(bool is_canary_dev, bool is_browser_process) {
+  double process_sampling_probability = kProcessSamplingParam.Get();
+  if (process_sampling_probability < 0.0 ||
+      process_sampling_probability > 1.0) {
+    DLOG(ERROR) << "GWP-ASan ProcessSamplingProbability is out-of-range: "
+                << process_sampling_probability;
+    return false;
+  }
+
+  base::CheckedNumeric<int> multiplier = 1;
+  if (is_canary_dev)
+    multiplier += kProcessSamplingBoostParam.Get();
+  if (is_browser_process)
+    multiplier += kProcessSamplingBoostParam.Get();
+
+  if (!multiplier.IsValid() || multiplier.ValueOrDie() < 1) {
+    DLOG(ERROR) << "GWP-ASan ProcessSampling multiplier is out-of-range";
+    return false;
+  }
+
+  base::CheckedNumeric<double> sampling_prob_mult =
+      process_sampling_probability;
+  sampling_prob_mult *= multiplier.ValueOrDie();
+  if (!sampling_prob_mult.IsValid()) {
+    DLOG(ERROR) << "GWP-ASan multiplier caused out-of-range multiply: "
+                << multiplier.ValueOrDie();
+    return false;
+  }
+
+  process_sampling_probability = sampling_prob_mult.ValueOrDie();
+  return (base::RandDouble() < process_sampling_probability);
+}
 
 bool EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
   if (!base::FeatureList::IsEnabled(kGwpAsan))
@@ -105,47 +139,7 @@ bool EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
     return false;
   }
 
-  double process_sampling_probability = kProcessSamplingParam.Get();
-  if (process_sampling_probability < 0.0 ||
-      process_sampling_probability > 1.0) {
-    DLOG(ERROR) << "GWP-ASan ProcessSamplingProbability is out-of-range: "
-                << process_sampling_probability;
-    return false;
-  }
-
-  base::CheckedNumeric<int> multiplier = 1;
-  if (is_canary_dev)
-    multiplier += kIncreasedMemoryMultiplierParam.Get();
-  if (is_browser_process)
-    multiplier += kIncreasedMemoryMultiplierParam.Get();
-
-  if (!multiplier.IsValid() || multiplier.ValueOrDie() < 1 ||
-      multiplier.ValueOrDie() > kMaxMetadata) {
-    DLOG(ERROR) << "GWP-ASan IncreaseMemoryMultiplier is out-of-range";
-    return false;
-  }
-
-  base::CheckedNumeric<int> total_pages_mult = total_pages;
-  total_pages_mult *= multiplier.ValueOrDie();
-  base::CheckedNumeric<int> max_metadata_mult = max_metadata;
-  max_metadata_mult *= multiplier;
-  base::CheckedNumeric<int> max_allocations_mult = max_allocations;
-  max_allocations_mult *= multiplier.ValueOrDie();
-
-  if (!total_pages_mult.IsValid() || !max_metadata_mult.IsValid() ||
-      !max_allocations_mult.IsValid()) {
-    DLOG(ERROR) << "GWP-ASan multiplier caused out-of-range multiply: "
-                << multiplier.ValueOrDie();
-    return false;
-  }
-
-  total_pages = std::min<int>(total_pages_mult.ValueOrDie(), kMaxSlots);
-  max_metadata = std::min<int>(
-      {max_metadata_mult.ValueOrDie(), total_pages, kMaxMetadata});
-  max_allocations =
-      std::min<int>(max_allocations_mult.ValueOrDie(), max_metadata);
-
-  if (base::RandDouble() >= process_sampling_probability)
+  if (!SampleProcess(is_canary_dev, is_browser_process))
     return false;
 
   InstallAllocatorHooks(max_allocations, max_metadata, total_pages,
