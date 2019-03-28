@@ -364,6 +364,9 @@ class LocationBarView : public LocationBar,
   // ui::MaterialDesignControllerObserver:
   void OnTouchUiChanged() override;
 
+  // Called with an async fetched for the keyword view.
+  void OnKeywordFaviconFetched(const gfx::Image& icon);
+
   // The Browser this LocationBarView is in.  Note that at least
   // chromeos::SimpleWebViewDialog uses a LocationBarView outside any browser
   // window, so this may be NULL.
