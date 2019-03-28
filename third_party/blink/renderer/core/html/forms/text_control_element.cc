@@ -319,7 +319,7 @@ void TextControlElement::setRangeText(const String& replacement,
     new_selection_start = new_selection_end = start + replacement_length;
   } else {
     DCHECK_EQ(selection_mode, "preserve");
-    long delta = replacement_length - (end - start);
+    int delta = replacement_length - (end - start);
 
     if (new_selection_start > end)
       new_selection_start += delta;

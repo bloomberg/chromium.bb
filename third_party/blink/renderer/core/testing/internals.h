@@ -473,7 +473,7 @@ class Internals final : public ScriptWrappable {
   ScriptPromise createRejectedPromise(ScriptState*, ScriptValue);
   ScriptPromise addOneToPromise(ScriptState*, ScriptPromise);
   ScriptPromise promiseCheck(ScriptState*,
-                             long,
+                             int32_t,
                              bool,
                              const ScriptValue&,
                              const String&,
@@ -483,10 +483,10 @@ class Internals final : public ScriptWrappable {
                                                   const ScriptValue&,
                                                   const String&,
                                                   const Vector<String>&);
-  ScriptPromise promiseCheckRange(ScriptState*, long);
+  ScriptPromise promiseCheckRange(ScriptState*, int32_t);
   ScriptPromise promiseCheckOverload(ScriptState*, Location*);
   ScriptPromise promiseCheckOverload(ScriptState*, Document*);
-  ScriptPromise promiseCheckOverload(ScriptState*, Location*, long, long);
+  ScriptPromise promiseCheckOverload(ScriptState*, Location*, int32_t, int32_t);
 
   void Trace(blink::Visitor*) override;
 
