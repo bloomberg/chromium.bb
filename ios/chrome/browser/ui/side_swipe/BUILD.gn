@@ -9,6 +9,8 @@ source_set("side_swipe") {
     "card_side_swipe_view.mm",
     "side_swipe_controller.h",
     "side_swipe_controller.mm",
+    "side_swipe_gesture_recognizer.h",
+    "side_swipe_gesture_recognizer.mm",
     "side_swipe_navigation_view.h",
     "side_swipe_navigation_view.mm",
     "side_swipe_util.h",

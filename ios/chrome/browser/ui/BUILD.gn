@@ -13,8 +13,6 @@ source_set("ui") {
     "native_content_controller.h",
     "native_content_controller.mm",
     "prerender_final_status.h",
-    "side_swipe_gesture_recognizer.h",
-    "side_swipe_gesture_recognizer.mm",
     "url_loader.h",
   ]
   public_deps = [
