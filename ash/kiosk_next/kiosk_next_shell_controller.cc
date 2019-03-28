@@ -4,8 +4,11 @@
 
 #include "ash/kiosk_next/kiosk_next_shell_controller.h"
 
+#include <memory>
 #include <utility>
 
+#include "ash/home_screen/home_screen_controller.h"
+#include "ash/kiosk_next/kiosk_next_home_controller.h"
 #include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -60,6 +63,12 @@ void KioskNextShellController::OnActiveUserPrefServiceChanged(
       pref_service->GetBoolean(prefs::kKioskNextShellEnabled);
 
   if (!prev_kiosk_next_enabled && kiosk_next_enabled_) {
+    // Replace the AppListController with a KioskNextHomeController.
+    kiosk_next_home_controller_ = std::make_unique<KioskNextHomeController>();
+    Shell::Get()->home_screen_controller()->SetDelegate(
+        kiosk_next_home_controller_.get());
+    Shell::Get()->RemoveAppListController();
+
     kiosk_next_shell_client_->LaunchKioskNextShell(Shell::Get()
                                                        ->session_controller()
                                                        ->GetPrimaryUserSession()

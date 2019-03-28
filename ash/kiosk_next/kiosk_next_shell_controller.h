@@ -17,6 +17,8 @@ class PrefRegistrySimple;
 
 namespace ash {
 
+class KioskNextHomeController;
+
 // KioskNextShellController allows an ash consumer to manage a Kiosk Next
 // session. During this session most system functions are disabled and we launch
 // a specific app (Kiosk Next Home) that takes the whole screen.
@@ -52,6 +54,9 @@ class ASH_EXPORT KioskNextShellController
   base::ObserverList<KioskNextShellObserver> observer_list_;
   ScopedSessionObserver session_observer_{this};
   bool kiosk_next_enabled_ = false;
+
+  // Controls the KioskNext home screen when the Kiosk Next Shell is enabled.
+  std::unique_ptr<KioskNextHomeController> kiosk_next_home_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskNextShellController);
 };

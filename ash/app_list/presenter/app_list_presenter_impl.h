@@ -105,9 +105,6 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
       float opacity,
       UpdateHomeLauncherAnimationSettingsCallback callback);
 
-  // Schedules animation for app list when overview mode starts or ends.
-  void ScheduleOverviewModeAnimation(bool start, bool animate);
-
   // Shows or hides the Assistant page.
   // |show| is true to show and false to hide.
   void ShowEmbeddedAssistantUI(bool show);
@@ -119,8 +116,6 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   void SetExpandArrowViewVisibility(bool show);
 
  private:
-  class OverviewAnimationMetricsReporter;
-
   // Sets the app list view and attempts to show it.
   void SetView(AppListView* view);
 
@@ -179,10 +174,6 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
 
   // Cached bounds of |view_| for snapping back animation after over-scroll.
   gfx::Rect view_bounds_;
-
-  // Metric reporter for entering/exiting overview.
-  const std::unique_ptr<OverviewAnimationMetricsReporter>
-      overview_animation_metrics_reporter_;
 
   // The last target visibility change.
   bool last_target_visible_ = false;

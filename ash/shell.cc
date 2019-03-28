@@ -167,6 +167,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
@@ -562,6 +563,12 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
   aura::Window* root = wm::GetRootWindowAt(location_in_screen);
   RootWindowController::ForWindow(root)->ShowContextMenu(location_in_screen,
                                                          source_type);
+}
+
+void Shell::RemoveAppListController() {
+  // AppListController must no longer be the HomeScreenController delegate.
+  DCHECK_NE(home_screen_controller_->delegate(), app_list_controller_.get());
+  app_list_controller_.reset();
 }
 
 void Shell::AddShellObserver(ShellObserver* observer) {

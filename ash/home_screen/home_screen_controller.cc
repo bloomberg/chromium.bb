@@ -13,6 +13,7 @@
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -46,10 +47,14 @@ bool MinimizeAllWindows() {
 HomeScreenController::HomeScreenController()
     : home_launcher_gesture_handler_(
           std::make_unique<HomeLauncherGestureHandler>()) {
-  wallpaper_controller_observer_.Add(Shell::Get()->wallpaper_controller());
+  Shell::Get()->overview_controller()->AddObserver(this);
+  Shell::Get()->wallpaper_controller()->AddObserver(this);
 }
 
-HomeScreenController::~HomeScreenController() = default;
+HomeScreenController::~HomeScreenController() {
+  Shell::Get()->wallpaper_controller()->RemoveObserver(this);
+  Shell::Get()->overview_controller()->RemoveObserver(this);
+}
 
 bool HomeScreenController::IsHomeScreenAvailable() {
   return Shell::Get()
@@ -63,7 +68,7 @@ void HomeScreenController::Show() {
   if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted())
     return;
 
-  delegate_->ShowHomeScreen();
+  delegate_->ShowHomeScreenView();
   UpdateVisibility();
 
   aura::Window* window = delegate_->GetHomeScreenWindow();
@@ -111,6 +116,37 @@ void HomeScreenController::OnWindowDragStarted() {
 void HomeScreenController::OnWindowDragEnded() {
   in_window_dragging_ = false;
   UpdateVisibility();
+}
+
+void HomeScreenController::OnOverviewModeStarting() {
+  // Only animate the home screen when overview mode is using slide animation.
+  bool animate = Shell::Get()
+                     ->overview_controller()
+                     ->overview_session()
+                     ->enter_exit_overview_type() ==
+                 OverviewSession::EnterExitOverviewType::kWindowsMinimized;
+  home_screen_presenter_.ScheduleOverviewModeAnimation(true /* start */,
+                                                       animate);
+}
+
+void HomeScreenController::OnOverviewModeEnding(
+    OverviewSession* overview_session) {
+  // Animate the launcher if overview mode is sliding out. Let
+  // OnOverviewModeEndingAnimationComplete handle showing the launcher after
+  // overview mode finishes animating. Overview however is nullptr by the
+  // time the animations are finished, so we need to check the animation type
+  // here.
+  use_slide_to_exit_overview_ =
+      overview_session->enter_exit_overview_type() ==
+      OverviewSession::EnterExitOverviewType::kWindowsMinimized;
+}
+
+void HomeScreenController::OnOverviewModeEndingAnimationComplete(
+    bool canceled) {
+  if (canceled)
+    return;
+  home_screen_presenter_.ScheduleOverviewModeAnimation(
+      false /* start */, use_slide_to_exit_overview_);
 }
 
 void HomeScreenController::OnWallpaperPreviewStarted() {

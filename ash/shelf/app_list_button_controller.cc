@@ -36,8 +36,8 @@ constexpr int kVoiceInteractionAnimationHideDelayMs = 500;
 
 // Returns true if the button should appear activatable.
 bool CanActivate() {
-  return !Shell::Get()->app_list_controller()->IsVisible() ||
-         Shell::Get()->home_screen_controller()->IsHomeScreenAvailable();
+  return Shell::Get()->home_screen_controller()->IsHomeScreenAvailable() ||
+         !Shell::Get()->app_list_controller()->IsVisible();
 }
 
 }  // namespace
@@ -48,7 +48,9 @@ AppListButtonController::AppListButtonController(AppListButton* button,
   DCHECK(button_);
   DCHECK(shelf_);
   Shell* shell = Shell::Get();
-  shell->app_list_controller()->AddObserver(this);
+  // AppListController is only available in non-KioskNext sessions.
+  if (shell->app_list_controller())
+    shell->app_list_controller()->AddObserver(this);
   shell->session_controller()->AddObserver(this);
   shell->tablet_mode_controller()->AddObserver(this);
   shell->voice_interaction_controller()->AddLocalObserver(this);
