@@ -833,13 +833,13 @@ bool FlexLayoutInternal::IsLayoutValid(const Layout& cached_layout) const {
 
   // Need to compare preferred child sizes with what we're seeing.
   View* const view = layout_.host();
-  int child_index = 0;
+  auto iter = view->children().cbegin();
   for (const ChildLayout& proposed_view_layout : cached_layout.child_layouts) {
     // Check that there is another child and that it's the view we expect.
-    DCHECK(child_index < view->child_count())
+    DCHECK(iter != view->children().cend())
         << "Child views should not be removed without clearing the cache.";
 
-    const View* child = view->child_at(child_index++);
+    const View* child = *iter++;
 
     // Ensure child views have not been reordered.
     if (child != proposed_view_layout.view)
@@ -888,7 +888,7 @@ bool FlexLayoutInternal::IsLayoutValid(const Layout& cached_layout) const {
       return false;
   }
 
-  DCHECK_EQ(child_index, view->child_count())
+  DCHECK(iter == view->children().cend())
       << "Child views should not be added without clearing the cache.";
 
   // This layout is still valid. Update the layout counter to show it's valid
