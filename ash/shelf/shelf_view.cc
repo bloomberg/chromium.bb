@@ -58,6 +58,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/bounds_animator.h"
@@ -2533,12 +2534,11 @@ void ShelfView::UpdateBackButton() {
       Shell::Get()->system_tray_model()->virtual_keyboard()->visible();
   gfx::Transform rotation;
   // Rotate the back button when virtual keyboard is visible.
-  if (virtual_keyboard_visible) {
+  if (virtual_keyboard_visible)
     rotation.Rotate(270.0);
-    rotation.Translate(-GetBackButton()->height(), 0);
-  }
   GetBackButton()->layer()->SetOpacity(IsTabletModeEnabled() ? 1.f : 0.f);
-  GetBackButton()->layer()->SetTransform(rotation);
+  GetBackButton()->layer()->SetTransform(
+      TransformAboutPivot(GetBackButton()->GetCenterPoint(), rotation));
   GetBackButton()->SetFocusBehavior(
       IsTabletModeEnabled() ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
 }
