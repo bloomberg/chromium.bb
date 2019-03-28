@@ -47,7 +47,7 @@ static bool check_msgtable() {
   // Exclude test and other non-browser files from consideration.  Do not
   // include message files used inside the actual chrome browser in this list.
   exemptions.push_back(TestMsgStart);
-  exemptions.push_back(ShellMsgStart);
+  exemptions.push_back(BlinkTestMsgStart);
   exemptions.push_back(WebTestMsgStart);
   exemptions.push_back(CastCryptoMsgStart);   // Reserved for chromecast.
   exemptions.push_back(CastChannelMsgStart);  // Reserved for chromecast.
