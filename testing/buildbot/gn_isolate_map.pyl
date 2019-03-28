@@ -630,6 +630,10 @@
       "--test-path=../../third_party/blink/web_tests/external/wpt/webdriver/tests/",
     ],
   },
+  "chrome/installer/linux": {
+    "label": "//chrome/installer/linux:linux",
+    "type": "additional_compile_target",
+  },
   "chromedriver_replay_unittests": {
     "label": "//chrome/test/chromedriver:chromedriver_replay_unittests",
     "script": "//chrome/test/chromedriver/log_replay/client_replay_unittest.py",
