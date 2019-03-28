@@ -8,6 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
@@ -239,6 +240,19 @@ PasswordSyncBridge::CreateMetadataChangeList() {
 }
 
 base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
+    std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
+    syncer::EntityChangeList entity_data) {
+  base::Optional<syncer::ModelError> error =
+      MergeSyncDataInternal(std::move(metadata_change_list), entity_data);
+  if (error) {
+    base::UmaHistogramCounts10000(
+        "Sync.DownloadedPasswordsCountWhenInitialMergeFails",
+        entity_data.size());
+  }
+  return error;
+}
+
+base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
   // This method merges the local and remote passwords based on their client
