@@ -39,6 +39,8 @@ bool Sequence::Transaction::PushTask(Task task) {
   // for details.
   CHECK(task.task);
   DCHECK(task.queue_time.is_null());
+
+  bool queue_was_empty = sequence()->queue_.empty();
   task.queue_time = base::TimeTicks::Now();
 
   task.task = sequence()->traits_.shutdown_behavior() ==
@@ -48,13 +50,20 @@ bool Sequence::Transaction::PushTask(Task task) {
 
   sequence()->queue_.push(std::move(task));
 
+  bool should_be_queued = queue_was_empty && NeedsWorker();
+
+  // AddRef() matched by manual Release() when the sequence has no more tasks
+  // to run (in DidRunTask() or Clear()).
+  if (should_be_queued && sequence()->task_runner())
+    sequence()->task_runner()->AddRef();
+
   // If the sequence was empty before |task| was inserted into it and the pool
   // is not running any task from this sequence, it should be queued.
   // Otherwise, one of these must be true:
   // - The Sequence is already scheduled, or,
   // - The pool is running a Task from the Sequence. The pool is expected to
   //   reschedule the Sequence once it's done running the Task.
-  return sequence()->queue_.size() == 1 && NeedsWorker();
+  return should_be_queued;
 }
 
 Optional<Task> Sequence::TakeTask() {
@@ -64,6 +73,14 @@ Optional<Task> Sequence::TakeTask() {
   auto next_task = std::move(queue_.front());
   queue_.pop();
   return std::move(next_task);
+}
+
+bool Sequence::DidRunTask() {
+  if (queue_.empty()) {
+    ReleaseTaskRunner();
+    return false;
+  }
+  return true;
 }
 
 SequenceSortKey Sequence::GetSortKey() const {
@@ -76,21 +93,34 @@ bool Sequence::IsEmpty() const {
 }
 
 void Sequence::Clear() {
-  while (!IsEmpty())
+  bool queue_was_empty = queue_.empty();
+  while (!queue_.empty())
     TakeTask();
-}
-
-Sequence::Sequence(
-    const TaskTraits& traits,
-    scoped_refptr<SchedulerParallelTaskRunner> scheduler_parallel_task_runner)
-    : TaskSource(traits),
-      scheduler_parallel_task_runner_(scheduler_parallel_task_runner) {}
-
-Sequence::~Sequence() {
-  if (scheduler_parallel_task_runner_) {
-    scheduler_parallel_task_runner_->UnregisterSequence(this);
+  if (!queue_was_empty) {
+    // No member access after this point, ReleaseTaskRunner() might have deleted
+    // |this|.
+    ReleaseTaskRunner();
   }
 }
+
+void Sequence::ReleaseTaskRunner() {
+  if (!task_runner())
+    return;
+  if (execution_mode() == TaskSourceExecutionMode::kParallel) {
+    static_cast<SchedulerParallelTaskRunner*>(task_runner())
+        ->UnregisterSequence(this);
+  }
+  // No member access after this point, releasing |task_runner()| might delete
+  // |this|.
+  task_runner()->Release();
+}
+
+Sequence::Sequence(const TaskTraits& traits,
+                   TaskRunner* task_runner,
+                   TaskSourceExecutionMode execution_mode)
+    : TaskSource(traits, task_runner, execution_mode) {}
+
+Sequence::~Sequence() = default;
 
 Sequence::Transaction Sequence::BeginTransaction() {
   return Transaction(this);

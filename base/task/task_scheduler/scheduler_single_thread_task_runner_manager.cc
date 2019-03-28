@@ -248,7 +248,9 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
 
   bool get_work_first_ = true;
   const scoped_refptr<Sequence> message_pump_sequence_ =
-      MakeRefCounted<Sequence>(TaskTraits(MayBlock()));
+      MakeRefCounted<Sequence>(TaskTraits(MayBlock()),
+                               nullptr,
+                               TaskSourceExecutionMode::kParallel);
   const TrackedRef<TaskTracker> task_tracker_;
   std::unique_ptr<win::ScopedCOMInitializer> scoped_com_initializer_;
 
@@ -272,7 +274,10 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
       : outer_(outer),
         worker_(worker),
         thread_mode_(thread_mode),
-        sequence_(MakeRefCounted<Sequence>(traits)) {
+        sequence_(
+            MakeRefCounted<Sequence>(traits,
+                                     this,
+                                     TaskSourceExecutionMode::kSingleThread)) {
     DCHECK(outer_);
     DCHECK(worker_);
   }
@@ -285,7 +290,6 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
       return false;
 
     Task task(from_here, std::move(closure), delay);
-    task.single_thread_task_runner_ref = this;
 
     if (!outer_->task_tracker_->WillPostTask(&task,
                                              sequence_->shutdown_behavior())) {
@@ -297,8 +301,7 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
     } else {
       outer_->delayed_task_manager_->AddDelayedTask(
           std::move(task),
-          BindOnce(&SchedulerSingleThreadTaskRunner::PostTaskNow,
-                   Unretained(this)));
+          BindOnce(&SchedulerSingleThreadTaskRunner::PostTaskNow, this), this);
     }
     return true;
   }

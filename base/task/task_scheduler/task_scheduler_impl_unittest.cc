@@ -881,6 +881,47 @@ TEST_F(TaskSchedulerImplTest, SchedulerWorkerObserver) {
   observer.WaitCallsOnMainExit();
 }
 
+namespace {
+
+class MustBeDestroyed {
+ public:
+  MustBeDestroyed(bool* was_destroyed) : was_destroyed_(was_destroyed) {}
+  ~MustBeDestroyed() { *was_destroyed_ = true; }
+
+ private:
+  bool* const was_destroyed_;
+
+  DISALLOW_COPY_AND_ASSIGN(MustBeDestroyed);
+};
+
+}  // namespace
+
+// Regression test for https://crbug.com/945087.
+TEST_P(TaskSchedulerImplTest, NoLeakWhenPostingNestedTask) {
+  StartTaskScheduler();
+
+  SequenceLocalStorageSlot<std::unique_ptr<MustBeDestroyed>> sls;
+
+  bool was_destroyed = false;
+  auto must_be_destroyed = std::make_unique<MustBeDestroyed>(&was_destroyed);
+
+  auto task_runner = CreateTaskRunnerWithTraitsAndExecutionMode(
+      &scheduler_, GetParam().traits, GetParam().execution_mode);
+
+  task_runner->PostTask(FROM_HERE, BindLambdaForTesting([&] {
+                          sls.Set(std::move(must_be_destroyed));
+                          task_runner->PostTask(FROM_HERE, DoNothing());
+                        }));
+
+  TearDown();
+
+  // The TaskRunner should be deleted along with the Sequence and its
+  // SequenceLocalStorage when dropping this reference.
+  task_runner = nullptr;
+
+  EXPECT_TRUE(was_destroyed);
+}
+
 class TaskSchedulerPriorityUpdateTest : public testing::Test {
  protected:
   struct PoolBlockingEvents {

@@ -512,9 +512,12 @@ TEST_P(TaskSchedulerTaskTrackerTest, IOAllowed) {
                                 traits_without_may_block);
 }
 
-static void RunTaskRunnerHandleVerificationTask(TaskTracker* tracker,
-                                                Task verify_task,
-                                                TaskTraits traits) {
+static void RunTaskRunnerHandleVerificationTask(
+    TaskTracker* tracker,
+    Task verify_task,
+    TaskTraits traits,
+    scoped_refptr<TaskRunner> task_runner,
+    TaskSourceExecutionMode execution_mode) {
   // Pretend |verify_task| is posted to respect TaskTracker's contract.
   EXPECT_TRUE(tracker->WillPostTask(&verify_task, traits.shutdown_behavior()));
 
@@ -524,7 +527,9 @@ static void RunTaskRunnerHandleVerificationTask(TaskTracker* tracker,
   EXPECT_FALSE(SequencedTaskRunnerHandle::IsSet());
 
   testing::StrictMock<MockCanScheduleSequenceObserver> never_notified_observer;
-  auto sequence = test::CreateSequenceWithTask(std::move(verify_task), traits);
+  auto sequence = test::CreateSequenceWithTask(
+      std::move(verify_task), traits, std::move(task_runner), execution_mode);
+
   ASSERT_TRUE(tracker->WillScheduleSequence(sequence->BeginTransaction(),
                                             &never_notified_observer));
   tracker->RunAndPopNextTask(std::move(sequence), &never_notified_observer);
@@ -545,7 +550,8 @@ TEST_P(TaskSchedulerTaskTrackerTest, TaskRunnerHandleIsNotSetOnParallel) {
   Task verify_task(FROM_HERE, BindOnce(&VerifyNoTaskRunnerHandle), TimeDelta());
 
   RunTaskRunnerHandleVerificationTask(&tracker_, std::move(verify_task),
-                                      TaskTraits(GetParam()));
+                                      TaskTraits(GetParam()), nullptr,
+                                      TaskSourceExecutionMode::kParallel);
 }
 
 static void VerifySequencedTaskRunnerHandle(
@@ -566,10 +572,10 @@ TEST_P(TaskSchedulerTaskTrackerTest,
                    BindOnce(&VerifySequencedTaskRunnerHandle,
                             Unretained(test_task_runner.get())),
                    TimeDelta());
-  verify_task.sequenced_task_runner_ref = test_task_runner;
 
-  RunTaskRunnerHandleVerificationTask(&tracker_, std::move(verify_task),
-                                      TaskTraits(GetParam()));
+  RunTaskRunnerHandleVerificationTask(
+      &tracker_, std::move(verify_task), TaskTraits(GetParam()),
+      std::move(test_task_runner), TaskSourceExecutionMode::kSequenced);
 }
 
 static void VerifyThreadTaskRunnerHandle(
@@ -592,10 +598,10 @@ TEST_P(TaskSchedulerTaskTrackerTest,
                    BindOnce(&VerifyThreadTaskRunnerHandle,
                             Unretained(test_task_runner.get())),
                    TimeDelta());
-  verify_task.single_thread_task_runner_ref = test_task_runner;
 
-  RunTaskRunnerHandleVerificationTask(&tracker_, std::move(verify_task),
-                                      TaskTraits(GetParam()));
+  RunTaskRunnerHandleVerificationTask(
+      &tracker_, std::move(verify_task), TaskTraits(GetParam()),
+      std::move(test_task_runner), TaskSourceExecutionMode::kSingleThread);
 }
 
 TEST_P(TaskSchedulerTaskTrackerTest, FlushPendingDelayedTask) {
@@ -890,7 +896,8 @@ void ExpectSequenceToken(SequenceToken sequence_token) {
 // Verify that SequenceToken::GetForCurrentThread() returns the Sequence's token
 // when a Task runs.
 TEST_F(TaskSchedulerTaskTrackerTest, CurrentSequenceToken) {
-  scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(TaskTraits());
+  scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(
+      TaskTraits(), nullptr, TaskSourceExecutionMode::kParallel);
 
   const SequenceToken sequence_token = sequence->token();
   Task task(FROM_HERE, Bind(&ExpectSequenceToken, sequence_token), TimeDelta());

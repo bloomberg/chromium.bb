@@ -17,9 +17,13 @@ namespace internal {
 
 DelayedTaskManager::DelayedTask::DelayedTask() = default;
 
-DelayedTaskManager::DelayedTask::DelayedTask(Task task,
-                                             PostTaskNowCallback callback)
-    : task(std::move(task)), callback(std::move(callback)) {}
+DelayedTaskManager::DelayedTask::DelayedTask(
+    Task task,
+    PostTaskNowCallback callback,
+    scoped_refptr<TaskRunner> task_runner)
+    : task(std::move(task)),
+      callback(std::move(callback)),
+      task_runner(std::move(task_runner)) {}
 
 DelayedTaskManager::DelayedTask::DelayedTask(
     DelayedTaskManager::DelayedTask&& other) = default;
@@ -69,7 +73,8 @@ void DelayedTaskManager::Start(
 
 void DelayedTaskManager::AddDelayedTask(
     Task task,
-    PostTaskNowCallback post_task_now_callback) {
+    PostTaskNowCallback post_task_now_callback,
+    scoped_refptr<TaskRunner> task_runner) {
   DCHECK(task.task);
   DCHECK(!task.delayed_run_time.is_null());
 
@@ -79,8 +84,9 @@ void DelayedTaskManager::AddDelayedTask(
   TimeTicks process_ripe_tasks_time;
   {
     AutoSchedulerLock auto_lock(queue_lock_);
-    delayed_task_queue_.insert(
-        DelayedTask(std::move(task), std::move(post_task_now_callback)));
+    delayed_task_queue_.insert(DelayedTask(std::move(task),
+                                           std::move(post_task_now_callback),
+                                           std::move(task_runner)));
     // Not started yet.
     if (service_thread_task_runner_ == nullptr)
       return;

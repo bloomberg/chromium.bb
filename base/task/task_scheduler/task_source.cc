@@ -51,7 +51,7 @@ Optional<Task> TaskSource::Transaction::TakeTask() {
 bool TaskSource::Transaction::DidRunTask() {
   DCHECK(task_source_->has_worker_);
   task_source_->has_worker_ = false;
-  return !task_source_->IsEmpty();
+  return task_source_->DidRunTask();
 }
 
 SequenceSortKey TaskSource::Transaction::GetSortKey() const {
@@ -80,7 +80,14 @@ void TaskSource::ClearHeapHandle() {
   heap_handle_ = HeapHandle();
 }
 
-TaskSource::TaskSource(const TaskTraits& traits) : traits_(traits) {}
+TaskSource::TaskSource(const TaskTraits& traits,
+                       TaskRunner* task_runner,
+                       TaskSourceExecutionMode execution_mode)
+    : traits_(traits),
+      task_runner_(task_runner),
+      execution_mode_(execution_mode) {
+  DCHECK(task_runner_ || execution_mode_ == TaskSourceExecutionMode::kParallel);
+}
 
 TaskSource::~TaskSource() = default;
 
