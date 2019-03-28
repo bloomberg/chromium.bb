@@ -71,7 +71,7 @@ public class DetachedResourceRequestTest {
     private static final int NET_OK = 0;
 
     @Before
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         mConnection = CustomTabsTestUtils.setUpConnection();
@@ -82,7 +82,7 @@ public class DetachedResourceRequestTest {
     }
 
     @After
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         CustomTabsTestUtils.cleanupSessions(mConnection);
         if (mServer != null) mServer.stopAndDestroyServer();
         mServer = null;
