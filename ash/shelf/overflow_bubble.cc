@@ -44,7 +44,10 @@ void OverflowBubble::Show(OverflowButton* overflow_button,
   views::Widget* widget = bubble_->GetWidget();
   TrayBackgroundView::InitializeBubbleAnimations(widget);
   widget->AddObserver(this);
-  widget->Show();
+  // Show the bubble without activating it so that if the keyboard focus is on
+  // the overflow button, it remains there and allows toggling with the
+  // keyboard.
+  widget->ShowInactive();
   widget->GetFocusManager()->set_arrow_key_traversal_enabled_for_widget(true);
   Shell::Get()->focus_cycler()->AddWidget(widget);
 }
