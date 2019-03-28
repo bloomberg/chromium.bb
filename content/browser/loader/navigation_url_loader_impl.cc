@@ -18,6 +18,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_stats.h"
+#include "content/browser/about_url_loader_factory.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/appcache_request_handler.h"
@@ -305,45 +306,6 @@ bool IsRedirectSafe(const GURL& from_url,
          GetContentClient()->browser()->IsSafeRedirectTarget(to_url,
                                                              resource_context);
 }
-
-// URLLoaderFactory for handling about: URLs. This treats everything as
-// about:blank since no other about: features should be available to web
-// content.
-class AboutURLLoaderFactory : public network::mojom::URLLoaderFactory {
- private:
-  // network::mojom::URLLoaderFactory:
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
-    network::ResourceResponseHead response_head;
-    response_head.mime_type = "text/html";
-    client->OnReceiveResponse(response_head);
-
-    // Create a data pipe for transmitting the empty response. The |producer|
-    // doesn't add any data.
-    mojo::ScopedDataPipeProducerHandle producer;
-    mojo::ScopedDataPipeConsumerHandle consumer;
-    if (CreateDataPipe(nullptr, &producer, &consumer) != MOJO_RESULT_OK) {
-      client->OnComplete(
-          network::URLLoaderCompletionStatus(net::ERR_INSUFFICIENT_RESOURCES));
-      return;
-    }
-
-    client->OnStartLoadingResponseBody(std::move(consumer));
-    client->OnComplete(network::URLLoaderCompletionStatus(net::OK));
-  }
-
-  void Clone(network::mojom::URLLoaderFactoryRequest loader) override {
-    bindings_.AddBinding(this, std::move(loader));
-  }
-
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
-};
 
 }  // namespace
 

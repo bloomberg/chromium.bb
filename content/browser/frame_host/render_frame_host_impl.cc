@@ -31,6 +31,7 @@
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "content/browser/about_url_loader_factory.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
@@ -4640,13 +4641,15 @@ void RenderFrameHostImpl::CommitNavigation(
       }
     }
 
+    non_network_url_loader_factories_.clear();
+
     // Set up the default factory.
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
 
     // See if this is for WebUI.
     std::string scheme = common_params.url.scheme();
-    const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
-    if (base::ContainsValue(schemes, scheme)) {
+    const auto& webui_schemes = URLDataManagerBackend::GetWebUISchemes();
+    if (base::ContainsValue(webui_schemes, scheme)) {
       network::mojom::URLLoaderFactoryPtr factory_for_webui =
           CreateWebUIURLLoaderBinding(this, scheme);
       // If the renderer has webui bindings, then don't give it access to
@@ -4657,6 +4660,11 @@ void RenderFrameHostImpl::CommitNavigation(
           !GetContentClient()->browser()->IsWebUIAllowedToMakeNetworkRequests(
               url::Origin::Create(common_params.url.GetOrigin()))) {
         default_factory_info = factory_for_webui.PassInterface();
+        // WebUIURLLoaderFactory will kill the renderer if it sees a request
+        // with a non-chrome scheme. Register a URLLoaderFactory for the about
+        // scheme so about:blank doesn't kill the renderer.
+        non_network_url_loader_factories_[url::kAboutScheme] =
+            std::make_unique<AboutURLLoaderFactory>();
       } else {
         // This is a webui scheme that doesn't have webui bindings. Give it
         // access to the network loader as it might require it.
@@ -4681,7 +4689,6 @@ void RenderFrameHostImpl::CommitNavigation(
     subresource_loader_factories->default_factory_info() =
         std::move(default_factory_info);
 
-    non_network_url_loader_factories_.clear();
 
     if (common_params.url.SchemeIsFile()) {
       // Only file resources can load file subresources
