@@ -351,6 +351,10 @@ class AuthenticatorRequestDialogModel {
     return responses_;
   }
 
+  void set_has_attempted_pin_entry_for_testing() {
+    has_attempted_pin_entry_ = true;
+  }
+
  private:
   void DispatchRequestAsync(AuthenticatorReference* authenticator,
                             base::TimeDelta delay);
