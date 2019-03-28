@@ -121,7 +121,11 @@ srcs_session_helper = [
 ]
 deps_session_helper = [
 	# for compositor.h needing pixman.h
-	dep_pixman.partial_dependency(compile_args: true)
+	dep_pixman.partial_dependency(compile_args: true),
+	# for compositor.h needing xkbcommon.h
+	dep_xkbcommon.partial_dependency(compile_args: true),
+	# for compositor.h needing wayland-server.h
+	dep_wayland_server.partial_dependency(compile_args: true)
 ]
 
 if get_option('backend-drm')
