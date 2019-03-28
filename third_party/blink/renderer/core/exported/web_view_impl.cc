@@ -1592,13 +1592,6 @@ void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update,
   }
 }
 
-void WebViewImpl::UpdateAllLifecyclePhasesAndCompositeForTesting(
-    bool do_raster) {
-  if (layer_tree_view_) {
-    layer_tree_view_->UpdateAllLifecyclePhasesAndCompositeForTesting(do_raster);
-  }
-}
-
 void WebViewImpl::RequestPresentationCallbackForTesting(
     base::OnceClosure callback) {
   layer_tree_view_->RequestPresentationCallback(std::move(callback));

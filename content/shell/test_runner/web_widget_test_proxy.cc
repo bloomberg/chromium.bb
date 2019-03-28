@@ -19,6 +19,8 @@
 
 namespace test_runner {
 
+WebWidgetTestProxy::~WebWidgetTestProxy() = default;
+
 void WebWidgetTestProxy::ScheduleAnimation() {
   if (!GetTestRunner()->TestIsRunning())
     return;
@@ -108,7 +110,26 @@ void WebWidgetTestProxy::EndSyntheticGestures() {
   widget_input_handler_manager()->InvokeInputProcessedCallback();
 }
 
-WebWidgetTestProxy::~WebWidgetTestProxy() = default;
+void WebWidgetTestProxy::SynchronouslyComposite(bool do_raster) {
+  layer_tree_view()->SynchronouslyComposite(do_raster,
+                                            /*swap_promise=*/nullptr);
+
+  // If the RenderWidget is for the main frame, we also composite the current
+  // PagePopup afterward.
+  //
+  // TODO(danakj): This means that an OOPIF's popup, which is attached to a
+  // WebView without a main frame, would have no opportunity to execute this
+  // method call.
+  if (delegate()) {
+    blink::WebView* view = GetWebViewTestProxy()->webview();
+    if (blink::WebPagePopup* popup = view->GetPagePopup()) {
+      auto* popup_render_widget =
+          static_cast<RenderWidget*>(popup->GetClientForTesting());
+      popup_render_widget->layer_tree_view()->SynchronouslyComposite(
+          do_raster, /*swap_promise=*/nullptr);
+    }
+  }
+}
 
 TestRunnerForSpecificView* WebWidgetTestProxy::GetViewTestRunner() {
   return GetWebViewTestProxy()->view_test_runner();
@@ -140,25 +161,7 @@ void WebWidgetTestProxy::AnimateNow() {
   animation_scheduled_ = false;
   CHECK(GetTestRunner());
   bool animation_requires_raster = GetTestRunner()->animation_requires_raster();
-  blink::WebWidget* web_widget = GetWebWidget();
-  CHECK(web_widget);
-  web_widget->UpdateAllLifecyclePhasesAndCompositeForTesting(
-      animation_requires_raster);
-
-  // If this RenderWidget is attached to a RenderView, we composite the
-  // current PagePopup with the widget.
-  //
-  // TODO(danakj): This means that an OOPIF's popup, which is attached to a
-  // WebView without a main frame, would have no opportunity to execute this
-  // method call.
-  if (delegate()) {
-    blink::WebView* view = GetWebViewTestProxy()->webview();
-    CHECK(view);
-    if (blink::WebPagePopup* popup = view->GetPagePopup()) {
-      popup->UpdateAllLifecyclePhasesAndCompositeForTesting(
-          animation_requires_raster);
-    }
-  }
+  SynchronouslyComposite(animation_requires_raster);
 }
 
 }  // namespace test_runner

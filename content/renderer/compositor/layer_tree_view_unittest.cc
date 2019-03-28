@@ -423,11 +423,9 @@ class NotifySwapTimesLayerTreeViewTest : public ::testing::Test {
           std::move(callback).Run();
         },
         run_loop.QuitClosure(), &swap_time));
-    blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &LayerTreeView::UpdateAllLifecyclePhasesAndCompositeForTesting,
-            base::Unretained(&layer_tree_view_), true /* do_raster */));
+    layer_tree_view_.SynchronouslyComposite(/*raster=*/true,
+                                            /*swap_promise=*/nullptr);
+    // The swap time notify comes as a posted task.
     run_loop.Run();
     return swap_time;
   }

@@ -306,6 +306,12 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
       const url::Origin& initiator_origin,
       network::mojom::URLLoaderFactoryPtr url_loader_factory) = 0;
 
+  // Synchronously performs the complete set of document lifecycle phases,
+  // including updates to the compositor state and rasterization, then sending
+  // a frame to the viz display compositor. Does nothing if RenderFrame is not
+  // a local root.
+  virtual void UpdateAllLifecyclePhasesAndCompositeForTesting() = 0;
+
  protected:
   ~RenderFrame() override {}
 

@@ -128,6 +128,13 @@ void WebFrameTestProxy::Initialize(
   new TestRenderFrameObserver(this, view_proxy_for_frame);  // deletes itself.
 }
 
+void WebFrameTestProxy::UpdateAllLifecyclePhasesAndCompositeForTesting() {
+  if (!IsLocalRoot())
+    return;
+  auto* widget = static_cast<WebWidgetTestProxy*>(GetLocalRootRenderWidget());
+  widget->SynchronouslyComposite(/*do_raster=*/true);
+}
+
 // WebLocalFrameClient implementation.
 blink::WebPlugin* WebFrameTestProxy::CreatePlugin(
     const blink::WebPluginParams& params) {

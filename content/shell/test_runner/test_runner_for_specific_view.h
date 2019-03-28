@@ -25,17 +25,13 @@ class WebLocalFrame;
 class WebView;
 }
 
-namespace content {
-class RenderWidget;
-}  // namespace content
-
 namespace gin {
 class Arguments;
 }
 
 namespace test_runner {
-
 class WebTestDelegate;
+class WebWidgetTestProxy;
 class WebViewTestProxy;
 
 // TestRunnerForSpecificView implements part of |testRunner| javascript bindings
@@ -223,7 +219,7 @@ class TEST_RUNNER_EXPORT TestRunnerForSpecificView {
   blink::WebLocalFrame* GetLocalMainFrame();
 
   // Helpers for accessing pointers exposed by |web_view_test_proxy_|.
-  content::RenderWidget* main_frame_render_widget();
+  WebWidgetTestProxy* main_frame_render_widget();
   blink::WebView* web_view();
   WebTestDelegate* delegate();
 

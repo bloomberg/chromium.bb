@@ -82,6 +82,8 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget {
 
   void EndSyntheticGestures();
 
+  void SynchronouslyComposite(bool do_raster);
+
  private:
   // RenderWidget does not have a public destructor.
   ~WebWidgetTestProxy() override;

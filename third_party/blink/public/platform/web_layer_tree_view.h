@@ -100,11 +100,6 @@ class WebLayerTreeView {
   virtual void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) {}
 
-  // Synchronously performs the complete set of document lifecycle phases,
-  // including updates to the compositor state, optionally including
-  // rasterization.
-  virtual void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) {}
-
   // Prevents any updates to the input for the layer tree, and the layer tree
   // itself, and the layer tree from becoming visible.
   virtual std::unique_ptr<cc::ScopedDeferMainFrameUpdate>

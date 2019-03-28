@@ -522,6 +522,7 @@ class CONTENT_EXPORT RenderFrameImpl
       override;
   void SetRenderFrameMediaPlaybackOptions(
       const RenderFrameMediaPlaybackOptions& opts) override;
+  void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
 
   // blink::mojom::AutoplayConfigurationClient implementation:
   void AddAutoplayFlags(const url::Origin& origin,
@@ -993,6 +994,9 @@ class CONTENT_EXPORT RenderFrameImpl
  protected:
   explicit RenderFrameImpl(CreateParams params);
 
+  bool IsLocalRoot() const;
+  const RenderFrameImpl* GetLocalRoot() const;
+
  private:
   friend class RenderFrameImplTest;
   friend class RenderFrameObserver;
@@ -1082,9 +1086,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Functions to add and remove observers for this object.
   void AddObserver(RenderFrameObserver* observer);
   void RemoveObserver(RenderFrameObserver* observer);
-
-  bool IsLocalRoot() const;
-  const RenderFrameImpl* GetLocalRoot() const;
 
   // Swaps the current frame into the frame tree, replacing the
   // RenderFrameProxy it is associated with.  Return value indicates whether

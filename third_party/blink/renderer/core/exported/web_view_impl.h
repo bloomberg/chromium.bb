@@ -443,7 +443,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
   void UpdateLifecycle(LifecycleUpdate requested_update,
                        LifecycleUpdateReason reason) override;
-  void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
   void RequestPresentationCallbackForTesting(
       base::OnceClosure callback) override;
   void PaintContent(cc::PaintCanvas*, const WebRect&) override;

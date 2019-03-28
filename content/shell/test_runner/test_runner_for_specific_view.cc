@@ -28,6 +28,7 @@
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
+#include "content/shell/test_runner/web_widget_test_proxy.h"
 #include "gin/arguments.h"
 #include "gin/array_buffer.h"
 #include "gin/handle.h"
@@ -204,16 +205,14 @@ base::OnceClosure TestRunnerForSpecificView::CreateClosureThatPostsV8Callback(
 void TestRunnerForSpecificView::UpdateAllLifecyclePhasesAndComposite() {
   // Note, this is executed synchronously. Wrap in setTimeout() to run
   // asynchronously.
-  blink::WebWidget* widget =
-      web_view()->MainFrame()->ToWebLocalFrame()->FrameWidget();
-  widget->UpdateAllLifecyclePhasesAndCompositeForTesting(/* raster = */ true);
+  main_frame_render_widget()->SynchronouslyComposite(/*raster=*/true);
 }
 
 void TestRunnerForSpecificView::UpdateAllLifecyclePhasesAndCompositeThen(
     v8::Local<v8::Function> callback) {
   // Note, this is executed synchronously. Wrap in setTimeout() to run
   // asynchronously.
-  TestRunnerForSpecificView::UpdateAllLifecyclePhasesAndComposite();
+  UpdateAllLifecyclePhasesAndComposite();
   InvokeV8Callback(
       v8::UniquePersistent<v8::Function>(blink::MainThreadIsolate(), callback));
 }
@@ -678,8 +677,8 @@ blink::WebLocalFrame* TestRunnerForSpecificView::GetLocalMainFrame() {
   return web_view()->MainFrame()->ToWebLocalFrame();
 }
 
-content::RenderWidget* TestRunnerForSpecificView::main_frame_render_widget() {
-  return web_view_test_proxy_->GetWidget();
+WebWidgetTestProxy* TestRunnerForSpecificView::main_frame_render_widget() {
+  return static_cast<WebWidgetTestProxy*>(web_view_test_proxy_->GetWidget());
 }
 
 blink::WebView* TestRunnerForSpecificView::web_view() {

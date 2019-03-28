@@ -84,7 +84,6 @@ class CORE_EXPORT WebFrameWidgetBase
   // WebFrameWidget implementation.
   void Close() override;
   WebLocalFrame* LocalRoot() const override;
-  void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
   WebDragOperation DragTargetDragEnter(const WebDragData&,
                                        const WebFloatPoint& point_in_viewport,
                                        const WebFloatPoint& screen_point,
