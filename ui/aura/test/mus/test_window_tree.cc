@@ -471,4 +471,8 @@ void TestWindowTree::UnpauseWindowOcclusionTracking() {
     delegate_->UnpauseWindowOcclusionTracking();
 }
 
+void TestWindowTree::ConnectToImeEngine(
+    ime::mojom::ImeEngineRequest engine_request,
+    ime::mojom::ImeEngineClientPtr client) {}
+
 }  // namespace aura

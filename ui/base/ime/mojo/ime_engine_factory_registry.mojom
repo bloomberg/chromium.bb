@@ -1,0 +1,13 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module ime.mojom;
+
+import "ui/base/ime/mojo/ime.mojom";
+
+// Implemented by IMM service and used by ImeEngine to set the active
+// ImeEngineFactory, through which the client can connect to the ImeEngine.
+interface ImeEngineFactoryRegistry {
+  ActivateFactory(ImeEngineFactory factory);
+};

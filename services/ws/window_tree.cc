@@ -32,6 +32,7 @@
 #include "services/ws/window_service_delegate.h"
 #include "services/ws/window_service_observer.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
@@ -2399,6 +2400,25 @@ void WindowTree::UnpauseWindowOcclusionTracking() {
   }
 
   window_occlusion_tracking_pauses_.pop_back();
+}
+
+void WindowTree::ConnectToImeEngine(ime::mojom::ImeEngineRequest engine_request,
+                                    ime::mojom::ImeEngineClientPtr client) {
+  aura::Window* focused_window =
+      window_service_->focus_client()->GetFocusedWindow();
+  if (!focused_window) {
+    DVLOG(1) << "ConnectToImeEngine failed (no focused window)";
+    return;
+  }
+
+  if (!IsClientCreatedWindow(focused_window) &&
+      !IsClientRootWindow(focused_window)) {
+    DVLOG(1) << "ConnectToImeEngine failed (the caller client is not focused)";
+    return;
+  }
+
+  window_service_->delegate()->ConnectToImeEngine(std::move(engine_request),
+                                                  std::move(client));
 }
 
 }  // namespace ws

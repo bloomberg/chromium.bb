@@ -31,6 +31,7 @@ mojom("mojom") {
     "//services/viz/public/interfaces",
     "//services/ws/public/mojom/ime",
     "//skia/public/interfaces",
+    "//ui/base/ime/mojo",
     "//ui/base/mojo",
     "//ui/display/mojo:interfaces",
     "//ui/events/mojo:interfaces",

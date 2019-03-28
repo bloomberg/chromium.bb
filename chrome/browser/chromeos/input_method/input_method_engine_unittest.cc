@@ -20,12 +20,16 @@
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service_manager_context.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/mock_component_extension_ime_manager_delegate.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/mock_ime_input_context_handler.h"
+#include "ui/base/ime/mojo/ime.mojom.h"
+#include "ui/base/ime/mojo/ime_engine_factory_registry.mojom.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -142,6 +146,53 @@ class TestObserver : public InputMethodEngineBase::Observer {
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
+class TestImeEngineFactoryRegistry
+    : public ime::mojom::ImeEngineFactoryRegistry {
+ public:
+  TestImeEngineFactoryRegistry() : binding_(this) {}
+  ~TestImeEngineFactoryRegistry() override = default;
+
+  ime::mojom::ImeEngineFactoryRegistryPtr BindInterface() {
+    ime::mojom::ImeEngineFactoryRegistryPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    return ptr;
+  }
+
+  void Connect(ime::mojom::ImeEngineRequest engine_request,
+               ime::mojom::ImeEngineClientPtr client) {
+    if (factory_)
+      factory_->CreateEngine(std::move(engine_request), std::move(client));
+  }
+
+ private:
+  // ime::mojom::ImeEngineFactoryRegistry:
+  void ActivateFactory(ime::mojom::ImeEngineFactoryPtr factory) override {
+    factory_ = std::move(factory);
+  }
+
+  ime::mojom::ImeEngineFactoryPtr factory_;
+  mojo::Binding<ime::mojom::ImeEngineFactoryRegistry> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestImeEngineFactoryRegistry);
+};
+
+class TestImeEngineClient : public ime::mojom::ImeEngineClient {
+ public:
+  TestImeEngineClient() : binding_(this) {}
+  ~TestImeEngineClient() override = default;
+
+  ime::mojom::ImeEngineClientPtr BindInterface() {
+    ime::mojom::ImeEngineClientPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    return ptr;
+  }
+
+ private:
+  mojo::Binding<ime::mojom::ImeEngineClient> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestImeEngineClient);
+};
+
 class InputMethodEngineTest : public testing::Test {
  public:
   InputMethodEngineTest() : observer_(nullptr), input_view_("inputview.html") {
@@ -156,7 +207,6 @@ class InputMethodEngineTest : public testing::Test {
     chrome_keyboard_controller_client_test_helper_ =
         ChromeKeyboardControllerClientTestHelper::InitializeWithFake();
   }
-
   ~InputMethodEngineTest() override {
     ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
     engine_.reset();
@@ -332,6 +382,28 @@ TEST_F(InputMethodEngineTest, TestCompositionBoundsChanged) {
   rects.push_back(gfx::Rect());
   engine_->SetCompositionBounds(rects);
   EXPECT_EQ(ONCOMPOSITIONBOUNDSCHANGED, observer_->GetCallsBitmapAndReset());
+}
+
+TEST_F(InputMethodEngineTest, TestMojoInteractions) {
+  CreateEngine(false);
+  TestImeEngineFactoryRegistry registry;
+  engine_->set_ime_engine_factory_registry_for_testing(
+      registry.BindInterface());
+
+  TestImeEngineClient client;
+  ime::mojom::ImeEnginePtr engine_ptr;
+
+  // Enables the extension with focus.
+  engine_->Enable(kTestImeComponentId);
+  engine_->FlushForTesting();
+
+  registry.Connect(mojo::MakeRequest(&engine_ptr), client.BindInterface());
+  engine_ptr->StartInput(ime::mojom::EditorInfo::New(
+      ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT,
+      ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_MOUSE,
+      false));
+  engine_ptr.FlushForTesting();
+  EXPECT_EQ(ACTIVATE | ONFOCUS, observer_->GetCallsBitmapAndReset());
 }
 
 }  // namespace input_method
