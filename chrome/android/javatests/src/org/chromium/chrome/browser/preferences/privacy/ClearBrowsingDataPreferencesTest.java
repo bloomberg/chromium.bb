@@ -301,7 +301,7 @@ public class ClearBrowsingDataPreferencesTest {
                         (ClearBrowsingDataPreferences) preferences2.getFragmentForTest();
                 OtherFormsOfHistoryDialogFragment dialog =
                         fragment.getDialogAboutOtherFormsOfBrowsingHistory();
-                return dialog != null;
+                return dialog != null && dialog.getActivity() != null;
             }
         });
 
