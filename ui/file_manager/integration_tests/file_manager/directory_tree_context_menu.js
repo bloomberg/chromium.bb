@@ -1342,4 +1342,68 @@
     await remoteCall.waitForElement(
         appId, '#directory-tree-context-menu[hidden]');
   };
+
+  /**
+   * Tests context menu for Google Drive/Computer grand-root, a computer root, a
+   * folder inside it.
+   */
+  testcase.dirContextMenuComputers = async () => {
+    const computersGrandRootMenus = [
+      ['#cut', true],
+      ['#copy', true],
+      ['#paste-into-folder', false],
+      ['#rename', true],
+      ['#delete', false],
+      ['#new-folder', false],
+    ];
+    const computerRootMenus = [
+      ['#cut', true],
+      ['#copy', true],
+      ['#paste-into-folder', false],
+      ['#rename', false],
+      ['#delete', false],
+      ['#new-folder', false],
+    ];
+    const folderMenus = [
+      ['#cut', true],
+      ['#copy', true],
+      ['#paste-into-folder', true],
+      ['#share-with-linux', true],
+      ['#rename', false],
+      ['#create-folder-shortcut', true],
+      ['#delete', true],
+      ['#new-folder', true],
+    ];
+
+    // Open Files App on Drive.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DRIVE, [], COMPUTERS_ENTRY_SET);
+
+    // Select and copy hello.txt into the clipboard to test paste-into-folder
+    // command.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil(
+            'selectFile', appId, ['hello.txt']),
+        'selectFile failed');
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('execCommand', appId, ['copy']),
+        'execCommand failed');
+
+    // Check that Google Drive is expanded.
+    await remoteCall.waitForElement(
+        appId, ['#directory-tree .tree-item.drive-volume[expanded]']);
+
+    // Check the context menu for Computers grand root.
+    await checkContextMenu(
+        appId, '/Computers', computersGrandRootMenus, false /* rootMenu */);
+
+    // Check the context menu for a computer root.
+    await checkContextMenu(
+        appId, '/Computers/Computer A', computerRootMenus,
+        false /* rootMenu */);
+
+    // Check the context menu for a folder inside a computer.
+    await checkContextMenu(
+        appId, '/Computers/Computer A/A', folderMenus, false /* rootMenu */);
+  };
 })();
