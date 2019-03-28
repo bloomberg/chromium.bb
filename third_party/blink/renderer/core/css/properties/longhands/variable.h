@@ -17,11 +17,10 @@ namespace blink {
 // (as returned by GetCSSPropertyVariable()) has been removed.
 class CORE_EXPORT Variable : public Longhand {
  public:
-  constexpr Variable() : Longhand() {}
+  constexpr Variable() : Longhand(CSSPropertyID::kVariable, kProperty, '\0') {}
 
   bool IsInherited() const override { return true; }
   bool IsAffectedByAll() const override { return false; }
-  CSSPropertyID PropertyID() const override { return CSSPropertyID::kVariable; }
   CSSPropertyName GetCSSPropertyName() const override {
     NOTREACHED();
     return CSSPropertyName("");
