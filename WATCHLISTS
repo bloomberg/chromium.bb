@@ -2132,6 +2132,7 @@
     'chromeos_login': ['achuith+watch@chromium.org',
                        'alemate+watch@chromium.org',
                        'jdufault+watch@chromium.org',
+                       'rsorokin+watch@chromium.org',
                        'tbarzic+watch@chromium.org'],
     'chromeos_net': ['stevenjb+watch@chromium.org'],
     'chromeos_power': ['derat+watch@chromium.org'],
