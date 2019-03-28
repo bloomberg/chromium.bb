@@ -62,6 +62,10 @@ const base::Feature kAssistantKeyRemapping{"AssistantKeyRemapping",
 const base::Feature kScreenContextQuery{"ChromeOSAssistantScreenContextQuery",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnableMediaSessionIntegration{
+    "AssistantEnableMediaSessionIntegration",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsAppSupportEnabled() {
   return base::FeatureList::IsEnabled(
       assistant::features::kAssistantAppSupport);
@@ -89,6 +93,10 @@ bool IsInAssistantNotificationsEnabled() {
 
 bool IsKeyRemappingEnabled() {
   return base::FeatureList::IsEnabled(kAssistantKeyRemapping);
+}
+
+bool IsMediaSessionIntegrationEnabled() {
+  return base::FeatureList::IsEnabled(kEnableMediaSessionIntegration);
 }
 
 bool IsPowerManagerEnabled() {
