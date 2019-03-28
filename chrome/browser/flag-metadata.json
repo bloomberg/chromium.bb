@@ -1416,11 +1416,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-ntp-asset-download-suggestions",
-    "owners": [ "fgorski" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-ntp-button",
     "owners": [ "twellington" ],
     "expiry_milestone": 78

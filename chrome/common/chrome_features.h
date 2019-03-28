@@ -53,9 +53,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppServiceServer;
 #endif  // !defined(OS_ANDROID)
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kAssetDownloadSuggestionsFeature;
-
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kAsyncDns;
 
 #if defined(OS_ANDROID)

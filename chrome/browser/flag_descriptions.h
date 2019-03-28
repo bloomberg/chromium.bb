@@ -1391,9 +1391,6 @@ extern const char kEnableCustomContextMenuDescription[];
 extern const char kEnableRevampedContextMenuName[];
 extern const char kEnableRevampedContextMenuDescription[];
 
-extern const char kEnableNtpAssetDownloadSuggestionsName[];
-extern const char kEnableNtpAssetDownloadSuggestionsDescription[];
-
 extern const char kEnableNtpOfflinePageDownloadSuggestionsName[];
 extern const char kEnableNtpOfflinePageDownloadSuggestionsDescription[];
 
