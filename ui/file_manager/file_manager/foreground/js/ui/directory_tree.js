@@ -1832,10 +1832,9 @@ class DirectoryTree extends cr.ui.Tree {
           currentItem.updateSubDirectories(true);
         }
         // EntryListItem can contain volumes that might have been updated: ask
-        // them to re-draw. Updates recursively so any created or removed
-        // children folder can be reflected on directory tree.
+        // them to re-draw.
         if (currentItem instanceof EntryListItem) {
-          currentItem.updateSubDirectories(true);
+          currentItem.updateSubDirectories(recursive);
         }
       } else {
         const modelItem = this.dataModel.item(modelIndex);
