@@ -7,7 +7,13 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.CachedProviderAdapter;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.PropertyProvider;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.Provider;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_tabs.CreditCardAccessorySheetCoordinator;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 

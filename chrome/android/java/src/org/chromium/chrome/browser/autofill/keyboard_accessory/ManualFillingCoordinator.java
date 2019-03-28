@@ -10,6 +10,10 @@ import android.view.ViewStub;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.PropertyProvider;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_component.AccessorySheetCoordinator;
 import org.chromium.ui.DeferredViewStubInflationProvider;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.ViewProvider;
@@ -43,8 +47,8 @@ public class ManualFillingCoordinator {
     }
 
     @VisibleForTesting
-    void initialize(WindowAndroid windowAndroid, ViewProvider<KeyboardAccessoryView> barProvider,
-            ViewProvider<AccessorySheetView> sheetProvider) {
+    void initialize(WindowAndroid windowAndroid, ViewProvider<View> barProvider,
+            ViewProvider<View> sheetProvider) {
         mMediator.initialize(new KeyboardAccessoryCoordinator(mMediator, barProvider),
                 new AccessorySheetCoordinator(sheetProvider), windowAndroid);
     }
@@ -144,7 +148,7 @@ public class ManualFillingCoordinator {
     }
 
     @VisibleForTesting
-    ManualFillingMediator getMediatorForTesting() {
+    public ManualFillingMediator getMediatorForTesting() {
         return mMediator;
     }
 

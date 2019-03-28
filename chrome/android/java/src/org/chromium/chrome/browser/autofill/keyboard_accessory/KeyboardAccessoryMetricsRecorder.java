@@ -4,18 +4,22 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece.Type.PASSWORD_INFO;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece.getType;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTrigger.MANUAL_OPEN;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BAR_ITEMS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BAR_ITEMS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.Type.PASSWORD_INFO;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.getType;
 
 import android.support.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.UserInfo;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryProperties;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BarItem;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_component.AccessorySheetProperties;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -32,18 +36,19 @@ import java.util.Set;
  * accordingly.
  */
 public class KeyboardAccessoryMetricsRecorder {
-    static final String UMA_KEYBOARD_ACCESSORY_ACTION_IMPRESSION =
+    public static final String UMA_KEYBOARD_ACCESSORY_ACTION_IMPRESSION =
             "KeyboardAccessory.AccessoryActionImpression";
     public static final String UMA_KEYBOARD_ACCESSORY_ACTION_SELECTED =
             "KeyboardAccessory.AccessoryActionSelected";
-    static final String UMA_KEYBOARD_ACCESSORY_BAR_SHOWN = "KeyboardAccessory.AccessoryBarShown";
-    static final String UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS =
+    public static final String UMA_KEYBOARD_ACCESSORY_BAR_SHOWN =
+            "KeyboardAccessory.AccessoryBarShown";
+    public static final String UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS =
             "KeyboardAccessory.AccessorySheetSuggestionCount";
-    static final String UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTION_SELECTED =
+    public static final String UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTION_SELECTED =
             "KeyboardAccessory.AccessorySheetSuggestionsSelected";
-    static final String UMA_KEYBOARD_ACCESSORY_SHEET_TRIGGERED =
+    public static final String UMA_KEYBOARD_ACCESSORY_SHEET_TRIGGERED =
             "KeyboardAccessory.AccessorySheetTriggered";
-    static final String UMA_KEYBOARD_ACCESSORY_SHEET_TYPE_SUFFIX_PASSWORDS = "Passwords";
+    public static final String UMA_KEYBOARD_ACCESSORY_SHEET_TYPE_SUFFIX_PASSWORDS = "Passwords";
 
     /**
      * The Recorder itself should be stateless and have no need for an instance.
@@ -207,7 +212,8 @@ public class KeyboardAccessoryMetricsRecorder {
      * Registers an observer to the given model that records changes for all properties.
      * @param keyboardAccessoryModel The observable {@link KeyboardAccessoryProperties}.
      */
-    static void registerKeyboardAccessoryModelMetricsObserver(PropertyModel keyboardAccessoryModel,
+    public static void registerKeyboardAccessoryModelMetricsObserver(
+            PropertyModel keyboardAccessoryModel,
             KeyboardAccessoryCoordinator.TabSwitchingDelegate tabSwitcher) {
         AccessoryBarObserver observer =
                 new AccessoryBarObserver(keyboardAccessoryModel, tabSwitcher);
@@ -219,7 +225,8 @@ public class KeyboardAccessoryMetricsRecorder {
      * Registers an observer to the given model that records changes for all properties.
      * @param accessorySheetModel The observable {@link AccessorySheetProperties}.
      */
-    static void registerAccessorySheetModelMetricsObserver(PropertyModel accessorySheetModel) {
+    public static void registerAccessorySheetModelMetricsObserver(
+            PropertyModel accessorySheetModel) {
         accessorySheetModel.addObserver((source, propertyKey) -> {
             if (propertyKey == AccessorySheetProperties.VISIBLE) {
                 if (accessorySheetModel.get(AccessorySheetProperties.VISIBLE)) {
@@ -255,7 +262,7 @@ public class KeyboardAccessoryMetricsRecorder {
      * @return The complete name of the histogram.
      */
     @VisibleForTesting
-    static String getHistogramForType(String baseHistogram, @AccessoryTabType int tabType) {
+    public static String getHistogramForType(String baseHistogram, @AccessoryTabType int tabType) {
         switch (tabType) {
             case AccessoryTabType.ALL:
                 return baseHistogram;
@@ -271,7 +278,7 @@ public class KeyboardAccessoryMetricsRecorder {
      * @param tabType The tab that was selected to trigger the sheet.
      * @param bucket The {@link AccessorySheetTrigger} to record..
      */
-    static void recordSheetTrigger(
+    public static void recordSheetTrigger(
             @AccessoryTabType int tabType, @AccessorySheetTrigger int bucket) {
         // TODO(crbug.com/926372): Add metrics capabilities for credit cards.
         if (tabType == AccessoryTabType.CREDIT_CARDS) return;
@@ -287,7 +294,7 @@ public class KeyboardAccessoryMetricsRecorder {
         }
     }
 
-    static void recordActionImpression(@AccessoryAction int bucket) {
+    public static void recordActionImpression(@AccessoryAction int bucket) {
         RecordHistogram.recordEnumeratedHistogram(
                 UMA_KEYBOARD_ACCESSORY_ACTION_IMPRESSION, bucket, AccessoryAction.COUNT);
     }
@@ -318,7 +325,7 @@ public class KeyboardAccessoryMetricsRecorder {
      * @param tabType The tab that contained the list.
      * @param suggestionList The list containing all suggestions.
      */
-    static void recordSheetSuggestions(
+    public static void recordSheetSuggestions(
             @AccessoryTabType int tabType, ListModel<AccessorySheetDataPiece> suggestionList) {
         // TODO(crbug.com/926372): Add metrics capabilities for credit cards.
         if (tabType == AccessoryTabType.CREDIT_CARDS) return;

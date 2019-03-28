@@ -22,8 +22,14 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeKeyboardVisibilityDelegate;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.InsetObserverView;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingProperties.KeyboardExtensionState;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData.Action;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.PropertyProvider;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_component.AccessorySheetCoordinator;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_tabs.CreditCardAccessorySheetCoordinator;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -49,7 +55,7 @@ import java.util.HashSet;
  * This part of the manual filling component manages the state of the manual filling flow depending
  * on the currently shown tab.
  */
-class ManualFillingMediator extends EmptyTabObserver
+public class ManualFillingMediator extends EmptyTabObserver
         implements KeyboardAccessoryCoordinator.VisibilityDelegate, View.OnLayoutChangeListener {
     static private final int MINIMAL_AVAILABLE_VERTICAL_SPACE = 80; // in DP.
     static private final int MINIMAL_AVAILABLE_HORIZONTAL_SPACE = 180; // in DP.
@@ -468,8 +474,7 @@ class ManualFillingMediator extends EmptyTabObserver
      * @return A {@link PasswordAccessorySheetCoordinator} or null if unavailable.
      */
     @VisibleForTesting
-    @Nullable
-    PasswordAccessorySheetCoordinator getOrCreatePasswordSheet() {
+    public @Nullable PasswordAccessorySheetCoordinator getOrCreatePasswordSheet() {
         if (!isInitialized()) return null;
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.EXPERIMENTAL_UI)
                 && !ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY)) {
