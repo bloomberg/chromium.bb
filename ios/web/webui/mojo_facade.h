@@ -12,8 +12,6 @@
 #include "base/values.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 
-@protocol CRWJSInjectionEvaluator;
-
 namespace service_manager {
 namespace mojom {
 class InterfaceProvider;
@@ -22,15 +20,17 @@ class InterfaceProvider;
 
 namespace web {
 
+class WebState;
+
 // Facade class for Mojo. All inputs and outputs are optimized for communication
 // with WebUI pages and hence use JSON format. Must be created used and
 // destroyed on UI thread.
 class MojoFacade {
  public:
   // Constructs MojoFacade. The calling code must retain the ownership of
-  // |interface_provider| and |script_evaluator|, both can not be null.
+  // |interface_provider| and |web_state|, both can not be null.
   MojoFacade(service_manager::mojom::InterfaceProvider* interface_provider,
-             id<CRWJSInjectionEvaluator> script_evaluator);
+             WebState* web_state);
   ~MojoFacade();
 
   // Handles Mojo message received from WebUI page. Returns a valid JSON string
@@ -115,7 +115,8 @@ class MojoFacade {
   // Provides interfaces.
   service_manager::mojom::InterfaceProvider* interface_provider_;
   // Runs JavaScript on WebUI page.
-  __weak id<CRWJSInjectionEvaluator> script_evaluator_ = nil;
+  WebState* web_state_ = nil;
+  //  __weak id<CRWJSInjectionEvaluator> script_evaluator_ = nil;
   // Id of the last created watch.
   int last_watch_id_ = 0;
   // Currently active watches created through this facade.

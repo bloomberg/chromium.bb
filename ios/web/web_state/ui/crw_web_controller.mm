@@ -914,7 +914,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if (!_mojoFacade) {
     service_manager::mojom::InterfaceProvider* interfaceProvider =
         self.webStateImpl->GetWebStateInterfaceProvider();
-    _mojoFacade.reset(new web::MojoFacade(interfaceProvider, self));
+    _mojoFacade =
+        std::make_unique<web::MojoFacade>(interfaceProvider, self.webState);
   }
   return _mojoFacade.get();
 }
@@ -1033,6 +1034,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   self.webStateImpl->CancelDialogs();
 
   _SSLStatusUpdater = nil;
+  _mojoFacade.reset();
 
   self.nativeProvider = nil;
   self.swipeRecognizerProvider = nil;
