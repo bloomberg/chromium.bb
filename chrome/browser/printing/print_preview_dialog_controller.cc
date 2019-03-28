@@ -145,7 +145,7 @@ void PrintPreviewDialogDelegate::GetDialogSize(gfx::Size* size) const {
 
   static const gfx::Size kMaxDialogSize(1000, 660);
   bool should_limit_dialog_size =
-      base::FeatureList::IsEnabled(features::kNewPrintPreviewLayout);
+      base::FeatureList::IsEnabled(::features::kNewPrintPreviewLayout);
 #if defined(OS_MACOSX)
   // Limit the maximum size on MacOS X.
   // http://crbug.com/105815
