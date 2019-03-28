@@ -61,26 +61,6 @@ unsigned EstimateOffsetMappingItemsCount(const LayoutBlockFlow& block) {
   return EstimateInlineItemsCount(block) / 4;
 }
 
-// Ensure this LayoutObject IsInLayoutNGInlineFormattingContext and does not
-// have associated NGPaintFragment.
-void ClearInlineFragment(LayoutObject* object) {
-  object->SetIsInLayoutNGInlineFormattingContext(true);
-  object->SetFirstInlineFragment(nullptr);
-}
-
-void ClearNeedsLayout(LayoutObject* object) {
-  object->ClearNeedsLayout();
-  object->ClearNeedsCollectInlines();
-
-  ClearInlineFragment(object);
-
-  // Reset previous items if they cannot be reused to prevent stale items
-  // for subsequent layouts. Items that can be reused have already been
-  // added to the builder.
-  if (object->IsText())
-    ToLayoutText(object)->ClearInlineItems();
-}
-
 // This class marks appropriate line box fragments as dirty.
 //
 // |CollectInlinesInternal| calls this class when traversing the LayoutObject
@@ -183,6 +163,18 @@ class ItemsBuilderForMarkLineBoxesDirty {
     return has_floating_or_out_of_flow_positioned_;
   }
 
+  void ClearInlineFragment(LayoutObject* object) {
+    NGInlineNode::ClearInlineFragment(object);
+  }
+
+  void ClearNeedsLayout(LayoutObject* object) {
+    NGInlineNode::ClearNeedsLayout(object);
+  }
+
+  void UpdateShouldCreateBoxFragment(LayoutInline* object) {
+    object->UpdateShouldCreateBoxFragment();
+  }
+
  private:
   bool has_floating_or_out_of_flow_positioned_ = false;
 };
@@ -201,8 +193,7 @@ template <typename ItemsBuilder>
 void CollectInlinesInternal(LayoutBlockFlow* block,
                             ItemsBuilder* builder,
                             String* previous_text,
-                            NGLineBoxMarker* marker,
-                            bool update_layout) {
+                            NGLineBoxMarker* marker) {
   builder->EnterBlock(block->Style());
   LayoutObject* node = GetLayoutObjectForFirstChildNode(block);
 
@@ -232,24 +223,21 @@ void CollectInlinesInternal(LayoutBlockFlow* block,
       if (marker && marker->HandleText(layout_text))
         marker = nullptr;
 
-      if (update_layout)
-        ClearNeedsLayout(layout_text);
+      builder->ClearNeedsLayout(layout_text);
 
     } else if (node->IsFloating()) {
       builder->AppendFloating(node);
       if (builder->ShouldAbort())
         return;
 
-      if (update_layout)
-        ClearInlineFragment(node);
+      builder->ClearInlineFragment(node);
 
     } else if (node->IsOutOfFlowPositioned()) {
       builder->AppendOutOfFlowPositioned(node);
       if (builder->ShouldAbort())
         return;
 
-      if (update_layout)
-        ClearInlineFragment(node);
+      builder->ClearInlineFragment(node);
 
     } else if (node->IsAtomicInlineLevel()) {
       if (node->IsLayoutNGListMarker() || node->IsListMarker()) {
@@ -266,8 +254,7 @@ void CollectInlinesInternal(LayoutBlockFlow* block,
         if (marker && marker->HandleAtomicInline(ToLayoutBox(node)))
           marker = nullptr;
 
-        if (update_layout)
-          ClearInlineFragment(node);
+        builder->ClearInlineFragment(node);
       }
 
     } else {
@@ -276,8 +263,7 @@ void CollectInlinesInternal(LayoutBlockFlow* block,
       // box to prevent having inline/block-mixed children.
       DCHECK(node->IsInline());
       LayoutInline* layout_inline = ToLayoutInline(node);
-      if (update_layout)
-        layout_inline->UpdateShouldCreateBoxFragment();
+      builder->UpdateShouldCreateBoxFragment(layout_inline);
 
       builder->EnterInline(layout_inline);
 
@@ -292,9 +278,7 @@ void CollectInlinesInternal(LayoutBlockFlow* block,
 
       // An empty inline node.
       builder->ExitInline(layout_inline);
-
-      if (update_layout)
-        ClearNeedsLayout(layout_inline);
+      builder->ClearNeedsLayout(layout_inline);
     }
 
     // Find the next sibling, or parent, until we reach |block|.
@@ -311,9 +295,7 @@ void CollectInlinesInternal(LayoutBlockFlow* block,
       }
       DCHECK(node->IsInline());
       builder->ExitInline(node);
-
-      if (update_layout)
-        ClearNeedsLayout(node);
+      builder->ClearNeedsLayout(node);
     }
   }
   builder->ExitBlock();
@@ -434,9 +416,7 @@ void NGInlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
   NGInlineItemsBuilderForOffsetMapping builder(&items);
   builder.GetOffsetMappingBuilder().ReserveCapacity(
       EstimateOffsetMappingItemsCount(*layout_block_flow));
-  const bool update_layout = false;
-  CollectInlinesInternal(layout_block_flow, &builder, nullptr, nullptr,
-                         update_layout);
+  CollectInlinesInternal(layout_block_flow, &builder, nullptr, nullptr);
 
   // For non-NG object, we need the text, and also the inline items to resolve
   // bidi levels. Otherwise |data| already has the text from the pre-layout
@@ -500,10 +480,8 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
       previous_data ? &previous_data->text_content : nullptr;
   data->items.ReserveCapacity(EstimateInlineItemsCount(*block));
   NGInlineItemsBuilder builder(&data->items);
-  const bool update_layout = true;
   CollectInlinesInternal(block, &builder, previous_text,
-                         marker.has_value() ? &*marker : nullptr,
-                         update_layout);
+                         marker.has_value() ? &*marker : nullptr);
   data->text_content = builder.ToString();
 
   // Set |is_bidi_enabled_| for all UTF-16 strings for now, because at this
@@ -1001,8 +979,7 @@ bool NGInlineNode::PrepareReuseFragments(
 bool NGInlineNode::MarkLineBoxesDirty(LayoutBlockFlow* block_flow) {
   NGLineBoxMarker marker(block_flow->PaintFragment());
   ItemsBuilderForMarkLineBoxesDirty builder;
-  const bool update_layout = true;
-  CollectInlinesInternal(block_flow, &builder, nullptr, &marker, update_layout);
+  CollectInlinesInternal(block_flow, &builder, nullptr, &marker);
   return !builder.ShouldAbort();
 }
 
