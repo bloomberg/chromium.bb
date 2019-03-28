@@ -8,8 +8,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/time/time.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_separator_view.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -44,10 +46,6 @@ constexpr int kIconLabelBubbleSeparatorWidth = 1;
 // or label.
 constexpr int kIconLabelBubbleSpaceBesideSeparator = 8;
 
-// The length of the separator's fade animation. These values are empirical.
-constexpr int kIconLabelBubbleFadeInDurationMs = 250;
-constexpr int kIconLabelBubbleFadeOutDurationMs = 175;
-
 // The type of tweening for the animation.
 const gfx::Tween::Type kIconLabelBubbleTweenType = gfx::Tween::EASE_IN_OUT;
 
@@ -58,77 +56,14 @@ constexpr int kIconLabelBubbleAnimationDurationMs = 3000;
 const double kIconLabelBubbleOpenTimeFraction = 0.2;
 }  // namespace
 
-//////////////////////////////////////////////////////////////////
-// SeparatorView class
-
-IconLabelBubbleView::SeparatorView::SeparatorView(IconLabelBubbleView* owner) {
-  DCHECK(owner);
-  owner_ = owner;
-
-  SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
-}
-
-void IconLabelBubbleView::SeparatorView::OnPaint(gfx::Canvas* canvas) {
-  const SkColor background_color = owner_->GetParentBackgroundColor();
-  const SkColor separator_color =
-      SkColorSetA(color_utils::GetColorWithMaxContrast(background_color), 0x69);
-  const float x = GetLocalBounds().right() -
-                  owner_->GetEndPaddingWithSeparator() -
-                  1.0f / canvas->image_scale();
-  canvas->DrawLine(gfx::PointF(x, GetLocalBounds().y()),
-                   gfx::PointF(x, GetLocalBounds().bottom()), separator_color);
-}
-
-void IconLabelBubbleView::SeparatorView::UpdateOpacity() {
-  if (!visible())
-    return;
-
-  // When using focus rings are visible we should hide the separator instantly
-  // when the IconLabelBubbleView is focused. Otherwise we should follow the
-  // inkdrop.
-  if (owner_->focus_ring() && owner_->HasFocus()) {
-    layer()->SetOpacity(0.0f);
-    return;
-  }
-
-  views::InkDrop* ink_drop = owner_->GetInkDrop();
-  DCHECK(ink_drop);
-
-  // If an inkdrop highlight or ripple is animating in or visible, the
-  // separator should fade out.
-  views::InkDropState state = ink_drop->GetTargetInkDropState();
-  float opacity = 0.0f;
-  float duration = kIconLabelBubbleFadeOutDurationMs;
-  if (!ink_drop->IsHighlightFadingInOrVisible() &&
-      (state == views::InkDropState::HIDDEN ||
-       state == views::InkDropState::ACTION_TRIGGERED ||
-       state == views::InkDropState::DEACTIVATED)) {
-    opacity = 1.0f;
-    duration = kIconLabelBubbleFadeInDurationMs;
-  }
-
-  if (disable_animation_for_test_) {
-    layer()->SetOpacity(opacity);
-  } else {
-    ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
-    animation.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(duration));
-    animation.SetTweenType(gfx::Tween::Type::EASE_IN);
-    layer()->SetOpacity(opacity);
-  }
-}
-
-//////////////////////////////////////////////////////////////////
-// IconLabelBubbleView class
-
 IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list)
     : LabelButton(nullptr, base::string16()),
-      separator_view_(new SeparatorView(this)) {
+      separator_view_(new LocationBarSeparatorView()) {
   SetFontList(font_list);
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  separator_view_->SetVisible(ShouldShowSeparator());
+  separator_view_->SetBackgroundColor(GetParentBackgroundColor());
+  UpdateSeparator();
   AddChildView(separator_view_);
 
   set_ink_drop_visible_opacity(
@@ -149,7 +84,7 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list)
 IconLabelBubbleView::~IconLabelBubbleView() {}
 
 void IconLabelBubbleView::InkDropAnimationStarted() {
-  separator_view_->UpdateOpacity();
+  UpdateSeparator();
 }
 
 void IconLabelBubbleView::InkDropRippleAnimationEnded(
@@ -164,8 +99,7 @@ bool IconLabelBubbleView::ShouldShowLabel() const {
 void IconLabelBubbleView::SetLabel(const base::string16& label_text) {
   SetAccessibleName(label_text);
   label()->SetText(label_text);
-  separator_view_->SetVisible(ShouldShowSeparator());
-  separator_view_->UpdateOpacity();
+  UpdateSeparator();
 }
 
 void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
@@ -254,17 +188,17 @@ void IconLabelBubbleView::Layout() {
                                     GetWidthBetweenIconAndSeparator());
   label()->SetBounds(label_x, 0, label_width, height());
 
-  // The separator should be the same height as the icons.
-  const int separator_height = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
-  gfx::Rect separator_bounds(label()->bounds());
-  separator_bounds.Inset(0, (separator_bounds.height() - separator_height) / 2);
+  const int icon_end = label()->text().empty() ? image()->bounds().right()
+                                               : label()->bounds().right();
 
-  float separator_width =
-      GetWidthBetweenIconAndSeparator() + GetEndPaddingWithSeparator();
-  int separator_x = label()->text().empty() ? image()->bounds().right()
-                                            : label()->bounds().right();
-  separator_view_->SetBounds(separator_x, separator_bounds.y(), separator_width,
-                             separator_height);
+  // The separator should be the same height as the icons.
+  const gfx::Size separator_size(kIconLabelBubbleSeparatorWidth,
+                                 GetLayoutConstant(LOCATION_BAR_ICON_SIZE));
+  const int separator_x = icon_end + GetWidthBetweenIconAndSeparator();
+  const int separator_y = (height() - separator_size.height()) / 2;
+  const gfx::Rect separator_bounds(gfx::Point(separator_x, separator_y),
+                                   separator_size);
+  separator_view_->SetBoundsRect(separator_bounds);
 
   UpdateHighlightPath();
 }
@@ -279,6 +213,7 @@ void IconLabelBubbleView::OnNativeThemeChanged(
   LabelButton::OnNativeThemeChanged(native_theme);
   SetEnabledTextColors(GetTextColor());
   label()->SetBackgroundColor(GetParentBackgroundColor());
+  separator_view_->SetBackgroundColor(GetParentBackgroundColor());
   SchedulePaint();
 }
 
@@ -309,12 +244,12 @@ void IconLabelBubbleView::NotifyClick(const ui::Event& event) {
 }
 
 void IconLabelBubbleView::OnFocus() {
-  separator_view_->UpdateOpacity();
+  UpdateSeparator();
   LabelButton::OnFocus();
 }
 
 void IconLabelBubbleView::OnBlur() {
-  separator_view_->UpdateOpacity();
+  UpdateSeparator();
   LabelButton::OnBlur();
 }
 
@@ -508,5 +443,36 @@ void IconLabelBubbleView::UpdateHighlightPath() {
   if (focus_ring()) {
     focus_ring()->Layout();
     focus_ring()->SchedulePaint();
+  }
+}
+
+void IconLabelBubbleView::UpdateSeparator() {
+  if (!ShouldShowSeparator()) {
+    separator_view_->SetVisible(false);
+    return;
+  }
+
+  separator_view_->SetVisible(true);
+
+  // When using focus rings, we should hide the separator instantly upon
+  // focus. Otherwise we should follow the inkdrop.
+  if (focus_ring() && HasFocus()) {
+    separator_view_->Hide();
+    return;
+  }
+
+  views::InkDrop* const ink_drop = GetInkDrop();
+  DCHECK(ink_drop);
+
+  // If an inkdrop highlight or ripple is animating in or visible, the
+  // separator should fade out.
+  const views::InkDropState state = ink_drop->GetTargetInkDropState();
+  if (!ink_drop->IsHighlightFadingInOrVisible() &&
+      (state == views::InkDropState::HIDDEN ||
+       state == views::InkDropState::ACTION_TRIGGERED ||
+       state == views::InkDropState::DEACTIVATED)) {
+    separator_view_->FadeIn();
+  } else {
+    separator_view_->FadeOut();
   }
 }
