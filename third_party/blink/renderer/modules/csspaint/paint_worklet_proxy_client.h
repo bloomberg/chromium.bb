@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
 
 namespace blink {
 
@@ -32,9 +33,10 @@ class MODULES_EXPORT PaintWorkletProxyClient
  public:
   static const char kSupplementName[];
 
-  static PaintWorkletProxyClient* Create();
+  static PaintWorkletProxyClient* Create(Document*);
 
-  PaintWorkletProxyClient();
+  PaintWorkletProxyClient(
+      scoped_refptr<PaintWorkletPaintDispatcher> compositor_paintee);
   virtual ~PaintWorkletProxyClient() = default;
 
   void Trace(blink::Visitor*) override;
@@ -45,8 +47,11 @@ class MODULES_EXPORT PaintWorkletProxyClient
   static PaintWorkletProxyClient* From(WorkerClients*);
 
  private:
-  CrossThreadPersistent<PaintWorkletGlobalScope> global_scope_;
+  FRIEND_TEST_ALL_PREFIXES(PaintWorkletProxyClientTest,
+                           PaintWorkletProxyClientConstruction);
 
+  scoped_refptr<PaintWorkletPaintDispatcher> compositor_paintee_;
+  CrossThreadPersistent<PaintWorkletGlobalScope> global_scope_;
   enum RunState { kUninitialized, kWorking, kDisposed } state_;
 };
 
