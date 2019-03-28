@@ -51,7 +51,7 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
                               int desired_flags) override;
   int DatabaseDeleteFile(const blink::WebString& vfs_file_name,
                          bool sync_dir) override;
-  long DatabaseGetFileAttributes(
+  int32_t DatabaseGetFileAttributes(
       const blink::WebString& vfs_file_name) override;
   int64_t DatabaseGetFileSize(const blink::WebString& vfs_file_name) override;
   int64_t DatabaseGetSpaceAvailableForOrigin(

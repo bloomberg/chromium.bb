@@ -234,7 +234,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   }
 
   // Returns the attributes of the given database file.
-  virtual long DatabaseGetFileAttributes(const WebString& vfs_file_name) {
+  virtual int32_t DatabaseGetFileAttributes(const WebString& vfs_file_name) {
     return 0;
   }
 

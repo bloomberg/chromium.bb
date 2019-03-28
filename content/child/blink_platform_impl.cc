@@ -634,7 +634,7 @@ int BlinkPlatformImpl::DatabaseDeleteFile(const blink::WebString& vfs_file_name,
   return -1;
 }
 
-long BlinkPlatformImpl::DatabaseGetFileAttributes(
+int32_t BlinkPlatformImpl::DatabaseGetFileAttributes(
     const blink::WebString& vfs_file_name) {
   return 0;
 }
