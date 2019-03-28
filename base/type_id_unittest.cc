@@ -61,6 +61,11 @@ TEST(TypeId, TypesInAnonymousNameSpacesDontCollide) {
             TypeIdTestSupportB::GetTypeIdForTypeInAnonymousNameSpace());
 }
 
+TEST(TypeId, TemplateTypesfromDifferentSo) {
+  EXPECT_EQ(TypeIdTestSupportA::GetTypeIdForUniquePtrTestType(),
+            TypeId::From<std::unique_ptr<TestType>>());
+}
+
 // See http://crbug.com/914734
 #if defined(ADDRESS_SANITIZER)
 TEST(TypeId, DISABLED_IdenticalTypesFromDifferentCompilationUnitsMatch) {

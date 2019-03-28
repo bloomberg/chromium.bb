@@ -10,10 +10,13 @@
 
 namespace base {
 
+struct COMPONENT_EXPORT(BASE_TEST) TestType {};
+
 // This is here to help test base::TypeId.
 struct COMPONENT_EXPORT(BASE_TEST) TypeIdTestSupportA {
   static TypeId GetTypeIdForTypeInAnonymousNameSpace();
   static TypeId GetTypeIdForUniquePtrInt();
+  static TypeId GetTypeIdForUniquePtrTestType();
 };
 
 }  // namespace base
