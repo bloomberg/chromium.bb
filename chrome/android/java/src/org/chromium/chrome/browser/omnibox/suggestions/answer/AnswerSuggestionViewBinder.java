@@ -67,6 +67,14 @@ public class AnswerSuggestionViewBinder {
             view.setLine1TextContent(model.get(AnswerSuggestionViewProperties.TEXT_LINE_1_TEXT));
         } else if (AnswerSuggestionViewProperties.TEXT_LINE_2_TEXT.equals(propertyKey)) {
             view.setLine2TextContent(model.get(AnswerSuggestionViewProperties.TEXT_LINE_2_TEXT));
+        } else if (AnswerSuggestionViewProperties.TEXT_LINE_1_ACCESSIBILITY_DESCRIPTION.equals(
+                           propertyKey)) {
+            view.setLine1AccessibilityDescription(model.get(
+                    AnswerSuggestionViewProperties.TEXT_LINE_1_ACCESSIBILITY_DESCRIPTION));
+        } else if (AnswerSuggestionViewProperties.TEXT_LINE_2_ACCESSIBILITY_DESCRIPTION.equals(
+                           propertyKey)) {
+            view.setLine2AccessibilityDescription(model.get(
+                    AnswerSuggestionViewProperties.TEXT_LINE_2_ACCESSIBILITY_DESCRIPTION));
         }
     }
 }
