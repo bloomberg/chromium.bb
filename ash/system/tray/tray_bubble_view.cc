@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/public/cpp/ash_features.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -225,9 +226,11 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   set_margins(gfx::Insets());
   SetPaintToLayer();
 
-  bubble_content_mask_ = views::Painter::CreatePaintedLayer(
-      views::Painter::CreateSolidRoundRectPainter(
-          SK_ColorBLACK, bubble_border_->GetBorderCornerRadius()));
+  if (!ash::features::ShouldUseShaderRoundedCorner()) {
+    bubble_content_mask_ = views::Painter::CreatePaintedLayer(
+        views::Painter::CreateSolidRoundRectPainter(
+            SK_ColorBLACK, bubble_border_->GetBorderCornerRadius()));
+  }
 
   auto layout = std::make_unique<BottomAlignedBoxLayout>(this);
   layout->SetDefaultFlex(1);
@@ -256,7 +259,13 @@ bool TrayBubbleView::IsATrayBubbleOpen() {
 }
 
 void TrayBubbleView::InitializeAndShowBubble() {
-  layer()->parent()->SetMaskLayer(bubble_content_mask_->layer());
+  if (ash::features::ShouldUseShaderRoundedCorner()) {
+    int radius = bubble_border_->GetBorderCornerRadius();
+    layer()->parent()->SetRoundedCornerRadius({radius, radius, radius, radius});
+  } else {
+    CHECK(bubble_content_mask_);
+    layer()->parent()->SetMaskLayer(bubble_content_mask_->layer());
+  }
 
   GetWidget()->Show();
   UpdateBubble();
@@ -341,7 +350,8 @@ ax::mojom::Role TrayBubbleView::GetAccessibleWindowRole() const {
 
 void TrayBubbleView::SizeToContents() {
   BubbleDialogDelegateView::SizeToContents();
-  bubble_content_mask_->layer()->SetBounds(layer()->parent()->bounds());
+  if (bubble_content_mask_)
+    bubble_content_mask_->layer()->SetBounds(layer()->parent()->bounds());
 }
 
 void TrayBubbleView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,
