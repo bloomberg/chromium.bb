@@ -459,6 +459,9 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->cb_pred_filter_search = 0;
   sf->use_nonrd_pick_mode = 0;
   sf->use_real_time_ref_set = 0;
+  sf->use_fast_nonrd_pick_mode = 0;
+  sf->reuse_inter_pred_nonrd = 0;
+  sf->estimate_motion_for_var_based_partition = 1;
 
   if (speed >= 1) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
@@ -597,27 +600,26 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->simple_model_rd_from_var = 1;
   }
   if (speed >= 7) {
-    sf->default_max_partition_size = BLOCK_32X32;
-    sf->default_min_partition_size = BLOCK_8X8;
-    sf->intra_y_mode_mask[TX_64X64] = INTRA_DC;
-    sf->intra_y_mode_mask[TX_32X32] = INTRA_DC;
-    sf->frame_parameter_update = 0;
-    sf->mv.search_method = FAST_HEX;
-    sf->partition_search_type = REFERENCE_PARTITION;
-    sf->mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
-  }
-  if (speed >= 8) {
-    sf->mv.search_method = FAST_DIAMOND;
     sf->lpf_pick = LPF_PICK_FROM_Q;
+    sf->mv.subpel_force_stop = QUARTER_PEL;
     sf->default_max_partition_size = BLOCK_128X128;
     sf->default_min_partition_size = BLOCK_8X8;
+    sf->frame_parameter_update = 0;
+    sf->mv.search_method = FAST_DIAMOND;
     sf->partition_search_type = VAR_BASED_PARTITION;
+    sf->mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
     sf->use_real_time_ref_set = 1;
     // Can't use LARGEST TX mode with pre-calculated partition
     // and disabled TX64
     if (!cpi->oxcf.enable_tx64) sf->tx_size_search_method = USE_FAST_RD;
     sf->use_nonrd_pick_mode = 1;
     sf->inter_mode_rd_model_estimation = 2;
+  }
+  if (speed >= 8) {
+    sf->use_fast_nonrd_pick_mode = 1;
+    sf->mv.subpel_search_method = SUBPEL_TREE;
+    sf->tx_size_search_method = USE_FAST_RD;
+    sf->estimate_motion_for_var_based_partition = 0;
   }
 }
 

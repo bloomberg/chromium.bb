@@ -348,7 +348,6 @@ static void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[], int q,
       thresholds[2] = (5 * threshold_base) >> 2;
     } else if (cm->width < 1920 && cm->height < 1080) {
       thresholds[2] = threshold_base << 1;
-      thresholds[3] <<= 2;
     } else {
       thresholds[2] = (5 * threshold_base) >> 1;
     }
@@ -477,10 +476,12 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
     mi->sb_type = cm->seq_params.sb_size;
     mi->mv[0].as_int = 0;
     mi->interp_filters = av1_make_interp_filters(BILINEAR, BILINEAR);
-    if (xd->mb_to_right_edge >= 0 && xd->mb_to_bottom_edge >= 0) {
-      const MV dummy_mv = { 0, 0 };
-      av1_int_pro_motion_estimation(cpi, x, cm->seq_params.sb_size, mi_row,
-                                    mi_col, &dummy_mv);
+    if (cpi->sf.estimate_motion_for_var_based_partition) {
+      if (xd->mb_to_right_edge >= 0 && xd->mb_to_bottom_edge >= 0) {
+        const MV dummy_mv = { 0, 0 };
+        av1_int_pro_motion_estimation(cpi, x, cm->seq_params.sb_size, mi_row,
+                                      mi_col, &dummy_mv);
+      }
     }
 
 // TODO(kyslov): bring the small SAD functionality back
