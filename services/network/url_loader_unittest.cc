@@ -1463,6 +1463,19 @@ TEST_F(URLLoaderTest, UploadTwoBatchesOfFilesWithRespondDifferentNumOfFiles) {
 }
 
 TEST_F(URLLoaderTest, UploadInvalidFile) {
+  allow_file_uploads();
+  set_upload_files_invalid(true);
+  base::FilePath file_path = GetTestFilePath("simple_page.html");
+
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  request_body->AppendFileRange(
+      file_path, 0, std::numeric_limits<uint64_t>::max(), base::Time());
+  set_request_body(std::move(request_body));
+
+  EXPECT_EQ(net::ERR_ACCESS_DENIED, Load(test_server()->GetURL("/echo")));
+}
+
+TEST_F(URLLoaderTest, UploadFileWithoutNetworkServiceClient) {
   // Don't call allow_file_uploads();
   base::FilePath file_path = GetTestFilePath("simple_page.html");
 
