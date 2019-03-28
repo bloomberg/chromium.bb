@@ -21,11 +21,11 @@ void ReadFromReader(FileStreamReader* reader,
   ASSERT_TRUE(reader != nullptr);
   ASSERT_TRUE(result != nullptr);
   *result = net::OK;
-  net::TestCompletionCallback callback;
   size_t total_bytes_read = 0;
   while (total_bytes_read < size) {
     scoped_refptr<net::IOBufferWithSize> buf(
         base::MakeRefCounted<net::IOBufferWithSize>(size - total_bytes_read));
+    net::TestCompletionCallback callback;
     int rv = reader->Read(buf.get(), buf->size(), callback.callback());
     if (rv == net::ERR_IO_PENDING)
       rv = callback.WaitForResult();
