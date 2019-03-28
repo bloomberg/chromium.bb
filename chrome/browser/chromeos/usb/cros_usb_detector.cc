@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/notification_utils.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
@@ -151,6 +152,9 @@ device::mojom::UsbDeviceFilterPtr UsbFilterByClassCode(
 
 void ShowNotificationForDevice(device::mojom::UsbDeviceInfoPtr device_info) {
   message_center::RichNotificationData rich_notification_data;
+  rich_notification_data.small_image = gfx::Image(
+      gfx::CreateVectorIcon(vector_icons::kUsbIcon, 64, gfx::kGoogleBlue800));
+  rich_notification_data.accent_color = ash::kSystemNotificationColorNormal;
   rich_notification_data.buttons.emplace_back(
       message_center::ButtonInfo(l10n_util::GetStringUTF16(
           IDS_CROSUSB_NOTIFICATION_BUTTON_CONNECT_TO_LINUX)));
@@ -162,9 +166,7 @@ void ShowNotificationForDevice(device::mojom::UsbDeviceInfoPtr device_info) {
       l10n_util::GetStringUTF16(IDS_CROSUSB_DEVICE_DETECTED_NOTIFICATION_TITLE),
       l10n_util::GetStringFUTF16(IDS_CROSUSB_DEVICE_DETECTED_NOTIFICATION,
                                  ProductLabelFromDevice(device_info)),
-      gfx::Image(gfx::CreateVectorIcon(vector_icons::kUsbIcon, 64,
-                                       gfx::kGoogleBlue800)),
-      base::string16(), GURL(),
+      gfx::Image(), base::string16(), GURL(),
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierUsb),
       rich_notification_data,
