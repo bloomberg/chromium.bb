@@ -111,6 +111,8 @@ void Button::SetFocusForPlatform() {
 }
 
 void Button::SetTooltipText(const base::string16& tooltip_text) {
+  if (tooltip_text == tooltip_text_)
+    return;
   tooltip_text_ = tooltip_text;
   OnSetTooltipText(tooltip_text);
   TooltipTextChanged();
