@@ -150,6 +150,8 @@ bool KeyboardEventManager::HandleAccessKey(const WebKeyboardEvent& evt) {
       frame_->GetDocument()->GetElementByAccessKey(key.DeprecatedLower());
   if (!elem)
     return false;
+  elem->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
+                          kWebFocusTypeAccessKey, nullptr));
   elem->AccessKeyAction(false);
   return true;
 }
