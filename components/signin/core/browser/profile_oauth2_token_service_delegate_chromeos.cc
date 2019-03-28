@@ -300,25 +300,11 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::OnTokenUpserted(
     return;
   }
 
-  std::string email = account.raw_email;
-  if (email.empty()) {
-    // This is an old, un-migrated account for which we do not have an email id
-    // stored on disk. Check https://crbug.com/933307 and
-    // https://crbug.com/925827 for context.
-
-    // This is an existing account and thus, must be present in
-    // AccountTrackerService.
-    email = account_tracker_service_
-                ->FindAccountInfoByGaiaId(account.key.id /* gaia_id */)
-                .email;
-
-    // Additionally, backfill this email into Account Manager so that we can
-    // remove this block of code with a DCHECK in future (M75) releases.
-    account_manager_->UpdateEmail(account.key, email);
-  }
-
+  // All Gaia accounts in Chrome OS Account Manager must have an email
+  // associated with them (https://crbug.com/933307).
+  DCHECK(!account.raw_email.empty());
   std::string account_id = account_tracker_service_->SeedAccountInfo(
-      account.key.id /* gaia_id */, email);
+      account.key.id /* gaia_id */, account.raw_email);
   DCHECK(!account_id.empty());
 
   // Clear any previously cached errors for |account_id|.
