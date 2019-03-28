@@ -31,17 +31,18 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_LAYOUT_UNIT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_LAYOUT_UNIT_H_
 
+#include <climits>
 #include <iosfwd>
 #include <limits>
 
 #include "base/compiler_specific.h"
 #include "base/numerics/clamped_math.h"
 #include "base/numerics/safe_conversions.h"
+#include "build/build_config.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 
 namespace blink {
 
@@ -59,6 +60,30 @@ static const int kFixedPointDenominator = 1 << kLayoutUnitFractionalBits;
 const int kIntMaxForLayoutUnit = INT_MAX / kFixedPointDenominator;
 const int kIntMinForLayoutUnit = INT_MIN / kFixedPointDenominator;
 
+#if defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_32_BITS) && \
+    defined(COMPILER_GCC) && !defined(OS_NACL) && __OPTIMIZE__
+inline int GetMaxSaturatedSetResultForTesting() {
+  // For ARM Asm version the set function maxes out to the biggest
+  // possible integer part with the fractional part zero'd out.
+  // e.g. 0x7fffffc0.
+  return std::numeric_limits<int>::max() & ~(kFixedPointDenominator - 1);
+}
+
+inline int GetMinSaturatedSetResultForTesting() {
+  return std::numeric_limits<int>::min();
+}
+#else
+ALWAYS_INLINE int GetMaxSaturatedSetResultForTesting() {
+  // For C version the set function maxes out to max int, this differs from
+  // the ARM asm version.
+  return std::numeric_limits<int>::max();
+}
+
+ALWAYS_INLINE int GetMinSaturatedSetResultForTesting() {
+  return std::numeric_limits<int>::min();
+}
+#endif  // CPU(ARM) && COMPILER(GCC)
+
 // TODO(thakis): Remove these two lines once http://llvm.org/PR26504 is resolved
 class PLATFORM_EXPORT LayoutUnit;
 constexpr inline bool operator<(const LayoutUnit&, const LayoutUnit&);
@@ -71,9 +96,9 @@ class LayoutUnit {
   template <typename IntegerType>
   explicit LayoutUnit(IntegerType value) {
     if (std::is_signed<IntegerType>::value)
-      SetValue(static_cast<int>(value));
+      SaturatedSet(static_cast<int>(value));
     else
-      SetValue(static_cast<unsigned>(value));
+      SaturatedSet(static_cast<unsigned>(value));
   }
   explicit LayoutUnit(uint64_t value) {
     value_ = base::saturated_cast<int>(value * kFixedPointDenominator);
@@ -246,13 +271,78 @@ class LayoutUnit {
            std::numeric_limits<int>::max() / kFixedPointDenominator;
   }
 
-  ALWAYS_INLINE void SetValue(int value) {
-    value_ = SaturatedSet<kLayoutUnitFractionalBits>(value);
+#if defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_32_BITS) && \
+    defined(COMPILER_GCC) && !defined(OS_NACL) && __OPTIMIZE__
+  // If we're building ARM 32-bit on GCC we replace the C++ versions with some
+  // native ARM assembly for speed.
+  inline void SaturatedSet(int value) {
+    // Figure out how many bits are left for storing the integer part of
+    // the fixed point number, and saturate our input to that
+    enum { Saturate = 32 - kLayoutUnitFractionalBits };
+
+    int result;
+
+    // The following ARM code will Saturate the passed value to the number of
+    // bits used for the whole part of the fixed point representation, then
+    // shift it up into place. This will result in the low
+    // <kLayoutUnitFractionalBits> bits all being 0's. When the value saturates
+    // this gives a different result to from the C++ case; in the C++ code a
+    // saturated value has all the low bits set to 1 (for a +ve number at
+    // least). This cannot be done rapidly in ARM ... we live with the
+    // difference, for the sake of speed.
+
+    asm("ssat %[output],%[saturate],%[value]\n\t"
+        "lsl  %[output],%[shift]"
+        : [output] "=r"(result)
+        : [value] "r"(value), [saturate] "n"(Saturate),
+          [shift] "n"(kLayoutUnitFractionalBits));
+
+    value_ = result;
   }
 
-  inline void SetValue(unsigned value) {
-    value_ = SaturatedSet<kLayoutUnitFractionalBits>(value);
+  inline void SaturatedSet(unsigned value) {
+    // Here we are being passed an unsigned value to saturate,
+    // even though the result is returned as a signed integer. The ARM
+    // instruction for unsigned saturation therefore needs to be given one
+    // less bit (i.e. the sign bit) for the saturation to work correctly; hence
+    // the '31' below.
+    enum { Saturate = 31 - kLayoutUnitFractionalBits };
+
+    // The following ARM code will Saturate the passed value to the number of
+    // bits used for the whole part of the fixed point representation, then
+    // shift it up into place. This will result in the low
+    // <kLayoutUnitFractionalBits> bits all being 0's. When the value saturates
+    // this gives a different result to from the C++ case; in the C++ code a
+    // saturated value has all the low bits set to 1. This cannot be done
+    // rapidly in ARM, so we live with the difference, for the sake of speed.
+
+    int result;
+
+    asm("usat %[output],%[saturate],%[value]\n\t"
+        "lsl  %[output],%[shift]"
+        : [output] "=r"(result)
+        : [value] "r"(value), [saturate] "n"(Saturate),
+          [shift] "n"(kLayoutUnitFractionalBits));
+
+    value_ = result;
   }
+#else
+  ALWAYS_INLINE void SaturatedSet(int value) {
+    if (value > kIntMaxForLayoutUnit)
+      value_ = std::numeric_limits<int>::max();
+    else if (value < kIntMinForLayoutUnit)
+      value_ = std::numeric_limits<int>::min();
+    else
+      value_ = static_cast<unsigned>(value) << kLayoutUnitFractionalBits;
+  }
+
+  ALWAYS_INLINE void SaturatedSet(unsigned value) {
+    if (value >= (unsigned)kIntMaxForLayoutUnit)
+      value_ = std::numeric_limits<int>::max();
+    else
+      value_ = value << kLayoutUnitFractionalBits;
+  }
+#endif  // CPU(ARM) && COMPILER(GCC)
 
   int value_;
 };
