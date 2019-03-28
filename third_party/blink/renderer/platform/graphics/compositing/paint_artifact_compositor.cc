@@ -35,6 +35,15 @@ namespace blink {
 
 namespace {
 
+// Returns true if the given element namespace is one of the ones needed for
+// running animations on the compositor. These are the only element_ids the
+// compositor needs to track existence of in the element id set.
+bool IsAnimationNamespace(CompositorElementIdNamespace element_namespace) {
+  return element_namespace == CompositorElementIdNamespace::kPrimaryTransform ||
+         element_namespace == CompositorElementIdNamespace::kPrimaryEffect ||
+         element_namespace == CompositorElementIdNamespace::kEffectFilter;
+}
+
 // Inserts the element ids of the given node and all of its ancestors into the
 // given |composited_element_ids| set. Filters out specifically element ids
 // which are needed for animations. Returns once it finds an id which already
@@ -46,7 +55,8 @@ void InsertAncestorElementIdsForAnimation(
     CompositorElementIdSet& composited_element_ids) {
   for (const auto* n = &node; n; n = SafeUnalias(n->Parent())) {
     const CompositorElementId& element_id = n->GetCompositorElementId();
-    if (element_id && n->RequiresCompositingForAnimation()) {
+    if (element_id && n->RequiresCompositingForAnimation() &&
+        IsAnimationNamespace(NamespaceFromCompositorElementId(element_id))) {
       if (composited_element_ids.count(element_id)) {
         // Once we reach a node already counted we can stop traversing the
         // parent chain.
