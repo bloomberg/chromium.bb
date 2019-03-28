@@ -42,8 +42,8 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/test/web_test_support.h"
-#include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
+#include "content/shell/common/web_test/blink_test_messages.h"
 #include "content/shell/common/web_test/web_test_messages.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
@@ -187,11 +187,11 @@ void BlinkTestRunner::SetEditCommand(const std::string& name,
 }
 
 void BlinkTestRunner::PrintMessageToStderr(const std::string& message) {
-  Send(new ShellViewHostMsg_PrintMessageToStderr(routing_id(), message));
+  Send(new BlinkTestHostMsg_PrintMessageToStderr(routing_id(), message));
 }
 
 void BlinkTestRunner::PrintMessage(const std::string& message) {
-  Send(new ShellViewHostMsg_PrintMessage(routing_id(), message));
+  Send(new BlinkTestHostMsg_PrintMessage(routing_id(), message));
 }
 
 void BlinkTestRunner::PostTask(base::OnceClosure task) {
@@ -261,12 +261,12 @@ void BlinkTestRunner::ApplyPreferences() {
   WebPreferences prefs = render_view()->GetWebkitPreferences();
   ExportWebTestSpecificPreferences(prefs_, &prefs);
   render_view()->SetWebkitPreferences(prefs);
-  Send(new ShellViewHostMsg_OverridePreferences(routing_id(), prefs));
+  Send(new BlinkTestHostMsg_OverridePreferences(routing_id(), prefs));
 }
 
 void BlinkTestRunner::SetPopupBlockingEnabled(bool block_popups) {
   Send(
-      new ShellViewHostMsg_SetPopupBlockingEnabled(routing_id(), block_popups));
+      new BlinkTestHostMsg_SetPopupBlockingEnabled(routing_id(), block_popups));
 }
 
 void BlinkTestRunner::UseUnfortunateSynchronousResizeMode(bool enable) {
@@ -286,7 +286,7 @@ void BlinkTestRunner::DisableAutoResizeMode(const WebSize& new_size) {
 }
 
 void BlinkTestRunner::NavigateSecondaryWindow(const GURL& url) {
-  Send(new ShellViewHostMsg_NavigateSecondaryWindow(routing_id(), url));
+  Send(new BlinkTestHostMsg_NavigateSecondaryWindow(routing_id(), url));
 }
 
 void BlinkTestRunner::InspectSecondaryWindow() {
@@ -355,19 +355,19 @@ void BlinkTestRunner::SetBluetoothFakeAdapter(const std::string& adapter_name,
 }
 
 void BlinkTestRunner::SetBluetoothManualChooser(bool enable) {
-  Send(new ShellViewHostMsg_SetBluetoothManualChooser(routing_id(), enable));
+  Send(new BlinkTestHostMsg_SetBluetoothManualChooser(routing_id(), enable));
 }
 
 void BlinkTestRunner::GetBluetoothManualChooserEvents(
     base::OnceCallback<void(const std::vector<std::string>&)> callback) {
   get_bluetooth_events_callbacks_.push_back(std::move(callback));
-  Send(new ShellViewHostMsg_GetBluetoothManualChooserEvents(routing_id()));
+  Send(new BlinkTestHostMsg_GetBluetoothManualChooserEvents(routing_id()));
 }
 
 void BlinkTestRunner::SendBluetoothManualChooserEvent(
     const std::string& event,
     const std::string& argument) {
-  Send(new ShellViewHostMsg_SendBluetoothManualChooserEvent(routing_id(), event,
+  Send(new BlinkTestHostMsg_SendBluetoothManualChooserEvent(routing_id(), event,
                                                             argument));
 }
 
@@ -506,7 +506,7 @@ void BlinkTestRunner::CaptureLocalLayoutDump() {
     // TODO(vmpstr): Since CaptureDump is called from the browser, we can be
     // smart and move this logic directly to the browser.
     waiting_for_layout_dump_results_ = true;
-    Send(new ShellViewHostMsg_InitiateLayoutDump(routing_id()));
+    Send(new BlinkTestHostMsg_InitiateLayoutDump(routing_id()));
   }
 }
 
@@ -577,7 +577,7 @@ void BlinkTestRunner::CaptureDumpComplete() {
 }
 
 void BlinkTestRunner::CloseRemainingWindows() {
-  Send(new ShellViewHostMsg_CloseRemainingWindows(routing_id()));
+  Send(new BlinkTestHostMsg_CloseRemainingWindows(routing_id()));
 }
 
 void BlinkTestRunner::DeleteAllCookies() {
@@ -589,16 +589,16 @@ int BlinkTestRunner::NavigationEntryCount() {
 }
 
 void BlinkTestRunner::GoToOffset(int offset) {
-  Send(new ShellViewHostMsg_GoToOffset(routing_id(), offset));
+  Send(new BlinkTestHostMsg_GoToOffset(routing_id(), offset));
 }
 
 void BlinkTestRunner::Reload() {
-  Send(new ShellViewHostMsg_Reload(routing_id()));
+  Send(new BlinkTestHostMsg_Reload(routing_id()));
 }
 
 void BlinkTestRunner::LoadURLForFrame(const WebURL& url,
                                       const std::string& frame_name) {
-  Send(new ShellViewHostMsg_LoadURLForFrame(routing_id(), url, frame_name));
+  Send(new BlinkTestHostMsg_LoadURLForFrame(routing_id(), url, frame_name));
 }
 
 bool BlinkTestRunner::AllowExternalPages() {
@@ -686,12 +686,12 @@ void BlinkTestRunner::DidClearWindowObject(WebLocalFrame* frame) {
 bool BlinkTestRunner::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BlinkTestRunner, message)
-    IPC_MESSAGE_HANDLER(ShellViewMsg_Reset, OnReset)
-    IPC_MESSAGE_HANDLER(ShellViewMsg_TestFinishedInSecondaryRenderer,
+    IPC_MESSAGE_HANDLER(BlinkTestMsg_Reset, OnReset)
+    IPC_MESSAGE_HANDLER(BlinkTestMsg_TestFinishedInSecondaryRenderer,
                         OnTestFinishedInSecondaryRenderer)
-    IPC_MESSAGE_HANDLER(ShellViewMsg_ReplyBluetoothManualChooserEvents,
+    IPC_MESSAGE_HANDLER(BlinkTestMsg_ReplyBluetoothManualChooserEvents,
                         OnReplyBluetoothManualChooserEvents)
-    IPC_MESSAGE_HANDLER(ShellViewMsg_LayoutDumpCompleted, OnLayoutDumpCompleted)
+    IPC_MESSAGE_HANDLER(BlinkTestMsg_LayoutDumpCompleted, OnLayoutDumpCompleted)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -707,7 +707,7 @@ void BlinkTestRunner::DidCommitProvisionalLoad(WebLocalFrame* frame,
   if (waiting_for_reset_ && frame == render_view()->GetWebView()->MainFrame() &&
       GURL(frame->GetDocumentLoader()->GetUrl()).IsAboutBlank()) {
     waiting_for_reset_ = false;
-    Send(new ShellViewHostMsg_ResetDone(routing_id()));
+    Send(new BlinkTestHostMsg_ResetDone(routing_id()));
   }
   if (!focus_on_next_commit_)
     return;
@@ -817,7 +817,7 @@ void BlinkTestRunner::OnSetTestConfiguration(
 }
 
 void BlinkTestRunner::OnReset() {
-  // ShellViewMsg_Reset should always be sent to the *current* view.
+  // BlinkTestMsg_Reset should always be sent to the *current* view.
   DCHECK(render_view()->GetWebView()->MainFrame()->IsWebLocalFrame());
   WebLocalFrame* main_frame =
       render_view()->GetWebView()->MainFrame()->ToWebLocalFrame();
