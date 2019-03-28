@@ -76,7 +76,7 @@ void RemoveFormatCommand::DoApply(EditingState* editing_state) {
   default_style->Style()->SetProperty(CSSPropertyID::kBackgroundColor,
                                       CSSValueID::kTransparent);
 
-  ApplyCommandToComposite(ApplyStyleCommand::Create(
+  ApplyCommandToComposite(MakeGarbageCollected<ApplyStyleCommand>(
                               GetDocument(), default_style,
                               IsElementForRemoveFormatCommand, GetInputType()),
                           editing_state);

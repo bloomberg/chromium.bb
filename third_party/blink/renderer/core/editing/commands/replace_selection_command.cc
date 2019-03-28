@@ -1198,8 +1198,9 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
                           kCanCrossEditingBoundary) &&
       prevent_nesting_ &&
       !(EnclosingNodeOfType(insertion_pos, &IsTableStructureNode))) {
-    ApplyCommandToComposite(BreakBlockquoteCommand::Create(GetDocument()),
-                            editing_state);
+    ApplyCommandToComposite(
+        MakeGarbageCollected<BreakBlockquoteCommand>(GetDocument()),
+        editing_state);
     if (editing_state->IsAborted())
       return;
     // This will leave a br between the split.

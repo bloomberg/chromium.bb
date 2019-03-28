@@ -65,8 +65,8 @@ void StyleCommands::ApplyStyle(LocalFrame& frame,
   if (!style)
     return;
   DCHECK(frame.GetDocument());
-  ApplyStyleCommand::Create(*frame.GetDocument(), EditingStyle::Create(style),
-                            input_type)
+  MakeGarbageCollected<ApplyStyleCommand>(
+      *frame.GetDocument(), EditingStyle::Create(style), input_type)
       ->Apply();
 }
 

@@ -48,19 +48,10 @@ class CORE_EXPORT ReplaceSelectionCommand final : public CompositeEditCommand {
 
   typedef unsigned CommandOptions;
 
-  static ReplaceSelectionCommand* Create(
-      Document& document,
-      DocumentFragment* fragment,
-      CommandOptions options,
-      InputEvent::InputType input_type = InputEvent::InputType::kNone) {
-    return MakeGarbageCollected<ReplaceSelectionCommand>(document, fragment,
-                                                         options, input_type);
-  }
-
   ReplaceSelectionCommand(Document&,
                           DocumentFragment*,
                           CommandOptions,
-                          InputEvent::InputType);
+                          InputEvent::InputType = InputEvent::InputType::kNone);
 
   EphemeralRange InsertedRange() const;
 
