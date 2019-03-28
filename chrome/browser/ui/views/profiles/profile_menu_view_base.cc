@@ -176,7 +176,7 @@ void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
       border_insets));
 
   for (size_t i = 0; i < menu_item_groups_.size(); i++) {
-    if (i == 0)
+    if (i > 0)
       main_view->AddChildView(new views::Separator());
 
     views::View* sub_view = new views::View();
