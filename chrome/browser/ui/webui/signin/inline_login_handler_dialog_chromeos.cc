@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/logging.h"
@@ -12,6 +13,8 @@
 #include "chrome/common/webui_url_constants.h"
 #include "net/base/url_util.h"
 #include "ui/aura/window.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -19,6 +22,8 @@ namespace chromeos {
 namespace {
 
 InlineLoginHandlerDialogChromeOS* dialog = nullptr;
+constexpr int kSigninDialogWidth = 768;
+constexpr int kSigninDialogHeight = 640;
 
 }  // namespace
 
@@ -49,18 +54,19 @@ InlineLoginHandlerDialogChromeOS::~InlineLoginHandlerDialogChromeOS() {
   dialog = nullptr;
 }
 
+void InlineLoginHandlerDialogChromeOS::GetDialogSize(gfx::Size* size) const {
+  const display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(dialog_window());
+  size->SetSize(std::min(kSigninDialogWidth, display.work_area().width()),
+                std::min(kSigninDialogHeight, display.work_area().height()));
+}
+
 std::string InlineLoginHandlerDialogChromeOS::GetDialogArgs() const {
   return std::string();
 }
 
 bool InlineLoginHandlerDialogChromeOS::ShouldShowDialogTitle() const {
   return false;
-}
-
-void InlineLoginHandlerDialogChromeOS::GetDialogSize(gfx::Size* size) const {
-  constexpr int kSigninDialogWidth = 800;
-  constexpr int kSigninDialogHeight = 700;
-  size->SetSize(kSigninDialogWidth, kSigninDialogHeight);
 }
 
 }  // namespace chromeos
