@@ -201,7 +201,7 @@ class DiskCacheLPMFuzzer {
   disk_cache::MemBackendImpl* mem_cache_ = nullptr;
 
   // Maximum size of the cache, that we have currently set.
-  uint32_t max_size_;
+  uint32_t max_size_ = kMaxSize;
 
   // This "consistent hash table" keeys track of the keys we've added to the
   // backend so far. This should always be indexed by a "key_id" from a
@@ -477,7 +477,8 @@ void DiskCacheLPMFuzzer::RunCommands(
                            base::Unretained(this), entry_id, async, is_sparse);
 
         MAYBE_PRINT << "CreateEntry(\"" << key_str
-                    << "\", set_is_sparse = " << is_sparse << ") = ";
+                    << "\", set_is_sparse = " << is_sparse
+                    << ") = " << std::flush;
         int rv = cache_->CreateEntry(key_str, pri, &entry_info->entry_ptr,
                                      std::move(cb));
         if (!async || rv != net::ERR_IO_PENDING) {
@@ -515,7 +516,8 @@ void DiskCacheLPMFuzzer::RunCommands(
                            base::Unretained(this), entry_id, async, false);
 
         auto key_it = GetNextValue(&created_cache_entries_, key_id);
-        MAYBE_PRINT << "OpenEntry(\"" << key_it->second << "\") = ";
+        MAYBE_PRINT << "OpenEntry(\"" << key_it->second
+                    << "\") = " << std::flush;
         int rv = cache_->OpenEntry(key_it->second, pri, &entry_info->entry_ptr,
                                    std::move(cb));
         if (!async || rv != net::ERR_IO_PENDING) {
@@ -569,7 +571,8 @@ void DiskCacheLPMFuzzer::RunCommands(
 
         // Will only be set as sparse if it is created and not opened.
         MAYBE_PRINT << "OpenOrCreateEntry(\"" << key_str
-                    << "\", set_is_sparse = " << is_sparse << ") = ";
+                    << "\", set_is_sparse = " << is_sparse
+                    << ") = " << std::flush;
         int rv =
             cache_->OpenOrCreateEntry(key_str, pri, ewo_ptr, std::move(cb));
         if (!async || rv != net::ERR_IO_PENDING) {
@@ -807,7 +810,8 @@ void DiskCacheLPMFuzzer::RunCommands(
             base::BindOnce(&DiskCacheLPMFuzzer::OpenCacheEntryCallback,
                            base::Unretained(this), entry_id, async, false);
 
-        MAYBE_PRINT << "Iterator(" << ione.it_id() << ").OpenNextEntry() = ";
+        MAYBE_PRINT << "Iterator(" << ione.it_id()
+                    << ").OpenNextEntry() = " << std::flush;
         int rv = iterator_it->second->OpenNextEntry(&entry_info->entry_ptr,
                                                     std::move(cb));
         if (!async || rv != net::ERR_IO_PENDING) {
