@@ -33,14 +33,13 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
 
   bool ComputeImageFeaturesForTesting(Image& image,
                                       std::vector<float>* features) {
+    std::vector<SkColor> sampled_pixels;
     return ComputeImageFeatures(
         image,
         FloatRect(0, 0, static_cast<float>(image.width()),
                   static_cast<float>(image.height())),
-        features);
+        features, &sampled_pixels);
   }
-
-  void SetRandomGeneratorForTesting() { use_testing_random_generator_ = true; }
 
   DarkModeClassification ClassifyImageUsingDecisionTreeForTesting(
       const std::vector<float>& features) {
@@ -51,7 +50,10 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
   enum class ColorMode { kColor = 0, kGrayscale = 1 };
 
   // Computes the features vector for a given image.
-  bool ComputeImageFeatures(Image&, const FloatRect&, std::vector<float>*);
+  bool ComputeImageFeatures(Image&,
+                            const FloatRect&,
+                            std::vector<float>*,
+                            std::vector<SkColor>*);
 
   // Converts image to SkBitmap and returns true if successful.
   bool GetBitmap(Image&, const FloatRect&, SkBitmap*);
@@ -87,21 +89,13 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
                        std::vector<SkColor>* sampled_pixels,
                        int* transparent_pixels_count);
 
-  // Given sampled pixels from a block of image and the number of transparent
-  // pixels, decides if a block is part of background or or not.
-  bool IsBlockBackground(const std::vector<SkColor>&, const int);
-
-  // Returns a random number in range [min, max).
-  int GetRandomInt(const int min, const int max);
-
   // Decides if the filter should be applied to the image or not, only using the
   // decision tree. Returns 'kNotClassified' if decision tree cannot give a
   // trustable answer.
   DarkModeClassification ClassifyImageUsingDecisionTree(
       const std::vector<float>&);
 
-  bool use_testing_random_generator_;
-  int testing_random_generator_seed_;
+  int pixels_to_sample_;
 };
 
 }  // namespace blink
