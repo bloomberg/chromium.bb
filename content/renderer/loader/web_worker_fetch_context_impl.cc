@@ -34,7 +34,6 @@
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -173,8 +172,7 @@ scoped_refptr<WebWorkerFetchContextImpl> WebWorkerFetchContextImpl::Create(
     service_worker_client_request = mojo::MakeRequest(&worker_client_ptr);
     provider_context->RegisterWorkerClient(std::move(worker_client_ptr));
 
-    if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-      container_host_ptr_info = provider_context->CloneContainerHostPtrInfo();
+    container_host_ptr_info = provider_context->CloneContainerHostPtrInfo();
   }
 
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
@@ -320,19 +318,18 @@ void WebWorkerFetchContextImpl::InitializeOnWorkerThread(
   if (preference_watcher_request_.is_pending())
     preference_watcher_binding_.Bind(std::move(preference_watcher_request_));
 
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    if (service_worker_container_host_info_) {
-      service_worker_container_host_.Bind(
-          std::move(service_worker_container_host_info_));
-    }
-
-    blink::mojom::BlobRegistryPtr blob_registry_ptr;
-    service_manager_connection_->BindInterface(
-        mojom::kBrowserServiceName, mojo::MakeRequest(&blob_registry_ptr));
-    blob_registry_ = base::MakeRefCounted<
-        base::RefCountedData<blink::mojom::BlobRegistryPtr>>(
-        std::move(blob_registry_ptr));
+  if (service_worker_container_host_info_) {
+    service_worker_container_host_.Bind(
+        std::move(service_worker_container_host_info_));
   }
+
+  blink::mojom::BlobRegistryPtr blob_registry_ptr;
+  service_manager_connection_->BindInterface(
+      mojom::kBrowserServiceName, mojo::MakeRequest(&blob_registry_ptr));
+  blob_registry_ =
+      base::MakeRefCounted<base::RefCountedData<blink::mojom::BlobRegistryPtr>>(
+          std::move(blob_registry_ptr));
+
   accept_languages_watcher_ = watcher;
 
   DCHECK(loader_factory_);
@@ -340,8 +337,7 @@ void WebWorkerFetchContextImpl::InitializeOnWorkerThread(
   web_loader_factory_ = std::make_unique<Factory>(
       resource_dispatcher_->GetWeakPtr(), loader_factory_);
 
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    ResetServiceWorkerURLLoaderFactory();
+  ResetServiceWorkerURLLoaderFactory();
 }
 
 blink::WebURLLoaderFactory* WebWorkerFetchContextImpl::GetURLLoaderFactory() {
@@ -524,9 +520,7 @@ void WebWorkerFetchContextImpl::SetApplicationCacheHostID(int id) {
 void WebWorkerFetchContextImpl::OnControllerChanged(
     blink::mojom::ControllerServiceWorkerMode mode) {
   set_is_controlled_by_service_worker(mode);
-
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    ResetServiceWorkerURLLoaderFactory();
+  ResetServiceWorkerURLLoaderFactory();
 }
 
 bool WebWorkerFetchContextImpl::Send(IPC::Message* message) {
@@ -534,7 +528,6 @@ bool WebWorkerFetchContextImpl::Send(IPC::Message* message) {
 }
 
 void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   if (!web_loader_factory_)
     return;
   if (IsControlledByServiceWorker() !=
