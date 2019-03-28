@@ -45,7 +45,7 @@ def FailIfScreenLockedOnMac():
   if current_session.get('CGSSessionScreenIsLocked'):
     raise RuntimeError('Mac lockscreen detected, aborting.')
 
-def FindTestCase(options):
+def FindTestCase(test_name):
   for start_dir in gpu_project_config.CONFIG.start_dirs:
     modules_to_classes = discover.DiscoverClasses(
         start_dir,
@@ -53,7 +53,7 @@ def FindTestCase(options):
         base_class=serially_executed_browser_test_case.
         SeriallyExecutedBrowserTestCase)
     for cl in modules_to_classes.values():
-      if cl.Name() == options.test:
+      if cl.Name() == test_name:
           return cl
 
 def main():
@@ -68,14 +68,24 @@ def main():
     help=('Write the test script arguments to the results file.'))
   option, rest_args_filtered = parser.parse_known_args(rest_args)
 
-  parser.add_argument('test', type=str, help='Name of the test suite to run')
+  parser.add_argument(
+      'test', nargs='*', type=str, help=argparse.SUPPRESS)
   option, _ = parser.parse_known_args(rest_args_filtered)
 
-  test_class = FindTestCase(option)
-  assert test_class
-  rest_args_filtered.extend(
-      ['--test-name-prefix=%s.%s.' %
-       (test_class.__module__, test_class.__name__)])
+  if option.test:
+    test_class = FindTestCase(option.test[0])
+  else:
+    test_class = None
+
+  if test_class:
+    rest_args_filtered.extend(
+        ['--test-name-prefix=%s.%s.' %
+         (test_class.__module__, test_class.__name__)])
+
+  if not any(arg.startswith('--retry-limit') for arg in rest_args_filtered):
+    if '--retry-only-retry-on-failure-tests' not in rest_args_filtered:
+      rest_args_filtered.append('--retry-only-retry-on-failure-tests')
+    rest_args_filtered.append('--retry-limit=2')
 
   retval = browser_test_runner.Run(
       gpu_project_config.CONFIG, rest_args_filtered)

@@ -382,7 +382,8 @@ class GpuIntegrationTest(
     # an exception.
     if not cls.ExpectationsFiles():
       return []
-    with possible_browser.BrowserSession(finder_options) as browser:
+    with possible_browser.BrowserSession(
+        finder_options.browser_options) as browser:
       return cls.GetPlatformTags(browser)
 
   @classmethod
