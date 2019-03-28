@@ -3515,76 +3515,112 @@ TEST_F(NetworkContextTest, DISABLED_PreconnectMax) {
   ASSERT_EQ(num_sockets, max_num_sockets);
 }
 
-TEST_F(NetworkContextTest, CloseAllConnections) {
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
+// This tests both ClostAllConnetions and CloseIdleConnections.
+TEST_F(NetworkContextTest, CloseConnections) {
+  // Have to close all connections first, as CloseIdleConnections leaves around
+  // a connection at the end of the test.
+  for (bool close_all_connections : {true, false}) {
+    std::unique_ptr<NetworkContext> network_context =
+        CreateContextWithParams(CreateContextParams());
 
-  ConnectionListener connection_listener;
-  net::EmbeddedTestServer test_server;
-  test_server.SetConnectionListener(&connection_listener);
-  ASSERT_TRUE(test_server.Start());
+    // Use different paths to avoid running into the cache lock.
+    const char kPath1[] = "/foo";
+    const char kPath2[] = "/bar";
+    const char kPath3[] = "/baz";
+    net::EmbeddedTestServer test_server;
+    net::test_server::ControllableHttpResponse controllable_response1(
+        &test_server, kPath1);
+    net::test_server::ControllableHttpResponse controllable_response2(
+        &test_server, kPath2);
+    net::test_server::ControllableHttpResponse controllable_response3(
+        &test_server, kPath3);
+    ASSERT_TRUE(test_server.Start());
 
-  network_context->PreconnectSockets(2, test_server.base_url(),
-                                     net::LOAD_NORMAL, true);
-  connection_listener.WaitForAcceptedConnections(2u);
+    // Start three network requests. Requests have to all be started before any
+    // one of them receives a response to be sure none of them tries to reuse
+    // the socket created by another one.
 
-  int num_sockets =
-      GetSocketPoolInfo(network_context.get(), "idle_socket_count");
-  EXPECT_EQ(num_sockets, 2);
+    net::TestDelegate delegate1;
+    base::RunLoop run_loop1;
+    delegate1.set_on_complete(run_loop1.QuitClosure());
+    std::unique_ptr<net::URLRequest> request1 =
+        network_context->url_request_context()->CreateRequest(
+            test_server.GetURL(kPath1), net::DEFAULT_PRIORITY, &delegate1,
+            TRAFFIC_ANNOTATION_FOR_TESTS);
+    request1->Start();
+    controllable_response1.WaitForRequest();
+    EXPECT_EQ(
+        1, GetSocketPoolInfo(network_context.get(), "handed_out_socket_count"));
 
-  base::RunLoop run_loop;
-  network_context->CloseAllConnections(run_loop.QuitClosure());
-  run_loop.Run();
+    net::TestDelegate delegate2;
+    base::RunLoop run_loop2;
+    delegate2.set_on_complete(run_loop2.QuitClosure());
+    std::unique_ptr<net::URLRequest> request2 =
+        network_context->url_request_context()->CreateRequest(
+            test_server.GetURL(kPath2), net::DEFAULT_PRIORITY, &delegate2,
+            TRAFFIC_ANNOTATION_FOR_TESTS);
+    request2->Start();
+    controllable_response2.WaitForRequest();
+    EXPECT_EQ(
+        2, GetSocketPoolInfo(network_context.get(), "handed_out_socket_count"));
 
-  num_sockets = GetSocketPoolInfo(network_context.get(), "idle_socket_count");
-  EXPECT_EQ(num_sockets, 0);
-}
+    net::TestDelegate delegate3;
+    base::RunLoop run_loop3;
+    delegate3.set_on_complete(run_loop3.QuitClosure());
+    std::unique_ptr<net::URLRequest> request3 =
+        network_context->url_request_context()->CreateRequest(
+            test_server.GetURL(kPath3), net::DEFAULT_PRIORITY, &delegate3,
+            TRAFFIC_ANNOTATION_FOR_TESTS);
+    request3->Start();
+    controllable_response3.WaitForRequest();
+    EXPECT_EQ(
+        3, GetSocketPoolInfo(network_context.get(), "handed_out_socket_count"));
 
-// Flaky; see http://crbug.com/905423
-TEST_F(NetworkContextTest, DISABLED_CloseIdleConnections) {
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
+    // Complete the first two requests successfully, with a keep-alive response.
+    // The EmbeddedTestServer doesn't actually support connection reuse, but
+    // this will send a raw response that will make the network stack think it
+    // does, and will cause the connection not to be closed.
+    controllable_response1.Send(
+        "HTTP/1.1 200 OK\r\n"
+        "Connection: keep-alive\r\n"
+        "Content-Length: 0\r\n\r\n");
+    controllable_response2.Send(
+        "HTTP/1.1 200 OK\r\n"
+        "Connection: keep-alive\r\n"
+        "Content-Length: 0\r\n\r\n");
+    run_loop1.Run();
+    run_loop2.Run();
+    // There should now be 2 idle and one handed out socket.
+    EXPECT_EQ(2, GetSocketPoolInfo(network_context.get(), "idle_socket_count"));
+    EXPECT_EQ(
+        1, GetSocketPoolInfo(network_context.get(), "handed_out_socket_count"));
 
-  ConnectionListener connection_listener;
-  net::EmbeddedTestServer test_server;
-  test_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
-  test_server.SetConnectionListener(&connection_listener);
-  ASSERT_TRUE(test_server.Start());
+    // Closing all or idle connections should result in closing the idle
+    // sockets, but the handed out socket can't be closed.
+    base::RunLoop run_loop;
+    if (close_all_connections) {
+      network_context->CloseAllConnections(run_loop.QuitClosure());
+    } else {
+      network_context->CloseIdleConnections(run_loop.QuitClosure());
+    }
+    run_loop.Run();
+    EXPECT_EQ(0, GetSocketPoolInfo(network_context.get(), "idle_socket_count"));
+    EXPECT_EQ(
+        1, GetSocketPoolInfo(network_context.get(), "handed_out_socket_count"));
 
-  // Create a hung (i.e. non-idle) socket.
-  net::TestDelegate delegate;
-  std::unique_ptr<net::URLRequest> request =
-      network_context->url_request_context()->CreateRequest(
-          test_server.GetURL("/hung"), net::DEFAULT_PRIORITY, &delegate,
-          TRAFFIC_ANNOTATION_FOR_TESTS);
-  request->Start();
-  connection_listener.WaitForAcceptedConnections(1u);
-  EXPECT_EQ(0, GetSocketPoolInfo(network_context.get(), "idle_socket_count"));
-  EXPECT_EQ(
-      0, GetSocketPoolInfo(network_context.get(), "connecting_socket_count"));
-  EXPECT_EQ(
-      1, GetSocketPoolInfo(network_context.get(), "handed_out_socket_count"));
-
-  // Create an idle socket.
-  network_context->PreconnectSockets(2, test_server.base_url(),
-                                     net::LOAD_NORMAL, true);
-  connection_listener.WaitForAcceptedConnections(2u);
-  EXPECT_EQ(2, GetSocketPoolInfo(network_context.get(), "idle_socket_count"));
-  EXPECT_EQ(
-      0, GetSocketPoolInfo(network_context.get(), "connecting_socket_count"));
-  EXPECT_EQ(
-      1, GetSocketPoolInfo(network_context.get(), "handed_out_socket_count"));
-
-  base::RunLoop run_loop;
-  network_context->CloseIdleConnections(run_loop.QuitClosure());
-  run_loop.Run();
-
-  EXPECT_EQ(0, GetSocketPoolInfo(network_context.get(), "idle_socket_count"));
-  EXPECT_EQ(
-      0, GetSocketPoolInfo(network_context.get(), "connecting_socket_count"));
-  EXPECT_EQ(
-      1, GetSocketPoolInfo(network_context.get(), "handed_out_socket_count"));
+    // The final request completes. In the close all connections case, its
+    // socket should be closed as soon as it is returned to the pool, but in the
+    // CloseIdleConnections case, it is added to the pool as an idle socket.
+    controllable_response3.Send(
+        "HTTP/1.1 200 OK\r\n"
+        "Connection: keep-alive\r\n"
+        "Content-Length: 0\r\n\r\n");
+    run_loop3.Run();
+    EXPECT_EQ(close_all_connections ? 0 : 1,
+              GetSocketPoolInfo(network_context.get(), "idle_socket_count"));
+    EXPECT_EQ(
+        0, GetSocketPoolInfo(network_context.get(), "handed_out_socket_count"));
+  }
 }
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
