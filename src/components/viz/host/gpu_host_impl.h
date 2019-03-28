@@ -103,12 +103,11 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
     // TODO(https://crbug.com/806092): Remove this when legacy IPC-based Ozone
     // is removed.
     virtual void SendGpuProcessMessage(IPC::Message* message) = 0;
+#endif
 
     virtual void OnEstablishGpuChannelTimeout(int client_id,
                                               uint64_t client_tracing_id,
                                               bool is_gpu_host) = 0;
-
-#endif
 
    protected:
     virtual ~Delegate() {}
