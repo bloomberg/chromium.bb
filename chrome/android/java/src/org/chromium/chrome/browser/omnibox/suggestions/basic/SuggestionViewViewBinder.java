@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.basic;
 
-import android.content.Context;
-import android.support.annotation.ColorInt;
-import android.support.annotation.ColorRes;
 import android.support.v4.view.ViewCompat;
 import android.text.Spannable;
 import android.text.TextUtils;
@@ -37,7 +34,9 @@ public class SuggestionViewViewBinder {
             view.updateRefineIconTint(useDarkColors);
             view.updateSuggestionIconTint(useDarkColors);
             view.getTextLine1().setTextColor(
-                    getStandardFontColor(view.getContext(), useDarkColors));
+                    ApiCompatibilityUtils.getColor(view.getContext().getResources(),
+                            useDarkColors ? R.color.default_text_color_dark
+                                          : R.color.url_emphasis_light_default_text));
         } else if (SuggestionCommonProperties.LAYOUT_DIRECTION.equals(propertyKey)) {
             ViewCompat.setLayoutDirection(
                     view, model.get(SuggestionCommonProperties.LAYOUT_DIRECTION));
@@ -156,19 +155,5 @@ public class SuggestionViewViewBinder {
                             ? SuggestionView.SuggestionLayoutType.MULTI_LINE_ANSWER
                             : SuggestionView.SuggestionLayoutType.ANSWER);
         }
-    }
-
-    /**
-     * Get the appropriate font color to be used for non-URL text in suggestions.
-     * @param context The context to load the color.
-     * @param useDarkColors Whether dark colors should be used.
-     * @return The font color to be used.
-     */
-    @ColorInt
-    public static int getStandardFontColor(Context context, boolean useDarkColors) {
-        @ColorRes
-        int res = useDarkColors ? R.color.url_emphasis_default_text
-                                : R.color.url_emphasis_light_default_text;
-        return ApiCompatibilityUtils.getColor(context.getResources(), res);
     }
 }

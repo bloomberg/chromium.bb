@@ -91,8 +91,7 @@ class UrlBarViewBinder {
         int hintColor;
         int highlightColor;
         if (useDarkTextColors) {
-            textColor =
-                    ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_default_text);
+            textColor = ApiCompatibilityUtils.getColor(resources, R.color.default_text_color_dark);
             hintColor =
                     ApiCompatibilityUtils.getColor(resources, R.color.locationbar_dark_hint_text);
             highlightColor = originalHighlightColor;

@@ -183,7 +183,7 @@ public class OmniboxUrlEmphasizer {
                         // Draw attention to the data: URI scheme for anti-spoofing reasons.
                         if (UrlConstants.DATA_SCHEME.equals(
                                     emphasizeResponse.extractScheme(urlString))) {
-                            colorId = useDarkColors ? R.color.url_emphasis_default_text
+                            colorId = useDarkColors ? R.color.default_text_color_dark
                                                     : R.color.url_emphasis_light_default_text;
                         }
                         break;
