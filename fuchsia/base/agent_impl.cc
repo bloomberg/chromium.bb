@@ -73,6 +73,7 @@ void AgentImpl::Connect(
 
 void AgentImpl::RunTask(std::string task_id, RunTaskCallback callback) {
   NOTIMPLEMENTED();
+  callback();
 }
 
 void AgentImpl::DeleteComponentState(base::StringPiece component_id) {
