@@ -279,9 +279,6 @@
   <message name="IDS_WELCOME_SCREEN_GREETING" desc="Greeting message on the OOBE welcome screen">
     Welcome!
   </message>
-  <message name="IDS_WELCOME_SCREEN_TITLE" desc="Title of the OOBE welcome screen">
-    Connect
-  </message>
   <message name="IDS_OOBE_ADVANCED_OPTIONS_SCREEN_TITLE" desc="Screen title on the Chrome OS OOBE (first run) Advanced options screen">
     Advanced options
   </message>
@@ -296,9 +293,6 @@
   </message>
   <message name="IDS_OOBE_ADVANCED_OPTIONS_DEVICE_REQUISITION_SUBTITLE" desc="Subtitle of the button that trigers Device requisition device setup mode on the Chrome OS OOBE (first run UI) Advanced options screen">
     Add requisition ID to this device
-  </message>
-  <message name="IDS_EULA_SCREEN_TITLE" desc="Title of the OOBE EULA screen">
-    The small print
   </message>
   <message name="IDS_NETWORK_PROXY_SETTINGS_LIST_ITEM_NAME" desc="OOBE network screen list entry that opens proxy settings dialog">
     Proxy settings
@@ -342,17 +336,11 @@
   <message name="IDS_RESET_SCREEN_ILLUSTRATION_TITLE" desc="Accessible title of the reset screen illustration depicting powerwash.">
     Powerwash illustration
   </message>
-  <message name="IDS_UPDATE_SCREEN_TITLE" desc="Title of the OOBE update screen">
-    Update
-  </message>
   <message name="IDS_UPDATING_SCREEN_TITLE" desc="Title of the OOBE screen displayed while system update is being dowloaded.">
     Updating
   </message>
   <message name="IDS_UPDATE_SCREEN_ACCESSIBLE_TITLE" desc="Title to be spoken on opening the OOBE update screen">
     Chrome updates automatically so you always have the freshest version
-  </message>
-  <message name="IDS_SIGNIN_SCREEN_TITLE_TAB_PROMPT" desc="Title of OOBE/Add User sign-in screen with TAB prompt when ChromeVox is active">
-    Sign in, press the tab key to interact with input elements
   </message>
   <message name="IDS_LOGIN_GAIA_LOADING_MESSAGE" desc="Message on the OOBE gaia loading screen">
     Please wait...

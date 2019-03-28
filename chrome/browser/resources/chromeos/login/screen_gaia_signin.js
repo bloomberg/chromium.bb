@@ -346,14 +346,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Header text of the screen.
-     * @type {string}
-     */
-    get header() {
-      return loadTimeData.getString('signinScreenTitle');
-    },
-
-    /**
      * Returns true if offline version of Gaia is used.
      * @type {boolean}
      */

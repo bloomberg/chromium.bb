@@ -47,14 +47,6 @@ login.createScreen('WelcomeScreen', 'connect', function() {
     },
 
     /**
-     * Header text of the screen.
-     * @type {string}
-     */
-    get header() {
-      return loadTimeData.getString('welcomeScreenTitle');
-    },
-
-    /**
      * Returns a control which should receive an initial focus.
      */
     get defaultControl() {

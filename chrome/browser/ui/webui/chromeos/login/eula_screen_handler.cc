@@ -65,7 +65,6 @@ void EulaScreenHandler::Unbind() {
 
 void EulaScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
-  builder->Add("eulaScreenTitle", IDS_EULA_SCREEN_TITLE);
   builder->Add("eulaScreenAccessibleTitle", IDS_EULA_SCREEN_ACCESSIBLE_TITLE);
   builder->Add("checkboxLogging", IDS_EULA_CHECKBOX_ENABLE_LOGGING);
   builder->Add("back", IDS_EULA_BACK_BUTTON);

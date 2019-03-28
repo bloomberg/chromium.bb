@@ -505,12 +505,16 @@ cr.define('cr.ui.login', function() {
       for (var i = 0; i < states.length; ++i) {
         if (states[i] != state) {
           step.classList.remove(states[i]);
-          header.classList.remove(states[i]);
+          if (header) {
+            header.classList.remove(states[i]);
+          }
         }
       }
 
       step.classList.add(state);
-      header.classList.add(state);
+      if (header) {
+        header.classList.add(state);
+      }
     },
 
     /**
@@ -522,7 +526,6 @@ cr.define('cr.ui.login', function() {
       var nextStepId = this.screens_[nextStepIndex];
       var oldStep = $(currentStepId);
       var newStep = $(nextStepId);
-      var newHeader = $('header-' + nextStepId);
 
       // Disable controls before starting animation.
       this.disableButtons_(oldStep, true);
@@ -582,16 +585,6 @@ cr.define('cr.ui.login', function() {
       if (newStep.onAfterShow)
         newStep.onAfterShow(screenData);
 
-      // Workaround for gaia and welcome screens.
-      // Due to other origin iframe and long ChromeVox focusing correspondingly
-      // passive aria-label title is not pronounced.
-      // Gaia hack can be removed on fixed crbug.com/316726.
-      if (nextStepId == SCREEN_GAIA_SIGNIN ||
-          nextStepId == SCREEN_OOBE_ENROLLMENT) {
-        newStep.setAttribute(
-            'aria-label', loadTimeData.getString('signinScreenTitle'));
-      }
-
       // Default control to be focused (if specified).
       var defaultControl = newStep.defaultControl;
 
@@ -647,7 +640,10 @@ cr.define('cr.ui.login', function() {
       }
       this.currentStep_ = nextStepIndex;
 
-      $('step-logo').hidden = newStep.classList.contains('no-logo');
+      var stepLogo = $('step-logo');
+      if (stepLogo) {
+        stepLogo.hidden = newStep.classList.contains('no-logo');
+      }
 
       $('oobe').dispatchEvent(
           new CustomEvent('screenchanged', {detail: this.currentScreen.id}));
@@ -732,11 +728,15 @@ cr.define('cr.ui.login', function() {
       var screenId = el.id;
       this.screens_.push(screenId);
 
-      var header = document.createElement('span');
-      header.id = 'header-' + screenId;
-      header.textContent = el.header ? el.header : '';
-      header.className = 'header-section';
-      $('header-sections').appendChild(header);
+      // No headers on Chrome OS
+      var headerSections = $('header-sections');
+      if (headerSections) {
+        var header = document.createElement('span');
+        header.id = 'header-' + screenId;
+        header.textContent = el.header ? el.header : '';
+        header.className = 'header-section';
+        headerSections.appendChild(header);
+      }
       this.appendButtons_(el.buttons, screenId);
 
       if (el.updateOobeConfiguration && this.oobe_configuration_)

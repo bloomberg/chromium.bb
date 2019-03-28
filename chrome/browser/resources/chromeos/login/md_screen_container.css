@@ -4,10 +4,10 @@
  */
 
 #outer-container {
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
+  align-items: center;
   bottom: 57px;  /* Leave space for the header bar */
-  display: -webkit-box;
+  display: flex;
+  justify-content: center;
   left: 0;
   min-height: 717px; /* This enables scrolling. Min resolution: 1024x768 */
   perspective: 1px; /* Workaround, see http://crbug.com/360567 */
@@ -106,50 +106,6 @@ html:not([full-screen-dialog]) #oobe.tpm-error-message #inner-container {
   transform: translateY(50px) rotateX(-2.5deg);
 }
 
-#oobe #step-logo {
-  display: none;
-}
-
-#account-picker-dot,
-#app-launch-splash-dot,
-#arc-kiosk-splash-dot,
-#auto-enrollment-check-dot,
-#autolaunch-dot,
-#confirm-password-dot,
-#debugging-dot,
-#device-disabled-dot,
-#enrollment-dot,
-#error-message-dot,
-#fatal-error-dot,
-#hid-detection-dot,
-#kiosk-enable-dot,
-#oauth-enrollment-dot,
-#password-changed-dot,
-#reset-dot,
-#supervised-user-creation-dialog-dot,
-#supervised-user-creation-dot,
-#terms-of-service-dot,
-#arc-tos-dot,
-#tpm-error-message-dot,
-#wrong-hwid-dot,
-#update-required-dot,
-#unrecoverable-cryptohome-error-dot {
-  display: none;
-}
-
-#oobe.connect #connect-dot,
-#oobe.enrollment #gaia-signin-dot,
-#oobe.enrollment #signin-dot,
-#oobe.eula #eula-dot,
-#oobe.gaia-signin #gaia-signin-dot,
-#oobe.oauth-enrollment #gaia-signin-dot,
-#oobe.oauth-enrollment #signin-dot,
-#oobe.signin #signin-dot,
-#oobe.update #update-dot,
-#oobe.user-image #user-image-dot {
-  opacity: 1;
-}
-
 body:not(.oobe-display) #inner-container {
   height: 262px;
   padding: 0;
@@ -161,29 +117,4 @@ body:not(.oobe-display) #inner-container {
 #outer-container.fullscreen #oobe #inner-container {
   height: 100%;
   width: 100%;
-}
-
-html[build=chrome] #header-sections {
-  -webkit-margin-start: -48px;
-  margin-top: -1px;
-}
-
-html[build=chromium] #header-sections {
-  -webkit-margin-start: 5px;
-  margin-top: -1px;
-}
-
-.header-section {
-  color: rgb(119, 120, 123);  /* Should matching text color of the logo. */
-  display: none;
-  font-size: 23px;
-  line-height: 31px;
-  text-transform: lowercase;
-  width: 23em;
-}
-
-.header-section::before {
-  /* Divider in header between product name and title,
-   * like "[Product name] > [step header]". */
-  content: '\00A0\203A\00A0\00A0';
 }
