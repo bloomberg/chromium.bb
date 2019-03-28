@@ -99,6 +99,19 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
   String ToString() const;
 
+  // A helper function for NGInlineItemsBuilder.
+  static void ClearInlineFragment(LayoutObject* object) {
+    object->SetIsInLayoutNGInlineFormattingContext(true);
+    object->SetFirstInlineFragment(nullptr);
+  }
+
+  // A helper function for NGInlineItemsBuilder.
+  static void ClearNeedsLayout(LayoutObject* object) {
+    object->ClearNeedsLayout();
+    object->ClearNeedsCollectInlines();
+    ClearInlineFragment(object);
+  }
+
  protected:
   bool IsPrepareLayoutFinished() const;
 

@@ -18,6 +18,7 @@
 namespace blink {
 
 class ComputedStyle;
+class LayoutInline;
 class LayoutObject;
 class LayoutText;
 
@@ -125,6 +126,11 @@ class NGInlineItemsBuilderTemplate {
 
   bool ShouldAbort() const { return false; }
 
+  // Functions change |LayoutObject| states.
+  void ClearInlineFragment(LayoutObject*);
+  void ClearNeedsLayout(LayoutObject*);
+  void UpdateShouldCreateBoxFragment(LayoutInline*);
+
  private:
   static bool NeedsBoxInfo();
 
@@ -205,6 +211,20 @@ template <>
 CORE_EXPORT bool NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::Append(
     const String&,
     LayoutText*);
+
+template <>
+CORE_EXPORT void
+NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::ClearInlineFragment(
+    LayoutObject*);
+
+template <>
+CORE_EXPORT void
+NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::ClearNeedsLayout(
+    LayoutObject*);
+
+template <>
+CORE_EXPORT void NGInlineItemsBuilderTemplate<
+    NGOffsetMappingBuilder>::UpdateShouldCreateBoxFragment(LayoutInline*);
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     NGInlineItemsBuilderTemplate<EmptyOffsetMappingBuilder>;
