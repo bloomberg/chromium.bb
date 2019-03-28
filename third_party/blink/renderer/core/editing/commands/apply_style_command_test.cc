@@ -45,9 +45,10 @@ TEST_F(ApplyStyleCommandTest, RemoveRedundantBlocksWithStarEditableStyle) {
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   style->SetProperty(CSSPropertyID::kTextAlign, "center", /* important */ false,
                      SecureContextMode::kInsecureContext);
-  ApplyStyleCommand::Create(GetDocument(), EditingStyle::Create(style),
-                            InputEvent::InputType::kFormatJustifyCenter,
-                            ApplyStyleCommand::kForceBlockProperties)
+  MakeGarbageCollected<ApplyStyleCommand>(
+      GetDocument(), EditingStyle::Create(style),
+      InputEvent::InputType::kFormatJustifyCenter,
+      ApplyStyleCommand::kForceBlockProperties)
       ->Apply();
   // Shouldn't crash.
 }
@@ -74,9 +75,10 @@ TEST_F(ApplyStyleCommandTest, JustifyRightDetachesDestination) {
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   style->SetProperty(CSSPropertyID::kTextAlign, "right", /* important */ false,
                      SecureContextMode::kInsecureContext);
-  ApplyStyleCommand::Create(GetDocument(), EditingStyle::Create(style),
-                            InputEvent::InputType::kFormatJustifyCenter,
-                            ApplyStyleCommand::kForceBlockProperties)
+  MakeGarbageCollected<ApplyStyleCommand>(
+      GetDocument(), EditingStyle::Create(style),
+      InputEvent::InputType::kFormatJustifyCenter,
+      ApplyStyleCommand::kForceBlockProperties)
       ->Apply();
   // Shouldn't crash.
 }
@@ -93,8 +95,8 @@ TEST_F(ApplyStyleCommandTest, FontSizeDeltaWithSpanElement) {
   style->SetProperty(CSSPropertyID::kWebkitFontSizeDelta, "3",
                      /* important */ false,
                      GetDocument().GetSecureContextMode());
-  ApplyStyleCommand::Create(GetDocument(), EditingStyle::Create(style),
-                            InputEvent::InputType::kNone)
+  MakeGarbageCollected<ApplyStyleCommand>(
+      GetDocument(), EditingStyle::Create(style), InputEvent::InputType::kNone)
       ->Apply();
   EXPECT_EQ("<div contenteditable><div></div><span>^a|</span></div>",
             GetSelectionTextFromBody());

@@ -311,8 +311,8 @@ void Editor::ReplaceSelectionWithFragment(DocumentFragment* fragment,
   if (match_style)
     options |= ReplaceSelectionCommand::kMatchStyle;
   DCHECK(GetFrame().GetDocument());
-  ReplaceSelectionCommand::Create(*GetFrame().GetDocument(), fragment, options,
-                                  input_type)
+  MakeGarbageCollected<ReplaceSelectionCommand>(*GetFrame().GetDocument(),
+                                                fragment, options, input_type)
       ->Apply();
   RevealSelectionAfterEditingOperation();
 }
@@ -337,8 +337,9 @@ void Editor::ReplaceSelectionAfterDragging(DocumentFragment* fragment,
   if (drag_source_type == DragSourceType::kPlainTextSource)
     options |= ReplaceSelectionCommand::kMatchStyle;
   DCHECK(GetFrame().GetDocument());
-  ReplaceSelectionCommand::Create(*GetFrame().GetDocument(), fragment, options,
-                                  InputEvent::InputType::kInsertFromDrop)
+  MakeGarbageCollected<ReplaceSelectionCommand>(
+      *GetFrame().GetDocument(), fragment, options,
+      InputEvent::InputType::kInsertFromDrop)
       ->Apply();
 }
 
@@ -432,9 +433,9 @@ void Editor::ApplyParagraphStyle(CSSPropertyValueSet* style,
       !style)
     return;
   DCHECK(GetFrame().GetDocument());
-  ApplyStyleCommand::Create(*GetFrame().GetDocument(),
-                            EditingStyle::Create(style), input_type,
-                            ApplyStyleCommand::kForceBlockProperties)
+  MakeGarbageCollected<ApplyStyleCommand>(
+      *GetFrame().GetDocument(), EditingStyle::Create(style), input_type,
+      ApplyStyleCommand::kForceBlockProperties)
       ->Apply();
 }
 
@@ -731,8 +732,8 @@ void Editor::ComputeAndSetTypingStyle(CSSPropertyValueSet* style,
   EditingStyle* block_style = typing_style_->ExtractAndRemoveBlockProperties();
   if (!block_style->IsEmpty()) {
     DCHECK(GetFrame().GetDocument());
-    ApplyStyleCommand::Create(*GetFrame().GetDocument(), block_style,
-                              input_type)
+    MakeGarbageCollected<ApplyStyleCommand>(*GetFrame().GetDocument(),
+                                            block_style, input_type)
         ->Apply();
   }
 }

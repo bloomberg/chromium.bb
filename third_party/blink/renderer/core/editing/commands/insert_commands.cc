@@ -58,7 +58,7 @@ LocalFrame& InsertCommands::TargetFrame(LocalFrame& frame, Event* event) {
 bool InsertCommands::ExecuteInsertFragment(LocalFrame& frame,
                                            DocumentFragment* fragment) {
   DCHECK(frame.GetDocument());
-  return ReplaceSelectionCommand::Create(
+  return MakeGarbageCollected<ReplaceSelectionCommand>(
              *frame.GetDocument(), fragment,
              ReplaceSelectionCommand::kPreventNesting,
              InputEvent::InputType::kNone)
@@ -164,8 +164,8 @@ bool InsertCommands::ExecuteInsertOrderedList(LocalFrame& frame,
                                               EditorCommandSource,
                                               const String&) {
   DCHECK(frame.GetDocument());
-  return InsertListCommand::Create(*frame.GetDocument(),
-                                   InsertListCommand::kOrderedList)
+  return MakeGarbageCollected<InsertListCommand>(
+             *frame.GetDocument(), InsertListCommand::kOrderedList)
       ->Apply();
 }
 
@@ -200,8 +200,8 @@ bool InsertCommands::ExecuteInsertUnorderedList(LocalFrame& frame,
                                                 EditorCommandSource,
                                                 const String&) {
   DCHECK(frame.GetDocument());
-  return InsertListCommand::Create(*frame.GetDocument(),
-                                   InsertListCommand::kUnorderedList)
+  return MakeGarbageCollected<InsertListCommand>(
+             *frame.GetDocument(), InsertListCommand::kUnorderedList)
       ->Apply();
 }
 

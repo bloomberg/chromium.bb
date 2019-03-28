@@ -218,15 +218,15 @@ void IndentOutdentCommand::OutdentParagraph(EditingState* editing_state) {
 
   // Use InsertListCommand to remove the selection from the list
   if (IsHTMLOListElement(*enclosing_element)) {
-    ApplyCommandToComposite(InsertListCommand::Create(
+    ApplyCommandToComposite(MakeGarbageCollected<InsertListCommand>(
                                 GetDocument(), InsertListCommand::kOrderedList),
                             editing_state);
     return;
   }
   if (IsHTMLUListElement(*enclosing_element)) {
     ApplyCommandToComposite(
-        InsertListCommand::Create(GetDocument(),
-                                  InsertListCommand::kUnorderedList),
+        MakeGarbageCollected<InsertListCommand>(
+            GetDocument(), InsertListCommand::kUnorderedList),
         editing_state);
     return;
   }

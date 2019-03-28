@@ -24,8 +24,8 @@ TEST_F(InsertParagraphSeparatorCommandTest,
           "</table>"),
       SetSelectionOptions());
 
-  InsertParagraphSeparatorCommand* command =
-      InsertParagraphSeparatorCommand::Create(GetDocument());
+  auto* command =
+      MakeGarbageCollected<InsertParagraphSeparatorCommand>(GetDocument());
   // Crash should not be observed here.
   command->Apply();
 
@@ -47,8 +47,8 @@ TEST_F(InsertParagraphSeparatorCommandTest,
                              "</table>"),
       SetSelectionOptions());
 
-  InsertParagraphSeparatorCommand* command =
-      InsertParagraphSeparatorCommand::Create(GetDocument());
+  auto* command =
+      MakeGarbageCollected<InsertParagraphSeparatorCommand>(GetDocument());
   // Crash should not be observed here.
   command->Apply();
   EXPECT_EQ(
@@ -78,8 +78,8 @@ TEST_F(InsertParagraphSeparatorCommandTest, CrashWithCaptionBeforeBody) {
           .Build(),
       SetSelectionOptions());
 
-  InsertParagraphSeparatorCommand* command =
-      InsertParagraphSeparatorCommand::Create(GetDocument());
+  auto* command =
+      MakeGarbageCollected<InsertParagraphSeparatorCommand>(GetDocument());
   // Shouldn't crash inside.
   EXPECT_FALSE(command->Apply());
   EXPECT_EQ(

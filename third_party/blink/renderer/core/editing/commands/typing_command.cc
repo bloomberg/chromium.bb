@@ -664,7 +664,7 @@ void TypingCommand::InsertTextRunWithoutNewlines(const String& text,
                   kRebalanceLeadingAndTrailingWhitespaces
             : InsertIncrementalTextCommand::kRebalanceAllWhitespaces);
   } else {
-    command = InsertTextCommand::Create(
+    command = MakeGarbageCollected<InsertTextCommand>(
         GetDocument(), text,
         composition_type_ == kTextCompositionNone
             ? InsertTextCommand::kRebalanceLeadingAndTrailingWhitespaces
@@ -684,8 +684,9 @@ void TypingCommand::InsertLineBreak(EditingState* editing_state) {
   if (!CanAppendNewLineFeedToSelection(EndingVisibleSelection(), editing_state))
     return;
 
-  ApplyCommandToComposite(InsertLineBreakCommand::Create(GetDocument()),
-                          editing_state);
+  ApplyCommandToComposite(
+      MakeGarbageCollected<InsertLineBreakCommand>(GetDocument()),
+      editing_state);
   if (editing_state->IsAborted())
     return;
   TypingAddedToOpenCommand(kInsertLineBreak);
@@ -696,7 +697,8 @@ void TypingCommand::InsertParagraphSeparator(EditingState* editing_state) {
     return;
 
   ApplyCommandToComposite(
-      InsertParagraphSeparatorCommand::Create(GetDocument()), editing_state);
+      MakeGarbageCollected<InsertParagraphSeparatorCommand>(GetDocument()),
+      editing_state);
   if (editing_state->IsAborted())
     return;
   TypingAddedToOpenCommand(kInsertParagraphSeparator);
@@ -712,8 +714,9 @@ void TypingCommand::InsertParagraphSeparatorInQuotedContent(
     return;
   }
 
-  ApplyCommandToComposite(BreakBlockquoteCommand::Create(GetDocument()),
-                          editing_state);
+  ApplyCommandToComposite(
+      MakeGarbageCollected<BreakBlockquoteCommand>(GetDocument()),
+      editing_state);
   if (editing_state->IsAborted())
     return;
   TypingAddedToOpenCommand(kInsertParagraphSeparatorInQuotedContent);

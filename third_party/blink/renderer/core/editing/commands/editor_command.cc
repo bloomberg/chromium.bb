@@ -353,7 +353,8 @@ static bool ExecuteCreateLink(LocalFrame& frame,
   if (value.IsEmpty())
     return false;
   DCHECK(frame.GetDocument());
-  return CreateLinkCommand::Create(*frame.GetDocument(), value)->Apply();
+  return MakeGarbageCollected<CreateLinkCommand>(*frame.GetDocument(), value)
+      ->Apply();
 }
 
 static bool ExecuteDefaultParagraphSeparator(LocalFrame& frame,
@@ -615,8 +616,8 @@ static bool ExecuteFormatBlock(LocalFrame& frame,
   QualifiedName qualified_tag_name(prefix, local_name, xhtmlNamespaceURI);
 
   DCHECK(frame.GetDocument());
-  FormatBlockCommand* command =
-      FormatBlockCommand::Create(*frame.GetDocument(), qualified_tag_name);
+  auto* command = MakeGarbageCollected<FormatBlockCommand>(*frame.GetDocument(),
+                                                           qualified_tag_name);
   command->Apply();
   return command->DidApply();
 }
@@ -660,8 +661,8 @@ static bool ExecuteIndent(LocalFrame& frame,
                           EditorCommandSource,
                           const String&) {
   DCHECK(frame.GetDocument());
-  return IndentOutdentCommand::Create(*frame.GetDocument(),
-                                      IndentOutdentCommand::kIndent)
+  return MakeGarbageCollected<IndentOutdentCommand>(
+             *frame.GetDocument(), IndentOutdentCommand::kIndent)
       ->Apply();
 }
 
@@ -706,8 +707,8 @@ static bool ExecuteOutdent(LocalFrame& frame,
                            EditorCommandSource,
                            const String&) {
   DCHECK(frame.GetDocument());
-  return IndentOutdentCommand::Create(*frame.GetDocument(),
-                                      IndentOutdentCommand::kOutdent)
+  return MakeGarbageCollected<IndentOutdentCommand>(
+             *frame.GetDocument(), IndentOutdentCommand::kOutdent)
       ->Apply();
 }
 
@@ -742,7 +743,7 @@ static bool ExecuteRemoveFormat(LocalFrame& frame,
                                 EditorCommandSource,
                                 const String&) {
   DCHECK(frame.GetDocument());
-  RemoveFormatCommand::Create(*frame.GetDocument())->Apply();
+  MakeGarbageCollected<RemoveFormatCommand>(*frame.GetDocument())->Apply();
 
   return true;
 }

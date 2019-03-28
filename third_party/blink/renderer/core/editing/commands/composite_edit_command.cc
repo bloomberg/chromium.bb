@@ -228,8 +228,8 @@ void CompositeEditCommand::AppendCommandToUndoStep(
 void CompositeEditCommand::ApplyStyle(const EditingStyle* style,
                                       EditingState* editing_state) {
   ApplyCommandToComposite(
-      ApplyStyleCommand::Create(GetDocument(), style,
-                                InputEvent::InputType::kNone),
+      MakeGarbageCollected<ApplyStyleCommand>(GetDocument(), style,
+                                              InputEvent::InputType::kNone),
       editing_state);
 }
 
@@ -238,27 +238,27 @@ void CompositeEditCommand::ApplyStyle(const EditingStyle* style,
                                       const Position& end,
                                       EditingState* editing_state) {
   ApplyCommandToComposite(
-      ApplyStyleCommand::Create(GetDocument(), style, start, end),
+      MakeGarbageCollected<ApplyStyleCommand>(GetDocument(), style, start, end),
       editing_state);
 }
 
 void CompositeEditCommand::ApplyStyledElement(Element* element,
                                               EditingState* editing_state) {
-  ApplyCommandToComposite(ApplyStyleCommand::Create(element, false),
-                          editing_state);
+  ApplyCommandToComposite(
+      MakeGarbageCollected<ApplyStyleCommand>(element, false), editing_state);
 }
 
 void CompositeEditCommand::RemoveStyledElement(Element* element,
                                                EditingState* editing_state) {
-  ApplyCommandToComposite(ApplyStyleCommand::Create(element, true),
-                          editing_state);
+  ApplyCommandToComposite(
+      MakeGarbageCollected<ApplyStyleCommand>(element, true), editing_state);
 }
 
 void CompositeEditCommand::InsertParagraphSeparator(
     EditingState* editing_state,
     bool use_default_paragraph_element,
     bool paste_blockqutoe_into_unquoted_area) {
-  ApplyCommandToComposite(InsertParagraphSeparatorCommand::Create(
+  ApplyCommandToComposite(MakeGarbageCollected<InsertParagraphSeparatorCommand>(
                               GetDocument(), use_default_paragraph_element,
                               paste_blockqutoe_into_unquoted_area),
                           editing_state);
@@ -368,7 +368,7 @@ void CompositeEditCommand::AppendNode(Node* node,
                              ToElement(parent)->TagQName() == kObjectTag));
   ABORT_EDITING_COMMAND_IF(!HasEditableStyle(*parent) &&
                            parent->InActiveDocument());
-  ApplyCommandToComposite(AppendNodeCommand::Create(parent, node),
+  ApplyCommandToComposite(MakeGarbageCollected<AppendNodeCommand>(parent, node),
                           editing_state);
 }
 
@@ -397,9 +397,9 @@ void CompositeEditCommand::RemoveNode(
   if (!node || !node->NonShadowBoundaryParentNode())
     return;
   ABORT_EDITING_COMMAND_IF(!node->GetDocument().GetFrame());
-  ApplyCommandToComposite(
-      RemoveNodeCommand::Create(node, should_assume_content_is_always_editable),
-      editing_state);
+  ApplyCommandToComposite(MakeGarbageCollected<RemoveNodeCommand>(
+                              node, should_assume_content_is_always_editable),
+                          editing_state);
 }
 
 void CompositeEditCommand::RemoveNodePreservingChildren(
@@ -408,9 +408,10 @@ void CompositeEditCommand::RemoveNodePreservingChildren(
     ShouldAssumeContentIsAlwaysEditable
         should_assume_content_is_always_editable) {
   ABORT_EDITING_COMMAND_IF(!node->GetDocument().GetFrame());
-  ApplyCommandToComposite(RemoveNodePreservingChildrenCommand::Create(
-                              node, should_assume_content_is_always_editable),
-                          editing_state);
+  ApplyCommandToComposite(
+      MakeGarbageCollected<RemoveNodePreservingChildrenCommand>(
+          node, should_assume_content_is_always_editable),
+      editing_state);
 }
 
 void CompositeEditCommand::RemoveNodeAndPruneAncestors(
@@ -463,8 +464,7 @@ CompositeEditCommand::ReplaceElementWithSpanPreservingChildrenAndAttributes(
   // It would also be possible to implement all of ReplaceNodeWithSpanCommand
   // as a series of existing smaller edit commands.  Someone who wanted to
   // reduce the number of edit commands could do so here.
-  ReplaceNodeWithSpanCommand* command =
-      ReplaceNodeWithSpanCommand::Create(node);
+  auto* command = MakeGarbageCollected<ReplaceNodeWithSpanCommand>(node);
   // ReplaceNodeWithSpanCommand is never aborted.
   ApplyCommandToComposite(command, ASSERT_NO_EDITING_ABORT);
   // Returning a raw pointer here is OK because the command is retained by
@@ -507,8 +507,9 @@ void CompositeEditCommand::MergeIdenticalElements(Element* first,
     if (editing_state->IsAborted())
       return;
   }
-  ApplyCommandToComposite(MergeIdenticalElementsCommand::Create(first, second),
-                          editing_state);
+  ApplyCommandToComposite(
+      MakeGarbageCollected<MergeIdenticalElementsCommand>(first, second),
+      editing_state);
 }
 
 void CompositeEditCommand::WrapContentsInDummySpan(Element* element) {
@@ -531,7 +532,7 @@ void CompositeEditCommand::InsertTextIntoNode(Text* node,
   // InsertIntoTextNodeCommand is never aborted.
   if (!text.IsEmpty())
     ApplyCommandToComposite(
-        InsertIntoTextNodeCommand::Create(node, offset, text),
+        MakeGarbageCollected<InsertIntoTextNodeCommand>(node, offset, text),
         ASSERT_NO_EDITING_ABORT);
 }
 
@@ -540,7 +541,7 @@ void CompositeEditCommand::DeleteTextFromNode(Text* node,
                                               unsigned count) {
   // DeleteFromTextNodeCommand is never aborted.
   ApplyCommandToComposite(
-      DeleteFromTextNodeCommand::Create(node, offset, count),
+      MakeGarbageCollected<DeleteFromTextNodeCommand>(node, offset, count),
       ASSERT_NO_EDITING_ABORT);
 }
 
@@ -634,9 +635,9 @@ bool CompositeEditCommand::DeleteSelection(
 void CompositeEditCommand::RemoveCSSProperty(Element* element,
                                              CSSPropertyID property) {
   // RemoveCSSPropertyCommand is never aborted.
-  ApplyCommandToComposite(
-      RemoveCSSPropertyCommand::Create(GetDocument(), element, property),
-      ASSERT_NO_EDITING_ABORT);
+  ApplyCommandToComposite(MakeGarbageCollected<RemoveCSSPropertyCommand>(
+                              GetDocument(), element, property),
+                          ASSERT_NO_EDITING_ABORT);
 }
 
 void CompositeEditCommand::RemoveElementAttribute(
@@ -1567,9 +1568,9 @@ void CompositeEditCommand::MoveParagraphs(
       ReplaceSelectionCommand::kMovingParagraph;
   if (should_preserve_style == kDoNotPreserveStyle)
     options |= ReplaceSelectionCommand::kMatchStyle;
-  ApplyCommandToComposite(
-      ReplaceSelectionCommand::Create(GetDocument(), fragment, options),
-      editing_state);
+  ApplyCommandToComposite(MakeGarbageCollected<ReplaceSelectionCommand>(
+                              GetDocument(), fragment, options),
+                          editing_state);
   if (editing_state->IsAborted())
     return;
   ABORT_EDITING_COMMAND_IF(!EndingSelection().IsValidFor(GetDocument()));

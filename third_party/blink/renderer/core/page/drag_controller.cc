@@ -619,7 +619,7 @@ bool DragController::ConcludeEditDrag(DragData* drag_data) {
   // Start new Drag&Drop command group, invalidate previous command group.
   // Assume no other places is firing |DeleteByDrag| and |InsertFromDrop|.
   inner_frame->GetEditor().RegisterCommandGroup(
-      DragAndDropCommand::Create(*inner_frame->GetDocument()));
+      MakeGarbageCollected<DragAndDropCommand>(*inner_frame->GetDocument()));
 
   if (DragIsMove(inner_frame->Selection(), drag_data) ||
       IsRichlyEditablePosition(drag_caret.Base())) {
