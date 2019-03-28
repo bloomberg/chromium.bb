@@ -20,9 +20,6 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
-
 namespace {
 
 // Waits until the title of any tab in the browser for |contents| has the title
@@ -143,7 +140,7 @@ class CustomTabBarViewBrowserTest : public extensions::ExtensionBrowserTest {
         {features::kDesktopPWAsStayInWindow, features::kDesktopPWAWindowing,
          features::kDesktopPWAsCustomTabUI},
         {});
-    https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
 
     // Everything should be redirected to the http server.
     host_resolver()->AddRule("*", "127.0.0.1");

@@ -194,9 +194,6 @@ using web_modal::WebContentsModalDialogManager;
 
 namespace {
 
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
-
 const int kLargeVersionId = 0xFFFFFF;
 
 const char kHstsTestHostName[] = "hsts-example.test";
@@ -530,11 +527,11 @@ class SSLUITestBase : public InProcessBrowserTest,
         https_server_ocsp_ok_(
             net::SpawnedTestServer::TYPE_HTTPS,
             GetOCSPSSLOptions(net::SpawnedTestServer::SSLOptions::OCSP_OK),
-            base::FilePath(kDocRoot)),
+            GetChromeTestDataDir()),
         https_server_ocsp_revoked_(
             net::SpawnedTestServer::TYPE_HTTPS,
             GetOCSPSSLOptions(net::SpawnedTestServer::SSLOptions::OCSP_REVOKED),
-            base::FilePath(kDocRoot)),
+            GetChromeTestDataDir()),
         wss_server_expired_(net::SpawnedTestServer::TYPE_WSS,
                             SSLOptions(SSLOptions::CERT_EXPIRED),
                             net::GetWebSocketTestDataDirectory()),
@@ -542,21 +539,21 @@ class SSLUITestBase : public InProcessBrowserTest,
                                SSLOptions(SSLOptions::CERT_MISMATCHED_NAME),
                                net::GetWebSocketTestDataDirectory()),
         binding_(this) {
-    https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
 
     https_server_expired_.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
-    https_server_expired_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_expired_.AddDefaultHandlers(GetChromeTestDataDir());
 
     https_server_mismatched_.SetSSLConfig(
         net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-    https_server_mismatched_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_mismatched_.AddDefaultHandlers(GetChromeTestDataDir());
 
     https_server_sha1_.SetSSLConfig(net::EmbeddedTestServer::CERT_SHA1_LEAF);
-    https_server_sha1_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_sha1_.AddDefaultHandlers(GetChromeTestDataDir());
 
     https_server_common_name_only_.SetSSLConfig(
         net::EmbeddedTestServer::CERT_COMMON_NAME_ONLY);
-    https_server_common_name_only_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_common_name_only_.AddDefaultHandlers(GetChromeTestDataDir());
 
     // Sometimes favicons load before tests check the authentication
     // state, and sometimes they load after. This is problematic on
@@ -2043,7 +2040,7 @@ class CertificateTransparencySSLUITest : public CertVerifierBrowserTest {
   void SetUpOnMainThread() override {
     CertVerifierBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
-    https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
   }
 
   void SetUp() override {
@@ -5195,7 +5192,7 @@ IN_PROC_BROWSER_TEST_P(CommonNameMismatchBrowserTest,
   net::EmbeddedTestServer https_server_example_domain(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_example_domain.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
   ASSERT_TRUE(https_server_example_domain.Start());
 
   scoped_refptr<net::X509Certificate> cert =
@@ -5252,7 +5249,7 @@ IN_PROC_BROWSER_TEST_P(CommonNameMismatchBrowserTest,
   net::EmbeddedTestServer https_server_example_domain(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_example_domain.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
   ASSERT_TRUE(https_server_example_domain.Start());
 
   scoped_refptr<net::X509Certificate> cert =
@@ -5304,7 +5301,7 @@ IN_PROC_BROWSER_TEST_P(CommonNameMismatchBrowserTest,
   net::EmbeddedTestServer https_server_example_domain(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_example_domain.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
   ASSERT_TRUE(https_server_example_domain.Start());
 
   scoped_refptr<net::X509Certificate> cert =
@@ -5380,7 +5377,7 @@ IN_PROC_BROWSER_TEST_P(CommonNameMismatchBrowserTest,
       base::Bind(&HTTPSToHTTPRedirectHandler, &https_server_example_domain));
 
   https_server_example_domain.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
 
   ASSERT_TRUE(https_server_example_domain.Start());
 
@@ -5433,7 +5430,7 @@ IN_PROC_BROWSER_TEST_P(CommonNameMismatchBrowserTest,
   net::EmbeddedTestServer https_server_example_domain(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_example_domain.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
   ASSERT_TRUE(https_server_example_domain.Start());
 
   scoped_refptr<net::X509Certificate> cert =
@@ -5496,7 +5493,7 @@ IN_PROC_BROWSER_TEST_P(CommonNameMismatchBrowserTest,
   net::EmbeddedTestServer https_server_example_domain(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_example_domain.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
   ASSERT_TRUE(https_server_example_domain.Start());
 
   scoped_refptr<net::X509Certificate> cert =
@@ -5557,7 +5554,7 @@ IN_PROC_BROWSER_TEST_P(CommonNameMismatchBrowserTest,
   net::EmbeddedTestServer https_server_example_domain(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_example_domain.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
   ASSERT_TRUE(https_server_example_domain.Start());
 
   scoped_refptr<net::X509Certificate> cert =
@@ -5643,7 +5640,7 @@ IN_PROC_BROWSER_TEST_F(SSLBlockingPageIDNTest,
 
 IN_PROC_BROWSER_TEST_F(CertVerifierBrowserTest, MockCertVerifierSmokeTest) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+  https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
 
   mock_cert_verifier()->set_default_result(
@@ -6326,7 +6323,7 @@ class SSLUICaptivePortalListResourceBundleTest
   SSLUICaptivePortalListResourceBundleTest()
       : CertVerifierBrowserTest(),
         https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    https_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+    https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
 
   void SetUpOnMainThread() override {
@@ -7097,7 +7094,7 @@ class TLSLegacyVersionSSLUITest : public CertVerifierBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     mock_cert_verifier()->set_default_result(net::OK);
 
-    https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
 
     SetShouldNotRequireCTForTesting();
   }
@@ -7248,7 +7245,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, NetworkErrorDoesntRevokeExemptions) {
   // should still be invalid.
   net::EmbeddedTestServer new_https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   new_https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
-  new_https_server.AddDefaultHandlers(base::FilePath(kDocRoot));
+  new_https_server.AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(new_https_server.Start(server_port));
 
   ui_test_utils::NavigateToURL(browser(), expired_url);

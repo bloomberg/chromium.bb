@@ -137,7 +137,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   void SetUp() override {
     https_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
-    https_server_->ServeFilesFromSourceDirectory("chrome/test/data");
+    https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     ASSERT_TRUE(https_server_->Start());
 
     SiteEngagementScore::SetParamValuesForTesting();

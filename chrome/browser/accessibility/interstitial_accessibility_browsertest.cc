@@ -18,16 +18,13 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
-
 class InterstitialAccessibilityBrowserTest : public InProcessBrowserTest {
  public:
   InterstitialAccessibilityBrowserTest()
       : https_server_mismatched_(net::EmbeddedTestServer::TYPE_HTTPS) {
     https_server_mismatched_.SetSSLConfig(
         net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-    https_server_mismatched_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_mismatched_.AddDefaultHandlers(GetChromeTestDataDir());
   }
 
   std::string GetNameOfFocusedNode(content::WebContents* web_contents) {

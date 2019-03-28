@@ -39,17 +39,10 @@
 
 using content::BrowserThread;
 
-namespace {
-
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
-
-}  // namespace
-
 class HistoryBrowserTest : public InProcessBrowserTest {
  protected:
   HistoryBrowserTest() : test_server_() {
-    test_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+    test_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
 
   void SetUpOnMainThread() override {

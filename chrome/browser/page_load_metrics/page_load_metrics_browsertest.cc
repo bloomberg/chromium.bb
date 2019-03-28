@@ -1199,8 +1199,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   // subresources. Therefore, this test loads the test file on a real HTTPS
   // server.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  https_server.AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
@@ -1233,8 +1232,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   // subresources. Therefore, this test loads the test file on a real HTTPS
   // server.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  https_server.AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
@@ -1264,8 +1262,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   // subresources. Therefore, this test loads the test file on a real HTTPS
   // server.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  https_server.AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
@@ -1383,8 +1380,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   // As with UseCounterFeaturesMixedContent, load on a real HTTPS server to
   // trigger mixed content.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  https_server.AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
 
   auto waiter = CreatePageLoadMetricsTestWaiter();

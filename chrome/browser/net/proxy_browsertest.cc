@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, BasicAuthWSConnect) {
 class BaseHttpProxyScriptBrowserTest : public InProcessBrowserTest {
  public:
   BaseHttpProxyScriptBrowserTest() {
-    http_server_.ServeFilesFromSourceDirectory("chrome/test/data");
+    http_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
   ~BaseHttpProxyScriptBrowserTest() override {}
 

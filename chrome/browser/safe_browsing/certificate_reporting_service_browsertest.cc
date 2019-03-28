@@ -88,7 +88,7 @@ class CertificateReportingServiceBrowserTest
     host_resolver()->AddRule("*", "127.0.0.1");
 
     https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-    https_server_.ServeFilesFromSourceDirectory("chrome/test/data");
+    https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     ASSERT_TRUE(https_server_.Start());
 
     test_helper_ =

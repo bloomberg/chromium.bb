@@ -38,9 +38,6 @@ const char kOutOfScopeUrlPath[] = "/out_of_scope/index.html";
 
 const char kAppName[] = "Test app";
 
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
-
 bool HasOpenedWindowAndOpener(content::WebContents* opener_contents,
                               content::WebContents* opened_contents) {
   bool has_opener;
@@ -218,7 +215,7 @@ BookmarkAppNavigationBrowserTest::BookmarkAppNavigationBrowserTest()
 BookmarkAppNavigationBrowserTest::~BookmarkAppNavigationBrowserTest() = default;
 
 void BookmarkAppNavigationBrowserTest::SetUp() {
-  https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
+  https_server_.AddDefaultHandlers(GetChromeTestDataDir());
   // Register a request handler that will return empty pages. Tests are
   // responsible for adding elements and firing events on these empty pages.
   https_server_.RegisterRequestHandler(

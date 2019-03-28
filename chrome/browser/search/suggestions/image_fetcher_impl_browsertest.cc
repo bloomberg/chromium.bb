@@ -32,8 +32,6 @@ const char kImageFetcherUmaClientName[] = "TestClientName";
 const char kTestImagePath[] = "/image_decoding/droids.png";
 const char kInvalidImagePath[] = "/DOESNOTEXIST";
 
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
 }  // namespace
 
 class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
@@ -43,7 +41,7 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
         num_callback_null_called_(0),
         num_data_callback_valid_called_(0),
         num_data_callback_null_called_(0) {
-    test_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+    test_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
 
   void SetUpInProcessBrowserTestFixture() override {
