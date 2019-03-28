@@ -21,7 +21,6 @@
 #include "chrome/browser/apps/app_service/extension_apps.h"
 #endif  // OS_CHROMEOS
 
-class AppServiceProxyTest;
 class Profile;
 
 namespace apps {
@@ -67,6 +66,9 @@ class AppServiceProxy : public KeyedService,
   void Uninstall(const std::string& app_id);
 
   void OpenNativeSettings(const std::string& app_id);
+
+  apps::IconLoader* OverrideInnerIconLoaderForTesting(
+      apps::IconLoader* icon_loader);
 
  private:
   // An adapter, presenting an IconLoader interface based on the underlying
@@ -129,9 +131,6 @@ class AppServiceProxy : public KeyedService,
 
     apps::IconLoader* overriding_icon_loader_for_testing_;
   };
-
-  friend class ::AppServiceProxyTest;
-  void OverrideInnerIconLoaderForTesting(apps::IconLoader* icon_loader);
 
   // KeyedService overrides.
   void Shutdown() override;

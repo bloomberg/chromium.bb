@@ -267,6 +267,8 @@ class AppSearchProvider::DataSource {
       AppListControllerDelegate* list_controller,
       bool is_recommended) = 0;
 
+  virtual void ViewClosing() {}
+
  protected:
   Profile* profile() { return profile_; }
   AppSearchProvider* owner() { return owner_; }
@@ -285,7 +287,9 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
                              public apps::AppRegistryCache::Observer {
  public:
   AppServiceDataSource(Profile* profile, AppSearchProvider* owner)
-      : AppSearchProvider::DataSource(profile, owner) {
+      : AppSearchProvider::DataSource(profile, owner),
+        icon_cache_(apps::AppServiceProxy::Get(profile),
+                    apps::IconCache::GarbageCollectionPolicy::kExplicit) {
     apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile);
     if (proxy) {
       Observe(&proxy->AppRegistryCache());
@@ -335,8 +339,10 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
       AppListControllerDelegate* list_controller,
       bool is_recommended) override {
     return std::make_unique<AppServiceAppResult>(
-        profile(), app_id, list_controller, is_recommended);
+        profile(), app_id, list_controller, is_recommended, &icon_cache_);
   }
+
+  void ViewClosing() override { icon_cache_.SweepReleasedIcons(); }
 
  private:
   // apps::AppRegistryCache::Observer overrides:
@@ -347,6 +353,18 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
       owner()->RefreshAppsAndUpdateResults();
     }
   }
+
+  // The AppServiceDataSource seems like one (but not the only) good place to
+  // add an App Service icon caching wrapper, because (1) the AppSearchProvider
+  // destroys and creates multiple search results in a short period of time,
+  // while the user is typing, so will clearly benefit from a cache, and (2)
+  // there is an obvious point in time when the cache can be emptied: the user
+  // will obviously stop typing (so stop triggering LoadIcon requests) when the
+  // search box view closes.
+  //
+  // There are reasons to have more than one icon caching layer. See the
+  // comments for the apps::IconCache::GarbageCollectionPolicy enum.
+  apps::IconCache icon_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceDataSource);
 };
@@ -686,6 +704,12 @@ void AppSearchProvider::Start(const base::string16& query) {
     RefreshAppsAndUpdateResults();
   else
     UpdateResults();
+}
+
+void AppSearchProvider::ViewClosing() {
+  ClearResults();
+  for (auto& data_source : data_sources_)
+    data_source->ViewClosing();
 }
 
 void AppSearchProvider::Train(const std::string& id, RankingItemType type) {

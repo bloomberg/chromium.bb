@@ -172,6 +172,8 @@ void AppListClientImpl::SearchResultContextMenuItemSelected(
 
 void AppListClientImpl::ViewClosing() {
   display_id_ = display::kInvalidDisplayId;
+  if (search_controller_)
+    search_controller_->ViewClosing();
 }
 
 void AppListClientImpl::ViewShown(int64_t display_id) {

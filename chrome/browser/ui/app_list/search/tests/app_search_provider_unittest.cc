@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -19,6 +20,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
@@ -34,6 +36,8 @@
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/services/app_service/public/cpp/stub_icon_loader.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/crx_file/id_util.h"
@@ -218,6 +222,8 @@ class AppSearchProviderTest : public AppListTestBase {
   void Train(const std::string& id) {
     app_search_->Train(id, RankingItemType::kApp);
   }
+
+  void CallViewClosing() { app_search_->ViewClosing(); }
 
   sync_sessions::SyncedSessionTracker* session_tracker() {
     return session_tracker_.get();
@@ -781,6 +787,50 @@ TEST_F(AppSearchProviderTest, CrostiniApp) {
   EXPECT_EQ("goodApp", RunQuery("executable"));
   EXPECT_EQ("", RunQuery("wow amazing"));
   EXPECT_EQ("", RunQuery("terrible"));
+}
+
+TEST_F(AppSearchProviderTest, AppServiceIconCache) {
+  // Skip this App Service specific test if the App Service is disabled.
+  if (!base::FeatureList::IsEnabled(features::kAppServiceAsh)) {
+    return;
+  }
+
+  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
+  ASSERT_NE(proxy, nullptr);
+
+  apps::StubIconLoader stub_icon_loader;
+  apps::IconLoader* old_icon_loader =
+      proxy->OverrideInnerIconLoaderForTesting(&stub_icon_loader);
+
+  // Insert dummy map values so that the stub_icon_loader knows of these apps.
+  stub_icon_loader.timelines_by_app_id_[kPackagedApp1Id] = 1;
+  stub_icon_loader.timelines_by_app_id_[kPackagedApp2Id] = 2;
+
+  // The stub_icon_loader should start with no LoadIconFromIconKey calls.
+  CreateSearch();
+  EXPECT_EQ(0, stub_icon_loader.NumLoadIconFromIconKeyCalls());
+
+  // Running the "pa" query should get two hits (for "Packaged App #"), which
+  // should lead to 2 LoadIconFromIconKey calls on the stub_icon_loader.
+  RunQuery("pa");
+  EXPECT_EQ(2, stub_icon_loader.NumLoadIconFromIconKeyCalls());
+
+  // Issuing the same "pa" query should hit the AppServiceDataSource's icon
+  // cache, with no further calls to the wrapped stub_icon_loader.
+  RunQuery("pa");
+  EXPECT_EQ(2, stub_icon_loader.NumLoadIconFromIconKeyCalls());
+
+  // Hiding the UI (i.e. calling ViewClosing) should clear the icon cache. The
+  // number of LoadIconFromIconKey calls should not change.
+  CallViewClosing();
+  EXPECT_EQ(2, stub_icon_loader.NumLoadIconFromIconKeyCalls());
+
+  // Issuing the same "pa" query should bypass the now-clear icon cache, with 2
+  // further calls to the wrapped stub_icon_loader, bringing the total to 4.
+  RunQuery("pa");
+  EXPECT_EQ(4, stub_icon_loader.NumLoadIconFromIconKeyCalls());
+
+  proxy->OverrideInnerIconLoaderForTesting(old_icon_loader);
 }
 
 enum class TestExtensionInstallType {

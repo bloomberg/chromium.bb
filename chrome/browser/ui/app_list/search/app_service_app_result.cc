@@ -18,8 +18,10 @@ namespace app_list {
 AppServiceAppResult::AppServiceAppResult(Profile* profile,
                                          const std::string& app_id,
                                          AppListControllerDelegate* controller,
-                                         bool is_recommendation)
+                                         bool is_recommendation,
+                                         apps::IconLoader* icon_loader)
     : AppResult(profile, app_id, controller, is_recommendation),
+      icon_loader_(icon_loader),
       app_type_(apps::mojom::AppType::kUnknown),
       is_platform_app_(false),
       show_in_launcher_(false),
@@ -123,9 +125,11 @@ void AppServiceAppResult::Launch(int event_flags,
 }
 
 void AppServiceAppResult::CallLoadIcon(bool chip, bool allow_placeholder_icon) {
-  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
-  if (proxy) {
-    proxy->LoadIcon(
+  if (icon_loader_) {
+    // If |icon_loader_releaser_| is non-null, assigning to it will signal to
+    // |icon_loader_| that the previous icon is no longer being used, as a hint
+    // that it could be flushed from any caches.
+    icon_loader_releaser_ = icon_loader_->LoadIcon(
         app_type_, app_id(), apps::mojom::IconCompression::kUncompressed,
         chip ? AppListConfig::instance().suggestion_chip_icon_dimension()
              : AppListConfig::instance().GetPreferredIconDimension(
