@@ -59,6 +59,16 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # status.
     self.Fail('conformance2/extensions/ext-float-blend.html',
         ['win', 'mac', 'linux', 'android'], bug=945970)
+    # TODO(shrekshao): Remove the following two Fail expectations
+    # (draw-buffers and fs-color-type-mismatch-color-buffer-type)
+    # after applying the new draw buffers validation
+    self.Fail('conformance2/rendering/draw-buffers.html',
+        bug=927908)
+    self.Fail('conformance2/rendering/' +
+        'fs-color-type-mismatch-color-buffer-type.html',
+        bug=927908)
+    self.Fail('conformance2/rendering/vertex-id.html',
+        ['win'], bug=945903)
 
     # Too slow (take about one hour to run)
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
@@ -137,6 +147,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia', 'd3d11'], bug=735464)
     self.Flaky('conformance/uniforms/uniform-default-values.html',
         ['win', 'nvidia', 'vulkan', 'passthrough'], bug=907544)
+    self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
+        ['win', 'linux', 'passthrough'], bug=945877)
 
     # Win / NVIDIA Quadro P400 / D3D11 flaky failures
     self.Fail('deqp/data/gles3/shaders/functions.html',
@@ -318,6 +330,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
         ['win', 'intel', 'd3d11'], bug=782317)
 
+    self.Flaky('conformance/uniforms/' +
+        'no-over-optimization-on-uniform-array-00.html',
+        ['win', 'intel', 'passthrough'], bug=945942)
     self.Flaky('deqp/functional/gles3/lifetime.html',
         ['win', 'intel', 'd3d11'], bug=620379)
     self.Flaky('deqp/functional/gles3/textureformat/unsized_3d.html',
@@ -1364,7 +1379,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Qualcomm (Pixel 2) failures
     self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
         ['android', 'qualcomm'], bug=906737)
-    self.Fail('conformance2/extensions/webgl_multiview.html',
+    self.Fail('conformance2/extensions/ovr_multiview2.html',
         ['android', 'qualcomm'], bug=906739)
     self.Fail('conformance2/glsl3/compare-structs-containing-arrays.html',
         ['android', 'qualcomm'], bug=906742)
