@@ -541,7 +541,7 @@ int RendererBlinkPlatformImpl::DatabaseDeleteFile(
   return rv;
 }
 
-long RendererBlinkPlatformImpl::DatabaseGetFileAttributes(
+int32_t RendererBlinkPlatformImpl::DatabaseGetFileAttributes(
     const WebString& vfs_file_name) {
   int32_t rv = -1;
   GetWebDatabaseHost().GetFileAttributes(vfs_file_name.Utf16(), &rv);

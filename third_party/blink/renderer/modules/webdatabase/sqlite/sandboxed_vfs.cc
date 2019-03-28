@@ -220,7 +220,7 @@ int SandboxedVfs::Delete(const char* full_path, int sync_dir) {
 int SandboxedVfs::Access(const char* full_path, int flags, int* result) {
   DCHECK(full_path);
   DCHECK(result);
-  long attributes =
+  int32_t attributes =
       platform_->DatabaseGetFileAttributes(StringFromFullPath(full_path));
 
   // TODO(pwnall): Make the mojo interface portable across OSes, instead of
