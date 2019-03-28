@@ -368,13 +368,36 @@ void NativeWidgetMac::SetSize(const gfx::Size& size) {
 }
 
 void NativeWidgetMac::StackAbove(gfx::NativeView native_view) {
-  NSInteger view_parent = native_view.GetNativeNSView().window.windowNumber;
-  [GetNativeWindow().GetNativeNSWindow() orderWindow:NSWindowAbove
-                                          relativeTo:view_parent];
+  if (!bridge())
+    return;
+
+  auto* sibling_host =
+      BridgedNativeWidgetHostImpl::GetFromNativeView(native_view);
+
+  if (!sibling_host) {
+    // This will only work if |this| is in-process.
+    DCHECK(!bridge_host_->bridge_factory_host());
+    NSInteger view_parent = native_view.GetNativeNSView().window.windowNumber;
+    [GetNativeWindow().GetNativeNSWindow() orderWindow:NSWindowAbove
+                                            relativeTo:view_parent];
+    return;
+  }
+
+  if (bridge_host_->bridge_factory_host() ==
+      sibling_host->bridge_factory_host()) {
+    // Check if |native_view|'s BridgedNativeWidgetHostImpl corresponds to the
+    // same process as |this|.
+    bridge()->StackAbove(sibling_host->bridged_native_widget_id());
+    return;
+  }
+
+  NOTREACHED() << "|native_view|'s BridgedNativeWidgetHostImpl isn't same "
+                  "process |this|";
 }
 
 void NativeWidgetMac::StackAtTop() {
-  [GetNativeWindow().GetNativeNSWindow() setOrderedIndex:0];
+  if (bridge())
+    bridge()->StackAtTop();
 }
 
 void NativeWidgetMac::SetShape(std::unique_ptr<Widget::ShapeRects> shape) {

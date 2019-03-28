@@ -204,6 +204,8 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   void CreateWindow(
       views_bridge_mac::mojom::CreateWindowParamsPtr params) override;
   void SetParent(uint64_t parent_id) override;
+  void StackAbove(uint64_t sibling_id) override;
+  void StackAtTop() override;
   void ShowEmojiPanel() override;
   void InitWindow(views_bridge_mac::mojom::BridgedNativeWidgetInitParamsPtr
                       params) override;
