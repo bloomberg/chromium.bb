@@ -11,9 +11,9 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "chromeos/dbus/auth_policy/auth_policy_client.h"
-#include "chromeos/dbus/cryptohome/tpm_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
 #include "crypto/symmetric_key.h"
@@ -170,7 +170,7 @@ void AuthPolicyHelper::JoinAdDomain(const std::string& machine_name,
                                     const std::string& username,
                                     const std::string& password,
                                     JoinCallback callback) {
-  DCHECK(!tpm_util::IsActiveDirectoryLocked());
+  DCHECK(!InstallAttributes::Get()->IsActiveDirectoryManaged());
   DCHECK(!weak_factory_.HasWeakPtrs()) << "Another operation is in progress";
   authpolicy::JoinDomainRequest request;
   if (!ParseDomainAndOU(distinguished_name, &request)) {
@@ -217,7 +217,7 @@ void AuthPolicyHelper::CancelRequestsAndRestart() {
 void AuthPolicyHelper::OnJoinCallback(JoinCallback callback,
                                       authpolicy::ErrorType error,
                                       const std::string& machine_domain) {
-  DCHECK(!tpm_util::IsActiveDirectoryLocked());
+  DCHECK(!InstallAttributes::Get()->IsActiveDirectoryManaged());
   if (error != authpolicy::ERROR_NONE) {
     std::move(callback).Run(error, machine_domain);
     return;
@@ -231,7 +231,7 @@ void AuthPolicyHelper::OnFirstPolicyRefreshCallback(
     JoinCallback callback,
     const std::string& machine_domain,
     authpolicy::ErrorType error) {
-  DCHECK(!tpm_util::IsActiveDirectoryLocked());
+  DCHECK(!InstallAttributes::Get()->IsActiveDirectoryManaged());
   // First policy refresh happens before device is locked. So policy store
   // should not succeed. The error means that authpolicyd cached device policy
   // and stores it in the next call to RefreshDevicePolicy in STEP_STORE_POLICY.

@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -56,6 +56,8 @@ class MockAuthPolicyClient : public FakeAuthPolicyClient {
 
 // Check that helper calls RefreshDevicePolicy after JoinAdDomain.
 TEST(AuthPolicyHelper, JoinFollowedByRefreshDevicePolicy) {
+  ScopedStubInstallAttributes scoped_stub_install_attributes;
+
   auto* mock_client = new MockAuthPolicyClient;
   CryptohomeClient::InitializeFake();
 
