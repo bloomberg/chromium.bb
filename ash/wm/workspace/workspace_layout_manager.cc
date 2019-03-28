@@ -107,9 +107,11 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
   keyboard::KeyboardController::Get()->AddObserver(this);
   settings_bubble_container_ = window->GetRootWindow()->GetChildById(
       kShellWindowId_SettingBubbleContainer);
+  root_window_controller_->shelf()->AddObserver(this);
 }
 
 WorkspaceLayoutManager::~WorkspaceLayoutManager() {
+  root_window_controller_->shelf()->RemoveObserver(this);
   if (root_window_)
     root_window_->RemoveObserver(this);
   if (settings_bubble_container_)
@@ -425,6 +427,13 @@ void WorkspaceLayoutManager::OnPinnedStateChanged(aura::Window* pinned_window) {
   }
 
   UpdateAlwaysOnTop(is_pinned ? pinned_window : nullptr);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// WorkspaceLayoutManager, ShelfObserver implementation:
+void WorkspaceLayoutManager::OnAutoHideStateChanged(
+    ShelfAutoHideState new_state) {
+  NotifySystemUiAreaChanged();
 }
 
 //////////////////////////////////////////////////////////////////////////////

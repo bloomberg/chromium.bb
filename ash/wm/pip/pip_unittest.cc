@@ -14,6 +14,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/pip/pip_positioner.h"
+#include "ash/wm/pip/pip_test_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
@@ -177,6 +178,7 @@ TEST_F(PipTest, TargetBoundsAffectedByWorkAreaChange) {
 }
 
 TEST_F(PipTest, PipRestoresToPreviousBoundsOnMovementAreaChangeIfTheyExist) {
+  ForceHideShelvesForTest();
   UpdateDisplay("400x400");
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(200, 200, 100, 100)));
@@ -195,27 +197,24 @@ TEST_F(PipTest, PipRestoresToPreviousBoundsOnMovementAreaChangeIfTheyExist) {
 
   // Update the work area so that the PIP window should be pushed upward.
   UpdateDisplay("400x200");
-  Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets());
+  ForceHideShelvesForTest();
 
-  // Set PIP to the updated constrained bounds.
-  const gfx::Rect constrained_bounds =
-      PipPositioner::GetPositionAfterMovementAreaChange(window_state);
-  EXPECT_EQ(gfx::Rect(292, 92, 100, 100), constrained_bounds);
-  window->SetBoundsInScreen(constrained_bounds, window_state->GetDisplay());
+  // PIP should move up to accommodate the new work area.
+  EXPECT_EQ(gfx::Rect(292, 92, 100, 100), window->GetBoundsInScreen());
 
   // Restore the original work area.
   UpdateDisplay("400x400");
+  ForceHideShelvesForTest();
 
   // Expect that the PIP window is put back to where it was before.
-  EXPECT_EQ(gfx::Rect(292, 200, 100, 100),
-            PipPositioner::GetPositionAfterMovementAreaChange(window_state));
+  EXPECT_EQ(gfx::Rect(292, 200, 100, 100), window->GetBoundsInScreen());
 }
 
 TEST_F(
     PipTest,
     PipRestoresToPreviousBoundsOnMovementAreaChangeIfTheyExistOnExternalDisplay) {
   UpdateDisplay("400x400,400x400");
+  ForceHideShelvesForTest();
   auto* root_window = Shell::GetAllRootWindows()[1];
 
   // Position the PIP window on the side of the screen where it will be next
@@ -234,21 +233,17 @@ TEST_F(
 
   // Update the work area so that the PIP window should be pushed upward.
   UpdateDisplay("400x400,400x200");
-  Shell::Get()->SetDisplayWorkAreaInsets(root_window, gfx::Insets());
+  ForceHideShelvesForTest();
 
-  // Set PIP to the updated constrained bounds.
-  // const gfx::Rect constrained_bounds =
-  // PipPositioner::GetPositionAfterMovementAreaChange(window_state);
+  // PIP should move up to accommodate the new work area.
   EXPECT_EQ(gfx::Rect(408, 92, 100, 100), window->GetBoundsInScreen());
-  // window->SetBoundsInScreen(constrained_bounds, window_state->GetDisplay());
 
   // Restore the original work area.
   UpdateDisplay("400x400,400x400");
-  Shell::Get()->SetDisplayWorkAreaInsets(root_window, gfx::Insets());
+  ForceHideShelvesForTest();
 
   // Expect that the PIP window is put back to where it was before.
   EXPECT_EQ(gfx::Rect(408, 292, 100, 100), window->GetBoundsInScreen());
-  // PipPositioner::GetPositionAfterMovementAreaChange(window_state));
 }
 
 }  // namespace ash
