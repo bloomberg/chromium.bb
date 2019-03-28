@@ -9,7 +9,6 @@ import("//build/config/dcheck_always_on.gni")
 import("//build/config/python.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build_overrides/build.gni")
-
 assert(is_android)
 
 # These identify targets that have .build_config files (except for android_apk,
@@ -3272,7 +3271,7 @@ if (enable_java_templates) {
         _emma_instrument = !invoker.emma_never_instrument && _emma_instrument
       }
       if (_emma_instrument) {
-        _accumulated_deps += [ "//third_party/android_tools:emma_device_java" ]
+        _accumulated_deps += [ "//third_party/android_sdk:emma_device_java" ]
       }
     }
 
@@ -3292,7 +3291,7 @@ if (enable_java_templates) {
       if (defined(invoker.alternative_android_sdk_dep)) {
         _accumulated_deps += [ invoker.alternative_android_sdk_dep ]
       } else {
-        _accumulated_deps += [ "//third_party/android_tools:android_sdk_java" ]
+        _accumulated_deps += [ "//third_party/android_sdk:android_sdk_java" ]
       }
     }
 

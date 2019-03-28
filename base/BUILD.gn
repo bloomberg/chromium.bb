@@ -1392,7 +1392,7 @@ jumbo_component("base") {
 
     deps += [
       ":base_jni_headers",
-      "//third_party/android_tools:cpu_features",
+      "//third_party/android_sdk:cpu_features",
       "//third_party/ashmem",
     ]
 
@@ -3202,12 +3202,12 @@ if (is_android) {
       "//testing/android/reporter:reporter_java",
       "//third_party/android_deps:com_android_support_support_annotations_java",
       "//third_party/android_deps:com_android_support_support_compat_java",
+      "//third_party/android_sdk:android_support_chromium_java",
+      "//third_party/android_sdk:android_test_base_java",
+      "//third_party/android_sdk:android_test_mock_java",
       "//third_party/android_support_test_runner:exposed_instrumentation_api_publish_java",
       "//third_party/android_support_test_runner:rules_java",
       "//third_party/android_support_test_runner:runner_java",
-      "//third_party/android_tools:android_support_chromium_java",
-      "//third_party/android_tools:android_test_base_java",
-      "//third_party/android_tools:android_test_mock_java",
       "//third_party/hamcrest:hamcrest_core_java",
       "//third_party/junit",
       "//third_party/ub-uiautomator:ub_uiautomator_java",

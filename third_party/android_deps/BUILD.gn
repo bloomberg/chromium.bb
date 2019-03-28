@@ -197,9 +197,9 @@ android_aar_prebuilt("androidx_test_rules_java") {
     ":androidx_test_runner_java",
   ]
   deps += [
-    "//third_party/android_tools:android_test_base_java",
-    "//third_party/android_tools:android_test_mock_java",
-    "//third_party/android_tools:android_test_runner_java",
+    "//third_party/android_sdk:android_test_base_java",
+    "//third_party/android_sdk:android_test_mock_java",
+    "//third_party/android_sdk:android_test_runner_java",
   ]
 }
 

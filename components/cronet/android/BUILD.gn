@@ -763,7 +763,7 @@ if (!is_component_build) {
       "//base:base_java",
       "//base:base_java_test_support",
       "//net/android:net_java_test_support",
-      "//third_party/android_tools:android_test_base_java",
+      "//third_party/android_sdk:android_test_base_java",
       "//third_party/junit",
       "//third_party/netty4:netty_all_java",
     ]
@@ -843,8 +843,8 @@ if (!is_component_build) {
       ":cronet_api_java",
       ":cronet_impl_all_java",
       ":cronet_urlconnection_impl_java",
+      "//third_party/android_sdk:android_test_base_java",
       "//third_party/android_support_test_runner:runner_java",
-      "//third_party/android_tools:android_test_base_java",
       "//third_party/hamcrest:hamcrest_core_java",
     ]
     deps += cronet_javatests_deps_to_package
@@ -879,9 +879,9 @@ if (!is_component_build) {
       "//base:base_java_test_support",
       "//net/android:net_java",
       "//net/android:net_java_test_support",
+      "//third_party/android_sdk:android_test_base_java",
+      "//third_party/android_sdk:android_test_mock_java",
       "//third_party/android_support_test_runner:runner_java",
-      "//third_party/android_tools:android_test_base_java",
-      "//third_party/android_tools:android_test_mock_java",
       "//third_party/hamcrest:hamcrest_core_java",
       "//third_party/junit",
       "//third_party/netty-tcnative:netty-tcnative-so",
@@ -925,9 +925,9 @@ if (!is_component_build) {
       ":cronet_impl_platform_base_java",
       ":cronet_smoketests_platform_only_apk_resources",
       "//base:base_java_test_support",
+      "//third_party/android_sdk:android_test_base_java",
+      "//third_party/android_sdk:android_test_mock_java",
       "//third_party/android_support_test_runner:runner_java",
-      "//third_party/android_tools:android_test_base_java",
-      "//third_party/android_tools:android_test_mock_java",
       "//third_party/junit",
       "//third_party/netty4:netty_all_java",
     ]
@@ -956,9 +956,9 @@ if (!is_component_build) {
       ":cronet_test_apk_resources",
       "//base:base_java",
       "//base:base_java_test_support",
+      "//third_party/android_sdk:android_test_base_java",
+      "//third_party/android_sdk:android_test_mock_java",
       "//third_party/android_support_test_runner:runner_java",
-      "//third_party/android_tools:android_test_base_java",
-      "//third_party/android_tools:android_test_mock_java",
       "//third_party/junit",
       "//third_party/netty4:netty_all_java",
     ]
@@ -992,7 +992,7 @@ if (!is_component_build) {
       ":cronet_javatests",
       ":cronet_test_apk_java",
       "//base:base_java",
-      "//third_party/android_tools:android_test_mock_java",
+      "//third_party/android_sdk:android_test_mock_java",
       "//third_party/junit",
     ]
 

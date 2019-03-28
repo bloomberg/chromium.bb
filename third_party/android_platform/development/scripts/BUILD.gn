@@ -6,9 +6,9 @@ import("//build/config/android/config.gni")
 import("//build/config/python.gni")
 
 python_library("stack_py") {
-  pydeps_file = "//build/secondary/third_party/android_platform/development/scripts/stack.pydeps"
+  pydeps_file = "stack.pydeps"
   data = [
-    "//third_party/android_platform/development/scripts/stack",
+    "stack",
     "//third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
   ]
 }

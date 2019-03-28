@@ -345,8 +345,8 @@ android_library("chrome_java") {
     "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
     "//third_party/android_deps:javax_inject_javax_inject_java",
     "//third_party/android_media:android_media_java",
+    "//third_party/android_sdk:android_gcm_java",
     "//third_party/android_swipe_refresh:android_swipe_refresh_java",
-    "//third_party/android_tools:android_gcm_java",
     "//third_party/blink/public:android_mojo_bindings_java",
     "//third_party/blink/public:blink_headers_java",
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
@@ -453,9 +453,7 @@ android_library("chrome_java") {
     proguard_configs = [ "//chrome/android/features/ar/proguard_async.flags" ]
   }
 
-  processor_args_javac = [
-    "dagger.fastInit=enabled"
-  ]
+  processor_args_javac = [ "dagger.fastInit=enabled" ]
 }
 
 # This is a list of all base module java dependencies. New features should be
@@ -783,11 +781,11 @@ android_library("chrome_test_java") {
     "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/android_deps:com_google_ar_core_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
+    "//third_party/android_sdk:android_test_base_java",
+    "//third_party/android_sdk:android_test_mock_java",
+    "//third_party/android_sdk:android_test_runner_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
-    "//third_party/android_tools:android_test_base_java",
-    "//third_party/android_tools:android_test_mock_java",
-    "//third_party/android_tools:android_test_runner_java",
     "//third_party/blink/public:android_mojo_bindings_java",
     "//third_party/blink/public:blink_headers_java",
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
@@ -1894,9 +1892,9 @@ template("chrome_test_apk_tmpl") {
              ":chrome_apk_pak_assets",
              ":chrome_public_base_module_java_for_test",
              "//third_party/android_support_test_runner:runner_java",
-             "//third_party/android_tools:android_test_base_java",
-             "//third_party/android_tools:android_test_mock_java",
-             "//third_party/android_tools:android_test_runner_java",
+             "//third_party/android_sdk:android_test_base_java",
+             "//third_party/android_sdk:android_test_mock_java",
+             "//third_party/android_sdk:android_test_runner_java",
            ]
     if (enable_vr) {
       # Contains VrFirstRunActivity, which is referenced by AndroidManifest.xml.
@@ -1954,7 +1952,7 @@ if (enable_vr) {
 
     deps = [
       ":chrome_test_vr_java",
-      "//third_party/android_tools:android_test_mock_java",
+      "//third_party/android_sdk:android_test_mock_java",
     ]
   }
 
@@ -1983,7 +1981,7 @@ if (enable_arcore && package_arcore) {
 
     deps = [
       ":chrome_test_ar_java",
-      "//third_party/android_tools:android_test_mock_java",
+      "//third_party/android_sdk:android_test_mock_java",
     ]
     additional_apks = [ "//net/android:net_test_support_apk" ]
     proguard_enabled = !is_java_debug

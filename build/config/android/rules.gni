@@ -12,7 +12,6 @@ import("//build/config/dcheck_always_on.gni")
 import("//build/config/python.gni")
 import("//build/config/zip.gni")
 import("//build/toolchain/toolchain.gni")
-
 assert(is_android)
 
 declare_args() {
@@ -969,7 +968,7 @@ if (enable_java_templates) {
     if (defined(invoker.alternative_android_sdk_dep)) {
       _deps += [ invoker.alternative_android_sdk_dep ]
     } else {
-      _deps += [ "//third_party/android_tools:android_sdk_java" ]
+      _deps += [ "//third_party/android_sdk:android_sdk_java" ]
     }
 
     write_build_config(_build_config_target_name) {
@@ -1579,7 +1578,7 @@ if (enable_java_templates) {
       _deps = invoker.deps
     }
     if (_supports_android) {
-      _deps += [ "//third_party/android_tools:android_sdk_java" ]
+      _deps += [ "//third_party/android_sdk:android_sdk_java" ]
     }
     _enable_build_hooks =
         _supports_android &&
@@ -1676,7 +1675,7 @@ if (enable_java_templates) {
   #   }
   template("proguarded_dist_dex") {
     _deps = [
-      "//third_party/android_tools:android_sdk_java",
+      "//third_party/android_sdk:android_sdk_java",
       "//build/android/buildhooks:build_hooks_android_impl_java",
     ]
     if (defined(invoker.deps)) {
@@ -2216,7 +2215,8 @@ if (enable_java_templates) {
       }
     }
 
-    if (_shared_libraries_is_valid || _secondary_abi_shared_libraries_is_valid) {
+    if (_shared_libraries_is_valid ||
+        _secondary_abi_shared_libraries_is_valid) {
       _native_lib_version_rule = ""
       if (defined(invoker.native_lib_version_rule)) {
         _native_lib_version_rule = invoker.native_lib_version_rule
@@ -2296,7 +2296,7 @@ if (enable_java_templates) {
     if (defined(invoker.alternative_android_sdk_dep)) {
       _android_sdk_dep = invoker.alternative_android_sdk_dep
     } else {
-      _android_sdk_dep = "//third_party/android_tools:android_sdk_java"
+      _android_sdk_dep = "//third_party/android_sdk:android_sdk_java"
     }
 
     _optimize_resources =
@@ -4192,7 +4192,7 @@ if (enable_java_templates) {
     if (defined(invoker.proguard_android_sdk_dep)) {
       proguard_android_sdk_dep_ = invoker.proguard_android_sdk_dep
     } else {
-      proguard_android_sdk_dep_ = "//third_party/android_tools:android_sdk_java"
+      proguard_android_sdk_dep_ = "//third_party/android_sdk:android_sdk_java"
     }
     write_build_config(_build_config_target) {
       # We don't want async modules to be proguarded synchronously, so we leave

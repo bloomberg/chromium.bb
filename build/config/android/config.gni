@@ -129,7 +129,7 @@ if (is_android || is_chromeos) {
   }
 
   webview_public_framework_dep =
-      "//third_party/android_system_sdk:public_framework_system_java"
+      "//third_party/android_sdk:public_framework_system_java"
   if (!defined(webview_framework_dep)) {
     webview_framework_dep = webview_public_framework_dep
   }
