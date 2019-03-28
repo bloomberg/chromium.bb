@@ -7,17 +7,17 @@ package org.chromium.chrome.browser.upgrade;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin.DocumentModeAssassinObserver;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * Activity that interrupts launch and shows that users are being upgraded to a new version of
@@ -32,7 +32,6 @@ public class UpgradeActivity extends AppCompatActivity {
     private static final long MIN_MS_TO_DISPLAY_ACTIVITY = 3000;
     private static final long INVALID_TIMESTAMP = -1;
 
-    private final Handler mHandler;
     private final DocumentModeAssassinObserver mObserver;
 
     private Intent mIntentToFireAfterUpgrade;
@@ -49,8 +48,6 @@ public class UpgradeActivity extends AppCompatActivity {
     }
 
     public UpgradeActivity() {
-        mHandler = new Handler(Looper.getMainLooper());
-
         mObserver = new DocumentModeAssassinObserver() {
             @Override
             public void onStageChange(int newStage) {
@@ -61,12 +58,8 @@ public class UpgradeActivity extends AppCompatActivity {
                 // while other Observers are being alerted.
                 long msElapsed = System.currentTimeMillis() - mStartTimestamp;
                 long msRemaining = Math.max(0, MIN_MS_TO_DISPLAY_ACTIVITY - msElapsed);
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        continueApplicationLaunch();
-                    }
-                }, msRemaining);
+                PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT,
+                        () -> { continueApplicationLaunch(); }, msRemaining);
             }
         };
     }
