@@ -818,6 +818,8 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
       ->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   selected_tabs_ = new_selection;
 
+  UpdateHoverCard(nullptr, false);
+
   // Notify all tabs whose selected state changed.
   for (auto tab_index :
        base::STLSetUnion<ui::ListSelectionModel::SelectedIndices>(
