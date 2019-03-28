@@ -72,16 +72,6 @@ cr.define('settings_search_engines_page', function() {
       });
 
       // Tests that the dialog calls 'searchEngineEditStarted' and
-      // 'searchEngineEditCancelled' when closed from the 'x' button.
-      test('DialogOpenAndClose', function() {
-        return browserProxy.whenCalled('searchEngineEditStarted')
-            .then(function() {
-              dialog.$.dialog.getCloseButton().click();
-              return browserProxy.whenCalled('searchEngineEditCancelled');
-            });
-      });
-
-      // Tests that the dialog calls 'searchEngineEditStarted' and
       // 'searchEngineEditCancelled' when closed from the 'cancel' button.
       test('DialogOpenAndCancel', function() {
         return browserProxy.whenCalled('searchEngineEditStarted')

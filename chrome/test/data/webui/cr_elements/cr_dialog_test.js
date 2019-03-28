@@ -186,7 +186,7 @@ suite('cr-dialog', function() {
     assertEquals(0, clickedCounter);
 
     // Enter keys on the close icon in the top-right corner should be ignored.
-    pressEnter(dialog.getCloseButton());
+    pressEnter(dialog.$.close);
     assertEquals(0, clickedCounter);
   });
 
@@ -372,9 +372,7 @@ suite('cr-dialog', function() {
     const dialog = document.body.querySelector('cr-dialog');
     dialog.showModal();
 
-    // The paper-icon-button-light is the hidden element which is the
-    // parentElement of the button.
-    assertTrue(dialog.getCloseButton().parentElement.hidden);
+    assertTrue(dialog.$.close.hidden);
 
     // Hitting escape fires a 'cancel' event. Cancelling that event prevents the
     // dialog from closing.
@@ -399,13 +397,9 @@ suite('cr-dialog', function() {
     dialog.showModal();
     assertTrue(dialog.open);
 
-    // The paper-icon-button-light is the hidden element which is the
-    // parentElement of the button.
-    assertFalse(dialog.getCloseButton().parentElement.hidden);
-    assertEquals(
-        'block',
-        window.getComputedStyle(dialog.getCloseButton().parentElement).display);
-    dialog.getCloseButton().click();
+    assertFalse(dialog.$.close.hidden);
+    assertEquals('flex', window.getComputedStyle(dialog.$.close).display);
+    dialog.$.close.click();
     assertFalse(dialog.open);
   });
 
@@ -418,12 +412,8 @@ suite('cr-dialog', function() {
     const dialog = document.body.querySelector('cr-dialog');
     dialog.showModal();
 
-    // The paper-icon-button-light is the hidden element which is the
-    // parentElement of the button.
-    assertTrue(dialog.getCloseButton().parentElement.hidden);
-    assertEquals(
-        'none',
-        window.getComputedStyle(dialog.getCloseButton().parentElement).display);
+    assertTrue(dialog.$.close.hidden);
+    assertEquals('none', window.getComputedStyle(dialog.$.close).display);
   });
 
   test('keydown should be consumed when the property is true', function() {

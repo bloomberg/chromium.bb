@@ -1,11 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="../cr_icon_button/cr_icon_button.html">
+<link rel="import" href="../cr_input/cr_input.html">
+<link rel="import" href="../icons.html">
+<link rel="import" href="../shared_style_css.html">
+<link rel="import" href="../shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="cr_search_field_behavior.html">
 
 <dom-module id="cr-search-field">
@@ -73,18 +73,17 @@
         color: var(--cr-primary-text-color);
       }
 
-      #clearSearchContainer {
+      #clearSearch {
         /* A 16px icon that fits on the input line. */
-        background-size: 16px;
-        height: 24px;
+        --cr-icon-button-icon-size: 16px;
+        --cr-icon-button-size: 24px;
         margin-inline-end: -4px;
         margin-inline-start: 4px;
         position: absolute;
         right: 0;
-        width: 24px;
       }
 
-      :host-context([dir='rtl']) #clearSearchContainer {
+      :host-context([dir='rtl']) #clearSearch {
         left: 0;
         right: auto;
       }
@@ -93,11 +92,10 @@
     <cr-input id="searchInput" on-search="onSearchTermSearch"
         on-input="onSearchTermInput" aria-label$="[[label]]" type="search"
         autofocus="[[autofocus]]" placeholder="[[label]]" spellcheck="false">
-      <paper-icon-button-light id="clearSearchContainer" class="icon-cancel"
-          hidden$="[[!hasSearchText]]" slot="suffix">
-        <button id="clearSearch" on-click="onTapClear_" title="[[clearLabel]]">
-        </button>
-      </paper-icon-button-light>
+      <cr-icon-button id="clearSearch" class="icon-cancel"
+          hidden$="[[!hasSearchText]]" slot="suffix" on-click="onTapClear_"
+          title="[[clearLabel]]">
+      </cr-icon-button>
     </cr-input>
   </template>
   <script src="cr_search_field.js"></script>

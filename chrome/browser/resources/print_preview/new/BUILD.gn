@@ -119,6 +119,7 @@ js_library("destination_select") {
     ":select_behavior",
     "../data:destination",
     "../data:user_info",
+    "//third_party/polymer/v1_0/components-chromium/iron-meta:iron-meta-extracted",
     "//ui/webui/resources/js:i18n_behavior",
   ]
   externs_list = [ "$externs_path/pending.js" ]
