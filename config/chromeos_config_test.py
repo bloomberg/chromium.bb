@@ -591,6 +591,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'betty-paladin': site_config.templates.tast_vm_paladin_tests,
       'betty-pre-cq': site_config.templates.tast_vm_paladin_tests,
 
+      # There's no amd64-generic-release builder, so we use amd64-generic-full
+      # to validate informational Tast tests on amd64-generic:
+      # https://crbug.com/946858
+      'amd64-generic-full': site_config.templates.tast_vm_canary_tests,
       'betty-arc64-release': site_config.templates.tast_vm_canary_tests,
       'betty-release': site_config.templates.tast_vm_canary_tests,
   }
