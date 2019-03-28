@@ -5,8 +5,8 @@
 #include "components/password_manager/core/browser/generation/password_requirements_spec_fetcher_impl.h"
 
 #include "base/bind.h"
+#include "base/hash/md5.h"
 #include "base/logging.h"
-#include "base/md5.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"

@@ -10,8 +10,8 @@
 #include <string>
 
 #include "base/files/file.h"
+#include "base/hash/md5.h"
 #include "base/logging.h"
-#include "base/md5.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"

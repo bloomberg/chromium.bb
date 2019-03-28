@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file.h"
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"

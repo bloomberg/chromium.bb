@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"

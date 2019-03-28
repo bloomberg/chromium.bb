@@ -19,7 +19,7 @@ include_rules = [
 
 specific_include_rules = {
     'image_decoder_base_test\.cc': [
-        "+base/md5.h",
+        "+base/hash/md5.h",
         "+base/path_service.h",
         "+base/strings/utf_string_conversions.h",
     ],

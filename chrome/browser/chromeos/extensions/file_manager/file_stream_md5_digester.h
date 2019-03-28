@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/hash/md5.h"
 #include "base/macros.h"
-#include "base/md5.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/io_buffer.h"
 

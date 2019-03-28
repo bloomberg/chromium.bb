@@ -9,7 +9,7 @@
 #include <algorithm>
 
 #include "base/callback.h"
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/strings/string_util.h"
 
 namespace chromeos {

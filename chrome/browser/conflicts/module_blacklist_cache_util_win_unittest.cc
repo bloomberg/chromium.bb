@@ -13,9 +13,9 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/hash/md5.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/md5.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"

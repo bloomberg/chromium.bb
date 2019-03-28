@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"

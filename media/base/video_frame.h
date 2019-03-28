@@ -14,9 +14,9 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/hash/md5.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/md5.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory.h"

@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/feature_list.h"
+#include "base/hash/md5.h"
 #include "base/json/json_reader.h"
-#include "base/md5.h"
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator.h"
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/chromeos/printing/calculators_policies_binder.h"
