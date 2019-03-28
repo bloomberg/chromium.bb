@@ -17,7 +17,7 @@
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/hint_cache.h"
-#include "components/previews/content/hint_cache_leveldb_store.h"
+#include "components/previews/content/hint_cache_store.h"
 #include "components/previews/content/previews_hints_util.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
@@ -77,10 +77,9 @@ class PreviewsHintsTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    hint_cache_ =
-        std::make_unique<HintCache>(std::make_unique<HintCacheLevelDBStore>(
-            temp_dir_.GetPath(),
-            scoped_task_environment_.GetMainThreadTaskRunner()));
+    hint_cache_ = std::make_unique<HintCache>(std::make_unique<HintCacheStore>(
+        temp_dir_.GetPath(),
+        scoped_task_environment_.GetMainThreadTaskRunner()));
 
     is_store_initialized_ = false;
     hint_cache_->Initialize(

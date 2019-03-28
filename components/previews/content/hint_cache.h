@@ -13,11 +13,9 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "components/previews/content/hint_cache_leveldb_store.h"
+#include "components/previews/content/hint_cache_store.h"
 
 namespace previews {
-
-using HintCacheStore = HintCacheLevelDBStore;
 
 using HintLoadedCallback =
     base::OnceCallback<void(const optimization_guide::proto::Hint*)>;

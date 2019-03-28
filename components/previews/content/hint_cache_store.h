@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CONTENT_HINT_CACHE_LEVELDB_STORE_H_
-#define COMPONENTS_PREVIEWS_CONTENT_HINT_CACHE_LEVELDB_STORE_H_
+#ifndef COMPONENTS_PREVIEWS_CONTENT_HINT_CACHE_STORE_H_
+#define COMPONENTS_PREVIEWS_CONTENT_HINT_CACHE_STORE_H_
 
 #include <map>
 #include <string>
@@ -37,7 +37,7 @@ class StoreEntry;
 // are locally available. While the HintCache itself may retain some hints in a
 // memory cache, all of its hints are initially loaded asynchronously by the
 // store. All calls to this store must be made from the same thread.
-class HintCacheLevelDBStore {
+class HintCacheStore {
  public:
   using HintLoadedCallback = base::OnceCallback<void(
       const std::string&,
@@ -85,12 +85,11 @@ class HintCacheLevelDBStore {
     base::Version version_;
   };
 
-  HintCacheLevelDBStore(
-      const base::FilePath& database_dir,
-      scoped_refptr<base::SequencedTaskRunner> store_task_runner);
-  HintCacheLevelDBStore(const base::FilePath& database_dir,
-                        std::unique_ptr<StoreEntryProtoDatabase> database);
-  ~HintCacheLevelDBStore();
+  HintCacheStore(const base::FilePath& database_dir,
+                 scoped_refptr<base::SequencedTaskRunner> store_task_runner);
+  HintCacheStore(const base::FilePath& database_dir,
+                 std::unique_ptr<StoreEntryProtoDatabase> database);
+  ~HintCacheStore();
 
   // Initializes the hint cache store. If |purge_existing_data| is set to true,
   // then the cache is purged during initialization and starts in a fresh state.
@@ -114,7 +113,7 @@ class HintCacheLevelDBStore {
   // hints have been successfully fetched from the remote Optimization Guide
   // Service so the store can expire old hints, remove hints specified by the
   // server, and store the fresh hints.
-  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData>
+  std::unique_ptr<HintCacheStore::ComponentUpdateData>
   CreateUpdateDataForFetchedHints() const;
 
   // Updates the component data (both version and hints) contained within the
@@ -139,7 +138,7 @@ class HintCacheLevelDBStore {
   void LoadHint(const EntryKey& hint_entry_key, HintLoadedCallback callback);
 
  private:
-  friend class HintCacheLevelDBStoreTest;
+  friend class HintCacheStoreTest;
 
   using EntryKeyPrefix = std::string;
   using EntryKeySet = std::unordered_set<EntryKey>;
@@ -180,11 +179,11 @@ class HintCacheLevelDBStore {
     kComponent = 2,
   };
 
-  // HintCacheLevelDBStore's concrete implementation of ComponentUpdateData.
-  // LevelDBComponentUpdateData is private within HintCacheLevelDBStore. All
-  // classes outside of HintCacheLevelDBStore can only interact with the
+  // HintCacheStore's concrete implementation of ComponentUpdateData.
+  // LevelDBComponentUpdateData is private within HintCacheStore. All
+  // classes outside of HintCacheStore can only interact with the
   // ComponentUpdateData base class. LevelDBComponentUpdateData is created by
-  // HintCacheLevelDBStore when MaybeCreateComponentUpdateData() is called and
+  // HintCacheStore when MaybeCreateComponentUpdateData() is called and
   // used to update the store's component data during UpdateComponentData().
   class LevelDBComponentUpdateData : public ComponentUpdateData {
    public:
@@ -196,7 +195,7 @@ class HintCacheLevelDBStore {
         optimization_guide::proto::Hint&& hint) override;
 
    private:
-    friend class HintCacheLevelDBStore;
+    friend class HintCacheStore;
 
     // The prefix to add to the key of every component hint entry. It is set
     // during construction, using the provided component version.
@@ -336,11 +335,11 @@ class HintCacheLevelDBStore {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<HintCacheLevelDBStore> weak_ptr_factory_;
+  base::WeakPtrFactory<HintCacheStore> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(HintCacheLevelDBStore);
+  DISALLOW_COPY_AND_ASSIGN(HintCacheStore);
 };
 
 }  // namespace previews
 
-#endif  // COMPONENTS_PREVIEWS_CONTENT_HINT_CACHE_LEVELDB_STORE_H_
+#endif  // COMPONENTS_PREVIEWS_CONTENT_HINT_CACHE_STORE_H_
