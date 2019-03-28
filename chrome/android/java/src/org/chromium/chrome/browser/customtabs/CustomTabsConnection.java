@@ -644,7 +644,7 @@ public class CustomTabsConnection {
         }
 
         if (!ids.isEmpty()) {
-            result &= ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            result &= PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
                 boolean res = true;
                 for (int i = 0; i < ids.size(); i++) {
                     res &= BrowserSessionContentUtils.updateCustomButton(
@@ -661,7 +661,7 @@ public class CustomTabsConnection {
                     CustomTabsIntent.EXTRA_REMOTEVIEWS_VIEW_IDS);
             final PendingIntent pendingIntent = IntentUtils.safeGetParcelable(bundle,
                     CustomTabsIntent.EXTRA_REMOTEVIEWS_PENDINGINTENT);
-            result &= ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            result &= PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
                 return BrowserSessionContentUtils.updateRemoteViews(
                         session, remoteViews, clickableIDs, pendingIntent);
             });
