@@ -185,7 +185,8 @@
   {
     "prefix": "origin-trials-runtimeflags-disabled",
     "base": "http/tests/origin_trials/webexposed",
-    "args": ["--disable-origin-trial-controlled-blink-features"]
+    "args": ["--disable-origin-trial-controlled-blink-features",
+             "--stable-release-mode"]
   },
   {
     "prefix": "stable",
