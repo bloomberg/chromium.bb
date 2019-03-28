@@ -46,11 +46,11 @@
 // The loader will load |URL| in a new tab. Next state will be:
 // newTabDidLoadURL.
 // Invoked by UrlLoadingObserverBridge::NewTabWillLoadUrl.
-- (void)newTabWillLoadURL:(GURL)URL inIncognito:(BOOL)inIncognito;
+- (void)newTabWillLoadURL:(GURL)URL isUserInitiated:(BOOL)isUserInitiated;
 
 // The loader initiated the |URL| loading in a new tab successfully.
 // Invoked by UrlLoadingObserverBridge::NewTabDidLoadUrl.
-- (void)newTabDidLoadURL:(GURL)URL inIncognito:(BOOL)inIncognito;
+- (void)newTabDidLoadURL:(GURL)URL isUserInitiated:(BOOL)isUserInitiated;
 
 // The loader will switch to an existing tab with |URL| instead of loading it.
 // Next state will be: didSwitchToTabWithURL. Invoked by
@@ -76,8 +76,8 @@ class UrlLoadingObserverBridge {
   void TabDidReloadUrl(const GURL& url, ui::PageTransition transition_type);
   void TabDidLoadUrl(const GURL& url, ui::PageTransition transition_type);
 
-  void NewTabWillLoadUrl(const GURL& url, bool in_incognito);
-  void NewTabDidLoadUrl(const GURL& url, bool in_incognito);
+  void NewTabWillLoadUrl(const GURL& url, bool user_initiated);
+  void NewTabDidLoadUrl(const GURL& url, bool user_initiated);
 
   void WillSwitchToTabWithUrl(const GURL& url, int new_web_state_index);
   void DidSwitchToTabWithUrl(const GURL& url, int new_web_state_index);

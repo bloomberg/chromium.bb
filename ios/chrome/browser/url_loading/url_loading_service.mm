@@ -267,7 +267,7 @@ void UrlLoadingService::LoadUrlInNewTab(UrlLoadParams* params) {
   // Notify only after checking incognito match, otherwise the delegate will
   // take of changing the mode and try again. Notifying before the checks can
   // lead to be calling it twice, and calling 'did' below once.
-  notifier_->NewTabWillLoadUrl(params->web_params.url, params->in_incognito);
+  notifier_->NewTabWillLoadUrl(params->web_params.url, params->user_initiated);
 
   TabModel* tab_model = browser_->GetTabModel();
 
@@ -275,22 +275,15 @@ void UrlLoadingService::LoadUrlInNewTab(UrlLoadParams* params) {
   if (params->append_to == kCurrentTab)
     adjacent_tab = tab_model.currentTab;
 
-  GURL captured_url = params->web_params.url;
-  GURL captured_virtual_url = params->web_params.virtual_url;
-  web::Referrer captured_referrer = params->web_params.referrer;
   auto openTab = ^{
-    web::NavigationManager::WebLoadParams web_params(captured_url);
-    web_params.referrer = captured_referrer;
-    web_params.transition_type = ui::PAGE_TRANSITION_LINK;
-    web_params.virtual_url = captured_virtual_url;
     [tab_model
-        insertTabWithLoadParams:web_params
+        insertTabWithLoadParams:params->web_params
                          opener:adjacent_tab
                     openedByDOM:NO
                         atIndex:TabModelConstants::kTabPositionAutomatically
                    inBackground:params->in_background()];
 
-    notifier_->NewTabDidLoadUrl(captured_url, params->in_incognito);
+    notifier_->NewTabDidLoadUrl(params->web_params.url, params->user_initiated);
   };
 
   if (!params->in_background()) {

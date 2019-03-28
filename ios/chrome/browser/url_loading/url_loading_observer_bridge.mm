@@ -54,16 +54,18 @@ void UrlLoadingObserverBridge::TabDidLoadUrl(
 }
 
 void UrlLoadingObserverBridge::NewTabWillLoadUrl(const GURL& url,
-                                                 bool in_incognito) {
-  if ([owner_ respondsToSelector:@selector(newTabWillLoadURL:inIncognito:)]) {
-    [owner_ newTabWillLoadURL:url inIncognito:in_incognito];
+                                                 bool user_initiated) {
+  if ([owner_ respondsToSelector:@selector(newTabWillLoadURL:
+                                             isUserInitiated:)]) {
+    [owner_ newTabWillLoadURL:url isUserInitiated:user_initiated];
   }
 }
 
 void UrlLoadingObserverBridge::NewTabDidLoadUrl(const GURL& url,
-                                                bool in_incognito) {
-  if ([owner_ respondsToSelector:@selector(newTabDidLoadURL:inIncognito:)]) {
-    [owner_ newTabDidLoadURL:url inIncognito:in_incognito];
+                                                bool user_initiated) {
+  if ([owner_ respondsToSelector:@selector(newTabDidLoadURL:
+                                            isUserInitiated:)]) {
+    [owner_ newTabDidLoadURL:url isUserInitiated:user_initiated];
   }
 }
 

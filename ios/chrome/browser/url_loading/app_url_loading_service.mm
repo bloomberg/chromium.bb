@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/feature_engagement/tracker_util.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -74,18 +73,7 @@ void AppUrlLoadingService::LoadUrlInNewTab(UrlLoadParams* params) {
 
     // TODO(crbug.com/907527): move the following lines to Browser level making
     // openNewTabFromOriginPoint a delegate there. openNewTabFromOriginPoint is
-    // only called frok here. Use notifier newTabWillLoadURL and
-    // paramrs.is_user_initiated to trigger NotifyNewTabEventForCommand. Add
-    // notifier newTabDidLoadURL afterward.
-
-    // Either send or don't send the "New Tab Opened" or "Incognito Tab Opened"
-    // events to the feature_engagement::Tracker based on
-    // |params.user_initiated| and |params.in_incognito|.
-    if (params->user_initiated) {
-      feature_engagement::NotifyNewTabEvent([delegate_ currentBrowserState],
-                                            params -> in_incognito);
-    }
-
+    // only called from here.
     [delegate_ openNewTabFromOriginPoint:params->origin_point
                             focusOmnibox:params->should_focus_omnibox];
   }
