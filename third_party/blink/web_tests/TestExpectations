@@ -2854,8 +2854,8 @@ crbug.com/940050 virtual/threaded/external/wpt/animation-worklet/playback-rate.h
 # These need to be updated but appear not to be related to that change.
 crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]
 crbug.com/626703 virtual/binary-for-devtools/http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]
-crbug.com/626703 http/tests/devtools/extensions/extensions-sidebar.js [ Pass Failure ]
-crbug.com/626703 virtual/binary-for-devtools/http/tests/devtools/extensions/extensions-sidebar.js [ Pass Failure ]
+crbug.com/626703 crbug.com/946710 http/tests/devtools/extensions/extensions-sidebar.js [ Crash Failure Pass Timeout ]
+crbug.com/626703 crbug.com/946710 virtual/binary-for-devtools/http/tests/devtools/extensions/extensions-sidebar.js [ Crash Failure Pass Timeout ]
 crbug.com/751952 fast/text/international/complex-text-rectangle.html [ Timeout Pass ]
 crbug.com/751952 [ Mac ] editing/selection/modify_extend/extend_by_character.html [ Failure Pass ]
 crbug.com/751952 [ Win ] editing/selection/modify_extend/extend_by_character.html [ Failure Pass ]
