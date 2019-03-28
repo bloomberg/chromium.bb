@@ -75,6 +75,9 @@ class PerformanceManager {
   template <typename NodeType>
   void DeleteNode(std::unique_ptr<NodeType> node);
 
+  // Deletes |page_node|'s frame tree and then the node itself.
+  void DeletePageNode(std::unique_ptr<PageNodeImpl> page_node);
+
   // TODO(siggi): Can this be hidden away?
   scoped_refptr<base::SequencedTaskRunner> task_runner() const {
     return task_runner_;
@@ -94,6 +97,7 @@ class PerformanceManager {
 
   void PostDeleteNode(std::unique_ptr<NodeBase> node);
   void DeleteNodeImpl(std::unique_ptr<NodeBase> node);
+  void DeletePageNodeImpl(std::unique_ptr<PageNodeImpl> node);
 
   void OnStart();
   void OnStartImpl(std::unique_ptr<service_manager::Connector> connector);

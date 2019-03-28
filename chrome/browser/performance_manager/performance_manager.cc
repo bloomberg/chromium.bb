@@ -96,6 +96,13 @@ std::unique_ptr<ProcessNodeImpl> PerformanceManager::CreateProcessNode() {
   return CreateNodeImpl<ProcessNodeImpl>();
 }
 
+void PerformanceManager::DeletePageNode(
+    std::unique_ptr<PageNodeImpl> page_node) {
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&PerformanceManager::DeletePageNodeImpl,
+                                base::Unretained(this), std::move(page_node)));
+}
+
 void PerformanceManager::PostBindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle message_pipe) {
@@ -125,6 +132,31 @@ void PerformanceManager::DeleteNodeImpl(std::unique_ptr<NodeBase> node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   graph_.RemoveNode(node.get());
+}
+
+namespace {
+
+void DeleteChildrenAndNode(FrameNodeImpl* frame_node) {
+  // Recurse on the first child while there is one.
+  while (!frame_node->child_frame_nodes().empty())
+    DeleteChildrenAndNode(*(frame_node->child_frame_nodes().begin()));
+
+  // Now that all children are deleted, delete this frame.
+  frame_node->graph()->RemoveNode(frame_node);
+  delete frame_node;
+}
+
+}  // namespace
+
+void PerformanceManager::DeletePageNodeImpl(
+    std::unique_ptr<PageNodeImpl> page_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Delete the main frame nodes until no more exist.
+  while (!page_node->main_frame_nodes().empty())
+    DeleteChildrenAndNode(*(page_node->main_frame_nodes().begin()));
+
+  graph_.RemoveNode(page_node.get());
 }
 
 void PerformanceManager::OnStart() {
