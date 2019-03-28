@@ -377,6 +377,7 @@ class HWLabCommandsTest(cros_test_lib.RunCommandTestCase,
 Autotest instance: cautotest
 02-23-2015 [06:26:51] Submitted create_suite_job rpc
 02-23-2015 [06:26:53] Created suite job: http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110
+Created task id: 26960110
 @@@STEP_LINK@Suite created@http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110@@@
 '''
 

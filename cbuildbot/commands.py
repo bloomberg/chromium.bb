@@ -1608,8 +1608,7 @@ def _HWTestCreate(cmd, debug=False, **kwargs):
     for output in result.GetValue('outputs', ''):
       sys.stdout.write(output)
     sys.stdout.flush()
-    m = re.search(r'Created suite job:.*object_id=(?P<job_id>\d*)',
-                  result.output)
+    m = re.search(r'Created task id: (?P<job_id>.*)', result.output)
     if m:
       return m.group('job_id')
   return None
