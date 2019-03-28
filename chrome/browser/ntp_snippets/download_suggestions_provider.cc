@@ -45,35 +45,12 @@ const int kDefaultMaxDownloadAgeHours = 24;
 const char kAssetDownloadsPrefix = 'D';
 const char kOfflinePageDownloadsPrefix = 'O';
 
-// NOTE: You must set variation param values for both features (one of them may
-// be disabled in future).
-const char kMaxSuggestionsCountParamName[] = "downloads_max_count";
-const char kMaxDownloadAgeHoursParamName[] = "downloads_max_age_hours";
-
-const base::Feature& GetEnabledDownloadsFeature() {
-  bool assets_enabled =
-      base::FeatureList::IsEnabled(features::kAssetDownloadSuggestionsFeature);
-  DCHECK(assets_enabled ||
-         base::FeatureList::IsEnabled(
-             features::kOfflinePageDownloadSuggestionsFeature));
-  return assets_enabled ? features::kAssetDownloadSuggestionsFeature
-                        : features::kOfflinePageDownloadSuggestionsFeature;
-}
-
 int GetMaxSuggestionsCount() {
-  // One cannot get a variation param from a disabled feature, so the enabled
-  // one is taken.
-  return variations::GetVariationParamByFeatureAsInt(
-      GetEnabledDownloadsFeature(), kMaxSuggestionsCountParamName,
-      kDefaultMaxSuggestionsCount);
+  return kDefaultMaxSuggestionsCount;
 }
 
 int GetMaxDownloadAgeHours() {
-  // One cannot get a variation param from a disabled feature, so the enabled
-  // one is taken.
-  return variations::GetVariationParamByFeatureAsInt(
-      GetEnabledDownloadsFeature(), kMaxDownloadAgeHoursParamName,
-      kDefaultMaxDownloadAgeHours);
+  return kDefaultMaxDownloadAgeHours;
 }
 
 base::Time GetOfflinePagePublishedTime(const OfflinePageItem& item) {

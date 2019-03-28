@@ -77,14 +77,6 @@ const base::Feature kAppServiceServer{"AppServiceServer",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
-// If enabled, the list of content suggestions on the New Tab page will contain
-// assets (e.g. books, pictures, audio) that the user downloaded for later use.
-// DO NOT check directly whether this feature is enabled (i.e. do not use
-// base::FeatureList::IsEnabled()). It is enabled conditionally. Use
-// |AreAssetDownloadsEnabled| instead.
-const base::Feature kAssetDownloadSuggestionsFeature{
-    "NTPAssetDownloadSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the built-in DNS resolver.
 const base::Feature kAsyncDns {
   "AsyncDns",
