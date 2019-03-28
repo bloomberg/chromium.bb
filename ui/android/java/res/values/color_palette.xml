@@ -7,6 +7,7 @@
     <color name="modern_grey_100" tools:ignore="UnusedResources">#F1F3F4</color>
     <color name="modern_grey_200" tools:ignore="UnusedResources">#E8EAED</color>
     <color name="modern_grey_300" tools:ignore="UnusedResources">#DADCE0</color>
+    <color name="modern_grey_300_alpha_38">#61DADCE0</color>
     <color name="modern_grey_400" tools:ignore="UnusedResources">#BDC1C6</color>
     <color name="modern_grey_500" tools:ignore="UnusedResources">#9AA0A6</color>
     <color name="modern_grey_600" tools:ignore="UnusedResources">#80868B</color>
