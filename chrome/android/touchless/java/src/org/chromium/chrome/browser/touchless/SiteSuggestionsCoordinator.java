@@ -53,8 +53,7 @@ class SiteSuggestionsCoordinator {
         int iconSize =
                 context.getResources().getDimensionPixelSize(R.dimen.tile_view_icon_min_size);
 
-        LinearLayoutManager layoutManager = new LinearLayoutManager(
-                context, LinearLayoutManager.HORIZONTAL, /* reverseLayout= */ false);
+        LinearLayoutManager layoutManager = new SiteSuggestionsLayoutManager(context);
         RecyclerView recyclerView =
                 suggestionsView.findViewById(R.id.most_likely_launcher_recycler);
         SiteSuggestionsAdapter adapterDelegate = new SiteSuggestionsAdapter(model, iconGenerator,
