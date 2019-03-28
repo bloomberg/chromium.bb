@@ -396,7 +396,7 @@ void DeleteSelectionCommand::SaveTypingStyleState() {
     return;
 
   // Figure out the typing style in effect before the delete is done.
-  typing_style_ = EditingStyle::Create(
+  typing_style_ = MakeGarbageCollected<EditingStyle>(
       selection_to_delete_.Start(), EditingStyle::kEditingPropertiesInEffect);
   typing_style_->RemoveStyleAddedByElement(
       EnclosingAnchorElement(selection_to_delete_.Start()));
@@ -407,7 +407,7 @@ void DeleteSelectionCommand::SaveTypingStyleState() {
   if (EnclosingNodeOfType(selection_to_delete_.Start(),
                           IsMailHTMLBlockquoteElement)) {
     delete_into_blockquote_style_ =
-        EditingStyle::Create(selection_to_delete_.End());
+        MakeGarbageCollected<EditingStyle>(selection_to_delete_.End());
     return;
   }
   delete_into_blockquote_style_ = nullptr;

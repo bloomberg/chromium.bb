@@ -66,7 +66,8 @@ void StyleCommands::ApplyStyle(LocalFrame& frame,
     return;
   DCHECK(frame.GetDocument());
   MakeGarbageCollected<ApplyStyleCommand>(
-      *frame.GetDocument(), EditingStyle::Create(style), input_type)
+      *frame.GetDocument(), MakeGarbageCollected<EditingStyle>(style),
+      input_type)
       ->Apply();
 }
 
@@ -207,8 +208,8 @@ bool StyleCommands::SelectionStartHasStyle(LocalFrame& frame,
   const SecureContextMode secure_context_mode =
       frame.GetDocument()->GetSecureContextMode();
 
-  EditingStyle* const style_to_check =
-      EditingStyle::Create(property_id, value, secure_context_mode);
+  EditingStyle* const style_to_check = MakeGarbageCollected<EditingStyle>(
+      property_id, value, secure_context_mode);
   EditingStyle* const style_at_start =
       EditingStyleUtilities::CreateStyleAtSelectionStart(
           frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated(),
@@ -233,9 +234,9 @@ bool StyleCommands::ExecuteToggleStyle(LocalFrame& frame,
           : EditingStyle::SelectionHasStyle(frame, property_id, on_value) ==
                 EditingTriState::kTrue;
 
-  EditingStyle* const style =
-      EditingStyle::Create(property_id, style_is_present ? off_value : on_value,
-                           frame.GetDocument()->GetSecureContextMode());
+  EditingStyle* const style = MakeGarbageCollected<EditingStyle>(
+      property_id, style_is_present ? off_value : on_value,
+      frame.GetDocument()->GetSecureContextMode());
   return ApplyCommandToFrame(frame, source, input_type, style->Style());
 }
 

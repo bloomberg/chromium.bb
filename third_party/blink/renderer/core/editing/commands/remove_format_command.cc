@@ -69,7 +69,7 @@ void RemoveFormatCommand::DoApply(EditingState* editing_state) {
   // Get the default style for this editable root, it's the style that we'll
   // give the content that we're operating on.
   Element* root = selection.RootEditableElement();
-  EditingStyle* default_style = EditingStyle::Create(root);
+  EditingStyle* default_style = MakeGarbageCollected<EditingStyle>(root);
 
   // We want to remove everything but transparent background.
   // FIXME: We shouldn't access style().

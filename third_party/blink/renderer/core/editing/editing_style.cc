@@ -171,13 +171,6 @@ static int LegacyFontSizeFromCSSValue(Document*,
 
 class HTMLElementEquivalent : public GarbageCollected<HTMLElementEquivalent> {
  public:
-  static HTMLElementEquivalent* Create(CSSPropertyID property_id,
-                                       CSSValueID primitive_value,
-                                       const HTMLQualifiedName& tag_name) {
-    return MakeGarbageCollected<HTMLElementEquivalent>(
-        property_id, primitive_value, tag_name);
-  }
-
   HTMLElementEquivalent(CSSPropertyID);
   HTMLElementEquivalent(CSSPropertyID, const HTMLQualifiedName& tag_name);
   HTMLElementEquivalent(CSSPropertyID,
@@ -307,18 +300,6 @@ bool HTMLTextDecorationEquivalent::ValueIsPresentInStyle(
 
 class HTMLAttributeEquivalent : public HTMLElementEquivalent {
  public:
-  static HTMLAttributeEquivalent* Create(CSSPropertyID property_id,
-                                         const HTMLQualifiedName& tag_name,
-                                         const QualifiedName& attr_name) {
-    return MakeGarbageCollected<HTMLAttributeEquivalent>(property_id, tag_name,
-                                                         attr_name);
-  }
-  static HTMLAttributeEquivalent* Create(CSSPropertyID property_id,
-                                         const QualifiedName& attr_name) {
-    return MakeGarbageCollected<HTMLAttributeEquivalent>(property_id,
-                                                         attr_name);
-  }
-
   HTMLAttributeEquivalent(CSSPropertyID,
                           const HTMLQualifiedName& tag_name,
                           const QualifiedName& attr_name);
@@ -693,7 +674,7 @@ void EditingStyle::Clear() {
 }
 
 EditingStyle* EditingStyle::Copy() const {
-  EditingStyle* copy = EditingStyle::Create();
+  EditingStyle* copy = MakeGarbageCollected<EditingStyle>();
   if (mutable_style_)
     copy->mutable_style_ = mutable_style_->MutableCopy();
   copy->is_monospace_font_ = is_monospace_font_;
@@ -728,7 +709,7 @@ static Vector<const CSSProperty*>& BlockPropertiesVector() {
 }
 
 EditingStyle* EditingStyle::ExtractAndRemoveBlockProperties() {
-  EditingStyle* block_properties = EditingStyle::Create();
+  EditingStyle* block_properties = MakeGarbageCollected<EditingStyle>();
   if (!mutable_style_)
     return block_properties;
 
@@ -741,7 +722,7 @@ EditingStyle* EditingStyle::ExtractAndRemoveBlockProperties() {
 
 EditingStyle* EditingStyle::ExtractAndRemoveTextDirection(
     SecureContextMode secure_context_mode) {
-  EditingStyle* text_direction = EditingStyle::Create();
+  EditingStyle* text_direction = MakeGarbageCollected<EditingStyle>();
   text_direction->mutable_style_ =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   text_direction->mutable_style_->SetProperty(
@@ -998,19 +979,28 @@ HtmlElementEquivalents() {
       html_element_equivalents,
       (MakeGarbageCollected<HeapVector<Member<HTMLElementEquivalent>>>()));
   if (!html_element_equivalents->size()) {
-    html_element_equivalents->push_back(HTMLElementEquivalent::Create(
-        CSSPropertyID::kFontWeight, CSSValueID::kBold, html_names::kBTag));
-    html_element_equivalents->push_back(HTMLElementEquivalent::Create(
-        CSSPropertyID::kFontWeight, CSSValueID::kBold, html_names::kStrongTag));
-    html_element_equivalents->push_back(HTMLElementEquivalent::Create(
-        CSSPropertyID::kVerticalAlign, CSSValueID::kSub, html_names::kSubTag));
     html_element_equivalents->push_back(
-        HTMLElementEquivalent::Create(CSSPropertyID::kVerticalAlign,
-                                      CSSValueID::kSuper, html_names::kSupTag));
-    html_element_equivalents->push_back(HTMLElementEquivalent::Create(
-        CSSPropertyID::kFontStyle, CSSValueID::kItalic, html_names::kITag));
-    html_element_equivalents->push_back(HTMLElementEquivalent::Create(
-        CSSPropertyID::kFontStyle, CSSValueID::kItalic, html_names::kEmTag));
+        MakeGarbageCollected<HTMLElementEquivalent>(
+            CSSPropertyID::kFontWeight, CSSValueID::kBold, html_names::kBTag));
+    html_element_equivalents->push_back(
+        MakeGarbageCollected<HTMLElementEquivalent>(CSSPropertyID::kFontWeight,
+                                                    CSSValueID::kBold,
+                                                    html_names::kStrongTag));
+    html_element_equivalents->push_back(
+        MakeGarbageCollected<HTMLElementEquivalent>(
+            CSSPropertyID::kVerticalAlign, CSSValueID::kSub,
+            html_names::kSubTag));
+    html_element_equivalents->push_back(
+        MakeGarbageCollected<HTMLElementEquivalent>(
+            CSSPropertyID::kVerticalAlign, CSSValueID::kSuper,
+            html_names::kSupTag));
+    html_element_equivalents->push_back(
+        MakeGarbageCollected<HTMLElementEquivalent>(
+            CSSPropertyID::kFontStyle, CSSValueID::kItalic, html_names::kITag));
+    html_element_equivalents->push_back(
+        MakeGarbageCollected<HTMLElementEquivalent>(CSSPropertyID::kFontStyle,
+                                                    CSSValueID::kItalic,
+                                                    html_names::kEmTag));
 
     html_element_equivalents->push_back(HTMLTextDecorationEquivalent::Create(
         CSSValueID::kUnderline, html_names::kUTag));
@@ -1056,17 +1046,22 @@ HtmlAttributeEquivalents() {
     // elementIsStyledSpanOrHTMLEquivalent depends on the fact each
     // HTMLAttriuteEquivalent matches exactly one attribute of exactly one
     // element except dirAttr.
-    html_attribute_equivalents->push_back(HTMLAttributeEquivalent::Create(
-        CSSPropertyID::kColor, html_names::kFontTag, html_names::kColorAttr));
-    html_attribute_equivalents->push_back(HTMLAttributeEquivalent::Create(
-        CSSPropertyID::kFontFamily, html_names::kFontTag,
-        html_names::kFaceAttr));
+    html_attribute_equivalents->push_back(
+        MakeGarbageCollected<HTMLAttributeEquivalent>(CSSPropertyID::kColor,
+                                                      html_names::kFontTag,
+                                                      html_names::kColorAttr));
+    html_attribute_equivalents->push_back(
+        MakeGarbageCollected<HTMLAttributeEquivalent>(
+            CSSPropertyID::kFontFamily, html_names::kFontTag,
+            html_names::kFaceAttr));
     html_attribute_equivalents->push_back(HTMLFontSizeEquivalent::Create());
 
-    html_attribute_equivalents->push_back(HTMLAttributeEquivalent::Create(
-        CSSPropertyID::kDirection, html_names::kDirAttr));
-    html_attribute_equivalents->push_back(HTMLAttributeEquivalent::Create(
-        CSSPropertyID::kUnicodeBidi, html_names::kDirAttr));
+    html_attribute_equivalents->push_back(
+        MakeGarbageCollected<HTMLAttributeEquivalent>(CSSPropertyID::kDirection,
+                                                      html_names::kDirAttr));
+    html_attribute_equivalents->push_back(
+        MakeGarbageCollected<HTMLAttributeEquivalent>(
+            CSSPropertyID::kUnicodeBidi, html_names::kDirAttr));
   }
 
   return *html_attribute_equivalents;
@@ -1205,7 +1200,7 @@ void EditingStyle::PrepareToApplyAt(
   // to delete all redundant properties, then add a boolean value to indicate
   // which one of editingStyleAtPosition or computedStyle is called.
   EditingStyle* editing_style_at_position =
-      EditingStyle::Create(position, kEditingPropertiesInEffect);
+      MakeGarbageCollected<EditingStyle>(position, kEditingPropertiesInEffect);
   CSSPropertyValueSet* style_at_position =
       editing_style_at_position->mutable_style_.Get();
 
@@ -1314,7 +1309,7 @@ void EditingStyle::MergeInlineAndImplicitStyleOfElement(
     Element* element,
     CSSPropertyOverrideMode mode,
     PropertiesToInclude properties_to_include) {
-  EditingStyle* style_from_rules = EditingStyle::Create();
+  EditingStyle* style_from_rules = MakeGarbageCollected<EditingStyle>();
   style_from_rules->MergeStyleFromRulesForSerialization(element);
 
   if (element->InlineStyle())
@@ -1503,7 +1498,7 @@ void EditingStyle::RemoveStyleFromRulesAndContext(Element* element,
 
   // 2. Remove style present in context and not overriden by matched rules.
   EditingStyle* computed_style =
-      EditingStyle::Create(context, kEditingPropertiesInEffect);
+      MakeGarbageCollected<EditingStyle>(context, kEditingPropertiesInEffect);
   if (computed_style->mutable_style_) {
     if (!computed_style->mutable_style_->GetPropertyCSSValue(
             CSSPropertyID::kBackgroundColor)) {
@@ -1914,7 +1909,8 @@ EditingTriState EditingStyle::SelectionHasStyle(const LocalFrame& frame,
   const SecureContextMode secure_context_mode =
       frame.GetDocument()->GetSecureContextMode();
 
-  return Create(property_id, value, secure_context_mode)
+  return MakeGarbageCollected<EditingStyle>(property_id, value,
+                                            secure_context_mode)
       ->TriStateOfStyle(
           frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated(),
           secure_context_mode);

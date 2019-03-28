@@ -385,7 +385,7 @@ DOMSelection* TreeScope::GetSelection() const {
   // FIXME: The correct selection in Shadow DOM requires that Position can have
   // a ShadowRoot as a container.  See
   // https://bugs.webkit.org/show_bug.cgi?id=82697
-  selection_ = DOMSelection::Create(this);
+  selection_ = MakeGarbageCollected<DOMSelection>(this);
   return selection_.Get();
 }
 

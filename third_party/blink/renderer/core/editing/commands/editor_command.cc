@@ -958,7 +958,7 @@ static bool ExecuteUnlink(LocalFrame& frame,
                           EditorCommandSource,
                           const String&) {
   DCHECK(frame.GetDocument());
-  return UnlinkCommand::Create(*frame.GetDocument())->Apply();
+  return MakeGarbageCollected<UnlinkCommand>(*frame.GetDocument())->Apply();
 }
 
 static bool ExecuteUnselect(LocalFrame& frame,

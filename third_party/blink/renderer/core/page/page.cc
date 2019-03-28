@@ -161,7 +161,7 @@ Page::Page(PageClients& page_clients)
       animator_(PageAnimator::Create(*this)),
       autoscroll_controller_(AutoscrollController::Create(*this)),
       chrome_client_(page_clients.chrome_client),
-      drag_caret_(DragCaret::Create()),
+      drag_caret_(MakeGarbageCollected<DragCaret>()),
       drag_controller_(DragController::Create(this)),
       focus_controller_(FocusController::Create(this)),
       context_menu_controller_(ContextMenuController::Create(this)),

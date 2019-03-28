@@ -45,8 +45,6 @@ class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
   USING_GARBAGE_COLLECTED_MIXIN(DragCaret);
 
  public:
-  static DragCaret* Create();
-
   DragCaret();
   virtual ~DragCaret();
 

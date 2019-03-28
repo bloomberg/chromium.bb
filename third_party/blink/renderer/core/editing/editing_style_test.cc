@@ -22,8 +22,8 @@ TEST_F(EditingStyleTest, mergeInlineStyleOfElement) {
       "<span id=s2 style='float:var(--C)'>2</span>");
   UpdateAllLifecyclePhasesForTest();
 
-  EditingStyle* editing_style =
-      EditingStyle::Create(ToHTMLElement(GetDocument().getElementById("s2")));
+  EditingStyle* editing_style = MakeGarbageCollected<EditingStyle>(
+      ToHTMLElement(GetDocument().getElementById("s2")));
   editing_style->MergeInlineStyleOfElement(
       ToHTMLElement(GetDocument().getElementById("s1")),
       EditingStyle::kOverrideValues);
