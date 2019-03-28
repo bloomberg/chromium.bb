@@ -287,6 +287,10 @@ const char kNTPHelpURL[] =
                                 atPoint:(CGPoint)touchLocation
                             atIndexPath:(NSIndexPath*)indexPath
                         readLaterAction:(BOOL)readLaterAction {
+  // Unfocus the omnibox as the omnibox can disappear when choosing some
+  // options. See crbug.com/928237.
+  [self.dispatcher cancelOmniboxEdit];
+
   ContentSuggestionsItem* suggestionsItem =
       base::mac::ObjCCastStrict<ContentSuggestionsItem>(item);
 
@@ -315,6 +319,11 @@ const char kNTPHelpURL[] =
   if ([item isKindOfClass:[ContentSuggestionsMostVisitedActionItem class]]) {
     return;
   }
+
+  // Unfocus the omnibox as the omnibox can disappear when choosing some
+  // options. See crbug.com/928237.
+  [self.dispatcher cancelOmniboxEdit];
+
   ContentSuggestionsMostVisitedItem* mostVisitedItem =
       base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedItem>(item);
   self.alertCoordinator = [ContentSuggestionsAlertFactory
@@ -545,11 +554,6 @@ const char kNTPHelpURL[] =
                               /* in_incognito */ incognito,
                               /* in_background */ !incognito, kCurrentTab);
   params->origin_point = originPoint;
-  if (incognito) {
-    // Unfocus the omnibox if the new page should be opened in incognito to
-    // prevent staying stuck.
-    [self.dispatcher cancelOmniboxEdit];
-  }
   _urlLoadingService->Load(params);
 }
 
