@@ -42,7 +42,7 @@ DeviceFactoryProviderTest::~DeviceFactoryProviderTest() = default;
 
 void DeviceFactoryProviderTest::SetUp() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kUseFakeJpegDecodeAccelerator);
+      switches::kUseFakeMjpegDecodeAccelerator);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kUseFakeDeviceForMediaStream, "device-count=3");
 

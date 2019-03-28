@@ -27,7 +27,7 @@ class MojoMjpegDecodeAcceleratorServiceTest : public ::testing::Test {
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kUseFakeJpegDecodeAccelerator);
+        switches::kUseFakeMjpegDecodeAccelerator);
   }
 
   void OnInitializeDone(const base::Closure& continuation, bool success) {

@@ -75,7 +75,7 @@ bool GpuJpegDecodeAcceleratorFactory::IsAcceleratedJpegDecodeSupported() {
 std::vector<GpuJpegDecodeAcceleratorFactory::CreateAcceleratorCB>
 GpuJpegDecodeAcceleratorFactory::GetAcceleratorFactories() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseFakeJpegDecodeAccelerator)) {
+          switches::kUseFakeMjpegDecodeAccelerator)) {
     return {base::Bind(&CreateFakeMjpegDecodeAccelerator)};
   }
 
