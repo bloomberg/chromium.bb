@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_iframe_element.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/feature_policy/iframe_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -77,7 +78,10 @@ void HTMLIFrameElement::SetCollapsed(bool collapse) {
   // This is always called in response to an IPC, so should not happen in the
   // middle of a style recalc.
   DCHECK(!GetDocument().InStyleRecalc());
-  LazyReattachIfAttached();
+
+  // Trigger style recalc to trigger layout tree re-attachment.
+  SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                                             style_change_reason::kFrame));
 }
 
 DOMTokenList* HTMLIFrameElement::sandbox() const {
