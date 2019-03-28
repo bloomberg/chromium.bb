@@ -220,31 +220,32 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
                                    display_mode == kWebDisplayModeFullscreen;
   }
 
-  if (should_send_key_events_to_js) {
-    // FIXME: it would be fair to let an input method handle KeyUp events before
-    // DOM dispatch.
-    if (initial_key_event.GetType() == WebInputEvent::kKeyUp ||
-        initial_key_event.GetType() == WebInputEvent::kChar) {
-      KeyboardEvent* dom_event = KeyboardEvent::Create(
-          initial_key_event, frame_->GetDocument()->domWindow());
+  // FIXME: it would be fair to let an input method handle KeyUp events before
+  // DOM dispatch.
+  if (initial_key_event.GetType() == WebInputEvent::kKeyUp ||
+      initial_key_event.GetType() == WebInputEvent::kChar) {
+    KeyboardEvent* dom_event = KeyboardEvent::Create(
+        initial_key_event, frame_->GetDocument()->domWindow());
+    dom_event->SetStopPropagation(!should_send_key_events_to_js);
 
-      return event_handling_util::ToWebInputEventResult(
-          node->DispatchEvent(*dom_event));
-    }
-
-    WebKeyboardEvent key_down_event = initial_key_event;
-    if (key_down_event.GetType() != WebInputEvent::kRawKeyDown)
-      key_down_event.SetType(WebInputEvent::kRawKeyDown);
-    KeyboardEvent* keydown = KeyboardEvent::Create(
-        key_down_event, frame_->GetDocument()->domWindow());
-    if (matched_an_access_key)
-      keydown->SetDefaultPrevented(true);
-    keydown->SetTarget(node);
-
-    DispatchEventResult dispatch_result = node->DispatchEvent(*keydown);
-    if (dispatch_result != DispatchEventResult::kNotCanceled)
-      return event_handling_util::ToWebInputEventResult(dispatch_result);
+    return event_handling_util::ToWebInputEventResult(
+        node->DispatchEvent(*dom_event));
   }
+
+  WebKeyboardEvent key_down_event = initial_key_event;
+  if (key_down_event.GetType() != WebInputEvent::kRawKeyDown)
+    key_down_event.SetType(WebInputEvent::kRawKeyDown);
+  KeyboardEvent* keydown =
+      KeyboardEvent::Create(key_down_event, frame_->GetDocument()->domWindow());
+  if (matched_an_access_key)
+    keydown->SetDefaultPrevented(true);
+  keydown->SetTarget(node);
+
+  keydown->SetStopPropagation(!should_send_key_events_to_js);
+
+  DispatchEventResult dispatch_result = node->DispatchEvent(*keydown);
+  if (dispatch_result != DispatchEventResult::kNotCanceled)
+    return event_handling_util::ToWebInputEventResult(dispatch_result);
 
   // If frame changed as a result of keydown dispatch, then return early to
   // avoid sending a subsequent keypress message to the new frame.
@@ -282,6 +283,8 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
   KeyboardEvent* keypress = KeyboardEvent::Create(
       key_press_event, frame_->GetDocument()->domWindow());
   keypress->SetTarget(node);
+  keypress->SetStopPropagation(!should_send_key_events_to_js);
+
   return event_handling_util::ToWebInputEventResult(
       node->DispatchEvent(*keypress));
 }

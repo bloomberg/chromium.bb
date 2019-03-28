@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -1559,11 +1560,17 @@ TEST_F(EventHandlerSimTest, SmallCustomCursorIntersectsViewport) {
 
 TEST_F(EventHandlerSimTest, NotExposeKeyboardEvent) {
   GetDocument().GetSettings()->SetDontSendKeyEventsToJavascript(true);
+  GetDocument().GetSettings()->SetScrollAnimatorEnabled(false);
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
     <!DOCTYPE html>
+    <style>
+    body {
+      height: 10000px;
+    }
+    </style>
     Last event: <br>
     <p id='log'>no event</p>
     <script>
@@ -1582,6 +1589,7 @@ TEST_F(EventHandlerSimTest, NotExposeKeyboardEvent) {
   WebElement element = GetDocument().getElementById("log");
   WebKeyboardEvent e{WebInputEvent::kRawKeyDown, WebInputEvent::kNoModifiers,
                      WebInputEvent::GetStaticTimeStampForTests()};
+  e.windows_key_code = VKEY_DOWN;
   GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
   EXPECT_EQ("no event", element.InnerHTML().Utf8());
 
@@ -1592,6 +1600,11 @@ TEST_F(EventHandlerSimTest, NotExposeKeyboardEvent) {
   e.SetType(WebInputEvent::kKeyDown);
   GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
   EXPECT_EQ("no event", element.InnerHTML().Utf8());
+
+  // Arrow key caused scroll down in post event dispatch process. Ensure page
+  // scrolled.
+  ScrollableArea* scrollable_area = GetDocument().View()->LayoutViewport();
+  EXPECT_GT(scrollable_area->ScrollOffsetInt().Height(), 0);
 }
 
 }  // namespace blink
