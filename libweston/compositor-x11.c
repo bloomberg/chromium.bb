@@ -50,7 +50,7 @@
 
 #include <xkbcommon/xkbcommon.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "compositor-x11.h"
 #include "shared/config-parser.h"
 #include "shared/helpers.h"

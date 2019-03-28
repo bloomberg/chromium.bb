@@ -44,7 +44,7 @@
 #include <unistd.h>
 #include <wayland-server.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "dbus.h"
 
 /*

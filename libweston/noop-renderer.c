@@ -28,7 +28,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 
 static int
 noop_renderer_read_pixels(struct weston_output *output,

@@ -33,7 +33,7 @@
 #include <assert.h>
 
 #include "timeline.h"
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "file-util.h"
 
 struct timeline_log {

@@ -44,7 +44,7 @@
 #include <linux/kd.h>
 #include <linux/major.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "weston-launch.h"
 #include "launcher-impl.h"
 

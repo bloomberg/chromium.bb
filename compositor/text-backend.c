@@ -33,7 +33,7 @@
 #include <unistd.h>
 #include <time.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "weston.h"
 #include "text-input-unstable-v1-server-protocol.h"
 #include "input-method-unstable-v1-server-protocol.h"

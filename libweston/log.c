@@ -34,7 +34,7 @@
 
 #include <wayland-util.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 
 static int
 default_log_handler(const char *fmt, va_list ap);

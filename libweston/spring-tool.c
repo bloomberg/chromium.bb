@@ -28,7 +28,7 @@
 
 #include "config.h"
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "shared/timespec-util.h"
 
 WL_EXPORT void

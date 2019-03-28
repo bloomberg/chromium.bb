@@ -41,7 +41,7 @@
 #include <X11/Xcursor/Xcursor.h>
 #include <linux/input.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "xwayland.h"
 #include "xwayland-internal-interface.h"
 

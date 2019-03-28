@@ -24,7 +24,7 @@
 #ifndef WESTON_DESKTOP_H
 #define WESTON_DESKTOP_H
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include <pixman.h>
 #include <stdbool.h>
 

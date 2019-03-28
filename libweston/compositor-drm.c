@@ -50,7 +50,7 @@
 #include <gbm.h>
 #include <libudev.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "compositor-drm.h"
 #include "weston-debug.h"
 #include "shared/helpers.h"

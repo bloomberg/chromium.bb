@@ -26,7 +26,7 @@
 
 #include "config.h"
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 
 #include <errno.h>
 #include <fcntl.h>

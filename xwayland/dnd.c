@@ -37,7 +37,7 @@
 #include <signal.h>
 #include <X11/Xcursor/Xcursor.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "xwayland.h"
 
 #include "cairo-util.h"

@@ -30,7 +30,7 @@
 #include <xcb/composite.h>
 #include <cairo/cairo-xcb.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "compositor/weston.h"
 #include "xwayland-api.h"
 #include "weston-debug.h"

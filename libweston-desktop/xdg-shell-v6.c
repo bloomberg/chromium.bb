@@ -31,7 +31,7 @@
 
 #include <wayland-server.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "zalloc.h"
 #include "xdg-shell-unstable-v6-server-protocol.h"
 

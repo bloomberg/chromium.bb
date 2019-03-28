@@ -28,7 +28,7 @@
 #ifndef REMOTING_PLUGIN_H
 #define REMOTING_PLUGIN_H
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "plugin-registry.h"
 
 #define WESTON_REMOTING_API_NAME	"weston_remoting_api_v1"

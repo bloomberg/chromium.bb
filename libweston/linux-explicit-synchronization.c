@@ -28,7 +28,7 @@
 #include <assert.h>
 #include <inttypes.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "linux-explicit-synchronization.h"
 #include "linux-explicit-synchronization-unstable-v1-server-protocol.h"
 #include "linux-sync-file.h"

@@ -57,7 +57,6 @@ srcs_libweston = [
 ]
 
 install_headers(
-	'compositor.h',
 	'plugin-registry.h',
 	'windowed-output-api.h',
 	'../shared/config-parser.h',

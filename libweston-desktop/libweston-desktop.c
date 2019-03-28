@@ -28,7 +28,7 @@
 #include <wayland-server.h>
 #include <assert.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "zalloc.h"
 #include "helpers.h"
 

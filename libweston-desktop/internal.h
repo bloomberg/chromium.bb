@@ -24,7 +24,7 @@
 #ifndef WESTON_DESKTOP_INTERNAL_H
 #define WESTON_DESKTOP_INTERNAL_H
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 
 struct weston_desktop_seat;
 struct weston_desktop_client;

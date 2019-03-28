@@ -28,7 +28,7 @@
 #ifndef WESTON_COMPOSITOR_DRM_H
 #define WESTON_COMPOSITOR_DRM_H
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "plugin-registry.h"
 
 #ifdef  __cplusplus

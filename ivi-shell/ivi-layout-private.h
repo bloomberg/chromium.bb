@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "ivi-layout-export.h"
 #include "libweston-desktop/libweston-desktop.h"
 

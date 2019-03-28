@@ -31,7 +31,7 @@
 #include <errno.h>
 #include <wayland-server.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 
 #ifdef HAVE_DBUS
 

@@ -28,7 +28,7 @@
 
 #include "config.h"
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 
 /* General overview on how to be a CMS plugin:
  *

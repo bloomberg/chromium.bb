@@ -33,7 +33,7 @@
 #include "shared/helpers.h"
 #include "shared/string-helpers.h"
 #include "shared/zalloc.h"
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "weston.h"
 
 struct systemd_notifier {

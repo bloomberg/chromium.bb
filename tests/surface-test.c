@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "compositor/weston.h"
 
 static void

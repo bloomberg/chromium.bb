@@ -59,7 +59,7 @@ extern "C" {
 #include <limits.h>
 
 #include "stdbool.h"
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "plugin-registry.h"
 
 #define IVI_SUCCEEDED (0)

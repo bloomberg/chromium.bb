@@ -33,7 +33,7 @@
 #include <string.h>
 #include <colord.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "weston.h"
 #include "cms-helper.h"
 #include "shared/helpers.h"

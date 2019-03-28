@@ -31,7 +31,7 @@
 
 #include <libudev.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 
 struct libinput_device;
 

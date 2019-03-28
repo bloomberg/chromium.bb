@@ -33,7 +33,7 @@
 #include <libinput.h>
 #include <stdbool.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 
 enum evdev_device_seat_capability {
 	EVDEV_SEAT_POINTER = (1 << 0),

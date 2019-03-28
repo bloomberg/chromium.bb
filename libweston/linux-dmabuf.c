@@ -30,7 +30,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "linux-dmabuf.h"
 #include "linux-dmabuf-unstable-v1-server-protocol.h"
 

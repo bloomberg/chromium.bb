@@ -29,7 +29,7 @@
 #include <signal.h>
 #include <sys/socket.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "compositor/weston.h"
 #include "xwayland/xwayland-api.h"
 #include "shared/helpers.h"

@@ -38,7 +38,7 @@
 #include <systemd/sd-login.h>
 #include <unistd.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "dbus.h"
 #include "launcher-impl.h"
 

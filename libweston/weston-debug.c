@@ -28,7 +28,7 @@
 
 #include "weston-debug.h"
 #include "helpers.h"
-#include "compositor.h"
+#include <libweston/libweston.h>
 
 #include "weston-debug-server-protocol.h"
 

@@ -55,7 +55,7 @@
 
 #include "timeline.h"
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "weston-debug.h"
 #include "linux-dmabuf.h"
 #include "viewporter-server-protocol.h"

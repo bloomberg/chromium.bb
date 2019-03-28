@@ -34,7 +34,7 @@
 #include <libinput.h>
 #include <libudev.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "launcher-util.h"
 #include "libinput-seat.h"
 #include "libinput-device.h"

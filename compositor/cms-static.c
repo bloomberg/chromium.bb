@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "cms-helper.h"
 #include "shared/helpers.h"
 #include "weston.h"

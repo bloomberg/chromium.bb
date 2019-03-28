@@ -27,7 +27,7 @@
 
 #include <stdint.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 
 #ifdef ENABLE_EGL
 

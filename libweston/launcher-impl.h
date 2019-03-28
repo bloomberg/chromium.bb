@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 
 struct weston_launcher;
 

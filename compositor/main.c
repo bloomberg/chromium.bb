@@ -47,7 +47,7 @@
 #include <linux/limits.h>
 
 #include "weston.h"
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "../shared/os-compatibility.h"
 #include "../shared/helpers.h"
 #include "../shared/string-helpers.h"

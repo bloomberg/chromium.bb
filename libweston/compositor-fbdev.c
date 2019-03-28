@@ -45,7 +45,7 @@
 #include <libudev.h>
 
 #include "shared/helpers.h"
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "compositor-fbdev.h"
 #include "launcher-util.h"
 #include "pixman-renderer.h"

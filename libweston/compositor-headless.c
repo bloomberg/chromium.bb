@@ -33,7 +33,7 @@
 #include <sys/time.h>
 #include <stdbool.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "compositor-headless.h"
 #include "shared/helpers.h"
 #include "linux-explicit-synchronization.h"

@@ -44,7 +44,7 @@
 #include <wayland-egl.h>
 #endif
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "compositor-wayland.h"
 #include "gl-renderer.h"
 #include "weston-egl-ext.h"

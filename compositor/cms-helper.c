@@ -34,7 +34,7 @@
 #include <lcms2.h>
 #endif
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "cms-helper.h"
 
 #ifdef HAVE_LCMS

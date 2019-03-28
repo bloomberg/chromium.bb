@@ -33,7 +33,7 @@
 #include <errno.h>
 #include <linux/input.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "compositor/weston.h"
 #include "file-util.h"
 

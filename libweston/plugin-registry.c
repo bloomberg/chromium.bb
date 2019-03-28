@@ -29,7 +29,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "plugin-registry.h"
 
 struct weston_plugin_api {

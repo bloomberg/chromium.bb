@@ -40,7 +40,7 @@
 
 #include <wayland-client.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "weston.h"
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"

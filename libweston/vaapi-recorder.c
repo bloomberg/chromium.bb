@@ -45,7 +45,7 @@
 #include <va/va_enc_h264.h>
 #include <va/va_vpp.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "vaapi-recorder.h"
 
 #define NAL_REF_IDC_NONE        0

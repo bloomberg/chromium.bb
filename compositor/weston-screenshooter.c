@@ -28,7 +28,7 @@
 #include <stdint.h>
 #include <linux/input.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "weston.h"
 #include "weston-screenshooter-server-protocol.h"
 #include "shared/helpers.h"

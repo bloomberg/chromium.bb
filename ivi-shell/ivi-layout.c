@@ -62,7 +62,7 @@
 #include <stdint.h>
 
 #include "compositor/weston.h"
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "ivi-shell.h"
 #include "ivi-layout-export.h"
 #include "ivi-layout-private.h"

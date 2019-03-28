@@ -33,7 +33,7 @@
 #include "shared/string-helpers.h"
 #include "shared/zalloc.h"
 #include "shared/timespec-util.h"
-#include "compositor.h"
+#include <libweston/libweston.h>
 
 #include "weston-touch-calibration-server-protocol.h"
 

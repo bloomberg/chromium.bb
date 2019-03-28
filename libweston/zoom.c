@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "text-cursor-position-server-protocol.h"
 #include "shared/helpers.h"
 

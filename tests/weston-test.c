@@ -32,7 +32,7 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "compositor/weston.h"
 #include "weston-test-server-protocol.h"
 

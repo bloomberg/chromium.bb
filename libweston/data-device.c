@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 #include "shared/helpers.h"
 #include "shared/timespec-util.h"
 

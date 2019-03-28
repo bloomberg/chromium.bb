@@ -26,7 +26,7 @@
 
 #include "config.h"
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 
 #include "launcher-util.h"
 #include "launcher-impl.h"

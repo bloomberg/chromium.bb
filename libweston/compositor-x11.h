@@ -32,7 +32,7 @@ extern "C" {
 
 #include <stdint.h>
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 
 #define WESTON_X11_BACKEND_CONFIG_VERSION 2
 

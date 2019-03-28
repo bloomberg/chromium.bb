@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "compositor.h"
+#include <libweston/libweston.h>
 
 int
 pixman_renderer_init(struct weston_compositor *ec);
