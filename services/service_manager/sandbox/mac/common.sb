@@ -109,6 +109,7 @@
 
 ; Allow reads of system libraries and frameworks.
 (allow file-read*
+  (subpath "/System/Library/CoreServices/CoreTypes.bundle")
   (subpath "/System/Library/Frameworks")
   (subpath "/System/Library/Preferences/Logging")
   (subpath "/System/Library/PrivateFrameworks")
