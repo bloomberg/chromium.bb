@@ -12,13 +12,3 @@
       url(images/1x/info.png) 1x,
       url(images/2x/info.png) 2x);
 }
-
-.lookalike-url #primary-button {
-  float: none;
-  margin-right: 10px;
-}
-
-[dir='rtl'] .lookalike-url #primary-button {
-  margin-left: 10px;
-  margin-right: 0;
-}
