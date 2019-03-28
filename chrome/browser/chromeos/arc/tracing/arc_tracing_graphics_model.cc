@@ -856,9 +856,9 @@ bool LoadEventsContainer(const base::Value* value,
     out_events->buffer_events().emplace_back(std::move(events));
   }
 
-  const base::Value* const jank_entries =
+  const base::Value* const global_events =
       dictionary->FindKeyOfType(kKeyGlobalEvents, base::Value::Type::LIST);
-  if (!LoadEvents(jank_entries, &out_events->global_events()))
+  if (!LoadEvents(global_events, &out_events->global_events()))
     return false;
 
   return true;
@@ -964,6 +964,7 @@ bool ArcTracingGraphicsModel::Build(const ArcTracingModel& common_model) {
              BufferEventType::kBufferFillJank);
     AddJanks(&it.second, BufferEventType::kExoSurfaceAttach,
              BufferEventType::kExoJank);
+    SortBufferEventsByTimestamp(&it.second.global_events());
   }
 
   GetChromeTopLevelEvents(common_model, &chrome_top_level_);
@@ -1072,14 +1073,18 @@ std::string ArcTracingGraphicsModel::SerializeToJson() const {
 
 bool ArcTracingGraphicsModel::LoadFromJson(const std::string& json_data) {
   Reset();
-
   const std::unique_ptr<base::DictionaryValue> root =
       base::DictionaryValue::From(base::JSONReader::ReadDeprecated(json_data));
   if (!root)
     return false;
+  return LoadFromValue(*root);
+}
+
+bool ArcTracingGraphicsModel::LoadFromValue(const base::DictionaryValue& root) {
+  Reset();
 
   const base::Value* view_list =
-      root->FindKeyOfType(kKeyViews, base::Value::Type::LIST);
+      root.FindKeyOfType(kKeyViews, base::Value::Type::LIST);
   if (!view_list || view_list->GetList().empty())
     return false;
 
@@ -1100,13 +1105,13 @@ bool ArcTracingGraphicsModel::LoadFromJson(const std::string& json_data) {
       return false;
   }
 
-  if (!LoadEventsContainer(root->FindKey(kKeyAndroid), &android_top_level_))
+  if (!LoadEventsContainer(root.FindKey(kKeyAndroid), &android_top_level_))
     return false;
 
-  if (!LoadEventsContainer(root->FindKey(kKeyChrome), &chrome_top_level_))
+  if (!LoadEventsContainer(root.FindKey(kKeyChrome), &chrome_top_level_))
     return false;
 
-  const base::Value* duration = root->FindKey(kKeyDuration);
+  const base::Value* duration = root.FindKey(kKeyDuration);
   if (!duration || (!duration->is_double() && !duration->is_int()))
     return false;
 

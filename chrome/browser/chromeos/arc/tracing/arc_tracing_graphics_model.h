@@ -140,6 +140,8 @@ class ArcTracingGraphicsModel {
   std::string SerializeToJson() const;
   // Loads the model from Json string.
   bool LoadFromJson(const std::string& json_data);
+  // Loads the model from |base::DictionaryValue|.
+  bool LoadFromValue(const base::DictionaryValue& root);
 
   uint64_t duration() const { return duration_; }
 
