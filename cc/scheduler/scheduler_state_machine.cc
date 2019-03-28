@@ -365,6 +365,11 @@ bool SchedulerStateMachine::ShouldDraw() const {
   if (forced_redraw_state_ == ForcedRedrawOnTimeoutState::WAITING_FOR_DRAW)
     return true;
 
+  // Delay draws when we have pending animation worklet updates to give them
+  // time to produce output before we draw.
+  if (processing_animation_worklets_for_active_tree_)
+    return false;
+
   return needs_redraw_;
 }
 
@@ -1430,8 +1435,18 @@ void SchedulerStateMachine::NotifyAnimationWorkletStateChange(
     AnimationWorkletState state,
     TreeType tree) {
   if (tree == TreeType::ACTIVE) {
-    processing_animation_worklets_for_active_tree_ =
-        (state == AnimationWorkletState::PROCESSING);
+    switch (state) {
+      case AnimationWorkletState::PROCESSING:
+        DCHECK_GE(processing_animation_worklets_for_active_tree_, 0);
+        DCHECK_LE(processing_animation_worklets_for_active_tree_, 1);
+        processing_animation_worklets_for_active_tree_++;
+        break;
+
+      case AnimationWorkletState::IDLE:
+        DCHECK_LE(processing_animation_worklets_for_active_tree_, 2);
+        DCHECK_GE(processing_animation_worklets_for_active_tree_, 1);
+        processing_animation_worklets_for_active_tree_--;
+    }
   } else {
     processing_animation_worklets_for_pending_tree_ =
         (state == AnimationWorkletState::PROCESSING);

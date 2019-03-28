@@ -161,9 +161,10 @@ class StateMachine : public SchedulerStateMachine {
     return needs_impl_side_invalidation_;
   }
 
+  using SchedulerStateMachine::ProactiveBeginFrameWanted;
+  using SchedulerStateMachine::ShouldDraw;
   using SchedulerStateMachine::ShouldPrepareTiles;
   using SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately;
-  using SchedulerStateMachine::ProactiveBeginFrameWanted;
   using SchedulerStateMachine::WillCommit;
 
  protected:
@@ -2741,18 +2742,51 @@ TEST(SchedulerStateMachineTest, BlockDrawIfAnimationWorkletsPending) {
   state.NotifyReadyToActivate();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::ACTIVATE_SYNC_TREE);
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
+  EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::IMMEDIATE,
+            state.CurrentBeginImplFrameDeadlineMode());
+  // Started async mutation cycle for animation worklets.
   state.NotifyAnimationWorkletStateChange(
       SchedulerStateMachine::AnimationWorkletState::PROCESSING,
       SchedulerStateMachine::TreeType::ACTIVE);
   EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
   EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::REGULAR,
             state.CurrentBeginImplFrameDeadlineMode());
+  // Second queued state change.
+  state.NotifyAnimationWorkletStateChange(
+      SchedulerStateMachine::AnimationWorkletState::PROCESSING,
+      SchedulerStateMachine::TreeType::ACTIVE);
+  EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
+  EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::REGULAR,
+            state.CurrentBeginImplFrameDeadlineMode());
+  // First mutation cycle completes. Still waiting on queued mutation cycle
+  // before being ready to draw.
+  state.NotifyAnimationWorkletStateChange(
+      SchedulerStateMachine::AnimationWorkletState::IDLE,
+      SchedulerStateMachine::TreeType::ACTIVE);
+  EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
+  EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::REGULAR,
+            state.CurrentBeginImplFrameDeadlineMode());
+  // Queued mutation cycle completes. Now ready to draw.
   state.NotifyAnimationWorkletStateChange(
       SchedulerStateMachine::AnimationWorkletState::IDLE,
       SchedulerStateMachine::TreeType::ACTIVE);
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
   EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::IMMEDIATE,
             state.CurrentBeginImplFrameDeadlineMode());
+
+  state.SetNeedsRedraw(true);
+  state.OnBeginImplFrameDeadline();
+  EXPECT_IMPL_FRAME_STATE(
+      SchedulerStateMachine::BeginImplFrameState::INSIDE_DEADLINE);
+  EXPECT_TRUE(state.ShouldDraw());
+  state.NotifyAnimationWorkletStateChange(
+      SchedulerStateMachine::AnimationWorkletState::PROCESSING,
+      SchedulerStateMachine::TreeType::ACTIVE);
+  EXPECT_FALSE(state.ShouldDraw());
+  state.NotifyAnimationWorkletStateChange(
+      SchedulerStateMachine::AnimationWorkletState::IDLE,
+      SchedulerStateMachine::TreeType::ACTIVE);
+  EXPECT_TRUE(state.ShouldDraw());
 }
 
 TEST(SchedulerStateMachineTest, BlockActivationIfAnimationWorkletsPending) {
