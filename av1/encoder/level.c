@@ -569,10 +569,30 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
 }
 
 aom_codec_err_t av1_get_seq_level_idx(const AV1_COMP *cpi, int *seq_level_idx) {
-  // TODO(chiyotsai@, kyslov@, huisu@): put in real implementations.
-  (void)cpi;
-  for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
-    seq_level_idx[i] = (int)SEQ_LEVEL_MAX;
+  const SequenceHeader *const seq_params = &cpi->common.seq_params;
+  if (!cpi->keep_level_stats) {
+    for (int op = 0; op < seq_params->operating_points_cnt_minus_1 + 1; ++op) {
+      seq_level_idx[op] = (int)SEQ_LEVEL_MAX;
+    }
+    return AOM_CODEC_OK;
+  }
+
+  const int is_still_picture = seq_params->still_picture;
+  for (int op = 0; op < seq_params->operating_points_cnt_minus_1 + 1; ++op) {
+    seq_level_idx[op] = (int)SEQ_LEVEL_MAX;
+    const int tier = seq_params->tier[op];
+    const AV1LevelInfo *const level_info = &cpi->level_info[op];
+    const AV1LevelStats *const level_stats = &level_info->level_stats;
+    const AV1LevelSpec *const level_spec = &level_info->level_spec;
+    for (int level = 0; level < SEQ_LEVELS; ++level) {
+      const AV1LevelSpec *const target_level_spec = av1_level_defs + level;
+      const TARGET_LEVEL_FAIL_ID fail_id = check_level_constraints(
+          target_level_spec, level_spec, level_stats, tier, is_still_picture);
+      if (fail_id == TARGET_LEVEL_OK) {
+        seq_level_idx[op] = level;
+        break;
+      }
+    }
   }
 
   return AOM_CODEC_OK;
