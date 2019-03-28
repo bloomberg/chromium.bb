@@ -15,6 +15,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using chromeos::NetworkConnectionHandler;
@@ -58,6 +59,72 @@ const NetworkState* GetCurrentNetwork() {
   }
 
   return nullptr;
+}
+
+base::string16 GetSubLabelForConnectedNetwork(const NetworkState* network) {
+  DCHECK(network && network->IsConnectedState());
+
+  if (NetworkTypePattern::Cellular().MatchesType(network->type())) {
+    if (network->network_technology() == shill::kNetworkTechnology1Xrtt) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_ONE_X);
+    }
+    if (network->network_technology() == shill::kNetworkTechnologyGsm) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_GSM);
+    }
+    if (network->network_technology() == shill::kNetworkTechnologyGprs) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_GPRS);
+    }
+    if (network->network_technology() == shill::kNetworkTechnologyEdge) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_EDGE);
+    }
+    if (network->network_technology() == shill::kNetworkTechnologyEvdo ||
+        network->network_technology() == shill::kNetworkTechnologyUmts) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_THREE_G);
+    }
+    if (network->network_technology() == shill::kNetworkTechnologyHspa) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_HSPA);
+    }
+    if (network->network_technology() == shill::kNetworkTechnologyHspaPlus) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_HSPA_PLUS);
+    }
+    if (network->network_technology() == shill::kNetworkTechnologyLte) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_LTE);
+    }
+    if (network->network_technology() == shill::kNetworkTechnologyLteAdvanced) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_LTE_PLUS);
+    }
+
+    // All connectivity types exposed by Shill should be covered above. However,
+    // as a fail-safe, return the default "Connected" string here to protect
+    // against Shill providing an unexpected value.
+    NOTREACHED();
+    return l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED);
+  }
+
+  switch (network_icon::GetSignalStrengthForNetwork(network)) {
+    case network_icon::SignalStrength::WEAK:
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_WEAK_SUBLABEL);
+    case network_icon::SignalStrength::MEDIUM:
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_MEDIUM_SUBLABEL);
+    case network_icon::SignalStrength::STRONG:
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_STRONG_SUBLABEL);
+    default:
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED);
+  }
 }
 
 }  // namespace
@@ -128,26 +195,7 @@ void NetworkFeaturePodButton::Update() {
   }
 
   if (network->IsConnectedState()) {
-    switch (network_icon::GetSignalStrengthForNetwork(network)) {
-      case network_icon::SignalStrength::WEAK:
-        SetSubLabel(l10n_util::GetStringUTF16(
-            IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_WEAK_SUBLABEL));
-        break;
-      case network_icon::SignalStrength::MEDIUM:
-        SetSubLabel(l10n_util::GetStringUTF16(
-            IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_MEDIUM_SUBLABEL));
-        break;
-      case network_icon::SignalStrength::STRONG:
-        SetSubLabel(l10n_util::GetStringUTF16(
-            IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_STRONG_SUBLABEL));
-        break;
-      case network_icon::SignalStrength::NONE:
-        FALLTHROUGH;
-      case network_icon::SignalStrength::NOT_WIRELESS:
-        SetSubLabel(l10n_util::GetStringUTF16(
-            IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
-        break;
-    }
+    SetSubLabel(GetSubLabelForConnectedNetwork(network));
     SetTooltipState(l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_TOOLTIP, network_name));
     return;
