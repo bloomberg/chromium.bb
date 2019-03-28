@@ -17,8 +17,9 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
-#import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
+#include "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_thread.h"
 #include "mojo/public/cpp/system/core.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -31,12 +32,11 @@ namespace web {
 
 MojoFacade::MojoFacade(
     service_manager::mojom::InterfaceProvider* interface_provider,
-    id<CRWJSInjectionEvaluator> script_evaluator)
-    : interface_provider_(interface_provider),
-      script_evaluator_(script_evaluator) {
+    WebState* web_state)
+    : interface_provider_(interface_provider), web_state_(web_state) {
   DCHECK_CURRENTLY_ON(WebThread::UI);
   DCHECK(interface_provider_);
-  DCHECK(script_evaluator_);
+  DCHECK(web_state_);
 }
 
 MojoFacade::~MojoFacade() {
@@ -223,7 +223,7 @@ base::Value MojoFacade::HandleMojoHandleWatch(base::Value args) {
             stringWithFormat:
                 @"Mojo.internal.watchCallbacksHolder.callCallback(%d, %d)",
                 callback_id, result];
-        [script_evaluator_ executeJavaScript:script completionHandler:nil];
+        web_state_->ExecuteJavaScript(base::SysNSStringToUTF16(script));
       },
       *callback_id);
   auto watcher = std::make_unique<mojo::SimpleWatcher>(
