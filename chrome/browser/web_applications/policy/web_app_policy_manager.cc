@@ -59,28 +59,45 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
   const base::Value* web_apps =
       pref_service_->GetList(prefs::kWebAppInstallForceList);
   std::vector<InstallOptions> install_options_list;
+  // No need to validate the types or values of the policy members because we
+  // are using a SimpleSchemaValidatingPolicyHandler which should validate them
+  // for us.
   for (const base::Value& info : web_apps->GetList()) {
     const base::Value& url = *info.FindKey(kUrlKey);
-    const base::Value* launch_container = info.FindKey(kLaunchContainerKey);
+    const base::Value* default_launch_container =
+        info.FindKey(kDefaultLaunchContainerKey);
+    const base::Value* create_desktop_shortcut =
+        info.FindKey(kCreateDesktopShorcutKey);
 
-    DCHECK(!launch_container ||
-           launch_container->GetString() == kLaunchContainerWindowValue ||
-           launch_container->GetString() == kLaunchContainerTabValue);
+    DCHECK(!default_launch_container ||
+           default_launch_container->GetString() ==
+               kDefaultLaunchContainerWindowValue ||
+           default_launch_container->GetString() ==
+               kDefaultLaunchContainerTabValue);
 
-    LaunchContainer container;
-    if (!launch_container)
-      container = LaunchContainer::kDefault;
-    else if (launch_container->GetString() == kLaunchContainerWindowValue)
-      container = LaunchContainer::kWindow;
+    LaunchContainer launch_container;
+    if (!default_launch_container)
+      launch_container = LaunchContainer::kTab;
+    else if (default_launch_container->GetString() ==
+             kDefaultLaunchContainerTabValue)
+      launch_container = LaunchContainer::kTab;
     else
-      container = LaunchContainer::kTab;
+      launch_container = LaunchContainer::kWindow;
 
-    web_app::InstallOptions install_options(
-        GURL(std::move(url.GetString())), container,
-        web_app::InstallSource::kExternalPolicy);
-    install_options.create_shortcuts = false;
+    InstallOptions install_options(GURL(std::move(url.GetString())),
+                                   launch_container,
+                                   web_app::InstallSource::kExternalPolicy);
 
-    // There is a separate policy to create shortcuts/pin apps to shelf.
+    bool create_shortcut = false;
+    if (create_desktop_shortcut)
+      create_shortcut = create_desktop_shortcut->GetBool();
+
+    // This currently pins the app to the shelf on Chrome OS, which we don't
+    // want to do because there is a separate policy for that.
+    // TODO(ortuno): Introduce an option to specifically create desktop
+    // shortcuts and not pin the app to the shelf.
+    install_options.create_shortcuts = create_shortcut;
+
     install_options_list.push_back(std::move(install_options));
   }
 

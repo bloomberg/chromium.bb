@@ -37,12 +37,13 @@ namespace {
 
 const char kWindowedUrl[] = "https://windowed.example";
 const char kTabbedUrl[] = "https://tabbed.example";
-const char kDefaultContainerUrl[] = "https://default-container.example";
+const char kNoContainerUrl[] = "https://no-container.example";
 
 base::Value GetWindowedItem() {
   base::Value item(base::Value::Type::DICTIONARY);
   item.SetKey(kUrlKey, base::Value(kWindowedUrl));
-  item.SetKey(kLaunchContainerKey, base::Value(kLaunchContainerWindowValue));
+  item.SetKey(kDefaultLaunchContainerKey,
+              base::Value(kDefaultLaunchContainerWindowValue));
   return item;
 }
 
@@ -56,7 +57,8 @@ InstallOptions GetWindowedInstallOptions() {
 base::Value GetTabbedItem() {
   base::Value item(base::Value::Type::DICTIONARY);
   item.SetKey(kUrlKey, base::Value(kTabbedUrl));
-  item.SetKey(kLaunchContainerKey, base::Value(kLaunchContainerTabValue));
+  item.SetKey(kDefaultLaunchContainerKey,
+              base::Value(kDefaultLaunchContainerTabValue));
   return item;
 }
 
@@ -67,16 +69,57 @@ InstallOptions GetTabbedInstallOptions() {
   return options;
 }
 
-base::Value GetDefaultContainerItem() {
+base::Value GetNoContainerItem() {
   base::Value item(base::Value::Type::DICTIONARY);
-  item.SetKey(kUrlKey, base::Value(kDefaultContainerUrl));
+  item.SetKey(kUrlKey, base::Value(kNoContainerUrl));
   return item;
 }
 
-InstallOptions GetDefaultContainerInstallOptions() {
-  InstallOptions options(GURL(kDefaultContainerUrl), LaunchContainer::kDefault,
+InstallOptions GetNoContainerInstallOptions() {
+  InstallOptions options(GURL(kNoContainerUrl), LaunchContainer::kTab,
                          InstallSource::kExternalPolicy);
   options.create_shortcuts = false;
+  return options;
+}
+
+base::Value GetCreateDesktopShorcutDefaultItem() {
+  base::Value item(base::Value::Type::DICTIONARY);
+  item.SetKey(kUrlKey, base::Value(kNoContainerUrl));
+  return item;
+}
+
+InstallOptions GetCreateDesktopShorcutDefaultInstallOptions() {
+  InstallOptions options(GURL(kNoContainerUrl), LaunchContainer::kTab,
+                         InstallSource::kExternalPolicy);
+  options.create_shortcuts = false;
+  return options;
+}
+
+base::Value GetCreateDesktopShorcutFalseItem() {
+  base::Value item(base::Value::Type::DICTIONARY);
+  item.SetKey(kUrlKey, base::Value(kNoContainerUrl));
+  item.SetKey(kCreateDesktopShorcutKey, base::Value(false));
+  return item;
+}
+
+InstallOptions GetCreateDesktopShorcutFalseInstallOptions() {
+  InstallOptions options(GURL(kNoContainerUrl), LaunchContainer::kTab,
+                         InstallSource::kExternalPolicy);
+  options.create_shortcuts = false;
+  return options;
+}
+
+base::Value GetCreateDesktopShorcutTrueItem() {
+  base::Value item(base::Value::Type::DICTIONARY);
+  item.SetKey(kUrlKey, base::Value(kNoContainerUrl));
+  item.SetKey(kCreateDesktopShorcutKey, base::Value(true));
+  return item;
+}
+
+InstallOptions GetCreateDesktopShorcutTrueInstallOptions() {
+  InstallOptions options(GURL(kNoContainerUrl), LaunchContainer::kTab,
+                         InstallSource::kExternalPolicy);
+  options.create_shortcuts = true;
   return options;
 }
 
@@ -177,9 +220,9 @@ TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
   EXPECT_EQ(install_requests, expected_install_options_list);
 }
 
-TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithNoForcedLaunchContainer) {
+TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithNoDefaultLaunchContainer) {
   base::Value list(base::Value::Type::LIST);
-  list.GetList().push_back(GetDefaultContainerItem());
+  list.GetList().push_back(GetNoContainerItem());
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
 
   policy_manager()->Start();
@@ -188,7 +231,45 @@ TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithNoForcedLaunchContainer) {
   const auto& install_requests = pending_app_manager()->install_requests();
 
   std::vector<InstallOptions> expected_install_options_list;
-  expected_install_options_list.push_back(GetDefaultContainerInstallOptions());
+  expected_install_options_list.push_back(GetNoContainerInstallOptions());
+
+  EXPECT_EQ(install_requests, expected_install_options_list);
+}
+
+TEST_F(WebAppPolicyManagerTest,
+       ForceInstallAppWithDefaultCreateDesktopShorcut) {
+  base::Value list(base::Value::Type::LIST);
+  list.GetList().push_back(GetCreateDesktopShorcutDefaultItem());
+  profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
+
+  policy_manager()->Start();
+  base::RunLoop().RunUntilIdle();
+
+  const auto& install_requests = pending_app_manager()->install_requests();
+
+  std::vector<InstallOptions> expected_install_options_list;
+  expected_install_options_list.push_back(
+      GetCreateDesktopShorcutDefaultInstallOptions());
+
+  EXPECT_EQ(install_requests, expected_install_options_list);
+}
+
+TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithCreateDesktopShortcut) {
+  base::Value list(base::Value::Type::LIST);
+  list.GetList().push_back(GetCreateDesktopShorcutFalseItem());
+  list.GetList().push_back(GetCreateDesktopShorcutTrueItem());
+  profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
+
+  policy_manager()->Start();
+  base::RunLoop().RunUntilIdle();
+
+  const auto& install_requests = pending_app_manager()->install_requests();
+
+  std::vector<InstallOptions> expected_install_options_list;
+  expected_install_options_list.push_back(
+      GetCreateDesktopShorcutFalseInstallOptions());
+  expected_install_options_list.push_back(
+      GetCreateDesktopShorcutTrueInstallOptions());
 
   EXPECT_EQ(install_requests, expected_install_options_list);
 }
@@ -228,7 +309,7 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
                                  InstallSource::kExternalPolicy);
   SimulatePreviouslyInstalledApp(GURL(kTabbedUrl),
                                  InstallSource::kExternalPolicy);
-  SimulatePreviouslyInstalledApp(GURL(kDefaultContainerUrl),
+  SimulatePreviouslyInstalledApp(GURL(kNoContainerUrl),
                                  InstallSource::kInternal);
 
   // Push a policy with only one of the apps.

@@ -4215,6 +4215,24 @@
   },
 
   "WebAppInstallForceList": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": {
+      "WebAppInstallForceList": [{
+        "url": "https://foo.example",
+        "default_launch_container": "tab"
+      }, {
+        "url": "https://bar.example",
+        "default_launch_container": "window"
+      }, {
+        "url": "https://foobar.example"
+      }, {
+        "url": "https://xyz.example",
+        "create_desktop_shortcut": true
+      }]
+    },
+    "pref_mappings": [
+      { "pref": "profile.web_app.install.forcelist" }
+    ]
   },
 
   "PluginVmAllowed": {

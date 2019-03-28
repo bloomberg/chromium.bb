@@ -14092,35 +14092,37 @@
           'type': 'object',
           'properties': {
             'url': { 'type': 'string' },
-            'launch_container': {
+            'default_launch_container': {
               'type': 'string',
               'enum': [
                 'tab',
                 'window'
               ]
-            }
+            },
+            'create_desktop_shortcut': { 'type': 'boolean' }
           },
           'required': ['url']
         }
       },
-      'supported_on': [],
+      'supported_on': ['chrome.*:75-', 'chrome_os:75-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
       },
       'example_value': [{
         'url': 'https://www.google.com/maps',
-        'launch_container': 'window'
+        'default_launch_container': 'window',
+        'create_desktop_shortcut': True
       }, {
         'url': 'https://docs.google.com',
-        'launch_container': 'tab'
+        'default_launch_container': 'tab'
       }],
       'id': 468,
       'caption': '''Configure list of force-installed Web Apps''',
       'tags': [],
       'desc': '''Specifies a list of websites that are installed silently, without user interaction, and which cannot be uninstalled nor disabled by the user.
 
-      Each list item of the policy is an object with two members: "url" and "launch_container". "url" should be the URL of the web app to install and "launch_container" should be either "window" or "tab" to indicate how the Web App will be opened once installed. If "launch_container" is omitted, the app will launch in a window if Chrome considers it a Progressive Web App and in a tab otherwise.''',
+      Each list item of the policy is an object with a mandatory member: "url" and two optional members: "default_launch_container" and "create_desktop_shortcut". "url" should be the URL of the web app to install, "launch_container" should be either "window" or "tab" to indicate how the Web App will be opened once installed, and "create_desktop_shortcut" should be true if a desktop shortcut should be created on Linux and Windows. If "default_launch_container" is omitted, the app will open in a tab by default. Regardless of the value of "default_launch_container", users are able to change which container the app will open in. If "create_desktop_shortcuts" is ommitted, no desktop shortcuts will be created.''',
       'label': '''URLs for Web Apps to be silently installed.''',
     },
     {

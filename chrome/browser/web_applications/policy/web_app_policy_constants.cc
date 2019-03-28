@@ -7,8 +7,9 @@
 namespace web_app {
 
 const char kUrlKey[] = "url";
-const char kLaunchContainerKey[] = "launch_container";
-const char kLaunchContainerWindowValue[] = "window";
-const char kLaunchContainerTabValue[] = "tab";
+const char kDefaultLaunchContainerKey[] = "default_launch_container";
+const char kDefaultLaunchContainerWindowValue[] = "window";
+const char kDefaultLaunchContainerTabValue[] = "tab";
+const char kCreateDesktopShorcutKey[] = "create_desktop_shortcut";
 
 }  // namespace web_app
