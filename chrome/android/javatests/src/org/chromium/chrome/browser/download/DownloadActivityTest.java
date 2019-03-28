@@ -18,8 +18,6 @@ import static org.hamcrest.Matchers.not;
 
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.StringRes;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
@@ -96,28 +94,24 @@ public class DownloadActivityTest {
         public final CallbackHelper onSpaceDisplayUpdatedCallback = new CallbackHelper();
 
         private List<DownloadHistoryItemWrapper> mOnSelectionItems;
-        private Handler mHandler;
-
-        public TestObserver() {
-            mHandler = new Handler(Looper.getMainLooper());
-        }
 
         @Override
         public void onChanged() {
             // To guarantee that all real Observers have had a chance to react to the event, post
             // the CallbackHelper.notifyCalled() call.
-            mHandler.post(() -> onChangedCallback.notifyCalled());
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> onChangedCallback.notifyCalled());
         }
 
         @Override
         public void onSelectionStateChange(List<DownloadHistoryItemWrapper> selectedItems) {
             mOnSelectionItems = selectedItems;
-            mHandler.post(() -> onSelectionCallback.notifyCalled());
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> onSelectionCallback.notifyCalled());
         }
 
         @Override
         public void onSpaceDisplayUpdated(SpaceDisplay display) {
-            mHandler.post(() -> onSpaceDisplayUpdatedCallback.notifyCalled());
+            PostTask.postTask(
+                    UiThreadTaskTraits.DEFAULT, () -> onSpaceDisplayUpdatedCallback.notifyCalled());
         }
     }
 
