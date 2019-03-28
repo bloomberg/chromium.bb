@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -59,8 +60,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoveryFilter {
       const device::BluetoothDiscoveryFilter* filter_b);
 
  private:
-  std::unique_ptr<int16_t> rssi_;
-  std::unique_ptr<uint16_t> pathloss_;
+  base::Optional<int16_t> rssi_;
+  base::Optional<uint16_t> pathloss_;
   BluetoothTransport transport_;
   std::vector<std::unique_ptr<device::BluetoothUUID>> uuids_;
 
