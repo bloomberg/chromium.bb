@@ -110,6 +110,8 @@ class APP_LIST_EXPORT PaginationModel : public gfx::AnimationDelegate {
   void NotifyTransitionStarted();
   void NotifyTransitionChanged();
   void NotifyTransitionEnded();
+  void NotifyScrollStarted();
+  void NotifyScrollEnded();
 
   void clear_transition() { SetTransition(Transition(-1, 0)); }
 

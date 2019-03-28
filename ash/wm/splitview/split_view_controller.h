@@ -5,6 +5,8 @@
 #ifndef ASH_WM_SPLITSVIEW_SPLIT_VIEW_CONTROLLER_H_
 #define ASH_WM_SPLITSVIEW_SPLIT_VIEW_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
 #include "ash/display/screen_orientation_controller.h"
@@ -30,6 +32,8 @@ class Layer;
 }  // namespace ui
 
 namespace ash {
+class PresentationTimeRecorder;
+class OverviewSession;
 class SplitViewControllerTest;
 class SplitViewDivider;
 class SplitViewOverviewSessionTest;
@@ -442,6 +446,9 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
 
   base::ObserverList<Observer>::Unchecked observers_;
   mojo::InterfacePtrSet<mojom::SplitViewObserver> mojo_observers_;
+
+  // Records the presentation time of resize operation in split view mode.
+  std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(SplitViewController);
 };

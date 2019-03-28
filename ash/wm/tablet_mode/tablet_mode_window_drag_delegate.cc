@@ -27,6 +27,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -43,6 +44,15 @@ constexpr float kIndicatorsThresholdRatio = 0.1;
 // Duration of a drag that it will be considered as an intended drag.
 constexpr base::TimeDelta kIsWindowMovedTimeoutMs =
     base::TimeDelta::FromMilliseconds(300);
+
+constexpr char kSwipeDownDragWindowHistogram[] =
+    "Ash.SwipeDownDrag.Window.PresentationTime.TabletMode";
+constexpr char kSwipeDownDragWindowMaxLatencyHistogram[] =
+    "Ash.SwipeDownDrag.Window.PresentationTime.MaxLatency.TabletMode";
+constexpr char kSwipeDownDragTabHistogram[] =
+    "Ash.SwipeDownDrag.Tab.PresentationTime.TabletMode";
+constexpr char kSwipeDownDragTabMaxLatencyHistogram[] =
+    "Ash.SwipeDownDrag.Tab.PresentationTime.MaxLatency.TabletMode";
 
 // Returns the overview session if overview mode is active, otherwise returns
 // nullptr.
@@ -98,6 +108,21 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
   // crbug.com/904631.
   DCHECK(!occlusion_excluder_);
   occlusion_excluder_.emplace(dragged_window);
+
+  DCHECK(!presentation_time_recorder_);
+  presentation_time_recorder_.reset();
+  if (wm::IsDraggingTabs(dragged_window)) {
+    presentation_time_recorder_ =
+        std::make_unique<PresentationTimeHistogramRecorder>(
+            dragged_window->layer()->GetCompositor(),
+            kSwipeDownDragTabHistogram, kSwipeDownDragTabMaxLatencyHistogram);
+  } else {
+    presentation_time_recorder_ =
+        std::make_unique<PresentationTimeHistogramRecorder>(
+            dragged_window->layer()->GetCompositor(),
+            kSwipeDownDragWindowHistogram,
+            kSwipeDownDragWindowMaxLatencyHistogram);
+  }
 
   dragged_window_ = dragged_window;
   initial_location_in_screen_ = location_in_screen;
@@ -184,6 +209,9 @@ void TabletModeWindowDragDelegate::ContinueWindowDrag(
     const gfx::Rect& target_bounds) {
   UpdateIsWindowConsideredMoved(location_in_screen.y());
 
+  if (presentation_time_recorder_)
+    presentation_time_recorder_->RequestNext();
+
   if (type == UpdateDraggedWindowType::UPDATE_BOUNDS) {
     // UPDATE_BOUNDS is used when dragging tab(s) out of a browser window.
     // Changing bounds might delete ourselves as the dragged (browser) window
@@ -260,6 +288,7 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
     }
   }
 
+  presentation_time_recorder_.reset();
   occlusion_excluder_.reset();
   dragged_window_ = nullptr;
   is_window_considered_moved_ = false;
