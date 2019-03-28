@@ -3096,16 +3096,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "video-fullscreen-orientation-lock",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "video-rotate-to-fullscreen",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "views-cast-dialog",
     "owners": [ "//chrome/browser/media/router/OWNERS" ],
     "expiry_milestone": 76

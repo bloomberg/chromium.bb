@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -38,8 +37,7 @@ import java.util.concurrent.TimeoutException;
  * is rotated whilst watching a video.
  */
 @RunWith(ContentJUnit4ClassRunner.class)
-@CommandLineFlags.
-Add({"enable-features=VideoRotateToFullscreen", MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY})
+@CommandLineFlags.Add({MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY})
 public class VideoRotateToFullscreenTest {
     @Rule
     public ContentShellActivityTestRule mRule = new ContentShellActivityTestRule();
@@ -91,7 +89,6 @@ public class VideoRotateToFullscreenTest {
 
     @Test
     @MediumTest
-    @Feature({"VideoRotateToFullscreen"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @DisabledTest(message = "crbug.com/726977")
     public void testPortraitToLandscapeAndBack() throws Exception {

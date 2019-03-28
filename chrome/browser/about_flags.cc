@@ -2344,16 +2344,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewPrintPreviewLayoutDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNewPrintPreviewLayout)},
 #endif
-#if defined(OS_ANDROID)
-    {"video-fullscreen-orientation-lock",
-     flag_descriptions::kVideoFullscreenOrientationLockName,
-     flag_descriptions::kVideoFullscreenOrientationLockDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(media::kVideoFullscreenOrientationLock)},
-    {"video-rotate-to-fullscreen",
-     flag_descriptions::kVideoRotateToFullscreenName,
-     flag_descriptions::kVideoRotateToFullscreenDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(media::kVideoRotateToFullscreen)},
-#endif
     {"enable-nostate-prefetch", flag_descriptions::kNostatePrefetchName,
      flag_descriptions::kNostatePrefetchDescription, kOsAll,
      FEATURE_VALUE_TYPE(prerender::kNoStatePrefetchFeature)},

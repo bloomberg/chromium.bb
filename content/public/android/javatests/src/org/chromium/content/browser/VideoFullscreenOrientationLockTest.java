@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -38,8 +37,7 @@ import java.util.concurrent.TimeoutException;
  * See also chrome layer org.chromium.chrome.browser.VideoFullscreenOrientationLockChromeTest
  */
 @RunWith(ContentJUnit4ClassRunner.class)
-@CommandLineFlags.Add({"enable-features=VideoFullscreenOrientationLock",
-        MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY,
+@CommandLineFlags.Add({MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY,
         "disable-features=" + MediaSwitches.USE_MODERN_MEDIA_CONTROLS})
 public class VideoFullscreenOrientationLockTest {
     @Rule
@@ -138,7 +136,6 @@ public class VideoFullscreenOrientationLockTest {
     @MediumTest
     @DisableIf.Build(message = "crbug.com/837423", sdk_is_greater_than = Build.VERSION_CODES.KITKAT,
             sdk_is_less_than = Build.VERSION_CODES.M)
-    @Feature({"VideoFullscreenOrientationLock"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testEnterExitFullscreenWithControlsButton() throws Exception {
         // Start playback to guarantee it's properly loaded.
@@ -165,7 +162,6 @@ public class VideoFullscreenOrientationLockTest {
 
     @Test
     @MediumTest
-    @Feature({"VideoFullscreenOrientationLock"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testEnterExitFullscreenWithAPI() throws Exception {
         // Start playback to guarantee it's properly loaded.
@@ -188,7 +184,6 @@ public class VideoFullscreenOrientationLockTest {
 
     @Test
     @MediumTest
-    @Feature({"VideoFullscreenOrientationLock"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testExitFullscreenByRemovingVideo() throws Exception {
         // Start playback to guarantee it's properly loaded.
@@ -212,7 +207,6 @@ public class VideoFullscreenOrientationLockTest {
 
     @Test
     @MediumTest
-    @Feature({"VideoFullscreenOrientationLock"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testExitFullscreenWithNavigation() throws Exception {
         // Start playback to guarantee it's properly loaded.

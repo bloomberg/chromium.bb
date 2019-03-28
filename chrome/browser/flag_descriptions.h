@@ -1202,12 +1202,6 @@ extern const char kV8VmFutureDescription[];
 extern const char kV8OrinocoName[];
 extern const char kV8OrinocoDescription[];
 
-extern const char kVideoFullscreenOrientationLockName[];
-extern const char kVideoFullscreenOrientationLockDescription[];
-
-extern const char kVideoRotateToFullscreenName[];
-extern const char kVideoRotateToFullscreenDescription[];
-
 extern const char kWalletServiceUseSandboxName[];
 extern const char kWalletServiceUseSandboxDescription[];
 
