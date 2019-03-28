@@ -548,6 +548,7 @@ void WindowTreeHostManager::DeleteHost(AshWindowTreeHost* host_to_delete) {
   controller->Shutdown();
   if (primary_tree_host_for_replace_ == host_to_delete)
     primary_tree_host_for_replace_ = nullptr;
+  // NOTE: ShelfWidget is gone, but Shelf still exists until this task runs.
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, controller);
 }
 

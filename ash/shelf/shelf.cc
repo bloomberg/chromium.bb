@@ -143,13 +143,12 @@ bool Shelf::IsVisible() const {
 }
 
 aura::Window* Shelf::GetWindow() {
-  return shelf_widget_->GetNativeWindow();
+  return shelf_widget_ ? shelf_widget_->GetNativeWindow() : nullptr;
 }
 
 void Shelf::SetAlignment(ShelfAlignment alignment) {
-  // Checks added for http://crbug.com/738011.
-  CHECK(shelf_widget_);
-  CHECK(shelf_layout_manager_);
+  if (!shelf_widget_)
+    return;
 
   if (alignment_ == alignment)
     return;
@@ -218,7 +217,8 @@ void Shelf::UpdateAutoHideState() {
 }
 
 ShelfBackgroundType Shelf::GetBackgroundType() const {
-  return shelf_widget_->GetBackgroundType();
+  return shelf_widget_ ? shelf_widget_->GetBackgroundType()
+                       : SHELF_BACKGROUND_DEFAULT;
 }
 
 void Shelf::UpdateVisibilityState() {
@@ -280,7 +280,7 @@ void Shelf::NotifyShelfIconPositionsChanged() {
 }
 
 StatusAreaWidget* Shelf::GetStatusAreaWidget() const {
-  return shelf_widget_->status_area_widget();
+  return shelf_widget_ ? shelf_widget_->status_area_widget() : nullptr;
 }
 
 TrayBackgroundView* Shelf::GetSystemTrayAnchorView() const {
