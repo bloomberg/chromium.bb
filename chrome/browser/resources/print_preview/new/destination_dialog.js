@@ -413,6 +413,14 @@ Polymer({
         !this.cloudPrintPromoDismissed_;
   },
 
+  /**
+   * @return {boolean} Whether to show the footer.
+   * @private
+   */
+  shouldShowFooter_: function() {
+    return this.shouldShowCloudPrintPromo_() || !!this.invitation_;
+  },
+
   /** @private */
   onOpenSettingsPrintPage_: function() {
     this.metrics_.record(

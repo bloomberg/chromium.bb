@@ -31,7 +31,7 @@
 
       :host > * {
         align-items: center;
-        color: var(--google-grey-700);
+        color: var(--cr-secondary-text-color);
         font-size: calc(10/12 * 1em);
         margin-inline-start: 1em;
         overflow: hidden;
@@ -47,6 +47,10 @@
         margin-inline-end: 12px;
         min-width: 20px;
         transition: opacity 150ms;
+      }
+
+      :host-context([dark]) iron-icon {
+        fill: var(--google-grey-refresh-500);
       }
 
       .name {

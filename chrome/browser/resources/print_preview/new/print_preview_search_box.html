@@ -8,19 +8,18 @@
 
 <dom-module id="print-preview-search-box">
   <template>
-    <style include="print-preview-shared">
+    <style include="print-preview-shared cr-input-style">
       :host {
         display: flex;
         font-size: calc(13/15 * 1em);
         --cr-input-row-container: {
-          background-color: var(--google-grey-refresh-100);
           min-height: 32px;
-        };
+        }
         --cr-input-error-display: none;
       }
 
       #icon {
-        background-color: var(--google-grey-refresh-100);
+        background-color: var(--cr-input-background-color);
         height: 30px;
         margin-inline-end: 0;
         margin-inline-start: 0;
