@@ -52,7 +52,6 @@ import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarActionModeCallback;
@@ -105,8 +104,6 @@ public class LocationBarLayout extends FrameLayout
     private boolean mVoiceSearchEnabled;
 
     private OmniboxPrerender mOmniboxPrerender;
-
-    private boolean mUseDarkColors;
 
     private boolean mOmniboxVoiceSearchAlwaysVisible;
     protected float mUrlFocusChangePercent;
@@ -1028,22 +1025,21 @@ public class LocationBarLayout extends FrameLayout
                 ColorUtils.getDefaultThemeColor(getResources(), mToolbarDataProvider.isIncognito());
         final int primaryColor =
                 mUrlHasFocus ? defaultPrimaryColor : mToolbarDataProvider.getPrimaryColor();
-        mUseDarkColors =
-                LocationBarModel.shouldUseDarkColors(mToolbarDataProvider.hasTab(), primaryColor);
+        final boolean useDarkColors = !ColorUtils.shouldUseLightForegroundOnBackground(primaryColor);
 
-        int id = ColorUtils.getIconTintRes(!mUseDarkColors);
+        int id = ColorUtils.getIconTintRes(!useDarkColors);
         ColorStateList colorStateList = AppCompatResources.getColorStateList(getContext(), id);
         ApiCompatibilityUtils.setImageTintList(mMicButton, colorStateList);
         ApiCompatibilityUtils.setImageTintList(mDeleteButton, colorStateList);
 
         // If the URL changed colors and is not focused, update the URL to account for the new
         // color scheme.
-        if (mUrlCoordinator.setUseDarkTextColors(mUseDarkColors) && !mUrlBar.hasFocus()) {
+        if (mUrlCoordinator.setUseDarkTextColors(useDarkColors) && !mUrlBar.hasFocus()) {
             setUrlToPageUrl();
         }
 
-        mStatusViewCoordinator.setUseDarkColors(mUseDarkColors);
-        mAutocompleteCoordinator.updateVisualsForState(mUseDarkColors);
+        mStatusViewCoordinator.setUseDarkColors(useDarkColors);
+        mAutocompleteCoordinator.updateVisualsForState(useDarkColors);
     }
 
     @Override

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
-import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
@@ -225,7 +224,8 @@ public class LocationBarModel implements ToolbarDataProvider {
 
             OmniboxUrlEmphasizer.emphasizeUrl(spannableDisplayText, mContext.getResources(),
                     getProfile(), getSecurityLevel(), isInternalPage,
-                    shouldUseDarkColors(hasTab(), getPrimaryColor()), shouldEmphasizeHttpsScheme());
+                    !ColorUtils.shouldUseLightForegroundOnBackground(getPrimaryColor()),
+                    shouldEmphasizeHttpsScheme());
         }
 
         return UrlBarData.forUrlAndText(url, spannableDisplayText, editingText);
@@ -248,16 +248,6 @@ public class LocationBarModel implements ToolbarDataProvider {
     @VisibleForTesting
     public boolean shouldEmphasizeHttpsScheme() {
         return !isUsingBrandColor() && !isIncognito();
-    }
-
-    /**
-     * @param hasTab Whether the location is attached to a {@link Tab}. See
-     *               {@link ToolbarDataProvider#hasTab()}.
-     * @param primaryColor The primary color of the toolbar that holds this location bar.
-     * @return Whether or not dark text color or icon tint should be used for the location bar.
-     */
-    public static boolean shouldUseDarkColors(boolean hasTab, @ColorInt int primaryColor) {
-        return !hasTab || !ColorUtils.shouldUseLightForegroundOnBackground(primaryColor);
     }
 
     @Override

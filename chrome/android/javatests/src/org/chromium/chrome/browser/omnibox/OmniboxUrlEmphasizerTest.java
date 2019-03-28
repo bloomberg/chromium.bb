@@ -294,7 +294,7 @@ public class OmniboxUrlEmphasizerTest {
 
         Assert.assertEquals("Unexpected number of spans:", 2, spans.length);
         spans[0].assertIsColoredSpan("data", 0,
-                ApiCompatibilityUtils.getColor(mResources, R.color.url_emphasis_default_text));
+                ApiCompatibilityUtils.getColor(mResources, R.color.default_text_color_dark));
         spans[1].assertIsColoredSpan(":text/plain;charset=utf-8;base64,VGVzdCBVUkw=", 4,
                 ApiCompatibilityUtils.getColor(
                         mResources, R.color.url_emphasis_non_emphasized_text));
