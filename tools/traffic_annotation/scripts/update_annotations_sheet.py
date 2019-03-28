@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -23,6 +23,7 @@ import os
 import sys
 
 from apiclient import discovery
+from infra_libs import luci_auth
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
@@ -97,6 +98,8 @@ class SheetEditor():
     if the stored credentials are invalid, the OAuth2 flow is completed to
     obtain the new credentials.
 
+    When running in the buildbot, uses LUCI credentials instead.
+
     Args:
       credentials_file_path: str Absolute path to read/save user credentials.
       client_secret_file_path: str Absolute path to read client_secret.json.
@@ -104,6 +107,9 @@ class SheetEditor():
     Returns:
       OAuth2Credentials The obtained user credentials.
     """
+    if luci_auth.available():
+      return luci_auth.LUCICredentials(scopes=[self.SCOPES])
+
     store = Storage(credentials_file_path)
     credentials = store.get()
     if not credentials or credentials.invalid:
@@ -419,8 +425,8 @@ def main():
       changes_sheet_name = config["changes_sheet_name"],
       silent_change_columns = config["silent_change_columns"],
       last_update_column_name = config["last_update_column_name"],
-      credentials_file_path = config["credentials_file_path"],
-      client_secret_file_path = config["client_secret_file_path"],
+      credentials_file_path = config.get("credentials_file_path", None),
+      client_secret_file_path = config.get("client_secret_file_path", None),
       verbose = args.verbose)
   if not sheet_editor.GenerateUpdates(file_content):
     return -1
