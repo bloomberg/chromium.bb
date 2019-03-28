@@ -28,7 +28,6 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
@@ -37,7 +36,7 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controll
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
-import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -75,11 +74,10 @@ public class TrustedWebActivityVerifierTest {
     @Mock ClientAppDataRecorder mClientAppDataRecorder;
     @Mock CustomTabsConnection mCustomTabsConnection;
     @Mock CustomTabIntentDataProvider mIntentDataProvider;
-    @Mock ActivityTabProvider mActivityTabProvider;
     @Mock TabObserverRegistrar mTabObserverRegistrar;
     @Mock ActivityLifecycleDispatcher mLifecycleDispatcher;
     @Mock OriginVerifier.Factory mOriginVerifierFactory;
-    @Mock CustomTabActivityTabController mCustomTabActivityTabController;
+    @Mock CustomTabActivityTabProvider mTabProvider;
     @Mock Tab mTab;
     @Captor ArgumentCaptor<TabObserver> mTabObserverCaptor;
 
@@ -92,14 +90,14 @@ public class TrustedWebActivityVerifierTest {
         MockitoAnnotations.initMocks(this);
         when(mCustomTabsConnection.getClientPackageNameForSession(any())).thenReturn(PACKAGE_NAME);
         when(mOriginVerifierFactory.create(any(), anyInt())).thenReturn(mOriginVerifier.mock);
-        when(mActivityTabProvider.getActivityTab()).thenReturn(mTab);
+        when(mTabProvider.getTab()).thenReturn(mTab);
         when(mIntentDataProvider.getTrustedWebActivityAdditionalOrigins()).thenReturn(
                 Arrays.asList("https://www.origin2.com/"));
         doNothing().when(mTabObserverRegistrar).registerTabObserver(mTabObserverCaptor.capture());
         mVerifier = new TrustedWebActivityVerifier(() -> mClientAppDataRecorder,
                 mIntentDataProvider, mCustomTabsConnection, mLifecycleDispatcher,
-                mTabObserverRegistrar, mActivityTabProvider, mOriginVerifierFactory,
-                mCustomTabActivityTabController);
+                mTabObserverRegistrar, mOriginVerifierFactory,
+                mTabProvider);
     }
 
     @Test
