@@ -48,8 +48,6 @@ class CORE_EXPORT SelectionController final
   USING_GARBAGE_COLLECTED_MIXIN(SelectionController);
 
  public:
-  static SelectionController* Create(LocalFrame&);
-
   explicit SelectionController(LocalFrame&);
   virtual ~SelectionController();
   void Trace(Visitor*) override;

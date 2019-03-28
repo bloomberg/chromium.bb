@@ -96,8 +96,8 @@ static inline bool ShouldAlwaysUseDirectionalSelection(LocalFrame* frame) {
 
 FrameSelection::FrameSelection(LocalFrame& frame)
     : frame_(frame),
-      layout_selection_(LayoutSelection::Create(*this)),
-      selection_editor_(SelectionEditor::Create(frame)),
+      layout_selection_(MakeGarbageCollected<LayoutSelection>(*this)),
+      selection_editor_(MakeGarbageCollected<SelectionEditor>(frame)),
       granularity_(TextGranularity::kCharacter),
       x_pos_for_vertical_arrow_navigation_(NoXPosForVerticalArrowNavigation()),
       focused_(frame.GetPage() &&

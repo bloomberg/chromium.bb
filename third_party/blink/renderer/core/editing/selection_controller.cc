@@ -60,9 +60,6 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
-SelectionController* SelectionController::Create(LocalFrame& frame) {
-  return MakeGarbageCollected<SelectionController>(frame);
-}
 
 SelectionController::SelectionController(LocalFrame& frame)
     : frame_(&frame),
