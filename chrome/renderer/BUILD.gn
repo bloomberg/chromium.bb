@@ -276,10 +276,6 @@ jumbo_static_library("renderer") {
 
   if (enable_extensions) {
     sources += [
-      "extensions/app_bindings.cc",
-      "extensions/app_bindings.h",
-      "extensions/app_bindings_core.cc",
-      "extensions/app_bindings_core.h",
       "extensions/app_hooks_delegate.cc",
       "extensions/app_hooks_delegate.h",
       "extensions/automation_ax_tree_wrapper.cc",

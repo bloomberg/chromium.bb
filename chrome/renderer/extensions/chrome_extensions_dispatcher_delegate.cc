@@ -12,7 +12,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/grit/renderer_resources.h"
-#include "chrome/renderer/extensions/app_bindings.h"
 #include "chrome/renderer/extensions/app_hooks_delegate.h"
 #include "chrome/renderer/extensions/automation_internal_custom_bindings.h"
 #include "chrome/renderer/extensions/cast_streaming_native_handler.h"
@@ -64,9 +63,6 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
     extensions::ModuleSystem* module_system,
     extensions::ExtensionBindingsSystem* bindings_system,
     extensions::ScriptContext* context) {
-  module_system->RegisterNativeHandler(
-      "app", std::unique_ptr<NativeHandler>(
-                 new extensions::AppBindings(dispatcher, context)));
   module_system->RegisterNativeHandler(
       "sync_file_system",
       std::unique_ptr<NativeHandler>(
