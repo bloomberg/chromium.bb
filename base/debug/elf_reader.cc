@@ -9,7 +9,7 @@
 
 #include "base/bits.h"
 #include "base/containers/span.h"
-#include "base/sha1.h"
+#include "base/hash/sha1.h"
 #include "base/strings/safe_sprintf.h"
 #include "build/build_config.h"
 
