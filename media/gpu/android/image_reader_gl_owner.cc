@@ -412,7 +412,9 @@ ImageReaderGLOwner::ScopedCurrentImageRef::ScopedCurrentImageRef(
 
 ImageReaderGLOwner::ScopedCurrentImageRef::~ScopedCurrentImageRef() {
   base::ScopedFD release_fence;
-  if (image_bound_)
+  // If there is no |image_reader_|, we are in tear down so no fence is
+  // required.
+  if (image_bound_ && texture_owner_->image_reader_)
     release_fence = gpu::CreateEglFenceAndExportFd();
   else
     release_fence = std::move(ready_fence_);
