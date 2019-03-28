@@ -18,6 +18,7 @@
 #include "chrome/browser/conflicts/module_list_filter_win.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "content/public/common/process_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,11 +81,12 @@ constexpr wchar_t kCertificateSubject[] = L"CertificateSubject";
 constexpr wchar_t kDllPath1[] = L"c:\\path\\to\\module.dll";
 constexpr wchar_t kDllPath2[] = L"c:\\some\\shellextension.dll";
 
-// Returns a new ModuleInfoData marked as loaded into the process but otherwise
-// empty.
+// Returns a new ModuleInfoData marked as loaded into the browser process but
+// otherwise empty.
 ModuleInfoData CreateLoadedModuleInfoData() {
   ModuleInfoData module_data;
   module_data.module_properties |= ModuleInfoData::kPropertyLoadedModule;
+  module_data.process_types |= ProcessTypeToBit(content::PROCESS_TYPE_BROWSER);
   module_data.inspection_result = base::make_optional<ModuleInspectionResult>();
   return module_data;
 }
