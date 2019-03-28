@@ -3611,6 +3611,11 @@ class ShelfViewFocusTest : public ShelfViewTest {
                        ui::EventFlags::EF_SHIFT_DOWN);
   }
 
+  void DoEnter() {
+    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+    generator.PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EventFlags::EF_NONE);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfViewFocusTest);
 };
@@ -3826,6 +3831,27 @@ TEST_F(ShelfViewOverflowFocusTest, BackwardCyclingWithBubbleOpen) {
   // One more shift tab and the last item on the main shelf has focus.
   DoShiftTab();
   EXPECT_TRUE(test_api_->GetViewAt(last_item_on_main_shelf_index_)->HasFocus());
+}
+
+// Tests that the keyboard focus remains on the overflow button when toggling
+// the overflow bubble, so that the bubble can be toggled repeatedly without
+// resetting with keyboard focus back to the first subview of the shelf.
+TEST_F(ShelfViewOverflowFocusTest, ToggleBubbleWithKeyboard) {
+  EXPECT_FALSE(shelf_view_->GetOverflowButton()->HasFocus());
+  // Focus the last item on the main shelf.
+  shelf_view_->shelf_widget()->GetFocusManager()->SetFocusedView(
+      test_api_->GetViewAt(last_item_on_main_shelf_index_));
+  // Focus the overflow button.
+  DoTab();
+  EXPECT_TRUE(shelf_view_->GetOverflowButton()->HasFocus());
+  EXPECT_FALSE(shelf_view_->IsShowingOverflowBubble());
+
+  DoEnter();
+  EXPECT_TRUE(shelf_view_->IsShowingOverflowBubble());
+  DoEnter();
+  EXPECT_FALSE(shelf_view_->IsShowingOverflowBubble());
+  DoEnter();
+  EXPECT_TRUE(shelf_view_->IsShowingOverflowBubble());
 }
 
 // Verifies that focus moves as expected between the shelf and the status area
