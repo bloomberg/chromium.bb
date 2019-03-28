@@ -329,19 +329,19 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(int x,
   // Check if the point is within any of the immediate children of this
   // view. We don't have to search further because AXPlatformNode will
   // do a recursive hit test if we return anything other than |this| or NULL.
-  for (int i = view()->child_count() - 1; i >= 0; --i) {
-    View* child_view = view()->child_at(i);
-    if (!child_view->visible())
-      continue;
-
+  View* v = view();
+  const auto is_point_in_child = [point, v](View* child) {
+    if (!child->visible())
+      return false;
     gfx::Point point_in_child_coords = point;
-    view()->ConvertPointToTarget(view(), child_view, &point_in_child_coords);
-    if (child_view->HitTestPoint(point_in_child_coords))
-      return child_view->GetNativeViewAccessible();
-  }
-
+    v->ConvertPointToTarget(v, child, &point_in_child_coords);
+    return child->HitTestPoint(point_in_child_coords);
+  };
+  const auto i = std::find_if(v->children().rbegin(), v->children().rend(),
+                              is_point_in_child);
   // If it's not inside any of our children, it's inside this view.
-  return GetNativeObject();
+  return (i == v->children().rend()) ? GetNativeObject()
+                                     : (*i)->GetNativeViewAccessible();
 }
 
 gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetFocus() {
@@ -393,32 +393,32 @@ ViewAXPlatformNodeDelegate::GetChildWidgets() const {
   if (!widget || !widget->GetNativeView() || widget->GetRootView() != view())
     return {{}, false};
 
-  const views::FocusManager* focus_manager = view()->GetFocusManager();
-  const views::View* focused_view =
+  std::set<Widget*> owned_widgets;
+  Widget::GetAllOwnedWidgets(widget->GetNativeView(), &owned_widgets);
+
+  std::vector<Widget*> visible_widgets;
+  const auto visible = [widget](const Widget* child) {
+    return child->IsVisible() &&
+           // TODO(dmazzoni): Shouldn't this be |child|?
+           !widget->GetNativeWindowProperty(kWidgetNativeViewHostKey);
+  };
+  std::copy_if(owned_widgets.cbegin(), owned_widgets.cend(),
+               std::back_inserter(visible_widgets), visible);
+
+  // Focused child widgets should take the place of the web page they cover in
+  // the accessibility tree.
+  const FocusManager* focus_manager = view()->GetFocusManager();
+  const View* focused_view =
       focus_manager ? focus_manager->GetFocusedView() : nullptr;
+  const auto is_focused_child = [focused_view](Widget* child) {
+    return ViewAccessibilityUtils::IsFocusedChildWidget(child, focused_view);
+  };
+  const auto i = std::find_if(visible_widgets.cbegin(), visible_widgets.cend(),
+                              is_focused_child);
+  if (i != visible_widgets.cend())
+    return {{*i}, true};
 
-  std::set<Widget*> child_widget_set;
-  Widget::GetAllOwnedWidgets(widget->GetNativeView(), &child_widget_set);
-
-  std::vector<Widget*> child_widgets;
-  for (Widget* child_widget : child_widget_set) {
-    DCHECK_NE(widget, child_widget);
-
-    if (!child_widget->IsVisible())
-      continue;
-
-    if (widget->GetNativeWindowProperty(kWidgetNativeViewHostKey))
-      continue;
-
-    // Focused child widgets should take the place of the web page they cover in
-    // the accessibility tree.
-    if (ViewAccessibilityUtils::IsFocusedChildWidget(child_widget,
-                                                     focused_view))
-      return {{child_widget}, true};
-
-    child_widgets.push_back(child_widget);
-  }
-  return {child_widgets, false};
+  return {visible_widgets, false};
 }
 
 }  // namespace views

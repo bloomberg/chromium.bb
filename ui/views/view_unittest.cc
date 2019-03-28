@@ -4904,19 +4904,11 @@ class OrderableView : public View {
   ~OrderableView() override = default;
 
   View::Views GetChildrenInZOrder() override {
-    View::Views children;
-    // Iterate over regular children and later over the raised children to
-    // create a custom Z-order.
-    for (int i = 0; i < child_count(); ++i) {
-      if (child_at(i)->id() != VIEW_ID_RAISED)
-        children.push_back(child_at(i));
-    }
-    for (int i = 0; i < child_count(); ++i) {
-      if (child_at(i)->id() == VIEW_ID_RAISED)
-        children.push_back(child_at(i));
-    }
-    DCHECK_EQ(child_count(), static_cast<int>(children.size()));
-    return children;
+    View::Views children_in_z_order = children();
+    std::stable_partition(
+        children_in_z_order.begin(), children_in_z_order.end(),
+        [](const View* child) { return child->id() != VIEW_ID_RAISED; });
+    return children_in_z_order;
   }
 
  private:

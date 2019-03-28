@@ -5,6 +5,7 @@
 #include "ui/views/controls/menu/submenu_view.h"
 
 #include <algorithm>
+#include <numeric>
 
 #include "base/compiler_specific.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -61,15 +62,14 @@ SubmenuView::~SubmenuView() {
   delete scroll_view_container_;
 }
 
-bool SubmenuView::HasEmptyMenuItemView() {
-  for (int i = 0; i < child_count(); i++) {
-    if (child_at(i)->id() == MenuItemView::kEmptyMenuItemViewID)
-      return true;
-  }
-  return false;
+bool SubmenuView::HasEmptyMenuItemView() const {
+  return std::any_of(children().cbegin(), children().cend(),
+                     [](const View* child) {
+                       return child->id() == MenuItemView::kEmptyMenuItemViewID;
+                     });
 }
 
-bool SubmenuView::HasVisibleChildren() {
+bool SubmenuView::HasVisibleChildren() const {
   const auto menu_items = GetMenuItems();
   return std::any_of(menu_items.cbegin(), menu_items.cend(),
                      [](const MenuItemView* item) { return item->visible(); });
@@ -99,7 +99,7 @@ void SubmenuView::ChildPreferredSizeChanged(View* child) {
   if (!resize_open_menu_)
     return;
 
-  MenuItemView *item = GetMenuItem();
+  MenuItemView* item = parent_menu_item_;
   MenuController* controller = item->GetMenuController();
 
   if (controller) {
@@ -183,18 +183,19 @@ gfx::Size SubmenuView::CalculatePreferredSize() const {
                                     insets.width(),
                                 minimum_preferred_width_ - 2 * insets.width()));
 
-  if (GetMenuItem()->GetMenuController() &&
-      GetMenuItem()->GetMenuController()->use_touchable_layout()) {
+  if (parent_menu_item_->GetMenuController() &&
+      parent_menu_item_->GetMenuController()->use_touchable_layout()) {
     width = std::max(touchable_minimum_width, width);
   }
 
   // Then, the height for that width.
-  int height = 0;
-  int menu_item_width = width - insets.width();
-  for (int i = 0; i < child_count(); ++i) {
-    const View* child = child_at(i);
-    height += child->visible() ? child->GetHeightForWidth(menu_item_width) : 0;
-  }
+  const int menu_item_width = width - insets.width();
+  const auto get_height = [menu_item_width](int height, const View* child) {
+    return height +
+           (child->visible() ? child->GetHeightForWidth(menu_item_width) : 0);
+  };
+  const int height =
+      std::accumulate(children().cbegin(), children().cend(), 0, get_height);
 
   return gfx::Size(width, height + insets.height());
 }
@@ -202,8 +203,8 @@ gfx::Size SubmenuView::CalculatePreferredSize() const {
 void SubmenuView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // Inherit most of the state from the parent menu item, except the role and
   // the orientation.
-  if (GetMenuItem())
-    GetMenuItem()->GetAccessibleNodeData(node_data);
+  if (parent_menu_item_)
+    parent_menu_item_->GetAccessibleNodeData(node_data);
   node_data->role = ax::mojom::Role::kMenuListPopup;
   // Menus in Chrome are always traversed in a vertical direction.
   node_data->AddState(ax::mojom::State::kVertical);
@@ -236,39 +237,39 @@ void SubmenuView::PaintChildren(const PaintInfo& paint_info) {
 bool SubmenuView::GetDropFormats(
     int* formats,
     std::set<ui::ClipboardFormatType>* format_types) {
-  DCHECK(GetMenuItem()->GetMenuController());
-  return GetMenuItem()->GetMenuController()->GetDropFormats(this, formats,
-                                                            format_types);
+  DCHECK(parent_menu_item_->GetMenuController());
+  return parent_menu_item_->GetMenuController()->GetDropFormats(this, formats,
+                                                                format_types);
 }
 
 bool SubmenuView::AreDropTypesRequired() {
-  DCHECK(GetMenuItem()->GetMenuController());
-  return GetMenuItem()->GetMenuController()->AreDropTypesRequired(this);
+  DCHECK(parent_menu_item_->GetMenuController());
+  return parent_menu_item_->GetMenuController()->AreDropTypesRequired(this);
 }
 
 bool SubmenuView::CanDrop(const OSExchangeData& data) {
-  DCHECK(GetMenuItem()->GetMenuController());
-  return GetMenuItem()->GetMenuController()->CanDrop(this, data);
+  DCHECK(parent_menu_item_->GetMenuController());
+  return parent_menu_item_->GetMenuController()->CanDrop(this, data);
 }
 
 void SubmenuView::OnDragEntered(const ui::DropTargetEvent& event) {
-  DCHECK(GetMenuItem()->GetMenuController());
-  GetMenuItem()->GetMenuController()->OnDragEntered(this, event);
+  DCHECK(parent_menu_item_->GetMenuController());
+  parent_menu_item_->GetMenuController()->OnDragEntered(this, event);
 }
 
 int SubmenuView::OnDragUpdated(const ui::DropTargetEvent& event) {
-  DCHECK(GetMenuItem()->GetMenuController());
-  return GetMenuItem()->GetMenuController()->OnDragUpdated(this, event);
+  DCHECK(parent_menu_item_->GetMenuController());
+  return parent_menu_item_->GetMenuController()->OnDragUpdated(this, event);
 }
 
 void SubmenuView::OnDragExited() {
-  DCHECK(GetMenuItem()->GetMenuController());
-  GetMenuItem()->GetMenuController()->OnDragExited(this);
+  DCHECK(parent_menu_item_->GetMenuController());
+  parent_menu_item_->GetMenuController()->OnDragExited(this);
 }
 
 int SubmenuView::OnPerformDrop(const ui::DropTargetEvent& event) {
-  DCHECK(GetMenuItem()->GetMenuController());
-  return GetMenuItem()->GetMenuController()->OnPerformDrop(this, event);
+  DCHECK(parent_menu_item_->GetMenuController());
+  return parent_menu_item_->GetMenuController()->OnPerformDrop(this, event);
 }
 
 bool SubmenuView::OnMouseWheel(const ui::MouseWheelEvent& e) {
@@ -361,18 +362,15 @@ int SubmenuView::GetRowCount() {
 
 int SubmenuView::GetSelectedRow() {
   const auto menu_items = GetMenuItems();
-  for (size_t i = 0; i < menu_items.size(); ++i) {
-    if (menu_items[i]->IsSelected())
-      return static_cast<int>(i);
-  }
-
-  return -1;
+  const auto i =
+      std::find_if(menu_items.cbegin(), menu_items.cend(),
+                   [](const MenuItemView* item) { return item->IsSelected(); });
+  return (i == menu_items.cend()) ? -1 : std::distance(menu_items.cbegin(), i);
 }
 
 void SubmenuView::SetSelectedRow(int row) {
-  GetMenuItem()->GetMenuController()->SetSelection(
-      GetMenuItemAt(row),
-      MenuController::SELECTION_DEFAULT);
+  parent_menu_item_->GetMenuController()->SetSelection(
+      GetMenuItemAt(row), MenuController::SELECTION_DEFAULT);
 }
 
 base::string16 SubmenuView::GetTextForRow(int row) {
@@ -380,7 +378,7 @@ base::string16 SubmenuView::GetTextForRow(int row) {
                                                     base::string16());
 }
 
-bool SubmenuView::IsShowing() {
+bool SubmenuView::IsShowing() const {
   return host_ && host_->IsMenuHostVisible();
 }
 
@@ -440,7 +438,7 @@ bool SubmenuView::SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) {
   return views::FocusManager::IsTabTraversalKeyEvent(e);
 }
 
-MenuItemView* SubmenuView::GetMenuItem() const {
+MenuItemView* SubmenuView::GetMenuItem() {
   return parent_menu_item_;
 }
 
@@ -479,7 +477,7 @@ MenuItemView* SubmenuView::GetLastItem() {
 
 void SubmenuView::MenuHostDestroyed() {
   host_ = nullptr;
-  MenuController* controller = GetMenuItem()->GetMenuController();
+  MenuController* controller = parent_menu_item_->GetMenuController();
   if (controller)
     controller->Cancel(MenuController::EXIT_DESTROYED);
 }

@@ -48,12 +48,10 @@ class ScrollCornerView : public View {
 // Returns true if any descendants of |view| have a layer (not including
 // |view|).
 bool DoesDescendantHaveLayer(View* view) {
-  for (int i = 0; i < view->child_count(); ++i) {
-    View* child = view->child_at(i);
-    if (child->layer() || DoesDescendantHaveLayer(child))
-      return true;
-  }
-  return false;
+  return std::any_of(view->children().cbegin(), view->children().cend(),
+                     [](View* child) {
+                       return child->layer() || DoesDescendantHaveLayer(child);
+                     });
 }
 
 // Returns the position for the view so that it isn't scrolled off the visible

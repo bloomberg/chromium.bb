@@ -1174,21 +1174,16 @@ gfx::Size MenuItemView::GetChildPreferredSize() const {
   if (IsContainer())
     return child_at(0)->GetPreferredSize();
 
-  int width = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    const View* child = child_at(i);
-    if (icon_view_ == child)
-      continue;
-    if (radio_check_image_view_ == child)
-      continue;
-    if (submenu_arrow_image_view_ == child)
-      continue;
-    if (vertical_separator_ == child)
-      continue;
-    if (i)
+  const auto add_width = [this](int width, const View* child) {
+    if (child == icon_view_ || child == radio_check_image_view_ ||
+        child == submenu_arrow_image_view_ || child == vertical_separator_)
+      return width;
+    if (width)
       width += kChildXPadding;
-    width += child->GetPreferredSize().width();
-  }
+    return width + child->GetPreferredSize().width();
+  };
+  const int width =
+      std::accumulate(children().cbegin(), children().cend(), 0, add_width);
 
   // If there is no icon view it returns a height of 0 to indicate that
   // we should use the title height instead.
