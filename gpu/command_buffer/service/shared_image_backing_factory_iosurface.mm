@@ -254,7 +254,8 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
                            size,
                            color_space,
                            usage,
-                           estimated_size),
+                           estimated_size,
+                           false /* is_thread_safe */),
         io_surface_(std::move(io_surface)),
         dawn_format_(dawn_format) {
     DCHECK(io_surface_);
@@ -453,7 +454,9 @@ SharedImageBackingFactoryIOSurface::CreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
-    uint32_t usage) {
+    uint32_t usage,
+    bool is_thread_safe) {
+  DCHECK(!is_thread_safe);
   // Check the format is supported and for simplicity always require it to be
   // supported for GL.
   if (!format_supported_by_gl_[format]) {

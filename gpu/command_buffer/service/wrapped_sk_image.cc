@@ -105,7 +105,8 @@ class WrappedSkImage : public SharedImageBacking {
                            size,
                            color_space,
                            usage,
-                           estimated_size),
+                           estimated_size,
+                           false /* is_thread_safe */),
         context_state_(context_state) {
     DCHECK(!!context_state_);
   }
@@ -235,7 +236,9 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
-    uint32_t usage) {
+    uint32_t usage,
+    bool is_thread_safe) {
+  DCHECK(!is_thread_safe);
   return CreateSharedImage(mailbox, format, size, color_space, usage,
                            base::span<uint8_t>());
 }

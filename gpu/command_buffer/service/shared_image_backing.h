@@ -10,6 +10,8 @@
 #include <memory>
 
 #include "base/containers/flat_map.h"
+#include "base/optional.h"
+#include "base/synchronization/lock.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/gpu_gles2_export.h"
@@ -43,7 +45,8 @@ class GPU_GLES2_EXPORT SharedImageBacking {
                      const gfx::Size& size,
                      const gfx::ColorSpace& color_space,
                      uint32_t usage,
-                     size_t estimated_size);
+                     size_t estimated_size,
+                     bool is_thread_safe);
 
   virtual ~SharedImageBacking();
 
@@ -53,12 +56,12 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   uint32_t usage() const { return usage_; }
   const Mailbox& mailbox() const { return mailbox_; }
   size_t estimated_size() const { return estimated_size_; }
-  void OnContextLost() { have_context_ = false; }
+  void OnContextLost();
 
   // Concrete functions to manage a ref count.
   void AddRef(SharedImageRepresentation* representation);
   void ReleaseRef(SharedImageRepresentation* representation);
-  bool HasAnyRefs() const { return !refs_.empty(); }
+  bool HasAnyRefs() const;
 
   // Tracks whether the backing has ever been cleared, or whether it may contain
   // uninitialized pixels.
@@ -105,7 +108,24 @@ class GPU_GLES2_EXPORT SharedImageBacking {
       DawnDevice device);
 
   // Used by subclasses in Destroy.
-  bool have_context() const { return have_context_; }
+  bool have_context() const;
+
+  void AssertLockedIfNecessary() const;
+
+  class GPU_GLES2_EXPORT AutoLock {
+   public:
+    explicit AutoLock(const SharedImageBacking* shared_image_backing);
+    ~AutoLock();
+
+    AutoLock(const AutoLock&) = delete;
+    AutoLock& operator=(const AutoLock&) = delete;
+
+    static base::Lock* InitializeLock(
+        const SharedImageBacking* shared_image_backing);
+
+   private:
+    base::AutoLockMaybe auto_lock_;
+  };
 
  private:
   const Mailbox mailbox_;
@@ -114,6 +134,9 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   const gfx::ColorSpace color_space_;
   const uint32_t usage_;
   const size_t estimated_size_;
+
+  // Protects non-const members here and in derived classes.
+  mutable base::Optional<base::Lock> lock_;
 
   bool have_context_ = true;
   // A vector of SharedImageRepresentations which hold references to this

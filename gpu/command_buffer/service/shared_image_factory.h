@@ -77,6 +77,7 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                     uint64_t client_tracing_id);
 
  private:
+  bool IsSharedBetweenThreads(uint32_t usage);
   SharedImageBackingFactory* GetFactoryByUsage(uint32_t usage,
                                                bool* allow_legacy_mailbox);
   bool RegisterBacking(std::unique_ptr<SharedImageBacking> backing,

@@ -108,8 +108,8 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   auto* factory = GetFactoryByUsage(usage, &allow_legacy_mailbox);
   if (!factory)
     return false;
-  auto backing =
-      factory->CreateSharedImage(mailbox, format, size, color_space, usage);
+  auto backing = factory->CreateSharedImage(
+      mailbox, format, size, color_space, usage, IsSharedBetweenThreads(usage));
   return RegisterBacking(std::move(backing), allow_legacy_mailbox);
 }
 
@@ -198,6 +198,13 @@ bool SharedImageFactory::OnMemoryDump(
   return true;
 }
 
+bool SharedImageFactory::IsSharedBetweenThreads(uint32_t usage) {
+  // If |shared_image_manager_| is thread safe, it means the display is running
+  // on a separate thread (which uses a separate GL context or VkDeviceQueue).
+  return shared_image_manager_->is_thread_safe() &&
+         (usage & SHARED_IMAGE_USAGE_DISPLAY);
+}
+
 SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
     uint32_t usage,
     bool* allow_legacy_mailbox) {
@@ -209,10 +216,7 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
 
   bool vulkan_usage = using_vulkan_ && (usage & SHARED_IMAGE_USAGE_DISPLAY);
   bool gl_usage = usage & SHARED_IMAGE_USAGE_GLES2;
-  // If |shared_image_manager_| is thread safe, it means the display is running
-  // on a separate thread (which uses a separate GL context or VkDeviceQueue).
-  bool share_between_threads = shared_image_manager_->is_thread_safe() &&
-                               (usage & SHARED_IMAGE_USAGE_DISPLAY);
+  bool share_between_threads = IsSharedBetweenThreads(usage);
   bool share_between_gl_vulkan = gl_usage && vulkan_usage;
   bool using_interop_factory = share_between_threads ||
                                share_between_gl_vulkan ||
