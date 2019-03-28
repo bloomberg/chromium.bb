@@ -33,6 +33,8 @@ std::string TypeId::ToString() const {
   return function_name_;
 #elif defined(COMPILER_MSVC)
   return HexEncode(&unique_type_id_, sizeof(unique_type_id_));
+#elif defined(COMPONENT_BUILD)
+  return NumberToString(unique_type_id_);
 #else
   return NumberToString(reinterpret_cast<uintptr_t>(unique_type_id_));
 #endif
