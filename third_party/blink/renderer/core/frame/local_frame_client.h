@@ -47,7 +47,6 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
-#include "third_party/blink/public/web/web_global_object_reuse_policy.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
@@ -59,6 +58,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/html/link_resource.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
@@ -149,7 +149,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DispatchDidChangeIcons(IconType) = 0;
   virtual void DispatchDidCommitLoad(HistoryItem*,
                                      WebHistoryCommitType,
-                                     WebGlobalObjectReusePolicy) = 0;
+                                     GlobalObjectReusePolicy) = 0;
   virtual void DispatchDidFailProvisionalLoad(const ResourceError&,
                                               WebHistoryCommitType) = 0;
   virtual void DispatchDidFailLoad(const ResourceError&,

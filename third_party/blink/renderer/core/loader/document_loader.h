@@ -38,7 +38,6 @@
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
-#include "third_party/blink/public/web/web_global_object_reuse_policy.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -82,6 +81,12 @@ class SubresourceFilter;
 class WebServiceWorkerNetworkProvider;
 struct ViewportDescriptionWrapper;
 
+// Indicates whether the global object (i.e. Window instance) associated with
+// the previous document in a browsing context was replaced or reused for the
+// new Document corresponding to the just-committed navigation; effective in the
+// main world and all isolated worlds. WindowProxies are not affected.
+enum class GlobalObjectReusePolicy { kCreateNew, kUseExisting };
+
 // The DocumentLoader fetches a main resource and handles the result.
 class CORE_EXPORT DocumentLoader
     : public GarbageCollectedFinalized<DocumentLoader>,
@@ -104,7 +109,7 @@ class CORE_EXPORT DocumentLoader
 
   void ReplaceDocumentWhileExecutingJavaScriptURL(const KURL&,
                                                   Document* owner_document,
-                                                  WebGlobalObjectReusePolicy,
+                                                  GlobalObjectReusePolicy,
                                                   const String& source);
 
   const AtomicString& MimeType() const;
@@ -281,7 +286,7 @@ class CORE_EXPORT DocumentLoader
       const KURL&,
       const scoped_refptr<const SecurityOrigin> initiator_origin,
       Document* owner_document,
-      WebGlobalObjectReusePolicy,
+      GlobalObjectReusePolicy,
       const AtomicString& mime_type,
       const AtomicString& encoding,
       InstallNewDocumentReason,
@@ -289,7 +294,7 @@ class CORE_EXPORT DocumentLoader
       const KURL& overriding_url);
   void DidInstallNewDocument(Document*);
   void WillCommitNavigation();
-  void DidCommitNavigation(WebGlobalObjectReusePolicy);
+  void DidCommitNavigation(GlobalObjectReusePolicy);
 
   void CommitNavigation(const AtomicString& mime_type,
                         const KURL& overriding_url = KURL());

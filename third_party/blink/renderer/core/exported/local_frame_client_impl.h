@@ -48,6 +48,7 @@ namespace blink {
 class WebDevToolsAgentImpl;
 class WebLocalFrameImpl;
 class WebSpellCheckPanelHostClient;
+enum class GlobalObjectReusePolicy;
 struct WebScrollIntoViewParams;
 
 class LocalFrameClientImpl final : public LocalFrameClient {
@@ -100,7 +101,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DispatchDidChangeIcons(IconType) override;
   void DispatchDidCommitLoad(HistoryItem*,
                              WebHistoryCommitType,
-                             WebGlobalObjectReusePolicy) override;
+                             GlobalObjectReusePolicy) override;
   void DispatchDidFailProvisionalLoad(const ResourceError&,
                                       WebHistoryCommitType) override;
   void DispatchDidFailLoad(const ResourceError&, WebHistoryCommitType) override;

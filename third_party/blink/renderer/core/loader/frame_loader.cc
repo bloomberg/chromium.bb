@@ -377,10 +377,10 @@ void FrameLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
   // done previously before getting here:
   // HTMLFormElement::ScheduleFormSubmission
   // HTMLFrameElementBase::OpenURL
-  WebGlobalObjectReusePolicy global_object_reuse_policy =
+  GlobalObjectReusePolicy global_object_reuse_policy =
       ShouldReuseDefaultView(url, document->GetContentSecurityPolicy())
-          ? WebGlobalObjectReusePolicy::kUseExisting
-          : WebGlobalObjectReusePolicy::kCreateNew;
+          ? GlobalObjectReusePolicy::kUseExisting
+          : GlobalObjectReusePolicy::kCreateNew;
 
   document_loader_->StopLoading();
 
