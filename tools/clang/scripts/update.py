@@ -43,7 +43,7 @@ if use_head_revision:
   CLANG_REVISION = 'HEAD'
 
 # This is incremented when pushing a new build of Clang at the same revision.
-CLANG_SUB_REVISION=1
+CLANG_SUB_REVISION=2
 
 PACKAGE_VERSION = "%s-%s" % (CLANG_REVISION, CLANG_SUB_REVISION)
 
@@ -547,7 +547,8 @@ def UpdateClang(args):
   targets = 'AArch64;ARM;Mips;PowerPC;SystemZ;WebAssembly;X86'
   base_cmake_args = ['-GNinja',
                      '-DCMAKE_BUILD_TYPE=Release',
-                     '-DLLVM_ENABLE_ASSERTIONS=ON',
+                     '-DLLVM_ENABLE_ASSERTIONS=%s' %
+                         ('OFF' if args.disable_asserts else 'ON'),
                      '-DLLVM_ENABLE_PIC=OFF',
                      '-DLLVM_ENABLE_TERMINFO=OFF',
                      '-DLLVM_TARGETS_TO_BUILD=' + targets,
@@ -573,6 +574,8 @@ def UpdateClang(args):
         '-DCMAKE_INSTALL_PREFIX=' + LLVM_BOOTSTRAP_INSTALL_DIR,
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
+        # Ignore args.disable_asserts for the bootstrap compiler.
+        '-DLLVM_ENABLE_ASSERTIONS=ON',
         ]
     if cc is not None:  bootstrap_args.append('-DCMAKE_C_COMPILER=' + cc)
     if cxx is not None: bootstrap_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
@@ -951,6 +954,8 @@ def main():
   parser = argparse.ArgumentParser(description='Build Clang.')
   parser.add_argument('--bootstrap', action='store_true',
                       help='first build clang with CC, then with itself.')
+  parser.add_argument('--disable-asserts', action='store_true',
+                      help='build with asserts disabled')
   parser.add_argument('--force-local-build', action='store_true',
                       help="don't try to download prebuild binaries")
   parser.add_argument('--gcc-toolchain', help='set the version for which gcc '
