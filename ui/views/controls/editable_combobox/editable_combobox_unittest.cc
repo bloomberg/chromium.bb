@@ -78,9 +78,13 @@ class EditableComboboxTest : public ViewsTestBase {
   void InitWidget();
 
  protected:
+  void ClickArrow();
+  void ClickMenuItem(int index);
   bool IsMenuOpen();
-  void PerformMouseEvent(const gfx::Point& point, ui::EventType type);
-  void PerformClick(const gfx::Point& point);
+  void PerformMouseEvent(Widget* widget,
+                         const gfx::Point& point,
+                         ui::EventType type);
+  void PerformClick(Widget* widget, const gfx::Point& point);
   void SendKeyEvent(ui::KeyboardCode key_code,
                     bool alt = false,
                     bool shift = false,
@@ -159,32 +163,44 @@ void EditableComboboxTest::InitWidget() {
   event_generator_->set_target(ui::test::EventGenerator::Target::WINDOW);
 }
 
+void EditableComboboxTest::ClickArrow() {
+  const gfx::Point arrow_button(combobox_->x() + combobox_->width() - 1,
+                                combobox_->y() + 1);
+  PerformClick(widget_, arrow_button);
+}
+
+void EditableComboboxTest::ClickMenuItem(const int index) {
+  DCHECK(combobox_->GetMenuRunnerForTest());
+  const gfx::Point middle_of_item(
+      combobox_->x() + combobox_->width() / 2,
+      combobox_->y() + combobox_->height() / 2 + combobox_->height() * index);
+  // For the menu, we send the click event to the child widget where the menu is
+  // shown. That child widget is the MenuHost object created inside
+  // EditableCombobox's MenuRunner to host the menu items.
+  std::set<Widget*> child_widgets;
+  Widget::GetAllOwnedWidgets(widget_->GetNativeView(), &child_widgets);
+  ASSERT_EQ(1UL, child_widgets.size());
+  PerformClick(*child_widgets.begin(), middle_of_item);
+}
+
 bool EditableComboboxTest::IsMenuOpen() {
   return combobox_->GetMenuRunnerForTest() &&
          combobox_->GetMenuRunnerForTest()->IsRunning();
 }
 
-void EditableComboboxTest::PerformMouseEvent(const gfx::Point& point,
+void EditableComboboxTest::PerformMouseEvent(Widget* widget,
+                                             const gfx::Point& point,
                                              const ui::EventType type) {
   ui::MouseEvent event =
       ui::MouseEvent(type, point, point, ui::EventTimeForNow(),
                      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  Widget* widget = widget_;
-  // If a menu is open, we send the click event to the child widget where the
-  // menu is shown. That child widget is the MenuHost object created inside
-  // EditableCombobox's MenuRunner to host the menu items.
-  if (combobox_->GetMenuRunnerForTest()) {
-    std::set<Widget*> child_widgets;
-    Widget::GetAllOwnedWidgets(widget->GetNativeView(), &child_widgets);
-    ASSERT_EQ(1UL, child_widgets.size());
-    widget = *child_widgets.begin();
-  }
   widget->OnMouseEvent(&event);
 }
 
-void EditableComboboxTest::PerformClick(const gfx::Point& point) {
-  PerformMouseEvent(point, ui::ET_MOUSE_PRESSED);
-  PerformMouseEvent(point, ui::ET_MOUSE_RELEASED);
+void EditableComboboxTest::PerformClick(Widget* widget,
+                                        const gfx::Point& point) {
+  PerformMouseEvent(widget, point, ui::ET_MOUSE_PRESSED);
+  PerformMouseEvent(widget, point, ui::ET_MOUSE_RELEASED);
 }
 
 void EditableComboboxTest::SendKeyEvent(ui::KeyboardCode key_code,
@@ -411,12 +427,9 @@ TEST_F(EditableComboboxTest, TypingInTextfieldUnhighlightsMenuItem) {
 TEST_F(EditableComboboxTest, ClickOnMenuItemSelectsItAndClosesMenu) {
   InitEditableCombobox();
   combobox_->GetTextfieldForTest()->RequestFocus();
-
-  const gfx::Point middle_of_first_item(
-      combobox_->x() + combobox_->width() / 2,
-      combobox_->y() + combobox_->height() + 1);
   EXPECT_TRUE(IsMenuOpen());
-  PerformClick(middle_of_first_item);
+
+  ClickMenuItem(/*index=*/0);
   WaitForMenuClosureAnimation();
   EXPECT_FALSE(IsMenuOpen());
   EXPECT_EQ(ASCIIToUTF16("item[0]"), combobox_->GetText());
@@ -610,6 +623,17 @@ TEST_F(EditableComboboxTest, PasswordCanBeHiddenAndRevealed) {
             combobox_->GetItemForTest(0));
   ASSERT_EQ(base::string16(5, gfx::RenderText::kPasswordReplacementChar),
             combobox_->GetItemForTest(1));
+}
+
+TEST_F(EditableComboboxTest, ArrowButtonOpensAndClosesMenu) {
+  InitEditableCombobox();
+  EXPECT_FALSE(IsMenuOpen());
+
+  ClickArrow();
+  EXPECT_TRUE(IsMenuOpen());
+  ClickArrow();
+  WaitForMenuClosureAnimation();
+  EXPECT_FALSE(IsMenuOpen());
 }
 
 }  // namespace

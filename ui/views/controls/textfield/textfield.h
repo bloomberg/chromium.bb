@@ -30,6 +30,7 @@
 #include "ui/base/pointer/touch_editing_controller.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/gfx/text_constants.h"
@@ -251,6 +252,8 @@ class VIEWS_EXPORT Textfield : public View,
   void SetGlyphSpacing(int spacing);
 
   int GetPasswordCharRevealIndex() const { return password_char_reveal_index_; }
+
+  void SetExtraInsets(const gfx::Insets& insets);
 
   // View overrides:
   int GetBaseline() const override;
@@ -646,6 +649,9 @@ class VIEWS_EXPORT Textfield : public View,
 
   // The password char reveal index, for testing only.
   int password_char_reveal_index_ = -1;
+
+  // Extra insets, useful to make room for a button for example.
+  gfx::Insets extra_insets_ = gfx::Insets();
 
   // Used to bind callback functions to this object.
   base::WeakPtrFactory<Textfield> weak_ptr_factory_;

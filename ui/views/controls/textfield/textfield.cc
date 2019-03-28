@@ -598,6 +598,11 @@ void Textfield::SetGlyphSpacing(int spacing) {
   GetRenderText()->set_glyph_spacing(spacing);
 }
 
+void Textfield::SetExtraInsets(const gfx::Insets& insets) {
+  extra_insets_ = insets;
+  UpdateBorder();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, View overrides:
 
@@ -1055,9 +1060,10 @@ void Textfield::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // beyond their legibility, or enlarging controls dynamically with content.
   gfx::Rect bounds = GetLocalBounds();
   const gfx::Insets insets = GetInsets();
-  // The text will draw with the correct verticial alignment if we don't apply
+  // The text will draw with the correct vertical alignment if we don't apply
   // the vertical insets.
   bounds.Inset(insets.left(), 0, insets.right(), 0);
+  bounds.set_x(GetMirroredXForRect(bounds));
   GetRenderText()->SetDisplayRect(bounds);
   OnCaretBoundsChanged();
   UpdateCursorViewPosition();
@@ -2093,8 +2099,14 @@ void Textfield::UpdateBorder() {
   auto border = std::make_unique<views::FocusableBorder>();
   const LayoutProvider* provider = LayoutProvider::Get();
   border->SetInsets(
-      provider->GetDistanceMetric(DISTANCE_CONTROL_VERTICAL_TEXT_PADDING),
-      provider->GetDistanceMetric(DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING));
+      extra_insets_.top() +
+          provider->GetDistanceMetric(DISTANCE_CONTROL_VERTICAL_TEXT_PADDING),
+      extra_insets_.left() + provider->GetDistanceMetric(
+                                 DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING),
+      extra_insets_.bottom() +
+          provider->GetDistanceMetric(DISTANCE_CONTROL_VERTICAL_TEXT_PADDING),
+      extra_insets_.right() + provider->GetDistanceMetric(
+                                  DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING));
   if (invalid_)
     border->SetColorId(ui::NativeTheme::kColorId_AlertSeverityHigh);
   View::SetBorder(std::move(border));
