@@ -75,17 +75,20 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages,
     // there should be no risk of a race here.
     base::AutoLock lock(lock_);
 
+    free_metadata_.resize(state_.num_metadata);
     for (size_t i = 0; i < num_metadata; i++)
       free_metadata_[i] = i;
-    free_metadata_end_ = num_metadata;
 
+    free_slots_.resize(total_pages);
     for (size_t i = 0; i < total_pages; i++)
       free_slots_[i] = i;
-    free_slots_end_ = total_pages;
-
-    for (size_t i = 0; i < total_pages; i++)
-      state_.slot_to_metadata_idx[i] = AllocatorState::kInvalidMetadataIdx;
   }
+
+  slot_to_metadata_idx_.resize(total_pages);
+  for (size_t i = 0; i < total_pages; i++)
+    slot_to_metadata_idx_[i] = AllocatorState::kInvalidMetadataIdx;
+  state_.slot_to_metadata_addr =
+      reinterpret_cast<uintptr_t>(&slot_to_metadata_idx_.front());
 
   metadata_ =
       std::make_unique<AllocatorState::SlotMetadata[]>(state_.num_metadata);
@@ -138,7 +141,7 @@ void GuardedPageAllocator::Deallocate(void* ptr) {
 
   const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
   AllocatorState::SlotIdx slot = state_.AddrToSlot(state_.GetPageAddr(addr));
-  AllocatorState::MetadataIdx metadata_idx = state_.slot_to_metadata_idx[slot];
+  AllocatorState::MetadataIdx metadata_idx = slot_to_metadata_idx_[slot];
 
   // Check for a call to free() with an incorrect pointer, e.g. the pointer does
   // not match the allocated pointer. This may occur with a bad free pointer or
@@ -172,7 +175,7 @@ size_t GuardedPageAllocator::GetRequestedSize(const void* ptr) const {
   CHECK(PointerIsMine(ptr));
   const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
   AllocatorState::SlotIdx slot = state_.AddrToSlot(state_.GetPageAddr(addr));
-  AllocatorState::MetadataIdx metadata_idx = state_.slot_to_metadata_idx[slot];
+  AllocatorState::MetadataIdx metadata_idx = slot_to_metadata_idx_[slot];
   CHECK_LT(metadata_idx, state_.num_metadata);
   CHECK_EQ(addr, metadata_[metadata_idx].alloc_ptr);
   return metadata_[metadata_idx].alloc_size;
@@ -190,33 +193,32 @@ bool GuardedPageAllocator::ReserveSlotAndMetadata(
     return false;
   num_alloced_pages_++;
 
-  DCHECK_GT(free_metadata_end_, 0U);
-  DCHECK_LE(free_metadata_end_, state_.num_metadata);
-  size_t rand = base::RandGenerator(free_metadata_end_);
+  DCHECK(!free_metadata_.empty());
+  DCHECK_LE(free_metadata_.size(), state_.num_metadata);
+  size_t rand = base::RandGenerator(free_metadata_.size());
   *metadata_idx = free_metadata_[rand];
-  free_metadata_end_--;
-  free_metadata_[rand] = free_metadata_[free_metadata_end_];
-  DCHECK_EQ(free_metadata_end_, state_.num_metadata - num_alloced_pages_);
+  free_metadata_[rand] = free_metadata_.back();
+  free_metadata_.pop_back();
+  DCHECK_EQ(free_metadata_.size(), state_.num_metadata - num_alloced_pages_);
 
   // If this metadata has been previously used, overwrite the outdated
   // slot_to_metadata_idx mapping from the previous use if it's still valid.
   if (metadata_[*metadata_idx].alloc_ptr) {
     DCHECK(state_.PointerIsMine(metadata_[*metadata_idx].alloc_ptr));
     size_t old_slot = state_.GetNearestSlot(metadata_[*metadata_idx].alloc_ptr);
-    if (state_.slot_to_metadata_idx[old_slot] == *metadata_idx)
-      state_.slot_to_metadata_idx[old_slot] =
-          AllocatorState::kInvalidMetadataIdx;
+    if (slot_to_metadata_idx_[old_slot] == *metadata_idx)
+      slot_to_metadata_idx_[old_slot] = AllocatorState::kInvalidMetadataIdx;
   }
 
-  DCHECK_GT(free_slots_end_, 0U);
-  DCHECK_LE(free_slots_end_, state_.total_pages);
-  rand = base::RandGenerator(free_slots_end_);
+  DCHECK(!free_slots_.empty());
+  DCHECK_LE(free_slots_.size(), state_.total_pages);
+  rand = base::RandGenerator(free_slots_.size());
   *slot = free_slots_[rand];
-  free_slots_end_--;
-  free_slots_[rand] = free_slots_[free_slots_end_];
-  DCHECK_EQ(free_slots_end_, state_.total_pages - num_alloced_pages_);
+  free_slots_[rand] = free_slots_.back();
+  free_slots_.pop_back();
+  DCHECK_EQ(free_slots_.size(), state_.total_pages - num_alloced_pages_);
 
-  state_.slot_to_metadata_idx[*slot] = *metadata_idx;
+  slot_to_metadata_idx_[*slot] = *metadata_idx;
   return true;
 }
 
@@ -227,19 +229,17 @@ void GuardedPageAllocator::FreeSlotAndMetadata(
   DCHECK_LT(metadata_idx, state_.num_metadata);
 
   base::AutoLock lock(lock_);
-  DCHECK_LT(free_slots_end_, state_.total_pages);
-  free_slots_[free_slots_end_] = slot;
-  free_slots_end_++;
+  DCHECK_LT(free_slots_.size(), state_.total_pages);
+  free_slots_.push_back(slot);
 
-  DCHECK_LT(free_metadata_end_, state_.num_metadata);
-  free_metadata_[free_metadata_end_] = metadata_idx;
-  free_metadata_end_++;
+  DCHECK_LT(free_metadata_.size(), state_.total_pages);
+  free_metadata_.push_back(metadata_idx);
 
   DCHECK_GT(num_alloced_pages_, 0U);
   num_alloced_pages_--;
 
-  DCHECK_EQ(free_metadata_end_, state_.num_metadata - num_alloced_pages_);
-  DCHECK_EQ(free_slots_end_, state_.total_pages - num_alloced_pages_);
+  DCHECK_EQ(free_metadata_.size(), state_.num_metadata - num_alloced_pages_);
+  DCHECK_EQ(free_slots_.size(), state_.total_pages - num_alloced_pages_);
 }
 
 void GuardedPageAllocator::RecordAllocationMetadata(

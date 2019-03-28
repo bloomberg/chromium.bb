@@ -125,9 +125,21 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
     return GwpAsanCrashAnalysisResult::kErrorFailedToReadSlotMetadata;
   }
 
+  // Read the allocator's slot_to_metadata mapping.
+  auto slot_to_metadata =
+      std::make_unique<AllocatorState::MetadataIdx[]>(valid_state.total_pages);
+  if (!memory.Read(
+          valid_state.slot_to_metadata_addr,
+          sizeof(AllocatorState::MetadataIdx) * valid_state.total_pages,
+          slot_to_metadata.get())) {
+    DLOG(ERROR) << "Failed to read slot_to_metadata from process.";
+    return GwpAsanCrashAnalysisResult::kErrorFailedToReadSlotMetadataMapping;
+  }
+
   AllocatorState::MetadataIdx metadata_idx;
-  auto ret = valid_state.GetMetadataForAddress(
-      exception_addr, metadata_arr.get(), &metadata_idx);
+  auto ret =
+      valid_state.GetMetadataForAddress(exception_addr, metadata_arr.get(),
+                                        slot_to_metadata.get(), &metadata_idx);
   if (ret == GetMetadataReturnType::kErrorBadSlot) {
     DLOG(ERROR) << "Allocator computed a bad slot index!";
     return GwpAsanCrashAnalysisResult::kErrorBadSlot;

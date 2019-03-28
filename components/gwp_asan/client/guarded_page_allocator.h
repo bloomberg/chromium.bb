@@ -7,6 +7,7 @@
 
 #include <atomic>
 #include <memory>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -21,6 +22,10 @@ namespace internal {
 
 // This class encompasses the allocation and deallocation logic on top of the
 // AllocatorState. Its members are not inspected or used by the crash handler.
+//
+// This class makes use of dynamically-sized arrays like std::vector<> to only
+// allocate as much memory as we need; however, they only reserve memory at
+// initialization-time so there is no risk of malloc reentrancy.
 class GWP_ASAN_EXPORT GuardedPageAllocator {
  public:
   // Default maximum alignment for all returned allocations.
@@ -110,26 +115,23 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Lock that synchronizes allocating/freeing slots between threads.
   base::Lock lock_;
 
-  // Fixed-size array used to store all free slot indices.
-  AllocatorState::SlotIdx free_slots_[AllocatorState::kMaxSlots] GUARDED_BY(
-      lock_);
-  // Stores the end index of the array.
-  size_t free_slots_end_ GUARDED_BY(lock_) = 0;
-
-  // Fixed-size array used to store all free metadata indices.
-  AllocatorState::MetadataIdx
-      free_metadata_[AllocatorState::kMaxMetadata] GUARDED_BY(lock_);
-  // Stores the end of the array.
-  size_t free_metadata_end_ GUARDED_BY(lock_) = 0;
+  // Array used to store all free slot indices.
+  std::vector<AllocatorState::SlotIdx> free_slots_ GUARDED_BY(lock_);
+  // Array used to store all free metadata indices.
+  std::vector<AllocatorState::MetadataIdx> free_metadata_ GUARDED_BY(lock_);
 
   // Number of currently-allocated pages.
   size_t num_alloced_pages_ GUARDED_BY(lock_) = 0;
   // Max number of concurrent allocations.
   size_t max_alloced_pages_ = 0;
 
-  // We dynamically allocate the SlotMetadata array to avoid allocating
-  // extraneous memory for when num_metadata < kMaxMetadata.
+  // Array of metadata (e.g. stack traces) for allocations.
+  // TODO(vtsyrklevich): Use an std::vector<> here as well.
   std::unique_ptr<AllocatorState::SlotMetadata[]> metadata_;
+
+  // Maps a slot index to a metadata index (or kInvalidMetadataIdx if no such
+  // mapping exists.)
+  std::vector<AllocatorState::MetadataIdx> slot_to_metadata_idx_;
 
   // Required for a singleton to access the constructor.
   friend base::NoDestructor<GuardedPageAllocator>;

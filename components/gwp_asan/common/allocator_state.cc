@@ -25,6 +25,7 @@ AllocatorState::AllocatorState() {}
 AllocatorState::GetMetadataReturnType AllocatorState::GetMetadataForAddress(
     uintptr_t exception_address,
     const SlotMetadata* metadata_arr,
+    const MetadataIdx* slot_to_metadata,
     MetadataIdx* metadata_idx) const {
   CHECK(IsValid());
 
@@ -35,7 +36,7 @@ AllocatorState::GetMetadataReturnType AllocatorState::GetMetadataForAddress(
   if (slot_idx >= total_pages)
     return GetMetadataReturnType::kErrorBadSlot;
 
-  size_t index = slot_to_metadata_idx[slot_idx];
+  size_t index = slot_to_metadata[slot_idx];
   if (index == kInvalidMetadataIdx)
     return GetMetadataReturnType::kGwpAsanCrashWithMissingMetadata;
 
@@ -70,14 +71,8 @@ bool AllocatorState::IsValid() const {
       pages_end_addr - pages_base_addr != page_size * (total_pages * 2 + 1))
     return false;
 
-  if (!metadata_addr)
+  if (!metadata_addr || !slot_to_metadata_addr)
     return false;
-
-  for (size_t i = 0; i < total_pages; i++) {
-    if (slot_to_metadata_idx[i] != kInvalidMetadataIdx &&
-        slot_to_metadata_idx[i] >= num_metadata)
-      return false;
-  }
 
   return true;
 }
