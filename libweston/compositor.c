@@ -481,6 +481,7 @@ weston_surface_state_init(struct weston_surface_state *state)
 	state->acquire_fence_fd = -1;
 
 	state->desired_protection = WESTON_HDCP_DISABLE;
+	state->protection_mode = WESTON_SURFACE_PROTECTION_MODE_RELAXED;
 }
 
 static void
@@ -564,6 +565,8 @@ weston_surface_create(struct weston_compositor *compositor)
 	surface->acquire_fence_fd = -1;
 
 	surface->desired_protection = WESTON_HDCP_DISABLE;
+	surface->current_protection = WESTON_HDCP_DISABLE;
+	surface->protection_mode = WESTON_SURFACE_PROTECTION_MODE_RELAXED;
 
 	return surface;
 }
@@ -3361,6 +3364,22 @@ weston_surface_set_desired_protection(struct weston_surface *surface,
 }
 
 static void
+weston_surface_set_protection_mode(struct weston_surface *surface,
+				   enum weston_surface_protection_mode p_mode)
+{
+	struct content_protection *cp = surface->compositor->content_protection;
+	struct protected_surface *psurface;
+
+	surface->protection_mode = p_mode;
+	wl_list_for_each(psurface, &cp->protected_list, link) {
+		if (!psurface || psurface->surface != surface)
+			continue;
+		weston_protected_surface_send_event(psurface,
+						    surface->current_protection);
+	}
+}
+
+static void
 weston_surface_commit_state(struct weston_surface *surface,
 			    struct weston_surface_state *state)
 {
@@ -3449,6 +3468,11 @@ weston_surface_commit_state(struct weston_surface *surface,
 	wl_list_insert_list(&surface->feedback_list,
 			    &state->feedback_list);
 	wl_list_init(&state->feedback_list);
+
+	/* weston_protected_surface.enforced/relaxed */
+	if (surface->protection_mode != state->protection_mode)
+		weston_surface_set_protection_mode(surface,
+						   state->protection_mode);
 
 	/* weston_protected_surface.set_type */
 	weston_surface_set_desired_protection(surface, state->desired_protection);
@@ -3753,6 +3777,7 @@ weston_subsurface_commit_to_cache(struct weston_subsurface *sub)
 					   &surface->pending.buffer_release_ref);
 	}
 	sub->cached.desired_protection = surface->pending.desired_protection;
+	sub->cached.protection_mode = surface->pending.protection_mode;
 	assert(surface->pending.acquire_fence_fd == -1);
 	assert(surface->pending.buffer_release_ref.buffer_release == NULL);
 	sub->cached.sx += surface->pending.sx;
@@ -7086,6 +7111,8 @@ weston_compositor_create(struct wl_display *display,
 	ec->activate_serial = 1;
 
 	ec->touch_mode = WESTON_TOUCH_MODE_NORMAL;
+
+	ec->content_protection = NULL;
 
 	if (!wl_global_create(ec->wl_display, &wl_compositor_interface, 4,
 			      ec, compositor_bind))
