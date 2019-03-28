@@ -3932,7 +3932,9 @@ GLenum Texture::GetInternalFormatOfBaseLevel() const {
   return level_info ? level_info->internal_format : GL_NONE;
 }
 
-bool Texture::CompatibleWithSamplerUniformType(GLenum type) const {
+bool Texture::CompatibleWithSamplerUniformType(
+    GLenum type,
+    const SamplerState& sampler_state) const {
   enum {
     SAMPLER_INVALID,
     SAMPLER_FLOAT,
@@ -3978,7 +3980,7 @@ bool Texture::CompatibleWithSamplerUniformType(GLenum type) const {
   }
   if ((level_info->format == GL_DEPTH_COMPONENT ||
        level_info->format == GL_DEPTH_STENCIL) &&
-      sampler_state_.compare_mode != GL_NONE) {
+      sampler_state.compare_mode != GL_NONE) {
     // If TEXTURE_COMPARE_MODE is set, then depth textures can only be sampled
     // by shadow samplers.
     return category == SAMPLER_SHADOW;

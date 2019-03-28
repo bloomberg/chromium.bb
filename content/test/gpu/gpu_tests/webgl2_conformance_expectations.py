@@ -103,15 +103,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/rendering/rendering-sampling-feedback-loop.html',
         bug=660844) # WebGL 2.0.1
 
-    # TODO(jdarpinian): This is a temporary failure expectation while the test
-    # is being fixed. But the test needs to be skipped on one platform, and
-    # there's no easy way to mark it as skipped on one and failing on all
-    # others, so skip it everywhere. When removing this, uncomment the
-    # matching skip expectation below in the AMD section.
-    self.Skip('conformance2/uniforms/' +
-        'incompatible-texture-type-for-sampler.html',
-        bug=809237)
-
     # Nvidia bugs fixed in latest driver
     # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
     self.Fail('conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html',
@@ -1344,11 +1335,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/' +
         'generate-mipmap-with-large-base-level.html',
         ['linux', ('amd', 0x6613)], bug=913301)
-    # TODO(jdarpinian): Uncomment after this test is re-enabled on all
-    # platforms when bug 940080 is fixed.
-    # self.Skip('conformance2/uniforms/' +
-    #     'incompatible-texture-type-for-sampler.html',
-    #     ['linux', ('amd', 0x6613)], bug=809237)
+    self.Skip('conformance2/uniforms/' +
+        'incompatible-texture-type-for-sampler.html',
+        ['linux', ('amd', 0x6613)], bug=809237)
 
     ####################
     # Android failures #

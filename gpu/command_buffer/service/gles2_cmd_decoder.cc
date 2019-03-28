@@ -10711,6 +10711,19 @@ bool GLES2DecoderImpl::PrepareTexturesForRender(bool* textures_set,
                 " incompatible texture filtering.");
           }
           continue;
+        } else if (!texture_ref->texture()->CompatibleWithSamplerUniformType(
+                       uniform_info->type, sampler_state)) {
+          LOCAL_SET_GL_ERROR(
+              GL_INVALID_OPERATION, function_name,
+              (std::string("Texture bound to texture unit ") +
+               base::NumberToString(texture_unit_index) +
+               " with internal format " +
+               GLES2Util::GetStringEnum(
+                   texture_ref->texture()->GetInternalFormatOfBaseLevel()) +
+               " is not compatible with sampler type " +
+               GLES2Util::GetStringEnum(uniform_info->type))
+                  .c_str());
+          return false;
         }
 
         if (textarget != GL_TEXTURE_CUBE_MAP) {
