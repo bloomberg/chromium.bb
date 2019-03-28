@@ -13,6 +13,10 @@
 #include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_transmission_encoding_info_handler.h"
 
+namespace blink {
+struct WebVideoConfiguration;
+}  // namespace blink
+
 namespace webrtc {
 class VideoEncoderFactory;
 }  // namespace webrtc
@@ -24,9 +28,11 @@ class CONTENT_EXPORT TransmissionEncodingInfoHandler final
     : public blink::WebTransmissionEncodingInfoHandler {
  public:
   TransmissionEncodingInfoHandler();
-  // Constructor for unittest to inject VideoEncodeFactory instance.
+  // Constructor for unittest to inject VideoEncodeFactory instance and
+  // |cpu_hd_smooth|.
   explicit TransmissionEncodingInfoHandler(
-      std::unique_ptr<webrtc::VideoEncoderFactory> video_encoder_factory);
+      std::unique_ptr<webrtc::VideoEncoderFactory> video_encoder_factory,
+      bool cpu_hd_smooth);
   ~TransmissionEncodingInfoHandler() override;
 
   // blink::WebTransmissionEncodingInfoHandler implementation.
@@ -41,12 +47,19 @@ class CONTENT_EXPORT TransmissionEncodingInfoHandler final
   std::string ExtractSupportedCodecFromMimeType(
       const std::string& mime_type) const;
 
+  // True if it can encode |configuration| smoothly via CPU.
+  bool CanCpuEncodeSmoothly(
+      const blink::WebVideoConfiguration& configuration) const;
+
   // List of supported video codecs.
   base::flat_set<std::string> supported_video_codecs_;
   // List of hardware accelerated codecs.
   base::flat_set<std::string> hardware_accelerated_video_codecs_;
   // List of supported audio codecs.
   base::flat_set<std::string> supported_audio_codecs_;
+
+  // True if CPU is capable to encode 720p video smoothly.
+  bool cpu_hd_smooth_;
 
   DISALLOW_COPY_AND_ASSIGN(TransmissionEncodingInfoHandler);
 };
