@@ -4,7 +4,10 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
 
+#include <algorithm>
 #include <memory>
+#include <string>
+
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
@@ -747,7 +750,7 @@ void ResourceLoadScheduler::ShowConsoleMessageIfNeeded() {
       "Some resource load requests were throttled while the tab was in "
       "background, and no request was sent from the queue in the last 1 "
       "minute. This means previously requested in-flight requests haven't "
-      "received any response from servers. See"
+      "received any response from servers. See "
       "https://www.chromestatus.com/feature/5527160148197376 for more details");
   is_console_info_shown_ = true;
 }
