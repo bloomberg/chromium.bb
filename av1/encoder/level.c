@@ -232,7 +232,8 @@ typedef enum {
   DECODE_RATE_TOO_HIGH,
   CR_TOO_SMALL,
 
-  TARGET_LEVEL_FAIL_IDS
+  TARGET_LEVEL_FAIL_IDS,
+  TARGET_LEVEL_OK,
 } TARGET_LEVEL_FAIL_ID;
 
 static const char *level_fail_messages[TARGET_LEVEL_FAIL_IDS] = {
@@ -260,21 +261,13 @@ static double get_min_cr(const AV1LevelSpec *const level_spec, int tier,
   return AOMMAX(min_cr_basis * speed_adj, 0.8);
 }
 
-static void check_level_constraints(AV1_COMP *cpi, int operating_point_idx,
-                                    const AV1LevelSpec *const level_spec,
-                                    const AV1LevelStats *const level_stats) {
-  const AV1_LEVEL target_seq_level_idx =
-      cpi->target_seq_level_idx[operating_point_idx];
-  if (target_seq_level_idx >= SEQ_LEVELS) return;
-  TARGET_LEVEL_FAIL_ID fail_id = TARGET_LEVEL_FAIL_IDS;
-  const AV1LevelSpec *const target_level_spec =
-      av1_level_defs + target_seq_level_idx;
-  const SequenceHeader *const seq_params = &cpi->common.seq_params;
-  const double min_cr =
-      get_min_cr(target_level_spec, seq_params->tier[operating_point_idx],
-                 seq_params->still_picture, level_spec->max_decode_rate);
-  // Check level conformance
-  // TODO(kyslov@) implement all constraints
+static TARGET_LEVEL_FAIL_ID check_level_constraints(
+    const AV1LevelSpec *const target_level_spec,
+    const AV1LevelSpec *const level_spec,
+    const AV1LevelStats *const level_stats, int tier, int is_still_picture) {
+  const double min_cr = get_min_cr(target_level_spec, tier, is_still_picture,
+                                   level_spec->max_decode_rate);
+  TARGET_LEVEL_FAIL_ID fail_id = TARGET_LEVEL_OK;
 
   do {
     if (level_spec->max_picture_size > target_level_spec->max_picture_size) {
@@ -343,15 +336,7 @@ static void check_level_constraints(AV1_COMP *cpi, int operating_point_idx,
     }
   } while (0);
 
-  if (fail_id != TARGET_LEVEL_FAIL_IDS) {
-    AV1_COMMON *const cm = &cpi->common;
-    const int target_level_major = 2 + (target_seq_level_idx >> 2);
-    const int target_level_minor = target_seq_level_idx & 3;
-    aom_internal_error(&cm->error, AOM_CODEC_ERROR,
-                       "Failed to encode to the target level %d_%d. %s",
-                       target_level_major, target_level_minor,
-                       level_fail_messages[fail_id]);
-  }
+  return fail_id;
 }
 
 static INLINE int is_in_operating_point(int operating_point,
@@ -482,7 +467,7 @@ static void scan_past_frames(const FrameWindowBuffer *const buffer,
 
 void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
                            int64_t ts_end) {
-  const AV1_COMMON *const cm = &cpi->common;
+  AV1_COMMON *const cm = &cpi->common;
   const int upscaled_width = cm->superres_upscaled_width;
   const int height = cm->height;
   const int tile_cols = cm->tile_cols;
@@ -508,10 +493,10 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
   get_tile_stats(cpi, &max_tile_size, &min_cropped_tile_width,
                  &min_cropped_tile_height, &tile_width_is_valid);
 
+  const SequenceHeader *const seq_params = &cm->seq_params;
+  const BITSTREAM_PROFILE profile = seq_params->profile;
   const int pic_size_profile_factor =
-      cm->seq_params.profile == PROFILE_0
-          ? 15
-          : (cm->seq_params.profile == PROFILE_1 ? 30 : 36);
+      profile == PROFILE_0 ? 15 : (profile == PROFILE_1 ? 30 : 36);
   const size_t frame_compressed_size = (size > 129 ? size - 128 : 1);
   const size_t frame_uncompressed_size =
       (luma_pic_size * pic_size_profile_factor) >> 3;
@@ -523,14 +508,14 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
       (cpi->last_end_time_stamp_seen - cpi->first_time_stamp_ever) /
       (double)TICKS_PER_SEC;
 
-  const SequenceHeader *const seq = &cm->seq_params;
   const int temporal_layer_id = cm->temporal_layer_id;
   const int spatial_layer_id = cm->spatial_layer_id;
+  const int is_still_picture = seq_params->still_picture;
   // update level_stats
   // TODO(kyslov@) fix the implementation according to buffer model
-  for (int i = 0; i < seq->operating_points_cnt_minus_1 + 1; ++i) {
-    if (!is_in_operating_point(seq->operating_point_idc[i], temporal_layer_id,
-                               spatial_layer_id)) {
+  for (int i = 0; i < seq_params->operating_points_cnt_minus_1 + 1; ++i) {
+    if (!is_in_operating_point(seq_params->operating_point_idc[i],
+                               temporal_layer_id, spatial_layer_id)) {
       continue;
     }
 
@@ -563,7 +548,23 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
       scan_past_frames(buffer, encoded_frames_in_last_second, level_spec);
     }
 
-    check_level_constraints(cpi, i, level_spec, level_stats);
+    // Check whether target level is met.
+    const AV1_LEVEL target_seq_level_idx = cpi->target_seq_level_idx[i];
+    if (target_seq_level_idx < SEQ_LEVELS) {
+      const AV1LevelSpec *const target_level_spec =
+          av1_level_defs + target_seq_level_idx;
+      const int tier = seq_params->tier[i];
+      const TARGET_LEVEL_FAIL_ID fail_id = check_level_constraints(
+          target_level_spec, level_spec, level_stats, tier, is_still_picture);
+      if (fail_id != TARGET_LEVEL_OK) {
+        const int target_level_major = 2 + (target_seq_level_idx >> 2);
+        const int target_level_minor = target_seq_level_idx & 3;
+        aom_internal_error(&cm->error, AOM_CODEC_ERROR,
+                           "Failed to encode to the target level %d_%d. %s",
+                           target_level_major, target_level_minor,
+                           level_fail_messages[fail_id]);
+      }
+    }
   }
 }
 
