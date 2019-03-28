@@ -577,7 +577,6 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
   content_length_ = response.head.content_length;
   http_response_code_ =
       response.head.headers ? response.head.headers->response_code() : 0;
-  http_method_ = request.method();
   request_initiator_site_lock_ = request_initiator_site_lock;
 
   should_block_based_on_headers_ =
@@ -896,17 +895,6 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::ShouldReportBlockedResponse()
   // associated with error responses (e.g. it is quite common to serve a
   // text/html 404 error page for an <img> tag pointing to a wrong URL).
   if (400 <= http_response_code() && http_response_code() <= 599)
-    return false;
-
-  // Requests using HTTP methods other than GET (e.g. OPTIONS used for CORS
-  // preflight or POST used for form submissions) do not need to report warning
-  // messages about CORB, because:
-  // - For XHR/fetch the *CORS* message should be sufficient
-  // - If no-cors mode was forced for XHR/fetch, then the response is opaque
-  //   and therefore CORB warning message is not needed
-  // - Other subresource requests (e.g. for img or script) tag should
-  //   only use the GET method.
-  if (!base::EqualsCaseInsensitiveASCII(http_method_, "GET"))
     return false;
 
   return true;
