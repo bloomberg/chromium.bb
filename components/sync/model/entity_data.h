@@ -101,7 +101,7 @@ struct EntityData {
 
   // Makes a copy of EntityData and updates its id to |new_id|. This is needed
   // when entity id is updated with commit response while EntityData for next
-  // local change is cached in ProcessorEntityTracker.
+  // local change is cached in ProcessorEntity.
   EntityDataPtr UpdateId(const std::string& new_id) const WARN_UNUSED_RESULT;
 
   // Makes a copy of EntityData and updates its client tag hash to

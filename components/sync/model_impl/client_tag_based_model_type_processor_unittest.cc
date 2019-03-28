@@ -271,8 +271,7 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
     return;
   }
 
-  ProcessorEntityTracker* GetEntityForStorageKey(
-      const std::string& storage_key) {
+  ProcessorEntity* GetEntityForStorageKey(const std::string& storage_key) {
     return type_processor()->GetEntityForStorageKey(storage_key);
   }
 
@@ -1949,9 +1948,9 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   worker()->VerifyNthPendingCommit(1, {kHash1}, {specifics2});
 }
 
-// Tests that UpdateStorageKey propagates storage key to ProcessorEntityTracker
+// Tests that UpdateStorageKey propagates storage key to ProcessorEntity
 // and updates corresponding entity's metadata in MetadataChangeList, and
-// UntrackEntity will remove corresponding ProcessorEntityTracker and do not add
+// UntrackEntity will remove corresponding ProcessorEntity and do not add
 // any entity's metadata into MetadataChangeList.
 TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldUpdateStorageKey) {
   // Setup bridge to not support calls to GetStorageKey. This will cause
@@ -2010,7 +2009,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 }
 
 // Tests that UntrackEntity won't propagate storage key to
-// ProcessorEntityTracker, and no entity's metadata are added into
+// ProcessorEntity, and no entity's metadata are added into
 // MetadataChangeList.
 TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldUntrackEntity) {
   // Setup bridge to not support calls to GetStorageKey. This will cause
@@ -2026,7 +2025,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldUntrackEntity) {
   EXPECT_EQ(1, bridge()->merge_call_count());
   EXPECT_EQ(0U, ProcessorEntityCount());
   // Metadata should not be written under kUntrackKey1. This means that
-  // UntrackEntity was called and corresponding ProcessorEntityTracker is
+  // UntrackEntity was called and corresponding ProcessorEntity is
   // removed and no storage key got propagated to MetadataChangeList.
   EXPECT_FALSE(db()->HasMetadata(kHash1));
   EXPECT_EQ(0U, db()->metadata_count());
@@ -2034,7 +2033,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldUntrackEntity) {
 }
 
 // Tests that UntrackEntityForStorage won't propagate storage key to
-// ProcessorEntityTracker, and no entity's metadata are added into
+// ProcessorEntity, and no entity's metadata are added into
 // MetadataChangeList.
 TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldUntrackEntityForStorageKey) {
   InitializeToReadyState();

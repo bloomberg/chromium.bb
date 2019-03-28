@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/model_impl/processor_entity_tracker.h"
+#include "components/sync/model_impl/processor_entity.h"
 
 #include "base/base64.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
@@ -31,7 +32,7 @@ void HashSpecifics(const sync_pb::EntitySpecifics& specifics,
 
 }  // namespace
 
-std::unique_ptr<ProcessorEntityTracker> ProcessorEntityTracker::CreateNew(
+std::unique_ptr<ProcessorEntity> ProcessorEntity::CreateNew(
     const std::string& storage_key,
     const std::string& client_tag_hash,
     const std::string& id,
@@ -46,21 +47,18 @@ std::unique_ptr<ProcessorEntityTracker> ProcessorEntityTracker::CreateNew(
   metadata.set_server_version(kUncommittedVersion);
   metadata.set_creation_time(TimeToProtoTime(creation_time));
 
-  return std::unique_ptr<ProcessorEntityTracker>(
-      new ProcessorEntityTracker(storage_key, &metadata));
+  return base::WrapUnique(new ProcessorEntity(storage_key, &metadata));
 }
 
-std::unique_ptr<ProcessorEntityTracker>
-ProcessorEntityTracker::CreateFromMetadata(const std::string& storage_key,
-                                           sync_pb::EntityMetadata* metadata) {
-  DCHECK(!storage_key.empty());
-  return std::unique_ptr<ProcessorEntityTracker>(
-      new ProcessorEntityTracker(storage_key, metadata));
-}
-
-ProcessorEntityTracker::ProcessorEntityTracker(
+std::unique_ptr<ProcessorEntity> ProcessorEntity::CreateFromMetadata(
     const std::string& storage_key,
-    sync_pb::EntityMetadata* metadata)
+    sync_pb::EntityMetadata* metadata) {
+  DCHECK(!storage_key.empty());
+  return base::WrapUnique(new ProcessorEntity(storage_key, metadata));
+}
+
+ProcessorEntity::ProcessorEntity(const std::string& storage_key,
+                                 sync_pb::EntityMetadata* metadata)
     : storage_key_(storage_key),
       commit_requested_sequence_number_(metadata->acked_sequence_number()) {
   DCHECK(metadata->has_client_tag_hash());
@@ -68,15 +66,15 @@ ProcessorEntityTracker::ProcessorEntityTracker(
   metadata_.Swap(metadata);
 }
 
-ProcessorEntityTracker::~ProcessorEntityTracker() {}
+ProcessorEntity::~ProcessorEntity() {}
 
-void ProcessorEntityTracker::SetStorageKey(const std::string& storage_key) {
+void ProcessorEntity::SetStorageKey(const std::string& storage_key) {
   DCHECK(storage_key_.empty());
   DCHECK(!storage_key.empty());
   storage_key_ = storage_key;
 }
 
-void ProcessorEntityTracker::SetCommitData(EntityData* data) {
+void ProcessorEntity::SetCommitData(EntityData* data) {
   DCHECK(data);
   // Update data's fields from metadata.
   data->client_tag_hash = metadata_.client_tag_hash();
@@ -89,17 +87,17 @@ void ProcessorEntityTracker::SetCommitData(EntityData* data) {
   CacheCommitData(data->PassToPtr());
 }
 
-void ProcessorEntityTracker::CacheCommitData(const EntityDataPtr& data_ptr) {
+void ProcessorEntity::CacheCommitData(const EntityDataPtr& data_ptr) {
   DCHECK(RequiresCommitData());
   commit_data_ = data_ptr;
   DCHECK(HasCommitData());
 }
 
-bool ProcessorEntityTracker::HasCommitData() const {
+bool ProcessorEntity::HasCommitData() const {
   return !commit_data_->client_tag_hash.empty();
 }
 
-bool ProcessorEntityTracker::MatchesData(const EntityData& data) const {
+bool ProcessorEntity::MatchesData(const EntityData& data) const {
   if (metadata_.is_deleted())
     return data.is_deleted();
   if (data.is_deleted())
@@ -107,7 +105,7 @@ bool ProcessorEntityTracker::MatchesData(const EntityData& data) const {
   return MatchesSpecificsHash(data.specifics);
 }
 
-bool ProcessorEntityTracker::MatchesBaseData(const EntityData& data) const {
+bool ProcessorEntity::MatchesBaseData(const EntityData& data) const {
   DCHECK(IsUnsynced());
   if (data.is_deleted() || metadata_.base_specifics_hash().empty()) {
     return false;
@@ -117,28 +115,28 @@ bool ProcessorEntityTracker::MatchesBaseData(const EntityData& data) const {
   return hash == metadata_.base_specifics_hash();
 }
 
-bool ProcessorEntityTracker::IsUnsynced() const {
+bool ProcessorEntity::IsUnsynced() const {
   return metadata_.sequence_number() > metadata_.acked_sequence_number();
 }
 
-bool ProcessorEntityTracker::RequiresCommitRequest() const {
+bool ProcessorEntity::RequiresCommitRequest() const {
   return metadata_.sequence_number() > commit_requested_sequence_number_;
 }
 
-bool ProcessorEntityTracker::RequiresCommitData() const {
+bool ProcessorEntity::RequiresCommitData() const {
   return RequiresCommitRequest() && !HasCommitData() && !metadata_.is_deleted();
 }
 
-bool ProcessorEntityTracker::CanClearMetadata() const {
+bool ProcessorEntity::CanClearMetadata() const {
   return metadata_.is_deleted() && !IsUnsynced();
 }
 
-bool ProcessorEntityTracker::UpdateIsReflection(int64_t update_version) const {
+bool ProcessorEntity::UpdateIsReflection(int64_t update_version) const {
   return metadata_.server_version() >= update_version;
 }
 
-void ProcessorEntityTracker::RecordEntityUpdateLatency(int64_t update_version,
-                                                       const ModelType& type) {
+void ProcessorEntity::RecordEntityUpdateLatency(int64_t update_version,
+                                                const ModelType& type) {
   auto first_greater =
       unsynced_time_per_committed_server_version_.upper_bound(update_version);
   if (first_greater == unsynced_time_per_committed_server_version_.begin()) {
@@ -159,8 +157,7 @@ void ProcessorEntityTracker::RecordEntityUpdateLatency(int64_t update_version,
       unsynced_time_per_committed_server_version_.begin(), first_greater);
 }
 
-void ProcessorEntityTracker::RecordIgnoredUpdate(
-    const UpdateResponseData& update) {
+void ProcessorEntity::RecordIgnoredUpdate(const UpdateResponseData& update) {
   DCHECK(metadata_.server_id().empty() ||
          metadata_.server_id() == update.entity->id);
   metadata_.set_server_id(update.entity->id);
@@ -176,8 +173,7 @@ void ProcessorEntityTracker::RecordIgnoredUpdate(
   }
 }
 
-void ProcessorEntityTracker::RecordAcceptedUpdate(
-    const UpdateResponseData& update) {
+void ProcessorEntity::RecordAcceptedUpdate(const UpdateResponseData& update) {
   DCHECK(!IsUnsynced());
   RecordIgnoredUpdate(update);
   metadata_.set_is_deleted(update.entity->is_deleted());
@@ -186,8 +182,7 @@ void ProcessorEntityTracker::RecordAcceptedUpdate(
   UpdateSpecificsHash(update.entity->specifics);
 }
 
-void ProcessorEntityTracker::RecordForcedUpdate(
-    const UpdateResponseData& update) {
+void ProcessorEntity::RecordForcedUpdate(const UpdateResponseData& update) {
   DCHECK(IsUnsynced());
   // There was a conflict and the server just won it. Explicitly ack all
   // pending commits so they are never enqueued again.
@@ -196,7 +191,7 @@ void ProcessorEntityTracker::RecordForcedUpdate(
   RecordAcceptedUpdate(update);
 }
 
-void ProcessorEntityTracker::MakeLocalChange(std::unique_ptr<EntityData> data) {
+void ProcessorEntity::MakeLocalChange(std::unique_ptr<EntityData> data) {
   DCHECK(!metadata_.client_tag_hash().empty());
 
   // Update metadata fields from updated data.
@@ -218,7 +213,7 @@ void ProcessorEntityTracker::MakeLocalChange(std::unique_ptr<EntityData> data) {
   SetCommitData(data.get());
 }
 
-bool ProcessorEntityTracker::Delete() {
+bool ProcessorEntity::Delete() {
   IncrementSequenceNumber(base::Time::Now());
   metadata_.set_modification_time(TimeToProtoTime(base::Time::Now()));
   metadata_.set_is_deleted(true);
@@ -240,8 +235,7 @@ bool ProcessorEntityTracker::Delete() {
           metadata_.acked_sequence_number());
 }
 
-void ProcessorEntityTracker::InitializeCommitRequestData(
-    CommitRequestData* request) {
+void ProcessorEntity::InitializeCommitRequestData(CommitRequestData* request) {
   if (!metadata_.is_deleted()) {
     DCHECK(HasCommitData());
     DCHECK_EQ(commit_data_->client_tag_hash, metadata_.client_tag_hash());
@@ -265,9 +259,8 @@ void ProcessorEntityTracker::InitializeCommitRequestData(
   commit_requested_sequence_number_ = metadata_.sequence_number();
 }
 
-void ProcessorEntityTracker::ReceiveCommitResponse(
-    const CommitResponseData& data,
-    bool commit_only) {
+void ProcessorEntity::ReceiveCommitResponse(const CommitResponseData& data,
+                                            bool commit_only) {
   DCHECK_EQ(metadata_.client_tag_hash(), data.client_tag_hash);
   DCHECK_GT(data.sequence_number, metadata_.acked_sequence_number());
   // Version is not valid for commit only types, as it's stripped before being
@@ -302,14 +295,13 @@ void ProcessorEntityTracker::ReceiveCommitResponse(
   }
 }
 
-void ProcessorEntityTracker::ClearTransientSyncState() {
+void ProcessorEntity::ClearTransientSyncState() {
   // If we have any unacknowledged commit requests outstanding, they've been
   // dropped and we should forget about them.
   commit_requested_sequence_number_ = metadata_.acked_sequence_number();
 }
 
-void ProcessorEntityTracker::IncrementSequenceNumber(
-    base::Time modification_time) {
+void ProcessorEntity::IncrementSequenceNumber(base::Time modification_time) {
   DCHECK(metadata_.has_sequence_number());
   if (!IsUnsynced()) {
     // Update the base specifics hash if this entity wasn't already out of sync.
@@ -320,7 +312,7 @@ void ProcessorEntityTracker::IncrementSequenceNumber(
   DCHECK(IsUnsynced());
 }
 
-size_t ProcessorEntityTracker::EstimateMemoryUsage() const {
+size_t ProcessorEntity::EstimateMemoryUsage() const {
   using base::trace_event::EstimateMemoryUsage;
   size_t memory_usage = 0;
   memory_usage += EstimateMemoryUsage(storage_key_);
@@ -331,7 +323,7 @@ size_t ProcessorEntityTracker::EstimateMemoryUsage() const {
   return memory_usage;
 }
 
-bool ProcessorEntityTracker::MatchesSpecificsHash(
+bool ProcessorEntity::MatchesSpecificsHash(
     const sync_pb::EntitySpecifics& specifics) const {
   DCHECK(!metadata_.is_deleted());
   DCHECK_GT(specifics.ByteSize(), 0);
@@ -340,7 +332,7 @@ bool ProcessorEntityTracker::MatchesSpecificsHash(
   return hash == metadata_.specifics_hash();
 }
 
-void ProcessorEntityTracker::UpdateSpecificsHash(
+void ProcessorEntity::UpdateSpecificsHash(
     const sync_pb::EntitySpecifics& specifics) {
   if (specifics.ByteSize() > 0) {
     HashSpecifics(specifics, metadata_.mutable_specifics_hash());
