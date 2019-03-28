@@ -172,8 +172,8 @@ void FakeDB<P, T>::UpdateEntries(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     std::unique_ptr<std::vector<std::string>> keys_to_remove,
     Callbacks::UpdateCallback callback) {
-  for (const auto& pair : *entries_to_save)
-    (*db_)[pair.first] = pair.second;
+  for (auto& pair : *entries_to_save)
+    (*db_)[pair.first] = std::move(pair.second);
 
   for (const auto& key : *keys_to_remove)
     db_->erase(key);

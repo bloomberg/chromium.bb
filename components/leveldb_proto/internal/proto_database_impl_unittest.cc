@@ -27,6 +27,11 @@ const std::string kDefaultClientName2 = "client_2";
 // Example struct defined by clients that can be used instead of protos.
 struct ClientStruct {
  public:
+  ClientStruct() {}
+  ClientStruct(ClientStruct&& other) {
+    id_ = std::move(other.id_);
+    data_ = std::move(other.data_);
+  }
   ~ClientStruct() = default;
 
   // The methods below are convenience methods to have a similar API as protocol
@@ -39,6 +44,9 @@ struct ClientStruct {
 
   std::string id_;
   std::string data_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ClientStruct);
 };
 
 void CreateData(const std::string& key,
@@ -296,7 +304,7 @@ class ProtoDatabaseImplTest : public testing::Test {
     for (const auto& key : *entry_keys) {
       T data;
       CreateData(key, key, &data);
-      data_set->emplace_back(std::make_pair(key, data));
+      data_set->emplace_back(key, std::move(data));
     }
 
     base::RunLoop data_loop;
