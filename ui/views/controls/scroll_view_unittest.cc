@@ -43,19 +43,19 @@ class ScrollViewTestApi {
   explicit ScrollViewTestApi(ScrollView* scroll_view)
       : scroll_view_(scroll_view) {}
 
-  BaseScrollBar* GetBaseScrollBar(ScrollBarOrientation orientation) {
+  ScrollBar* GetScrollBar(ScrollBarOrientation orientation) {
     ScrollBar* scroll_bar = orientation == VERTICAL ? scroll_view_->vert_sb_
                                                     : scroll_view_->horiz_sb_;
-    return static_cast<BaseScrollBar*>(scroll_bar);
+    return static_cast<ScrollBar*>(scroll_bar);
   }
 
   const base::OneShotTimer& GetScrollBarTimer(
       ScrollBarOrientation orientation) {
-    return GetBaseScrollBar(orientation)->repeater_.timer_for_testing();
+    return GetScrollBar(orientation)->repeater_.timer_for_testing();
   }
 
   BaseScrollBarThumb* GetScrollBarThumb(ScrollBarOrientation orientation) {
-    return GetBaseScrollBar(orientation)->thumb_;
+    return GetScrollBar(orientation)->thumb_;
   }
 
   gfx::Point IntegralViewOffset() {
@@ -66,7 +66,7 @@ class ScrollViewTestApi {
 
   base::RetainingOneShotTimer* GetScrollBarHideTimer(
       ScrollBarOrientation orientation) {
-    return BaseScrollBar::GetHideTimerForTest(GetBaseScrollBar(orientation));
+    return ScrollBar::GetHideTimerForTesting(GetScrollBar(orientation));
   }
 
   View* corner_view() { return scroll_view_->corner_view_; }
@@ -672,13 +672,13 @@ TEST_F(ScrollViewTest, HeaderScrollsWithContent) {
 
   // Scroll the horizontal scrollbar.
   ASSERT_TRUE(scroll_view_->horizontal_scroll_bar());
-  scroll_view_->ScrollToPosition(test_api.GetBaseScrollBar(HORIZONTAL), 1);
+  scroll_view_->ScrollToPosition(test_api.GetScrollBar(HORIZONTAL), 1);
   EXPECT_EQ("-1,0", test_api.IntegralViewOffset().ToString());
   EXPECT_EQ("-1,0", header->origin().ToString());
 
   // Scrolling the vertical scrollbar shouldn't effect the header.
   ASSERT_TRUE(scroll_view_->vertical_scroll_bar());
-  scroll_view_->ScrollToPosition(test_api.GetBaseScrollBar(VERTICAL), 1);
+  scroll_view_->ScrollToPosition(test_api.GetScrollBar(VERTICAL), 1);
   EXPECT_EQ("-1,-1", test_api.IntegralViewOffset().ToString());
   EXPECT_EQ("-1,0", header->origin().ToString());
 }
@@ -693,7 +693,7 @@ TEST_F(ScrollViewTest, ScrollToPositionUpdatesScrollBar) {
   // should be updated (i.e. it should be non-zero).
   contents->SetBounds(0, 0, 400, 50);
   scroll_view_->Layout();
-  auto* scroll_bar = test_api.GetBaseScrollBar(HORIZONTAL);
+  auto* scroll_bar = test_api.GetScrollBar(HORIZONTAL);
   ASSERT_TRUE(scroll_bar);
   EXPECT_TRUE(scroll_bar->visible());
   EXPECT_EQ(0, scroll_bar->GetPosition());
@@ -703,7 +703,7 @@ TEST_F(ScrollViewTest, ScrollToPositionUpdatesScrollBar) {
   // Scroll the vertical scrollbar.
   contents->SetBounds(0, 0, 50, 400);
   scroll_view_->Layout();
-  scroll_bar = test_api.GetBaseScrollBar(VERTICAL);
+  scroll_bar = test_api.GetScrollBar(VERTICAL);
   ASSERT_TRUE(scroll_bar);
   EXPECT_TRUE(scroll_bar->visible());
   EXPECT_EQ(0, scroll_bar->GetPosition());
@@ -1014,8 +1014,8 @@ TEST_F(WidgetScrollViewTest, ScrollersOnRest) {
   ScrollView* scroll_view = AddScrollViewWithContentSize(
       gfx::Size(kDefaultWidth * 5, kDefaultHeight * 5));
   ScrollViewTestApi test_api(scroll_view);
-  BaseScrollBar* bar[]{test_api.GetBaseScrollBar(HORIZONTAL),
-                       test_api.GetBaseScrollBar(VERTICAL)};
+  ScrollBar* bar[]{test_api.GetScrollBar(HORIZONTAL),
+                   test_api.GetScrollBar(VERTICAL)};
   base::RetainingOneShotTimer* hide_timer[] = {
       test_api.GetScrollBarHideTimer(HORIZONTAL),
       test_api.GetScrollBarHideTimer(VERTICAL)};
@@ -1132,7 +1132,7 @@ TEST_F(ScrollViewTest, ContentScrollNotResetOnLayout) {
   EXPECT_EQ(gfx::Size(300, 150), scroll_view_->size());
 
   // Scroll down.
-  scroll_view_->ScrollToPosition(test_api.GetBaseScrollBar(VERTICAL), 25);
+  scroll_view_->ScrollToPosition(test_api.GetScrollBar(VERTICAL), 25);
   EXPECT_EQ(25, test_api.CurrentOffset().y());
   // Call Layout; no change to scroll position.
   scroll_view_->Layout();
@@ -1164,9 +1164,8 @@ TEST_F(ScrollViewTest, VerticalOverflowIndicators) {
   scroll_view_->ClipHeightTo(0, kMaxHeight);
 
   // Make sure the size is set such that no horizontal scrollbar gets shown.
-  scroll_view_->SetSize(
-      gfx::Size(kWidth + test_api.GetBaseScrollBar(VERTICAL)->GetThickness(),
-                kMaxHeight));
+  scroll_view_->SetSize(gfx::Size(
+      kWidth + test_api.GetScrollBar(VERTICAL)->GetThickness(), kMaxHeight));
 
   // Make sure the initial origin is 0,0
   EXPECT_EQ(gfx::ScrollOffset(0, 0), test_api.CurrentOffset());
@@ -1188,7 +1187,7 @@ TEST_F(ScrollViewTest, VerticalOverflowIndicators) {
 
   // Now scroll the view to someplace in the middle of the scrollable region.
   int offset = kMaxHeight * 2;
-  scroll_view_->ScrollToPosition(test_api.GetBaseScrollBar(VERTICAL), offset);
+  scroll_view_->ScrollToPosition(test_api.GetScrollBar(VERTICAL), offset);
   EXPECT_EQ(gfx::ScrollOffset(0, offset), test_api.CurrentOffset());
 
   // At this point, both overflow indicators on the top and bottom should be
@@ -1202,7 +1201,7 @@ TEST_F(ScrollViewTest, VerticalOverflowIndicators) {
 
   // Finally scroll the view to end of the scrollable region.
   offset = kMaxHeight * 4;
-  scroll_view_->ScrollToPosition(test_api.GetBaseScrollBar(VERTICAL), offset);
+  scroll_view_->ScrollToPosition(test_api.GetScrollBar(VERTICAL), offset);
   EXPECT_EQ(gfx::ScrollOffset(0, offset), test_api.CurrentOffset());
 
   // The overflow indicator on the bottom should not be visible.
@@ -1228,7 +1227,7 @@ TEST_F(ScrollViewTest, HorizontalOverflowIndicators) {
 
   // Make sure the size is set such that no vertical scrollbar gets shown.
   scroll_view_->SetSize(gfx::Size(
-      kWidth, kHeight + test_api.GetBaseScrollBar(HORIZONTAL)->GetThickness()));
+      kWidth, kHeight + test_api.GetScrollBar(HORIZONTAL)->GetThickness()));
 
   contents->SetBounds(0, 0, kWidth * 5, kHeight);
 
@@ -1252,7 +1251,7 @@ TEST_F(ScrollViewTest, HorizontalOverflowIndicators) {
 
   // Now scroll the view to someplace in the middle of the scrollable region.
   int offset = kWidth * 2;
-  scroll_view_->ScrollToPosition(test_api.GetBaseScrollBar(HORIZONTAL), offset);
+  scroll_view_->ScrollToPosition(test_api.GetScrollBar(HORIZONTAL), offset);
   EXPECT_EQ(gfx::ScrollOffset(offset, 0), test_api.CurrentOffset());
 
   // At this point, both overflow indicators on the left and right should be
@@ -1266,7 +1265,7 @@ TEST_F(ScrollViewTest, HorizontalOverflowIndicators) {
 
   // Finally scroll the view to end of the scrollable region.
   offset = kWidth * 4;
-  scroll_view_->ScrollToPosition(test_api.GetBaseScrollBar(HORIZONTAL), offset);
+  scroll_view_->ScrollToPosition(test_api.GetScrollBar(HORIZONTAL), offset);
   EXPECT_EQ(gfx::ScrollOffset(offset, 0), test_api.CurrentOffset());
 
   // The overflow indicator on the right should not be visible.
@@ -1313,8 +1312,7 @@ TEST_F(ScrollViewTest, HorizontalVerticalOverflowIndicators) {
   // Now scroll the view to someplace in the middle of the horizontal scrollable
   // region.
   int offset_x = kWidth * 2;
-  scroll_view_->ScrollToPosition(test_api.GetBaseScrollBar(HORIZONTAL),
-                                 offset_x);
+  scroll_view_->ScrollToPosition(test_api.GetScrollBar(HORIZONTAL), offset_x);
   EXPECT_EQ(gfx::ScrollOffset(offset_x, 0), test_api.CurrentOffset());
 
   // Since there is a vertical scrollbar only the overflow indicator on the left
@@ -1328,8 +1326,7 @@ TEST_F(ScrollViewTest, HorizontalVerticalOverflowIndicators) {
 
   // Next, scroll the view to end of the scrollable region.
   offset_x = kWidth * 4;
-  scroll_view_->ScrollToPosition(test_api.GetBaseScrollBar(HORIZONTAL),
-                                 offset_x);
+  scroll_view_->ScrollToPosition(test_api.GetScrollBar(HORIZONTAL), offset_x);
   EXPECT_EQ(gfx::ScrollOffset(offset_x, 0), test_api.CurrentOffset());
 
   // The overflow indicator on the right should still not be visible.
@@ -1345,7 +1342,7 @@ TEST_F(ScrollViewTest, HorizontalVerticalOverflowIndicators) {
   EXPECT_FALSE(test_api.more_content_bottom()->visible());
 
   // Return the view back to the horizontal origin.
-  scroll_view_->ScrollToPosition(test_api.GetBaseScrollBar(HORIZONTAL), 0);
+  scroll_view_->ScrollToPosition(test_api.GetScrollBar(HORIZONTAL), 0);
   EXPECT_EQ(gfx::ScrollOffset(0, 0), test_api.CurrentOffset());
 
   // The overflow indicators on the right and bottom should not be visible since
@@ -1361,7 +1358,7 @@ TEST_F(ScrollViewTest, HorizontalVerticalOverflowIndicators) {
   // Now scroll the view to somplace in the middle of the vertical scrollable
   // region.
   int offset_y = kHeight * 2;
-  scroll_view_->ScrollToPosition(test_api.GetBaseScrollBar(VERTICAL), offset_y);
+  scroll_view_->ScrollToPosition(test_api.GetScrollBar(VERTICAL), offset_y);
   EXPECT_EQ(gfx::ScrollOffset(0, offset_y), test_api.CurrentOffset());
 
   // Similar to the above, since there is a horizontal scrollbar only the
@@ -1376,7 +1373,7 @@ TEST_F(ScrollViewTest, HorizontalVerticalOverflowIndicators) {
 
   // Finally, for the vertical test scroll the region all the way to the end.
   offset_y = kHeight * 4;
-  scroll_view_->ScrollToPosition(test_api.GetBaseScrollBar(VERTICAL), offset_y);
+  scroll_view_->ScrollToPosition(test_api.GetScrollBar(VERTICAL), offset_y);
   EXPECT_EQ(gfx::ScrollOffset(0, offset_y), test_api.CurrentOffset());
 
   // The overflow indicator on the bottom should still not be visible.
@@ -1394,8 +1391,7 @@ TEST_F(ScrollViewTest, HorizontalVerticalOverflowIndicators) {
   // Back to the horizontal. Scroll all the way to the end in the horizontal
   // direction.
   offset_x = kWidth * 4;
-  scroll_view_->ScrollToPosition(test_api.GetBaseScrollBar(HORIZONTAL),
-                                 offset_x);
+  scroll_view_->ScrollToPosition(test_api.GetScrollBar(HORIZONTAL), offset_x);
   EXPECT_EQ(gfx::ScrollOffset(offset_x, offset_y), test_api.CurrentOffset());
 
   // The overflow indicator on the bottom and right should still not be visible.
@@ -1423,7 +1419,7 @@ TEST_F(ScrollViewTest, VerticalWithHeaderOverflowIndicators) {
 
   // Make sure the size is set such that no horizontal scrollbar gets shown.
   scroll_view_->SetSize(
-      gfx::Size(kWidth + test_api.GetBaseScrollBar(VERTICAL)->GetThickness(),
+      gfx::Size(kWidth + test_api.GetScrollBar(VERTICAL)->GetThickness(),
                 kMaxHeight + header_ptr->height()));
 
   // Make sure the initial origin is 0,0
@@ -1446,7 +1442,7 @@ TEST_F(ScrollViewTest, VerticalWithHeaderOverflowIndicators) {
 
   // Now scroll the view to someplace in the middle of the scrollable region.
   int offset = kMaxHeight * 2;
-  scroll_view_->ScrollToPosition(test_api.GetBaseScrollBar(VERTICAL), offset);
+  scroll_view_->ScrollToPosition(test_api.GetScrollBar(VERTICAL), offset);
   EXPECT_EQ(gfx::ScrollOffset(0, offset), test_api.CurrentOffset());
 
   // At this point, only the overflow indicator on the bottom should be visible
@@ -1460,8 +1456,8 @@ TEST_F(ScrollViewTest, VerticalWithHeaderOverflowIndicators) {
   EXPECT_FALSE(test_api.more_content_right()->visible());
 
   // Finally scroll the view to end of the scrollable region.
-  offset = test_api.GetBaseScrollBar(VERTICAL)->GetMaxPosition();
-  scroll_view_->ScrollToPosition(test_api.GetBaseScrollBar(VERTICAL), offset);
+  offset = test_api.GetScrollBar(VERTICAL)->GetMaxPosition();
+  scroll_view_->ScrollToPosition(test_api.GetScrollBar(VERTICAL), offset);
   EXPECT_EQ(gfx::ScrollOffset(0, offset), test_api.CurrentOffset());
 
   // The overflow indicator on the bottom should not be visible now.
@@ -1481,7 +1477,7 @@ TEST_F(WidgetScrollViewTest, ScrollTrackScrolling) {
   ScrollView* scroll_view =
       AddScrollViewWithContentSize(gfx::Size(10, kDefaultHeight * 5));
   ScrollViewTestApi test_api(scroll_view);
-  BaseScrollBar* scroll_bar = test_api.GetBaseScrollBar(VERTICAL);
+  ScrollBar* scroll_bar = test_api.GetScrollBar(VERTICAL);
   View* thumb = test_api.GetScrollBarThumb(VERTICAL);
 
   // Click in the middle of the track, ensuring it's below the thumb.
