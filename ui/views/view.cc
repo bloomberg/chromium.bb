@@ -235,16 +235,66 @@ void View::SetBoundsRect(const gfx::Rect& bounds) {
     return;
   }
 
-  if (visible_) {
-    // Paint where the view is currently.
-    SchedulePaintBoundsChanged(
-        bounds_.size() == bounds.size() ? SCHEDULE_PAINT_SIZE_SAME :
-        SCHEDULE_PAINT_SIZE_CHANGED);
-  }
+  bool is_size_changed = bounds_.size() != bounds.size();
+  // Paint where the view is currently.
+  SchedulePaintBoundsChanged(is_size_changed);
 
   gfx::Rect prev = bounds_;
   bounds_ = bounds;
-  BoundsChanged(prev);
+
+  // Paint the new bounds.
+  SchedulePaintBoundsChanged(is_size_changed);
+
+  if (layer()) {
+    if (parent_) {
+      LayerOffsetData offset_data(
+          parent_->CalculateOffsetToAncestorWithLayer(nullptr));
+      offset_data += GetMirroredPosition().OffsetFromOrigin();
+      SetLayerBounds(size(), offset_data);
+    } else {
+      SetLayerBounds(bounds_.size(),
+                     LayerOffsetData() + bounds_.OffsetFromOrigin());
+    }
+
+    // In RTL mode, if our width has changed, our children's mirrored bounds
+    // will have changed. Update the child's layer bounds, or if it is not a
+    // layer, the bounds of any layers inside the child.
+    if (base::i18n::IsRTL() && bounds_.width() != prev.width()) {
+      for (int i = 0; i < child_count(); ++i) {
+        View* child = child_at(i);
+        child->UpdateChildLayerBounds(
+            LayerOffsetData(layer()->device_scale_factor(),
+                            child->GetMirroredPosition().OffsetFromOrigin()));
+      }
+    }
+  } else {
+    // If our bounds have changed, then any descendant layer bounds may have
+    // changed. Update them accordingly.
+    UpdateChildLayerBounds(CalculateOffsetToAncestorWithLayer(nullptr));
+  }
+
+  OnBoundsChanged(prev);
+  if (bounds_ != prev)
+    NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged, false);
+
+  if (needs_layout_ || is_size_changed) {
+    needs_layout_ = false;
+    TRACE_EVENT1("views", "View::Layout(bounds_changed)", "class",
+                 GetClassName());
+    Layout();
+  }
+
+  if (GetNeedsNotificationWhenVisibleBoundsChange())
+    OnVisibleBoundsChanged();
+
+  // Notify interested Views that visible bounds within the root view may have
+  // changed.
+  if (descendants_to_notify_) {
+    for (auto i(descendants_to_notify_->begin());
+         i != descendants_to_notify_->end(); ++i) {
+      (*i)->OnVisibleBoundsChanged();
+    }
+  }
 
   for (ViewObserver& observer : observers_)
     observer.OnViewBoundsChanged(this);
@@ -1808,15 +1858,18 @@ void View::DragInfo::PossibleDrag(const gfx::Point& p) {
 
 // Painting --------------------------------------------------------------------
 
-void View::SchedulePaintBoundsChanged(SchedulePaintType type) {
+void View::SchedulePaintBoundsChanged(bool size_changed) {
+  if (!visible_)
+    return;
+
   // If we have a layer and the View's size did not change, we do not need to
   // schedule any paints since the layer will be redrawn at its new location
   // during the next Draw() cycle in the compositor.
-  if (!layer() || type == SCHEDULE_PAINT_SIZE_CHANGED) {
+  if (!layer() || size_changed) {
     // Otherwise, if the size changes or we don't have a layer then we need to
     // use SchedulePaint to invalidate the area occupied by the View.
     SchedulePaint();
-  } else if (parent_ && type == SCHEDULE_PAINT_SIZE_SAME) {
+  } else {
     // The compositor doesn't Draw() until something on screen changes, so
     // if our position changes but nothing is being animated on screen, then
     // tell the compositor to redraw the scene. We know layer() exists due to
@@ -2152,66 +2205,6 @@ void View::SnapLayerToPixelBoundary(const LayerOffsetData& offset_data) {
   } else {
     // Reset the offset.
     layer()->SetSubpixelPositionOffset(gfx::Vector2dF());
-  }
-}
-
-void View::BoundsChanged(const gfx::Rect& previous_bounds) {
-  if (visible_) {
-    // Paint the new bounds.
-    SchedulePaintBoundsChanged(
-        bounds_.size() == previous_bounds.size() ? SCHEDULE_PAINT_SIZE_SAME :
-        SCHEDULE_PAINT_SIZE_CHANGED);
-  }
-
-  if (layer()) {
-    if (parent_) {
-      LayerOffsetData offset_data(
-          parent_->CalculateOffsetToAncestorWithLayer(nullptr));
-      offset_data += GetMirroredPosition().OffsetFromOrigin();
-      SetLayerBounds(size(), offset_data);
-    } else {
-      SetLayerBounds(bounds_.size(),
-                     LayerOffsetData() + bounds_.OffsetFromOrigin());
-    }
-
-    // In RTL mode, if our width has changed, our children's mirrored bounds
-    // will have changed. Update the child's layer bounds, or if it is not a
-    // layer, the bounds of any layers inside the child.
-    if (base::i18n::IsRTL() && bounds_.width() != previous_bounds.width()) {
-      for (int i = 0; i < child_count(); ++i) {
-        View* child = child_at(i);
-        child->UpdateChildLayerBounds(
-            LayerOffsetData(layer()->device_scale_factor(),
-                            child->GetMirroredPosition().OffsetFromOrigin()));
-      }
-    }
-  } else {
-    // If our bounds have changed, then any descendant layer bounds may have
-    // changed. Update them accordingly.
-    UpdateChildLayerBounds(CalculateOffsetToAncestorWithLayer(nullptr));
-  }
-
-  OnBoundsChanged(previous_bounds);
-  if (bounds_ != previous_bounds)
-    NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged, false);
-
-  if (needs_layout_ || previous_bounds.size() != size()) {
-    needs_layout_ = false;
-    TRACE_EVENT1("views", "View::Layout(bounds_changed)", "class",
-                 GetClassName());
-    Layout();
-  }
-
-  if (GetNeedsNotificationWhenVisibleBoundsChange())
-    OnVisibleBoundsChanged();
-
-  // Notify interested Views that visible bounds within the root view may have
-  // changed.
-  if (descendants_to_notify_) {
-    for (auto i(descendants_to_notify_->begin());
-         i != descendants_to_notify_->end(); ++i) {
-      (*i)->OnVisibleBoundsChanged();
-    }
   }
 }
 

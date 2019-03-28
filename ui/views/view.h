@@ -1439,17 +1439,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Painting  -----------------------------------------------------------------
 
-  enum SchedulePaintType {
-    // Indicates the size is the same (only the origin changed).
-    SCHEDULE_PAINT_SIZE_SAME,
-
-    // Indicates the size changed (and possibly the origin).
-    SCHEDULE_PAINT_SIZE_CHANGED
-  };
-
   // Invoked before and after the bounds change to schedule painting the old and
   // new bounds.
-  void SchedulePaintBoundsChanged(SchedulePaintType type);
+  void SchedulePaintBoundsChanged(bool size_changed);
 
   // Schedules a paint on the parent View if it exists.
   void SchedulePaintOnParent();
@@ -1534,10 +1526,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Registers/unregisters accelerators as necessary and calls
   // VisibilityChanged().
   void VisibilityChangedImpl(View* starting_from, bool is_visible);
-
-  // Responsible for propagating bounds change notifications to relevant
-  // views.
-  void BoundsChanged(const gfx::Rect& previous_bounds);
 
   // Visible bounds notification registration.
   // When a view is added to a hierarchy, it and all its children are asked if
