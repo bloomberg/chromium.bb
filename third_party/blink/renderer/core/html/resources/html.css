@@ -559,10 +559,16 @@ input[type="image" i] {
 /* TODO(crbug.com/880258): Use different styles for
   `-internal-autofill-previewed` and `-internal-autofill-selected`. */
 input:-internal-autofill-previewed,
-input:-internal-autofill-selected,
 textarea:-internal-autofill-previewed,
+select:-internal-autofill-previewed {
+  font-family: system-ui !important;
+  background-color: #E8F0FE !important;
+  background-image:none !important;
+  color: #000000 !important;
+}
+
+input:-internal-autofill-selected,
 textarea:-internal-autofill-selected,
-select:-internal-autofill-previewed,
 select:-internal-autofill-selected {
   background-color: #E8F0FE !important;
   background-image:none !important;
