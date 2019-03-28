@@ -137,7 +137,7 @@ bool RlzValueStoreChromeOS::HasAccess(AccessType type) {
 bool RlzValueStoreChromeOS::WritePingTime(Product product, int64_t time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   rlz_store_->SetString(GetKeyName(kPingTimeKey, product),
-                        base::Int64ToString(time));
+                        base::NumberToString(time));
   return true;
 }
 
