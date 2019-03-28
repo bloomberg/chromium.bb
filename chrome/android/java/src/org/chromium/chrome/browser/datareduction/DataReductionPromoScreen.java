@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.view.View;
 
+import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.widget.PromoDialog;
@@ -17,19 +18,31 @@ import org.chromium.ui.widget.Toast;
  * The promo screen encouraging users to enable Data Saver.
  */
 public class DataReductionPromoScreen extends PromoDialog {
+    private static final String FORCE_PROMO_SWITCH = "force-data-reduction-second-run-promo";
+
     private int mState;
 
-    /**
-     * Launch the data reduction promo, if it needs to be displayed.
-     * @return Whether the data reduction promo was displayed.
-     */
-    public static boolean launchDataReductionPromo(Activity parentActivity, boolean isIncognito) {
+    private static boolean shouldLaunchDataReductionPromo(
+            Activity parentActivity, boolean isIncognito) {
+        // This switch is only used for testing so it is ok to override all the other checking.
+        if (CommandLine.getInstance().hasSwitch(FORCE_PROMO_SWITCH)) return true;
+
         // The promo is displayed if Chrome is launched directly (i.e., not with the intent to
         // navigate to and view a URL on startup), the instance is part of the field trial,
         // and the promo has not been displayed before.
         if (isIncognito) return false;
         if (!DataReductionPromoUtils.canShowPromos()) return false;
         if (DataReductionPromoUtils.getDisplayedFreOrSecondRunPromo()) return false;
+
+        return true;
+    }
+
+    /**
+     * Launch the data reduction promo, if it needs to be displayed.
+     * @return Whether the data reduction promo was displayed.
+     */
+    public static boolean launchDataReductionPromo(Activity parentActivity, boolean isIncognito) {
+        if (!shouldLaunchDataReductionPromo(parentActivity, isIncognito)) return false;
 
         DataReductionPromoScreen promoScreen = new DataReductionPromoScreen(parentActivity);
         promoScreen.setOnDismissListener(promoScreen);
