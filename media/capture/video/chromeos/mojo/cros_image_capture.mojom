@@ -8,8 +8,8 @@ import "media/capture/mojom/image_capture.mojom";
 
 // Effect that recognized by Chrome OS.
 enum Effect {
-  PORTRAIT_MODE = 0,
-  NO_EFFECT
+  NO_EFFECT = 0,
+  PORTRAIT_MODE = 1,
 };
 
 // Interface for Chrome OS specific Image Capture API which supports reprocess

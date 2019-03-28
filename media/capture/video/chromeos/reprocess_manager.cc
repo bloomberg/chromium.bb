@@ -176,6 +176,7 @@ void ReprocessManager::ReprocessManagerImpl::UpdateSupportedEffects(
           metadata,
           static_cast<cros::mojom::CameraMetadataTag>(kPortraitModeVendorKey));
   supported_effects_map_[device_id].clear();
+  supported_effects_map_[device_id].insert(cros::mojom::Effect::NO_EFFECT);
   if (portrait_mode) {
     supported_effects_map_[device_id].insert(
         cros::mojom::Effect::PORTRAIT_MODE);
