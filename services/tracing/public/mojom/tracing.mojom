@@ -43,16 +43,6 @@ interface Agent {
       => (bool success);
   StopAndFlush(Recorder recorder);
   RequestBufferStatus() => (uint32 capacity, uint32 count);
-  // This is only ever needed when the legacy Coordinator uses Perfetto to
-  // start tracing, rather than calling StartTracing on each agent through
-  // this interface. In that case, the Coordinator still needs a way of
-  // deferring the success callback until we know that tracing has started
-  // in each relevant process. This is a temporary thing until all clients
-  // of the TracingController in the browser (which uses the
-  // Coordinator interface) have been migrated to use the Perfetto
-  // Consumer interface directly instead, and the Coordinator/Agent
-  // interfaces can be removed.
-  WaitForTracingEnabled() => ();
 };
 
 // An agent can make several calls to |AddChunk|. Chunks will be concatenated

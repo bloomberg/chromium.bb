@@ -59,11 +59,6 @@ void BaseAgent::RequestBufferStatus(
   std::move(callback).Run(0 /* capacity */, 0 /* count */);
 }
 
-void BaseAgent::WaitForTracingEnabled(
-    Agent::WaitForTracingEnabledCallback callback) {
-  std::move(callback).Run();
-}
-
 bool BaseAgent::IsBoundForTesting() const {
   return binding_.is_bound();
 }
