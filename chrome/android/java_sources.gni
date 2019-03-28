@@ -23,6 +23,7 @@ if (enable_vr) {
 if (notouch_build) {
   chrome_java_sources += touchless_java_sources
   chrome_test_java_sources += touchless_test_java_sources
+  chrome_junit_test_java_sources += touchless_junit_test_java_sources
 } else {
   chrome_java_sources += touchess_fallback_java_sources
 }
