@@ -8,7 +8,6 @@
  * button (taking up the whole 'row'). The name link comes from the intended use
  * of this element to take the user to another page in the app or to an external
  * page (somewhat like an HTML link).
- * Note: the ripple handling was taken from Polymer v1 paper-icon-button-light.
  */
 Polymer({
   is: 'cr-link-row',

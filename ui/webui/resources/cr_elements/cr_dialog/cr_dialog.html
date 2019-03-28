@@ -1,10 +1,10 @@
 <link rel="import" href="../../html/polymer.html">
 
-<link rel="import" href="../hidden_style_css.html">
-<link rel="import" href="../cr_icons_css.html">
-<link rel="import" href="../shared_vars_css.html">
 <link rel="import" href="../../html/assert.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="../cr_icon_button/cr_icon_button.html">
+<link rel="import" href="../cr_icons_css.html">
+<link rel="import" href="../hidden_style_css.html">
+<link rel="import" href="../shared_vars_css.html">
 
 <dom-module id="cr-dialog">
   <template>
@@ -160,9 +160,7 @@
         outline: none;
       }
 
-      /* TODO (rbpotter): Remove all the --cr-dialog-close-* mixins below, */
-      /* when Print Preview is updated to Material Design. */
-      #closeContainer {
+      #close {
         --layout-inline: {
           display: flex;
         };
@@ -170,24 +168,6 @@
         align-self: flex-start;
         margin-inline-end: 4px;
         margin-top: 4px;
-
-        @apply --cr-dialog-close-image;
-      }
-
-      #closeContainer:hover {
-        @apply --cr-dialog-close-image-hover;
-      }
-
-      #closeContainer:focus-within {
-        @apply --cr-dialog-close-image-focus;
-      }
-
-      #closeContainer:active {
-        @apply --cr-dialog-close-image-active;
-      }
-
-      #closeContainer paper-ripple {
-        @apply --cr-dialog-close-ripple;
       }
     </style>
     <dialog id="dialog" on-close="onNativeDialogClose_"
@@ -199,12 +179,10 @@
           <div class="title-container" tabindex="-1">
             <slot name="title"></slot>
           </div>
-          <paper-icon-button-light id="closeContainer" class="icon-clear"
-              hidden$="[[!showCloseButton]]">
-            <button id="close" aria-label$="[[closeText]]"
-                on-tap="cancel" on-keypress="onCloseKeypress_">
-            </button>
-          </paper-icon-button-light>
+          <cr-icon-button id="close" class="icon-clear"
+              hidden$="[[!showCloseButton]]" aria-label$="[[closeText]]"
+              on-click="cancel" on-keypress="onCloseKeypress_">
+          </cr-icon-button>
         </div>
         <slot name="header"></slot>
         <div class="body-container">

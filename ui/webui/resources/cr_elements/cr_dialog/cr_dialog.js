@@ -300,11 +300,6 @@ Polymer({
     return this.$.dialog;
   },
 
-  /** @return {!PaperIconButtonElement} */
-  getCloseButton: function() {
-    return this.$.close;
-  },
-
   /**
    * @param {!Event} e
    * @private
