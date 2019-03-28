@@ -67,8 +67,6 @@ class HTMLMediaElementControlsList;
 class HTMLMediaSource;
 class HTMLSourceElement;
 class HTMLTrackElement;
-class IntersectionObserver;
-class IntersectionObserverEntry;
 class KURL;
 class MediaError;
 class MediaStreamDescriptor;
@@ -367,7 +365,6 @@ class CORE_EXPORT HTMLMediaElement
  private:
   // Friend class for testing.
   friend class ContextMenuControllerTest;
-  friend class MediaElementFillingViewportTest;
   friend class VideoWakeLockTest;
   friend class PictureInPictureControllerTest;
 
@@ -393,6 +390,8 @@ class CORE_EXPORT HTMLMediaElement
 
   virtual void UpdateDisplayState() {}
   virtual void OnPlay() {}
+  virtual void OnLoadStarted() {}
+  virtual void OnLoadFinished() {}
 
   void SetReadyState(ReadyState);
   void SetNetworkState(WebMediaPlayer::NetworkState);
@@ -428,7 +427,6 @@ class CORE_EXPORT HTMLMediaElement
   bool HasSelectedVideoTrack() final;
   WebMediaPlayer::TrackId GetSelectedVideoTrackId() final;
   bool WasAlwaysMuted() final;
-  void ActivateViewportIntersectionMonitoring(bool) final;
   bool HasNativeControls() final;
   bool IsAudioElement() final;
   WebMediaPlayer::DisplayType DisplayType() const override;
@@ -446,8 +444,6 @@ class CORE_EXPORT HTMLMediaElement
   void ProgressEventTimerFired(TimerBase*);
   void PlaybackProgressTimerFired(TimerBase*);
   void ScheduleTimeupdateEvent(bool periodic_event);
-  void OnViewportIntersectionChanged(
-      const HeapVector<Member<IntersectionObserverEntry>>& entries);
   void StartPlaybackProgressTimer();
   void StartProgressEventTimer();
   void StopPeriodicTimers();
@@ -556,9 +552,6 @@ class CORE_EXPORT HTMLMediaElement
 
   EnumerationHistogram& ShowControlsHistogram() const;
 
-  void OnIntersectionChangedForLazyLoad(
-      const HeapVector<Member<IntersectionObserverEntry>>& entries);
-
   void OnRemovedFromDocumentTimerFired(TimerBase*);
 
   TaskRunnerTimer<HTMLMediaElement> load_timer_;
@@ -566,8 +559,6 @@ class CORE_EXPORT HTMLMediaElement
   TaskRunnerTimer<HTMLMediaElement> playback_progress_timer_;
   TaskRunnerTimer<HTMLMediaElement> audio_tracks_timer_;
   TaskRunnerTimer<HTMLMediaElement> removed_from_document_timer_;
-
-  Member<IntersectionObserver> viewport_intersection_observer_;
 
   Member<TimeRanges> played_time_ranges_;
   Member<EventQueue> async_event_queue_;
@@ -668,10 +659,6 @@ class CORE_EXPORT HTMLMediaElement
 
   bool tracks_are_ready_ : 1;
   bool processing_preference_change_ : 1;
-
-  // The following is always false unless viewport intersection monitoring is
-  // turned on via ActivateViewportIntersectionMonitoring().
-  bool mostly_filling_viewport_ : 1;
 
   bool was_always_muted_ : 1;
 

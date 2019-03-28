@@ -130,8 +130,6 @@ using DocumentElementSetMap =
 
 namespace {
 
-constexpr float kMostlyFillViewportThreshold = 0.85f;
-
 // This enum is used to record histograms. Do not reorder.
 enum MediaControlsShow {
   kMediaControlsShowAttribute = 0,
@@ -505,7 +503,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       should_perform_automatic_track_selection_(true),
       tracks_are_ready_(true),
       processing_preference_change_(false),
-      mostly_filling_viewport_(false),
       was_always_muted_(true),
       audio_tracks_(AudioTrackList::Create(*this)),
       video_tracks_(VideoTrackList::Create(*this)),
@@ -555,10 +552,6 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
       GetDocument().GetTaskRunner(TaskType::kInternalMedia));
   audio_tracks_timer_.MoveToNewTaskRunner(
       GetDocument().GetTaskRunner(TaskType::kInternalMedia));
-  if (viewport_intersection_observer_) {
-    ActivateViewportIntersectionMonitoring(false);
-    ActivateViewportIntersectionMonitoring(true);
-  }
   deferred_load_timer_.MoveToNewTaskRunner(
       GetDocument().GetTaskRunner(TaskType::kInternalMedia));
   removed_from_document_timer_.MoveToNewTaskRunner(
@@ -1304,7 +1297,7 @@ void HTMLMediaElement::StartPlayerLoad() {
   if (IsFullscreen())
     web_media_player_->EnteredFullscreen();
 
-  web_media_player_->BecameDominantVisibleContent(mostly_filling_viewport_);
+  OnLoadStarted();
 }
 
 void HTMLMediaElement::SetPlayerPreload() {
@@ -1860,17 +1853,7 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
     ScheduleEvent(event_type_names::kLoadeddata);
     SetShouldDelayLoadEvent(false);
 
-    // If the player did a lazy load, it's expecting to be called when the
-    // element actually becomes visible to complete the load.
-    if (IsHTMLVideoElement() && web_media_player_->DidLazyLoad() &&
-        !is_potentially_playing) {
-      lazy_load_intersection_observer_ = IntersectionObserver::Create(
-          {}, {IntersectionObserver::kMinimumThreshold}, &GetDocument(),
-          WTF::BindRepeating(
-              &HTMLMediaElement::OnIntersectionChangedForLazyLoad,
-              WrapWeakPersistent(this)));
-      lazy_load_intersection_observer_->observe(this);
-    }
+    OnLoadFinished();
   }
 
   if (ready_state_ == kHaveFutureData && old_state <= kHaveCurrentData &&
@@ -3901,7 +3884,6 @@ bool HTMLMediaElement::IsInteractiveContent() const {
 
 void HTMLMediaElement::Trace(Visitor* visitor) {
   visitor->Trace(audio_source_node_);
-  visitor->Trace(viewport_intersection_observer_);
   visitor->Trace(played_time_ranges_);
   visitor->Trace(async_event_queue_);
   visitor->Trace(error_);
@@ -4139,21 +4121,6 @@ void HTMLMediaElement::AudioSourceProviderImpl::Trace(Visitor* visitor) {
   visitor->Trace(client_);
 }
 
-void HTMLMediaElement::ActivateViewportIntersectionMonitoring(bool activate) {
-  if (activate && !viewport_intersection_observer_) {
-    viewport_intersection_observer_ = IntersectionObserver::Create(
-        {}, {kMostlyFillViewportThreshold}, &(GetDocument()),
-        WTF::BindRepeating(&HTMLMediaElement::OnViewportIntersectionChanged,
-                           WrapWeakPersistent(this)),
-        IntersectionObserver::kFractionOfRoot);
-    viewport_intersection_observer_->observe(this);
-  } else if (!activate && viewport_intersection_observer_) {
-    viewport_intersection_observer_->disconnect();
-    viewport_intersection_observer_ = nullptr;
-    mostly_filling_viewport_ = false;
-  }
-}
-
 bool HTMLMediaElement::HasNativeControls() {
   return ShouldShowControls(RecordMetricsBehavior::kDoRecord);
 }
@@ -4195,29 +4162,6 @@ bool HTMLMediaElement::MediaShouldBeOpaque() const {
   return !IsMediaDataCorsSameOrigin() && ready_state_ < kHaveMetadata &&
          !FastGetAttribute(kSrcAttr).IsEmpty() &&
          EffectivePreloadType() != WebMediaPlayer::kPreloadNone;
-}
-
-void HTMLMediaElement::OnViewportIntersectionChanged(
-    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
-  const bool is_mostly_filling_viewport =
-      (entries.back()->intersectionRatio() >= kMostlyFillViewportThreshold);
-  if (mostly_filling_viewport_ == is_mostly_filling_viewport)
-    return;
-
-  mostly_filling_viewport_ = is_mostly_filling_viewport;
-  if (web_media_player_)
-    web_media_player_->BecameDominantVisibleContent(mostly_filling_viewport_);
-}
-
-void HTMLMediaElement::OnIntersectionChangedForLazyLoad(
-    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
-  bool is_visible = (entries.back()->intersectionRatio() > 0);
-  if (!is_visible || !web_media_player_)
-    return;
-
-  web_media_player_->OnBecameVisible();
-  lazy_load_intersection_observer_->disconnect();
-  lazy_load_intersection_observer_ = nullptr;
 }
 
 STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveNothing,
