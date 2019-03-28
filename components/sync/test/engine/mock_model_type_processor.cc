@@ -8,7 +8,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/sha1.h"
+#include "base/hash/sha1.h"
 #include "components/sync/engine/commit_queue.h"
 
 namespace syncer {

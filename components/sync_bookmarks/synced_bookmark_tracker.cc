@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/hash/sha1.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/bookmarks/browser/bookmark_model.h"
