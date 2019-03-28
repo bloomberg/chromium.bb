@@ -16,8 +16,8 @@ import gpu_project_config
 from telemetry.testing import browser_test_runner
 from telemetry.internal.platform import system_info
 
-from gpu_tests import path_util
 from gpu_tests import gpu_integration_test
+from gpu_tests import path_util
 from gpu_tests import webgl_conformance_integration_test
 
 path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'tools', 'perf')
@@ -78,6 +78,7 @@ class MockArgs(object):
     self.is_asan = is_asan
     self.webgl_conformance_version = webgl_version
     self.webgl2_only = False
+    self.browser_options = []
 
 
 class MockAbstractGpuTestClass(gpu_integration_test.GpuIntegrationTest):
@@ -136,25 +137,51 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self._test_state = {}
     self._test_result = {}
 
-  def testTestNamePrefixGenerationInRunGpuIntegrationTests(self):
+  def _RunGpuIntegrationTests(self, test_name, extra_args=None):
+    extra_args = extra_args or []
     temp_file = tempfile.NamedTemporaryFile(delete=False)
     temp_file.close()
     try:
       sys.argv = [
-          run_gpu_integration_test.__file__, 'simple_integration_unittest',
-          '--write-full-results-to=%s' % temp_file.name]
+          run_gpu_integration_test.__file__,
+          test_name,
+          '--write-full-results-to=%s' % temp_file.name,
+          ] + extra_args
       gpu_project_config.CONFIG = chromium_config.ChromiumConfig(
           top_level_dir=path_util.GetGpuTestDir(),
           benchmark_dirs=[
               os.path.join(path_util.GetGpuTestDir(), 'unittest_data')])
       run_gpu_integration_test.main()
       with open(temp_file.name) as f:
-        results = json.load(f)
-      self.assertIn('expected_failure', results['tests'])
-      self.assertEqual(results['test_name_prefix'],
-                       'unittest_data.integration_tests.SimpleTest.')
+        self._test_result = json.load(f)
     finally:
       temp_file.close()
+
+  def testOverrideDefaultRetryArgumentsinRunGpuIntegrationTests(self):
+    self._RunGpuIntegrationTests(
+        'run_tests_with_expectations_files', ['--retry-limit=1'])
+    self.assertEqual(
+        self._test_result['tests']['unexpected_test_failure']['actual'],
+        'FAIL FAIL')
+    self.assertEqual(
+        self._test_result['test_name_prefix'],
+          'unittest_data.integration_tests.RunTestsWithExpectationsFiles.')
+
+  def testDefaultRetryArgumentsinRunGpuIntegrationTests(self):
+    self._RunGpuIntegrationTests('run_tests_with_expectations_files')
+    self.assertEqual(
+        self._test_result['tests']['expected_flaky']['actual'],
+        'FAIL FAIL FAIL')
+    self.assertEqual(
+        self._test_result['test_name_prefix'],
+        'unittest_data.integration_tests.RunTestsWithExpectationsFiles.')
+
+  def testTestNamePrefixGenerationInRunGpuIntegrationTests(self):
+    self._RunGpuIntegrationTests('simple_integration_unittest')
+    self.assertIn('expected_failure', self._test_result['tests'])
+    self.assertEqual(
+        self._test_result['test_name_prefix'],
+        'unittest_data.integration_tests.SimpleTest.')
 
   def testWithoutExpectationsFilesGenerateTagsReturnsEmptyList(self):
     # we need to make sure that GenerateTags() returns an empty list if
@@ -165,9 +192,18 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertFalse(MockTestCaseWithoutExpectationsFile.GenerateTags(
         args, possible_browser))
 
+  def _TestTagGenerationForMockPlatform(self, test_class, args):
+    tag_set = _generateNvidiaExampleTagsForTestClassAndArgs(
+        webgl_conformance_integration_test.WebGLConformanceIntegrationTest,
+        args)
+    self.assertTrue(
+        set(['win', 'win10', 'd3d9', 'release',
+             'nvidia', 'nvidia-0x1cb3', 'no-passthrough']).issubset(tag_set))
+    return tag_set
+
   def testGenerateWebglConformanceExampleTagsForWebglVersion1andAsan(self):
     args = MockArgs(is_asan=True, webgl_version='1.0.0')
-    tag_set = _generateNvidiaExampleTagsForTestClassAndArgs(
+    tag_set = self._TestTagGenerationForMockPlatform(
         webgl_conformance_integration_test.WebGLConformanceIntegrationTest,
         args)
     self.assertTrue(set(['asan', 'webgl-version-1']).issubset(tag_set))
@@ -175,7 +211,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
 
   def testGenerateWebglConformanceExampleTagsForWebglVersion2andNoAsan(self):
     args = MockArgs(is_asan=False, webgl_version='2.0.0')
-    tag_set = _generateNvidiaExampleTagsForTestClassAndArgs(
+    tag_set = self._TestTagGenerationForMockPlatform(
         webgl_conformance_integration_test.WebGLConformanceIntegrationTest,
         args)
     self.assertTrue(set(['no-asan', 'webgl-version-2']) .issubset(tag_set))
@@ -267,44 +303,38 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
   def _RunTestsWithExpectationsFiles(self):
     self._RunIntegrationTest(
       'run_tests_with_expectations_files',
-      [('unittest_data.integration_tests'
-        '.RunTestsWithExpectationsFiles.unexpected_test_failure')],
-      [('unittest_data.integration_tests'
-        '.RunTestsWithExpectationsFiles.expected_failure'),
-       ('unittest_data.integration_tests'
-        '.RunTestsWithExpectationsFiles.expected_flaky')],
-      [('unittest_data.integration_tests'
-        '.RunTestsWithExpectationsFiles.expected_skip')],
-      ['--retry-limit=3', '--retry-only-retry-on-failure-tests'])
+      [('unexpected_test_failure')],
+      [('expected_failure'),
+       ('expected_flaky')],
+      [('expected_skip')],
+      ['--retry-limit=3', '--retry-only-retry-on-failure-tests',
+       ('--test-name-prefix=unittest_data.integration_tests.'
+        'RunTestsWithExpectationsFiles.')])
 
   def testUseTestExpectationsFileToHandleExpectedSkip(self):
     self._RunTestsWithExpectationsFiles()
-    results = (self._test_result['tests']['unittest_data']['integration_tests']
-               ['RunTestsWithExpectationsFiles']['expected_skip'])
+    results = self._test_result['tests']['expected_skip']
     self.assertEqual(results['expected'], 'SKIP')
     self.assertEqual(results['actual'], 'SKIP')
     self.assertNotIn('is_regression', results)
 
   def testUseTestExpectationsFileToHandleUnexpectedTestFailure(self):
     self._RunTestsWithExpectationsFiles()
-    results = (self._test_result['tests']['unittest_data']['integration_tests']
-               ['RunTestsWithExpectationsFiles']['unexpected_test_failure'])
+    results = self._test_result['tests']['unexpected_test_failure']
     self.assertEqual(results['expected'], 'PASS')
     self.assertEqual(results['actual'], 'FAIL')
     self.assertIn('is_regression', results)
 
   def testUseTestExpectationsFileToHandleExpectedFailure(self):
     self._RunTestsWithExpectationsFiles()
-    results = (self._test_result['tests']['unittest_data']['integration_tests']
-               ['RunTestsWithExpectationsFiles']['expected_failure'])
+    results = self._test_result['tests']['expected_failure']
     self.assertEqual(results['expected'], 'FAIL')
     self.assertEqual(results['actual'], 'FAIL')
     self.assertNotIn('is_regression', results)
 
   def testUseTestExpectationsFileToHandleExpectedFlakyTest(self):
     self._RunTestsWithExpectationsFiles()
-    results = (self._test_result['tests']['unittest_data']['integration_tests']
-               ['RunTestsWithExpectationsFiles']['expected_flaky'])
+    results = self._test_result['tests']['expected_flaky']
     self.assertEqual(results['expected'], 'PASS')
     self.assertEqual(results['actual'], 'FAIL FAIL FAIL PASS')
     self.assertNotIn('is_regression', results)
