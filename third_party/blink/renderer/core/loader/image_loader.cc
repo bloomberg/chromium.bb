@@ -71,11 +71,15 @@ namespace {
 bool IsLazyLoadableImage(const LocalFrame* frame,
                          HTMLImageElement* html_image,
                          const KURL& url) {
-  // Do not lazyload image elements created from javascript.
-  if (!html_image->ElementCreatedByParser())
+  if (!url.ProtocolIsInHTTPFamily())
     return false;
 
-  if (!url.ProtocolIsInHTTPFamily())
+  if (EqualIgnoringASCIICase(
+          html_image->FastGetAttribute(html_names::kLoadAttr), "lazy"))
+    return true;
+
+  // Do not lazyload image elements created from javascript.
+  if (!html_image->ElementCreatedByParser())
     return false;
 
   if (EqualIgnoringASCIICase(
