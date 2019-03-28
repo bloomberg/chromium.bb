@@ -69,8 +69,8 @@ void AXAuraObjCache::Remove(View* view) {
 
 void AXAuraObjCache::RemoveViewSubtree(View* view) {
   Remove(view);
-  for (int i = 0; i < view->child_count(); ++i)
-    RemoveViewSubtree(view->child_at(i));
+  for (View* child : view->children())
+    RemoveViewSubtree(child);
 }
 
 void AXAuraObjCache::Remove(Widget* widget) {

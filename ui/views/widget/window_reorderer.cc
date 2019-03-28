@@ -54,8 +54,8 @@ void GetOrderOfViewsWithLayers(
     order->push_back(view);
   }
 
-  for (int i = 0; i < view->child_count(); ++i)
-    GetOrderOfViewsWithLayers(view->child_at(i), parent_layer, hosts, order);
+  for (views::View* child : view->children())
+    GetOrderOfViewsWithLayers(child, parent_layer, hosts, order);
 }
 
 }  // namespace

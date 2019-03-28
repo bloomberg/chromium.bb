@@ -814,9 +814,9 @@ TEST_F(WidgetTestInteractive, ViewFocusOnHWNDEnabledChanges) {
   EXPECT_TRUE(::IsWindowEnabled(hwnd));
   EXPECT_EQ(hwnd, ::GetActiveWindow());
 
-  for (int i = 0; i < widget->GetContentsView()->child_count(); ++i) {
-    SCOPED_TRACE(base::StringPrintf("Child view %d", i));
-    View* view = widget->GetContentsView()->child_at(i);
+  for (View* view : widget->GetContentsView()->children()) {
+    SCOPED_TRACE(base::StringPrintf(
+        "Child view %d", widget->GetContentsView()->GetIndexOf(view)));
 
     view->RequestFocus();
     EXPECT_EQ(view, widget->GetFocusManager()->GetFocusedView());

@@ -120,8 +120,7 @@ void LayoutExampleBase::ChildPanel::SetSelected(bool value) {
     selected_ = value;
     SetBorder(CreateSolidBorder(1, selected_ ? SK_ColorBLACK : SK_ColorGRAY));
     if (selected_ && parent()) {
-      for (int i = 0; i < parent()->child_count(); ++i) {
-        View* child = parent()->child_at(i);
+      for (View* child : parent()->children()) {
         if (child != this && child->GetGroup() == GetGroup())
           static_cast<ChildPanel*>(child)->SetSelected(false);
       }

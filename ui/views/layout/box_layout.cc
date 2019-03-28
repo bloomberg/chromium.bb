@@ -300,8 +300,8 @@ gfx::Size BoxLayout::GetPreferredSize(const View* host) const {
     int leading = 0;
     int trailing = 0;
     gfx::Rect child_view_area;
-    for (int i = 0; i < host_->child_count(); ++i) {
-      const ViewWrapper child(this, host_->child_at(i));
+    for (View* view : host_->children()) {
+      const ViewWrapper child(this, view);
       if (!child.visible())
         continue;
 
@@ -481,8 +481,8 @@ gfx::Insets BoxLayout::MainAxisOuterMargin() const {
 gfx::Insets BoxLayout::CrossAxisMaxViewMargin() const {
   int leading = 0;
   int trailing = 0;
-  for (int i = 0; i < host_->child_count(); ++i) {
-    const ViewWrapper child(this, host_->child_at(i));
+  for (View* view : host_->children()) {
+    const ViewWrapper child(this, view);
     if (!child.visible())
       continue;
     leading = std::max(leading, CrossAxisLeadingInset(child.margins()));

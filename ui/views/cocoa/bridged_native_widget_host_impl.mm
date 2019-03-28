@@ -694,8 +694,8 @@ void BridgedNativeWidgetHostImpl::RankNSViewsRecursive(
   auto it = associated_views_.find(view);
   if (it != associated_views_.end())
     rank->emplace(it->second, rank->size());
-  for (int i = 0; i < view->child_count(); ++i)
-    RankNSViewsRecursive(view->child_at(i), rank);
+  for (View* child : view->children())
+    RankNSViewsRecursive(child, rank);
 }
 
 void BridgedNativeWidgetHostImpl::UpdateLocalWindowFrame(

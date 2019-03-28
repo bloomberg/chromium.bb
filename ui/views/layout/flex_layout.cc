@@ -1046,8 +1046,7 @@ void FlexLayout::Installed(View* host) {
   // Add all the existing children when the layout manager is installed.
   // If new children are added, ViewAdded() will be called and we'll add data
   // there.
-  for (int i = 0; i < host->child_count(); ++i) {
-    View* const child = host->child_at(i);
+  for (View* child : host->children()) {
     internal::ChildLayoutParams child_layout_params;
     child_layout_params.hidden_by_owner = !child->visible();
     child_params_.emplace(child, child_layout_params);

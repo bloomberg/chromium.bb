@@ -56,8 +56,8 @@ void BuildViewsWithLayers(View* view, View::Views* views) {
   if (view->layer()) {
     views->push_back(view);
   } else {
-    for (int i = 0; i < view->child_count(); ++i)
-      BuildViewsWithLayers(view->child_at(i), views);
+    for (View* child : view->children())
+      BuildViewsWithLayers(child, views);
   }
 }
 

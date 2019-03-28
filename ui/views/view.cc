@@ -260,8 +260,7 @@ void View::SetBoundsRect(const gfx::Rect& bounds) {
     // will have changed. Update the child's layer bounds, or if it is not a
     // layer, the bounds of any layers inside the child.
     if (base::i18n::IsRTL() && bounds_.width() != prev.width()) {
-      for (int i = 0; i < child_count(); ++i) {
-        View* child = child_at(i);
+      for (View* child : children_) {
         child->UpdateChildLayerBounds(
             LayerOffsetData(layer()->device_scale_factor(),
                             child->GetMirroredPosition().OffsetFromOrigin()));
@@ -2217,16 +2216,16 @@ void View::SnapLayerToPixelBoundary(const LayerOffsetData& offset_data) {
 void View::RegisterChildrenForVisibleBoundsNotification(View* view) {
   if (view->GetNeedsNotificationWhenVisibleBoundsChange())
     view->RegisterForVisibleBoundsNotification();
-  for (int i = 0; i < view->child_count(); ++i)
-    RegisterChildrenForVisibleBoundsNotification(view->child_at(i));
+  for (View* child : view->children_)
+    RegisterChildrenForVisibleBoundsNotification(child);
 }
 
 // static
 void View::UnregisterChildrenForVisibleBoundsNotification(View* view) {
   if (view->GetNeedsNotificationWhenVisibleBoundsChange())
     view->UnregisterForVisibleBoundsNotification();
-  for (int i = 0; i < view->child_count(); ++i)
-    UnregisterChildrenForVisibleBoundsNotification(view->child_at(i));
+  for (View* child : view->children_)
+    UnregisterChildrenForVisibleBoundsNotification(child);
 }
 
 void View::RegisterForVisibleBoundsNotification() {
