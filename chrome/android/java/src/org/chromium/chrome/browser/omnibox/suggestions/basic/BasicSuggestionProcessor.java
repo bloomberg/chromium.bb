@@ -131,10 +131,8 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
             if ((suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_ENTITY)
                     || (suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE)) {
                 textLine2 = SpannableString.valueOf(suggestion.getDescription());
-                textLine2Color = ApiCompatibilityUtils.getColor(mContext.getResources(),
-                        model.get(SuggestionCommonProperties.USE_DARK_COLORS)
-                                ? R.color.default_text_color_dark
-                                : R.color.default_text_color_light);
+                textLine2Color = SuggestionViewViewBinder.getStandardFontColor(
+                        mContext, model.get(SuggestionCommonProperties.USE_DARK_COLORS));
                 textLine2Direction = View.TEXT_DIRECTION_INHERIT;
             } else if (mEnableNewAnswerLayout
                     && suggestionType == OmniboxSuggestionType.CALCULATOR) {

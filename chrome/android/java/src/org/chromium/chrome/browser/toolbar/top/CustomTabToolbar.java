@@ -490,9 +490,11 @@ public class CustomTabToolbar
             setUrlToPageUrl();
         }
 
-        mTitleBar.setTextColor(ApiCompatibilityUtils.getColor(resources,
-                mUseDarkColors ? R.color.default_text_color_dark
-                               : R.color.default_text_color_light));
+        int titleTextColor = mUseDarkColors
+                ? ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_default_text)
+                : ApiCompatibilityUtils.getColor(
+                        resources, R.color.url_emphasis_light_default_text);
+        mTitleBar.setTextColor(titleTextColor);
 
         if (getProgressBar() != null) {
             if (!ColorUtils.isUsingDefaultToolbarColor(

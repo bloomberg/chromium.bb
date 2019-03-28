@@ -91,12 +91,14 @@ class UrlBarViewBinder {
         int hintColor;
         int highlightColor;
         if (useDarkTextColors) {
-            textColor = ApiCompatibilityUtils.getColor(resources, R.color.default_text_color_dark);
+            textColor =
+                    ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_default_text);
             hintColor =
                     ApiCompatibilityUtils.getColor(resources, R.color.locationbar_dark_hint_text);
             highlightColor = originalHighlightColor;
         } else {
-            textColor = ApiCompatibilityUtils.getColor(resources, R.color.default_text_color_light);
+            textColor = ApiCompatibilityUtils.getColor(
+                    resources, R.color.url_emphasis_light_default_text);
             hintColor =
                     ApiCompatibilityUtils.getColor(resources, R.color.locationbar_light_hint_text);
             highlightColor = ApiCompatibilityUtils.getColor(
