@@ -375,6 +375,9 @@ const size_t kActionsKeepingMenuOpenLength =
 const AcceleratorAction kActionsAllowedForKioskNextShell[] = {
     BRIGHTNESS_DOWN,
     BRIGHTNESS_UP,
+    DEBUG_TOGGLE_SHOW_DEBUG_BORDERS,
+    DEBUG_TOGGLE_SHOW_FPS_COUNTER,
+    DEBUG_TOGGLE_SHOW_PAINT_RECTS,
     KEYBOARD_BRIGHTNESS_DOWN,
     KEYBOARD_BRIGHTNESS_UP,
     MEDIA_NEXT_TRACK,
