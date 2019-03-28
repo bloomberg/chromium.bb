@@ -68,7 +68,7 @@ const base::Feature kImeInputLogic{"ImeInputLogic",
 
 // If enabled, allows the qualified IME extension to connect to IME service.
 const base::Feature kImeServiceConnectable{"ImeServiceConnectable",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables Instant Tethering on Chrome OS.
 const base::Feature kInstantTethering{"InstantTethering",
