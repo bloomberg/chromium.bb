@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.omaha.inline;
 
 import android.app.Activity;
 import android.content.IntentSender.SendIntentException;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
@@ -81,8 +79,6 @@ public class PlayInlineUpdateController
     private static final String TAG = "PlayInline";
     private static final int RESULT_IN_APP_UPDATE_FAILED = 1;
     private static final int REQUEST_CODE = 8123;
-
-    private final Handler mHandler = new Handler(Looper.getMainLooper());
 
     private final Runnable mCallback;
     private final AppUpdateManager mAppUpdateManager;
