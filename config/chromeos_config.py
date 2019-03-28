@@ -2447,6 +2447,7 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
       'postsubmit',
       display_label=config_lib.DISPLAY_LABEL_POSTSUBMIT,
       build_type=constants.POSTSUBMIT_TYPE,
+      luci_builder=config_lib.LUCI_BUILDER_LEGACY_POSTSUBMIT,
       manifest_version=True,
       chroot_replace=True,
       uprev=False,

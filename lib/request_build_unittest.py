@@ -243,7 +243,7 @@ class RequestBuildHelperTestsMock(RequestBuildHelperTestsBase):
     parameters_parsed = json.loads(body['parameters_json'])
 
     self.assertEqual(parameters_parsed, {
-        u'builder_name': u'Prod',
+        u'builder_name': u'LegacyPostsubmit',
         u'email_notify': [{u'email': u'default_email',
                            u'template': u'default'}],
         u'properties': {
