@@ -4596,7 +4596,7 @@ void Element::SetIsInTopLayer(bool in_top_layer) {
   if (!isConnected())
     return;
   if (!GetDocument().InStyleRecalc())
-    LazyReattachIfAttached();
+    SetForceReattachLayoutTree();
 }
 
 void Element::requestPointerLock() {
