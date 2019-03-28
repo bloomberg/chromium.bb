@@ -1433,9 +1433,6 @@ extern const char kIncognitoStringsDescription[];
 extern const char kInterestFeedContentSuggestionsName[];
 extern const char kInterestFeedContentSuggestionsDescription[];
 
-extern const char kKeepPrefetchedContentSuggestionsName[];
-extern const char kKeepPrefetchedContentSuggestionsDescription[];
-
 extern const char kLanguagesPreferenceName[];
 extern const char kLanguagesPreferenceDescription[];
 
