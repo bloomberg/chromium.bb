@@ -92,8 +92,8 @@ TEST_F(AddPageTaskTest, AddPage) {
 
 TEST_F(AddPageTaskTest, AddPageWithAllFieldsSet) {
   OfflinePageItem page(kTestUrl1, kTestOfflineId1, kTestClientId1,
-                       kTestFilePath, kTestFileSize, base::Time::Now(),
-                       kTestOrigin);
+                       kTestFilePath, kTestFileSize, base::Time::Now());
+  page.request_origin = kTestOrigin;
   page.title = kTestTitle;
   page.original_url_if_different = kTestUrl2;
   page.system_download_id = kTestDownloadId;

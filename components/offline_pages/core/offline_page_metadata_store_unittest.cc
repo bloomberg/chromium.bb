@@ -896,7 +896,8 @@ TEST_F(OfflinePageMetadataStoreTest, AddRemoveMultipleOfflinePages) {
       base::FilePath(FILE_PATH_LITERAL("//other.page.com.mhtml"));
   OfflinePageItem offline_page_2(GURL("https://other.page.com"), 5678LL,
                                  kTestClientId2, file_path_2, 12345,
-                                 OfflineTimeNow(), kTestRequestOrigin);
+                                 OfflineTimeNow());
+  offline_page_2.request_origin = kTestRequestOrigin;
   offline_page_2.original_url_if_different = GURL("https://example.com/bar");
   offline_page_2.system_download_id = kTestSystemDownloadId;
   offline_page_2.digest = kTestDigest;
