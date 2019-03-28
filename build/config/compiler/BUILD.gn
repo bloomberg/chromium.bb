@@ -153,7 +153,7 @@ declare_args() {
   # other architectures.
   #
   # lld doesn't have the bug.
-  use_icf = (is_posix || is_fuchsia) && !using_sanitizer &&
+  use_icf = (is_posix || is_fuchsia) && !is_debug && !using_sanitizer &&
             !use_clang_coverage && !(is_android && use_order_profiling) &&
             (use_lld ||
              (use_gold &&
