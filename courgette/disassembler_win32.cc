@@ -629,12 +629,12 @@ std::string DisassemblerWin32::DescribeRVA(RVA rva) const {
 
 const Section* DisassemblerWin32::FindNextSection(
     FileOffset file_offset) const {
-  const Section* best = 0;
+  const Section* best = nullptr;
   for (int i = 0; i < number_of_sections_; ++i) {
     const Section* section = &sections_[i];
     if (section->size_of_raw_data > 0) {  // i.e. has data in file.
       if (file_offset <= section->file_offset_of_raw_data) {
-        if (best == 0 ||
+        if (best == nullptr ||
             section->file_offset_of_raw_data < best->file_offset_of_raw_data) {
           best = section;
         }
