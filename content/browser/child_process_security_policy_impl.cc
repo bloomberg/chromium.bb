@@ -132,7 +132,8 @@ base::debug::CrashKeyString* GetRequestedOriginCrashKey() {
 
 // The SecurityState class is used to maintain per-child process security state
 // information.
-class ChildProcessSecurityPolicyImpl::SecurityState {
+class ChildProcessSecurityPolicyImpl::SecurityState
+    : public base::RefCountedThreadSafe<SecurityState> {
  public:
   explicit SecurityState(BrowserContext* browser_context)
       : enabled_bindings_(0),
@@ -140,15 +141,6 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
         can_send_midi_sysex_(false),
         browser_context_(browser_context),
         resource_context_(browser_context->GetResourceContext()) {}
-
-  ~SecurityState() {
-    storage::IsolatedContext* isolated_context =
-        storage::IsolatedContext::GetInstance();
-    for (auto iter = filesystem_permissions_.begin();
-         iter != filesystem_permissions_.end(); ++iter) {
-      isolated_context->RemoveReference(iter->first);
-    }
-  }
 
   // Grant permission to request and commit URLs with the specified origin.
   void GrantCommitOrigin(const url::Origin& origin) {
@@ -370,13 +362,38 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     return BrowserOrResourceContext();
   }
 
-  void ClearBrowserContext() { browser_context_ = nullptr; }
+  void ClearMatchingContexts(const BrowserContext* browser_context) {
+    if (browser_context != browser_context_)
+      return;
+
+    browser_context_ = nullptr;
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(
+            [](ChildProcessSecurityPolicyImpl::SecurityState* state) {
+              DCHECK_CURRENTLY_ON(BrowserThread::IO);
+              state->resource_context_ = nullptr;
+            },
+            base::RetainedRef(this)));
+  }
 
  private:
+  friend class base::RefCountedThreadSafe<
+      ChildProcessSecurityPolicyImpl::SecurityState>;
+
   enum class CommitRequestPolicy {
     kRequestOnly,
     kCommitAndRequest,
   };
+
+  ~SecurityState() {
+    storage::IsolatedContext* isolated_context =
+        storage::IsolatedContext::GetInstance();
+    for (auto iter = filesystem_permissions_.begin();
+         iter != filesystem_permissions_.end(); ++iter) {
+      isolated_context->RemoveReference(iter->first);
+    }
+  }
 
   bool CanCommitOrigin(const url::Origin& origin) {
     auto it = origin_map_.find(origin);
@@ -545,8 +562,6 @@ void ChildProcessSecurityPolicyImpl::Remove(int child_id) {
   auto state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
-
-  state->second->ClearBrowserContext();
 
   // Moving the existing SecurityState object into a pending map so
   // that we can preserve permission state and avoid mutations to this
@@ -1266,7 +1281,8 @@ void ChildProcessSecurityPolicyImpl::AddChild(int child_id,
     return;
   }
 
-  security_state_[child_id] = std::make_unique<SecurityState>(browser_context);
+  security_state_[child_id] =
+      base::MakeRefCounted<SecurityState>(browser_context);
 }
 
 bool ChildProcessSecurityPolicyImpl::ChildProcessHasPermissionsForFile(
@@ -1500,8 +1516,20 @@ void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
   }
 }
 
-void ChildProcessSecurityPolicyImpl::RemoveIsolatedOriginsForBrowserContext(
+void ChildProcessSecurityPolicyImpl::OnBrowserContextBeingDestroyed(
     const BrowserContext& browser_context) {
+  {
+    // Clear any references we may have to |browser_context|.
+    base::AutoLock lock(lock_);
+    for (auto& itr : security_state_) {
+      itr.second->ClearMatchingContexts(&browser_context);
+    }
+
+    for (auto& itr : pending_remove_state_) {
+      itr.second->ClearMatchingContexts(&browser_context);
+    }
+  }
+
   base::AutoLock isolated_origins_lock(isolated_origins_lock_);
 
   for (auto& iter : isolated_origins_) {

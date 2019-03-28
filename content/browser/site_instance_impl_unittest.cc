@@ -1284,7 +1284,7 @@ TEST_F(SiteInstanceTest, StartIsolatingSite) {
   EXPECT_FALSE(IsIsolatedOrigin(blank_url));
 
   // Cleanup.
-  policy->RemoveIsolatedOriginsForBrowserContext(*context());
+  policy->OnBrowserContextBeingDestroyed(*context());
 }
 
 }  // namespace content
