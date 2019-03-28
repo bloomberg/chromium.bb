@@ -6127,3 +6127,5 @@ crbug.com/946699 [ Release ] virtual/binary-for-devtools/http/tests/devtools/net
 crbug.com/946700 [ Win7 Release ] http/tests/devtools/coverage/decorations-after-script-formatter.js [ Pass Timeout ]
 crbug.com/946711 [ Release ] http/tests/devtools/editor/text-editor-search-switch-editor.js [ Crash Pass Timeout ]
 crbug.com/946711 [ Release ] virtual/binary-for-devtools/http/tests/devtools/editor/text-editor-search-switch-editor.js [ Crash Pass Timeout ]
+crbug.com/946712 [ Release ] http/tests/devtools/elements/styles-2/paste-property.js [ Crash Pass Timeout ]
+crbug.com/946712 [ Release ] virtual/binary-for-devtools/http/tests/devtools/elements/styles-2/paste-property.js [ Crash Pass Timeout ]
