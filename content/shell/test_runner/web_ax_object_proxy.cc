@@ -774,6 +774,7 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
       .SetMethod("scrollToGlobalPoint", &WebAXObjectProxy::ScrollToGlobalPoint)
       .SetMethod("scrollX", &WebAXObjectProxy::ScrollX)
       .SetMethod("scrollY", &WebAXObjectProxy::ScrollY)
+      .SetMethod("toString", &WebAXObjectProxy::ToString)
       .SetMethod("wordStart", &WebAXObjectProxy::WordStart)
       .SetMethod("wordEnd", &WebAXObjectProxy::WordEnd)
       .SetMethod("nextOnLine", &WebAXObjectProxy::NextOnLine)
@@ -1715,6 +1716,11 @@ int WebAXObjectProxy::ScrollX() {
 int WebAXObjectProxy::ScrollY() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
   return accessibility_object_.GetScrollOffset().y;
+}
+
+std::string WebAXObjectProxy::ToString() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  return accessibility_object_.ToString().Utf8();
 }
 
 float WebAXObjectProxy::BoundsX() {

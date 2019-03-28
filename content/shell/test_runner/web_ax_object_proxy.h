@@ -193,6 +193,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   void ScrollToGlobalPoint(int x, int y);
   int ScrollX();
   int ScrollY();
+  std::string ToString();
   int WordStart(int character_index);
   int WordEnd(int character_index);
   v8::Local<v8::Object> NextOnLine();

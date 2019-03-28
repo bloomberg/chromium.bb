@@ -346,6 +346,10 @@ class WebAXObject {
                                       SkMatrix44& container_transform,
                                       bool* clips_children = nullptr) const;
 
+  // Returns a brief description of the object, suitable for debugging. E.g. its
+  // role and name.
+  BLINK_EXPORT WebString ToString() const;
+
 #if INSIDE_BLINK
   BLINK_EXPORT WebAXObject(AXObject*);
   WebAXObject& operator=(AXObject*);
