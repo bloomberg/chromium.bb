@@ -4,12 +4,17 @@
 
 #include "chrome/browser/download/offline_item_utils.h"
 
+#include "build/build_config.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/download/download_utils.h"
+#endif
 
 using DownloadItem = download::DownloadItem;
 using ContentId = offline_items_collection::ContentId;
@@ -81,7 +86,11 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
   item.is_openable = download_item->CanOpenDownload();
   item.file_path = download_item->GetTargetFilePath();
   item.mime_type = download_item->GetMimeType();
-  // TODO(shaktisahu): Handle any null or generic mime types.
+#if defined(OS_ANDROID)
+  item.mime_type = DownloadUtils::RemapGenericMimeType(
+      item.mime_type, download_item->GetOriginalUrl(),
+      download_item->GetTargetFilePath().value());
+#endif
 
   item.page_url = download_item->GetTabUrl();
   item.original_url = download_item->GetOriginalUrl();

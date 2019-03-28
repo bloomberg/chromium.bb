@@ -24,12 +24,14 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/download/download_manager_bridge.h"
+#include "chrome/browser/android/download/download_utils.h"
 #endif
 
 using OfflineItemFilter = offline_items_collection::OfflineItemFilter;
 using OfflineItemState = offline_items_collection::OfflineItemState;
 using OfflineItemProgressUnit =
     offline_items_collection::OfflineItemProgressUnit;
+using offline_items_collection::OfflineItemShareInfo;
 using OfflineItemVisuals = offline_items_collection::OfflineItemVisuals;
 
 namespace {
@@ -40,6 +42,20 @@ const int kThumbnailSizeInDP = 64;
 bool ShouldShowDownloadItem(const DownloadItem* item) {
   return !item->IsTemporary() && !item->IsTransient() && !item->IsDangerous() &&
          !item->GetTargetFilePath().empty();
+}
+
+std::unique_ptr<OfflineItemShareInfo> CreateShareInfo(
+    const DownloadItem* item) {
+  auto share_info = std::make_unique<OfflineItemShareInfo>();
+#if defined(OS_ANDROID)
+  if (item) {
+    share_info->uri =
+        DownloadUtils::GetUriStringForPath(item->GetTargetFilePath());
+  }
+#else
+  NOTIMPLEMENTED();
+#endif
+  return share_info;
 }
 
 }  // namespace
@@ -155,7 +171,12 @@ void DownloadOfflineContentProvider::GetVisualsForItem(
 
 void DownloadOfflineContentProvider::GetShareInfoForItem(
     const ContentId& id,
-    ShareCallback callback) {}
+    ShareCallback callback) {
+  DownloadItem* item = GetDownload(id.id);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), id, CreateShareInfo(item)));
+}
 
 void DownloadOfflineContentProvider::OnThumbnailRetrieved(
     const ContentId& id,
