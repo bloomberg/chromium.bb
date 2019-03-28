@@ -160,9 +160,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // resource request.
     int http_response_code_ = 0;
 
-    // The HTTP method of the request (e.g. "GET", "OPTIONS", "POST", etc.).
-    std::string http_method_;
-
     // Whether |request_initiator| was compatible with
     // |request_initiator_site_lock|.  For safety initialized to kIncorrectLock,
     // but in practice it will always be explicitly set by the constructor.
