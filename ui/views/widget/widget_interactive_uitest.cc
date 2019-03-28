@@ -634,12 +634,15 @@ TEST_F(WidgetTestInteractive, DISABLED_GrabUngrab) {
 // Tests mouse move outside of the window into the "resize controller" and back
 // will still generate an OnMouseEntered and OnMouseExited event..
 TEST_F(WidgetTestInteractive, CheckResizeControllerEvents) {
-  Widget* toplevel = CreateTopLevelPlatformWidget();
+  Widget* toplevel = CreateTopLevelFramelessPlatformWidget();
 
   toplevel->SetBounds(gfx::Rect(0, 0, 100, 100));
 
   MouseView* view = new MouseView();
   view->SetBounds(90, 90, 10, 10);
+  // |view| needs to be a particular size. Reset the LayoutManager so that
+  // it doesn't get resized.
+  toplevel->GetRootView()->SetLayoutManager(nullptr);
   toplevel->GetRootView()->AddChildView(view);
 
   toplevel->Show();

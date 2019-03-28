@@ -33,6 +33,12 @@ void NativeViewHost::Attach(gfx::NativeView native_view) {
   DCHECK(!native_view_);
   native_view_ = native_view;
   native_wrapper_->AttachNativeView();
+  // This does not use InvalidateLayout() to ensure the visibility state of
+  // the NativeView is correctly set (if this View isn't visible, Layout()
+  // won't, be called, resulting in the NativeView potentially having the wrong
+  // visibility state).
+  // TODO(https://crbug.com/947051): inestigate removing updating visibility
+  // immediately and calling InvalidateLayout() to update bounds.
   Layout();
 
   Widget* widget = Widget::GetWidgetForNativeView(native_view);
@@ -150,6 +156,8 @@ void NativeViewHost::OnPaint(gfx::Canvas* canvas) {
 }
 
 void NativeViewHost::VisibilityChanged(View* starting_from, bool is_visible) {
+  // This does not use InvalidateLayout() to ensure the visibility state is
+  // correctly set (if this View isn't visible, Layout() won't be called).
   Layout();
 }
 
@@ -161,7 +169,7 @@ bool NativeViewHost::GetNeedsNotificationWhenVisibleBoundsChange() const {
 }
 
 void NativeViewHost::OnVisibleBoundsChanged() {
-  Layout();
+  InvalidateLayout();
 }
 
 void NativeViewHost::ViewHierarchyChanged(

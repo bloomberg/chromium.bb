@@ -385,7 +385,7 @@ void LabelButton::StateChanged(ButtonState old_state) {
   ResetLabelEnabledColor();
   label_->SetEnabled(state() != STATE_DISABLED);
   if (image_->GetPreferredSize() != previous_image_size)
-    Layout();
+    InvalidateLayout();
 }
 
 void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
@@ -479,7 +479,6 @@ void LabelButton::SetTextInternal(const base::string16& text) {
 void LabelButton::ChildPreferredSizeChanged(View* child) {
   ResetCachedPreferredSize();
   PreferredSizeChanged();
-  Layout();
 }
 
 ui::NativeTheme::Part LabelButton::GetThemePart() const {

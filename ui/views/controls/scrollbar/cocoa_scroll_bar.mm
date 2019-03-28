@@ -413,7 +413,7 @@ void CocoaScrollBar::OnScrollerStyleChanged() {
 
   // Ensure that the ScrollView updates the scrollbar's layout.
   if (parent())
-    parent()->Layout();
+    parent()->InvalidateLayout();
 
   if (scroller_style_ == NSScrollerStyleOverlay) {
     // Hide the scrollbar, but don't fade out.

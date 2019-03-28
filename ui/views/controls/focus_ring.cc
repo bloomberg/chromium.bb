@@ -32,7 +32,7 @@ std::unique_ptr<FocusRing> FocusRing::Install(View* parent) {
   auto ring = base::WrapUnique<FocusRing>(new FocusRing());
   ring->set_owned_by_client();
   parent->AddChildView(ring.get());
-  ring->Layout();
+  ring->InvalidateLayout();
   ring->SchedulePaint();
   return ring;
 }

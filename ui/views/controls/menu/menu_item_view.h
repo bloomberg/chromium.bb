@@ -381,8 +381,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // MenuRunner owns MenuItemView and should be the only one deleting it.
   ~MenuItemView() override;
 
+  // View:
   void ChildPreferredSizeChanged(View* child) override;
-
   const char* GetClassName() const override;
 
   // Returns the preferred size (and padding) of any children.

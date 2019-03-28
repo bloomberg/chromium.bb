@@ -549,7 +549,6 @@ void DesktopWindowTreeHostPlatform::Relayout() {
     non_client_view->client_view()->InvalidateLayout();
     non_client_view->InvalidateLayout();
   }
-  widget->GetRootView()->Layout();
 }
 
 void DesktopWindowTreeHostPlatform::RemoveNonClientEventFilter() {
