@@ -5,7 +5,6 @@
 #include "gpu/command_buffer/service/shared_image_backing_factory_iosurface.h"
 
 #include "base/mac/scoped_cftyperef.h"
-#include "base/optional.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -15,15 +14,8 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "ui/gfx/mac/io_surface.h"
-#include "ui/gl/buildflags.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_io_surface.h"
-
-// Usage of BUILDFLAG(USE_DAWN) needs to be after the include for
-// ui/gl/buildflags.h
-#if BUILDFLAG(USE_DAWN)
-#include <dawn_native/MetalBackend.h>
-#endif  // BUILDFLAG(USE_DAWN)
 
 namespace gpu {
 
@@ -80,22 +72,6 @@ void FlushIOSurfaceGLOperations() {
   // graphics contexts.
   gl::GLApi* api = gl::g_current_gl_context;
   api->glFlushFn();
-}
-
-base::Optional<DawnTextureFormat> GetDawnFormat(viz::ResourceFormat format) {
-  switch (format) {
-    case viz::RED_8:
-    case viz::ALPHA_8:
-    case viz::LUMINANCE_8:
-      return DAWN_TEXTURE_FORMAT_R8_UNORM;
-    case viz::RG_88:
-      return DAWN_TEXTURE_FORMAT_R8_G8_UNORM;
-    case viz::RGBA_8888:
-    case viz::BGRA_8888:
-      return DAWN_TEXTURE_FORMAT_B8_G8_R8_A8_UNORM;
-    default:
-      return {};
-  }
 }
 
 }  // anonymous namespace
@@ -182,62 +158,6 @@ class SharedImageRepresentationSkiaIOSurface
   gles2::Texture* texture_;
 };
 
-// Representation of a SharedImageBackingIOSurface as a Dawn Texture.
-#if BUILDFLAG(USE_DAWN)
-class SharedImageRepresentationDawnIOSurface
-    : public SharedImageRepresentationDawn {
- public:
-  SharedImageRepresentationDawnIOSurface(
-      SharedImageManager* manager,
-      SharedImageBacking* backing,
-      MemoryTypeTracker* tracker,
-      DawnDevice device,
-      base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-      DawnTextureFormat dawn_format)
-      : SharedImageRepresentationDawn(manager, backing, tracker),
-        io_surface_(std::move(io_surface)),
-        device_(device),
-        dawn_format_(dawn_format) {
-    DCHECK(device_);
-    DCHECK(io_surface_);
-  }
-
-  ~SharedImageRepresentationDawnIOSurface() override {}
-
-  DawnTexture BeginAccess(DawnTextureUsageBit usage) final {
-    DawnTextureDescriptor desc;
-    desc.nextInChain = nullptr;
-    desc.format = dawn_format_;
-    desc.usage = usage;
-    desc.dimension = DAWN_TEXTURE_DIMENSION_2D;
-    desc.size = {size().width(), size().height(), 1};
-    desc.arrayLayerCount = 1;
-    desc.mipLevelCount = 1;
-    desc.sampleCount = 1;
-
-    return dawn_native::metal::WrapIOSurface(device_, &desc, io_surface_.get(),
-                                             0);
-  }
-
-  void EndAccess() final {
-    // macOS has a global GPU command queue so synchronization between APIs and
-    // devices is automatic. However on Metal, dawnQueueSubmit "commits" the
-    // Metal command buffers but they aren't "scheduled" in the global queue
-    // immediately. (that work seems offloaded to a different thread?)
-    // Wait for all the previous submitted commands to be scheduled to have
-    // scheduling races between commands using the IOSurface on different APIs.
-    // This is a blocking call but should be almost instant.
-    TRACE_EVENT0("gpu", "SharedImageRepresentationDawnIOSurface::EndAccess");
-    dawn_native::metal::WaitForCommandsToBeScheduled(device_);
-  }
-
- private:
-  base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
-  DawnDevice device_;
-  DawnTextureFormat dawn_format_;
-};
-#endif  // BUILDFLAG(USE_DAWN)
-
 // Implementation of SharedImageBacking by wrapping IOSurfaces
 class SharedImageBackingIOSurface : public SharedImageBacking {
  public:
@@ -247,7 +167,6 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
                               const gfx::ColorSpace& color_space,
                               uint32_t usage,
                               base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-                              base::Optional<DawnTextureFormat> dawn_format,
                               size_t estimated_size)
       : SharedImageBacking(mailbox,
                            format,
@@ -256,8 +175,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
                            usage,
                            estimated_size,
                            false /* is_thread_safe */),
-        io_surface_(std::move(io_surface)),
-        dawn_format_(dawn_format) {
+        io_surface_(std::move(io_surface)) {
     DCHECK(io_surface_);
   }
   ~SharedImageBackingIOSurface() final { DCHECK(!io_surface_); }
@@ -324,23 +242,6 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
         SkPromiseImageTexture::Make(backend_texture);
     return std::make_unique<SharedImageRepresentationSkiaIOSurface>(
         manager, this, promise_texture, tracker, texture);
-  }
-
-  std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker,
-      DawnDevice device) override {
-#if BUILDFLAG(USE_DAWN)
-    if (!dawn_format_) {
-      LOG(ERROR) << "Format not supported for Dawn";
-      return nullptr;
-    }
-
-    return std::make_unique<SharedImageRepresentationDawnIOSurface>(
-        manager, this, tracker, device, io_surface_, dawn_format_.value());
-#else   // BUILDFLAG(USE_DAWN)
-    return nullptr;
-#endif  // BUILDFLAG(USE_DAWN)
   }
 
  private:
@@ -412,7 +313,6 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
   }
 
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
-  base::Optional<DawnTextureFormat> dawn_format_;
   bool is_cleared_ = false;
 
   // A texture for the associated legacy mailbox.
@@ -483,7 +383,7 @@ SharedImageBackingFactoryIOSurface::CreateSharedImage(
 
   return std::make_unique<SharedImageBackingIOSurface>(
       mailbox, format, size, color_space, usage, std::move(io_surface),
-      GetDawnFormat(format), estimated_size);
+      estimated_size);
 }
 
 std::unique_ptr<SharedImageBacking>
