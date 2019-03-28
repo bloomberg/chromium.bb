@@ -1324,18 +1324,7 @@ IN_PROC_BROWSER_TEST_F(NavigationConsumingTest, TargetNavigationFocus) {
   EXPECT_EQ(new_contents, browser()->tab_strip_model()->GetActiveWebContents());
 }
 
-class HistoryManipulationInterventionBrowserTest
-    : public ChromeNavigationBrowserTest {
- protected:
-  void SetUp() override {
-    feature_list_.InitAndEnableFeature(
-        features::kHistoryManipulationIntervention);
-    ChromeNavigationBrowserTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
+using HistoryManipulationInterventionBrowserTest = ChromeNavigationBrowserTest;
 
 // Tests that chrome::GoBack does nothing if all the previous entries are marked
 // as skippable and the back button is disabled.

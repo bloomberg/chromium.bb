@@ -8400,11 +8400,14 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(url1, shell()->web_contents()->GetLastCommittedURL());
 }
 
-class NavigationControllerHistoryInterventionBrowserTest
+using NavigationControllerHistoryInterventionBrowserTest =
+    NavigationControllerBrowserTest;
+
+class NavigationControllerDisableHistoryIntervention
     : public NavigationControllerBrowserTest {
  protected:
   void SetUp() override {
-    feature_list_.InitAndEnableFeature(
+    feature_list_.InitAndDisableFeature(
         features::kHistoryManipulationIntervention);
     NavigationControllerBrowserTest::SetUp();
   }
@@ -8525,7 +8528,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 
 // Tests that the navigation entry is marked as skippable on back/forward button
 // but is not skipped if the feature is not enabled.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationControllerDisableHistoryIntervention,
                        NoSkipOnBackFeatureDisabled) {
   base::HistogramTester histograms;
 
@@ -8693,8 +8696,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 }
 
 // Tests that if an entry is marked as skippable, it will be reset if there is a
-// navigation to this entry again.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+// navigation to this entry again. This does not need the feature to be enabled.
+IN_PROC_BROWSER_TEST_F(NavigationControllerDisableHistoryIntervention,
                        ResetSkipOnBackForward) {
   base::HistogramTester histograms;
   GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));

@@ -493,6 +493,11 @@ TEST_F(NavigationControllerTest, LoadURL) {
   // The timestamp should have been set.
   EXPECT_FALSE(controller.GetVisibleEntry()->GetTimestamp().is_null());
 
+  // Simulate a user gesture so that the above entry is not marked to be skipped
+  // on back.
+  main_test_rfh()->frame_tree_node()->UpdateUserActivationState(
+      blink::UserActivationUpdateType::kNotifyActivation);
+
   // Load another...
   controller.LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
@@ -932,6 +937,11 @@ TEST_F(NavigationControllerTest, LoadURL_ExistingPending) {
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
+  // Simulate a user gesture so that the above entry is not marked to be skipped
+  // on back.
+  main_test_rfh()->frame_tree_node()->UpdateUserActivationState(
+      blink::UserActivationUpdateType::kNotifyActivation);
+
   const GURL kExistingURL2("http://foo/bee");
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kExistingURL2);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
@@ -979,6 +989,10 @@ TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
   navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(BINDINGS_POLICY_MOJO_WEB_UI,
             controller.GetLastCommittedEntry()->bindings());
+  // Simulate a user gesture so that the above entry is not marked to be skipped
+  // on back.
+  main_test_rfh()->frame_tree_node()->UpdateUserActivationState(
+      blink::UserActivationUpdateType::kNotifyActivation);
 
   // Navigate cross-process to a second URL.
   const GURL kExistingURL2("http://foo/eh");
@@ -1677,6 +1691,11 @@ TEST_F(NavigationControllerTest, Back_NewPending) {
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
+  // Simulate a user gesture so that the above entry is not marked to be skipped
+  // on back.
+  main_test_rfh()->frame_tree_node()->UpdateUserActivationState(
+      blink::UserActivationUpdateType::kNotifyActivation);
+
   // controller.LoadURL(kUrl2, ui::PAGE_TRANSITION_TYPED);
   NavigationSimulator::NavigateAndCommitFromDocument(kUrl2, main_test_rfh());
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
@@ -2357,6 +2376,10 @@ TEST_F(NavigationControllerTest, LinkClick) {
   NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
+
+  // Simulate a user gesture.
+  main_test_rfh()->frame_tree_node()->UpdateUserActivationState(
+      blink::UserActivationUpdateType::kNotifyActivation);
 
   NavigationSimulator::NavigateAndCommitFromDocument(url2, main_test_rfh());
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
