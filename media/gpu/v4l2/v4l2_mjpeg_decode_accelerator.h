@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_V4L2_V4L2_JPEG_DECODE_ACCELERATOR_H_
-#define MEDIA_GPU_V4L2_V4L2_JPEG_DECODE_ACCELERATOR_H_
+#ifndef MEDIA_GPU_V4L2_V4L2_MJPEG_DECODE_ACCELERATOR_H_
+#define MEDIA_GPU_V4L2_V4L2_MJPEG_DECODE_ACCELERATOR_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -26,15 +26,15 @@
 
 namespace media {
 
-class MEDIA_GPU_EXPORT V4L2JpegDecodeAccelerator
+class MEDIA_GPU_EXPORT V4L2MjpegDecodeAccelerator
     : public MjpegDecodeAccelerator {
  public:
-  V4L2JpegDecodeAccelerator(
+  V4L2MjpegDecodeAccelerator(
       const scoped_refptr<V4L2Device>& device,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
-  ~V4L2JpegDecodeAccelerator() override;
+  ~V4L2MjpegDecodeAccelerator() override;
 
-  // JpegDecodeAccelerator implementation.
+  // MjpegDecodeAccelerator implementation.
   bool Initialize(Client* client) override;
   void Decode(const BitstreamBuffer& bitstream_buffer,
               const scoped_refptr<VideoFrame>& video_frame) override;
@@ -183,13 +183,13 @@ class MEDIA_GPU_EXPORT V4L2JpegDecodeAccelerator
 
   // Point to |this| for use in posting tasks from the decoder thread back to
   // the ChildThread.
-  base::WeakPtr<V4L2JpegDecodeAccelerator> weak_ptr_;
+  base::WeakPtr<V4L2MjpegDecodeAccelerator> weak_ptr_;
   // Weak factory for producing weak pointers on the child thread.
-  base::WeakPtrFactory<V4L2JpegDecodeAccelerator> weak_factory_;
+  base::WeakPtrFactory<V4L2MjpegDecodeAccelerator> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(V4L2JpegDecodeAccelerator);
+  DISALLOW_COPY_AND_ASSIGN(V4L2MjpegDecodeAccelerator);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_V4L2_V4L2_JPEG_DECODE_ACCELERATOR_H_
+#endif  // MEDIA_GPU_V4L2_V4L2_MJPEG_DECODE_ACCELERATOR_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/fake_jpeg_decode_accelerator.h"
+#include "media/gpu/fake_mjpeg_decode_accelerator.h"
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
@@ -11,18 +11,18 @@
 
 namespace media {
 
-FakeJpegDecodeAccelerator::FakeJpegDecodeAccelerator(
+FakeMjpegDecodeAccelerator::FakeMjpegDecodeAccelerator(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : client_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(std::move(io_task_runner)),
-      decoder_thread_("FakeJpegDecoderThread"),
+      decoder_thread_("FakeMjpegDecoderThread"),
       weak_factory_(this) {}
 
-FakeJpegDecodeAccelerator::~FakeJpegDecodeAccelerator() {
+FakeMjpegDecodeAccelerator::~FakeMjpegDecodeAccelerator() {
   DCHECK(client_task_runner_->BelongsToCurrentThread());
 }
 
-bool FakeJpegDecodeAccelerator::Initialize(
+bool FakeMjpegDecodeAccelerator::Initialize(
     MjpegDecodeAccelerator::Client* client) {
   DCHECK(client_task_runner_->BelongsToCurrentThread());
   client_ = client;
@@ -36,7 +36,7 @@ bool FakeJpegDecodeAccelerator::Initialize(
   return true;
 }
 
-void FakeJpegDecodeAccelerator::Decode(
+void FakeMjpegDecodeAccelerator::Decode(
     const BitstreamBuffer& bitstream_buffer,
     const scoped_refptr<VideoFrame>& video_frame) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -46,7 +46,7 @@ void FakeJpegDecodeAccelerator::Decode(
                                    bitstream_buffer.size(),
                                    bitstream_buffer.offset()));
   if (!src_shm->IsValid()) {
-    DLOG(ERROR) << "Unable to map shared memory in FakeJpegDecodeAccelerator";
+    DLOG(ERROR) << "Unable to map shared memory in FakeMjpegDecodeAccelerator";
     NotifyError(bitstream_buffer.id(),
                 MjpegDecodeAccelerator::UNREADABLE_INPUT);
     return;
@@ -55,12 +55,12 @@ void FakeJpegDecodeAccelerator::Decode(
   // Unretained |this| is safe because |this| owns |decoder_thread_|.
   decoder_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&FakeJpegDecodeAccelerator::DecodeOnDecoderThread,
+      base::BindOnce(&FakeMjpegDecodeAccelerator::DecodeOnDecoderThread,
                      base::Unretained(this), bitstream_buffer, video_frame,
                      base::Passed(&src_shm)));
 }
 
-void FakeJpegDecodeAccelerator::DecodeOnDecoderThread(
+void FakeMjpegDecodeAccelerator::DecodeOnDecoderThread(
     const BitstreamBuffer& bitstream_buffer,
     const scoped_refptr<VideoFrame>& video_frame,
     std::unique_ptr<WritableUnalignedMapping> src_shm) {
@@ -74,30 +74,30 @@ void FakeJpegDecodeAccelerator::DecodeOnDecoderThread(
 
   client_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&FakeJpegDecodeAccelerator::OnDecodeDoneOnClientThread,
+      base::BindOnce(&FakeMjpegDecodeAccelerator::OnDecodeDoneOnClientThread,
                      weak_factory_.GetWeakPtr(), bitstream_buffer.id()));
 }
 
-bool FakeJpegDecodeAccelerator::IsSupported() {
+bool FakeMjpegDecodeAccelerator::IsSupported() {
   return true;
 }
 
-void FakeJpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
-                                            Error error) {
+void FakeMjpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
+                                             Error error) {
   client_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&FakeJpegDecodeAccelerator::NotifyErrorOnClientThread,
+      base::BindOnce(&FakeMjpegDecodeAccelerator::NotifyErrorOnClientThread,
                      weak_factory_.GetWeakPtr(), bitstream_buffer_id, error));
 }
 
-void FakeJpegDecodeAccelerator::NotifyErrorOnClientThread(
+void FakeMjpegDecodeAccelerator::NotifyErrorOnClientThread(
     int32_t bitstream_buffer_id,
     Error error) {
   DCHECK(client_task_runner_->BelongsToCurrentThread());
   client_->NotifyError(bitstream_buffer_id, error);
 }
 
-void FakeJpegDecodeAccelerator::OnDecodeDoneOnClientThread(
+void FakeMjpegDecodeAccelerator::OnDecodeDoneOnClientThread(
     int32_t input_buffer_id) {
   DCHECK(client_task_runner_->BelongsToCurrentThread());
   client_->VideoFrameReady(input_buffer_id);
