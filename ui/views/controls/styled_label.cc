@@ -192,10 +192,10 @@ void StyledLabel::SetDisplayedOnBackgroundColor(SkColor color) {
   displayed_on_background_color_ = color;
   displayed_on_background_color_set_ = true;
 
-  for (int i = 0, count = child_count(); i < count; ++i) {
-    DCHECK((child_at(i)->GetClassName() == Label::kViewClassName) ||
-           (child_at(i)->GetClassName() == Link::kViewClassName));
-    static_cast<Label*>(child_at(i))->SetBackgroundColor(color);
+  for (View* child : children()) {
+    DCHECK((child->GetClassName() == Label::kViewClassName) ||
+           (child->GetClassName() == Link::kViewClassName));
+    static_cast<Label*>(child)->SetBackgroundColor(color);
   }
 }
 

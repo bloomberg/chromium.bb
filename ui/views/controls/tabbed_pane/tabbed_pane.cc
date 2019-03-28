@@ -752,8 +752,8 @@ void TabbedPane::SelectTabAt(size_t index) {
 
 gfx::Size TabbedPane::CalculatePreferredSize() const {
   gfx::Size size;
-  for (int i = 0; i < contents_->child_count(); ++i)
-    size.SetToMax(contents_->child_at(i)->GetPreferredSize());
+  for (const View* child : contents_->children())
+    size.SetToMax(child->GetPreferredSize());
   if (GetOrientation() == Orientation::kHorizontal)
     size.Enlarge(0, tab_strip_->GetPreferredSize().height());
   else
@@ -795,8 +795,8 @@ void TabbedPane::Layout() {
     contents_->SetBounds(tab_strip_->bounds().width(), 0,
                          std::max(0, width() - size.width()), height());
   }
-  for (int i = 0; i < contents_->child_count(); ++i)
-    contents_->child_at(i)->SetSize(contents_->size());
+  for (View* child : contents_->children())
+    child->SetSize(contents_->size());
 }
 
 void TabbedPane::ViewHierarchyChanged(

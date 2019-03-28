@@ -127,8 +127,7 @@ void SubmenuView::Layout() {
   int x = insets.left();
   int y = insets.top();
   int menu_item_width = width() - insets.width();
-  for (int i = 0; i < child_count(); ++i) {
-    View* child = child_at(i);
+  for (View* child : children()) {
     if (child->visible()) {
       int child_height = child->GetHeightForWidth(menu_item_width);
       child->SetBounds(x, y, menu_item_width, child_height);
@@ -153,8 +152,7 @@ gfx::Size SubmenuView::CalculatePreferredSize() const {
   // calculate the width of the menu. In the second, we calculate the height
   // using that width. This allows views that have flexible widths to adjust
   // accordingly.
-  for (int i = 0; i < child_count(); ++i) {
-    const View* child = child_at(i);
+  for (const View* child : children()) {
     if (!child->visible())
       continue;
     if (child->id() == MenuItemView::kMenuItemViewID) {

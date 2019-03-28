@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <numeric>
 
+#include "base/containers/adapters.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -638,8 +639,7 @@ void MenuItemView::Layout() {
     // Child views are laid out right aligned and given the full height. To
     // right align start with the last view and progress to the first.
     int x = width() - (use_right_margin_ ? item_right_margin_ : 0);
-    for (int i = child_count() - 1; i >= 0; --i) {
-      View* child = child_at(i);
+    for (View* child : base::Reversed(children())) {
       if (icon_view_ == child)
         continue;
       if (radio_check_image_view_ == child)
@@ -923,10 +923,9 @@ void MenuItemView::AddEmptyMenus() {
 
 void MenuItemView::RemoveEmptyMenus() {
   DCHECK(HasSubmenu());
-  // Iterate backwards as we may end up removing views, which alters the child
-  // view count.
-  for (int i = submenu_->child_count() - 1; i >= 0; --i) {
-    View* child = submenu_->child_at(i);
+  // Copy the children, since we may mutate them as we go.
+  const Views children = submenu_->children();
+  for (View* child : children) {
     if (child->id() == MenuItemView::kMenuItemViewID) {
       MenuItemView* menu_item = static_cast<MenuItemView*>(child);
       if (menu_item->HasSubmenu())
