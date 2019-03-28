@@ -475,11 +475,6 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
       av1_encode_intra_block_plane(cpi, x, bsize, 0, 0, mb_row * 2, mb_col * 2);
       this_error = aom_get_mb_ss(x->plane[0].src_diff);
 
-      // Keep a record of blocks that have almost no intra error residual
-      // (i.e. are in effect completely flat and untextured in the intra
-      // domain). In natural videos this is uncommon, but it is much more
-      // common in animations, graphics and screen content, so may be used
-      // as a signal to detect these types of content.
       if (this_error < UL_INTRA_THRESH) {
         ++intra_skip_count;
       } else if ((mb_col > 0) && (image_data_start_row == INVALID_ROW)) {
