@@ -48,9 +48,11 @@ class PerfettoTracingCoordinator : public Coordinator {
   void RequestBufferUsage(RequestBufferUsageCallback callback) override;
 
  private:
+  void OnPIDStartedTracing(base::ProcessId pid);
+  void OnAgentStartedTracing(AgentRegistry::AgentEntry* agent_entry);
   void OnTracingOverCallback();
   void OnClientConnectionError() override;
-  void PingAgent(AgentRegistry::AgentEntry* agent_entry);
+  void WaitForAgentToBeginTracing(AgentRegistry::AgentEntry* agent_entry);
   void StopAndFlushInternal(mojo::ScopedDataPipeProducerHandle stream,
                             const std::string& agent_label,
                             StopAndFlushCallback callback);

@@ -34,6 +34,9 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
       mojom::ConsumerHostRequest request,
       const service_manager::BindSourceInfo& source_info);
 
+  static bool ParsePidFromProducerName(const std::string& producer_name,
+                                       base::ProcessId* pid);
+
   // The owner of ConsumerHost should make sure to destroy
   // |service| after destroying this.
   explicit ConsumerHost(PerfettoService* service);

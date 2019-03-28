@@ -33,8 +33,11 @@ bool StringToProcessId(const std::string& input, base::ProcessId* output) {
   return base::StringToUint(input, reinterpret_cast<uint32_t*>(output));
 }
 
-bool ParsePidFromProducerName(const std::string& producer_name,
-                              base::ProcessId* pid) {
+}  // namespace
+
+// static
+bool ConsumerHost::ParsePidFromProducerName(const std::string& producer_name,
+                                            base::ProcessId* pid) {
   if (!base::StartsWith(producer_name, mojom::kPerfettoProducerNamePrefix,
                         base::CompareCase::SENSITIVE)) {
     LOG(DFATAL) << "Unexpected producer name: " << producer_name;
@@ -49,8 +52,6 @@ bool ParsePidFromProducerName(const std::string& producer_name,
   }
   return true;
 }
-
-}  // namespace
 
 // static
 void ConsumerHost::BindConsumerRequest(
