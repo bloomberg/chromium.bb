@@ -253,6 +253,11 @@
       'platform': 'N',
     },
 
+    'android_o_cts_tests': {
+      'arch': 'arm64',
+      'platform': 'O',
+    },
+
     'android_oreo_standard_gtests': {
       'chrome_public_test_apk': {
         'swarming': {
