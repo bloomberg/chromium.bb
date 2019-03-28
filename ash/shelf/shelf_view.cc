@@ -1295,8 +1295,7 @@ void ShelfView::CalculateIdealBounds() const {
         (i <= kAppListButtonIndex) ? kShelfControlSize : kShelfButtonSize;
     const int size_secondary = kShelfButtonSize;
 
-    if (i < first_visible_index_) {
-      // This happens for the overflow view.
+    if (is_overflow_mode() && i < first_visible_index_) {
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
       continue;
     }
