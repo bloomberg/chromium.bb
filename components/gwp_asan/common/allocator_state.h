@@ -42,7 +42,7 @@ class AllocatorState {
 
   // Maximum number of virtual memory slots (guard-page buffered pages) this
   // class can allocate.
-  static constexpr size_t kMaxSlots = 512;
+  static constexpr size_t kMaxSlots = 4096;
   // Maximum number of concurrent allocations/metadata this class can allocate.
   static constexpr size_t kMaxMetadata = 255;
   // Invalid metadata index.
