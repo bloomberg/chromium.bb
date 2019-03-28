@@ -1638,6 +1638,7 @@ static INLINE void lowbd_inv_txfm2d_add_no_identity_avx2(
   assert(row_txfm != NULL);
   int ud_flip, lr_flip;
   get_flip_cfg(tx_type, &ud_flip, &lr_flip);
+  const __m256i scale0 = _mm256_set1_epi16(1 << (15 + shift[0]));
   for (int i = 0; i < buf_size_nonzero_h_div16; i++) {
     __m256i buf0[64];
     const int32_t *input_row = input + (i << 4) * input_stride;
@@ -1652,7 +1653,9 @@ static INLINE void lowbd_inv_txfm2d_add_no_identity_avx2(
       round_shift_avx2(buf0, buf0, input_stride);  // rect special code
     }
     row_txfm(buf0, buf0, cos_bit_row);
-    round_shift_16bit_w16_avx2(buf0, txfm_size_col, shift[0]);
+    for (int j = 0; j < txfm_size_col; ++j) {
+      buf0[j] = _mm256_mulhrs_epi16(buf0[j], scale0);
+    }
 
     __m256i *buf1_cur = buf1 + (i << 4);
     if (lr_flip) {
@@ -1668,10 +1671,13 @@ static INLINE void lowbd_inv_txfm2d_add_no_identity_avx2(
       }
     }
   }
+  const __m256i scale1 = _mm256_set1_epi16(1 << (15 + shift[1]));
   for (int i = 0; i < buf_size_w_div16; i++) {
     __m256i *buf1_cur = buf1 + i * txfm_size_row;
     col_txfm(buf1_cur, buf1_cur, cos_bit_col);
-    round_shift_16bit_w16_avx2(buf1_cur, txfm_size_row, shift[1]);
+    for (int j = 0; j < txfm_size_row; ++j) {
+      buf1_cur[j] = _mm256_mulhrs_epi16(buf1_cur[j], scale1);
+    }
   }
   for (int i = 0; i < buf_size_w_div16; i++) {
     lowbd_write_buffer_16xn_avx2(buf1 + i * txfm_size_row, output + 16 * i,

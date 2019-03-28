@@ -2820,8 +2820,22 @@ static void lowbd_inv_txfm2d_add_4x16_ssse3(const int32_t *input,
     load_buffer_32bit_to_16bit_w4(input_cur, txfm_size_col, buf_cur,
                                   row_one_loop);
     transpose_16bit_4x8(buf_cur, buf_cur);
-    row_txfm(buf_cur, buf_cur, cos_bit_row);
-    round_shift_16bit_ssse3(buf_cur, row_one_loop, shift[0]);
+    if (row_txfm == iidentity4_new_ssse3) {
+      const __m128i scale = pair_set_epi16(NewSqrt2, 3 << (NewSqrt2Bits - 1));
+      const __m128i ones = _mm_set1_epi16(1);
+      for (int j = 0; j < 4; ++j) {
+        const __m128i buf_lo = _mm_unpacklo_epi16(buf_cur[j], ones);
+        const __m128i buf_hi = _mm_unpackhi_epi16(buf_cur[j], ones);
+        const __m128i buf_32_lo =
+            _mm_srai_epi32(_mm_madd_epi16(buf_lo, scale), (NewSqrt2Bits + 1));
+        const __m128i buf_32_hi =
+            _mm_srai_epi32(_mm_madd_epi16(buf_hi, scale), (NewSqrt2Bits + 1));
+        buf_cur[j] = _mm_packs_epi32(buf_32_lo, buf_32_hi);
+      }
+    } else {
+      row_txfm(buf_cur, buf_cur, cos_bit_row);
+      round_shift_16bit_ssse3(buf_cur, row_one_loop, shift[0]);
+    }
     if (lr_flip) {
       __m128i temp[8];
       flip_buf_sse2(buf_cur, temp, txfm_size_col);
@@ -2867,8 +2881,22 @@ static void lowbd_inv_txfm2d_add_16x4_ssse3(const int32_t *input,
                                txfm_size_row);
     transpose_16bit_8x4(buf_cur, buf_cur);
   }
-  row_txfm(buf, buf, cos_bit_row);
-  round_shift_16bit_ssse3(buf, txfm_size_col, shift[0]);
+  if (row_txfm == iidentity16_new_ssse3) {
+    const __m128i scale = pair_set_epi16(2 * NewSqrt2, 3 << (NewSqrt2Bits - 1));
+    const __m128i ones = _mm_set1_epi16(1);
+    for (int j = 0; j < 16; ++j) {
+      const __m128i buf_lo = _mm_unpacklo_epi16(buf[j], ones);
+      const __m128i buf_hi = _mm_unpackhi_epi16(buf[j], ones);
+      const __m128i buf_32_lo =
+          _mm_srai_epi32(_mm_madd_epi16(buf_lo, scale), (NewSqrt2Bits + 1));
+      const __m128i buf_32_hi =
+          _mm_srai_epi32(_mm_madd_epi16(buf_hi, scale), (NewSqrt2Bits + 1));
+      buf[j] = _mm_packs_epi32(buf_32_lo, buf_32_hi);
+    }
+  } else {
+    row_txfm(buf, buf, cos_bit_row);
+    round_shift_16bit_ssse3(buf, txfm_size_col, shift[0]);
+  }
   if (lr_flip) {
     __m128i temp[16];
     flip_buf_sse2(buf, temp, 16);
@@ -2916,22 +2944,14 @@ void av1_lowbd_inv_txfm2d_add_ssse3(const int32_t *input, uint8_t *output,
       break;
   }
 }
+
 void av1_inv_txfm_add_ssse3(const tran_low_t *dqcoeff, uint8_t *dst, int stride,
                             const TxfmParam *txfm_param) {
-  const TX_TYPE tx_type = txfm_param->tx_type;
   if (!txfm_param->lossless) {
-    switch (txfm_param->tx_size) {
-      case TX_4X16:
-      case TX_16X4:
-        // TODO(http://crbug.com/aomedia/2350): the ssse3 versions cause test
-        // vector mismatches.
-        av1_inv_txfm_add_c(dqcoeff, dst, stride, txfm_param);
-        break;
-      default:
-        av1_lowbd_inv_txfm2d_add_ssse3(dqcoeff, dst, stride, tx_type,
-                                       txfm_param->tx_size, txfm_param->eob);
-        break;
-    }
+    const TX_TYPE tx_type = txfm_param->tx_type;
+    av1_lowbd_inv_txfm2d_add_ssse3(dqcoeff, dst, stride, tx_type,
+                                   txfm_param->tx_size, txfm_param->eob);
+
   } else {
     av1_inv_txfm_add_c(dqcoeff, dst, stride, txfm_param);
   }

@@ -38,6 +38,25 @@ using std::vector;
 
 namespace {
 
+static const char *tx_type_name[] = {
+  "DCT_DCT",
+  "ADST_DCT",
+  "DCT_ADST",
+  "ADST_ADST",
+  "FLIPADST_DCT",
+  "DCT_FLIPADST",
+  "FLIPADST_FLIPADST",
+  "ADST_FLIPADST",
+  "FLIPADST_ADST",
+  "IDTX",
+  "V_DCT",
+  "H_DCT",
+  "V_ADST",
+  "H_ADST",
+  "V_FLIPADST",
+  "H_FLIPADST",
+};
+
 // AV1InvTxfm2dParam argument list:
 // tx_type_, tx_size_, max_error_, max_avg_error_
 typedef ::testing::tuple<TX_TYPE, TX_SIZE, int, double> AV1InvTxfm2dParam;
@@ -243,14 +262,15 @@ typedef ::testing::tuple<const LbdInvTxfm2dFunc> AV1LbdInvTxfm2dParam;
 class AV1LbdInvTxfm2d : public ::testing::TestWithParam<AV1LbdInvTxfm2dParam> {
  public:
   virtual void SetUp() { target_func_ = GET_PARAM(0); }
-  void RunAV1InvTxfm2dTest(TX_TYPE tx_type, TX_SIZE tx_size, int run_times);
+  void RunAV1InvTxfm2dTest(TX_TYPE tx_type, TX_SIZE tx_size, int run_times,
+                           int gt_int16 = 0);
 
  private:
   LbdInvTxfm2dFunc target_func_;
 };
 
 void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type, TX_SIZE tx_size,
-                                          int run_times) {
+                                          int run_times, int gt_int16) {
   FwdTxfm2dFunc fwd_func_ = libaom_test::fwd_txfm_func_ls[tx_size];
   InvTxfm2dFunc ref_func_ = libaom_test::inv_txfm_func_ls[tx_size];
   if (fwd_func_ == NULL || ref_func_ == NULL || target_func_ == NULL) {
@@ -275,6 +295,7 @@ void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type, TX_SIZE tx_size,
   const int16_t eobmax = rows_nonezero * cols_nonezero;
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   int randTimes = run_times == 1 ? (eobmax + 500) : 1;
+
   for (int cnt = 0; cnt < randTimes; ++cnt) {
     const int16_t max_in = (1 << (bd)) - 1;
     for (int r = 0; r < BLK_WIDTH; ++r) {
@@ -291,7 +312,9 @@ void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type, TX_SIZE tx_size,
     for (int i = eob; i < eobmax; i++) {
       inv_input[scan[i]] = 0;
     }
-
+    if (gt_int16) {
+      inv_input[scan[eob - 1]] = ((int32_t)INT16_MAX * 100 / 141);
+    }
     aom_usec_timer timer;
     aom_usec_timer_start(&timer);
     for (int i = 0; i < run_times; ++i) {
@@ -313,10 +336,13 @@ void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type, TX_SIZE tx_size,
     for (int r = 0; r < rows; ++r) {
       for (int c = 0; c < cols; ++c) {
         uint8_t ref_value = static_cast<uint8_t>(ref_output[r * stride + c]);
+        if (ref_value != output[r * stride + c]) {
+          printf(" ");
+        }
         ASSERT_EQ(ref_value, output[r * stride + c])
             << "[" << r << "," << c << "] " << cnt
             << " tx_size: " << static_cast<int>(tx_size)
-            << " tx_type: " << tx_type << " eob " << eob;
+            << " tx_type: " << tx_type_name[tx_type] << " eob " << eob;
       }
     }
   }
@@ -334,8 +360,23 @@ TEST_P(AV1LbdInvTxfm2d, match) {
   }
 }
 
-TEST_P(AV1LbdInvTxfm2d, DISABLED_Speed) {
+TEST_P(AV1LbdInvTxfm2d, gt_int16) {
+  static const TX_TYPE types[] = {
+    DCT_DCT, ADST_DCT, FLIPADST_DCT, IDTX, V_DCT, H_DCT, H_ADST, H_FLIPADST
+  };
   for (int j = 0; j < (int)(TX_SIZES_ALL); ++j) {
+    const TX_SIZE sz = static_cast<TX_SIZE>(j);
+    for (uint8_t i = 0; i < sizeof(types) / sizeof(TX_TYPE); ++i) {
+      const TX_TYPE tp = types[i];
+      if (libaom_test::IsTxSizeTypeValid(sz, tp)) {
+        RunAV1InvTxfm2dTest(tp, sz, 1, 1);
+      }
+    }
+  }
+}
+
+TEST_P(AV1LbdInvTxfm2d, DISABLED_Speed) {
+  for (int j = 1; j < (int)(TX_SIZES_ALL); ++j) {
     for (int i = 0; i < (int)TX_TYPES; ++i) {
       if (libaom_test::IsTxSizeTypeValid(static_cast<TX_SIZE>(j),
                                          static_cast<TX_TYPE>(i))) {
