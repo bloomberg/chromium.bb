@@ -26,7 +26,7 @@ class HttpsPreviewsBaseClass():
   def getVersion(self):
     raise Exception( "Please override this method")
 
-  def EnableLitePageServerPreviews(self, t):
+  def EnableLitePageServerPreviewsAndInit(self, t):
     version = self.getVersion()
 
     # These feature flags are common to both versions.
@@ -52,10 +52,16 @@ class HttpsPreviewsBaseClass():
 
     t.AddChromeArg('--enable-spdy-proxy-auth')
     t.AddChromeArg('--dont-require-litepage-redirect-infobar')
-    t.AddChromeArg('--ignore-previews-blacklist')
+    t.AddChromeArg('--ignore-previews-blocklist')
     t.AddChromeArg('--force-effective-connection-type=2G')
+    t.AddChromeArg('--ignore-litepage-redirect-optimization-blacklist')
     t.AddChromeArg('--data-reduction-proxy-experiment='
       'external_chrome_integration_test')
+
+    # Start Chrome and wait for initialization.
+    t.LoadURL('data:,')
+    t.SleepUntilHistogramHasEntry(
+        'DataReductionProxy.ConfigService.FetchResponseCode')
 
   def _AssertShowingLitePage(self, t, expectedText, expectedImages):
     """Asserts that Chrome has loaded a Lite Page from the litepages server.
@@ -67,13 +73,16 @@ class HttpsPreviewsBaseClass():
     image_responses = 0
 
     for response in t.GetHTTPResponses():
-      ct = response.response_headers['content-type']
-      if 'text/html' in ct:
+      content_type = ''
+      if 'content-type' in response.response_headers:
+        content_type = response.response_headers['content-type']
+
+      if 'text/html' in content_type:
         self.assertRegexpMatches(response.url,
                                  r"https://\w+\.litepages\.googlezip\.net/")
         self.assertEqual(200, response.status)
         lite_page_responses += 1
-      if 'image/' in ct:
+      if 'image/' in content_type:
         self.assertRegexpMatches(response.url,
                                  r"https://\w+\.litepages\.googlezip\.net/")
         self.assertEqual(200, response.status)
@@ -108,7 +117,7 @@ class HttpsPreviewsBaseClass():
   @ChromeVersionEqualOrAfterM(74)
   def testServerReturnsBypass(self):
     with TestDriver() as t:
-      self.EnableLitePageServerPreviews(t)
+      self.EnableLitePageServerPreviewsAndInit(t)
       url = 'https://mobilespeed-test.appspot.com/static/litepagetests/bypass.html'
       t.LoadURL(url)
       self._AssertShowingOriginalPage(t, url, 200)
@@ -117,7 +126,7 @@ class HttpsPreviewsBaseClass():
   @ChromeVersionEqualOrAfterM(74)
   def testServerReturns404(self):
     with TestDriver() as t:
-      self.EnableLitePageServerPreviews(t)
+      self.EnableLitePageServerPreviewsAndInit(t)
       url = 'https://mobilespeed-test.appspot.com/404'
       t.LoadURL(url)
       self._AssertShowingOriginalPage(t, url, 404)
@@ -126,7 +135,7 @@ class HttpsPreviewsBaseClass():
   @ChromeVersionEqualOrAfterM(74)
   def testServerReturnsLitePage(self):
     with TestDriver() as t:
-      self.EnableLitePageServerPreviews(t)
+      self.EnableLitePageServerPreviewsAndInit(t)
       t.LoadURL('https://mobilespeed-test.appspot.com/static/litepagetests/simple.html')
       self._AssertShowingLitePage(t, 'Hello world', 1)
 
@@ -135,8 +144,8 @@ class HttpsPreviewsBaseClass():
   @ChromeVersionEqualOrAfterM(74)
   def testPingbackSent(self):
     with TestDriver() as t:
-      self.EnableLitePageServerPreviews(t)
       t.AddChromeArg('--enable-data-reduction-proxy-force-pingback')
+      self.EnableLitePageServerPreviewsAndInit(t)
 
       # Navigate twice so that the first page sends a pingback. The second page
       # can be anything since only the first pageload will send a pingback in
@@ -157,7 +166,7 @@ class HttpsPreviewsBaseClass():
   @ChromeVersionEqualOrAfterM(74)
   def testServerReturnsLitePageAfterRedirect(self):
     with TestDriver() as t:
-      self.EnableLitePageServerPreviews(t)
+      self.EnableLitePageServerPreviewsAndInit(t)
       t.LoadURL('https://mobilespeed-test.appspot.com/redirect-to/static/litepagetests/simple.html')
       self._AssertShowingLitePage(t, 'Hello world', 1)
 
@@ -166,7 +175,7 @@ class HttpsPreviewsBaseClass():
   @ChromeVersionEqualOrAfterM(74)
   def testServerShowsBadSSLInterstitial(self):
     with TestDriver() as t:
-      self.EnableLitePageServerPreviews(t)
+      self.EnableLitePageServerPreviewsAndInit(t)
       url = 'https://expired.badssl.com/'
       t.LoadURL(url)
       self._AssertShowingOriginalPage(t, url, 200)
@@ -183,7 +192,7 @@ class HttpsPreviewsBaseClass():
   @ChromeVersionEqualOrAfterM(74)
   def testServerShowsSafebrowsingInterstitial(self):
     with TestDriver() as t:
-      self.EnableLitePageServerPreviews(t)
+      self.EnableLitePageServerPreviewsAndInit(t)
       try :
         # LoadURL will timeout when the interstital appears.
         t.LoadURL('https://testsafebrowsing.appspot.com/s/malware.html')
@@ -199,9 +208,9 @@ class HttpsPreviewsBaseClass():
   @ChromeVersionEqualOrAfterM(74)
   def testLitePageWebReport(self):
     with TestDriver() as t:
-      self.EnableLitePageServerPreviews(t)
       t.AddChromeArg('--short-reporting-delay')
       t.UseNetLog()
+      self.EnableLitePageServerPreviewsAndInit(t)
 
       t.LoadURL('https://mobilespeed-test.appspot.com/snapshot-test/')
 
@@ -225,7 +234,8 @@ class HttpsPreviewsBaseClass():
           continue
 
         header = event["params"]["headers"]
-        quoted_report_url = urllib.quote_plus("https://mobilespeed-test.appspot.com/web-reports")
+        quoted_report_url = urllib.quote_plus(
+            "https://mobilespeed-test.appspot.com/web-reports")
         if ((":path: /webreports?u=%s" % quoted_report_url) in header
             and "content-type: application/reports+json" in header):
           report_request_id.append(event["source"]["id"])
