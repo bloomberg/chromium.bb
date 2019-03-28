@@ -406,6 +406,12 @@ const char kLastUpdateCheck[] = "extensions.autoupdate.last_check";
 const char kVoiceInteractionActivityControlAcceptedDeprecated[] =
     "settings.voice_interaction.activity_control.accepted";
 
+// Deprecated 3/2019.
+const char kCurrentThemeImages[] = "extensions.theme.images";
+const char kCurrentThemeColors[] = "extensions.theme.colors";
+const char kCurrentThemeTints[] = "extensions.theme.tints";
+const char kCurrentThemeDisplayProperties[] = "extensions.theme.properties";
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -437,6 +443,11 @@ void RegisterProfilePrefsForMigration(
 
   registry->RegisterBooleanPref(
       kVoiceInteractionActivityControlAcceptedDeprecated, false);
+
+  registry->RegisterDictionaryPref(kCurrentThemeImages);
+  registry->RegisterDictionaryPref(kCurrentThemeColors);
+  registry->RegisterDictionaryPref(kCurrentThemeTints);
+  registry->RegisterDictionaryPref(kCurrentThemeDisplayProperties);
 }
 
 }  // namespace
@@ -979,4 +990,10 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 3/2019.
   syncer::ClearObsoleteFirstSyncTime(profile_prefs);
   syncer::ClearObsoleteSyncLongPollIntervalSeconds(profile_prefs);
+
+  // Added 3/2019.
+  profile_prefs->ClearPref(kCurrentThemeImages);
+  profile_prefs->ClearPref(kCurrentThemeColors);
+  profile_prefs->ClearPref(kCurrentThemeTints);
+  profile_prefs->ClearPref(kCurrentThemeDisplayProperties);
 }
