@@ -768,18 +768,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 
   content::WebContents* web_contents = active_contents();
 
-  auto send_tab_set_composition_wait_for_bounds_change = [&web_contents](
-      content::RenderWidgetHostView* view) {
-    ViewTextInputTypeObserver type_observer(web_contents, view,
-                                            ui::TEXT_INPUT_TYPE_TEXT);
-    SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
-                     ui::VKEY_TAB, false, false, false, false);
-    type_observer.Wait();
+  auto send_tab_set_composition_wait_for_bounds_change =
+      [&web_contents](content::RenderWidgetHostView* view) {
+        ViewTextInputTypeObserver type_observer(web_contents, view,
+                                                ui::TEXT_INPUT_TYPE_TEXT);
+        SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
+                         ui::VKEY_TAB, false, false, false, false);
+        type_observer.Wait();
 
-    ViewCompositionRangeChangedObserver range_observer(web_contents, view);
-    EXPECT_TRUE(content::RequestCompositionInfoFromActiveWidget(web_contents));
-    range_observer.Wait();
-  };
+        ViewCompositionRangeChangedObserver range_observer(web_contents, view);
+        EXPECT_TRUE(
+            content::RequestCompositionInfoFromActiveWidget(web_contents));
+        range_observer.Wait();
+      };
 
   for (auto* view : views)
     send_tab_set_composition_wait_for_bounds_change(view);
@@ -821,16 +822,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
     observer.Wait();
   };
 
-  auto send_keys_select_all_wait_for_selection_change = [&web_contents](
-      content::RenderWidgetHostView* view, size_t count) {
-    ViewTextSelectionObserver observer(web_contents, view, count);
-    for (size_t i = 0; i < count; ++i) {
-      SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('E'),
-                       ui::DomCode::US_E, ui::VKEY_E, false, false, false,
-                       false);
-    }
-    observer.Wait();
-  };
+  auto send_keys_select_all_wait_for_selection_change =
+      [&web_contents](content::RenderWidgetHostView* view, size_t count) {
+        ViewTextSelectionObserver observer(web_contents, view, count);
+        for (size_t i = 0; i < count; ++i) {
+          SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('E'),
+                           ui::DomCode::US_E, ui::VKEY_E, false, false, false,
+                           false);
+        }
+        observer.Wait();
+      };
 
   size_t count = 2;
   for (size_t i = 0; i < views.size(); ++i) {
@@ -919,18 +920,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 
   content::WebContents* web_contents = active_contents();
 
-  auto send_tab_insert_text_wait_for_bounds_change = [&web_contents](
-      content::RenderWidgetHostView* view) {
-    ViewTextInputTypeObserver type_observer(web_contents, view,
-                                            ui::TEXT_INPUT_TYPE_TEXT);
-    SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
-                     ui::VKEY_TAB, false, false, false, false);
-    type_observer.Wait();
-    ViewSelectionBoundsChangedObserver bounds_observer(web_contents, view);
-    SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('E'),
-                     ui::DomCode::US_E, ui::VKEY_E, false, false, false, false);
-    bounds_observer.Wait();
-  };
+  auto send_tab_insert_text_wait_for_bounds_change =
+      [&web_contents](content::RenderWidgetHostView* view) {
+        ViewTextInputTypeObserver type_observer(web_contents, view,
+                                                ui::TEXT_INPUT_TYPE_TEXT);
+        SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
+                         ui::VKEY_TAB, false, false, false, false);
+        type_observer.Wait();
+        ViewSelectionBoundsChangedObserver bounds_observer(web_contents, view);
+        SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('E'),
+                         ui::DomCode::US_E, ui::VKEY_E, false, false, false,
+                         false);
+        bounds_observer.Wait();
+      };
 
   for (auto* view : views)
     send_tab_insert_text_wait_for_bounds_change(view);
@@ -1271,8 +1273,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   // the latter doesn't go through
   // RenderWidgetHostViewAura::ForwardKeyboardEvent, which contains the edit
   // commands logic that's tested here.
-  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_D,
-                                              true, true, true, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_D, true, true,
+                                              true, false));
   ui::SetTextEditKeyBindingsDelegate(old_delegate);
 
   // Verify that the input field in the subframe is erased.

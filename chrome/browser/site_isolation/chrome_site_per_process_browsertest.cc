@@ -228,8 +228,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIExpiredCertBrowserTest,
 // RenderFrameProxyHost for a child frame.
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, RenderFrameProxyHostShutdown) {
   GURL main_url(embedded_test_server()->GetURL(
-        "a.com",
-        "/frame_tree/page_with_two_frames_remote_and_local.html"));
+      "a.com", "/frame_tree/page_with_two_frames_remote_and_local.html"));
   ui_test_utils::NavigateToURL(browser(), main_url);
 }
 
@@ -293,9 +292,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, PluginWithRemoteTopFrame) {
   // Navigate subframe to a page with a Flash object.
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GURL frame_url =
-      embedded_test_server()->GetURL("b.com",
-                                     "/chrome/test/data/flash_object.html");
+  GURL frame_url = embedded_test_server()->GetURL(
+      "b.com", "/chrome/test/data/flash_object.html");
 
   // Ensure the page finishes loading without crashing.
   EXPECT_TRUE(NavigateIframeToURL(active_web_contents, "test", frame_url));
@@ -695,13 +693,13 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   frame_url = embedded_test_server()->GetURL("c.com", "/title1.html");
   content::TestNavigationObserver popup_observer(nullptr);
   popup_observer.StartWatchingNewWebContents();
-  bool popup_handle_is_valid = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      active_web_contents,
-      "document.querySelector('iframe').src = '" + frame_url.spec() + "';\n"
-      "var w = window.open('about:blank');\n"
-      "window.domAutomationController.send(!!w);\n",
-      &popup_handle_is_valid));
+  const char kScriptTemplate[] = R"(
+      document.querySelector('iframe').src = $1;
+      !!window.open('about:blank'); )";
+  bool popup_handle_is_valid =
+      content::EvalJs(active_web_contents,
+                      content::JsReplace(kScriptTemplate, frame_url))
+          .ExtractBool();
   popup_observer.Wait();
 
   // The popup shouldn't be blocked.

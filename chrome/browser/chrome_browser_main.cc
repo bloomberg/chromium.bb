@@ -93,7 +93,7 @@
 #include "chrome/browser/resource_coordinator/render_process_probe.h"
 #include "chrome/browser/sessions/chrome_serialized_navigation_driver.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/site_isolation_policy.h"
+#include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/tracing/background_tracing_field_trial.h"
 #include "chrome/browser/tracing/navigation_tracing.h"
 #include "chrome/browser/tracing/trace_event_system_stats_monitor.h"

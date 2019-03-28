@@ -24,7 +24,7 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/site_isolation_policy.h"
+#include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/browser_finder.h"

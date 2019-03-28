@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/site_details.h"
+#include "chrome/browser/site_isolation/site_details.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "content/public/browser/browser_thread.h"
@@ -116,8 +116,7 @@ SiteDetails::SiteDetails() {}
 
 SiteDetails::~SiteDetails() {}
 
-void SiteDetails::CollectSiteInfo(WebContents* contents,
-                                  SiteData* site_data) {
+void SiteDetails::CollectSiteInfo(WebContents* contents, SiteData* site_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserContext* context = contents->GetBrowserContext();
 
@@ -181,7 +180,6 @@ void SiteDetails::CollectSiteInfo(WebContents* contents,
       frame_urls[frame] = site;
     }
   }
-
 }
 
 void SiteDetails::UpdateHistograms(
@@ -236,9 +234,8 @@ void SiteDetails::UpdateHistograms(
   // Just renderer process count:
   UMA_HISTOGRAM_COUNTS_100("SiteIsolation.CurrentRendererProcessCount",
                            all_renderer_process_count);
-  UMA_HISTOGRAM_COUNTS_100(
-      "SiteIsolation.BrowsingInstanceCount",
-      num_browsing_instances);
+  UMA_HISTOGRAM_COUNTS_100("SiteIsolation.BrowsingInstanceCount",
+                           num_browsing_instances);
   UMA_HISTOGRAM_COUNTS_10000("SiteIsolation.ProxyCount", num_proxies);
   UMA_HISTOGRAM_COUNTS_100("SiteIsolation.OutOfProcessIframes", num_oopifs);
 
