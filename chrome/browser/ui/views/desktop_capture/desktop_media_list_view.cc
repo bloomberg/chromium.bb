@@ -8,10 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/command_line.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/media/webrtc/window_icon_util.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
@@ -19,8 +15,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/theme_resources.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
@@ -55,18 +49,15 @@ gfx::ImageSkia LoadDefaultIcon(aura::Window* window) {
 }  // namespace
 
 DesktopMediaListView::DesktopMediaListView(
-    DesktopMediaPickerDialogView* parent,
-    std::unique_ptr<DesktopMediaList> media_list,
+    DesktopMediaListController* controller,
     DesktopMediaSourceViewStyle generic_style,
     DesktopMediaSourceViewStyle single_style,
     const base::string16& accessible_name)
-    : parent_(parent),
-      media_list_(std::move(media_list)),
+    : controller_(controller),
       single_style_(single_style),
       generic_style_(generic_style),
       active_style_(&single_style_),
-      accessible_name_(accessible_name),
-      weak_factory_(this) {
+      accessible_name_(accessible_name) {
   SetStyle(&single_style_);
 
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -74,17 +65,12 @@ DesktopMediaListView::DesktopMediaListView(
 
 DesktopMediaListView::~DesktopMediaListView() {}
 
-void DesktopMediaListView::StartUpdating(DesktopMediaID dialog_window_id) {
-  media_list_->SetViewDialogWindowId(dialog_window_id);
-  media_list_->StartUpdating(this);
-}
-
 void DesktopMediaListView::OnSelectionChanged() {
-  parent_->OnSelectionChanged();
+  controller_->OnSourceSelectionChanged();
 }
 
 void DesktopMediaListView::OnDoubleClick() {
-  parent_->OnDoubleClick();
+  controller_->AcceptSource();
 }
 
 DesktopMediaSourceView* DesktopMediaListView::GetSelection() {
@@ -161,8 +147,8 @@ bool DesktopMediaListView::OnKeyPressed(const ui::KeyEvent& event) {
   return true;
 }
 
-void DesktopMediaListView::OnSourceAdded(DesktopMediaList* list, int index) {
-  const DesktopMediaList::Source& source = media_list_->GetSource(index);
+void DesktopMediaListView::OnSourceAdded(int index) {
+  const DesktopMediaList::Source& source = controller_->GetSource(index);
 
   // We are going to have a second item, apply the generic style.
   if (child_count() == 1)
@@ -189,26 +175,12 @@ void DesktopMediaListView::OnSourceAdded(DesktopMediaList* list, int index) {
   AddChildViewAt(source_view, index);
 
   if ((child_count() - 1) % active_style_->columns == 0)
-    parent_->OnMediaListRowsChanged();
+    controller_->OnSourceListLayoutChanged();
 
   PreferredSizeChanged();
-
-  std::string autoselect_source =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kAutoSelectDesktopCaptureSource);
-  if (!autoselect_source.empty() &&
-      base::ASCIIToUTF16(autoselect_source) == source.name) {
-    // Select, then accept and close the dialog when we're done adding sources.
-    parent_->SelectTab(source.id.type);
-    source_view->OnFocus();
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&DesktopMediaListView::AcceptSelection,
-                       weak_factory_.GetWeakPtr()));
-  }
 }
 
-void DesktopMediaListView::OnSourceRemoved(DesktopMediaList* list, int index) {
+void DesktopMediaListView::OnSourceRemoved(int index) {
   DesktopMediaSourceView* view = GetChild(index);
   DCHECK(view);
 
@@ -220,7 +192,7 @@ void DesktopMediaListView::OnSourceRemoved(DesktopMediaList* list, int index) {
     OnSelectionChanged();
 
   if (child_count() % active_style_->columns == 0)
-    parent_->OnMediaListRowsChanged();
+    controller_->OnSourceListLayoutChanged();
 
   // Apply single-item styling when the second source is removed.
   if (child_count() == 1)
@@ -229,35 +201,26 @@ void DesktopMediaListView::OnSourceRemoved(DesktopMediaList* list, int index) {
   PreferredSizeChanged();
 }
 
-void DesktopMediaListView::OnSourceMoved(DesktopMediaList* list,
-                                         int old_index,
-                                         int new_index) {
+void DesktopMediaListView::OnSourceMoved(int old_index, int new_index) {
   ReorderChildView(child_at(old_index), new_index);
   PreferredSizeChanged();
 }
 
-void DesktopMediaListView::OnSourceNameChanged(DesktopMediaList* list,
-                                               int index) {
-  const DesktopMediaList::Source& source = media_list_->GetSource(index);
+void DesktopMediaListView::OnSourceNameChanged(int index) {
+  const DesktopMediaList::Source& source = controller_->GetSource(index);
   DesktopMediaSourceView* source_view = GetChild(index);
   source_view->SetName(source.name);
 }
 
-void DesktopMediaListView::OnSourceThumbnailChanged(DesktopMediaList* list,
-                                                    int index) {
-  const DesktopMediaList::Source& source = media_list_->GetSource(index);
+void DesktopMediaListView::OnSourceThumbnailChanged(int index) {
+  const DesktopMediaList::Source& source = controller_->GetSource(index);
   DesktopMediaSourceView* source_view = GetChild(index);
   source_view->SetThumbnail(source.thumbnail);
 }
 
-void DesktopMediaListView::AcceptSelection() {
-  OnSelectionChanged();
-  OnDoubleClick();
-}
-
 void DesktopMediaListView::SetStyle(DesktopMediaSourceViewStyle* style) {
   active_style_ = style;
-  media_list_->SetThumbnailSize(gfx::Size(
+  controller_->SetThumbnailSize(gfx::Size(
       style->image_rect.width() - 2 * style->selection_border_thickness,
       style->image_rect.height() - 2 * style->selection_border_thickness));
 
