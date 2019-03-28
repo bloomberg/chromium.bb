@@ -278,7 +278,10 @@ test("accessibility_unittests") {
 
   if (is_win) {
     deps += [ "//third_party/iaccessible2" ]
-    libs = [ "oleacc.lib" ]
+    libs = [
+      "oleacc.lib",
+      "uiautomationcore.lib",
+    ]
   }
   if (use_atk) {
     sources += [

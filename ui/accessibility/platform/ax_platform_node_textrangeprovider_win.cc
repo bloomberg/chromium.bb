@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/win/scoped_variant.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 
 #define UIA_VALIDATE_TEXTRANGEPROVIDER_CALL()                        \
@@ -134,7 +135,44 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
     TEXTATTRIBUTEID attribute_id,
     VARIANT* value) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETATTRIBUTEVALUE);
-  return E_NOTIMPL;
+
+  AXNodeRange range(start_->Clone(), end_->Clone());
+  std::vector<AXNodeRange> anchors = range.GetAnchors();
+
+  if (anchors.empty())
+    return UIA_E_ELEMENTNOTAVAILABLE;
+
+  base::win::ScopedVariant attribute_value_variant;
+
+  AXPlatformNodeDelegate* delegate = owner()->GetDelegate();
+
+  for (auto&& current_range : anchors) {
+    DCHECK(current_range.anchor()->GetAnchor() ==
+           current_range.focus()->GetAnchor());
+
+    AXPlatformNodeWin* platform_node = static_cast<AXPlatformNodeWin*>(
+        delegate->GetFromNodeID(current_range.anchor()->GetAnchor()->id()));
+    DCHECK(platform_node);
+    if (!platform_node)
+      continue;
+
+    base::win::ScopedVariant current_variant;
+
+    HRESULT hr = platform_node->GetTextAttributeValue(
+        attribute_id, current_variant.Receive());
+    if (FAILED(hr))
+      return E_FAIL;
+
+    if (attribute_value_variant.type() == VT_EMPTY) {
+      attribute_value_variant.Reset(current_variant);
+    } else if (0 != attribute_value_variant.Compare(current_variant)) {
+      V_VT(value) = VT_UNKNOWN;
+      return ::UiaGetReservedMixedAttributeValue(&V_UNKNOWN(value));
+    }
+  }
+
+  *value = attribute_value_variant.Release();
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetBoundingRectangles(
