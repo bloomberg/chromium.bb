@@ -170,6 +170,7 @@ def GeneralTemplates(site_config):
       build_timeout=6 * 60 * 60,
       display_label=config_lib.DISPLAY_LABEL_FULL,
       build_type=constants.FULL_TYPE,
+      luci_builder=config_lib.LUCI_BUILDER_FULL,
       archive_build_debug=True,
       images=['base', 'recovery', 'test', 'factory_install'],
       git_sync=True,
@@ -243,11 +244,6 @@ def GeneralTemplates(site_config):
       display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
       description='Informational Builds',
       luci_builder=config_lib.LUCI_BUILDER_INFORMATIONAL,
-  )
-
-  site_config.AddTemplate(
-      'use_full_builder',
-      luci_builder=config_lib.LUCI_BUILDER_FULL,
   )
 
   site_config.AddTemplate(
@@ -413,6 +409,7 @@ def GeneralTemplates(site_config):
       'asan',
       site_config.templates.full,
       profile='asan',
+      luci_builder=config_lib.LUCI_BUILDER_PROD,
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='16gb-rootfs',
       # TODO(deymo): ASan builders generate bigger files, in particular a bigger
@@ -573,6 +570,7 @@ def GeneralTemplates(site_config):
       site_config.templates.internal,
       site_config.templates.official_chrome,
       build_type=constants.PFQ_TYPE,
+      luci_builder=config_lib.LUCI_BUILDER_PFQ,
       build_timeout=20 * 60,
       manifest_version=True,
       branch=True,
@@ -644,12 +642,13 @@ def GeneralTemplates(site_config):
   )
 
   site_config.AddTemplate(
-      'release_common',
+      'release',
       site_config.templates.full,
       site_config.templates.official,
       site_config.templates.internal,
       display_label=config_lib.DISPLAY_LABEL_RELEASE,
       build_type=constants.CANARY_TYPE,
+      luci_builder=config_lib.LUCI_BUILDER_RELEASE,
       chroot_use_image=False,
       suite_scheduling=True,
       # Because release builders never use prebuilts, they need the
@@ -692,14 +691,9 @@ def GeneralTemplates(site_config):
   )
 
   site_config.AddTemplate(
-      'release',
-      site_config.templates.release_common,
-      luci_builder=config_lib.LUCI_BUILDER_RELEASE,
-  )
-
-  site_config.AddTemplate(
       'factory_firmware',
-      site_config.templates.release_common,
+      site_config.templates.release,
+      luci_builder=config_lib.LUCI_BUILDER_FACTORY,
   )
 
   ### Release AFDO configs.
@@ -856,6 +850,7 @@ def GeneralTemplates(site_config):
       'buildspec',
       site_config.templates.workspace,
       site_config.templates.internal,
+      luci_builder=config_lib.LUCI_BUILDER_FACTORY,
       master=True,
       boards=[],
       build_type=constants.GENERIC_TYPE,
@@ -978,7 +973,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       'base_toolchain',
       # Full build, AFDO, latest-toolchain, -cros-debug, and simple-chrome.
       site_config.templates.full,
-      site_config.templates.use_full_builder,
       display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
       build_type=constants.TOOLCHAIN_TYPE,
       build_timeout=(15 * 60 + 50) * 60,
@@ -1824,7 +1818,6 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       external_board_configs,
       site_config.templates.full,
       site_config.templates.build_external_chrome,
-      site_config.templates.use_full_builder,
       internal=False,
       manifest_repo_url=config_lib.GetSiteParams().MANIFEST_URL,
       overlays=constants.PUBLIC_OVERLAYS,
@@ -1835,7 +1828,6 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.full,
       site_config.templates.internal,
       site_config.templates.build_external_chrome,
-      site_config.templates.use_full_builder,
       boards=[],
       master=True,
       manifest_version=True,
@@ -4255,7 +4247,7 @@ def BranchScheduleConfig():
     result.append(default_config.derive(
         name=config_name,
         display_label=label,
-        luci_builder=config_lib.LUCI_BUILDER_PROD,
+        luci_builder=config_lib.LUCI_BUILDER_RELEASE,
         schedule_branch=branch,
         schedule=schedule,
         triggered_gitiles=trigger,
