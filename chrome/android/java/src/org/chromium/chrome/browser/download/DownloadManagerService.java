@@ -1695,7 +1695,7 @@ public class DownloadManagerService
      * Returns whether a given file path is in a directory that is no longer available, most likely
      * because it is on an SD card that was removed.
      *
-     * @param filePath  The file path to check.
+     * @param filePath  The file path to check, can be a content URI.
      * @param externalStorageDir  The absolute path of external storage directory for primary
      * storage.
      * @param directoryOptions  All available download directories including primary storage and
@@ -1705,7 +1705,8 @@ public class DownloadManagerService
      */
     private boolean isFilePathOnMissingExternalDrive(String filePath, String externalStorageDir,
             ArrayList<DirectoryOption> directoryOptions) {
-        if (TextUtils.isEmpty(filePath) || filePath.contains(externalStorageDir)) {
+        if (TextUtils.isEmpty(filePath) || filePath.contains(externalStorageDir)
+                || ContentUriUtils.isContentUri(filePath)) {
             return false;
         }
 
