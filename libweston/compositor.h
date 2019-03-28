@@ -44,7 +44,7 @@ extern "C" {
 #include "matrix.h"
 #include "config-parser.h"
 #include "zalloc.h"
-#include "timeline-object.h"
+#include <libweston/timeline-object.h>
 
 struct weston_geometry {
 	int32_t x, y;

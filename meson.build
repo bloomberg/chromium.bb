@@ -10,7 +10,7 @@ project('weston',
 	license: 'MIT/Expat',
 )
 
-libweston_major = 6
+libweston_major = 7
 
 # libweston_revision is manufactured to follow the autotools build's
 # library file naming, thanks to libtool
@@ -31,6 +31,7 @@ dir_prefix = get_option('prefix')
 dir_bin = join_paths(dir_prefix, get_option('bindir'))
 dir_data = join_paths(dir_prefix, get_option('datadir'))
 dir_include_libweston = 'libweston-@0@'.format(libweston_major)
+dir_include_libweston_install = join_paths(dir_include_libweston, 'libweston')
 dir_lib = join_paths(dir_prefix, get_option('libdir'))
 dir_libexec = join_paths(dir_prefix, get_option('libexecdir'))
 dir_module_weston = join_paths(dir_lib, 'weston')
@@ -39,6 +40,8 @@ dir_data_pc = join_paths(dir_data, 'pkgconfig')
 dir_lib_pc = join_paths(dir_lib, 'pkgconfig')
 dir_man = join_paths(dir_prefix, get_option('mandir'))
 dir_protocol_libweston = 'libweston/protocols'
+
+public_inc = include_directories('include')
 
 pkgconfig = import('pkgconfig')
 
@@ -149,6 +152,7 @@ dep_libdrm = dependency('libdrm', version: '>= 2.4.68')
 dep_libdrm_headers = dep_libdrm.partial_dependency(compile_args: true)
 dep_threads = dependency('threads')
 
+subdir('include')
 subdir('protocol')
 subdir('shared')
 subdir('libweston')
