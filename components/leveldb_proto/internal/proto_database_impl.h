@@ -195,35 +195,34 @@ std::string SerializeAsString(const T& entry) {
 }
 
 template <typename P>
-std::unique_ptr<P> ParseToProto(const std::string& serialized_entry) {
-  auto proto = std::make_unique<P>();
+bool ParseToProto(const std::string& serialized_entry, P* proto) {
   if (!proto->ParseFromString(serialized_entry)) {
     DLOG(WARNING) << "Unable to parse leveldb_proto entry";
-    proto.reset(new P);
+    *proto = P();
+    return false;
   }
-  return proto;
+  return true;
 }
 
 template <typename P,
           typename T,
           std::enable_if_t<std::is_base_of<google::protobuf::MessageLite,
                                            T>::value>* = nullptr>
-std::unique_ptr<T> ParseToClientType(const std::string& serialized_entry) {
-  return ParseToProto<T>(serialized_entry);
+bool ParseToClientType(const std::string& serialized_entry, T* output) {
+  return ParseToProto<T>(serialized_entry, output);
 }
 
 template <typename P,
           typename T,
           std::enable_if_t<!std::is_base_of<google::protobuf::MessageLite,
                                             T>::value>* = nullptr>
-std::unique_ptr<T> ParseToClientType(const std::string& serialized_entry) {
-  auto entry = std::make_unique<T>();
-  auto proto = ParseToProto<P>(serialized_entry);
-  if (!proto)
-    return entry;
+bool ParseToClientType(const std::string& serialized_entry, T* entry) {
+  P proto;
+  if (!ParseToProto<P>(serialized_entry, &proto))
+    return false;
 
-  ProtoToData(*proto, entry.get());
-  return entry;
+  ProtoToData(proto, entry);
+  return true;
 }
 
 // Update transactions need to serialize the entries to be updated on background
@@ -283,8 +282,8 @@ void ParseLoadedEntries(
     entries.reset();
   } else {
     for (const auto& serialized_entry : *loaded_entries) {
-      auto entry = ParseToClientType<P, T>(serialized_entry);
-      entries->push_back(*entry);
+      entries->emplace_back(T());
+      ParseToClientType<P, T>(serialized_entry, &entries->back());
     }
   }
 
@@ -307,8 +306,8 @@ void ParseLoadedKeysAndEntries(
     keys_entries.reset();
   } else {
     for (const auto& pair : *loaded_entries) {
-      auto entry = ParseToClientType<P, T>(pair.second);
-      keys_entries->emplace(pair.first, *entry);
+      auto it = keys_entries->emplace(pair.first, T());
+      ParseToClientType<P, T>(pair.second, &(it.first->second));
     }
   }
 
@@ -330,10 +329,8 @@ void ParseLoadedEntry(
 
   if (!success || !serialized_entry) {
     entry.reset();
-  } else {
-    entry = ParseToClientType<P, T>(*serialized_entry);
-    if (!entry)
-      success = false;
+  } else if (!ParseToClientType<P, T>(*serialized_entry, entry.get())) {
+    success = false;
   }
   callback_task_runner->PostTask(
       FROM_HERE,
