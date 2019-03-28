@@ -1111,7 +1111,8 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
     // will be done when the lock is committed.
     if (RuntimeEnabledFeatures::DisplayLockingEnabled()) {
       if (ancestor->IsElementNode() &&
-          ToElement(ancestor)->StyleRecalcBlockedByDisplayLock()) {
+          ToElement(ancestor)->StyleRecalcBlockedByDisplayLock(
+              DisplayLockContext::kChildren)) {
         break;
       }
     }
@@ -1132,7 +1133,9 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
     for (auto* ancestor_copy = ancestor; ancestor_copy;
          ancestor_copy = ancestor_copy->ParentOrShadowHostNode()) {
       if (ancestor_copy->IsElementNode() &&
-          ToElement(ancestor_copy)->StyleRecalcBlockedByDisplayLock()) {
+          ToElement(ancestor_copy)
+              ->StyleRecalcBlockedByDisplayLock(
+                  DisplayLockContext::kChildren)) {
         return;
       }
     }
@@ -1205,7 +1208,8 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
     SetStyleChange(change_type);
 
   if (existing_change_type == kNoStyleChange &&
-      (!IsElementNode() || !ToElement(this)->StyleRecalcBlockedByDisplayLock()))
+      (!IsElementNode() || !ToElement(this)->StyleRecalcBlockedByDisplayLock(
+                               DisplayLockContext::kSelf)))
     MarkAncestorsWithChildNeedsStyleRecalc();
 
   if (IsElementNode() && HasRareData())

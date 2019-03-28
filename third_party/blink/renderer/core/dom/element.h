@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/style_recalc.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/dom/element_data.h"
@@ -59,7 +60,6 @@ class DOMRectList;
 class DOMStringMap;
 class DOMTokenList;
 class Document;
-class DisplayLockContext;
 class ElementAnimations;
 class ElementInternals;
 class ElementIntersectionObserverData;
@@ -910,7 +910,8 @@ class CORE_EXPORT Element : public ContainerNode {
   DisplayLockContext* getDisplayLockForBindings();
   DisplayLockContext* GetDisplayLockContext() const;
 
-  bool StyleRecalcBlockedByDisplayLock() const;
+  bool StyleRecalcBlockedByDisplayLock(
+      DisplayLockContext::LifecycleTarget) const;
 
   void ActivateDisplayLockIfNeeded();
 
@@ -1117,8 +1118,6 @@ class CORE_EXPORT Element : public ContainerNode {
   void DetachAllAttrNodesFromElement();
   void DetachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);
   void DetachAttrNodeAtIndex(Attr*, wtf_size_t index);
-
-  void NotifyDisplayLockDidRecalcStyle();
 
   bool DisplayLockPreventsActivation() const;
   FRIEND_TEST_ALL_PREFIXES(DisplayLockContextTest,

@@ -169,6 +169,41 @@ enum class ClassStringContent { kEmpty, kWhiteSpaceOnly, kHasClasses };
 
 namespace {
 
+class DisplayLockStyleScope {
+ public:
+  DisplayLockStyleScope(DisplayLockContext* context)
+      : context_(context),
+        should_update_self_(!context ||
+                            context->ShouldStyle(DisplayLockContext::kSelf)),
+        should_update_children_(
+            !context || context->ShouldStyle(DisplayLockContext::kChildren)) {}
+  ~DisplayLockStyleScope() {
+    if (!context_)
+      return;
+    if (did_update_children_)
+      context_->DidStyle(DisplayLockContext::kChildren);
+    // There is no other condition to block us form updating self, so if we
+    // "should" update, then we "did" update.
+    if (should_update_self_)
+      context_->DidStyle(DisplayLockContext::kSelf);
+  }
+
+  bool ShouldUpdateSelfStyle() const { return should_update_self_; }
+  bool ShouldUpdateChildStyle() const { return should_update_children_; }
+  void DidUpdateChildStyle() { did_update_children_ = true; }
+
+  void NotifyUpdateWasBlocked(DisplayLockContext::StyleType style) {
+    DCHECK(!ShouldUpdateChildStyle());
+    context_->NotifyStyleRecalcWasBlocked(style);
+  }
+
+ private:
+  UntracedMember<DisplayLockContext> context_;
+  const bool should_update_self_;
+  const bool should_update_children_;
+  bool did_update_children_ = false;
+};
+
 bool IsRootEditableElementWithCounting(const Element& element) {
   bool is_editable = IsRootEditableElement(element);
   Document& doc = element.GetDocument();
@@ -2328,15 +2363,14 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
   DCHECK(GetDocument().InStyleRecalc());
   DCHECK(!GetDocument().Lifecycle().InDetach());
 
-  if (StyleRecalcBlockedByDisplayLock()) {
-    // Mark this so that we will traverse back here when the style recalc is not
-    // blocked anymore (e.g. forced update, element getting unlocked).
-    if (change.RecalcChildren()) {
-      SetNeedsStyleRecalc(
-          change.RecalcDescendants() ? kSubtreeStyleChange : kLocalStyleChange,
-          StyleChangeReasonForTracing::Create(
-              style_change_reason::kDisplayLock));
-    }
+  DisplayLockStyleScope display_lock_style_scope(GetDisplayLockContext());
+  if (!display_lock_style_scope.ShouldUpdateSelfStyle()) {
+    display_lock_style_scope.NotifyUpdateWasBlocked(
+        change.RecalcChildren()
+            ? (change.RecalcDescendants()
+                   ? DisplayLockContext::kStyleUpdateDescendants
+                   : DisplayLockContext::kStyleUpdateChildren)
+            : DisplayLockContext::kStyleUpdateSelf);
     return;
   }
 
@@ -2356,7 +2390,9 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
     UpdatePseudoElement(kPseudoIdBefore, child_change);
   }
 
-  if (child_change.TraverseChildren(*this)) {
+  const bool should_update_child_style =
+      display_lock_style_scope.ShouldUpdateChildStyle();
+  if (child_change.TraverseChildren(*this) && should_update_child_style) {
     SelectorFilterParentScope filter_scope(*this);
     if (ShadowRoot* root = GetShadowRoot()) {
       if (child_change.TraverseChild(*root))
@@ -2365,6 +2401,7 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
     } else {
       RecalcDescendantStyles(child_change);
     }
+    display_lock_style_scope.DidUpdateChildStyle();
   }
 
   if (child_change.TraversePseudoElements(*this)) {
@@ -2377,11 +2414,21 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
       UpdateFirstLetterPseudoElement(StyleUpdatePhase::kRecalc);
   }
 
-  ClearChildNeedsStyleRecalc();
+  if (should_update_child_style) {
+    ClearChildNeedsStyleRecalc();
+  } else if (child_change.RecalcChildren()) {
+    // If we should've calculated the style for children but was blocked,
+    // notify so that we'd come back.
+    // Note that the if-clause wouldn't catch cases where
+    // ChildNeedsStyleRecalc() is true but child_change.RecalcChildren() is
+    // false. Since we are retaining the child dirty bit, that case is
+    // automatically handled without needing to notify it here.
+    display_lock_style_scope.NotifyUpdateWasBlocked(
+        DisplayLockContext::kStyleUpdateDescendants);
+  }
 
   if (HasCustomStyleCallbacks())
     DidRecalcStyle(child_change);
-  NotifyDisplayLockDidRecalcStyle();
 }
 
 scoped_refptr<ComputedStyle> Element::PropagateInheritedProperties() {
@@ -2559,7 +2606,7 @@ StyleRecalcChange Element::RecalcOwnStyle(const StyleRecalcChange change) {
 void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
   DCHECK(InActiveDocument());
   DCHECK(parentNode());
-  DCHECK(!StyleRecalcBlockedByDisplayLock());
+  DCHECK(!StyleRecalcBlockedByDisplayLock(DisplayLockContext::kSelf));
 
   if (NeedsReattachLayoutTree()) {
     AttachContext reattach_context;
@@ -2572,6 +2619,7 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     whitespace_attacher.DidReattachElement(this,
                                            reattach_context.previous_in_flow);
   } else {
+    DCHECK(!StyleRecalcBlockedByDisplayLock(DisplayLockContext::kChildren));
     // We create a local WhitespaceAttacher when rebuilding children of an
     // element with a LayoutObject since whitespace nodes do not rely on layout
     // objects further up the tree. Also, if this Element's layout object is an
@@ -5384,14 +5432,10 @@ const NamesMap* Element::PartNamesMap() const {
              : nullptr;
 }
 
-bool Element::StyleRecalcBlockedByDisplayLock() const {
+bool Element::StyleRecalcBlockedByDisplayLock(
+    DisplayLockContext::LifecycleTarget target) const {
   auto* context = GetDisplayLockContext();
-  return context && !context->ShouldStyle();
-}
-
-void Element::NotifyDisplayLockDidRecalcStyle() {
-  if (auto* context = GetDisplayLockContext())
-    context->DidStyle();
+  return context && !context->ShouldStyle(target);
 }
 
 }  // namespace blink
