@@ -6081,7 +6081,6 @@ crbug.com/945665 virtual/binary-for-devtools/http/tests/devtools/elements/styles
 crbug.com/945507 [ Win ] fast/url/standard-url.html [ Pass Failure ]
 crbug.com/945629 http/tests/devtools/network/network-filters.js [ Pass Failure Timeout ]
 crbug.com/945629 virtual/binary-for-devtools/http/tests/devtools/network/network-filters.js [ Pass Failure Timeout ]
-crbug.com/945832 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Failure Timeout Crash ]
 
 # Sheriff 2019-03-26
 crbug.com/945774 external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Pass Timeout ]
