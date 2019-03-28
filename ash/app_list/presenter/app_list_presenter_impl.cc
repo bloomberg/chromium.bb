@@ -29,6 +29,8 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/transient_window_manager.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace app_list {
 namespace {
@@ -169,6 +171,26 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   is_visible_ = false;
   const int64_t display_id = GetDisplayId();
   RequestPresentationTime(display_id, event_time_stamp);
+
+  // Hide the active window if it is a transient descendant of |view_|'s widget.
+  aura::Window* window = view_->GetWidget()->GetNativeWindow();
+  aura::Window* active_window =
+      ::wm::GetActivationClient(window->GetRootWindow())->GetActiveWindow();
+  if (active_window) {
+    aura::Window* transient_parent =
+        ::wm::TransientWindowManager::GetOrCreate(active_window)
+            ->transient_parent();
+    while (transient_parent) {
+      if (window == transient_parent) {
+        active_window->Hide();
+        break;
+      }
+      transient_parent =
+          ::wm::TransientWindowManager::GetOrCreate(transient_parent)
+              ->transient_parent();
+    }
+  }
+
   // The dismissal may have occurred in response to the app list losing
   // activation. Otherwise, our widget is currently active. When the animation
   // completes we'll hide the widget, changing activation. If a menu is shown
