@@ -492,8 +492,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 }
 
 // Navigate to a domain within an edit distance of 1 to a top domain.
-// This should record metrics. It should also show a lookalike warning
-// interstitial if configured via a feature param.
+// This should record metrics, but should not show a lookalike warning
+// interstitial yet.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        EditDistance_TopDomain_Match) {
   base::HistogramTester histograms;
@@ -501,14 +501,16 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   // The skeleton of this domain, gooogle.corn, is one 1 edit away from
   // google.corn, the skeleton of google.com.
   const GURL kNavigatedUrl = GetURL("goooglé.com");
-  const GURL kExpectedSuggestedUrl = GetURL("google.com");
   // Even if the navigated site has a low engagement score, it should be
   // considered for lookalike suggestions.
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
 
-  TestHistogramEventsRecordedAndInterstitialShown(
-      browser(), &histograms, kNavigatedUrl, kExpectedSuggestedUrl,
-      NavigationSuggestionEvent::kMatchEditDistance);
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+  histograms.ExpectTotalCount(LookalikeUrlNavigationThrottle::kHistogramName,
+                              1);
+  histograms.ExpectBucketCount(LookalikeUrlNavigationThrottle::kHistogramName,
+                               NavigationSuggestionEvent::kMatchEditDistance,
+                               1);
 
   CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kEditDistance);
 }
@@ -542,16 +544,10 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 
   // Matches google.com but page returns an invalid response.
   NavigateToURLSync(browser(),
-                    custom_test_server.GetURL("gooogle.com", "/title1.html"));
-  VerifyInterstitialShowingIfNeeded(browser());
-  histograms.ExpectTotalCount(LookalikeUrlNavigationThrottle::kHistogramName,
-                              1);
-
-  NavigateToURLSync(browser(),
                     custom_test_server.GetURL("googlé.com", "/title1.html"));
   VerifyInterstitialShowingIfNeeded(browser());
   histograms.ExpectTotalCount(LookalikeUrlNavigationThrottle::kHistogramName,
-                              2);
+                              1);
 
   SetEngagementScore(browser(), GURL("http://site1.com"), kHighEngagement);
   // Advance clock to force a fetch of new engaged sites list.
@@ -560,7 +556,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                     custom_test_server.GetURL("sité1.com", "/title1.html"));
   VerifyInterstitialShowingIfNeeded(browser());
   histograms.ExpectTotalCount(LookalikeUrlNavigationThrottle::kHistogramName,
-                              3);
+                              2);
 }
 
 // Verify that, after dismissing a lookalike warning when enabled, the user
@@ -771,14 +767,14 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        Interstitial_Dismiss) {
   base::HistogramTester histograms;
 
-  const GURL kNavigatedUrl = GetURL("goooglé.com");
+  const GURL kNavigatedUrl = GetURL("googlé.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
 
   TestHistogramEventsRecordedWhenInterstitialIgnored(
       browser(), &histograms, kNavigatedUrl,
-      NavigationSuggestionEvent::kMatchEditDistance);
+      NavigationSuggestionEvent::kMatchTopSite);
 
-  CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kEditDistance);
+  CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kTopSite);
 }
 
 // Navigate to lookalike domains that redirect to benign domains and ensure that
@@ -788,7 +784,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
   {
     // Verify it works when the lookalike domain is the first in the chain
     const GURL kNavigatedUrl =
-        GetLongRedirect("goooglé.com", "example.net", "example.com");
+        GetLongRedirect("googlé.com", "example.net", "example.com");
     SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
     LoadAndCheckInterstitialAt(browser(), kNavigatedUrl);
   }
@@ -800,7 +796,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
   {
     // ...or when it's later in the chain
     const GURL kNavigatedUrl =
-        GetLongRedirect("example.net", "goooglé.com", "example.com");
+        GetLongRedirect("example.net", "googlé.com", "example.com");
     SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
     LoadAndCheckInterstitialAt(browser(), kNavigatedUrl);
   }
@@ -810,7 +806,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
   {
     // ...or when it's last in the chain
     const GURL kNavigatedUrl =
-        GetLongRedirect("example.net", "example.com", "goooglé.com");
+        GetLongRedirect("example.net", "example.com", "googlé.com");
     SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
     LoadAndCheckInterstitialAt(browser(), kNavigatedUrl);
   }
@@ -824,7 +820,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   if (ui_enabled())
     return;
 
-  const GURL navigated_url = GetURL("goooglé.com");
+  const GURL navigated_url = GetURL("googlé.com");
   TestInterstitialNotShown(browser(), navigated_url);
   CheckUkm({navigated_url}, "UserAction", UserAction::kInterstitialNotShown);
 }
@@ -833,7 +829,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 // from the interstitial without interacting with it.
 IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
                        UkmRecordedAfterNavigateAway) {
-  const GURL navigated_url = GetURL("goooglé.com");
+  const GURL navigated_url = GetURL("googlé.com");
   const GURL subsequent_url = GetURL("example.com");
 
   LoadAndCheckInterstitialAt(browser(), navigated_url);
@@ -845,7 +841,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
 // the navigation suggestion.
 IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
                        UkmRecordedAfterSuggestionAccepted) {
-  const GURL navigated_url = GetURL("goooglé.com");
+  const GURL navigated_url = GetURL("googlé.com");
 
   LoadAndCheckInterstitialAt(browser(), navigated_url);
   SendInterstitialCommandSync(browser(),
@@ -857,7 +853,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
 // the navigation suggestion.
 IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
                        UkmRecordedAfterSuggestionIgnored) {
-  const GURL navigated_url = GetURL("goooglé.com");
+  const GURL navigated_url = GetURL("googlé.com");
 
   LoadAndCheckInterstitialAt(browser(), navigated_url);
   SendInterstitialCommandSync(browser(),
@@ -868,7 +864,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
 // Verify that the URL shows normally on pages after a lookalike interstitial.
 IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
                        UrlShownAfterInterstitial) {
-  LoadAndCheckInterstitialAt(browser(), GetURL("goooglé.com"));
+  LoadAndCheckInterstitialAt(browser(), GetURL("googlé.com"));
 
   // URL should be showing again when we navigate to a normal URL
   NavigateToURLSync(browser(), GetURL("example.com"));
