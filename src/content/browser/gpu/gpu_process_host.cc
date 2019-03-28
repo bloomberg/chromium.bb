@@ -642,8 +642,8 @@ void GpuProcessHost::OnEstablishGpuChannelTimeout(int client_id,
   if (process_ && process_launched_ && kind_ == GPU_PROCESS_KIND_SANDBOXED && gpu_host_) {
     process_->TerminateOnBadMessageReceived(msg);
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, std::move(msg), logging::LOG_WARNING));
 }
 
