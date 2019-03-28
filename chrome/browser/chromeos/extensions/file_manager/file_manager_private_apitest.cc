@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/drivefs_test_support.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
+#include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_misc.h"
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
@@ -28,7 +29,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
-#include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/cros_disks_client.h"
@@ -191,7 +191,6 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
 
   ~FileManagerPrivateApiTest() override {
     DCHECK(!disk_mount_manager_mock_);
-    DCHECK(!testing_profile_);
     DCHECK(!event_router_);
   }
 
@@ -203,17 +202,11 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
     extensions::ExtensionApiTest::SetUpOnMainThread();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    testing_profile_ = std::make_unique<TestingProfile>();
-    event_router_ =
-        std::make_unique<file_manager::EventRouter>(testing_profile_.get());
+    event_router_ = file_manager::EventRouterFactory::GetForProfile(profile());
   }
 
   void TearDownOnMainThread() override {
-    event_router_->Shutdown();
-
-    event_router_.reset();
-    testing_profile_.reset();
-
+    event_router_ = nullptr;
     extensions::ExtensionApiTest::TearDownOnMainThread();
   }
 
@@ -387,8 +380,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
   chromeos::disks::MockDiskMountManager* disk_mount_manager_mock_;
   DiskMountManager::DiskMap volumes_;
   DiskMountManager::MountPointMap mount_points_;
-  std::unique_ptr<TestingProfile> testing_profile_;
-  std::unique_ptr<file_manager::EventRouter> event_router_;
+  file_manager::EventRouter* event_router_ = nullptr;
 };
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {

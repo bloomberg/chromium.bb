@@ -490,10 +490,7 @@ void EventRouter::Shutdown() {
       << "Not all file watchers are "
       << "removed. This can happen when the Files app is open during shutdown.";
   file_watchers_.clear();
-  if (!profile_) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(profile_);
 
   pref_change_registrar_->RemoveAll();
 
@@ -527,10 +524,8 @@ void EventRouter::Shutdown() {
 }
 
 void EventRouter::ObserveEvents() {
-  if (!profile_) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(profile_);
+
   if (!chromeos::LoginState::IsInitialized() ||
       !chromeos::LoginState::Get()->IsUserLoggedIn()) {
     return;
@@ -733,10 +728,8 @@ void EventRouter::OnWatcherManagerNotification(
 }
 
 void EventRouter::OnConnectionChanged(network::mojom::ConnectionType type) {
-  if (!profile_ || !extensions::EventRouter::Get(profile_)) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(profile_);
+  DCHECK(extensions::EventRouter::Get(profile_));
 
   BroadcastEvent(
       profile_, extensions::events::
@@ -750,10 +743,8 @@ void EventRouter::TimezoneChanged(const icu::TimeZone& timezone) {
 }
 
 void EventRouter::OnFileManagerPrefsChanged() {
-  if (!profile_ || !extensions::EventRouter::Get(profile_)) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(profile_);
+  DCHECK(extensions::EventRouter::Get(profile_));
 
   BroadcastEvent(
       profile_, extensions::events::FILE_MANAGER_PRIVATE_ON_PREFERENCES_CHANGED,
@@ -913,10 +904,7 @@ void EventRouter::DispatchDirectoryChangeEventImpl(
     const drive::FileChange* list,
     bool got_error,
     const std::vector<std::string>& extension_ids) {
-  if (!profile_) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(profile_);
   std::unique_ptr<drive::FileChange> changes;
   if (list)
     changes = std::make_unique<drive::FileChange>(*list);  // Copy
