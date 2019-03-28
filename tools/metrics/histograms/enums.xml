@@ -129,9 +129,9 @@ uploading your change for review.  These are checked by presubmit scripts.
     Tracks what mode the user has selected for accessibility image labels,
     either always enabled, enabled once, or disabled.
   </summary>
-  <int value="0" label="Enabled (always)"/>
-  <int value="1" label="Enabled (once)"/>
-  <int value="2" label="Disabled"/>
+  <int value="1" label="Enabled (always)"/>
+  <int value="2" label="Enabled (once)"/>
+  <int value="3" label="Disabled"/>
 </enum>
 
 <enum name="AccessibilityModeFlagEnum">
