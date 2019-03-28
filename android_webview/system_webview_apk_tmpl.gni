@@ -3,10 +3,10 @@
 # found in the LICENSE file.
 
 import("//base/android/proguard/proguard.gni")
-import("//build/config/android/chrome_version.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
+import("//build/util/version.gni")
 import("//chrome/android/trichrome.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 

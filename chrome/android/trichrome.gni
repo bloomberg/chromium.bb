@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 import("//base/android/proguard/proguard.gni")
-import("//build/config/android/chrome_version.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/util/version.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
 
 if (!defined(default_trichrome_certdigest)) {
