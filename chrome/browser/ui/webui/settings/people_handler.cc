@@ -195,6 +195,55 @@ base::Value GetAccountValue(const AccountInfo& account) {
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
+base::string16 GetEnterPassphraseBody(syncer::PassphraseType passphrase_type,
+                                      base::Time passphrase_time) {
+  DCHECK(syncer::IsExplicitPassphrase(passphrase_type));
+  switch (passphrase_type) {
+    case syncer::PassphraseType::FROZEN_IMPLICIT_PASSPHRASE:
+      if (passphrase_time.is_null()) {
+        return GetStringUTF16(IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY);
+      }
+      return GetStringFUTF16(IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY_WITH_DATE,
+                             base::ASCIIToUTF16(chrome::kSyncErrorsHelpURL),
+                             base::TimeFormatShortDate(passphrase_time));
+    case syncer::PassphraseType::CUSTOM_PASSPHRASE:
+      if (passphrase_time.is_null()) {
+        return GetStringUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY);
+      }
+      return GetStringFUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE,
+                             base::ASCIIToUTF16(chrome::kSyncErrorsHelpURL),
+                             base::TimeFormatShortDate(passphrase_time));
+    case syncer::PassphraseType::IMPLICIT_PASSPHRASE:
+    case syncer::PassphraseType::KEYSTORE_PASSPHRASE:
+    case syncer::PassphraseType::PASSPHRASE_TYPE_SIZE:
+      break;
+  }
+  NOTREACHED();
+  return base::string16();
+}
+
+base::string16 GetFullEncryptionBody(syncer::PassphraseType passphrase_type,
+                                     base::Time passphrase_time) {
+  DCHECK(syncer::IsExplicitPassphrase(passphrase_type));
+  if (passphrase_time.is_null()) {
+    return GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM);
+  }
+  switch (passphrase_type) {
+    case syncer::PassphraseType::FROZEN_IMPLICIT_PASSPHRASE:
+      return GetStringFUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_GOOGLE_WITH_DATE,
+                             base::TimeFormatShortDate(passphrase_time));
+    case syncer::PassphraseType::CUSTOM_PASSPHRASE:
+      return GetStringFUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM_WITH_DATE,
+                             base::TimeFormatShortDate(passphrase_time));
+    case syncer::PassphraseType::IMPLICIT_PASSPHRASE:
+    case syncer::PassphraseType::KEYSTORE_PASSPHRASE:
+    case syncer::PassphraseType::PASSPHRASE_TYPE_SIZE:
+      break;
+  }
+  NOTREACHED();
+  return base::string16();
+}
+
 }  // namespace
 
 namespace settings {
@@ -1040,56 +1089,15 @@ void PeopleHandler::PushSyncPrefs() {
   args.SetBoolean("passphraseRequired",
                   service->GetUserSettings()->IsPassphraseRequired());
 
-  base::Time passphrase_time =
-      service->GetUserSettings()->GetExplicitPassphraseTime();
   syncer::PassphraseType passphrase_type =
       service->GetUserSettings()->GetPassphraseType();
-  if (!passphrase_time.is_null()) {
-    base::string16 passphrase_time_str =
-        base::TimeFormatShortDate(passphrase_time);
-    switch (passphrase_type) {
-      case syncer::PassphraseType::FROZEN_IMPLICIT_PASSPHRASE:
-        args.SetString(
-            "enterPassphraseBody",
-            GetStringFUTF16(IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY_WITH_DATE,
-                            base::ASCIIToUTF16(chrome::kSyncErrorsHelpURL),
-                            passphrase_time_str));
-        args.SetString(
-            "fullEncryptionBody",
-            GetStringFUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_GOOGLE_WITH_DATE,
-                            passphrase_time_str));
-        break;
-      case syncer::PassphraseType::CUSTOM_PASSPHRASE:
-        args.SetString(
-            "enterPassphraseBody",
-            GetStringFUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE,
-                            base::ASCIIToUTF16(chrome::kSyncErrorsHelpURL),
-                            passphrase_time_str));
-        args.SetString(
-            "fullEncryptionBody",
-            GetStringFUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM_WITH_DATE,
-                            passphrase_time_str));
-        break;
-      default:
-        args.SetString("fullEncryptionBody",
-                       GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM));
-        break;
-    }
-  } else if (syncer::IsExplicitPassphrase(passphrase_type)) {
-    switch (passphrase_type) {
-      case syncer::PassphraseType::FROZEN_IMPLICIT_PASSPHRASE:
-        args.SetString("enterPassphraseBody",
-                       GetStringUTF16(IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY));
-        break;
-      case syncer::PassphraseType::CUSTOM_PASSPHRASE:
-        args.SetString("enterPassphraseBody",
-                       GetStringUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY));
-        break;
-      default:
-        NOTREACHED();
-    }
+  if (syncer::IsExplicitPassphrase(passphrase_type)) {
+    base::Time passphrase_time =
+        service->GetUserSettings()->GetExplicitPassphraseTime();
+    args.SetString("enterPassphraseBody",
+                   GetEnterPassphraseBody(passphrase_type, passphrase_time));
     args.SetString("fullEncryptionBody",
-                   GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM));
+                   GetFullEncryptionBody(passphrase_type, passphrase_time));
   }
 
   FireWebUIListener("sync-prefs-changed", args);
