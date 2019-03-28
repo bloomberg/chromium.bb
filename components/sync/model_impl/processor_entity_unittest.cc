@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/model_impl/processor_entity_tracker.h"
+#include "components/sync/model_impl/processor_entity.h"
 
 #include <utility>
 
@@ -42,7 +42,7 @@ std::unique_ptr<EntityData> GenerateEntityData(const std::string& hash,
   return entity_data;
 }
 
-UpdateResponseData GenerateUpdate(const ProcessorEntityTracker& entity,
+UpdateResponseData GenerateUpdate(const ProcessorEntity& entity,
                                   const std::string& hash,
                                   const std::string& id,
                                   const std::string& name,
@@ -58,7 +58,7 @@ UpdateResponseData GenerateUpdate(const ProcessorEntityTracker& entity,
   return update;
 }
 
-UpdateResponseData GenerateTombstone(const ProcessorEntityTracker& entity,
+UpdateResponseData GenerateTombstone(const ProcessorEntity& entity,
                                      const std::string& hash,
                                      const std::string& id,
                                      const std::string& name,
@@ -89,48 +89,48 @@ CommitResponseData GenerateAckData(const CommitRequestData& request,
 
 }  // namespace
 
-// Some simple sanity tests for the ProcessorEntityTracker.
+// Some simple sanity tests for the ProcessorEntity.
 //
 // A lot of the more complicated sync logic is implemented in the
-// ClientTagBasedModelTypeProcessor that owns the ProcessorEntityTracker.  We
+// ClientTagBasedModelTypeProcessor that owns the ProcessorEntity.  We
 // can't unit test it here.
 //
 // Instead, we focus on simple tests to make sure that variables are getting
 // properly intialized and flags properly set.  Anything more complicated would
 // be a redundant and incomplete version of the ClientTagBasedModelTypeProcessor
 // tests.
-class ProcessorEntityTrackerTest : public ::testing::Test {
+class ProcessorEntityTest : public ::testing::Test {
  public:
-  ProcessorEntityTrackerTest()
+  ProcessorEntityTest()
       : ctime_(base::Time::Now() - base::TimeDelta::FromSeconds(1)) {}
 
-  std::unique_ptr<ProcessorEntityTracker> CreateNew() {
-    return ProcessorEntityTracker::CreateNew(kKey, kHash, "", ctime_);
+  std::unique_ptr<ProcessorEntity> CreateNew() {
+    return ProcessorEntity::CreateNew(kKey, kHash, "", ctime_);
   }
 
-  std::unique_ptr<ProcessorEntityTracker> CreateNewWithEmptyStorageKey() {
-    return ProcessorEntityTracker::CreateNew("", kHash, "", ctime_);
+  std::unique_ptr<ProcessorEntity> CreateNewWithEmptyStorageKey() {
+    return ProcessorEntity::CreateNew("", kHash, "", ctime_);
   }
 
-  std::unique_ptr<ProcessorEntityTracker> CreateSynced() {
-    std::unique_ptr<ProcessorEntityTracker> entity = CreateNew();
+  std::unique_ptr<ProcessorEntity> CreateSynced() {
+    std::unique_ptr<ProcessorEntity> entity = CreateNew();
     entity->RecordAcceptedUpdate(
         GenerateUpdate(*entity, kHash, kId, kName, kValue1, ctime_, 1));
     DCHECK(!entity->IsUnsynced());
     return entity;
   }
 
-  std::unique_ptr<ProcessorEntityTracker> RestoreFromMetadata(
+  std::unique_ptr<ProcessorEntity> RestoreFromMetadata(
       sync_pb::EntityMetadata* entity_metadata) {
-    return ProcessorEntityTracker::CreateFromMetadata(kKey, entity_metadata);
+    return ProcessorEntity::CreateFromMetadata(kKey, entity_metadata);
   }
 
   const base::Time ctime_;
 };
 
-// Test the state of the default new tracker.
-TEST_F(ProcessorEntityTrackerTest, DefaultTracker) {
-  std::unique_ptr<ProcessorEntityTracker> entity = CreateNew();
+// Test the state of the default new entity.
+TEST_F(ProcessorEntityTest, DefaultEntity) {
+  std::unique_ptr<ProcessorEntity> entity = CreateNew();
 
   EXPECT_EQ(kKey, entity->storage_key());
   EXPECT_EQ(kHash, entity->metadata().client_tag_hash());
@@ -153,8 +153,8 @@ TEST_F(ProcessorEntityTrackerTest, DefaultTracker) {
 }
 
 // Test creating and commiting a new local item.
-TEST_F(ProcessorEntityTrackerTest, NewLocalItem) {
-  std::unique_ptr<ProcessorEntityTracker> entity = CreateNew();
+TEST_F(ProcessorEntityTest, NewLocalItem) {
+  std::unique_ptr<ProcessorEntity> entity = CreateNew();
   entity->MakeLocalChange(GenerateEntityData(kHash, kName, kValue1));
 
   EXPECT_EQ("", entity->metadata().server_id());
@@ -225,8 +225,8 @@ TEST_F(ProcessorEntityTrackerTest, NewLocalItem) {
 }
 
 // Test state for a newly synced server item.
-TEST_F(ProcessorEntityTrackerTest, NewServerItem) {
-  std::unique_ptr<ProcessorEntityTracker> entity = CreateNew();
+TEST_F(ProcessorEntityTest, NewServerItem) {
+  std::unique_ptr<ProcessorEntity> entity = CreateNew();
 
   const base::Time mtime = base::Time::Now();
   entity->RecordAcceptedUpdate(
@@ -251,11 +251,10 @@ TEST_F(ProcessorEntityTrackerTest, NewServerItem) {
   EXPECT_FALSE(entity->HasCommitData());
 }
 
-// Test creating tracker for new server item with empty storage key, applying
+// Test creating an entity for new server item with empty storage key, applying
 // update and updating storage key.
-TEST_F(ProcessorEntityTrackerTest, NewServerItem_EmptyStorageKey) {
-  std::unique_ptr<ProcessorEntityTracker> entity =
-      CreateNewWithEmptyStorageKey();
+TEST_F(ProcessorEntityTest, NewServerItem_EmptyStorageKey) {
+  std::unique_ptr<ProcessorEntity> entity = CreateNewWithEmptyStorageKey();
 
   EXPECT_EQ("", entity->storage_key());
 
@@ -267,8 +266,8 @@ TEST_F(ProcessorEntityTrackerTest, NewServerItem_EmptyStorageKey) {
 }
 
 // Test state for a tombstone received for a previously unknown item.
-TEST_F(ProcessorEntityTrackerTest, NewServerTombstone) {
-  std::unique_ptr<ProcessorEntityTracker> entity = CreateNew();
+TEST_F(ProcessorEntityTest, NewServerTombstone) {
+  std::unique_ptr<ProcessorEntity> entity = CreateNew();
 
   const base::Time mtime = base::Time::Now();
   entity->RecordAcceptedUpdate(
@@ -293,9 +292,9 @@ TEST_F(ProcessorEntityTrackerTest, NewServerTombstone) {
 }
 
 // Apply a deletion update to a synced item.
-TEST_F(ProcessorEntityTrackerTest, ServerTombstone) {
+TEST_F(ProcessorEntityTest, ServerTombstone) {
   // Start with a non-deleted state with version 1.
-  std::unique_ptr<ProcessorEntityTracker> entity = CreateSynced();
+  std::unique_ptr<ProcessorEntity> entity = CreateSynced();
   // A deletion update one version later.
   const base::Time mtime = base::Time::Now();
   entity->RecordAcceptedUpdate(
@@ -319,8 +318,8 @@ TEST_F(ProcessorEntityTrackerTest, ServerTombstone) {
 }
 
 // Test a local change of a synced item.
-TEST_F(ProcessorEntityTrackerTest, LocalChange) {
-  std::unique_ptr<ProcessorEntityTracker> entity = CreateSynced();
+TEST_F(ProcessorEntityTest, LocalChange) {
+  std::unique_ptr<ProcessorEntity> entity = CreateSynced();
   const int64_t mtime_v0 = entity->metadata().modification_time();
   const std::string specifics_hash_v0 = entity->metadata().specifics_hash();
 
@@ -369,8 +368,8 @@ TEST_F(ProcessorEntityTrackerTest, LocalChange) {
 }
 
 // Test a local deletion of a synced item.
-TEST_F(ProcessorEntityTrackerTest, LocalDeletion) {
-  std::unique_ptr<ProcessorEntityTracker> entity = CreateSynced();
+TEST_F(ProcessorEntityTest, LocalDeletion) {
+  std::unique_ptr<ProcessorEntity> entity = CreateSynced();
   const int64_t mtime = entity->metadata().modification_time();
   const std::string specifics_hash = entity->metadata().specifics_hash();
 
@@ -437,8 +436,8 @@ TEST_F(ProcessorEntityTrackerTest, LocalDeletion) {
 
 // Test that hashes and sequence numbers are handled correctly for the "commit
 // commit, ack ack" case.
-TEST_F(ProcessorEntityTrackerTest, LocalChangesInterleaved) {
-  std::unique_ptr<ProcessorEntityTracker> entity = CreateSynced();
+TEST_F(ProcessorEntityTest, LocalChangesInterleaved) {
+  std::unique_ptr<ProcessorEntity> entity = CreateSynced();
   const std::string specifics_hash_v0 = entity->metadata().specifics_hash();
 
   // Make the first change.
@@ -506,8 +505,8 @@ TEST_F(ProcessorEntityTrackerTest, LocalChangesInterleaved) {
 
 // Tests that updating entity id with commit response while next local change is
 // pending correctly updates that change's id and version.
-TEST_F(ProcessorEntityTrackerTest, NewLocalChangeUpdatedId) {
-  std::unique_ptr<ProcessorEntityTracker> entity = CreateNew();
+TEST_F(ProcessorEntityTest, NewLocalChangeUpdatedId) {
+  std::unique_ptr<ProcessorEntity> entity = CreateNew();
   // Create new local change. Make sure initial id is empty.
   entity->MakeLocalChange(GenerateEntityData(kHash, kName, kValue1));
 
@@ -520,7 +519,7 @@ TEST_F(ProcessorEntityTrackerTest, NewLocalChangeUpdatedId) {
   entity->ReceiveCommitResponse(GenerateAckData(request, kId, 1), false);
 
   // Receiving commit response with valid id should update
-  // ProcessorEntityTracker. Consecutive commit requests should include updated
+  // ProcessorEntity. Consecutive commit requests should include updated
   // id.
   entity->InitializeCommitRequestData(&request);
   EXPECT_EQ(kId, request.entity->id);
@@ -529,9 +528,9 @@ TEST_F(ProcessorEntityTrackerTest, NewLocalChangeUpdatedId) {
 
 // Tests that entity restored after restart accepts specifics that don't match
 // the ones passed originally to MakeLocalChange.
-TEST_F(ProcessorEntityTrackerTest, RestoredLocalChangeWithUpdatedSpecifics) {
+TEST_F(ProcessorEntityTest, RestoredLocalChangeWithUpdatedSpecifics) {
   // Create new entity and preserver its metadata.
-  std::unique_ptr<ProcessorEntityTracker> entity = CreateNew();
+  std::unique_ptr<ProcessorEntity> entity = CreateNew();
   entity->MakeLocalChange(GenerateEntityData(kHash, kName, kValue1));
   sync_pb::EntityMetadata entity_metadata = entity->metadata();
 
@@ -547,8 +546,8 @@ TEST_F(ProcessorEntityTrackerTest, RestoredLocalChangeWithUpdatedSpecifics) {
 // Tests the scenario where a local creation conflicts with a remote deletion,
 // where usually (and in this test) local wins. In this case, the remote update
 // should be ignored but the server IDs should be updated.
-TEST_F(ProcessorEntityTrackerTest, LocalCreationConflictsWithServerTombstone) {
-  std::unique_ptr<ProcessorEntityTracker> entity = CreateNew();
+TEST_F(ProcessorEntityTest, LocalCreationConflictsWithServerTombstone) {
+  std::unique_ptr<ProcessorEntity> entity = CreateNew();
   entity->MakeLocalChange(GenerateEntityData(kHash, kName, kValue1));
 
   ASSERT_TRUE(entity->IsUnsynced());
@@ -559,7 +558,7 @@ TEST_F(ProcessorEntityTrackerTest, LocalCreationConflictsWithServerTombstone) {
   ASSERT_TRUE(entity->metadata().server_id().empty());
 
   {
-    // Local creation should use a temporary server ID (which in this tracker
+    // Local creation should use a temporary server ID (which in this entity
     // involves an empty string).
     CommitRequestData request;
     entity->InitializeCommitRequestData(&request);

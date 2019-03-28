@@ -21,7 +21,7 @@
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/model_type_processor_proxy.h"
-#include "components/sync/model_impl/processor_entity_tracker.h"
+#include "components/sync/model_impl/processor_entity.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 
@@ -49,8 +49,7 @@ int64_t FindTheNthBigestProtoTimeStamp(std::vector<int64_t> time_stamps,
 }
 
 int CountNonTombstoneEntries(
-    const std::map<std::string, std::unique_ptr<ProcessorEntityTracker>>&
-        entities) {
+    const std::map<std::string, std::unique_ptr<ProcessorEntity>>& entities) {
   int count = 0;
   for (const auto& kv : entities) {
     if (!kv.second->metadata().is_deleted()) {
@@ -141,8 +140,8 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
     EntityMetadataMap metadata_map(batch->TakeAllMetadata());
 
     for (auto it = metadata_map.begin(); it != metadata_map.end(); it++) {
-      std::unique_ptr<ProcessorEntityTracker> entity =
-          ProcessorEntityTracker::CreateFromMetadata(it->first, &it->second);
+      std::unique_ptr<ProcessorEntity> entity =
+          ProcessorEntity::CreateFromMetadata(it->first, &it->second);
       storage_key_to_tag_hash_[entity->storage_key()] =
           entity->metadata().client_tag_hash();
       entities_[entity->metadata().client_tag_hash()] = std::move(entity);
@@ -376,7 +375,7 @@ void ClientTagBasedModelTypeProcessor::Put(
     return;
   }
 
-  ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
+  ProcessorEntity* entity = GetEntityForStorageKey(storage_key);
   if (entity == nullptr) {
     // The bridge is creating a new entity. The bridge may or may not populate
     // |data->client_tag_hash|, so let's ask for the client tag if needed.
@@ -420,7 +419,7 @@ void ClientTagBasedModelTypeProcessor::Delete(
     return;
   }
 
-  ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
+  ProcessorEntity* entity = GetEntityForStorageKey(storage_key);
   if (entity == nullptr) {
     // Missing is as good as deleted as far as the model is concerned.
     return;
@@ -444,7 +443,7 @@ void ClientTagBasedModelTypeProcessor::UpdateStorageKey(
   DCHECK(!bridge_->SupportsGetStorageKey());
   DCHECK(model_type_state_.initial_sync_done());
 
-  ProcessorEntityTracker* entity = GetEntityForTagHash(client_tag_hash);
+  ProcessorEntity* entity = GetEntityForTagHash(client_tag_hash);
   DCHECK(entity);
 
   DCHECK(entity->storage_key().empty());
@@ -483,7 +482,7 @@ void ClientTagBasedModelTypeProcessor::UntrackEntityForClientTagHash(
 
 bool ClientTagBasedModelTypeProcessor::IsEntityUnsynced(
     const std::string& storage_key) {
-  ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
+  ProcessorEntity* entity = GetEntityForStorageKey(storage_key);
   if (entity == nullptr) {
     return false;
   }
@@ -493,7 +492,7 @@ bool ClientTagBasedModelTypeProcessor::IsEntityUnsynced(
 
 base::Time ClientTagBasedModelTypeProcessor::GetEntityCreationTime(
     const std::string& storage_key) const {
-  const ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
+  const ProcessorEntity* entity = GetEntityForStorageKey(storage_key);
   if (entity == nullptr) {
     return base::Time();
   }
@@ -502,7 +501,7 @@ base::Time ClientTagBasedModelTypeProcessor::GetEntityCreationTime(
 
 base::Time ClientTagBasedModelTypeProcessor::GetEntityModificationTime(
     const std::string& storage_key) const {
-  const ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
+  const ProcessorEntity* entity = GetEntityForStorageKey(storage_key);
   if (entity == nullptr) {
     return base::Time();
   }
@@ -525,7 +524,7 @@ void ClientTagBasedModelTypeProcessor::NudgeForCommitIfNeeded() {
 
 bool ClientTagBasedModelTypeProcessor::HasLocalChanges() const {
   for (const auto& kv : entities_) {
-    ProcessorEntityTracker* entity = kv.second.get();
+    ProcessorEntity* entity = kv.second.get();
     if (entity->RequiresCommitRequest()) {
       return true;
     }
@@ -542,7 +541,7 @@ void ClientTagBasedModelTypeProcessor::GetLocalChanges(
 
   std::vector<std::string> entities_requiring_data;
   for (const auto& kv : entities_) {
-    ProcessorEntityTracker* entity = kv.second.get();
+    ProcessorEntity* entity = kv.second.get();
     if (entity->RequiresCommitData()) {
       entities_requiring_data.push_back(entity->storage_key());
     }
@@ -578,7 +577,7 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
   metadata_change_list->UpdateModelTypeState(model_type_state_);
 
   for (const CommitResponseData& data : response_list) {
-    ProcessorEntityTracker* entity = GetEntityForTagHash(data.client_tag_hash);
+    ProcessorEntity* entity = GetEntityForTagHash(data.client_tag_hash);
     if (entity == nullptr) {
       NOTREACHED() << "Received commit response for missing item."
                    << " type: " << ModelTypeToString(type_)
@@ -719,14 +718,14 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
         /*buckets=*/50);
   }
 
-  // If there were trackers with empty storage keys, they should have been
+  // If there were entities with empty storage keys, they should have been
   // updated by bridge as part of ApplySyncChanges.
   DCHECK(AllStorageKeysPopulated());
   // There may be new reasons to commit by the time this function is done.
   NudgeForCommitIfNeeded();
 }
 
-ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::ProcessUpdate(
+ProcessorEntity* ClientTagBasedModelTypeProcessor::ProcessUpdate(
     const UpdateResponseData& update,
     EntityChangeList* entity_changes) {
   const EntityData& data = update.entity.value();
@@ -747,7 +746,7 @@ ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::ProcessUpdate(
     return nullptr;
   }
 
-  ProcessorEntityTracker* entity = GetEntityForTagHash(client_tag_hash);
+  ProcessorEntity* entity = GetEntityForTagHash(client_tag_hash);
 
   // Handle corner cases first.
   if (entity == nullptr && data.is_deleted()) {
@@ -815,7 +814,7 @@ ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::ProcessUpdate(
 
 ConflictResolution::Type ClientTagBasedModelTypeProcessor::ResolveConflict(
     const UpdateResponseData& update,
-    ProcessorEntityTracker* entity,
+    ProcessorEntity* entity,
     EntityChangeList* changes) {
   const EntityData& remote_data = update.entity.value();
 
@@ -893,7 +892,7 @@ void ClientTagBasedModelTypeProcessor::RecommitAllForEncryption(
   ModelTypeSyncBridge::StorageKeyList entities_needing_data;
 
   for (const auto& kv : entities_) {
-    ProcessorEntityTracker* entity = kv.second.get();
+    ProcessorEntity* entity = kv.second.get();
     if (entity->storage_key().empty() ||
         (already_updated.find(entity->storage_key()) !=
          already_updated.end())) {
@@ -1004,7 +1003,7 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
                   << " for " << ModelTypeToString(type_);
     }
 #endif  // DCHECK_IS_ON()
-    ProcessorEntityTracker* entity = CreateEntity(update.entity.value());
+    ProcessorEntity* entity = CreateEntity(update.entity.value());
     entity->RecordAcceptedUpdate(update);
     const std::string& storage_key = entity->storage_key();
     entity_data.push_back(EntityChange::CreateAdd(storage_key, update.entity));
@@ -1041,7 +1040,7 @@ ClientTagBasedModelTypeProcessor::OnIncrementalUpdateReceived(
   std::unordered_set<std::string> already_updated;
 
   for (const UpdateResponseData& update : updates) {
-    ProcessorEntityTracker* entity = ProcessUpdate(update, &entity_changes);
+    ProcessorEntity* entity = ProcessUpdate(update, &entity_changes);
 
     if (!entity) {
       // The update is either of the following:
@@ -1112,7 +1111,7 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
     const std::string& storage_key = data.first;
 
     storage_keys_to_load.erase(storage_key);
-    ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
+    ProcessorEntity* entity = GetEntityForStorageKey(storage_key);
     // If the entity wasn't deleted or updated with new commit.
     if (entity != nullptr && entity->RequiresCommitData()) {
       // SetCommitData will update EntityData's fields with values from
@@ -1124,7 +1123,7 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
   // Detect failed loads that shouldn't have failed.
   std::vector<std::string> storage_keys_to_untrack;
   for (const std::string& storage_key : storage_keys_to_load) {
-    ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
+    ProcessorEntity* entity = GetEntityForStorageKey(storage_key);
     if (entity == nullptr || entity->metadata().is_deleted()) {
       // Skip entities that are not tracked any more or already marked for
       // deletion.
@@ -1166,7 +1165,7 @@ void ClientTagBasedModelTypeProcessor::CommitLocalChanges(
   CommitRequestDataList commit_requests;
   // TODO(rlarocque): Do something smarter than iterate here.
   for (const auto& kv : entities_) {
-    ProcessorEntityTracker* entity = kv.second.get();
+    ProcessorEntity* entity = kv.second.get();
     if (entity->RequiresCommitRequest() && !entity->RequiresCommitData()) {
       CommitRequestData request;
       entity->InitializeCommitRequestData(&request);
@@ -1189,8 +1188,7 @@ std::string ClientTagBasedModelTypeProcessor::GetClientTagHash(
              : iter->second;
 }
 
-ProcessorEntityTracker*
-ClientTagBasedModelTypeProcessor::GetEntityForStorageKey(
+ProcessorEntity* ClientTagBasedModelTypeProcessor::GetEntityForStorageKey(
     const std::string& storage_key) {
   auto iter = storage_key_to_tag_hash_.find(storage_key);
   return iter == storage_key_to_tag_hash_.end()
@@ -1198,8 +1196,7 @@ ClientTagBasedModelTypeProcessor::GetEntityForStorageKey(
              : GetEntityForTagHash(iter->second);
 }
 
-const ProcessorEntityTracker*
-ClientTagBasedModelTypeProcessor::GetEntityForStorageKey(
+const ProcessorEntity* ClientTagBasedModelTypeProcessor::GetEntityForStorageKey(
     const std::string& storage_key) const {
   auto iter = storage_key_to_tag_hash_.find(storage_key);
   return iter == storage_key_to_tag_hash_.end()
@@ -1207,20 +1204,19 @@ ClientTagBasedModelTypeProcessor::GetEntityForStorageKey(
              : GetEntityForTagHash(iter->second);
 }
 
-ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::GetEntityForTagHash(
+ProcessorEntity* ClientTagBasedModelTypeProcessor::GetEntityForTagHash(
     const std::string& tag_hash) {
   auto it = entities_.find(tag_hash);
   return it != entities_.end() ? it->second.get() : nullptr;
 }
 
-const ProcessorEntityTracker*
-ClientTagBasedModelTypeProcessor::GetEntityForTagHash(
+const ProcessorEntity* ClientTagBasedModelTypeProcessor::GetEntityForTagHash(
     const std::string& tag_hash) const {
   auto it = entities_.find(tag_hash);
   return it != entities_.end() ? it->second.get() : nullptr;
 }
 
-ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::CreateEntity(
+ProcessorEntity* ClientTagBasedModelTypeProcessor::CreateEntity(
     const std::string& storage_key,
     const EntityData& data) {
   DCHECK(!data.client_tag_hash.empty());
@@ -1228,17 +1224,16 @@ ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::CreateEntity(
   DCHECK(!bridge_->SupportsGetStorageKey() || !storage_key.empty());
   DCHECK(storage_key.empty() || storage_key_to_tag_hash_.find(storage_key) ==
                                     storage_key_to_tag_hash_.end());
-  std::unique_ptr<ProcessorEntityTracker> entity =
-      ProcessorEntityTracker::CreateNew(storage_key, data.client_tag_hash,
-                                        data.id, data.creation_time);
-  ProcessorEntityTracker* entity_ptr = entity.get();
+  std::unique_ptr<ProcessorEntity> entity = ProcessorEntity::CreateNew(
+      storage_key, data.client_tag_hash, data.id, data.creation_time);
+  ProcessorEntity* entity_ptr = entity.get();
   entities_[data.client_tag_hash] = std::move(entity);
   if (!storage_key.empty())
     storage_key_to_tag_hash_[storage_key] = data.client_tag_hash;
   return entity_ptr;
 }
 
-ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::CreateEntity(
+ProcessorEntity* ClientTagBasedModelTypeProcessor::CreateEntity(
     const EntityData& data) {
   if (bridge_->SupportsGetClientTag()) {
     DCHECK_EQ(data.client_tag_hash,
@@ -1252,7 +1247,7 @@ ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::CreateEntity(
 
 bool ClientTagBasedModelTypeProcessor::AllStorageKeysPopulated() const {
   for (const auto& kv : entities_) {
-    ProcessorEntityTracker* entity = kv.second.get();
+    ProcessorEntity* entity = kv.second.get();
     if (entity->storage_key().empty())
       return false;
   }
@@ -1340,7 +1335,7 @@ void ClientTagBasedModelTypeProcessor::ExpireAllEntries(
 
   std::vector<std::string> storage_key_to_be_deleted;
   for (const auto& kv : entities_) {
-    ProcessorEntityTracker* entity = kv.second.get();
+    ProcessorEntity* entity = kv.second.get();
     if (!entity->IsUnsynced()) {
       storage_key_to_be_deleted.push_back(entity->storage_key());
     }
@@ -1358,7 +1353,7 @@ void ClientTagBasedModelTypeProcessor::ExpireEntriesByAge(
       base::Time::Now() - base::TimeDelta::FromDays(age_watermark_in_days);
   std::vector<std::string> storage_key_to_be_deleted;
   for (const auto& kv : entities_) {
-    ProcessorEntityTracker* entity = kv.second.get();
+    ProcessorEntity* entity = kv.second.get();
     if (!entity->IsUnsynced() &&
         ProtoTimeToTime(entity->metadata().modification_time()) <=
             to_be_expired) {
@@ -1380,7 +1375,7 @@ void ClientTagBasedModelTypeProcessor::ExpireEntriesByItemLimit(
 
   std::vector<int64_t> all_proto_times;
   for (const auto& kv : entities_) {
-    ProcessorEntityTracker* entity = kv.second.get();
+    ProcessorEntity* entity = kv.second.get();
     all_proto_times.push_back(entity->metadata().modification_time());
   }
   int64_t expired_proto_time = FindTheNthBigestProtoTimeStamp(
@@ -1388,7 +1383,7 @@ void ClientTagBasedModelTypeProcessor::ExpireEntriesByItemLimit(
 
   std::vector<std::string> storage_key_to_be_deleted;
   for (const auto& kv : entities_) {
-    ProcessorEntityTracker* entity = kv.second.get();
+    ProcessorEntity* entity = kv.second.get();
     if (!entity->IsUnsynced() &&
         entity->metadata().modification_time() < expired_proto_time) {
       storage_key_to_be_deleted.push_back(entity->storage_key());
@@ -1399,7 +1394,7 @@ void ClientTagBasedModelTypeProcessor::ExpireEntriesByItemLimit(
 }
 
 void ClientTagBasedModelTypeProcessor::RemoveEntity(
-    ProcessorEntityTracker* entity,
+    ProcessorEntity* entity,
     MetadataChangeList* metadata_change_list) {
   metadata_change_list->ClearMetadata(entity->storage_key());
   storage_key_to_tag_hash_.erase(entity->storage_key());
@@ -1450,10 +1445,10 @@ void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(
     std::unique_ptr<EntityData> data = std::move(key_and_data.second);
 
     // There is an overlap between EntityData fields from the bridge and
-    // EntityMetadata fields from the processor's entity tracker, metadata is
+    // EntityMetadata fields from the processor's entity, metadata is
     // the authoritative source of truth.
-    ProcessorEntityTracker* entity = GetEntityForStorageKey(key_and_data.first);
-    // Tracker could be null if there are some unapplied changes.
+    ProcessorEntity* entity = GetEntityForStorageKey(key_and_data.first);
+    // |entity| could be null if there are some unapplied changes.
     if (entity != nullptr) {
       const sync_pb::EntityMetadata& metadata = entity->metadata();
       // Set id value as directory, "s" means server.

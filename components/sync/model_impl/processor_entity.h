@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_MODEL_IMPL_PROCESSOR_ENTITY_TRACKER_H_
-#define COMPONENTS_SYNC_MODEL_IMPL_PROCESSOR_ENTITY_TRACKER_H_
+#ifndef COMPONENTS_SYNC_MODEL_IMPL_PROCESSOR_ENTITY_H_
+#define COMPONENTS_SYNC_MODEL_IMPL_PROCESSOR_ENTITY_H_
 
 #include <stdint.h>
 
@@ -25,10 +25,10 @@ struct UpdateResponseData;
 // of each entity with its type. It can be considered a helper class internal to
 // the processor. It manages the metadata for its entity and caches entity data
 // upon a local change until commit confirmation is received.
-class ProcessorEntityTracker {
+class ProcessorEntity {
  public:
   // Construct an instance representing a new locally-created item.
-  static std::unique_ptr<ProcessorEntityTracker> CreateNew(
+  static std::unique_ptr<ProcessorEntity> CreateNew(
       const std::string& storage_key,
       const std::string& client_tag_hash,
       const std::string& id,
@@ -36,11 +36,11 @@ class ProcessorEntityTracker {
 
   // Construct an instance representing an item loaded from storage on init.
   // This method swaps out the contents of |metadata|.
-  static std::unique_ptr<ProcessorEntityTracker> CreateFromMetadata(
+  static std::unique_ptr<ProcessorEntity> CreateFromMetadata(
       const std::string& storage_key,
       sync_pb::EntityMetadata* metadata);
 
-  ~ProcessorEntityTracker();
+  ~ProcessorEntity();
 
   const std::string& storage_key() const { return storage_key_; }
   const sync_pb::EntityMetadata& metadata() const { return metadata_; }
@@ -108,7 +108,7 @@ class ProcessorEntityTracker {
 
   // Update storage_key_. Allows setting storage key for datatypes that don't
   // generate storage key from syncer::EntityData. Should only be called for
-  // tracker initialized with empty storage key.
+  // an entity initialized with empty storage key.
   void SetStorageKey(const std::string& storage_key);
 
   // Takes the passed commit data updates its fields with values from metadata
@@ -137,11 +137,11 @@ class ProcessorEntityTracker {
   size_t EstimateMemoryUsage() const;
 
  private:
-  friend class ProcessorEntityTrackerTest;
+  friend class ProcessorEntityTest;
 
   // The constructor swaps the data from the passed metadata.
-  ProcessorEntityTracker(const std::string& storage_key,
-                         sync_pb::EntityMetadata* metadata);
+  ProcessorEntity(const std::string& storage_key,
+                  sync_pb::EntityMetadata* metadata);
 
   // Check whether |specifics| matches the stored specifics_hash.
   bool MatchesSpecificsHash(const sync_pb::EntitySpecifics& specifics) const;
@@ -171,4 +171,4 @@ class ProcessorEntityTracker {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_MODEL_IMPL_PROCESSOR_ENTITY_TRACKER_H_
+#endif  // COMPONENTS_SYNC_MODEL_IMPL_PROCESSOR_ENTITY_H_
