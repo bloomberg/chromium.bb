@@ -31,9 +31,9 @@ void CreateNewEntry(content::WebContents* tab, Profile* profile) {
           ->AddEntry(url, title, navigation_time);
 
   if (entry) {
-    DesktopNotificationHandler(profile).DisplaySendingConfirmation(entry);
+    DesktopNotificationHandler(profile).DisplaySendingConfirmation(*entry);
   } else {
-    DesktopNotificationHandler(profile).DisplayFailureMessage();
+    DesktopNotificationHandler(profile).DisplayFailureMessage(url);
   }
 }
 

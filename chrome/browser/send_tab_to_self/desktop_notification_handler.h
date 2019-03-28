@@ -46,9 +46,9 @@ class DesktopNotificationHandler : public NotificationHandler,
   // When the user share a tab, a confirmation notification will be shown.
   // Displays a notification telling the user that the tab was successfully
   // sent.
-  void DisplaySendingConfirmation(const SendTabToSelfEntry* entry);
+  void DisplaySendingConfirmation(const SendTabToSelfEntry& entry);
   // Displays a notification telling the user that the tab could not be sent.
-  void DisplayFailureMessage();
+  void DisplayFailureMessage(const GURL& url);
 
  protected:
   Profile* const profile_;
