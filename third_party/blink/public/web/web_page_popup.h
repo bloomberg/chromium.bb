@@ -53,6 +53,10 @@ class WebPagePopup : public WebWidget {
   // be released when the popup is closed via Close().
   BLINK_EXPORT static WebPagePopup* Create(WebPagePopupClient*);
   virtual WebPoint PositionRelativeToOwner() = 0;
+
+  // Web tests require access to the client for a WebPagePopup in order
+  // to synchronously composite.
+  virtual WebPagePopupClient* GetClientForTesting() const = 0;
 };
 
 }  // namespace blink

@@ -386,13 +386,6 @@ void WebPagePopupImpl::UpdateLifecycle(LifecycleUpdate requested_update,
                                       WebWidget::LifecycleUpdateReason::kOther);
 }
 
-void WebPagePopupImpl::UpdateAllLifecyclePhasesAndCompositeForTesting(
-    bool do_raster) {
-  if (layer_tree_view_) {
-    layer_tree_view_->UpdateAllLifecyclePhasesAndCompositeForTesting(do_raster);
-  }
-}
-
 void WebPagePopupImpl::PaintContent(cc::PaintCanvas* canvas,
                                     const WebRect& rect) {
   if (!closing_)
@@ -595,6 +588,10 @@ WebPoint WebPagePopupImpl::PositionRelativeToOwner() {
   WebRect window_rect = WindowRectInScreen();
   return WebPoint(window_rect.x - root_window_rect.x,
                   window_rect.y - root_window_rect.y);
+}
+
+WebPagePopupClient* WebPagePopupImpl::GetClientForTesting() const {
+  return web_page_popup_client_;
 }
 
 void WebPagePopupImpl::Cancel() {

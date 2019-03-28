@@ -106,13 +106,6 @@ WebRect WebFrameWidgetBase::ComputeBlockBound(
   return WebRect();
 }
 
-void WebFrameWidgetBase::UpdateAllLifecyclePhasesAndCompositeForTesting(
-    bool do_raster) {
-  if (WebLayerTreeView* layer_tree_view = GetLayerTreeView()) {
-    layer_tree_view->UpdateAllLifecyclePhasesAndCompositeForTesting(do_raster);
-  }
-}
-
 WebDragOperation WebFrameWidgetBase::DragTargetDragEnter(
     const WebDragData& web_drag_data,
     const WebFloatPoint& point_in_viewport,

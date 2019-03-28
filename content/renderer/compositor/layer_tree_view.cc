@@ -394,11 +394,6 @@ void LayerTreeView::CompositeAndReadbackAsync(
   }
 }
 
-void LayerTreeView::UpdateAllLifecyclePhasesAndCompositeForTesting(
-    bool do_raster) {
-  SynchronouslyComposite(do_raster, nullptr /* swap_promise */);
-}
-
 void LayerTreeView::SynchronouslyComposite(
     bool raster,
     std::unique_ptr<cc::SwapPromise> swap_promise) {

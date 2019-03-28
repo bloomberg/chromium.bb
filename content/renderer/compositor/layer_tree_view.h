@@ -135,10 +135,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
   void HeuristicsForGpuRasterizationUpdated(bool matches_heuristics) override;
   void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) override;
-  // Synchronously performs the complete set of document lifecycle phases,
-  // including updates to the compositor state, optionally including
-  // rasterization.
-  void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
   std::unique_ptr<cc::ScopedDeferMainFrameUpdate> DeferMainFrameUpdate()
       override;
   void StartDeferringCommits(base::TimeDelta timeout) override;
@@ -206,6 +202,12 @@ class LayerTreeView : public blink::WebLayerTreeView,
 
   const cc::LayerTreeSettings& GetLayerTreeSettings() const;
 
+  // Performs a composite including a main frame and all lifecycle stages,
+  // immediately and synchronously. Should only be called in testing, when
+  // CompositeIsSynchronous() is true.
+  void SynchronouslyComposite(bool raster,
+                              std::unique_ptr<cc::SwapPromise> swap_promise);
+
   // Sets the RenderFrameMetadataObserver, which is sent to the compositor
   // thread for binding.
   void SetRenderFrameObserver(
@@ -229,8 +231,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
   void SetLayerTreeFrameSink(
       std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink);
   bool CompositeIsSynchronous() const;
-  void SynchronouslyComposite(bool raster,
-                              std::unique_ptr<cc::SwapPromise> swap_promise);
 
   LayerTreeViewDelegate* const delegate_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;

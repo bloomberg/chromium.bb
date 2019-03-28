@@ -99,6 +99,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
   // WebPagePopup implementation.
   WebPoint PositionRelativeToOwner() override;
+  WebPagePopupClient* GetClientForTesting() const override;
 
   // PagePopup implementation.
   void PostMessageToPopup(const String& message) override;
@@ -114,7 +115,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
                   bool record_main_frame_metrics) override;
   void UpdateLifecycle(LifecycleUpdate requested_update,
                        LifecycleUpdateReason reason) override;
-  void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
   void PaintContent(cc::PaintCanvas*, const WebRect&) override;
   void Resize(const WebSize&) override;
   void Close() override;
