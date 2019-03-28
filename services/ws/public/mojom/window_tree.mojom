@@ -12,6 +12,7 @@ import "services/viz/public/interfaces/compositing/surface_info.mojom";
 import "services/ws/public/mojom/window_manager.mojom";
 import "services/ws/public/mojom/screen_provider_observer.mojom";
 import "services/ws/public/mojom/window_tree_constants.mojom";
+import "ui/base/ime/mojo/ime.mojom";
 import "ui/base/mojo/cursor.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
 import "ui/events/mojo/event.mojom";
@@ -448,6 +449,12 @@ interface WindowTree {
   // all outstanding pause requests are cleared, server will re-compute
   // occlusion states for the tracked windows and send back updates.
   UnpauseWindowOcclusionTracking();
+
+  // Called by the client every time the focus changes, to build the connection
+  // between the client and the IME. And Window Service makes sure that only
+  // focused client can have the connection.
+  ConnectToImeEngine(ime.mojom.ImeEngine& engine_request,
+                     ime.mojom.ImeEngineClient client);
 };
 
 // Changes to windows are not sent to the connection that originated the

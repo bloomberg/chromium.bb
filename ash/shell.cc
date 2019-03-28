@@ -57,6 +57,7 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_engine_factory_registry.h"
 #include "ash/ime/ime_focus_handler.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/kiosk_next/kiosk_next_shell_controller.h"
@@ -649,6 +650,8 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       first_run_helper_(std::make_unique<FirstRunHelper>()),
       focus_cycler_(std::make_unique<FocusCycler>()),
       ime_controller_(std::make_unique<ImeController>()),
+      ime_engine_factory_registry_(
+          std::make_unique<ImeEngineFactoryRegistry>()),
       immersive_context_(std::make_unique<ImmersiveContextAsh>()),
       keyboard_brightness_control_delegate_(
           std::make_unique<KeyboardBrightnessController>()),
@@ -869,6 +872,7 @@ Shell::~Shell() {
   accessibility_focus_ring_controller_.reset();
   policy_recommendation_restorer_.reset();
   ime_controller_.reset();
+  ime_engine_factory_registry_.reset();
 
   // Balances the Install() in Initialize().
   views::FocusManagerFactory::Install(nullptr);

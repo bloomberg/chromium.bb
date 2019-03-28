@@ -52,6 +52,7 @@
 #include "services/viz/public/interfaces/constants.mojom.h"
 #include "services/ws/public/cpp/manifest.h"
 #include "services/ws/public/mojom/constants.mojom.h"
+#include "ui/base/ime/mojo/ime_engine_factory_registry.mojom.h"
 
 namespace ash {
 
@@ -89,6 +90,7 @@ const service_manager::Manifest& GetManifest() {
                   mojom::DockedMagnifierController,
                   mojom::EventRewriterController, mojom::FirstRunHelper,
                   mojom::HighlighterController, mojom::ImeController,
+                  ime::mojom::ImeEngineFactoryRegistry,
                   mojom::KeyboardController, mojom::LocaleUpdateController,
                   mojom::LoginScreen, mojom::MediaController,
                   mojom::NewWindowController, mojom::NightLightController,

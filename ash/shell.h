@@ -130,6 +130,7 @@ class HighContrastController;
 class HighlighterController;
 class HomeScreenController;
 class ImeController;
+class ImeEngineFactoryRegistry;
 class ImeFocusHandler;
 class ImmersiveContext;
 class KeyAccessibilityEnabler;
@@ -414,6 +415,9 @@ class ASH_EXPORT Shell : public SessionObserver,
     return high_contrast_controller_.get();
   }
   ImeController* ime_controller() { return ime_controller_.get(); }
+  ImeEngineFactoryRegistry* ime_engine_factory_registry() {
+    return ime_engine_factory_registry_.get();
+  }
   ImmersiveContext* immersive_context() { return immersive_context_.get(); }
   KeyAccessibilityEnabler* key_accessibility_enabler() {
     return key_accessibility_enabler_.get();
@@ -735,6 +739,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<HomeScreenController> home_screen_controller_;
   std::unique_ptr<ImeController> ime_controller_;
+  std::unique_ptr<ImeEngineFactoryRegistry> ime_engine_factory_registry_;
   std::unique_ptr<ImeFocusHandler> ime_focus_handler_;
   std::unique_ptr<ImmersiveContext> immersive_context_;
   std::unique_ptr<KeyboardBrightnessControlDelegate>

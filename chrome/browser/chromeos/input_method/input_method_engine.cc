@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -15,6 +16,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "content/public/common/service_manager_connection.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/candidate_window.h"
@@ -24,6 +28,7 @@
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/constants.h"
 #include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/mojo/ime.mojom.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/chromeos/ime/input_method_menu_item.h"
@@ -48,6 +53,84 @@ const char kCandidateNotFound[] = "Candidate not found";
 const int kDefaultPageSize = 9;
 
 }  // namespace
+
+// The helper to make the InputMethodEngine as a mojom::ImeEngine and
+// mojom::ImeEngineFactory.
+// It forwards the mojom::ImeEngine method calls to InputMethodEngine's
+// ui::IMEEngineHandlerInterface methods.
+// TODO(crbug.com/946352): Removes this helper after the
+// ui::IMEEngineHandlerInterface is deprecated. So that InputMethodEngine can
+// directly inherits from mojom::ImeEngine/ImeEngineFactory.
+class MojoHelper : public ime::mojom::ImeEngine,
+                   public ime::mojom::ImeEngineFactory {
+ public:
+  MojoHelper(InputMethodEngine* engine,
+             ime::mojom::ImeEngineFactoryRegistryPtr registry)
+      : engine_(engine), factory_binding_(this), engine_binding_(this) {
+    ime::mojom::ImeEngineFactoryPtr factory_ptr;
+    factory_binding_.Bind(mojo::MakeRequest(&factory_ptr));
+    if (registry) {
+      registry_ = std::move(registry);
+    } else {
+      auto* conn = content::ServiceManagerConnection::GetForProcess();
+      if (!conn)  // Could be null in tests.
+        return;
+      conn->GetConnector()->BindInterface(ash::mojom::kServiceName, &registry_);
+    }
+    registry_->ActivateFactory(std::move(factory_ptr));
+  }
+  ~MojoHelper() override = default;
+
+  // ime::mojom::ImeEngineFactory overrides:
+  void CreateEngine(ime::mojom::ImeEngineRequest engine_request,
+                    ime::mojom::ImeEngineClientPtr client) override {
+    engine_binding_.Bind(std::move(engine_request));
+    engine_client_ = std::move(client);
+  }
+
+  // ime::mojom::ImeEngine overrides:
+  void StartInput(ime::mojom::EditorInfoPtr info) override {
+    ui::IMEEngineHandlerInterface::InputContext context(
+        info->type, info->mode, info->flags, info->focus_reason,
+        info->should_do_learning);
+    engine_->FocusIn(context);
+  }
+  void FinishInput() override { engine_->FocusOut(); }
+  void CancelInput() override { engine_->Reset(); }
+  void ProcessKeyEvent(
+      std::unique_ptr<ui::Event> key_event,
+      ime::mojom::ImeEngine::ProcessKeyEventCallback cb) override {
+    engine_->ProcessKeyEvent(*(key_event->AsKeyEvent()), std::move(cb));
+  }
+  void UpdateSurroundingInfo(const std::string& text,
+                             int32_t cursor,
+                             int32_t anchor,
+                             int32_t offset) override {
+    engine_->SetSurroundingText(text, cursor, anchor, offset);
+  }
+  void UpdateCompositionBounds(const std::vector<gfx::Rect>& bounds) override {
+    engine_->SetCompositionBounds(bounds);
+  }
+
+  ime::mojom::ImeEngineClientPtr& engine_client() { return engine_client_; }
+
+  void FlushForTesting() {
+    if (registry_)
+      registry_.FlushForTesting();
+    if (engine_client_)
+      engine_client_.FlushForTesting();
+  }
+
+ private:
+  InputMethodEngine* engine_;
+  mojo::Binding<ime::mojom::ImeEngineFactory> factory_binding_;
+  mojo::Binding<ime::mojom::ImeEngine> engine_binding_;
+
+  ime::mojom::ImeEngineClientPtr engine_client_;
+  ime::mojom::ImeEngineFactoryRegistryPtr registry_;
+
+  DISALLOW_COPY_AND_ASSIGN(MojoHelper);
+};
 
 InputMethodEngine::Candidate::Candidate() {}
 
@@ -76,6 +159,13 @@ InputMethodEngine::~InputMethodEngine() {}
 void InputMethodEngine::Enable(const std::string& component_id) {
   InputMethodEngineBase::Enable(component_id);
   EnableInputView();
+  mojo_helper_ = std::make_unique<MojoHelper>(
+      this, std::move(ime_engine_factory_registry_));
+}
+
+void InputMethodEngine::Disable() {
+  InputMethodEngineBase::Disable();
+  mojo_helper_.reset();
 }
 
 bool InputMethodEngine::IsActive() const {
@@ -108,6 +198,10 @@ void InputMethodEngine::SetCastingEnabled(bool casting_enabled) {
     is_casting_ = casting_enabled;
     observer_->OnScreenProjectionChanged(is_mirroring_ || is_casting_);
   }
+}
+
+void InputMethodEngine::FlushForTesting() {
+  mojo_helper_->FlushForTesting();
 }
 
 const InputMethodEngine::CandidateWindowProperty&

@@ -22,6 +22,7 @@
 #include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_occlusion_tracker.h"
+#include "ui/base/ime/mojo/ime.mojom.h"
 
 namespace aura {
 class Window;
@@ -522,6 +523,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void TrackOcclusionState(Id transport_window_id) override;
   void PauseWindowOcclusionTracking() override;
   void UnpauseWindowOcclusionTracking() override;
+  void ConnectToImeEngine(ime::mojom::ImeEngineRequest engine_request,
+                          ime::mojom::ImeEngineClientPtr client) override;
 
   WindowService* window_service_;
 

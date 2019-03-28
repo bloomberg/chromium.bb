@@ -15,6 +15,7 @@
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/aura/mus/mus_types.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ime/mojo/ime.mojom.h"
 #include "ui/platform_window/mojo/text_input_state.mojom.h"
 
 namespace aura {
@@ -319,6 +320,8 @@ class TestWindowTree : public ws::mojom::WindowTree {
   void TrackOcclusionState(ws::Id window_id) override;
   void PauseWindowOcclusionTracking() override;
   void UnpauseWindowOcclusionTracking() override;
+  void ConnectToImeEngine(ime::mojom::ImeEngineRequest engine_request,
+                          ime::mojom::ImeEngineClientPtr client) override;
 
   struct AckedEvent {
     uint32_t event_id;

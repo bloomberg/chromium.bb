@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/host/ash_window_tree_host.h"
+#include "ash/ime/ime_engine_factory_registry.h"
 #include "ash/public/interfaces/ash_window_manager.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -261,6 +262,13 @@ WindowServiceDelegateImpl::CreateWindowManagerInterface(
                                                           std::move(handle));
   }
   return nullptr;
+}
+
+void WindowServiceDelegateImpl::ConnectToImeEngine(
+    ime::mojom::ImeEngineRequest engine_request,
+    ime::mojom::ImeEngineClientPtr client) {
+  Shell::Get()->ime_engine_factory_registry()->ConnectToImeEngine(
+      std::move(engine_request), std::move(client));
 }
 
 }  // namespace ash

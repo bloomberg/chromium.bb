@@ -108,6 +108,23 @@ class TestWindowServiceDelegateWithInterface
   DISALLOW_COPY_AND_ASSIGN(TestWindowServiceDelegateWithInterface);
 };
 
+class TestImeEngineClient : public ime::mojom::ImeEngineClient {
+ public:
+  TestImeEngineClient() : binding_(this) {}
+  ~TestImeEngineClient() override = default;
+
+  ime::mojom::ImeEngineClientPtr BindInterface() {
+    ime::mojom::ImeEngineClientPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    return ptr;
+  }
+
+ private:
+  mojo::Binding<ime::mojom::ImeEngineClient> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestImeEngineClient);
+};
+
 TEST(WindowServiceTest, GetWindowManagerInterface) {
   // Use |test_setup| to configure aura and other state.
   WindowServiceTestSetup test_setup;
@@ -233,6 +250,30 @@ TEST(WindowServiceTest,
   // Deleting |window_tree2| should make |local_window| no longer a proxy.
   window_tree2.reset();
   EXPECT_FALSE(WindowService::IsProxyWindow(local_window.get()));
+}
+
+TEST(WindowServiceTest, ConnectToImeEngine) {
+  // Use |test_setup| to configure aura and other state.
+  WindowServiceTestSetup test_setup;
+
+  aura::Window* top_level =
+      test_setup.window_tree_test_helper()->NewTopLevelWindow();
+  top_level->Show();
+
+  // Verifies only the focused window tree can connect to ime engine.
+  ime::mojom::ImeEnginePtr engine;
+  TestImeEngineClient engine_client1;
+  test_setup.window_tree_test_helper()->ConnectToImeEngine(
+      MakeRequest(&engine), engine_client1.BindInterface());
+  ASSERT_FALSE(test_setup.delegate()->ime_engine_connected());
+
+  test_setup.window_tree_test_helper()->SetFocus(top_level);
+
+  engine.reset();
+  TestImeEngineClient engine_client2;
+  test_setup.window_tree_test_helper()->ConnectToImeEngine(
+      MakeRequest(&engine), engine_client2.BindInterface());
+  ASSERT_TRUE(test_setup.delegate()->ime_engine_connected());
 }
 
 }  // namespace ws
