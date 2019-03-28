@@ -4301,7 +4301,6 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
   int row, col;
 
   int dr = 0;
-  int count = 0;
   double r0, rk, beta;
 
   if (tpl_frame->is_valid == 0) return orig_rdmult;
@@ -4318,8 +4317,6 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
 
       intra_cost += this_stats->intra_cost;
       mc_dep_cost += this_stats->mc_dep_cost;
-
-      ++count;
     }
   }
 

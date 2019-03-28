@@ -119,7 +119,6 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
                             tran_low_t *qcoeff, tran_low_t *dqcoeff, int mi_row,
                             int mi_col, BLOCK_SIZE bsize, TX_SIZE tx_size,
                             YV12_BUFFER_CONFIG *ref_frame[], uint8_t *predictor,
-                            int64_t *recon_error, int64_t *sse,
                             TplDepStats *tpl_stats) {
   AV1_COMMON *cm = &cpi->common;
   ThreadData *td = &cpi->td;
@@ -223,11 +222,13 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
 
     inter_cost = aom_satd(coeff, pix_num);
     if (inter_cost < best_inter_cost) {
+      int64_t recon_error, sse;
+
       best_rf_idx = rf_idx;
       best_inter_cost = inter_cost;
       best_mv.as_int = x->best_mv.as_int;
-      get_quantize_error(x, 0, coeff, qcoeff, dqcoeff, tx_size, recon_error,
-                         sse);
+      get_quantize_error(x, 0, coeff, qcoeff, dqcoeff, tx_size, &recon_error,
+                         &sse);
     }
   }
   best_intra_cost = AOMMAX(best_intra_cost, 1);
@@ -404,7 +405,6 @@ static void mc_flow_dispenser(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   const TX_SIZE tx_size = max_txsize_lookup[bsize];
   const int mi_height = mi_size_high[bsize];
   const int mi_width = mi_size_wide[bsize];
-  int64_t recon_error, sse;
 
   // Setup scaling factor
   av1_setup_scale_factors_for_frame(
@@ -430,8 +430,8 @@ static void mc_flow_dispenser(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   // Get rd multiplier set up.
   rdmult = (int)av1_compute_rd_mult(cpi, tpl_frame->base_qindex);
   if (rdmult < 1) rdmult = 1;
-  set_error_per_bit(&cpi->td.mb, rdmult);
-  av1_initialize_me_consts(cpi, &cpi->td.mb, tpl_frame->base_qindex);
+  set_error_per_bit(x, rdmult);
+  av1_initialize_me_consts(cpi, x, tpl_frame->base_qindex);
 
   tpl_frame->is_valid = 1;
 
@@ -447,7 +447,7 @@ static void mc_flow_dispenser(AV1_COMP *cpi, GF_PICTURE *gf_picture,
       TplDepStats tpl_stats;
       mode_estimation(cpi, x, xd, &sf, gf_picture, frame_idx, src_diff, coeff,
                       qcoeff, dqcoeff, mi_row, mi_col, bsize, tx_size,
-                      ref_frame, predictor, &recon_error, &sse, &tpl_stats);
+                      ref_frame, predictor, &tpl_stats);
 
       // Motion flow dependency dispenser.
       tpl_model_store(tpl_frame->tpl_stats_ptr, mi_row, mi_col, bsize,
