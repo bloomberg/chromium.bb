@@ -479,6 +479,15 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
     right_rotated_view_->OnBoundsUpdated(right_rotated_bounds,
                                          /*angle=*/-left_rotation_angle);
 
+    // Avoid animating label transforms in a case where each label might have
+    // zero opacity and could start fading in if the indicator state changes.
+    // https://crbug.com/946683
+    if (indicator_state_ == IndicatorState::kNone) {
+      left_rotated_view_->layer()->SetTransform(gfx::Transform());
+      right_rotated_view_->layer()->SetTransform(gfx::Transform());
+      return;
+    }
+
     // Compute the transform for the labels. The labels slide in and out when
     // moving between states.
     gfx::Transform main_rotated_transform, other_rotated_transform;
