@@ -1051,11 +1051,6 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryByDefault) {
   bool should_be_enabled =
       device::BluetoothAdapterFactory::Get().IsLowEnergySupported();
 
-#if defined(OS_CHROMEOS)
-  // Test only valid if truly running on instance of ChromeOS.
-  should_be_enabled = should_be_enabled && base::SysInfo::IsRunningOnChromeOS();
-#endif  // defined(OS_CHROMEOS)
-
   EXPECT_EQ(
       should_be_enabled,
       SupportsTransportProtocol(
