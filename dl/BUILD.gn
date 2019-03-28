@@ -209,7 +209,7 @@ if (current_cpu == "arm") {
     if (arm_optionally_use_neon) {
       # Run-time NEON detection.
       deps = [
-        "//third_party/android_tools:cpu_features",
+        "//third_party/android_sdk:cpu_features",
       ]
 
       # To get the __android_log_print routine
