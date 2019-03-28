@@ -252,7 +252,9 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
 
   void set_suspend_reposition(bool value) { suspend_reposition_ = value; }
 
-  const DesksBarView* GetDesksBarViewForTesting() const;
+  const DesksBarView* GetDesksBarViewForTesting() const {
+    return desks_bar_view_;
+  }
 
  private:
   class ShieldView;
@@ -268,6 +270,10 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
 
   // Initializes the screen shield widget.
   void InitShieldWidget(bool animate);
+
+  // If the Virtual Desks feature is enabled, it initializes the widget that
+  // contains the DeskBarView contents.
+  void MaybeInitDesksWidget();
 
   // Internal function to initialize the selection widget.
   void InitSelectionWidget(OverviewSession::Direction direction);
@@ -345,6 +351,12 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
 
   // A pointer to |shield_widget_|'s content view.
   ShieldView* shield_view_ = nullptr;
+
+  // Widget that contains the DeskBarView contents when the Virtual Desks
+  // feature is enabled.
+  std::unique_ptr<views::Widget> desks_widget_;
+  // The contents view of the above |desks_widget_| if created.
+  DesksBarView* desks_bar_view_ = nullptr;
 
   // Widget that indicates to the user which is the selected window.
   std::unique_ptr<views::Widget> selection_widget_;
