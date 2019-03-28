@@ -21,11 +21,11 @@ namespace {
 
 using ReadResult = GetPagesTask::ReadResult;
 
-#define OFFLINE_PAGE_PROJECTION                                \
-  " offline_id, creation_time, file_size, last_access_time,"   \
-  " access_count, system_download_id, file_missing_time,"      \
-  " upgrade_attempt, client_namespace, client_id, online_url," \
-  " file_path, title, original_url, request_origin, digest"
+#define OFFLINE_PAGE_PROJECTION                           \
+  " offline_id,creation_time,file_size,last_access_time," \
+  "access_count,system_download_id,file_missing_time,"    \
+  "client_namespace,client_id,online_url,"                \
+  "file_path,title,original_url,request_origin,digest"
 
 // Create an offline page item from a SQL result.
 // Expects the order of columns as defined by OFFLINE_PAGE_PROJECTION macro.
@@ -40,15 +40,14 @@ OfflinePageItem MakeOfflinePageItem(sql::Statement* statement) {
   int64_t system_download_id = statement->ColumnInt64(5);
   base::Time file_missing_time =
       store_utils::FromDatabaseTime(statement->ColumnInt64(6));
-  int upgrade_attempt = statement->ColumnInt(7);
-  ClientId client_id(statement->ColumnString(8), statement->ColumnString(9));
-  GURL url(statement->ColumnString(10));
+  ClientId client_id(statement->ColumnString(7), statement->ColumnString(8));
+  GURL url(statement->ColumnString(9));
   base::FilePath path(
-      store_utils::FromDatabaseFilePath(statement->ColumnString(11)));
-  base::string16 title = statement->ColumnString16(12);
-  GURL original_url(statement->ColumnString(13));
-  std::string request_origin = statement->ColumnString(14);
-  std::string digest = statement->ColumnString(15);
+      store_utils::FromDatabaseFilePath(statement->ColumnString(10)));
+  base::string16 title = statement->ColumnString16(11);
+  GURL original_url(statement->ColumnString(12));
+  std::string request_origin = statement->ColumnString(13);
+  std::string digest = statement->ColumnString(14);
 
   OfflinePageItem item(url, id, client_id, path, file_size, creation_time);
   item.last_access_time = last_access_time;
@@ -58,7 +57,6 @@ OfflinePageItem MakeOfflinePageItem(sql::Statement* statement) {
   item.request_origin = request_origin;
   item.system_download_id = system_download_id;
   item.file_missing_time = file_missing_time;
-  item.upgrade_attempt = upgrade_attempt;
   item.digest = digest;
   return item;
 }
@@ -253,23 +251,6 @@ void WrapInMultipleItemsCallback(SingleOfflinePageItemCallback callback,
     std::move(callback).Run(&pages[0]);
 }
 
-ReadResult SelectItemsForUpgrade(sql::Database* db) {
-  ReadResult result;
-
-  static const char kSql[] =
-      "SELECT " OFFLINE_PAGE_PROJECTION
-      " FROM offlinepages_v1"
-      " WHERE upgrade_attempt > 0"
-      " ORDER BY upgrade_attempt DESC, creation_time DESC";
-  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
-
-  while (statement.Step())
-    result.pages.emplace_back(MakeOfflinePageItem(&statement));
-
-  result.success = true;
-  return result;
-}
-
 }  // namespace
 
 GetPagesTask::ReadResult::ReadResult() {}
@@ -383,15 +364,6 @@ std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingSizeAndDigest(
   return base::WrapUnique(new GetPagesTask(
       store, base::BindOnce(&ReadPagesBySizeAndDigest, file_size, digest),
       base::BindOnce(&WrapInMultipleItemsCallback, std::move(callback))));
-}
-
-// static
-std::unique_ptr<GetPagesTask>
-GetPagesTask::CreateTaskSelectingItemsMarkedForUpgrade(
-    OfflinePageMetadataStore* store,
-    MultipleOfflinePageItemCallback callback) {
-  return base::WrapUnique(new GetPagesTask(
-      store, base::BindOnce(&SelectItemsForUpgrade), std::move(callback)));
 }
 
 GetPagesTask::GetPagesTask(OfflinePageMetadataStore* store,

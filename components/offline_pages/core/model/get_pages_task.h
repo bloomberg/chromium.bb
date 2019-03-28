@@ -107,14 +107,6 @@ class GetPagesTask : public Task {
       int64_t file_size,
       const std::string& digest);
 
-  // Creates |GetPagesTask| selecting persistent items having a non-zero
-  // remaining upgrade attempts.
-  // Order of items is determined by number of remaining attempts (descending)
-  // and creation time (descending).
-  static std::unique_ptr<GetPagesTask> CreateTaskSelectingItemsMarkedForUpgrade(
-      OfflinePageMetadataStore* store,
-      MultipleOfflinePageItemCallback callback);
-
   ~GetPagesTask() override;
 
   // Task implementation:

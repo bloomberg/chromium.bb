@@ -49,8 +49,7 @@ bool OfflinePageItem::operator==(const OfflinePageItem& other) const {
          original_url_if_different == other.original_url_if_different &&
          request_origin == other.request_origin &&
          system_download_id == other.system_download_id &&
-         file_missing_time == other.file_missing_time &&
-         upgrade_attempt == other.upgrade_attempt && digest == other.digest;
+         file_missing_time == other.file_missing_time && digest == other.digest;
 }
 
 bool OfflinePageItem::operator<(const OfflinePageItem& other) const {

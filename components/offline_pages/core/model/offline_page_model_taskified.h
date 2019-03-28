@@ -52,10 +52,6 @@ class SystemDownloadManager;
 class OfflinePageModelTaskified : public OfflinePageModel,
                                   public TaskQueue::Delegate {
  public:
-  // Initial delay after which a list of items for upgrade will be generated.
-  static constexpr base::TimeDelta kInitialUpgradeSelectionDelay =
-      base::TimeDelta::FromSeconds(45);
-
   // Delay between the scheduling and actual running of maintenance tasks. To
   // not cause the re-opening of the metadata store this delay should be kept
   // smaller than OfflinePageMetadataStore::kClosingDelay.
@@ -195,12 +191,6 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   void OnPersistentPageConsistencyCheckDone(
       bool success,
       const std::vector<int64_t>& pages_deleted);
-
-  // Method for upgrade to public storage.
-  void PostSelectItemsMarkedForUpgrade();
-  void SelectItemsMarkedForUpgrade();
-  void OnSelectItemsMarkedForUpgradeDone(
-      const MultipleOfflinePageItemResult& pages_for_upgrade);
 
   // Callback for when PublishArchive has completd.
   void PublishArchiveDone(std::unique_ptr<OfflinePageArchiver> archiver,
