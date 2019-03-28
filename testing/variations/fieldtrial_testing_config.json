@@ -4840,6 +4840,25 @@
             ]
         }
     ],
+    "SyncE2ELatency": [
+        {
+            "platforms": [
+                "android",
+                "windows",
+                "mac",
+                "chromeos",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncE2ELatencyMeasurement"
+                    ]
+                }
+            ]
+        }
+    ],
     "SyncPseudoUss'": [
         {
             "platforms": [
