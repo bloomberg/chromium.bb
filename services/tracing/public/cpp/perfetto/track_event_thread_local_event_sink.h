@@ -65,6 +65,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   base::ThreadTicks last_thread_time_;
   int process_id_;
   int thread_id_;
+  int events_since_last_incremental_state_reset_ = 0;
 
   base::trace_event::TraceEvent complete_event_stack_[kMaxCompleteEventDepth];
   uint32_t current_stack_depth_ = 0;

@@ -34,6 +34,12 @@ namespace {
 constexpr uint32_t kMagicChunkIndex =
     base::trace_event::TraceBufferChunk::kMaxChunkIndex;
 
+// Force an incremental state reset every 1000 events on each thread. This
+// limits the maximum number of events we lose when trace buffers wrap.
+// TODO(eseckler): Tune this value experimentally and/or replace it with a
+// signal by the service.
+constexpr int kMaxEventsBeforeIncrementalStateReset = 1000;
+
 base::ThreadTicks ThreadNow() {
   return base::ThreadTicks::IsSupported()
              ? base::subtle::ThreadTicksNowIgnoringOverride()
@@ -62,11 +68,11 @@ TrackEventThreadLocalEventSink::TrackEventThreadLocalEventSink(
 
 TrackEventThreadLocalEventSink::~TrackEventThreadLocalEventSink() {}
 
-// TODO(eseckler): Decide on a (temporary) way to trigger this periodically.
-// Long-term, it should be triggered by a signal from the service. Short-term,
-// maybe we can reset it every N events and/or seconds.
+// TODO(eseckler): Trigger this upon a signal from the perfetto, once perfetto
+// supports this.
 void TrackEventThreadLocalEventSink::ResetIncrementalState() {
   reset_incremental_state_ = true;
+  events_since_last_incremental_state_reset_ = 0;
 }
 
 void TrackEventThreadLocalEventSink::AddConvertableToTraceFormat(
@@ -380,6 +386,12 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
     interned_event_names_.Clear();
     interned_annotation_names_.Clear();
     interned_source_locations_.Clear();
+  }
+
+  events_since_last_incremental_state_reset_++;
+  if (events_since_last_incremental_state_reset_ >=
+      kMaxEventsBeforeIncrementalStateReset) {
+    ResetIncrementalState();
   }
 }
 
