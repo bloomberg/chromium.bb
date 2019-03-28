@@ -2088,21 +2088,26 @@ template("monochrome_public_bundle_tmpl") {
   }
 
   if (modularize_ar) {
+    _native_switches = {
+      is_64_bit_browser =
+          defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser
+      include_32_bit_webview = defined(invoker.include_32_bit_webview) &&
+                               invoker.include_32_bit_webview
+    }
+  }
+
+  if (modularize_ar) {
     ar_module_tmpl("${target_name}__ar_bundle_module") {
       manifest_package = manifest_package
       module_name = "Ar" + _bundle_name
       base_module_target = ":$_base_module_target_name"
+      native_switches = _native_switches
       if (_is_trichrome) {
         version_code = trichrome_version_code
       } else {
         version_code = monochrome_version_code
       }
       version_name = chrome_version_name
-      forward_variables_from(invoker,
-                             [
-                               "is_64_bit_browser",
-                               "include_32_bit_webview",
-                             ])
     }
   }
 
