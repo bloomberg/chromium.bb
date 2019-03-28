@@ -120,7 +120,8 @@
       ],
       "device type": "iPad Air 2",
       "os": "11.4",
-      "shard size": 2,
+      "shards": 3,
+      "xcode parallelization": true,
       "xctest": true,
       "host os": "Mac-10.13.6",
       "pool": "Chrome",
@@ -203,7 +204,8 @@
       "test args": [
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
-      "shard size": 2,
+      "shards": 3,
+      "xcode parallelization": true,
       "device type": "iPad Air 2",
       "os": "12.1",
       "xctest": true,
@@ -290,7 +292,8 @@
       ],
       "device type": "iPhone X",
       "os": "11.4",
-      "shard size": 2,
+      "shards": 3,
+      "xcode parallelization": true,
       "xctest": true,
       "host os": "Mac-10.13.6",
       "pool": "Chrome",
@@ -373,7 +376,8 @@
       "test args": [
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
-      "shard size": 2,
+      "shards": 3,
+      "xcode parallelization": true,
       "device type": "iPhone X",
       "os": "12.1",
       "xctest": true,
