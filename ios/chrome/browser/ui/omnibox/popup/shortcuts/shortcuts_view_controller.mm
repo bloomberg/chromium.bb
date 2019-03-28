@@ -24,11 +24,7 @@
 #endif
 
 namespace {
-const NSInteger kNumberOfItemsPerRow = 4;
 const CGFloat kTopInset = 10;
-
-const NSInteger kMostVisitedSection = 0;
-const NSInteger kCollectionShortcutSection = 1;
 }  // namespace
 
 @interface ShortcutsViewController ()<UICollectionViewDelegate,
@@ -66,15 +62,8 @@ const NSInteger kCollectionShortcutSection = 1;
   // collection view data.
   self.displayedMostVisitedItems = self.latestMostVisitedItems;
   [self.collectionView reloadData];
-}
 
-- (void)viewDidAppear:(BOOL)animated {
-  [super viewDidAppear:animated];
-  // Calculate insets to center the items in the view.
-  CGFloat widthInsets = CenteredTilesMarginForWidth(
-      self.traitCollection, self.view.bounds.size.width);
-  self.layout.sectionInset =
-      UIEdgeInsetsMake(kTopInset, widthInsets, 0, widthInsets);
+  [self configureLayout:self.layout];
 }
 
 #pragma mark - properties
@@ -105,11 +94,8 @@ const NSInteger kCollectionShortcutSection = 1;
   }
 
   _layout = [[UICollectionViewFlowLayout alloc] init];
-  _layout.minimumLineSpacing = kNtpTilesVerticalSpacing;
-  _layout.minimumInteritemSpacing =
-      NtpTilesHorizontalSpacing(self.traitCollection);
-  _layout.itemSize =
-      MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory);
+  [self configureLayout:_layout];
+
   return _layout;
 }
 
@@ -136,8 +122,7 @@ const NSInteger kCollectionShortcutSection = 1;
   for (ShortcutsMostVisitedItem* item in self.displayedMostVisitedItems) {
     if (item.URL == URL) {
       NSUInteger i = [self.displayedMostVisitedItems indexOfObject:item];
-      NSIndexPath* indexPath =
-          [NSIndexPath indexPathForItem:i inSection:kMostVisitedSection];
+      NSIndexPath* indexPath = [NSIndexPath indexPathForItem:i inSection:0];
       MostVisitedShortcutCell* cell =
           base::mac::ObjCCastStrict<MostVisitedShortcutCell>(
               [self.collectionView cellForItemAtIndexPath:indexPath]);
@@ -154,8 +139,9 @@ const NSInteger kCollectionShortcutSection = 1;
   }
 
   NSIndexPath* readingListShortcutIndexPath =
-      [NSIndexPath indexPathForItem:NTPCollectionShortcutTypeReadingList
-                          inSection:kCollectionShortcutSection];
+      [NSIndexPath indexPathForItem:NTPCollectionShortcutTypeReadingList +
+                                    self.displayedMostVisitedItems.count
+                          inSection:0];
   [self.collectionView
       reloadItemsAtIndexPaths:@[ readingListShortcutIndexPath ]];
 }
@@ -164,22 +150,21 @@ const NSInteger kCollectionShortcutSection = 1;
 
 - (NSInteger)numberOfSectionsInCollectionView:
     (UICollectionView*)collectionView {
-  return 2;
+  return 1;
 }
 
 - (NSInteger)collectionView:(UICollectionView*)collectionView
      numberOfItemsInSection:(NSInteger)section {
-  if (section == kMostVisitedSection) {
-    return MIN(kNumberOfItemsPerRow, self.displayedMostVisitedItems.count);
-  };
-  return kNumberOfItemsPerRow;
+  DCHECK(section == 0);
+  return self.displayedMostVisitedItems.count + NTPCollectionShortcutTypeCount;
 }
 
 // The cell that is returned must be retrieved from a call to
 // -dequeueReusableCellWithReuseIdentifier:forIndexPath:
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
                  cellForItemAtIndexPath:(NSIndexPath*)indexPath {
-  if (indexPath.section == kMostVisitedSection) {
+  if (static_cast<NSUInteger>(indexPath.row) <
+      self.displayedMostVisitedItems.count) {
     MostVisitedShortcutCell* cell = [self.collectionView
         dequeueReusableCellWithReuseIdentifier:
             NSStringFromClass([MostVisitedShortcutCell class])
@@ -189,16 +174,19 @@ const NSInteger kCollectionShortcutSection = 1;
     [self configureMostVisitedCell:cell withItem:item];
     cell.accessibilityTraits = UIAccessibilityTraitButton;
     return cell;
-  }
-
-  if (indexPath.section == kCollectionShortcutSection) {
+  } else {
     CollectionShortcutCell* cell = [self.collectionView
         dequeueReusableCellWithReuseIdentifier:
             NSStringFromClass([CollectionShortcutCell class])
                                   forIndexPath:indexPath];
-    DCHECK(indexPath.item < 4) << "Only four collection shortcuts described in "
-                                  "NTPCollectionShortcutType are supported";
-    NTPCollectionShortcutType type = (NTPCollectionShortcutType)indexPath.item;
+    DCHECK(static_cast<NSUInteger>(indexPath.row) <
+           self.displayedMostVisitedItems.count +
+               NTPCollectionShortcutTypeCount)
+        << "Only four collection shortcuts described in "
+           "NTPCollectionShortcutType are supported";
+
+    NTPCollectionShortcutType type = (NTPCollectionShortcutType)(
+        indexPath.item - self.displayedMostVisitedItems.count);
     [self configureCollectionShortcutCell:cell withCollection:type];
     cell.accessibilityTraits = UIAccessibilityTraitButton;
     return cell;
@@ -234,17 +222,17 @@ const NSInteger kCollectionShortcutSection = 1;
 
 - (void)collectionView:(UICollectionView*)collectionView
     didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  if (indexPath.section == kMostVisitedSection) {
+  if (static_cast<NSUInteger>(indexPath.row) <
+      self.displayedMostVisitedItems.count) {
     ShortcutsMostVisitedItem* item =
         self.displayedMostVisitedItems[indexPath.item];
     DCHECK(item);
     [self.commandHandler openMostVisitedItem:item];
     base::RecordAction(
         base::UserMetricsAction("MobileOmniboxShortcutsOpenMostVisitedItem"));
-  }
-
-  if (indexPath.section == kCollectionShortcutSection) {
-    NTPCollectionShortcutType type = (NTPCollectionShortcutType)indexPath.item;
+  } else {
+    NTPCollectionShortcutType type = (NTPCollectionShortcutType)(
+        indexPath.item - self.displayedMostVisitedItems.count);
     switch (type) {
       case NTPCollectionShortcutTypeBookmark:
         [self.commandHandler openBookmarks];
@@ -266,8 +254,27 @@ const NSInteger kCollectionShortcutSection = 1;
         base::RecordAction(
             base::UserMetricsAction("MobileOmniboxShortcutsOpenHistory"));
         break;
+      case NTPCollectionShortcutTypeCount:
+        NOTREACHED();
+        break;
     }
   }
+}
+
+#pragma mark - Private
+
+- (void)configureLayout:(UICollectionViewFlowLayout*)layout {
+  // Calculate insets to center the items in the view.
+  CGFloat widthInsets = CenteredTilesMarginForWidth(
+      self.traitCollection, self.view.bounds.size.width);
+
+  layout.minimumLineSpacing = kNtpTilesVerticalSpacing;
+  layout.minimumInteritemSpacing =
+      NtpTilesHorizontalSpacing(self.traitCollection);
+  layout.itemSize =
+      MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory);
+  layout.sectionInset =
+      UIEdgeInsetsMake(kTopInset, widthInsets, 0, widthInsets);
 }
 
 @end

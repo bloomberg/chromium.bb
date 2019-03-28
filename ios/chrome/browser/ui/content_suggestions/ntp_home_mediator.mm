@@ -269,6 +269,9 @@ const char kNTPHelpURL[] =
         [self.dispatcher showHistory];
         base::RecordAction(base::UserMetricsAction("MobileNTPShowHistory"));
         break;
+      case NTPCollectionShortcutTypeCount:
+        NOTREACHED();
+        break;
     }
     return;
   }

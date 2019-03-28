@@ -32,7 +32,6 @@
 namespace {
 const int kRowCount = 12;
 const CGFloat kRowHeight = 48.0;
-const CGFloat kShortcutsRowHeight = 220;
 const CGFloat kAnswerRowHeight = 64.0;
 }  // namespace
 
@@ -357,7 +356,8 @@ const CGFloat kAnswerRowHeight = 64.0;
     heightForRowAtIndexPath:(NSIndexPath*)indexPath {
   if (self.shortcutsEnabled && indexPath.row == 0 &&
       self.currentResult.count == 0) {
-    return kShortcutsRowHeight;
+    UIView* collectionView = self.shortcutsViewController.view;
+    return collectionView.frame.size.height;
   }
 
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
