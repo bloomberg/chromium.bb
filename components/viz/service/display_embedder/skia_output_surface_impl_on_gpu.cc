@@ -765,7 +765,7 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGLWithGpuService(
   }
   DCHECK(gl_surface_);
 
-  context_state_ = gpu_service->GetContextStateForGLSurface(gl_surface_.get());
+  context_state_ = gpu_service->GetContextState();
   if (!context_state_) {
     LOG(FATAL) << "Failed to create GrContext";
     // TODO(penghuang): handle the failure.
@@ -801,7 +801,7 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGLWithGpuService(
 
 void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan(
     GpuServiceImpl* gpu_service) {
-  context_state_ = gpu_service->GetContextStateForVulkan();
+  context_state_ = gpu_service->GetContextState();
   DCHECK(context_state_);
   capabilities_.flipped_output_surface = true;
 #if BUILDFLAG(ENABLE_VULKAN)

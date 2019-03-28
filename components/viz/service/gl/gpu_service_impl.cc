@@ -299,23 +299,8 @@ void GpuServiceImpl::DisableGpuCompositing() {
   (*gpu_host_)->DisableGpuCompositing();
 }
 
-scoped_refptr<gpu::SharedContextState>
-GpuServiceImpl::GetContextStateForGLSurface(gl::GLSurface* surface) {
+scoped_refptr<gpu::SharedContextState> GpuServiceImpl::GetContextState() {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  DCHECK(!is_using_vulkan());
-  gpu::ContextResult result;
-  auto context_state = gpu_channel_manager_->GetSharedContextState(&result);
-  // TODO(penghuang): https://crbug.com/899740 Support GLSurface which is not
-  // compatible.
-  DCHECK_EQ(surface->GetCompatibilityKey(),
-            context_state->surface()->GetCompatibilityKey());
-  return context_state;
-}
-
-scoped_refptr<gpu::SharedContextState>
-GpuServiceImpl::GetContextStateForVulkan() {
-  DCHECK(main_runner_->BelongsToCurrentThread());
-  DCHECK(is_using_vulkan());
   gpu::ContextResult result;
   return gpu_channel_manager_->GetSharedContextState(&result);
 }
