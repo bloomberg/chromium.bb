@@ -6125,3 +6125,5 @@ crbug.com/946714 [ Release ] http/tests/devtools/elements/styles-4/styles-live-l
 crbug.com/946699 [ Release ] http/tests/devtools/network/network-filter-service-worker.js [ Pass Timeout ]
 crbug.com/946699 [ Release ] virtual/binary-for-devtools/http/tests/devtools/network/network-filter-service-worker.js [ Pass Timeout ]
 crbug.com/946700 [ Win7 Release ] http/tests/devtools/coverage/decorations-after-script-formatter.js [ Pass Timeout ]
+crbug.com/946711 [ Release ] http/tests/devtools/editor/text-editor-search-switch-editor.js [ Crash Pass Timeout ]
+crbug.com/946711 [ Release ] virtual/binary-for-devtools/http/tests/devtools/editor/text-editor-search-switch-editor.js [ Crash Pass Timeout ]
