@@ -121,17 +121,16 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
       DCHECK(!length_to_resolve.IsAuto());
 
       if (MainAxisIsInlineAxis(child)) {
-        flex_base_border_box = ResolveInlineLength(
+        flex_base_border_box = ResolveMainInlineLength(
             child_space, child_style, border_padding_in_child_writing_mode,
-            intrinsic_sizes_border_box, length_to_resolve,
-            LengthResolveType::kContentSize, LengthResolvePhase::kLayout);
+            intrinsic_sizes_border_box, length_to_resolve);
       } else {
         // Flex container's main axis is in child's block direction. Child's
         // flex basis is in child's block direction.
-        flex_base_border_box = ResolveBlockLength(
+        flex_base_border_box = ResolveMainBlockLength(
             child_space, child_style, border_padding_in_child_writing_mode,
             length_to_resolve, fragment_in_child_writing_mode.BlockSize(),
-            LengthResolveType::kContentSize, LengthResolvePhase::kLayout);
+            LengthResolvePhase::kLayout);
       }
     }
 
@@ -153,15 +152,14 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     const Length& max = is_horizontal_flow ? child.Style().MaxWidth()
                                            : child.Style().MaxHeight();
     if (MainAxisIsInlineAxis(child)) {
-      min_max_sizes_in_main_axis_direction.max_size = ResolveInlineLength(
+      min_max_sizes_in_main_axis_direction.max_size = ResolveMaxInlineLength(
           child_space, child_style, border_padding_in_child_writing_mode,
-          intrinsic_sizes_border_box, max, LengthResolveType::kMaxSize,
-          LengthResolvePhase::kLayout);
+          intrinsic_sizes_border_box, max, LengthResolvePhase::kLayout);
     } else {
-      min_max_sizes_in_main_axis_direction.max_size = ResolveBlockLength(
+      min_max_sizes_in_main_axis_direction.max_size = ResolveMaxBlockLength(
           child_space, child_style, border_padding_in_child_writing_mode, max,
           fragment_in_child_writing_mode.BlockSize(),
-          LengthResolveType::kMaxSize, LengthResolvePhase::kLayout);
+          LengthResolvePhase::kLayout);
     }
 
     const Length& min = is_horizontal_flow ? child.Style().MinWidth()
@@ -173,15 +171,14 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
         // LayoutFlexibleBox::ComputeMinAndMaxSizesForChild
       }
     } else if (MainAxisIsInlineAxis(child)) {
-      min_max_sizes_in_main_axis_direction.min_size = ResolveInlineLength(
+      min_max_sizes_in_main_axis_direction.min_size = ResolveMinInlineLength(
           child_space, child_style, border_padding_in_child_writing_mode,
-          intrinsic_sizes_border_box, min, LengthResolveType::kMinSize,
-          LengthResolvePhase::kLayout);
+          intrinsic_sizes_border_box, min, LengthResolvePhase::kLayout);
     } else {
-      min_max_sizes_in_main_axis_direction.min_size = ResolveBlockLength(
+      min_max_sizes_in_main_axis_direction.min_size = ResolveMinBlockLength(
           child_space, child_style, border_padding_in_child_writing_mode, min,
           fragment_in_child_writing_mode.BlockSize(),
-          LengthResolveType::kMinSize, LengthResolvePhase::kLayout);
+          LengthResolvePhase::kLayout);
     }
 
     algorithm_
