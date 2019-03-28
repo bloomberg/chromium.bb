@@ -26,7 +26,11 @@
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/public/conversation_state_listener.h"
 #include "libassistant/shared/public/device_state_listener.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
+#include "services/media_session/public/mojom/media_controller.mojom.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/accessibility/ax_assistant_structure.h"
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
@@ -83,7 +87,8 @@ class AssistantManagerServiceImpl
       public AssistantEventObserver,
       public assistant_client::ConversationStateListener,
       public assistant_client::AssistantManagerDelegate,
-      public assistant_client::DeviceStateListener {
+      public assistant_client::DeviceStateListener,
+      public media_session::mojom::MediaControllerObserver {
  public:
   // |service| owns this class and must outlive this class.
   AssistantManagerServiceImpl(
@@ -182,6 +187,17 @@ class AssistantManagerServiceImpl
     return assistant_manager_internal_;
   }
 
+  // media_session::mojom::MediaControllerObserver overrides:
+  void MediaSessionInfoChanged(
+      media_session::mojom::MediaSessionInfoPtr info) override;
+  void MediaSessionMetadataChanged(
+      const base::Optional<media_session::MediaMetadata>& metadata) override;
+  void MediaSessionActionsChanged(
+      const std::vector<media_session::mojom::MediaSessionAction>& action)
+      override {}
+  void MediaSessionChanged(
+      const base::Optional<base::UnguessableToken>& request_id) override {}
+
  private:
   void StartAssistantInternal(const base::Optional<std::string>& access_token);
   void PostInitAssistant(base::OnceClosure post_init_callback);
@@ -224,8 +240,11 @@ class AssistantManagerServiceImpl
       const std::string play_media_args_proto,
       action::AndroidAppInfo* android_app_info);
   void OnPlayMedia(const std::string play_media_args_proto);
+  void OnMediaControlAction(const std::string& action_name,
+                            const std::string& media_action_args_proto);
 
   void RegisterFallbackMediaHandler();
+  void AddMediaControllerObserver();
 
   void CacheAssistantStructure(
       base::OnceClosure on_done,
@@ -252,6 +271,8 @@ class AssistantManagerServiceImpl
   // be sent back in the second round (recorded as kDeviceAction).
   void RecordQueryResponseTypeUMA();
 
+  void UpdateMediaState();
+
   State state_ = State::STOPPED;
   std::unique_ptr<AssistantMediaSession> media_session_;
   std::unique_ptr<PlatformApiImpl> platform_api_;
@@ -272,6 +293,7 @@ class AssistantManagerServiceImpl
   mojo::InterfacePtrSet<mojom::AssistantInteractionSubscriber>
       interaction_subscribers_;
   ash::mojom::AshMessageCenterControllerPtr ash_message_center_controller_;
+  media_session::mojom::MediaControllerPtr media_controller_;
 
   Service* service_;  // unowned.
 
@@ -291,6 +313,15 @@ class AssistantManagerServiceImpl
   std::string receive_url_response_;
 
   bool is_first_client_discourse_context_query_ = true;
+
+  mojo::Binding<media_session::mojom::MediaControllerObserver>
+      media_controller_observer_binding_;
+
+  // Info associated to the active media session.
+  media_session::mojom::MediaSessionInfoPtr media_session_info_ptr_;
+  // The metadata for the active media session. It can be null to be reset, e.g.
+  // the media that was being played has been stopped.
+  base::Optional<media_session::MediaMetadata> media_metadata_ = base::nullopt;
 
   base::WeakPtrFactory<AssistantManagerServiceImpl> weak_factory_;
 
