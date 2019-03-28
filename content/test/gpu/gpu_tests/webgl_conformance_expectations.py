@@ -101,6 +101,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     self.Fail('conformance/extensions/oes-texture-float.html',
         bug=930993)
+    # TODO(shrekshao): Remove this after applying the new draw buffer
+    # validation. And then uncomment the failure expectation for
+    # angle bug 1523 (L160)
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        bug=927908)
 
     # Need to add detection of feedback loops with multiple render targets.
     self.Fail('conformance/rendering/rendering-sampling-feedback-loop.html',
@@ -152,8 +157,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough', 'opengl', 'intel'], bug=665521)
 
     # Passthrough command decoder / OpenGL / AMD
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['passthrough', 'opengl', 'amd', 'linux'], bug=1523) # angle bug ID
+    # self.Fail('conformance/extensions/webgl-draw-buffers.html',
+    #     ['passthrough', 'opengl', 'amd', 'linux'], bug=1523) # angle bug ID
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
         ['passthrough', 'opengl', 'amd'], bug=665521)
     self.Fail('conformance/glsl/constructors/' +
