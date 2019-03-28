@@ -20,15 +20,20 @@ namespace viz {
 
 class VulkanContextProvider;
 
-class SkiaOutputDeviceVulkan : public SkiaOutputDevice {
+class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
  public:
-  SkiaOutputDeviceVulkan(VulkanContextProvider* context_provider,
-                         gpu::SurfaceHandle surface_handle);
+  SkiaOutputDeviceVulkan(
+      VulkanContextProvider* context_provider,
+      gpu::SurfaceHandle surface_handle,
+      DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceVulkan() override;
 
-  sk_sp<SkSurface> DrawSurface() override;
-  void Reshape(const gfx::Size& size) override;
-  gfx::SwapResult SwapBuffers() override;
+  // SkiaOutputDevice implementation:
+  void Reshape(const gfx::Size& size,
+               float device_scale_factor,
+               const gfx::ColorSpace& color_space,
+               bool has_alpha) override;
+  gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) override;
 
  private:
   void CreateVulkanSurface();
@@ -41,9 +46,6 @@ class SkiaOutputDeviceVulkan : public SkiaOutputDevice {
 
   // SkSurfaces for swap chain images.
   std::vector<sk_sp<SkSurface>> sk_surfaces_;
-
-  // SkSurface to be drawn to. Updated after Reshape and SwapBuffers.
-  sk_sp<SkSurface> draw_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDeviceVulkan);
 };

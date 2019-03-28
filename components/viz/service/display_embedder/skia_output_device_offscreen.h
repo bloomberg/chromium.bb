@@ -14,18 +14,22 @@ namespace viz {
 
 class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
  public:
-  SkiaOutputDeviceOffscreen(GrContext* gr_context,
-                            bool flipped,
-                            bool has_alpha);
+  SkiaOutputDeviceOffscreen(
+      GrContext* gr_context,
+      bool flipped,
+      bool has_alpha,
+      DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceOffscreen() override;
 
-  sk_sp<SkSurface> DrawSurface() override;
-  void Reshape(const gfx::Size& size) override;
-  gfx::SwapResult SwapBuffers() override;
+  // SkiaOutputDevice implementation:
+  void Reshape(const gfx::Size& size,
+               float device_scale_factor,
+               const gfx::ColorSpace& color_space,
+               bool has_alpha) override;
+  gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) override;
 
  protected:
   GrContext* const gr_context_;
-  sk_sp<SkSurface> draw_surface_;
   const bool flipped_;
   const bool has_alpha_;
 
