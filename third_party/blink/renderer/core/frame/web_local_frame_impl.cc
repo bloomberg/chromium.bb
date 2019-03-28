@@ -1469,9 +1469,10 @@ void WebLocalFrameImpl::DispatchPrintEventRecursively(
     }
     if (!frame->Tree().IsDescendantOf(frame_))
       continue;
-    Event* event = event_type == event_type_names::kBeforeprint
-                       ? static_cast<Event*>(BeforePrintEvent::Create())
-                       : static_cast<Event*>(AfterPrintEvent::Create());
+    Event* event =
+        event_type == event_type_names::kBeforeprint
+            ? static_cast<Event*>(MakeGarbageCollected<BeforePrintEvent>())
+            : static_cast<Event*>(MakeGarbageCollected<AfterPrintEvent>());
     To<LocalFrame>(frame.Get())->DomWindow()->DispatchEvent(*event);
   }
 }

@@ -26,14 +26,6 @@ class ApplicationCacheErrorEvent final : public Event {
                              const ApplicationCacheErrorEventInit* initializer);
   ~ApplicationCacheErrorEvent() override;
 
-  static ApplicationCacheErrorEvent* Create(mojom::AppCacheErrorReason reason,
-                                            const String& url,
-                                            uint16_t status,
-                                            const String& message) {
-    return MakeGarbageCollected<ApplicationCacheErrorEvent>(reason, url, status,
-                                                            message);
-  }
-
   static ApplicationCacheErrorEvent* Create(
       const AtomicString& event_type,
       const ApplicationCacheErrorEventInit* initializer) {

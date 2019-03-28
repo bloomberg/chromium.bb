@@ -68,7 +68,7 @@ void DispatchCompositionUpdateEvent(LocalFrame& frame, const String& text) {
   if (!target)
     return;
 
-  CompositionEvent* event = CompositionEvent::Create(
+  auto* event = MakeGarbageCollected<CompositionEvent>(
       event_type_names::kCompositionupdate, frame.DomWindow(), text);
   target->DispatchEvent(*event);
 }
@@ -83,7 +83,7 @@ void DispatchCompositionEndEvent(LocalFrame& frame, const String& text) {
   if (!target)
     return;
 
-  CompositionEvent* event = CompositionEvent::Create(
+  auto* event = MakeGarbageCollected<CompositionEvent>(
       event_type_names::kCompositionend, frame.DomWindow(), text);
   EventDispatcher::DispatchScopedEvent(*target, *event);
 }
@@ -735,7 +735,7 @@ bool InputMethodController::DispatchCompositionStartEvent(const String& text) {
   if (!target)
     return IsAvailable();
 
-  CompositionEvent* event = CompositionEvent::Create(
+  auto* event = MakeGarbageCollected<CompositionEvent>(
       event_type_names::kCompositionstart, GetFrame().DomWindow(), text);
   target->DispatchEvent(*event);
 

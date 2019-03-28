@@ -74,7 +74,7 @@ String DispatchBeforeTextInsertedEvent(const String& text,
   // Send BeforeTextInsertedEvent. The event handler will update text if
   // necessary.
   const Document& document = start_node->GetDocument();
-  BeforeTextInsertedEvent* evt = BeforeTextInsertedEvent::Create(text);
+  auto* evt = MakeGarbageCollected<BeforeTextInsertedEvent>(text);
   RootEditableElement(*start_node)->DispatchEvent(*evt);
   if (IsValidDocument(document) && selection.IsValidFor(document))
     return evt->GetText();
@@ -146,8 +146,7 @@ bool CanAppendNewLineFeedToSelection(const VisibleSelection& selection,
     return false;
 
   const Document& document = element->GetDocument();
-  BeforeTextInsertedEvent* event =
-      BeforeTextInsertedEvent::Create(String("\n"));
+  auto* event = MakeGarbageCollected<BeforeTextInsertedEvent>(String("\n"));
   element->DispatchEvent(*event);
   // event may invalidate frame or selection
   if (IsValidDocument(document) && selection.IsValidFor(document))
