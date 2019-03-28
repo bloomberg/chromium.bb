@@ -53242,6 +53242,16 @@ would be helpful to identify which type is being sent.
   <int value="9" label="Store recovered after corruption"/>
 </enum>
 
+<enum name="SyncNigoriMigrationReason">
+  <int value="0" label="No reason"/>
+  <int value="1" label="Keybag cannot be decrypted using default key"/>
+  <int value="2" label="Encrypt everything with keystore passphrase"/>
+  <int value="3" label="Nigori node isn't migrated"/>
+  <int value="4" label="Explicit passphrase without encrypt everything"/>
+  <int value="5" label="Old passphrase type"/>
+  <int value="6" label="Server key rotation"/>
+</enum>
+
 <enum name="SyncNigoriMigrationResult">
   <int value="0" label="Failed to set default encryption key"/>
   <int value="1" label="Failed to set nondefault encryption key"/>
@@ -53260,6 +53270,14 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Not migrated due to cryptographer not ready"/>
   <int value="2" label="Not migrated due to missing keystore key"/>
   <int value="3" label="Not migrated for an unknown reason"/>
+</enum>
+
+<enum name="SyncNigoriMigrationTrigger">
+  <int value="0" label="ApplyNigoriUpdate"/>
+  <int value="1" label="EnableEncryptEverything"/>
+  <int value="2" label="FinishSetPassphrase"/>
+  <int value="3" label="Init"/>
+  <int value="4" label="SetKeystoreKeys"/>
 </enum>
 
 <enum name="SyncPassphraseDismissal">
