@@ -564,8 +564,7 @@ class MenuControllerTest : public ViewsTestBase {
         parent, MenuController::INCREMENT_SELECTION_UP);
   }
 
-  MenuItemView* FindNextSelectableMenuItem(MenuItemView* parent,
-                                           int index) {
+  MenuItemView* FindNextSelectableMenuItem(MenuItemView* parent, int index) {
     return menu_controller_->FindNextSelectableMenuItem(
         parent, index, MenuController::INCREMENT_SELECTION_DOWN, false);
   }

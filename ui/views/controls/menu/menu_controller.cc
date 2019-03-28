@@ -1964,8 +1964,8 @@ void MenuController::CloseMenu(MenuItemView* item) {
   if (!item->HasSubmenu())
     return;
 
-  for (int i = 0; i < item->GetSubmenu()->GetMenuItemCount(); ++i)
-    UnregisterAlertedItem(item->GetSubmenu()->GetMenuItemAt(i));
+  for (MenuItemView* subitem : item->GetSubmenu()->GetMenuItems())
+    UnregisterAlertedItem(subitem);
 
   item->GetSubmenu()->Hide();
 }
@@ -2006,8 +2006,7 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
 
   // Register alerted MenuItemViews so we can animate them. We do this here to
   // handle both newly-opened submenus and submenus that have changed.
-  for (int i = 0; i < item->GetSubmenu()->GetMenuItemCount(); ++i) {
-    MenuItemView* const subitem = item->GetSubmenu()->GetMenuItemAt(i);
+  for (MenuItemView* subitem : item->GetSubmenu()->GetMenuItems()) {
     if (subitem->is_alerted())
       RegisterAlertedItem(subitem);
   }
@@ -2442,7 +2441,7 @@ void MenuController::IncrementSelection(
   if (pending_state_.submenu_open && item->SubmenuIsShowing()) {
     // A menu is selected and open, but none of its children are selected,
     // select the first menu item that is visible and enabled.
-    if (item->GetSubmenu()->GetMenuItemCount()) {
+    if (!item->GetSubmenu()->GetMenuItems().empty()) {
       MenuItemView* to_select = FindInitialSelectableMenuItem(item, direction);
       SetInitialHotTrackedView(to_select, direction);
       return;
@@ -2466,28 +2465,14 @@ void MenuController::IncrementSelection(
     }
   }
 
-  MenuItemView* parent = item->GetParentMenuItem();
-  if (parent) {
-    int parent_count = parent->GetSubmenu()->GetMenuItemCount();
-    if (parent_count > 1) {
-      for (int i = 0; i < parent_count; ++i) {
-        if (parent->GetSubmenu()->GetMenuItemAt(i) == item) {
-          MenuItemView* to_select =
-              FindNextSelectableMenuItem(parent, i, direction, false);
-          SetInitialHotTrackedView(to_select, direction);
-          break;
-        }
-      }
-    }
-  }
+  SetNextHotTrackedView(item, direction);
 }
 
 void MenuController::SetSelectionIndices(MenuItemView* parent) {
   std::vector<View*> ordering;
   SubmenuView* const submenu = parent->GetSubmenu();
 
-  for (int i = 0; i < submenu->GetMenuItemCount(); ++i) {
-    MenuItemView* const item = submenu->GetMenuItemAt(i);
+  for (MenuItemView* item : submenu->GetMenuItems()) {
     if (!item->visible() || !item->enabled())
       continue;
 
@@ -2520,7 +2505,7 @@ void MenuController::MoveSelectionToFirstOrLastItem(
   MenuItemView* submenu = nullptr;
 
   if (pending_state_.submenu_open && item->SubmenuIsShowing()) {
-    if (!item->GetSubmenu()->GetMenuItemCount())
+    if (item->GetSubmenu()->GetMenuItems().empty())
       return;
 
     // A menu is selected and open, but none of its children are selected,
@@ -2546,7 +2531,7 @@ MenuItemView* MenuController::FindNextSelectableMenuItem(
     int index,
     SelectionIncrementDirectionType direction,
     bool is_initial) {
-  int parent_count = parent->GetSubmenu()->GetMenuItemCount();
+  int parent_count = int{parent->GetSubmenu()->GetMenuItems().size()};
   int stop_index = (index + parent_count) % parent_count;
   bool include_all_items =
       (index == -1 && direction == INCREMENT_SELECTION_DOWN) ||
@@ -2576,7 +2561,7 @@ void MenuController::OpenSubmenuChangeSelectionIfCan() {
   if (!item->HasSubmenu() || !item->enabled())
     return;
   MenuItemView* to_select = nullptr;
-  if (item->GetSubmenu()->GetMenuItemCount() > 0)
+  if (!item->GetSubmenu()->GetMenuItems().empty())
     to_select = FindInitialSelectableMenuItem(item, INCREMENT_SELECTION_DOWN);
   if (to_select) {
     // Selection is going from the ACTIONABLE to the SUBMENU region of the
@@ -2609,20 +2594,20 @@ MenuController::SelectByCharDetails MenuController::FindChildForMnemonic(
   DCHECK(submenu);
   SelectByCharDetails details;
 
-  for (int i = 0, menu_item_count = submenu->GetMenuItemCount();
-       i < menu_item_count; ++i) {
-    MenuItemView* child = submenu->GetMenuItemAt(i);
+  const auto menu_items = submenu->GetMenuItems();
+  for (size_t i = 0; i < menu_items.size(); ++i) {
+    MenuItemView* child = menu_items[i];
     if (child->enabled() && child->visible()) {
       if (child == pending_state_.item)
-        details.index_of_item = i;
+        details.index_of_item = int{i};
       if (match_function(child, key)) {
         if (details.first_match == -1)
-          details.first_match = i;
+          details.first_match = int{i};
         else
           details.has_multiple = true;
         if (details.next_match == -1 && details.index_of_item != -1 &&
-            i > details.index_of_item)
-          details.next_match = i;
+            int{i} > details.index_of_item)
+          details.next_match = int{i};
       }
     }
   }
@@ -2667,7 +2652,7 @@ void MenuController::SelectByChar(base::char16 character) {
   DCHECK(item);
   DCHECK(item->HasSubmenu());
   DCHECK(item->GetSubmenu());
-  if (item->GetSubmenu()->GetMenuItemCount() == 0)
+  if (item->GetSubmenu()->GetMenuItems().empty())
     return;
 
   // Look for matches based on mnemonic first.
@@ -3008,6 +2993,22 @@ void MenuController::SetInitialHotTrackedView(
   View* hot_view =
       GetInitialFocusableView(item, direction == INCREMENT_SELECTION_DOWN);
   SetHotTrackedButton(Button::AsButton(hot_view));
+}
+
+void MenuController::SetNextHotTrackedView(
+    MenuItemView* item,
+    SelectionIncrementDirectionType direction) {
+  MenuItemView* parent = item->GetParentMenuItem();
+  if (!parent)
+    return;
+  const auto menu_items = parent->GetSubmenu()->GetMenuItems();
+  if (menu_items.size() <= 1)
+    return;
+  const auto i = std::find(menu_items.cbegin(), menu_items.cend(), item);
+  DCHECK(i != menu_items.cend());
+  MenuItemView* to_select = FindNextSelectableMenuItem(
+      parent, std::distance(menu_items.cbegin(), i), direction, false);
+  SetInitialHotTrackedView(to_select, direction);
 }
 
 void MenuController::SetHotTrackedButton(Button* hot_button) {
