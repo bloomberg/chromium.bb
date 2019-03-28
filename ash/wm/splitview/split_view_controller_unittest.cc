@@ -4071,6 +4071,31 @@ TEST_F(SplitViewTabDraggingTest, DividerBarOnTopAfterDragEnds) {
   EXPECT_TRUE(split_view_divider()->divider_widget()->IsAlwaysOnTop());
 }
 
+TEST_F(SplitViewTabDraggingTest, IgnoreActivatedTabDraggingWindow) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> dragged_window(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  std::unique_ptr<aura::Window> left_window(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  std::unique_ptr<aura::Window> right_window(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  split_view_controller()->SnapWindow(left_window.get(),
+                                      SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(right_window.get(),
+                                      SplitViewController::RIGHT);
+
+  // Simulate what might happen in reality.
+  SetIsInTabDragging(dragged_window.get(), /*is_dragging=*/true,
+                     left_window.get());
+  ::wm::ActivateWindow(dragged_window.get());
+
+  // Test that |left_window| and |right_window| is still snapped in splitview
+  // and overview is not opened behind the dragged window.
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(left_window.get()));
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(right_window.get()));
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {
  public:
   TestWindowDelegateWithWidget(bool can_activate)
