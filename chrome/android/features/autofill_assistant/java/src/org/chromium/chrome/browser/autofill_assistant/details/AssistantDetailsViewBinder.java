@@ -9,6 +9,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -28,7 +29,14 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 import java.text.DateFormat;
@@ -142,6 +150,7 @@ class AssistantDetailsViewBinder
         if (details.getImageUrl().isEmpty()) {
             if (details.getShowImagePlaceholder()) {
                 viewHolder.mImageView.setImageDrawable(viewHolder.mDefaultImage);
+                viewHolder.mImageView.setOnClickListener(null);
             } else {
                 viewHolder.mImageView.setVisibility(View.GONE);
             }
@@ -151,6 +160,15 @@ class AssistantDetailsViewBinder
                     CachedImageFetcher.ASSISTANT_DETAILS_UMA_CLIENT_NAME, image -> {
                         if (image != null) {
                             viewHolder.mImageView.setImageDrawable(getRoundedImage(image));
+                            // TODO(wuandy): Actually pull 'showAttribution' from server response,
+                            // once it is ready.
+                            boolean showAttribution = false;
+                            if (showAttribution) {
+                                viewHolder.mImageView.setOnClickListener(unusedView
+                                        -> onImageClicked(mContext, details.getImageUrl()));
+                            } else {
+                                viewHolder.mImageView.setOnClickListener(null);
+                            }
                         }
                     });
         }
@@ -306,5 +324,50 @@ class AssistantDetailsViewBinder
             mPulseAnimation.cancel();
             mPulseAnimation = null;
         }
+    }
+
+    /**
+     * Clicking on the image will trigger a modal dialog asking whether the user wants to
+     * see the original image, if they choose to see it, a new custom tab pointing to the
+     * url of the orinial image will present on top of current one.
+     */
+    private void onImageClicked(Context context, String imageUrl) {
+        ModalDialogManager manager = new ModalDialogManager(
+                new AppModalPresenter((android.app.Activity) context), ModalDialogType.APP);
+
+        // Handles 'View' and 'Cancel' actions from modal dialog.
+        ModalDialogProperties.Controller dialogController = new ModalDialogProperties.Controller() {
+            @Override
+            public void onClick(PropertyModel model, int buttonType) {
+                if (buttonType == ModalDialogProperties.ButtonType.NEGATIVE) {
+                    manager.dismissDialog(model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
+                } else {
+                    manager.dismissDialog(model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
+
+                    CustomTabActivity.showInfoPage(context.getApplicationContext(), imageUrl);
+                }
+            }
+
+            @Override
+            public void onDismiss(PropertyModel model, int dismissalCause) {}
+        };
+
+        Resources resources = context.getResources();
+        // TODO(wuandy): Make these strings server side and pass along with potential
+        // 'showAttribution' flag.
+        PropertyModel.Builder builder =
+                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                        .with(ModalDialogProperties.CONTROLLER, dialogController)
+                        .with(ModalDialogProperties.TITLE, resources,
+                                R.string.autofill_assistant_view_original_image_title)
+                        .with(ModalDialogProperties.MESSAGE, resources,
+                                R.string.autofill_assistant_view_original_image_desc)
+                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
+                                R.string.autofill_assistant_view_original_image_view)
+                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
+                                R.string.autofill_assistant_view_original_image_cancel);
+
+        PropertyModel dialogModel = builder.build();
+        manager.showDialog(dialogModel, ModalDialogType.APP);
     }
 }
