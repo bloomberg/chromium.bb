@@ -2981,14 +2981,11 @@ crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-or
 crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Win7 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/forms/the-textarea-element/multiline-placeholder-cr.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/event-timing/event-timing-onloadthenobserve.html [ Timeout ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/event-timing/event-timing-onloadthenobserve.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/event-timing/event-timing-onloadthenobserve.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/webrtc/RTCPeerConnection-ondatachannel.html [ Failure Timeout ]
-crbug.com/626703 [ Win10 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-url-allow.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-url-allow.html [ Timeout ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-url-allow.html [ Timeout ]
@@ -2996,9 +2993,6 @@ crbug.com/626703 [ Mac10.13 ] external/wpt/content-security-policy/frame-ancesto
 crbug.com/626703 [ Retina ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-url-allow.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-url-allow.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-url-allow.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
-crbug.com/626703 [ Mac10.11 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
-crbug.com/626703 [ Retina ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
 crbug.com/626703 external/wpt/media-source/mediasource-correct-frames-after-reappend.html [ Pass Failure Timeout ]
 crbug.com/626703 external/wpt/media-source/mediasource-correct-frames.html [ Pass Failure Timeout ]
 crbug.com/626703 external/wpt/payment-method-basic-card/steps_for_selecting_the_payment_handler.html [ Timeout ]
@@ -6089,7 +6083,7 @@ crbug.com/945629 virtual/binary-for-devtools/http/tests/devtools/network/network
 crbug.com/945832 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Failure Timeout Crash ]
 
 # Sheriff 2019-03-26
-crbug.com/945774 [ Mac10.13 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
+crbug.com/945774 external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Pass Timeout ]
 crbug.com/945845 http/tests/security/inactive-document-with-empty-security-origin.html [ Timeout ]
 crbug.com/945845 virtual/outofblink-cors/http/tests/security/inactive-document-with-empty-security-origin.html [ Timeout ]
 
@@ -6127,3 +6121,4 @@ crbug.com/946624 virtual/user-activation-v2/http/tests/media/autoplay/document-u
 crbug.com/946890 external/wpt/html/semantics/embedded-content/media-elements/location-of-the-media-resource/currentSrc.html [ Failure Pass ]
 crbug.com/946990 virtual/binary-for-devtools/http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout ]
 crbug.com/946719 http/tests/serviceworker/resolve-after-window-close.html [ Crash Pass ]
+
