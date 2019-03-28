@@ -3364,6 +3364,20 @@ static void scale_references(AV1_COMP *cpi) {
       }
 
       if (ref->y_crop_width != cm->width || ref->y_crop_height != cm->height) {
+        // Replace the reference buffer with a copy having a thicker border,
+        // if the reference buffer is higher resolution than the current
+        // frame, and the border is thin.
+        if ((ref->y_crop_width > cm->width ||
+             ref->y_crop_height > cm->height) &&
+            ref->border < AOM_BORDER_IN_PIXELS) {
+          RefCntBuffer *ref_fb = get_ref_frame_buf(cm, ref_frame);
+          if (aom_yv12_realloc_with_new_border(
+                  &ref_fb->buf, AOM_BORDER_IN_PIXELS, cm->byte_alignment,
+                  num_planes) != 0) {
+            aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                               "Failed to allocate frame buffer");
+          }
+        }
         int force_scaling = 0;
         RefCntBuffer *new_fb = cpi->scaled_ref_buf[ref_frame - 1];
         if (new_fb == NULL) {
