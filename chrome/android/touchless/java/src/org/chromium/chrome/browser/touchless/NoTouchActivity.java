@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogPresenter;
 import org.chromium.chrome.browser.touchless.ui.iph.KeyFunctionsIPHCoordinator;
 import org.chromium.chrome.browser.touchless.ui.progressbar.ProgressBarCoordinator;
 import org.chromium.chrome.browser.touchless.ui.progressbar.ProgressBarView;
@@ -30,6 +31,8 @@ import org.chromium.chrome.browser.touchless.ui.tooltip.TooltipView;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 
 /**
  * An Activity used to display WebContents on devices that don't support touch.
@@ -156,6 +159,11 @@ public class NoTouchActivity extends SingleTabActivity {
 
     @Override
     protected void initializeToolbar() {}
+
+    @Override
+    public ModalDialogManager createModalDialogManager() {
+        return new ModalDialogManager(new TouchlessDialogPresenter(this), ModalDialogType.APP);
+    }
 
     @Override
     protected ChromeFullscreenManager createFullscreenManager() {
