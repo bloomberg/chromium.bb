@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/menu/menu_model_adapter.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/image/image.h"
@@ -18,11 +20,11 @@ MenuModelAdapter::MenuModelAdapter(ui::MenuModel* menu_model)
 
 MenuModelAdapter::MenuModelAdapter(
     ui::MenuModel* menu_model,
-    const base::RepeatingClosure& on_menu_closed_callback)
+    base::RepeatingClosure on_menu_closed_callback)
     : menu_model_(menu_model),
       triggerable_event_flags_(ui::EF_LEFT_MOUSE_BUTTON |
                                ui::EF_RIGHT_MOUSE_BUTTON),
-      on_menu_closed_callback_(on_menu_closed_callback) {
+      on_menu_closed_callback_(std::move(on_menu_closed_callback)) {
   DCHECK(menu_model);
   menu_model_->SetMenuModelDelegate(nullptr);
   menu_model_->SetMenuModelDelegate(this);

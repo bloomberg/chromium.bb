@@ -123,21 +123,23 @@ NSEvent* EventForPositioningContextMenu(const gfx::Rect& anchor,
 MenuRunnerImplInterface* MenuRunnerImplInterface::Create(
     ui::MenuModel* menu_model,
     int32_t run_types,
-    const base::RepeatingClosure& on_menu_closed_callback) {
+    base::RepeatingClosure on_menu_closed_callback) {
   if ((run_types & MenuRunner::CONTEXT_MENU) &&
       !(run_types & MenuRunner::IS_NESTED)) {
-    return new MenuRunnerImplCocoa(menu_model, on_menu_closed_callback);
+    return new MenuRunnerImplCocoa(menu_model,
+                                   std::move(on_menu_closed_callback));
   }
-  return new MenuRunnerImplAdapter(menu_model, on_menu_closed_callback);
+  return new MenuRunnerImplAdapter(menu_model,
+                                   std::move(on_menu_closed_callback));
 }
 
 MenuRunnerImplCocoa::MenuRunnerImplCocoa(
     ui::MenuModel* menu,
-    const base::RepeatingClosure& on_menu_closed_callback)
+    base::RepeatingClosure on_menu_closed_callback)
     : running_(false),
       delete_after_run_(false),
       closing_event_time_(base::TimeTicks()),
-      on_menu_closed_callback_(on_menu_closed_callback) {
+      on_menu_closed_callback_(std::move(on_menu_closed_callback)) {
   menu_controller_.reset([[MenuControllerCocoa alloc] initWithModel:menu
                                              useWithPopUpButtonCell:NO]);
   [menu_controller_ setPostItemSelectedAsTask:YES];

@@ -4,6 +4,8 @@
 
 #include "ui/views/repeat_controller.h"
 
+#include <utility>
+
 using base::TimeDelta;
 
 namespace views {
@@ -16,8 +18,8 @@ constexpr int kRepeatDelay = 50;
 ///////////////////////////////////////////////////////////////////////////////
 // RepeatController, public:
 
-RepeatController::RepeatController(const base::RepeatingClosure& callback)
-    : callback_(callback) {}
+RepeatController::RepeatController(base::RepeatingClosure callback)
+    : callback_(std::move(callback)) {}
 
 RepeatController::~RepeatController() = default;
 

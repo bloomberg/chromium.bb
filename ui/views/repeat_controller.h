@@ -23,8 +23,7 @@ namespace views {
 ///////////////////////////////////////////////////////////////////////////////
 class RepeatController {
  public:
-  // The RepeatController takes ownership of this callback object.
-  explicit RepeatController(const base::RepeatingClosure& callback);
+  explicit RepeatController(base::RepeatingClosure callback);
   virtual ~RepeatController();
 
   // Start repeating.

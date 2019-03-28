@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -93,8 +94,8 @@ class VIEWS_EXPORT ViewsDelegate {
 
   // Call this method to set a factory callback that will be used to construct
   // NativeWidget implementations overriding the platform defaults.
-  void set_native_widget_factory(const NativeWidgetFactory& factory) {
-    native_widget_factory_ = factory;
+  void set_native_widget_factory(NativeWidgetFactory factory) {
+    native_widget_factory_ = std::move(factory);
   }
   const NativeWidgetFactory& native_widget_factory() const {
     return native_widget_factory_;
@@ -102,8 +103,8 @@ class VIEWS_EXPORT ViewsDelegate {
 
 #if defined(USE_AURA)
   void set_desktop_window_tree_host_factory(
-      const DesktopWindowTreeHostFactory& factory) {
-    desktop_window_tree_host_factory_ = factory;
+      DesktopWindowTreeHostFactory factory) {
+    desktop_window_tree_host_factory_ = std::move(factory);
   }
   const DesktopWindowTreeHostFactory& desktop_window_tree_host_factory() const {
     return desktop_window_tree_host_factory_;

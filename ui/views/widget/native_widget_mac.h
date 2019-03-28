@@ -174,7 +174,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   // Calls |callback| with the newly created NativeWidget whenever a
   // NativeWidget is created.
   static void SetInitNativeWidgetCallback(
-      const base::RepeatingCallback<void(NativeWidgetMac*)>& callback);
+      base::RepeatingCallback<void(NativeWidgetMac*)> callback);
 
  protected:
   virtual void PopulateCreateWindowParams(

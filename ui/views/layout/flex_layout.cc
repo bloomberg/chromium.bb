@@ -161,7 +161,7 @@ class ChildViewSpacing {
       base::RepeatingCallback<int(base::Optional<size_t>,
                                   base::Optional<size_t>)>;
 
-  explicit ChildViewSpacing(const GetViewSpacingCallback& get_view_spacing);
+  explicit ChildViewSpacing(GetViewSpacingCallback get_view_spacing);
   ChildViewSpacing(ChildViewSpacing&& other);
   ChildViewSpacing& operator=(ChildViewSpacing&& other);
 
@@ -194,10 +194,9 @@ class ChildViewSpacing {
   int trailing_space_;
 };
 
-ChildViewSpacing::ChildViewSpacing(
-    const GetViewSpacingCallback& get_view_spacing)
-    : get_view_spacing_(get_view_spacing),
-      trailing_space_(get_view_spacing.Run(base::nullopt, base::nullopt)) {}
+ChildViewSpacing::ChildViewSpacing(GetViewSpacingCallback get_view_spacing)
+    : get_view_spacing_(std::move(get_view_spacing)),
+      trailing_space_(get_view_spacing_.Run(base::nullopt, base::nullopt)) {}
 
 ChildViewSpacing::ChildViewSpacing(ChildViewSpacing&& other)
     : get_view_spacing_(std::move(other.get_view_spacing_)),

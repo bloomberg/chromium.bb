@@ -25,7 +25,7 @@ namespace internal {
 class VIEWS_EXPORT MenuRunnerImplCocoa : public MenuRunnerImplInterface {
  public:
   MenuRunnerImplCocoa(ui::MenuModel* menu,
-                      const base::RepeatingClosure& on_menu_closed_callback);
+                      base::RepeatingClosure on_menu_closed_callback);
 
   bool IsRunning() const override;
   void Release() override;

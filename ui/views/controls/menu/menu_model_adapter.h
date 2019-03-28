@@ -30,7 +30,7 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate,
   // reflected in the created MenuItemView.
   explicit MenuModelAdapter(ui::MenuModel* menu_model);
   MenuModelAdapter(ui::MenuModel* menu_model,
-                   const base::RepeatingClosure& on_menu_closed_callback);
+                   base::RepeatingClosure on_menu_closed_callback);
   ~MenuModelAdapter() override;
 
   // Populate a MenuItemView menu with the ui::MenuModel items
