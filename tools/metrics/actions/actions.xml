@@ -1177,6 +1177,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Accessibility.Autoclick.TrayMenu.Open">
+  <obsolete>
+    Removed 3/2019. The autoclick menu is always onscreen when autoclick is
+    enabled.
+  </obsolete>
   <owner>katie@chromium.org</owner>
   <owner>dtseng@chromium.org</owner>
   <owner>dmazzoni@chromium.org</owner>
@@ -1184,6 +1188,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Accessibility.Autoclick.TrayMenu.Settings">
+  <obsolete>
+    Removed 3/2019. There is no longer a settings button in the autoclick menu.
+  </obsolete>
   <owner>katie@chromium.org</owner>
   <owner>dtseng@chromium.org</owner>
   <owner>dmazzoni@chromium.org</owner>
@@ -1231,6 +1238,16 @@ should be able to be added at any place in this file.
   <description>
     A Chrome OS user with spoken feedback enabled manually toggles ChromeVox
     Next on.
+  </description>
+</action>
+
+<action name="Accessibility.CrosAutoclick.TrayMenu.ChangePosition">
+  <owner>katie@chromium.org</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    A user has tapped the button to change the position of the autoclick bubble
+    menu.
   </description>
 </action>
 
@@ -19300,13 +19317,15 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_AutoClickDisabled">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>katie@chromium.org</owner>
+  <owner>dmazzoni@chromium.org</owner>
+  <description>User disabled autoclick from the SystemTray</description>
 </action>
 
 <action name="StatusArea_AutoClickEnabled">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>katie@chromium.org</owner>
+  <owner>dmazzoni@chromium.org</owner>
+  <description>User enabled autoclick from the SystemTray</description>
 </action>
 
 <action name="StatusArea_Bluetooth_Connect_Known">
