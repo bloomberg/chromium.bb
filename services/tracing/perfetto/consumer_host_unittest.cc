@@ -111,7 +111,7 @@ class ThreadedPerfettoService : public mojom::TracingSession {
                                 size_t num_packets) {
     producer_ = std::make_unique<MockProducer>(
         base::StrCat({mojom::kPerfettoProducerNamePrefix,
-                      base::IntToString(kProducerPid)}),
+                      base::NumberToString(kProducerPid)}),
         data_source_name, perfetto_service_->GetService(),
         std::move(on_datasource_registered), std::move(on_tracing_started),
         num_packets);
@@ -454,7 +454,7 @@ TEST_F(TracingConsumerTest, NotifiesOnTracingEnabledWaitsForFilteredProducer) {
   auto config = GetDefaultTraceConfig(mojom::kTraceEventDataSourceName);
   *config.mutable_data_sources()->front().add_producer_name_filter() =
       base::StrCat({mojom::kPerfettoProducerNamePrefix,
-                    base::IntToString(kProducerPid)});
+                    base::NumberToString(kProducerPid)});
   threaded_perfetto_service()->EnableTracingWithConfig(config);
 
   // Tracing is only marked as enabled once the expected producer has acked that
@@ -479,7 +479,7 @@ TEST_F(TracingConsumerTest,
   auto config = GetDefaultTraceConfig(mojom::kTraceEventDataSourceName);
   *config.mutable_data_sources()->front().add_producer_name_filter() =
       base::StrCat({mojom::kPerfettoProducerNamePrefix,
-                    base::IntToString(kProducerPid + 1)});
+                    base::NumberToString(kProducerPid + 1)});
   threaded_perfetto_service()->EnableTracingWithConfig(config);
 
   // Tracing should already have been enabled even though the host was told
