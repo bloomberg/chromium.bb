@@ -162,7 +162,7 @@ GpuChannel* GpuChannelManager::EstablishChannel(int client_id,
   if (gr_shader_cache_ && cache_shaders_on_disk)
     gr_shader_cache_->CacheClientIdOnDisk(client_id);
 
-  std::unique_ptr<GpuChannel> gpu_channel = std::make_unique<GpuChannel>(
+  std::unique_ptr<GpuChannel> gpu_channel = GpuChannel::Create(
       this, scheduler_, sync_point_manager_, share_group_, task_runner_,
       io_task_runner_, client_id, client_tracing_id, is_gpu_host,
       image_decode_accelerator_worker_);
