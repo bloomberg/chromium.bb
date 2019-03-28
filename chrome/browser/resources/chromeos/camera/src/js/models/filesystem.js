@@ -24,27 +24,6 @@ cca.models.FileSystem = function() {
 };
 
 /**
- * The prefix of image files.
- * @type {string}
- * @const
- */
-cca.models.FileSystem.IMAGE_PREFIX = 'IMG_';
-
-/**
- * The prefix of video files.
- * @type {string}
- * @const
- */
-cca.models.FileSystem.VIDEO_PREFIX = 'VID_';
-
-/**
- * The prefix of thumbnail files.
- * @type {string}
- * @const
- */
-cca.models.FileSystem.THUMBNAIL_PREFIX = 'thumb-';
-
-/**
  * Directory in the internal file system.
  * @type {DirectoryEntry}
  */
@@ -242,27 +221,6 @@ cca.models.FileSystem.migratePictures = function() {
 };
 
 /**
- * Generates a file name for the picture.
- * @param {boolean} isVideo Picture is a video.
- * @param {number} time Timestamp of the picture in millisecond.
- * @return {string} Picture's file name.
- * @private
- */
-cca.models.FileSystem.generatePictureName_ = function(isVideo, time) {
-  const pad = (n) => (n < 10 ? '0' : '') + n;
-
-  // File name base will be formatted as IMG/VID_yyyyMMdd_HHmmss.
-  var prefix = isVideo ? cca.models.FileSystem.VIDEO_PREFIX :
-      cca.models.FileSystem.IMAGE_PREFIX;
-  var date = new Date(time);
-  var result = prefix + date.getFullYear() + pad(date.getMonth() + 1) +
-      pad(date.getDate()) + '_' + pad(date.getHours()) +
-      pad(date.getMinutes()) + pad(date.getSeconds());
-
-  return result + (isVideo ? '.mkv' : '.jpg');
-};
-
-/**
  * Regulates the picture name to the desired format if it's in legacy formats.
  * @param {FileEntry} entry Picture entry whose name to be regulated.
  * @return {string} Name in the desired format.
@@ -280,8 +238,7 @@ cca.models.FileSystem.regulatePictureName = function(entry) {
     // Early pictures are in legacy file name format (crrev.com/c/310064).
     var match = entry.name.match(/(\d+).(?:\d+)/);
     if (match) {
-      return cca.models.FileSystem.generatePictureName_(
-          false, parseInt(match[1], 10));
+      return (new cca.models.Filenamer(parseInt(match[1], 10))).newImageName();
     }
   }
   return entry.name;
@@ -310,15 +267,14 @@ cca.models.FileSystem.saveToFile_ = function(dir, name, blob) {
 
 /**
  * Saves the picture into the external or internal file system.
- * @param {boolean} isVideo Picture is a video.
  * @param {Blob} blob Data of the picture to be saved.
+ * @param {string} filename Filename of the Picture to be saved.
  * @return {!Promise<FileEntry>} Promise for the result.
  */
-cca.models.FileSystem.savePicture = function(isVideo, blob) {
+cca.models.FileSystem.savePicture = function(blob, filename) {
   var dir =
       cca.models.FileSystem.externalDir || cca.models.FileSystem.internalDir;
-  var name = cca.models.FileSystem.generatePictureName_(isVideo, Date.now());
-  return cca.models.FileSystem.saveToFile_(dir, name, blob);
+  return cca.models.FileSystem.saveToFile_(dir, filename, blob);
 };
 
 /**
@@ -391,7 +347,7 @@ cca.models.FileSystem.saveThumbnail = function(isVideo, entry) {
  * @private
  */
 cca.models.FileSystem.hasVideoPrefix = function(entry) {
-  return entry.name.startsWith(cca.models.FileSystem.VIDEO_PREFIX);
+  return entry.name.startsWith(cca.models.Filenamer.VIDEO_PREFIX);
 };
 
 /**
@@ -401,7 +357,7 @@ cca.models.FileSystem.hasVideoPrefix = function(entry) {
  * @private
  */
 cca.models.FileSystem.hasImagePrefix_ = function(entry) {
-  return entry.name.startsWith(cca.models.FileSystem.IMAGE_PREFIX);
+  return entry.name.startsWith(cca.models.Filenamer.IMAGE_PREFIX);
 };
 
 /**
