@@ -16,6 +16,7 @@ namespace ash {
 
 class OverviewItem;
 class OverviewSession;
+class PresentationTimeRecorder;
 
 // The drag controller for an overview window item in overview mode. It updates
 // the position of the corresponding window item using transform while dragging.
@@ -102,6 +103,9 @@ class ASH_EXPORT OverviewWindowDragController {
 
   // Set to true once the bounds of |item_| change.
   bool did_move_ = false;
+
+  // Records the presentation time of window drag operation in overview mode.
+  std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
 
   SplitViewController::SnapPosition snap_position_ = SplitViewController::NONE;
 
