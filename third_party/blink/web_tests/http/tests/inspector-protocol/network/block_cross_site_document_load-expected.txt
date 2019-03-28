@@ -1,6 +1,12 @@
 Tests the blockedCrossSiteDocumentLoad bit available as a part of the loading finished signal.
 Blocking cross-site document at http://devtools.oopif.test:8000/inspector-protocol/network/resources/nosniff.pl: shouldReportCorbBlocking=true.
+Blocking cross-site document at http://devtools.oopif.test:8000/inspector-protocol/network/resources/nosniff.pl fetched via GET: shouldReportCorbBlocking=true.
+Blocking cross-site document at http://devtools.oopif.test:8000/inspector-protocol/network/resources/nosniff.pl fetched via OPTIONS: shouldReportCorbBlocking=false.
+Blocking cross-site document at http://devtools.oopif.test:8000/inspector-protocol/network/resources/nosniff.pl fetched via POST: shouldReportCorbBlocking=false.
 Blocking cross-site document at http://devtools.oopif.test:8000/inspector-protocol/network/resources/simple-iframe.html: shouldReportCorbBlocking=true.
+Blocking cross-site document at http://devtools.oopif.test:8000/inspector-protocol/network/resources/simple-iframe.html fetched via GET: shouldReportCorbBlocking=true.
+Blocking cross-site document at http://devtools.oopif.test:8000/inspector-protocol/network/resources/simple-iframe.html fetched via OPTIONS: shouldReportCorbBlocking=false.
+Blocking cross-site document at http://devtools.oopif.test:8000/inspector-protocol/network/resources/simple-iframe.html fetched via POST: shouldReportCorbBlocking=false.
 Blocking, but not reporting cross-site document at http://devtools.oopif.test:8000/inspector-protocol/network/resources/204.pl: shouldReportCorbBlocking=false.
 Blocking, but not reporting cross-site document at http://devtools.oopif.test:8000/inspector-protocol/network/resources/404.pl: shouldReportCorbBlocking=false.
 Blocking, but not reporting cross-site document at http://devtools.oopif.test:8000/inspector-protocol/network/resources/content-length-0.pl: shouldReportCorbBlocking=false.

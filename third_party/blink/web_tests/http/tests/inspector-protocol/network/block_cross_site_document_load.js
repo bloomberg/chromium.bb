@@ -16,6 +16,16 @@
     testRunner.log(
         `Blocking cross-site document at ${url}: ` +
         `shouldReportCorbBlocking=${response.params.shouldReportCorbBlocking}.`);
+
+    // Only GET method requests should show a warning message.
+    let http_methods = ['GET', 'OPTIONS', 'POST'];
+    for (const method of http_methods) {
+      session.evaluate(`fetch('${url}', {method: '${method}'});`);
+      const response = await dp.Network.onceLoadingFinished();
+      testRunner.log(
+          `Blocking cross-site document at ${url} fetched via ${method}: ` +
+          `shouldReportCorbBlocking=${response.params.shouldReportCorbBlocking}.`);
+    }
   }
 
   let blocked_unreported_urls = [
