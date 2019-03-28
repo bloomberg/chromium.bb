@@ -160,8 +160,6 @@ endif
 weston_ini_config = configuration_data()
 weston_ini_config.set('bindir', dir_bin)
 weston_ini_config.set('libexecdir', dir_libexec)
-weston_ini_config.set('abs_top_srcdir', meson.source_root())
-weston_ini_config.set('abs_top_builddir', meson.build_root())
 configure_file(
 	input: '../weston.ini.in',
 	output: 'weston.ini',
