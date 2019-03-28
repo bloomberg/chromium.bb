@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/media_client.h"
 
+#include <utility>
+
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/location.h"
@@ -24,6 +26,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/media_session.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
@@ -134,17 +137,9 @@ MediaCaptureState GetMediaCaptureStateOfAllWebContents(
 
 }  // namespace
 
-MediaClient::MediaClient() : binding_(this), weak_ptr_factory_(this) {
+MediaClient::MediaClient() {
   MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
-
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(ash::mojom::kServiceName, &media_controller_);
-
-  // Register this object as the client interface implementation.
-  ash::mojom::MediaClientAssociatedPtrInfo ptr_info;
-  binding_.Bind(mojo::MakeRequest(&ptr_info));
-  media_controller_->SetClient(std::move(ptr_info));
+  BrowserList::GetInstance()->AddObserver(this);
 
   DCHECK(!g_media_client_);
   g_media_client_ = this;
@@ -152,7 +147,9 @@ MediaClient::MediaClient() : binding_(this), weak_ptr_factory_(this) {
 
 MediaClient::~MediaClient() {
   g_media_client_ = nullptr;
+
   MediaCaptureDevicesDispatcher::GetInstance()->RemoveObserver(this);
+  BrowserList::GetInstance()->RemoveObserver(this);
 }
 
 // static
@@ -160,56 +157,32 @@ MediaClient* MediaClient::Get() {
   return g_media_client_;
 }
 
+void MediaClient::Init() {
+  DCHECK(!media_controller_.is_bound());
+
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(ash::mojom::kServiceName, &media_controller_);
+  BindAndSetClient();
+}
+
+void MediaClient::InitForTesting(ash::mojom::MediaControllerPtr controller) {
+  DCHECK(!media_controller_.is_bound());
+
+  media_controller_ = std::move(controller);
+  BindAndSetClient();
+}
+
 void MediaClient::HandleMediaNextTrack() {
-  extensions::MediaPlayerAPI::Get(ProfileManager::GetActiveUserProfile())
-      ->media_player_event_router()
-      ->NotifyNextTrack();
+  HandleMediaAction(ui::VKEY_MEDIA_NEXT_TRACK);
 }
 
 void MediaClient::HandleMediaPlayPause() {
-  // If there is a video playing in Picture-in-Picture, toggle
-  // Picture-in-Picture tab's media session play pause.
-  content::WebContents* pip_web_contents =
-      PictureInPictureWindowManager::GetInstance()->GetWebContents();
-  if (pip_web_contents) {
-    ToggleMediaSessionPlayPause(content::MediaSession::Get(pip_web_contents));
-    return;
-  }
-  // If there is an active browser, handle active tab's media session play
-  // pause.
-  Browser* browser = chrome::FindBrowserWithActiveWindow();
-  if (browser) {
-    ToggleMediaSessionPlayPause(content::MediaSession::Get(
-        browser->tab_strip_model()->GetActiveWebContents()));
-    return;
-  }
-  // Dispatch this event.
-  extensions::MediaPlayerAPI::Get(ProfileManager::GetActiveUserProfile())
-      ->media_player_event_router()
-      ->NotifyTogglePlayState();
-}
-
-void MediaClient::ToggleMediaSessionPlayPause(
-    content::MediaSession* media_session) {
-  media_session->GetMediaSessionInfo(base::BindOnce(
-      [](content::MediaSession* media_session,
-         media_session::mojom::MediaSessionInfoPtr session_info) {
-        if (!session_info->is_controllable)
-          return;
-
-        if (session_info->playback_state ==
-            media_session::mojom::MediaPlaybackState::kPlaying)
-          media_session->Suspend(content::MediaSession::SuspendType::kUI);
-        else
-          media_session->Resume(content::MediaSession::SuspendType::kUI);
-      },
-      media_session));
+  HandleMediaAction(ui::VKEY_MEDIA_PLAY_PAUSE);
 }
 
 void MediaClient::HandleMediaPrevTrack() {
-  extensions::MediaPlayerAPI::Get(ProfileManager::GetActiveUserProfile())
-      ->media_player_event_router()
-      ->NotifyPrevTrack();
+  HandleMediaAction(ui::VKEY_MEDIA_PREV_TRACK);
 }
 
 void MediaClient::RequestCaptureState() {
@@ -240,4 +213,99 @@ void MediaClient::OnRequestUpdate(int render_process_id,
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&MediaClient::RequestCaptureState,
                                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void MediaClient::OnBrowserSetLastActive(Browser* browser) {
+  active_context_ = browser ? browser->profile() : nullptr;
+
+  UpdateForceMediaClientKeyHandling();
+}
+
+void MediaClient::EnableCustomMediaKeyHandler(
+    content::BrowserContext* context,
+    ui::MediaKeysListener::Delegate* delegate) {
+  auto it = media_key_delegates_.find(context);
+
+  DCHECK(!base::ContainsKey(media_key_delegates_, context) ||
+         it->second == delegate);
+
+  media_key_delegates_.emplace(context, delegate);
+
+  UpdateForceMediaClientKeyHandling();
+}
+
+void MediaClient::DisableCustomMediaKeyHandler(
+    content::BrowserContext* context,
+    ui::MediaKeysListener::Delegate* delegate) {
+  if (!base::ContainsKey(media_key_delegates_, context))
+    return;
+
+  auto it = media_key_delegates_.find(context);
+  DCHECK_EQ(it->second, delegate);
+
+  media_key_delegates_.erase(it);
+
+  UpdateForceMediaClientKeyHandling();
+}
+
+void MediaClient::FlushForTesting() {
+  media_controller_.FlushForTesting();
+}
+
+void MediaClient::BindAndSetClient() {
+  ash::mojom::MediaClientAssociatedPtrInfo ptr_info;
+  binding_.Bind(mojo::MakeRequest(&ptr_info));
+  media_controller_->SetClient(std::move(ptr_info));
+}
+
+void MediaClient::UpdateForceMediaClientKeyHandling() {
+  bool enabled = GetCurrentMediaKeyDelegate() != nullptr;
+
+  if (enabled == is_forcing_media_client_key_handling_)
+    return;
+
+  is_forcing_media_client_key_handling_ = enabled;
+
+  media_controller_->SetForceMediaClientKeyHandling(enabled);
+}
+
+ui::MediaKeysListener::Delegate* MediaClient::GetCurrentMediaKeyDelegate()
+    const {
+  auto it = media_key_delegates_.find(active_context_);
+  if (it != media_key_delegates_.end())
+    return it->second;
+
+  return nullptr;
+}
+
+void MediaClient::HandleMediaAction(ui::KeyboardCode keycode) {
+  if (ui::MediaKeysListener::Delegate* custom = GetCurrentMediaKeyDelegate()) {
+    custom->OnMediaKeysAccelerator(ui::Accelerator(keycode, ui::EF_NONE));
+    return;
+  }
+
+  // This API is used by Chrome apps so we should use the logged in user here.
+  extensions::MediaPlayerAPI* player_api =
+      extensions::MediaPlayerAPI::Get(ProfileManager::GetActiveUserProfile());
+  if (!player_api)
+    return;
+
+  extensions::MediaPlayerEventRouter* router =
+      player_api->media_player_event_router();
+  if (!router)
+    return;
+
+  switch (keycode) {
+    case ui::VKEY_MEDIA_NEXT_TRACK:
+      router->NotifyNextTrack();
+      break;
+    case ui::VKEY_MEDIA_PREV_TRACK:
+      router->NotifyPrevTrack();
+      break;
+    case ui::VKEY_MEDIA_PLAY_PAUSE:
+      router->NotifyTogglePlayState();
+      break;
+    default:
+      break;
+  }
 }

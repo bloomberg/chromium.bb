@@ -1670,6 +1670,9 @@ struct MediaSessionAcceleratorTestConfig {
 
   // If true then we should expect the action will handle the media keys.
   bool eligible_action = false;
+
+  // If true then we should force forwarding the action to the client.
+  bool force_key_handling = false;
 };
 
 }  // namespace
@@ -1703,6 +1706,8 @@ class MediaSessionAcceleratorTest
     media_controller->SetClient(client_->CreateAssociatedPtrInfo());
     media_controller->SetMediaSessionControllerForTest(
         controller_->CreateMediaControllerPtr());
+    media_controller->SetForceMediaClientKeyHandling(
+        GetParam().force_key_handling);
     media_controller->FlushForTesting();
   }
 
@@ -1734,6 +1739,8 @@ class MediaSessionAcceleratorTest
   bool service_enabled() const { return GetParam().service_enabled; }
 
   bool eligible_action() const { return GetParam().eligible_action; }
+
+  bool force_key_handling() const { return GetParam().force_key_handling; }
 
   void ExpectActionRecorded(ui::MediaHardwareKeyAction action) {
     histogram_tester_.ExpectBucketCount(
@@ -1791,7 +1798,15 @@ INSTANTIATE_TEST_SUITE_P(
                                           MediaSessionAction::kSeekBackward},
         MediaSessionAcceleratorTestConfig{false,
                                           MediaSessionAction::kSeekForward},
-        MediaSessionAcceleratorTestConfig{false, MediaSessionAction::kStop}));
+        MediaSessionAcceleratorTestConfig{false, MediaSessionAction::kStop},
+        MediaSessionAcceleratorTestConfig{true, MediaSessionAction::kPlay,
+                                          false, true},
+        MediaSessionAcceleratorTestConfig{true, MediaSessionAction::kPause,
+                                          false, true},
+        MediaSessionAcceleratorTestConfig{true, MediaSessionAction::kNextTrack,
+                                          false, true},
+        MediaSessionAcceleratorTestConfig{
+            true, MediaSessionAction::kPreviousTrack, false, true}));
 
 TEST_P(MediaSessionAcceleratorTest, MediaPlaybackAcceleratorsBehavior) {
   const ui::KeyboardCode media_keys[] = {ui::VKEY_MEDIA_NEXT_TRACK,
@@ -1838,7 +1853,7 @@ TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_NextTrack) {
   ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE));
   Shell::Get()->media_controller()->FlushForTesting();
 
-  if (service_enabled() && eligible_action()) {
+  if (service_enabled() && eligible_action() && !force_key_handling()) {
     EXPECT_EQ(0, client()->handle_media_next_track_count());
     EXPECT_EQ(1, controller()->next_track_count());
   } else {
@@ -1884,7 +1899,7 @@ TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_Pause) {
   ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE));
   Shell::Get()->media_controller()->FlushForTesting();
 
-  if (service_enabled() && eligible_action()) {
+  if (service_enabled() && eligible_action() && !force_key_handling()) {
     EXPECT_EQ(0, client()->handle_media_play_pause_count());
     EXPECT_EQ(1, controller()->suspend_count());
 
@@ -1910,7 +1925,7 @@ TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_PrevTrack) {
   ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_PREV_TRACK, ui::EF_NONE));
   Shell::Get()->media_controller()->FlushForTesting();
 
-  if (service_enabled() && eligible_action()) {
+  if (service_enabled() && eligible_action() && !force_key_handling()) {
     EXPECT_EQ(0, client()->handle_media_prev_track_count());
     EXPECT_EQ(1, controller()->previous_track_count());
   } else {
@@ -1931,7 +1946,7 @@ TEST_P(MediaSessionAcceleratorTest,
   ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE));
   Shell::Get()->media_controller()->FlushForTesting();
 
-  if (service_enabled() && eligible_action()) {
+  if (service_enabled() && eligible_action() && !force_key_handling()) {
     EXPECT_EQ(0, client()->handle_media_next_track_count());
     EXPECT_EQ(1, controller()->next_track_count());
   } else {
@@ -1944,7 +1959,7 @@ TEST_P(MediaSessionAcceleratorTest,
   ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE));
   Shell::Get()->media_controller()->FlushForTesting();
 
-  if (service_enabled() && eligible_action()) {
+  if (service_enabled() && eligible_action() && !force_key_handling()) {
     EXPECT_EQ(1, client()->handle_media_next_track_count());
     EXPECT_EQ(1, controller()->next_track_count());
   } else {
@@ -1969,10 +1984,56 @@ TEST_P(MediaSessionAcceleratorTest,
   ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE));
   Shell::Get()->media_controller()->FlushForTesting();
 
-  if (service_enabled() && eligible_action()) {
+  if (service_enabled() && eligible_action() && !force_key_handling()) {
     EXPECT_EQ(1, client()->handle_media_next_track_count());
     EXPECT_EQ(1, controller()->next_track_count());
   } else {
+    EXPECT_EQ(2, client()->handle_media_next_track_count());
+    EXPECT_EQ(0, controller()->next_track_count());
+  }
+}
+
+TEST_P(MediaSessionAcceleratorTest,
+       MediaGlobalAccelerators_UpdateForceKeyHandling) {
+  MaybeEnableMediaSession(media_session::mojom::MediaPlaybackState::kPaused);
+
+  EXPECT_EQ(0, client()->handle_media_next_track_count());
+  EXPECT_EQ(0, controller()->next_track_count());
+
+  ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE));
+  Shell::Get()->media_controller()->FlushForTesting();
+
+  if (service_enabled() && eligible_action() && !force_key_handling()) {
+    EXPECT_EQ(0, client()->handle_media_next_track_count());
+    EXPECT_EQ(1, controller()->next_track_count());
+  } else {
+    EXPECT_EQ(1, client()->handle_media_next_track_count());
+    EXPECT_EQ(0, controller()->next_track_count());
+  }
+
+  // Update the force media client key handling setting. It may have been
+  // previously set if |force_key_handling| is true.
+  Shell::Get()->media_controller()->SetForceMediaClientKeyHandling(false);
+
+  ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE));
+  Shell::Get()->media_controller()->FlushForTesting();
+
+  if (service_enabled() && force_key_handling()) {
+    // If we had |force_key_handling| true the first time we pressed the play
+    // pause key then we should see the previous action that was forward to the
+    // client. Since the service is enabled, the second action will be handled
+    // by the controller.
+    EXPECT_EQ(1, client()->handle_media_next_track_count());
+    EXPECT_EQ(1, controller()->next_track_count());
+  } else if (service_enabled() && eligible_action()) {
+    // If we had |force_key_handling| disabled the whole time and the service
+    // enabled then both actions should be handled in the controller.
+    EXPECT_EQ(0, client()->handle_media_next_track_count());
+    EXPECT_EQ(2, controller()->next_track_count());
+  } else {
+    // If we had |force_key_handling| disabled the whole time and the service
+    // disabled then both actions should fallback to the client because there is
+    // nothing in Ash to handle them.
     EXPECT_EQ(2, client()->handle_media_next_track_count());
     EXPECT_EQ(0, controller()->next_track_count());
   }

@@ -51,6 +51,17 @@ void MediaController::RemoveObserver(MediaCaptureObserver* observer) {
 
 void MediaController::SetClient(mojom::MediaClientAssociatedPtrInfo client) {
   client_.Bind(std::move(client));
+
+  // When |client_| is changed or encounters an error we should reset the
+  // |force_media_client_key_handling_| bit.
+  ResetForceMediaClientKeyHandling();
+  client_.set_connection_error_handler(
+      base::BindOnce(&MediaController::ResetForceMediaClientKeyHandling,
+                     base::Unretained(this)));
+}
+
+void MediaController::SetForceMediaClientKeyHandling(bool enabled) {
+  force_media_client_key_handling_ = enabled;
 }
 
 void MediaController::NotifyCaptureState(
@@ -60,6 +71,13 @@ void MediaController::NotifyCaptureState(
 }
 
 void MediaController::HandleMediaPlayPause() {
+  // If the |client_| is force handling the keys then we should forward them.
+  if (client_ && force_media_client_key_handling_) {
+    ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kPlayPause);
+    client_->HandleMediaPlayPause();
+    return;
+  }
+
   // If media session media key handling is enabled. Toggle play pause using the
   // media session service.
   if (ShouldUseMediaSession()) {
@@ -92,6 +110,12 @@ void MediaController::HandleMediaNextTrack() {
   ui::RecordMediaHardwareKeyAction(
       ui::MediaHardwareKeyAction::kNextTrack);
 
+  // If the |client_| is force handling the keys then we should forward them.
+  if (client_ && force_media_client_key_handling_) {
+    client_->HandleMediaNextTrack();
+    return;
+  }
+
   // If media session media key handling is enabled. Fire next track using the
   // media session service.
   if (ShouldUseMediaSession()) {
@@ -106,6 +130,12 @@ void MediaController::HandleMediaNextTrack() {
 void MediaController::HandleMediaPrevTrack() {
   ui::RecordMediaHardwareKeyAction(
       ui::MediaHardwareKeyAction::kPreviousTrack);
+
+  // If the |client_| is force handling the keys then we should forward them.
+  if (client_ && force_media_client_key_handling_) {
+    client_->HandleMediaPrevTrack();
+    return;
+  }
 
   // If media session media key handling is enabled. Fire previous track using
   // the media session service.
@@ -194,6 +224,10 @@ bool MediaController::ShouldUseMediaSession() {
   return base::FeatureList::IsEnabled(media::kHardwareMediaKeyHandling) &&
          GetMediaSessionController() && supported_media_session_action_ &&
          !media_session_info_.is_null();
+}
+
+void MediaController::ResetForceMediaClientKeyHandling() {
+  force_media_client_key_handling_ = false;
 }
 
 }  // namespace ash
