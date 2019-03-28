@@ -817,6 +817,33 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECTED_SUBLABEL" desc="The sub label text used when network is not connected.">
         No networks
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_ONE_X" desc="The sub label text used when a cellular connection is using the 1xRTT connectivity type.">
+        1X
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_GSM" desc="The sub label text used when a cellular connection is using the GSM connectivity type.">
+        GSM
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_GPRS" desc="The sub label text used when a cellular connection is using the GPRS connectivity type.">
+        GPRS
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_EDGE" desc="The sub label text used when a cellular connection is using the EDGE connectivity type.">
+        EDGE
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_THREE_G" desc="The sub label text used when a cellular connection is using the 3G connectivity type.">
+        3G
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_HSPA" desc="The sub label text used when a cellular connection is using the HSPA connectivity type.">
+        HSPA
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_HSPA_PLUS" desc="The sub label text used when a cellular connection is using the HSPA+ connectivity type.">
+        H+
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_LTE" desc="The sub label text used when a cellular connection is using the LTE connectivity type.">
+        LTE
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_LTE_PLUS" desc="The sub label text used when a cellular connection is using the LTE Advanced connectivity type.">
+        LTE+
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_WEAK_SUBLABEL" desc="The sub label text used when WiFi signal strength is weak (among weak, medium, and strong.)">
         Weak
       </message>
