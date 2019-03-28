@@ -178,7 +178,7 @@ void CocoaScrollBarThumb::OnMouseExited(const ui::MouseEvent& event) {
 // CocoaScrollBar class
 
 CocoaScrollBar::CocoaScrollBar(bool horizontal)
-    : BaseScrollBar(horizontal),
+    : ScrollBar(horizontal),
       hide_scrollbar_timer_(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kScrollbarHideTimeoutMs),
@@ -204,7 +204,7 @@ CocoaScrollBar::~CocoaScrollBar() {
 }
 
 //////////////////////////////////////////////////////////////////
-// CocoaScrollBar, BaseScrollBar:
+// CocoaScrollBar, ScrollBar:
 
 gfx::Rect CocoaScrollBar::GetTrackBounds() const {
   return GetLocalBounds();
@@ -226,7 +226,7 @@ bool CocoaScrollBar::OverlapsContent() const {
 
 void CocoaScrollBar::Layout() {
   // Set the thickness of the thumb according to the track bounds.
-  // The length of the thumb is set by BaseScrollBar::Update().
+  // The length of the thumb is set by ScrollBar::Update().
   gfx::Rect thumb_bounds(GetThumb()->bounds());
   gfx::Rect track_bounds(GetTrackBounds());
   if (IsHorizontal()) {
@@ -292,12 +292,12 @@ bool CocoaScrollBar::OnMousePressed(const ui::MouseEvent& event) {
   if (IsScrollbarFullyHidden())
     return false;
 
-  return BaseScrollBar::OnMousePressed(event);
+  return ScrollBar::OnMousePressed(event);
 }
 
 void CocoaScrollBar::OnMouseReleased(const ui::MouseEvent& event) {
   ResetOverlayScrollbar();
-  BaseScrollBar::OnMouseReleased(event);
+  ScrollBar::OnMouseReleased(event);
 }
 
 void CocoaScrollBar::OnMouseEntered(const ui::MouseEvent& event) {
@@ -339,7 +339,7 @@ void CocoaScrollBar::Update(int viewport_size,
                             int contents_scroll_offset) {
   // TODO(tapted): Pass in overscroll amounts from the Layer and "Squish" the
   // scroller thumb accordingly.
-  BaseScrollBar::Update(viewport_size, content_size, contents_scroll_offset);
+  ScrollBar::Update(viewport_size, content_size, contents_scroll_offset);
 
   // Only reveal the scroller when |contents_scroll_offset| changes. Note this
   // is different to GetPosition() which can change due to layout. A layout
@@ -546,8 +546,8 @@ CocoaScrollBarThumb* CocoaScrollBar::GetCocoaScrollBarThumb() const {
 }
 
 // static
-base::RetainingOneShotTimer* BaseScrollBar::GetHideTimerForTest(
-    BaseScrollBar* scroll_bar) {
+base::RetainingOneShotTimer* ScrollBar::GetHideTimerForTesting(
+    ScrollBar* scroll_bar) {
   return &static_cast<CocoaScrollBar*>(scroll_bar)->hide_scrollbar_timer_;
 }
 

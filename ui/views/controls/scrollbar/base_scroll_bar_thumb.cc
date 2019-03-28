@@ -6,7 +6,7 @@
 
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/views/controls/scrollbar/base_scroll_bar.h"
+#include "ui/views/controls/scrollbar/scroll_bar.h"
 
 namespace {
 // The distance the mouse can be dragged outside the bounds of the thumb during
@@ -16,7 +16,7 @@ static constexpr int kScrollThumbDragOutSnap = 100;
 
 namespace views {
 
-BaseScrollBarThumb::BaseScrollBarThumb(BaseScrollBar* scroll_bar)
+BaseScrollBarThumb::BaseScrollBarThumb(ScrollBar* scroll_bar)
     : scroll_bar_(scroll_bar),
       drag_start_position_(-1),
       mouse_offset_(-1),

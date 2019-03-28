@@ -47,7 +47,7 @@ class ScrollBarButton : public BaseScrollBarButton {
 // Wrapper for the scroll thumb
 class ScrollBarThumb : public BaseScrollBarThumb {
  public:
-  explicit ScrollBarThumb(BaseScrollBar* scroll_bar);
+  explicit ScrollBarThumb(ScrollBar* scroll_bar);
   ~ScrollBarThumb() override;
 
   gfx::Size CalculatePreferredSize() const override;
@@ -138,7 +138,7 @@ ui::NativeTheme::State ScrollBarButton::GetNativeThemeState() const {
 /////////////////////////////////////////////////////////////////////////////
 // ScrollBarThumb
 
-ScrollBarThumb::ScrollBarThumb(BaseScrollBar* scroll_bar)
+ScrollBarThumb::ScrollBarThumb(ScrollBar* scroll_bar)
     : BaseScrollBarThumb(scroll_bar), scroll_bar_(scroll_bar) {}
 
 ScrollBarThumb::~ScrollBarThumb() = default;
@@ -199,8 +199,7 @@ ui::NativeTheme::State ScrollBarThumb::GetNativeThemeState() const {
 
 const char ScrollBarViews::kViewClassName[] = "ScrollBarViews";
 
-ScrollBarViews::ScrollBarViews(bool horizontal)
-    : BaseScrollBar(horizontal) {
+ScrollBarViews::ScrollBarViews(bool horizontal) : ScrollBar(horizontal) {
   SetThumb(new ScrollBarThumb(this));
   if (horizontal) {
     prev_button_ = new ScrollBarButton(this, ScrollBarButton::LEFT);
@@ -295,9 +294,9 @@ int ScrollBarViews::GetThickness() const {
 
 void ScrollBarViews::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == prev_button_) {
-    ScrollByAmount(SCROLL_PREV_LINE);
+    ScrollByAmount(ScrollBar::ScrollAmount::kPrevLine);
   } else if (sender == next_button_) {
-    ScrollByAmount(SCROLL_NEXT_LINE);
+    ScrollByAmount(ScrollBar::ScrollAmount::kNextLine);
   }
 }
 
