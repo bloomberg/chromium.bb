@@ -840,8 +840,6 @@ def GeneralTemplates(site_config):
 
   site_config.AddTemplate(
       'moblab_vm_tests',
-      # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
-      disk_layout='16gb-rootfs',
       moblab_vm_tests=[
           config_lib.MoblabVMTestConfig(constants.MOBLAB_VM_SMOKE_TEST_TYPE)],
   )
