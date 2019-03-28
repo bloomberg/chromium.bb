@@ -12,8 +12,11 @@ import org.chromium.chrome.browser.customtabs.CustomTabBottomBarDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
 import org.chromium.chrome.browser.customtabs.CustomTabTopBarDelegate;
 import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityInitialPageLoader;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleCoordinator;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleToolbarController;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
@@ -41,6 +44,9 @@ public interface CustomTabActivityComponent extends ChromeActivityComponent {
     CustomTabActivityTabController resolveTabController();
     CustomTabActivityTabFactory resolveTabFactory();
     CustomTabActivityLifecycleUmaTracker resolveUmaTracker();
+    CustomTabActivityInitialPageLoader resolveInitialPageLoader();
+    CustomTabActivityNavigationController resolveNavigationController();
+    CustomTabActivityTabProvider resolveTabProvider();
 
     CustomTabTabPersistencePolicy resolveTabPersistencePolicy(); // For testing
 }

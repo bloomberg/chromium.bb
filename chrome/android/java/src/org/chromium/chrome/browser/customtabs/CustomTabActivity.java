@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.provider.Browser;
 import android.support.annotation.IntDef;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsSessionToken;
@@ -56,8 +57,11 @@ import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
+import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleCoordinator;
@@ -127,7 +131,9 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     private CustomTabBottomBarDelegate mBottomBarDelegate;
     private CustomTabTopBarDelegate mTopBarDelegate;
     private CustomTabActivityTabController mTabController;
+    private CustomTabActivityTabProvider mTabProvider;
     private CustomTabActivityTabFactory mTabFactory;
+    private CustomTabActivityNavigationController mNavigationController;
 
     // This is to give the right package name while using the client's resources during an
     // overridePendingTransition call.
@@ -161,9 +167,21 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         return (getIntent().getFlags() & separateTaskFlags) != 0;
     }
 
-    private CustomTabActivityTabController.Observer mTabChangeObserver = () -> {
-        resetPostMessageHandlersForCurrentSession();
-        if (mTabController.getTab() == null) {
+    private CustomTabActivityTabProvider.Observer mTabChangeObserver =
+            new CustomTabActivityTabProvider.Observer() {
+        @Override
+        public void onInitialTabCreated(@NonNull Tab tab, int mode) {
+            resetPostMessageHandlersForCurrentSession();
+        }
+
+        @Override
+        public void onTabSwapped(@NonNull Tab tab) {
+            resetPostMessageHandlersForCurrentSession();
+        }
+
+        @Override
+        public void onAllTabsClosed() {
+            resetPostMessageHandlersForCurrentSession();
             finishAndClose(false);
         }
     };
@@ -216,8 +234,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         mIntentDataProvider = new CustomTabIntentDataProvider(getIntent(), this);
 
         super.preInflationStartup();
-        mTabController.addObserver(mTabChangeObserver);
-        // We might have missed an onTabChanged event.
+        mTabProvider.addObserver(mTabChangeObserver);
+        // We might have missed an onInitialTabCreated event.
         resetPostMessageHandlersForCurrentSession();
 
         mSession = mIntentDataProvider.getSession();
@@ -274,9 +292,9 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
         // Properly attach tab's infobar to the view hierarchy, as the main tab might have been
         // initialized prior to inflation.
-        if (mTabController.getTab() != null) {
+        if (mTabProvider.getTab() != null) {
             ViewGroup bottomContainer = (ViewGroup) findViewById(R.id.bottom_container);
-            InfoBarContainer.get(mTabController.getTab()).setParentView(bottomContainer);
+            InfoBarContainer.get(mTabProvider.getTab()).setParentView(bottomContainer);
         }
 
         // Setting task title and icon to be null will preserve the client app's title and icon.
@@ -349,7 +367,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                     params.setUrl(DataReductionProxySettings.getInstance()
                             .maybeRewriteWebliteUrl(params.getUrl()));
                 }
-                mTabController.loadUrlInTab(params, timestamp);
+                mNavigationController.navigate(params, timestamp);
             }
 
             @Override
@@ -454,7 +472,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     private void resetPostMessageHandlersForCurrentSession() {
-        Tab tab = mTabController.getTab();
+        Tab tab = mTabProvider.getTab();
         WebContents webContents = tab == null ? null : tab.getWebContents();
         mConnection.resetPostMessageHandlerForSession(
                 mIntentDataProvider.getSession(), webContents);
@@ -538,7 +556,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     public void onStartWithNative() {
         super.onStartWithNative();
         BrowserSessionContentUtils.setActiveContentHandler(mBrowserSessionContentHandler);
-        if (mTabController.earlyCreatedTabIsReady()) postDeferredStartupIfNeeded();
+        @TabCreationMode int mode = mTabProvider.getInitialTabCreationMode();
+        boolean earlyCreatedTabIsReady =
+                (mode == TabCreationMode.HIDDEN || mode == TabCreationMode.EARLY)
+                && !mTabProvider.getTab().isLoading();
+        if (earlyCreatedTabIsReady) postDeferredStartupIfNeeded();
     }
 
     @Override
@@ -577,7 +599,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @Override
     @Nullable
     public Tab getActivityTab() {
-        return mTabController.getTab();
+        return mTabProvider.getTab();
     }
 
     @Override
@@ -969,7 +991,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             return false;
         }
 
-        Tab tab = mTabController.getTab();
+        Tab tab = mTabProvider.getTab();
         if (tab != null && tab.isPreview()) {
             return false;
         }
@@ -1007,8 +1029,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
         mTabObserverRegistrar = component.resolveTabObserverRegistrar();
         mTabController = component.resolveTabController();
+        mTabProvider = component.resolveTabProvider();
         mTabFactory = component.resolveTabFactory();
         component.resolveUmaTracker();
+        mNavigationController = component.resolveNavigationController();
+        component.resolveInitialPageLoader();
 
         if (mIntentDataProvider.isTrustedWebActivity()) {
             component.resolveTrustedWebActivityCoordinator();

@@ -5,11 +5,11 @@
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
 import android.support.annotation.IntDef;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsService;
 
 import org.chromium.base.ObserverList;
-import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
@@ -17,7 +17,7 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedW
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
-import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
@@ -49,7 +49,7 @@ public class TrustedWebActivityVerifier implements NativeInitObserver, Destroyab
     private final Lazy<ClientAppDataRecorder> mClientAppDataRecorder;
     private final CustomTabsConnection mCustomTabsConnection;
     private final CustomTabIntentDataProvider mIntentDataProvider;
-    private final ActivityTabProvider mActivityTabProvider;
+    private final CustomTabActivityTabProvider mTabProvider;
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final String mClientPackageName;
     private final OriginVerifier mOriginVerifier;
@@ -94,20 +94,14 @@ public class TrustedWebActivityVerifier implements NativeInitObserver, Destroyab
         }
     };
 
-    private final CustomTabActivityTabController.Observer mVerifyOnTabSwitchObserver =
-            new CustomTabActivityTabController.Observer() {
+    private final CustomTabActivityTabProvider.Observer mVerifyOnTabSwitchObserver =
+            new CustomTabActivityTabProvider.Observer() {
                 @Override
-                public void onTabChanged() {
-                    // During startup, onTabChanged is called before the ActivityTabProvider has
-                    // updated to have a Tab. Subsequent calls to onTabChanged occur after the
-                    // corresponding ActivityTabProvider update. Initial startup is covered by the
-                    // verify on page load observer, so it's fine to no-op here.
-                    if (mActivityTabProvider.getActivityTab() == null) return;
-
+                public void onTabSwapped(@NonNull Tab tab) {
                     // When a link with target="_blank" is followed and the user navigates back, we
                     // don't get the onDidFinishNavigation event (because the original page wasn't
                     // navigated away from, it was only ever hidden). https://crbug.com/942088
-                    verify(new Origin(mActivityTabProvider.getActivityTab().getUrl()));
+                    verify(new Origin(tab.getUrl()));
                 }
             };
 
@@ -117,13 +111,12 @@ public class TrustedWebActivityVerifier implements NativeInitObserver, Destroyab
             CustomTabsConnection customTabsConnection,
             ActivityLifecycleDispatcher lifecycleDispatcher,
             TabObserverRegistrar tabObserverRegistrar,
-            ActivityTabProvider activityTabProvider,
             OriginVerifier.Factory originVerifierFactory,
-            CustomTabActivityTabController activityTabController) {
+            CustomTabActivityTabProvider tabProvider) {
         mClientAppDataRecorder = clientAppDataRecorder;
         mCustomTabsConnection = customTabsConnection;
         mIntentDataProvider = intentDataProvider;
-        mActivityTabProvider = activityTabProvider;
+        mTabProvider = tabProvider;
         mTabObserverRegistrar =  tabObserverRegistrar;
         mClientPackageName = customTabsConnection.getClientPackageNameForSession(
                 intentDataProvider.getSession());
@@ -132,7 +125,7 @@ public class TrustedWebActivityVerifier implements NativeInitObserver, Destroyab
         mOriginVerifier = originVerifierFactory.create(mClientPackageName, RELATIONSHIP);
 
         tabObserverRegistrar.registerTabObserver(mVerifyOnPageLoadObserver);
-        activityTabController.addObserver(mVerifyOnTabSwitchObserver);
+        tabProvider.addObserver(mVerifyOnTabSwitchObserver);
         lifecycleDispatcher.register(this);
     }
 
@@ -215,8 +208,8 @@ public class TrustedWebActivityVerifier implements NativeInitObserver, Destroyab
     private void onVerificationResult(Origin origin, boolean verified) {
         mOriginsToVerify.remove(origin);
         if (verified) registerClientAppData(origin);
-        boolean stillOnSameOrigin =
-                origin.equals(new Origin(mActivityTabProvider.getActivityTab().getUrl()));
+        Tab tab = mTabProvider.getTab();
+        boolean stillOnSameOrigin = tab != null && origin.equals(new Origin(tab.getUrl()));
         if (stillOnSameOrigin) {
             updateState(origin, verified ? VerificationStatus.SUCCESS : VerificationStatus.FAILURE);
         }
