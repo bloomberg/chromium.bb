@@ -105,7 +105,7 @@ class TestShellObserver : public ShellObserver {
   ~TestShellObserver() override { Shell::Get()->RemoveShellObserver(this); }
 
   void OnFullscreenStateChanged(bool is_fullscreen,
-                                aura::Window* root_window) override {
+                                aura::Window* container) override {
     call_count_++;
     is_fullscreen_ = is_fullscreen;
   }

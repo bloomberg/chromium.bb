@@ -56,9 +56,9 @@ void VideoDetector::OnWindowInitialized(aura::Window* window) {
 }
 
 void VideoDetector::OnWindowDestroying(aura::Window* window) {
-  if (fullscreen_root_windows_.count(window)) {
+  if (fullscreen_desks_containers_.count(window)) {
     window_observer_manager_.Remove(window);
-    fullscreen_root_windows_.erase(window);
+    fullscreen_desks_containers_.erase(window);
     UpdateState();
   }
 }
@@ -74,15 +74,17 @@ void VideoDetector::OnChromeTerminating() {
 }
 
 void VideoDetector::OnFullscreenStateChanged(bool is_fullscreen,
-                                             aura::Window* root_window) {
-  if (is_fullscreen && !fullscreen_root_windows_.count(root_window)) {
-    fullscreen_root_windows_.insert(root_window);
-    if (!window_observer_manager_.IsObserving(root_window))
-      window_observer_manager_.Add(root_window);
+                                             aura::Window* container) {
+  const bool has_fullscreen_in_container =
+      fullscreen_desks_containers_.count(container);
+  if (is_fullscreen && !has_fullscreen_in_container) {
+    fullscreen_desks_containers_.insert(container);
+    if (!window_observer_manager_.IsObserving(container))
+      window_observer_manager_.Add(container);
     UpdateState();
-  } else if (!is_fullscreen && fullscreen_root_windows_.count(root_window)) {
-    fullscreen_root_windows_.erase(root_window);
-    window_observer_manager_.Remove(root_window);
+  } else if (!is_fullscreen && has_fullscreen_in_container) {
+    fullscreen_desks_containers_.erase(container);
+    window_observer_manager_.Remove(container);
     UpdateState();
   }
 }
@@ -90,8 +92,9 @@ void VideoDetector::OnFullscreenStateChanged(bool is_fullscreen,
 void VideoDetector::UpdateState() {
   State new_state = State::NOT_PLAYING;
   if (video_is_playing_) {
-    new_state = fullscreen_root_windows_.empty() ? State::PLAYING_WINDOWED
-                                                 : State::PLAYING_FULLSCREEN;
+    new_state = fullscreen_desks_containers_.empty()
+                    ? State::PLAYING_WINDOWED
+                    : State::PLAYING_FULLSCREEN;
   }
 
   if (state_ != new_state) {

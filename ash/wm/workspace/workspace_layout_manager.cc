@@ -398,13 +398,23 @@ void WorkspaceLayoutManager::OnDisplayMetricsChanged(
 //////////////////////////////////////////////////////////////////////////////
 // WorkspaceLayoutManager, ShellObserver implementation:
 
-void WorkspaceLayoutManager::OnFullscreenStateChanged(
-    bool is_fullscreen,
-    aura::Window* root_window) {
-  if (root_window != root_window_ || is_fullscreen_ == is_fullscreen)
+void WorkspaceLayoutManager::OnFullscreenStateChanged(bool is_fullscreen,
+                                                      aura::Window* container) {
+  // Note that only the active desk's container broadcasts this event, but all
+  // containers' workspaces (active desk's and inactive desks' as well the
+  // always-on-top container) receive it.
+  // TODO(afakhry): dcheck that |container| is always the active desk container.
+
+  // If |container| is the one associated with this workspace, then fullscreen
+  // state must match.
+  DCHECK(window_ != container || is_fullscreen == is_fullscreen_);
+
+  // This notification may come from active desk containers on other displays.
+  // No need to update the always-on-top states if the fullscreen state change
+  // happened on a different root window.
+  if (container->GetRootWindow() != root_window_)
     return;
 
-  is_fullscreen_ = is_fullscreen;
   if (Shell::Get()->screen_pinning_controller()->IsPinned()) {
     // If this is in pinned mode, then this event does not trigger the
     // always-on-top state change, because it is kept disabled regardless of
@@ -412,8 +422,14 @@ void WorkspaceLayoutManager::OnFullscreenStateChanged(
     return;
   }
 
-  UpdateAlwaysOnTop(is_fullscreen_ ? wm::GetWindowForFullscreenMode(window_)
-                                   : nullptr);
+  // We need to update the always-on-top states even for inactive desks
+  // containers, because inactive desks may have a previously demoted
+  // always-on-top windows that we need to promote back to the always-on-top
+  // container if there no longer fullscreen windows on this root window.
+
+  // TODO(afakhry): Use a function that gets the fullscreen window in the entire
+  // root window instead of GetWindowForFullscreenMode() below.
+  UpdateAlwaysOnTop(wm::GetWindowForFullscreenMode(window_));
 }
 
 void WorkspaceLayoutManager::OnPinnedStateChanged(aura::Window* pinned_window) {
@@ -467,21 +483,25 @@ void WorkspaceLayoutManager::UpdateShelfVisibility() {
 }
 
 void WorkspaceLayoutManager::UpdateFullscreenState() {
-  // TODO(flackr): The fullscreen state is currently tracked per workspace
-  // but the shell notification implies a per root window state. Currently
-  // only windows in the default workspace container will go fullscreen but
-  // this should really be tracked by the RootWindowController since
-  // technically any container could get a fullscreen window.
+  // Note that we don't allow always-on-top or PiP containers to have fullscreen
+  // windows, and we only update the fullscreen state for the active desk
+  // container.
+  // TODO(afakhry): Change this to check if this is the active desk container.
   if (window_->id() != kShellWindowId_DefaultContainer)
     return;
-  bool is_fullscreen = wm::GetWindowForFullscreenMode(window_) != nullptr;
-  if (is_fullscreen != is_fullscreen_) {
-    Shell::Get()->NotifyFullscreenStateChanged(is_fullscreen, root_window_);
-    is_fullscreen_ = is_fullscreen;
-  }
+
+  // TODO(afakhry): Use a function that gets the fullscreen window in |window_|
+  // only instead of GetWindowForFullscreenMode() below.
+  const bool is_fullscreen = wm::GetWindowForFullscreenMode(window_) != nullptr;
+  if (is_fullscreen == is_fullscreen_)
+    return;
+
+  is_fullscreen_ = is_fullscreen;
+  Shell::Get()->NotifyFullscreenStateChanged(is_fullscreen, window_);
 }
 
-void WorkspaceLayoutManager::UpdateAlwaysOnTop(aura::Window* window_on_top) {
+void WorkspaceLayoutManager::UpdateAlwaysOnTop(
+    aura::Window* active_desk_fullscreen_window) {
   // Changing always on top state may change window's parent. Iterate on a copy
   // of |windows_| to avoid invalidating an iterator. Since both workspace and
   // always_on_top containers' layouts are managed by this class all the
@@ -489,8 +509,8 @@ void WorkspaceLayoutManager::UpdateAlwaysOnTop(aura::Window* window_on_top) {
   WindowSet windows(windows_);
   for (aura::Window* window : windows) {
     wm::WindowState* window_state = wm::GetWindowState(window);
-    if (window_on_top)
-      window_state->DisableAlwaysOnTop(window_on_top);
+    if (active_desk_fullscreen_window)
+      window_state->DisableAlwaysOnTop(active_desk_fullscreen_window);
     else
       window_state->RestoreAlwaysOnTop();
   }
