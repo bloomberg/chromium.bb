@@ -76,6 +76,47 @@ bool DoesParentAllowLazyLoadingChildren(Document& document) {
   return containing_frame_owner->ShouldLazyLoadChildren();
 }
 
+bool IsFrameLazyLoadable(Document& document,
+                         const KURL& url,
+                         bool is_load_attr_lazy,
+                         bool should_lazy_load_children) {
+  if (!RuntimeEnabledFeatures::LazyFrameLoadingEnabled() &&
+      !RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled()) {
+    return false;
+  }
+
+  // Only http:// or https:// URLs are eligible for lazy loading, excluding
+  // URLs like invalid or empty URLs, "about:blank", local file URLs, etc.
+  // that it doesn't make sense to lazily load.
+  if (!url.ProtocolIsInHTTPFamily())
+    return false;
+
+  if (is_load_attr_lazy)
+    return true;
+
+  if (!should_lazy_load_children ||
+      // Disallow lazy loading by default if javascript in the embedding
+      // document would be able to access the contents of the frame, since in
+      // those cases deferring the frame could break the page. Note that this
+      // check does not take any possible redirects of |url| into account.
+      document.GetSecurityOrigin()->CanAccess(
+          SecurityOrigin::Create(url).get())) {
+    return false;
+  }
+
+  // If lazy loading is restricted to only Data Saver users, then avoid
+  // lazy loading unless Data Saver is enabled, taking the Data Saver
+  // holdback into consideration.
+  if (RuntimeEnabledFeatures::RestrictLazyFrameLoadingToDataSaverEnabled() &&
+      ((document.GetSettings() &&
+        document.GetSettings()->GetDataSaverHoldbackWebApi()) ||
+       !GetNetworkStateNotifier().SaveDataEnabled())) {
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 SubframeLoadingDisabler::SubtreeRootSet&
@@ -409,29 +450,11 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   if (IsPlugin())
     request.SetSkipServiceWorker(true);
 
-  if ((RuntimeEnabledFeatures::LazyFrameLoadingEnabled() ||
-       RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled()) &&
-      !lazy_load_frame_observer_ &&
-      // Only http:// or https:// URLs are eligible for lazy loading, excluding
-      // URLs like invalid or empty URLs, "about:blank", local file URLs, etc.
-      // that it doesn't make sense to lazily load.
-      url.ProtocolIsInHTTPFamily() &&
-      (EqualIgnoringASCIICase(FastGetAttribute(html_names::kLoadAttr),
-                              "lazy") ||
-       (should_lazy_load_children_ &&
-        // Disallow lazy loading by default if javascript in the embedding
-        // document would be able to access the contents of the frame, since in
-        // those cases deferring the frame could break the page. Note that this
-        // check does not take any possible redirects of |url| into account.
-        !GetDocument().GetSecurityOrigin()->CanAccess(
-            SecurityOrigin::Create(url).get()))) &&
-      // If lazy loading is restricted to only Data Saver users, then avoid
-      // lazy loading unless Data Saver is enabled, taking the Data Saver
-      // holdback into consideration.
-      (!RuntimeEnabledFeatures::RestrictLazyFrameLoadingToDataSaverEnabled() ||
-       (!(GetDocument().GetSettings() &&
-          GetDocument().GetSettings()->GetDataSaverHoldbackWebApi()) &&
-        GetNetworkStateNotifier().SaveDataEnabled()))) {
+  if (!lazy_load_frame_observer_ &&
+      IsFrameLazyLoadable(GetDocument(), url,
+                          EqualIgnoringASCIICase(
+                              FastGetAttribute(html_names::kLoadAttr), "lazy"),
+                          should_lazy_load_children_)) {
     // By default, avoid deferring subresources inside a lazily loaded frame.
     // This will make it possible for subresources in hidden frames to load that
     // will never be visible, as well as make it so that deferred frames that

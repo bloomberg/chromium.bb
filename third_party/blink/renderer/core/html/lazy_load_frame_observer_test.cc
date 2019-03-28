@@ -1231,6 +1231,7 @@ TEST_F(LazyLoadFramesTest, LazyLoadWhenDataSaverEnabledHoldbackAndRestricted) {
 
   GetNetworkStateNotifier().SetSaveDataEnabled(true);
   WebView().GetPage()->GetSettings().SetDataSaverHoldbackWebApi(true);
+  TestCrossOriginFrameIsLazilyLoaded("load='lazy'");
   TestCrossOriginFrameIsImmediatelyLoaded("");
 }
 
@@ -1251,7 +1252,10 @@ TEST_F(LazyLoadFramesTest, LazyLoadWhenDataSaverDisabledAndRestrictedAttrOn) {
 
   GetNetworkStateNotifier().SetSaveDataEnabled(false);
   WebView().GetPage()->GetSettings().SetDataSaverHoldbackWebApi(false);
-  TestCrossOriginFrameIsImmediatelyLoaded("load='lazy'");
+
+  // Even when restricted to data saver, the attribute should be respected.
+  TestCrossOriginFrameIsLazilyLoaded("load='lazy'");
+  TestCrossOriginFrameIsImmediatelyLoaded("");
 }
 
 }  // namespace

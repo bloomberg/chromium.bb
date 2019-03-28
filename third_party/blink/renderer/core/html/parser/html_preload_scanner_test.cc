@@ -1228,4 +1228,19 @@ TEST_F(HTMLPreloadScannerTest, LazyImageLoadDisabledForSmallImages) {
     Test(test_case);
 }
 
+TEST_F(HTMLPreloadScannerTest, LazyImageLoadAttributePassed) {
+  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
+  LazyImageLoadTestCase test_cases[] = {
+      {"<img src='foo.jpg' load='auto'>", false},
+      {"<img src='foo.jpg' load='lazy'>", false},
+      {"<img src='foo.jpg' load='eager'>", true},
+      // load=lazy should override other conditions.
+      {"<img src='foo.jpg' style='height: 1px;' load='lazy'>", false},
+      {"<img src='foo.jpg' style='height: 1px; width: 1px' load='lazy'>",
+       false},
+  };
+  for (const auto& test_case : test_cases)
+    Test(test_case);
+}
+
 }  // namespace blink
