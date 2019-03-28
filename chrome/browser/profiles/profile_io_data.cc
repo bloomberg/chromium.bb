@@ -436,6 +436,10 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   allowed_domains_for_apps_.Init(prefs::kAllowedDomainsForApps, pref_service);
   allowed_domains_for_apps_.MoveToThread(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+  signed_exchange_enabled_.Init(prefs::kSignedHTTPExchangeEnabled,
+                                pref_service);
+  signed_exchange_enabled_.MoveToThread(
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
@@ -1170,6 +1174,7 @@ void ProfileIOData::ShutdownOnUIThread(
   safe_browsing_whitelist_domains_.Destroy();
   network_prediction_options_.Destroy();
   incognito_availibility_pref_.Destroy();
+  signed_exchange_enabled_.Destroy();
 #if BUILDFLAG(ENABLE_PLUGINS)
   always_open_pdf_externally_.Destroy();
 #endif

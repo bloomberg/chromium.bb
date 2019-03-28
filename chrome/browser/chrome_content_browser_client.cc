@@ -1129,6 +1129,7 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kSitePerProcess, false);
   registry->RegisterDictionaryPref(
       prefs::kDevToolsBackgroundServicesExpirationDict);
+  registry->RegisterBooleanPref(prefs::kSignedHTTPExchangeEnabled, true);
 #if !defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kAutoplayAllowed, false);
   registry->RegisterListPref(prefs::kAutoplayWhitelist);
@@ -2376,6 +2377,17 @@ bool ChromeContentBrowserClient::AllowSharedWorker(
       render_process_id, render_frame_id, worker_url, name, constructor_origin,
       !allow);
   return allow;
+}
+
+bool ChromeContentBrowserClient::AllowSignedExchange(
+    content::ResourceContext* resource_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Null-check safe_browsing_service_ as in unit tests |resource_context| is a
+  // MockResourceContext and the cast doesn't work.
+  if (!safe_browsing_service_)
+    return false;
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+  return io_data->signed_exchange_enabled()->GetValue();
 }
 
 bool ChromeContentBrowserClient::AllowGetCookie(

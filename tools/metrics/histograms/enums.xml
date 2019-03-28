@@ -16413,6 +16413,7 @@ Called by update_net_error_codes.py.-->
   <int value="539" label="DevicePowerPeakShiftBatteryThreshold"/>
   <int value="540" label="DevicePowerPeakShiftDayConfig"/>
   <int value="541" label="DeviceBootOnAcEnabled"/>
+  <int value="542" label="SignedHTTPExchangeEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

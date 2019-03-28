@@ -14,6 +14,8 @@
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/browser/web_package/signed_exchange_request_handler.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "net/http/http_util.h"
@@ -34,7 +36,10 @@ void ReportErrorAndTraceEvent(
     devtools_proxy->ReportError(error_message, std::move(error_field));
 }
 
-bool IsSignedExchangeHandlingEnabled() {
+bool IsSignedExchangeHandlingEnabled(ResourceContext* context) {
+  if (!GetContentClient()->browser()->AllowSignedExchange(context))
+    return false;
+
   return base::FeatureList::IsEnabled(features::kSignedHTTPExchange) ||
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kEnableExperimentalWebPlatformFeatures);
@@ -66,7 +71,7 @@ bool ShouldHandleAsSignedHTTPExchange(
                                    head.mime_type)) {
     return false;
   }
-  return IsSignedExchangeHandlingEnabled();
+  return true;
 }
 
 base::Optional<SignedExchangeVersion> GetSignedExchangeVersion(

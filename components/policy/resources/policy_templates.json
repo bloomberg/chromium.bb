@@ -15261,6 +15261,25 @@
           If you set this policy, users cannot change or override it.
 
           If this policy is left unset, boot on AC is disabled and cannot be enabled by the user.'''
+    },
+    {
+      'name': 'SignedHTTPExchangeEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:75-', 'chrome_os:75-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 542,
+      'caption': '''Enable Signed HTTP Exchange (SXG) support''',
+      'tags': ['filtering'],
+      'desc': '''Enable support for Signed HTTP Exchange (SXG).
+
+          If this policy is unset or set to Enabled, Google Chrome will accept web contents served as Signed HTTP Exchanges.
+
+          If this policy is set to Disabled, Signed HTTP Exchanges cannot be loaded.''',
     }
   ],
 
@@ -15427,5 +15446,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  541
+  'highest_id_currently_used':  542
 }

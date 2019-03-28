@@ -315,6 +315,10 @@ bool ContentBrowserClient::AllowSharedWorker(
   return true;
 }
 
+bool ContentBrowserClient::AllowSignedExchange(ResourceContext* context) {
+  return true;
+}
+
 bool ContentBrowserClient::IsDataSaverEnabled(BrowserContext* context) {
   DCHECK(context);
   return false;

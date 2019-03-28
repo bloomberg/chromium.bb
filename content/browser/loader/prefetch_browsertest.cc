@@ -511,7 +511,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
   EXPECT_EQ(1, target_fetch_count);
 
   // Test after this point requires SignedHTTPExchange support
-  if (!signed_exchange_utils::IsSignedExchangeHandlingEnabled())
+  if (!GetParam().signed_exchange_enabled)
     return;
 
   // If the header in the .sxg file is correctly extracted, we should
@@ -583,7 +583,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWebPackageWithPreload) {
   EXPECT_EQ(1, target_fetch_count);
 
   // Test after this point requires SignedHTTPExchange support
-  if (!signed_exchange_utils::IsSignedExchangeHandlingEnabled())
+  if (!GetParam().signed_exchange_enabled)
     return;
   // If the header in the .sxg file is correctly extracted, we should
   // be able to also see the preload.

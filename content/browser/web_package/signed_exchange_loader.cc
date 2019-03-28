@@ -142,7 +142,6 @@ SignedExchangeLoader::SignedExchangeLoader(
       metric_recorder_(std::move(metric_recorder)),
       accept_langs_(accept_langs),
       weak_factory_(this) {
-  DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   DCHECK(outer_request_.url.is_valid());
 
   // |metric_recorder_| could be null in some tests.
