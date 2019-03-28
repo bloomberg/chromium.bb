@@ -160,7 +160,6 @@ struct DowncastTraits<ShareableElementData> {
 // attribute will have the same inline style.
 class UniqueElementData final : public ElementData {
  public:
-  static UniqueElementData* Create();
   ShareableElementData* MakeShareableCopy() const;
 
   MutableAttributeCollection Attributes();

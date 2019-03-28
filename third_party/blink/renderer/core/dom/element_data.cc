@@ -173,10 +173,6 @@ UniqueElementData::UniqueElementData(const ShareableElementData& other)
     attribute_vector_.UncheckedAppend(other.attribute_array_[i]);
 }
 
-UniqueElementData* UniqueElementData::Create() {
-  return MakeGarbageCollected<UniqueElementData>();
-}
-
 ShareableElementData* UniqueElementData::MakeShareableCopy() const {
   void* slot = ThreadHeap::Allocate<ElementData>(
       SizeForShareableElementDataWithAttributeCount(attribute_vector_.size()));

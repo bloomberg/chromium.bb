@@ -1002,8 +1002,8 @@ TEST_P(ScrollingCoordinatorTest, WindowTouchEventHandlerInvalidation) {
   // Adding a blocking window event handler should create a touch action region.
   auto* listener =
       MakeGarbageCollected<ScrollingCoordinatorMockEventListener>();
-  AddEventListenerOptionsResolved* resolved_options =
-      AddEventListenerOptionsResolved::Create();
+  auto* resolved_options =
+      MakeGarbageCollected<AddEventListenerOptionsResolved>();
   resolved_options->setPassive(false);
   GetFrame()->DomWindow()->addEventListener(event_type_names::kTouchstart,
                                             listener, resolved_options);

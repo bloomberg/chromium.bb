@@ -56,7 +56,7 @@ inline HTMLLinkElement::HTMLLinkElement(Document& document,
     : HTMLElement(kLinkTag, document),
       link_loader_(LinkLoader::Create(this)),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
-      sizes_(DOMTokenList::Create(*this, html_names::kSizesAttr)),
+      sizes_(MakeGarbageCollected<DOMTokenList>(*this, html_names::kSizesAttr)),
       rel_list_(RelList::Create(this)),
       created_by_parser_(flags.IsCreatedByParser()) {}
 

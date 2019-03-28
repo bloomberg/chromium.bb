@@ -58,9 +58,6 @@ class GC_PLUGIN_IGNORE("crbug.com/841830")
   // |V8FrameRequestCallback| to |Framecallback|.
   class CORE_EXPORT V8FrameCallback : public FrameCallback {
    public:
-    static V8FrameCallback* Create(V8FrameRequestCallback* callback) {
-      return MakeGarbageCollected<V8FrameCallback>(callback);
-    }
     void Trace(Visitor*) override;
     const char* NameInHeapSnapshot() const override {
       return "V8FrameCallback";

@@ -59,8 +59,7 @@ void RegisteredEventListener::Trace(Visitor* visitor) {
 }
 
 AddEventListenerOptionsResolved* RegisteredEventListener::Options() const {
-  AddEventListenerOptionsResolved* result =
-      AddEventListenerOptionsResolved::Create();
+  auto* result = MakeGarbageCollected<AddEventListenerOptionsResolved>();
   result->setCapture(use_capture_);
   result->setPassive(passive_);
   result->SetPassiveForcedForDocumentTarget(

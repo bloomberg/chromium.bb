@@ -113,7 +113,7 @@ ScriptValue IDBObjectStore::keyPath(ScriptState* script_state) const {
 DOMStringList* IDBObjectStore::indexNames() const {
   IDB_TRACE1("IDBObjectStore::indexNames", "store_name",
              metadata_->name.Utf8());
-  DOMStringList* index_names = DOMStringList::Create();
+  auto* index_names = MakeGarbageCollected<DOMStringList>();
   for (const auto& it : Metadata().indexes)
     index_names->Append(it.value->name);
   index_names->Sort();

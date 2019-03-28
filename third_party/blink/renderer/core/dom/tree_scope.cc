@@ -63,7 +63,8 @@ TreeScope::TreeScope(ContainerNode& root_node, Document& document)
     : root_node_(&root_node),
       document_(&document),
       parent_tree_scope_(&document),
-      id_target_observer_registry_(IdTargetObserverRegistry::Create()) {
+      id_target_observer_registry_(
+          MakeGarbageCollected<IdTargetObserverRegistry>()) {
   DCHECK_NE(root_node, document);
   root_node_->SetTreeScope(this);
 }
@@ -72,7 +73,8 @@ TreeScope::TreeScope(Document& document)
     : root_node_(document),
       document_(&document),
       parent_tree_scope_(nullptr),
-      id_target_observer_registry_(IdTargetObserverRegistry::Create()) {
+      id_target_observer_registry_(
+          MakeGarbageCollected<IdTargetObserverRegistry>()) {
   root_node_->SetTreeScope(this);
 }
 

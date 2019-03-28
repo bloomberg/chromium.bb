@@ -43,7 +43,7 @@ namespace blink {
 
 PseudoElement* PseudoElement::Create(Element* parent, PseudoId pseudo_id) {
   if (pseudo_id == kPseudoIdFirstLetter)
-    return FirstLetterPseudoElement::Create(parent);
+    return MakeGarbageCollected<FirstLetterPseudoElement>(parent);
   return MakeGarbageCollected<PseudoElement>(parent, pseudo_id);
 }
 

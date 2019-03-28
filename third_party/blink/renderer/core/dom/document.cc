@@ -850,7 +850,7 @@ void Document::SetDoctype(DocumentType* doc_type) {
 
 DOMImplementation& Document::implementation() {
   if (!implementation_)
-    implementation_ = DOMImplementation::Create(*this);
+    implementation_ = MakeGarbageCollected<DOMImplementation>(*this);
   return *implementation_;
 }
 
@@ -3715,7 +3715,7 @@ void Document::SetParsingState(ParsingState parsing_state) {
   parsing_state_ = parsing_state;
 
   if (Parsing() && !element_data_cache_)
-    element_data_cache_ = ElementDataCache::Create();
+    element_data_cache_ = MakeGarbageCollected<ElementDataCache>();
 }
 
 bool Document::ShouldScheduleLayout() const {
@@ -5874,7 +5874,7 @@ Attr* Document::createAttributeNS(const AtomicString& namespace_uri,
     return nullptr;
   }
 
-  return Attr::Create(*this, q_name, g_empty_atom);
+  return MakeGarbageCollected<Attr>(*this, q_name, g_empty_atom);
 }
 
 const SVGDocumentExtensions* Document::SvgExtensions() {

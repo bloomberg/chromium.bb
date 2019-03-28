@@ -34,10 +34,6 @@
 
 namespace blink {
 
-EventQueue* EventQueue::Create(ExecutionContext* context, TaskType task_type) {
-  return MakeGarbageCollected<EventQueue>(context, task_type);
-}
-
 EventQueue::EventQueue(ExecutionContext* context, TaskType task_type)
     : ContextLifecycleObserver(context),
       task_type_(task_type),
