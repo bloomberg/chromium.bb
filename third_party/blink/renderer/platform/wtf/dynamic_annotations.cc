@@ -47,7 +47,7 @@
 void WTFAnnotateBenignRaceSized(const char*,
                                 int,
                                 const volatile void*,
-                                long,
+                                size_t,
                                 const char*) {
   DYNAMIC_ANNOTATIONS_IMPL
 }

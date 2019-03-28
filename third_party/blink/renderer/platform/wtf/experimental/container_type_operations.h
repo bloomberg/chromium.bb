@@ -201,10 +201,10 @@ namespace internal {
 // the arguments specified in the "..." part of the macro.
 #define DEFINE_FUNCTION_DETECTOR(FunctionName, ...)                 \
   template <typename TypeOperations, typename T>                    \
-  auto test##FunctionName##Function(int)->decltype(                 \
+  auto test##FunctionName##Function(int32_t)->decltype(             \
       TypeOperations::FunctionName(__VA_ARGS__), std::true_type()); \
   template <typename TypeOperations, typename T>                    \
-  std::false_type test##FunctionName##Function(long);               \
+  std::false_type test##FunctionName##Function(int64_t);            \
   template <typename TypeOperations, typename T>                    \
   struct Has##FunctionName##Function                                \
       : decltype(test##FunctionName##Function<TypeOperations, T>(0)) {}
