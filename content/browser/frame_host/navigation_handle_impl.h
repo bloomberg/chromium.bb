@@ -64,28 +64,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
  public:
   ~NavigationHandleImpl() override;
 
-  // Used to track the state the navigation is currently in.
-  // Note: the states named PROCESSING_* indicate that NavigationThrottles are
-  // currently processing the correspondant event. When they are done, the state
-  // will move to the next in the list.
-  // TODO(https://crbug.com/1377855): Remove the PROCESSING_* states once the
-  // NavigationThrottleRunner is owned by the NavigationRequest.
-  enum State {
-    INITIAL = 0,
-    PROCESSING_WILL_START_REQUEST,
-    WILL_START_REQUEST,
-    PROCESSING_WILL_REDIRECT_REQUEST,
-    WILL_REDIRECT_REQUEST,
-    PROCESSING_WILL_FAIL_REQUEST,
-    WILL_FAIL_REQUEST,
-    CANCELING,
-    PROCESSING_WILL_PROCESS_RESPONSE,
-    WILL_PROCESS_RESPONSE,
-    READY_TO_COMMIT,
-    DID_COMMIT,
-    DID_COMMIT_ERROR_PAGE,
-  };
-
   // NavigationHandle implementation:
   int64_t GetNavigationId() const override;
   const GURL& GetURL() override;
@@ -170,7 +148,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
 #endif
 
   // Used in tests.
-  State state_for_testing() const { return state_; }
+  NavigationRequest::NavigationHandleState state_for_testing() const {
+    return state_;
+  }
 
   // The NavigatorDelegate to notify/query for various navigation events.
   // Normally this is the WebContents, except if this NavigationHandle was
@@ -185,12 +165,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   NavigatorDelegate* GetDelegate() const;
 
   blink::mojom::RequestContextType request_context_type() const {
-    DCHECK_GE(state_, PROCESSING_WILL_START_REQUEST);
+    DCHECK_GE(state_, NavigationRequest::PROCESSING_WILL_START_REQUEST);
     return navigation_request_->begin_params()->request_context_type;
   }
 
   blink::WebMixedContentContextType mixed_content_context_type() const {
-    DCHECK_GE(state_, PROCESSING_WILL_START_REQUEST);
+    DCHECK_GE(state_, NavigationRequest::PROCESSING_WILL_START_REQUEST);
     return navigation_request_->begin_params()->mixed_content_context_type;
   }
 
@@ -294,7 +274,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   const GURL& base_url() { return base_url_; }
 
   NavigationType navigation_type() {
-    DCHECK_GE(state_, DID_COMMIT);
+    DCHECK_GE(state_, NavigationRequest::DID_COMMIT);
     return navigation_type_;
   }
 
@@ -382,7 +362,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   void RunCompleteCallback(NavigationThrottle::ThrottleCheckResult result);
 
   // Used in tests.
-  State state() const { return state_; }
+  NavigationRequest::NavigationHandleState state() const { return state_; }
 
   // Checks for attempts to navigate to a page that is already referenced more
   // than once in the frame's ancestors.  This is a helper function used by
@@ -422,9 +402,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   net::HttpRequestHeaders modified_request_headers_;
 
   // The state the navigation is in.
-  State state_;
+  NavigationRequest::NavigationHandleState state_;
 
-  // The time this naviagtion was ready to commit.
+  // The time this navigation was ready to commit.
   base::TimeTicks ready_to_commit_time_;
 
   // Timer for detecting an unexpectedly long time to commit a navigation.
