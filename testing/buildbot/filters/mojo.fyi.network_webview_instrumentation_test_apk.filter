@@ -8,12 +8,6 @@
 # tests are also running with NS IP. Multiprocess webview currently does not
 # support running NS OOP, https://crbug.com/882650
 
-# https://crbug.com/893566
--org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testBaseUrlOfLoadDataSentInRefererHeader
--org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testLoadDataShouldTriggerShouldInterceptRequest
--org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testLoadDataUrlShouldTriggerShouldInterceptRequest
--org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testLoadDataWithBaseUrlTriggersShouldInterceptRequest
-
 # https://crbug.com/893575
 -org.chromium.android_webview.test.CookieManagerStartupTest.testStartup
 

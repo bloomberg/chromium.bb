@@ -921,10 +921,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // not handled by NavigationLoaderInterceptors above (e.g. Service Worker
       // or AppCache). Hence this code is only reachable when one of the above
       // interceptors isn't used and the URL is either a data URL or has a
-      // scheme which is handled by the network service. We explicitly avoid
-      // proxying the data URL case here.
-      if (proxied_factory_request_.is_pending() &&
-          !resource_request_->url.SchemeIs(url::kDataScheme)) {
+      // scheme which is handled by the network service.
+      if (proxied_factory_request_.is_pending()) {
         DCHECK(proxied_factory_info_.is_valid());
         // We don't worry about reconnection since it's a single navigation.
         network_loader_factory_->Clone(std::move(proxied_factory_request_));
