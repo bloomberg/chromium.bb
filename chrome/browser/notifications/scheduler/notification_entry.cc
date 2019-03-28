@@ -8,7 +8,9 @@
 
 namespace notifications {
 
-NotificationEntry::NotificationEntry(const std::string& guid) : guid(guid) {}
+NotificationEntry::NotificationEntry(SchedulerClientType type,
+                                     const std::string& guid)
+    : type(type), guid(guid) {}
 
 NotificationEntry::~NotificationEntry() = default;
 
