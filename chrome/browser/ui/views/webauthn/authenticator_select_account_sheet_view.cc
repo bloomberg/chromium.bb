@@ -7,6 +7,7 @@
 
 #include "chrome/browser/ui/views/webauthn/authenticator_select_account_sheet_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "device/fido/authenticator_get_assertion_response.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/views/controls/scroll_view.h"

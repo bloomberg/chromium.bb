@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
+#include "device/fido/fido_authenticator.h"
 
 namespace {
 

@@ -459,6 +459,8 @@ TEST_F(FidoMakeCredentialHandlerTest,
   auto device = std::make_unique<VirtualCtap2Device>();
   AuthenticatorSupportedOptions option;
   option.supports_resident_key = true;
+  option.user_verification_availability = AuthenticatorSupportedOptions::
+      UserVerificationAvailability::kSupportedAndConfigured;
   device->SetAuthenticatorSupportedOptions(std::move(option));
 
   auto request_handler =

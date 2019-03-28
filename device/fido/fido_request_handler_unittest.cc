@@ -16,6 +16,7 @@
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
+#include "device/fido/fido_device_authenticator.h"
 #include "device/fido/fido_request_handler.h"
 #include "device/fido/fido_task.h"
 #include "device/fido/fido_test_data.h"
@@ -125,6 +126,8 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
   }
   void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
                                            bool is_in_pairing_mode) override {}
+
+  bool SupportsPIN() const override { return false; }
 
   void CollectPIN(
       base::Optional<int> attempts,

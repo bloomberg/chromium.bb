@@ -14,6 +14,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "device/fido/ble_adapter_manager.h"
+#include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_discovery_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 

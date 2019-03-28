@@ -95,10 +95,18 @@ void AuthenticatorRequestClientDelegate::FidoAuthenticatorPairingModeChanged(
     base::StringPiece authenticator_id,
     bool is_in_pairing_mode) {}
 
+bool AuthenticatorRequestClientDelegate::SupportsPIN() const {
+  return false;
+}
+
 void AuthenticatorRequestClientDelegate::CollectPIN(
     base::Optional<int> attempts,
-    base::OnceCallback<void(std::string)> provide_pin_cb) {}
+    base::OnceCallback<void(std::string)> provide_pin_cb) {
+  NOTREACHED();
+}
 
-void AuthenticatorRequestClientDelegate::FinishCollectPIN() {}
+void AuthenticatorRequestClientDelegate::FinishCollectPIN() {
+  NOTREACHED();
+}
 
 }  // namespace content

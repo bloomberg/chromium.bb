@@ -50,15 +50,17 @@ void FidoAuthenticator::ChangePIN(const std::string& old_pin,
   NOTREACHED();
 }
 
-AuthenticatorSupportedOptions::ClientPinAvailability
-FidoAuthenticator::WillNeedPINToMakeCredential(const CtapMakeCredentialRequest&
-    request) {
-  return AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported;
+FidoAuthenticator::MakeCredentialPINDisposition
+FidoAuthenticator::WillNeedPINToMakeCredential(
+    const CtapMakeCredentialRequest& request,
+    const FidoRequestHandlerBase::Observer* observer) {
+  return MakeCredentialPINDisposition::kNoPIN;
 }
 
 FidoAuthenticator::GetAssertionPINDisposition
 FidoAuthenticator::WillNeedPINToGetAssertion(
-    const CtapGetAssertionRequest& request) {
+    const CtapGetAssertionRequest& request,
+    const FidoRequestHandlerBase::Observer* observer) {
   return GetAssertionPINDisposition::kNoPIN;
 }
 

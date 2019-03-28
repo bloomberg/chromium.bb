@@ -20,7 +20,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece_forward.h"
 #include "build/build_config.h"
-#include "device/fido/fido_device_authenticator.h"
 #include "device/fido/fido_discovery_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
@@ -140,6 +139,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     virtual void FidoAuthenticatorPairingModeChanged(
         base::StringPiece authenticator_id,
         bool is_in_pairing_mode) = 0;
+
+    // SupportsPIN returns true if this observer supports collecting a PIN from
+    // the user. If this function returns false, |CollectPIN| and
+    // |FinishCollectPIN| will not be called.
+    virtual bool SupportsPIN() const = 0;
 
     // CollectPIN is called when a PIN is needed to complete a request. The
     // |retries| parameter is either |nullopt| to indicate that the user needs

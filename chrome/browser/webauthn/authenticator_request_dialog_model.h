@@ -22,6 +22,10 @@
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
+namespace device {
+class AuthenticatorGetAssertionResponse;
+}
+
 // Encapsulates the model behind the Web Authentication request dialog's UX
 // flow. This is essentially a state machine going through the states defined in
 // the `Step` enumeration.
