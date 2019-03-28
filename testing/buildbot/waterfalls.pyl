@@ -639,6 +639,13 @@
           'linux_symbols',
           'symupload'
         ],
+        'mixins': [
+          'chrome-swarming-pool',
+          'experimental',
+        ],
+        'test_suites': {
+          'gtest_tests': 'linux_chromeos_gtests',
+        },
       },
       'linux-google-rel': {
         'additional_compile_targets': [
