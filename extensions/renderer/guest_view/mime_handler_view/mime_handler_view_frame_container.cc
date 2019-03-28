@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "base/containers/flat_set.h"
-#include "base/pickle.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"

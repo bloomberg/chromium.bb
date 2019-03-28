@@ -79,8 +79,6 @@ class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
 
   blink::WebFrame* GetContentFrame() const;
 
-  void OnMessageReceived(const IPC::Message& message);
-
   blink::WebElement plugin_element_;
   const int32_t element_instance_id_;
   std::unique_ptr<RenderFrameLifetimeObserver> render_frame_lifetime_observer_;
