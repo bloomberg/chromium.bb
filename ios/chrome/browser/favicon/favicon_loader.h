@@ -37,8 +37,8 @@ class FaviconLoader : public KeyedService {
   // successful favicon was retrieved by LargeIconService, it returns the
   // default favicon.
   FaviconAttributes* FaviconForUrl(const GURL& url,
-                                   float size,
-                                   float min_size,
+                                   float size_in_points,
+                                   float min_size_in_points,
                                    bool fallback_to_google_server,
                                    FaviconAttributesCompletionBlock block);
 

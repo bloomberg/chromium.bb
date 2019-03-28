@@ -57,8 +57,8 @@ FaviconLoader::~FaviconLoader() {}
 // to reset it, but then how do we ensure the FaviconService is updated?
 FaviconAttributes* FaviconLoader::FaviconForUrl(
     const GURL& url,
-    float size,
-    float min_size,
+    float size_in_points,
+    float min_size_in_points,
     bool fallback_to_google_server,  // retrieve favicon from Google Server if
                                      // GetLargeIconOrFallbackStyle() doesn't
                                      // return valid favicon.
@@ -69,6 +69,10 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
     return value;
   }
 
+  const CGFloat favicon_size_in_pixels =
+      [UIScreen mainScreen].scale * size_in_points;
+  const CGFloat min_favicon_size_in_pixels =
+      [UIScreen mainScreen].scale * min_size_in_points;
   GURL block_url(url);
   auto favicon_block = ^(const favicon_base::LargeIconResult& result) {
     // GetLargeIconOrFallbackStyle() either returns a valid favicon (which can
@@ -98,7 +102,7 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
             // Favicon should be loaded to the db that backs LargeIconService
             // now.  Fetch it again. Even if the request was not successful, the
             // fallback style will be used.
-            FaviconForUrl(block_url, size, min_size,
+            FaviconForUrl(block_url, size_in_points, min_size_in_points,
                           /*continueToGoogleServer=*/false, block);
 
           };
@@ -106,7 +110,8 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
       large_icon_service_
           ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
               favicon::FaviconServerFetcherParams::CreateForMobile(
-                  block_url, min_size, size),
+                  block_url, min_favicon_size_in_pixels,
+                  favicon_size_in_pixels),
               /*may_page_url_be_private=*/true, kTrafficAnnotation,
               base::BindRepeating(favicon_loaded_from_server_block));
       return;
@@ -137,11 +142,9 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
     }
   };
 
-  CGFloat favicon_size_in_pixels = [UIScreen mainScreen].scale * size;
-  CGFloat min_favicon_size = [UIScreen mainScreen].scale * min_size;
   DCHECK(large_icon_service_);
   large_icon_service_->GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
-      block_url, min_favicon_size, favicon_size_in_pixels,
+      block_url, min_favicon_size_in_pixels, favicon_size_in_pixels,
       base::BindRepeating(favicon_block), &cancelable_task_tracker_);
 
   if (IsUIRefreshPhase1Enabled()) {
