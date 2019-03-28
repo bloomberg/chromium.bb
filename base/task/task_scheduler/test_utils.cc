@@ -45,9 +45,13 @@ void MockSchedulerWorkerObserver::OnSchedulerWorkerMainExit() {
     on_main_exit_cv_->Signal();
 }
 
-scoped_refptr<Sequence> CreateSequenceWithTask(Task task,
-                                               const TaskTraits& traits) {
-  scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(traits);
+scoped_refptr<Sequence> CreateSequenceWithTask(
+    Task task,
+    const TaskTraits& traits,
+    scoped_refptr<TaskRunner> task_runner,
+    TaskSourceExecutionMode execution_mode) {
+  scoped_refptr<Sequence> sequence =
+      MakeRefCounted<Sequence>(traits, task_runner.get(), execution_mode);
   sequence->BeginTransaction().PushTask(std::move(task));
   return sequence;
 }
@@ -118,6 +122,9 @@ bool MockSchedulerTaskRunnerDelegate::PostTaskWithSequence(
         std::move(task),
         SequenceAndTransaction::FromSequence(std::move(sequence)));
   } else {
+    // It's safe to take a ref on this pointer since the caller must have a ref
+    // to the TaskRunner in order to post.
+    scoped_refptr<TaskRunner> task_runner = sequence->task_runner();
     delayed_task_manager_->AddDelayedTask(
         std::move(task),
         BindOnce(
@@ -127,7 +134,8 @@ bool MockSchedulerTaskRunnerDelegate::PostTaskWithSequence(
                   std::move(task),
                   SequenceAndTransaction::FromSequence(std::move(sequence)));
             },
-            std::move(sequence), worker_pool_));
+            std::move(sequence), worker_pool_),
+        std::move(task_runner));
   }
 
   return true;

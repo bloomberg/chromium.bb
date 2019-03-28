@@ -46,13 +46,18 @@ class BASE_EXPORT DelayedTaskManager {
   void Start(scoped_refptr<TaskRunner> service_thread_task_runner);
 
   // Schedules a call to |post_task_now_callback| with |task| as argument when
-  // |task| is ripe for execution.
-  void AddDelayedTask(Task task, PostTaskNowCallback post_task_now_callback);
+  // |task| is ripe for execution. |task_runner| is passed to retain a
+  // reference until |task| is ripe.
+  void AddDelayedTask(Task task,
+                      PostTaskNowCallback post_task_now_callback,
+                      scoped_refptr<TaskRunner> task_runner);
 
  private:
   struct DelayedTask {
     DelayedTask();
-    DelayedTask(Task task, PostTaskNowCallback callback);
+    DelayedTask(Task task,
+                PostTaskNowCallback callback,
+                scoped_refptr<TaskRunner> task_runner);
     DelayedTask(DelayedTask&& other);
     ~DelayedTask();
 
@@ -64,6 +69,7 @@ class BASE_EXPORT DelayedTaskManager {
 
     Task task;
     PostTaskNowCallback callback;
+    scoped_refptr<TaskRunner> task_runner;
 
     // True iff the delayed task has been marked as scheduled.
     bool IsScheduled() const;

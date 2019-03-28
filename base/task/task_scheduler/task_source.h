@@ -22,6 +22,13 @@
 namespace base {
 namespace internal {
 
+enum class TaskSourceExecutionMode {
+  kParallel,
+  kSequenced,
+  kSingleThread,
+  kMax = kSingleThread,
+};
+
 struct BASE_EXPORT ExecutionEnvironment {
   SequenceToken token;
   SequenceLocalStorageMap* sequence_local_storage;
@@ -108,7 +115,13 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   };
 
   // |traits| is metadata that applies to all Tasks in the TaskSource.
-  explicit TaskSource(const TaskTraits& traits);
+  // |task_runner| is a reference to the TaskRunner feeding this TaskSource.
+  // |task_runner| can be nullptr only for tasks with no TaskRunner, in which
+  // case |execution_mode| must be kParallel. Otherwise, |execution_mode| is the
+  // execution mode of |task_runner|.
+  TaskSource(const TaskTraits& traits,
+             TaskRunner* task_runner,
+             TaskSourceExecutionMode execution_mode);
 
   // Begins a Transaction. This method cannot be called on a thread which has an
   // active TaskSource::Transaction.
@@ -127,10 +140,22 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
     return traits_.shutdown_behavior();
   }
 
+  // A reference to TaskRunner is only retained between PushTask() and when
+  // DidRunTask() returns false, guaranteeing it is safe to dereference this
+  // pointer. Otherwise, the caller should guarantee such TaskRunner still
+  // exists before dereferencing.
+  TaskRunner* task_runner() const { return task_runner_; }
+
+  TaskSourceExecutionMode execution_mode() const { return execution_mode_; }
+
  protected:
   virtual ~TaskSource();
 
   virtual Optional<Task> TakeTask() = 0;
+
+  // Returns true if the TaskSource should be queued after this
+  // operation.
+  virtual bool DidRunTask() = 0;
 
   virtual SequenceSortKey GetSortKey() const = 0;
 
@@ -153,6 +178,13 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   // The TaskSource's position in its current PriorityQueue. Access is protected
   // by the PriorityQueue's lock.
   HeapHandle heap_handle_;
+
+  // A pointer to the TaskRunner that posts to this TaskSource, if any. The
+  // derived class is responsible for calling AddRef() when NeedWorkers()
+  // becomes true and Release() when DidRunTask() returns false.
+  TaskRunner* task_runner_;
+
+  TaskSourceExecutionMode execution_mode_;
 
   // TODO(etiennep): Add support for TaskSources with more than one worker.
   bool has_worker_ = false;

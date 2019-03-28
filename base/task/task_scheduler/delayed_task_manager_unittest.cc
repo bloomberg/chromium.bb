@@ -71,7 +71,8 @@ class TaskSchedulerDelayedTaskManagerTest : public testing::Test {
 // Verify that a delayed task isn't forwarded before Start().
 TEST_F(TaskSchedulerDelayedTaskManagerTest, DelayedTaskDoesNotRunBeforeStart) {
   // Send |task| to the DelayedTaskManager.
-  delayed_task_manager_.AddDelayedTask(std::move(task_), BindOnce(&RunTask));
+  delayed_task_manager_.AddDelayedTask(std::move(task_), BindOnce(&RunTask),
+                                       nullptr);
 
   // Fast-forward time until the task is ripe for execution. Since Start() has
   // not been called, the task should not be forwarded to RunTask() (MockTask is
@@ -84,7 +85,8 @@ TEST_F(TaskSchedulerDelayedTaskManagerTest, DelayedTaskDoesNotRunBeforeStart) {
 TEST_F(TaskSchedulerDelayedTaskManagerTest,
        DelayedTaskPostedBeforeStartExpiresAfterStartRunsOnExpire) {
   // Send |task| to the DelayedTaskManager.
-  delayed_task_manager_.AddDelayedTask(std::move(task_), BindOnce(&RunTask));
+  delayed_task_manager_.AddDelayedTask(std::move(task_), BindOnce(&RunTask),
+                                       nullptr);
 
   delayed_task_manager_.Start(service_thread_task_runner_);
 
@@ -103,7 +105,8 @@ TEST_F(TaskSchedulerDelayedTaskManagerTest,
 TEST_F(TaskSchedulerDelayedTaskManagerTest,
        DelayedTaskPostedBeforeStartExpiresBeforeStartRunsOnStart) {
   // Send |task| to the DelayedTaskManager.
-  delayed_task_manager_.AddDelayedTask(std::move(task_), BindOnce(&RunTask));
+  delayed_task_manager_.AddDelayedTask(std::move(task_), BindOnce(&RunTask),
+                                       nullptr);
 
   // Run tasks on the service thread. Don't expect any forwarding to
   // |task_target_| since the task isn't ripe for execution.
@@ -125,7 +128,8 @@ TEST_F(TaskSchedulerDelayedTaskManagerTest, DelayedTaskDoesNotRunTooEarly) {
   delayed_task_manager_.Start(service_thread_task_runner_);
 
   // Send |task| to the DelayedTaskManager.
-  delayed_task_manager_.AddDelayedTask(std::move(task_), BindOnce(&RunTask));
+  delayed_task_manager_.AddDelayedTask(std::move(task_), BindOnce(&RunTask),
+                                       nullptr);
 
   // Run tasks that are ripe for execution. Don't expect any forwarding to
   // RunTask().
@@ -138,7 +142,8 @@ TEST_F(TaskSchedulerDelayedTaskManagerTest, DelayedTaskRunsAfterDelay) {
   delayed_task_manager_.Start(service_thread_task_runner_);
 
   // Send |task| to the DelayedTaskManager.
-  delayed_task_manager_.AddDelayedTask(std::move(task_), BindOnce(&RunTask));
+  delayed_task_manager_.AddDelayedTask(std::move(task_), BindOnce(&RunTask),
+                                       nullptr);
 
   // Fast-forward time. Expect the task to be forwarded to RunTask().
   EXPECT_CALL(mock_task_, Run());
@@ -166,9 +171,12 @@ TEST_F(TaskSchedulerDelayedTaskManagerTest, DelayedTasksRunAfterDelay) {
       TimeDelta::FromHours(1));
 
   // Send tasks to the DelayedTaskManager.
-  delayed_task_manager_.AddDelayedTask(std::move(task_a), BindOnce(&RunTask));
-  delayed_task_manager_.AddDelayedTask(std::move(task_b), BindOnce(&RunTask));
-  delayed_task_manager_.AddDelayedTask(std::move(task_c), BindOnce(&RunTask));
+  delayed_task_manager_.AddDelayedTask(std::move(task_a), BindOnce(&RunTask),
+                                       nullptr);
+  delayed_task_manager_.AddDelayedTask(std::move(task_b), BindOnce(&RunTask),
+                                       nullptr);
+  delayed_task_manager_.AddDelayedTask(std::move(task_c), BindOnce(&RunTask),
+                                       nullptr);
 
   // Run tasks that are ripe for execution on the service thread. Don't expect
   // any call to RunTask().
@@ -194,12 +202,12 @@ TEST_F(TaskSchedulerDelayedTaskManagerTest, PostTaskDuringStart) {
 
   WaitableEvent task_posted;
 
-  other_thread.task_runner()->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
-                                         delayed_task_manager_.AddDelayedTask(
-                                             std::move(task_),
-                                             BindOnce(&RunTask));
-                                         task_posted.Signal();
-                                       }));
+  other_thread.task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        delayed_task_manager_.AddDelayedTask(
+            std::move(task_), BindOnce(&RunTask), other_thread.task_runner());
+        task_posted.Signal();
+      }));
 
   delayed_task_manager_.Start(service_thread_task_runner_);
 

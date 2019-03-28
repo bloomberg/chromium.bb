@@ -69,12 +69,18 @@ class MockSchedulerTaskRunnerDelegate : public SchedulerTaskRunnerDelegate {
 
 // An enumeration of possible task scheduler TaskRunner types. Used to
 // parametrize relevant task_scheduler tests.
+// TODO(etiennep): Migrate to TaskSourceExecutionMode.
 enum class ExecutionMode { PARALLEL, SEQUENCED, SINGLE_THREADED };
 
-// Creates a Sequence with given |traits| and pushes |task| to it. Returns that
-// Sequence.
-scoped_refptr<Sequence> CreateSequenceWithTask(Task task,
-                                               const TaskTraits& traits);
+// Creates a Sequence with given |traits| and pushes |task| to it. If a
+// TaskRunner is associated with |task|, it should be be passed as |task_runner|
+// along with its |execution_mode|. Returns the created Sequence.
+scoped_refptr<Sequence> CreateSequenceWithTask(
+    Task task,
+    const TaskTraits& traits,
+    scoped_refptr<TaskRunner> task_runner = nullptr,
+    TaskSourceExecutionMode execution_mode =
+        TaskSourceExecutionMode::kParallel);
 
 // Creates a TaskRunner that posts tasks to the worker pool owned by
 // |scheduler_task_runner_delegate| with the |execution_mode| execution mode
