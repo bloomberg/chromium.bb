@@ -449,6 +449,8 @@ class ExtensionWebRequestEventRouter {
                       uint64_t request_id,
                       int render_process_id,
                       int web_view_instance_id,
+                      int worker_thread_id,
+                      int64_t service_worker_version_id,
                       EventResponse* response);
 
   // Adds a listener to the given event. |event_name| specifies the event being
@@ -465,6 +467,8 @@ class ExtensionWebRequestEventRouter {
                         int extra_info_spec,
                         int render_process_id,
                         int web_view_instance_id,
+                        int worker_thread_id,
+                        int64_t service_worker_version_id,
                         base::WeakPtr<IPC::Sender> ipc_sender);
 
   // Removes the listeners for a given <webview>.
@@ -514,10 +518,9 @@ class ExtensionWebRequestEventRouter {
                            TestModifications);
 
   struct EventListener {
-    // An EventListener is uniquely defined by five properties.
     // TODO(rdevlin.cronin): There are two types of EventListeners - those
     // associated with WebViews and those that are not. The ones associated with
-    // WebViews are always identified by all five properties. The other ones
+    // WebViews are always identified by all seven properties. The other ones
     // will always have web_view_instance_id = 0. Unfortunately, the
     // callbacks/interfaces for these ones don't specify render_process_id.
     // This is why we need the LooselyMatches method, and the need for a
@@ -527,7 +530,11 @@ class ExtensionWebRequestEventRouter {
          const std::string& extension_id,
          const std::string& sub_event_name,
          int render_process_id,
-         int web_view_instance_id);
+         int web_view_instance_id,
+         int worker_thread_id,
+         int64_t service_worker_version_id);
+
+      ID(const ID& source);
 
       // If web_view_instance_id is 0, then ignore render_process_id.
       // TODO(rdevlin.cronin): In a more sane world, LooselyMatches wouldn't be
@@ -535,12 +542,18 @@ class ExtensionWebRequestEventRouter {
       bool LooselyMatches(const ID& that) const;
 
       bool operator==(const ID& that) const;
+
       void* browser_context;
       std::string extension_id;
       std::string sub_event_name;
       // In the case of a webview, this is the process ID of the embedder.
       int render_process_id;
       int web_view_instance_id;
+      // The worker_thread_id and service_worker_version_id members are only
+      // meaningful for event listeners for ServiceWorker events. Otherwise,
+      // they are initialized to sentinel values.
+      int worker_thread_id;
+      int64_t service_worker_version_id;
     };
 
     EventListener(ID id);

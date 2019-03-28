@@ -105,7 +105,6 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
                                            const EventFilteringInfo& info) {
   NotifyEventDispatched(browser_context_id, extension_id, event_name,
                         *event_args);
-
   ExtensionMsg_DispatchEvent_Params params;
   params.worker_thread_id = worker_thread_id;
   params.extension_id = extension_id;
@@ -131,10 +130,11 @@ std::string EventRouter::GetBaseEventName(const std::string& full_event_name) {
 // static
 void EventRouter::DispatchEventToSender(IPC::Sender* ipc_sender,
                                         void* browser_context_id,
-                                        int render_process_id,
                                         const std::string& extension_id,
                                         events::HistogramValue histogram_value,
                                         const std::string& event_name,
+                                        int render_process_id,
+                                        int worker_thread_id,
                                         int64_t service_worker_version_id,
                                         std::unique_ptr<ListValue> event_args,
                                         UserGestureState user_gesture,
@@ -143,7 +143,7 @@ void EventRouter::DispatchEventToSender(IPC::Sender* ipc_sender,
 
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DoDispatchEventToSenderBookkeepingOnUI(
-        browser_context_id, render_process_id, extension_id, event_id,
+        browser_context_id, extension_id, event_id, render_process_id,
         service_worker_version_id, histogram_value, event_name);
   } else {
     // This is called from WebRequest API.
@@ -151,17 +151,14 @@ void EventRouter::DispatchEventToSender(IPC::Sender* ipc_sender,
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&EventRouter::DoDispatchEventToSenderBookkeepingOnUI,
-                       browser_context_id, render_process_id, extension_id,
-                       event_id, service_worker_version_id, histogram_value,
-                       event_name));
+                       browser_context_id, extension_id, event_id,
+                       render_process_id, service_worker_version_id,
+                       histogram_value, event_name));
   }
 
-  DispatchExtensionMessage(ipc_sender,
-                           // TODO(lazyboy): |kMainThreadId| means these
-                           // will not work for extension SW.
-                           kMainThreadId, browser_context_id, extension_id,
-                           event_id, event_name, event_args.get(), user_gesture,
-                           info);
+  DispatchExtensionMessage(ipc_sender, worker_thread_id, browser_context_id,
+                           extension_id, event_id, event_name, event_args.get(),
+                           user_gesture, info);
 }
 
 // static.
@@ -275,10 +272,10 @@ void EventRouter::RemoveObserverForTesting(TestObserver* observer) {
 }
 
 void EventRouter::OnListenerAdded(const EventListener* listener) {
-  const EventListenerInfo details(listener->event_name(),
-                                  listener->extension_id(),
-                                  listener->listener_url(),
-                                  listener->GetBrowserContext());
+  const EventListenerInfo details(
+      listener->event_name(), listener->extension_id(),
+      listener->listener_url(), listener->GetBrowserContext(),
+      listener->worker_thread_id(), listener->service_worker_version_id());
   std::string base_event_name = GetBaseEventName(listener->event_name());
   auto observer = observers_.find(base_event_name);
   if (observer != observers_.end())
@@ -293,10 +290,10 @@ void EventRouter::OnListenerAdded(const EventListener* listener) {
 }
 
 void EventRouter::OnListenerRemoved(const EventListener* listener) {
-  const EventListenerInfo details(listener->event_name(),
-                                  listener->extension_id(),
-                                  listener->listener_url(),
-                                  listener->GetBrowserContext());
+  const EventListenerInfo details(
+      listener->event_name(), listener->extension_id(),
+      listener->listener_url(), listener->GetBrowserContext(),
+      listener->worker_thread_id(), listener->service_worker_version_id());
   std::string base_event_name = GetBaseEventName(listener->event_name());
   auto observer = observers_.find(base_event_name);
   if (observer != observers_.end())
@@ -713,9 +710,9 @@ void EventRouter::DispatchEventToProcess(
 // static
 void EventRouter::DoDispatchEventToSenderBookkeepingOnUI(
     void* browser_context_id,
-    int render_process_id,
     const std::string& extension_id,
     int event_id,
+    int render_process_id,
     int64_t service_worker_version_id,
     events::HistogramValue histogram_value,
     const std::string& event_name) {
@@ -1036,7 +1033,21 @@ EventListenerInfo::EventListenerInfo(const std::string& event_name,
     : event_name(event_name),
       extension_id(extension_id),
       listener_url(listener_url),
-      browser_context(browser_context) {
-}
+      browser_context(browser_context),
+      worker_thread_id(kMainThreadId),
+      service_worker_version_id(blink::mojom::kInvalidServiceWorkerVersionId) {}
+
+EventListenerInfo::EventListenerInfo(const std::string& event_name,
+                                     const std::string& extension_id,
+                                     const GURL& listener_url,
+                                     content::BrowserContext* browser_context,
+                                     int worker_thread_id,
+                                     int64_t service_worker_version_id)
+    : event_name(event_name),
+      extension_id(extension_id),
+      listener_url(listener_url),
+      browser_context(browser_context),
+      worker_thread_id(worker_thread_id),
+      service_worker_version_id(service_worker_version_id) {}
 
 }  // namespace extensions

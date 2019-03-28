@@ -117,7 +117,7 @@ class ServiceWorkerTest : public ExtensionApiTest {
 
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
-    host_resolver()->AddRule("a.com", "127.0.0.1");
+    host_resolver()->AddRule("*", "127.0.0.1");
   }
 
  protected:
@@ -334,6 +334,13 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsEvents) {
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsExecuteScript) {
   ASSERT_TRUE(RunExtensionTest(
       "service_worker/worker_based_background/tabs_execute_script"))
+      << message_;
+}
+
+// Tests chrome.storage APIs.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, WebRequest) {
+  ASSERT_TRUE(
+      RunExtensionTest("service_worker/worker_based_background/web_request"))
       << message_;
 }
 
