@@ -37,7 +37,6 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
   void StopDemoModeDetection() override;
   void ReloadLocalizedContent() override;
   void SetInputMethodId(const std::string& input_method_id) override;
-  void SetTimezoneId(const std::string& timezone_id) override;
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(

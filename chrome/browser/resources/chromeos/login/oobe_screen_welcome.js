@@ -8,8 +8,7 @@
 
 login.createScreen('WelcomeScreen', 'connect', function() {
   return {
-    EXTERNAL_API:
-        ['onInputMethodIdSetFromBackend', 'onTimezoneIdSetFromBackend'],
+    EXTERNAL_API: ['onInputMethodIdSetFromBackend'],
 
     /** @override */
     decorate: function() {
@@ -21,11 +20,6 @@ login.createScreen('WelcomeScreen', 'connect', function() {
 
     onInputMethodIdSetFromBackend: function(inputMethodId) {
       $('oobe-welcome-md').setSelectedKeyboard(inputMethodId);
-    },
-
-    onTimezoneIdSetFromBackend: function(timezoneId) {
-      // Timezone change triggers a localized content update so we don't need to
-      // do anything here.
     },
 
     onLanguageSelected_: function(languageId) {

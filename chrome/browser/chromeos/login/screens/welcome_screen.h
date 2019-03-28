@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 namespace chromeos {
@@ -86,9 +85,6 @@ class WelcomeScreen : public BaseScreen,
                           Profile* profile,
                           bool show_message) override;
 
-  // Subscribe to timezone changes.
-  void InitializeTimezoneObserver();
-
   // Called when continue button is pressed.
   void OnContinueButtonPressed();
 
@@ -116,8 +112,6 @@ class WelcomeScreen : public BaseScreen,
   void ConnectToLocaleUpdateController();
   void NotifyLocaleChange();
   void OnLocaleChangeResult(ash::mojom::LocaleNotificationResult result);
-
-  std::unique_ptr<CrosSettings::ObserverSubscription> timezone_subscription_;
 
   WelcomeView* view_ = nullptr;
   base::RepeatingClosure exit_callback_;

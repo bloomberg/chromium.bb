@@ -108,10 +108,6 @@ void WelcomeScreenHandler::SetInputMethodId(
   CallJS("login.WelcomeScreen.onInputMethodIdSetFromBackend", input_method_id);
 }
 
-void WelcomeScreenHandler::SetTimezoneId(const std::string& timezone_id) {
-  CallJS("login.WelcomeScreen.onTimezoneIdSetFromBackend", timezone_id);
-}
-
 // WelcomeScreenHandler, BaseScreenHandler implementation: --------------------
 
 void WelcomeScreenHandler::DeclareLocalizedValues(

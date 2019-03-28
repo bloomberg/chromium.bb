@@ -41,9 +41,6 @@ class WelcomeView {
 
   // Change the current input method.
   virtual void SetInputMethodId(const std::string& input_method_id) = 0;
-
-  // Change the current timezone.
-  virtual void SetTimezoneId(const std::string& timezone_id) = 0;
 };
 
 }  // namespace chromeos

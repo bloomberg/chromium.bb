@@ -60,8 +60,6 @@ WelcomeScreen::WelcomeScreen(WelcomeView* view,
     view_->Bind(this);
 
   input_method::InputMethodManager::Get()->AddObserver(this);
-  InitializeTimezoneObserver();
-  OnSystemTimezoneChanged();
   UpdateLanguageList();
 }
 
@@ -78,7 +76,6 @@ WelcomeScreen::~WelcomeScreen() {
 void WelcomeScreen::OnViewDestroyed(WelcomeView* view) {
   if (view_ == view) {
     view_ = nullptr;
-    timezone_subscription_.reset();
   }
 }
 
@@ -181,9 +178,6 @@ void WelcomeScreen::Show() {
     SetApplicationLocale(startup_manifest->initial_locale_default());
   }
 
-  if (!timezone_subscription_)
-    InitializeTimezoneObserver();
-
   // Automatically continue if we are using hands-off enrollment.
   if (WizardController::UsingHandsOffEnrollment()) {
     OnUserAction(kUserActionContinueButtonClicked);
@@ -193,7 +187,6 @@ void WelcomeScreen::Show() {
 }
 
 void WelcomeScreen::Hide() {
-  timezone_subscription_.reset();
   if (view_)
     view_->Hide();
 }
@@ -221,12 +214,6 @@ void WelcomeScreen::InputMethodChanged(
 
 ////////////////////////////////////////////////////////////////////////////////
 // WelcomeScreen, private:
-
-void WelcomeScreen::InitializeTimezoneObserver() {
-  timezone_subscription_ = CrosSettings::Get()->AddSettingsObserver(
-      kSystemTimezone, base::Bind(&WelcomeScreen::OnSystemTimezoneChanged,
-                                  base::Unretained(this)));
-}
 
 void WelcomeScreen::OnContinueButtonPressed() {
   if (view_) {
@@ -277,14 +264,6 @@ void WelcomeScreen::OnLanguageListResolved(
     view_->ReloadLocalizedContent();
   for (auto& observer : observers_)
     observer.OnLanguageListReloaded();
-}
-
-void WelcomeScreen::OnSystemTimezoneChanged() {
-  if (view_) {
-    std::string current_timezone_id;
-    CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
-    view_->SetTimezoneId(current_timezone_id);
-  }
 }
 
 void WelcomeScreen::ConnectToLocaleUpdateController() {
