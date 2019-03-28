@@ -987,11 +987,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-immersive-fullscreen-toolbar",
-    "owners": [ "sdy", "chrome/browser/ui/cocoa/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-credit-card-assist",
     "owners": [ "ftirelo", "gogerald" ],
     "expiry_milestone": 76
