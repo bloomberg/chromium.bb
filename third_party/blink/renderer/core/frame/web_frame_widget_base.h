@@ -32,6 +32,7 @@ class AnimationWorkletMutatorDispatcherImpl;
 class GraphicsLayer;
 class HitTestResult;
 class PageWidgetEventHandler;
+class PaintWorkletPaintDispatcher;
 class WebLayerTreeView;
 class WebLocalFrameImpl;
 class WebViewImpl;
@@ -63,6 +64,9 @@ class CORE_EXPORT WebFrameWidgetBase
   base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
   EnsureCompositorMutatorDispatcher(
       scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner);
+
+  // Creates or returns cached paint dispatcher.
+  scoped_refptr<PaintWorkletPaintDispatcher> EnsureCompositorPaintDispatcher();
 
   // Sets the root graphics layer. |GraphicsLayer| can be null when detaching
   // the root layer.
@@ -197,6 +201,8 @@ class CORE_EXPORT WebFrameWidgetBase
   // make that happen.
   base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> mutator_dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> mutator_task_runner_;
+
+  scoped_refptr<PaintWorkletPaintDispatcher> paint_dispatcher_;
 
   friend class WebViewImpl;
 };

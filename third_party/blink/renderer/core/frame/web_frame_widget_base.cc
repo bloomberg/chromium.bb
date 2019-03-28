@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
+#include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -467,6 +468,16 @@ WebFrameWidgetBase::EnsureCompositorMutatorDispatcher(
   DCHECK(mutator_task_runner_);
   *mutator_task_runner = mutator_task_runner_;
   return mutator_dispatcher_;
+}
+
+scoped_refptr<PaintWorkletPaintDispatcher>
+WebFrameWidgetBase::EnsureCompositorPaintDispatcher() {
+  if (!paint_dispatcher_) {
+    Client()->SetPaintWorkletLayerPainterClient(
+        PaintWorkletPaintDispatcher::CreateCompositorThreadPainter(
+            paint_dispatcher_));
+  }
+  return paint_dispatcher_;
 }
 
 }  // namespace blink

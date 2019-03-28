@@ -135,7 +135,8 @@ WorkletGlobalScopeProxy* PaintWorklet::CreateGlobalScope() {
         pending_generator_registry_, GetNumberOfGlobalScopes() + 1);
   }
 
-  PaintWorkletProxyClient* proxy_client = PaintWorkletProxyClient::Create();
+  PaintWorkletProxyClient* proxy_client =
+      PaintWorkletProxyClient::Create(To<Document>(GetExecutionContext()));
   WorkerClients* worker_clients = WorkerClients::Create();
   ProvidePaintWorkletProxyClientTo(worker_clients, proxy_client);
 

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
 
 namespace blink {
 
@@ -18,12 +19,20 @@ const char PaintWorkletProxyClient::kSupplementName[] =
     "PaintWorkletProxyClient";
 
 // static
-PaintWorkletProxyClient* PaintWorkletProxyClient::Create() {
-  return MakeGarbageCollected<PaintWorkletProxyClient>();
+PaintWorkletProxyClient* PaintWorkletProxyClient::Create(Document* document) {
+  WebLocalFrameImpl* local_frame =
+      WebLocalFrameImpl::FromFrame(document->GetFrame());
+
+  scoped_refptr<PaintWorkletPaintDispatcher> compositor_painter_dispatcher =
+      local_frame->LocalRootFrameWidget()->EnsureCompositorPaintDispatcher();
+  return MakeGarbageCollected<PaintWorkletProxyClient>(
+      std::move(compositor_painter_dispatcher));
 }
 
-PaintWorkletProxyClient::PaintWorkletProxyClient()
-    : state_(RunState::kUninitialized) {
+PaintWorkletProxyClient::PaintWorkletProxyClient(
+    scoped_refptr<PaintWorkletPaintDispatcher> compositor_paintee)
+    : compositor_paintee_(std::move(compositor_paintee)),
+      state_(RunState::kUninitialized) {
   DCHECK(IsMainThread());
 }
 
