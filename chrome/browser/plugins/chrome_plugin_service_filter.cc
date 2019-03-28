@@ -14,7 +14,6 @@
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_utils.h"
-#include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/render_messages.h"
@@ -210,8 +209,6 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
         context_info_it->second->host_content_settings_map.get();
     ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
         settings_map, main_frame_origin, plugin_content_url, &is_managed);
-    flash_setting = PluginsFieldTrial::EffectiveContentSetting(
-        settings_map, CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
 
     if (flash_setting == CONTENT_SETTING_ALLOW)
       return true;

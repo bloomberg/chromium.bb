@@ -93,6 +93,11 @@ void GetPluginContentSettingInternal(
       *setting = CONTENT_SETTING_BLOCK;
     }
   }
+
+  // For Plugins, ASK is obsolete. Show as DETECT_IMPORTANT_CONTENT to reflect
+  // actual behavior.
+  if (*setting == ContentSetting::CONTENT_SETTING_ASK)
+    *setting = ContentSetting::CONTENT_SETTING_DETECT_IMPORTANT_CONTENT;
 }
 
 }  // namespace

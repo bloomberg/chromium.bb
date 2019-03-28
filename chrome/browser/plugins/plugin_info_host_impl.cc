@@ -25,7 +25,6 @@
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/plugins/plugin_utils.h"
-#include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/buildflags.h"
@@ -274,20 +273,13 @@ void PluginInfoHostImpl::Context::DecidePluginStatus(
       plugin_identifier, &plugin_setting, &uses_default_content_setting,
       &is_managed);
 
-  // TODO(tommycli): Remove once we deprecate the plugin ASK policy.
-  bool legacy_ask_user = plugin_setting == CONTENT_SETTING_ASK;
-  plugin_setting = PluginsFieldTrial::EffectiveContentSetting(
-      host_content_settings_map_, CONTENT_SETTINGS_TYPE_PLUGINS,
-      plugin_setting);
-
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
   DCHECK(plugin_setting != CONTENT_SETTING_ASK);
 
   if (*status == chrome::mojom::PluginStatus::kFlashHiddenPreferHtml) {
     if (plugin_setting == CONTENT_SETTING_BLOCK) {
-      *status = is_managed && !legacy_ask_user
-                    ? chrome::mojom::PluginStatus::kBlockedByPolicy
-                    : chrome::mojom::PluginStatus::kBlockedNoLoading;
+      *status = is_managed ? chrome::mojom::PluginStatus::kBlockedByPolicy
+                           : chrome::mojom::PluginStatus::kBlockedNoLoading;
     }
     return;
   }
@@ -329,11 +321,8 @@ void PluginInfoHostImpl::Context::DecidePluginStatus(
        !run_all_flash_in_allow_mode_.GetValue())) {
     *status = chrome::mojom::PluginStatus::kPlayImportantContent;
   } else if (plugin_setting == CONTENT_SETTING_BLOCK) {
-    // For managed users with the ASK policy, we allow manually running plugins
-    // via context menu. This is the closest to admin intent.
-    *status = is_managed && !legacy_ask_user
-                  ? chrome::mojom::PluginStatus::kBlockedByPolicy
-                  : chrome::mojom::PluginStatus::kBlocked;
+    *status = is_managed ? chrome::mojom::PluginStatus::kBlockedByPolicy
+                         : chrome::mojom::PluginStatus::kBlocked;
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
