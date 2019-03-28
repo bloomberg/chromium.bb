@@ -272,8 +272,8 @@ void ApplicationCacheHost::DispatchDOMEvent(
     event =
         ProgressEvent::Create(event_type, true, progress_done, progress_total);
   } else if (id == mojom::AppCacheEventID::APPCACHE_ERROR_EVENT) {
-    event = ApplicationCacheErrorEvent::Create(error_reason, error_url,
-                                               error_status, error_message);
+    event = MakeGarbageCollected<ApplicationCacheErrorEvent>(
+        error_reason, error_url, error_status, error_message);
   } else {
     event = Event::Create(event_type);
   }

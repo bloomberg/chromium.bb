@@ -975,8 +975,9 @@ bool Animation::Update(TimingUpdateReason reason) {
         if (GetExecutionContext() && HasEventListeners(event_type)) {
           double event_current_time = NullValue();
           pending_cancelled_event_ =
-              AnimationPlaybackEvent::Create(event_type, event_current_time,
-                                             TimelineInternal()->currentTime());
+              MakeGarbageCollected<AnimationPlaybackEvent>(
+                  event_type, event_current_time,
+                  TimelineInternal()->currentTime());
           pending_cancelled_event_->SetTarget(this);
           pending_cancelled_event_->SetCurrentTarget(this);
           timeline_->GetDocument()->EnqueueAnimationFrameEvent(
@@ -987,8 +988,9 @@ bool Animation::Update(TimingUpdateReason reason) {
         if (GetExecutionContext() && HasEventListeners(event_type)) {
           double event_current_time = CurrentTimeInternal() * 1000;
           pending_finished_event_ =
-              AnimationPlaybackEvent::Create(event_type, event_current_time,
-                                             TimelineInternal()->currentTime());
+              MakeGarbageCollected<AnimationPlaybackEvent>(
+                  event_type, event_current_time,
+                  TimelineInternal()->currentTime());
           pending_finished_event_->SetTarget(this);
           pending_finished_event_->SetCurrentTarget(this);
           timeline_->GetDocument()->EnqueueAnimationFrameEvent(
