@@ -1,6 +1,6 @@
 project('weston',
 	'c',
-	version: '6.0.0',
+	version: '6.0.90',
 	default_options: [
 		'warning_level=2',
 		'c_std=gnu99',
