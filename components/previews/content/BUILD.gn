@@ -6,8 +6,8 @@ static_library("content") {
   sources = [
     "hint_cache.cc",
     "hint_cache.h",
-    "hint_cache_leveldb_store.cc",
-    "hint_cache_leveldb_store.h",
+    "hint_cache_store.cc",
+    "hint_cache_store.h",
     "hints_fetcher.cc",
     "hints_fetcher.h",
     "previews_decider_impl.cc",
@@ -43,7 +43,7 @@ static_library("content") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "hint_cache_leveldb_store_unittest.cc",
+    "hint_cache_store_unittest.cc",
     "hint_cache_unittest.cc",
     "hints_fetcher_unittest.cc",
     "previews_decider_impl_unittest.cc",

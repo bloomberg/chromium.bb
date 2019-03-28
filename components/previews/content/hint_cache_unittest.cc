@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/previews/content/hint_cache_leveldb_store.h"
+#include "components/previews/content/hint_cache_store.h"
 #include "components/previews/core/previews_experiments.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -41,7 +41,7 @@ class HintCacheTest : public testing::Test {
   void CreateAndInitializeHintCache(int memory_cache_size,
                                     bool purge_existing_data = false) {
     hint_cache_ = std::make_unique<HintCache>(
-        std::make_unique<HintCacheLevelDBStore>(
+        std::make_unique<HintCacheStore>(
             temp_dir_.GetPath(),
             scoped_task_environment_.GetMainThreadTaskRunner()),
         memory_cache_size);

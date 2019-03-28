@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/content/hint_cache_leveldb_store.h"
+#include "components/previews/content/hint_cache_store.h"
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
@@ -64,21 +64,20 @@ class ScopedLoadMetadataResultRecorder {
   PreviewsHintCacheLevelDBStoreLoadMetadataResult result_;
 };
 
-void RecordStatusChange(HintCacheLevelDBStore::Status status) {
+void RecordStatusChange(HintCacheStore::Status status) {
   UMA_HISTOGRAM_ENUMERATION("Previews.HintCacheLevelDBStore.Status", status);
 }
 
 }  // namespace
 
-HintCacheLevelDBStore::HintCacheLevelDBStore(
+HintCacheStore::HintCacheStore(
     const base::FilePath& database_dir,
     scoped_refptr<base::SequencedTaskRunner> store_task_runner)
-    : HintCacheLevelDBStore(
-          database_dir,
-          leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<
-              previews::proto::StoreEntry>(store_task_runner)) {}
+    : HintCacheStore(database_dir,
+                     leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<
+                         previews::proto::StoreEntry>(store_task_runner)) {}
 
-HintCacheLevelDBStore::HintCacheLevelDBStore(
+HintCacheStore::HintCacheStore(
     const base::FilePath& database_dir,
     std::unique_ptr<leveldb_proto::ProtoDatabase<previews::proto::StoreEntry>>
         database)
@@ -90,12 +89,12 @@ HintCacheLevelDBStore::HintCacheLevelDBStore(
   RecordStatusChange(status_);
 }
 
-HintCacheLevelDBStore::~HintCacheLevelDBStore() {
+HintCacheStore::~HintCacheStore() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void HintCacheLevelDBStore::Initialize(bool purge_existing_data,
-                                       base::OnceClosure callback) {
+void HintCacheStore::Initialize(bool purge_existing_data,
+                                base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UpdateStatus(Status::kInitializing);
 
@@ -114,13 +113,13 @@ void HintCacheLevelDBStore::Initialize(bool purge_existing_data,
   base::FilePath hint_store_dir =
       database_dir_.AppendASCII(kHintCacheStoreFolder);
   database_->Init(kHintCacheStoreUMAClientName, hint_store_dir, options,
-                  base::BindOnce(&HintCacheLevelDBStore::OnDatabaseInitialized,
+                  base::BindOnce(&HintCacheStore::OnDatabaseInitialized,
                                  weak_ptr_factory_.GetWeakPtr(),
                                  purge_existing_data, std::move(callback)));
 }
 
-std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData>
-HintCacheLevelDBStore::MaybeCreateComponentUpdateData(
+std::unique_ptr<HintCacheStore::ComponentUpdateData>
+HintCacheStore::MaybeCreateComponentUpdateData(
     const base::Version& version) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(version.IsValid());
@@ -142,16 +141,16 @@ HintCacheLevelDBStore::MaybeCreateComponentUpdateData(
   return std::make_unique<LevelDBComponentUpdateData>(version);
 }
 
-std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData>
-HintCacheLevelDBStore::CreateUpdateDataForFetchedHints() const {
+std::unique_ptr<HintCacheStore::ComponentUpdateData>
+HintCacheStore::CreateUpdateDataForFetchedHints() const {
   // TODO(mcrouse): Currently returns a LevelDBComponentUpdateData, future
   // refactor will create a LevelDBFetchedHintsData that will take a cache
   // expiry time. The version for this object will be ignored.
   return std::make_unique<LevelDBComponentUpdateData>(base::Version("0.0.1"));
 }
 
-void HintCacheLevelDBStore::UpdateComponentData(
-    std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> component_data,
+void HintCacheStore::UpdateComponentData(
+    std::unique_ptr<HintCacheStore::ComponentUpdateData> component_data,
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(component_data);
@@ -206,13 +205,12 @@ void HintCacheLevelDBStore::UpdateComponentData(
                    key.compare(0, filter_prefix.length(), filter_prefix) == 0;
           },
           retain_prefix, filter_prefix),
-      base::BindOnce(&HintCacheLevelDBStore::OnUpdateComponentData,
+      base::BindOnce(&HintCacheStore::OnUpdateComponentData,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-bool HintCacheLevelDBStore::FindHintEntryKey(
-    const std::string& host_suffix,
-    EntryKey* out_hint_entry_key) const {
+bool HintCacheStore::FindHintEntryKey(const std::string& host_suffix,
+                                      EntryKey* out_hint_entry_key) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!component_version_.has_value() ||
          component_hint_entry_key_prefix_ ==
@@ -227,8 +225,8 @@ bool HintCacheLevelDBStore::FindHintEntryKey(
   return false;
 }
 
-void HintCacheLevelDBStore::LoadHint(const EntryKey& hint_entry_key,
-                                     HintLoadedCallback callback) {
+void HintCacheStore::LoadHint(const EntryKey& hint_entry_key,
+                              HintLoadedCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsAvailable()) {
@@ -237,12 +235,12 @@ void HintCacheLevelDBStore::LoadHint(const EntryKey& hint_entry_key,
   }
 
   database_->GetEntry(hint_entry_key,
-                      base::BindOnce(&HintCacheLevelDBStore::OnLoadHint,
+                      base::BindOnce(&HintCacheStore::OnLoadHint,
                                      weak_ptr_factory_.GetWeakPtr(),
                                      hint_entry_key, std::move(callback)));
 }
 
-HintCacheLevelDBStore::LevelDBComponentUpdateData::LevelDBComponentUpdateData(
+HintCacheStore::LevelDBComponentUpdateData::LevelDBComponentUpdateData(
     const base::Version& version)
     : ComponentUpdateData(version),
       component_hint_entry_key_prefix_(GetComponentHintEntryKeyPrefix(version)),
@@ -256,10 +254,10 @@ HintCacheLevelDBStore::LevelDBComponentUpdateData::LevelDBComponentUpdateData(
       std::move(metadata_component_entry));
 }
 
-HintCacheLevelDBStore::LevelDBComponentUpdateData::
-    ~LevelDBComponentUpdateData() = default;
+HintCacheStore::LevelDBComponentUpdateData::~LevelDBComponentUpdateData() =
+    default;
 
-void HintCacheLevelDBStore::LevelDBComponentUpdateData::MoveHintIntoUpdateData(
+void HintCacheStore::LevelDBComponentUpdateData::MoveHintIntoUpdateData(
     optimization_guide::proto::Hint&& hint) {
   // Add a component hint entry to the update data. To avoid any unnecessary
   // copying, the hint is moved into proto::StoreEntry.
@@ -272,38 +270,36 @@ void HintCacheLevelDBStore::LevelDBComponentUpdateData::MoveHintIntoUpdateData(
 }
 
 // static
-const char HintCacheLevelDBStore::kStoreSchemaVersion[] = "1";
+const char HintCacheStore::kStoreSchemaVersion[] = "1";
 
 // static
-HintCacheLevelDBStore::EntryKeyPrefix
-HintCacheLevelDBStore::GetMetadataEntryKeyPrefix() {
+HintCacheStore::EntryKeyPrefix HintCacheStore::GetMetadataEntryKeyPrefix() {
   return std::to_string(static_cast<int>(EntryType::kMetadata)) +
          kKeySectionDelimiter;
 }
 
 // static
-HintCacheLevelDBStore::EntryKey HintCacheLevelDBStore::GetMetadataTypeEntryKey(
+HintCacheStore::EntryKey HintCacheStore::GetMetadataTypeEntryKey(
     MetadataType metadata_type) {
   return GetMetadataEntryKeyPrefix() +
          std::to_string(static_cast<int>(metadata_type));
 }
 
 // static
-HintCacheLevelDBStore::EntryKeyPrefix
-HintCacheLevelDBStore::GetComponentHintEntryKeyPrefixWithoutVersion() {
+HintCacheStore::EntryKeyPrefix
+HintCacheStore::GetComponentHintEntryKeyPrefixWithoutVersion() {
   return std::to_string(static_cast<int>(EntryType::kComponentHint)) +
          kKeySectionDelimiter;
 }
 
 // static
-HintCacheLevelDBStore::EntryKeyPrefix
-HintCacheLevelDBStore::GetComponentHintEntryKeyPrefix(
+HintCacheStore::EntryKeyPrefix HintCacheStore::GetComponentHintEntryKeyPrefix(
     const base::Version& component_version) {
   return GetComponentHintEntryKeyPrefixWithoutVersion() +
          component_version.GetString() + kKeySectionDelimiter;
 }
 
-void HintCacheLevelDBStore::UpdateStatus(Status new_status) {
+void HintCacheStore::UpdateStatus(Status new_status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Status::kUninitialized can only transition to Status::kInitializing.
@@ -328,20 +324,19 @@ void HintCacheLevelDBStore::UpdateStatus(Status new_status) {
   RecordStatusChange(status_);
 
   if (status_ == Status::kFailed) {
-    database_->Destroy(
-        base::BindOnce(&HintCacheLevelDBStore::OnDatabaseDestroyed,
-                       weak_ptr_factory_.GetWeakPtr()));
+    database_->Destroy(base::BindOnce(&HintCacheStore::OnDatabaseDestroyed,
+                                      weak_ptr_factory_.GetWeakPtr()));
     ClearComponentVersion();
     hint_entry_keys_.reset();
   }
 }
 
-bool HintCacheLevelDBStore::IsAvailable() const {
+bool HintCacheStore::IsAvailable() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return status_ == Status::kAvailable;
 }
 
-void HintCacheLevelDBStore::PurgeDatabase(base::OnceClosure callback) {
+void HintCacheStore::PurgeDatabase(base::OnceClosure callback) {
   // When purging the database, update the schema version to the current one.
   EntryKey schema_entry_key = GetMetadataTypeEntryKey(MetadataType::kSchema);
   previews::proto::StoreEntry schema_entry;
@@ -358,11 +353,11 @@ void HintCacheLevelDBStore::PurgeDatabase(base::OnceClosure callback) {
                                schema_entry_key) != 0;
           },
           schema_entry_key),
-      base::BindOnce(&HintCacheLevelDBStore::OnPurgeDatabase,
+      base::BindOnce(&HintCacheStore::OnPurgeDatabase,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void HintCacheLevelDBStore::SetComponentVersion(
+void HintCacheStore::SetComponentVersion(
     const base::Version& component_version) {
   DCHECK(component_version.IsValid());
   component_version_ = component_version;
@@ -370,12 +365,12 @@ void HintCacheLevelDBStore::SetComponentVersion(
       GetComponentHintEntryKeyPrefix(component_version_.value());
 }
 
-void HintCacheLevelDBStore::ClearComponentVersion() {
+void HintCacheStore::ClearComponentVersion() {
   component_version_.reset();
   component_hint_entry_key_prefix_.clear();
 }
 
-void HintCacheLevelDBStore::MaybeLoadHintEntryKeys(base::OnceClosure callback) {
+void HintCacheStore::MaybeLoadHintEntryKeys(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // If the database is unavailable or if there's an in-flight component data
@@ -404,19 +399,19 @@ void HintCacheLevelDBStore::MaybeLoadHintEntryKeys(base::OnceClosure callback) {
             return false;
           },
           raw_hint_entry_keys_pointer, GetMetadataEntryKeyPrefix()),
-      base::BindOnce(&HintCacheLevelDBStore::OnLoadHintEntryKeys,
+      base::BindOnce(&HintCacheStore::OnLoadHintEntryKeys,
                      weak_ptr_factory_.GetWeakPtr(), std::move(hint_entry_keys),
                      std::move(callback)));
 }
 
-size_t HintCacheLevelDBStore::GetHintEntryKeyCount() const {
+size_t HintCacheStore::GetHintEntryKeyCount() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return hint_entry_keys_ ? hint_entry_keys_->size() : 0;
 }
 
-void HintCacheLevelDBStore::OnDatabaseInitialized(bool purge_existing_data,
-                                                  base::OnceClosure callback,
-                                                  bool success) {
+void HintCacheStore::OnDatabaseInitialized(bool purge_existing_data,
+                                           base::OnceClosure callback,
+                                           bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!success) {
@@ -437,15 +432,15 @@ void HintCacheLevelDBStore::OnDatabaseInitialized(bool purge_existing_data,
   database_->LoadKeysAndEntriesWithFilter(
       leveldb_proto::KeyFilter(), leveldb::ReadOptions(),
       GetMetadataEntryKeyPrefix(),
-      base::BindOnce(&HintCacheLevelDBStore::OnLoadMetadata,
+      base::BindOnce(&HintCacheStore::OnLoadMetadata,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void HintCacheLevelDBStore::OnDatabaseDestroyed(bool /*success*/) {
+void HintCacheStore::OnDatabaseDestroyed(bool /*success*/) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void HintCacheLevelDBStore::OnLoadMetadata(
+void HintCacheStore::OnLoadMetadata(
     base::OnceClosure callback,
     bool success,
     std::unique_ptr<EntryMap> metadata_entries) {
@@ -502,8 +497,7 @@ void HintCacheLevelDBStore::OnLoadMetadata(
   MaybeLoadHintEntryKeys(std::move(callback));
 }
 
-void HintCacheLevelDBStore::OnPurgeDatabase(base::OnceClosure callback,
-                                            bool success) {
+void HintCacheStore::OnPurgeDatabase(base::OnceClosure callback, bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The database can only be purged during initialization.
   DCHECK_EQ(status_, Status::kInitializing);
@@ -512,8 +506,8 @@ void HintCacheLevelDBStore::OnPurgeDatabase(base::OnceClosure callback,
   std::move(callback).Run();
 }
 
-void HintCacheLevelDBStore::OnUpdateComponentData(base::OnceClosure callback,
-                                                  bool success) {
+void HintCacheStore::OnUpdateComponentData(base::OnceClosure callback,
+                                           bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(component_data_update_in_flight_);
 
@@ -526,7 +520,7 @@ void HintCacheLevelDBStore::OnUpdateComponentData(base::OnceClosure callback,
   MaybeLoadHintEntryKeys(std::move(callback));
 }
 
-void HintCacheLevelDBStore::OnLoadHintEntryKeys(
+void HintCacheStore::OnLoadHintEntryKeys(
     std::unique_ptr<EntryKeySet> hint_entry_keys,
     base::OnceClosure callback,
     bool success,
@@ -552,7 +546,7 @@ void HintCacheLevelDBStore::OnLoadHintEntryKeys(
   std::move(callback).Run();
 }
 
-void HintCacheLevelDBStore::OnLoadHint(
+void HintCacheStore::OnLoadHint(
     const std::string& entry_key,
     HintLoadedCallback callback,
     bool success,

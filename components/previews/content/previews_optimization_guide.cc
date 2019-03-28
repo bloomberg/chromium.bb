@@ -14,7 +14,7 @@
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "components/previews/content/hint_cache_leveldb_store.h"
+#include "components/previews/content/hint_cache_store.h"
 #include "components/previews/content/hints_fetcher.h"
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_hints_util.h"
@@ -92,8 +92,8 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
       background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
       hint_cache_(std::make_unique<HintCache>(
-          std::make_unique<HintCacheLevelDBStore>(profile_path,
-                                                  background_task_runner_))),
+          std::make_unique<HintCacheStore>(profile_path,
+                                           background_task_runner_))),
       previews_top_host_provider_(previews_top_host_provider),
       url_loader_factory_(url_loader_factory),
       ui_weak_ptr_factory_(this) {

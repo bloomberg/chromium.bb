@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/content/hint_cache_leveldb_store.h"
+#include "components/previews/content/hint_cache_store.h"
 
 #include <string>
 #include <vector>
@@ -45,12 +45,12 @@ enum class MetadataSchemaState {
 
 }  // namespace
 
-class HintCacheLevelDBStoreTest : public testing::Test {
+class HintCacheStoreTest : public testing::Test {
  public:
   using StoreEntry = previews::proto::StoreEntry;
-  using StoreEntryMap = std::map<HintCacheLevelDBStore::EntryKey, StoreEntry>;
+  using StoreEntryMap = std::map<HintCacheStore::EntryKey, StoreEntry>;
 
-  HintCacheLevelDBStoreTest() : db_(nullptr) {}
+  HintCacheStoreTest() : db_(nullptr) {}
 
   void TearDown() override { last_loaded_hint_.reset(); }
 
@@ -64,12 +64,12 @@ class HintCacheLevelDBStoreTest : public testing::Test {
     // entry version is set to the store's current version if the state is
     // kValid; otherwise, it's set to the invalid version of "0".
     if (state == MetadataSchemaState::kValid) {
-      db_store_[HintCacheLevelDBStore::GetMetadataTypeEntryKey(
-                    HintCacheLevelDBStore::MetadataType::kSchema)]
-          .set_version(HintCacheLevelDBStore::kStoreSchemaVersion);
+      db_store_[HintCacheStore::GetMetadataTypeEntryKey(
+                    HintCacheStore::MetadataType::kSchema)]
+          .set_version(HintCacheStore::kStoreSchemaVersion);
     } else if (state == MetadataSchemaState::kInvalid) {
-      db_store_[HintCacheLevelDBStore::GetMetadataTypeEntryKey(
-                    HintCacheLevelDBStore::MetadataType::kSchema)]
+      db_store_[HintCacheStore::GetMetadataTypeEntryKey(
+                    HintCacheStore::MetadataType::kSchema)]
           .set_version("0");
     }
 
@@ -77,11 +77,11 @@ class HintCacheLevelDBStoreTest : public testing::Test {
     // with a provided count. Add the component metadata with the default
     // component version and then add the indicated number of component hints.
     if (component_hint_count) {
-      db_store_[HintCacheLevelDBStore::GetMetadataTypeEntryKey(
-                    HintCacheLevelDBStore::MetadataType::kComponent)]
+      db_store_[HintCacheStore::GetMetadataTypeEntryKey(
+                    HintCacheStore::MetadataType::kComponent)]
           .set_version(kDefaultComponentVersion);
-      HintCacheLevelDBStore::EntryKeyPrefix component_hint_key_prefix =
-          HintCacheLevelDBStore::GetComponentHintEntryKeyPrefix(
+      HintCacheStore::EntryKeyPrefix component_hint_key_prefix =
+          HintCacheStore::GetComponentHintEntryKeyPrefix(
               base::Version(kDefaultComponentVersion));
       for (size_t i = 0; i < component_hint_count.value(); ++i) {
         std::string host_suffix = GetHostSuffix(i);
@@ -96,7 +96,7 @@ class HintCacheLevelDBStoreTest : public testing::Test {
   }
 
   // Moves the specified number of component hints into the update data.
-  void SeedUpdateData(HintCacheLevelDBStore::ComponentUpdateData* update_data,
+  void SeedUpdateData(HintCacheStore::ComponentUpdateData* update_data,
                       size_t component_hint_count) {
     for (size_t i = 0; i < component_hint_count; ++i) {
       std::string host_suffix = GetHostSuffix(i);
@@ -117,16 +117,15 @@ class HintCacheLevelDBStoreTest : public testing::Test {
     // Setup the fake db and the class under test.
     auto db = std::make_unique<FakeDB<StoreEntry>>(&db_store_);
     db_ = db.get();
-    hint_store_ = std::make_unique<HintCacheLevelDBStore>(base::FilePath(),
-                                                          std::move(db));
+    hint_store_ =
+        std::make_unique<HintCacheStore>(base::FilePath(), std::move(db));
   }
 
   void InitializeDatabase(bool success, bool purge_existing_data = false) {
     EXPECT_CALL(*this, OnInitialized());
-    hint_store()->Initialize(
-        purge_existing_data,
-        base::BindOnce(&HintCacheLevelDBStoreTest::OnInitialized,
-                       base::Unretained(this)));
+    hint_store()->Initialize(purge_existing_data,
+                             base::BindOnce(&HintCacheStoreTest::OnInitialized,
+                                            base::Unretained(this)));
     // OnDatabaseInitialized callback
     db()->InitCallback(success);
   }
@@ -153,14 +152,13 @@ class HintCacheLevelDBStoreTest : public testing::Test {
   }
 
   void UpdateComponentData(
-      std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData>
-          component_data,
+      std::unique_ptr<HintCacheStore::ComponentUpdateData> component_data,
       bool update_success = true,
       bool load_hint_entry_keys_success = true) {
     EXPECT_CALL(*this, OnUpdateComponentData());
     hint_store()->UpdateComponentData(
         std::move(component_data),
-        base::BindOnce(&HintCacheLevelDBStoreTest::OnUpdateComponentData,
+        base::BindOnce(&HintCacheStoreTest::OnUpdateComponentData,
                        base::Unretained(this)));
     // OnUpdateComponentData callback
     db()->UpdateCallback(update_success);
@@ -171,8 +169,8 @@ class HintCacheLevelDBStoreTest : public testing::Test {
   }
 
   bool IsMetadataSchemaEntryKeyPresent() const {
-    return IsKeyPresent(HintCacheLevelDBStore::GetMetadataTypeEntryKey(
-        HintCacheLevelDBStore::MetadataType::kSchema));
+    return IsKeyPresent(HintCacheStore::GetMetadataTypeEntryKey(
+        HintCacheStore::MetadataType::kSchema));
   }
 
   // Verifies that the component metadata has the expected version and all
@@ -180,20 +178,19 @@ class HintCacheLevelDBStoreTest : public testing::Test {
   void ExpectComponentHintsPresent(const std::string& version,
                                    int count) const {
     const auto& metadata_entry =
-        db_store_.find(HintCacheLevelDBStore::GetMetadataTypeEntryKey(
-            HintCacheLevelDBStore::MetadataType::kComponent));
+        db_store_.find(HintCacheStore::GetMetadataTypeEntryKey(
+            HintCacheStore::MetadataType::kComponent));
     if (metadata_entry != db_store_.end()) {
       EXPECT_EQ(metadata_entry->second.version(), version);
     } else {
       FAIL() << "No component metadata found";
     }
 
-    HintCacheLevelDBStore::EntryKeyPrefix component_hint_entry_key_prefix =
-        HintCacheLevelDBStore::GetComponentHintEntryKeyPrefix(
-            base::Version(version));
+    HintCacheStore::EntryKeyPrefix component_hint_entry_key_prefix =
+        HintCacheStore::GetComponentHintEntryKeyPrefix(base::Version(version));
     for (int i = 0; i < count; ++i) {
       std::string host_suffix = GetHostSuffix(i);
-      HintCacheLevelDBStore::EntryKey hint_entry_key =
+      HintCacheStore::EntryKey hint_entry_key =
           component_hint_entry_key_prefix + host_suffix;
       const auto& hint_entry = db_store_.find(hint_entry_key);
       if (hint_entry == db_store_.end()) {
@@ -211,7 +208,7 @@ class HintCacheLevelDBStoreTest : public testing::Test {
   }
 
   // Returns true if the data is present for the given key.
-  bool IsKeyPresent(const HintCacheLevelDBStore::EntryKey& entry_key) const {
+  bool IsKeyPresent(const HintCacheStore::EntryKey& entry_key) const {
     return db_store_.find(entry_key) != db_store_.end();
   }
 
@@ -220,10 +217,10 @@ class HintCacheLevelDBStoreTest : public testing::Test {
     return hint_store_->GetHintEntryKeyCount();
   }
 
-  HintCacheLevelDBStore* hint_store() { return hint_store_.get(); }
+  HintCacheStore* hint_store() { return hint_store_.get(); }
   FakeDB<previews::proto::StoreEntry>* db() { return db_; }
 
-  const HintCacheLevelDBStore::EntryKey& last_loaded_hint_entry_key() const {
+  const HintCacheStore::EntryKey& last_loaded_hint_entry_key() const {
     return last_loaded_hint_entry_key_;
   }
 
@@ -232,7 +229,7 @@ class HintCacheLevelDBStoreTest : public testing::Test {
   }
 
   void OnHintLoaded(
-      const HintCacheLevelDBStore::EntryKey& hint_entry_key,
+      const HintCacheStore::EntryKey& hint_entry_key,
       std::unique_ptr<optimization_guide::proto::Hint> loaded_hint) {
     last_loaded_hint_entry_key_ = hint_entry_key;
     last_loaded_hint_ = std::move(loaded_hint);
@@ -244,15 +241,15 @@ class HintCacheLevelDBStoreTest : public testing::Test {
  private:
   FakeDB<previews::proto::StoreEntry>* db_;
   StoreEntryMap db_store_;
-  std::unique_ptr<HintCacheLevelDBStore> hint_store_;
+  std::unique_ptr<HintCacheStore> hint_store_;
 
-  HintCacheLevelDBStore::EntryKey last_loaded_hint_entry_key_;
+  HintCacheStore::EntryKey last_loaded_hint_entry_key_;
   std::unique_ptr<optimization_guide::proto::Hint> last_loaded_hint_;
 
-  DISALLOW_COPY_AND_ASSIGN(HintCacheLevelDBStoreTest);
+  DISALLOW_COPY_AND_ASSIGN(HintCacheStoreTest);
 };
 
-TEST_F(HintCacheLevelDBStoreTest, NoInitialization) {
+TEST_F(HintCacheStoreTest, NoInitialization) {
   base::HistogramTester histogram_tester;
 
   SeedInitialData(MetadataSchemaState::kMissing);
@@ -271,8 +268,7 @@ TEST_F(HintCacheLevelDBStoreTest, NoInitialization) {
                                      3 /* kFailed */, 0);
 }
 
-TEST_F(HintCacheLevelDBStoreTest,
-       InitializeFailedOnInitializeWithNoInitialData) {
+TEST_F(HintCacheStoreTest, InitializeFailedOnInitializeWithNoInitialData) {
   base::HistogramTester histogram_tester;
 
   SeedInitialData(MetadataSchemaState::kMissing);
@@ -296,8 +292,7 @@ TEST_F(HintCacheLevelDBStoreTest,
                                      3 /* kFailed */, 1);
 }
 
-TEST_F(HintCacheLevelDBStoreTest,
-       InitializeFailedOnLoadMetadataWithNoInitialData) {
+TEST_F(HintCacheStoreTest, InitializeFailedOnLoadMetadataWithNoInitialData) {
   base::HistogramTester histogram_tester;
 
   SeedInitialData(MetadataSchemaState::kMissing);
@@ -325,8 +320,7 @@ TEST_F(HintCacheLevelDBStoreTest,
                                      3 /* kFailed */, 1);
 }
 
-TEST_F(HintCacheLevelDBStoreTest,
-       InitializeFailedOnUpdateMetadataNoInitialData) {
+TEST_F(HintCacheStoreTest, InitializeFailedOnUpdateMetadataNoInitialData) {
   base::HistogramTester histogram_tester;
 
   SeedInitialData(MetadataSchemaState::kMissing);
@@ -357,7 +351,7 @@ TEST_F(HintCacheLevelDBStoreTest,
                                      3 /* kFailed */, 1);
 }
 
-TEST_F(HintCacheLevelDBStoreTest, InitializeFailedOnInitializeWithInitialData) {
+TEST_F(HintCacheStoreTest, InitializeFailedOnInitializeWithInitialData) {
   base::HistogramTester histogram_tester;
 
   SeedInitialData(MetadataSchemaState::kValid, 10);
@@ -381,8 +375,7 @@ TEST_F(HintCacheLevelDBStoreTest, InitializeFailedOnInitializeWithInitialData) {
                                      3 /* kFailed */, 1);
 }
 
-TEST_F(HintCacheLevelDBStoreTest,
-       InitializeFailedOnLoadMetadataWithInitialData) {
+TEST_F(HintCacheStoreTest, InitializeFailedOnLoadMetadataWithInitialData) {
   base::HistogramTester histogram_tester;
 
   SeedInitialData(MetadataSchemaState::kValid, 10);
@@ -410,7 +403,7 @@ TEST_F(HintCacheLevelDBStoreTest,
                                      3 /* kFailed */, 1);
 }
 
-TEST_F(HintCacheLevelDBStoreTest,
+TEST_F(HintCacheStoreTest,
        InitializeFailedOnUpdateMetadataWithInvalidSchemaEntry) {
   base::HistogramTester histogram_tester;
 
@@ -441,8 +434,7 @@ TEST_F(HintCacheLevelDBStoreTest,
                                      3 /* kFailed */, 1);
 }
 
-TEST_F(HintCacheLevelDBStoreTest,
-       InitializeFailedOnLoadHintEntryKeysWithInitialData) {
+TEST_F(HintCacheStoreTest, InitializeFailedOnLoadHintEntryKeysWithInitialData) {
   base::HistogramTester histogram_tester;
 
   SeedInitialData(MetadataSchemaState::kValid, 10);
@@ -471,7 +463,7 @@ TEST_F(HintCacheLevelDBStoreTest,
                                      3 /* kFailed */, 1);
 }
 
-TEST_F(HintCacheLevelDBStoreTest, InitializeSucceededWithoutSchemaEntry) {
+TEST_F(HintCacheStoreTest, InitializeSucceededWithoutSchemaEntry) {
   base::HistogramTester histogram_tester;
 
   MetadataSchemaState schema_state = MetadataSchemaState::kMissing;
@@ -499,7 +491,7 @@ TEST_F(HintCacheLevelDBStoreTest, InitializeSucceededWithoutSchemaEntry) {
                                      3 /* kFailed */, 0);
 }
 
-TEST_F(HintCacheLevelDBStoreTest, InitializeSucceededWithInvalidSchemaEntry) {
+TEST_F(HintCacheStoreTest, InitializeSucceededWithInvalidSchemaEntry) {
   base::HistogramTester histogram_tester;
 
   MetadataSchemaState schema_state = MetadataSchemaState::kInvalid;
@@ -527,7 +519,7 @@ TEST_F(HintCacheLevelDBStoreTest, InitializeSucceededWithInvalidSchemaEntry) {
                                      3 /* kFailed */, 0);
 }
 
-TEST_F(HintCacheLevelDBStoreTest, InitializeSucceededWithValidSchemaEntry) {
+TEST_F(HintCacheStoreTest, InitializeSucceededWithValidSchemaEntry) {
   base::HistogramTester histogram_tester;
 
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
@@ -555,7 +547,7 @@ TEST_F(HintCacheLevelDBStoreTest, InitializeSucceededWithValidSchemaEntry) {
                                      3 /* kFailed */, 0);
 }
 
-TEST_F(HintCacheLevelDBStoreTest,
+TEST_F(HintCacheStoreTest,
        InitializeSucceededWithInvalidSchemaEntryAndInitialData) {
   base::HistogramTester histogram_tester;
 
@@ -585,7 +577,7 @@ TEST_F(HintCacheLevelDBStoreTest,
                                      3 /* kFailed */, 0);
 }
 
-TEST_F(HintCacheLevelDBStoreTest, InitializeSucceededWithPurgeExistingData) {
+TEST_F(HintCacheStoreTest, InitializeSucceededWithPurgeExistingData) {
   base::HistogramTester histogram_tester;
 
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
@@ -612,7 +604,7 @@ TEST_F(HintCacheLevelDBStoreTest, InitializeSucceededWithPurgeExistingData) {
                                      3 /* kFailed */, 0);
 }
 
-TEST_F(HintCacheLevelDBStoreTest,
+TEST_F(HintCacheStoreTest,
        InitializeSucceededWithValidSchemaEntryAndInitialData) {
   base::HistogramTester histogram_tester;
 
@@ -644,7 +636,7 @@ TEST_F(HintCacheLevelDBStoreTest,
                                      3 /* kFailed */, 0);
 }
 
-TEST_F(HintCacheLevelDBStoreTest,
+TEST_F(HintCacheStoreTest,
        CreateComponentUpdateDataFailsForUninitializedStore) {
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   SeedInitialData(schema_state, 10);
@@ -655,8 +647,7 @@ TEST_F(HintCacheLevelDBStoreTest,
       base::Version(kUpdateComponentVersion)));
 }
 
-TEST_F(HintCacheLevelDBStoreTest,
-       CreateComponentUpdateDataFailsForEarlierVersion) {
+TEST_F(HintCacheStoreTest, CreateComponentUpdateDataFailsForEarlierVersion) {
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   SeedInitialData(schema_state, 10);
   CreateDatabase();
@@ -668,8 +659,7 @@ TEST_F(HintCacheLevelDBStoreTest,
       hint_store()->MaybeCreateComponentUpdateData(base::Version("0.0.0")));
 }
 
-TEST_F(HintCacheLevelDBStoreTest,
-       CreateComponentUpdateDataFailsForCurrentVersion) {
+TEST_F(HintCacheStoreTest, CreateComponentUpdateDataFailsForCurrentVersion) {
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   SeedInitialData(schema_state, 10);
   CreateDatabase();
@@ -681,7 +671,7 @@ TEST_F(HintCacheLevelDBStoreTest,
       base::Version(kDefaultComponentVersion)));
 }
 
-TEST_F(HintCacheLevelDBStoreTest,
+TEST_F(HintCacheStoreTest,
        CreateComponentUpdateDataSucceedsWithNoPreexistingVersion) {
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   SeedInitialData(schema_state);
@@ -694,8 +684,7 @@ TEST_F(HintCacheLevelDBStoreTest,
       base::Version(kDefaultComponentVersion)));
 }
 
-TEST_F(HintCacheLevelDBStoreTest,
-       CreateComponentUpdateDataSucceedsForNewerVersion) {
+TEST_F(HintCacheStoreTest, CreateComponentUpdateDataSucceedsForNewerVersion) {
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   SeedInitialData(schema_state, 10);
   CreateDatabase();
@@ -707,13 +696,13 @@ TEST_F(HintCacheLevelDBStoreTest,
       base::Version(kUpdateComponentVersion)));
 }
 
-TEST_F(HintCacheLevelDBStoreTest, UpdateComponentDataUpdateEntriesFails) {
+TEST_F(HintCacheStoreTest, UpdateComponentDataUpdateEntriesFails) {
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   SeedInitialData(schema_state, 10);
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data =
+  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -726,13 +715,13 @@ TEST_F(HintCacheLevelDBStoreTest, UpdateComponentDataUpdateEntriesFails) {
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
 }
 
-TEST_F(HintCacheLevelDBStoreTest, UpdateComponentDataGetKeysFails) {
+TEST_F(HintCacheStoreTest, UpdateComponentDataGetKeysFails) {
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   SeedInitialData(schema_state, 10);
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data =
+  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -747,7 +736,7 @@ TEST_F(HintCacheLevelDBStoreTest, UpdateComponentDataGetKeysFails) {
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
 }
 
-TEST_F(HintCacheLevelDBStoreTest, UpdateComponentData) {
+TEST_F(HintCacheStoreTest, UpdateComponentData) {
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   size_t initial_hint_count = 10;
   size_t update_hint_count = 5;
@@ -755,7 +744,7 @@ TEST_F(HintCacheLevelDBStoreTest, UpdateComponentData) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data =
+  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -770,8 +759,7 @@ TEST_F(HintCacheLevelDBStoreTest, UpdateComponentData) {
   ExpectComponentHintsPresent(kUpdateComponentVersion, update_hint_count);
 }
 
-TEST_F(HintCacheLevelDBStoreTest,
-       UpdateComponentDataAfterInitializationDataPurge) {
+TEST_F(HintCacheStoreTest, UpdateComponentDataAfterInitializationDataPurge) {
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   size_t initial_hint_count = 10;
   size_t update_hint_count = 5;
@@ -779,7 +767,7 @@ TEST_F(HintCacheLevelDBStoreTest,
   CreateDatabase();
   InitializeStore(schema_state, true /*=purge_existing_data*/);
 
-  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data =
+  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -794,8 +782,7 @@ TEST_F(HintCacheLevelDBStoreTest,
   ExpectComponentHintsPresent(kUpdateComponentVersion, update_hint_count);
 }
 
-TEST_F(HintCacheLevelDBStoreTest,
-       CreateComponentDataWithAlreadyUpdatedVersionFails) {
+TEST_F(HintCacheStoreTest, CreateComponentDataWithAlreadyUpdatedVersionFails) {
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   size_t initial_hint_count = 10;
   size_t update_hint_count = 5;
@@ -803,7 +790,7 @@ TEST_F(HintCacheLevelDBStoreTest,
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data =
+  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -816,7 +803,7 @@ TEST_F(HintCacheLevelDBStoreTest,
       base::Version(kUpdateComponentVersion)));
 }
 
-TEST_F(HintCacheLevelDBStoreTest, UpdateComponentDataWithUpdatedVersionFails) {
+TEST_F(HintCacheStoreTest, UpdateComponentDataWithUpdatedVersionFails) {
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   size_t initial_hint_count = 10;
   size_t update_hint_count_1 = 5;
@@ -826,10 +813,10 @@ TEST_F(HintCacheLevelDBStoreTest, UpdateComponentDataWithUpdatedVersionFails) {
   InitializeStore(schema_state);
 
   // Create two updates for the same component version with different counts.
-  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data_1 =
+  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data_1 =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
-  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data_2 =
+  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data_2 =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data_1);
@@ -844,7 +831,7 @@ TEST_F(HintCacheLevelDBStoreTest, UpdateComponentDataWithUpdatedVersionFails) {
   EXPECT_CALL(*this, OnUpdateComponentData());
   hint_store()->UpdateComponentData(
       std::move(update_data_2),
-      base::BindOnce(&HintCacheLevelDBStoreTest::OnUpdateComponentData,
+      base::BindOnce(&HintCacheStoreTest::OnUpdateComponentData,
                      base::Unretained(this)));
 
   // Verify that the store is populated with the component data from
@@ -854,15 +841,15 @@ TEST_F(HintCacheLevelDBStoreTest, UpdateComponentDataWithUpdatedVersionFails) {
   ExpectComponentHintsPresent(kUpdateComponentVersion, update_hint_count_1);
 }
 
-TEST_F(HintCacheLevelDBStoreTest, LoadHintOnUnavailableStore) {
+TEST_F(HintCacheStoreTest, LoadHintOnUnavailableStore) {
   size_t initial_hint_count = 10;
   SeedInitialData(MetadataSchemaState::kValid, initial_hint_count);
   CreateDatabase();
 
-  const HintCacheLevelDBStore::EntryKey kInvalidEntryKey = "invalid";
-  hint_store()->LoadHint(
-      kInvalidEntryKey, base::BindOnce(&HintCacheLevelDBStoreTest::OnHintLoaded,
-                                       base::Unretained(this)));
+  const HintCacheStore::EntryKey kInvalidEntryKey = "invalid";
+  hint_store()->LoadHint(kInvalidEntryKey,
+                         base::BindOnce(&HintCacheStoreTest::OnHintLoaded,
+                                        base::Unretained(this)));
 
   // Verify that the OnHintLoaded callback runs when the store is unavailable
   // and that both the key and the hint were correctly set in it.
@@ -870,17 +857,17 @@ TEST_F(HintCacheLevelDBStoreTest, LoadHintOnUnavailableStore) {
   EXPECT_FALSE(last_loaded_hint());
 }
 
-TEST_F(HintCacheLevelDBStoreTest, LoadHintFailure) {
+TEST_F(HintCacheStoreTest, LoadHintFailure) {
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   size_t hint_count = 10;
   SeedInitialData(schema_state, hint_count);
   CreateDatabase();
   InitializeStore(schema_state);
 
-  const HintCacheLevelDBStore::EntryKey kInvalidEntryKey = "invalid";
-  hint_store()->LoadHint(
-      kInvalidEntryKey, base::BindOnce(&HintCacheLevelDBStoreTest::OnHintLoaded,
-                                       base::Unretained(this)));
+  const HintCacheStore::EntryKey kInvalidEntryKey = "invalid";
+  hint_store()->LoadHint(kInvalidEntryKey,
+                         base::BindOnce(&HintCacheStoreTest::OnHintLoaded,
+                                        base::Unretained(this)));
 
   // OnLoadHint callback
   db()->GetCallback(false);
@@ -891,7 +878,7 @@ TEST_F(HintCacheLevelDBStoreTest, LoadHintFailure) {
   EXPECT_FALSE(last_loaded_hint());
 }
 
-TEST_F(HintCacheLevelDBStoreTest, LoadHintSuccessInitialData) {
+TEST_F(HintCacheStoreTest, LoadHintSuccessInitialData) {
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   size_t hint_count = 10;
   SeedInitialData(schema_state, hint_count);
@@ -902,15 +889,15 @@ TEST_F(HintCacheLevelDBStoreTest, LoadHintSuccessInitialData) {
   // loaded from the store.
   for (size_t i = 0; i < hint_count; ++i) {
     std::string host_suffix = GetHostSuffix(i);
-    HintCacheLevelDBStore::EntryKey hint_entry_key;
+    HintCacheStore::EntryKey hint_entry_key;
     if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
       FAIL() << "Hint entry not found for host suffix: " << host_suffix;
       continue;
     }
 
-    hint_store()->LoadHint(
-        hint_entry_key, base::BindOnce(&HintCacheLevelDBStoreTest::OnHintLoaded,
-                                       base::Unretained(this)));
+    hint_store()->LoadHint(hint_entry_key,
+                           base::BindOnce(&HintCacheStoreTest::OnHintLoaded,
+                                          base::Unretained(this)));
 
     // OnLoadHint callback
     db()->GetCallback(true);
@@ -925,7 +912,7 @@ TEST_F(HintCacheLevelDBStoreTest, LoadHintSuccessInitialData) {
   }
 }
 
-TEST_F(HintCacheLevelDBStoreTest, LoadHintSuccessUpdateData) {
+TEST_F(HintCacheStoreTest, LoadHintSuccessUpdateData) {
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   size_t initial_hint_count = 10;
   size_t update_hint_count = 5;
@@ -933,7 +920,7 @@ TEST_F(HintCacheLevelDBStoreTest, LoadHintSuccessUpdateData) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data =
+  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -944,15 +931,15 @@ TEST_F(HintCacheLevelDBStoreTest, LoadHintSuccessUpdateData) {
   // be loaded from the store.
   for (size_t i = 0; i < update_hint_count; ++i) {
     std::string host_suffix = GetHostSuffix(i);
-    HintCacheLevelDBStore::EntryKey hint_entry_key;
+    HintCacheStore::EntryKey hint_entry_key;
     if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
       FAIL() << "Hint entry not found for host suffix: " << host_suffix;
       continue;
     }
 
-    hint_store()->LoadHint(
-        hint_entry_key, base::BindOnce(&HintCacheLevelDBStoreTest::OnHintLoaded,
-                                       base::Unretained(this)));
+    hint_store()->LoadHint(hint_entry_key,
+                           base::BindOnce(&HintCacheStoreTest::OnHintLoaded,
+                                          base::Unretained(this)));
 
     // OnLoadHint callback
     db()->GetCallback(true);
@@ -967,19 +954,19 @@ TEST_F(HintCacheLevelDBStoreTest, LoadHintSuccessUpdateData) {
   }
 }
 
-TEST_F(HintCacheLevelDBStoreTest, FindHintEntryKeyOnUnavailableStore) {
+TEST_F(HintCacheStoreTest, FindHintEntryKeyOnUnavailableStore) {
   size_t initial_hint_count = 10;
   SeedInitialData(MetadataSchemaState::kValid, initial_hint_count);
   CreateDatabase();
 
   std::string host_suffix = GetHostSuffix(0);
-  HintCacheLevelDBStore::EntryKey hint_entry_key;
+  HintCacheStore::EntryKey hint_entry_key;
 
   // Verify that hint entry keys can't be found when the store is unavailable.
   EXPECT_FALSE(hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
 }
 
-TEST_F(HintCacheLevelDBStoreTest, FindHintEntryKeyInitialData) {
+TEST_F(HintCacheStoreTest, FindHintEntryKeyInitialData) {
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   size_t hint_count = 10;
   SeedInitialData(schema_state, hint_count);
@@ -991,13 +978,13 @@ TEST_F(HintCacheLevelDBStoreTest, FindHintEntryKeyInitialData) {
   // properly reported as not being found.
   for (size_t i = 0; i < hint_count * 2; ++i) {
     std::string host_suffix = GetHostSuffix(i);
-    HintCacheLevelDBStore::EntryKey hint_entry_key;
+    HintCacheStore::EntryKey hint_entry_key;
     bool success = hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key);
     EXPECT_EQ(success, i < hint_count);
   }
 }
 
-TEST_F(HintCacheLevelDBStoreTest, FindHintEntryKeyUpdateData) {
+TEST_F(HintCacheStoreTest, FindHintEntryKeyUpdateData) {
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   size_t initial_hint_count = 10;
   size_t update_hint_count = 5;
@@ -1005,7 +992,7 @@ TEST_F(HintCacheLevelDBStoreTest, FindHintEntryKeyUpdateData) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintCacheLevelDBStore::ComponentUpdateData> update_data =
+  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
       hint_store()->MaybeCreateComponentUpdateData(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -1017,7 +1004,7 @@ TEST_F(HintCacheLevelDBStoreTest, FindHintEntryKeyUpdateData) {
   // component update are properly reported as not being found.
   for (size_t i = 0; i < update_hint_count * 2; ++i) {
     std::string host_suffix = GetHostSuffix(i);
-    HintCacheLevelDBStore::EntryKey hint_entry_key;
+    HintCacheStore::EntryKey hint_entry_key;
     bool success = hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key);
     EXPECT_EQ(success, i < update_hint_count);
   }
