@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/editing/set_selection_options.h"
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -659,8 +660,16 @@ SelectionInDOMTree TextControlElement::Selection() const {
   if (!start_node || !end_node)
     return SelectionInDOMTree();
 
+  TextAffinity affinity = TextAffinity::kDownstream;
+  if (GetDocument().FocusedElement() == this && GetDocument().GetFrame()) {
+    const SelectionInDOMTree& selection =
+        GetDocument().GetFrame()->Selection().GetSelectionInDOMTree();
+    affinity = selection.Affinity();
+  }
+
   return SelectionInDOMTree::Builder()
       .SetBaseAndExtent(Position(start_node, start), Position(end_node, end))
+      .SetAffinity(affinity)
       .Build();
 }
 

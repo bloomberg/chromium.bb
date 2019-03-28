@@ -678,9 +678,8 @@ TEST_F(AccessibilitySelectionTest, FromCurrentSelectionInTextareaWithAffinity) {
   EXPECT_EQ(TextAffinity::kDownstream, ax_selection.Extent().Affinity());
 }
 
-TEST_F(
-    AccessibilitySelectionTest,
-    DISABLED_FromCurrentSelectionInTextareaWithCollapsedSelectionAndAffinity) {
+TEST_F(AccessibilitySelectionTest,
+       FromCurrentSelectionInTextareaWithCollapsedSelectionAndAffinity) {
   SetBodyInnerHTML(R"HTML(
       <textarea id="textarea"
           rows="2" cols="15"
