@@ -22,6 +22,10 @@ namespace password_manager {
 class PasswordFormManagerForUI;
 }
 
+namespace web {
+class WebState;
+}
+
 @protocol PasswordManagerClientDelegate
 
 // Shows UI to prompt the user to save the password.
@@ -35,6 +39,8 @@ class PasswordFormManagerForUI;
 // Shows UI to notify the user about auto sign in.
 - (void)showAutosigninNotification:
     (std::unique_ptr<autofill::PasswordForm>)formSignedIn;
+
+@property(readonly, nonatomic) web::WebState* webState;
 
 @property(readonly, nonatomic) ios::ChromeBrowserState* browserState;
 
@@ -75,6 +81,7 @@ class IOSChromePasswordManagerClient
           saved_form_manager) override;
   bool IsIncognito() const override;
   const password_manager::PasswordManager* GetPasswordManager() const override;
+  bool IsMainFrameSecure() const override;
   PrefService* GetPrefs() const override;
   password_manager::PasswordStore* GetPasswordStore() const override;
   void NotifyUserAutoSignin(
