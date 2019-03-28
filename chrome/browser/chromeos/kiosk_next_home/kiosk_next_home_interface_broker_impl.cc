@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "chrome/browser/chromeos/kiosk_next_home/app_controller_impl.h"
+#include "chrome/browser/chromeos/kiosk_next_home/app_controller_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "services/identity/public/mojom/constants.mojom.h"
@@ -18,9 +18,8 @@ namespace kiosk_next_home {
 
 KioskNextHomeInterfaceBrokerImpl::KioskNextHomeInterfaceBrokerImpl(
     content::BrowserContext* context)
-    : connector_(content::BrowserContext::GetConnectorFor(context)->Clone()),
-      app_controller_(std::make_unique<AppControllerImpl>(
-          Profile::FromBrowserContext(context))) {}
+    : context_(context),
+      connector_(content::BrowserContext::GetConnectorFor(context)->Clone()) {}
 
 KioskNextHomeInterfaceBrokerImpl::~KioskNextHomeInterfaceBrokerImpl() = default;
 
@@ -32,7 +31,7 @@ void KioskNextHomeInterfaceBrokerImpl::GetIdentityAccessor(
 
 void KioskNextHomeInterfaceBrokerImpl::GetAppController(
     mojom::AppControllerRequest request) {
-  app_controller_->BindRequest(std::move(request));
+  AppControllerService::Get(context_)->BindRequest(std::move(request));
 }
 
 void KioskNextHomeInterfaceBrokerImpl::BindRequest(

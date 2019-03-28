@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_KIOSK_NEXT_HOME_APP_CONTROLLER_IMPL_H_
-#define CHROME_BROWSER_CHROMEOS_KIOSK_NEXT_HOME_APP_CONTROLLER_IMPL_H_
+#ifndef CHROME_BROWSER_CHROMEOS_KIOSK_NEXT_HOME_APP_CONTROLLER_SERVICE_H_
+#define CHROME_BROWSER_CHROMEOS_KIOSK_NEXT_HOME_APP_CONTROLLER_SERVICE_H_
 
 #include <map>
 #include <memory>
@@ -12,7 +12,12 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/kiosk_next_home/mojom/app_controller.mojom.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+
+namespace content {
+class BrowserContext;
+}
 
 class Profile;
 
@@ -24,16 +29,20 @@ class AppUpdate;
 namespace chromeos {
 namespace kiosk_next_home {
 
-// Implementation for the Kiosk Next AppController.
+// Service implementation for the Kiosk Next AppController.
 // This class is responsible for managing Chrome OS apps and returning useful
 // information about them to the Kiosk Next Home.
-class AppControllerImpl : public mojom::AppController,
-                          public apps::AppRegistryCache::Observer {
+class AppControllerService : public mojom::AppController,
+                             public KeyedService,
+                             public apps::AppRegistryCache::Observer {
  public:
-  explicit AppControllerImpl(Profile* profile);
-  ~AppControllerImpl() override;
+  // Returns the AppControllerService singleton attached to this |context|.
+  static AppControllerService* Get(content::BrowserContext* context);
 
-  // Binds this implementation instance to an AppController request.
+  explicit AppControllerService(Profile* profile);
+  ~AppControllerService() override;
+
+  // Binds this service to an AppController request.
   void BindRequest(mojom::AppControllerRequest request);
 
   // mojom::AppController:
@@ -77,10 +86,10 @@ class AppControllerImpl : public mojom::AppController,
   // URL prefix that can be launched by Kiosk Next Home.
   const std::string url_prefix_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppControllerImpl);
+  DISALLOW_COPY_AND_ASSIGN(AppControllerService);
 };
 
 }  // namespace kiosk_next_home
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_KIOSK_NEXT_HOME_APP_CONTROLLER_IMPL_H_
+#endif  // CHROME_BROWSER_CHROMEOS_KIOSK_NEXT_HOME_APP_CONTROLLER_SERVICE_H_

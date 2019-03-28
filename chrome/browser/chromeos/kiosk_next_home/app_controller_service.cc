@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/kiosk_next_home/app_controller_impl.h"
+#include "chrome/browser/chromeos/kiosk_next_home/app_controller_service.h"
 
 #include <string>
 #include <utility>
@@ -11,11 +11,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/chromeos/kiosk_next_home/app_controller_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -32,34 +34,36 @@
 namespace chromeos {
 namespace kiosk_next_home {
 
-AppControllerImpl::AppControllerImpl(Profile* profile)
+// static
+AppControllerService* AppControllerService::Get(
+    content::BrowserContext* context) {
+  return AppControllerServiceFactory::GetForBrowserContext(context);
+}
+
+AppControllerService::AppControllerService(Profile* profile)
     : profile_(profile),
       app_service_proxy_(apps::AppServiceProxy::Get(profile)),
       url_prefix_(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           chromeos::switches::kKioskNextHomeUrlPrefix)) {
+  DCHECK(profile);
   app_service_proxy_->AppRegistryCache().AddObserver(this);
 
   // Add the chrome://app-icon URL data source.
   // TODO(ltenorio): Move this to a more suitable location when we change
   // the Kiosk Next Home to WebUI.
-  if (profile) {
-    content::URLDataSource::Add(profile,
-                                std::make_unique<apps::AppIconSource>(profile));
-  }
+  content::URLDataSource::Add(profile,
+                              std::make_unique<apps::AppIconSource>(profile));
 }
 
-AppControllerImpl::~AppControllerImpl() {
-  // We can outlive the AppServiceProxy during Profile destruction, so we need
-  // to test if the proxy still exists before removing the observer.
-  if (apps::AppServiceProxy::Get(profile_))
-    app_service_proxy_->AppRegistryCache().RemoveObserver(this);
+AppControllerService::~AppControllerService() {
+  app_service_proxy_->AppRegistryCache().RemoveObserver(this);
 }
 
-void AppControllerImpl::BindRequest(mojom::AppControllerRequest request) {
+void AppControllerService::BindRequest(mojom::AppControllerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void AppControllerImpl::GetApps(
+void AppControllerService::GetApps(
     mojom::AppController::GetAppsCallback callback) {
   std::vector<chromeos::kiosk_next_home::mojom::AppPtr> app_list;
   // Using AppUpdate objects here since that's how the app list is intended to
@@ -71,11 +75,11 @@ void AppControllerImpl::GetApps(
   std::move(callback).Run(std::move(app_list));
 }
 
-void AppControllerImpl::SetClient(mojom::AppControllerClientPtr client) {
+void AppControllerService::SetClient(mojom::AppControllerClientPtr client) {
   client_ = std::move(client);
 }
 
-void AppControllerImpl::LaunchApp(const std::string& app_id) {
+void AppControllerService::LaunchApp(const std::string& app_id) {
   // TODO(ltenorio): Create a new launch source for Kiosk Next Home and use it
   // here.
   app_service_proxy_->Launch(app_id, ui::EventFlags::EF_NONE,
@@ -83,7 +87,7 @@ void AppControllerImpl::LaunchApp(const std::string& app_id) {
                              display::kDefaultDisplayId);
 }
 
-void AppControllerImpl::GetArcAndroidId(
+void AppControllerService::GetArcAndroidId(
     mojom::AppController::GetArcAndroidIdCallback callback) {
   arc::GetAndroidId(base::BindOnce(
       [](mojom::AppController::GetArcAndroidIdCallback callback, bool success,
@@ -95,8 +99,8 @@ void AppControllerImpl::GetArcAndroidId(
       std::move(callback)));
 }
 
-void AppControllerImpl::LaunchHomeUrl(const std::string& suffix,
-                                      LaunchHomeUrlCallback callback) {
+void AppControllerService::LaunchHomeUrl(const std::string& suffix,
+                                         LaunchHomeUrlCallback callback) {
   if (url_prefix_.empty()) {
     std::move(callback).Run(false, "No URL prefix.");
     return;
@@ -124,7 +128,7 @@ void AppControllerImpl::LaunchHomeUrl(const std::string& suffix,
   std::move(callback).Run(true, base::nullopt);
 }
 
-void AppControllerImpl::OnAppUpdate(const apps::AppUpdate& update) {
+void AppControllerService::OnAppUpdate(const apps::AppUpdate& update) {
   // Skip this event if no relevant fields have changed.
   if (!update.StateIsNull() && !update.NameChanged() &&
       !update.ReadinessChanged()) {
@@ -136,7 +140,8 @@ void AppControllerImpl::OnAppUpdate(const apps::AppUpdate& update) {
   }
 }
 
-mojom::AppPtr AppControllerImpl::CreateAppPtr(const apps::AppUpdate& update) {
+mojom::AppPtr AppControllerService::CreateAppPtr(
+    const apps::AppUpdate& update) {
   auto app = chromeos::kiosk_next_home::mojom::App::New();
   app->app_id = update.AppId();
   app->type = update.AppType();
@@ -149,7 +154,7 @@ mojom::AppPtr AppControllerImpl::CreateAppPtr(const apps::AppUpdate& update) {
   return app;
 }
 
-const std::string& AppControllerImpl::MaybeGetAndroidPackageName(
+const std::string& AppControllerService::MaybeGetAndroidPackageName(
     const std::string& app_id) {
   // Try to find a cached package name for this app.
   const auto& package_name_it = android_package_map_.find(app_id);
