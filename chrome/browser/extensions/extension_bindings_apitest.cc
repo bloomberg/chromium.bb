@@ -440,6 +440,60 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, UseAPIsAfterContextRemoval) {
   EXPECT_TRUE(RunExtensionTest("bindings/invalidate_context")) << message_;
 }
 
+// Tests that we don't crash if the extension invalidates the context in a
+// callback with a runtime.lastError present. Regression test for
+// https://crbug.com/944014.
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
+                       InvalidateContextInCallbackWithLastError) {
+  TestExtensionDir dir;
+  dir.WriteManifest(
+      R"({
+           "name": "Invalidate Context in onDisconnect",
+           "version": "0.1",
+           "manifest_version": 2,
+           "background": {"scripts": ["background.js"]}
+         })");
+
+  constexpr char kFrameHtml[] =
+      R"(<html>
+           <body></body>
+           <script src="frame.js"></script>
+         </html>)";
+  constexpr char kFrameJs[] =
+      R"(chrome.tabs.executeScript({code: ''}, () => {
+           // We expect a last error to be present, since we don't have access
+           // to the tab.
+           chrome.test.assertTrue(!!chrome.runtime.lastError);
+           // Remove the frame from the DOM. This causes blink to remove the
+           // associated script contexts.
+           parent.document.body.removeChild(
+               parent.document.body.querySelector('iframe'));
+         });)";
+  constexpr char kBackgroundJs[] =
+      R"(let frame = document.createElement('iframe');
+         frame.src = 'frame.html';
+         let observer = new MutationObserver((mutationList) => {
+           for (let mutation of mutationList) {
+             if (mutation.removedNodes.length == 0)
+               continue;
+             chrome.test.assertEq(1, mutation.removedNodes.length);
+             chrome.test.assertEq('IFRAME', mutation.removedNodes[0].tagName);
+             chrome.test.notifyPass();
+             break;
+           }
+         });
+         observer.observe(document.body, {childList: true});
+         document.body.appendChild(frame);)";
+  dir.WriteFile(FILE_PATH_LITERAL("frame.html"), kFrameHtml);
+  dir.WriteFile(FILE_PATH_LITERAL("frame.js"), kFrameJs);
+  dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundJs);
+
+  ResultCatcher catcher;
+  const Extension* extension = LoadExtension(dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
 // TODO(devlin): Can this be combined with
 // ExtensionBindingsApiTest.UseAPIsAfterContextRemoval?
 IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, UseAppAPIAfterFrameRemoval) {
