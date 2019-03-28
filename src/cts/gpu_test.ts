@@ -44,6 +44,12 @@ export class GPUTest extends Fixture {
     return result.GetBinary().slice().buffer;
   }
 
+  public expect(success: boolean, message: string): void {
+    if (!success) {
+      this.rec.fail(message);
+    }
+  }
+
   public async expectContents(src: GPUBuffer, expected: Uint8Array): Promise<void> {
     const size = expected.length;
     const dst = this.device.createBuffer({
