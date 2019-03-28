@@ -57,8 +57,6 @@ constexpr size_t kDefaultAllocationSize = 512 * 1024;
 // mojo::core::Core::CreateDataPipe
 constexpr size_t kBlockedBodyAllocationSize = 1;
 
-constexpr size_t kMaxFileUploadRequestsPerBatch = 64;
-
 // TODO: this duplicates some of PopulateResourceResponse in
 // content/browser/loader/resource_loader.cc
 void PopulateResourceResponse(net::URLRequest* request,
@@ -588,7 +586,11 @@ void URLLoader::SetUpUpload(const ResourceRequest& request,
                             std::vector<base::File> opened_files) {
   if (error_code != net::OK) {
     DCHECK(opened_files.empty());
-    NotifyCompleted(error_code);
+    // Defer calling NotifyCompleted to make sure the URLLoader finishes
+    // initializing before getting deleted.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&URLLoader::NotifyCompleted,
+                                  base::Unretained(this), error_code));
     return;
   }
   scoped_refptr<base::SequencedTaskRunner> task_runner =

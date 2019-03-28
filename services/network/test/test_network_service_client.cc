@@ -94,7 +94,7 @@ void TestNetworkServiceClient::OnFileUploadRequested(
     bool async,
     const std::vector<base::FilePath>& file_paths,
     OnFileUploadRequestedCallback callback) {
-  if (!enable_uploads_) {
+  if (!enable_uploads_ || upload_files_invalid_) {
     std::move(callback).Run(net::ERR_ACCESS_DENIED, std::vector<base::File>());
     return;
   }
@@ -111,6 +111,12 @@ void TestNetworkServiceClient::OnFileUploadRequested(
       return;
     }
   }
+
+  if (ignore_last_upload_file_) {
+    // Make the TestNetworkServiceClient respond one less file as requested.
+    files.pop_back();
+  }
+
   std::move(callback).Run(net::OK, std::move(files));
 }
 
