@@ -91,7 +91,7 @@ void AccessibilityPanelLayoutManager::OnWindowActivated(
 
 void AccessibilityPanelLayoutManager::OnFullscreenStateChanged(
     bool is_fullscreen,
-    aura::Window* root_window) {
+    aura::Window* container) {
   UpdateWindowBounds();
 }
 

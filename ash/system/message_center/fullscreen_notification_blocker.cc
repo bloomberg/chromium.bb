@@ -44,7 +44,8 @@ bool FullscreenNotificationBlocker::ShouldShowNotificationAsPopup(
 
 void FullscreenNotificationBlocker::OnFullscreenStateChanged(
     bool is_fullscreen,
-    aura::Window* root_window) {
+    aura::Window* container) {
+  aura::Window* root_window = container->GetRootWindow();
   if (root_window != Shell::GetRootWindowForNewWindows())
     return;
 

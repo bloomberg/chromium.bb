@@ -193,6 +193,8 @@ class ASH_EXPORT RootWindowController {
 
   // Returns the topmost window or one of its transient parents, if any of them
   // are in fullscreen mode.
+  // TODO(afakhry): Rename this to imply getting the fullscreen window on the
+  // currently active desk on this root.
   aura::Window* GetWindowForFullscreenMode();
 
   // If touch exploration is enabled, update the touch exploration

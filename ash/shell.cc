@@ -601,9 +601,9 @@ void Shell::NotifySplitViewModeEnded() {
 }
 
 void Shell::NotifyFullscreenStateChanged(bool is_fullscreen,
-                                         aura::Window* root_window) {
+                                         aura::Window* container) {
   for (auto& observer : shell_observers_)
-    observer.OnFullscreenStateChanged(is_fullscreen, root_window);
+    observer.OnFullscreenStateChanged(is_fullscreen, container);
 }
 
 void Shell::NotifyPinnedStateChanged(aura::Window* pinned_window) {

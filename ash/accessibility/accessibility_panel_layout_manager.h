@@ -65,7 +65,7 @@ class ASH_EXPORT AccessibilityPanelLayoutManager
 
   // ShellObserver:
   void OnFullscreenStateChanged(bool is_fullscreen,
-                                aura::Window* root_window) override;
+                                aura::Window* container) override;
 
   aura::Window* panel_window_for_test() { return panel_window_; }
 

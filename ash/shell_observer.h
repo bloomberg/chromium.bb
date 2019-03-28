@@ -35,9 +35,10 @@ class ASH_EXPORT ShellObserver {
   // Invoked when the shelf auto-hide behavior in |root_window| is changed.
   virtual void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) {}
 
-  // Invoked when entering or exiting fullscreen mode in |root_window|.
+  // Invoked when entering or exiting fullscreen mode in |container|.
+  // |container| is always the active desk container.
   virtual void OnFullscreenStateChanged(bool is_fullscreen,
-                                        aura::Window* root_window) {}
+                                        aura::Window* container) {}
 
   // Invoked when |pinned_window| enter or exit pinned mode.
   virtual void OnPinnedStateChanged(aura::Window* pinned_window) {}

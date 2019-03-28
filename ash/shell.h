@@ -621,9 +621,10 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Notifies observers that split view mode has ended.
   void NotifySplitViewModeEnded();
 
-  // Notifies observers that fullscreen mode has changed for |root_window|.
+  // Notifies observers that fullscreen mode has changed for |container|.
+  // |container| is always the active desk container.
   void NotifyFullscreenStateChanged(bool is_fullscreen,
-                                    aura::Window* root_window);
+                                    aura::Window* container);
 
   // Notifies observers that |pinned_window| changed its pinned window state.
   void NotifyPinnedStateChanged(aura::Window* pinned_window);
