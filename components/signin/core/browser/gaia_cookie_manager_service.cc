@@ -1139,10 +1139,13 @@ void GaiaCookieManagerService::OnSetAccountsFinished(
   HandleNextRequest();
 }
 
-void GaiaCookieManagerService::OnCookieSet(const std::string& cookie_name,
-                                           const std::string& cookie_domain,
-                                           bool success) {
+void GaiaCookieManagerService::OnCookieSet(
+    const std::string& cookie_name,
+    const std::string& cookie_domain,
+    net::CanonicalCookie::CookieInclusionStatus status) {
   cookies_to_set_.erase(std::make_pair(cookie_name, cookie_domain));
+  bool success =
+      (status == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
   if (!success) {
     VLOG(1) << "Failed to set cookie " << cookie_name
             << " for domain=" << cookie_domain << ".";
@@ -1167,9 +1170,10 @@ void GaiaCookieManagerService::StartSettingCookies(
   for (const net::CanonicalCookie& cookie : cookies) {
     if (cookies_to_set_.find(std::make_pair(cookie.Name(), cookie.Domain())) !=
         cookies_to_set_.end()) {
-      base::OnceCallback<void(bool success)> callback = base::Bind(
-          &GaiaCookieManagerService::OnCookieSet,
-          weak_ptr_factory_.GetWeakPtr(), cookie.Name(), cookie.Domain());
+      base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>
+          callback = base::BindOnce(&GaiaCookieManagerService::OnCookieSet,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    cookie.Name(), cookie.Domain());
       net::CookieOptions options;
       options.set_include_httponly();
       // Permit it to set a SameSite cookie if it wants to.
@@ -1177,8 +1181,9 @@ void GaiaCookieManagerService::StartSettingCookies(
           net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
       cookie_manager->SetCanonicalCookie(
           cookie, "https", options,
-          mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback),
-                                                      false));
+          mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+              std::move(callback), net::CanonicalCookie::CookieInclusionStatus::
+                                       EXCLUDE_UNKNOWN_ERROR));
     } else {
       LOG(ERROR) << "Duplicate cookie found: " << cookie.Name() << " "
                  << cookie.Domain();

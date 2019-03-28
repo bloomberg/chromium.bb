@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_pairing_state_tracker_impl.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -57,7 +58,8 @@ void AndroidSmsPairingStateTrackerImpl::AttemptFetchMessagesPairingState() {
 }
 
 void AndroidSmsPairingStateTrackerImpl::OnCookiesRetrieved(
-    const std::vector<net::CanonicalCookie>& cookies) {
+    const std::vector<net::CanonicalCookie>& cookies,
+    const net::CookieStatusList& excluded_cookies) {
   bool was_previously_paired = was_paired_on_last_update_;
   for (const auto& cookie : cookies) {
     if (cookie.Name() == kMessagesPairStateCookieName) {

@@ -259,17 +259,19 @@ class RemoveCookieTester {
     base::RunLoop run_loop;
     cookie_manager_->GetCookieList(
         kOrigin1, net::CookieOptions(),
-        base::BindLambdaForTesting([&](const net::CookieList& cookie_list) {
-          std::string cookie_line =
-              net::CanonicalCookie::BuildCookieLine(cookie_list);
-          if (cookie_line == "A=1") {
-            result = true;
-          } else {
-            EXPECT_EQ("", cookie_line);
-            result = false;
-          }
-          run_loop.Quit();
-        }));
+        base::BindLambdaForTesting(
+            [&](const net::CookieList& cookie_list,
+                const net::CookieStatusList& excluded_cookies) {
+              std::string cookie_line =
+                  net::CanonicalCookie::BuildCookieLine(cookie_list);
+              if (cookie_line == "A=1") {
+                result = true;
+              } else {
+                EXPECT_EQ("", cookie_line);
+                result = false;
+              }
+              run_loop.Quit();
+            }));
     run_loop.Run();
     return result;
   }
@@ -280,10 +282,13 @@ class RemoveCookieTester {
     auto cookie = net::CanonicalCookie::Create(kOrigin1, "A=1",
                                                base::Time::Now(), options);
     cookie_manager_->SetCanonicalCookie(
-        *cookie, "http", options, base::BindLambdaForTesting([&](bool result) {
-          EXPECT_TRUE(result);
-          run_loop.Quit();
-        }));
+        *cookie, "http", options,
+        base::BindLambdaForTesting(
+            [&](net::CanonicalCookie::CookieInclusionStatus result) {
+              EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
+                        result);
+              run_loop.Quit();
+            }));
     run_loop.Run();
   }
 

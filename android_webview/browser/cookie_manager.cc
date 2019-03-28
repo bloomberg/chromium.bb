@@ -38,6 +38,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
 #include "net/url_request/url_request_context.h"
@@ -149,18 +150,6 @@ static base::RepeatingCallback<void(int)> IntCallbackAdapter(
 
 // Are cookies allowed for file:// URLs by default?
 const bool kDefaultFileSchemeAllowed = false;
-
-net::CookieStore::SetCookiesCallback StatusToBool(
-    base::OnceCallback<void(bool)> callback) {
-  return base::BindOnce(
-      [](base::OnceCallback<void(bool)> callback,
-         const net::CanonicalCookie::CookieInclusionStatus status) {
-        bool success =
-            (status == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
-        std::move(callback).Run(success);
-      },
-      std::move(callback));
-}
 
 }  // namespace
 
@@ -340,16 +329,18 @@ void CookieManager::SetCookieHelper(
   // Note: CookieStore and network::CookieManager have different signatures: one
   // accepts a boolean callback while the other (recently) changed to accept a
   // CookieInclusionStatus callback. WebView only cares about boolean success,
-  // which is why we use StatusToBool. This is temporary technical debt until we
-  // fully launch the Network Service code path.
+  // which is why we use |AdaptCookieInclusionStatusToBool|. This is temporary
+  // technical debt until we fully launch the Network Service code path.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // *cc.get() is safe, because network::CookieManager::SetCanonicalCookie
     // will make a copy before our smart pointer goes out of scope.
-    GetCookieManagerWrapper()->SetCanonicalCookie(*cc.get(), new_host.scheme(),
-                                                  options, std::move(callback));
+    GetCookieManagerWrapper()->SetCanonicalCookie(
+        *cc.get(), new_host.scheme(), options,
+        net::cookie_util::AdaptCookieInclusionStatusToBool(callback));
   } else {
-    GetCookieStore()->SetCanonicalCookieAsync(std::move(cc), new_host.scheme(),
-                                              options, StatusToBool(callback));
+    GetCookieStore()->SetCanonicalCookieAsync(
+        std::move(cc), new_host.scheme(), options,
+        net::cookie_util::AdaptCookieInclusionStatusToBool(callback));
   }
 }
 
@@ -372,7 +363,7 @@ void CookieManager::GetCookieListAsyncHelper(const GURL& host,
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     GetCookieManagerWrapper()->GetCookieList(
         host, options,
-        base::BindOnce(&CookieManager::GetCookieListCompleted2,
+        base::BindOnce(&CookieManager::GetCookieListCompleted,
                        base::Unretained(this), std::move(complete), result));
   } else {
     GetCookieStore()->GetCookieListWithOptionsAsync(
@@ -387,13 +378,6 @@ void CookieManager::GetCookieListCompleted(
     net::CookieList* result,
     const net::CookieList& value,
     const net::CookieStatusList& excluded_cookies) {
-  *result = value;
-  std::move(complete).Run();
-}
-
-void CookieManager::GetCookieListCompleted2(base::OnceClosure complete,
-                                            net::CookieList* result,
-                                            const net::CookieList& value) {
   *result = value;
   std::move(complete).Run();
 }

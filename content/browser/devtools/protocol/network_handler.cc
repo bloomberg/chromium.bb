@@ -62,6 +62,7 @@
 #include "net/cert/x509_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
@@ -267,7 +268,8 @@ class CookieRetrieverNetworkService
   CookieRetrieverNetworkService(std::unique_ptr<GetCookiesCallback> callback)
       : callback_(std::move(callback)) {}
 
-  void GotCookies(const std::vector<net::CanonicalCookie>& cookies) {
+  void GotCookies(const std::vector<net::CanonicalCookie>& cookies,
+                  const net::CookieStatusList& excluded_cookies) {
     for (const auto& cookie : cookies) {
       std::string key = base::StringPrintf(
           "%s::%s::%s::%d", cookie.Name().c_str(), cookie.Domain().c_str(),
@@ -1272,7 +1274,8 @@ void NetworkHandler::SetCookie(const std::string& name,
   options.set_include_httponly();
   storage_partition_->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
       *cookie, "https", options,
-      base::BindOnce(&SetCookieCallback::sendSuccess, std::move(callback)));
+      net::cookie_util::AdaptCookieInclusionStatusToBool(base::BindOnce(
+          &SetCookieCallback::sendSuccess, std::move(callback))));
 }
 
 void NetworkHandler::SetCookies(
@@ -1325,7 +1328,8 @@ void NetworkHandler::SetCookies(
     cookie_manager->SetCanonicalCookie(
         *cookie, "https", options,
         base::BindOnce(
-            [](base::RepeatingClosure callback, bool) { callback.Run(); },
+            [](base::RepeatingClosure callback,
+               net::CanonicalCookie::CookieInclusionStatus) { callback.Run(); },
             barrier_closure));
   }
 }

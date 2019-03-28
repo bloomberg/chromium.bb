@@ -242,11 +242,11 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
       const network::ResourceResponseHead* head);
   void NotifyClient(std::unique_ptr<InterceptedRequestInfo> request_info);
   void FetchCookies(
-      base::OnceCallback<void(const std::vector<net::CanonicalCookie>&)>
-          callback);
+      network::mojom::CookieManager::GetCookieListCallback callback);
   void NotifyClientWithCookies(
       std::unique_ptr<InterceptedRequestInfo> request_info,
-      const std::vector<net::CanonicalCookie>& cookie_list);
+      const std::vector<net::CanonicalCookie>& cookie_list,
+      const net::CookieStatusList& excluded_cookies);
 
   void ResponseBodyComplete();
 
@@ -1055,7 +1055,8 @@ void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
       cookies.emplace_back(std::move(cookie));
   }
   auto on_cookie_set = base::BindRepeating(
-      [](base::RepeatingClosure closure, bool) { closure.Run(); },
+      [](base::RepeatingClosure closure,
+         net::CanonicalCookie::CookieInclusionStatus) { closure.Run(); },
       base::BarrierClosure(cookies.size(), std::move(callback)));
   for (auto& cookie : cookies) {
     cookie_manager_->SetCanonicalCookie(
@@ -1175,11 +1176,10 @@ std::unique_ptr<InterceptedRequestInfo> InterceptionJob::BuildRequestInfo(
 }
 
 void InterceptionJob::FetchCookies(
-    base::OnceCallback<void(const std::vector<net::CanonicalCookie>&)>
-        callback) {
+    network::mojom::CookieManager::GetCookieListCallback callback) {
   if (create_loader_params_->request.load_flags &
       net::LOAD_DO_NOT_SEND_COOKIES) {
-    std::move(callback).Run({});
+    std::move(callback).Run({}, {});
     return;
   }
   net::CookieOptions options;
@@ -1204,7 +1204,8 @@ void InterceptionJob::NotifyClient(
 
 void InterceptionJob::NotifyClientWithCookies(
     std::unique_ptr<InterceptedRequestInfo> request_info,
-    const std::vector<net::CanonicalCookie>& cookie_list) {
+    const std::vector<net::CanonicalCookie>& cookie_list,
+    const net::CookieStatusList& excluded_cookies) {
   if (!interceptor_)
     return;
   std::string cookie_line;

@@ -49,7 +49,10 @@ void SetCookie(const network::mojom::CookieManagerPtr& cookie_manager) {
   base::RunLoop run_loop;
   cookie_manager->SetCanonicalCookie(
       cookie, "http", net::CookieOptions(),
-      base::BindLambdaForTesting([&](bool success) { run_loop.Quit(); }));
+      base::BindLambdaForTesting(
+          [&](net::CanonicalCookie::CookieInclusionStatus status) {
+            run_loop.Quit();
+          }));
   run_loop.Run();
 }
 

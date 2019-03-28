@@ -1990,8 +1990,11 @@ TEST_F(NetworkContextTest, ClearEmptyNetworkErrorLoggingWithNoService) {
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
-void SetCookieCallback(base::RunLoop* run_loop, bool* result_out, bool result) {
-  *result_out = result;
+void SetCookieCallback(base::RunLoop* run_loop,
+                       bool* result_out,
+                       net::CanonicalCookie::CookieInclusionStatus result) {
+  *result_out =
+      (result == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
   run_loop->Quit();
 }
 

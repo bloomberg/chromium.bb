@@ -346,7 +346,8 @@ void GaiaScreenHandler::LoadGaiaWithPartition(
       base::BindOnce(&GaiaScreenHandler::OnSetCookieForLoadGaiaWithPartition,
                      weak_factory_.GetWeakPtr(), context, partition_name);
   if (context.gaps_cookie.empty()) {
-    std::move(callback).Run(true);
+    std::move(callback).Run(
+        net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
     return;
   }
 
@@ -379,7 +380,7 @@ void GaiaScreenHandler::LoadGaiaWithPartition(
 void GaiaScreenHandler::OnSetCookieForLoadGaiaWithPartition(
     const GaiaContext& context,
     const std::string& partition_name,
-    bool success) {
+    net::CanonicalCookie::CookieInclusionStatus status) {
   std::unique_ptr<std::string> version = std::make_unique<std::string>();
   std::unique_ptr<bool> consent = std::make_unique<bool>();
   base::OnceClosure get_version_and_consent =
@@ -805,7 +806,8 @@ void GaiaScreenHandler::OnGetCookiesForCompleteAuthentication(
     const std::string& password,
     bool using_saml,
     const ::login::StringList& services,
-    const std::vector<net::CanonicalCookie>& cookies) {
+    const std::vector<net::CanonicalCookie>& cookies,
+    const net::CookieStatusList& excluded_cookies) {
   std::string auth_code, gaps_cookie;
   for (const auto& cookie : cookies) {
     if (cookie.Name() == kOAUTHCodeCookie)

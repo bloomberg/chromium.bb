@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_view.h"
@@ -104,7 +105,8 @@ class EnrollmentScreenHandler
   void HandleCompleteLogin(const std::string& user);
   void OnGetCookiesForCompleteLogin(
       const std::string& user,
-      const std::vector<net::CanonicalCookie>& cookies);
+      const std::vector<net::CanonicalCookie>& cookies,
+      const net::CookieStatusList& excluded_cookies);
   void HandleAdCompleteLogin(const std::string& machine_name,
                              const std::string& distinguished_name,
                              const std::string& encryption_types,

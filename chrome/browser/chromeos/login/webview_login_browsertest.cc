@@ -74,8 +74,10 @@ constexpr char kTestCookieName[] = "TestCookie";
 constexpr char kTestCookieValue[] = "present";
 constexpr char kTestCookieHost[] = "host1.com";
 
-void InjectCookieDoneCallback(base::OnceClosure done_closure, bool result) {
-  ASSERT_TRUE(result);
+void InjectCookieDoneCallback(
+    base::OnceClosure done_closure,
+    net::CanonicalCookie::CookieInclusionStatus status) {
+  ASSERT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE, status);
   std::move(done_closure).Run();
 }
 

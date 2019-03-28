@@ -274,11 +274,13 @@ bool SetGaiaCookieForProfile(Profile* profile) {
 
   bool success = false;
   base::RunLoop loop;
-  base::OnceCallback<void(bool)> callback =
-      base::BindLambdaForTesting([&success, &loop](bool s) {
-        success = s;
-        loop.Quit();
-      });
+  base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>
+      callback = base::BindLambdaForTesting(
+          [&success, &loop](net::CanonicalCookie::CookieInclusionStatus s) {
+            success =
+                (s == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+            loop.Quit();
+          });
   network::mojom::CookieManager* cookie_manager =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetCookieManagerForBrowserProcess();

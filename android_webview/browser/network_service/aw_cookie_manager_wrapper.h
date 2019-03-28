@@ -24,6 +24,8 @@ class AwCookieManagerWrapper {
   // We redefine these type aliases for consistency and readability. These are
   // originally defined by generated mojo code in
   // out/<folder>/gen/services/network/public/mojom/cookie_manager.mojom.h.
+  using GetAllCookiesCallback =
+      network::mojom::CookieManager::GetAllCookiesCallback;
   using GetCookieListCallback =
       network::mojom::CookieManager::GetCookieListCallback;
   using SetCanonicalCookieCallback =
@@ -53,7 +55,7 @@ class AwCookieManagerWrapper {
   void DeleteCookies(network::mojom::CookieDeletionFilterPtr filter,
                      DeleteCookiesCallback callback);
 
-  void GetAllCookies(GetCookieListCallback callback);
+  void GetAllCookies(GetAllCookiesCallback callback);
 
   void FlushCookieStore(FlushCookieStoreCallback callback);
 

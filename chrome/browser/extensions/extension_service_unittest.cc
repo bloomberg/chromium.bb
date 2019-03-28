@@ -4932,14 +4932,16 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
 
 void SetCookieSaveData(bool* result_out,
                        base::OnceClosure callback,
-                       bool result) {
-  *result_out = result;
+                       net::CanonicalCookie::CookieInclusionStatus result) {
+  *result_out =
+      (result == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
   std::move(callback).Run();
 }
 
 void GetCookiesSaveData(std::vector<net::CanonicalCookie>* result_out,
                         base::OnceClosure callback,
-                        const std::vector<net::CanonicalCookie>& result) {
+                        const std::vector<net::CanonicalCookie>& result,
+                        const net::CookieStatusList& excluded_cookies) {
   *result_out = result;
   std::move(callback).Run();
 }

@@ -6,6 +6,7 @@
 
 #include <limits.h>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/metrics/user_metrics.h"
@@ -172,7 +173,8 @@ void InlineLoginHandler::HandleCompleteLoginMessage(
 
 void InlineLoginHandler::HandleCompleteLoginMessageWithCookies(
     const base::ListValue& args,
-    const std::vector<net::CanonicalCookie>& cookies) {
+    const std::vector<net::CanonicalCookie>& cookies,
+    const net::CookieStatusList& excluded_cookies) {
   const base::DictionaryValue* dict = nullptr;
   args.GetDictionary(0, &dict);
 
