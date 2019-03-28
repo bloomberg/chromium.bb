@@ -13,7 +13,6 @@
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/permissions/permission_util.h"
-#include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
@@ -187,18 +186,11 @@ ContentSetting GetEffectiveSetting(Profile* profile,
   if (effective_setting == CONTENT_SETTING_DEFAULT)
     effective_setting = default_setting;
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile);
-  effective_setting = PluginsFieldTrial::EffectiveContentSetting(
-      host_content_settings_map, type, effective_setting);
-
   // Display the UI string for ASK instead of DETECT for Flash.
   // TODO(tommycli): Just migrate the actual content setting to ASK.
   if (effective_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT)
     effective_setting = CONTENT_SETTING_ASK;
 
-#endif
   return effective_setting;
 }
 

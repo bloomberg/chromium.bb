@@ -4571,8 +4571,6 @@ jumbo_split_static_library("browser") {
       "plugins/plugin_status_pref_setter.h",
       "plugins/plugin_utils.cc",
       "plugins/plugin_utils.h",
-      "plugins/plugins_field_trial.cc",
-      "plugins/plugins_field_trial.h",
       "plugins/plugins_resource_service.cc",
       "plugins/plugins_resource_service.h",
       "plugins/reload_plugin_infobar_delegate.cc",

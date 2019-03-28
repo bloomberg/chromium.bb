@@ -8,7 +8,6 @@
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/plugins/flash_temporary_permission_tracker.h"
 #include "chrome/browser/plugins/plugin_utils.h"
-#include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -47,8 +46,6 @@ ContentSetting FlashPermissionContext::GetPermissionStatusInternal(
   ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
       host_content_settings_map, url::Origin::Create(embedding_origin),
       requesting_origin, nullptr);
-  flash_setting = PluginsFieldTrial::EffectiveContentSetting(
-      host_content_settings_map, content_settings_type(), flash_setting);
   if (flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT)
     return CONTENT_SETTING_ASK;
   return flash_setting;
