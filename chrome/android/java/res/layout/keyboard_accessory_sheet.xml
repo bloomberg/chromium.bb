@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetView
+<org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_component.AccessorySheetView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:fillViewport="true"
     android:paddingTop="0dp"
@@ -27,4 +27,4 @@
         android:scaleType="fitXY"
         android:visibility="invisible"
         android:importantForAccessibility="no" />
-</org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetView>
+</org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_component.AccessorySheetView>

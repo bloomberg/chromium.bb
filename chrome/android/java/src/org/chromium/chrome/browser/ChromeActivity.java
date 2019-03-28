@@ -62,7 +62,6 @@ import org.chromium.chrome.browser.appmenu.AppMenu;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryCoordinator;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingCoordinator;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
@@ -765,7 +764,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * @return The {@link KeyboardAccessoryCoordinator} that belongs to this activity.
+     * @return The ManualFillingCoordinator that belongs to this activity.
      */
     public ManualFillingCoordinator getManualFillingController() {
         return mManualFillingController;
