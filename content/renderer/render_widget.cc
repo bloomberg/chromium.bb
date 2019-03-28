@@ -537,7 +537,6 @@ void RenderWidget::InitForChildLocalRoot(
 
 void RenderWidget::CloseForFrame() {
   DCHECK(for_child_local_root_frame_);
-  closing_for_child_local_root_frame_ = true;
   OnClose();
 }
 
@@ -587,8 +586,6 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   // Take a reference on behalf of the RenderThread.  This will be balanced
   // when we receive WidgetMsg_Close.
   AddRef();
-
-  initialized_ = true;
 }
 
 void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget(
@@ -714,13 +711,6 @@ bool RenderWidget::ShouldHandleImeEvents() const {
 
 void RenderWidget::OnClose() {
   DCHECK(RenderThread::IsMainThread());
-  // TODO(crbug.com/939262): If this fails we're handling a WidgetMsg_Close IPC
-  // in a RenderWidget that is a child local root. This will leave the
-  // RenderWidget in a closed state while the blink-side is not closed until the
-  // frame is detached, leading to crashes later if it tries to use the
-  // RenderWidget.
-  if (for_child_local_root_frame_)
-    CHECK(closing_for_child_local_root_frame_);
   if (closing_)
     return;
   for (auto& observer : render_frames_)
@@ -1230,17 +1220,6 @@ void RenderWidget::SetRootLayer(scoped_refptr<cc::Layer> layer) {
 }
 
 void RenderWidget::ScheduleAnimation() {
-  CHECK(initialized_);
-  CHECK(!closed_);
-  // TODO(crbug.com/939262): This shouldn't be null. That would mean we're
-  // somehow using RenderWidget after it has closed.
-  if (!layer_tree_view_) {
-    // Determine if this object is for a child or main frame (it should be one
-    // of them!)
-    CHECK(!for_child_local_root_frame_);
-    CHECK(!delegate_);
-    CHECK(for_child_local_root_frame_ || delegate_);
-  }
   // This call is not needed in single thread mode for tests without a
   // scheduler, but they override this method in order to schedule a synchronous
   // composite task themselves.

@@ -2337,9 +2337,9 @@ void RenderFrameImpl::OnSwapOut(
   bool success = frame_->Swap(proxy->web_frame());
 
   if (is_main_frame) {
-    // TODO(crbug.com/939262): Looking for ways a main frame could be left in a
-    // provisional state and not deleted by the browser.
-    CHECK(success);
+    // Main frames should always swap successfully because there is no parent
+    // frame to cause them to become detached.
+    DCHECK(success);
     // For main frames, the swap should have cleared the RenderView's pointer to
     // this frame.
     CHECK(!render_view->main_render_frame_);
@@ -6157,9 +6157,9 @@ bool RenderFrameImpl::SwapIn() {
   // Note: Calling swap() will detach and delete |proxy|, so do not reference it
   // after this.
   if (!proxy->web_frame()->Swap(frame_)) {
-    // TODO(crbug.com/939262): Looking for ways a main frame could be left in a
-    // provisional state and not deleted by the browser.
-    CHECK(!is_main_frame_);
+    // Main frames should always swap successfully because there is no parent
+    // frame to cause them to become detached.
+    DCHECK(!is_main_frame_);
     return false;
   }
 

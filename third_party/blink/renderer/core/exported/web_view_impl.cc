@@ -1258,12 +1258,6 @@ void WebViewImpl::Close() {
   // deleted.
   AsView().client = nullptr;
 
-  // TODO(crbug.com/939262): After this the WebWidget for main frame local root
-  // is closed, and the WebWidgetClient should not be used. There appears to be
-  // pointers left over still pointing to the WebWidgetClient and being used
-  // though.
-  static_cast<ChromeClientImpl*>(chrome_client_.Get())->SetClosed();
-
   Release();  // Balances a reference acquired in WebView::Create
 }
 
