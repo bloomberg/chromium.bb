@@ -116,11 +116,14 @@ std::string DumpEvents(AXEventGenerator* generator) {
       case AXEventGenerator::Event::POSITION_IN_SET_CHANGED:
         event_name = "POSITION_IN_SET_CHANGED";
         break;
+      case AXEventGenerator::Event::READONLY_CHANGED:
+        event_name = "READONLY_CHANGED";
+        break;
       case AXEventGenerator::Event::RELATED_NODE_CHANGED:
         event_name = "RELATED_NODE_CHANGED";
         break;
-      case AXEventGenerator::Event::READONLY_CHANGED:
-        event_name = "READONLY_CHANGED";
+      case AXEventGenerator::Event::REQUIRED_STATE_CHANGED:
+        event_name = "REQUIRED_STATE_CHANGED";
         break;
       case AXEventGenerator::Event::ROLE_CHANGED:
         event_name = "ROLE_CHANGED";
@@ -1115,6 +1118,23 @@ TEST(AXEventGeneratorTest, MultiselectableStateChanged) {
   update.nodes[0].AddState(ax::mojom::State::kMultiselectable);
   EXPECT_TRUE(tree.Unserialize(update));
   EXPECT_EQ("MULTISELECTABLE_STATE_CHANGED on 1, STATE_CHANGED on 1",
+            DumpEvents(&event_generator));
+}
+
+TEST(AXEventGeneratorTest, RequiredStateChanged) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(1);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].role = ax::mojom::Role::kTextField;
+
+  AXTree tree(initial_state);
+  AXEventGenerator event_generator(&tree);
+  AXTreeUpdate update = initial_state;
+
+  update.nodes[0].AddState(ax::mojom::State::kRequired);
+  EXPECT_TRUE(tree.Unserialize(update));
+  EXPECT_EQ("REQUIRED_STATE_CHANGED on 1, STATE_CHANGED on 1",
             DumpEvents(&event_generator));
 }
 

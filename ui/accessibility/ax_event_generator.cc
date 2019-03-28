@@ -168,6 +168,9 @@ void AXEventGenerator::OnStateChanged(AXTree* tree,
     case ax::mojom::State::kMultiselectable:
       AddEvent(node, Event::MULTISELECTABLE_STATE_CHANGED);
       break;
+    case ax::mojom::State::kRequired:
+      AddEvent(node, Event::REQUIRED_STATE_CHANGED);
+      break;
     default:
       break;
   }
