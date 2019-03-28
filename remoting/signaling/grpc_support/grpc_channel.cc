@@ -8,8 +8,15 @@
 
 namespace remoting {
 
+namespace {
+
+#include "remoting/signaling/grpc_support/root_certs_prod.inc"
+
+}  // namespace
+
 GrpcChannelSharedPtr CreateSslChannelForEndpoint(const std::string& endpoint) {
-  auto channel_creds = grpc::SslCredentials(grpc::SslCredentialsOptions());
+  static const grpc::SslCredentialsOptions cred_options{certs_pem, {}, {}};
+  auto channel_creds = grpc::SslCredentials(cred_options);
   return grpc::CreateChannel(endpoint, channel_creds);
 }
 
