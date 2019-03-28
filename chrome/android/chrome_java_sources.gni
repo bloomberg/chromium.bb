@@ -737,7 +737,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/gcore/ConnectedTask.java",
   "java/src/org/chromium/chrome/browser/gcore/GoogleApiClientHelper.java",
   "java/src/org/chromium/chrome/browser/gcore/LifecycleHook.java",
-  "java/src/org/chromium/chrome/browser/gesturenav/ArrowDrawable.java",
+  "java/src/org/chromium/chrome/browser/gesturenav/ArrowChipView.java",
   "java/src/org/chromium/chrome/browser/gesturenav/HistoryNavigationLayout.java",
   "java/src/org/chromium/chrome/browser/gesturenav/SideSlideLayout.java",
   "java/src/org/chromium/chrome/browser/gsa/ContextReporter.java",

@@ -73,7 +73,11 @@ public class HistoryNavigationLayout extends FrameLayout {
             if (isForward) {
                 tab.goForward();
             } else {
-                tab.goBack();
+                if (canNavigate(/* forward= */ false)) {
+                    tab.goBack();
+                } else {
+                    tab.getActivity().onBackPressed();
+                }
             }
             cancelStopNavigatingRunnable();
             mSideSlideLayout.post(getStopNavigatingRunnable());
@@ -122,8 +126,9 @@ public class HistoryNavigationLayout extends FrameLayout {
             if (mState == GestureState.STARTED) {
                 if (Math.abs(distanceX) > Math.abs(distanceY)) {
                     boolean forward = distanceX > 0;
-                    if (canNavigate(forward)) {
-                        start(forward);
+                    boolean navigable = canNavigate(forward);
+                    if (navigable || !forward) {
+                        start(forward, !navigable);
                         mState = GestureState.DRAGGED;
                     }
                 }
@@ -151,10 +156,11 @@ public class HistoryNavigationLayout extends FrameLayout {
         return false;
     }
 
-    private void start(boolean isForward) {
+    private void start(boolean isForward, boolean enableCloseIndicator) {
         if (mSideSlideLayout == null) createLayout();
         mSideSlideLayout.setEnabled(true);
         mSideSlideLayout.setDirection(isForward);
+        mSideSlideLayout.setEnableCloseIndicator(enableCloseIndicator);
         attachSideSlideLayoutIfNecessary();
         mSideSlideLayout.start();
     }
