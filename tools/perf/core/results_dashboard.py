@@ -7,6 +7,8 @@
 
 # This file was copy-pasted over from:
 # //build/scripts/slave/results_dashboard.py
+# That file is now deprecated and this one is
+# the new source of truth.
 
 import calendar
 import datetime
@@ -47,9 +49,6 @@ def LuciAuthTokenGeneratorCallback(service_account_file):
   args = ['luci-auth', 'token']
   if service_account_file:
     args += ['-service-account-json', service_account_file]
-  else:
-    print ('service_account_file is not set. '
-           'Use LUCI swarming task service account')
   p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   if p.wait() == 0:
     return p.stdout.read()
