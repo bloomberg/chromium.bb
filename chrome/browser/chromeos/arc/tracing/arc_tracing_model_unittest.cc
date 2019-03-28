@@ -139,15 +139,20 @@ TEST_F(ArcTracingModelTest, TopLevel) {
   ArcTracingGraphicsModel graphics_model;
   ASSERT_TRUE(graphics_model.Build(model));
 
+  ASSERT_EQ(1U, graphics_model.android_top_level().buffer_events().size());
   EXPECT_TRUE(ValidateGrahpicsEvent(
-      graphics_model.android_top_level(),
-      {GraphicsEventType::kVsync,
-       GraphicsEventType::kSurfaceFlingerInvalidationStart,
+      graphics_model.android_top_level().buffer_events()[0],
+      {GraphicsEventType::kSurfaceFlingerInvalidationStart,
        GraphicsEventType::kSurfaceFlingerInvalidationDone,
        GraphicsEventType::kSurfaceFlingerCompositionStart,
        GraphicsEventType::kSurfaceFlingerCompositionDone}));
-  EXPECT_EQ(2U, graphics_model.chrome_top_level().size());
-  for (const auto& chrome_top_level_band : graphics_model.chrome_top_level()) {
+  EXPECT_TRUE(ValidateGrahpicsEvent(
+      graphics_model.android_top_level().global_events(),
+      {GraphicsEventType::kVsync,
+       GraphicsEventType::kSurfaceFlingerCompositionJank}));
+  EXPECT_EQ(2U, graphics_model.chrome_top_level().buffer_events().size());
+  for (const auto& chrome_top_level_band :
+       graphics_model.chrome_top_level().buffer_events()) {
     EXPECT_TRUE(ValidateGrahpicsEvent(
         chrome_top_level_band, {
                                    GraphicsEventType::kChromeOSDraw,
@@ -162,8 +167,8 @@ TEST_F(ArcTracingModelTest, TopLevel) {
     // At least one buffer.
     EXPECT_GT(view.first.task_id, 0);
     EXPECT_NE(std::string(), view.first.activity);
-    EXPECT_FALSE(view.second.empty());
-    for (const auto& buffer : view.second) {
+    EXPECT_FALSE(view.second.buffer_events().empty());
+    for (const auto& buffer : view.second.buffer_events()) {
       EXPECT_TRUE(ValidateGrahpicsEvent(
           buffer, {
                       GraphicsEventType::kBufferQueueDequeueStart,

@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/arc_graphics_tracing/arc_graphics_jank_detector.h"
+#include "chrome/browser/chromeos/arc/tracing/arc_graphics_jank_detector.h"
 
-namespace chromeos {
+namespace arc {
 
 // static
 constexpr base::TimeDelta ArcGraphicsJankDetector::kPauseDetectionThreshold;
 
-ArcGraphicsJankDetector::ArcGraphicsJankDetector(
-    const base::RepeatingClosure& callback)
+ArcGraphicsJankDetector::ArcGraphicsJankDetector(const JankCallback& callback)
     : callback_(callback),
       stage_(Stage::kWarmUp),
       last_sample_time_(base::Time::Now()),
@@ -22,12 +21,20 @@ void ArcGraphicsJankDetector::OnSample() {
   OnSample(base::Time::Now());
 }
 
+void ArcGraphicsJankDetector::SetPeriodFixed(const base::TimeDelta& period) {
+  period_ = period;
+  period_fixed_ = true;
+  stage_ = Stage::kActive;
+}
+
 void ArcGraphicsJankDetector::OnSample(const base::Time& timestamp) {
   const base::TimeDelta delta = timestamp - last_sample_time_;
   last_sample_time_ = timestamp;
 
   // Try to detect pause and switch to warm-up stage.
   if (delta >= kPauseDetectionThreshold) {
+    if (period_fixed_)
+      return;
     warm_up_sample_cnt_ = kWarmUpSamples;
     stage_ = Stage::kWarmUp;
     return;
@@ -52,9 +59,10 @@ void ArcGraphicsJankDetector::OnSample(const base::Time& timestamp) {
     stage_ = Stage::kActive;
     return;
   }
+
   DCHECK_EQ(Stage::kActive, stage_);
   if (delta >= period_ * kJankDetectionThresholdPercent / 100)
-    callback_.Run();
+    callback_.Run(timestamp - delta + period_);
 }
 
-}  // namespace chromeos
+}  // namespace arc
