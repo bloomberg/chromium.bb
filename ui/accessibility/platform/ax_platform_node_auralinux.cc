@@ -2094,7 +2094,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kAlert:
       return ATK_ROLE_ALERT;
     case ax::mojom::Role::kAlertDialog:
-      return ATK_ROLE_ALERT;
+      return ATK_ROLE_DIALOG;
     case ax::mojom::Role::kAnchor:
       return ATK_ROLE_LINK;
     case ax::mojom::Role::kAnnotation:
@@ -2218,7 +2218,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kDocSubtitle:
       return ATK_ROLE_HEADING;
     case ax::mojom::Role::kDocument:
-      return ATK_ROLE_DOCUMENT_WEB;
+      return ATK_ROLE_DOCUMENT_FRAME;
     case ax::mojom::Role::kEmbeddedObject:
       return ATK_ROLE_EMBEDDED;
     case ax::mojom::Role::kForm:
@@ -2232,7 +2232,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kGenericContainer:
       return ATK_ROLE_SECTION;
     case ax::mojom::Role::kGraphicsDocument:
-      return ATK_ROLE_DOCUMENT_WEB;
+      return ATK_ROLE_DOCUMENT_FRAME;
     case ax::mojom::Role::kGraphicsObject:
       return ATK_ROLE_PANEL;
     case ax::mojom::Role::kGraphicsSymbol:
