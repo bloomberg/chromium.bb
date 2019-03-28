@@ -65,6 +65,9 @@ struct BASE_EXPORT SharedMemoryCreateOptions {
 // SharedMemory consumes a SharedMemoryHandle [potentially one that it created]
 // to map a shared memory OS resource into the virtual address space of the
 // current process.
+//
+// DEPRECATED - Use {Writable,ReadOnly}SharedMemoryRegion instead.
+// http://crbug.com/795291
 class BASE_EXPORT SharedMemory {
  public:
   SharedMemory();
