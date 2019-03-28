@@ -96,8 +96,11 @@ static const CGFloat NoMultiplier = 1.0;
 @property(nonatomic, strong)
     NSMutableArray<NSLayoutConstraint*>* dynamicConstraints;
 
+// The constraints for the visible favicon.
+@property(nonatomic, strong) NSArray<NSLayoutConstraint*>* faviconContraints;
+
 // The favicon for the credential.
-@property(nonatomic, readwrite) FaviconView* faviconView;
+@property(nonatomic, strong) FaviconView* faviconView;
 
 // The label with the site name and host.
 @property(nonatomic, strong) UILabel* siteNameLabel;
@@ -122,6 +125,9 @@ static const CGFloat NoMultiplier = 1.0;
 
 - (void)prepareForReuse {
   [super prepareForReuse];
+  [NSLayoutConstraint deactivateConstraints:self.faviconContraints];
+  self.faviconView.hidden = YES;
+
   [NSLayoutConstraint deactivateConstraints:self.dynamicConstraints];
   [self.dynamicConstraints removeAllObjects];
 
@@ -230,6 +236,17 @@ static const CGFloat NoMultiplier = 1.0;
   return base::SysUTF8ToNSString(self.credential.URL.spec());
 }
 
+- (void)configureWithFaviconAttributes:(FaviconAttributes*)attributes {
+  if (attributes.faviconImage) {
+    self.faviconView.hidden = NO;
+    [NSLayoutConstraint activateConstraints:self.faviconContraints];
+    [self.faviconView configureWithAttributes:attributes];
+    return;
+  }
+  [NSLayoutConstraint deactivateConstraints:self.faviconContraints];
+  self.faviconView.hidden = YES;
+}
+
 #pragma mark - Private
 
 // Creates and sets up the view hierarchy.
@@ -243,23 +260,30 @@ static const CGFloat NoMultiplier = 1.0;
   self.faviconView = [[FaviconView alloc] init];
   self.faviconView.translatesAutoresizingMaskIntoConstraints = NO;
   self.faviconView.clipsToBounds = YES;
+  self.faviconView.hidden = YES;
   [self.contentView addSubview:self.faviconView];
+  self.faviconContraints = @[
+    [self.faviconView.widthAnchor constraintEqualToConstant:gfx::kFaviconSize],
+    [self.faviconView.heightAnchor
+        constraintEqualToAnchor:self.faviconView.widthAnchor],
+  ];
 
   self.siteNameLabel = CreateLabel();
   self.siteNameLabel.translatesAutoresizingMaskIntoConstraints = NO;
   self.siteNameLabel.adjustsFontForContentSizeCategory = YES;
   [self.contentView addSubview:self.siteNameLabel];
 
-  AppendHorizontalConstraintsForViews(
-      staticConstraints, @[ self.faviconView, self.siteNameLabel ],
-      self.contentView, kButtonHorizontalMargin);
-  [NSLayoutConstraint activateConstraints:@[
-    [self.faviconView.widthAnchor constraintEqualToConstant:gfx::kFaviconSize],
-    [self.faviconView.heightAnchor
-        constraintEqualToAnchor:self.faviconView.widthAnchor],
-    [self.faviconView.centerYAnchor
-        constraintEqualToAnchor:self.siteNameLabel.centerYAnchor],
-  ]];
+  UIStackView* stackView = [[UIStackView alloc] init];
+  stackView.translatesAutoresizingMaskIntoConstraints = NO;
+  stackView.spacing = kButtonHorizontalMargin;
+  [stackView addArrangedSubview:self.faviconView];
+  [stackView addArrangedSubview:self.siteNameLabel];
+  [self.contentView addSubview:stackView];
+
+  AppendHorizontalConstraintsForViews(staticConstraints, @[ stackView ],
+                                      self.contentView,
+                                      kButtonHorizontalMargin);
+
   self.usernameButton = CreateChipWithSelectorAndTarget(
       @selector(userDidTapUsernameButton:), self);
   [self.contentView addSubview:self.usernameButton];
