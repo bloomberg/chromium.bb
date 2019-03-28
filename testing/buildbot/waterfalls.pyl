@@ -173,9 +173,18 @@
       },
       'Android WebView O (dbg)': {
         'test_suites': {
-          'cts_tests': 'android_o_cts_tests',
+          'gtest_tests': 'webview_bot_gtests',
         },
-        'use_swarming': False,
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'OPD3.170816.023',
+              'device_type': 'walleye',
+              'os': 'Android',
+            },
+          ],
+        },
+        'use_swarming': True,
         'os_type': 'android',
       },
       'Android arm Builder (dbg)': {
