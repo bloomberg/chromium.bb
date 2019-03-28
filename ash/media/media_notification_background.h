@@ -6,7 +6,6 @@
 #define ASH_MEDIA_MEDIA_NOTIFICATION_BACKGROUND_H_
 
 #include "ash/ash_export.h"
-#include "base/optional.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/background.h"
 
@@ -30,7 +29,6 @@ class ASH_EXPORT MediaNotificationBackground : public views::Background {
                               int top_radius,
                               int bottom_radius,
                               double artwork_max_width_pct);
-  ~MediaNotificationBackground() override;
 
   // views::Background
   void Paint(gfx::Canvas* canvas, views::View* view) const override;
@@ -40,7 +38,6 @@ class ASH_EXPORT MediaNotificationBackground : public views::Background {
   void UpdateArtworkMaxWidthPct(double max_width_pct);
 
  private:
-  friend class MediaNotificationBackgroundTest;
   friend class MediaNotificationViewTest;
   FRIEND_TEST_ALL_PREFIXES(MediaNotificationBackgroundTest, BoundsSanityCheck);
 
@@ -58,8 +55,6 @@ class ASH_EXPORT MediaNotificationBackground : public views::Background {
 
   gfx::ImageSkia artwork_;
   double artwork_max_width_pct_;
-
-  base::Optional<SkColor> background_color_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationBackground);
 };

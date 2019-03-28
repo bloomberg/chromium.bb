@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <exception>
 #include <vector>
 
 #include "skia/ext/platform_canvas.h"
@@ -545,69 +544,6 @@ TEST_F(ColorAnalysisTest, ComputeProminentColors) {
   expectations[1] = kPureGreen;
   computations = CalculateProminentColorsOfBitmap(bitmap, color_profiles);
   EXPECT_EQ(expectations, computations);
-}
-
-TEST_F(ColorAnalysisTest, ComputeColorSwatches) {
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(100, 100);
-  bitmap.eraseColor(SK_ColorMAGENTA);
-  bitmap.erase(SK_ColorGREEN, {10, 10, 90, 90});
-  bitmap.erase(SK_ColorYELLOW, {40, 40, 60, 60});
-
-  const Swatch kYellowSwatch = Swatch(SK_ColorYELLOW, (20u * 20u));
-  const Swatch kGreenSwatch =
-      Swatch(SK_ColorGREEN, (80u * 80u) - kYellowSwatch.population);
-  const Swatch kMagentaSwatch =
-      Swatch(SK_ColorMAGENTA, (100u * 100u) - kGreenSwatch.population -
-                                  kYellowSwatch.population);
-
-  {
-    std::vector<Swatch> colors =
-        CalculateColorSwatches(bitmap, 10, gfx::Rect(100, 100), false);
-    EXPECT_EQ(3u, colors.size());
-    EXPECT_EQ(kGreenSwatch, colors[0]);
-    EXPECT_EQ(kMagentaSwatch, colors[1]);
-    EXPECT_EQ(kYellowSwatch, colors[2]);
-  }
-
-  {
-    std::vector<Swatch> colors =
-        CalculateColorSwatches(bitmap, 10, gfx::Rect(10, 10, 80, 80), false);
-    EXPECT_EQ(2u, colors.size());
-    EXPECT_EQ(kGreenSwatch, colors[0]);
-    EXPECT_EQ(kYellowSwatch, colors[1]);
-  }
-}
-
-TEST_F(ColorAnalysisTest, ComputeColorSwatches_Uninteresting) {
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(100, 100);
-  bitmap.eraseColor(SK_ColorMAGENTA);
-  bitmap.erase(SK_ColorBLACK, {10, 10, 90, 90});
-  bitmap.erase(SK_ColorWHITE, {40, 40, 60, 60});
-
-  const Swatch kWhiteSwatch = Swatch(SK_ColorWHITE, (20u * 20u));
-  const Swatch kBlackSwatch =
-      Swatch(SK_ColorBLACK, (80u * 80u) - kWhiteSwatch.population);
-  const Swatch kMagentaSwatch =
-      Swatch(SK_ColorMAGENTA,
-             (100u * 100u) - kBlackSwatch.population - kWhiteSwatch.population);
-
-  {
-    std::vector<Swatch> colors =
-        CalculateColorSwatches(bitmap, 10, gfx::Rect(100, 100), true);
-    EXPECT_EQ(1u, colors.size());
-    EXPECT_EQ(kMagentaSwatch, colors[0]);
-  }
-
-  {
-    std::vector<Swatch> colors =
-        CalculateColorSwatches(bitmap, 10, gfx::Rect(100, 100), false);
-    EXPECT_EQ(3u, colors.size());
-    EXPECT_EQ(kBlackSwatch, colors[0]);
-    EXPECT_EQ(kMagentaSwatch, colors[1]);
-    EXPECT_EQ(kWhiteSwatch, colors[2]);
-  }
 }
 
 }  // namespace color_utils
