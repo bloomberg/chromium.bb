@@ -20,6 +20,7 @@ android_library("net_java") {
     "java/src/org/chromium/net/NetStringUtil.java",
     "java/src/org/chromium/net/NetworkChangeNotifier.java",
     "java/src/org/chromium/net/NetworkChangeNotifierAutoDetect.java",
+    "java/src/org/chromium/net/ProxyBroadcastReceiver.java",
     "java/src/org/chromium/net/ProxyChangeListener.java",
     "java/src/org/chromium/net/RegistrationPolicyAlwaysRegister.java",
     "java/src/org/chromium/net/RegistrationPolicyApplicationStatus.java",
@@ -162,6 +163,7 @@ android_library("net_javatests") {
     "javatests/src/org/chromium/net/NetErrorsTest.java",
     "javatests/src/org/chromium/net/NetworkChangeNotifierNoNativeTest.java",
     "javatests/src/org/chromium/net/NetworkChangeNotifierTest.java",
+    "javatests/src/org/chromium/net/ProxyChangeListenerTest.java",
     "javatests/src/org/chromium/net/X509UtilTest.java",
   ]
   deps = [
@@ -171,7 +173,9 @@ android_library("net_javatests") {
     "//base:base_java_test_support",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/android_tools:android_test_mock_java",
     "//third_party/junit",
+    "//third_party/mockito:mockito_java",
   ]
 }
 
