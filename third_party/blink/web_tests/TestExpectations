@@ -6129,3 +6129,5 @@ crbug.com/946711 [ Release ] http/tests/devtools/editor/text-editor-search-switc
 crbug.com/946711 [ Release ] virtual/binary-for-devtools/http/tests/devtools/editor/text-editor-search-switch-editor.js [ Crash Pass Timeout ]
 crbug.com/946712 [ Release ] http/tests/devtools/elements/styles-2/paste-property.js [ Crash Pass Timeout ]
 crbug.com/946712 [ Release ] virtual/binary-for-devtools/http/tests/devtools/elements/styles-2/paste-property.js [ Crash Pass Timeout ]
+crbug.com/946713 [ Release ] http/tests/devtools/extensions/extensions-resources.js [ Crash Pass Timeout ]
+crbug.com/946713 [ Release ] virtual/binary-for-devtools/http/tests/devtools/extensions/extensions-resources.js [ Crash Pass Timeout ]
