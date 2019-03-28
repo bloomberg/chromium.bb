@@ -91,6 +91,10 @@
         padding: 0;
       }
 
+      :host-context([dark]) #dialog #promos {
+        background: rgb(50, 54, 57);
+      }
+
       #dialog .promo {
         align-items: center;
         color: var(--cr-primary-text-color);
@@ -127,8 +131,11 @@
       }
 
       #invitationPromo paper-button {
-        background-color: white;
         margin: 0 4px;
+      }
+
+      :host-context(html:not([dark])) #invitationPromo paper-button {
+        background-color: white;
       }
 
       #invitationPromo invitation-details {
@@ -180,7 +187,8 @@
           $i18n{cancel}
         </paper-button>
       </div>
-      <div id="promos" slot="footer">
+      <div id="promos" slot="footer" hidden="[[!shouldShowFooter_(
+          cloudPrintPromoDismissed_, cloudPrintState, invitation_)]]">
         <div class="promo" id="cloudprintPromo"
             hidden$="[[!shouldShowCloudPrintPromo_(
                 cloudPrintPromoDismissed_, cloudPrintState)]]">
