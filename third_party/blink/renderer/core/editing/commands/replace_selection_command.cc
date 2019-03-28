@@ -558,7 +558,8 @@ void ReplaceSelectionCommand::RemoveRedundantStylesAndKeepStyleSpanInline(
     Element* element = ToElement(node);
 
     const CSSPropertyValueSet* inline_style = element->InlineStyle();
-    EditingStyle* new_inline_style = EditingStyle::Create(inline_style);
+    EditingStyle* new_inline_style =
+        MakeGarbageCollected<EditingStyle>(inline_style);
     if (inline_style) {
       if (element->IsHTMLElement()) {
         Vector<QualifiedName> attributes;
@@ -893,8 +894,8 @@ static void HandleStyleSpansBeforeInsertion(ReplacementFragment& fragment,
     return;
   }
 
-  EditingStyle* style_at_insertion_pos =
-      EditingStyle::Create(insertion_pos.ParentAnchoredEquivalent());
+  EditingStyle* style_at_insertion_pos = MakeGarbageCollected<EditingStyle>(
+      insertion_pos.ParentAnchoredEquivalent());
   String style_text = style_at_insertion_pos->Style()->AsText();
 
   // FIXME: This string comparison is a naive way of comparing two styles.
@@ -1034,7 +1035,7 @@ void ReplaceSelectionCommand::SetUpStyle(const VisibleSelection& selection) {
     match_style_ = false;
 
   if (match_style_) {
-    insertion_style_ = EditingStyle::Create(selection.Start());
+    insertion_style_ = MakeGarbageCollected<EditingStyle>(selection.Start());
     insertion_style_->MergeTypingStyle(&GetDocument());
   }
 }
@@ -1463,9 +1464,9 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
 
   if (sanitize_fragment_ && inserted_nodes.FirstNodeInserted()) {
     ApplyCommandToComposite(
-        SimplifyMarkupCommand::Create(GetDocument(),
-                                      inserted_nodes.FirstNodeInserted(),
-                                      inserted_nodes.PastLastLeaf()),
+        MakeGarbageCollected<SimplifyMarkupCommand>(
+            GetDocument(), inserted_nodes.FirstNodeInserted(),
+            inserted_nodes.PastLastLeaf()),
         editing_state);
     if (editing_state->IsAborted())
       return;

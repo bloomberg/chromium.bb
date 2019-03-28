@@ -282,7 +282,7 @@ TextFinder& WebLocalFrameImpl::EnsureTextFinder() {
 
 TextFinder& FindInPage::EnsureTextFinder() {
   if (!text_finder_)
-    text_finder_ = TextFinder::Create(*frame_);
+    text_finder_ = MakeGarbageCollected<TextFinder>(*frame_);
 
   return *text_finder_;
 }

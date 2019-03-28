@@ -651,13 +651,10 @@ int TextFinder::SelectFindMatch(unsigned index, WebRect* selection_rect) {
   return active_match_index_ + 1;
 }
 
-TextFinder* TextFinder::Create(WebLocalFrameImpl& owner_frame) {
-  return MakeGarbageCollected<TextFinder>(owner_frame);
-}
-
 TextFinder::TextFinder(WebLocalFrameImpl& owner_frame)
     : owner_frame_(&owner_frame),
-      find_task_controller_(FindTaskController::Create(owner_frame, *this)),
+      find_task_controller_(
+          MakeGarbageCollected<FindTaskController>(owner_frame, *this)),
       current_active_match_frame_(false),
       active_match_index_(-1),
       total_match_count_(-1),

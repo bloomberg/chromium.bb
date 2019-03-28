@@ -434,8 +434,8 @@ void Editor::ApplyParagraphStyle(CSSPropertyValueSet* style,
     return;
   DCHECK(GetFrame().GetDocument());
   MakeGarbageCollected<ApplyStyleCommand>(
-      *GetFrame().GetDocument(), EditingStyle::Create(style), input_type,
-      ApplyStyleCommand::kForceBlockProperties)
+      *GetFrame().GetDocument(), MakeGarbageCollected<EditingStyle>(style),
+      input_type, ApplyStyleCommand::kForceBlockProperties)
       ->Apply();
 }
 
@@ -447,13 +447,9 @@ void Editor::ApplyParagraphStyleToSelection(CSSPropertyValueSet* style,
   ApplyParagraphStyle(style, input_type);
 }
 
-Editor* Editor::Create(LocalFrame& frame) {
-  return MakeGarbageCollected<Editor>(frame);
-}
-
 Editor::Editor(LocalFrame& frame)
     : frame_(&frame),
-      undo_stack_(UndoStack::Create()),
+      undo_stack_(MakeGarbageCollected<UndoStack>()),
       prevent_reveal_selection_(0),
       should_start_new_kill_ring_sequence_(false),
       // This is off by default, since most editors want this behavior (this
@@ -718,7 +714,7 @@ void Editor::ComputeAndSetTypingStyle(CSSPropertyValueSet* style,
   if (typing_style_)
     typing_style_->OverrideWithStyle(style);
   else
-    typing_style_ = EditingStyle::Create(style);
+    typing_style_ = MakeGarbageCollected<EditingStyle>(style);
 
   typing_style_->PrepareToApplyAt(
       GetFrame()

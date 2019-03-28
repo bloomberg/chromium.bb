@@ -170,8 +170,8 @@ UndoStep* CompositeEditCommand::EnsureUndoStep() {
   while (command && command->Parent())
     command = command->Parent();
   if (!command->undo_step_) {
-    command->undo_step_ = UndoStep::Create(&GetDocument(), StartingSelection(),
-                                           EndingSelection(), GetInputType());
+    command->undo_step_ = MakeGarbageCollected<UndoStep>(
+        &GetDocument(), StartingSelection(), EndingSelection(), GetInputType());
   }
   return command->undo_step_.Get();
 }
@@ -294,8 +294,8 @@ void CompositeEditCommand::InsertNodeBefore(
   ABORT_EDITING_COMMAND_IF(!HasEditableStyle(*ref_child->parentNode()) &&
                            ref_child->parentNode()->InActiveDocument());
   ApplyCommandToComposite(
-      InsertNodeBeforeCommand::Create(insert_child, ref_child,
-                                      should_assume_content_is_always_editable),
+      MakeGarbageCollected<InsertNodeBeforeCommand>(
+          insert_child, ref_child, should_assume_content_is_always_editable),
       editing_state);
 }
 
@@ -484,14 +484,16 @@ void CompositeEditCommand::Prune(Node* node,
 
 void CompositeEditCommand::SplitTextNode(Text* node, unsigned offset) {
   // SplitTextNodeCommand is never aborted.
-  ApplyCommandToComposite(SplitTextNodeCommand::Create(node, offset),
-                          ASSERT_NO_EDITING_ABORT);
+  ApplyCommandToComposite(
+      MakeGarbageCollected<SplitTextNodeCommand>(node, offset),
+      ASSERT_NO_EDITING_ABORT);
 }
 
 void CompositeEditCommand::SplitElement(Element* element, Node* at_child) {
   // SplitElementCommand is never aborted.
-  ApplyCommandToComposite(SplitElementCommand::Create(element, at_child),
-                          ASSERT_NO_EDITING_ABORT);
+  ApplyCommandToComposite(
+      MakeGarbageCollected<SplitElementCommand>(element, at_child),
+      ASSERT_NO_EDITING_ABORT);
 }
 
 void CompositeEditCommand::MergeIdenticalElements(Element* first,
@@ -514,15 +516,16 @@ void CompositeEditCommand::MergeIdenticalElements(Element* first,
 
 void CompositeEditCommand::WrapContentsInDummySpan(Element* element) {
   // WrapContentsInDummySpanCommand is never aborted.
-  ApplyCommandToComposite(WrapContentsInDummySpanCommand::Create(element),
-                          ASSERT_NO_EDITING_ABORT);
+  ApplyCommandToComposite(
+      MakeGarbageCollected<WrapContentsInDummySpanCommand>(element),
+      ASSERT_NO_EDITING_ABORT);
 }
 
 void CompositeEditCommand::SplitTextNodeContainingElement(Text* text,
                                                           unsigned offset) {
   // SplitTextNodeContainingElementCommand is never aborted.
   ApplyCommandToComposite(
-      SplitTextNodeContainingElementCommand::Create(text, offset),
+      MakeGarbageCollected<SplitTextNodeContainingElementCommand>(text, offset),
       ASSERT_NO_EDITING_ABORT);
 }
 
@@ -550,9 +553,9 @@ void CompositeEditCommand::ReplaceTextInNode(Text* node,
                                              unsigned count,
                                              const String& replacement_text) {
   // SetCharacterDataCommand is never aborted.
-  ApplyCommandToComposite(
-      SetCharacterDataCommand::Create(node, offset, count, replacement_text),
-      ASSERT_NO_EDITING_ABORT);
+  ApplyCommandToComposite(MakeGarbageCollected<SetCharacterDataCommand>(
+                              node, offset, count, replacement_text),
+                          ASSERT_NO_EDITING_ABORT);
 }
 
 Position CompositeEditCommand::ReplaceSelectedTextInNode(const String& text) {
@@ -651,7 +654,7 @@ void CompositeEditCommand::SetNodeAttribute(Element* element,
                                             const AtomicString& value) {
   // SetNodeAttributeCommand is never aborted.
   ApplyCommandToComposite(
-      SetNodeAttributeCommand::Create(element, attribute, value),
+      MakeGarbageCollected<SetNodeAttributeCommand>(element, attribute, value),
       ASSERT_NO_EDITING_ABORT);
 }
 
@@ -1490,8 +1493,8 @@ void CompositeEditCommand::MoveParagraphs(
   if (start_of_paragraph_to_move.DeepEquivalent() ==
           end_of_paragraph_to_move.DeepEquivalent() &&
       should_preserve_style == kPreserveStyle) {
-    style_in_empty_paragraph =
-        EditingStyle::Create(start_of_paragraph_to_move.DeepEquivalent());
+    style_in_empty_paragraph = MakeGarbageCollected<EditingStyle>(
+        start_of_paragraph_to_move.DeepEquivalent());
     style_in_empty_paragraph->MergeTypingStyle(&GetDocument());
     // The moved paragraph should assume the block style of the destination.
     style_in_empty_paragraph->RemoveBlockProperties();
@@ -1629,7 +1632,8 @@ bool CompositeEditCommand::BreakOutOfEmptyListItem(
   if (!empty_list_item)
     return false;
 
-  EditingStyle* style = EditingStyle::Create(EndingSelection().Start());
+  EditingStyle* style =
+      MakeGarbageCollected<EditingStyle>(EndingSelection().Start());
   style->MergeTypingStyle(&GetDocument());
 
   ContainerNode* list_node = empty_list_item->parentNode();

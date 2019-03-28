@@ -149,7 +149,7 @@ ApplyStyleCommand::ApplyStyleCommand(Document& document,
 
 ApplyStyleCommand::ApplyStyleCommand(Element* element, bool remove_only)
     : CompositeEditCommand(element->GetDocument()),
-      style_(EditingStyle::Create()),
+      style_(MakeGarbageCollected<EditingStyle>()),
       input_type_(InputEvent::InputType::kNone),
       property_level_(kPropertyDefault),
       start_(MostForwardCaretPosition(EndingSelection().Start())),
@@ -597,8 +597,8 @@ HTMLElement* ApplyStyleCommand::SplitAncestorsWithUnicodeBidi(
   if (allowed_direction != WritingDirection::kNatural &&
       highest_ancestor_unicode_bidi != CSSValueID::kBidiOverride &&
       highest_ancestor_with_unicode_bidi->IsHTMLElement() &&
-      EditingStyle::Create(highest_ancestor_with_unicode_bidi,
-                           EditingStyle::kAllProperties)
+      MakeGarbageCollected<EditingStyle>(highest_ancestor_with_unicode_bidi,
+                                         EditingStyle::kAllProperties)
           ->GetTextDirection(highest_ancestor_direction) &&
       highest_ancestor_direction == allowed_direction) {
     if (!next_highest_ancestor_with_unicode_bidi)
@@ -1376,7 +1376,7 @@ void ApplyStyleCommand::PushDownInlineStyleAroundNode(
       elements_to_push_down.push_back(styled_element);
     }
 
-    EditingStyle* style_to_push_down = EditingStyle::Create();
+    EditingStyle* style_to_push_down = MakeGarbageCollected<EditingStyle>();
     if (current->IsHTMLElement()) {
       RemoveInlineStyleFromElement(style, ToHTMLElement(current), editing_state,
                                    kRemoveIfNeeded, style_to_push_down);
@@ -1506,7 +1506,7 @@ void ApplyStyleCommand::RemoveInlineStyle(EditingStyle* style,
       EditingStyle* style_to_push_down = nullptr;
       Node* child_node = nullptr;
       if (IsStyledInlineElementToRemove(elem)) {
-        style_to_push_down = EditingStyle::Create();
+        style_to_push_down = MakeGarbageCollected<EditingStyle>();
         child_node = elem->firstChild();
       }
 

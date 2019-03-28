@@ -20,14 +20,6 @@ namespace {
 uint64_t g_current_sequence_number = 0;
 }
 
-UndoStep* UndoStep::Create(Document* document,
-                           const SelectionForUndoStep& starting_selection,
-                           const SelectionForUndoStep& ending_selection,
-                           InputEvent::InputType input_type) {
-  return MakeGarbageCollected<UndoStep>(document, starting_selection,
-                                        ending_selection, input_type);
-}
-
 UndoStep::UndoStep(Document* document,
                    const SelectionForUndoStep& starting_selection,
                    const SelectionForUndoStep& ending_selection,

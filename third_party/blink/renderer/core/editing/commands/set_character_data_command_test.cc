@@ -15,7 +15,7 @@ class SetCharacterDataCommandTest : public EditingTestBase {};
 TEST_F(SetCharacterDataCommandTest, replaceTextWithSameLength) {
   SetBodyContent("<div contenteditable>This is a good test case</div>");
 
-  SimpleEditCommand* command = SetCharacterDataCommand::Create(
+  SimpleEditCommand* command = MakeGarbageCollected<SetCharacterDataCommand>(
       ToText(GetDocument().body()->firstChild()->firstChild()), 10, 4, "lame");
 
   command->DoReapply();
@@ -32,7 +32,7 @@ TEST_F(SetCharacterDataCommandTest, replaceTextWithSameLength) {
 TEST_F(SetCharacterDataCommandTest, replaceTextWithLongerText) {
   SetBodyContent("<div contenteditable>This is a good test case</div>");
 
-  SimpleEditCommand* command = SetCharacterDataCommand::Create(
+  SimpleEditCommand* command = MakeGarbageCollected<SetCharacterDataCommand>(
       ToText(GetDocument().body()->firstChild()->firstChild()), 10, 4, "lousy");
 
   command->DoReapply();
@@ -49,7 +49,7 @@ TEST_F(SetCharacterDataCommandTest, replaceTextWithLongerText) {
 TEST_F(SetCharacterDataCommandTest, replaceTextWithShorterText) {
   SetBodyContent("<div contenteditable>This is a good test case</div>");
 
-  SimpleEditCommand* command = SetCharacterDataCommand::Create(
+  SimpleEditCommand* command = MakeGarbageCollected<SetCharacterDataCommand>(
       ToText(GetDocument().body()->firstChild()->firstChild()), 10, 4, "meh");
 
   command->DoReapply();
@@ -69,7 +69,7 @@ TEST_F(SetCharacterDataCommandTest, insertTextIntoEmptyNode) {
   GetDocument().body()->firstChild()->appendChild(
       GetDocument().CreateEditingTextNode(""));
 
-  SimpleEditCommand* command = SetCharacterDataCommand::Create(
+  SimpleEditCommand* command = MakeGarbageCollected<SetCharacterDataCommand>(
       ToText(GetDocument().body()->firstChild()->firstChild()), 0, 0, "hello");
 
   command->DoReapply();
@@ -86,7 +86,7 @@ TEST_F(SetCharacterDataCommandTest, insertTextIntoEmptyNode) {
 TEST_F(SetCharacterDataCommandTest, insertTextAtEndOfNonEmptyNode) {
   SetBodyContent("<div contenteditable>Hello</div>");
 
-  SimpleEditCommand* command = SetCharacterDataCommand::Create(
+  SimpleEditCommand* command = MakeGarbageCollected<SetCharacterDataCommand>(
       ToText(GetDocument().body()->firstChild()->firstChild()), 5, 0,
       ", world!");
 
@@ -104,7 +104,7 @@ TEST_F(SetCharacterDataCommandTest, insertTextAtEndOfNonEmptyNode) {
 TEST_F(SetCharacterDataCommandTest, replaceEntireNode) {
   SetBodyContent("<div contenteditable>Hello</div>");
 
-  SimpleEditCommand* command = SetCharacterDataCommand::Create(
+  SimpleEditCommand* command = MakeGarbageCollected<SetCharacterDataCommand>(
       ToText(GetDocument().body()->firstChild()->firstChild()), 0, 5, "Bye");
 
   command->DoReapply();
@@ -132,7 +132,7 @@ TEST_F(SetCharacterDataCommandTest, CombinedText) {
   EXPECT_FALSE(ToLayoutTextCombine(text_node->GetLayoutObject())->IsCombined());
 
   SimpleEditCommand* command =
-      SetCharacterDataCommand::Create(text_node, 0, 0, "text");
+      MakeGarbageCollected<SetCharacterDataCommand>(text_node, 0, 0, "text");
   command->DoReapply();
   UpdateAllLifecyclePhasesForTest();
 

@@ -170,7 +170,8 @@ static bool AreSameRanges(Node* node,
 
 static EditingStyle* StyleFromMatchedRulesAndInlineDecl(
     const HTMLElement* element) {
-  EditingStyle* style = EditingStyle::Create(element->InlineStyle());
+  EditingStyle* style =
+      MakeGarbageCollected<EditingStyle>(element->InlineStyle());
   // FIXME: Having to const_cast here is ugly, but it is quite a bit of work to
   // untangle the non-const-ness of styleFromMatchedRulesForElement.
   style->MergeStyleFromRules(const_cast<HTMLElement*>(element));
@@ -557,7 +558,7 @@ EditingStyle* StyledMarkupTraverser<Strategy>::CreateInlineStyle(
     inline_style->RemovePropertiesInElementDefaultStyle(&element);
     inline_style->RemoveStyleConflictingWithStyleOfElement(&element);
   } else {
-    inline_style = EditingStyle::Create();
+    inline_style = MakeGarbageCollected<EditingStyle>();
   }
 
   if (element.IsStyledElement() && element.InlineStyle())

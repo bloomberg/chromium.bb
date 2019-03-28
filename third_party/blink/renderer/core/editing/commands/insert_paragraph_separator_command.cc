@@ -102,7 +102,7 @@ void InsertParagraphSeparatorCommand::CalculateStyleBeforeInsertion(
     return;
 
   DCHECK(pos.IsNotNull());
-  style_ = EditingStyle::Create(pos);
+  style_ = MakeGarbageCollected<EditingStyle>(pos);
   style_->MergeTypingStyle(pos.GetDocument());
 }
 

@@ -87,8 +87,8 @@ EditingStyleUtilities::CreateWrappingStyleForAnnotatedSerialization(
   // TODO(editing-dev): Change this function to take |const ContainerNode&|.
   // Tracking bug for this is crbug.com/766448.
   DCHECK(context);
-  EditingStyle* wrapping_style =
-      EditingStyle::Create(context, EditingStyle::kEditingPropertiesInEffect);
+  EditingStyle* wrapping_style = MakeGarbageCollected<EditingStyle>(
+      context, EditingStyle::kEditingPropertiesInEffect);
 
   // Styles that Mail blockquotes contribute should only be placed on the Mail
   // blockquote, to help us differentiate those styles from ones that the user
@@ -109,7 +109,7 @@ EditingStyleUtilities::CreateWrappingStyleForAnnotatedSerialization(
 EditingStyle* EditingStyleUtilities::CreateWrappingStyleForSerialization(
     ContainerNode* context) {
   DCHECK(context);
-  EditingStyle* wrapping_style = EditingStyle::Create();
+  EditingStyle* wrapping_style = MakeGarbageCollected<EditingStyle>();
 
   // When not annotating for interchange, we only preserve inline style
   // declarations.
@@ -164,7 +164,7 @@ EditingStyle* EditingStyleUtilities::CreateStyleAtSelectionStart(
     return nullptr;
 
   EditingStyle* style =
-      EditingStyle::Create(element, EditingStyle::kAllProperties);
+      MakeGarbageCollected<EditingStyle>(element, EditingStyle::kAllProperties);
   style->MergeTypingStyle(&element->GetDocument());
 
   // If |element| has <sub> or <sup> ancestor element, apply the corresponding

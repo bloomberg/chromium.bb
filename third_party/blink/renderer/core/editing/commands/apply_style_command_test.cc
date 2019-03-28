@@ -46,7 +46,7 @@ TEST_F(ApplyStyleCommandTest, RemoveRedundantBlocksWithStarEditableStyle) {
   style->SetProperty(CSSPropertyID::kTextAlign, "center", /* important */ false,
                      SecureContextMode::kInsecureContext);
   MakeGarbageCollected<ApplyStyleCommand>(
-      GetDocument(), EditingStyle::Create(style),
+      GetDocument(), MakeGarbageCollected<EditingStyle>(style),
       InputEvent::InputType::kFormatJustifyCenter,
       ApplyStyleCommand::kForceBlockProperties)
       ->Apply();
@@ -76,7 +76,7 @@ TEST_F(ApplyStyleCommandTest, JustifyRightDetachesDestination) {
   style->SetProperty(CSSPropertyID::kTextAlign, "right", /* important */ false,
                      SecureContextMode::kInsecureContext);
   MakeGarbageCollected<ApplyStyleCommand>(
-      GetDocument(), EditingStyle::Create(style),
+      GetDocument(), MakeGarbageCollected<EditingStyle>(style),
       InputEvent::InputType::kFormatJustifyCenter,
       ApplyStyleCommand::kForceBlockProperties)
       ->Apply();
@@ -96,7 +96,8 @@ TEST_F(ApplyStyleCommandTest, FontSizeDeltaWithSpanElement) {
                      /* important */ false,
                      GetDocument().GetSecureContextMode());
   MakeGarbageCollected<ApplyStyleCommand>(
-      GetDocument(), EditingStyle::Create(style), InputEvent::InputType::kNone)
+      GetDocument(), MakeGarbageCollected<EditingStyle>(style),
+      InputEvent::InputType::kNone)
       ->Apply();
   EXPECT_EQ("<div contenteditable><div></div><span>^a|</span></div>",
             GetSelectionTextFromBody());
