@@ -230,6 +230,7 @@ typedef enum {
   FRAME_HEADER_RATE_TOO_HIGH,
   DISPLAY_RATE_TOO_HIGH,
   DECODE_RATE_TOO_HIGH,
+  CR_TOO_SMALL,
 
   TARGET_LEVEL_FAIL_IDS
 } TARGET_LEVEL_FAIL_ID;
@@ -247,19 +248,35 @@ static const char *level_fail_messages[TARGET_LEVEL_FAIL_IDS] = {
   "The frame header rate is too high",
   "The display luma sample rate is too high",
   "The decoded luma sample rate is too high",
+  "The compression ratio is too small",
 };
 
+static double get_min_cr(const AV1LevelSpec *const level_spec, int tier,
+                         int is_still_picture, int64_t decoded_sample_rate) {
+  if (is_still_picture) return 0.8;
+  const double min_cr_basis = tier ? level_spec->high_cr : level_spec->main_cr;
+  const double speed_adj =
+      (double)decoded_sample_rate / level_spec->max_display_rate;
+  return AOMMAX(min_cr_basis * speed_adj, 0.8);
+}
+
 static void check_level_constraints(AV1_COMP *cpi, int operating_point_idx,
-                                    const AV1LevelSpec *level_spec) {
+                                    const AV1LevelSpec *const level_spec,
+                                    const AV1LevelStats *const level_stats) {
   const AV1_LEVEL target_seq_level_idx =
       cpi->target_seq_level_idx[operating_point_idx];
   if (target_seq_level_idx >= SEQ_LEVELS) return;
   TARGET_LEVEL_FAIL_ID fail_id = TARGET_LEVEL_FAIL_IDS;
+  const AV1LevelSpec *const target_level_spec =
+      av1_level_defs + target_seq_level_idx;
+  const SequenceHeader *const seq_params = &cpi->common.seq_params;
+  const double min_cr =
+      get_min_cr(target_level_spec, seq_params->tier[operating_point_idx],
+                 seq_params->still_picture, level_spec->max_decode_rate);
   // Check level conformance
   // TODO(kyslov@) implement all constraints
+
   do {
-    const AV1LevelSpec *const target_level_spec =
-        av1_level_defs + target_seq_level_idx;
     if (level_spec->max_picture_size > target_level_spec->max_picture_size) {
       fail_id = LUMA_PIC_SIZE_TOO_LARGE;
       break;
@@ -317,6 +334,11 @@ static void check_level_constraints(AV1_COMP *cpi, int operating_point_idx,
 
     if (level_spec->max_decode_rate > target_level_spec->max_decode_rate) {
       fail_id = DECODE_RATE_TOO_HIGH;
+      break;
+    }
+
+    if (level_stats->min_cr < min_cr) {
+      fail_id = CR_TOO_SMALL;
       break;
     }
   } while (0);
@@ -517,6 +539,7 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
 
     level_stats->total_compressed_size += frame_compressed_size;
     if (show_frame) level_stats->total_time_encoded = total_time_encoded;
+    level_stats->min_cr = AOMMIN(level_stats->min_cr, compression_ratio);
 
     // update level_spec
     // TODO(kyslov@) update all spec fields
@@ -540,12 +563,7 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
       scan_past_frames(buffer, encoded_frames_in_last_second, level_spec);
     }
 
-    // TODO(kyslov@) These are needed for further level stat calculations
-    (void)compression_ratio;
-    (void)ts_start;
-    (void)ts_end;
-
-    check_level_constraints(cpi, i, level_spec);
+    check_level_constraints(cpi, i, level_spec, level_stats);
   }
 }
 

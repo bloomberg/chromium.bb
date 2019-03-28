@@ -2551,11 +2551,13 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 static void init_level_info(AV1LevelInfo *level_info) {
   memset(level_info, 0, MAX_NUM_OPERATING_POINTS * sizeof(*level_info));
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
-    AV1LevelSpec *level_spec = &level_info[i].level_spec;
+    AV1LevelSpec *const level_spec = &level_info[i].level_spec;
     level_spec->level = SEQ_LEVEL_MAX;
     level_spec->min_cropped_tile_width = INT_MAX;
     level_spec->min_cropped_tile_height = INT_MAX;
     level_spec->tile_width_is_valid = 1;
+    AV1LevelStats *const level_stats = &level_info[i].level_stats;
+    level_stats->min_cr = 1e8;
   }
 }
 

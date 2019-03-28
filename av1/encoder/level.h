@@ -58,6 +58,7 @@ typedef struct {
 typedef struct {
   uint64_t total_compressed_size;
   double total_time_encoded;
+  double min_cr;
 } AV1LevelStats;
 
 typedef struct {
