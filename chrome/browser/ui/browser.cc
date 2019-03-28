@@ -1975,7 +1975,7 @@ void Browser::Observe(int type,
   switch (type) {
 #if !defined(OS_ANDROID)
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
-      window()->UserChangedTheme();
+      window()->UserChangedTheme(BrowserThemeChangeType::kBrowserTheme);
       break;
 #endif
 

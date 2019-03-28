@@ -1496,8 +1496,33 @@ void BrowserView::ConfirmBrowserCloseWithPendingDownloads(
       GetNativeWindow(), download_count, dialog_type, app_modal, callback);
 }
 
-void BrowserView::UserChangedTheme() {
-  frame_->FrameTypeChanged();
+void BrowserView::UserChangedTheme(BrowserThemeChangeType theme_change_type) {
+  // When the native theme changes in a way that doesn't change the frame type
+  // required, we can skip a frame regeneration. Frame regeneration can cause
+  // visible flicker (see crbug/945138) so it's best avoided if all that has
+  // changed is, for example, the titlebar color, or the user has switched from
+  // light to dark mode.
+  const bool should_use_native_frame = frame_->ShouldUseNativeFrame();
+  bool must_regenerate_frame;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // GTK and user theme changes can both change frame buttons, so the frame
+  // always needs to be regenerated on Linux.
+  must_regenerate_frame = true;
+#else
+  must_regenerate_frame =
+      theme_change_type == BrowserThemeChangeType::kBrowserTheme ||
+      using_native_frame_ != should_use_native_frame;
+#endif
+  if (must_regenerate_frame) {
+    // This is a heavyweight theme change that requires regenerating the frame
+    // as well as repainting the browser window.
+    frame_->FrameTypeChanged();
+  } else {
+    // This is a lightweight theme change, so just refresh the theme on all
+    // views in the browser window.
+    GetWidget()->ThemeChanged();
+  }
+  using_native_frame_ = should_use_native_frame;
 }
 
 void BrowserView::ShowAppMenu() {
@@ -1920,7 +1945,7 @@ void BrowserView::NativeThemeUpdated(const ui::NativeTheme* theme) {
     return;
   // Don't infinitely recurse.
   if (!handling_theme_changed_)
-    UserChangedTheme();
+    UserChangedTheme(BrowserThemeChangeType::kNativeTheme);
   MaybeShowInvertBubbleView(this);
 }
 
@@ -2576,6 +2601,7 @@ void BrowserView::InitViews() {
 
   frame_->OnBrowserViewInitViewsComplete();
   frame_->GetFrameView()->UpdateMinimumSize();
+  using_native_frame_ = frame_->ShouldUseNativeFrame();
 }
 
 void BrowserView::LoadingAnimationCallback() {
