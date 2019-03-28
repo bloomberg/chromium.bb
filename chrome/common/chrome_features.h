@@ -114,8 +114,6 @@ extern const base::Feature kClipboardContentSetting;
 
 #if defined(OS_MACOSX)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kContentFullscreen;
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kImmersiveFullscreen;
 #endif
 
 #if defined(OS_CHROMEOS)

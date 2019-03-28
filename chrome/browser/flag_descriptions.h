@@ -1723,9 +1723,6 @@ extern const char kUseWinrtMidiApiDescription[];
 extern const char kContentFullscreenName[];
 extern const char kContentFullscreenDescription[];
 
-extern const char kImmersiveFullscreenName[];
-extern const char kImmersiveFullscreenDescription[];
-
 extern const char kHostedAppsInWindowsName[];
 extern const char kHostedAppsInWindowsDescription[];
 
