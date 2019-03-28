@@ -650,12 +650,8 @@ void RenderViewHostImpl::SetSlowWebPreferences(
 #if defined(OS_ANDROID)
     const bool device_is_phone =
         ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE;
-    prefs->video_fullscreen_orientation_lock_enabled =
-        base::FeatureList::IsEnabled(media::kVideoFullscreenOrientationLock) &&
-        device_is_phone;
-    prefs->video_rotate_to_fullscreen_enabled =
-        base::FeatureList::IsEnabled(media::kVideoRotateToFullscreen) &&
-        device_is_phone;
+    prefs->video_fullscreen_orientation_lock_enabled = device_is_phone;
+    prefs->video_rotate_to_fullscreen_enabled = device_is_phone;
 #endif
   }
 }

@@ -2023,18 +2023,6 @@ const char kV8OrinocoName[] = "V8 Orinoco garbage collection features";
 const char kV8OrinocoDescription[] =
     "This enables the V8 Orinoco garbage collection features.";
 
-const char kVideoFullscreenOrientationLockName[] =
-    "Lock screen orientation when playing a video fullscreen.";
-const char kVideoFullscreenOrientationLockDescription[] =
-    "Lock the screen orientation of the device to match video orientation when "
-    "a video goes fullscreen. Only on phones.";
-
-const char kVideoRotateToFullscreenName[] =
-    "Rotate-to-fullscreen gesture for videos.";
-const char kVideoRotateToFullscreenDescription[] =
-    "Enter/exit fullscreen when device is rotated to/from the orientation of "
-    "the video. Only on phones.";
-
 const char kWalletServiceUseSandboxName[] =
     "Use Google Payments sandbox servers";
 const char kWalletServiceUseSandboxDescription[] =
