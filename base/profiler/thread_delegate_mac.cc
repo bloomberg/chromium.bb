@@ -231,6 +231,12 @@ UnwindResult ThreadDelegateMac::WalkNativeFrames(
     uintptr_t stack_top,
     ModuleCache* module_cache,
     std::vector<ProfileBuilder::Frame>* stack) {
+  // Record the first frame from the context values.
+  unw_word_t instruction_pointer = thread_context->__rip;
+  const ModuleCache::Module* module =
+      module_cache->GetModuleForAddress(instruction_pointer);
+  stack->emplace_back(instruction_pointer, module);
+
   // There isn't an official way to create a unw_context other than to create it
   // from the current state of the current thread's stack. Since we're walking a
   // different thread's stack we must forge a context. The unw_context is just a
@@ -245,23 +251,18 @@ UnwindResult ThreadDelegateMac::WalkNativeFrames(
   // circumstances. If we're subject to that case, just record the first frame
   // and bail. See MayTriggerUnwInitLocalCrash for details.
   const ModuleCache::Module* leaf_frame_module =
-      module_cache->GetModuleForAddress(thread_context->__rip);
-  if (leaf_frame_module && MayTriggerUnwInitLocalCrash(leaf_frame_module)) {
-    stack->emplace_back(thread_context->__rip, leaf_frame_module);
+      module_cache->GetModuleForAddress(instruction_pointer);
+  if (leaf_frame_module && MayTriggerUnwInitLocalCrash(leaf_frame_module))
     return UnwindResult::ABORTED;
-  }
 
   unw_cursor_t unwind_cursor;
   unw_init_local(&unwind_cursor, &unwind_context);
 
   bool at_top_frame = true;
   int step_result;
-  do {
-    unw_word_t instruction_pointer;
-    unw_get_reg(&unwind_cursor, UNW_REG_IP, &instruction_pointer);
-
-    const ModuleCache::Module* module =
-        module_cache->GetModuleForAddress(instruction_pointer);
+  for (;;) {
+    // First frame unwind step, check pre-conditions for attempting a frame
+    // unwind.
     if (!module) {
       // There's no loaded module containing the instruction pointer. This is
       // due to either executing code that is not in a module (e.g. V8
@@ -284,9 +285,6 @@ UnwindResult ThreadDelegateMac::WalkNativeFrames(
       return UnwindResult::UNRECOGNIZED_FRAME;
     }
 
-    // Record the frame.
-    stack->emplace_back(instruction_pointer, module);
-
     // Don't continue if we're in sigtramp. Unwinding this from another thread
     // is very fragile. It's a complex DWARF unwind that needs to restore the
     // entire thread context which was saved by the kernel when the interrupt
@@ -301,6 +299,7 @@ UnwindResult ThreadDelegateMac::WalkNativeFrames(
     if (!HasValidRbp(&unwind_cursor, stack_top))
       return UnwindResult::ABORTED;
 
+    // Second frame unwind step: do the unwind.
     step_result = unw_step(&unwind_cursor);
 
     if (step_result == 0 && at_top_frame) {
@@ -325,9 +324,22 @@ UnwindResult ThreadDelegateMac::WalkNativeFrames(
       }
     }
 
-    at_top_frame = false;
-  } while (step_result > 0);
+    // Third frame unwind step: check the result of the unwind.
+    if (step_result < 0)
+      return UnwindResult::ABORTED;
 
+    if (step_result == 0)
+      return UnwindResult::COMPLETED;
+
+    // Fourth frame unwind step: record the frame to which we just unwound.
+    unw_get_reg(&unwind_cursor, UNW_REG_IP, &instruction_pointer);
+    module = module_cache->GetModuleForAddress(instruction_pointer);
+    stack->emplace_back(instruction_pointer, module);
+
+    at_top_frame = false;
+  }
+
+  NOTREACHED();
   return UnwindResult::COMPLETED;
 }
 
