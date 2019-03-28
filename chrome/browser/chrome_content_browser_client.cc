@@ -1846,7 +1846,11 @@ bool ChromeContentBrowserClient::ShouldEnableStrictSiteIsolation() {
 }
 
 bool ChromeContentBrowserClient::ShouldDisableSiteIsolation() {
-  constexpr int kDefaultMemoryThresholdMb = 1024;
+  // Using 1077 rather than 1024 because 1) it helps ensure that devices with
+  // exactly 1GB of RAM won't get included because of inaccuracies or off-by-one
+  // errors and 2) this is the bucket boundary in Memory.Stats.Win.TotalPhys2.
+  // See also https://crbug.com/844118.
+  constexpr int kDefaultMemoryThresholdMb = 1077;
 
   // TODO(acolwell): Rename feature since it now affects more than just the
   // site-per-process case.
