@@ -37,10 +37,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
-using password_manager::metrics_util::LinuxBackendMigrationStatus;
 using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
 using password_manager::UnorderedPasswordFormElementsAre;
+using password_manager::metrics_util::LinuxBackendMigrationStatus;
 using testing::ElementsAreArray;
 using testing::IsEmpty;
 using testing::Pointee;
@@ -163,8 +163,8 @@ class MockBackend : public PasswordStoreX::NativeBackend {
     for (size_t i = 0; i < all_forms_.size(); ++i) {
       if (ArePasswordFormUniqueKeyEqual(all_forms_[i], form)) {
         all_forms_[i] = form;
-        changes->push_back(PasswordStoreChange(PasswordStoreChange::UPDATE,
-                                               form));
+        changes->push_back(
+            PasswordStoreChange(PasswordStoreChange::UPDATE, form));
       }
     }
     return true;
@@ -174,8 +174,8 @@ class MockBackend : public PasswordStoreX::NativeBackend {
                    PasswordStoreChangeList* changes) override {
     for (size_t i = 0; i < all_forms_.size(); ++i) {
       if (ArePasswordFormUniqueKeyEqual(all_forms_[i], form)) {
-        changes->push_back(PasswordStoreChange(PasswordStoreChange::REMOVE,
-                                               form));
+        changes->push_back(
+            PasswordStoreChange(PasswordStoreChange::REMOVE, form));
         erase(i--);
       }
     }
@@ -290,10 +290,10 @@ void InitExpectedForms(bool autofillable,
   const char* domain = autofillable ? "example" : "blacklisted";
   for (size_t i = 0; i < count; ++i) {
     std::string realm = base::StringPrintf("http://%zu.%s.com", i, domain);
-    std::string origin = base::StringPrintf("http://%zu.%s.com/origin",
-                                            i, domain);
-    std::string action = base::StringPrintf("http://%zu.%s.com/action",
-                                            i, domain);
+    std::string origin =
+        base::StringPrintf("http://%zu.%s.com/origin", i, domain);
+    std::string action =
+        base::StringPrintf("http://%zu.%s.com/action", i, domain);
     password_manager::PasswordFormData data = {
         PasswordForm::SCHEME_HTML,
         realm.c_str(),
@@ -315,11 +315,7 @@ PasswordStoreChangeList AddChangeForForm(const PasswordForm& form) {
       1, PasswordStoreChange(PasswordStoreChange::ADD, form));
 }
 
-enum BackendType {
-  NO_BACKEND,
-  FAILING_BACKEND,
-  WORKING_BACKEND
-};
+enum BackendType { NO_BACKEND, FAILING_BACKEND, WORKING_BACKEND };
 
 std::unique_ptr<PasswordStoreX::NativeBackend> GetBackend(
     BackendType backend_type) {
@@ -403,7 +399,11 @@ class PasswordStoreXWorkingBackendTestDelegate
     : public PasswordStoreXTestDelegate {
  public:
   PasswordStoreXWorkingBackendTestDelegate()
-      : PasswordStoreXTestDelegate(WORKING_BACKEND) {}
+      : PasswordStoreXTestDelegate(WORKING_BACKEND) {
+    // Working backends are switched for LoginDatabase with encryption.
+    OSCryptMocker::SetUp();
+  }
+  ~PasswordStoreXWorkingBackendTestDelegate() { OSCryptMocker::TearDown(); }
 };
 
 std::vector<std::unique_ptr<PasswordForm>> ReadLoginDB(
@@ -429,7 +429,7 @@ INSTANTIATE_TYPED_TEST_SUITE_P(XNoBackend,
 INSTANTIATE_TYPED_TEST_SUITE_P(XWorkingBackend,
                                PasswordStoreOriginTest,
                                PasswordStoreXWorkingBackendTestDelegate);
-}
+}  // namespace password_manager
 
 class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
  protected:
@@ -494,12 +494,11 @@ TEST_P(PasswordStoreXTest, Notifications) {
   store->AddObserver(&observer);
 
   const PasswordStoreChange expected_add_changes[] = {
-    PasswordStoreChange(PasswordStoreChange::ADD, *form),
+      PasswordStoreChange(PasswordStoreChange::ADD, *form),
   };
 
-  EXPECT_CALL(
-      observer,
-      OnLoginsChanged(ElementsAreArray(expected_add_changes)));
+  EXPECT_CALL(observer,
+              OnLoginsChanged(ElementsAreArray(expected_add_changes)));
 
   // Adding a login should trigger a notification.
   store->AddLogin(*form);
@@ -510,12 +509,11 @@ TEST_P(PasswordStoreXTest, Notifications) {
   form->password_value = base::ASCIIToUTF16("a different password");
 
   const PasswordStoreChange expected_update_changes[] = {
-    PasswordStoreChange(PasswordStoreChange::UPDATE, *form),
+      PasswordStoreChange(PasswordStoreChange::UPDATE, *form),
   };
 
-  EXPECT_CALL(
-      observer,
-      OnLoginsChanged(ElementsAreArray(expected_update_changes)));
+  EXPECT_CALL(observer,
+              OnLoginsChanged(ElementsAreArray(expected_update_changes)));
 
   // Updating the login with the new password should trigger a notification.
   store->UpdateLogin(*form);
@@ -523,12 +521,11 @@ TEST_P(PasswordStoreXTest, Notifications) {
   WaitForPasswordStore();
 
   const PasswordStoreChange expected_delete_changes[] = {
-    PasswordStoreChange(PasswordStoreChange::REMOVE, *form),
+      PasswordStoreChange(PasswordStoreChange::REMOVE, *form),
   };
 
-  EXPECT_CALL(
-      observer,
-      OnLoginsChanged(ElementsAreArray(expected_delete_changes)));
+  EXPECT_CALL(observer,
+              OnLoginsChanged(ElementsAreArray(expected_delete_changes)));
 
   // Deleting the login should trigger a notification.
   store->RemoveLogin(*form);
@@ -541,6 +538,10 @@ TEST_P(PasswordStoreXTest, Notifications) {
 }
 
 TEST_P(PasswordStoreXTest, NativeMigration) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      password_manager::features::kMigrateLinuxToLoginDB);
+
   std::vector<std::unique_ptr<PasswordForm>> expected_autofillable;
   InitExpectedForms(true, 5, &expected_autofillable);
 
@@ -642,9 +643,6 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
 }
 
 TEST_P(PasswordStoreXTest, MigrationToEncryption) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      password_manager::features::kMigrateLinuxToLoginDB);
   IntegerPrefMember migration_step_pref_;
   migration_step_pref_.Init(password_manager::prefs::kMigrationToLoginDBStep,
                             &fake_pref_service_);
@@ -767,9 +765,6 @@ TEST_P(PasswordStoreXTest, MigrationToEncryption_OnlyOnce) {
   if (GetParam() != WORKING_BACKEND)
     return;
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      password_manager::features::kMigrateLinuxToLoginDB);
   IntegerPrefMember migration_step_pref_;
   migration_step_pref_.Init(password_manager::prefs::kMigrationToLoginDBStep,
                             &fake_pref_service_);
@@ -839,9 +834,6 @@ TEST_P(PasswordStoreXTest, MigrationToEncryption_DropIllegalEntries) {
   if (GetParam() != WORKING_BACKEND)
     return;
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      password_manager::features::kMigrateLinuxToLoginDB);
   IntegerPrefMember migration_step_pref_;
   migration_step_pref_.Init(password_manager::prefs::kMigrationToLoginDBStep,
                             &fake_pref_service_);

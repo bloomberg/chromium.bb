@@ -81,8 +81,8 @@ const base::Feature kManualPasswordGenerationAndroid{
 
 // Performs a one-off migration (with retries) from a native backend into
 // logindb. Passwords are served from the new location.
-const base::Feature kMigrateLinuxToLoginDB = {
-    "migrate-linux-to-logindb", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kMigrateLinuxToLoginDB = {"migrate-linux-to-logindb",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Field trial identifier for password generation requirements.
 const char* kGenerationRequirementsFieldTrial =
