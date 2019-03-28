@@ -5072,8 +5072,15 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
 // Tests that performing a touchpad double-tap zoom over an OOPIF offers the
 // synthetic wheel event to the child.
+#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN)
+// Flaky on mac, linux and win. crbug.com/947193
+#define MAYBE_TouchpadDoubleTapZoomOverOOPIF \
+  DISABLED_TouchpadDoubleTapZoomOverOOPIF
+#else
+#define MAYBE_TouchpadDoubleTapZoomOverOOPIF TouchpadDoubleTapZoomOverOOPIF
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       TouchpadDoubleTapZoomOverOOPIF) {
+                       MAYBE_TouchpadDoubleTapZoomOverOOPIF) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
