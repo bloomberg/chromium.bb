@@ -38,13 +38,13 @@ class Longhand : public CSSProperty {
     NOTREACHED();
     return Color();
   }
-  bool IsLonghand() const override { return true; }
   virtual const CSSValue* InitialValue() const {
     return CSSInitialValue::Create();
   }
 
  protected:
-  constexpr Longhand() : CSSProperty() {}
+  constexpr Longhand(CSSPropertyID id, uint8_t flags, char repetition_separator)
+      : CSSProperty(id, flags | kLonghand, repetition_separator) {}
 };
 
 template <>
