@@ -323,7 +323,7 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
   ukm::SourceId source_id = ukm::ConvertToSourceId(
       navigation_handle()->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
 
-  if (interstitials_enabled_) {
+  if (interstitials_enabled_ && match_type != MatchType::kEditDistance) {
     return ShowInterstitial(suggested_url, url, source_id, match_type);
   }
 
