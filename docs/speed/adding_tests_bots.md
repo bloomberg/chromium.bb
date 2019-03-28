@@ -8,4 +8,4 @@ See the
 ## Adding hardware
 
 This documentation is under construction. In the meantime, please reach out to
-benchmarking-dev@chromium.org.
+crouleau@chromium.org.
