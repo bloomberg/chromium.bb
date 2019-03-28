@@ -642,6 +642,8 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
 
   UpdateAccessibleTabIndices();
 
+  UpdateHoverCard(nullptr, false);
+
   for (TabStripObserver& observer : observers_)
     observer.OnTabRemoved(model_index);
 
