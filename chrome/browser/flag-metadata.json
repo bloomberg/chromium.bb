@@ -3057,7 +3057,7 @@
   },
   {
     "name": "use-new-accept-language-header",
-    // "owners": [ "your-team" ],
+    "owners": [ "claudiomagni" ],
     "expiry_milestone": 76
   },
   {
