@@ -6134,6 +6134,7 @@ crbug.com/946713 [ Release ] http/tests/devtools/extensions/extensions-resources
 crbug.com/946713 [ Release ] virtual/binary-for-devtools/http/tests/devtools/extensions/extensions-resources.js [ Crash Pass Timeout ]
 crbug.com/848799 [ Win7 ] http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Timeout ]
 crbug.com/848799 [ Win7 ] virtual/binary-for-devtools/http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Timeout ]
+crbug.com/947126 [ Mac10.13 ] virtual/video-surface-layer/media/video-played-ranges-1.html [ Pass Failure ]
 
 ### external/wpt/fetch/sec-metadata/
 crbug.com/947023 external/wpt/fetch/sec-metadata/embed.tentative.https.sub.html [ Pass Failure ]
