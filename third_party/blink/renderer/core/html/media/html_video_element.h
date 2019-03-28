@@ -41,6 +41,7 @@ class GLES2Interface;
 
 namespace blink {
 class ImageBitmapOptions;
+class IntersectionObserverEntry;
 class MediaCustomControlsFullscreenDetector;
 class MediaRemotingInterstitial;
 class PictureInPictureInterstitial;
@@ -167,6 +168,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   // WebMediaPlayerClient implementation.
   void OnBecamePersistentVideo(bool) final;
+  void ActivateViewportIntersectionMonitoring(bool) final;
 
   bool IsPersistent() const;
 
@@ -203,6 +205,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   friend class MediaCustomControlsFullscreenDetectorTest;
   friend class HTMLMediaElementEventListenersTest;
   friend class HTMLVideoElementPersistentTest;
+  friend class VideoFillingViewportTest;
 
   // ContextLifecycleStateObserver functions.
   void ContextDestroyed(ExecutionContext*) final;
@@ -221,8 +224,15 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   void UpdateDisplayState() override;
   void OnPlay() final;
+  void OnLoadStarted() final;
+  void OnLoadFinished() final;
   void DidMoveToNewDocument(Document& old_document) override;
   void SetDisplayMode(DisplayMode) override;
+
+  void OnViewportIntersectionChanged(
+      const HeapVector<Member<IntersectionObserverEntry>>& entries);
+  void OnIntersectionChangedForLazyLoad(
+      const HeapVector<Member<IntersectionObserverEntry>>& entries);
 
   Member<HTMLImageLoader> image_loader_;
   Member<MediaCustomControlsFullscreenDetector>
@@ -253,6 +263,12 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   IntSize overridden_intrinsic_size_;
   bool is_default_overridden_intrinsic_size_;
+
+  // The following is always false unless viewport intersection monitoring is
+  // turned on via ActivateViewportIntersectionMonitoring().
+  bool mostly_filling_viewport_ = false;
+
+  Member<IntersectionObserver> viewport_intersection_observer_;
 };
 
 }  // namespace blink

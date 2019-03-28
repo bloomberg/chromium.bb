@@ -68,6 +68,8 @@ using namespace html_names;
 
 namespace {
 
+constexpr float kMostlyFillViewportThreshold = 0.85f;
+
 // This enum is used to record histograms. Do not reorder.
 enum VideoPersistenceControlsType {
   kVideoPersistenceControlsTypeNative = 0,
@@ -115,6 +117,7 @@ void HTMLVideoElement::Trace(Visitor* visitor) {
   visitor->Trace(wake_lock_);
   visitor->Trace(remoting_interstitial_);
   visitor->Trace(picture_in_picture_interstitial_);
+  visitor->Trace(viewport_intersection_observer_);
   HTMLMediaElement::Trace(visitor);
 }
 
@@ -368,6 +371,21 @@ void HTMLVideoElement::OnBecamePersistentVideo(bool value) {
     GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
 }
 
+void HTMLVideoElement::ActivateViewportIntersectionMonitoring(bool activate) {
+  if (activate && !viewport_intersection_observer_) {
+    viewport_intersection_observer_ = IntersectionObserver::Create(
+        {}, {kMostlyFillViewportThreshold}, &(GetDocument()),
+        WTF::BindRepeating(&HTMLVideoElement::OnViewportIntersectionChanged,
+                           WrapWeakPersistent(this)),
+        IntersectionObserver::kFractionOfRoot);
+    viewport_intersection_observer_->observe(this);
+  } else if (!activate && viewport_intersection_observer_) {
+    viewport_intersection_observer_->disconnect();
+    viewport_intersection_observer_ = nullptr;
+    mostly_filling_viewport_ = false;
+  }
+}
+
 bool HTMLVideoElement::IsPersistent() const {
   return is_persistent_;
 }
@@ -386,6 +404,22 @@ void HTMLVideoElement::OnPlay() {
   }
 
   webkitEnterFullscreen();
+}
+
+void HTMLVideoElement::OnLoadStarted() {
+  web_media_player_->BecameDominantVisibleContent(mostly_filling_viewport_);
+}
+
+void HTMLVideoElement::OnLoadFinished() {
+  // If the player did a lazy load, it's expecting to be called when the
+  // element actually becomes visible to complete the load.
+  if (web_media_player_->DidLazyLoad() && !PotentiallyPlaying()) {
+    lazy_load_intersection_observer_ = IntersectionObserver::Create(
+        {}, {IntersectionObserver::kMinimumThreshold}, &GetDocument(),
+        WTF::BindRepeating(&HTMLVideoElement::OnIntersectionChangedForLazyLoad,
+                           WrapWeakPersistent(this)));
+    lazy_load_intersection_observer_->observe(this);
+  }
 }
 
 void HTMLVideoElement::PaintCurrentFrame(
@@ -556,6 +590,11 @@ void HTMLVideoElement::DidExitFullscreen() {
 void HTMLVideoElement::DidMoveToNewDocument(Document& old_document) {
   if (image_loader_)
     image_loader_->ElementDidMoveToNewDocument();
+
+  if (viewport_intersection_observer_) {
+    ActivateViewportIntersectionMonitoring(false);
+    ActivateViewportIntersectionMonitoring(true);
+  }
 
   HTMLMediaElement::DidMoveToNewDocument(old_document);
 }
@@ -764,6 +803,29 @@ void HTMLVideoElement::AddedEventListener(
 
 bool HTMLVideoElement::IsRemotingInterstitialVisible() const {
   return remoting_interstitial_ && remoting_interstitial_->IsVisible();
+}
+
+void HTMLVideoElement::OnViewportIntersectionChanged(
+    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  const bool is_mostly_filling_viewport =
+      (entries.back()->intersectionRatio() >= kMostlyFillViewportThreshold);
+  if (mostly_filling_viewport_ == is_mostly_filling_viewport)
+    return;
+
+  mostly_filling_viewport_ = is_mostly_filling_viewport;
+  if (web_media_player_)
+    web_media_player_->BecameDominantVisibleContent(mostly_filling_viewport_);
+}
+
+void HTMLVideoElement::OnIntersectionChangedForLazyLoad(
+    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  bool is_visible = (entries.back()->intersectionRatio() > 0);
+  if (!is_visible || !web_media_player_)
+    return;
+
+  web_media_player_->OnBecameVisible();
+  lazy_load_intersection_observer_->disconnect();
+  lazy_load_intersection_observer_ = nullptr;
 }
 
 }  // namespace blink

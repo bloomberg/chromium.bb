@@ -53,6 +53,7 @@ class CORE_EXPORT HTMLAudioElement final : public HTMLMediaElement {
   void MediaRemotingStopped(WebLocalizedString::Name error_msg) override {}
   void PictureInPictureStopped() override { NOTREACHED(); }
   void OnPictureInPictureStateChange() final { NOTREACHED(); }
+  void ActivateViewportIntersectionMonitoring(bool) final {}
 };
 
 }  // namespace blink

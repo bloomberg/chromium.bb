@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+
 #include <memory>
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -14,20 +15,20 @@
 
 namespace blink {
 
-class MediaElementFillingViewportTest : public SimTest {
+class VideoFillingViewportTest : public SimTest {
  protected:
-  MediaElementFillingViewportTest() = default;
+  VideoFillingViewportTest() = default;
 
   void SetUp() override {
     SimTest::SetUp();
     WebView().MainFrameWidget()->Resize(WebSize(640, 480));
   }
 
-  bool IsMostlyFillingViewport(HTMLMediaElement* element) {
+  bool IsMostlyFillingViewport(HTMLVideoElement* element) {
     return element->mostly_filling_viewport_;
   }
 
-  void ActivateViewportIntersectionMonitoring(HTMLMediaElement* element,
+  void ActivateViewportIntersectionMonitoring(HTMLVideoElement* element,
                                               bool enable) {
     element->ActivateViewportIntersectionMonitoring(enable);
     EXPECT_EQ(enable, !!element->viewport_intersection_observer_);
@@ -46,7 +47,7 @@ class MediaElementFillingViewportTest : public SimTest {
   }
 };
 
-TEST_F(MediaElementFillingViewportTest, MostlyFillingViewport) {
+TEST_F(VideoFillingViewportTest, MostlyFillingViewport) {
   std::unique_ptr<SimRequest> main_resource = CreateMainResource();
   main_resource->Complete(R"HTML(
     <!DOCTYPE html>
@@ -59,8 +60,8 @@ TEST_F(MediaElementFillingViewportTest, MostlyFillingViewport) {
   )HTML");
   Compositor().BeginFrame();
 
-  HTMLMediaElement* element =
-      ToElement<HTMLMediaElement>(GetDocument().getElementById("video"));
+  HTMLVideoElement* element =
+      ToElement<HTMLVideoElement>(GetDocument().getElementById("video"));
 
   ActivateViewportIntersectionMonitoring(element, true);
   DoCompositeAndPropagate();
@@ -71,7 +72,7 @@ TEST_F(MediaElementFillingViewportTest, MostlyFillingViewport) {
   EXPECT_FALSE(IsMostlyFillingViewport(element));
 }
 
-TEST_F(MediaElementFillingViewportTest, NotMostlyFillingViewport) {
+TEST_F(VideoFillingViewportTest, NotMostlyFillingViewport) {
   std::unique_ptr<SimRequest> main_resource = CreateMainResource();
   main_resource->Complete(R"HTML(
     <!DOCTYPE html>
@@ -84,14 +85,14 @@ TEST_F(MediaElementFillingViewportTest, NotMostlyFillingViewport) {
   )HTML");
   Compositor().BeginFrame();
 
-  HTMLMediaElement* element =
-      ToElement<HTMLMediaElement>(GetDocument().getElementById("video"));
+  HTMLVideoElement* element =
+      ToElement<HTMLVideoElement>(GetDocument().getElementById("video"));
   ActivateViewportIntersectionMonitoring(element, true);
   DoCompositeAndPropagate();
   EXPECT_FALSE(IsMostlyFillingViewport(element));
 }
 
-TEST_F(MediaElementFillingViewportTest, FillingViewportChanged) {
+TEST_F(VideoFillingViewportTest, FillingViewportChanged) {
   std::unique_ptr<SimRequest> main_resource = CreateMainResource();
   main_resource->Complete(R"HTML(
     <!DOCTYPE html>
@@ -104,8 +105,8 @@ TEST_F(MediaElementFillingViewportTest, FillingViewportChanged) {
   )HTML");
   Compositor().BeginFrame();
 
-  HTMLMediaElement* element =
-      ToElement<HTMLMediaElement>(GetDocument().getElementById("video"));
+  HTMLVideoElement* element =
+      ToElement<HTMLVideoElement>(GetDocument().getElementById("video"));
 
   ActivateViewportIntersectionMonitoring(element, true);
   DoCompositeAndPropagate();
@@ -118,7 +119,7 @@ TEST_F(MediaElementFillingViewportTest, FillingViewportChanged) {
   EXPECT_FALSE(IsMostlyFillingViewport(element));
 }
 
-TEST_F(MediaElementFillingViewportTest, LargeVideo) {
+TEST_F(VideoFillingViewportTest, LargeVideo) {
   std::unique_ptr<SimRequest> main_resource = CreateMainResource();
   main_resource->Complete(R"HTML(
     <!DOCTYPE html>
@@ -131,15 +132,15 @@ TEST_F(MediaElementFillingViewportTest, LargeVideo) {
   )HTML");
   Compositor().BeginFrame();
 
-  HTMLMediaElement* element =
-      ToElement<HTMLMediaElement>(GetDocument().getElementById("video"));
+  HTMLVideoElement* element =
+      ToElement<HTMLVideoElement>(GetDocument().getElementById("video"));
 
   ActivateViewportIntersectionMonitoring(element, true);
   DoCompositeAndPropagate();
   EXPECT_TRUE(IsMostlyFillingViewport(element));
 }
 
-TEST_F(MediaElementFillingViewportTest, VideoScrollOutHalf) {
+TEST_F(VideoFillingViewportTest, VideoScrollOutHalf) {
   std::unique_ptr<SimRequest> main_resource = CreateMainResource();
   main_resource->Complete(R"HTML(
     <!DOCTYPE html>
@@ -152,8 +153,8 @@ TEST_F(MediaElementFillingViewportTest, VideoScrollOutHalf) {
   )HTML");
   Compositor().BeginFrame();
 
-  HTMLMediaElement* element =
-      ToElement<HTMLMediaElement>(GetDocument().getElementById("video"));
+  HTMLVideoElement* element =
+      ToElement<HTMLVideoElement>(GetDocument().getElementById("video"));
 
   ActivateViewportIntersectionMonitoring(element, true);
   DoCompositeAndPropagate();
