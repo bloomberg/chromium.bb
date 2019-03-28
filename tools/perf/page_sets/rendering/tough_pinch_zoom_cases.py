@@ -1,7 +1,6 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from telemetry import story
 from telemetry.util import wpr_modes
 
 from page_sets.rendering import rendering_shared_state
@@ -257,44 +256,3 @@ class YahooSportsPinchZoom2018Page(ToughPinchZoomPage):
   BASE_NAME = 'yahoo_sports_pinch'
   YEAR = '2018'
   URL = 'http://sports.yahoo.com/'
-
-
-# TODO(crbug.com/760553):remove this class after
-# smoothness.tough_pinch_zoom_cases benchmark is completely
-# replaced by rendering benchmarks
-class AndroidToughPinchZoomCasesPageSet(story.StorySet):
-
-  """ Set of pages that are tricky to pinch-zoom """
-
-  def __init__(self):
-    super(AndroidToughPinchZoomCasesPageSet, self).__init__(
-      archive_data_file='../data/tough_pinch_zoom_cases.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET)
-
-    self.target_scale_factor = 7.0
-
-    self.AddStory(GmailPinchZoom2018Page(
-        page_set=self))
-    self.AddStory(GoogleCalendarPinchZoom2018Page(
-        page_set=self))
-    self.AddStory(GoogleImagePinchZoom2018Page(
-        page_set=self))
-    self.AddStory(YoutubePinchZoom2018Page(
-        page_set=self))
-    self.AddStory(BlogSpotPinchZoom2018Page(
-        page_set=self))
-    self.AddStory(FacebookPinchZoom2018Page(
-        page_set=self))
-    self.AddStory(TwitterPinchZoom2018Page(
-        page_set=self))
-    self.AddStory(ESPNPinchZoom2018Page(
-        page_set=self))
-    self.AddStory(YahooNewsPinchZoom2018Page(
-        page_set=self))
-    self.AddStory(AmazonPinchZoom2018Page(
-        page_set=self))
-    self.AddStory(YahooSportsPinchZoom2018Page(
-        page_set=self))
-    self.AddStory(BookingPinchZoom2018Page(
-        page_set=self))
-

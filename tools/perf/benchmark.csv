@@ -45,8 +45,6 @@ resource_sizes,"agrieve@chromium.org, rnephew@chromium.org, perezju@chromium.org
 sizes (linux),thestig@chromium.org,thomasanderson@chromium.org,Internals>PlatformIntegration,
 sizes (mac),tapted@chromium.org,,,
 sizes (win),grt@chromium.org,Internals>PlatformIntegration,,
-smoothness.gpu_rasterization.tough_pinch_zoom_cases,ericrk@chromium.org,,,"gpu_rasterization,representative_mac_desktop,tough_pinch_zoom"
-smoothness.tough_pinch_zoom_cases,bokan@chromium.org,Blink>Scroll,,"gpu_rasterization,representative_mac_desktop,tough_pinch_zoom"
 speedometer,hablich@chromium.org,Blink,,
 speedometer-future,hablich@chromium.org,Blink,,
 speedometer2,hablich@chromium.org,Blink,,
