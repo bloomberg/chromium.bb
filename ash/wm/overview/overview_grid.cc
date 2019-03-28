@@ -327,40 +327,6 @@ class OverviewGrid::ShieldView : public views::View {
   bool IsLabelVisible() const { return label_container_->visible(); }
 
  private:
-  // ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override {
-    if (event->type() == ui::ET_MOUSE_PRESSED) {
-      // In order to receive subsequent mouse release events in this view, we
-      // must mark the event as handled in this view.
-      event->SetHandled();
-      return;
-    }
-
-    HandleClickReleaseOrTap(event);
-  }
-
-  void OnGestureEvent(ui::GestureEvent* event) override {
-    HandleClickReleaseOrTap(event);
-  }
-
-  void HandleClickReleaseOrTap(ui::Event* event) {
-    if (event->type() != ui::ET_MOUSE_RELEASED &&
-        event->type() != ui::ET_GESTURE_TAP) {
-      return;
-    }
-
-    OverviewController* controller = Shell::Get()->overview_controller();
-    if (!controller->IsSelecting())
-      return;
-
-    // Events that happen while app list is sliding out during overview should
-    // be ignored to prevent overview from disappearing out from under the user.
-    if (!IsSlidingOutOverviewFromShelf())
-      controller->ToggleOverview();
-
-    event->StopPropagation();
-  }
-
   // Owned by views heirarchy.
   RoundedRectView* label_container_ = nullptr;
   views::Label* label_ = nullptr;
@@ -1409,7 +1375,7 @@ void OverviewGrid::InitShieldWidget(bool animate) {
   shield_widget_ = CreateBackgroundWidget(
       root_window_, ui::LAYER_NOT_DRAWN, SK_ColorTRANSPARENT, 0, 0,
       SK_ColorTRANSPARENT, initial_opacity, /*parent=*/nullptr,
-      /*stack_on_top=*/true, /*accept_events=*/true);
+      /*stack_on_top=*/true, /*accept_events=*/false);
   aura::Window* widget_window = shield_widget_->GetNativeWindow();
   aura::Window* parent_window = widget_window->parent();
   const gfx::Rect bounds = ash::screen_util::SnapBoundsToDisplayEdge(

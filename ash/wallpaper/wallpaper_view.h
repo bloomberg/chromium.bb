@@ -14,6 +14,8 @@ class Window;
 
 namespace ash {
 
+class PreEventDispatchHandler;
+
 class WallpaperView : public views::View, public views::ContextMenuController {
  public:
   WallpaperView(int blur, float opacity);
@@ -50,6 +52,11 @@ class WallpaperView : public views::View, public views::ContextMenuController {
   // applied. It is downsampled to increase performance.
   int repaint_blur_;
   float repaint_opacity_;
+
+  // A event handler that handles taps and closes overview if we are in that
+  // mode.
+  // TODO: See if we can move this logic into ash/wm/overview.
+  std::unique_ptr<PreEventDispatchHandler> pre_dispatch_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperView);
 };
