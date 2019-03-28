@@ -196,7 +196,7 @@ const base::Feature kHeapCompaction{"HeapCompaction",
 // If a page does a client side redirect or adds to the history without a user
 // gesture, then skip it on back/forward UI.
 const base::Feature kHistoryManipulationIntervention{
-    "HistoryManipulationIntervention", base::FEATURE_DISABLED_BY_DEFAULT};
+    "HistoryManipulationIntervention", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // This flag is used to set field parameters to choose predictor we use when
 // kResamplingInputEvents is disabled. It's used for gatherig accuracy metrics

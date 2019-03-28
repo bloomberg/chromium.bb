@@ -391,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   EXPECT_EQ(1, GetCurrentIndex());
   content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
   EXPECT_EQ(2, GetCurrentIndex());
-  web_contents->GetController().GoBack();
+  web_contents->GetController().GoToOffset(-1);
   EXPECT_EQ(1, GetCurrentIndex());
 
   aura::Window* content = web_contents->GetContentNativeView();
