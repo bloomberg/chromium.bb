@@ -16252,7 +16252,7 @@ Called by update_net_error_codes.py.-->
   <int value="378" label="CastReceiverEnabled"/>
   <int value="379" label="CastReceiverName"/>
   <int value="380" label="DeviceOffHours"/>
-  <int value="381" label="CloudPolicyOverridesMachinePolicy"/>
+  <int value="381" label="CloudPolicyOverridesPlatformPolicy"/>
   <int value="382" label="NativePrintersBulkConfiguration"/>
   <int value="383" label="NativePrintersBulkAccessMode"/>
   <int value="384" label="NativePrintersBulkBlacklist"/>
@@ -16406,7 +16406,7 @@ Called by update_net_error_codes.py.-->
   <int value="532" label="DeviceWilcoDtcAllowed"/>
   <int value="533" label="AllowPopupsDuringPageUnload"/>
   <int value="534" label="RemoteAccessHostAllowFileTransfer"/>
-  <int value="535" label="DeviceWilcoDtcConfig"/>
+  <int value="535" label="DeviceWilcoDtcConfiguration"/>
   <int value="536" label="SpellcheckLanguageBlacklist"/>
   <int value="537" label="DeviceWiFiAllowed"/>
   <int value="538" label="DevicePowerPeakShiftEnabled"/>
@@ -16414,6 +16414,7 @@ Called by update_net_error_codes.py.-->
   <int value="540" label="DevicePowerPeakShiftDayConfig"/>
   <int value="541" label="DeviceBootOnAcEnabled"/>
   <int value="542" label="SignedHTTPExchangeEnabled"/>
+  <int value="543" label="DeviceQuickFixBuildToken"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

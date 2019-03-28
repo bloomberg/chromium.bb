@@ -296,6 +296,10 @@ message AutoUpdateSettingsProto {
   // details and examples, see "DeviceUpdateStagingSchedule" in
   // policy_templates.json.
   optional string staging_schedule = 14;
+
+  // This token is forwarded to omaha by update_engine. If it is set, omaha may
+  // serve a quick fix build identified by the token.
+  optional string device_quick_fix_build_token = 15;
 }
 
 message OBSOLETE_StartUpUrlsProto {

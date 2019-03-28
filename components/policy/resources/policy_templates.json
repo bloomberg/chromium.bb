@@ -824,6 +824,7 @@
         'MinimumRequiredChromeVersion',
         'DeviceRollbackToTargetVersion',
         'DeviceRollbackAllowedMilestones',
+        'DeviceQuickFixBuildToken',
       ],
     },
     {
@@ -15280,7 +15281,28 @@
           If this policy is unset or set to Enabled, Google Chrome will accept web contents served as Signed HTTP Exchanges.
 
           If this policy is set to Disabled, Signed HTTP Exchanges cannot be loaded.''',
-    }
+    },
+    {
+      'name': 'DeviceQuickFixBuildToken',
+      'type': 'string',
+      'schema': {
+        'type': 'string',
+      },
+      'supported_on': ['chrome_os:75-'],
+      'tags': [],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 'sometoken',
+      'id': 543,
+      'caption': '''Provide users with Quick Fix Build.''',
+      'desc': '''This policy controls whether or not the device should be updated to a Quick Fix Build.
+
+      If policy value is set to a token that maps to a Quick Fix Build, the device will be updated to the corresponding Quick Fix Build if the update is not blocked by another policy.
+
+      If this policy is not set, or if its value does not map to a Quick Fix Build, then the device won't be updated to a Quick Fix Build. If the device is already running a Quick Fix Build and the policy is not set anymore or its value does not map to a Quick Fix Build anymore, then the device will be updated to a regular build if the update is not blocked by another policy.''',
+    },
   ],
 
   'messages': {
@@ -15446,5 +15468,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  542
+  'highest_id_currently_used':  543
 }
