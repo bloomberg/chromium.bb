@@ -88,6 +88,12 @@ interface BridgedNativeWidget {
   // this BridgedNativeWidget.
   SetParent(uint64 parent_id);
 
+  // Places this BridgedNativeWidget in front of the BridgedNativeWidget
+  // indicated by |sibling_id| in z-order.
+  StackAbove(uint64 sibling_id);
+
+  StackAtTop();
+
   // Show the emoji panel for the NSWindow's process.
   ShowEmojiPanel();
 
