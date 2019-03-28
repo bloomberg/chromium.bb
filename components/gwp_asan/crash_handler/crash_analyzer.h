@@ -53,8 +53,10 @@ class CrashAnalyzer {
     kErrorBadMetadataIndex = 10,
     // The computed metadata index was outdated.
     kErrorOutdatedMetadataIndex = 11,
+    // Failed to read the crashing process' slot to metadata mapping.
+    kErrorFailedToReadSlotMetadataMapping = 12,
     // Number of values in this enumeration, required by UMA.
-    kMaxValue = kErrorOutdatedMetadataIndex
+    kMaxValue = kErrorFailedToReadSlotMetadataMapping
   };
 
   // Given a ProcessSnapshot, determine if the exception is related to GWP-ASan.

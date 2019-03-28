@@ -125,17 +125,19 @@ class AllocatorState {
 
   // This method is meant to be called from the crash handler with a validated
   // AllocatorState object read from the crashed process. Given the metadata
-  // array for the allocator and an exception address, this method determines
-  // if the exception is related to GWP-ASan or not and what the metadata for
-  // the relevant GWP-ASan allocation is if so.
+  // and slot to metadata arrays for the allocator and an exception address,
+  // this method determines if the exception is related to GWP-ASan or not and
+  // what the metadata for the relevant GWP-ASan allocation is if so.
   //
   // Returns an enum indicating an error, unrelated exception, or a GWP-ASan
   // exception with or without metadata. If metadata is available, the
   // metadata_idx parameter stores the index of the relevant metadata in the
   // given array.
-  GetMetadataReturnType GetMetadataForAddress(uintptr_t exception_address,
-                                              const SlotMetadata* metadata_arr,
-                                              MetadataIdx* metadata_idx) const;
+  GetMetadataReturnType GetMetadataForAddress(
+      uintptr_t exception_address,
+      const SlotMetadata* metadata_arr,
+      const MetadataIdx* slot_to_metadata,
+      MetadataIdx* metadata_idx) const;
 
   // Returns the likely error type given an exception address and whether its
   // previously been allocated and deallocated.
@@ -166,16 +168,15 @@ class AllocatorState {
   // offset, and pointers to the allocation/deallocation stack traces (if
   // present.)
   uintptr_t metadata_addr = 0;
+  // Pointer to an array that maps a slot index to a metadata index (or
+  // kInvalidMetadataIdx if no such mapping exists) in |metadata_addr|.
+  uintptr_t slot_to_metadata_addr;
 
   // Set to the address of a double freed allocation if a double free occurred.
   uintptr_t double_free_address = 0;
   // If an invalid pointer has been free()d, this is the address of that invalid
   // pointer.
   uintptr_t free_invalid_address = 0;
-
-  // Maps a page index to a metadata index (or kInvalidMetadataIdx if no such
-  // mapping exists) in the metadata_addr array.
-  MetadataIdx slot_to_metadata_idx[kMaxSlots];
 
   DISALLOW_COPY_AND_ASSIGN(AllocatorState);
 };

@@ -27366,6 +27366,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="The crashing process' bitness does not match the crash handler"/>
   <int value="8" label="The allocator computed an invalid slot index"/>
   <int value="9" label="Failed to read the process' SlotMetadata"/>
+  <int value="10"
+      label="The allocator stored an invalid metadata index for a given slot"/>
+  <int value="11" label="The computed metadata index was outdated"/>
+  <int value="12"
+      label="Failed to read the crashing process' slot to metadata mapping"/>
 </enum>
 
 <enum name="GzipEncodingFixupResult">
