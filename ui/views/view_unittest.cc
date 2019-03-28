@@ -170,16 +170,17 @@ void ConstructTree(views::View* view, int depth) {
 }
 
 void ScrambleTree(views::View* view) {
-  int count = view->child_count();
-  if (count == 0)
+  if (view->children().empty())
     return;
-  for (int i = 0; i < count; i++) {
-    ScrambleTree(view->child_at(i));
-  }
 
+  for (views::View* child : view->children())
+    ScrambleTree(child);
+
+  size_t count = view->children().size();
   if (count > 1) {
-    int a = base::RandInt(0, count - 1);
-    int b = base::RandInt(0, count - 1);
+    const int max = int{count - 1};
+    int a = base::RandInt(0, max);
+    int b = base::RandInt(0, max);
 
     if (a != b) {
       views::View* view_a = view->child_at(a);
@@ -503,7 +504,7 @@ TEST_F(ViewTest, DeleteOnPressed) {
                          ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                          ui::EF_LEFT_MOUSE_BUTTON);
   root->OnMousePressed(pressed);
-  EXPECT_EQ(0, v1->child_count());
+  EXPECT_TRUE(v1->children().empty());
 
   widget->CloseNow();
 }
@@ -3493,7 +3494,6 @@ TEST_F(ViewTest, RemoveAllChildViews) {
   // Now remove all child views from root.
   root.RemoveAllChildViews(true);
 
-  EXPECT_EQ(0, root.child_count());
   EXPECT_TRUE(root.children().empty());
 }
 

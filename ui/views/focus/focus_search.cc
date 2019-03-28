@@ -47,8 +47,8 @@ View* FocusSearch::FindNextFocusableView(
   if (!starting_view) {
     // Default to the first/last child
     starting_view = search_direction == SearchDirection::kBackwards
-                        ? root_->child_at(root_->child_count() - 1)
-                        : root_->child_at(0);
+                        ? root_->children().back()
+                        : root_->children().front();
     // If there was no starting view, then the one we select is a potential
     // focus candidate.
     check_starting_view = StartingViewPolicy::kCheckStartingView;
@@ -315,8 +315,7 @@ View* FocusSearch::FindPreviousFocusableViewImpl(
     can_go_into_anchored_dialog =
         AnchoredDialogPolicy::kCanGoIntoAnchoredDialog;
     if (!starting_view->children().empty()) {
-      View* view =
-          starting_view->child_at(starting_view->child_count() - 1);
+      View* view = starting_view->children().back();
       View* v = FindPreviousFocusableViewImpl(
           view, StartingViewPolicy::kCheckStartingView, false, true,
           can_go_into_anchored_dialog, skip_group_id, seen_views,
