@@ -773,6 +773,7 @@ public class ToolbarManager
 
         final OnClickListener shareButtonListener = v -> {
             recordBottomToolbarUseForIPH();
+            RecordUserAction.record("MobileBottomToolbarShareButton");
             boolean isIncognito = false;
             if (mTabModelSelector != null) {
                 isIncognito = mTabModelSelector.getCurrentTab().isIncognito();
@@ -822,9 +823,9 @@ public class ToolbarManager
     }
 
     /**
-     * @return Whether the menu button is in the bottom toolbar.
+     * @return Whether the bottom toolbar is visible.
      */
-    public boolean isMenuButtonInBottomToolbar() {
+    public boolean isBottomToolbarVisible() {
         return mIsBottomToolbarVisible;
     }
 
@@ -1099,7 +1100,7 @@ public class ToolbarManager
      * @return The view containing the pop up menu button.
      */
     public @Nullable View getMenuButton() {
-        if (mBottomControlsCoordinator != null && isMenuButtonInBottomToolbar()) {
+        if (mBottomControlsCoordinator != null && isBottomToolbarVisible()) {
             return mBottomControlsCoordinator.getMenuButtonWrapper().getImageButton();
         }
         return mToolbar.getMenuButton();
@@ -1338,9 +1339,14 @@ public class ToolbarManager
             }
         });
         mAppMenuButtonHelper = new AppMenuButtonHelper(menuHandler);
-        mAppMenuButtonHelper.setMenuShowsFromBottom(isMenuButtonInBottomToolbar());
+        mAppMenuButtonHelper.setMenuShowsFromBottom(isBottomToolbarVisible());
         mAppMenuButtonHelper.setOnAppMenuShownListener(() -> {
             RecordUserAction.record("MobileToolbarShowMenu");
+            if (isBottomToolbarVisible()) {
+                RecordUserAction.record("MobileBottomToolbarShowMenu");
+            } else {
+                RecordUserAction.record("MobileTopToolbarShowMenu");
+            }
             mToolbar.onMenuShown();
 
             // Assume data saver footer is shown only if data reduction proxy is enabled and
@@ -1409,6 +1415,12 @@ public class ToolbarManager
     @Override
     public void openHomepage() {
         RecordUserAction.record("Home");
+
+        if (isBottomToolbarVisible()) {
+            RecordUserAction.record("MobileBottomToolbarHomeButton");
+        } else {
+            RecordUserAction.record("MobileTopToolbarHomeButton");
+        }
 
         Tab currentTab = mLocationBarModel.getTab();
         if (currentTab == null) return;
@@ -1660,7 +1672,7 @@ public class ToolbarManager
         mToolbar.updateForwardButtonVisibility(currentTab != null && currentTab.canGoForward());
         updateReloadState(tabCrashed);
         updateBookmarkButtonStatus();
-        if (mToolbar.getMenuButtonWrapper() != null && !isMenuButtonInBottomToolbar()) {
+        if (mToolbar.getMenuButtonWrapper() != null && !isBottomToolbarVisible()) {
             mToolbar.getMenuButtonWrapper().setVisibility(View.VISIBLE);
         }
     }

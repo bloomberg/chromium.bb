@@ -1600,7 +1600,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         boolean hasPermanentMenuKey = ViewConfiguration.get(this).hasPermanentMenuKey();
         getAppMenuHandler().showAppMenu(
                 hasPermanentMenuKey ? null : getToolbarManager().getMenuButton(), false,
-                getToolbarManager().isMenuButtonInBottomToolbar());
+                getToolbarManager().isBottomToolbarVisible());
     }
 
     /**
