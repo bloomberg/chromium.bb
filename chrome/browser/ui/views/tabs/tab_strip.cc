@@ -115,20 +115,28 @@ constexpr int kStackedPadding = 6;
 int g_drop_indicator_width = 0;
 int g_drop_indicator_height = 0;
 
-#if defined(USE_AURA)
-
 // Listens in on the browser event stream (as a pre target event handler) and
 // hides an associated hover card on any keypress.
 class TabHoverCardEventSniffer : public ui::EventHandler {
  public:
   TabHoverCardEventSniffer(TabHoverCardBubbleView* hover_card,
-                           gfx::NativeWindow native_window)
-      : hover_card_(hover_card), native_window_(native_window) {
-    native_window_->AddPreTargetHandler(this);
+                           views::Widget* widget)
+      : hover_card_(hover_card), widget_(widget) {
+#if defined(OS_MACOSX)
+    if (widget_->GetRootView())
+      widget_->GetRootView()->AddPreTargetHandler(this);
+#else
+    if (widget_->GetNativeWindow())
+      widget_->GetNativeWindow()->AddPreTargetHandler(this);
+#endif
   }
 
   ~TabHoverCardEventSniffer() override {
-    native_window_->RemovePreTargetHandler(this);
+#if defined(OS_MACOSX)
+    widget_->GetRootView()->RemovePreTargetHandler(this);
+#else
+    widget_->GetNativeWindow()->RemovePreTargetHandler(this);
+#endif
   }
 
  protected:
@@ -139,10 +147,8 @@ class TabHoverCardEventSniffer : public ui::EventHandler {
 
  private:
   TabHoverCardBubbleView* const hover_card_;
-  gfx::NativeWindow native_window_;
+  views::Widget* widget_;
 };
-
-#endif  // defined(USE_AURA)
 
 // Animation delegate used for any automatic tab movement.  Hides the tab if it
 // is not fully visible within the tabstrip area, to prevent overflow clipping.
@@ -1174,12 +1180,10 @@ void TabStrip::UpdateHoverCard(Tab* tab, bool should_show) {
       return;
     hover_card_ = new TabHoverCardBubbleView(tab);
     hover_card_->views::View::AddObserver(this);
-#if defined(USE_AURA)
-    if (GetWidget() && GetWidget()->GetNativeWindow()) {
-      hover_card_event_sniffer_ = std::make_unique<TabHoverCardEventSniffer>(
-          hover_card_, GetWidget()->GetNativeWindow());
+    if (GetWidget()) {
+      hover_card_event_sniffer_ =
+          std::make_unique<TabHoverCardEventSniffer>(hover_card_, GetWidget());
     }
-#endif
   }
   if (should_show)
     hover_card_->UpdateAndShow(tab);
@@ -2873,9 +2877,7 @@ views::View* TabStrip::TargetForRect(views::View* root, const gfx::Rect& rect) {
 void TabStrip::OnViewIsDeleting(views::View* observed_view) {
   if (observed_view == hover_card_) {
     hover_card_->views::View::RemoveObserver(this);
-#if defined(USE_AURA)
     hover_card_event_sniffer_.reset();
-#endif
     hover_card_ = nullptr;
   }
 }
