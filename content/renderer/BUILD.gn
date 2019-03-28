@@ -576,6 +576,7 @@ target(link_target_type, "renderer") {
   ]
 
   deps = [
+    "//base",
     "//base:i18n",
     "//cc",
     "//cc/animation",

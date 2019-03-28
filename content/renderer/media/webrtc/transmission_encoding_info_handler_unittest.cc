@@ -181,7 +181,8 @@ TEST_F(TransmissionEncodingInfoHandlerTest, SupportedVideoCodec) {
   auto video_encoder_factory = std::make_unique<FakeVideoEncoderFactory>();
   video_encoder_factory->AddSupportedFormat(webrtc::SdpVideoFormat("vp8"),
                                             false);
-  TransmissionEncodingInfoHandler handler(std::move(video_encoder_factory));
+  TransmissionEncodingInfoHandler handler(std::move(video_encoder_factory),
+                                          false);
   VerifyEncodingInfo(handler,
                      ComposeWebMediaConfigurationForVideo("video/vp8", ""),
                      true, false, false);
@@ -215,10 +216,58 @@ TEST_F(TransmissionEncodingInfoHandlerTest, HardwareAcceleratedVideoCodec) {
   auto video_encoder_factory = std::make_unique<FakeVideoEncoderFactory>();
   video_encoder_factory->AddSupportedFormat(webrtc::SdpVideoFormat("vp8"),
                                             true);
-  TransmissionEncodingInfoHandler handler(std::move(video_encoder_factory));
+  TransmissionEncodingInfoHandler handler(std::move(video_encoder_factory),
+                                          false);
   VerifyEncodingInfo(handler,
                      ComposeWebMediaConfigurationForVideo("video/vp8", ""),
                      true, true, true);
+}
+
+TEST_F(TransmissionEncodingInfoHandlerTest, SmoothVideoCodecPowerfulCpu) {
+  // Assume no HW vp8 encoder.
+  auto video_encoder_factory = std::make_unique<FakeVideoEncoderFactory>();
+  video_encoder_factory->AddSupportedFormat(webrtc::SdpVideoFormat("vp8"),
+                                            false);
+  // Assume powerful CPU.
+  TransmissionEncodingInfoHandler handler(std::move(video_encoder_factory),
+                                          true);
+  VerifyEncodingInfo(handler,
+                     ComposeWebMediaConfigurationForVideo("video/vp8", ""),
+                     true, true, false);
+}
+
+TEST_F(TransmissionEncodingInfoHandlerTest, SmoothVideoCodecVgaResolution) {
+  // Assume no HW vp8 encoder.
+  auto video_encoder_factory = std::make_unique<FakeVideoEncoderFactory>();
+  video_encoder_factory->AddSupportedFormat(webrtc::SdpVideoFormat("vp8"),
+                                            false);
+  // Assume no powerful CPU.
+  TransmissionEncodingInfoHandler handler(std::move(video_encoder_factory),
+                                          false);
+
+  // VP8 encoding for 640x480 video.
+  blink::WebMediaConfiguration config(
+      blink::MediaConfigurationType::kTransmission, base::nullopt,
+      ComposeVideoConfiguration("video/vp8", "", 640, 480));
+
+  VerifyEncodingInfo(handler, config, true, true, false);
+}
+
+TEST_F(TransmissionEncodingInfoHandlerTest, SmoothVideoCodecBelowHdResolution) {
+  // Assume no HW vp8 encoder.
+  auto video_encoder_factory = std::make_unique<FakeVideoEncoderFactory>();
+  video_encoder_factory->AddSupportedFormat(webrtc::SdpVideoFormat("vp8"),
+                                            false);
+  // Assume no powerful CPU.
+  TransmissionEncodingInfoHandler handler(std::move(video_encoder_factory),
+                                          false);
+
+  // VP8 encoding for 1024x768 video. Note its area size is below 1280x720).
+  blink::WebMediaConfiguration config(
+      blink::MediaConfigurationType::kTransmission, base::nullopt,
+      ComposeVideoConfiguration("video/vp8", "", 1024, 768));
+
+  VerifyEncodingInfo(handler, config, true, true, false);
 }
 
 TEST_F(TransmissionEncodingInfoHandlerTest, AudioAndVideoCodec) {
@@ -231,7 +280,8 @@ TEST_F(TransmissionEncodingInfoHandlerTest, AudioAndVideoCodec) {
   auto video_encoder_factory = std::make_unique<FakeVideoEncoderFactory>();
   video_encoder_factory->AddSupportedFormat(webrtc::SdpVideoFormat("vp8"),
                                             false);
-  TransmissionEncodingInfoHandler handler(std::move(video_encoder_factory));
+  TransmissionEncodingInfoHandler handler(std::move(video_encoder_factory),
+                                          false);
   VerifyEncodingInfo(handler, config, true, false, false);
 }
 
@@ -246,8 +296,26 @@ TEST_F(TransmissionEncodingInfoHandlerTest,
   auto video_encoder_factory = std::make_unique<FakeVideoEncoderFactory>();
   video_encoder_factory->AddSupportedFormat(webrtc::SdpVideoFormat("vp8"),
                                             true);
-  TransmissionEncodingInfoHandler handler(std::move(video_encoder_factory));
+  TransmissionEncodingInfoHandler handler(std::move(video_encoder_factory),
+                                          false);
   VerifyEncodingInfo(handler, config, true, true, true);
+}
+
+TEST_F(TransmissionEncodingInfoHandlerTest, AudioAndVideoCodecWithPowerfulCpu) {
+  // Both video/vp8 and audio/opus are given.
+  blink::WebMediaConfiguration config(
+      blink::MediaConfigurationType::kTransmission,
+      ComposeAudioConfiguration("audio/opus", ""),
+      ComposeVideoConfiguration("video/vp8", ""));
+
+  // Assume no HW vp8 encoder.
+  auto video_encoder_factory = std::make_unique<FakeVideoEncoderFactory>();
+  video_encoder_factory->AddSupportedFormat(webrtc::SdpVideoFormat("vp8"),
+                                            false);
+  // Assume powerful CPU.
+  TransmissionEncodingInfoHandler handler(std::move(video_encoder_factory),
+                                          true);
+  VerifyEncodingInfo(handler, config, true, true, false);
 }
 
 }  // namespace content

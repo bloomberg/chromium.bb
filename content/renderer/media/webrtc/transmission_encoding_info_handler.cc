@@ -8,16 +8,19 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/cpu.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
 #include "content/renderer/media/webrtc/audio_codec_factory.h"
 #include "content/renderer/media/webrtc/video_codec_factory.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_video_configuration.h"
 #include "third_party/blink/public/platform/scoped_web_callbacks.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/webrtc/api/audio_codecs/audio_encoder_factory.h"
@@ -60,32 +63,32 @@ media::GpuVideoAcceleratorFactories* GetGpuFactories() {
   return nullptr;
 }
 
-// An empirical threshold that roughly estimate if CPU can encode video
-// smoothly. Refer content/renderer/media_recorder/media_recorder_handler.cc
-// for detail.
-const double kNumPixelsPerSecondSmoothnessThreshold = 1280 * 720 * 30.0;
-
-// Returns true if software encoder can smoothly encode the given
-// |configuration|.
-// TODO(crbug.com/941352): provide a better algorithm to estimate software
-// encoder's smoothness capability.
-bool CanSoftwareEncoderRunSmoothly(
-    const blink::WebVideoConfiguration& configuration) {
-  const double pixels_per_second = base::checked_cast<double>(
-      configuration.width * configuration.height * configuration.framerate);
-  return pixels_per_second <= kNumPixelsPerSecondSmoothnessThreshold;
+// Returns true if CPU can encode HD video smoothly.
+// The logic is borrowed from Google Meet (crbug.com/941352).
+bool CanCpuEncodeHdSmoothly() {
+  const int num_processors = base::SysInfo::NumberOfProcessors();
+  if (num_processors >= 4)
+    return true;
+  if (num_processors < 2)
+    return false;
+  return base::CPU().has_sse41();
 }
+
+const unsigned int kHdVideoAreaSize = 1280 * 720;
 
 }  // namespace
 
-// If GetGpuFactories() returns null, CreateWebrtcVideoEncoderFactory() returns
-// software encoder factory only.
+// If GetGpuFactories() returns null, CreateWebrtcVideoEncoderFactory()
+// returns software encoder factory only.
 TransmissionEncodingInfoHandler::TransmissionEncodingInfoHandler()
     : TransmissionEncodingInfoHandler(
-          CreateWebrtcVideoEncoderFactory(GetGpuFactories())) {}
+          CreateWebrtcVideoEncoderFactory(GetGpuFactories()),
+          CanCpuEncodeHdSmoothly()) {}
 
 TransmissionEncodingInfoHandler::TransmissionEncodingInfoHandler(
-    std::unique_ptr<webrtc::VideoEncoderFactory> video_encoder_factory) {
+    std::unique_ptr<webrtc::VideoEncoderFactory> video_encoder_factory,
+    bool cpu_hd_smooth)
+    : cpu_hd_smooth_(cpu_hd_smooth) {
   std::vector<webrtc::SdpVideoFormat> supported_video_formats =
       video_encoder_factory->GetSupportedFormats();
   for (const auto& video_format : supported_video_formats) {
@@ -133,6 +136,13 @@ std::string TransmissionEncodingInfoHandler::ExtractSupportedCodecFromMimeType(
   return "";
 }
 
+bool TransmissionEncodingInfoHandler::CanCpuEncodeSmoothly(
+    const blink::WebVideoConfiguration& configuration) const {
+  if (configuration.width * configuration.height < kHdVideoAreaSize)
+    return true;
+  return cpu_hd_smooth_;
+}
+
 void TransmissionEncodingInfoHandler::EncodingInfo(
     const blink::WebMediaConfiguration& configuration,
     std::unique_ptr<blink::WebMediaCapabilitiesEncodingInfoCallbacks> callbacks)
@@ -168,8 +178,8 @@ void TransmissionEncodingInfoHandler::EncodingInfo(
     if (info->supported) {
       const bool is_hardware_accelerated =
           base::ContainsKey(hardware_accelerated_video_codecs_, codec_name);
-      info->smooth = is_hardware_accelerated ||
-                     CanSoftwareEncoderRunSmoothly(video_config);
+      info->smooth =
+          is_hardware_accelerated || CanCpuEncodeSmoothly(video_config);
       info->power_efficient = is_hardware_accelerated;
     } else {
       info->smooth = false;
