@@ -453,6 +453,7 @@ test("browser_tests") {
     ":test_support",
     "//base",
     "//chrome/browser/profiling_host:profiling_browsertests",
+    "//components/cbor",
     "//components/nacl/common:buildflags",
     "//components/spellcheck:buildflags",
     "//components/sync:test_support_model",

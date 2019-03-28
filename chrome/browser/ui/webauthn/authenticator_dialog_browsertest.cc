@@ -12,6 +12,10 @@
 #include "chrome/browser/ui/webauthn/authenticator_request_dialog.h"
 #include "chrome/browser/webauthn/authenticator_reference.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
+#include "components/cbor/values.h"
+#include "device/fido/authenticator_data.h"
+#include "device/fido/authenticator_get_assertion_response.h"
+#include "device/fido/public_key_credential_user_entity.h"
 
 class AuthenticatorDialogTest : public DialogBrowserTest {
  public:
@@ -84,6 +88,59 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "cable_activate") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kCableActivate);
+    } else if (name == "set_pin") {
+      model->CollectPIN(base::nullopt, base::Bind([](std::string pin) {}));
+    } else if (name == "get_pin") {
+      model->CollectPIN(8, base::Bind([](std::string pin) {}));
+    } else if (name == "get_pin_two_tries_remaining") {
+      model->set_has_attempted_pin_entry_for_testing();
+      model->CollectPIN(2, base::Bind([](std::string pin) {}));
+    } else if (name == "get_pin_one_try_remaining") {
+      model->set_has_attempted_pin_entry_for_testing();
+      model->CollectPIN(1, base::Bind([](std::string pin) {}));
+    } else if (name == "second_tap") {
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kClientPinTapAgain);
+    } else if (name == "soft_block") {
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kClientPinErrorSoftBlock);
+    } else if (name == "hard_block") {
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kClientPinErrorHardBlock);
+    } else if (name == "authenticator_removed") {
+      model->SetCurrentStep(AuthenticatorRequestDialogModel::Step::
+                                kClientPinErrorAuthenticatorRemoved);
+    } else if (name == "missing_resident_keys") {
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kMissingResidentKeys);
+    } else if (name == "missing_user_verification") {
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kMissingUserVerification);
+    } else if (name == "account_select") {
+      const std::vector<std::pair<std::string, std::string>> infos = {
+          {"foo@example.com", "Test User 1"},
+          {"bar@example.com", "Test User 2"},
+          {"bat@example.com", "Test User 3"},
+      };
+      std::vector<device::AuthenticatorGetAssertionResponse> responses;
+
+      for (const auto& info : infos) {
+        static const uint8_t kAppParam[32] = {0};
+        static const uint8_t kSignatureCounter[4] = {0};
+        device::AuthenticatorData auth_data(kAppParam, 0 /* flags */,
+                                            kSignatureCounter, base::nullopt);
+        device::AuthenticatorGetAssertionResponse response(
+            std::move(auth_data), {10, 11, 12, 13} /* signature */);
+        device::PublicKeyCredentialUserEntity user({1, 2, 3, 4});
+        user.SetUserName(info.first);
+        user.SetDisplayName(info.second);
+        response.SetUserEntity(std::move(user));
+        responses.emplace_back(std::move(response));
+      }
+
+      model->SelectAccount(
+          std::move(responses),
+          base::Bind([](device::AuthenticatorGetAssertionResponse) {}));
     }
 
     ShowAuthenticatorRequestDialog(
@@ -161,5 +218,54 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_touchid) {
 }
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_cable_activate) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_set_pin) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_get_pin) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
+                       InvokeUi_get_pin_two_tries_remaining) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
+                       InvokeUi_get_pin_one_try_remaining) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_second_tap) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_soft_block) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_hard_block) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
+                       InvokeUi_authenticator_removed) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
+                       InvokeUi_missing_resident_keys) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
+                       InvokeUi_missing_user_verification) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_account_select) {
   ShowAndVerifyUi();
 }
