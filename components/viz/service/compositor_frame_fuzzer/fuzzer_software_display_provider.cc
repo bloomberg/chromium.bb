@@ -77,8 +77,10 @@ class PNGSoftwareOutputDevice : public SoftwareOutputDevice {
 }  // namespace
 
 FuzzerSoftwareDisplayProvider::FuzzerSoftwareDisplayProvider(
+    ServerSharedBitmapManager* server_shared_bitmap_manager,
     base::Optional<base::FilePath> png_dir_path)
-    : png_dir_path_(png_dir_path),
+    : shared_bitmap_manager_(server_shared_bitmap_manager),
+      png_dir_path_(png_dir_path),
       begin_frame_source_(std::make_unique<StubBeginFrameSource>()) {}
 
 FuzzerSoftwareDisplayProvider::~FuzzerSoftwareDisplayProvider() = default;
@@ -106,7 +108,7 @@ std::unique_ptr<Display> FuzzerSoftwareDisplayProvider::CreateDisplay(
       begin_frame_source_.get(), task_runner.get(),
       output_surface->capabilities().max_frames_pending);
 
-  return std::make_unique<Display>(&shared_bitmap_manager_, renderer_settings,
+  return std::make_unique<Display>(shared_bitmap_manager_, renderer_settings,
                                    frame_sink_id, std::move(output_surface),
                                    std::move(scheduler), task_runner);
 }
