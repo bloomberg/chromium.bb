@@ -1,0 +1,4 @@
+# This is the main failure suppression file for WPT WebDriver Tests.
+# WPT WebDriver tests are a part of layout tests, but are run by a
+# separate runner, run_webdriver_tests.py. Thus this is a separate
+# expectation file from TestExpectations.

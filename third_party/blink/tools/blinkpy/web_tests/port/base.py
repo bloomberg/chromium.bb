@@ -1402,6 +1402,10 @@ class Port(object):
     def path_to_generic_test_expectations_file(self):
         return self._filesystem.join(self.web_tests_dir(), 'TestExpectations')
 
+    @memoized
+    def path_to_webdriver_expectations_file(self):
+        return self._filesystem.join(self.web_tests_dir(), 'WebDriverExpectations')
+
     def repository_path(self):
         """Returns the repository path for the chromium code base."""
         return self._path_from_chromium_base('build')

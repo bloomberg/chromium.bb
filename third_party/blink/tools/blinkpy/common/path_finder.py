@@ -148,6 +148,18 @@ class PathFinder(object):
     def path_from_web_tests(self, *comps):
         return self._filesystem.join(self.web_tests_dir(), *comps)
 
+    def strip_web_tests_path(self, wpt_test_abs_path):
+        web_tests_path = self.path_from_web_tests('')
+        if wpt_test_abs_path.startswith(web_tests_path):
+            return wpt_test_abs_path[len(web_tests_path):]
+        return wpt_test_abs_path
+
+    def strip_webdriver_tests_path(self, wpt_webdriver_test_path):
+        webdriver_prefix = self._filesystem.join('external', 'wpt', 'webdriver', '')
+        if wpt_webdriver_test_path.startswith(webdriver_prefix):
+            return wpt_webdriver_test_path[len(webdriver_prefix):]
+        return wpt_webdriver_test_path
+
     @memoized
     def depot_tools_base(self):
         """Returns the path to depot_tools, or None if not found.
