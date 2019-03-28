@@ -180,7 +180,7 @@ void MediaControlsTouchlessImpl::EnsureMediaControlsMenuHost() {
                           GetExecutionContext()->GetTaskRunner(
                               blink::TaskType::kMediaElementEvent)));
     media_controls_host_.set_connection_error_handler(WTF::Bind(
-        &MediaControlsNonTouchImpl::OnMediaControlsMenuHostConnectionError,
+        &MediaControlsTouchlessImpl::OnMediaControlsMenuHostConnectionError,
         WrapWeakPersistent(this)));
   }
 }
@@ -242,7 +242,7 @@ void MediaControlsTouchlessImpl::ShowContextMenu() {
 
   media_controls_host_->ShowMediaMenu(
       std::move(menu_items), std::move(video_state), std::move(text_tracks),
-      WTF::Bind(&MediaControlsNonTouchImpl::OnMediaMenuResult,
+      WTF::Bind(&MediaControlsTouchlessImpl::OnMediaMenuResult,
                 WrapWeakPersistent(this)));
 }
 
