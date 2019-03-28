@@ -34,6 +34,9 @@ void AccessibilityPanelLayoutManager::SetAlwaysVisible(bool always_visible) {
 void AccessibilityPanelLayoutManager::SetPanelBounds(
     const gfx::Rect& bounds,
     mojom::AccessibilityPanelState state) {
+  if (!panel_window_)
+    return;
+
   panel_bounds_ = bounds;
   panel_state_ = state;
   UpdateWindowBounds();
