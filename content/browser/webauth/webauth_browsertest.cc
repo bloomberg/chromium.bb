@@ -310,7 +310,7 @@ class WebAuthBrowserTestBase : public content::ContentBrowserTest {
     ContentBrowserTest::SetUpOnMainThread();
 
     host_resolver()->AddRule("*", "127.0.0.1");
-    https_server().ServeFilesFromSourceDirectory("content/test/data");
+    https_server().ServeFilesFromSourceDirectory(GetTestDataFilePath());
     ASSERT_TRUE(https_server().Start());
 
     test_client_.reset(

@@ -72,8 +72,7 @@ IN_PROC_BROWSER_TEST_F(AppCacheNetworkServiceBrowserTest,
       base::BindRepeating(&AppCacheNetworkServiceBrowserTest::HandleRequest,
                           base::Unretained(this)));
 
-  base::FilePath content_test_data(FILE_PATH_LITERAL("content/test/data"));
-  embedded_test_server->AddDefaultHandlers(content_test_data);
+  embedded_test_server->AddDefaultHandlers(GetTestDataFilePath());
 
   ASSERT_TRUE(embedded_test_server->Start());
 

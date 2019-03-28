@@ -896,8 +896,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   // Set up a separate http server, to allow sanity-checking that AppCache
   // serves files despite the fact that the original server is down.
   net::EmbeddedTestServer app_cache_content_server;
-  app_cache_content_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  app_cache_content_server.AddDefaultHandlers(GetTestDataFilePath());
   ASSERT_TRUE(app_cache_content_server.Start());
 
   // Load the main page twice. The second navigation should have AppCache
@@ -1427,11 +1426,11 @@ class CrossSiteDocumentBlockingServiceWorkerTest : public ContentBrowserTest {
     SetupCrossSiteRedirector(embedded_test_server());
 
     service_worker_https_server_.ServeFilesFromSourceDirectory(
-        "content/test/data");
+        GetTestDataFilePath());
     ASSERT_TRUE(service_worker_https_server_.Start());
 
     cross_origin_https_server_.ServeFilesFromSourceDirectory(
-        "content/test/data");
+        GetTestDataFilePath());
     cross_origin_https_server_.SetSSLConfig(
         net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
     ASSERT_TRUE(cross_origin_https_server_.Start());

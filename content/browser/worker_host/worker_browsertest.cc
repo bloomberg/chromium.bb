@@ -178,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerHttpAuth) {
 IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerTlsClientAuthImportScripts) {
   // Launch HTTPS server.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory("content/test/data");
+  https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
   net::SSLServerConfig ssl_config;
   ssl_config.client_cert_type =
       net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
@@ -196,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerTlsClientAuthImportScripts) {
 IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerTlsClientAuthFetch) {
   // Launch HTTPS server.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory("content/test/data");
+  https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
   net::SSLServerConfig ssl_config;
   ssl_config.client_cert_type =
       net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
@@ -218,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, SharedWorkerTlsClientAuthImportScripts) {
 
   // Launch HTTPS server.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory("content/test/data");
+  https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
   net::SSLServerConfig ssl_config;
   ssl_config.client_cert_type =
       net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;

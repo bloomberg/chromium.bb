@@ -1727,7 +1727,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, CrossOriginFetchWithSaveData) {
   const char kPageUrl[] = "/service_worker/fetch_cross_origin.html";
   const char kWorkerUrl[] = "/service_worker/fetch_event_pass_through.js";
   net::EmbeddedTestServer cross_origin_server;
-  cross_origin_server.ServeFilesFromSourceDirectory("content/test/data");
+  cross_origin_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
   cross_origin_server.RegisterRequestHandler(
       base::BindRepeating(&VerifySaveDataNotInAccessControlRequestHeader));
   ASSERT_TRUE(cross_origin_server.Start());
@@ -2831,7 +2831,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
   const char kPageUrl[] = "/service_worker/fetch_event_blob.html";
   const char kWorkerUrl[] = "/service_worker/fetch_event_blob.js";
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory("content/test/data");
+  https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
   ASSERT_TRUE(https_server.Start());
 
   scoped_refptr<WorkerActivatedObserver> observer =
@@ -3534,7 +3534,7 @@ class ServiceWorkerDisableWebSecurityTest : public ServiceWorkerBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    cross_origin_server_.ServeFilesFromSourceDirectory("content/test/data");
+    cross_origin_server_.ServeFilesFromSourceDirectory(GetTestDataFilePath());
     ASSERT_TRUE(cross_origin_server_.Start());
     ServiceWorkerBrowserTest::SetUpOnMainThread();
   }
