@@ -173,8 +173,11 @@ void WebGPUImplementation::OnSwapBufferPresented(
 void WebGPUImplementation::OnGpuControlReturnData(
     base::span<const uint8_t> data) {
 #if BUILDFLAG(USE_DAWN)
-  wire_client_->HandleCommands(reinterpret_cast<const char*>(data.data()),
-                               data.size());
+  if (!wire_client_->HandleCommands(
+      reinterpret_cast<const char*>(data.data()), data.size())) {
+    // TODO(enga): Lose the context.
+    NOTREACHED();
+  }
 #endif
 }
 

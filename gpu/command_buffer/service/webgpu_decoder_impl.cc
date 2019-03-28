@@ -471,7 +471,10 @@ error::Error WebGPUDecoderImpl::HandleDawnCommands(
   }
 
   std::vector<char> commands(shm_commands, shm_commands + size);
-  wire_server_->HandleCommands(commands.data(), size);
+  if (!wire_server_->HandleCommands(commands.data(), size)) {
+    NOTREACHED();
+    return error::kLostContext;
+  }
   wire_serializer_->Flush();
   return error::kNoError;
 }
