@@ -73,6 +73,9 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(SystemWebDialogLoginTest, NonModalTest);
+
+  // Returns the dialog window (pointer to |aura::Window|). This will be a
+  // |nullptr| if the dialog has not been created yet.
   gfx::NativeWindow dialog_window() const { return dialog_window_; }
 
  private:
@@ -80,7 +83,7 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
   base::string16 title_;
   content::WebUI* webui_ = nullptr;
   ui::ModalType modal_type_;
-  gfx::NativeWindow dialog_window_;
+  gfx::NativeWindow dialog_window_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SystemWebDialogDelegate);
 };
