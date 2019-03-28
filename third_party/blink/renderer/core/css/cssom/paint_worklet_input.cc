@@ -9,11 +9,11 @@
 namespace blink {
 
 PaintWorkletInput::PaintWorkletInput(
-    const std::string& name,
+    const String& name,
     const FloatSize& container_size,
     float effective_zoom,
     PaintWorkletStylePropertyMap::CrossThreadData data)
-    : name_(name),
+    : name_(name.IsolatedCopy()),
       container_size_(container_size),
       effective_zoom_(effective_zoom),
       style_map_data_(std::move(data)) {}

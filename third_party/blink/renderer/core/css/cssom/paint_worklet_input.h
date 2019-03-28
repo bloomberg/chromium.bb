@@ -15,9 +15,28 @@
 
 namespace blink {
 
+// PaintWorkletInput encapsulates the necessary information to run a CSS Paint
+// instance (a 'PaintWorklet') for a given target (e.g. the 'background-image'
+// property of a particular element). It is used to enable Off-Thread
+// PaintWorklet, allowing us to defer the actual JavaScript calls until the
+// cc-Raster phase (and even then run the JavaScript on a separate worklet
+// thread).
+//
+// This object is passed cross-thread, but contains thread-unsafe objects (the
+// WTF::Strings for |name_| and the WTF::Strings stored in |style_map_|). As
+// such PaintWorkletInput must be treated carefully. In essence, it 'belongs' to
+// the PaintWorklet thread for the purposes of the WTF::String members. None of
+// the WTF::String accessors should be accessed on any thread apart from the
+// PaintWorklet thread, where an IsolatedCopy should still be taken.
+//
+// An IsolatedCopy is still needed on the PaintWorklet thread because
+// cc::PaintWorkletInput is thread-safe ref-counted (it is shared between Blink,
+// cc-impl, and the cc-raster thread pool), so we *do not know* on what thread
+// this object will die - and thus on what thread the WTF::Strings that it
+// contains will die.
 class CORE_EXPORT PaintWorkletInput : public cc::PaintWorkletInput {
  public:
-  PaintWorkletInput(const std::string& name,
+  PaintWorkletInput(const String& name,
                     const FloatSize& container_size,
                     float effective_zoom,
                     PaintWorkletStylePropertyMap::CrossThreadData values);
@@ -29,15 +48,18 @@ class CORE_EXPORT PaintWorkletInput : public cc::PaintWorkletInput {
     return gfx::SizeF(container_size_.Width(), container_size_.Height());
   }
 
-  const std::string& Name() const { return name_; }
+  // These accessors are safe on any thread.
   const FloatSize& ContainerSize() const { return container_size_; }
   float EffectiveZoom() const { return effective_zoom_; }
+
+  // These should only be accessed on the PaintWorklet thread.
+  String NameCopy() const { return name_.IsolatedCopy(); }
   PaintWorkletStylePropertyMap::CrossThreadData StyleMapData() {
     return PaintWorkletStylePropertyMap::CopyCrossThreadData(style_map_data_);
   }
 
  private:
-  const std::string name_;
+  const String name_;
   const FloatSize container_size_;
   const float effective_zoom_;
   PaintWorkletStylePropertyMap::CrossThreadData style_map_data_;
