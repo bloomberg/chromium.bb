@@ -469,13 +469,14 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
 
   app->app_type = apps::mojom::AppType::kArc;
   app->app_id = app_id;
-  // TODO(crbug.com/826982): examine app_info.suspended, and possibly have a
-  // corresponding 'suspended' apps::mojom::Readiness enum value??
   app->readiness = apps::mojom::Readiness::kReady;
   app->name = app_info.name;
   app->short_name = app->name;
 
-  static constexpr uint32_t icon_effects = 0;
+  IconEffects icon_effects = IconEffects::kNone;
+  if (app_info.suspended) {
+    icon_effects = static_cast<IconEffects>(icon_effects | IconEffects::kGray);
+  }
   app->icon_key = icon_key_factory_.MakeIconKey(icon_effects);
 
   app->last_launch_time = app_info.last_launch_time;
