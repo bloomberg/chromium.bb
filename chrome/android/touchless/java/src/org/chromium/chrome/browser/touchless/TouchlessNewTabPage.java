@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.touchless.R;
-import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
@@ -75,10 +74,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
         mView = (FrameLayout) LayoutInflater.from(activity).inflate(
                 R.layout.new_tab_page_touchless_view, null);
 
-        PropertyModel model =
-                new PropertyModel.Builder(TouchlessNewTabPageProperties.ALL_KEYS).build();
-
-        mMediator = new TouchlessNewTabPageMediator(model, nativePageHost.getActiveTab());
+        mMediator = new TouchlessNewTabPageMediator(nativePageHost.getActiveTab());
 
         mRecyclerView = mView.findViewById(R.id.suggestions_recycler_view);
         mRecyclerTopmostView = (TouchlessNewTabPageTopLayout) LayoutInflater.from(activity).inflate(
@@ -91,7 +87,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
 
         // TODO(dewittj): Initialize the tile suggestions coordinator here.
 
-        initializeContentSuggestions(activity, nativePageHost, model);
+        initializeContentSuggestions(activity, nativePageHost);
 
         NewTabPageUma.recordIsUserOnline();
         NewTabPageUma.recordLoadType(activity);
@@ -103,7 +99,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
      * that does not properly support modern MVC code architecture.
      */
     private void initializeContentSuggestions(
-            ChromeActivity activity, NativePageHost nativePageHost, PropertyModel model) {
+            ChromeActivity activity, NativePageHost nativePageHost) {
         long constructedTimeNs = System.nanoTime();
 
         NewTabPageUma.trackTimeToFirstDraw(mRecyclerView, constructedTimeNs);
@@ -142,7 +138,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
                         mContextMenuManager);
 
         PropertyModelChangeProcessor.create(
-                model, mRecyclerView, ContentSuggestionsViewBinder::bind);
+                mMediator.getModel(), mRecyclerView, ContentSuggestionsViewBinder::bind);
 
         newTabPageAdapter.refreshSuggestions();
         eventReporter.onSurfaceOpened();
