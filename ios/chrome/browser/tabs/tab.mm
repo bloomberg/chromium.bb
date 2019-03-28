@@ -77,7 +77,6 @@
 #import "ios/web/public/serializable_user_data_manager.h"
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/url_scheme_util.h"
-#include "ios/web/public/url_util.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/navigation_context.h"
