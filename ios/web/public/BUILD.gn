@@ -59,7 +59,6 @@ source_set("public") {
     "url_scheme_util.h",
     "url_schemes.h",
     "url_schemes.mm",
-    "url_util.h",
     "web_client.h",
     "web_state/context_menu_params.h",
     "web_state/global_web_state_observer.h",

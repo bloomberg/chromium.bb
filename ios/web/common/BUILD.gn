@@ -9,14 +9,30 @@ source_set("common") {
     "crw_content_view.h",
     "crw_web_view_content_view.h",
     "crw_web_view_content_view.mm",
+    "url_util.cc",
+    "url_util.h",
   ]
 
   deps = [
     "//base",
     "//ios/web/public:features",
+    "//url",
   ]
 
   libs = [ "UIKit.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("unittests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  deps = [
+    ":common",
+    "//testing/gtest",
+  ]
+
+  sources = [
+    "url_util_unittest.cc",
+  ]
 }

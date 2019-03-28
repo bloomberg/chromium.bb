@@ -99,6 +99,7 @@ source_set("internal") {
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/ui",
     "//ios/web",
+    "//ios/web/common",
     "//ui/gfx/geometry",
   ]
 }
