@@ -41,8 +41,6 @@ class CORE_EXPORT NGInlineItem {
     kOutOfFlowPositioned,
     kListMarker,
     kBidiControl
-    // When adding new values, make sure the bit size of |type_| is large
-    // enough to store.
   };
 
   // Whether pre- and post-context should be used for shaping.
@@ -78,7 +76,7 @@ class CORE_EXPORT NGInlineItem {
                unsigned adjusted_end,
                scoped_refptr<const ShapeResult>);
 
-  NGInlineItemType Type() const { return static_cast<NGInlineItemType>(type_); }
+  NGInlineItemType Type() const { return type_; }
   const char* NGInlineItemTypeToString(int val) const;
 
   const ShapeResult* TextShapeResult() const { return shape_result_.get(); }
@@ -228,7 +226,7 @@ class CORE_EXPORT NGInlineItem {
   scoped_refptr<const ComputedStyle> style_;
   LayoutObject* layout_object_;
 
-  unsigned type_ : 4;
+  NGInlineItemType type_;
   unsigned segment_data_ : NGInlineItemSegment::kSegmentDataBits;
   unsigned bidi_level_ : 8;              // UBiDiLevel is defined as uint8_t.
   unsigned shape_options_ : 2;
