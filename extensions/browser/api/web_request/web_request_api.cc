@@ -626,7 +626,8 @@ void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
   //
   // Note that details.event_name is actually the sub_event_name!
   ExtensionWebRequestEventRouter::EventListener::ID id(
-      details.browser_context, details.extension_id, details.event_name, 0, 0);
+      details.browser_context, details.extension_id, details.event_name, 0, 0,
+      details.worker_thread_id, details.service_worker_version_id);
 
   // This Unretained is safe because the ExtensionWebRequestEventRouter
   // singleton is leaked.
@@ -1584,10 +1585,10 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
         listener->id.extension_id, crosses_incognito));
 
     EventRouter::DispatchEventToSender(
-        listener->ipc_sender.get(), browser_context,
-        listener->id.render_process_id, listener->id.extension_id,
+        listener->ipc_sender.get(), browser_context, listener->id.extension_id,
         listener->histogram_value, listener->id.sub_event_name,
-        blink::mojom::kInvalidServiceWorkerVersionId, std::move(args_filtered),
+        listener->id.render_process_id, listener->id.worker_thread_id,
+        listener->id.service_worker_version_id, std::move(args_filtered),
         EventRouter::USER_GESTURE_UNKNOWN, EventFilteringInfo());
   }
 }
@@ -1600,10 +1601,13 @@ void ExtensionWebRequestEventRouter::OnEventHandled(
     uint64_t request_id,
     int render_process_id,
     int web_view_instance_id,
+    int worker_thread_id,
+    int64_t service_worker_version_id,
     EventResponse* response) {
   Listeners& listeners = listeners_[browser_context][event_name];
   EventListener::ID id(browser_context, extension_id, sub_event_name,
-                       render_process_id, web_view_instance_id);
+                       render_process_id, web_view_instance_id,
+                       worker_thread_id, service_worker_version_id);
   EventListener* listener = FindEventListenerInContainer(id, listeners);
 
   // This might happen, for example, if the extension has been unloaded.
@@ -1626,6 +1630,8 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
     int extra_info_spec,
     int render_process_id,
     int web_view_instance_id,
+    int worker_thread_id,
+    int64_t service_worker_version_id,
     base::WeakPtr<IPC::Sender> ipc_sender) {
   if (!IsWebRequestEvent(event_name))
     return false;
@@ -1634,7 +1640,8 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
     return false;
 
   EventListener::ID id(browser_context, extension_id, sub_event_name,
-                       render_process_id, web_view_instance_id);
+                       render_process_id, web_view_instance_id,
+                       worker_thread_id, service_worker_version_id);
   if (FindEventListener(id) != nullptr) {
     // This is likely an abuse of the API by a malicious extension.
     return false;
@@ -2588,7 +2595,7 @@ WebRequestInternalAddEventListenerFunction::Run() {
           profile_id(), extension_id_safe(), extension_name,
           GetEventHistogramValue(event_name), event_name, sub_event_name,
           filter, extra_info_spec, render_process_id, web_view_instance_id,
-          ipc_sender_weak());
+          worker_thread_id(), service_worker_version_id(), ipc_sender_weak());
   EXTENSION_FUNCTION_VALIDATE(success);
 
   helpers::ClearCacheOnNavigation();
@@ -2605,7 +2612,8 @@ void WebRequestInternalEventHandledFunction::OnError(
     std::unique_ptr<ExtensionWebRequestEventRouter::EventResponse> response) {
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
       profile_id(), extension_id_safe(), event_name, sub_event_name, request_id,
-      render_process_id, web_view_instance_id, response.release());
+      render_process_id, web_view_instance_id, worker_thread_id(),
+      service_worker_version_id(), response.release());
 }
 
 ExtensionFunction::ResponseAction
@@ -2751,7 +2759,8 @@ WebRequestInternalEventHandledFunction::Run() {
 
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
       profile_id(), extension_id_safe(), event_name, sub_event_name, request_id,
-      render_process_id, web_view_instance_id, response.release());
+      render_process_id, web_view_instance_id, worker_thread_id(),
+      service_worker_version_id(), response.release());
 
   return RespondNow(NoArguments());
 }
@@ -2793,12 +2802,19 @@ ExtensionWebRequestEventRouter::EventListener::ID::ID(
     const std::string& extension_id,
     const std::string& sub_event_name,
     int render_process_id,
-    int web_view_instance_id)
+    int web_view_instance_id,
+    int worker_thread_id,
+    int64_t service_worker_version_id)
     : browser_context(browser_context),
       extension_id(extension_id),
       sub_event_name(sub_event_name),
       render_process_id(render_process_id),
-      web_view_instance_id(web_view_instance_id) {}
+      web_view_instance_id(web_view_instance_id),
+      worker_thread_id(worker_thread_id),
+      service_worker_version_id(service_worker_version_id) {}
+
+ExtensionWebRequestEventRouter::EventListener::ID::ID(const ID& source) =
+    default;
 
 bool ExtensionWebRequestEventRouter::EventListener::ID::LooselyMatches(
     const ID& that) const {
@@ -2807,6 +2823,8 @@ bool ExtensionWebRequestEventRouter::EventListener::ID::LooselyMatches(
     // last, as it is exceedingly unlikely to be different.
     return extension_id == that.extension_id &&
            sub_event_name == that.sub_event_name &&
+           worker_thread_id == that.worker_thread_id &&
+           service_worker_version_id == that.service_worker_version_id &&
            browser_context == that.browser_context;
   }
 
@@ -2821,6 +2839,8 @@ bool ExtensionWebRequestEventRouter::EventListener::ID::operator==(
          sub_event_name == that.sub_event_name &&
          web_view_instance_id == that.web_view_instance_id &&
          render_process_id == that.render_process_id &&
+         worker_thread_id == that.worker_thread_id &&
+         service_worker_version_id == that.service_worker_version_id &&
          browser_context == that.browser_context;
 }
 

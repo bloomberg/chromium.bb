@@ -230,7 +230,6 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
                       binding::RequestThread thread) override {
     DCHECK(!context->GetRenderFrame());
     DCHECK_EQ(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
-    DCHECK_EQ(binding::RequestThread::UI, thread);
     DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
 
     int worker_thread_id = content::WorkerThread::GetCurrentId();
@@ -245,7 +244,15 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     dispatcher_->Send(new ExtensionHostMsg_IncrementServiceWorkerActivity(
         service_worker_version_id_, guid));
 
-    dispatcher_->Send(new ExtensionHostMsg_RequestWorker(*params));
+    switch (thread) {
+      case binding::RequestThread::UI:
+        dispatcher_->Send(new ExtensionHostMsg_RequestWorker(*params));
+        break;
+      case binding::RequestThread::IO:
+        dispatcher_->Send(
+            new ExtensionHostMsg_RequestWorkerForIOThread(*params));
+        break;
+    }
   }
 
   void SendOnRequestResponseReceivedIPC(int request_id) override {

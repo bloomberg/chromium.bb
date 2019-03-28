@@ -752,7 +752,7 @@ void NativeExtensionBindingsSystem::SendRequest(
   params->has_callback = request->has_callback;
   params->user_gesture = request->has_user_gesture;
   // The IPC sender will update these members, if appropriate.
-  params->worker_thread_id = -1;
+  params->worker_thread_id = kMainThreadId;
   params->service_worker_version_id =
       blink::mojom::kInvalidServiceWorkerVersionId;
 

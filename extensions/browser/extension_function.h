@@ -312,6 +312,18 @@ class ExtensionFunction
     return source_process_id_;
   }
 
+  void set_service_worker_version_id(int64_t service_worker_version_id) {
+    service_worker_version_id_ = service_worker_version_id;
+  }
+  int64_t service_worker_version_id() const {
+    return service_worker_version_id_;
+  }
+
+  bool is_from_service_worker() const {
+    return service_worker_version_id_ !=
+           blink::mojom::kInvalidServiceWorkerVersionId;
+  }
+
   ResponseType* response_type() const { return response_type_.get(); }
 
   bool did_respond() const { return did_respond_; }
@@ -493,6 +505,10 @@ class ExtensionFunction
   // if unknown.
   int source_process_id_;
 
+  // If this ExtensionFunction was called by an extension Service Worker, then
+  // this contains the worker's version id.
+  int64_t service_worker_version_id_;
+
   // The response type of the function, if the response has been sent.
   std::unique_ptr<ResponseType> response_type_;
 
@@ -538,10 +554,6 @@ class UIThreadExtensionFunction : public ExtensionFunction {
     return dispatcher_.get();
   }
 
-  void set_service_worker_version_id(int64_t version_id) {
-    service_worker_version_id_ = version_id;
-  }
-
   // Returns the web contents associated with the sending |render_frame_host_|.
   // This can be null.
   content::WebContents* GetSenderWebContents();
@@ -571,20 +583,11 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 
   void Destruct() const override;
 
-  bool is_from_service_worker() const {
-    return service_worker_version_id_ !=
-           blink::mojom::kInvalidServiceWorkerVersionId;
-  }
-
   // The dispatcher that will service this extension function call.
   base::WeakPtr<extensions::ExtensionFunctionDispatcher> dispatcher_;
 
   // The RenderFrameHost we will send responses to.
   content::RenderFrameHost* render_frame_host_;
-
-  // If this ExtensionFunction was called by an extension Service Worker, then
-  // this contains the worker's version id.
-  int64_t service_worker_version_id_;
 
   std::unique_ptr<RenderFrameHostTracker> tracker_;
 
@@ -618,6 +621,11 @@ class IOThreadExtensionFunction : public ExtensionFunction {
     return ipc_sender_;
   }
 
+  void set_worker_thread_id(int worker_thread_id) {
+    worker_thread_id_ = worker_thread_id;
+  }
+  int worker_thread_id() const { return worker_thread_id_; }
+
   void set_extension_info_map(const extensions::InfoMap* extension_info_map) {
     extension_info_map_ = extension_info_map;
   }
@@ -636,6 +644,7 @@ class IOThreadExtensionFunction : public ExtensionFunction {
 
  private:
   base::WeakPtr<extensions::IOThreadExtensionMessageFilter> ipc_sender_;
+  int worker_thread_id_;
 
   scoped_refptr<const extensions::InfoMap> extension_info_map_;
 

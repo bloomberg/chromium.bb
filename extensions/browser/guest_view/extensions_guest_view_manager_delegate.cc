@@ -26,6 +26,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/view_type_utils.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-forward.h"
@@ -73,9 +74,9 @@ void ExtensionsGuestViewManagerDelegate::DispatchEvent(
     return;  // Could happen at tab shutdown.
 
   EventRouter::DispatchEventToSender(
-      owner->GetRenderViewHost(), guest->browser_context(),
-      content::ChildProcessHost::kInvalidUniqueID, guest->owner_host(),
-      histogram_value, event_name, blink::mojom::kInvalidServiceWorkerVersionId,
+      owner->GetRenderViewHost(), guest->browser_context(), guest->owner_host(),
+      histogram_value, event_name, content::ChildProcessHost::kInvalidUniqueID,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       std::move(event_args), EventRouter::USER_GESTURE_UNKNOWN, info);
 }
 
