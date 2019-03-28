@@ -69,6 +69,29 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
     FAILED,
   };
 
+  // Used to track the navigation state of NavigationHandleImpl.
+  // Note: the states named PROCESSING_* indicate that NavigationThrottles are
+  // currently processing the corresponding event. When they are done, the
+  // state will move to the next in the list.
+  // TODO(zetamoo): Merge NavigationHandleState with NavigationState, and remove
+  //                the duplicates. Remove the PROCESSING_* states once the
+  //                NavigationThrottleRunner is owned by the NavigationRequest.
+  enum NavigationHandleState {
+    INITIAL = 0,
+    PROCESSING_WILL_START_REQUEST,
+    WILL_START_REQUEST,
+    PROCESSING_WILL_REDIRECT_REQUEST,
+    WILL_REDIRECT_REQUEST,
+    PROCESSING_WILL_FAIL_REQUEST,
+    WILL_FAIL_REQUEST,
+    CANCELING,
+    PROCESSING_WILL_PROCESS_RESPONSE,
+    WILL_PROCESS_RESPONSE,
+    READY_TO_COMMIT,
+    DID_COMMIT,
+    DID_COMMIT_ERROR_PAGE,
+  };
+
   // The SiteInstance currently associated with the navigation. Note that the
   // final value will only be known when the response is received, or the
   // navigation fails, as server redirects can modify the SiteInstance to use
