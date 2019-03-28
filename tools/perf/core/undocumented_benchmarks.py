@@ -29,8 +29,6 @@ UNDOCUMENTED_BENCHMARKS = {
   'resource_sizes',
   'sizes (mac)',
   'sizes (win)',
-  'smoothness.gpu_rasterization.tough_pinch_zoom_cases',
-  'smoothness.tough_pinch_zoom_cases',
   'speedometer',
   'speedometer-future',
   'speedometer2',

@@ -53,18 +53,11 @@
         "benchmarks": {
             "rendering.mobile": {
                 "begin": 165
-            },
-            "smoothness.gpu_rasterization.tough_pinch_zoom_cases": {},
-            "smoothness.tough_pinch_zoom_cases": {
-                "end": 4
             }
         }
     },
     "4": {
         "benchmarks": {
-            "smoothness.tough_pinch_zoom_cases": {
-                "begin": 4
-            },
             "speedometer": {},
             "speedometer-future": {},
             "speedometer2": {},

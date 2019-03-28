@@ -102,18 +102,11 @@
         "benchmarks": {
             "rendering.mobile": {
                 "begin": 360
-            },
-            "smoothness.gpu_rasterization.tough_pinch_zoom_cases": {},
-            "smoothness.tough_pinch_zoom_cases": {
-                "end": 17
             }
         }
     },
     "10": {
         "benchmarks": {
-            "smoothness.tough_pinch_zoom_cases": {
-                "begin": 17
-            },
             "speedometer": {},
             "speedometer-future": {},
             "speedometer2": {},
