@@ -9,6 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
@@ -22,6 +23,10 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
+
+#if defined(OS_WIN)
+#include "ui/base/win/shell.h"
+#endif
 
 namespace views {
 
@@ -272,13 +277,21 @@ TEST_F(BubbleDialogDelegateViewTest, NonClientHitTest) {
   BubbleDialogDelegateView::CreateBubble(bubble_delegate);
   BubbleFrameView* frame = bubble_delegate->GetBubbleFrameView();
 
+#if defined(OS_WIN)
+  bool is_aero_glass_enabled = ui::win::IsAeroGlassEnabled();
+#endif
+
   struct {
     const int point;
     const int hit;
-  } constexpr kTestCases[] = {
-      {0, HTTRANSPARENT},
-      {60, HTCLIENT},
-      {1000, HTNOWHERE},
+  } kTestCases[] = {
+#if defined(OS_WIN)
+    {0, is_aero_glass_enabled ? HTTRANSPARENT : HTNOWHERE},
+#else
+    {0, HTTRANSPARENT},
+#endif
+    {60, HTCLIENT},
+    {1000, HTNOWHERE},
   };
 
   for (const auto& test_case : kTestCases) {
