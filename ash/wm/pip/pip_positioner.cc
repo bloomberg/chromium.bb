@@ -24,6 +24,10 @@ namespace {
 const int kPipWorkAreaInsetsDp = 8;
 const float kPipDismissMovementProportion = 1.5f;
 
+// A property key to store whether the a window should be ignored for PIP
+// collision detection. For example, StatusBubble windows.
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIgnoreForPipCollisionDetection, false)
+
 enum { GRAVITY_LEFT, GRAVITY_RIGHT, GRAVITY_TOP, GRAVITY_BOTTOM };
 
 // Returns the result of adjusting |bounds| according to |gravity| inside
@@ -85,6 +89,10 @@ gfx::Rect ComputeCollisionRectFromBounds(const gfx::Rect& bounds,
   return collision_rect;
 }
 
+bool ShouldIgnoreWindowForCollision(const aura::Window* window) {
+  return window->GetProperty(kIgnoreForPipCollisionDetection);
+}
+
 std::vector<gfx::Rect> CollectCollisionRects(const display::Display& display) {
   std::vector<gfx::Rect> rects;
   auto* root_window = Shell::GetRootWindowForDisplayId(display.id());
@@ -95,6 +103,8 @@ std::vector<gfx::Rect> CollectCollisionRects(const display::Display& display) {
     for (auto* window : settings_bubble_container->children()) {
       if (!window->IsVisible() && !window->GetTargetBounds().IsEmpty())
         continue;
+      if (ShouldIgnoreWindowForCollision(window))
+        continue;
       // Use the target bounds in case an animation is in progress.
       rects.push_back(ComputeCollisionRectFromBounds(window->GetTargetBounds(),
                                                      window->parent()));
@@ -103,7 +113,7 @@ std::vector<gfx::Rect> CollectCollisionRects(const display::Display& display) {
     // Check auto-hide shelf, which isn't included normally in the work area:
     auto* shelf = Shelf::ForWindow(root_window);
     auto* shelf_window = shelf->GetWindow();
-    if (shelf->IsVisible())
+    if (shelf->IsVisible() && !ShouldIgnoreWindowForCollision(shelf_window))
       rects.push_back(ComputeCollisionRectFromBounds(
           shelf_window->GetTargetBounds(), shelf_window->parent()));
   }
@@ -113,7 +123,9 @@ std::vector<gfx::Rect> CollectCollisionRects(const display::Display& display) {
       keyboard_controller->GetActiveContainerType() ==
           keyboard::mojom::ContainerType::kFloating &&
       keyboard_controller->GetRootWindow() == root_window &&
-      !keyboard_controller->visual_bounds_in_screen().IsEmpty()) {
+      !keyboard_controller->visual_bounds_in_screen().IsEmpty() &&
+      !ShouldIgnoreWindowForCollision(
+          keyboard_controller->GetKeyboardWindow())) {
     // TODO(shend): visual_bounds_in_screen should return the bounds in screen
     // coordinates. See crbug.com/943446.
     rects.push_back(ComputeCollisionRectFromBounds(
@@ -271,6 +283,11 @@ gfx::Rect PipPositioner::GetPositionAfterMovementAreaChange(
           ? window_state->GetRestoreBoundsInScreen()
           : window_state->window()->GetBoundsInScreen();
   return GetRestingPosition(window_state->GetDisplay(), bounds_in_screen);
+}
+
+void PipPositioner::MarkWindowAsIgnoredForCollisionDetection(
+    aura::Window* window) {
+  window->SetProperty(kIgnoreForPipCollisionDetection, true);
 }
 
 gfx::Rect PipPositioner::AvoidObstacles(const display::Display& display,

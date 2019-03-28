@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -55,6 +56,9 @@ class ASH_EXPORT PipPositioner {
   // shown, the PIP window should move up to not intersect it.
   static gfx::Rect GetPositionAfterMovementAreaChange(
       wm::WindowState* window_state);
+
+  // Mark a window as ignored for PIP collision detection.
+  static void MarkWindowAsIgnoredForCollisionDetection(aura::Window* window);
 
  private:
   friend class PipPositionerDisplayTest;
