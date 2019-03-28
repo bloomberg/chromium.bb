@@ -110,7 +110,7 @@
 #import "ios/chrome/browser/ui/infobars/infobar_container_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_model_delegate_ios.h"
-#import "ios/chrome/browser/ui/location_bar_notification_names.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_notification_names.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui_broadcasting_util.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui_state.h"
