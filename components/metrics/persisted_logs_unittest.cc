@@ -7,9 +7,9 @@
 #include <stddef.h>
 
 #include "base/base64.h"
+#include "base/hash/sha1.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
-#include "base/sha1.h"
 #include "base/values.h"
 #include "components/metrics/persisted_logs_metrics_impl.h"
 #include "components/prefs/pref_registry_simple.h"

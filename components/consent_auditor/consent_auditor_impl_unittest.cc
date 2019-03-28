@@ -8,8 +8,8 @@
 #include <string>
 #include <utility>
 
+#include "base/hash/sha1.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sha1.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/default_clock.h"
 #include "components/consent_auditor/pref_names.h"

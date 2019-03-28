@@ -5,10 +5,10 @@
 #include "components/sync/model_impl/processor_entity.h"
 
 #include "base/base64.h"
+#include "base/hash/sha1.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sha1.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/sync_base_switches.h"

@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/base64.h"
-#include "base/sha1.h"
+#include "base/hash/sha1.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/hash_util.h"
