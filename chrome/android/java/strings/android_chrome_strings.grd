@@ -1368,7 +1368,7 @@ Your Google account may have other forms of browsing history like searches and a
         Use up to 60 percent less data and speed up the web. Google servers will optimize the pages you visit.
       </message>
       <message name="IDS_DATA_REDUCTION_PROMO_SUMMARY_LITE_MODE" desc="Description for the promo inviting users to enable Lite mode. This informs users that their web traffic will be seen and optimized for speed and data usage, by Google servers (AKA 'Cloud technology')." >
-        In Lite mode, Chrome loads pages faster and uses up to 60 percent less data. Google's cloud technology optimizes the pages you visit.
+        In Lite mode, Chrome loads pages faster and uses up to 60 percent less data. Google's Cloud technology optimizes the pages you visit.
       </message>
       <message name="IDS_DATA_REDUCTION_ENABLE_BUTTON" desc="Button the user presses if they want to enable Data Saver" >
         Turn on Data Saver
