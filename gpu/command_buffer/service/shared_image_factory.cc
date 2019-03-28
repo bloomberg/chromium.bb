@@ -299,10 +299,4 @@ SharedImageRepresentationFactory::ProduceSkia(const Mailbox& mailbox) {
   return manager_->ProduceSkia(mailbox, tracker_.get());
 }
 
-std::unique_ptr<SharedImageRepresentationDawn>
-SharedImageRepresentationFactory::ProduceDawn(const Mailbox& mailbox,
-                                              DawnDevice device) {
-  return manager_->ProduceDawn(mailbox, tracker_.get(), device);
-}
-
 }  // namespace gpu
