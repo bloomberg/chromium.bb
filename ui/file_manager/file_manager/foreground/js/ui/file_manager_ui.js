@@ -371,20 +371,6 @@ function FileManagerUI(providersModel, element, launchParam) {
     this.element.setAttribute('block-hosted-docs', '');
   }
 
-  // Hack: make menuitems focusable. Since the menuitems in the Files app is not
-  // button so it doesn't have a tabfocus in nature. It prevents Chromevox from
-  // speeaching because the opened menu is closed when the non-focusable object
-  // tries to get the focus.
-  const menuitems = document.querySelectorAll('cr-menu.chrome-menu > :not(hr)');
-  for (let i = 0; i < menuitems.length; i++) {
-    // Make menuitems focusable. The value can be any non-negative value,
-    // because pressing 'Tab' key on menu is handled and we don't need to mind
-    // the taborder and the destination of tabfocus.
-    if (!menuitems[i].hasAttribute('tabindex')) {
-      menuitems[i].setAttribute('tabindex', '0');
-    }
-  }
-
   // Modify UI default behavior.
   this.element.addEventListener('click', this.onExternalLinkClick_.bind(this));
   this.element.addEventListener('drop', e => {
