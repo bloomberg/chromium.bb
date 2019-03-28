@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/hash/sha1.h"
 #include "base/memory/ptr_util.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "components/component_updater/component_updater_paths.h"
