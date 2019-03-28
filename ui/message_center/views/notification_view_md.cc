@@ -38,6 +38,7 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -466,6 +467,22 @@ class InlineSettingsRadioButton : public views::RadioButton {
   }
 };
 
+// NotificationInkDropImpl /////////////////////////////////////////////////////
+
+class NotificationInkDropImpl : public views::InkDropImpl {
+ public:
+  NotificationInkDropImpl(views::InkDropHostView* ink_drop_host,
+                          const gfx::Size& host_size)
+      : views::InkDropImpl(ink_drop_host, host_size) {
+    SetAutoHighlightMode(views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
+  }
+
+  void HostSizeChanged(const gfx::Size& new_size) override {
+    // Prevent a call to InkDropImpl::HostSizeChanged which recreates the ripple
+    // and stops the currently active animation: http://crbug.com/915222.
+  }
+};
+
 // ////////////////////////////////////////////////////////////
 // NotificationViewMD
 // ////////////////////////////////////////////////////////////
@@ -601,12 +618,6 @@ void NotificationViewMD::Layout() {
     ink_drop_layer_->SetBounds(GetContentsBounds());
   if (ink_drop_mask_)
     ink_drop_mask_->layer()->SetBounds(GetContentsBounds());
-}
-
-void NotificationViewMD::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // Prevent a call to InkDropHostView::OnBoundsChanged as that would call
-  // InkDropImpl::HostSizeChanged which recreates the ink drop ripple and stops
-  // the currently active animation: http://crbug.com/915222.
 }
 
 void NotificationViewMD::OnFocus() {
@@ -1344,6 +1355,10 @@ void NotificationViewMD::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
   GetInkDrop()->RemoveObserver(this);
   ink_drop_layer_ = nullptr;
+}
+
+std::unique_ptr<views::InkDrop> NotificationViewMD::CreateInkDrop() {
+  return std::make_unique<NotificationInkDropImpl>(this, size());
 }
 
 std::unique_ptr<views::InkDropRipple> NotificationViewMD::CreateInkDropRipple()
