@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
 
+#include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_sheet_model.h"
@@ -15,7 +16,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
-#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
@@ -84,7 +84,7 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
   auto image_with_overlays = std::make_unique<views::View>();
   image_with_overlays->SetPreferredSize(illustration_size);
 
-  auto image_view = std::make_unique<views::ImageView>();
+  auto image_view = std::make_unique<NonAccessibleImageView>();
   image_view->SetImage(model()->GetStepIllustration());
   image_view->SetPreferredSize(illustration_size);
   image_view->SizeToPreferredSize();
