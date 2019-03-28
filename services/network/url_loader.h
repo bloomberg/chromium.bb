@@ -40,6 +40,8 @@ class URLRequestContext;
 
 namespace network {
 
+constexpr size_t kMaxFileUploadRequestsPerBatch = 64;
+
 class NetToMojoPendingBuffer;
 class NetworkUsageAccumulator;
 class KeepaliveStatisticsRecorder;
