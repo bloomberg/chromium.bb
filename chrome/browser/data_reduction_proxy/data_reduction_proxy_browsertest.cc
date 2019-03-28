@@ -352,8 +352,7 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
   // If the DRP client (erroneously) decides to proxy the WebSocket handshake,
   // it will attempt to establish a tunnel through |drp_server|.
   net::EmbeddedTestServer drp_server;
-  drp_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  drp_server.AddDefaultHandlers(GetChromeTestDataDir());
   bool tunnel_attempted = false;
   drp_server.RegisterRequestMonitor(base::BindLambdaForTesting(
       [&tunnel_attempted, &web_socket_handshake_loop](

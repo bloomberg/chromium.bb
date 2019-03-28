@@ -102,9 +102,6 @@ constexpr const char kAppDotComManifest[] =
     "  }"
     "}";
 
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
-
 enum class AppType {
   HOSTED_APP,
   BOOKMARK_APP,
@@ -272,7 +269,7 @@ class HostedAppTest
   ~HostedAppTest() override {}
 
   void SetUp() override {
-    https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
 
     bool desktop_pwa_flag;
     bool use_custom_tab_flag;

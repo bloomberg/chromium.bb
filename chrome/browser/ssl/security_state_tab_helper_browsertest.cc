@@ -115,9 +115,6 @@ const char kCreateBlobUrlJavascript[] =
 
 enum CertificateStatus { VALID_CERTIFICATE, INVALID_CERTIFICATE };
 
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
-
 const char kTestCertificateIssuerName[] = "Test Root CA";
 
 bool AreCommittedInterstitialsEnabled() {
@@ -462,7 +459,7 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest,
  public:
   SecurityStateTabHelperTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    https_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+    https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
 
   void SetUpOnMainThread() override {
@@ -586,7 +583,7 @@ class DidChangeVisibleSecurityStateTest
  public:
   DidChangeVisibleSecurityStateTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    https_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+    https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1577,7 +1574,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server_expired.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
   https_test_server_expired.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
   ASSERT_TRUE(https_test_server_expired.Start());
 
   content::WebContents* web_contents =
@@ -1768,7 +1765,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server_expired.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
   https_test_server_expired.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
   ASSERT_TRUE(https_test_server_expired.Start());
 
   content::WebContents* web_contents =
@@ -2157,7 +2154,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, FormSecurityLevelHistogram) {
   net::EmbeddedTestServer broken_https_server(
       net::EmbeddedTestServer::TYPE_HTTPS);
   broken_https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
-  broken_https_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+  broken_https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(broken_https_server.Start());
 
   // Make the form target the expired certificate server.

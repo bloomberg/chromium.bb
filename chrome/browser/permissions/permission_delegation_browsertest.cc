@@ -34,7 +34,7 @@ class PermissionDelegationBrowserTest : public InProcessBrowserTest {
     https_embedded_test_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
     https_embedded_test_server_->ServeFilesFromSourceDirectory(
-        "chrome/test/data");
+        GetChromeTestDataDir());
     host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(https_embedded_test_server_.get());
     ASSERT_TRUE(https_embedded_test_server_->Start());

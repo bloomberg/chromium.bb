@@ -151,7 +151,7 @@ class PreviewsLitePageServerBrowserTest
   void SetUpLitePageTest(bool use_timeout, bool is_control) {
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
-    https_server_->ServeFilesFromSourceDirectory("chrome/test/data");
+    https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     https_server_->RegisterRequestHandler(base::BindRepeating(
         &PreviewsLitePageServerBrowserTest::HandleRedirectRequest,
         base::Unretained(this)));
@@ -180,7 +180,7 @@ class PreviewsLitePageServerBrowserTest
     // Set up http server with resource monitor and redirect handler.
     http_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTP);
-    http_server_->ServeFilesFromSourceDirectory("chrome/test/data");
+    http_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     http_server_->RegisterRequestHandler(base::BindRepeating(
         &PreviewsLitePageServerBrowserTest::HandleRedirectRequest,
         base::Unretained(this)));

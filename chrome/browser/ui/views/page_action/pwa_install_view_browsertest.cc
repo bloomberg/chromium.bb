@@ -20,13 +20,6 @@
 #include "content/public/common/referrer.h"
 #include "services/network/public/cpp/network_switches.h"
 
-namespace {
-
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
-
-}  // namespace
-
 class PwaInstallViewBrowserTest : public InProcessBrowserTest {
  public:
   PwaInstallViewBrowserTest()
@@ -38,7 +31,7 @@ class PwaInstallViewBrowserTest : public InProcessBrowserTest {
     scoped_feature_list_.InitAndEnableFeature(
         features::kDesktopPWAsOmniboxInstall);
 
-    https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
     ASSERT_TRUE(https_server_.Start());
 
     InProcessBrowserTest::SetUp();

@@ -189,7 +189,7 @@ class DataSaverWithServerBrowserTest : public InProcessBrowserTest {
     test_server_->RegisterRequestHandler(
         base::Bind(&DataSaverWithServerBrowserTest::VerifySaveDataHeader,
                    base::Unretained(this)));
-    test_server_->ServeFilesFromSourceDirectory("chrome/test/data");
+    test_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
 
   void EnableDataSaver(bool enabled) {

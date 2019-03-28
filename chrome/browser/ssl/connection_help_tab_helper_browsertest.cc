@@ -35,8 +35,8 @@ class ConnectionHelpTabHelperTest : public InProcessBrowserTest,
     }
     https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
     https_expired_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
-    https_server_.ServeFilesFromSourceDirectory("chrome/test/data");
-    https_expired_server_.ServeFilesFromSourceDirectory("chrome/test/data");
+    https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+    https_expired_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     ASSERT_TRUE(https_server_.Start());
     ASSERT_TRUE(https_expired_server_.Start());
   }

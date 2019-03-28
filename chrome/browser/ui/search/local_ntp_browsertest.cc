@@ -113,7 +113,7 @@ class LocalNTPTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIOnlyAvailableOnNTP) {
   // Set up a test server, so we have some arbitrary non-NTP URL to navigate to.
   net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  test_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  test_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(test_server.Start());
   const GURL other_url = test_server.GetURL("/simple.html");
 
@@ -294,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIEndToEnd) {
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIAfterDownload) {
   // Set up a test server, so we have some URL to download.
   net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  test_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  test_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(test_server.Start());
   const GURL download_url = test_server.GetURL("/download-test1.lib");
 
@@ -832,7 +832,7 @@ class TestNavigationThrottle : public content::NavigationThrottle {
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, InterstitialsAreNotNTPs) {
   // Set up a test server, so we have some non-NTP URL to navigate to.
   net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  test_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  test_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(test_server.Start());
 
   content::WebContents* active_tab =

@@ -577,7 +577,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, SSLError) {
   // Only send the loaded page, not the loader, through SSL.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
   std::unique_ptr<TestPrerender> prerender = PrefetchFromURL(
       https_server.GetURL(kPrefetchPage), FINAL_STATUS_SSL_ERROR);
@@ -594,7 +594,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, SSLSubresourceError) {
   // non-HTTPS.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("/prerender/image.jpeg");
   GURL main_page_url = GetURLWithReplacement(

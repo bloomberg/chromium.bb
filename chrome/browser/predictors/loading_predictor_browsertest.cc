@@ -793,8 +793,7 @@ class LoadingPredictorBrowserTestWithProxy
  public:
   void SetUp() override {
     pac_script_server_ = std::make_unique<net::EmbeddedTestServer>();
-    pac_script_server_->AddDefaultHandlers(
-        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+    pac_script_server_->AddDefaultHandlers(GetChromeTestDataDir());
     ASSERT_TRUE(pac_script_server_->InitializeAndListen());
     LoadingPredictorBrowserTest::SetUp();
   }

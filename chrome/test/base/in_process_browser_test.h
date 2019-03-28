@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -240,6 +241,9 @@ class InProcessBrowserTest : public content::BrowserTestBase {
     return autorelease_pool_;
   }
 #endif  // OS_MACOSX
+
+  // Returns the test data path used by the embedded test server.
+  base::FilePath GetChromeTestDataDir() const;
 
   void set_exit_when_last_browser_closes(bool value) {
     exit_when_last_browser_closes_ = value;

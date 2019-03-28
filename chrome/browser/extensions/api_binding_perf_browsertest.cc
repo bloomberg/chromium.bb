@@ -31,8 +31,6 @@ class APIBindingPerfBrowserTest : public ExtensionBrowserTest {
 
   void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
-    embedded_test_server()->ServeFilesFromDirectory(
-        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
     EXPECT_TRUE(embedded_test_server()->Start());
   }
 

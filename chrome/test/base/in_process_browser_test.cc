@@ -195,7 +195,7 @@ InProcessBrowserTest::InProcessBrowserTest(
   CHECK(base::PathService::Override(content::CHILD_PROCESS_EXE, file_exe));
 #endif  // defined(OS_MACOSX)
 
-  CreateTestServer(base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  CreateTestServer(GetChromeTestDataDir());
   base::FilePath src_dir;
   CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
 
@@ -203,7 +203,7 @@ InProcessBrowserTest::InProcessBrowserTest(
   // ContentMain. However that is after tests' constructors or SetUp methods,
   // which sometimes need it. So just override it.
   CHECK(base::PathService::Override(chrome::DIR_TEST_DATA,
-                                    src_dir.AppendASCII("chrome/test/data")));
+                                    src_dir.Append(GetChromeTestDataDir())));
 
 #if defined(OS_MACOSX)
   bundle_swizzler_.reset(new ScopedBundleSwizzlerMac);
@@ -544,6 +544,10 @@ base::CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
   return new_command_line;
 }
 #endif
+
+base::FilePath InProcessBrowserTest::GetChromeTestDataDir() const {
+  return base::FilePath(FILE_PATH_LITERAL("chrome/test/data"));
+}
 
 void InProcessBrowserTest::PreRunTestOnMainThread() {
   AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();

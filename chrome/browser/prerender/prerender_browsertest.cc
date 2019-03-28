@@ -1438,7 +1438,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // Checks that a page served over HTTPS is correctly prerendered.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttps) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("/prerender/prerender_page.html");
   PrerenderTestURL(https_url,
@@ -1969,7 +1969,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrDelete) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorTopLevel) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("/prerender/prerender_page.html");
   PrerenderTestURL(https_url, FINAL_STATUS_SSL_ERROR, 0);
@@ -1981,7 +1981,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorTopLevel) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorSubresource) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL(kPrefetchJpeg);
   base::StringPairs replacement_text;
@@ -1999,7 +1999,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorSubresource) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorIframe) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
   GURL https_url =
       https_server.GetURL("/prerender/prerender_embedded_content.html");
@@ -2068,7 +2068,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   ssl_config.client_cert_type =
       net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
-  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("/prerender/prerender_page.html");
   PrerenderTestURL(https_url, FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED, 0);
@@ -2088,7 +2088,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   ssl_config.client_cert_type =
       net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
-  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL(kPrefetchJpeg);
   base::StringPairs replacement_text;
@@ -2114,7 +2114,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertIframe) {
   ssl_config.client_cert_type =
       net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
-  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
   GURL https_url =
       https_server.GetURL("/prerender/prerender_embedded_content.html");
