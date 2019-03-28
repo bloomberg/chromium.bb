@@ -106,9 +106,9 @@ def main():
     base = os.path.splitext(os.path.basename(reproducer))[0]
     ProcessCrashreport(base, args.source)
 
-
   if args.delete:
     DeleteCrashFiles()
+
 
 if __name__ == '__main__':
   try:
