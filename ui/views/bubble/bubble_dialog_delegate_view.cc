@@ -454,8 +454,10 @@ void BubbleDialogDelegateView::OnDeactivate() {
 }
 
 void BubbleDialogDelegateView::UpdateAnchorWidgetRenderState(bool visible) {
-  if (!anchor_widget() || !anchor_widget()->GetTopLevelWidget())
+  if (!anchor_widget() || !anchor_widget()->GetTopLevelWidget() ||
+      !CanActivate()) {
     return;
+  }
 
   anchor_widget()->GetTopLevelWidget()->SetAlwaysRenderAsActive(visible);
 }
