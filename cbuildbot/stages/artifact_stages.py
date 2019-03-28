@@ -200,13 +200,16 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       # Build factory install image and create a symlink to it.
       factory_install_symlink = None
       if 'factory_install' in config['images']:
+        logging.info('Running commands.BuildFactoryInstallImage')
         alias = commands.BuildFactoryInstallImage(buildroot, board, extra_env)
         factory_install_symlink = self.GetImageDirSymlink(alias)
         if config['factory_install_netboot']:
+          logging.info('Running commands.MakeNetboot')
           commands.MakeNetboot(buildroot, board, factory_install_symlink)
 
       # Build and upload factory zip if needed.
       if factory_install_symlink or config['factory_toolkit']:
+        logging.info('Running commands.BuildFactoryZip')
         filename = commands.BuildFactoryZip(buildroot, board, archive_path,
                                             factory_install_symlink,
                                             self._run.attrs.release_tag)
@@ -215,6 +218,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     def ArchiveStandaloneArtifact(artifact_info):
       """Build and upload a single archive."""
       if artifact_info['paths']:
+        logging.info('Running commands.BuildStandaloneArchive')
         for path in commands.BuildStandaloneArchive(archive_path, image_dir,
                                                     artifact_info):
           self._release_upload_queue.put([path])
@@ -230,6 +234,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
 
       This includes all the files in /build/$BOARD/tmp/portage/logs.
       """
+      logging.info('Running commands.BuildEbuildLogsTarball')
       tarpath = commands.BuildEbuildLogsTarball(
           self._build_root, self._current_board, self.archive_path)
       if tarpath is not None:
@@ -242,6 +247,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
         - image.zip (all images in one big zip file)
       """
       # Zip up everything in the image directory.
+      logging.info('Running commands.BuildImageZip')
       image_zip = commands.BuildImageZip(archive_path, image_dir)
       self._release_upload_queue.put([image_zip])
 
@@ -257,13 +263,16 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
         # Build the full autotest tarball for hwqual image. We don't upload it,
         # as it's fairly large and only needed by the hwqual tarball.
         logging.info('Archiving full autotest tarball locally ...')
+        logging.info('Running commands.BuildFullAutotestTarball')
         tarball = commands.BuildFullAutotestTarball(
             self._build_root, self._current_board, image_dir)
         self.board_runattrs.SetParallel('autotest_tarball_generated', True)
+        logging.info('Running commands.ArchiveFile')
         commands.ArchiveFile(tarball, archive_path)
 
         # Build hwqual image and upload to Google Storage.
         hwqual_name = 'chromeos-hwqual-%s-%s' % (board, self.version)
+        logging.info('Running commands.ArchiveHWQual')
         filename = commands.ArchiveHWQual(buildroot, hwqual_name, archive_path,
                                           image_dir)
         self._release_upload_queue.put([filename])
@@ -280,6 +289,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
 
     def ArchiveFirmwareImages():
       """Archive firmware images built from source if available."""
+      logging.info('Running commands.BuildFirmwareArchive')
       archive = commands.BuildFirmwareArchive(buildroot, board, archive_path)
       if archive:
         self._release_upload_queue.put([archive])
@@ -298,6 +308,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       # run before BuildAndArchiveFactoryImages.
       if 'recovery' in config.images:
         assert os.path.isfile(os.path.join(image_dir, constants.BASE_IMAGE_BIN))
+        logging.info('Running commands.BuildRecoveryImage')
         commands.BuildRecoveryImage(buildroot, board, image_dir, extra_env)
         self._recovery_image_status_queue.put(True)
         recovery_image = constants.RECOVERY_IMAGE_BIN
@@ -347,6 +358,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       sign_types = []
       if config['sign_types']:
         sign_types = config['sign_types']
+      logging.info('Running commands.PushImages')
       urls = commands.PushImages(
           board=board,
           archive_url=upload_url,
