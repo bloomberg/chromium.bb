@@ -9,6 +9,7 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
+@class FaviconAttributes;
 @class FaviconView;
 class GURL;
 @protocol ManualFillContentDelegate;
@@ -22,6 +23,10 @@ class GURL;
 
 // Identifier to match a URLItem with its URLCell.
 @property(nonatomic, readonly) NSString* uniqueIdentifier;
+
+// The cell won't show a title (site name) label if it is connected to the
+// previous password item.
+@property(nonatomic, readonly) BOOL isConnectedToPreviousItem;
 
 - (instancetype)initWithCredential:(ManualFillCredential*)credential
          isConnectedToPreviousItem:(BOOL)isConnectedToPreviousItem
@@ -37,9 +42,6 @@ class GURL;
 // and send the data to the delegate.
 @interface ManualFillPasswordCell : TableViewCell
 
-// The favicon for the credential.
-@property(nonatomic, readonly) FaviconView* faviconView;
-
 // Identifier to match a URLItem with its URLCell.
 @property(nonatomic, readonly) NSString* uniqueIdentifier;
 
@@ -49,6 +51,9 @@ class GURL;
     isConnectedToPreviousCell:(BOOL)isConnectedToPreviousCell
         isConnectedToNextCell:(BOOL)isConnectedToNextCell
                      delegate:(id<ManualFillContentDelegate>)delegate;
+
+// Configures the cell for the passed favicon attributes.
+- (void)configureWithFaviconAttributes:(FaviconAttributes*)attributes;
 
 @end
 

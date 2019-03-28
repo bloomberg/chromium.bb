@@ -171,6 +171,10 @@ NSString* const PasswordTableViewAccessibilityIdentifier =
 
   ManualFillCredentialItem* passwordItem =
       base::mac::ObjCCastStrict<ManualFillCredentialItem>(item);
+  if (passwordItem.isConnectedToPreviousItem) {
+    return;
+  }
+
   ManualFillPasswordCell* passwordCell =
       base::mac::ObjCCastStrict<ManualFillPasswordCell>(cell);
 
@@ -181,11 +185,11 @@ NSString* const PasswordTableViewAccessibilityIdentifier =
            // Only set favicon if the cell hasn't been reused.
            if ([passwordCell.uniqueIdentifier isEqualToString:itemIdentifier]) {
              DCHECK(attributes);
-             [passwordCell.faviconView configureWithAttributes:attributes];
+             [passwordCell configureWithFaviconAttributes:attributes];
            }
          }];
   DCHECK(cachedAttributes);
-  [passwordCell.faviconView configureWithAttributes:cachedAttributes];
+  [passwordCell configureWithFaviconAttributes:cachedAttributes];
 }
 
 @end
