@@ -258,6 +258,9 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       else if (ui::IsValuePatternSupported(node))
         FireUiaPropertyChangedEvent(UIA_ValueIsReadOnlyPropertyId, node);
       break;
+    case ui::AXEventGenerator::Event::REQUIRED_STATE_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_IsRequiredForFormPropertyId, node);
+      break;
     case ui::AXEventGenerator::Event::ROLE_CHANGED:
       FireUiaPropertyChangedEvent(UIA_AriaRolePropertyId, node);
       break;
@@ -294,7 +297,6 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
         FireUiaPropertyChangedEvent(UIA_RangeValueLargeChangePropertyId, node);
       }
       break;
-
     case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
     case ui::AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
     case ui::AXEventGenerator::Event::LIVE_REGION_NODE_CHANGED:
