@@ -725,3 +725,18 @@ CrOnc.getValidType = function(typeStr) {
   }
   return undefined;
 };
+
+/**
+ * Returns whether |properties| has a Cellular or Tether network type.
+ * @param {!CrOnc.NetworkProperties|!CrOnc.NetworkStateProperties|undefined}
+ *     properties The ONC property dictionary to be checked.
+ * @return {boolean}
+ */
+CrOnc.isMobileNetwork = function(properties) {
+  if (!properties) {
+    return false;
+  }
+
+  const type = properties.Type;
+  return type == CrOnc.Type.CELLULAR || type == CrOnc.Type.TETHER;
+};
