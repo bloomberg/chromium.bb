@@ -63,6 +63,7 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/omnibox/browser/location_bar_model.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/vector_icons.h"
@@ -432,6 +433,10 @@ gfx::Size LocationBarView::CalculatePreferredSize() const {
   return gfx::Size(width, height);
 }
 
+void LocationBarView::OnKeywordFaviconFetched(const gfx::Image& icon) {
+  selected_keyword_view_->SetImage(icon.AsImageSkia());
+}
+
 void LocationBarView::Layout() {
   if (!IsInitialized())
     return;
@@ -504,6 +509,20 @@ void LocationBarView::Layout() {
         gfx::Image image = extensions::OmniboxAPI::Get(profile())->
             GetOmniboxIcon(template_url->GetExtensionId());
         selected_keyword_view_->SetImage(image.AsImageSkia());
+      } else if (template_url && template_url->type() == TemplateURL::NORMAL &&
+                 OmniboxFieldTrial::IsExperimentalKeywordModeEnabled()) {
+        gfx::Image image =
+            omnibox_view()
+                ->model()
+                ->client()
+                ->GetFaviconForKeywordSearchProvider(
+                    template_url,
+                    base::BindOnce(&LocationBarView::OnKeywordFaviconFetched,
+                                   base::Unretained(this)));
+        if (!image.IsEmpty())
+          selected_keyword_view_->SetImage(image.AsImageSkia());
+        else
+          selected_keyword_view_->ResetImage();
       } else {
         selected_keyword_view_->ResetImage();
       }
