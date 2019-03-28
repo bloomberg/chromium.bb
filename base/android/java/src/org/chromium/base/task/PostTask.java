@@ -10,6 +10,7 @@ import org.chromium.base.annotations.JNINamespace;
 import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.FutureTask;
 
@@ -127,19 +128,42 @@ public class PostTask {
      * absolutely must block the thread, use FutureTask.get().
      * @param taskTraits The TaskTraits that describe the desired TaskRunner.
      * @param task The task to be run with the specified traits.
+     * @return The result of the callable
+     */
+    @Deprecated
+    public static <T> T runSynchronously(TaskTraits taskTraits, Callable<T> c) {
+        return runSynchronouslyInternal(taskTraits, new FutureTask<T>(c));
+    }
+
+    /**
+     * This function executes the task immediately if the current thread is the
+     * same as the one corresponding to the SingleThreadTaskRunner, otherwise it
+     * posts it and blocks until the task finishes.
+     *
+     * It should be executed only for tasks with traits corresponding to
+     * executors backed by a SingleThreadTaskRunner, like UiThreadTaskTraits.
+     *
+     * Use this only for trivial tasks as it ignores task priorities.
+     *
+     * @deprecated In tests, use {@link
+     *         org.chromium.content_public.browser.test.util.TestThreadUtils#runOnUiThreadBlocking(Runnable)
+     *         TestThreadUtils.runOnUiThreadBlocking(Runnable)} instead. Non-test usage is heavily
+     *         discouraged. For non-tests, use callbacks rather than blocking threads. If you
+     * absolutely must block the thread, use FutureTask.get().
+     * @param taskTraits The TaskTraits that describe the desired TaskRunner.
+     * @param task The task to be run with the specified traits.
      */
     @Deprecated
     public static void runSynchronously(TaskTraits taskTraits, Runnable r) {
-        if (getTaskExecutorForTraits(taskTraits).canRunTaskImmediately(taskTraits)) {
-            r.run();
-        } else {
-            FutureTask<Void> task = new FutureTask<Void>(r, null);
-            postTask(taskTraits, task);
-            try {
-                task.get();
-            } catch (Exception e) {
-                throw new RuntimeException("Exception occurred while waiting for runnable", e);
-            }
+        runSynchronouslyInternal(taskTraits, new FutureTask<Void>(r, null));
+    }
+
+    private static <T> T runSynchronouslyInternal(TaskTraits taskTraits, FutureTask<T> task) {
+        runOrPostTask(taskTraits, task);
+        try {
+            return task.get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

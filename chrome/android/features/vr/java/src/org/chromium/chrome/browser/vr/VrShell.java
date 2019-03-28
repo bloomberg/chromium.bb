@@ -930,7 +930,7 @@ public class VrShell extends GvrLayout
 
     public boolean isDisplayingUrlForTesting() {
         assert mNativeVrShell != 0;
-        return ThreadUtils.runOnUiThreadBlockingNoException(
+        return PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT,
                 () -> { return nativeIsDisplayingUrlForTesting(mNativeVrShell); });
     }
 

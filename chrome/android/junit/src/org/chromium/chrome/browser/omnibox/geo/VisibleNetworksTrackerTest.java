@@ -20,12 +20,12 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowSystemClock;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleWifi;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworksTrackerTest.ShadowPlatformNetworksManager;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -91,12 +91,7 @@ public class VisibleNetworksTrackerTest {
                 Arrays.asList(FIRST_ONLY_CONNECTED_NETWORKS, SECOND_ONLY_CONNECTED_NETWORKS));
 
         // Make sure that the cache is empty before every test.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable(){
-            @Override
-            public void run() {
-                VisibleNetworksTracker.clearCache();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { VisibleNetworksTracker.clearCache(); });
     }
 
     @Test
