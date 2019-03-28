@@ -7,9 +7,9 @@
 #include <string>
 
 #include "base/base64url.h"
+#include "base/hash/sha1.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
-#include "base/sha1.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/cast_channel/cast_socket.h"

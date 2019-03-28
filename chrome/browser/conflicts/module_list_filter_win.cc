@@ -8,9 +8,9 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/hash/sha1.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "base/sha1.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 

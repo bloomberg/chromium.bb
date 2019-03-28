@@ -7,9 +7,9 @@
 #include <array>
 
 #include "base/base64url.h"
+#include "base/hash/sha1.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/media/router/providers/dial/dial_activity_manager.h"
 #include "chrome/browser/media/router/route_message_util.h"
