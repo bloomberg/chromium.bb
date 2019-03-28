@@ -302,26 +302,6 @@ static void check_level_constraints(AV1_COMP *cpi, int operating_point_idx,
       break;
     }
 
-    if (level_spec->max_tile_size > 4096 * 2304) {
-      fail_id = TILE_TOO_LARGE;
-      break;
-    }
-
-    if (level_spec->min_cropped_tile_width < 8) {
-      fail_id = CROPPED_TILE_WIDTH_TOO_SMALL;
-      break;
-    }
-
-    if (level_spec->min_cropped_tile_height < 8) {
-      fail_id = CROPPED_TILE_HEIGHT_TOO_SMALL;
-      break;
-    }
-
-    if (!level_spec->tile_width_is_valid) {
-      fail_id = TILE_WIDTH_INVALID;
-      break;
-    }
-
     if (level_spec->max_header_rate > target_level_spec->max_header_rate) {
       fail_id = FRAME_HEADER_RATE_TOO_HIGH;
       break;
@@ -334,6 +314,26 @@ static void check_level_constraints(AV1_COMP *cpi, int operating_point_idx,
 
     if (level_spec->max_decode_rate > target_level_spec->max_decode_rate) {
       fail_id = DECODE_RATE_TOO_HIGH;
+      break;
+    }
+
+    if (level_stats->max_tile_size > 4096 * 2304) {
+      fail_id = TILE_TOO_LARGE;
+      break;
+    }
+
+    if (level_stats->min_cropped_tile_width < 8) {
+      fail_id = CROPPED_TILE_WIDTH_TOO_SMALL;
+      break;
+    }
+
+    if (level_stats->min_cropped_tile_height < 8) {
+      fail_id = CROPPED_TILE_HEIGHT_TOO_SMALL;
+      break;
+    }
+
+    if (!level_stats->tile_width_is_valid) {
+      fail_id = TILE_WIDTH_INVALID;
       break;
     }
 
@@ -537,6 +537,13 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
     AV1LevelInfo *const level_info = &cpi->level_info[i];
     AV1LevelStats *const level_stats = &level_info->level_stats;
 
+    level_stats->max_tile_size =
+        AOMMAX(level_stats->max_tile_size, max_tile_size);
+    level_stats->min_cropped_tile_width =
+        AOMMIN(level_stats->min_cropped_tile_width, min_cropped_tile_width);
+    level_stats->min_cropped_tile_height =
+        AOMMIN(level_stats->min_cropped_tile_height, min_cropped_tile_height);
+    level_stats->tile_width_is_valid &= tile_width_is_valid;
     level_stats->total_compressed_size += frame_compressed_size;
     if (show_frame) level_stats->total_time_encoded = total_time_encoded;
     level_stats->min_cr = AOMMIN(level_stats->min_cr, compression_ratio);
@@ -551,13 +558,6 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
     level_spec->max_v_size = AOMMAX(level_spec->max_v_size, height);
     level_spec->max_tile_cols = AOMMAX(level_spec->max_tile_cols, tile_cols);
     level_spec->max_tiles = AOMMAX(level_spec->max_tiles, tiles);
-    level_spec->max_tile_size =
-        AOMMAX(level_spec->max_tile_size, max_tile_size);
-    level_spec->min_cropped_tile_width =
-        AOMMIN(level_spec->min_cropped_tile_width, min_cropped_tile_width);
-    level_spec->min_cropped_tile_height =
-        AOMMIN(level_spec->min_cropped_tile_height, min_cropped_tile_height);
-    level_spec->tile_width_is_valid &= tile_width_is_valid;
 
     if (show_frame) {
       scan_past_frames(buffer, encoded_frames_in_last_second, level_spec);

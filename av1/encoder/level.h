@@ -25,10 +25,6 @@ typedef struct {
   int max_header_rate;
   int max_tiles;
   int max_tile_cols;
-  int max_tile_size;
-  int min_cropped_tile_width;
-  int min_cropped_tile_height;
-  int tile_width_is_valid;
   int64_t max_display_rate;
   int64_t max_decode_rate;
   double main_mbps;
@@ -57,6 +53,10 @@ typedef struct {
 // Used to keep track of AV1 Level Stats. Currently unimplemented.
 typedef struct {
   uint64_t total_compressed_size;
+  int max_tile_size;
+  int min_cropped_tile_width;
+  int min_cropped_tile_height;
+  int tile_width_is_valid;
   double total_time_encoded;
   double min_cr;
 } AV1LevelStats;
