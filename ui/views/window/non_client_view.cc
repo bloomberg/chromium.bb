@@ -30,7 +30,7 @@ const char NonClientView::kViewClassName[] =
 // handling mouse messages.
 static constexpr int kFrameViewIndex = 0;
 static constexpr int kClientViewIndex = 1;
-// The overlay view is always on top (index == child_count() - 1).
+// The overlay view is always on top (view == children().back()).
 
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, default implementations:

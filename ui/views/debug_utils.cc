@@ -51,7 +51,7 @@ void PrintFocusHierarchyImp(const View* view,
   *out << view;
   *out << '\n';
 
-  if (view->child_count() > 0)
+  if (!view->children().empty())
     PrintFocusHierarchyImp(view->child_at(0), indent + 2, out);
 
   const View* next_focusable = view->GetNextFocusableView();
