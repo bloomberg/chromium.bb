@@ -117,6 +117,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend bool nux::IsNuxOnboardingEnabled(Profile* profile);
 
   // Testing related friends.
+  friend class ForceFieldTrialsBrowserTest;
   friend class MetricsReportingStateTest;
   friend class metrics::UkmConsentParamBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceAccessorTest,
