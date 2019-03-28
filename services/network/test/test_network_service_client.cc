@@ -10,22 +10,13 @@
 
 namespace network {
 
-TestNetworkServiceClient::TestNetworkServiceClient()
-    : enable_uploads_(true), binding_(nullptr) {}
+TestNetworkServiceClient::TestNetworkServiceClient() : binding_(nullptr) {}
 
 TestNetworkServiceClient::TestNetworkServiceClient(
     mojom::NetworkServiceClientRequest request)
-    : enable_uploads_(true), binding_(this, std::move(request)) {}
+    : binding_(this, std::move(request)) {}
 
 TestNetworkServiceClient::~TestNetworkServiceClient() {}
-
-void TestNetworkServiceClient::DisableUploads() {
-  enable_uploads_ = false;
-}
-
-void TestNetworkServiceClient::EnableUploads() {
-  enable_uploads_ = true;
-}
 
 void TestNetworkServiceClient::OnAuthRequired(
     uint32_t process_id,
@@ -94,7 +85,7 @@ void TestNetworkServiceClient::OnFileUploadRequested(
     bool async,
     const std::vector<base::FilePath>& file_paths,
     OnFileUploadRequestedCallback callback) {
-  if (!enable_uploads_ || upload_files_invalid_) {
+  if (upload_files_invalid_) {
     std::move(callback).Run(net::ERR_ACCESS_DENIED, std::vector<base::File>());
     return;
   }

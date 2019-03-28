@@ -20,8 +20,6 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
   explicit TestNetworkServiceClient(mojom::NetworkServiceClientRequest request);
   ~TestNetworkServiceClient() override;
 
-  void DisableUploads();
-  void EnableUploads();
   void set_upload_files_invalid(bool upload_files_invalid) {
     upload_files_invalid_ = upload_files_invalid;
   }
@@ -97,7 +95,6 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
 #endif
 
  private:
-  bool enable_uploads_;
   bool upload_files_invalid_ = false;
   bool ignore_last_upload_file_ = false;
   mojo::Binding<mojom::NetworkServiceClient> binding_;
