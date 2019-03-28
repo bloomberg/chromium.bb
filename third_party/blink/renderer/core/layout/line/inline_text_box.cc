@@ -519,10 +519,6 @@ void InlineTextBox::PaintTextMatchMarkerForeground(
     const Font& font) const {
   InlineTextBoxPainter(*this).PaintTextMatchMarkerForeground(
       paint_info, box_origin, marker, style, font);
-  if (GetLineLayoutItem().ContainsOnlyWhitespaceOrNbsp() !=
-      OnlyWhitespaceOrNbsp::kYes) {
-    paint_info.context.GetPaintController().SetTextPainted();
-  }
 }
 
 void InlineTextBox::PaintTextMatchMarkerBackground(
