@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_VAAPI_VAAPI_JPEG_DECODE_ACCELERATOR_H_
-#define MEDIA_GPU_VAAPI_VAAPI_JPEG_DECODE_ACCELERATOR_H_
+#ifndef MEDIA_GPU_VAAPI_VAAPI_MJPEG_DECODE_ACCELERATOR_H_
+#define MEDIA_GPU_VAAPI_VAAPI_MJPEG_DECODE_ACCELERATOR_H_
 
 #include <stdint.h>
 
@@ -28,22 +28,22 @@ class ScopedVAImage;
 class UnalignedSharedMemory;
 class VideoFrame;
 
-// Class to provide JPEG decode acceleration for Intel systems with hardware
+// Class to provide MJPEG decode acceleration for Intel systems with hardware
 // support for it, and on which libva is available.
-// Decoding tasks are performed in a separate decoding thread.
+// Decoding tasks are performed on a separate |decoder_thread_|.
 //
 // Threading/life-cycle: this object is created & destroyed on the GPU
 // ChildThread.  A few methods on it are called on the decoder thread which is
 // stopped during |this->Destroy()|, so any tasks posted to the decoder thread
 // can assume |*this| is still alive.  See |weak_this_| below for more details.
-class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
+class MEDIA_GPU_EXPORT VaapiMjpegDecodeAccelerator
     : public MjpegDecodeAccelerator {
  public:
-  VaapiJpegDecodeAccelerator(
+  VaapiMjpegDecodeAccelerator(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
-  ~VaapiJpegDecodeAccelerator() override;
+  ~VaapiMjpegDecodeAccelerator() override;
 
-  // JpegDecodeAccelerator implementation.
+  // MjpegDecodeAccelerator implementation.
   bool Initialize(MjpegDecodeAccelerator::Client* client) override;
   void Decode(const BitstreamBuffer& bitstream_buffer,
               const scoped_refptr<VideoFrame>& video_frame) override;
@@ -94,11 +94,11 @@ class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
   // this class, tasks posted to it may use base::Unretained(this), and tasks
   // posted from the |decoder_task_runner_| to |task_runner_| should use a
   // WeakPtr (obtained via weak_this_factory_.GetWeakPtr()).
-  base::WeakPtrFactory<VaapiJpegDecodeAccelerator> weak_this_factory_;
+  base::WeakPtrFactory<VaapiMjpegDecodeAccelerator> weak_this_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(VaapiJpegDecodeAccelerator);
+  DISALLOW_COPY_AND_ASSIGN(VaapiMjpegDecodeAccelerator);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_VAAPI_VAAPI_JPEG_DECODE_ACCELERATOR_H_
+#endif  // MEDIA_GPU_VAAPI_VAAPI_MJPEG_DECODE_ACCELERATOR_H_

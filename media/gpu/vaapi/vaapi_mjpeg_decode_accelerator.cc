@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/vaapi/vaapi_jpeg_decode_accelerator.h"
+#include "media/gpu/vaapi/vaapi_mjpeg_decode_accelerator.h"
 
 #include <stddef.h>
 
@@ -33,7 +33,7 @@ namespace media {
 
 namespace {
 
-// UMA errors that the VaapiJpegDecodeAccelerator class reports.
+// UMA errors that the VaapiMjpegDecodeAccelerator class reports.
 enum VAJDADecoderFailure {
   VAAPI_ERROR = 0,
   VAJDA_DECODER_FAILURES_MAX,
@@ -82,11 +82,11 @@ static bool VerifyDataSize(const VAImage* image) {
 
 }  // namespace
 
-void VaapiJpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
-                                             Error error) {
+void VaapiMjpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
+                                              Error error) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&VaapiJpegDecodeAccelerator::NotifyError,
+        FROM_HERE, base::BindOnce(&VaapiMjpegDecodeAccelerator::NotifyError,
                                   weak_this_factory_.GetWeakPtr(),
                                   bitstream_buffer_id, error));
     return;
@@ -100,29 +100,29 @@ void VaapiJpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
   client_->NotifyError(bitstream_buffer_id, error);
 }
 
-void VaapiJpegDecodeAccelerator::VideoFrameReady(int32_t bitstream_buffer_id) {
+void VaapiMjpegDecodeAccelerator::VideoFrameReady(int32_t bitstream_buffer_id) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   ReportToVAJDAResponseToClientUMA(MjpegDecodeAccelerator::Error::NO_ERRORS);
   client_->VideoFrameReady(bitstream_buffer_id);
 }
 
-VaapiJpegDecodeAccelerator::VaapiJpegDecodeAccelerator(
+VaapiMjpegDecodeAccelerator::VaapiMjpegDecodeAccelerator(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(io_task_runner),
       client_(nullptr),
-      decoder_thread_("VaapiJpegDecoderThread"),
+      decoder_thread_("VaapiMjpegDecoderThread"),
       weak_this_factory_(this) {}
 
-VaapiJpegDecodeAccelerator::~VaapiJpegDecodeAccelerator() {
+VaapiMjpegDecodeAccelerator::~VaapiMjpegDecodeAccelerator() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  VLOGF(2) << "Destroying VaapiJpegDecodeAccelerator";
+  VLOGF(2) << "Destroying VaapiMjpegDecodeAccelerator";
 
   weak_this_factory_.InvalidateWeakPtrs();
   decoder_thread_.Stop();
 }
 
-bool VaapiJpegDecodeAccelerator::Initialize(Client* client) {
+bool VaapiMjpegDecodeAccelerator::Initialize(Client* client) {
   VLOGF(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -142,13 +142,13 @@ bool VaapiJpegDecodeAccelerator::Initialize(Client* client) {
   return true;
 }
 
-bool VaapiJpegDecodeAccelerator::OutputPictureOnTaskRunner(
+bool VaapiMjpegDecodeAccelerator::OutputPictureOnTaskRunner(
     std::unique_ptr<ScopedVAImage> scoped_image,
     int32_t input_buffer_id,
     const scoped_refptr<VideoFrame>& video_frame) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
-  TRACE_EVENT1("jpeg", "VaapiJpegDecodeAccelerator::OutputPictureOnTaskRunner",
+  TRACE_EVENT1("jpeg", "VaapiMjpegDecodeAccelerator::OutputPictureOnTaskRunner",
                "input_buffer_id", input_buffer_id);
 
   // Copy image content from VAImage to VideoFrame. If the image is not in the
@@ -209,13 +209,13 @@ bool VaapiJpegDecodeAccelerator::OutputPictureOnTaskRunner(
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&VaapiJpegDecodeAccelerator::VideoFrameReady,
+      base::BindOnce(&VaapiMjpegDecodeAccelerator::VideoFrameReady,
                      weak_this_factory_.GetWeakPtr(), input_buffer_id));
 
   return true;
 }
 
-void VaapiJpegDecodeAccelerator::DecodeTask(
+void VaapiMjpegDecodeAccelerator::DecodeTask(
     int32_t bitstream_buffer_id,
     std::unique_ptr<UnalignedSharedMemory> shm,
     scoped_refptr<VideoFrame> video_frame) {
@@ -240,7 +240,7 @@ void VaapiJpegDecodeAccelerator::DecodeTask(
   }
 }
 
-void VaapiJpegDecodeAccelerator::Decode(
+void VaapiMjpegDecodeAccelerator::Decode(
     const BitstreamBuffer& bitstream_buffer,
     const scoped_refptr<VideoFrame>& video_frame) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -268,12 +268,12 @@ void VaapiJpegDecodeAccelerator::Decode(
   // It's safe to use base::Unretained(this) because |decoder_task_runner_| runs
   // tasks on |decoder_thread_| which is stopped in the destructor of |this|.
   decoder_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VaapiJpegDecodeAccelerator::DecodeTask,
+      FROM_HERE, base::BindOnce(&VaapiMjpegDecodeAccelerator::DecodeTask,
                                 base::Unretained(this), bitstream_buffer.id(),
                                 std::move(shm), std::move(video_frame)));
 }
 
-bool VaapiJpegDecodeAccelerator::IsSupported() {
+bool VaapiMjpegDecodeAccelerator::IsSupported() {
   return VaapiWrapper::IsJpegDecodeSupported();
 }
 

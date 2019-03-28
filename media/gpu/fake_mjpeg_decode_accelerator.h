@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_FAKE_JPEG_DECODE_ACCELERATOR_H_
-#define MEDIA_GPU_FAKE_JPEG_DECODE_ACCELERATOR_H_
+#ifndef MEDIA_GPU_FAKE_MJPEG_DECODE_ACCELERATOR_H_
+#define MEDIA_GPU_FAKE_MJPEG_DECODE_ACCELERATOR_H_
 
 #include <stdint.h>
 
@@ -23,16 +23,16 @@ class SingleThreadTaskRunner;
 namespace media {
 
 // Uses software-based decoding. The purpose of this class is to enable testing
-// of communication to the JpegDecodeAccelerator without requiring an actual
+// of communication to the MjpegDecodeAccelerator without requiring an actual
 // hardware decoder.
-class MEDIA_GPU_EXPORT FakeJpegDecodeAccelerator
+class MEDIA_GPU_EXPORT FakeMjpegDecodeAccelerator
     : public MjpegDecodeAccelerator {
  public:
-  FakeJpegDecodeAccelerator(
+  FakeMjpegDecodeAccelerator(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
-  ~FakeJpegDecodeAccelerator() override;
+  ~FakeMjpegDecodeAccelerator() override;
 
-  // JpegDecodeAccelerator implementation.
+  // MjpegDecodeAccelerator implementation.
   bool Initialize(MjpegDecodeAccelerator::Client* client) override;
   void Decode(const BitstreamBuffer& bitstream_buffer,
               const scoped_refptr<VideoFrame>& video_frame) override;
@@ -57,11 +57,11 @@ class MEDIA_GPU_EXPORT FakeJpegDecodeAccelerator
   base::Thread decoder_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> decoder_task_runner_;
 
-  base::WeakPtrFactory<FakeJpegDecodeAccelerator> weak_factory_;
+  base::WeakPtrFactory<FakeMjpegDecodeAccelerator> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeJpegDecodeAccelerator);
+  DISALLOW_COPY_AND_ASSIGN(FakeMjpegDecodeAccelerator);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_FAKE_JPEG_DECODE_ACCELERATOR_H_
+#endif  // MEDIA_GPU_FAKE_MJPEG_DECODE_ACCELERATOR_H_

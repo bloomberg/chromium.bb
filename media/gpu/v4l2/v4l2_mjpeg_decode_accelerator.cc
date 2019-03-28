@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/v4l2/v4l2_jpeg_decode_accelerator.h"
+#include "media/gpu/v4l2/v4l2_mjpeg_decode_accelerator.h"
 
 #include <errno.h>
 #include <linux/videodev2.h>
@@ -74,7 +74,7 @@ const size_t kMaxInputPlanes = 1;
 // can only be 1.
 static_assert(kMaxInputPlanes == 1,
               "kMaxInputPlanes must be 1 as input must be V4L2_PIX_FMT_JPEG");
-}
+}  // namespace
 
 namespace media {
 
@@ -120,14 +120,14 @@ const uint8_t kDefaultDhtSeg[] = {
     0xD5, 0xD6, 0xD7, 0xD8, 0xD9, 0xDA, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7,
     0xE8, 0xE9, 0xEA, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA};
 
-V4L2JpegDecodeAccelerator::BufferRecord::BufferRecord() : at_device(false) {
+V4L2MjpegDecodeAccelerator::BufferRecord::BufferRecord() : at_device(false) {
   memset(address, 0, sizeof(address));
   memset(length, 0, sizeof(length));
 }
 
-V4L2JpegDecodeAccelerator::BufferRecord::~BufferRecord() {}
+V4L2MjpegDecodeAccelerator::BufferRecord::~BufferRecord() {}
 
-V4L2JpegDecodeAccelerator::JobRecord::JobRecord(
+V4L2MjpegDecodeAccelerator::JobRecord::JobRecord(
     const BitstreamBuffer& bitstream_buffer,
     scoped_refptr<VideoFrame> video_frame)
     : bitstream_buffer_id(bitstream_buffer.id()),
@@ -135,9 +135,9 @@ V4L2JpegDecodeAccelerator::JobRecord::JobRecord(
       offset(bitstream_buffer.offset()),
       out_frame(video_frame) {}
 
-V4L2JpegDecodeAccelerator::JobRecord::~JobRecord() {}
+V4L2MjpegDecodeAccelerator::JobRecord::~JobRecord() {}
 
-V4L2JpegDecodeAccelerator::V4L2JpegDecodeAccelerator(
+V4L2MjpegDecodeAccelerator::V4L2MjpegDecodeAccelerator(
     const scoped_refptr<V4L2Device>& device,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : output_buffer_pixelformat_(0),
@@ -146,20 +146,20 @@ V4L2JpegDecodeAccelerator::V4L2JpegDecodeAccelerator(
       io_task_runner_(io_task_runner),
       client_(nullptr),
       device_(device),
-      decoder_thread_("V4L2JpegDecodeThread"),
-      device_poll_thread_("V4L2JpegDecodeDevicePollThread"),
+      decoder_thread_("V4L2MjpegDecodeThread"),
+      device_poll_thread_("V4L2MjpegDecodeDevicePollThread"),
       input_streamon_(false),
       output_streamon_(false),
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 
-V4L2JpegDecodeAccelerator::~V4L2JpegDecodeAccelerator() {
+V4L2MjpegDecodeAccelerator::~V4L2MjpegDecodeAccelerator() {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   if (decoder_thread_.IsRunning()) {
     decoder_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&V4L2JpegDecodeAccelerator::DestroyTask,
+        FROM_HERE, base::BindOnce(&V4L2MjpegDecodeAccelerator::DestroyTask,
                                   base::Unretained(this)));
     decoder_thread_.Stop();
   }
@@ -167,7 +167,7 @@ V4L2JpegDecodeAccelerator::~V4L2JpegDecodeAccelerator() {
   DCHECK(!device_poll_thread_.IsRunning());
 }
 
-void V4L2JpegDecodeAccelerator::DestroyTask() {
+void V4L2MjpegDecodeAccelerator::DestroyTask() {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   while (!input_jobs_.empty())
     input_jobs_.pop();
@@ -181,27 +181,27 @@ void V4L2JpegDecodeAccelerator::DestroyTask() {
   DestroyOutputBuffers();
 }
 
-void V4L2JpegDecodeAccelerator::VideoFrameReady(int32_t bitstream_buffer_id) {
+void V4L2MjpegDecodeAccelerator::VideoFrameReady(int32_t bitstream_buffer_id) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   client_->VideoFrameReady(bitstream_buffer_id);
 }
 
-void V4L2JpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
-                                            Error error) {
+void V4L2MjpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
+                                             Error error) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   VLOGF(1) << "Notifying of error " << error << " for buffer id "
            << bitstream_buffer_id;
   client_->NotifyError(bitstream_buffer_id, error);
 }
 
-void V4L2JpegDecodeAccelerator::PostNotifyError(int32_t bitstream_buffer_id,
-                                                Error error) {
+void V4L2MjpegDecodeAccelerator::PostNotifyError(int32_t bitstream_buffer_id,
+                                                 Error error) {
   child_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2JpegDecodeAccelerator::NotifyError,
+      FROM_HERE, base::BindOnce(&V4L2MjpegDecodeAccelerator::NotifyError,
                                 weak_ptr_, bitstream_buffer_id, error));
 }
 
-bool V4L2JpegDecodeAccelerator::Initialize(Client* client) {
+bool V4L2MjpegDecodeAccelerator::Initialize(Client* client) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   if (!device_->Open(V4L2Device::Type::kJpegDecoder, V4L2_PIX_FMT_JPEG)) {
@@ -240,14 +240,14 @@ bool V4L2JpegDecodeAccelerator::Initialize(Client* client) {
   decoder_task_runner_ = decoder_thread_.task_runner();
 
   decoder_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2JpegDecodeAccelerator::StartDevicePoll,
+      FROM_HERE, base::BindOnce(&V4L2MjpegDecodeAccelerator::StartDevicePoll,
                                 base::Unretained(this)));
 
-  VLOGF(2) << "V4L2JpegDecodeAccelerator initialized.";
+  VLOGF(2) << "V4L2MjpegDecodeAccelerator initialized.";
   return true;
 }
 
-void V4L2JpegDecodeAccelerator::Decode(
+void V4L2MjpegDecodeAccelerator::Decode(
     const BitstreamBuffer& bitstream_buffer,
     const scoped_refptr<VideoFrame>& video_frame) {
   DVLOGF(4) << "input_id=" << bitstream_buffer.id()
@@ -272,12 +272,12 @@ void V4L2JpegDecodeAccelerator::Decode(
 
   decoder_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&V4L2JpegDecodeAccelerator::DecodeTask,
+      base::BindOnce(&V4L2MjpegDecodeAccelerator::DecodeTask,
                      base::Unretained(this), base::Passed(&job_record)));
 }
 
 // static
-bool V4L2JpegDecodeAccelerator::IsSupported() {
+bool V4L2MjpegDecodeAccelerator::IsSupported() {
   scoped_refptr<V4L2Device> device = V4L2Device::Create();
   if (!device)
     return false;
@@ -285,7 +285,7 @@ bool V4L2JpegDecodeAccelerator::IsSupported() {
   return device->IsJpegDecodingSupported();
 }
 
-void V4L2JpegDecodeAccelerator::DecodeTask(
+void V4L2MjpegDecodeAccelerator::DecodeTask(
     std::unique_ptr<JobRecord> job_record) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   if (!job_record->shm.MapAt(job_record->offset, job_record->shm.size())) {
@@ -298,15 +298,15 @@ void V4L2JpegDecodeAccelerator::DecodeTask(
   ServiceDeviceTask(false);
 }
 
-size_t V4L2JpegDecodeAccelerator::InputBufferQueuedCount() {
+size_t V4L2MjpegDecodeAccelerator::InputBufferQueuedCount() {
   return input_buffer_map_.size() - free_input_buffers_.size();
 }
 
-size_t V4L2JpegDecodeAccelerator::OutputBufferQueuedCount() {
+size_t V4L2MjpegDecodeAccelerator::OutputBufferQueuedCount() {
   return output_buffer_map_.size() - free_output_buffers_.size();
 }
 
-bool V4L2JpegDecodeAccelerator::ShouldRecreateInputBuffers() {
+bool V4L2MjpegDecodeAccelerator::ShouldRecreateInputBuffers() {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   if (input_jobs_.empty())
     return false;
@@ -318,7 +318,7 @@ bool V4L2JpegDecodeAccelerator::ShouldRecreateInputBuffers() {
               input_buffer_map_.front().length[0]);
 }
 
-bool V4L2JpegDecodeAccelerator::RecreateInputBuffers() {
+bool V4L2MjpegDecodeAccelerator::RecreateInputBuffers() {
   VLOGF(2);
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
@@ -336,7 +336,7 @@ bool V4L2JpegDecodeAccelerator::RecreateInputBuffers() {
   return true;
 }
 
-bool V4L2JpegDecodeAccelerator::RecreateOutputBuffers() {
+bool V4L2MjpegDecodeAccelerator::RecreateOutputBuffers() {
   VLOGF(2);
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
@@ -350,7 +350,7 @@ bool V4L2JpegDecodeAccelerator::RecreateOutputBuffers() {
   return true;
 }
 
-bool V4L2JpegDecodeAccelerator::CreateInputBuffers() {
+bool V4L2MjpegDecodeAccelerator::CreateInputBuffers() {
   VLOGF(2);
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
@@ -413,7 +413,7 @@ bool V4L2JpegDecodeAccelerator::CreateInputBuffers() {
   return true;
 }
 
-bool V4L2JpegDecodeAccelerator::CreateOutputBuffers() {
+bool V4L2MjpegDecodeAccelerator::CreateOutputBuffers() {
   VLOGF(2);
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   DCHECK(!output_streamon_);
@@ -497,7 +497,7 @@ bool V4L2JpegDecodeAccelerator::CreateOutputBuffers() {
   return true;
 }
 
-void V4L2JpegDecodeAccelerator::DestroyInputBuffers() {
+void V4L2MjpegDecodeAccelerator::DestroyInputBuffers() {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
   free_input_buffers_.clear();
@@ -527,7 +527,7 @@ void V4L2JpegDecodeAccelerator::DestroyInputBuffers() {
   input_buffer_map_.clear();
 }
 
-void V4L2JpegDecodeAccelerator::DestroyOutputBuffers() {
+void V4L2MjpegDecodeAccelerator::DestroyOutputBuffers() {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
   free_output_buffers_.clear();
@@ -558,7 +558,7 @@ void V4L2JpegDecodeAccelerator::DestroyOutputBuffers() {
   output_buffer_num_planes_ = 0;
 }
 
-void V4L2JpegDecodeAccelerator::DevicePollTask() {
+void V4L2MjpegDecodeAccelerator::DevicePollTask() {
   DCHECK(device_poll_task_runner_->BelongsToCurrentThread());
 
   bool event_pending;
@@ -571,11 +571,11 @@ void V4L2JpegDecodeAccelerator::DevicePollTask() {
   // All processing should happen on ServiceDeviceTask(), since we shouldn't
   // touch decoder state from this thread.
   decoder_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2JpegDecodeAccelerator::ServiceDeviceTask,
+      FROM_HERE, base::BindOnce(&V4L2MjpegDecodeAccelerator::ServiceDeviceTask,
                                 base::Unretained(this), event_pending));
 }
 
-bool V4L2JpegDecodeAccelerator::DequeueSourceChangeEvent() {
+bool V4L2MjpegDecodeAccelerator::DequeueSourceChangeEvent() {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
   struct v4l2_event ev;
@@ -599,7 +599,7 @@ bool V4L2JpegDecodeAccelerator::DequeueSourceChangeEvent() {
   return false;
 }
 
-void V4L2JpegDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
+void V4L2MjpegDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   // If DestroyTask() shuts |device_poll_thread_| down, we should early-out.
   if (!device_poll_thread_.IsRunning())
@@ -623,19 +623,17 @@ void V4L2JpegDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
 
   if (!running_jobs_.empty()) {
     device_poll_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&V4L2JpegDecodeAccelerator::DevicePollTask,
+        FROM_HERE, base::BindOnce(&V4L2MjpegDecodeAccelerator::DevicePollTask,
                                   base::Unretained(this)));
   }
 
-  DVLOGF(3) << "buffer counts: INPUT["
-            << input_jobs_.size() << "] => DEVICE["
-            << free_input_buffers_.size() << "/"
-            << input_buffer_map_.size() << "->"
-            << free_output_buffers_.size() << "/"
+  DVLOGF(3) << "buffer counts: INPUT[" << input_jobs_.size() << "] => DEVICE["
+            << free_input_buffers_.size() << "/" << input_buffer_map_.size()
+            << "->" << free_output_buffers_.size() << "/"
             << output_buffer_map_.size() << "]";
 }
 
-void V4L2JpegDecodeAccelerator::EnqueueInput() {
+void V4L2MjpegDecodeAccelerator::EnqueueInput() {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   while (!input_jobs_.empty() && !free_input_buffers_.empty()) {
     // If input buffers are required to re-create, do not enqueue input record
@@ -654,7 +652,7 @@ void V4L2JpegDecodeAccelerator::EnqueueInput() {
   }
 }
 
-void V4L2JpegDecodeAccelerator::EnqueueOutput() {
+void V4L2MjpegDecodeAccelerator::EnqueueOutput() {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   // Output record can be enqueued because the output coded sizes of the frames
   // currently in the pipeline are all the same.
@@ -672,7 +670,7 @@ void V4L2JpegDecodeAccelerator::EnqueueOutput() {
   }
 }
 
-bool V4L2JpegDecodeAccelerator::ConvertOutputImage(
+bool V4L2MjpegDecodeAccelerator::ConvertOutputImage(
     const BufferRecord& output_buffer,
     const scoped_refptr<VideoFrame>& dst_frame) {
   uint8_t* dst_y = dst_frame->data(VideoFrame::kYPlane);
@@ -747,7 +745,7 @@ bool V4L2JpegDecodeAccelerator::ConvertOutputImage(
   return true;
 }
 
-void V4L2JpegDecodeAccelerator::Dequeue() {
+void V4L2MjpegDecodeAccelerator::Dequeue() {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
   // Dequeue completed input (VIDEO_OUTPUT) buffers,
@@ -795,7 +793,7 @@ void V4L2JpegDecodeAccelerator::Dequeue() {
     dqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
     // From experiments, using MMAP and memory copy is still faster than
     // USERPTR. Also, client doesn't need to consider the buffer alignment and
-    // JpegDecodeAccelerator API will be simpler.
+    // MjpegDecodeAccelerator API will be simpler.
     dqbuf.memory = V4L2_MEMORY_MMAP;
     dqbuf.length = base::size(planes);
     dqbuf.m.planes = planes;
@@ -833,8 +831,8 @@ void V4L2JpegDecodeAccelerator::Dequeue() {
 
       child_task_runner_->PostTask(
           FROM_HERE,
-          base::BindOnce(&V4L2JpegDecodeAccelerator::VideoFrameReady, weak_ptr_,
-                         job_record->bitstream_buffer_id));
+          base::BindOnce(&V4L2MjpegDecodeAccelerator::VideoFrameReady,
+                         weak_ptr_, job_record->bitstream_buffer_id));
     }
   }
 }
@@ -919,7 +917,7 @@ static bool AddHuffmanTable(const void* input_ptr,
   return true;
 }
 
-bool V4L2JpegDecodeAccelerator::EnqueueInputRecord() {
+bool V4L2MjpegDecodeAccelerator::EnqueueInputRecord() {
   DCHECK(!input_jobs_.empty());
   DCHECK(!free_input_buffers_.empty());
 
@@ -958,7 +956,7 @@ bool V4L2JpegDecodeAccelerator::EnqueueInputRecord() {
   return true;
 }
 
-bool V4L2JpegDecodeAccelerator::EnqueueOutputRecord() {
+bool V4L2MjpegDecodeAccelerator::EnqueueOutputRecord() {
   DCHECK(!free_output_buffers_.empty());
   DCHECK_GT(output_buffer_num_planes_, 0u);
 
@@ -981,7 +979,7 @@ bool V4L2JpegDecodeAccelerator::EnqueueOutputRecord() {
   return true;
 }
 
-void V4L2JpegDecodeAccelerator::StartDevicePoll() {
+void V4L2MjpegDecodeAccelerator::StartDevicePoll() {
   DVLOGF(3) << ": starting device poll";
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   DCHECK(!device_poll_thread_.IsRunning());
@@ -994,7 +992,7 @@ void V4L2JpegDecodeAccelerator::StartDevicePoll() {
   device_poll_task_runner_ = device_poll_thread_.task_runner();
 }
 
-bool V4L2JpegDecodeAccelerator::StopDevicePoll() {
+bool V4L2MjpegDecodeAccelerator::StopDevicePoll() {
   DVLOGF(3) << "stopping device poll";
   // Signal the DevicePollTask() to stop, and stop the device poll thread.
   if (!device_->SetDevicePollInterrupt()) {
