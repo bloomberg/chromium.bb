@@ -9,11 +9,19 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
+@class FaviconView;
+class GURL;
 @protocol ManualFillContentDelegate;
 @class ManualFillCredential;
 
 // Wrapper to show password cells in a ChromeTableViewController.
 @interface ManualFillCredentialItem : TableViewItem
+
+// URL to fetch the favicon.
+@property(nonatomic, readonly) const GURL& faviconURL;
+
+// Identifier to match a URLItem with its URLCell.
+@property(nonatomic, readonly) NSString* uniqueIdentifier;
 
 - (instancetype)initWithCredential:(ManualFillCredential*)credential
          isConnectedToPreviousItem:(BOOL)isConnectedToPreviousItem
@@ -28,6 +36,12 @@
 // Cell to display a Credential where the username and password are interactable
 // and send the data to the delegate.
 @interface ManualFillPasswordCell : TableViewCell
+
+// The favicon for the credential.
+@property(nonatomic, readonly) FaviconView* faviconView;
+
+// Identifier to match a URLItem with its URLCell.
+@property(nonatomic, readonly) NSString* uniqueIdentifier;
 
 // Updates the cell with the |credential|. If the user iteracts with it, the
 // |delegate| will be notified.
