@@ -213,7 +213,7 @@ void MenuViewDragAndDropTest::DoTestWithMenuOpen() {
   views::SubmenuView* submenu = menu()->GetSubmenu();
   ASSERT_TRUE(submenu);
   ASSERT_TRUE(submenu->IsShowing());
-  ASSERT_EQ(3, submenu->GetMenuItemCount());
+  ASSERT_EQ(3u, submenu->GetMenuItems().size());
   const views::View* first_view = submenu->GetMenuItemAt(0);
   ASSERT_EQ(1, first_view->child_count());
   const views::View* child_view = first_view->child_at(0);

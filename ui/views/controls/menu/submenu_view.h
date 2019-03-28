@@ -44,6 +44,8 @@ class VIEWS_EXPORT SubmenuView : public View,
                                  public PrefixDelegate,
                                  public ScrollDelegate {
  public:
+  using MenuItems = std::vector<MenuItemView*>;
+
   // The submenu's class name.
   static const char kViewClassName[];
 
@@ -57,9 +59,8 @@ class VIEWS_EXPORT SubmenuView : public View,
   // Returns true if the submenu has at least one visible child item.
   bool HasVisibleChildren();
 
-  // Returns the number of child views that are MenuItemViews.
-  // MenuItemViews are identified by ID.
-  int GetMenuItemCount() const;
+  // Returns the children which are menu items.
+  MenuItems GetMenuItems() const;
 
   // Returns the MenuItemView at the specified index.
   MenuItemView* GetMenuItemAt(int index);
@@ -182,11 +183,6 @@ class VIEWS_EXPORT SubmenuView : public View,
 
  private:
   friend class test::MenuControllerTest;
-
-  using MenuItems = std::vector<MenuItemView*>;
-
-  // Returns the children which are menu items.
-  MenuItems GetMenuItems() const;
 
   void SchedulePaintForDropIndicator(MenuItemView* item,
                                      MenuDelegate::DropPosition position);

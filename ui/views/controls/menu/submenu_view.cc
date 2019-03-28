@@ -70,15 +70,18 @@ bool SubmenuView::HasEmptyMenuItemView() {
 }
 
 bool SubmenuView::HasVisibleChildren() {
-  for (int i = 0, item_count = GetMenuItemCount(); i < item_count; i++) {
-    if (GetMenuItemAt(i)->visible())
-      return true;
-  }
-  return false;
+  const auto menu_items = GetMenuItems();
+  return std::any_of(menu_items.cbegin(), menu_items.cend(),
+                     [](const MenuItemView* item) { return item->visible(); });
 }
 
-int SubmenuView::GetMenuItemCount() const {
-  return static_cast<int>(GetMenuItems().size());
+SubmenuView::MenuItems SubmenuView::GetMenuItems() const {
+  MenuItems menu_items;
+  for (View* child : children()) {
+    if (child->id() == MenuItemView::kMenuItemViewID)
+      menu_items.push_back(static_cast<MenuItemView*>(child));
+  }
+  return menu_items;
 }
 
 MenuItemView* SubmenuView::GetMenuItemAt(int index) {
@@ -270,21 +273,19 @@ int SubmenuView::OnPerformDrop(const ui::DropTargetEvent& event) {
 
 bool SubmenuView::OnMouseWheel(const ui::MouseWheelEvent& e) {
   gfx::Rect vis_bounds = GetVisibleBounds();
-  int menu_item_count = GetMenuItemCount();
-  if (vis_bounds.height() == height() || !menu_item_count) {
+  const auto menu_items = GetMenuItems();
+  if (vis_bounds.height() == height() || menu_items.empty()) {
     // All menu items are visible, nothing to scroll.
     return true;
   }
 
-  // Find the index of the first menu item whose y-coordinate is >= visible
-  // y-coordinate.
-  int i = 0;
-  while ((i < menu_item_count) && (GetMenuItemAt(i)->y() < vis_bounds.y()))
-    ++i;
-  if (i == menu_item_count)
+  const auto starts_above_vis_bounds = [&vis_bounds](const MenuItemView* item) {
+    return item->y() < vis_bounds.y();
+  };
+  auto i = std::find_if_not(menu_items.cbegin(), menu_items.cend(),
+                            starts_above_vis_bounds);
+  if (i == menu_items.cend())
     return true;
-  int first_vis_index = std::max(0,
-      (GetMenuItemAt(i)->y() == vis_bounds.y()) ? i : i - 1);
 
   // If the first item isn't entirely visible, make it visible, otherwise make
   // the next/previous one entirely visible. If enough wasn't scrolled to show
@@ -293,21 +294,28 @@ bool SubmenuView::OnMouseWheel(const ui::MouseWheelEvent& e) {
   int delta = abs(e.y_offset() / ui::MouseWheelEvent::kWheelDelta);
   if (delta == 0)
     return OnScroll(0, e.y_offset());
+
+  const auto scrolled_to_top = [&vis_bounds](const MenuItemView* item) {
+    return item->y() == vis_bounds.y();
+  };
+  if (i != menu_items.cbegin() && !scrolled_to_top(*i))
+    --i;
   for (bool scroll_up = (e.y_offset() > 0); delta != 0; --delta) {
     int scroll_target;
     if (scroll_up) {
-      if (GetMenuItemAt(first_vis_index)->y() == vis_bounds.y()) {
-        if (first_vis_index == 0)
+      if (scrolled_to_top(*i)) {
+        if (i == menu_items.cbegin())
           break;
-        first_vis_index--;
+        --i;
       }
-      scroll_target = GetMenuItemAt(first_vis_index)->y();
+      scroll_target = (*i)->y();
     } else {
-      if (first_vis_index + 1 == menu_item_count)
+      const auto next_iter = std::next(i);
+      if (next_iter == menu_items.cend())
         break;
-      scroll_target = GetMenuItemAt(first_vis_index + 1)->y();
-      if (GetMenuItemAt(first_vis_index)->y() == vis_bounds.y())
-        first_vis_index++;
+      scroll_target = (*next_iter)->y();
+      if (scrolled_to_top(*i))
+        i = next_iter;
     }
     ScrollRectToVisible(gfx::Rect(gfx::Point(0, scroll_target),
                                   vis_bounds.size()));
@@ -348,7 +356,7 @@ void SubmenuView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 int SubmenuView::GetRowCount() {
-  return GetMenuItemCount();
+  return static_cast<int>(GetMenuItems().size());
 }
 
 int SubmenuView::GetSelectedRow() {
@@ -482,15 +490,6 @@ const char* SubmenuView::GetClassName() const {
 
 void SubmenuView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   SchedulePaint();
-}
-
-SubmenuView::MenuItems SubmenuView::GetMenuItems() const {
-  MenuItems menu_items;
-  for (View* child : children()) {
-    if (child->id() == MenuItemView::kMenuItemViewID)
-      menu_items.push_back(static_cast<MenuItemView*>(child));
-  }
-  return menu_items;
 }
 
 void SubmenuView::SchedulePaintForDropIndicator(

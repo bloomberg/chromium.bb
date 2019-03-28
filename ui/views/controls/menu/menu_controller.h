@@ -606,6 +606,11 @@ class VIEWS_EXPORT MenuController
   void SetInitialHotTrackedView(MenuItemView* item,
                                 SelectionIncrementDirectionType direction);
 
+  // Sets hot-tracked state to the next focusable element after |item| in
+  // |direction|.
+  void SetNextHotTrackedView(MenuItemView* item,
+                             SelectionIncrementDirectionType direction);
+
   // Updates the current |hot_button_| and its hot tracked state.
   void SetHotTrackedButton(Button* hot_button);
 
