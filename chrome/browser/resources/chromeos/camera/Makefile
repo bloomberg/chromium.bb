@@ -115,7 +115,8 @@ RESOURCES = \
 	src/js/main.js \
 	src/js/metrics.js \
 	src/js/models/gallery.js \
-	src/js/models/file_system.js \
+	src/js/models/filenamer.js \
+	src/js/models/filesystem.js \
 	src/js/nav.js \
 	src/js/scrollbar.js \
 	src/js/sound.js \

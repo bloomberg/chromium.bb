@@ -117,7 +117,8 @@ copy("chrome_camera_app_js") {
 
 copy("chrome_camera_app_js_models") {
   sources = [
-    "src/js/models/file_system.js",
+    "src/js/models/filenamer.js",
+    "src/js/models/filesystem.js",
     "src/js/models/gallery.js",
   ]
 

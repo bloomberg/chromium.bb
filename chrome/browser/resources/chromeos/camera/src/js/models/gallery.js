@@ -288,24 +288,30 @@ cca.models.Gallery.prototype.wrapPicture_ = function(
  * Saves a picture that will also be added to the pictures' model.
  * @param {Blob} blob Data of the picture to be added.
  * @param {boolean} isMotionPicture Picture to be added is a video.
+ * @param {string} filename Filename of picture to be added.
  * @return {!Promise} Promise for the operation.
  */
-cca.models.Gallery.prototype.savePicture = function(blob, isMotionPicture) {
+cca.models.Gallery.prototype.savePicture = function(
+    blob, isMotionPicture, filename) {
   // TODO(yuli): models.Gallery listens to models.FileSystem's file-added event
   // and then add a new picture into the model.
   var saved = new Promise((resolve) => {
-    if (isMotionPicture) {
-      resolve(blob);
-    } else {
-      // Ignore errors since it is better to save something than nothing.
-      // TODO(yuli): Support showing images by EXIF orientation instead.
-      cca.util.orientPhoto(blob, resolve, () => resolve(blob));
-    }
-  }).then((blob) => {
-    return cca.models.FileSystem.savePicture(isMotionPicture, blob);
-  }).then((pictureEntry) => {
-    return this.wrapPicture_(pictureEntry);
-  });
+                if (isMotionPicture) {
+                  resolve(blob);
+                } else {
+                  // Ignore errors since it is better to save something than
+                  // nothing.
+                  // TODO(yuli): Support showing images by EXIF orientation
+                  // instead.
+                  cca.util.orientPhoto(blob, resolve, () => resolve(blob));
+                }
+              })
+                  .then((blob) => {
+                    return cca.models.FileSystem.savePicture(blob, filename);
+                  })
+                  .then((pictureEntry) => {
+                    return this.wrapPicture_(pictureEntry);
+                  });
 
   return Promise.all([this.loaded_, saved]).then(([pictures, picture]) => {
     // Insert the picture into the sorted pictures' model.

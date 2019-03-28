@@ -56,12 +56,12 @@ cca.views.Camera = function(model) {
    * @private
    */
   this.modes_ = new cca.views.camera.Modes(
-      this.stop_.bind(this), async (blob, isMotionPicture) => {
+      this.stop_.bind(this), async (blob, isMotionPicture, filename) => {
         if (blob) {
           cca.metrics.log(
               cca.metrics.Type.CAPTURE, this.facingMode_, blob.mins);
           try {
-            await this.model_.savePicture(blob, isMotionPicture);
+            await this.model_.savePicture(blob, isMotionPicture, filename);
           } catch (e) {
             cca.toast.show('error_msg_save_file_failed');
             throw e;

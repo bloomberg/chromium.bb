@@ -22,8 +22,8 @@ cca.views.camera = cca.views.camera || {};
 /**
  * Mode controller managing capture sequence of different camera mode.
  * @param {function()} doSwitchMode Callback to trigger mode switching.
- * @param {function(?Blob, boolean): Promise} doSavePicture Callback for saving
- *     picture.
+ * @param {function(?Blob, boolean, string): Promise} doSavePicture Callback for
+ *     saving picture.
  * @constructor
  */
 cca.views.camera.Modes = function(doSwitchMode, doSavePicture) {
@@ -35,7 +35,7 @@ cca.views.camera.Modes = function(doSwitchMode, doSavePicture) {
 
   /**
    * Callback for saving picture.
-   * @type {function(?Blob, boolean): Promise}
+   * @type {function(?Blob, boolean, string): Promise}
    * @private
    */
   this.doSavePicture_ = doSavePicture;
@@ -109,7 +109,7 @@ cca.views.camera.Modes.prototype.update = async function(stream) {
 /**
  * Base class for controlling capture sequence in different camera modes.
  * @param {MediaStream} stream
- * @param {function(?Blob, boolean): Promise} doSavePicture
+ * @param {function(?Blob, boolean, string): Promise} doSavePicture
  * @constructor
  */
 cca.views.camera.Mode = function(stream, doSavePicture) {
@@ -129,7 +129,7 @@ cca.views.camera.Mode = function(stream, doSavePicture) {
 
   /**
    * Callback for saving picture.
-   * @type {function(?Blob, boolean): Promise}
+   * @type {function(?Blob, boolean, string): Promise}
    * @protected
    */
   this.doSavePicture_ = doSavePicture;
@@ -172,7 +172,7 @@ cca.views.camera.Mode.prototype.stop_ = function() {};
 /**
  * Video mode capture controller.
  * @param {MediaStream} stream
- * @param {function(?Blob, boolean): Promise} doSavePicture
+ * @param {function(?Blob, boolean, string): Promise} doSavePicture
  * @constructor
  */
 cca.views.camera.Video = function(stream, doSavePicture) {
@@ -242,7 +242,8 @@ cca.views.camera.Video.prototype.start_ = async function() {
   }
   cca.sound.play('#sound-rec-end');
 
-  await this.doSavePicture_(blob, true);
+  await this.doSavePicture_(
+      blob, true, (new cca.models.Filenamer()).newVideoName());
 };
 
 /**
@@ -314,7 +315,7 @@ cca.views.camera.Video.prototype.createVideoBlob_ = function() {
 /**
  * Photo mode capture controller.
  * @param {MediaStream} stream
- * @param {function(?Blob, boolean): Promise} doSavePicture
+ * @param {function(?Blob, boolean, string): Promise} doSavePicture
  * @constructor
  */
 cca.views.camera.Photo = function(stream, doSavePicture) {
@@ -353,7 +354,8 @@ cca.views.camera.Photo.prototype.start_ = async function() {
     throw e;
   }
   cca.sound.play('#sound-shutter');
-  await this.doSavePicture_(blob, false);
+  await this.doSavePicture_(
+      blob, false, (new cca.models.Filenamer()).newImageName());
 };
 
 /**
@@ -376,7 +378,7 @@ cca.views.camera.Photo.prototype.createPhotoBlob_ = async function() {
 /**
  * Square mode capture controller.
  * @param {MediaStream} stream
- * @param {function(?Blob, boolean): Promise} doSavePicture
+ * @param {function(?Blob, boolean, string): Promise} doSavePicture
  * @constructor
  */
 cca.views.camera.Square = function(stream, doSavePicture) {
@@ -384,7 +386,7 @@ cca.views.camera.Square = function(stream, doSavePicture) {
 
   /**
    * Picture saving callback from parent.
-   * @type {function(?Blob, boolean): Promise}
+   * @type {function(?Blob, boolean, string): Promise}
    * @private
    */
   this.doAscentSave_ = this.doSavePicture_;
