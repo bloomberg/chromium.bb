@@ -1085,6 +1085,10 @@ void PaymentRequest::OnUpdatePaymentDetailsFailure(const String& error) {
   ClearResolversAndCloseMojoConnection();
 }
 
+bool PaymentRequest::IsInteractive() const {
+  return !!GetPendingAcceptPromiseResolver();
+}
+
 void PaymentRequest::Trace(blink::Visitor* visitor) {
   visitor->Trace(options_);
   visitor->Trace(shipping_address_);
@@ -1256,7 +1260,7 @@ void PaymentRequest::OnPayerDetailChange(
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
       GetExecutionContext(), event_type_names::kPayerdetailchange);
   event->SetTarget(payment_response_);
-  event->SetPaymentDetailsUpdater(this);
+  event->SetPaymentRequest(this);
   payment_response_->UpdatePayerDetail(std::move(detail));
   payment_response_->DispatchEvent(*event);
   if (!event->is_waiting_for_update()) {
@@ -1540,7 +1544,7 @@ ScriptPromiseResolver* PaymentRequest::GetPendingAcceptPromiseResolver() const {
 void PaymentRequest::DispatchPaymentRequestUpdateEvent(
     PaymentRequestUpdateEvent* event) {
   event->SetTarget(this);
-  event->SetPaymentDetailsUpdater(this);
+  event->SetPaymentRequest(this);
   DispatchEvent(*event);
   if (!event->is_waiting_for_update()) {
     // DispatchEvent runs synchronously. The method is_waiting_for_update()

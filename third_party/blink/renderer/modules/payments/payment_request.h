@@ -18,8 +18,8 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/payments/payment_method_data.h"
 #include "third_party/blink/renderer/modules/payments/payment_options.h"
+#include "third_party/blink/renderer/modules/payments/payment_request_delegate.h"
 #include "third_party/blink/renderer/modules/payments/payment_state_resolver.h"
-#include "third_party/blink/renderer/modules/payments/payment_updater.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -42,7 +42,7 @@ class MODULES_EXPORT PaymentRequest final
     : public EventTargetWithInlineData,
       public payments::mojom::blink::PaymentRequestClient,
       public PaymentStateResolver,
-      public PaymentUpdater,
+      public PaymentRequestDelegate,
       public ContextLifecycleObserver,
       public ActiveScriptWrappable<PaymentRequest> {
   DEFINE_WRAPPERTYPEINFO();
@@ -93,9 +93,10 @@ class MODULES_EXPORT PaymentRequest final
   ScriptPromise Complete(ScriptState*, PaymentComplete result) override;
   ScriptPromise Retry(ScriptState*, const PaymentValidationErrors*) override;
 
-  // PaymentUpdater:
+  // PaymentRequestDelegate:
   void OnUpdatePaymentDetails(const ScriptValue& details_script_value) override;
   void OnUpdatePaymentDetailsFailure(const String& error) override;
+  bool IsInteractive() const override;
 
   void Trace(blink::Visitor*) override;
 
