@@ -279,7 +279,7 @@ void AutofillControllerTest::SetUp() {
                                              passwordStore:NULL];
 
   [accessory_mediator_ injectWebState:web_state()];
-  [accessory_mediator_ injectProviders:@[ suggestion_controller_ ]];
+  [accessory_mediator_ injectProvider:suggestion_controller_];
   auto suggestionManager = base::mac::ObjCCastStrict<JsSuggestionManager>(
       [web_state()->GetJSInjectionReceiver()
           instanceOfClass:[JsSuggestionManager class]]);
