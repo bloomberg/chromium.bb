@@ -600,8 +600,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Turn on accessibility testing. The given callback will be run
   // every time an accessibility notification is received from the
-  // renderer process, and the accessibility tree it sent can be
-  // retrieved using GetAXTreeForTesting().
+  // renderer process.
   void SetAccessibilityCallbackForTesting(
       const AccessibilityCallbackForTesting& callback);
 
@@ -617,11 +616,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Send a message to the render process to change text track style settings.
   void SetTextTrackSettings(const FrameMsg_TextTrackSettings_Params& params);
-
-  // Returns a snapshot of the accessibility tree received from the
-  // renderer as of the last time an accessibility notification was
-  // received.
-  const ui::AXTree* GetAXTreeForTesting();
 
   // Access the BrowserAccessibilityManager if it already exists.
   BrowserAccessibilityManager* browser_accessibility_manager() const {
@@ -1739,8 +1733,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Callback when an event is received, for testing.
   AccessibilityCallbackForTesting accessibility_testing_callback_;
-  // The most recently received accessibility tree - for testing only.
-  std::unique_ptr<ui::AXTree> ax_tree_for_testing_;
   // Flag to not create a BrowserAccessibilityManager, for testing. If one
   // already exists it will still be used.
   bool no_create_browser_accessibility_manager_for_testing_;

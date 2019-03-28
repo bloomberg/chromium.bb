@@ -114,10 +114,11 @@ void AccessibilityNotificationWaiter::WaitForNotificationWithTimeout(
 
 const ui::AXTree& AccessibilityNotificationWaiter::GetAXTree() const {
   static base::NoDestructor<ui::AXTree> empty_tree;
-  RenderFrameHostImpl* main_frame =
-      static_cast<RenderFrameHostImpl*>(web_contents()->GetMainFrame());
-  const ui::AXTree* tree = main_frame->GetAXTreeForTesting();
-  return tree ? *tree : *empty_tree;
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents());
+  BrowserAccessibilityManager* manager =
+      web_contents_impl->GetRootBrowserAccessibilityManager();
+  return manager && manager->ax_tree() ? *manager->ax_tree() : *empty_tree;
 }
 
 void AccessibilityNotificationWaiter::BindOnAccessibilityEvent(

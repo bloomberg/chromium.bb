@@ -3200,23 +3200,6 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
 
     // For testing only.
     if (!accessibility_testing_callback_.is_null()) {
-      // Apply tree updates to test tree.
-      for (size_t i = 0; i < details.updates.size(); i++) {
-        if (!ax_tree_for_testing_) {
-          if (browser_accessibility_manager_) {
-            ax_tree_for_testing_.reset(new ui::AXTree(
-                browser_accessibility_manager_->SnapshotAXTreeForTesting()));
-          } else {
-            ax_tree_for_testing_.reset(new ui::AXTree());
-            CHECK(ax_tree_for_testing_->Unserialize(details.updates[i]))
-                << ax_tree_for_testing_->error();
-          }
-        } else {
-          CHECK(ax_tree_for_testing_->Unserialize(details.updates[i]))
-              << ax_tree_for_testing_->error();
-        }
-      }
-
       if (details.events.empty()) {
         // Objects were marked dirty but no events were provided.
         // The callback must still run, otherwise dump event tests can hang.
@@ -5247,10 +5230,6 @@ void RenderFrameHostImpl::SetTextTrackSettings(
     const FrameMsg_TextTrackSettings_Params& params) {
   DCHECK(!GetParent());
   Send(new FrameMsg_SetTextTrackSettings(routing_id_, params));
-}
-
-const ui::AXTree* RenderFrameHostImpl::GetAXTreeForTesting() {
-  return ax_tree_for_testing_.get();
 }
 
 BrowserAccessibilityManager*
