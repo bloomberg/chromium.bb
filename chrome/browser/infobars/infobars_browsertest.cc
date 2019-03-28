@@ -300,7 +300,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
           GetInfoBarService(), nullptr,
           std::make_unique<PluginMetadata>(
               "test-plugin", base::ASCIIToUTF16("Test Plugin"), true, GURL(),
-              GURL(), base::ASCIIToUTF16("Test"), std::string()));
+              GURL(), base::ASCIIToUTF16("Test"), std::string(), false));
       break;
 
     case IBD::RELOAD_PLUGIN_INFOBAR_DELEGATE:

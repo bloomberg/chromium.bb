@@ -416,9 +416,12 @@ void PluginInfoHostImpl::ComponentPluginLookupDone(
       output->status = chrome::mojom::PluginStatus::kRestartRequired;
     }
 #endif
+    // Component Updater wouldn't provide a deprecated plugin.
+    bool plugin_is_deprecated = false;
     plugin_metadata = std::make_unique<PluginMetadata>(
         cus_plugin_info->id, cus_plugin_info->name, false, GURL(), GURL(),
-        base::ASCIIToUTF16(cus_plugin_info->id), std::string());
+        base::ASCIIToUTF16(cus_plugin_info->id), std::string(),
+        plugin_is_deprecated);
   }
   GetPluginInfoFinish(params, std::move(output), std::move(callback),
                       std::move(plugin_metadata));
