@@ -242,10 +242,6 @@ namespace {
 
 class EmptyEventListener final : public NativeEventListener {
  public:
-  static EmptyEventListener* Create() {
-    return MakeGarbageCollected<EmptyEventListener>();
-  }
-
   void Invoke(ExecutionContext* execution_context, Event*) override {}
 };
 
@@ -1194,7 +1190,8 @@ void WebViewImpl::EnablePopupMouseWheelEventListener(
   DCHECK(document);
   // We register an empty event listener, EmptyEventListener, so that mouse
   // wheel events get sent to the WebView.
-  popup_mouse_wheel_event_listener_ = EmptyEventListener::Create();
+  popup_mouse_wheel_event_listener_ =
+      MakeGarbageCollected<EmptyEventListener>();
   document->addEventListener(event_type_names::kMousewheel,
                              popup_mouse_wheel_event_listener_, false);
   local_root_with_empty_mouse_wheel_listener_ = local_root;

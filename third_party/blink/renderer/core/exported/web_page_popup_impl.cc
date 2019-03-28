@@ -71,10 +71,6 @@ namespace blink {
 
 class PagePopupChromeClient final : public EmptyChromeClient {
  public:
-  static PagePopupChromeClient* Create(WebPagePopupImpl* popup) {
-    return MakeGarbageCollected<PagePopupChromeClient>(popup);
-  }
-
   explicit PagePopupChromeClient(WebPagePopupImpl* popup) : popup_(popup) {}
 
   void SetWindowRect(const IntRect& rect, LocalFrame&) override {
@@ -270,7 +266,7 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
 
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
-  chrome_client_ = PagePopupChromeClient::Create(this);
+  chrome_client_ = MakeGarbageCollected<PagePopupChromeClient>(this);
   page_clients.chrome_client = chrome_client_.Get();
 
   Settings& main_settings = web_view_->GetPage()->GetSettings();

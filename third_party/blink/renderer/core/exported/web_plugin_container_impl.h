@@ -76,10 +76,6 @@ class CORE_EXPORT WebPluginContainerImpl final
   USING_PRE_FINALIZER(WebPluginContainerImpl, PreFinalize);
 
  public:
-  static WebPluginContainerImpl* Create(HTMLPlugInElement& element,
-                                        WebPlugin* web_plugin) {
-    return MakeGarbageCollected<WebPluginContainerImpl>(element, web_plugin);
-  }
   // Check if plugins support a given command |name|.
   static bool SupportsCommand(const WebString& name);
 
