@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/site_details.h"
+#include "chrome/browser/site_isolation/site_details.h"
 
 #include <stddef.h>
 #include <stdint.h>

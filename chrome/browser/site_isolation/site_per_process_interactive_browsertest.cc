@@ -57,7 +57,7 @@
 namespace autofill {
 class AutofillPopupDelegate;
 struct Suggestion;
-}
+}  // namespace autofill
 
 namespace {
 
@@ -161,8 +161,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest, DocumentHasFocus) {
   auto document_has_focus = [](content::RenderFrameHost* rfh) -> bool {
     bool has_focus = false;
     EXPECT_TRUE(ExecuteScriptAndExtractBool(
-        rfh,
-        "window.domAutomationController.send(document.hasFocus())",
+        rfh, "window.domAutomationController.send(document.hasFocus())",
         &has_focus));
     return has_focus;
   };
@@ -611,8 +610,8 @@ void AddFullscreenChangeListener(content::RenderFrameHost* frame,
 void AddResizeListener(content::RenderFrameHost* frame,
                        const gfx::Size& expected_size) {
   std::string script =
-      base::StringPrintf("addResizeListener(%d, %d);",
-                         expected_size.width(), expected_size.height());
+      base::StringPrintf("addResizeListener(%d, %d);", expected_size.width(),
+                         expected_size.height());
   EXPECT_TRUE(ExecuteScript(frame, script));
 }
 
@@ -696,9 +695,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 
   // Verify that the browser has entered fullscreen for the current tab.
   EXPECT_TRUE(browser()->window()->IsFullscreen());
-  EXPECT_TRUE(browser()->exclusive_access_manager()
-                       ->fullscreen_controller()
-                       ->IsFullscreenForTabOrPending(web_contents));
+  EXPECT_TRUE(browser()
+                  ->exclusive_access_manager()
+                  ->fullscreen_controller()
+                  ->IsFullscreenForTabOrPending(web_contents));
 
   // Verify that the <div> has fullscreen style (:-webkit-full-screen) in the
   // subframe.
@@ -795,9 +795,10 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
 
   // Verify that the browser has entered fullscreen for the current tab.
   EXPECT_TRUE(browser()->window()->IsFullscreen());
-  EXPECT_TRUE(browser()->exclusive_access_manager()
-                       ->fullscreen_controller()
-                       ->IsFullscreenForTabOrPending(web_contents));
+  EXPECT_TRUE(browser()
+                  ->exclusive_access_manager()
+                  ->fullscreen_controller()
+                  ->IsFullscreenForTabOrPending(web_contents));
 
   // Verify that the <div> has fullscreen style in the bottom frame, and that
   // the proper <iframe> elements have fullscreen style in its ancestor frames.
@@ -958,9 +959,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 
   // Verify that the browser has entered fullscreen for the current tab.
   EXPECT_TRUE(browser()->window()->IsFullscreen());
-  EXPECT_TRUE(browser()->exclusive_access_manager()
-                       ->fullscreen_controller()
-                       ->IsFullscreenForTabOrPending(web_contents));
+  EXPECT_TRUE(browser()
+                  ->exclusive_access_manager()
+                  ->fullscreen_controller()
+                  ->IsFullscreenForTabOrPending(web_contents));
 
   // Check document.webkitFullscreenElement.  It should point to corresponding
   // <iframe> element IDs on |c_middle|'s ancestor chain, and it should be null
