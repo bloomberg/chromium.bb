@@ -219,7 +219,7 @@ class PasswordControllerTest : public ChromeWebTest {
                                            personalDataManager:NULL
                                                  passwordStore:NULL];
       [accessoryMediator_ injectWebState:web_state()];
-      [accessoryMediator_ injectProviders:@[ suggestionController_ ]];
+      [accessoryMediator_ injectProvider:suggestionController_];
     }
   }
 
