@@ -726,9 +726,17 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
   }
 
   // Do not snap the window if the activation change is caused by dragging a
-  // window, regardless of tab drag or window drag.
-  if (wm::GetWindowState(gained_active)->is_dragged())
+  // window, or by dragging a tab. Note the two values WindowState::is_dragged()
+  // and IsDraggingTabs() might not be exactly the same under certain
+  // circumstance, e.g., when a tab is dragged out from a browser window, a new
+  // browser window will be created for the dragged tab and then be activated,
+  // and at that time, IsDraggingTabs() is true, but WindowState::is_dragged()
+  // is still false. And later after the window drag starts,
+  // WindowState::is_dragged() will then be true.
+  if (wm::GetWindowState(gained_active)->is_dragged() ||
+      wm::IsDraggingTabs(gained_active)) {
     return;
+  }
 
   // Only windows in MRU list can be snapped.
   if (!base::ContainsValue(
