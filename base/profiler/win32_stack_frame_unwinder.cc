@@ -78,17 +78,7 @@ Win32StackFrameUnwinder::Win32StackFrameUnwinder()
 
 Win32StackFrameUnwinder::~Win32StackFrameUnwinder() {}
 
-bool Win32StackFrameUnwinder::TryUnwind(CONTEXT* context,
-                                        const ModuleCache::Module* module) {
-  bool result =
-      TryUnwindImpl(unwind_functions_.get(), at_top_frame_, context, module);
-  at_top_frame_ = false;
-  return result;
-}
-
-// static
-bool Win32StackFrameUnwinder::TryUnwindImpl(
-    UnwindFunctions* unwind_functions,
+bool Win32StackFrameUnwinder::TryUnwind(
     bool at_top_frame,
     CONTEXT* context,
     // The module parameter, while not directly used, is still passed because it
@@ -105,12 +95,12 @@ bool Win32StackFrameUnwinder::TryUnwindImpl(
   ULONG64 image_base;
   // Try to look up unwind metadata for the current function.
   PRUNTIME_FUNCTION runtime_function =
-      unwind_functions->LookupFunctionEntry(ContextPC(context), &image_base);
+      unwind_functions_->LookupFunctionEntry(ContextPC(context), &image_base);
   DCHECK_EQ(module->GetBaseAddress(), image_base);
 
   if (runtime_function) {
-    unwind_functions->VirtualUnwind(image_base, ContextPC(context),
-                                    runtime_function, context);
+    unwind_functions_->VirtualUnwind(image_base, ContextPC(context),
+                                     runtime_function, context);
     return true;
   }
 

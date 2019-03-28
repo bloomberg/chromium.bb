@@ -38,9 +38,8 @@ inline ULONG64 ContextPC(CONTEXT* context) {
 #endif
 }
 
-// Instances of this class are expected to be created and destroyed for each
-// stack unwinding. This class is not used while the target thread is suspended,
-// so may allocate from the default heap.
+// This class is not used while the target thread is suspended, so may allocate
+// from the default heap.
 class BASE_EXPORT Win32StackFrameUnwinder {
  public:
   // Interface for Win32 unwind-related functionality this class depends
@@ -69,20 +68,14 @@ class BASE_EXPORT Win32StackFrameUnwinder {
   // Attempts to unwind the frame represented by |context|, where the
   // instruction pointer is known to be in |module|. Updates |context| if
   // successful.
-  bool TryUnwind(CONTEXT* context, const ModuleCache::Module* module);
+  bool TryUnwind(bool at_top_frame,
+                 CONTEXT* context,
+                 const ModuleCache::Module* module);
 
  private:
-  static bool TryUnwindImpl(UnwindFunctions* unwind_functions,
-                            bool at_top_frame,
-                            CONTEXT* context,
-                            const ModuleCache::Module* module);
-
   // This function is for internal and test purposes only.
   Win32StackFrameUnwinder(std::unique_ptr<UnwindFunctions> unwind_functions);
   friend class Win32StackFrameUnwinderTest;
-
-  // State associated with each stack unwinding.
-  bool at_top_frame_ = true;
 
   std::unique_ptr<UnwindFunctions> unwind_functions_;
 

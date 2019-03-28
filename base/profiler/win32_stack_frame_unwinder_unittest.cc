@@ -147,15 +147,15 @@ TEST_F(Win32StackFrameUnwinderTest, FramesWithUnwindInfo) {
 
   TestModule stub_module1(kImageBaseIncrement);
   unwind_functions_->SetHasRuntimeFunction(&context);
-  EXPECT_TRUE(unwinder->TryUnwind(&context, &stub_module1));
+  EXPECT_TRUE(unwinder->TryUnwind(true, &context, &stub_module1));
 
   TestModule stub_module2(kImageBaseIncrement * 2);
   unwind_functions_->SetHasRuntimeFunction(&context);
-  EXPECT_TRUE(unwinder->TryUnwind(&context, &stub_module2));
+  EXPECT_TRUE(unwinder->TryUnwind(false, &context, &stub_module2));
 
   TestModule stub_module3(kImageBaseIncrement * 3);
   unwind_functions_->SetHasRuntimeFunction(&context);
-  EXPECT_TRUE(unwinder->TryUnwind(&context, &stub_module3));
+  EXPECT_TRUE(unwinder->TryUnwind(false, &context, &stub_module3));
 }
 
 // Checks that the CONTEXT's stack pointer gets popped when the top frame has no
@@ -167,19 +167,11 @@ TEST_F(Win32StackFrameUnwinderTest, FrameAtTopWithoutUnwindInfo) {
   DWORD64 original_rsp = reinterpret_cast<DWORD64>(&next_ip);
   context.Rsp = original_rsp;
 
-  TestModule stub_module1(kImageBaseIncrement);
+  TestModule stub_module(kImageBaseIncrement);
   unwind_functions_->SetNoRuntimeFunction(&context);
-  EXPECT_TRUE(unwinder->TryUnwind(&context, &stub_module1));
+  EXPECT_TRUE(unwinder->TryUnwind(true, &context, &stub_module));
   EXPECT_EQ(next_ip, context.Rip);
   EXPECT_EQ(original_rsp + 8, context.Rsp);
-
-  TestModule stub_module2(kImageBaseIncrement * 2);
-  unwind_functions_->SetHasRuntimeFunction(&context);
-  EXPECT_TRUE(unwinder->TryUnwind(&context, &stub_module2));
-
-  TestModule stub_module3(kImageBaseIncrement * 3);
-  unwind_functions_->SetHasRuntimeFunction(&context);
-  EXPECT_TRUE(unwinder->TryUnwind(&context, &stub_module3));
 }
 
 // Checks that a frame below the top of the stack with missing unwind info
@@ -190,13 +182,9 @@ TEST_F(Win32StackFrameUnwinderTest, FrameBelowTopWithoutUnwindInfo) {
     std::unique_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
     CONTEXT context = {0};
 
-    TestModule stub_module1(kImageBaseIncrement);
-    unwind_functions_->SetHasRuntimeFunction(&context);
-    EXPECT_TRUE(unwinder->TryUnwind(&context, &stub_module1));
-
-    TestModule stub_module2(kImageBaseIncrement * 2);
+    TestModule stub_module(kImageBaseIncrement);
     unwind_functions_->SetNoRuntimeFunction(&context);
-    EXPECT_FALSE(unwinder->TryUnwind(&context, &stub_module2));
+    EXPECT_FALSE(unwinder->TryUnwind(false, &context, &stub_module));
   }
 }
 

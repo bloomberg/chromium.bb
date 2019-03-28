@@ -562,7 +562,8 @@ std::string FormatSampleForDiagnosticOutput(const Frames& frames) {
   for (const auto& frame : frames) {
     output += StringPrintf(
         "0x%p %s\n", reinterpret_cast<const void*>(frame.instruction_pointer),
-        frame.module->GetDebugBasename().AsUTF8Unsafe().c_str());
+        frame.module ? frame.module->GetDebugBasename().AsUTF8Unsafe().c_str()
+                     : "null module");
   }
   return output;
 }
@@ -676,15 +677,27 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
 
   if (wait_until_unloaded) {
     // The stack should look like this, resulting one frame after
-    // SignalAndWaitUntilSignaled. The frame in the now-unloaded library is
-    // not recorded since we can't get module information.
+    // SignalAndWaitUntilSignaled. The frame in the now-unloaded library should
+    // have a null module.
     //
     // ... WaitableEvent and system frames ...
     // TargetThread::SignalAndWaitUntilSignaled
     // TargetThread::OtherLibraryCallback
+    // <frame in unloaded library>
+#if !defined(OS_MACOSX)
+    EXPECT_EQ(3, frames.end() - end_frame)
+        << "Stack:\n"
+        << FormatSampleForDiagnosticOutput(frames);
+    EXPECT_EQ(nullptr, frames.back().module)
+        << "Stack:\n"
+        << FormatSampleForDiagnosticOutput(frames);
+#else
+    // TODO(wittman): Fix Mac unwinding to match the expected behavior
+    // above. Currently it doesn't produce a frame for the unloaded library.
     EXPECT_EQ(2, frames.end() - end_frame)
         << "Stack:\n"
         << FormatSampleForDiagnosticOutput(frames);
+#endif
   } else {
     // We didn't wait for the asynchronous unloading to complete, so the results
     // are non-deterministic: if the library finished unloading we should have
