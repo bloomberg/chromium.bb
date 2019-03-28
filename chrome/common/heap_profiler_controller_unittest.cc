@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
+#include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
 #include "components/metrics/call_stack_profile_builder.h"
@@ -27,7 +27,7 @@ class HeapProfilerControllerTest : public testing::Test {
                             base::Unretained(this)));
     controller_ = std::make_unique<HeapProfilerController>();
     controller_->SetTaskRunnerForTest(std::move(task_runner));
-    controller_->StartIfEnabled();
+    controller_->Start();
   }
 
   void CheckProfile(base::TimeTicks time, metrics::SampledProfile profile) {
@@ -78,8 +78,10 @@ TEST_F(HeapProfilerControllerTest, ProfileCollectionsScheduler) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   base::TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner.get());
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitchASCII(switches::kSamplingHeapProfiler, "1");
+  base::SamplingHeapProfiler::Init();
+  auto* profiler = base::SamplingHeapProfiler::Get();
+  profiler->SetSamplingInterval(1024);
+  profiler->Start();
 
   base::PoissonAllocationSampler::Init();
   StartController(task_runner);

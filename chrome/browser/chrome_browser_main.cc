@@ -835,7 +835,7 @@ void ChromeBrowserMainParts::PostMainMessageLoopStart() {
   ui_thread_profiler_->SetMainThreadTaskRunner(
       base::ThreadTaskRunnerHandle::Get());
 
-  heap_profiler_controller_->StartIfEnabled();
+  heap_profiler_controller_->Start();
 
   system_monitor_ = performance_monitor::SystemMonitor::Create();
 
