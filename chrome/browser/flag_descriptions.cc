@@ -2412,12 +2412,6 @@ const char kInterestFeedContentSuggestionsDescription[] =
 const char kInterestFeedContentSuggestionsName[] =
     "Interest Feed Content Suggestions";
 
-const char kKeepPrefetchedContentSuggestionsName[] =
-    "Keep prefetched content suggestions";
-const char kKeepPrefetchedContentSuggestionsDescription[] =
-    "If enabled, some of prefetched content suggestions are not replaced by "
-    "the new fetched suggestions.";
-
 const char kLanguagesPreferenceName[] = "Language Settings";
 const char kLanguagesPreferenceDescription[] =
     "Enable this option for Language Settings feature on Android.";

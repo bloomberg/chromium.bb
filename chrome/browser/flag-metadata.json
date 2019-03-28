@@ -2196,11 +2196,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "keep-prefetched-content-suggestions",
-    "owners": [ "fgorski" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "language-settings",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

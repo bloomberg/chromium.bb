@@ -2071,11 +2071,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableAudioForDesktopShareDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kDisableAudioSupportForDesktopShare)},
 #if defined(OS_ANDROID)
-    {"keep-prefetched-content-suggestions",
-     flag_descriptions::kKeepPrefetchedContentSuggestionsName,
-     flag_descriptions::kKeepPrefetchedContentSuggestionsDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(ntp_snippets::kKeepPrefetchedContentSuggestions)},
     {"content-suggestions-debug-log",
      flag_descriptions::kContentSuggestionsDebugLogName,
      flag_descriptions::kContentSuggestionsDebugLogDescription, kOsAndroid,
