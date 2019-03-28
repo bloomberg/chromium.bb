@@ -427,7 +427,6 @@ bool AccessibleNode::GetPropertyOrARIAAttribute(
   if (value.IsEmpty())
     return false;
 
-  value.SimplifyWhiteSpace();
   Vector<String> ids;
   value.Split(' ', ids);
   if (ids.IsEmpty())
