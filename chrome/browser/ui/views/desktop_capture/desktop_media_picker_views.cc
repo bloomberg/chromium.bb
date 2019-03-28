@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -40,7 +41,7 @@ using content::DesktopMediaID;
 
 namespace {
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && defined(USE_AURA)
 DesktopMediaID::Id AcceleratedWidgetToDesktopMediaId(
     gfx::AcceleratedWidget accelerated_widget) {
 #if defined(OS_WIN)
@@ -215,24 +216,40 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     widget =
         constrained_window::ShowWebModalDialogViews(this, params.web_contents);
   } else {
+#if defined(OS_MACOSX)
+    // On Mac, MODAL_TYPE_CHILD with a null parent isn't allowed - fall back to
+    // MODAL_TYPE_WINDOW.
+    modality_ = ui::MODAL_TYPE_WINDOW;
+#endif
     widget = DialogDelegate::CreateDialogWidget(this, params.context, nullptr);
     widget->Show();
   }
   chrome::RecordDialogCreation(chrome::DialogIdentifier::DESKTOP_MEDIA_PICKER);
 
-  // If the picker is not modal to the calling web contents then it is displayed
-  // in its own top-level window, so in that case it needs to be filtered out of
-  // the list of top-level windows available for capture, and to achieve that
-  // the Id is passed to DesktopMediaList.
+#if defined(OS_MACOSX)
+  // On Mac, even modals are shown using separate native windows.
+  bool is_separate_native_window = true;
+#else
+  bool is_separate_native_window = !modal_dialog;
+#endif
+
+  // If the picker is a separate native window, it should not be shown in the
+  // source list, so its id is passed into NativeDesktopMediaList to be ignored.
   DesktopMediaID dialog_window_id;
-  if (!modal_dialog) {
+  if (is_separate_native_window) {
     dialog_window_id = DesktopMediaID::RegisterNativeWindow(
         DesktopMediaID::TYPE_WINDOW, widget->GetNativeWindow());
 
+#if !defined(OS_CHROMEOS) && defined(USE_AURA)
     // Set native window ID if the windows is outside Ash.
-#if !defined(OS_CHROMEOS)
     dialog_window_id.id = AcceleratedWidgetToDesktopMediaId(
         widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+#elif defined(OS_MACOSX)
+    // On Mac, the window_id in DesktopMediaID is the same as the actual native
+    // window ID. Note that assuming this is a bit of a layering violation; the
+    // fact that this code makes that assumption is documented at the code that
+    // causes it to hold, so hopefully nobody changes that :)
+    dialog_window_id.id = dialog_window_id.window_id;
 #endif
   }
 

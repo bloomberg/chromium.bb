@@ -1177,6 +1177,7 @@ jumbo_source_set("browser") {
     "media/desktop_media_window_registry.cc",
     "media/desktop_media_window_registry.h",
     "media/desktop_media_window_registry_aura.cc",
+    "media/desktop_media_window_registry_mac.mm",
     "media/flinging_renderer.cc",
     "media/flinging_renderer.h",
     "media/forwarding_audio_stream_factory.cc",
