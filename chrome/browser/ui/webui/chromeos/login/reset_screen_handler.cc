@@ -52,7 +52,6 @@ void ResetScreenHandler::Hide() {
 
 void ResetScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
-  builder->Add("resetScreenTitle", IDS_RESET_SCREEN_TITLE);
   builder->Add("resetScreenAccessibleTitle", IDS_RESET_SCREEN_TITLE);
   builder->Add("resetScreenIconTitle", IDS_RESET_SCREEN_ICON_TITLE);
   builder->Add("resetScreenIllustrationTitle",

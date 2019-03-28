@@ -67,7 +67,6 @@ void KioskEnableScreenHandler::SetDelegate(Delegate* delegate) {
 
 void KioskEnableScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
-  builder->Add("kioskEnableTitle", IDS_KIOSK_ENABLE_SCREEN_WARNING);
   builder->Add("kioskEnableWarningText",
                IDS_KIOSK_ENABLE_SCREEN_WARNING);
   builder->Add("kioskEnableWarningDetails",

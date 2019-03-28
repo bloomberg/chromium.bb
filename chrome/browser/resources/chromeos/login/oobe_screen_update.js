@@ -33,14 +33,6 @@ login.createScreen('UpdateScreen', 'update', function() {
     },
 
     /**
-     * Header text of the screen.
-     * @type {string}
-     */
-    get header() {
-      return loadTimeData.getString('updateScreenTitle');
-    },
-
-    /**
      * Returns default event target element.
      * @type {Object}
      */

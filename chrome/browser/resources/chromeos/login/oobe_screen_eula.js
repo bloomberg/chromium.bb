@@ -131,14 +131,6 @@ login.createScreen('EulaScreen', 'eula', function() {
     },
 
     /**
-     * Header text of the screen.
-     * @type {string}
-     */
-    get header() {
-      return loadTimeData.getString('eulaScreenTitle');
-    },
-
-    /**
      * Returns a control which should receive an initial focus.
      */
     get defaultControl() {
