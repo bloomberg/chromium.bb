@@ -76,7 +76,7 @@ inline bool InlineLengthMayChange(const ComputedStyle& style,
                                   const NGLayoutResult& layout_result) {
   DCHECK_EQ(new_space.IsShrinkToFit(), old_space.IsShrinkToFit());
 #if DCHECK_IS_ON()
-  if (type == LengthResolveType::kContentSize && new_space.IsShrinkToFit())
+  if (type == LengthResolveType::kMainSize && new_space.IsShrinkToFit())
     DCHECK(length.IsAuto());
 #endif
 
@@ -97,7 +97,7 @@ inline bool InlineLengthMayChange(const ComputedStyle& style,
   // where we can skip relayout if the element was sized to its min-content or
   // max-content size.
   bool is_content_shrink_to_fit =
-      type == LengthResolveType::kContentSize &&
+      type == LengthResolveType::kMainSize &&
       (new_space.IsShrinkToFit() || length.IsFitContent());
 
   if (is_content_shrink_to_fit) {
@@ -156,7 +156,7 @@ bool SizeMayChange(const ComputedStyle& style,
       return true;
   } else {
     if (InlineLengthMayChange(style, style.LogicalWidth(),
-                              LengthResolveType::kContentSize, new_space,
+                              LengthResolveType::kMainSize, new_space,
                               old_space, layout_result) ||
         InlineLengthMayChange(style, style.LogicalMinWidth(),
                               LengthResolveType::kMinSize, new_space, old_space,

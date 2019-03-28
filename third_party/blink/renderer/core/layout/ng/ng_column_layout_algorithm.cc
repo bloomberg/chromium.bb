@@ -50,12 +50,12 @@ LayoutUnit ConstrainColumnBlockSize(LayoutUnit size,
       ComputeBorders(space, node) + ComputePadding(space, node.Style());
 
   const ComputedStyle& style = node.Style();
-  LayoutUnit max = ResolveBlockLength(
-      space, style, border_padding, style.LogicalMaxHeight(), size,
-      LengthResolveType::kMaxSize, LengthResolvePhase::kLayout);
-  LayoutUnit extent = ResolveBlockLength(
-      space, style, border_padding, style.LogicalHeight(), size,
-      LengthResolveType::kContentSize, LengthResolvePhase::kLayout);
+  LayoutUnit max = ResolveMaxBlockLength(space, style, border_padding,
+                                         style.LogicalMaxHeight(), size,
+                                         LengthResolvePhase::kLayout);
+  LayoutUnit extent = ResolveMainBlockLength(space, style, border_padding,
+                                             style.LogicalHeight(), size,
+                                             LengthResolvePhase::kLayout);
   if (extent != NGSizeIndefinite) {
     // A specified height/width will just constrain the maximum length.
     max = std::min(max, extent);
