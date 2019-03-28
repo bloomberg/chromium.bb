@@ -28,6 +28,13 @@ struct UrlLoadParams {
   static UrlLoadParams* InCurrentTab(const GURL& url);
 
   // Initializes a UrlLoadParams intended to open in a new page.
+  static UrlLoadParams* InNewTab(
+      const web::NavigationManager::WebLoadParams& web_params,
+      bool in_incognito,
+      bool in_background,
+      OpenPosition append_to);
+
+  // Initializes a UrlLoadParams intended to open in a new page.
   static UrlLoadParams* InNewTab(const GURL& url,
                                  const GURL& virtual_url,
                                  const web::Referrer& referrer,

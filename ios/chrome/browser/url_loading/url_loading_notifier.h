@@ -47,12 +47,14 @@ class UrlLoadingNotifier : public KeyedService {
   // The loader initiated the |url| loading successfully.
   void TabDidLoadUrl(const GURL& url, ui::PageTransition transition_type);
 
-  // The loader will load |url| in a new tab. Next state will be
-  // NewTabDidLoadUrl.
-  void NewTabWillLoadUrl(const GURL& url, bool in_incognito);
+  // The loader will load |url| in a new tab. |user_initiated| is true of the
+  // request is explicitly user initiated, and false otherwise (like the
+  // opening on an NTP on startup or requesting the help page). Next state will
+  // be NewTabDidLoadUrl.
+  void NewTabWillLoadUrl(const GURL& url, bool user_initiated);
 
   // The loader initiated the |url| loading in a new tab successfully.
-  void NewTabDidLoadUrl(const GURL& url, bool in_incognito);
+  void NewTabDidLoadUrl(const GURL& url, bool user_initiated);
 
   // The loader will switch to an existing tab with |URL| instead of loading it.
   // Next state will be: DidSwitchToTabWithUrl.

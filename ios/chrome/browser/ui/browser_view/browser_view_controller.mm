@@ -254,11 +254,6 @@ void Record(ContextMenuHistogram action, bool is_image, bool is_link) {
   }
 }
 
-bool IsHelpURL(GURL& URL) {
-  GURL helpUrl(l10n_util::GetStringUTF16(IDS_IOS_TOOLS_MENU_HELP_URL));
-  return helpUrl == URL;
-}
-
 // Histogram that tracks user actions related to the WKWebView 3D touch link
 // preview API. These values are persisted to logs. Entries should not be
 // renumbered and numeric values should never be reused.
@@ -1184,14 +1179,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         ->UpdateSnapshotWithCallback(nil);
   }
 
-  [self.tabModel
-      insertTabWithLoadParams:web_navigation_util::CreateWebLoadParams(
-                                  GURL(kChromeUINewTabURL),
-                                  ui::PAGE_TRANSITION_TYPED, nullptr)
-                       opener:nil
-                  openedByDOM:NO
-                      atIndex:self.tabModel.count
-                 inBackground:NO];
+  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+      ->Load(UrlLoadParams::InNewTab(
+          web_navigation_util::CreateWebLoadParams(
+              GURL(kChromeUINewTabURL), ui::PAGE_TRANSITION_TYPED, nullptr),
+          /* in_incognito */ self.isOffTheRecord,
+          /* in_background */ NO, kLastTab));
 }
 
 - (void)appendTabAddedCompletion:(ProceduralBlock)tabAddedCompletion {
@@ -3414,11 +3407,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       web_navigation_util::CreateWebLoadParams(
           result, ui::PAGE_TRANSITION_TYPED, &postContent);
   if (inNewTab) {
-    [self.tabModel insertTabWithLoadParams:loadParams
-                                    opener:nil
-                               openedByDOM:NO
-                                   atIndex:self.tabModel.count
-                              inBackground:NO];
+    UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+        ->Load(UrlLoadParams::InNewTab(loadParams,
+                                       /* in_incognito */ self.isOffTheRecord,
+                                       /* in_background */ NO, kLastTab));
   } else {
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
         ->Load(UrlLoadParams::InCurrentTab(loadParams));
@@ -3464,11 +3456,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
-- (void)newTabWillLoadURL:(GURL)URL inIncognito:(BOOL)inIncognito {
-  if (!IsHelpURL(URL)) {
+- (void)newTabWillLoadURL:(GURL)URL isUserInitiated:(BOOL)isUserInitiated {
+  if (isUserInitiated) {
     // Send either the "New Tab Opened" or "New Incognito Tab" opened to the
     // feature_engagement::Tracker based on |inIncognito|.
-    feature_engagement::NotifyNewTabEvent(_browserState, inIncognito);
+    feature_engagement::NotifyNewTabEvent(_browserState, self.isOffTheRecord);
   }
 }
 
@@ -4283,6 +4275,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       UrlLoadParams::InNewTab(helpUrl,
                               /* in_incognito */ NO,
                               /* in_background */ NO, kCurrentTab);
+  params->user_initiated = NO;
   UrlLoadingServiceFactory::GetForBrowserState(self.browserState)->Load(params);
 }
 

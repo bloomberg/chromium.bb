@@ -26,6 +26,22 @@ UrlLoadParams* UrlLoadParams::InCurrentTab(const GURL& url) {
   return InCurrentTab(web::NavigationManager::WebLoadParams(url));
 }
 
+UrlLoadParams* UrlLoadParams::InNewTab(
+    const web::NavigationManager::WebLoadParams& web_params,
+    bool in_incognito,
+    bool in_background,
+    OpenPosition append_to) {
+  UrlLoadParams* params = new UrlLoadParams();
+  params->disposition = in_background
+                            ? WindowOpenDisposition::NEW_BACKGROUND_TAB
+                            : WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  params->web_params = web_params;
+  params->in_incognito = in_incognito;
+  params->append_to = append_to;
+  params->user_initiated = true;
+  return params;
+}
+
 UrlLoadParams* UrlLoadParams::InNewTab(const GURL& url,
                                        const GURL& virtual_url,
                                        const web::Referrer& referrer,
@@ -105,7 +121,15 @@ UrlLoadParams* UrlLoadParams::SwitchToTab(
   return params;
 }
 
-UrlLoadParams::UrlLoadParams() : web_params(GURL()) {}
+UrlLoadParams::UrlLoadParams()
+    : web_params(GURL()),
+      disposition(WindowOpenDisposition::NEW_FOREGROUND_TAB),
+      in_incognito(false),
+      append_to(kLastTab),
+      origin_point(CGPointZero),
+      from_chrome(false),
+      user_initiated(false),
+      should_focus_omnibox(false) {}
 
 UrlLoadParams::UrlLoadParams(const UrlLoadParams& other)
     : web_params(other.web_params), disposition(other.disposition) {}
