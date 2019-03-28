@@ -64,11 +64,11 @@ class TaskTracingInfo : public trace_event::ConvertableToTraceFormat {
 void TaskTracingInfo::AppendAsTraceFormat(std::string* out) const {
   DictionaryValue dict;
 
-  dict.SetString("task_priority",
-                 base::TaskPriorityToString(task_traits_.priority()));
-  dict.SetString("execution_mode", execution_mode_);
+  dict.SetStringKey("task_priority",
+                    base::TaskPriorityToString(task_traits_.priority()));
+  dict.SetStringKey("execution_mode", execution_mode_);
   if (sequence_token_.IsValid())
-    dict.SetInteger("sequence_token", sequence_token_.ToInternalValue());
+    dict.SetIntKey("sequence_token", sequence_token_.ToInternalValue());
 
   std::string tmp;
   JSONWriter::Write(dict, &tmp);

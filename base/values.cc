@@ -381,17 +381,49 @@ bool Value::RemoveKey(StringPiece key) {
   return dict_.erase(key) != 0;
 }
 
-Value* Value::SetKey(StringPiece key, Value&& value) {
+Value* Value::SetKeyInternal(StringPiece key,
+                             std::unique_ptr<Value>&& val_ptr) {
   CHECK(is_dict());
   // NOTE: We can't use |insert_or_assign| here, as only |try_emplace| does
   // an explicit conversion from StringPiece to std::string if necessary.
-  auto val_ptr = std::make_unique<Value>(std::move(value));
   auto result = dict_.try_emplace(key, std::move(val_ptr));
   if (!result.second) {
     // val_ptr is guaranteed to be still intact at this point.
     result.first->second = std::move(val_ptr);
   }
   return result.first->second.get();
+}
+
+Value* Value::SetBoolKey(StringPiece key, bool value) {
+  return SetKeyInternal(key, std::make_unique<Value>(value));
+}
+
+Value* Value::SetIntKey(StringPiece key, int value) {
+  return SetKeyInternal(key, std::make_unique<Value>(value));
+}
+
+Value* Value::SetDoubleKey(StringPiece key, double value) {
+  return SetKeyInternal(key, std::make_unique<Value>(value));
+}
+
+Value* Value::SetStringKey(StringPiece key, StringPiece value) {
+  return SetKeyInternal(key, std::make_unique<Value>(value));
+}
+
+Value* Value::SetStringKey(StringPiece key, const char* value) {
+  return SetKeyInternal(key, std::make_unique<Value>(value));
+}
+
+Value* Value::SetStringKey(StringPiece key, std::string&& value) {
+  return SetKeyInternal(key, std::make_unique<Value>(std::move(value)));
+}
+
+Value* Value::SetStringKey(StringPiece key, StringPiece16 value) {
+  return SetKeyInternal(key, std::make_unique<Value>(value));
+}
+
+Value* Value::SetKey(StringPiece key, Value&& value) {
+  return SetKeyInternal(key, std::make_unique<Value>(std::move(value)));
 }
 
 Value* Value::SetKey(std::string&& key, Value&& value) {
@@ -403,7 +435,7 @@ Value* Value::SetKey(std::string&& key, Value&& value) {
 }
 
 Value* Value::SetKey(const char* key, Value&& value) {
-  return SetKey(StringPiece(key), std::move(value));
+  return SetKeyInternal(key, std::make_unique<Value>(std::move(value)));
 }
 
 Value* Value::FindPath(std::initializer_list<StringPiece> path) {

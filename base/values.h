@@ -222,6 +222,7 @@ class BASE_EXPORT Value {
   // value to |value|. If |key| could not be found, a new element is inserted.
   // A pointer to the modified item is returned.
   // Note: This fatally asserts if type() is not Type::DICTIONARY.
+  // Note: Prefer Set<Type>Key() for simple values.
   //
   // Example:
   //   SetKey("foo", std::move(myvalue));
@@ -230,6 +231,20 @@ class BASE_EXPORT Value {
   Value* SetKey(std::string&& key, Value&& value);
   // This overload is necessary to avoid ambiguity for const char* arguments.
   Value* SetKey(const char* key, Value&& value);
+
+  // |Set<Type>Key| looks up |key| in the underlying dictionary and associates
+  // a corresponding Value() constructed from the second parameter. Compared
+  // to SetKey(), this avoids un-necessary temporary Value() creation, as well
+  // ambiguities in the value type.
+  Value* SetBoolKey(StringPiece key, bool val);
+  Value* SetIntKey(StringPiece key, int val);
+  Value* SetDoubleKey(StringPiece key, double val);
+  Value* SetStringKey(StringPiece key, StringPiece val);
+  // NOTE: These two overloads are provided as performance / code generation
+  // optimizations.
+  Value* SetStringKey(StringPiece key, const char* val);
+  Value* SetStringKey(StringPiece key, std::string&& val);
+  Value* SetStringKey(StringPiece key, StringPiece16 val);
 
   // This attemps to remove the value associated with |key|. In case of failure,
   // e.g. the key does not exist, |false| is returned and the underlying
@@ -468,6 +483,10 @@ class BASE_EXPORT Value {
   friend class ValuesTest_SizeOfValue_Test;
   void InternalMoveConstructFrom(Value&& that);
   void InternalCleanup();
+
+  // NOTE: Using a movable reference here is done for performance (it avoids
+  // creating + moving + destroying a temporary unique ptr).
+  Value* SetKeyInternal(StringPiece key, std::unique_ptr<Value>&& val_ptr);
 
   DISALLOW_COPY_AND_ASSIGN(Value);
 };
