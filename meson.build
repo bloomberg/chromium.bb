@@ -30,7 +30,6 @@ endif
 dir_prefix = get_option('prefix')
 dir_bin = join_paths(dir_prefix, get_option('bindir'))
 dir_data = join_paths(dir_prefix, get_option('datadir'))
-dir_include = join_paths(dir_prefix, get_option('includedir'))
 dir_include_libweston = 'libweston-@0@'.format(libweston_major)
 dir_lib = join_paths(dir_prefix, get_option('libdir'))
 dir_libexec = join_paths(dir_prefix, get_option('libexecdir'))
