@@ -13,7 +13,7 @@ DisplayLockBudget::DisplayLockBudget(DisplayLockContext* context)
 bool DisplayLockBudget::MarkAncestorsDirtyForPhaseIfNeeded(Phase phase) {
   switch (phase) {
     case Phase::kStyle:
-      return context_->MarkAncestorsForStyleRecalcIfNeeded();
+      return context_->MarkForStyleRecalcIfNeeded();
     case Phase::kLayout:
       return context_->MarkAncestorsForLayoutIfNeeded();
     case Phase::kPrePaint:

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_options.h"
 #include "third_party/blink/renderer/core/display_lock/strict_yielding_display_lock_budget.h"
 #include "third_party/blink/renderer/core/display_lock/unyielding_display_lock_budget.h"
@@ -171,6 +172,7 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
     return GetResolvedPromise(script_state);
 
   update_budget_.reset();
+  is_locked_after_connect_ = element_->isConnected();
 
   // If we're already connected then we need to ensure that 1. layout is clean
   // and 2. we have removed the current painted output.
@@ -311,17 +313,26 @@ void DisplayLockContext::FinishResolver(Member<ScriptPromiseResolver>* resolver,
   *resolver = nullptr;
 }
 
-bool DisplayLockContext::ShouldStyle() const {
-  return update_forced_ || state_ > kUpdating ||
+bool DisplayLockContext::ShouldStyle(LifecycleTarget target) const {
+  return (target == kSelf && is_locked_after_connect_) || update_forced_ ||
+         state_ > kUpdating ||
          (state_ == kUpdating &&
           update_budget_->ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
 }
 
-void DisplayLockContext::DidStyle() {
+void DisplayLockContext::DidStyle(LifecycleTarget target) {
+  if (target == kSelf) {
+    if (blocked_style_traversal_type_ == kStyleUpdateSelf)
+      blocked_style_traversal_type_ = kStyleUpdateNotRequired;
+    return;
+  }
+
   if (state_ != kCommitting && state_ != kUpdating &&
       state_ != kPendingAcquire && !update_forced_) {
     return;
   }
+
+  blocked_style_traversal_type_ = kStyleUpdateNotRequired;
 
   MarkElementsForWhitespaceReattachment();
   // We must have "contain: style layout" for display locking.
@@ -443,7 +454,7 @@ DisplayLockContext::GetScopedForcedUpdate() {
   // prepaint code can reach it via dirty bits. Note that paint isn't a part of
   // this, since |update_forced_| doesn't force paint to happen. See
   // ShouldPaint().
-  MarkAncestorsForStyleRecalcIfNeeded();
+  MarkForStyleRecalcIfNeeded();
   MarkAncestorsForLayoutIfNeeded();
   MarkAncestorsForPrePaintIfNeeded();
   return ScopedForcedUpdate(this);
@@ -485,7 +496,7 @@ void DisplayLockContext::StartCommit() {
   update_budget_.reset();
 
   // We're committing without a budget, so ensure we can reach style.
-  MarkAncestorsForStyleRecalcIfNeeded();
+  MarkForStyleRecalcIfNeeded();
 
   auto* layout_object = element_->GetLayoutObject();
   // We might commit without connecting, so there is no layout object yet.
@@ -560,8 +571,24 @@ void DisplayLockContext::MarkElementsForWhitespaceReattachment() {
   whitespace_reattach_set_.clear();
 }
 
-bool DisplayLockContext::MarkAncestorsForStyleRecalcIfNeeded() {
+bool DisplayLockContext::MarkForStyleRecalcIfNeeded() {
   if (IsElementDirtyForStyleRecalc()) {
+    if (blocked_style_traversal_type_ > kStyleUpdateNotRequired) {
+      // We blocked a traversal going to the element previously.
+      // Make sure we will traverse this element and maybe its subtree if we
+      // previously blocked a style traversal that should've done that.
+      element_->SetNeedsStyleRecalc(
+          blocked_style_traversal_type_ == kStyleUpdateDescendants
+              ? kSubtreeStyleChange
+              : kLocalStyleChange,
+          StyleChangeReasonForTracing::Create(
+              style_change_reason::kDisplayLock));
+      if (blocked_style_traversal_type_ == kStyleUpdateChildren)
+        element_->SetChildNeedsStyleRecalc();
+    }
+    // Propagate to the ancestors, since the dirty bit in a locked subtree is
+    // stopped at the locked ancestor.
+    // See comment in IsElementDirtyForStyleRecalc.
     element_->MarkAncestorsWithChildNeedsStyleRecalc();
     return true;
   }
@@ -605,7 +632,15 @@ bool DisplayLockContext::MarkPaintLayerNeedsRepaint() {
 }
 
 bool DisplayLockContext::IsElementDirtyForStyleRecalc() const {
-  return element_->NeedsStyleRecalc() || element_->ChildNeedsStyleRecalc();
+  // The |element_| checks could be true even if |blocked_style_traversal_type_|
+  // is not required. The reason for this is that the
+  // blocked_style_traversal_type_ is set during the style walk that this
+  // display lock blocked. However, we could dirty element style and commit
+  // before ever having gone through the style calc that would have been
+  // blocked, meaning we never blocked style during a walk. Instead we might
+  // have not propagated the dirty bits up the tree.
+  return element_->NeedsStyleRecalc() || element_->ChildNeedsStyleRecalc() ||
+         blocked_style_traversal_type_ > kStyleUpdateNotRequired;
 }
 
 bool DisplayLockContext::IsElementDirtyForLayout() const {

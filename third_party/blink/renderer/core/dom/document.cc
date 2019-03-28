@@ -2139,7 +2139,8 @@ static void AssertLayoutTreeUpdated(Node& root) {
   while (node) {
     if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
         node->IsElementNode() &&
-        ToElement(node)->StyleRecalcBlockedByDisplayLock()) {
+        ToElement(node)->StyleRecalcBlockedByDisplayLock(
+            DisplayLockContext::kChildren)) {
       node = FlatTreeTraversal::NextSkippingChildren(*node);
       continue;
     }

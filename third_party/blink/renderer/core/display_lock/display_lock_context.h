@@ -59,6 +59,14 @@ class CORE_EXPORT DisplayLockContext final
     kPendingAcquire,
   };
 
+  // The type of style that was blocked by this display lock.
+  enum StyleType {
+    kStyleUpdateNotRequired,
+    kStyleUpdateSelf,
+    kStyleUpdateChildren,
+    kStyleUpdateDescendants
+  };
+
   // See GetScopedPendingFrameRect() for description.
   class ScopedPendingFrameRect {
     STACK_ALLOCATED();
@@ -111,9 +119,11 @@ class CORE_EXPORT DisplayLockContext final
   ScriptPromise commit(ScriptState*);
   ScriptPromise updateAndCommit(ScriptState*);
 
+  enum LifecycleTarget { kSelf, kChildren };
+
   // Lifecycle observation / state functions.
-  bool ShouldStyle() const;
-  void DidStyle();
+  bool ShouldStyle(LifecycleTarget) const;
+  void DidStyle(LifecycleTarget);
   bool ShouldLayout() const;
   void DidLayout();
   bool ShouldPrePaint() const;
@@ -166,6 +176,13 @@ class CORE_EXPORT DisplayLockContext final
   void WillStartLifecycleUpdate(const LocalFrameView&) override;
   void DidFinishLifecycleUpdate(const LocalFrameView&) override;
 
+  // Inform the display lock that it prevented a style change. This is used to
+  // invalidate style when we need to update it in the future.
+  void NotifyStyleRecalcWasBlocked(StyleType type) {
+    blocked_style_traversal_type_ =
+        std::max(blocked_style_traversal_type_, type);
+  }
+
   // Notify this element will be disconnected.
   void NotifyWillDisconnect();
 
@@ -208,9 +225,10 @@ class CORE_EXPORT DisplayLockContext final
   void MarkElementsForWhitespaceReattachment();
 
   // The following functions propagate dirty bits from the locked element up to
-  // the ancestors in order to be reached. They return true if the element or
-  // its subtree were dirty, and false otherwise.
-  bool MarkAncestorsForStyleRecalcIfNeeded();
+  // the ancestors in order to be reached, and update dirty bits for the element
+  // as well if needed. They return true if the element or its subtree were
+  // dirty, and false otherwise.
+  bool MarkForStyleRecalcIfNeeded();
   bool MarkAncestorsForLayoutIfNeeded();
   bool MarkAncestorsForPrePaintIfNeeded();
   bool MarkPaintLayerNeedsRepaint();
@@ -291,6 +309,9 @@ class CORE_EXPORT DisplayLockContext final
   bool update_forced_ = false;
   bool timeout_task_is_scheduled_ = false;
   bool activatable_ = false;
+
+  bool is_locked_after_connect_ = false;
+  StyleType blocked_style_traversal_type_ = kStyleUpdateNotRequired;
 
   bool needs_effective_whitelisted_touch_action_update_ = false;
   bool needs_prepaint_subtree_walk_ = false;
