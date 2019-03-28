@@ -9,6 +9,7 @@
 #include <set>
 
 #include "ash/ash_export.h"
+#include "ash/shelf/shelf_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/macros.h"
@@ -38,7 +39,8 @@ class ASH_EXPORT WorkspaceLayoutManager
       public keyboard::KeyboardControllerObserver,
       public display::DisplayObserver,
       public ShellObserver,
-      public wm::WindowStateObserver {
+      public wm::WindowStateObserver,
+      public ShelfObserver {
  public:
   // |window| is the container for this layout manager.
   explicit WorkspaceLayoutManager(aura::Window* window);
@@ -102,6 +104,9 @@ class ASH_EXPORT WorkspaceLayoutManager
   void OnFullscreenStateChanged(bool is_fullscreen,
                                 aura::Window* root_window) override;
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
+
+  // ShelfObserver:
+  void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
 
  private:
   friend class WorkspaceControllerTestApi;

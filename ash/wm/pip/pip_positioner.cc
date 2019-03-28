@@ -77,20 +77,35 @@ int GetGravityToClosestEdge(const gfx::Rect& bounds, const gfx::Rect& region) {
   }
 }
 
+gfx::Rect ComputeCollisionRectFromBounds(const gfx::Rect& bounds,
+                                         const aura::Window* parent) {
+  gfx::Rect collision_rect = bounds;
+  ::wm::ConvertRectToScreen(parent, &collision_rect);
+  collision_rect.Inset(-kPipWorkAreaInsetsDp, -kPipWorkAreaInsetsDp);
+  return collision_rect;
+}
+
 std::vector<gfx::Rect> CollectCollisionRects(const display::Display& display) {
   std::vector<gfx::Rect> rects;
   auto* root_window = Shell::GetRootWindowForDisplayId(display.id());
   if (root_window) {
+    // Check SettingsBubbleContainer windows.
     auto* settings_bubble_container =
         root_window->GetChildById(kShellWindowId_SettingBubbleContainer);
     for (auto* window : settings_bubble_container->children()) {
       if (!window->IsVisible() && !window->GetTargetBounds().IsEmpty())
         continue;
       // Use the target bounds in case an animation is in progress.
-      rects.push_back(window->GetTargetBounds());
-      ::wm::ConvertRectToScreen(root_window, &rects.back());
-      rects.back().Inset(-kPipWorkAreaInsetsDp, -kPipWorkAreaInsetsDp);
+      rects.push_back(ComputeCollisionRectFromBounds(window->GetTargetBounds(),
+                                                     window->parent()));
     }
+
+    // Check auto-hide shelf, which isn't included normally in the work area:
+    auto* shelf = Shelf::ForWindow(root_window);
+    auto* shelf_window = shelf->GetWindow();
+    if (shelf->IsVisible())
+      rects.push_back(ComputeCollisionRectFromBounds(
+          shelf_window->GetTargetBounds(), shelf_window->parent()));
   }
 
   auto* keyboard_controller = keyboard::KeyboardController::Get();
@@ -99,9 +114,11 @@ std::vector<gfx::Rect> CollectCollisionRects(const display::Display& display) {
           keyboard::mojom::ContainerType::kFloating &&
       keyboard_controller->GetRootWindow() == root_window &&
       !keyboard_controller->visual_bounds_in_screen().IsEmpty()) {
-    rects.push_back(keyboard_controller->visual_bounds_in_screen());
-    ::wm::ConvertRectToScreen(root_window, &rects.back());
-    rects.back().Inset(-kPipWorkAreaInsetsDp, -kPipWorkAreaInsetsDp);
+    // TODO(shend): visual_bounds_in_screen should return the bounds in screen
+    // coordinates. See crbug.com/943446.
+    rects.push_back(ComputeCollisionRectFromBounds(
+        keyboard_controller->visual_bounds_in_screen(),
+        /*parent=*/root_window));
   }
 
   return rects;
