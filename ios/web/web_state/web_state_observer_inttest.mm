@@ -979,6 +979,9 @@ TEST_P(WebStateObserverTest, AboutNewTabNavigation) {
           &context, &nav_id));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
+  }
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
           web_state(), second_url, kExpectedMimeType, /*content_is_html=*/true,
