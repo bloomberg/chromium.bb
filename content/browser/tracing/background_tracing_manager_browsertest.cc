@@ -394,8 +394,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 }
 
 // This tests that non-whitelisted args get stripped if required.
+// TODO(https://crbug.com/945484): This tracing test is flaky.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       NotWhitelistedArgsStripped) {
+                       DISABLED_NotWhitelistedArgsStripped) {
   TestTraceReceiverHelper trace_receiver_helper;
   TestBackgroundTracingHelper background_tracing_helper;
 
