@@ -51,17 +51,6 @@ AppIconSource::AppIconSource(Profile* profile) : profile_(profile) {}
 
 AppIconSource::~AppIconSource() = default;
 
-bool AppIconSource::AllowCaching() const {
-  // Should not be cached as caching is performed by proxy.
-  return false;
-}
-
-std::string AppIconSource::GetMimeType(const std::string&) const {
-  // We need to explicitly return a mime type, otherwise if the user tries to
-  // drag the image they get no extension.
-  return "image/png";
-}
-
 std::string AppIconSource::GetSource() const {
   return chrome::kChromeUIAppIconHost;
 }
@@ -103,6 +92,22 @@ void AppIconSource::StartDataRequest(
   app_service_proxy->LoadIcon(
       app_type, app_id, apps::mojom::IconCompression::kCompressed, size_in_dip,
       allow_placeholder_icon, base::BindOnce(&RunCallback, callback));
+}
+
+std::string AppIconSource::GetMimeType(const std::string&) const {
+  // We need to explicitly return a mime type, otherwise if the user tries to
+  // drag the image they get no extension.
+  return "image/png";
+}
+
+bool AppIconSource::AllowCaching() const {
+  // Should not be cached as caching is performed by proxy.
+  return false;
+}
+
+bool AppIconSource::ShouldReplaceExistingSource() const {
+  // The source doesn't maintain its own state so there's no need to replace it.
+  return false;
 }
 
 }  // namespace apps
