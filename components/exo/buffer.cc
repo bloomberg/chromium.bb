@@ -62,7 +62,6 @@ class Buffer::Texture : public ui::ContextFactoryObserver {
 
   // Overridden from ui::ContextFactoryObserver:
   void OnLostSharedContext() override;
-  void OnLostVizProcess() override;
 
   // Returns true if the RasterInterface context has been lost.
   bool IsLost();
@@ -186,7 +185,6 @@ void Buffer::Texture::OnLostSharedContext() {
   context_factory_ = nullptr;
 }
 
-void Buffer::Texture::OnLostVizProcess() {}
 
 bool Buffer::Texture::IsLost() {
   if (context_provider_) {

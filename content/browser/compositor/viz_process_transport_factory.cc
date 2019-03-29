@@ -359,9 +359,6 @@ void VizProcessTransportFactory::DisableGpuCompositing(
 void VizProcessTransportFactory::OnGpuProcessLost() {
   // Reconnect HostFrameSinkManager to new GPU process.
   ConnectHostFrameSinkManager();
-
-  for (auto& observer : observer_list_)
-    observer.OnLostVizProcess();
 }
 
 void VizProcessTransportFactory::OnEstablishedGpuChannel(
