@@ -531,7 +531,7 @@ def _handle_perf_results(
                   indent=4, separators=(',', ': ')),
       content_type=JSON_CONTENT_TYPE)
   if upload_failures_counter > 0:
-    logdog_label += ('Upload Failure (%s benchmark upload failures)' %
+    logdog_label += (' %s merge script perf data upload failures' %
                       upload_failures_counter)
   extra_links[logdog_label] = logdog_stream
   end_time = time.time()
