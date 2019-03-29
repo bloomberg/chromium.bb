@@ -159,7 +159,7 @@ int ExecutionContext::CircularSequentialID() {
 
 PublicURLManager& ExecutionContext::GetPublicURLManager() {
   if (!public_url_manager_)
-    public_url_manager_ = PublicURLManager::Create(this);
+    public_url_manager_ = MakeGarbageCollected<PublicURLManager>(this);
   return *public_url_manager_;
 }
 

@@ -1680,7 +1680,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileIndexOutOfRange) {
 
 TEST(V8ScriptValueSerializerTest, RoundTripFileList) {
   V8TestingScope scope;
-  FileList* file_list = FileList::Create();
+  auto* file_list = MakeGarbageCollected<FileList>();
   file_list->Append(File::Create("/native/path"));
   file_list->Append(File::Create("/native/path2"));
   v8::Local<v8::Value> wrapper = ToV8(file_list, scope.GetScriptState());
@@ -1741,7 +1741,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileListV8WithoutSnapshot) {
 
 TEST(V8ScriptValueSerializerTest, RoundTripFileListIndex) {
   V8TestingScope scope;
-  FileList* file_list = FileList::Create();
+  auto* file_list = MakeGarbageCollected<FileList>();
   file_list->Append(File::Create("/native/path"));
   file_list->Append(File::Create("/native/path2"));
   v8::Local<v8::Value> wrapper = ToV8(file_list, scope.GetScriptState());

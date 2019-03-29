@@ -48,8 +48,6 @@ class CORE_EXPORT PublicURLManager final
   USING_GARBAGE_COLLECTED_MIXIN(PublicURLManager);
 
  public:
-  static PublicURLManager* Create(ExecutionContext*);
-
   explicit PublicURLManager(ExecutionContext*);
 
   // Generates a new Blob URL and registers the URLRegistrable to the

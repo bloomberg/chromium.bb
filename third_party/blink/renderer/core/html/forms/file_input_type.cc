@@ -70,7 +70,7 @@ Vector<String> CollectAcceptTypes(const HTMLInputElement& input) {
 inline FileInputType::FileInputType(HTMLInputElement& element)
     : InputType(element),
       KeyboardClickableInputTypeView(element),
-      file_list_(FileList::Create()) {}
+      file_list_(MakeGarbageCollected<FileList>()) {}
 
 InputType* FileInputType::Create(HTMLInputElement& element) {
   return MakeGarbageCollected<FileInputType>(element);
@@ -124,7 +124,7 @@ void FileInputType::RestoreFormControlState(const FormControlState& state) {
   HeapVector<Member<File>> file_vector =
       CreateFilesFrom<File*, HeapVector<Member<File>>>(
           state, &File::CreateFromControlState);
-  FileList* file_list = FileList::Create();
+  auto* file_list = MakeGarbageCollected<FileList>();
   for (const auto& file : file_vector)
     file_list->Append(file);
   SetFilesAndDispatchEvents(file_list);
@@ -252,7 +252,7 @@ void FileInputType::SetValue(const String&,
 
 FileList* FileInputType::CreateFileList(const FileChooserFileInfoList& files,
                                         const base::FilePath& base_dir) {
-  FileList* file_list(FileList::Create());
+  auto* file_list(MakeGarbageCollected<FileList>());
   wtf_size_t size = files.size();
 
   // If a directory is being selected, the UI allows a directory to be chosen
