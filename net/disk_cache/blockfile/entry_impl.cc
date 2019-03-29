@@ -1358,7 +1358,11 @@ bool EntryImpl::HandleTruncation(int index, int offset, int buf_len) {
   int current_size = entry_.Data()->data_size[index];
   int new_size = offset + buf_len;
 
-  if (!new_size) {
+  // This is only called when actually truncating the file, not simply when
+  // truncate = true is passed to WriteData(), which could be growing the file.
+  DCHECK_LT(new_size, current_size);
+
+  if (new_size == 0) {
     // This is by far the most common scenario.
     backend_->ModifyStorageSize(current_size - unreported_size_[index], 0);
     entry_.Data()->data_addr[index] = 0;
@@ -1378,13 +1382,24 @@ bool EntryImpl::HandleTruncation(int index, int offset, int buf_len) {
     if (!address.is_initialized()) {
       // There is no overlap between the buffer and disk.
       if (new_size > user_buffers_[index]->Start()) {
-        // Just truncate our buffer.
+        // Truncate our buffer.
         DCHECK_LT(new_size, user_buffers_[index]->End());
         user_buffers_[index]->Truncate(new_size);
-        return true;
+
+        if (offset < user_buffers_[index]->Start()) {
+          // Request to write before the current buffer's start, so flush it to
+          // disk and re-init.
+          UpdateSize(index, current_size, new_size);
+          if (!Flush(index, 0))
+            return false;
+          return PrepareBuffer(index, offset, buf_len);
+        } else {
+          // Can just stick to using the memory buffer.
+          return true;
+        }
       }
 
-      // Just discard our buffer.
+      // Truncated to before the current buffer, so can just discard it.
       user_buffers_[index]->Reset();
       return PrepareBuffer(index, offset, buf_len);
     }
