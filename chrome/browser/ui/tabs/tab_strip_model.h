@@ -587,6 +587,12 @@ class TabStripModel {
   // Notifies any observers that group affiliation has changed for the tab.
   void MoveAndSetGroup(int index, int new_index, const TabGroupData* new_group);
 
+  // Notifies observers that the tab at |index| was moved from |old_group| to
+  // |new_group|.
+  void NotifyGroupChange(int index,
+                         const TabGroupData* old_group,
+                         const TabGroupData* new_group);
+
   // Helper function for MoveAndSetGroup. Removes the tab at |index| from the
   // group that contains it, if any. Also deletes that group, if it now contains
   // no tabs. Returns that group.
