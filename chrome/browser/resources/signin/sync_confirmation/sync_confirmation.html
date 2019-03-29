@@ -265,93 +265,62 @@
         }
 
         .loaded .fade-top-left {
-          animation-name: fade-in-icon-top-left;
+          animation-name: fade-in, icon-top-left;
         }
 
         .loaded .fade-top-right {
-          animation-name: fade-in-icon-top-right;
+          animation-name: fade-in, icon-top-right;
         }
 
         .loaded .fade-middle-left {
-          animation-name: fade-in-icon-middle-left;
+          animation-name: fade-in, icon-middle-left;
         }
 
         .loaded .fade-middle-right {
-          animation-name: fade-in-icon-middle-right;
+          animation-name: fade-in, icon-middle-right;
         }
 
         .loaded .fade-bottom-left {
-          animation-name: fade-in-icon-bottom-left;
+          animation-name: fade-in, icon-bottom-left;
         }
 
         .loaded .fade-bottom-right {
-          animation-name: fade-in-icon-bottom-right;
+          animation-name: fade-in, icon-bottom-right;
         }
 
-        @keyframes fade-in-icon-top-left {
-          from {
-            opacity: 0;
-            transform: translate(0, 0);
-          }
-          to {
-            opacity: 0.1;
-            transform: translate(-4px, -4px);
-          }
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: .1; }
         }
 
-        @keyframes fade-in-icon-top-right {
-          from {
-            opacity: 0;
-            transform: translate(0, 0);
-          }
-          to {
-            opacity: 0.1;
-            transform: translate(4px, -4px);
-          }
+        @keyframes icon-top-left {
+          from { transform: translate(0, 0); }
+          to { transform: translate(-4px, -4px); }
         }
 
-        @keyframes fade-in-icon-middle-left {
-          from {
-            opacity: 0;
-            transform: translate(0, 0);
-          }
-          to {
-            opacity: 0.1;
-            transform: translate(-4px, 0);
-          }
+        @keyframes icon-top-right {
+          from { transform: translate(0, 0); }
+          to { transform: translate(4px, -4px); }
         }
 
-        @keyframes fade-in-icon-middle-right {
-          from {
-            opacity: 0;
-             transform: translate(0, 0);
-            }
-          to {
-            opacity: 0.1;
-            transform: translate(4px, 0);
-          }
+        @keyframes icon-middle-left {
+          from { transform: translate(0, 0); }
+          to { transform: translate(-4px, 0); }
         }
 
-        @keyframes fade-in-icon-bottom-left {
-          from {
-            opacity: 0;
-            transform: translate(0, 0);
-          }
-          to {
-            opacity: 0.1;
-            transform: translate(-4px, 4px);
-          }
+        @keyframes icon-middle-right {
+          from { transform: translate(0, 0); }
+          to { transform: translate(4px, 0); }
         }
 
-        @keyframes fade-in-icon-bottom-right {
-          from {
-            opacity: 0;
-            transform: translate(0, 0);
-          }
-          to {
-            opacity: 0.1;
-            transform: translate(4px, 4px);
-          }
+        @keyframes icon-bottom-left {
+          from { transform: translate(0, 0); }
+          to { transform: translate(-4px, 4px); }
+        }
+
+        @keyframes icon-bottom-right {
+          from { transform: translate(0, 0); }
+          to { transform: translate(4px, 4px); }
         }
       </style>
     </custom-style>
