@@ -414,11 +414,10 @@ void PoissonAllocationSampler::RecordAlloc(void* address,
 
   if (UNLIKELY(!g_running.load(std::memory_order_relaxed))) {
     // Sampling is in fact disabled. Put a large negative value into
-    // the accumulator. 1MB is large enough to have this code not trigger
-    // frequently, and small enough to eventually start collecting samples
-    // when the sampling is enabled.
-    constexpr intptr_t sample_size_of_1mb = 1 << 20;
-    g_accumulated_bytes_tls = -sample_size_of_1mb;
+    // the accumulator. It needs to be large enough to have this code
+    // not trigger frequently, and small enough to eventually start collecting
+    // samples when the sampling is enabled.
+    g_accumulated_bytes_tls = -static_cast<intptr_t>(kWarmupInterval);
     return;
   }
 
