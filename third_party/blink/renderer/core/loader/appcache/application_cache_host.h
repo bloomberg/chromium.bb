@@ -68,15 +68,18 @@ class CORE_EXPORT ApplicationCacheHost final
     CacheInfo(const KURL& manifest,
               double creation_time,
               double update_time,
-              int64_t size)
+              int64_t response_sizes,
+              int64_t padding_sizes)
         : manifest_(manifest),
           creation_time_(creation_time),
           update_time_(update_time),
-          size_(size) {}
+          response_sizes_(response_sizes),
+          padding_sizes_(padding_sizes) {}
     KURL manifest_;
     double creation_time_;
     double update_time_;
-    int64_t size_;
+    int64_t response_sizes_;
+    int64_t padding_sizes_;
   };
 
   struct ResourceInfo {
@@ -87,21 +90,24 @@ class CORE_EXPORT ApplicationCacheHost final
                  bool is_fallback,
                  bool is_foreign,
                  bool is_explicit,
-                 int64_t size)
+                 int64_t response_size,
+                 int64_t padding_size)
         : resource_(resource),
           is_master_(is_master),
           is_manifest_(is_manifest),
           is_fallback_(is_fallback),
           is_foreign_(is_foreign),
           is_explicit_(is_explicit),
-          size_(size) {}
+          response_size_(response_size),
+          padding_size_(padding_size) {}
     KURL resource_;
     bool is_master_;
     bool is_manifest_;
     bool is_fallback_;
     bool is_foreign_;
     bool is_explicit_;
-    int64_t size_;
+    int64_t response_size_;
+    int64_t padding_size_;
   };
 
   typedef Vector<ResourceInfo> ResourceInfoList;

@@ -46,7 +46,13 @@ void OnAppCacheInfoFetchComplete(
     int64_t total_size = 0;
     for (const auto& info : origin_info.second) {
       last_modified = std::max(last_modified, info.last_update_time);
-      total_size += info.size;
+      // The sizes only cover the on-disk response sizes. They do not include
+      // the padding sizes added by the Quota system to cross-origin resources.
+      //
+      // We count the actual disk usage because this number is only reported in
+      // UI (not in any API accessible to the site). This decision may need to
+      // be revisited if users are confused by the Quota system's decisions.
+      total_size += info.response_sizes;
     }
     result.emplace_back(origin, total_size, last_modified);
   }

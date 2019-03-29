@@ -211,12 +211,13 @@ void ApplicationCacheHost::NotifyApplicationCache(
 
 ApplicationCacheHost::CacheInfo ApplicationCacheHost::ApplicationCacheInfo() {
   if (!host_)
-    return CacheInfo(NullURL(), 0, 0, 0);
+    return CacheInfo(NullURL(), 0, 0, 0, 0);
 
   WebApplicationCacheHost::CacheInfo web_info;
   host_->GetAssociatedCacheInfo(&web_info);
   return CacheInfo(web_info.manifest_url, web_info.creation_time,
-                   web_info.update_time, web_info.total_size);
+                   web_info.update_time, web_info.response_sizes,
+                   web_info.padding_sizes);
 }
 
 int ApplicationCacheHost::GetHostID() const {
@@ -232,11 +233,11 @@ void ApplicationCacheHost::FillResourceList(ResourceInfoList* resources) {
   WebVector<WebApplicationCacheHost::ResourceInfo> web_resources;
   host_->GetResourceList(&web_resources);
   for (size_t i = 0; i < web_resources.size(); ++i) {
-    resources->push_back(
-        ResourceInfo(web_resources[i].url, web_resources[i].is_master,
-                     web_resources[i].is_manifest, web_resources[i].is_fallback,
-                     web_resources[i].is_foreign, web_resources[i].is_explicit,
-                     web_resources[i].size));
+    resources->push_back(ResourceInfo(
+        web_resources[i].url, web_resources[i].is_master,
+        web_resources[i].is_manifest, web_resources[i].is_fallback,
+        web_resources[i].is_foreign, web_resources[i].is_explicit,
+        web_resources[i].response_size, web_resources[i].padding_size));
   }
 }
 

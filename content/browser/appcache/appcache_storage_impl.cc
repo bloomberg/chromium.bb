@@ -378,7 +378,8 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
       blink::mojom::AppCacheInfo info;
       info.manifest_url = group.manifest_url;
       info.creation_time = group.creation_time;
-      info.size = cache_record.cache_size;
+      info.response_sizes = cache_record.cache_size;
+      info.padding_sizes = cache_record.padding_size;
       info.last_access_time = group.last_access_time;
       info.last_update_time = cache_record.update_time;
       info.cache_id = cache_record.cache_id;

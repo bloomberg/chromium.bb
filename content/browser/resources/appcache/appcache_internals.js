@@ -168,7 +168,9 @@ cr.define('appcache', function() {
       }
       properties = properties.join(',');
       simpleVector.push({
-        size: details.size,
+        responseSize: details.responseSize,
+        paddingSize: details.paddingSize,
+        totalSize: details.totalSize,
         properties: properties,
         fileUrl: details.url,
         responseId: details.responseId
