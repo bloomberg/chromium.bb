@@ -286,51 +286,24 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
     base::OnceClosure on_available;
   };
 
-  // Constructor that takes in an IdentityManager instance as well as instances
-  // of the dependencies of that IdentityManager. For use only in contexts where
-  // IdentityManager and its dependencies are all unavoidably created by the
-  // embedder (e.g., //chrome-level unittests that use the
-  // ProfileKeyedServiceFactory infrastructure).
-  // When using this constructor, the invoker is responsible for ensuring the
-  // following:
-  // - That all of these objects outlive this object
-  // - That the dependencies being passed in were in fact the objects used to
-  //   construct |identity_manager|
-  // - That the passed-in dependencies of |identity_manager| outlive it
+  // Constructs an IdentityTestEnvironment that builds and owns an
+  // IdentityManager. This private constructor is meant to only be called
+  // internally by IdentityTestEnvironment from other constructors.
+  IdentityTestEnvironment(
+      std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner,
+      network::TestURLLoaderFactory* test_url_loader_factory,
+      signin::AccountConsistencyMethod account_consistency);
+
+  // Constructs an IdentityTestEnvironment that uses the supplied
+  // |identity_manager|.
+  // For use only in contexts where IdentityManager and its dependencies are all
+  // unavoidably created by the embedder (e.g., //chrome-level unittests that
+  // use the ProfileKeyedServiceFactory infrastructure).
   // NOTE: This constructor is for usage only in the special case of embedder
   // unittests that must use the IdentityManager instance associated with the
   // Profile/ChromeBrowserState. If you think you have another use case for it,
   // contact blundell@chromium.org.
-  IdentityTestEnvironment(
-      PrefService* pref_service,
-      AccountTrackerService* account_tracker_service,
-      AccountFetcherService* account_fetcher_service,
-      FakeProfileOAuth2TokenService* token_service,
-      IdentityManager* identity_manager,
-      network::TestURLLoaderFactory* test_url_loader_factory = nullptr,
-      signin::AccountConsistencyMethod account_consistency =
-          signin::AccountConsistencyMethod::kDisabled);
-
-  // Constructs this object from the supplied
-  // dependencies of IdentityManager and potentially IdentityManager itself.
-  // The supplied dependencies must be either:
-  // (1) non-null instances of the backing classes,
-  // (2) a non-null instance of |dependencies_owner|.
-  // In the case of (1), |identity_manager| can be non-null, in which case it
-  // must point to an object created via these dependencies. In the case of 2,
-  // |identity_manager| must be null. If |identity_manager| is non-null, it will
-  // be the IdentityManager instance associated with this object. Otherwise,
-  // this object will create and own an IdentityManager instance from the
-  // supplied dependencies.
-  IdentityTestEnvironment(
-      PrefService* pref_service,
-      AccountTrackerService* account_tracker_service,
-      AccountFetcherService* account_fetcher_service,
-      FakeProfileOAuth2TokenService* token_service,
-      network::TestURLLoaderFactory* test_url_loader_factory,
-      signin::AccountConsistencyMethod account_consistency,
-      std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner,
-      IdentityManager* identity_manager);
+  IdentityTestEnvironment(IdentityManager* identity_manager);
 
   // IdentityManager::DiagnosticsObserver:
   void OnAccessTokenRequested(const std::string& account_id,
@@ -383,6 +356,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
 
   base::OnceClosure on_access_token_requested_callback_;
   std::vector<AccessTokenRequestState> requesters_;
+
+  // Shared constructor initialization logic.
+  void Initialize();
 
   base::WeakPtrFactory<IdentityTestEnvironment> weak_ptr_factory_;
 
