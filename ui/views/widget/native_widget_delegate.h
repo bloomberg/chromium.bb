@@ -155,9 +155,6 @@ class VIEWS_EXPORT NativeWidgetDelegate {
       gfx::NativeView child,
       ui::Layer* child_layer,
       const gfx::Point& location) = 0;
-
-  // Called to process a previous call to ScheduleLayout().
-  virtual void LayoutRootViewIfNecessary() = 0;
 };
 
 }  // namespace internal

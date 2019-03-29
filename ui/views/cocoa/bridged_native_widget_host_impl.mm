@@ -1407,10 +1407,6 @@ void BridgedNativeWidgetHostImpl::OnDeviceScaleFactorChanged(
       old_device_scale_factor, new_device_scale_factor);
 }
 
-void BridgedNativeWidgetHostImpl::UpdateVisualState() {
-  native_widget_mac_->GetWidget()->LayoutRootViewIfNecessary();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl, AcceleratedWidgetMac:
 

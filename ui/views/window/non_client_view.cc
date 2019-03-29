@@ -87,7 +87,7 @@ void NonClientView::UpdateFrame() {
   Widget* widget = GetWidget();
   SetFrameView(widget->CreateNonClientFrameView());
   widget->ThemeChanged();
-  InvalidateLayout();
+  Layout();
   SchedulePaint();
 }
 
