@@ -105,7 +105,7 @@ def main_mac(options, args, results_collector):
     app_bundle = base_name + '.app'
     framework_name = base_name + ' Framework'
     framework_bundle = framework_name + '.framework'
-    framework_dsym_bundle = framework_bundle + '.dSYM'
+    framework_dsym_bundle = framework_name + '.dSYM'
     framework_unstripped_name = framework_name + '.unstripped'
 
     chromium_app_dir = os.path.join(target_dir, app_bundle)
