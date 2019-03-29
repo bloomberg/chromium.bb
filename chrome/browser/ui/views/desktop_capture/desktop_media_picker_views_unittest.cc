@@ -8,10 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "chrome/browser/media/webrtc/fake_desktop_media_list.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_view.h"
@@ -20,7 +18,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
@@ -46,13 +43,6 @@ class DesktopMediaPickerViewsTest : public testing::Test {
   void SetUp() override {
     test_helper_.test_views_delegate()->set_layout_provider(
         ChromeLayoutProvider::CreateLayoutProvider());
-
-#if defined(OS_MACOSX)
-    // These tests create actual child Widgets, which normally have a closure
-    // animation on Mac; inhibit it here to avoid the tests flakily hanging.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableModalAnimations);
-#endif
 
     std::vector<std::unique_ptr<DesktopMediaList>> source_lists;
     for (auto type : kSourceTypes) {
