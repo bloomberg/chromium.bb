@@ -469,26 +469,36 @@ extern const char kVizDisplayCompositorDescription[];
 extern const char kVizHitTestDrawQuadName[];
 extern const char kVizHitTestDrawQuadDescription[];
 
-extern const char kEnableOutOfProcessHeapProfilingName[];
-extern const char kEnableOutOfProcessHeapProfilingDescription[];
-extern const char kEnableOutOfProcessHeapProfilingModeMinimal[];
-extern const char kEnableOutOfProcessHeapProfilingModeAll[];
-extern const char kEnableOutOfProcessHeapProfilingModeAllRenderers[];
-extern const char kEnableOutOfProcessHeapProfilingModeBrowser[];
-extern const char kEnableOutOfProcessHeapProfilingModeGpu[];
-extern const char kEnableOutOfProcessHeapProfilingModeManual[];
-extern const char kEnableOutOfProcessHeapProfilingModeRendererSampling[];
-extern const char kOutOfProcessHeapProfilingInProcess[];
-extern const char kOutOfProcessHeapProfilingInProcessDescription[];
-extern const char kOutOfProcessHeapProfilingSamplingRate[];
-extern const char kOutOfProcessHeapProfilingSamplingRateDescription[];
+extern const char kMemlogName[];
+extern const char kMemlogDescription[];
+extern const char kMemlogModeMinimal[];
+extern const char kMemlogModeAll[];
+extern const char kMemlogModeAllRenderers[];
+extern const char kMemlogModeBrowser[];
+extern const char kMemlogModeGpu[];
+extern const char kMemlogModeManual[];
+extern const char kMemlogModeRendererSampling[];
 
-extern const char kOOPHPStackModeName[];
-extern const char kOOPHPStackModeDescription[];
-extern const char kOOPHPStackModeMixed[];
-extern const char kOOPHPStackModeNative[];
-extern const char kOOPHPStackModeNativeWithThreadNames[];
-extern const char kOOPHPStackModePseudo[];
+extern const char kMemlogInProcessName[];
+extern const char kMemlogInProcessDescription[];
+extern const char kMemlogInProcessDisabled[];
+extern const char kMemlogInProcessEnabled[];
+
+extern const char kMemlogSamplingRateName[];
+extern const char kMemlogSamplingRateDescription[];
+extern const char kMemlogSamplingRate10KB[];
+extern const char kMemlogSamplingRate50KB[];
+extern const char kMemlogSamplingRate100KB[];
+extern const char kMemlogSamplingRate500KB[];
+extern const char kMemlogSamplingRate1MB[];
+extern const char kMemlogSamplingRate5MB[];
+
+extern const char kMemlogStackModeName[];
+extern const char kMemlogStackModeDescription[];
+extern const char kMemlogStackModeMixed[];
+extern const char kMemlogStackModeNative[];
+extern const char kMemlogStackModeNativeWithThreadNames[];
+extern const char kMemlogStackModePseudo[];
 
 extern const char kEnableNewDownloadBackendName[];
 extern const char kEnableNewDownloadBackendDescription[];

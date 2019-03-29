@@ -780,63 +780,64 @@ const char kVizHitTestDrawQuadDescription[] =
     "If enabled, event targeting uses the new viz-assisted hit-testing logic, "
     "with hit-test data computed from the CompositorFrame.";
 
-const char kEnableOutOfProcessHeapProfilingName[] =
-    "Chrome heap profiling start mode.";
-const char kEnableOutOfProcessHeapProfilingDescription[] =
-    "Starts heap profiling service that records sampled memory allocation "
-    "profile having each sample attributed with a callstack. "
-    "The sampling resolution is controlled with --memlog-sampling flag. "
-    "Recorded heap dumps can be obtained at chrome://tracing "
-    "[category:memory-infra] and chrome://memory-internals. This setting "
-    "controls which processes are profiled. As long as this setting is not "
-    "disabled, users can start profiling any given process in "
-    "chrome://memory-internals.";
-const char kEnableOutOfProcessHeapProfilingModeMinimal[] = "Browser and GPU";
-const char kEnableOutOfProcessHeapProfilingModeAll[] = "All processes";
-const char kEnableOutOfProcessHeapProfilingModeAllRenderers[] = "All renderers";
-const char kEnableOutOfProcessHeapProfilingModeBrowser[] = "Only browser";
-const char kEnableOutOfProcessHeapProfilingModeGpu[] = "Only GPU.";
-const char kEnableOutOfProcessHeapProfilingModeManual[] =
-    "None by default. Visit chrome://memory-internals to choose which "
-    "processes to profile.";
-const char kEnableOutOfProcessHeapProfilingModeRendererSampling[] =
-    "Profile a random sampling of renderer processes, ensuring only one is "
-    "ever profiled at a time.";
-
 const char kCompositorThreadedScrollbarScrollingName[] =
     "Enable compositor threaded scrollbar scrolling";
 const char kCompositorThreadedScrollbarScrollingDescription[] =
     "Enables pointer-based scrollbar scrolling on the compositor thread "
     "instead of the main thread";
 
-const char kOutOfProcessHeapProfilingInProcess[] =
-    "Run the heap profiling service in the browser process.";
-const char kOutOfProcessHeapProfilingInProcessDescription[] =
-    "Makes profiling service (if enabled) to be executed within the browser "
-    "process. By default the service is run in a dedicated utility process.";
+const char kMemlogName[] = "Chrome heap profiler start mode.";
+const char kMemlogDescription[] =
+    "Starts heap profiling service that records sampled memory allocation "
+    "profile having each sample attributed with a callstack. "
+    "The sampling resolution is controlled with --memlog-sampling-rate flag. "
+    "Recorded heap dumps can be obtained at chrome://tracing "
+    "[category:memory-infra] and chrome://memory-internals. This setting "
+    "controls which processes will be profiled since their start. To profile "
+    "any given process at a later time use chrome://memory-internals page.";
+const char kMemlogModeMinimal[] = "Browser and GPU";
+const char kMemlogModeAll[] = "All processes";
+const char kMemlogModeAllRenderers[] = "All renderers";
+const char kMemlogModeRendererSampling[] = "Single renderer";
+const char kMemlogModeBrowser[] = "Browser only";
+const char kMemlogModeGpu[] = "GPU only";
 
-const char kOutOfProcessHeapProfilingSamplingRate[] =
-    "Sampling interval in bytes for memlog allocations.";
-const char kOutOfProcessHeapProfilingSamplingRateDescription[] =
-    "Use a poisson process to sample allocations. Defaults to a sampling rate "
-    "of 100KB. This results in low noise for large and/or frequent allocations "
+const char kMemlogInProcessName[] = "Heap profiling service process type.";
+const char kMemlogInProcessDescription[] =
+    "Controls if the heap profiling service runs within the browser process "
+    "(default) or in a dedicated utility process.";
+const char kMemlogInProcessEnabled[] = "In browser process";
+const char kMemlogInProcessDisabled[] = "As separate process";
+
+const char kMemlogSamplingRateName[] =
+    "Heap profiling sampling interval (in bytes).";
+const char kMemlogSamplingRateDescription[] =
+    "Heap profiling service uses Poisson process to sample allocations. "
+    "Default value for the interval between samples is 100000 (100KB). "
+    "This results in low noise for large and/or frequent allocations "
     "[size * frequency >> 100KB]. This means that aggregate numbers [e.g. "
     "total size of malloc-ed objects] and large and/or frequent allocations "
-    "can be trusted with high fidelity.";
+    "can be trusted with high fidelity. "
+    "Lower intervals produce higher samples resolution, but come at a cost of "
+    "higher performance overhead.";
+const char kMemlogSamplingRate10KB[] = "10KB";
+const char kMemlogSamplingRate50KB[] = "50KB";
+const char kMemlogSamplingRate100KB[] = "100KB";
+const char kMemlogSamplingRate500KB[] = "500KB";
+const char kMemlogSamplingRate1MB[] = "1MB";
+const char kMemlogSamplingRate5MB[] = "5MB";
 
-const char kOOPHPStackModeName[] =
-    "The type of stack to record for memlog heap dumps";
-const char kOOPHPStackModeDescription[] =
-    "By default, memlog heap dumps record native stacks, which requires a "
-    "post-processing step to symbolize. Requires a custom build with frame "
-    "pointers to work on Android. Native with thread names will add the thread "
-    "name as the first frame of each native stack. It's also possible to "
-    "record a pseudo stack using trace events as identifiers. It's also "
-    "possible to do a mix of both.";
-const char kOOPHPStackModeMixed[] = "Mixed";
-const char kOOPHPStackModeNative[] = "Native";
-const char kOOPHPStackModeNativeWithThreadNames[] = "Native with thread names";
-const char kOOPHPStackModePseudo[] = "Trace events";
+const char kMemlogStackModeName[] = "Heap profiling stack traces type.";
+const char kMemlogStackModeDescription[] =
+    "By default heap profiling service records native stacks. "
+    "A post-processing step is required to symbolize the stacks. "
+    "'Native with thread names' adds the thread name as the first frame of "
+    "each native stack. It's also possible to record a pseudo stack using "
+    "trace events as identifiers. It's also possible to do a mix of both.";
+const char kMemlogStackModeMixed[] = "Mixed";
+const char kMemlogStackModeNative[] = "Native";
+const char kMemlogStackModeNativeWithThreadNames[] = "Native with thread names";
+const char kMemlogStackModePseudo[] = "Trace events";
 
 const char kEnablePixelCanvasRecordingName[] = "Enable pixel canvas recording";
 const char kEnablePixelCanvasRecordingDescription[] =

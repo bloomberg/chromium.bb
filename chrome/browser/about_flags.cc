@@ -725,33 +725,64 @@ const FeatureEntry::FeatureVariation
          nullptr}};
 #endif  // OS_ANDROID
 
-const FeatureEntry::Choice kEnableOutOfProcessHeapProfilingChoices[] = {
+const FeatureEntry::Choice kMemlogModeChoices[] = {
     {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
-    {flag_descriptions::kEnableOutOfProcessHeapProfilingModeMinimal,
-     heap_profiling::kMemlog, heap_profiling::kMemlogModeMinimal},
-    {flag_descriptions::kEnableOutOfProcessHeapProfilingModeAll,
-     heap_profiling::kMemlog, heap_profiling::kMemlogModeAll},
-    {flag_descriptions::kEnableOutOfProcessHeapProfilingModeBrowser,
-     heap_profiling::kMemlog, heap_profiling::kMemlogModeBrowser},
-    {flag_descriptions::kEnableOutOfProcessHeapProfilingModeGpu,
-     heap_profiling::kMemlog, heap_profiling::kMemlogModeGpu},
-    {flag_descriptions::kEnableOutOfProcessHeapProfilingModeAllRenderers,
-     heap_profiling::kMemlog, heap_profiling::kMemlogModeAllRenderers},
-    {flag_descriptions::kEnableOutOfProcessHeapProfilingModeManual,
-     heap_profiling::kMemlog, heap_profiling::kMemlogModeManual},
+    {flag_descriptions::kMemlogModeMinimal, heap_profiling::kMemlogMode,
+     heap_profiling::kMemlogModeMinimal},
+    {flag_descriptions::kMemlogModeAll, heap_profiling::kMemlogMode,
+     heap_profiling::kMemlogModeAll},
+    {flag_descriptions::kMemlogModeBrowser, heap_profiling::kMemlogMode,
+     heap_profiling::kMemlogModeBrowser},
+    {flag_descriptions::kMemlogModeGpu, heap_profiling::kMemlogMode,
+     heap_profiling::kMemlogModeGpu},
+    {flag_descriptions::kMemlogModeAllRenderers, heap_profiling::kMemlogMode,
+     heap_profiling::kMemlogModeAllRenderers},
+    {flag_descriptions::kMemlogModeRendererSampling,
+     heap_profiling::kMemlogMode, heap_profiling::kMemlogModeRendererSampling},
 };
 
-const FeatureEntry::Choice kOOPHPStackModeChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
-    {flag_descriptions::kOOPHPStackModeNative, heap_profiling::kMemlogStackMode,
-     heap_profiling::kMemlogStackModeNative},
-    {flag_descriptions::kOOPHPStackModeNativeWithThreadNames,
+const FeatureEntry::Choice kMemlogStackModeChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kMemlogStackModeNative,
+     heap_profiling::kMemlogStackMode, heap_profiling::kMemlogStackModeNative},
+    {flag_descriptions::kMemlogStackModeNativeWithThreadNames,
      heap_profiling::kMemlogStackMode,
      heap_profiling::kMemlogStackModeNativeWithThreadNames},
-    {flag_descriptions::kOOPHPStackModePseudo, heap_profiling::kMemlogStackMode,
-     heap_profiling::kMemlogStackModePseudo},
-    {flag_descriptions::kOOPHPStackModeMixed, heap_profiling::kMemlogStackMode,
+    {flag_descriptions::kMemlogStackModePseudo,
+     heap_profiling::kMemlogStackMode, heap_profiling::kMemlogStackModePseudo},
+    {flag_descriptions::kMemlogStackModeMixed, heap_profiling::kMemlogStackMode,
      heap_profiling::kMemlogStackModeMixed},
+};
+
+const FeatureEntry::Choice kMemlogInProcessChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kMemlogInProcessDisabled,
+     heap_profiling::kMemlogInProcess,
+     heap_profiling::kMemlogInProcessDisabled},
+    {flag_descriptions::kMemlogInProcessEnabled,
+     heap_profiling::kMemlogInProcess, heap_profiling::kMemlogInProcessEnabled},
+};
+
+const FeatureEntry::Choice kMemlogSamplingRateChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kMemlogSamplingRate10KB,
+     heap_profiling::kMemlogSamplingRate,
+     heap_profiling::kMemlogSamplingRate10KB},
+    {flag_descriptions::kMemlogSamplingRate50KB,
+     heap_profiling::kMemlogSamplingRate,
+     heap_profiling::kMemlogSamplingRate50KB},
+    {flag_descriptions::kMemlogSamplingRate100KB,
+     heap_profiling::kMemlogSamplingRate,
+     heap_profiling::kMemlogSamplingRate100KB},
+    {flag_descriptions::kMemlogSamplingRate500KB,
+     heap_profiling::kMemlogSamplingRate,
+     heap_profiling::kMemlogSamplingRate500KB},
+    {flag_descriptions::kMemlogSamplingRate1MB,
+     heap_profiling::kMemlogSamplingRate,
+     heap_profiling::kMemlogSamplingRate1MB},
+    {flag_descriptions::kMemlogSamplingRate5MB,
+     heap_profiling::kMemlogSamplingRate,
+     heap_profiling::kMemlogSamplingRate5MB},
 };
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
@@ -2633,23 +2664,21 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSamplingHeapProfilerDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kSamplingHeapProfiler)},
 
-    {"memlog", flag_descriptions::kEnableOutOfProcessHeapProfilingName,
-     flag_descriptions::kEnableOutOfProcessHeapProfilingDescription, kOsAll,
-     MULTI_VALUE_TYPE(kEnableOutOfProcessHeapProfilingChoices)},
+    {"memlog", flag_descriptions::kMemlogName,
+     flag_descriptions::kMemlogDescription, kOsAll,
+     MULTI_VALUE_TYPE(kMemlogModeChoices)},
 
-    {"memlog-in-process",
-     flag_descriptions::kOutOfProcessHeapProfilingInProcess,
-     flag_descriptions::kOutOfProcessHeapProfilingInProcessDescription, kOsAll,
-     SINGLE_VALUE_TYPE(heap_profiling::kMemlogInProcess)},
+    {"memlog-in-process", flag_descriptions::kMemlogInProcessName,
+     flag_descriptions::kMemlogInProcessDescription, kOsAll,
+     MULTI_VALUE_TYPE(kMemlogInProcessChoices)},
 
-    {"memlog-sampling-rate",
-     flag_descriptions::kOutOfProcessHeapProfilingSamplingRate,
-     flag_descriptions::kOutOfProcessHeapProfilingSamplingRateDescription,
-     kOsAll, SINGLE_VALUE_TYPE(heap_profiling::kMemlogSamplingRate)},
+    {"memlog-sampling-rate", flag_descriptions::kMemlogSamplingRateName,
+     flag_descriptions::kMemlogSamplingRateDescription, kOsAll,
+     MULTI_VALUE_TYPE(kMemlogSamplingRateChoices)},
 
-    {"memlog-stack-mode", flag_descriptions::kOOPHPStackModeName,
-     flag_descriptions::kOOPHPStackModeDescription, kOsAll,
-     MULTI_VALUE_TYPE(kOOPHPStackModeChoices)},
+    {"memlog-stack-mode", flag_descriptions::kMemlogStackModeName,
+     flag_descriptions::kMemlogStackModeDescription, kOsAll,
+     MULTI_VALUE_TYPE(kMemlogStackModeChoices)},
 
     {"omnibox-ui-hide-steady-state-url-scheme",
      flag_descriptions::kOmniboxUIHideSteadyStateUrlSchemeName,

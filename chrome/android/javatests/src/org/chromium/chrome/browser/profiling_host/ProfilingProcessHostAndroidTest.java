@@ -49,6 +49,7 @@ public class ProfilingProcessHostAndroidTest {
 
     @Test
     @MediumTest
+    @CommandLineFlags.Add({"memlog-in-process=off"})
     public void testModeBrowserDynamic() throws Exception {
         HeapProfilingTestShim shim = new HeapProfilingTestShim();
         Assert.assertTrue(shim.runTestForMode("browser", true, "native", true, false, false));
@@ -63,6 +64,7 @@ public class ProfilingProcessHostAndroidTest {
 
     @Test
     @MediumTest
+    @CommandLineFlags.Add({"memlog-in-process=off"})
     public void testModeBrowserDynamicPseudo() throws Exception {
         HeapProfilingTestShim shim = new HeapProfilingTestShim();
         Assert.assertTrue(shim.runTestForMode("browser", true, "pseudo", true, false, false));
@@ -101,6 +103,7 @@ public class ProfilingProcessHostAndroidTest {
 
     @Test
     @MediumTest
+    @CommandLineFlags.Add({"memlog-in-process=off"})
     public void testModeBrowserDynamicPseudoSampleEverything() throws Exception {
         HeapProfilingTestShim shim = new HeapProfilingTestShim();
         Assert.assertTrue(shim.runTestForMode("browser", true, "pseudo", true, true, true));
