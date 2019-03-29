@@ -5756,6 +5756,25 @@
             ]
         }
     ],
+    "WebRTC-Aec3FilterAnalyzerIncrementalAnalysisKillSwitch": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Default",
+                    "enable_features": [
+                        "WebRTC-Aec3FilterAnalyzerIncrementalAnalysisKillSwitch"
+                    ]
+                }
+            ]
+        }
+    ],
     "WebRTC-Audio-NetEqForceTargetDelayPercentile": [
         {
             "platforms": [
