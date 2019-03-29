@@ -132,7 +132,9 @@ def main_mac(options, args, results_collector):
         'framework_name'   : re.sub(r'\s', '', framework_name),
         'framework_bundle' : re.sub(r'\s', '', framework_bundle),
         'app_size'         : get_size(chromium_executable),
-        'framework_size'   : get_size(chromium_framework_executable)
+        'framework_size'   : get_size(chromium_framework_executable),
+        'framework_dsym_name' : re.sub(r'\s', '', framework_name) + 'Dsym',
+        'framework_dsym_size' : get_size(chromium_framework_dsym),
       }
 
       # Collect the segment info out of the App
@@ -179,6 +181,9 @@ def main_mac(options, args, results_collector):
       results_collector.add_result(
           print_dict['app_bundle'], print_dict['app_bundle'],
           print_dict['app_bundle_size'], 'bytes')
+      results_collector.add_result(
+          print_dict['framework_dsym_name'], print_dict['framework_dsym_name'],
+          print_dict['framework_dsym_size'], 'bytes')
 
       # Found a match, don't check the other base_names.
       return result
