@@ -717,3 +717,7 @@ const base::Value* PrefService::GetPreferenceValue(
 
   return nullptr;
 }
+
+bool PrefService::HasInMemoryUserPrefStore() const {
+  return user_pref_store_->IsInMemoryPrefStore();
+}
