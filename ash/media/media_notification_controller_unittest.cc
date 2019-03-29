@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -64,6 +65,13 @@ class MediaNotificationControllerTest : public AshTestBase {
     EXPECT_TRUE(message_center->GetPopupNotifications().empty());
   }
 
+  media_session::MediaMetadata BuildMediaMetadata() {
+    media_session::MediaMetadata metadata;
+    metadata.title = base::ASCIIToUTF16("title");
+    metadata.artist = base::ASCIIToUTF16("artist");
+    return metadata;
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -79,6 +87,11 @@ TEST_F(MediaNotificationControllerTest, OnFocusGainedLost_SameId) {
 
   Shell::Get()->media_notification_controller()->OnFocusGained(
       GetRequestStateWithId(id));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
 
   ExpectNotificationCount(1);
 
@@ -104,10 +117,20 @@ TEST_F(MediaNotificationControllerTest, OnFocusGainedLost_MultipleIds) {
   Shell::Get()->media_notification_controller()->OnFocusGained(
       GetRequestStateWithId(id1));
 
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id1.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
+
   ExpectNotificationCount(1);
 
   Shell::Get()->media_notification_controller()->OnFocusGained(
       GetRequestStateWithId(id2));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id2.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
 
   ExpectNotificationCount(2);
 
@@ -127,6 +150,11 @@ TEST_F(MediaNotificationControllerTest,
 
   Shell::Get()->media_notification_controller()->OnFocusGained(
       GetRequestStateWithId(id));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
 
   ExpectNotificationCount(1);
 
@@ -150,6 +178,11 @@ TEST_F(MediaNotificationControllerTest,
   state->session_info->is_controllable = false;
   Shell::Get()->media_notification_controller()->OnFocusGained(
       std::move(state));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
 
   ExpectNotificationCount(0);
 
@@ -180,6 +213,11 @@ TEST_F(MediaNotificationControllerTest, NotificationHasCustomViewType) {
   Shell::Get()->media_notification_controller()->OnFocusGained(
       GetRequestStateWithId(id));
 
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
+
   ExpectNotificationCount(1);
 
   message_center::Notification* notification =
@@ -201,12 +239,78 @@ TEST_F(MediaNotificationControllerTest, HandleNullMediaSessionInfo) {
   Shell::Get()->media_notification_controller()->OnFocusGained(
       GetRequestStateWithId(id));
 
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
+
   ExpectNotificationCount(1);
 
   Shell::Get()
       ->media_notification_controller()
       ->GetItem(id.ToString())
       ->MediaSessionInfoChanged(nullptr);
+
+  ExpectNotificationCount(0);
+}
+
+TEST_F(MediaNotificationControllerTest, MediaMetadata_NoArtist) {
+  base::UnguessableToken id = base::UnguessableToken::Create();
+
+  ExpectNotificationCount(0);
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      GetRequestStateWithId(id));
+
+  media_session::MediaMetadata metadata;
+  metadata.title = base::ASCIIToUTF16("title");
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(metadata);
+
+  ExpectNotificationCount(0);
+}
+
+TEST_F(MediaNotificationControllerTest, MediaMetadata_NoTitle) {
+  base::UnguessableToken id = base::UnguessableToken::Create();
+
+  ExpectNotificationCount(0);
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      GetRequestStateWithId(id));
+
+  media_session::MediaMetadata metadata;
+  metadata.artist = base::ASCIIToUTF16("artist");
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(metadata);
+
+  ExpectNotificationCount(0);
+}
+
+TEST_F(MediaNotificationControllerTest, MediaMetadataUpdated_MissingInfo) {
+  base::UnguessableToken id = base::UnguessableToken::Create();
+
+  ExpectNotificationCount(0);
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      GetRequestStateWithId(id));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
+
+  ExpectNotificationCount(1);
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(media_session::MediaMetadata());
 
   ExpectNotificationCount(0);
 }

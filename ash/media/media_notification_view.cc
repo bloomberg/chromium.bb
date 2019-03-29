@@ -44,8 +44,6 @@ constexpr double kMediaImageMaxWidthExpandedPct = 0.4;
 constexpr gfx::Size kMediaButtonSize = gfx::Size(36, 36);
 constexpr int kMediaButtonRowSeparator = 8;
 constexpr gfx::Insets kMediaTitleArtistInsets = gfx::Insets(8, 8, 0, 8);
-constexpr gfx::Insets kMediaTitleArtistSingleRowInsets =
-    gfx::Insets(18, 8, 10, 8);
 constexpr gfx::Insets kMediaNotificationMainRowInsets =
     gfx::Insets(0, kDefaultMarginSize, 14, kRightMarginSize);
 constexpr gfx::Insets kMediaNotificationExpandedMainRowInsets =
@@ -104,12 +102,11 @@ MediaNotificationView::MediaNotificationView(
   title_artist_row_ = new views::View();
   title_artist_row_layout_ =
       title_artist_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, gfx::Insets(), 0));
+          views::BoxLayout::kVertical, kMediaTitleArtistInsets, 0));
   title_artist_row_layout_->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   title_artist_row_layout_->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  title_artist_row_->SetVisible(false);
   main_row_->AddChildView(title_artist_row_);
 
   title_label_ = new views::Label(base::string16(), views::style::CONTEXT_LABEL,
@@ -117,14 +114,12 @@ MediaNotificationView::MediaNotificationView(
   const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
   title_label_->SetFontList(base_font_list.Derive(
       0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::MEDIUM));
-  title_label_->SetVisible(false);
   title_label_->SetLineHeight(kTitleArtistLineHeight);
   title_artist_row_->AddChildView(title_label_);
 
   artist_label_ =
       new views::Label(base::string16(), views::style::CONTEXT_LABEL,
                        views::style::STYLE_PRIMARY);
-  artist_label_->SetVisible(false);
   artist_label_->SetLineHeight(kTitleArtistLineHeight);
   title_artist_row_->AddChildView(artist_label_);
 
@@ -264,31 +259,13 @@ void MediaNotificationView::UpdateWithMediaSessionInfo(
 
 void MediaNotificationView::UpdateWithMediaMetadata(
     const media_session::MediaMetadata& metadata) {
-  if (!metadata.source_title.empty()) {
-    header_row_->SetAppName(metadata.source_title);
-  } else {
-    header_row_->SetAppName(
-        message_center::MessageCenter::Get()->GetSystemNotificationAppName());
-  }
+  header_row_->SetAppName(
+      metadata.source_title.empty()
+          ? message_center::MessageCenter::Get()->GetSystemNotificationAppName()
+          : metadata.source_title);
 
-  if (metadata.title.empty() && metadata.artist.empty()) {
-    title_artist_row_->SetVisible(false);
-  } else {
-    title_artist_row_->SetVisible(true);
-
-    title_label_->SetText(metadata.title);
-    title_label_->SetVisible(!metadata.title.empty());
-
-    artist_label_->SetText(metadata.artist);
-    artist_label_->SetVisible(!metadata.artist.empty());
-
-    // If there is only a single row of text then we should use larger insets to
-    // balance out the row.
-    title_artist_row_layout_->set_inside_border_insets(
-        (metadata.title.empty() || metadata.artist.empty())
-            ? kMediaTitleArtistSingleRowInsets
-            : kMediaTitleArtistInsets);
-  }
+  title_label_->SetText(metadata.title);
+  artist_label_->SetText(metadata.artist);
 
   PreferredSizeChanged();
   Layout();
