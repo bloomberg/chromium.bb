@@ -526,9 +526,8 @@ bool BlinkTestRunner::CaptureLocalPixelsDump() {
   waiting_for_pixels_dump_result_ = true;
   bool browser_should_capture_pixels =
       interfaces->TestRunner()->DumpPixelsAsync(
-          render_view()->GetWebView()->MainFrame()->ToWebLocalFrame(),
-          base::BindOnce(&BlinkTestRunner::OnPixelsDumpCompleted,
-                         base::Unretained(this)));
+          render_view(), base::BindOnce(&BlinkTestRunner::OnPixelsDumpCompleted,
+                                        base::Unretained(this)));
 
   // If the browser should capture pixels, then we shouldn't be waiting for dump
   // results.

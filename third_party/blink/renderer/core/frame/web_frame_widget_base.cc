@@ -342,11 +342,10 @@ void WebFrameWidgetBase::RequestDecode(
     base::OnceCallback<void(bool)> callback) {
   // If we have a LayerTreeView, propagate the request, otherwise fail it since
   // otherwise it would remain in a unresolved and unrejected state.
-  if (WebLayerTreeView* layer_tree_view = GetLayerTreeView()) {
-    layer_tree_view->RequestDecode(image, std::move(callback));
-  } else {
+  // TODO(danakj): This should be based on |does_composite| instead.
+  if (!GetLayerTreeView())
     std::move(callback).Run(false);
-  }
+  Client()->RequestDecode(image, std::move(callback));
 }
 
 void WebFrameWidgetBase::Trace(blink::Visitor* visitor) {
