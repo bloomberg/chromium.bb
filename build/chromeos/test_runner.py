@@ -247,6 +247,11 @@ class TastTest(RemoteTest):
 
     # Build the shell script that will be used on the device to invoke the test.
     device_test_script_contents = self.BASIC_SHELL_SCRIPT[:]
+    if self._llvm_profile_var:
+      device_test_script_contents += [
+          'echo "LLVM_PROFILE_FILE=%s" >> /etc/chrome_dev.conf' % (
+              self._llvm_profile_var)
+      ]
 
     local_test_runner_cmd = ['local_test_runner', '-waituntilready']
     if self._use_vm:
@@ -442,6 +447,11 @@ class BrowserSanityTest(RemoteTest):
       self._test_cmd.append('--nostrip')
 
     device_test_script_contents = self.BASIC_SHELL_SCRIPT[:]
+    if self._llvm_profile_var:
+      device_test_script_contents += [
+          'echo "LLVM_PROFILE_FILE=%s" >> /etc/chrome_dev.conf' % (
+              self._llvm_profile_var)
+      ]
 
     # vm_sanity.py is the sanity test, which is baked into the device image.
     device_test_script_contents.append('/usr/local/autotest/bin/vm_sanity.py')
