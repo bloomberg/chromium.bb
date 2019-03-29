@@ -22,7 +22,6 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ui_base_features.h"
 
 namespace autofill {
 
@@ -34,8 +33,7 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
     DialogBrowserTest::SetUpCommandLine(command_line);
     scoped_feature_list_.InitWithFeatures(
         // Enabled.
-        {::features::kExperimentalUi,
-         features::kAutofillSaveCardSignInAfterLocalSave},
+        {features::kAutofillSaveCardSignInAfterLocalSave},
         // Disabled.
         {});
   }
