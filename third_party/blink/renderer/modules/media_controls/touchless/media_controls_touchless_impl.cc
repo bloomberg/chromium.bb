@@ -18,10 +18,10 @@
 #include "third_party/blink/renderer/core/html/track/text_track.h"
 #include "third_party/blink/renderer/core/html/track/text_track_list.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
-#include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_text_track_manager.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_overlay_element.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_media_event_listener.h"
+#include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_resource_loader.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -83,7 +83,8 @@ MediaControlsTouchlessImpl* MediaControlsTouchlessImpl::Create(
   // Controls start hidden.
   controls->MakeTransparent();
 
-  MediaControlsResourceLoader::InjectMediaControlsUAStyleSheet();
+  MediaControlsTouchlessResourceLoader::
+      InjectMediaControlsTouchlessUAStyleSheet();
 
   shadow_root.ParserAppendChild(controls);
   return controls;

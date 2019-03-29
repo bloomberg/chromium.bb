@@ -118,6 +118,8 @@ blink_modules_sources("media_controls") {
       "touchless/media_controls_touchless_media_event_listener.cc",
       "touchless/media_controls_touchless_media_event_listener.h",
       "touchless/media_controls_touchless_media_event_listener_observer.h",
+      "touchless/media_controls_touchless_resource_loader.cc",
+      "touchless/media_controls_touchless_resource_loader.h",
     ]
 
     deps += [ ":media_controls_touchless_resources" ]
