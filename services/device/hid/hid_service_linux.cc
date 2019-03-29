@@ -66,15 +66,15 @@ struct HidServiceLinux::ConnectParams {
   base::ScopedFD fd;
 };
 
-class HidServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
+class HidServiceLinux::BlockingTaskRunnerHelper : public UdevWatcher::Observer {
  public:
-  BlockingTaskHelper(base::WeakPtr<HidServiceLinux> service)
+  BlockingTaskRunnerHelper(base::WeakPtr<HidServiceLinux> service)
       : service_(std::move(service)),
         task_runner_(base::SequencedTaskRunnerHandle::Get()) {
     DETACH_FROM_SEQUENCE(sequence_checker_);
   }
 
-  ~BlockingTaskHelper() override {
+  ~BlockingTaskRunnerHelper() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   }
 
@@ -187,16 +187,17 @@ class HidServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
   base::WeakPtr<HidServiceLinux> service_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlockingTaskHelper);
+  DISALLOW_COPY_AND_ASSIGN(BlockingTaskRunnerHelper);
 };
 
 HidServiceLinux::HidServiceLinux()
     : blocking_task_runner_(
           base::CreateSequencedTaskRunnerWithTraits(kBlockingTaskTraits)),
       weak_factory_(this) {
-  helper_ = std::make_unique<BlockingTaskHelper>(weak_factory_.GetWeakPtr());
+  helper_ =
+      std::make_unique<BlockingTaskRunnerHelper>(weak_factory_.GetWeakPtr());
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BlockingTaskHelper::Start,
+      FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::Start,
                                 base::Unretained(helper_.get())));
 }
 

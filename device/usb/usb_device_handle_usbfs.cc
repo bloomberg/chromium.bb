@@ -127,12 +127,13 @@ UsbTransferStatus ConvertTransferResult(int rc) {
 
 }  // namespace
 
-class UsbDeviceHandleUsbfs::BlockingTaskHelper {
+class UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper {
  public:
-  BlockingTaskHelper(base::ScopedFD fd,
-                     scoped_refptr<UsbDeviceHandleUsbfs> device_handle,
-                     scoped_refptr<base::SequencedTaskRunner> task_runner);
-  ~BlockingTaskHelper();
+  BlockingTaskRunnerHelper(
+      base::ScopedFD fd,
+      scoped_refptr<UsbDeviceHandleUsbfs> device_handle,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
+  ~BlockingTaskRunnerHelper();
 
   void Start();
   void ReleaseFileDescriptor();
@@ -156,7 +157,7 @@ class UsbDeviceHandleUsbfs::BlockingTaskHelper {
   std::unique_ptr<base::FileDescriptorWatcher::Controller> watch_controller_;
   base::SequenceChecker sequence_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlockingTaskHelper);
+  DISALLOW_COPY_AND_ASSIGN(BlockingTaskRunnerHelper);
 };
 
 struct UsbDeviceHandleUsbfs::Transfer {
@@ -195,7 +196,7 @@ struct UsbDeviceHandleUsbfs::Transfer {
   usbdevfs_urb urb;
 };
 
-UsbDeviceHandleUsbfs::BlockingTaskHelper::BlockingTaskHelper(
+UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::BlockingTaskRunnerHelper(
     base::ScopedFD fd,
     scoped_refptr<UsbDeviceHandleUsbfs> device_handle,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
@@ -203,30 +204,30 @@ UsbDeviceHandleUsbfs::BlockingTaskHelper::BlockingTaskHelper(
       device_handle_(std::move(device_handle)),
       task_runner_(std::move(task_runner)) {}
 
-UsbDeviceHandleUsbfs::BlockingTaskHelper::~BlockingTaskHelper() {
+UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::~BlockingTaskRunnerHelper() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
-void UsbDeviceHandleUsbfs::BlockingTaskHelper::Start() {
+void UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::Start() {
   sequence_checker_.DetachFromSequence();
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   // Linux indicates that URBs are available to reap by marking the file
   // descriptor writable.
   watch_controller_ = base::FileDescriptorWatcher::WatchWritable(
-      fd_.get(),
-      base::BindRepeating(&BlockingTaskHelper::OnFileCanWriteWithoutBlocking,
-                          base::Unretained(this)));
+      fd_.get(), base::BindRepeating(
+                     &BlockingTaskRunnerHelper::OnFileCanWriteWithoutBlocking,
+                     base::Unretained(this)));
 }
 
-void UsbDeviceHandleUsbfs::BlockingTaskHelper::ReleaseFileDescriptor() {
+void UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::ReleaseFileDescriptor() {
   // This method intentionally leaks the file descriptor.
   DCHECK(sequence_checker_.CalledOnValidSequence());
   watch_controller_.reset();
   ignore_result(fd_.release());
 }
 
-void UsbDeviceHandleUsbfs::BlockingTaskHelper::SetConfiguration(
+void UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::SetConfiguration(
     int configuration_value,
     ResultCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
@@ -243,7 +244,7 @@ void UsbDeviceHandleUsbfs::BlockingTaskHelper::SetConfiguration(
                                 std::move(callback)));
 }
 
-void UsbDeviceHandleUsbfs::BlockingTaskHelper::ReleaseInterface(
+void UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::ReleaseInterface(
     int interface_number,
     ResultCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
@@ -264,7 +265,7 @@ void UsbDeviceHandleUsbfs::BlockingTaskHelper::ReleaseInterface(
   }
 }
 
-void UsbDeviceHandleUsbfs::BlockingTaskHelper::SetInterface(
+void UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::SetInterface(
     int interface_number,
     int alternate_setting,
     ResultCallback callback) {
@@ -285,7 +286,7 @@ void UsbDeviceHandleUsbfs::BlockingTaskHelper::SetInterface(
                          base::BindOnce(std::move(callback), rc == 0));
 }
 
-void UsbDeviceHandleUsbfs::BlockingTaskHelper::ResetDevice(
+void UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::ResetDevice(
     ResultCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
@@ -301,7 +302,7 @@ void UsbDeviceHandleUsbfs::BlockingTaskHelper::ResetDevice(
                          base::BindOnce(std::move(callback), rc == 0));
 }
 
-void UsbDeviceHandleUsbfs::BlockingTaskHelper::ClearHalt(
+void UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::ClearHalt(
     uint8_t endpoint_address,
     ResultCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
@@ -318,7 +319,8 @@ void UsbDeviceHandleUsbfs::BlockingTaskHelper::ClearHalt(
                          base::BindOnce(std::move(callback), rc == 0));
 }
 
-void UsbDeviceHandleUsbfs::BlockingTaskHelper::DiscardUrb(Transfer* transfer) {
+void UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::DiscardUrb(
+    Transfer* transfer) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
@@ -330,7 +332,8 @@ void UsbDeviceHandleUsbfs::BlockingTaskHelper::DiscardUrb(Transfer* transfer) {
                                         device_handle_, transfer));
 }
 
-void UsbDeviceHandleUsbfs::BlockingTaskHelper::OnFileCanWriteWithoutBlocking() {
+void UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::
+    OnFileCanWriteWithoutBlocking() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   const size_t MAX_URBS_PER_EVENT = 10;
@@ -418,9 +421,10 @@ UsbDeviceHandleUsbfs::UsbDeviceHandleUsbfs(
   DCHECK(fd.is_valid());
   DCHECK(blocking_task_runner_);
 
-  helper_.reset(new BlockingTaskHelper(std::move(fd), this, task_runner_));
+  helper_.reset(
+      new BlockingTaskRunnerHelper(std::move(fd), this, task_runner_));
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BlockingTaskHelper::Start,
+      FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::Start,
                                 base::Unretained(helper_.get())));
 }
 
@@ -466,7 +470,7 @@ void UsbDeviceHandleUsbfs::SetConfiguration(int configuration_value,
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &UsbDeviceHandleUsbfs::BlockingTaskHelper::SetConfiguration,
+          &UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::SetConfiguration,
           base::Unretained(helper_.get()), configuration_value,
           std::move(callback)));
 }
@@ -514,7 +518,7 @@ void UsbDeviceHandleUsbfs::ReleaseInterface(int interface_number,
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &UsbDeviceHandleUsbfs::BlockingTaskHelper::ReleaseInterface,
+          &UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::ReleaseInterface,
           base::Unretained(helper_.get()), interface_number,
           std::move(callback)));
 }
@@ -535,9 +539,10 @@ void UsbDeviceHandleUsbfs::SetInterfaceAlternateSetting(
   // to block.
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&UsbDeviceHandleUsbfs::BlockingTaskHelper::SetInterface,
-                     base::Unretained(helper_.get()), interface_number,
-                     alternate_setting, std::move(callback)));
+      base::BindOnce(
+          &UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::SetInterface,
+          base::Unretained(helper_.get()), interface_number, alternate_setting,
+          std::move(callback)));
 }
 
 void UsbDeviceHandleUsbfs::ResetDevice(ResultCallback callback) {
@@ -553,8 +558,9 @@ void UsbDeviceHandleUsbfs::ResetDevice(ResultCallback callback) {
   // is okay to block.
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&UsbDeviceHandleUsbfs::BlockingTaskHelper::ResetDevice,
-                     base::Unretained(helper_.get()), std::move(callback)));
+      base::BindOnce(
+          &UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::ResetDevice,
+          base::Unretained(helper_.get()), std::move(callback)));
 }
 
 void UsbDeviceHandleUsbfs::ClearHalt(uint8_t endpoint_address,
@@ -571,7 +577,7 @@ void UsbDeviceHandleUsbfs::ClearHalt(uint8_t endpoint_address,
   // to block.
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&UsbDeviceHandleUsbfs::BlockingTaskHelper::ClearHalt,
+      base::BindOnce(&UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::ClearHalt,
                      base::Unretained(helper_.get()), endpoint_address,
                      std::move(callback)));
 }
@@ -931,8 +937,9 @@ void UsbDeviceHandleUsbfs::CancelTransfer(Transfer* transfer,
 
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&UsbDeviceHandleUsbfs::BlockingTaskHelper::DiscardUrb,
-                     base::Unretained(helper_.get()), transfer));
+      base::BindOnce(
+          &UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::DiscardUrb,
+          base::Unretained(helper_.get()), transfer));
 
   // Cancelling |timeout_closure| and running completion callbacks may free
   // |this| so these operations must be performed at the end of this function.

@@ -30,7 +30,7 @@ class UsbServiceLinux : public UsbService {
   using DeviceMap =
       std::unordered_map<std::string, scoped_refptr<UsbDeviceLinux>>;
 
-  class BlockingTaskHelper;
+  class BlockingTaskRunnerHelper;
 
   void OnDeviceAdded(const std::string& device_path,
                      const UsbDeviceDescriptor& descriptor,
@@ -57,7 +57,7 @@ class UsbServiceLinux : public UsbService {
   std::list<GetDevicesCallback> enumeration_callbacks_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  std::unique_ptr<BlockingTaskHelper> helper_;
+  std::unique_ptr<BlockingTaskRunnerHelper> helper_;
   DeviceMap devices_by_path_;
 
   base::WeakPtrFactory<UsbServiceLinux> weak_factory_;

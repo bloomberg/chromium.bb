@@ -39,10 +39,10 @@ namespace media {
 // Wraps a device::UdevLinux with an API that makes it easier to use from
 // DeviceMonitorLinux. Since it is essentially a wrapper around blocking udev
 // calls, Initialize() must be called from a task runner that can block.
-class DeviceMonitorLinux::BlockingTaskHelper {
+class DeviceMonitorLinux::BlockingTaskRunnerHelper {
  public:
-  BlockingTaskHelper();
-  ~BlockingTaskHelper() = default;
+  BlockingTaskRunnerHelper();
+  ~BlockingTaskRunnerHelper() = default;
 
   void Initialize();
 
@@ -53,16 +53,16 @@ class DeviceMonitorLinux::BlockingTaskHelper {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(BlockingTaskHelper);
+  DISALLOW_COPY_AND_ASSIGN(BlockingTaskRunnerHelper);
 };
 
-DeviceMonitorLinux::BlockingTaskHelper::BlockingTaskHelper() {
+DeviceMonitorLinux::BlockingTaskRunnerHelper::BlockingTaskRunnerHelper() {
   // Detaches from the sequence on which this object was created. It will be
   // bound to its owning sequence when Initialize() is called.
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-void DeviceMonitorLinux::BlockingTaskHelper::Initialize() {
+void DeviceMonitorLinux::BlockingTaskRunnerHelper::Initialize() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<device::UdevLinux::UdevMonitorFilter> filters;
   for (const SubsystemMap& entry : kSubsystemMap) {
@@ -70,11 +70,11 @@ void DeviceMonitorLinux::BlockingTaskHelper::Initialize() {
         device::UdevLinux::UdevMonitorFilter(entry.subsystem, entry.devtype));
   }
   udev_ = std::make_unique<device::UdevLinux>(
-      filters, base::BindRepeating(&BlockingTaskHelper::OnDevicesChanged,
+      filters, base::BindRepeating(&BlockingTaskRunnerHelper::OnDevicesChanged,
                                    base::Unretained(this)));
 }
 
-void DeviceMonitorLinux::BlockingTaskHelper::OnDevicesChanged(
+void DeviceMonitorLinux::BlockingTaskRunnerHelper::OnDevicesChanged(
     udev_device* device) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(device);
@@ -99,14 +99,14 @@ DeviceMonitorLinux::DeviceMonitorLinux()
     : blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      blocking_task_helper_(new BlockingTaskHelper,
+      blocking_task_helper_(new BlockingTaskRunnerHelper,
                             base::OnTaskRunnerDeleter(blocking_task_runner_)) {
   // Unretained() is safe because the deletion of |blocking_task_helper_|
   // is scheduled on |blocking_task_runner_| when DeviceMonitorLinux is
   // deleted.
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&DeviceMonitorLinux::BlockingTaskHelper::Initialize,
+      base::BindOnce(&DeviceMonitorLinux::BlockingTaskRunnerHelper::Initialize,
                      base::Unretained(blocking_task_helper_.get())));
 }
 

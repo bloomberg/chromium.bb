@@ -38,11 +38,12 @@ class PollingSensorReader : public SensorReader {
   // Helper class that performs the actual I/O. It must run on a
   // SequencedTaskRunner that is properly configured for blocking I/O
   // operations.
-  class BlockingTaskHelper final {
+  class BlockingTaskRunnerHelper final {
    public:
-    BlockingTaskHelper(base::WeakPtr<PollingSensorReader> polling_sensor_reader,
-                       const SensorInfoLinux& sensor_info);
-    ~BlockingTaskHelper();
+    BlockingTaskRunnerHelper(
+        base::WeakPtr<PollingSensorReader> polling_sensor_reader,
+        const SensorInfoLinux& sensor_info);
+    ~BlockingTaskRunnerHelper();
 
     // Starts polling for data at a given |frequency|, and stops if there is an
     // error while reading or parsing the data.
@@ -73,7 +74,7 @@ class PollingSensorReader : public SensorReader {
 
     SEQUENCE_CHECKER(sequence_checker_);
 
-    DISALLOW_COPY_AND_ASSIGN(BlockingTaskHelper);
+    DISALLOW_COPY_AND_ASSIGN(BlockingTaskRunnerHelper);
   };
 
   // Receives a reading from the platform sensor and forwards it to |sensor_|.
@@ -94,7 +95,7 @@ class PollingSensorReader : public SensorReader {
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 
-  std::unique_ptr<BlockingTaskHelper, base::OnTaskRunnerDeleter>
+  std::unique_ptr<BlockingTaskRunnerHelper, base::OnTaskRunnerDeleter>
       blocking_task_helper_;
 
   base::WeakPtrFactory<PollingSensorReader> weak_factory_;
@@ -102,7 +103,7 @@ class PollingSensorReader : public SensorReader {
   DISALLOW_COPY_AND_ASSIGN(PollingSensorReader);
 };
 
-PollingSensorReader::BlockingTaskHelper::BlockingTaskHelper(
+PollingSensorReader::BlockingTaskRunnerHelper::BlockingTaskRunnerHelper(
     base::WeakPtr<PollingSensorReader> polling_sensor_reader,
     const SensorInfoLinux& sensor_info)
     : polling_sensor_reader_(polling_sensor_reader),
@@ -113,25 +114,27 @@ PollingSensorReader::BlockingTaskHelper::BlockingTaskHelper(
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-PollingSensorReader::BlockingTaskHelper::~BlockingTaskHelper() {
+PollingSensorReader::BlockingTaskRunnerHelper::~BlockingTaskRunnerHelper() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void PollingSensorReader::BlockingTaskHelper::StartPolling(double frequency) {
+void PollingSensorReader::BlockingTaskRunnerHelper::StartPolling(
+    double frequency) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!timer_.IsRunning());
   timer_.Start(FROM_HERE,
                base::TimeDelta::FromMicroseconds(
                    base::Time::kMicrosecondsPerSecond / frequency),
-               this, &PollingSensorReader::BlockingTaskHelper::PollForData);
+               this,
+               &PollingSensorReader::BlockingTaskRunnerHelper::PollForData);
 }
 
-void PollingSensorReader::BlockingTaskHelper::StopPolling() {
+void PollingSensorReader::BlockingTaskRunnerHelper::StopPolling() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   timer_.Stop();
 }
 
-void PollingSensorReader::BlockingTaskHelper::StopWithError() {
+void PollingSensorReader::BlockingTaskRunnerHelper::StopWithError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   StopPolling();
   owner_task_runner_->PostTask(
@@ -139,7 +142,7 @@ void PollingSensorReader::BlockingTaskHelper::StopWithError() {
                                 polling_sensor_reader_));
 }
 
-void PollingSensorReader::BlockingTaskHelper::PollForData() {
+void PollingSensorReader::BlockingTaskRunnerHelper::PollForData() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   SensorReading readings;
@@ -184,7 +187,7 @@ PollingSensorReader::PollingSensorReader(
   // We need to properly initialize |blocking_task_helper_| here because we need
   // |weak_factory_| to be created first.
   blocking_task_helper_.reset(
-      new BlockingTaskHelper(weak_factory_.GetWeakPtr(), sensor_info));
+      new BlockingTaskRunnerHelper(weak_factory_.GetWeakPtr(), sensor_info));
 }
 
 PollingSensorReader::~PollingSensorReader() {
@@ -198,7 +201,7 @@ void PollingSensorReader::StartFetchingData(
     StopFetchingData();
   is_reading_active_ = true;
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BlockingTaskHelper::StartPolling,
+      FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::StartPolling,
                                 base::Unretained(blocking_task_helper_.get()),
                                 configuration.frequency()));
 }
@@ -207,7 +210,7 @@ void PollingSensorReader::StopFetchingData() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_reading_active_ = false;
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BlockingTaskHelper::StopPolling,
+      FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::StopPolling,
                                 base::Unretained(blocking_task_helper_.get())));
 }
 

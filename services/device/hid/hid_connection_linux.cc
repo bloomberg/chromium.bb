@@ -32,11 +32,11 @@
 
 namespace device {
 
-class HidConnectionLinux::BlockingTaskHelper {
+class HidConnectionLinux::BlockingTaskRunnerHelper {
  public:
-  BlockingTaskHelper(base::ScopedFD fd,
-                     scoped_refptr<HidDeviceInfo> device_info,
-                     base::WeakPtr<HidConnectionLinux> connection)
+  BlockingTaskRunnerHelper(base::ScopedFD fd,
+                           scoped_refptr<HidDeviceInfo> device_info,
+                           base::WeakPtr<HidConnectionLinux> connection)
       : fd_(std::move(fd)),
         connection_(connection),
         origin_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
@@ -46,7 +46,9 @@ class HidConnectionLinux::BlockingTaskHelper {
     has_report_id_ = device_info->has_report_id();
   }
 
-  ~BlockingTaskHelper() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
+  ~BlockingTaskRunnerHelper() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  }
 
   // Starts the FileDescriptorWatcher that reads input events from the device.
   // Must be called on a thread that has a base::MessageLoopForIO.
@@ -54,8 +56,9 @@ class HidConnectionLinux::BlockingTaskHelper {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     file_watcher_ = base::FileDescriptorWatcher::WatchReadable(
-        fd_.get(), base::Bind(&BlockingTaskHelper::OnFileCanReadWithoutBlocking,
-                              base::Unretained(this)));
+        fd_.get(), base::BindRepeating(
+                       &BlockingTaskRunnerHelper::OnFileCanReadWithoutBlocking,
+                       base::Unretained(this)));
   }
 
   void Write(scoped_refptr<base::RefCountedBytes> buffer,
@@ -175,7 +178,7 @@ class HidConnectionLinux::BlockingTaskHelper {
   const scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
   std::unique_ptr<base::FileDescriptorWatcher::Controller> file_watcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlockingTaskHelper);
+  DISALLOW_COPY_AND_ASSIGN(BlockingTaskRunnerHelper);
 };
 
 HidConnectionLinux::HidConnectionLinux(
@@ -185,10 +188,10 @@ HidConnectionLinux::HidConnectionLinux(
     : HidConnection(device_info),
       blocking_task_runner_(std::move(blocking_task_runner)),
       weak_factory_(this) {
-  helper_ = std::make_unique<BlockingTaskHelper>(std::move(fd), device_info,
-                                                 weak_factory_.GetWeakPtr());
+  helper_ = std::make_unique<BlockingTaskRunnerHelper>(
+      std::move(fd), device_info, weak_factory_.GetWeakPtr());
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BlockingTaskHelper::Start,
+      FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::Start,
                                 base::Unretained(helper_.get())));
 }
 
@@ -208,7 +211,7 @@ void HidConnectionLinux::PlatformWrite(
   // Linux expects the first byte of the buffer to always be a report ID so the
   // buffer can be used directly.
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BlockingTaskHelper::Write,
+      FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::Write,
                                 base::Unretained(helper_.get()), buffer,
                                 std::move(callback)));
 }
@@ -223,7 +226,7 @@ void HidConnectionLinux::PlatformGetFeatureReport(uint8_t report_id,
   buffer->data()[0] = report_id;
 
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BlockingTaskHelper::GetFeatureReport,
+      FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::GetFeatureReport,
                                 base::Unretained(helper_.get()), report_id,
                                 buffer, std::move(callback)));
 }
@@ -234,7 +237,7 @@ void HidConnectionLinux::PlatformSendFeatureReport(
   // Linux expects the first byte of the buffer to always be a report ID so the
   // buffer can be used directly.
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BlockingTaskHelper::SendFeatureReport,
+      FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::SendFeatureReport,
                                 base::Unretained(helper_.get()), buffer,
                                 std::move(callback)));
 }

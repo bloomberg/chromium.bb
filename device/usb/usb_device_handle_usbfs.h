@@ -88,7 +88,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
   virtual void CloseBlocking();
 
  private:
-  class BlockingTaskHelper;
+  class BlockingTaskRunnerHelper;
   struct Transfer;
   struct InterfaceInfo {
     uint8_t alternate_setting;
@@ -138,7 +138,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
 
   // Helper object exists on the blocking task thread and all calls to it and
   // its destruction must be posted there.
-  std::unique_ptr<BlockingTaskHelper> helper_;
+  std::unique_ptr<BlockingTaskRunnerHelper> helper_;
 
   std::list<std::unique_ptr<Transfer>> transfers_;
   base::SequenceChecker sequence_checker_;
