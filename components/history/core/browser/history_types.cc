@@ -67,7 +67,7 @@ void QueryResults::SetURLResults(std::vector<URLResult>&& results) {
 
   // Recreate the map for the results_ has been replaced.
   url_to_results_.clear();
-  for(size_t i = 0; i < results_.size(); ++i)
+  for (size_t i = 0; i < results_.size(); ++i)
     AddURLUsageAtIndex(results_[i].url(), i);
 }
 
@@ -168,10 +168,13 @@ int QueryOptions::EffectiveMaxCount() const {
 
 // QueryURLResult -------------------------------------------------------------
 
-QueryURLResult::QueryURLResult() {}
+QueryURLResult::QueryURLResult() = default;
 
-QueryURLResult::~QueryURLResult() {
-}
+QueryURLResult::~QueryURLResult() = default;
+
+QueryURLResult::QueryURLResult(const QueryURLResult&) = default;
+
+QueryURLResult::QueryURLResult(QueryURLResult&&) = default;
 
 // MostVisitedURL --------------------------------------------------------------
 

@@ -245,8 +245,8 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       history::HistoryService* history =
           ios::HistoryServiceFactory::GetForBrowserState(
               browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
-      return history ? history->AsWeakPtr()
-                     : base::WeakPtr<history::HistoryService>();
+      return history ? history->GetDeleteDirectivesSyncableService()
+                     : base::WeakPtr<syncer::SyncableService>();
     }
     case syncer::FAVICON_IMAGES:
     case syncer::FAVICON_TRACKING: {

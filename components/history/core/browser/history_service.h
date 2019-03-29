@@ -35,9 +35,7 @@
 #include "components/favicon_base/favicon_usage_data.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
-#include "components/history/core/browser/sync/delete_directive_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sync/model/syncable_service.h"
 #include "sql/init_status.h"
 #include "ui/base/page_transition_types.h"
 
@@ -60,10 +58,16 @@ class FaviconServiceImpl;
 
 namespace syncer {
 class ModelTypeControllerDelegate;
+class SyncableService;
+}  // namespace syncer
+
+namespace sync_pb {
+class HistoryDeleteDirectiveSpecifics;
 }
 
 namespace history {
 
+class DeleteDirectiveHandler;
 struct DownloadRow;
 struct HistoryAddPageArgs;
 class HistoryBackend;
@@ -78,12 +82,9 @@ class URLDatabase;
 class VisitDelegate;
 class WebHistoryService;
 
-// The history service records page titles, and visit times, as well as
-// (eventually) information about autocomplete.
-//
-// This service is thread safe. Each request callback is invoked in the
-// thread that made the request.
-class HistoryService : public syncer::SyncableService, public KeyedService {
+// The history service records page titles, visit times, and favicons, as well
+// as information about downloads.
+class HistoryService : public KeyedService {
  public:
   // Must call Init after construction. The empty constructor provided only for
   // unit tests. When using the full constructor, |history_client| may only be
@@ -371,9 +372,8 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   void DeleteLocalAndRemoteUrl(WebHistoryService* web_history, const GURL& url);
 
   // Processes the given |delete_directive| and sends it to the
-  // SyncChangeProcessor (if it exists).  Returns any error resulting
-  // from sending the delete directive to sync.
-  syncer::SyncError ProcessLocalDeleteDirective(
+  // SyncChangeProcessor (if it exists).
+  void ProcessLocalDeleteDirective(
       const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive);
 
   // Downloads -----------------------------------------------------------------
@@ -512,17 +512,9 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
 
   base::WeakPtr<HistoryService> AsWeakPtr();
 
-  // syncer::SyncableService implementation.
-  syncer::SyncMergeResult MergeDataAndStartSyncing(
-      syncer::ModelType type,
-      const syncer::SyncDataList& initial_sync_data,
-      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
-      std::unique_ptr<syncer::SyncErrorFactory> error_handler) override;
-  void StopSyncing(syncer::ModelType type) override;
-  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
-  syncer::SyncError ProcessSyncChanges(
-      const base::Location& from_here,
-      const syncer::SyncChangeList& change_list) override;
+  // For sync codebase only: returns the SyncableService API that implements
+  // sync datatype HISTORY_DELETE_DIRECTIVES.
+  base::WeakPtr<syncer::SyncableService> GetDeleteDirectivesSyncableService();
 
   // For sync codebase only: instantiates a controller delegate to interact with
   // TypedURLSyncBridge. Must be called from the UI thread.
@@ -872,7 +864,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   base::CallbackList<void(const std::set<GURL>&, const GURL&)>
       favicon_changed_callback_list_;
 
-  DeleteDirectiveHandler delete_directive_handler_;
+  std::unique_ptr<DeleteDirectiveHandler> delete_directive_handler_;
 
   // All vended weak pointers are invalidated in Cleanup().
   base::WeakPtrFactory<HistoryService> weak_ptr_factory_;
