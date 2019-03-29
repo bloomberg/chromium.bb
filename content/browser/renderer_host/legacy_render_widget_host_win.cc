@@ -14,6 +14,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
+#include "content/browser/renderer_host/direct_manipulation_win.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/public/common/content_switches.h"
@@ -24,7 +25,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/view_prop.h"
-#include "ui/base/win/direct_manipulation.h"
 #include "ui/base/win/internal_constants.h"
 #include "ui/base/win/window_event_target.h"
 #include "ui/compositor/compositor.h"
@@ -214,9 +214,8 @@ bool LegacyRenderWidgetHostHWND::Init() {
 
   // Direct Manipulation is enabled on Windows 10+. The CreateInstance function
   // returns NULL if Direct Manipulation is not available.
-  direct_manipulation_helper_ =
-      ui::win::DirectManipulationHelper::CreateInstance(
-          hwnd(), GetWindowEventTarget(GetParent()));
+  direct_manipulation_helper_ = DirectManipulationHelper::CreateInstance(
+      hwnd(), GetWindowEventTarget(GetParent()));
 
   // Disable pen flicks (http://crbug.com/506977)
   base::win::DisableFlicks(hwnd());

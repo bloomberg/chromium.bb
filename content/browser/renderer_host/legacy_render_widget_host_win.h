@@ -21,17 +21,14 @@
 namespace ui {
 class AXFragmentRootWin;
 class AXSystemCaretWin;
-class DirectManipulationHelper;
 class WindowEventTarget;
-namespace win {
-class DirectManipulationHelper;
-}  // namespace win
 }  // namespace ui
 
 namespace content {
-class RenderWidgetHostViewAura;
 
 class DirectManipulationBrowserTest;
+class DirectManipulationHelper;
+class RenderWidgetHostViewAura;
 
 // Reasons for the existence of this class outlined below:-
 // 1. Some screen readers expect every tab / every unique web content container
@@ -191,8 +188,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   // This class provides functionality to register the legacy window as a
   // Direct Manipulation consumer. This allows us to support smooth scroll
   // in Chrome on Windows 10.
-  std::unique_ptr<ui::win::DirectManipulationHelper>
-      direct_manipulation_helper_;
+  std::unique_ptr<DirectManipulationHelper> direct_manipulation_helper_;
 
   std::unique_ptr<ui::CompositorAnimationObserver>
       compositor_animation_observer_;
