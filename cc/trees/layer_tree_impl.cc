@@ -2156,10 +2156,7 @@ LayerImpl* LayerTreeImpl::FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
 }
 
 struct HitTestVisibleScrollableOrTouchableFunctor {
-  bool operator()(LayerImpl* layer) const {
-    return layer->scrollable() || layer->ShouldHitTest() ||
-           !layer->touch_action_region().region().IsEmpty();
-  }
+  bool operator()(LayerImpl* layer) const { return layer->HitTestable(); }
 };
 
 LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPoint(
