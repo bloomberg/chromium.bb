@@ -1165,6 +1165,25 @@ TEST(JsonStdStringWriterTest, HelloWorld) {
       out);
 }
 
+TEST(JsonStdStringWriterTest, RepresentingNonFiniteValuesAsNull) {
+  // JSON can't represent +Infinity, -Infinity, or NaN.
+  // So in practice it's mapped to null.
+  std::string out;
+  Status status;
+  std::unique_ptr<StreamingParserHandler> writer =
+      NewJSONEncoder(GetTestPlatform(), &out, &status);
+  writer->HandleMapBegin();
+  writer->HandleString8(SpanFromStdString("Infinity"));
+  writer->HandleDouble(std::numeric_limits<double>::infinity());
+  writer->HandleString8(SpanFromStdString("-Infinity"));
+  writer->HandleDouble(-std::numeric_limits<double>::infinity());
+  writer->HandleString8(SpanFromStdString("NaN"));
+  writer->HandleDouble(std::numeric_limits<double>::quiet_NaN());
+  writer->HandleMapEnd();
+  EXPECT_TRUE(status.ok());
+  EXPECT_EQ("{\"Infinity\":null,\"-Infinity\":null,\"NaN\":null}", out);
+}
+
 TEST(JsonStdStringWriterTest, BinaryEncodedAsJsonString) {
   // The encoder emits binary submitted to StreamingParserHandler::HandleBinary
   // as base64. The following three examples are taken from
