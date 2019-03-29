@@ -2811,6 +2811,20 @@
           'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
         },
       },
+      'Win10 FYI Release (AMD RX 550)': {
+        # This bot currently only has one piece of hardware behind it,
+        # and is being qualified for potential scale-out.
+        'os_type': 'win',
+        'browser_config': 'release',
+        'mixins': [
+          'limited_capacity_bot',
+          'win10_amd_rx_550',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_fyi_win_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_amd_telemetry_tests',
+        },
+      },
       'Win10 FYI Release (Intel HD 630)': {
         'os_type': 'win',
         'browser_config': 'release',
