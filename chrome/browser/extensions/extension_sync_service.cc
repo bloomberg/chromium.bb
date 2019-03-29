@@ -31,6 +31,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/image_util.h"
+#include "extensions/common/one_shot_event.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
 
@@ -149,6 +150,11 @@ bool ExtensionSyncService::HasPendingReenable(
   const PendingUpdate& pending = it->second;
   return pending.version == version &&
          pending.grant_permissions_and_reenable;
+}
+
+void ExtensionSyncService::WaitUntilReadyToSync(base::OnceClosure done) {
+  // Wait for the extension system to be ready.
+  ExtensionSystem::Get(profile_)->ready().Post(FROM_HERE, std::move(done));
 }
 
 syncer::SyncMergeResult ExtensionSyncService::MergeDataAndStartSyncing(
