@@ -713,7 +713,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigationObserverDisconnected) {
   run_loop.Run();
 }
 
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DelayedNavigationEventAck) {
+// TODO(crbug.com/947268): Re-enable this once flakiness is addressed.
+IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_DelayedNavigationEventAck) {
   chromium::web::FramePtr frame = CreateFrame();
 
   chromium::web::NavigationControllerPtr controller;
