@@ -6134,9 +6134,8 @@ crbug.com/946713 [ Release ] virtual/binary-for-devtools/http/tests/devtools/ext
 crbug.com/848799 [ Win7 ] http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Timeout ]
 crbug.com/848799 [ Win7 ] virtual/binary-for-devtools/http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Timeout ]
 crbug.com/947126 [ Mac10.13 ] virtual/video-surface-layer/media/video-played-ranges-1.html [ Pass Failure ]
-crbug.com/942411 [ Win7 ] http/tests/devtools/network/network-search.js [ Pass Timeout ]
-crbug.com/942411 [ Win7 ] virtual/binary-for-devtools/http/tests/devtools/network/network-search.js [ Pass Timeout ]
-
+crbug.com/942411 [ Win7 Linux ] http/tests/devtools/network/network-search.js [ Pass Timeout ]
+crbug.com/942411 [ Win7 Linux ] virtual/binary-for-devtools/http/tests/devtools/network/network-search.js [ Pass Timeout ]
 
 ### external/wpt/fetch/sec-metadata/
 crbug.com/947023 external/wpt/fetch/sec-metadata/embed.tentative.https.sub.html [ Pass Failure ]
