@@ -27,6 +27,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/ukm/ios/features.h"
 #include "components/variations/field_trial_config/field_trial_util.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/synthetic_trials_active_group_id_provider.h"
@@ -251,7 +252,12 @@ void IOSChromeMainParts::StartMetricsRecording() {
   bool wifiOnly = local_state_->GetBoolean(prefs::kMetricsReportingWifiOnly);
   bool isConnectionCellular = net::NetworkChangeNotifier::IsConnectionCellular(
       net::NetworkChangeNotifier::GetConnectionType());
-  bool mayUpload = !wifiOnly || !isConnectionCellular;
+  bool mayUpload = false;
+  if (base::FeatureList::IsEnabled(kUmaCellular)) {
+    mayUpload = !isConnectionCellular;
+  } else {
+    mayUpload = !wifiOnly || !isConnectionCellular;
+  }
 
   application_context_->GetMetricsServicesManager()->UpdateUploadPermissions(
       mayUpload);

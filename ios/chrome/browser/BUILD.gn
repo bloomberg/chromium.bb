@@ -193,6 +193,7 @@ source_set("browser_impl") {
     "//components/sessions",
     "//components/translate/core/browser",
     "//components/ukm",
+    "//components/ukm/ios:features",
     "//components/update_client",
     "//components/variations",
     "//components/variations/field_trial_config",

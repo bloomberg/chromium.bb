@@ -160,6 +160,7 @@ source_set("app_internal") {
     "//components/proxy_config",
     "//components/suggestions",
     "//components/sync",
+    "//components/ukm/ios:features",
     "//components/url_formatter",
     "//components/web_resource",
     "//ios/chrome/app/application_delegate",
