@@ -37,7 +37,7 @@
   // Configure the NavigationBar.
   UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                           target:self.infobarModalDelegate
+                           target:self
                            action:@selector(dismissInfobarModal:)];
   UIImage* settingsImage = [[UIImage imageNamed:@"infobar_settings_icon"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
@@ -48,6 +48,12 @@
                                       action:nil];
   self.navigationItem.leftBarButtonItem = cancelButton;
   self.navigationItem.rightBarButtonItem = settingsButton;
+}
+
+#pragma mark - Private Methods
+
+- (void)dismissInfobarModal:(UIButton*)sender {
+  [self.infobarModalDelegate dismissInfobarModal:sender completion:nil];
 }
 
 @end

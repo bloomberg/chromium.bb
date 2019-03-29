@@ -11,7 +11,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
-#import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinating.h"
+#import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
 #include "ios/chrome/browser/ui/infobars/infobar_container_mediator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
@@ -148,15 +148,16 @@ const double kBannerPresentationDurationInSeconds = 6.0;
 - (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate
                       position:(NSInteger)position {
   DCHECK(IsInfobarUIRebootEnabled());
-  ChromeCoordinator<InfobarCoordinating>* infobarCoordinator =
-      static_cast<ChromeCoordinator<InfobarCoordinating>*>(infoBarDelegate);
+  InfobarCoordinator* infobarCoordinator =
+      static_cast<InfobarCoordinator*>(infoBarDelegate);
 
   // Present the InfobarBanner, and set the Coordinator and View hierarchies.
   [infobarCoordinator start];
   infobarCoordinator.badgeDelegate = self.mediator;
   infobarCoordinator.browserState = self.browserState;
-  [infobarCoordinator presentInfobarBannerFrom:self.baseViewController];
-  self.infobarViewController = [infobarCoordinator bannerViewController];
+  infobarCoordinator.baseViewController = self.baseViewController;
+  [infobarCoordinator presentInfobarBanner];
+  self.infobarViewController = infobarCoordinator.bannerViewController;
   [self.childCoordinators addObject:infobarCoordinator];
 
   // Dismissed the presented InfobarCoordinator banner after
@@ -164,7 +165,7 @@ const double kBannerPresentationDurationInSeconds = 6.0;
   dispatch_time_t popTime = dispatch_time(
       DISPATCH_TIME_NOW, kBannerPresentationDurationInSeconds * NSEC_PER_SEC);
   dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
-    [infobarCoordinator dismissInfobarBannerIfPresented];
+    [infobarCoordinator dismissInfobarBannerAfterInteraction];
   });
 }
 
@@ -181,15 +182,9 @@ const double kBannerPresentationDurationInSeconds = 6.0;
 #pragma mark - InfobarCommands
 
 - (void)displayModalInfobar {
-  // Dismiss the InfobarBanner if being presented.
-  if (self.baseViewController.presentedViewController) {
-    [self.baseViewController dismissViewControllerAnimated:NO completion:nil];
-  }
-
-  ChromeCoordinator<InfobarCoordinating>* infobarCoordinator =
-      static_cast<ChromeCoordinator<InfobarCoordinating>*>(
-          self.activeChildCoordinator);
-  [infobarCoordinator presentInfobarModalFrom:self.baseViewController];
+  InfobarCoordinator* infobarCoordinator =
+      static_cast<InfobarCoordinator*>(self.activeChildCoordinator);
+  [infobarCoordinator presentInfobarModal];
 }
 
 #pragma mark - SigninPresenter

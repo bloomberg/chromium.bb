@@ -189,7 +189,7 @@ const CGFloat kChangeInPositionForTransition = 100.0;
 
 - (void)dismissWhenInteractionIsFinished {
   if (!self.touchInProgress) {
-    [self.delegate dismissInfobarBanner:self];
+    [self.delegate dismissInfobarBanner:self animated:YES completion:nil];
   }
   self.shouldDismissAfterTouchesEnded = YES;
 }
@@ -228,7 +228,7 @@ const CGFloat kChangeInPositionForTransition = 100.0;
     // banner.
     if ((self.view.center.y - self.originalCenter.y < 0) ||
         self.shouldDismissAfterTouchesEnded) {
-      [self.delegate dismissInfobarBanner:self];
+      [self.delegate dismissInfobarBanner:self animated:YES completion:nil];
       return;
     }
     self.view.center = self.originalCenter;
