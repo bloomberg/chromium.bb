@@ -52,11 +52,13 @@ class GitCL(object):
         self._cwd = cwd
         self._git_executable_name = Git.find_executable_name(host.executive, host.platform)
 
-    def run(self, args):
+    def run(self, args, return_stderr=None):
         """Runs git-cl with the given arguments and returns the output."""
         command = [self._git_executable_name, 'cl'] + args
         if self._auth_refresh_token_json and args[0] in _COMMANDS_THAT_TAKE_REFRESH_TOKEN:
             command += ['--auth-refresh-token-json', self._auth_refresh_token_json]
+        if return_stderr is not None:
+            return self._host.executive.run_command(command, cwd=self._cwd, return_stderr=return_stderr)
         return self._host.executive.run_command(command, cwd=self._cwd)
 
     def trigger_try_jobs(self, builders, bucket=None):
@@ -101,7 +103,8 @@ class GitCL(object):
         return 'None'
 
     def _get_cl_status(self):
-        return self.run(['status', '--field=status']).strip()
+        # Note: Don't return stderr to address crbug.com/946619
+        return self.run(['status', '--field=status'], return_stderr=False).strip()
 
     def wait_for_try_jobs(
             self, poll_delay_seconds=10 * 60, timeout_seconds=120 * 60,
