@@ -580,6 +580,9 @@ void LegacyRenderWidgetHostHWND::PollForNextEvent() {
 
 gfx::NativeViewAccessible
 LegacyRenderWidgetHostHWND::GetOrCreateWindowRootAccessible() {
+  if (!host_)
+    return nullptr;
+
   RenderWidgetHostImpl* rwhi =
       RenderWidgetHostImpl::From(host_->GetRenderWidgetHost());
   if (!rwhi)

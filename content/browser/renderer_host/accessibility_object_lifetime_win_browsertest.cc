@@ -10,6 +10,7 @@
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/accessibility/platform/ax_system_caret_win.h"
+#include "ui/base/win/hwnd_subclass.h"
 
 namespace content {
 
@@ -89,6 +90,50 @@ IN_PROC_BROWSER_TEST_F(AccessibilityObjectLifetimeWinBrowserTest,
 
   // At this point our test reference should be the only one remaining.
   EXPECT_EQ(test_node_->m_dwRef, 1);
+}
+
+// Window subclassing message filter for the legacy window to allow us to
+// examine state after the call to LegacyRenderWidgetHostHWND::Destroy() but
+// before the window is torn down completely. Operating system hooks can run in
+// this narrow window; see crbug.com/945584 for one example.
+class AccessibilityTeardownTestMessageFilter : public ui::HWNDMessageFilter {
+ public:
+  AccessibilityTeardownTestMessageFilter(RenderWidgetHostViewAura* view)
+      : view_(view) {
+    HWND hwnd = view->AccessibilityGetAcceleratedWidget();
+    CHECK(hwnd);
+    ui::HWNDSubclass::AddFilterToTarget(hwnd, this);
+  }
+  ~AccessibilityTeardownTestMessageFilter() override = default;
+
+  // ui::HWNDMessageFilter:
+  bool FilterMessage(HWND hwnd,
+                     UINT message,
+                     WPARAM w_param,
+                     LPARAM l_param,
+                     LRESULT* l_result) override {
+    if (message == WM_DESTROY) {
+      // Verify that the view no longer exposes a NativeViewAccessible.
+      EXPECT_EQ(view_->GetNativeViewAccessible(), nullptr);
+
+      // Remove ourselves as a subclass.
+      ui::HWNDSubclass::RemoveFilterFromAllTargets(this);
+    }
+
+    return true;
+  }
+
+ private:
+  RenderWidgetHostViewAura* view_;
+};
+
+IN_PROC_BROWSER_TEST_F(AccessibilityObjectLifetimeWinBrowserTest,
+                       DoNotReturnObjectDuringTeardown) {
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  AccessibilityTeardownTestMessageFilter test_message_filter(GetView());
+
+  shell()->Close();
 }
 
 class AccessibilityObjectLifetimeUiaWinBrowserTest
