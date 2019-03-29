@@ -1374,7 +1374,7 @@ it or fix the checkout.
 '''  % {'checkout_path': os.path.join(self.root_dir, dep.name),
         'expected_url': dep.url,
         'expected_scm': dep.GetScmName(),
-        'mirror_string' : mirror_string,
+        'mirror_string': mirror_string,
         'actual_url': actual_url,
         'actual_scm': dep.GetScmName()})
 
@@ -1386,6 +1386,21 @@ it or fix the checkout.
       exec(content, config_dict)
     except SyntaxError as e:
       gclient_utils.SyntaxErrorToError('.gclient', e)
+
+    # Supporting Unicode URLs in both Python 2 and 3 is annoying. Try to
+    # convert to ASCII in case the URL doesn't actually have any Unicode
+    # characters, otherwise raise an error.
+    # This isn't an issue on Python 3 because everything's Unicode anyway.
+    if sys.version_info.major == 2:
+      try:
+        url = config_dict['solutions'][0]['url']
+        if isinstance(url, unicode):
+          config_dict['solutions'][0]['url'] = url.encode('ascii')
+      except UnicodeEncodeError:
+        raise gclient_utils.Error(
+            "Invalid .gclient file. The url mustn't be unicode.")
+      except KeyError:
+        pass
 
     # Append any target OS that is not already being enforced to the tuple.
     target_os = config_dict.get('target_os', [])
