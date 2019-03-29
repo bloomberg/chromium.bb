@@ -1930,6 +1930,16 @@ extern const char kExperimentalAccessibilityChromeVoxLanguageSwitchingName[];
 extern const char
     kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[];
 
+extern const char kExperimentalAccessibilityChromeVoxRichTextIndicationName[];
+extern const char
+    kExperimentalAccessibilityChromeVoxRichTextIndicationDescription[];
+
+extern const char kFileManagerTouchModeName[];
+extern const char kFileManagerTouchModeDescription[];
+
+extern const char kFirstRunUiTransitionsName[];
+extern const char kFirstRunUiTransitionsDescription[];
+
 extern const char kForceEnableStylusToolsName[];
 extern const char kForceEnableStylusToolsDescription[];
 

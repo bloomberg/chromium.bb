@@ -2253,6 +2253,15 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(
          ::switches::
              kEnableExperimentalAccessibilityChromeVoxLanguageSwitching)},
+    {"enable-experimental-accessibility-chromevox-rich-text-indication",
+     flag_descriptions::
+         kExperimentalAccessibilityChromeVoxRichTextIndicationName,
+     flag_descriptions::
+         kExperimentalAccessibilityChromeVoxRichTextIndicationDescription,
+     kOsCrOS,
+     SINGLE_VALUE_TYPE(
+         ::switches::
+             kEnableExperimentalAccessibilityChromeVoxRichTextIndication)},
 #endif  // OS_CHROMEOS
 #if !defined(OS_ANDROID) && defined(GOOGLE_CHROME_BUILD)
     {"enable-google-branded-context-menu",

@@ -9,13 +9,13 @@
  */
 
 goog.provide('cvox.ChromeVoxPrefs');
+goog.provide('cvox.RichTextSpeechStyle');
 
 goog.require('ConsoleTts');
 goog.require('EventStreamLogger');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.ExtensionBridge');
 goog.require('cvox.KeyMap');
-
 
 /**
  * This object has default values of preferences and contains the common
@@ -73,6 +73,7 @@ cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
   // class to manage multiple key maps. Also, this doesn't belong as a pref;
   // should just store in local storage.
   'currentKeyMap': cvox.KeyMap.DEFAULT_KEYMAP,
+  'customizeRichTextIndication': false,
   'cvoxKey': '',
   'enableBrailleLogging': false,
   'enableEarconLogging': false,
@@ -94,6 +95,11 @@ cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
   'useIBeamCursor': cvox.ChromeVox.isMac,
   'useClassic': false,
   'useVerboseMode': true,
+
+  'indicateMisspell': 'do nothing',
+  'indicateBold': 'do nothing',
+  'indicateItalic': 'do nothing',
+  'indicateUnderline': 'do nothing',
 
   // eventStreamFilters
   'activedescendantchanged': true,

@@ -63,6 +63,7 @@ cvox.OptionsPage.init = function() {
   cvox.OptionsPage.consoleTts =
       chrome.extension.getBackgroundPage().ConsoleTts.getInstance();
   cvox.OptionsPage.populateVoicesSelect();
+  cvox.OptionsPage.populateRichTextSelects();
   cvox.BrailleTable.getAll(function(tables) {
     /** @type {!Array<cvox.BrailleTable.Table>} */
     cvox.OptionsPage.brailleTables = tables;
@@ -108,6 +109,25 @@ cvox.OptionsPage.init = function() {
           $('languageSwitchingOtion').hidden = true;
         }
       });
+
+  chrome.commandLinePrivate.hasSwitch(
+      'enable-experimental-accessibility-chromevox-rich-text-indication',
+      function(enabled) {
+        if (!enabled) {
+          $('richTextIndicationOptions').style.display = 'none';
+        }
+      });
+
+  if (localStorage['customizeRichTextIndication'] === 'false')
+    $('additionalRichTextIndicationOptions').style.display = 'none';
+
+  // Toggle visibility of additional rich text options.
+  $('customizeRichTextIndication').addEventListener('change', function(evt) {
+    if (!evt.target.checked)
+      $('additionalRichTextIndicationOptions').style.display = 'none';
+    else
+      $('additionalRichTextIndicationOptions').style.display = 'block';
+  });
 
   var registerEventStreamFiltersListener = function() {
     $('toggle-event-stream-filters').addEventListener('click', function(evt) {
@@ -542,3 +562,22 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('beforeunload', function(e) {
   cvox.OptionsPage.bluetoothBrailleDisplayUI.detach();
 });
+
+/**
+ * Populates rich text selects with options.
+ */
+cvox.OptionsPage.populateRichTextSelects = function() {
+  var richTextSelects = [
+    $('indicateMisspell'), $('indicateBold'), $('indicateItalic'),
+    $('indicateUnderline')
+  ];
+  richTextSelects.forEach(function(select) {
+    select.value = localStorage[select.id];
+
+    select.addEventListener('change', function(evt) {
+      var id = evt.target.id;
+      var value = evt.target.options[evt.target.selectedIndex].value;
+      cvox.OptionsPage.prefs.setPref(id, value);
+    }, true);
+  });
+};

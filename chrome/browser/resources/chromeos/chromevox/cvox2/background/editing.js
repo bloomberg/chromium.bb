@@ -448,6 +448,7 @@ AutomationRichEditableText.prototype = {
         if (markerEndIndex > -1)
           this.speakTextMarker_(container.markerTypes[markerEndIndex], true);
       }
+
       this.speakTextStyle_(container);
       return;
     }
@@ -607,8 +608,10 @@ AutomationRichEditableText.prototype = {
   speakTextMarker_: function(markerType, opt_end) {
     // TODO(dtseng): Plumb through constants to automation.
     var msgs = [];
-    if (markerType & 1)
-      msgs.push(opt_end ? 'misspelling_end' : 'misspelling_start');
+    if (markerType & 1) {
+      if (localStorage['indicateMisspell'] == 'announce')
+        msgs.push(opt_end ? 'misspelling_end' : 'misspelling_start');
+    }
     if (markerType & 2)
       msgs.push(opt_end ? 'grammar_end' : 'grammar_start');
     if (markerType & 4)
@@ -662,15 +665,18 @@ AutomationRichEditableText.prototype = {
       msgs.push(
           this.superscript_ ? {msg: 'superscript'} : {msg: 'not_superscript'});
     }
-    if (bold !== this.bold_) {
+    if ((localStorage['indicateBold'].toLowerCase() == 'announce') &&
+        (bold !== this.bold_)) {
       this.bold_ = bold;
       msgs.push(this.bold_ ? {msg: 'bold'} : {msg: 'not_bold'});
     }
-    if (italic !== this.italic_) {
+    if ((localStorage['indicateItalic'].toLowerCase() == 'announce') &&
+        (italic !== this.italic_)) {
       this.italic_ = italic;
       msgs.push(this.italic_ ? {msg: 'italic'} : {msg: 'not_italic'});
     }
-    if (underline !== this.underline_) {
+    if ((localStorage['indicateUnderline'].toLowerCase() == 'announce') &&
+        (underline !== this.underline_)) {
       this.underline_ = underline;
       msgs.push(this.underline_ ? {msg: 'underline'} : {msg: 'not_underline'});
     }
