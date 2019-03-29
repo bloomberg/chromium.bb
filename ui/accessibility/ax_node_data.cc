@@ -1261,6 +1261,9 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::FloatAttribute::kFontSize:
         result += " font_size=" + value;
         break;
+      case ax::mojom::FloatAttribute::kFontWeight:
+        result += " font_weight=" + value;
+        break;
       case ax::mojom::FloatAttribute::kNone:
         break;
     }

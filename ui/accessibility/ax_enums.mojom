@@ -603,6 +603,11 @@ enum FloatAttribute {
    // Text attributes.
    // Font size is in pixels.
   kFontSize,
+
+   // Font weight can take on any arbitrary numeric value. Increments of 100 in
+   // range [0, 900] represent keywords such as light, normal, bold, etc. 0 is
+   // the default.
+  kFontWeight,
 };
 
 // These attributes can take three states:

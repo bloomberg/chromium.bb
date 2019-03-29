@@ -1636,6 +1636,8 @@ const char* ToString(ax::mojom::FloatAttribute float_attribute) {
       return "stepValueForRange";
     case ax::mojom::FloatAttribute::kFontSize:
       return "fontSize";
+    case ax::mojom::FloatAttribute::kFontWeight:
+      return "fontWeight";
   }
 
   return "";
@@ -1654,6 +1656,8 @@ ax::mojom::FloatAttribute ParseFloatAttribute(const char* float_attribute) {
     return ax::mojom::FloatAttribute::kStepValueForRange;
   if (0 == strcmp(float_attribute, "fontSize"))
     return ax::mojom::FloatAttribute::kFontSize;
+  if (0 == strcmp(float_attribute, "fontWeight"))
+    return ax::mojom::FloatAttribute::kFontWeight;
   return ax::mojom::FloatAttribute::kNone;
 }
 

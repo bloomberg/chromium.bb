@@ -105,6 +105,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   AtomicString FontFamily() const final;
   // Font size is in pixels.
   float FontSize() const final;
+  float FontWeight() const final;
   String ImageDataUrl(const IntSize& max_size) const final;
   String GetText() const override;
   ax::mojom::TextDirection GetTextDirection() const final;
