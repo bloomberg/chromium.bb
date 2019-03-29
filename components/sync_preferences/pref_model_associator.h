@@ -52,21 +52,21 @@ class PrefModelAssociator : public syncer::SyncableService {
   bool models_associated() const { return models_associated_; }
 
   // syncer::SyncableService implementation.
-
-  // Note for GetAllSyncData: This will build a model of all preferences
-  // registered as syncable with user controlled data. We do not track any
-  // information for preferences not registered locally as syncable and do not
-  // inform the syncer of non-user controlled preferences.
-  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
-  syncer::SyncError ProcessSyncChanges(
-      const base::Location& from_here,
-      const syncer::SyncChangeList& change_list) override;
+  void WaitUntilReadyToSync(base::OnceClosure done) override;
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
       std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
   void StopSyncing(syncer::ModelType type) override;
+  syncer::SyncError ProcessSyncChanges(
+      const base::Location& from_here,
+      const syncer::SyncChangeList& change_list) override;
+  // Note for GetAllSyncData: This will build a model of all preferences
+  // registered as syncable with user controlled data. We do not track any
+  // information for preferences not registered locally as syncable and do not
+  // inform the syncer of non-user controlled preferences.
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
 
   // TODO(tschumann): Replace the RegisterPref() call with a
   // VerifyPersistedPrefType() method. All pref registration checks are now
