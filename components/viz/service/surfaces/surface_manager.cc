@@ -192,7 +192,7 @@ void SurfaceManager::GarbageCollectSurfaces() {
     return;
   }
 
-  SurfaceIdSet reachable_surfaces = GetLiveSurfacesForReferences();
+  SurfaceIdSet reachable_surfaces = GetLiveSurfaces();
 
   // Log the number of reachable surfaces after a garbage collection.
   UMA_HISTOGRAM_CUSTOM_COUNTS(kUmaAliveSurfaces, reachable_surfaces.size(), 1,
@@ -252,7 +252,7 @@ SurfaceManager::GetSurfacesThatReferenceChildForTesting(
   return parents;
 }
 
-SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfacesForReferences() {
+SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfaces() {
   SurfaceIdSet reachable_surfaces;
 
   // Walk down from the root and mark each SurfaceId we encounter as

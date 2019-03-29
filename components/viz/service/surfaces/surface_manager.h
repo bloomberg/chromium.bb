@@ -234,11 +234,8 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
     bool marked_as_old = false;
   };
 
-  // Returns set of live surfaces for |lifetime_manager_| is REFERENCES.
-  SurfaceIdSet GetLiveSurfacesForReferences();
-
-  // Returns set of live surfaces for |lifetime_manager_| is SEQUENCES.
-  SurfaceIdSet GetLiveSurfacesForSequences();
+  // Returns set of surfaces that cannot be garbage-collected.
+  SurfaceIdSet GetLiveSurfaces();
 
   // Adds a reference from |parent_id| to |child_id| without dealing with
   // temporary references.
