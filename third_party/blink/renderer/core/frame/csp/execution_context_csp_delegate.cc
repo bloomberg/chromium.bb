@@ -155,7 +155,7 @@ void ExecutionContextCSPDelegate::PostViolationReport(
 
   // Construct and route the report to the ReportingContext, to be observed
   // by any ReportingObservers.
-  CSPViolationReportBody* body = CSPViolationReportBody::Create(violation_data);
+  auto* body = MakeGarbageCollected<CSPViolationReportBody>(violation_data);
   Report* observed_report =
       MakeGarbageCollected<Report>("csp-violation", Url().GetString(), body);
   auto* reporting_context = ReportingContext::From(document);

@@ -16,7 +16,7 @@ RemoteSecurityContext::RemoteSecurityContext() : SecurityContext() {
   DCHECK(!GetSecurityOrigin());
 
   // Start with a clean slate.
-  SetContentSecurityPolicy(ContentSecurityPolicy::Create());
+  SetContentSecurityPolicy(MakeGarbageCollected<ContentSecurityPolicy>());
 
   // FIXME: Document::initSecurityContext has a few other things we may
   // eventually want here, such as enforcing a setting to
@@ -36,7 +36,7 @@ void RemoteSecurityContext::SetReplicatedOrigin(
 
 void RemoteSecurityContext::ResetReplicatedContentSecurityPolicy() {
   DCHECK(GetSecurityOrigin());
-  SetContentSecurityPolicy(ContentSecurityPolicy::Create());
+  SetContentSecurityPolicy(MakeGarbageCollected<ContentSecurityPolicy>());
   GetContentSecurityPolicy()->SetupSelf(*GetSecurityOrigin());
 }
 

@@ -2911,7 +2911,7 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
 void LocalFrameView::EnableAutoSizeMode(const IntSize& min_size,
                                         const IntSize& max_size) {
   if (!auto_size_info_)
-    auto_size_info_ = FrameViewAutoSizeInfo::Create(this);
+    auto_size_info_ = MakeGarbageCollected<FrameViewAutoSizeInfo>(this);
 
   auto_size_info_->ConfigureAutoSizeMode(min_size, max_size);
   SetLayoutSizeFixedToFrameSize(true);

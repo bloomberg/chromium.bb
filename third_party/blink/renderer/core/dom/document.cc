@@ -6535,7 +6535,8 @@ void Document::InitSecureContextState() {
 void Document::InitContentSecurityPolicy(
     ContentSecurityPolicy* csp,
     const ContentSecurityPolicy* last_origin_document_csp) {
-  SetContentSecurityPolicy(csp ? csp : ContentSecurityPolicy::Create());
+  SetContentSecurityPolicy(csp ? csp
+                               : MakeGarbageCollected<ContentSecurityPolicy>());
 
   GetContentSecurityPolicy()->BindToDelegate(
       GetContentSecurityPolicyDelegate());

@@ -1582,7 +1582,7 @@ bool ContentSecurityPolicy::IsValidCSPAttr(const String& attr,
   if (attr.Contains('\n') || attr.Contains('\r'))
     return false;
 
-  ContentSecurityPolicy* attr_policy = ContentSecurityPolicy::Create();
+  auto* attr_policy = MakeGarbageCollected<ContentSecurityPolicy>();
   attr_policy->AddPolicyFromHeaderValue(attr,
                                         kContentSecurityPolicyHeaderTypeEnforce,
                                         kContentSecurityPolicyHeaderSourceHTTP);
@@ -1601,7 +1601,7 @@ bool ContentSecurityPolicy::IsValidCSPAttr(const String& attr,
     return true;
   }
 
-  ContentSecurityPolicy* context_policy = ContentSecurityPolicy::Create();
+  auto* context_policy = MakeGarbageCollected<ContentSecurityPolicy>();
   context_policy->AddPolicyFromHeaderValue(
       context_required_csp, kContentSecurityPolicyHeaderTypeEnforce,
       kContentSecurityPolicyHeaderSourceHTTP);

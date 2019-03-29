@@ -24,10 +24,6 @@ class FloatSize;
 class CORE_EXPORT BrowserControls final
     : public GarbageCollected<BrowserControls> {
  public:
-  static BrowserControls* Create(const Page& page) {
-    return MakeGarbageCollected<BrowserControls>(page);
-  }
-
   explicit BrowserControls(const Page&);
 
   void Trace(blink::Visitor*);

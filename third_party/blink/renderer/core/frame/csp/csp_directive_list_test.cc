@@ -24,7 +24,7 @@ namespace blink {
 
 class CSPDirectiveListTest : public testing::Test {
  public:
-  CSPDirectiveListTest() : csp(ContentSecurityPolicy::Create()) {}
+  CSPDirectiveListTest() : csp(MakeGarbageCollected<ContentSecurityPolicy>()) {}
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures({network::features::kReporting}, {});
     csp->SetupSelf(

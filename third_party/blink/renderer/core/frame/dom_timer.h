@@ -79,15 +79,6 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
  private:
   friend class DOMTimerCoordinator;  // For Create().
 
-  static DOMTimer* Create(ExecutionContext* context,
-                          ScheduledAction* action,
-                          TimeDelta timeout,
-                          bool single_shot,
-                          int timeout_id) {
-    return MakeGarbageCollected<DOMTimer>(context, action, timeout, single_shot,
-                                          timeout_id);
-  }
-
   void Fired() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> TimerTaskRunner() const override;

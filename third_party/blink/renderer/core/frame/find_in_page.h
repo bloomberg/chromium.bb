@@ -28,11 +28,6 @@ class CORE_EXPORT FindInPage final
       public mojom::blink::FindInPage {
 
  public:
-  static FindInPage* Create(WebLocalFrameImpl& frame,
-                            InterfaceRegistry* interface_registry) {
-    return MakeGarbageCollected<FindInPage>(frame, interface_registry);
-  }
-
   FindInPage(WebLocalFrameImpl& frame, InterfaceRegistry* interface_registry);
 
   bool FindInternal(int identifier,

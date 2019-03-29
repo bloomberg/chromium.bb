@@ -207,10 +207,6 @@ class CORE_EXPORT ContentSecurityPolicy
 
   static const size_t kMaxSampleLength = 40;
 
-  static ContentSecurityPolicy* Create() {
-    return MakeGarbageCollected<ContentSecurityPolicy>();
-  }
-
   ContentSecurityPolicy();
   ~ContentSecurityPolicy();
   void Trace(blink::Visitor*);

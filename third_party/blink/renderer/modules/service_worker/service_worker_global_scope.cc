@@ -238,7 +238,7 @@ void ServiceWorkerGlobalScope::RunInstalledClassicScript(
   // Construct a ContentSecurityPolicy object to convert
   // ContentSecurityPolicyResponseHeaders to CSPHeaderAndType.
   // TODO(nhiroki): Find an efficient way to do this.
-  auto* content_security_policy = ContentSecurityPolicy::Create();
+  auto* content_security_policy = MakeGarbageCollected<ContentSecurityPolicy>();
   content_security_policy->DidReceiveHeaders(
       script_data->GetContentSecurityPolicyResponseHeaders());
 

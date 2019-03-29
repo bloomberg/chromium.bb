@@ -167,14 +167,14 @@ Page::Page(PageClients& page_clients)
       context_menu_controller_(ContextMenuController::Create(this)),
       page_scale_constraints_set_(PageScaleConstraintsSet::Create(this)),
       pointer_lock_controller_(PointerLockController::Create(this)),
-      browser_controls_(BrowserControls::Create(*this)),
+      browser_controls_(MakeGarbageCollected<BrowserControls>(*this)),
       console_message_storage_(MakeGarbageCollected<ConsoleMessageStorage>()),
       global_root_scroller_controller_(
           TopDocumentRootScrollerController::Create(*this)),
       visual_viewport_(VisualViewport::Create(*this)),
       overscroll_controller_(
           OverscrollController::Create(GetVisualViewport(), GetChromeClient())),
-      link_highlights_(LinkHighlights::Create(*this)),
+      link_highlights_(MakeGarbageCollected<LinkHighlights>(*this)),
       plugin_data_(nullptr),
       // TODO(pdr): Initialize |validation_message_client_| lazily.
       validation_message_client_(ValidationMessageClientImpl::Create(*this)),
