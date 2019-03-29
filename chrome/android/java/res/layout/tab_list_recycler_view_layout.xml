@@ -7,6 +7,7 @@
     android:id="@+id/tab_list_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp"
     android:visibility="invisible"/>
+

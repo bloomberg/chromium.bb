@@ -27,8 +27,10 @@
                 android:layout_toEndOf="@id/tab_favicon"
                 android:layout_marginEnd="32dp"
                 android:minHeight="32dp"
-                android:ellipsize="end"
-                android:maxLines="1"
+                android:requiresFadingEdge="horizontal"
+                android:fadingEdgeLength="24dp"
+                android:ellipsize="none"
+                android:singleLine="true"
                 android:paddingBottom="6dp"
                 android:paddingTop="6dp"
                 android:textAppearance="@style/TextAppearance.BlackTitle2"/>
@@ -68,5 +70,5 @@
         android:scaleType="center"
         android:layout_gravity="end"
         android:contentDescription="@string/accessibility_tabstrip_btn_close_tab"
-        android:src="@drawable/btn_delete_24dp"/>
+        android:src="@drawable/btn_close"/>
 </FrameLayout>
