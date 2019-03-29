@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/credentialmanager/credential_manager_proxy.h"
 
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -15,9 +16,9 @@ namespace blink {
 CredentialManagerProxy::CredentialManagerProxy(Document& document) {
   LocalFrame* frame = document.GetFrame();
   DCHECK(frame);
-  frame->GetInterfaceProvider().GetInterface(
-      &credential_manager_, frame->GetTaskRunner(TaskType::kUserInteraction));
-  frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(
+  frame->GetDocumentInterfaceBroker().GetCredentialManager(mojo::MakeRequest(
+      &credential_manager_, frame->GetTaskRunner(TaskType::kUserInteraction)));
+  frame->GetDocumentInterfaceBroker().GetAuthenticator(mojo::MakeRequest(
       &authenticator_, frame->GetTaskRunner(TaskType::kUserInteraction)));
 }
 

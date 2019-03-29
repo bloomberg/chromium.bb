@@ -3766,6 +3766,13 @@ void ChromeContentBrowserClient::BindInterfaceRequestFromFrame(
   }
 }
 
+void ChromeContentBrowserClient::BindCredentialManagerRequest(
+    content::RenderFrameHost* render_frame_host,
+    blink::mojom::CredentialManagerRequest request) {
+  ChromePasswordManagerClient::BindCredentialManager(std::move(request),
+                                                     render_frame_host);
+}
+
 bool ChromeContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
     content::RenderFrameHost* render_frame_host,
     const std::string& interface_name,
@@ -4486,8 +4493,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
   frame_interfaces_parameterized_->AddInterface(
       base::BindRepeating(&language::BindContentTranslateDriver));
 
-  frame_interfaces_parameterized_->AddInterface(
-      base::BindRepeating(&ChromePasswordManagerClient::BindCredentialManager));
   frame_interfaces_parameterized_->AddInterface(
       base::Bind(&InsecureSensitiveInputDriverFactory::BindDriver));
   frame_interfaces_parameterized_->AddInterface(

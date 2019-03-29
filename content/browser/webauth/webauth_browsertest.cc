@@ -367,14 +367,10 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
   }
 
   void ConnectToAuthenticator() {
-    auto* interface_provider =
-        static_cast<service_manager::mojom::InterfaceProvider*>(
-            static_cast<RenderFrameHostImpl*>(
-                shell()->web_contents()->GetMainFrame()));
-
-    interface_provider->GetInterface(
-        Authenticator::Name_,
-        mojo::MakeRequest(&authenticator_ptr_).PassMessagePipe());
+    auto* broker = static_cast<blink::mojom::DocumentInterfaceBroker*>(
+        static_cast<RenderFrameHostImpl*>(
+            shell()->web_contents()->GetMainFrame()));
+    broker->GetAuthenticator(mojo::MakeRequest(&authenticator_ptr_));
   }
 
   blink::mojom::PublicKeyCredentialCreationOptionsPtr

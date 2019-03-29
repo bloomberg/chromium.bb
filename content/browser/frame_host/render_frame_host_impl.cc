@@ -4057,22 +4057,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   registry_->AddInterface(base::Bind(&ImageCaptureImpl::Create));
 
-#if !defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kWebAuth)) {
-    registry_->AddInterface(
-        base::Bind(&RenderFrameHostImpl::BindAuthenticatorRequest,
-                   base::Unretained(this)));
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableWebAuthTestingAPI)) {
-      auto* environment_singleton =
-          ScopedVirtualAuthenticatorEnvironment::GetInstance();
-      registry_->AddInterface(base::BindRepeating(
-          &ScopedVirtualAuthenticatorEnvironment::AddBinding,
-          base::Unretained(environment_singleton)));
-    }
-  }
-#endif  // !defined(OS_ANDROID)
-
   sensor_provider_proxy_.reset(
       new SensorProviderProxyImpl(permission_controller, this));
   registry_->AddInterface(
@@ -5793,6 +5777,42 @@ void RenderFrameHostImpl::GetFrameHostTestInterface(
 void RenderFrameHostImpl::GetAudioContextManager(
     blink::mojom::AudioContextManagerRequest request) {
   AudioContextManagerImpl::Create(this, std::move(request));
+}
+
+void RenderFrameHostImpl::GetAuthenticator(
+    blink::mojom::AuthenticatorRequest request) {
+#if !defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kWebAuth)) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableWebAuthTestingAPI)) {
+      ScopedVirtualAuthenticatorEnvironment::GetInstance();
+    }
+
+    BindAuthenticatorRequest(std::move(request));
+  }
+#else
+  GetJavaInterfaces()->GetInterface(std::move(request));
+#endif  // !defined(OS_ANDROID)
+}
+
+void RenderFrameHostImpl::GetCredentialManager(
+    blink::mojom::CredentialManagerRequest request) {
+  GetContentClient()->browser()->BindCredentialManagerRequest(
+      this, std::move(request));
+}
+
+void RenderFrameHostImpl::GetVirtualAuthenticatorManager(
+    blink::test::mojom::VirtualAuthenticatorManagerRequest request) {
+#if !defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kWebAuth)) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableWebAuthTestingAPI)) {
+      auto* environment_singleton =
+          ScopedVirtualAuthenticatorEnvironment::GetInstance();
+      environment_singleton->AddBinding(std::move(request));
+    }
+  }
+#endif  // !defined(OS_ANDROID)
 }
 
 std::unique_ptr<NavigationRequest>
