@@ -84,6 +84,8 @@ void MediaNotificationItem::MediaSessionMetadataChanged(
     const base::Optional<media_session::MediaMetadata>& metadata) {
   session_metadata_ = metadata.value_or(media_session::MediaMetadata());
 
+  MaybeHideOrShowNotification();
+
   if (view_)
     view_->UpdateWithMediaMetadata(session_metadata_);
 }
@@ -137,6 +139,13 @@ void MediaNotificationItem::MaybeHideOrShowNotification() {
   // If the |is_controllable| bit is set in MediaSessionInfo then we should show
   // a media notification.
   if (!session_info_ || !session_info_->is_controllable) {
+    HideNotification();
+    return;
+  }
+
+  // If we do not have a title and an artist then we should hide the
+  // notification.
+  if (session_metadata_.title.empty() || session_metadata_.artist.empty()) {
     HideNotification();
     return;
   }

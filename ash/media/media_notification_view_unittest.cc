@@ -99,6 +99,12 @@ class MediaNotificationViewTest : public AshTestBase {
     Shell::Get()->media_notification_controller()->OnFocusGained(
         std::move(session));
 
+    // Update the metadata.
+    media_session::MediaMetadata metadata;
+    metadata.title = base::ASCIIToUTF16("title");
+    metadata.artist = base::ASCIIToUTF16("artist");
+    GetItem()->MediaSessionMetadataChanged(metadata);
+
     message_center::Notification* notification =
         message_center::MessageCenter::Get()->FindVisibleNotificationById(
             request_id_.ToString());
@@ -137,25 +143,6 @@ class MediaNotificationViewTest : public AshTestBase {
 
   bool IsControlButtonsViewVisible() const {
     return view()->GetControlButtonsView()->layer()->opacity() > 0;
-  }
-
-  void UpdateWithSampleMetadata() {
-    EXPECT_FALSE(title_artist_row()->visible());
-    EXPECT_FALSE(title_label()->visible());
-    EXPECT_FALSE(artist_label()->visible());
-
-    media_session::MediaMetadata metadata;
-    metadata.title = base::ASCIIToUTF16("title");
-    metadata.artist = base::ASCIIToUTF16("artist");
-
-    GetItem()->MediaSessionMetadataChanged(metadata);
-
-    EXPECT_TRUE(title_artist_row()->visible());
-    EXPECT_TRUE(title_label()->visible());
-    EXPECT_TRUE(artist_label()->visible());
-
-    EXPECT_EQ(metadata.title, title_label()->text());
-    EXPECT_EQ(metadata.artist, artist_label()->text());
   }
 
   void EnableAllActions() {
@@ -228,6 +215,15 @@ class MediaNotificationViewTest : public AshTestBase {
 
   const gfx::ImageSkia& GetAppIcon() const {
     return view_->header_row_->app_icon_for_testing();
+  }
+
+  void SimulateButtonClick(MediaSessionAction action) {
+    views::Button* button = GetButtonForAction(action);
+    EXPECT_TRUE(button->visible());
+
+    view_->ButtonPressed(
+        button, ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                               ui::EventTimeForNow(), 0, 0));
   }
 
  private:
@@ -312,11 +308,7 @@ TEST_F(MediaNotificationViewTest, NextTrackButtonClick) {
 
   EXPECT_EQ(0, media_controller()->next_track_count());
 
-  gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToScreen(
-      GetButtonForAction(MediaSessionAction::kNextTrack), &cursor_location);
-  GetEventGenerator()->MoveMouseTo(cursor_location);
-  GetEventGenerator()->ClickLeftButton();
+  SimulateButtonClick(MediaSessionAction::kNextTrack);
   GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->next_track_count());
@@ -327,11 +319,7 @@ TEST_F(MediaNotificationViewTest, PlayButtonClick) {
 
   EXPECT_EQ(0, media_controller()->resume_count());
 
-  gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToScreen(
-      GetButtonForAction(MediaSessionAction::kPlay), &cursor_location);
-  GetEventGenerator()->MoveMouseTo(cursor_location);
-  GetEventGenerator()->ClickLeftButton();
+  SimulateButtonClick(MediaSessionAction::kPlay);
   GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->resume_count());
@@ -349,11 +337,7 @@ TEST_F(MediaNotificationViewTest, PauseButtonClick) {
   session_info->is_controllable = true;
   GetItem()->MediaSessionInfoChanged(session_info.Clone());
 
-  gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToScreen(
-      GetButtonForAction(MediaSessionAction::kPause), &cursor_location);
-  GetEventGenerator()->MoveMouseTo(cursor_location);
-  GetEventGenerator()->ClickLeftButton();
+  SimulateButtonClick(MediaSessionAction::kPause);
   GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->suspend_count());
@@ -364,11 +348,7 @@ TEST_F(MediaNotificationViewTest, PreviousTrackButtonClick) {
 
   EXPECT_EQ(0, media_controller()->previous_track_count());
 
-  gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToScreen(
-      GetButtonForAction(MediaSessionAction::kPreviousTrack), &cursor_location);
-  GetEventGenerator()->MoveMouseTo(cursor_location);
-  GetEventGenerator()->ClickLeftButton();
+  SimulateButtonClick(MediaSessionAction::kPreviousTrack);
   GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->previous_track_count());
@@ -379,11 +359,7 @@ TEST_F(MediaNotificationViewTest, SeekBackwardButtonClick) {
 
   EXPECT_EQ(0, media_controller()->seek_backward_count());
 
-  gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToScreen(
-      GetButtonForAction(MediaSessionAction::kSeekBackward), &cursor_location);
-  GetEventGenerator()->MoveMouseTo(cursor_location);
-  GetEventGenerator()->ClickLeftButton();
+  SimulateButtonClick(MediaSessionAction::kSeekBackward);
   GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->seek_backward_count());
@@ -394,11 +370,7 @@ TEST_F(MediaNotificationViewTest, SeekForwardButtonClick) {
 
   EXPECT_EQ(0, media_controller()->seek_forward_count());
 
-  gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToScreen(
-      GetButtonForAction(MediaSessionAction::kSeekForward), &cursor_location);
-  GetEventGenerator()->MoveMouseTo(cursor_location);
-  GetEventGenerator()->ClickLeftButton();
+  SimulateButtonClick(MediaSessionAction::kSeekForward);
   GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->seek_forward_count());
@@ -510,61 +482,29 @@ TEST_F(MediaNotificationViewTest, PlayToggle_FromObserver_PlaybackState) {
   }
 }
 
-TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver) {
-  UpdateWithSampleMetadata();
+TEST_F(MediaNotificationViewTest, MetadataIsDisplayed) {
+  EXPECT_TRUE(title_artist_row()->visible());
+  EXPECT_TRUE(title_label()->visible());
+  EXPECT_TRUE(artist_label()->visible());
+
+  EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->text());
 
   EXPECT_EQ(kMediaTitleArtistRowExpectedHeight, title_artist_row()->height());
 }
 
-TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_Empty) {
-  UpdateWithSampleMetadata();
-
-  GetItem()->MediaSessionMetadataChanged(base::nullopt);
-
-  EXPECT_FALSE(title_artist_row()->visible());
-}
-
-TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_EmptyString) {
-  UpdateWithSampleMetadata();
-
-  GetItem()->MediaSessionMetadataChanged(media_session::MediaMetadata());
-
-  EXPECT_FALSE(title_artist_row()->visible());
-}
-
-TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_NoArtist) {
-  EXPECT_FALSE(title_artist_row()->visible());
-  EXPECT_FALSE(title_label()->visible());
-  EXPECT_FALSE(artist_label()->visible());
-
+TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver) {
   media_session::MediaMetadata metadata;
-  metadata.title = base::ASCIIToUTF16("title");
+  metadata.title = base::ASCIIToUTF16("title2");
+  metadata.artist = base::ASCIIToUTF16("artist2");
 
   GetItem()->MediaSessionMetadataChanged(metadata);
 
   EXPECT_TRUE(title_artist_row()->visible());
   EXPECT_TRUE(title_label()->visible());
-  EXPECT_FALSE(artist_label()->visible());
-
-  EXPECT_EQ(metadata.title, title_label()->text());
-
-  EXPECT_EQ(kMediaTitleArtistRowExpectedHeight, title_artist_row()->height());
-}
-
-TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_NoTitle) {
-  EXPECT_FALSE(title_artist_row()->visible());
-  EXPECT_FALSE(title_label()->visible());
-  EXPECT_FALSE(artist_label()->visible());
-
-  media_session::MediaMetadata metadata;
-  metadata.artist = base::ASCIIToUTF16("artist");
-
-  GetItem()->MediaSessionMetadataChanged(metadata);
-
-  EXPECT_TRUE(title_artist_row()->visible());
-  EXPECT_FALSE(title_label()->visible());
   EXPECT_TRUE(artist_label()->visible());
 
+  EXPECT_EQ(metadata.title, title_label()->text());
   EXPECT_EQ(metadata.artist, artist_label()->text());
 
   EXPECT_EQ(kMediaTitleArtistRowExpectedHeight, title_artist_row()->height());
@@ -575,15 +515,23 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_AppName) {
       message_center::MessageCenter::Get()->GetSystemNotificationAppName(),
       header_row()->app_name_for_testing());
 
-  media_session::MediaMetadata metadata;
-  metadata.source_title = base::ASCIIToUTF16(kTestAppName);
-
-  GetItem()->MediaSessionMetadataChanged(metadata);
+  {
+    media_session::MediaMetadata metadata;
+    metadata.title = base::ASCIIToUTF16("title");
+    metadata.artist = base::ASCIIToUTF16("artist");
+    metadata.source_title = base::ASCIIToUTF16(kTestAppName);
+    GetItem()->MediaSessionMetadataChanged(metadata);
+  }
 
   EXPECT_EQ(base::ASCIIToUTF16(kTestAppName),
             header_row()->app_name_for_testing());
 
-  GetItem()->MediaSessionMetadataChanged(media_session::MediaMetadata());
+  {
+    media_session::MediaMetadata metadata;
+    metadata.title = base::ASCIIToUTF16("title");
+    metadata.artist = base::ASCIIToUTF16("artist");
+    GetItem()->MediaSessionMetadataChanged(metadata);
+  }
 
   EXPECT_EQ(
       message_center::MessageCenter::Get()->GetSystemNotificationAppName(),
@@ -592,11 +540,6 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_AppName) {
 
 TEST_F(MediaNotificationViewTest, Buttons_WhenCollapsed) {
   EnableAllActions();
-
-  media_session::MediaMetadata metadata;
-  metadata.artist = base::ASCIIToUTF16("artist");
-
-  GetItem()->MediaSessionMetadataChanged(metadata);
 
   view()->SetExpanded(false);
 
@@ -623,11 +566,6 @@ TEST_F(MediaNotificationViewTest, Buttons_WhenCollapsed) {
 
 TEST_F(MediaNotificationViewTest, Buttons_WhenExpanded) {
   EnableAllActions();
-
-  media_session::MediaMetadata metadata;
-  metadata.artist = base::ASCIIToUTF16("artist");
-
-  GetItem()->MediaSessionMetadataChanged(metadata);
 
   view()->SetExpanded(true);
 
