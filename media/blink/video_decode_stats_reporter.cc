@@ -144,8 +144,16 @@ void VideoDecodeStatsReporter::StartNewRecord(
   frames_dropped_offset_ = frames_dropped_offset;
   frames_decoded_power_efficient_offset_ =
       frames_decoded_power_efficient_offset;
+
+  // TODO(chcunningham): Implement saving of EME stats. Hard-coding values
+  // for non-EME stats below.
+  const std::string key_system = "";
+  const bool use_hw_secure_codecs = false;
+
   mojom::PredictionFeaturesPtr features = mojom::PredictionFeatures::New(
-      codec_profile_, natural_size_, last_observed_fps_);
+      codec_profile_, natural_size_, last_observed_fps_, key_system,
+      use_hw_secure_codecs);
+
   recorder_ptr_->StartNewRecord(std::move(features));
 }
 

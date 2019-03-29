@@ -43,7 +43,9 @@ void VideoDecodeStatsRecorder::StartNewRecord(
 
   DVLOG(2) << __func__ << "profile: " << features_.profile
            << " sz:" << features_.video_size.ToString()
-           << " fps:" << features_.frames_per_sec;
+           << " fps:" << features_.frames_per_sec
+           << " key_system:" << features_.key_system
+           << " use_hw_secure_codecs:" << features_.use_hw_secure_codecs;
 
   // Reinitialize to defaults.
   targets_ = mojom::PredictionTargets();

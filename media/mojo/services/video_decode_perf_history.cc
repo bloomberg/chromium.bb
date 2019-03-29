@@ -124,7 +124,8 @@ void VideoDecodePerfHistory::GetPerfInfo(mojom::PredictionFeaturesPtr features,
 
   VideoDecodeStatsDB::VideoDescKey video_key =
       VideoDecodeStatsDB::VideoDescKey::MakeBucketedKey(
-          features->profile, features->video_size, features->frames_per_sec);
+          features->profile, features->video_size, features->frames_per_sec,
+          features->key_system, features->use_hw_secure_codecs);
 
   db_->GetDecodeStats(
       video_key, base::BindOnce(&VideoDecodePerfHistory::OnGotStatsForRequest,
@@ -239,7 +240,8 @@ void VideoDecodePerfHistory::SavePerfRecord(ukm::SourceId source_id,
 
   VideoDecodeStatsDB::VideoDescKey video_key =
       VideoDecodeStatsDB::VideoDescKey::MakeBucketedKey(
-          features.profile, features.video_size, features.frames_per_sec);
+          features.profile, features.video_size, features.frames_per_sec,
+          features.key_system, features.use_hw_secure_codecs);
   VideoDecodeStatsDB::DecodeStatsEntry new_stats(
       targets.frames_decoded, targets.frames_dropped,
       targets.frames_power_efficient);
@@ -322,6 +324,7 @@ void VideoDecodePerfHistory::ReportUkmMetrics(
   builder.SetVideo_FramesPerSecond(video_key.frame_rate);
   builder.SetVideo_NaturalHeight(video_key.size.height());
   builder.SetVideo_NaturalWidth(video_key.size.width());
+  // TODO(chcunningham): Report key_system and use_hw_secure_codecs to UKM.
 
   bool past_is_smooth = false;
   bool past_is_efficient = false;
