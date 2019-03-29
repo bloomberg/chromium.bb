@@ -121,8 +121,8 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
   if (allow_default_instance &&
       !base::FeatureList::IsEnabled(
           features::kProcessSharingWithStrictSiteInstances) &&
-      !SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-          GetBrowserContext(), isolation_context_, url)) {
+      !SiteInstanceImpl::DoesSiteRequireDedicatedProcess(isolation_context_,
+                                                         url)) {
     DCHECK(!default_process_);
     if (!default_site_instance_) {
       default_site_instance_ = new SiteInstanceImpl(this);

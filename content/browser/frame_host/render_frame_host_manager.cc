@@ -1444,8 +1444,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
           frame_tree_node_->parent()->current_frame_host();
       bool dest_url_requires_dedicated_process =
           SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-              browser_context, parent->GetSiteInstance()->GetIsolationContext(),
-              dest_url);
+              parent->GetSiteInstance()->GetIsolationContext(), dest_url);
       if (!parent->GetSiteInstance()->RequiresDedicatedProcess() &&
           !dest_url_requires_dedicated_process) {
         return SiteInstanceDescriptor(parent->GetSiteInstance());
@@ -1521,7 +1520,6 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
   if (rfh->GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme))
     return false;
 
-  BrowserContext* context = rfh->GetSiteInstance()->GetBrowserContext();
   // TODO(nasko, nick): These following --site-per-process checks are
   // overly simplistic. Update them to match all the cases
   // considered by DetermineSiteInstanceForURL.
@@ -1543,7 +1541,7 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
   // then a transfer is needed.
   if (rfh->GetSiteInstance()->RequiresDedicatedProcess() ||
       SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-          context, rfh->GetSiteInstance()->GetIsolationContext(), dest_url)) {
+          rfh->GetSiteInstance()->GetIsolationContext(), dest_url)) {
     return true;
   }
 
@@ -1642,7 +1640,7 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   // without the effective URL resolution if needed.
   if (candidate->last_successful_url().is_empty()) {
     return SiteInstanceImpl::IsSameWebSite(
-        browser_context, candidate->GetSiteInstance()->GetIsolationContext(),
+        candidate->GetSiteInstance()->GetIsolationContext(),
         candidate->GetSiteInstance()->original_url(), dest_url,
         should_compare_effective_urls);
   }
@@ -1651,7 +1649,7 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   // we compare against the last successful commit when deciding whether to swap
   // this time.
   if (SiteInstanceImpl::IsSameWebSite(
-          browser_context, candidate->GetSiteInstance()->GetIsolationContext(),
+          candidate->GetSiteInstance()->GetIsolationContext(),
           candidate->last_successful_url(), dest_url,
           should_compare_effective_urls)) {
     return true;
@@ -1662,7 +1660,7 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   // the site.
   if (!candidate->GetLastCommittedOrigin().opaque() &&
       SiteInstanceImpl::IsSameWebSite(
-          browser_context, candidate->GetSiteInstance()->GetIsolationContext(),
+          candidate->GetSiteInstance()->GetIsolationContext(),
           GURL(candidate->GetLastCommittedOrigin().Serialize()), dest_url,
           should_compare_effective_urls)) {
     return true;
@@ -1677,7 +1675,7 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   if (candidate->last_successful_url().IsAboutBlank() &&
       candidate->GetLastCommittedOrigin().opaque() &&
       SiteInstanceImpl::IsSameWebSite(
-          browser_context, candidate->GetSiteInstance()->GetIsolationContext(),
+          candidate->GetSiteInstance()->GetIsolationContext(),
           candidate->GetSiteInstance()->original_url(), dest_url,
           should_compare_effective_urls)) {
     return true;

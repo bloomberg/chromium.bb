@@ -3737,8 +3737,7 @@ bool RenderProcessHostImpl::IsSuitableHost(
         return false;
       case CheckOriginLockResult::NO_LOCK:
         if (!host->IsUnused() &&
-            SiteInstanceImpl::ShouldLockToOrigin(browser_context,
-                                                 isolation_context, site_url)) {
+            SiteInstanceImpl::ShouldLockToOrigin(isolation_context, site_url)) {
           // If this process has been used to host any other content, it cannot
           // be reused if the destination site requires a dedicated process and
           // should use a process locked to just that site.
