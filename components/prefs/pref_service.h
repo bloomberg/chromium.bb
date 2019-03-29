@@ -367,6 +367,9 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   void AddPrefObserverAllPrefs(PrefObserver* obs);
   void RemovePrefObserverAllPrefs(PrefObserver* obs);
 
+  // TODO(crbug.com/942491) Remove this one the bug is fixed.
+  bool HasInMemoryUserPrefStore() const;
+
  protected:
   // The PrefNotifier handles registering and notifying preference observers.
   // It is created and owned by this PrefService. Subclasses may access it for

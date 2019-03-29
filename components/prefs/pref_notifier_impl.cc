@@ -4,6 +4,8 @@
 
 #include "components/prefs/pref_notifier_impl.h"
 
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/prefs/pref_service.h"
@@ -19,8 +21,46 @@ PrefNotifierImpl::~PrefNotifierImpl() {
 
   // Verify that there are no pref observers when we shut down.
   for (const auto& observer_list : pref_observers_) {
-    if (observer_list.second->begin() != observer_list.second->end())
-      LOG(WARNING) << "Pref observer found at shutdown.";
+    if (observer_list.second->begin() != observer_list.second->end()) {
+      // Generally, there should not be any subscribers left when the profile
+      // is destroyed because a) those may indicate that the subscriber class
+      // maintains an active pointer to the profile that might be used for
+      // accessing a destroyed profile and b) those subscribers will try to
+      // unsubscribe from a PrefService that has been destroyed with the
+      // profile.
+      // There is one exception that is safe: Static objects that are leaked
+      // on process termination, if these objects just subscribe to preferences
+      // and never access the profile after destruction. As these objects are
+      // leaked on termination, it is guaranteed that they don't attempt to
+      // unsubscribe.
+      const auto& pref_name = observer_list.first;
+      LOG(WARNING) << "Pref observer for " << pref_name
+                   << " found at shutdown.";
+
+      // TODO(crbug.com/942491, 946668, 945772) The following code collects
+      // stacktraces that show how the profile is destroyed that owns
+      // preferences which are known to have subscriptions outliving the
+      // profile.
+      if (
+          // For GlobalMenuBarX11, crbug.com/946668
+          pref_name == "bookmark_bar.show_on_all_tabs" ||
+          // For BrowserWindowPropertyManager, crbug.com/942491
+          pref_name == "profile.icon_version" ||
+          // For BrowserWindowDefaultTouchBar, crbug.com/945772
+          pref_name == "default_search_provider_data.template_url_data") {
+        const bool is_incognito_profile =
+            pref_service_->HasInMemoryUserPrefStore();
+        base::debug::Alias(&is_incognito_profile);
+        // Export value of is_incognito_profile to a string so that `grep`
+        // is a sufficient tool to analyze crashdumps.
+        char is_incognito_profile_string[32];
+        strncpy(is_incognito_profile_string,
+                is_incognito_profile ? "is_incognito: yes" : "is_incognito: no",
+                sizeof(is_incognito_profile_string));
+        base::debug::Alias(&is_incognito_profile_string);
+        base::debug::DumpWithoutCrashing();
+      }
+    }
   }
 
   // Same for initialization observers.
