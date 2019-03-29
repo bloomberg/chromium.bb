@@ -8,10 +8,14 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
 class InfoBarService;
+class Profile;
 
 class FlashDeprecationInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   static void Create(InfoBarService* infobar_service);
+
+  // Returns true if we should display a deprecation warning for |profile|.
+  static bool ShouldDisplayFlashDeprecation(Profile* profile);
 
   FlashDeprecationInfoBarDelegate() = default;
   ~FlashDeprecationInfoBarDelegate() override = default;
