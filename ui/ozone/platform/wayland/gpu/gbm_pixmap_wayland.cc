@@ -21,7 +21,7 @@
 #include "ui/ozone/common/linux/gbm_device.h"
 #include "ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
-#include "ui/ozone/platform/wayland/wayland_surface_factory.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
 #include "ui/ozone/public/overlay_plane.h"
 #include "ui/ozone/public/ozone_platform.h"
 
