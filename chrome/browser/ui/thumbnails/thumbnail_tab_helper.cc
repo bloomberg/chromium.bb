@@ -248,6 +248,7 @@ bool ThumbnailTabHelper::CanCaptureThumbnail(CaptureSchedule schedule) const {
 ThumbnailTabHelper::ThumbnailState ThumbnailTabHelper::GetThumbnailState()
     const {
   switch (loading_state_) {
+    case LoadingState::kNavigationFinished:
     case LoadingState::kLoadStarted:
       return ThumbnailState::kLoadInProgress;
     case LoadingState::kLoadFinished:
@@ -262,10 +263,11 @@ void ThumbnailTabHelper::TransitionLoadingState(LoadingState state,
   // Because the loading process is unpredictable, and because there are a large
   // number of events which could be interpreted as navigation of the main frame
   // or loading, only move the loading progress forward.
+  const bool is_same_url = url.EqualsIgnoringRef(current_url_);
   switch (state) {
     case LoadingState::kNavigationStarted:
     case LoadingState::kNavigationFinished:
-      if (current_url_ != url) {
+      if (!is_same_url) {
         current_url_ = url;
         ClearThumbnail();
         loading_state_ = state;
@@ -275,7 +277,7 @@ void ThumbnailTabHelper::TransitionLoadingState(LoadingState state,
       break;
     case LoadingState::kLoadStarted:
     case LoadingState::kLoadFinished:
-      if (current_url_ != url &&
+      if (!is_same_url &&
           (loading_state_ == LoadingState::kNavigationStarted ||
            loading_state_ == LoadingState::kNavigationFinished)) {
         // This probably refers to an old page, so ignore it.
