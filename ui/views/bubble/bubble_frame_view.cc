@@ -262,7 +262,7 @@ void BubbleFrameView::UpdateWindowTitle() {
                                !delegate->GetWindowTitle().empty());
     default_title_->SetText(delegate->GetWindowTitle());
   }  // custom_title_'s updates are handled by its creator.
-  InvalidateLayout();
+  Layout();
 }
 
 void BubbleFrameView::SizeConstraintsChanged() {}
@@ -533,7 +533,8 @@ void BubbleFrameView::MirrorArrowIfOffScreen(
         GetOffScreenLength(available_bounds, window_bounds, vertical)) {
       bubble_border_->set_arrow(arrow);
     } else {
-      InvalidateLayout();
+      if (parent())
+        parent()->Layout();
       SchedulePaint();
     }
   }

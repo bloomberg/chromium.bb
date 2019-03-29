@@ -126,7 +126,7 @@ void ScrollViewExample::ButtonPressed(Button* sender, const ui::Event& event) {
     scroll_view_->contents()->ScrollRectToVisible(
         gfx::Rect(20, 500, 1000, 500));
   }
-  scroll_view_->InvalidateLayout();
+  scroll_view_->Layout();
 }
 
 }  // namespace examples

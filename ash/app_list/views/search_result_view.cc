@@ -284,6 +284,10 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
+void SearchResultView::ChildPreferredSizeChanged(views::View* child) {
+  Layout();
+}
+
 void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
   gfx::Rect rect(GetContentsBounds());
   if (rect.IsEmpty())

@@ -264,11 +264,16 @@ DialogDelegate* DialogClientView::GetDialogDelegate() const {
   return GetWidget()->widget_delegate()->AsDialogDelegate();
 }
 
+void DialogClientView::ChildPreferredSizeChanged(View* child) {
+  if (!adding_or_removing_views_ && child == extra_view_)
+    Layout();
+}
+
 void DialogClientView::ChildVisibilityChanged(View* child) {
   // Showing or hiding |extra_view_| can alter which columns have linked sizes.
   if (child == extra_view_)
     UpdateDialogButtons();
-  InvalidateLayout();
+  ChildPreferredSizeChanged(child);
 }
 
 void DialogClientView::OnDialogChanged() {

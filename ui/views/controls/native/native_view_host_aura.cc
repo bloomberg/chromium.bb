@@ -144,7 +144,7 @@ void NativeViewHostAura::AddedToWidget() {
     host_->native_view()->Show();
   else
     host_->native_view()->Hide();
-  host_->InvalidateLayout();
+  host_->Layout();
 }
 
 void NativeViewHostAura::RemovedFromWidget() {

@@ -135,8 +135,6 @@ class ScrollView::Viewport : public View {
     scroll_view_->ScrollContentsRegionToBeVisible(scroll_rect);
   }
 
-  // TODO(https://crbug.com/947053): this override should not be necessary, but
-  // there are some assumptions that this calls Layout().
   void ChildPreferredSizeChanged(View* child) override {
     if (parent())
       parent()->Layout();
@@ -703,9 +701,6 @@ void ScrollView::SetHeaderOrContents(View* parent,
     *member = parent->AddChildView(std::move(new_view));
   else
     *member = nullptr;
-  // TODO(https://crbug.com/947053): this should call InvalidateLayout(), but
-  // there are some assumptions that it call Layout(). These assumptions should
-  // be updated.
   Layout();
 }
 
