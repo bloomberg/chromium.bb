@@ -28,7 +28,6 @@
 #include "components/variations/variations_associated_data.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/ui_base_features.h"
 
 using metrics::OmniboxEventProto;
 
@@ -520,8 +519,7 @@ int OmniboxFieldTrial::KeywordScoreForSufficientlyCompleteMatch() {
 OmniboxFieldTrial::EmphasizeTitlesCondition
 OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
     const AutocompleteInput& input) {
-  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentSwapTitleAndUrl) ||
-      base::FeatureList::IsEnabled(features::kExperimentalUi)) {
+  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentSwapTitleAndUrl)) {
     return EMPHASIZE_WHEN_NONEMPTY;
   }
 
@@ -556,16 +554,14 @@ bool OmniboxFieldTrial::IsRichEntitySuggestionsEnabled() {
 }
 
 bool OmniboxFieldTrial::IsReverseAnswersEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxReverseAnswers) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxReverseAnswers);
 }
 
 bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
 #if defined(OS_IOS)
   return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions);
 #else  // defined(OS_IOS)
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions);
 #endif
 }
 
@@ -578,14 +574,12 @@ bool OmniboxFieldTrial::IsPedalSuggestionsEnabled() {
 }
 
 bool OmniboxFieldTrial::IsHideSteadyStateUrlSchemeEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kHideSteadyStateUrlScheme) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
+  return base::FeatureList::IsEnabled(omnibox::kHideSteadyStateUrlScheme);
 }
 
 bool OmniboxFieldTrial::IsHideSteadyStateUrlTrivialSubdomainsEnabled() {
   return base::FeatureList::IsEnabled(
-             omnibox::kHideSteadyStateUrlTrivialSubdomains) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
+      omnibox::kHideSteadyStateUrlTrivialSubdomains);
 }
 
 int OmniboxFieldTrial::GetSuggestionVerticalMargin() {

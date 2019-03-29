@@ -9,10 +9,8 @@
 
 #include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -271,8 +269,6 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
 
   {
     // Test with the image URL supplied by the "i" (image) param.
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(features::kExperimentalUi);
     json =
         "{ \"i\": { \"d\": \"https://gstatic.com/foo.png\", \"t\": 3 },"
         "  \"l\" : ["
