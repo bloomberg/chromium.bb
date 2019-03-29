@@ -187,24 +187,10 @@ Polymer({
         return map;
       },
     },
-
-    /**
-     * True if current user is child user.
-     */
-    isChild_: Boolean,
   },
 
   /** @private {?settings.SyncBrowserProxy} */
   syncBrowserProxy_: null,
-
-  /** @override */
-  created: function() {
-    // <if expr="chromeos">
-    chrome.usersPrivate.getCurrentUser(user => {
-      this.isChild_ = user.isChild;
-    });
-    // </if>
-  },
 
   /** @override */
   attached: function() {
