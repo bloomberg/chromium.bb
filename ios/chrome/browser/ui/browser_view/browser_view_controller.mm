@@ -108,6 +108,7 @@
 #import "ios/chrome/browser/ui/image_util/image_copier.h"
 #import "ios/chrome/browser/ui/image_util/image_saver.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_coordinator.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_model_delegate_ios.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_notification_names.h"
@@ -1850,9 +1851,24 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self.sideSwipeController resetContentView];
   }
 
-  [super presentViewController:viewControllerToPresent
-                      animated:flag
-                    completion:finalCompletionHandler];
+  // An Infobar message is currently the only presented controller that allows
+  // interaction with the rest of the App while its being presented. Dismiss it
+  // in case the user or system has triggered another presentation.
+  if (IsInfobarUIRebootEnabled() &&
+      [self.infobarContainerCoordinator isPresentingInfobarBanner]) {
+    [self.infobarContainerCoordinator
+        dismissInfobarBannerAnimated:NO
+                          completion:^{
+                            [super
+                                presentViewController:viewControllerToPresent
+                                             animated:flag
+                                           completion:finalCompletionHandler];
+                          }];
+  } else {
+    [super presentViewController:viewControllerToPresent
+                        animated:flag
+                      completion:finalCompletionHandler];
+  }
 }
 
 - (BOOL)shouldAutorotate {

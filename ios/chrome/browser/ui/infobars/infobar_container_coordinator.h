@@ -49,6 +49,11 @@ class WebState;
 // YES if an Infobar is being presented for |webState|.
 - (BOOL)isInfobarPresentingForWebState:(web::WebState*)webState;
 
+// Dismisses the InfobarBanner, if none is being presented |completion| will
+// still run.
+- (void)dismissInfobarBannerAnimated:(BOOL)animated
+                          completion:(void (^)())completion;
+
 // The CommandDispatcher for this Coordinator.
 @property(nonatomic, weak) CommandDispatcher* commandDispatcher;
 
@@ -57,6 +62,10 @@ class WebState;
 
 // The SyncPresenter delegate for this Coordinator.
 @property(nonatomic, weak) id<SyncPresenter> syncPresenter;
+
+// YES if an InfobarBanner is being presented.
+@property(nonatomic, assign, getter=isPresentingInfobarBanner)
+    BOOL presentingInfobarBanner;
 
 @end
 
