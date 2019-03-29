@@ -217,12 +217,13 @@ const CGFloat kChangeInPositionForTransition = 100.0;
       [self.delegate presentInfobarModalFromBanner];
       // Since the modal has now been presented prevent any external dismissal.
       self.shouldDismissAfterTouchesEnded = NO;
+      // Cancel the gesture since the modal has now been presented.
+      gesture.state = UIGestureRecognizerStateCancelled;
       return;
     }
   }
 
-  if (gesture.state == UIGestureRecognizerStateEnded ||
-      gesture.state == UIGestureRecognizerStateCancelled) {
+  if (gesture.state == UIGestureRecognizerStateEnded) {
     // If there's more than a 1px translation in the negative Y axis when the
     // gesture ended or |self.shouldDismissAfterInteraction| is YES, dismiss the
     // banner.
