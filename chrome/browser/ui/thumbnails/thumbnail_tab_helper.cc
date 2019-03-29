@@ -22,6 +22,26 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/scrollbar_size.h"
 
+namespace {
+
+// Determine if two URLs are similar enough that we should not blank the preview
+// image when transitioning between them. This prevents webapps which do all of
+// their work through internal page transitions (and which can transition after
+// the page is loaded) from blanking randomly.
+bool AreSimilarURLs(const GURL& url1, const GURL& url2) {
+  const GURL origin1 = url1.GetOrigin();
+
+  // For non-standard URLs, compare using normal logic.
+  if (origin1.is_empty())
+    return url1.EqualsIgnoringRef(url2);
+
+  // TODO(dfried): make this logic a little smarter; maybe compare the first
+  // element of the path as well?
+  return origin1 == url2.GetOrigin();
+}
+
+}  // namespace
+
 ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
     : view_is_visible_(contents->GetVisibility() ==
                        content::Visibility::VISIBLE),
@@ -263,11 +283,11 @@ void ThumbnailTabHelper::TransitionLoadingState(LoadingState state,
   // Because the loading process is unpredictable, and because there are a large
   // number of events which could be interpreted as navigation of the main frame
   // or loading, only move the loading progress forward.
-  const bool is_same_url = url.EqualsIgnoringRef(current_url_);
+  const bool is_similar_url = AreSimilarURLs(url, current_url_);
   switch (state) {
     case LoadingState::kNavigationStarted:
     case LoadingState::kNavigationFinished:
-      if (!is_same_url) {
+      if (!is_similar_url) {
         current_url_ = url;
         ClearThumbnail();
         loading_state_ = state;
@@ -277,7 +297,7 @@ void ThumbnailTabHelper::TransitionLoadingState(LoadingState state,
       break;
     case LoadingState::kLoadStarted:
     case LoadingState::kLoadFinished:
-      if (!is_same_url &&
+      if (!is_similar_url &&
           (loading_state_ == LoadingState::kNavigationStarted ||
            loading_state_ == LoadingState::kNavigationFinished)) {
         // This probably refers to an old page, so ignore it.
