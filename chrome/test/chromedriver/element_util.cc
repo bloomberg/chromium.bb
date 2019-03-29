@@ -798,3 +798,25 @@ Status ScrollElementRegionIntoView(
   *location = region_offset;
   return Status(kOk);
 }
+
+Status GetElementLocationInViewCenter(Session* session,
+                                      WebView* web_view,
+                                      const std::string& element_id,
+                                      WebPoint* location) {
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
+  base::ListValue args;
+  args.Append(CreateElement(element_id));
+  std::unique_ptr<base::Value> result;
+  status =
+      web_view->CallFunction(session->GetCurrentFrameId(),
+                             kGetElementCenterLocationScript, args, &result);
+  if (status.IsError())
+    return status;
+  if (!ParseFromValue(result.get(), location)) {
+    return Status(kUnknownError,
+                  "failed to parse value of getElementLocationInViewCenter");
+  }
+  return Status(kOk);
+}

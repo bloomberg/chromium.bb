@@ -415,31 +415,14 @@ Status ElementInViewCenter(Session* session,
                            std::string element_id,
                            int* center_x,
                            int* center_y) {
-  WebRect region;
-  Status status = GetElementRegion(session, web_view, element_id, &region);
+  WebPoint center_location;
+  Status status = GetElementLocationInViewCenter(session, web_view, element_id,
+                                                 &center_location);
   if (status.IsError())
     return status;
-  WebPoint region_offset;
-  status = ScrollElementRegionIntoView(session, web_view, element_id, region,
-                                       true /* center */, std::string(),
-                                       &region_offset);
-  if (status.IsError())
-    return status;
-  int innerWidth, innerHeight;
-  status = WindowViewportSize(session, web_view, &innerWidth, &innerHeight);
-  if (status.IsError())
-    return status;
-  int left =
-      std::max(0, std::min(region_offset.x, region_offset.x + region.Width()));
-  int right = std::min(
-      innerWidth, std::max(region_offset.x, region_offset.x + region.Width()));
-  int top =
-      std::max(0, std::min(region_offset.y, region_offset.y + region.Height()));
-  int bottom =
-      std::min(innerHeight,
-               std::max(region_offset.y, region_offset.y + region.Height()));
-  *center_x = static_cast<int>(std::floor((left + right) / 2));
-  *center_y = static_cast<int>(std::floor((top + bottom) / 2));
+
+  *center_x = center_location.x;
+  *center_y = center_location.y;
   return Status(kOk);
 }
 

@@ -493,7 +493,6 @@ Status WebViewImpl::DispatchTouchEvent(const TouchEvent& event) {
   base::DictionaryValue params;
   std::string type = GetAsString(event.type);
   params.SetString("type", type);
-  LOG(ERROR) << "WebViewImpl::DispatchTouchEvent type " << type;
   std::unique_ptr<base::ListValue> point_list(new base::ListValue);
   if (type == "touchStart" || type == "touchMove") {
     std::unique_ptr<base::DictionaryValue> point(new base::DictionaryValue());
