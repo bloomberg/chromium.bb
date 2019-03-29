@@ -52,6 +52,11 @@ class InfoBarDelegate;
 // e.g. No in progress touch gestures,etc. The dismissal will be animated.
 - (void)dismissInfobarBannerAfterInteraction;
 
+// Dismisses the InfobarBanner immediately, if none is being presented
+// |completion| will still run.
+- (void)dismissInfobarBannerAnimated:(BOOL)animated
+                          completion:(void (^)())completion;
+
 // YES if the Coordinator has been started.
 @property(nonatomic, assign) BOOL started;
 

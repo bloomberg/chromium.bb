@@ -126,6 +126,15 @@ const double kBannerPresentationDurationInSeconds = 6.0;
   return NO;
 }
 
+- (void)dismissInfobarBannerAnimated:(BOOL)animated
+                          completion:(void (^)())completion {
+  DCHECK(IsInfobarUIRebootEnabled());
+  InfobarCoordinator* infobarCoordinator =
+      static_cast<InfobarCoordinator*>(self.activeChildCoordinator);
+  [infobarCoordinator dismissInfobarBannerAnimated:animated
+                                        completion:completion];
+}
+
 #pragma mark - Accessors
 
 - (void)setCommandDispatcher:(CommandDispatcher*)commandDispatcher {
@@ -141,6 +150,11 @@ const double kBannerPresentationDurationInSeconds = 6.0;
                                   forSelector:@selector(displayModalInfobar)];
   _commandDispatcher = commandDispatcher;
   self.dispatcher = static_cast<id<ApplicationCommands>>(_commandDispatcher);
+}
+
+- (BOOL)presentingInfobarBanner {
+  DCHECK(IsInfobarUIRebootEnabled());
+  return self.infobarViewController ? YES : NO;
 }
 
 #pragma mark - InfobarConsumer

@@ -100,6 +100,11 @@
   }
 }
 
+- (void)dismissInfobarBannerAnimated:(BOOL)animated
+                          completion:(void (^)())completion {
+  [self dismissInfobarBanner:self animated:animated completion:completion];
+}
+
 #pragma mark - Protocols
 
 #pragma mark InfobarUIDelegate
