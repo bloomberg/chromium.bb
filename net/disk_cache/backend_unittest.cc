@@ -186,9 +186,9 @@ class DiskCacheBackendTest : public DiskCacheTestWithCache {
   void BackendDisable3();
   void BackendDisable4();
   void BackendDisabledAPI();
-
   void BackendEviction();
   void BackendOpenOrCreateEntry();
+  void BackendDeadOpenNextEntry();
 };
 
 int DiskCacheBackendTest::GeneratePendingIO(net::TestCompletionCallback* cb) {
@@ -4849,6 +4849,29 @@ TEST_F(DiskCacheBackendTest, BlockFileOpenOrCreateEntry) {
 TEST_F(DiskCacheBackendTest, SimpleOpenOrCreateEntry) {
   SetSimpleCacheMode();
   BackendOpenOrCreateEntry();
+}
+
+void DiskCacheBackendTest::BackendDeadOpenNextEntry() {
+  InitCache();
+  std::unique_ptr<disk_cache::Backend::Iterator> iter =
+      cache_->CreateIterator();
+  cache_.reset();
+  disk_cache::Entry* out = nullptr;
+  ASSERT_EQ(net::ERR_FAILED, iter->OpenNextEntry(&out, base::DoNothing()));
+}
+
+TEST_F(DiskCacheBackendTest, BlockFileBackendDeadOpenNextEntry) {
+  BackendDeadOpenNextEntry();
+}
+
+TEST_F(DiskCacheBackendTest, SimpleBackendDeadOpenNextEntry) {
+  SetSimpleCacheMode();
+  BackendDeadOpenNextEntry();
+}
+
+TEST_F(DiskCacheBackendTest, InMemorySimpleBackendDeadOpenNextEntry) {
+  SetMemoryOnlyMode();
+  BackendDeadOpenNextEntry();
 }
 
 TEST_F(DiskCacheBackendTest, EmptyCorruptSimpleCacheRecovery) {

@@ -598,6 +598,8 @@ class SimpleBackendImpl::SimpleIterator final : public Iterator {
   // From Backend::Iterator:
   net::Error OpenNextEntry(Entry** next_entry,
                            CompletionOnceCallback callback) override {
+    if (!backend_)
+      return net::ERR_FAILED;
     CompletionOnceCallback open_next_entry_impl = base::BindOnce(
         &SimpleIterator::OpenNextEntryImpl, weak_factory_.GetWeakPtr(),
         next_entry, std::move(callback));
