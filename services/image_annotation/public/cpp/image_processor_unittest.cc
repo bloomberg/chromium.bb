@@ -55,8 +55,7 @@ SkBitmap GenCheckerboardBitmap(const int dim) {
 // in the original and compressed images.
 double CalcImageError(const SkBitmap& orig, const SkBitmap& comp) {
   // Only valid to call on images of matching size.
-  if (orig.width() != comp.width() || orig.height() != comp.height())
-    return std::numeric_limits<double>::infinity();
+  CHECK(orig.width() == comp.width() && orig.height() == comp.height());
 
   double sum = 0;
   for (int row = 0; row < orig.width(); ++row) {
@@ -77,12 +76,16 @@ double CalcImageError(const SkBitmap& orig, const SkBitmap& comp) {
 // mean sum of squared distance between their pixels.
 void OutputImageError(double* const error,
                       const SkBitmap& expected,
-                      const std::vector<uint8_t>& result) {
+                      const std::vector<uint8_t>& result,
+                      const int32_t width,
+                      const int32_t height) {
   const std::unique_ptr<SkBitmap> comp =
       gfx::JPEGCodec::Decode(result.data(), result.size());
   CHECK(comp);
 
-  *error = CalcImageError(expected, *comp);
+  *error = width == expected.width() && height == expected.height()
+               ? CalcImageError(expected, *comp)
+               : std::numeric_limits<double>::infinity();
 }
 
 }  // namespace
@@ -97,8 +100,9 @@ TEST(ImageProcessorTest, NullImage) {
   // pixels.
   ImageProcessor(base::BindRepeating([]() { return SkBitmap(); }))
       .GetJpgImageData(base::BindOnce(
-          [](bool* const empty_bytes, const std::vector<uint8_t>& bytes) {
-            *empty_bytes = bytes.empty();
+          [](bool* const empty_bytes, const std::vector<uint8_t>& bytes,
+             const int32_t w, const int32_t h) {
+            *empty_bytes = bytes.empty() && w == 0 && h == 0;
           },
           &empty_bytes));
   test_task_env.RunUntilIdle();

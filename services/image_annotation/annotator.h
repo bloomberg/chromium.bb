@@ -46,6 +46,12 @@ class Annotator : public mojom::Annotator {
   // The HTTP request header in which the API key should be transmitted.
   static constexpr char kGoogApiKeyHeader[] = "X-Goog-Api-Key";
 
+  // The minimum side length needed to request description annotations.
+  static constexpr int32_t kDescMinDimension = 150;
+
+  // The maximum aspect ratio permitted to request description annotations.
+  static constexpr double kDescMaxAspectRatio = 2.5;
+
   // Constructs an annotator.
   //  |server_url|        : the URL of the server with which the annotator
   //                        communicates. The annotator gracefully handles (i.e.
@@ -90,9 +96,16 @@ class Annotator : public mojom::Annotator {
   using UrlLoaderList = std::list<std::unique_ptr<network::SimpleURLLoader>>;
 
   // A queue of the data needed to make HTTP requests to the image annotation
-  // server. Each entry is a (source ID, image bytes) pair.
+  // server. Each entry is a (source ID, image bytes, desc) triple, where desc
+  // is a bool that specifies whether or not description annotations should be
+  // requested.
   using HttpRequestQueue =
-      std::deque<std::pair<std::string, std::vector<uint8_t>>>;
+      std::deque<std::tuple<std::string, std::vector<uint8_t>, bool>>;
+
+  // Returns true if the given dimensions fit the policy of the description
+  // backend (i.e. the image has size / shape on which it is acceptable to run
+  // the description model).
+  static bool IsWithinDescPolicy(int32_t width, int32_t height);
 
   // Constructs and returns a JSON object containing an request for the
   // given images.
@@ -121,7 +134,9 @@ class Annotator : public mojom::Annotator {
   // source ID.
   void OnJpgImageDataReceived(const std::string& source_id,
                               RequestInfoList::iterator request_info_it,
-                              const std::vector<uint8_t>& image_bytes);
+                              const std::vector<uint8_t>& image_bytes,
+                              int32_t width,
+                              int32_t height);
 
   // Called periodically to send the next batch of requests to the image
   // annotation server.

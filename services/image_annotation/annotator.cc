@@ -296,6 +296,11 @@ std::map<std::string, mojom::AnnotateImageResultPtr> UnpackJsonResponse(
 
 constexpr char Annotator::kGoogApiKeyHeader[];
 
+static_assert(Annotator::kDescMinDimension > 0,
+              "Description engine must accept images of some sizes.");
+static_assert(Annotator::kDescMaxAspectRatio > 0.0,
+              "Description engine must accept images of some aspect ratios.");
+
 Annotator::Annotator(
     GURL server_url,
     std::string api_key,
@@ -373,33 +378,57 @@ void Annotator::AnnotateImage(const std::string& source_id,
 }
 
 // static
+bool Annotator::IsWithinDescPolicy(const int32_t width, const int32_t height) {
+  if (width < kDescMinDimension || height < kDescMinDimension)
+    return false;
+
+  // Can't be 0 or inf because |kDescMinDimension| is guaranteed positive (via a
+  // static_assert).
+  const double aspect_ratio = static_cast<double>(width) / height;
+  if (aspect_ratio < 1.0 / kDescMaxAspectRatio ||
+      aspect_ratio > kDescMaxAspectRatio)
+    return false;
+
+  return true;
+}
+
+// static
 std::string Annotator::FormatJsonRequest(
     const HttpRequestQueue::iterator begin_it,
     const HttpRequestQueue::iterator end_it) {
   base::Value image_request_list(base::Value::Type::LIST);
   for (HttpRequestQueue::iterator it = begin_it; it != end_it; ++it) {
+    const std::string& source_id = std::get<0>(*it);
+    const std::vector<uint8_t>& bytes = std::get<1>(*it);
+    const bool desc = std::get<2>(*it);
+
     // Re-encode image bytes into base64, which can be represented in JSON.
     std::string base64_data;
-    Base64Encode(
-        base::StringPiece(reinterpret_cast<const char*>(it->second.data()),
-                          it->second.size()),
-        &base64_data);
+    Base64Encode(base::StringPiece(reinterpret_cast<const char*>(bytes.data()),
+                                   bytes.size()),
+                 &base64_data);
 
     // TODO(crbug.com/916420): accept and propagate page language info to
     //                         improve OCR accuracy.
     base::Value ocr_engine_params(base::Value::Type::DICTIONARY);
     ocr_engine_params.SetKey("ocrParameters",
                              base::Value(base::Value::Type::DICTIONARY));
-    base::Value desc_engine_params(base::Value::Type::DICTIONARY);
-    desc_engine_params.SetKey("descriptionParameters",
-                              base::Value(base::Value::Type::DICTIONARY));
 
     base::Value engine_params_list(base::Value::Type::LIST);
     engine_params_list.GetList().push_back(std::move(ocr_engine_params));
-    engine_params_list.GetList().push_back(std::move(desc_engine_params));
+
+    // Also add a description annotations request if the image is within model
+    // policy.
+    if (desc) {
+      base::Value desc_engine_params(base::Value::Type::DICTIONARY);
+      desc_engine_params.SetKey("descriptionParameters",
+                                base::Value(base::Value::Type::DICTIONARY));
+      engine_params_list.GetList().push_back(std::move(desc_engine_params));
+    }
+    ReportImageRequestIncludesDesc(desc);
 
     base::Value image_request(base::Value::Type::DICTIONARY);
-    image_request.SetKey("imageId", base::Value(it->first));
+    image_request.SetKey("imageId", base::Value(source_id));
     image_request.SetKey("imageBytes", base::Value(std::move(base64_data)));
     image_request.SetKey("engineParameters", std::move(engine_params_list));
 
@@ -484,7 +513,9 @@ std::unique_ptr<network::SimpleURLLoader> Annotator::MakeRequestLoader(
 void Annotator::OnJpgImageDataReceived(
     const std::string& source_id,
     const RequestInfoList::iterator request_info_it,
-    const std::vector<uint8_t>& image_bytes) {
+    const std::vector<uint8_t>& image_bytes,
+    const int32_t width,
+    const int32_t height) {
   ReportPixelFetchSuccess(!image_bytes.empty());
 
   // Failed to retrieve bytes from local processor; remove dead processor and
@@ -498,7 +529,8 @@ void Annotator::OnJpgImageDataReceived(
   local_processors_.erase(source_id);
 
   // Schedule an HTTP request for this image.
-  http_request_queue_.push_front({source_id, image_bytes});
+  http_request_queue_.push_front(
+      {source_id, image_bytes, IsWithinDescPolicy(width, height)});
   pending_source_ids_.insert(source_id);
 
   // Start sending batches to the server.
@@ -521,7 +553,7 @@ void Annotator::SendRequestBatchToServer() {
   // The set of source IDs relevant for this request.
   std::set<std::string> source_ids;
   for (HttpRequestQueue::iterator it = begin_it; it != end_it; it++) {
-    source_ids.insert(it->first);
+    source_ids.insert(std::get<0>(*it));
   }
 
   // Kick off server communication.

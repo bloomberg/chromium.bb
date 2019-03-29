@@ -226,6 +226,9 @@ constexpr char kBatchResponse[] = R"(
 
 constexpr base::TimeDelta kThrottle = base::TimeDelta::FromSeconds(1);
 
+// The minimum dimension required for description annotation.
+constexpr int32_t kDescDim = Annotator::kDescMinDimension;
+
 // An image processor that holds and exposes the callbacks it is passed.
 class TestImageProcessor : public mojom::ImageProcessor {
  public:
@@ -404,7 +407,7 @@ TEST(AnnotatorTest, OcrSuccessAndCache) {
     ASSERT_THAT(processor.callbacks(), SizeIs(1));
 
     // Send back image data.
-    std::move(processor.callbacks()[0]).Run({1, 2, 3});
+    std::move(processor.callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
     processor.callbacks().pop_back();
     test_task_env.RunUntilIdle();
 
@@ -507,7 +510,7 @@ TEST(AnnotatorTest, DescriptionSuccess) {
   ASSERT_THAT(processor.callbacks(), SizeIs(1));
 
   // Send back image data.
-  std::move(processor.callbacks()[0]).Run({1, 2, 3});
+  std::move(processor.callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
   processor.callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
@@ -566,6 +569,8 @@ TEST(AnnotatorTest, DescriptionSuccess) {
 
   // Metrics about the description results should have been logged.
   histogram_tester.ExpectUniqueSample(
+      metrics_internal::kImageRequestIncludesDesc, true, 1);
+  histogram_tester.ExpectUniqueSample(
       base::StringPrintf(metrics_internal::kAnnotationStatus, "Ocr"),
       0 /* OK RPC status */, 1);
   histogram_tester.ExpectUniqueSample(
@@ -612,7 +617,7 @@ TEST(AnnotatorTest, DoubleOcrResult) {
   ASSERT_THAT(processor.callbacks(), SizeIs(1));
 
   // Send back image data.
-  std::move(processor.callbacks()[0]).Run({1, 2, 3});
+  std::move(processor.callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
   processor.callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
@@ -727,7 +732,7 @@ TEST(AnnotatorTest, HttpError) {
   ASSERT_THAT(processor.callbacks(), SizeIs(1));
 
   // Send back image data.
-  std::move(processor.callbacks()[0]).Run({1, 2, 3});
+  std::move(processor.callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
   processor.callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
@@ -782,7 +787,7 @@ TEST(AnnotatorTest, BackendError) {
   ASSERT_THAT(processor.callbacks(), SizeIs(1));
 
   // Send back image data.
-  std::move(processor.callbacks()[0]).Run({1, 2, 3});
+  std::move(processor.callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
   processor.callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
@@ -865,7 +870,7 @@ TEST(AnnotatorTest, OcrBackendError) {
   ASSERT_THAT(processor.callbacks(), SizeIs(1));
 
   // Send back image data.
-  std::move(processor.callbacks()[0]).Run({1, 2, 3});
+  std::move(processor.callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
   processor.callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
@@ -959,7 +964,7 @@ TEST(AnnotatorTest, DescriptionBackendError) {
   ASSERT_THAT(processor.callbacks(), SizeIs(1));
 
   // Send back image data.
-  std::move(processor.callbacks()[0]).Run({1, 2, 3});
+  std::move(processor.callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
   processor.callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
@@ -1049,7 +1054,7 @@ TEST(AnnotatorTest, ServerError) {
   ASSERT_THAT(processor.callbacks(), SizeIs(1));
 
   // Send back image data.
-  std::move(processor.callbacks()[0]).Run({1, 2, 3});
+  std::move(processor.callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
   processor.callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
@@ -1107,7 +1112,7 @@ TEST(AnnotatorTest, AdultError) {
   ASSERT_THAT(processor.callbacks(), SizeIs(1));
 
   // Send back image data.
-  std::move(processor.callbacks()[0]).Run({1, 2, 3});
+  std::move(processor.callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
   processor.callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
@@ -1187,7 +1192,7 @@ TEST(AnnotatorTest, ProcessorFails) {
   ASSERT_THAT(processor[2].callbacks(), IsEmpty());
 
   // Make processor 1 fail by returning empty bytes.
-  std::move(processor[0].callbacks()[0]).Run({});
+  std::move(processor[0].callbacks()[0]).Run({}, 0, 0);
   processor[0].callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
@@ -1197,7 +1202,7 @@ TEST(AnnotatorTest, ProcessorFails) {
   ASSERT_THAT(processor[2].callbacks(), IsEmpty());
 
   // Send back image data.
-  std::move(processor[1].callbacks()[0]).Run({1, 2, 3});
+  std::move(processor[1].callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
   processor[1].callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
@@ -1275,7 +1280,7 @@ TEST(AnnotatorTest, ProcessorDies) {
   ASSERT_THAT(processor[2].callbacks(), IsEmpty());
 
   // Send back image data.
-  std::move(processor[1].callbacks()[0]).Run({1, 2, 3});
+  std::move(processor[1].callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
   processor[1].callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
@@ -1347,11 +1352,11 @@ TEST(AnnotatorTest, ConcurrentSameBatch) {
   ASSERT_THAT(processor[2].callbacks(), SizeIs(1));
 
   // Send back image data.
-  std::move(processor[0].callbacks()[0]).Run({1, 2, 3});
+  std::move(processor[0].callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
   processor[0].callbacks().pop_back();
-  std::move(processor[1].callbacks()[0]).Run({4, 5, 6});
+  std::move(processor[1].callbacks()[0]).Run({4, 5, 6}, kDescDim, kDescDim);
   processor[1].callbacks().pop_back();
-  std::move(processor[2].callbacks()[0]).Run({7, 8, 9});
+  std::move(processor[2].callbacks()[0]).Run({7, 8, 9}, kDescDim, kDescDim);
   processor[2].callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
@@ -1426,7 +1431,7 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
   ASSERT_THAT(processor[1].callbacks(), IsEmpty());
 
   // Send back image 1 data.
-  std::move(processor[0].callbacks()[0]).Run({1, 2, 3});
+  std::move(processor[0].callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
   processor[0].callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
@@ -1446,7 +1451,7 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
   ASSERT_THAT(processor[1].callbacks(), SizeIs(1));
 
   // Send back image 2 data.
-  std::move(processor[1].callbacks()[0]).Run({4, 5, 6});
+  std::move(processor[1].callbacks()[0]).Run({4, 5, 6}, kDescDim, kDescDim);
   processor[1].callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
@@ -1585,7 +1590,7 @@ TEST(AnnotatorTest, DuplicateWork) {
   ASSERT_THAT(processor[3].callbacks(), IsEmpty());
 
   // Get processor 1 to reply with bytes for the image.
-  std::move(processor[0].callbacks()[0]).Run({1, 2, 3});
+  std::move(processor[0].callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
   processor[0].callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
@@ -1648,6 +1653,209 @@ TEST(AnnotatorTest, DuplicateWork) {
                                       true, 1);
 }
 
+// Test that the description engine is not requested for images that violate
+// model policy (i.e. are too small or have too-high an aspect ratio).
+TEST(AnnotatorTest, DescPolicy) {
+  base::test::ScopedTaskEnvironment test_task_env(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+  TestServerURLLoaderFactory test_url_factory(
+      "https://ia-pa.googleapis.com/v1/");
+  data_decoder::TestDataDecoderService test_dd_service;
+  base::HistogramTester histogram_tester;
+
+  Annotator annotator(
+      GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
+      3 /* batch_size */, 1.0 /* min_ocr_confidence */,
+      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+
+  TestImageProcessor processor[3];
+  base::Optional<mojom::AnnotateImageError> error[3];
+  std::vector<mojom::Annotation> annotations[3];
+
+  // Request annotation for images 1, 2 and 3.
+  annotator.AnnotateImage(
+      kImage1Url, processor[0].GetPtr(),
+      base::BindOnce(&ReportResult, &error[0], &annotations[0]));
+  annotator.AnnotateImage(
+      kImage2Url, processor[1].GetPtr(),
+      base::BindOnce(&ReportResult, &error[1], &annotations[1]));
+  annotator.AnnotateImage(
+      kImage3Url, processor[2].GetPtr(),
+      base::BindOnce(&ReportResult, &error[2], &annotations[2]));
+  test_task_env.RunUntilIdle();
+
+  // Annotator should have asked processor 1 for image 1's pixels, processor
+  // 2 for image 2's pixels and processor 3 for image 3's pixels.
+  ASSERT_THAT(processor[0].callbacks(), SizeIs(1));
+  ASSERT_THAT(processor[1].callbacks(), SizeIs(1));
+  ASSERT_THAT(processor[2].callbacks(), SizeIs(1));
+
+  // Send back image data.
+  //
+  // Image 1 is (just) within policy. Image 2 violates policy because it is too
+  // small. Image 3 is large enough, but violates policy because of its aspect
+  // ratio.
+  std::move(processor[0].callbacks()[0])
+      .Run({1, 2, 3}, Annotator::kDescMinDimension,
+           Annotator::kDescMinDimension);
+  processor[0].callbacks().pop_back();
+  std::move(processor[1].callbacks()[0])
+      .Run({4, 5, 6}, Annotator::kDescMinDimension,
+           Annotator::kDescMinDimension - 1);
+  processor[1].callbacks().pop_back();
+  std::move(processor[2].callbacks()[0])
+      .Run({7, 8, 9},
+           static_cast<int32_t>(Annotator::kDescMinDimension *
+                                Annotator::kDescMaxAspectRatio) +
+               1,
+           Annotator::kDescMinDimension);
+  processor[2].callbacks().pop_back();
+  test_task_env.RunUntilIdle();
+
+  // No request should be sent yet (because service is waiting to batch up
+  // multiple requests).
+  EXPECT_THAT(test_url_factory.requests(), IsEmpty());
+  test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // A single HTTP request for all images should have been sent.
+  test_url_factory.ExpectRequestAndSimulateResponse(
+      "annotation", {} /* expected_headers */,
+      // Only image 1 includes a description request (as the other two violate
+      // one of the policies).
+      ReformatJson(R"(
+        {
+          "imageRequests": [
+            {
+              "imageId": "https://www.example.com/image3.jpg",
+              "imageBytes": "BwgJ",
+              "engineParameters": [
+                {"ocrParameters": {}}
+              ]
+            },
+            {
+              "imageId": "https://www.example.com/image2.jpg",
+              "imageBytes": "BAUG",
+              "engineParameters": [
+                {"ocrParameters": {}}
+              ]
+            },
+            {
+              "imageId": "https://www.example.com/image1.jpg",
+              "imageBytes": "AQID",
+              "engineParameters": [
+                {"ocrParameters": {}},
+                {"descriptionParameters": {}}
+              ]
+            }
+          ]
+        }
+      )"),
+      R"(
+        {
+          "results": [
+            {
+              "imageId": "https://www.example.com/image2.jpg",
+              "engineResults": [
+                {
+                  "status": {},
+                  "ocrEngine": {
+                    "ocrRegions": [{
+                      "words": [{
+                        "detectedText": "2",
+                        "confidenceScore": 1.0
+                      }]
+                    }]
+                  }
+                }
+              ]
+            },
+            {
+              "imageId": "https://www.example.com/image1.jpg",
+              "engineResults": [
+                {
+                  "status": {},
+                  "ocrEngine": {
+                    "ocrRegions": [{
+                      "words": [{
+                        "detectedText": "1",
+                        "confidenceScore": 1.0
+                      }]
+                    }]
+                  }
+                },
+                {
+                  "status": {},
+                  "descriptionEngine": {
+                    "descriptionList": {
+                      "descriptions": [{
+                        "type": "CAPTION",
+                        "text": "This is an example image.",
+                        "score": 1.0
+                      }]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "imageId": "https://www.example.com/image3.jpg",
+              "engineResults": [
+                {
+                  "status": {},
+                  "ocrEngine": {
+                    "ocrRegions": [{
+                      "words": [{
+                        "detectedText": "3",
+                        "confidenceScore": 1.0
+                      }]
+                    }]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      )",
+      net::HTTP_OK);
+  test_task_env.RunUntilIdle();
+
+  // Annotator should have called each callback with its corresponding results.
+  ASSERT_THAT(error, ElementsAre(base::nullopt, base::nullopt, base::nullopt));
+  EXPECT_THAT(
+      annotations[0],
+      UnorderedElementsAre(AnnotatorEq(mojom::AnnotationType::kOcr, 1.0, "1"),
+                           AnnotatorEq(mojom::AnnotationType::kCaption, 1.0,
+                                       "This is an example image.")));
+  EXPECT_THAT(annotations[1], UnorderedElementsAre(AnnotatorEq(
+                                  mojom::AnnotationType::kOcr, 1.0, "2")));
+  EXPECT_THAT(annotations[2], UnorderedElementsAre(AnnotatorEq(
+                                  mojom::AnnotationType::kOcr, 1.0, "3")));
+
+  // Metrics should have been logged for the 3 OCR results and 1 description
+  // result.
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  metrics_internal::kImageRequestIncludesDesc),
+              UnorderedElementsAre(Bucket(false, 2), Bucket(true, 1)));
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(metrics_internal::kAnnotationStatus, "Ocr"),
+      0 /* OK RPC status */, 3);
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(metrics_internal::kAnnotationStatus, "Desc"),
+      0 /* OK RPC status */, 1);
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(metrics_internal::kAnnotationConfidence, "Ocr"), 100,
+      3);
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(metrics_internal::kAnnotationConfidence,
+                         "DescCaption"),
+      100, 1);
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(metrics_internal::kAnnotationEmpty, "Ocr"), false, 3);
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(metrics_internal::kAnnotationEmpty, "DescCaption"),
+      false, 1);
+}
+
 // Test that the specified API key is sent, but only to Google-associated server
 // domains.
 TEST(AnnotatorTest, ApiKey) {
@@ -1674,7 +1882,7 @@ TEST(AnnotatorTest, ApiKey) {
     ASSERT_THAT(processor.callbacks(), SizeIs(1));
 
     // Send back image data.
-    std::move(processor.callbacks()[0]).Run({1, 2, 3});
+    std::move(processor.callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
     processor.callbacks().pop_back();
     test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
     test_task_env.RunUntilIdle();
@@ -1707,7 +1915,7 @@ TEST(AnnotatorTest, ApiKey) {
     ASSERT_THAT(processor.callbacks(), SizeIs(1));
 
     // Send back image data.
-    std::move(processor.callbacks()[0]).Run({1, 2, 3});
+    std::move(processor.callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
     processor.callbacks().pop_back();
     test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
     test_task_env.RunUntilIdle();
@@ -1737,7 +1945,7 @@ TEST(AnnotatorTest, ApiKey) {
     ASSERT_THAT(processor.callbacks(), SizeIs(1));
 
     // Send back image data.
-    std::move(processor.callbacks()[0]).Run({1, 2, 3});
+    std::move(processor.callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
     processor.callbacks().pop_back();
     test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
     test_task_env.RunUntilIdle();
