@@ -22,6 +22,7 @@ import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.text.format.Formatter;
+import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
@@ -31,6 +32,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
+import org.chromium.chrome.browser.preferences.ChromeImageViewPreference;
+import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
+import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 
@@ -51,7 +55,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
     // permissions for that website address and display those.
     public static final String EXTRA_SITE = "org.chromium.chrome.preferences.site";
     public static final String EXTRA_SITE_ADDRESS = "org.chromium.chrome.preferences.site_address";
-    public static final String EXTRA_OBJECT_INFO = "org.chromium.chrome.preferences.object_info";
 
     // Preference keys, see single_website_preferences.xml
     // Headings:
@@ -101,8 +104,12 @@ public class SingleWebsitePreferences extends PreferenceFragment
     // The website this page is displaying details about.
     private Website mSite;
 
-    // The number of chosen object permissions displayed.
-    private int mObjectPermissionCount;
+    // The Preference key for chooser object permissions.
+    private static final String CHOOSER_PERMISSION_PREFERENCE_KEY = "chooser_permission_list";
+
+    // The number of user and policy chosen object permissions displayed.
+    private int mObjectUserPermissionCount;
+    private int mObjectPolicyPermissionCount;
 
     // Records previous notification permission on Android O+ to allow detection of permission
     // revocation within the Android system permission activity.
@@ -138,6 +145,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
         if (!hasUsagePreferences()) {
             removePreferenceSafely(PREF_USAGE);
         }
+        removeUserChosenObjectPreferences();
         popBackIfNoSettings();
     };
 
@@ -465,17 +473,62 @@ public class SingleWebsitePreferences extends PreferenceFragment
         }
     }
 
+    /**
+     * Creates a ChromeImageViewPreference for each object permission with a
+     * ManagedPreferenceDelegate that configures the Preference's widget to display a managed icon
+     * and show a toast if a managed permission is clicked. The number of object permissions are
+     * tracked by |mObjectPolicyPermissionCount| and |mObjectUserPermissionCount|, which are used
+     * when permissions are modified to determine if this preference list should be displayed or
+     * not. The preferences are added to the preference screen using |maxPermissionOrder| to order
+     * the preferences in the list.
+     * @param maxPermissionOrder The listing order of the ChromeImageViewPreference(s) with respect
+     *                           to the other preferences.
+     */
     private void setUpChosenObjectPreferences(int maxPermissionOrder) {
+        PreferenceScreen preferenceScreen = getPreferenceScreen();
+
         for (ChosenObjectInfo info : mSite.getChosenObjectInfo()) {
-            Preference preference = new Preference(getActivity());
-            preference.getExtras().putSerializable(EXTRA_OBJECT_INFO, info);
+            ChromeImageViewPreference preference = new ChromeImageViewPreference(getActivity());
+
+            preference.setKey(CHOOSER_PERMISSION_PREFERENCE_KEY);
             preference.setIcon(ContentSettingsResources.getIcon(info.getContentSettingsType()));
-            preference.setOnPreferenceClickListener(this);
             preference.setOrder(maxPermissionOrder);
             preference.setTitle(info.getName());
-            preference.setWidgetLayoutResource(R.layout.object_permission);
+            preference.setImageView(R.drawable.ic_delete_white_24dp,
+                    R.string.website_settings_revoke_device_permission, (View view) -> {
+                        info.revoke();
+                        preferenceScreen.removePreference(preference);
+                        mObjectUserPermissionCount--;
+
+                        if (!hasPermissionsPreferences()) {
+                            removePreferenceSafely(PREF_PERMISSIONS);
+                        }
+                    });
+
+            preference.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
+                @Override
+                public boolean isPreferenceControlledByPolicy(Preference preference) {
+                    return info.isManaged();
+                }
+
+                @Override
+                public boolean isPreferenceControlledByCustodian(Preference preference) {
+                    return false;
+                }
+
+                @Override
+                public boolean isPreferenceClickDisabledByPolicy(Preference preference) {
+                    return info.isManaged();
+                }
+            });
+
+            if (info.isManaged()) {
+                mObjectPolicyPermissionCount++;
+            } else {
+                mObjectUserPermissionCount++;
+            }
+
             getPreferenceScreen().addPreference(preference);
-            mObjectPermissionCount++;
         }
     }
 
@@ -555,7 +608,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     private boolean hasPermissionsPreferences() {
-        if (mObjectPermissionCount > 0) return true;
+        if (mObjectUserPermissionCount > 0 || mObjectPolicyPermissionCount > 0) return true;
         PreferenceScreen screen = getPreferenceScreen();
         for (String key : PERMISSION_PREFERENCE_KEYS) {
             if (screen.findPreference(key) != null) return true;
@@ -756,24 +809,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
     @Override
     public boolean onPreferenceClick(Preference preference) {
-        Bundle extras = preference.peekExtras();
-        if (extras != null) {
-            ChosenObjectInfo objectInfo =
-                    (ChosenObjectInfo) extras.getSerializable(EXTRA_OBJECT_INFO);
-            if (objectInfo != null) {
-                objectInfo.revoke();
-
-                PreferenceScreen preferenceScreen = getPreferenceScreen();
-                preferenceScreen.removePreference(preference);
-                mObjectPermissionCount--;
-                if (!hasPermissionsPreferences()) {
-                    Preference heading = preferenceScreen.findPreference(PREF_PERMISSIONS);
-                    preferenceScreen.removePreference(heading);
-                }
-                return true;
-            }
-        }
-
         // Handle the Clear & Reset preference click by showing a confirmation.
         new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
                 .setTitle(R.string.website_reset)
@@ -804,12 +839,12 @@ public class SingleWebsitePreferences extends PreferenceFragment
             removePreferenceSafely(key);
         }
 
-        mObjectPermissionCount = 0;
-
-        // Clearing stored data implies popping back to parent menu if there
-        // is nothing left to show. Therefore, we only need to explicitly
-        // close the activity if there's no stored data to begin with.
-        boolean finishActivityImmediately = mSite.getTotalUsage() == 0;
+        // Clearing stored data implies popping back to parent menu if there is nothing left to
+        // show. Therefore, we only need to explicitly close the activity if there's no stored data
+        // to begin with. The only exception to this is if there are policy managed permissions as
+        // those cannot be reset and will always show.
+        boolean finishActivityImmediately =
+                mSite.getTotalUsage() == 0 && mObjectPolicyPermissionCount == 0;
 
         mSiteDataCleaner.clearData(mSite, mDataClearedCallback);
 
@@ -831,5 +866,29 @@ public class SingleWebsitePreferences extends PreferenceFragment
         PreferenceScreen screen = getPreferenceScreen();
         Preference preference = screen.findPreference(prefKey);
         if (preference != null) screen.removePreference(preference);
+    }
+
+    /**
+     * Removes any user granted chosen object preference(s) from the preference screen.
+     */
+    private void removeUserChosenObjectPreferences() {
+        PreferenceScreen preferenceScreen = getPreferenceScreen();
+        ListAdapter list = preferenceScreen.getRootAdapter();
+
+        for (int i = 0; i < list.getCount(); ++i) {
+            Preference preference = (Preference) list.getItem(i);
+
+            if (preference.getKey().equals(CHOOSER_PERMISSION_PREFERENCE_KEY)) {
+                if (!((ChromeImageViewPreference) preference).isManaged()) {
+                    preferenceScreen.removePreference(preference);
+                }
+            }
+        }
+
+        mObjectUserPermissionCount = 0;
+
+        if (mObjectPolicyPermissionCount > 0) {
+            ManagedPreferencesUtils.showManagedSettingsCannotBeResetToast(getActivity());
+        }
     }
 }

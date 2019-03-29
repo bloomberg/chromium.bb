@@ -274,6 +274,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_MANAGED_BY_YOUR_PARENT" desc="Popup message when the user clicks a UI element that has been disabled by their parent.">
         Managed by your parent
       </message>
+      <message name="IDS_MANAGED_SETTINGS_CANNOT_BE_RESET" desc="Popup message when the user clicks a UI element that resets a list of settings that include managed settings.">
+        Managed settings cannot be reset
+      </message>
       <message name="IDS_PREFS_SECTION_BASICS" desc='Title of "Basics" section of preferences. [CHAR-LIMIT=32]'>
         Basics
       </message>
@@ -1128,6 +1131,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_RESET_CONFIRMATION" desc="The confirmation text asking if the user is sure about clearing all data and reset the permissions for a site.">
         Are you sure you want to clear all local data, including cookies, and reset all permissions for this website?
       </message>
+      <message name="IDS_CHOSEN_OBJECT_WEBSITE_RESET_CONFIRMATION_FOR" desc="The confirmation asking if the user is sure about clearing all site permissions for the chosen object">
+        Are you sure you want to reset all site permissions for <ph name="CHOSEN_OBJECT_NAME">%1$s<ex>Weblight</ex></ph>?
+      </message>
       <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_TITLE" desc="Title of the confirmation dialog when the user ask to clear all data for an origin">
         Clear stored data
       </message>
@@ -1248,6 +1254,9 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_WEBSITE_SETTINGS_REVOKE_DEVICE_PERMISSION" desc="Content description for revoking a website's permission to access a device.">
         Revoke device permission
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_REVOKE_ALL_PERMISSIONS_FOR_DEVICE" desc="Content description for revoking all of the website permissions for a device.">
+        Revoke all permissions for device
       </message>
 
       <!-- Data Saver and Lite Mode-->
