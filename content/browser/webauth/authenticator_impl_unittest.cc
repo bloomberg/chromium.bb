@@ -2978,6 +2978,7 @@ class InternalUVAuthenticatorImplTest : public UVAuthenticatorImplTest {
     UVAuthenticatorImplTest::SetUp();
     device::VirtualCtap2Device::Config config;
     config.internal_uv_support = true;
+    config.u2f_support = true;
     virtual_device_.SetCtap2Config(config);
     NavigateAndCommit(GURL(kTestOrigin1));
   }
@@ -3027,6 +3028,46 @@ TEST_F(InternalUVAuthenticatorImplTest, MakeCredential) {
   }
 }
 
+TEST_F(InternalUVAuthenticatorImplTest, MakeCredentialCryptotoken) {
+  TestServiceManagerContext smc;
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
+  url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
+  OverrideLastCommittedOrigin(main_rfh(),
+                              url::Origin::Create(GURL(kCryptotokenOrigin)));
+
+  for (const auto fingerprints_enrolled : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "fingerprints_enrolled=" << fingerprints_enrolled);
+    virtual_device_.mutable_state()->fingerprints_enrolled =
+        fingerprints_enrolled;
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(
+        make_credential_options(
+            blink::mojom::UserVerificationRequirement::PREFERRED),
+        callback_receiver.callback());
+
+    if (!fingerprints_enrolled) {
+      callback_receiver.WaitForCallback();
+      EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+      // The credential should have been created over U2F.
+      for (const auto& registration :
+           virtual_device_.mutable_state()->registrations) {
+        EXPECT_TRUE(registration.second.is_u2f);
+      }
+    } else {
+      // TODO(agl): this is a bug; an internal-UV authenticator should be able
+      // to create U2F credentials over the U2F interface.
+      base::RunLoop().RunUntilIdle();
+      task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+      callback_receiver.WaitForCallback();
+      EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+                callback_receiver.status());
+    }
+  }
+}
+
 TEST_F(InternalUVAuthenticatorImplTest, GetAssertion) {
   TestServiceManagerContext smc;
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
@@ -3069,6 +3110,31 @@ TEST_F(InternalUVAuthenticatorImplTest, GetAssertion) {
             HasUV(callback_receiver));
       }
     }
+  }
+}
+
+TEST_F(InternalUVAuthenticatorImplTest, GetAssertionCryptotoken) {
+  TestServiceManagerContext smc;
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
+  OverrideLastCommittedOrigin(main_rfh(),
+                              url::Origin::Create(GURL(kCryptotokenOrigin)));
+  ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
+      get_credential_options()->allow_credentials[0]->id, kTestRelyingPartyId));
+
+  for (const auto fingerprints_enrolled : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "fingerprints_enrolled=" << fingerprints_enrolled);
+    virtual_device_.mutable_state()->fingerprints_enrolled =
+        fingerprints_enrolled;
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(
+        get_credential_options(
+            blink::mojom::UserVerificationRequirement::PREFERRED),
+        callback_receiver.callback());
+
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
   }
 }
 

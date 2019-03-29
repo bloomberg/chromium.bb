@@ -176,9 +176,10 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
   Append(&response, *attestation_cert);
   Append(&response, sig);
 
-  StoreNewKey(key_handle,
-              RegistrationData(std::move(private_key), application_parameter,
-                               1 /* signature counter */));
+  RegistrationData registration_data(
+      std::move(private_key), application_parameter, 1 /* signature counter */);
+  registration_data.is_u2f = true;
+  StoreNewKey(key_handle, std::move(registration_data));
   return apdu::ApduResponse(std::move(response),
                             apdu::ApduResponse::Status::SW_NO_ERROR)
       .GetEncodedResponse();

@@ -52,6 +52,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     std::array<uint8_t, kRpIdHashLength> application_parameter;
     uint32_t counter = 0;
     bool is_resident = false;
+    // is_u2f is true if the credential was created via a U2F interface.
+    bool is_u2f = false;
 
     // user is only valid if |is_resident| is true.
     base::Optional<device::PublicKeyCredentialUserEntity> user;
@@ -157,10 +159,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
 
   ~VirtualFidoDevice() override;
 
-  State* mutable_state() { return state_.get(); }
+  State* mutable_state() const { return state_.get(); }
 
  protected:
   static std::vector<uint8_t> GetAttestationKey();
+
+  scoped_refptr<State> NewReferenceToState() const { return state_; }
 
   static bool Sign(crypto::ECPrivateKey* private_key,
                    base::span<const uint8_t> sign_buffer,
