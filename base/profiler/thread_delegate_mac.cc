@@ -300,6 +300,8 @@ UnwindResult ThreadDelegateMac::WalkNativeFrames(
       return UnwindResult::ABORTED;
 
     // Second frame unwind step: do the unwind.
+    unw_word_t prev_stack_pointer;
+    unw_get_reg(&unwind_cursor, UNW_REG_SP, &prev_stack_pointer);
     step_result = unw_step(&unwind_cursor);
 
     if (step_result == 0 && at_top_frame) {
@@ -328,13 +330,35 @@ UnwindResult ThreadDelegateMac::WalkNativeFrames(
     if (step_result < 0)
       return UnwindResult::ABORTED;
 
-    if (step_result == 0)
-      return UnwindResult::COMPLETED;
-
     // Fourth frame unwind step: record the frame to which we just unwound.
     unw_get_reg(&unwind_cursor, UNW_REG_IP, &instruction_pointer);
-    module = module_cache->GetModuleForAddress(instruction_pointer);
-    stack->emplace_back(instruction_pointer, module);
+    unw_word_t stack_pointer;
+    unw_get_reg(&unwind_cursor, UNW_REG_SP, &stack_pointer);
+    // Record the frame if the last step was successful.
+    if (step_result > 0 ||
+        // libunwind considers the unwind complete and returns 0 if no unwind
+        // info was found for the current instruction pointer. It performs this
+        // check both before *and* after stepping the cursor. In the former case
+        // no action is taken, but in the latter case an unwind was successfully
+        // performed prior to the check. Distinguish these cases by checking
+        // whether the stack pointer was moved by unw_step. If so, record the
+        // new frame to enable non-native unwinders to continue the unwinding.
+        (step_result == 0 && stack_pointer > prev_stack_pointer)) {
+      module = module_cache->GetModuleForAddress(instruction_pointer);
+      stack->emplace_back(instruction_pointer, module);
+    }
+
+    // libunwind returns 0 if it can't continue because no unwind info was found
+    // for the current instruction pointer. This could be due to unwinding past
+    // the entry point, in which case the unwind would be complete. It could
+    // also be due to unwinding to a function that simply doesn't have unwind
+    // info, in which case the unwind should be aborted. Or it could be due to
+    // unwinding to code not in a module, in which case the unwind might be
+    // continuable by a non-native unwinder. We don't have a good way to
+    // distinguish these cases, so return UNRECOGNIZED_FRAME to at least
+    // signify that we couldn't unwind further.
+    if (step_result == 0)
+      return UnwindResult::UNRECOGNIZED_FRAME;
 
     at_top_frame = false;
   }

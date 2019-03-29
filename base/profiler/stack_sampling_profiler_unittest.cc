@@ -684,20 +684,12 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
     // TargetThread::SignalAndWaitUntilSignaled
     // TargetThread::OtherLibraryCallback
     // <frame in unloaded library>
-#if !defined(OS_MACOSX)
     EXPECT_EQ(3, frames.end() - end_frame)
         << "Stack:\n"
         << FormatSampleForDiagnosticOutput(frames);
     EXPECT_EQ(nullptr, frames.back().module)
         << "Stack:\n"
         << FormatSampleForDiagnosticOutput(frames);
-#else
-    // TODO(wittman): Fix Mac unwinding to match the expected behavior
-    // above. Currently it doesn't produce a frame for the unloaded library.
-    EXPECT_EQ(2, frames.end() - end_frame)
-        << "Stack:\n"
-        << FormatSampleForDiagnosticOutput(frames);
-#endif
   } else {
     // We didn't wait for the asynchronous unloading to complete, so the results
     // are non-deterministic: if the library finished unloading we should have
