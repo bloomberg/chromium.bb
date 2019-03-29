@@ -14,7 +14,6 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/it2me/it2me_native_messaging_host.h"
 #include "remoting/host/policy_watcher.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/events/system_input_injector.h"
 
 #if defined(USE_OZONE)
@@ -56,15 +55,13 @@ namespace remoting {
 std::unique_ptr<extensions::NativeMessageHost>
 CreateIt2MeNativeMessagingHostForChromeOS(
     net::URLRequestContextGetter* system_request_context,
-    scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
     scoped_refptr<base::SingleThreadTaskRunner> io_runnner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_runnner,
     policy::PolicyService* policy_service) {
   std::unique_ptr<It2MeHostFactory> host_factory(new It2MeHostFactory());
   std::unique_ptr<ChromotingHostContext> context =
       ChromotingHostContext::CreateForChromeOS(
-          base::WrapRefCounted(system_request_context),
-          system_url_loader_factory, io_runnner, ui_runnner,
+          base::WrapRefCounted(system_request_context), io_runnner, ui_runnner,
           base::CreateSingleThreadTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
           GetInputInjector());

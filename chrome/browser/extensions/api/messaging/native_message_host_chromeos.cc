@@ -21,14 +21,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/extensions/arc_support_message_host.h"
 #include "chrome/browser/chromeos/diagnosticsd/diagnosticsd_messaging.h"
-#include "chrome/browser/net/system_network_context_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/url_pattern.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/host/it2me/it2me_native_messaging_host_chromeos.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
@@ -99,8 +97,6 @@ struct BuiltInHost {
 std::unique_ptr<NativeMessageHost> CreateIt2MeHost() {
   return remoting::CreateIt2MeNativeMessagingHostForChromeOS(
       g_browser_process->system_request_context(),
-      g_browser_process->system_network_context_manager()
-          ->GetSharedURLLoaderFactory(),
       base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::IO}),
       base::CreateSingleThreadTaskRunnerWithTraits(
