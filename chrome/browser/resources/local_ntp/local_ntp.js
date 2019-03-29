@@ -264,7 +264,15 @@ var lastBlacklistedTile = null;
  * set if a notification is visible.
  * @type {?Object}
  */
-let delayedHideNotification;
+let delayedHideNotification = null;
+
+
+/**
+ * The currently visible notification element. Null if no notification is
+ * present.
+ * @type {?Object}
+ */
+let currNotification = null;
 
 
 /**
@@ -798,9 +806,15 @@ function showErrorNotification(msg, linkName, linkOnClick) {
  * @param {!Element} notificationContainer The notification container element.
  */
 function floatUpNotification(notification, notificationContainer) {
-  // Hide any pre-existing notification.
   if (delayedHideNotification) {
-    delayedHideNotification.trigger();
+    // Hide the current notification if it's a different type (i.e. error vs
+    // success). Otherwise, simply clear the notification timeout and reset it
+    // later.
+    if (currNotification === notificationContainer) {
+      delayedHideNotification.clear();
+    } else {
+      delayedHideNotification.trigger();
+    }
     delayedHideNotification = null;
   }
 
@@ -831,6 +845,7 @@ function floatUpNotification(notification, notificationContainer) {
     // case, we do not want to re-show the promo yet.
     floatDownNotification(notification, notificationContainer, !executedEarly);
   }, NOTIFICATION_TIMEOUT);
+  currNotification = notificationContainer;
 }
 
 
@@ -850,6 +865,7 @@ function floatDownNotification(notification, notificationContainer, showPromo) {
   if (delayedHideNotification) {
     delayedHideNotification.clear();
     delayedHideNotification = null;
+    currNotification = null;
   }
 
   if (showPromo) {
