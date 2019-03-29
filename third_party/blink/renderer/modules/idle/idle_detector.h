@@ -41,9 +41,6 @@ class IdleDetector final : public EventTargetWithInlineData,
 
   void Dispose();
 
-  // Called when the service has returned an initial state.
-  void Init(mojom::blink::IdleStatePtr);
-
   // EventTarget implementation.
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;

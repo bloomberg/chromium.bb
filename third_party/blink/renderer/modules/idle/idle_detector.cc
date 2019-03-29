@@ -54,10 +54,6 @@ IdleDetector* IdleDetector::Create(ScriptState* script_state,
 IdleDetector::IdleDetector(ExecutionContext* context, base::TimeDelta threshold)
     : ContextClient(context), threshold_(threshold), binding_(this) {}
 
-void IdleDetector::Init(mojom::blink::IdleStatePtr state) {
-  state_ = MakeGarbageCollected<blink::IdleState>(std::move(state));
-}
-
 IdleDetector::~IdleDetector() = default;
 
 void IdleDetector::Dispose() {
@@ -73,7 +69,9 @@ ExecutionContext* IdleDetector::GetExecutionContext() const {
 }
 
 bool IdleDetector::HasPendingActivity() const {
-  return binding_.is_bound();
+  // This object should be considered active as long as there are registered
+  // event listeners.
+  return GetExecutionContext() && HasEventListeners();
 }
 
 ScriptPromise IdleDetector::start(ScriptState* script_state) {
@@ -117,7 +115,7 @@ void IdleDetector::StartMonitoring() {
 
   service_->AddMonitor(
       threshold_, std::move(monitor_ptr),
-      WTF::Bind(&IdleDetector::OnAddMonitor, WrapPersistent(this)));
+      WTF::Bind(&IdleDetector::OnAddMonitor, WrapWeakPersistent(this)));
 }
 
 void IdleDetector::StopMonitoring() {
@@ -125,8 +123,7 @@ void IdleDetector::StopMonitoring() {
 }
 
 void IdleDetector::OnAddMonitor(mojom::blink::IdleStatePtr state) {
-  Init(std::move(state));
-  DispatchEvent(*Event::Create(event_type_names::kChange));
+  Update(std::move(state));
 }
 
 blink::IdleState* IdleDetector::state() const {
@@ -138,17 +135,19 @@ void IdleDetector::Update(mojom::blink::IdleStatePtr state) {
   if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed())
     return;
 
-  if (state.get()->Equals(state_->state()))
+  if (state_ && state.get()->Equals(state_->state()))
     return;
 
-  Init(std::move(state));
+  state_ = MakeGarbageCollected<blink::IdleState>(std::move(state));
+
   DispatchEvent(*Event::Create(event_type_names::kChange));
 }
 
 void IdleDetector::Trace(blink::Visitor* visitor) {
+  visitor->Trace(state_);
   EventTargetWithInlineData::Trace(visitor);
   ContextClient::Trace(visitor);
-  visitor->Trace(state_);
+  ActiveScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink
