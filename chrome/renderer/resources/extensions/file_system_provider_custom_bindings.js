@@ -4,11 +4,7 @@
 
 // Custom binding for the fileSystemProvider API.
 
-var fileSystemProviderInternal =
-    getInternalApi ?
-        getInternalApi('fileSystemProviderInternal') :
-        require('binding').Binding.create('fileSystemProviderInternal')
-            .generate();
+var fileSystemProviderInternal = getInternalApi('fileSystemProviderInternal');
 
 /**
  * Maximum size of the thumbnail in bytes.

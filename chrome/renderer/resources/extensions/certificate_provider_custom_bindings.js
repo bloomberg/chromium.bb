@@ -2,11 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var certificateProviderInternal =
-    getInternalApi ?
-        getInternalApi('certificateProviderInternal') :
-        require('binding').Binding.create(
-            'certificateProviderInternal').generate();
+var certificateProviderInternal = getInternalApi('certificateProviderInternal');
 
 var certificateProviderSchema =
     requireNative('schema_registry').GetSchema('certificateProvider')

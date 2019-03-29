@@ -4,10 +4,7 @@
 
 // Custom bindings for the downloads API.
 
-var downloadsInternal =
-    getInternalApi ?
-        getInternalApi('downloadsInternal') :
-        require('binding').Binding.create('downloadsInternal').generate();
+var downloadsInternal = getInternalApi('downloadsInternal');
 
 bindingUtil.registerEventArgumentMassager('downloads.onDeterminingFilename',
                                           function(args, dispatch) {
