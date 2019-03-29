@@ -287,8 +287,10 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
       break;
     }
     case ax::mojom::IntAttribute::kScrollX:
+      AddEvent(node, Event::SCROLL_HORIZONTAL_POSITION_CHANGED);
+      break;
     case ax::mojom::IntAttribute::kScrollY:
-      AddEvent(node, Event::SCROLL_POSITION_CHANGED);
+      AddEvent(node, Event::SCROLL_VERTICAL_POSITION_CHANGED);
       break;
     case ax::mojom::IntAttribute::kImageAnnotationStatus:
       // The image annotation is reported as part of the accessible name.

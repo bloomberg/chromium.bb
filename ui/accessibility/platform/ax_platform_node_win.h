@@ -1188,6 +1188,12 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   HRESULT ISelectionItemProviderSetSelected(bool selected);
 
   bool IsAncestorComboBox();
+
+  // Helper method for getting the horizontal scroll percent.
+  double GetHorizontalScrollPercent();
+
+  // Helper method for getting the vertical scroll percent.
+  double GetVerticalScrollPercent();
 };
 
 }  // namespace ui

@@ -165,7 +165,8 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:
       wcax->HandleCheckStateChanged(android_node->unique_id());
       break;
-    case ui::AXEventGenerator::Event::SCROLL_POSITION_CHANGED:
+    case ui::AXEventGenerator::Event::SCROLL_HORIZONTAL_POSITION_CHANGED:
+    case ui::AXEventGenerator::Event::SCROLL_VERTICAL_POSITION_CHANGED:
       wcax->HandleScrollPositionChanged(android_node->unique_id());
       break;
     case ui::AXEventGenerator::Event::ALERT:
