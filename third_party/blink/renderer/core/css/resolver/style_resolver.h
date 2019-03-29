@@ -219,27 +219,27 @@ class CORE_EXPORT StyleResolver final
     kUpdateNeedsApplyPass = true,
   };
 
-  void ApplyMatchedPropertiesAndCustomPropertyAnimations(
-      StyleResolverState&,
-      const MatchResult&,
-      const Element* animating_element);
   CacheSuccess ApplyMatchedCache(StyleResolverState&, const MatchResult&);
-  enum ApplyAnimations { kExcludeAnimations, kIncludeAnimations };
   void ApplyCustomProperties(StyleResolverState&,
                              const MatchResult&,
-                             ApplyAnimations,
                              const CacheSuccess&,
                              NeedsApplyPass&);
   void ApplyMatchedAnimationProperties(StyleResolverState&,
                                        const MatchResult&,
                                        const CacheSuccess&,
                                        NeedsApplyPass&);
-  void ApplyMatchedStandardProperties(StyleResolverState&,
-                                      const MatchResult&,
-                                      const CacheSuccess&,
-                                      NeedsApplyPass&);
+  void ApplyMatchedHighPriorityProperties(StyleResolverState&,
+                                          const MatchResult&,
+                                          const CacheSuccess&,
+                                          bool& apply_inherited_only,
+                                          NeedsApplyPass&);
+  void ApplyMatchedProperties(StyleResolverState&,
+                              const MatchResult&,
+                              const Element* animating_element);
+
   void CalculateAnimationUpdate(StyleResolverState&,
                                 const Element* animating_element);
+
   bool ApplyAnimatedStandardProperties(StyleResolverState&, const Element*);
 
   void ApplyCallbackSelectors(StyleResolverState&);
