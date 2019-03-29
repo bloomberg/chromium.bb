@@ -5621,6 +5621,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="inappropriate_fallback alert"/>
 </enum>
 
+<enum name="BooleanIncluded">
+  <int value="0" label="Not included"/>
+  <int value="1" label="Included"/>
+</enum>
+
 <enum name="BooleanIncludesHash">
   <int value="0" label="Hash Missing"/>
   <int value="1" label="Hash Included"/>

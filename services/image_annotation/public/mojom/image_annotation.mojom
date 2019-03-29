@@ -5,11 +5,12 @@
 module image_annotation.mojom;
 
 interface ImageProcessor {
-  // Returns the (potentially resized and compressed) pixels for the image.
+  // Returns the (potentially resized and compressed) pixels for the image,
+  // along with its new width and height.
   //
   // TODO(crbug.com/916420): expand this signature to include arguments when we
   //                         require more sophisticated render-side processing.
-  GetJpgImageData() => (array<uint8> bytes);
+  GetJpgImageData() => (array<uint8> bytes, int32 width, int32 height);
 };
 
 // The ways in which an annotation request can fail.

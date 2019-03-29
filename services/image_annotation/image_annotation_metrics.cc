@@ -81,6 +81,10 @@ void ReportServerLatency(const base::TimeDelta latency) {
                              base::TimeDelta::FromSeconds(30), 50);
 }
 
+void ReportImageRequestIncludesDesc(const bool includes_desc) {
+  UMA_HISTOGRAM_BOOLEAN(kImageRequestIncludesDesc, includes_desc);
+}
+
 void ReportServerRequestSizeKB(const size_t size_kb) {
   // Use a custom memory histogram with ~10 buckets per order of magnitude
   // between 1KB and 30MB.
