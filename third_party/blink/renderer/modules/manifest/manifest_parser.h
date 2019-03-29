@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MANIFEST_MANIFEST_PARSER_H_
-#define CONTENT_RENDERER_MANIFEST_MANIFEST_PARSER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MANIFEST_MANIFEST_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MANIFEST_MANIFEST_PARSER_H_
 
 #include <stdint.h>
 
@@ -13,9 +13,10 @@
 #include "base/optional.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_piece.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
-#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class GURL;
@@ -24,33 +25,32 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace content {
+namespace blink {
+
+class KURL;
 
 // ManifestParser handles the logic of parsing the Web Manifest from a string.
 // It implements:
 // http://w3c.github.io/manifest/#dfn-steps-for-processing-a-manifest
-class CONTENT_EXPORT ManifestParser {
+class MODULES_EXPORT ManifestParser {
  public:
   ManifestParser(const base::StringPiece& data,
-                 const GURL& manifest_url,
-                 const GURL& document_url);
+                 const KURL& manifest_url,
+                 const KURL& document_url);
   ~ManifestParser();
 
   // Parse the Manifest from a string using following:
   // http://w3c.github.io/manifest/#dfn-steps-for-processing-a-manifest
   void Parse();
 
-  const blink::Manifest& manifest() const;
+  const Manifest& manifest() const;
   bool failed() const;
 
-  void TakeErrors(std::vector<blink::mojom::ManifestErrorPtr>* errors);
+  void TakeErrors(WebVector<ManifestError>* errors);
 
  private:
   // Used to indicate whether to strip whitespace when parsing a string.
-  enum TrimType {
-    Trim,
-    NoTrim
-  };
+  enum TrimType { Trim, NoTrim };
 
   // Indicate whether a parsed URL should be restricted to document origin.
   enum class ParseURLOriginRestrictions {
@@ -115,13 +115,13 @@ class CONTENT_EXPORT ManifestParser {
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-display-member
   // Returns the parsed DisplayMode if any, WebDisplayModeUndefined if the
   // parsing failed.
-  blink::WebDisplayMode ParseDisplay(const base::DictionaryValue& dictionary);
+  WebDisplayMode ParseDisplay(const base::DictionaryValue& dictionary);
 
   // Parses the 'orientation' field of the manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-orientation-member
   // Returns the parsed WebScreenOrientationLockType if any,
   // WebScreenOrientationLockDefault if the parsing failed.
-  blink::WebScreenOrientationLockType ParseOrientation(
+  WebScreenOrientationLockType ParseOrientation(
       const base::DictionaryValue& dictionary);
 
   // Parses the 'src' field of an icon, as defined in:
@@ -145,14 +145,14 @@ class CONTENT_EXPORT ManifestParser {
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-a-purpose-member-of-an-image
   // Returns a vector of Manifest::Icon::IconPurpose with the successfully
   // parsed icon purposes, and nullopt if the parsing failed.
-  base::Optional<std::vector<blink::Manifest::ImageResource::Purpose>>
+  base::Optional<std::vector<Manifest::ImageResource::Purpose>>
   ParseIconPurpose(const base::DictionaryValue& icon);
 
   // Parses the 'icons' field of a Manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-an-array-of-images
   // Returns a vector of Manifest::Icon with the successfully parsed icons, if
   // any. An empty vector if the field was not present or empty.
-  std::vector<blink::Manifest::ImageResource> ParseIcons(
+  std::vector<Manifest::ImageResource> ParseIcons(
       const base::DictionaryValue& dictionary);
 
   // Parses the name field of a share target file, as defined in:
@@ -170,46 +170,46 @@ class CONTENT_EXPORT ManifestParser {
   // Parses the |key| field of |from| as a list of FileFilters.
   // This is used to parse |file_handlers| and |share_target.params.files|
   // Returns a parsed vector of share target files.
-  std::vector<blink::Manifest::FileFilter> ParseTargetFiles(
+  std::vector<Manifest::FileFilter> ParseTargetFiles(
       const base::StringPiece& key,
       const base::DictionaryValue& from);
 
   // Parses a single FileFilter (see above comment) and appends it to
   // the given |files| vector.
   void ParseFileFilter(const base::DictionaryValue& file_dictionary,
-                       std::vector<blink::Manifest::FileFilter>* files);
+                       std::vector<Manifest::FileFilter>* files);
 
   // Parses the method field of a Share Target, as defined in:
   // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
   // Returns an optional share target method enum object..
-  base::Optional<blink::Manifest::ShareTarget::Method> ParseShareTargetMethod(
+  base::Optional<Manifest::ShareTarget::Method> ParseShareTargetMethod(
       const base::DictionaryValue& share_target_dict);
 
   // Parses the enctype field of a Share Target, as defined in:
   // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
   // Returns an optional share target enctype enum object.
-  base::Optional<blink::Manifest::ShareTarget::Enctype> ParseShareTargetEnctype(
+  base::Optional<Manifest::ShareTarget::Enctype> ParseShareTargetEnctype(
       const base::DictionaryValue& share_target_dict);
 
   // Parses the 'params' field of a Share Target, as defined in:
   // https://wicg.github.io/web-share-target/level-2/#sharetargetparams-and-its-members
   // Returns a parsed Manifest::ShareTargetParams, not all fields need to be
   // populated.
-  blink::Manifest::ShareTargetParams ParseShareTargetParams(
+  Manifest::ShareTargetParams ParseShareTargetParams(
       const base::DictionaryValue& share_target_params);
 
   // Parses the 'share_target' field of a Manifest, as defined in:
   // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
   // Returns the parsed Web Share target. The returned Share Target is null if
   // the field didn't exist, parsing failed, or it was empty.
-  base::Optional<blink::Manifest::ShareTarget> ParseShareTarget(
+  base::Optional<Manifest::ShareTarget> ParseShareTarget(
       const base::DictionaryValue& dictionary);
 
   // Parses the 'file_handler' field of a Manifest, as defined in:
   // https://github.com/WICG/file-handling/blob/master/explainer.md
   // Returns the parsed file handler information. The returned FileHandler is
   // null if the field didn't exist, parsing failed, or it was empty.
-  base::Optional<blink::Manifest::FileHandler> ParseFileHandler(
+  base::Optional<Manifest::FileHandler> ParseFileHandler(
       const base::DictionaryValue& dictionary);
 
   // Parses the 'platform' field of a related application, as defined in:
@@ -234,7 +234,7 @@ class CONTENT_EXPORT ManifestParser {
   // Returns a vector of Manifest::RelatedApplication with the successfully
   // parsed applications, if any. An empty vector if the field was not present
   // or empty.
-  std::vector<blink::Manifest::RelatedApplication> ParseRelatedApplications(
+  std::vector<Manifest::RelatedApplication> ParseRelatedApplications(
       const base::DictionaryValue& dictionary);
 
   // Parses the 'prefer_related_applications' field on the manifest, as defined
@@ -275,12 +275,12 @@ class CONTENT_EXPORT ManifestParser {
   GURL document_url_;
 
   bool failed_;
-  blink::Manifest manifest_;
-  std::vector<blink::mojom::ManifestErrorPtr> errors_;
+  Manifest manifest_;
+  Vector<ManifestError> errors_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestParser);
 };
 
-} // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MANIFEST_MANIFEST_PARSER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MANIFEST_MANIFEST_PARSER_H_

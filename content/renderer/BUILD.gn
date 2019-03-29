@@ -203,8 +203,6 @@ target(link_target_type, "renderer") {
     "manifest/manifest_change_notifier.h",
     "manifest/manifest_manager.cc",
     "manifest/manifest_manager.h",
-    "manifest/manifest_parser.cc",
-    "manifest/manifest_parser.h",
     "manifest/manifest_uma_util.cc",
     "manifest/manifest_uma_util.h",
     "media/android/flinging_renderer_client_factory.cc",

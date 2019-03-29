@@ -647,6 +647,22 @@ _CONFIG = [
             'base::OnTaskRunnerDeleter',
             'sigslot::.+',
         ],
+    },
+    # TODO(https://crbug.com/704441) : Added temporarily.
+    {
+        'paths': ['third_party/blink/renderer/modules/exported/web_manifest_parser.cc'],
+        'allowed': [
+            'base::StringPiece',
+            'GURL',
+        ],
+    },
+    {
+        'paths': ['third_party/blink/renderer/modules/manifest/'],
+        'allowed': [
+            'base::.+',
+            'net::ParseMimeTypeWithoutParameter',
+            'GURL',
+        ],
     }
 ]
 
