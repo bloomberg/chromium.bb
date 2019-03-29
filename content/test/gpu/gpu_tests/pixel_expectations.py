@@ -44,6 +44,39 @@ class PixelExpectations(GpuTestExpectations):
     self.Skip('Pixel_Canvas2DRedBox_NoGpuProcess', ['android', 'chromeos'])
     self.Skip('Pixel_CSS3DBlueBox_NoGpuProcess', ['android', 'chromeos'])
 
+    # Skip tests on Android WebView that requires embedding viz clients. This
+    # includes offscreen canvas and other features. crbug.com/805739 tracks
+    # making this work.
+    self.Skip('Pixel_OffscreenCanvas2DResizeOnWorker',
+              ['android-webview-instrumentation'], bug=805739)
+    self.Skip('Pixel_OffscreenCanvasAccelerated2D',
+              ['android-webview-instrumentation'], bug=805739)
+    self.Skip('Pixel_OffscreenCanvasAccelerated2DWorker',
+              ['android-webview-instrumentation'], bug=805739)
+    self.Skip('Pixel_OffscreenCanvasTransferAfterStyleResize',
+              ['android-webview-instrumentation'], bug=805739)
+    self.Skip('Pixel_OffscreenCanvasTransferBeforeStyleResize',
+              ['android-webview-instrumentation'], bug=805739)
+    self.Skip('Pixel_OffscreenCanvasWebGLDefault',
+              ['android-webview-instrumentation'], bug=805739)
+    self.Skip('Pixel_OffscreenCanvasWebGLDefaultWorker',
+              ['android-webview-instrumentation'], bug=805739)
+    self.Skip('Pixel_OffscreenCanvasWebGLPaintAfterResize',
+              ['android-webview-instrumentation'], bug=805739)
+    self.Skip('Pixel_OffscreenCanvasWebglResizeOnWorker',
+              ['android-webview-instrumentation'], bug=805739)
+    self.Skip('Pixel_CanvasLowLatencyWebGL',
+              ['android-webview-instrumentation'], bug=805739)
+    # Skip test that kills GPU process since Android Webview only supports
+    # in-process GPU.
+    # Uncomment this when crbug.com/575305 is fixed and conflicting
+    # expectation below is removed.
+    # self.Skip('Pixel_WebGLSadCanvas', ['android-webview-instrumentation'])
+    # Uncomment this when crbug.com/925744 is fixed and conflicting
+    # expectation below is removed.
+    # self.SKip('Pixel_Video_Context_Loss_VP9',
+    #           ['android-webview-instrumentation'])
+
     self.Fail('Pixel_ScissorTestWithPreserveDrawingBuffer',
         ['android'], bug=521588)
 
@@ -99,7 +132,7 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(kbr): temporary suppression for new test.
     self.Flaky('Pixel_WebGLSadCanvas', ['linux', 'win'], bug=575305)
     self.Fail('Pixel_WebGLSadCanvas', ['mac'], bug=872423)
-    self.Fail('Pixel_WebGLSadCanvas', ['android'], bug=575305)
+    self.Skip('Pixel_WebGLSadCanvas', ['android'], bug=575305)
 
     self.Fail('Pixel_CanvasLowLatencyWebGL', ['android', 'nvidia'], bug=868596)
     self.Fail('Pixel_OffscreenCanvasWebGLPaintAfterResize',
@@ -115,7 +148,7 @@ class PixelExpectations(GpuTestExpectations):
 
     # Flakes on Nexus 5X.
     self.Flaky('Pixel_BackgroundImage',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=883500)
+        ['android-chromium', ('qualcomm', 'Adreno (TM) 418')], bug=883500)
 
     # We do not have software H.264 decoding on Android, so it can't survive a
     # context loss which results in hardware decoder loss.
@@ -145,7 +178,7 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_Video_MP4_FourColors_Rot_270', ['android'], bug=925744)
     self.Fail('Pixel_Video_MP4_FourColors_Rot_90', ['android'], bug=925744)
     self.Fail('Pixel_Video_VP9', ['android'], bug=925744)
-    self.Fail('Pixel_Video_Context_Loss_VP9', ['android'], bug=925744)
+    self.Skip('Pixel_Video_Context_Loss_VP9', ['android'], bug=925744)
 
     # Skip on platforms where DXVA vs D3D11 decoder doesn't matter.
     self.Skip('Pixel_Video_MP4_DXVA', ['linux', 'android', 'mac', 'chromeos'],
@@ -156,3 +189,46 @@ class PixelExpectations(GpuTestExpectations):
     # Complex overlays test is flaky on Nvidia probably due to its small size.
     self.Flaky('Pixel_DirectComposition_ComplexOverlays', ['win', 'nvidia'],
                bug=929425)
+
+    # Mark as fail all pixel tests on Android WebView before refimgs are
+    # generated
+    self.Fail('Pixel_Canvas2DUntagged', ['android-webview-instrumentation'],
+        bug=907935)
+    self.Fail('Pixel_GpuRasterization_BlueBox',
+              ['android-webview-instrumentation'], bug=907935)
+    self.Fail('Pixel_GpuRasterization_ConcavePaths',
+              ['android-webview-instrumentation'], bug=907935)
+    self.Fail('Pixel_OffscreenCanvasTransferToImageBitmap',
+              ['android-webview-instrumentation'], bug=907935)
+    self.Fail('Pixel_OffscreenCanvasTransferToImageBitmapWorker',
+              ['android-webview-instrumentation'], bug=907935)
+    self.Fail('Pixel_RepeatedWebGLTo2D', ['android-webview-instrumentation'],
+        bug=907935)
+    self.Fail('Pixel_WebGL_PremultipliedAlpha_False',
+              ['android-webview-instrumentation'], bug=907935)
+    self.Fail('Pixel_2DCanvasWebGL', ['android-webview-instrumentation'],
+        bug=907935)
+    # Uncomment this when crbug.com/927107 is fixed and conflicting expectation
+    # above is removed.
+    # self.Fail('Pixel_CSS3DBlueBox', ['android-webview-instrumentation'],
+    #     bug=907935)
+    self.Fail('Pixel_Canvas2DRedBox', ['android-webview-instrumentation'],
+        bug=907935)
+    self.Fail('Pixel_CanvasDisplayLinearRGBAccelerated2D',
+              ['android-webview-instrumentation'], bug=907935)
+    self.Fail('Pixel_CanvasLowLatency2D', ['android-webview-instrumentation'],
+        bug=907935)
+    self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
+              ['android-webview-instrumentation'], bug=907935)
+    self.Fail('Pixel_WebGLGreenTriangle_AA_Alpha',
+              ['android-webview-instrumentation'], bug=907935)
+    self.Fail('Pixel_WebGLGreenTriangle_AA_NoAlpha',
+              ['android-webview-instrumentation'], bug=907935)
+    self.Fail('Pixel_WebGLGreenTriangle_NoAA_Alpha',
+              ['android-webview-instrumentation'], bug=907935)
+    self.Fail('Pixel_WebGLGreenTriangle_NoAA_NoAlpha',
+              ['android-webview-instrumentation'], bug=907935)
+    self.Fail('Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
+              ['android-webview-instrumentation'], bug=907935)
+    self.Fail('Pixel_BackgroundImage',
+              ['android-webview-instrumentation'], bug=907935)
