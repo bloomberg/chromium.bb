@@ -77,7 +77,7 @@ LocalDOMWindow& SimTest::Window() {
   return *GetDocument().domWindow();
 }
 
-SimPage& SimTest::Page() {
+SimPage& SimTest::GetPage() {
   return page_;
 }
 
