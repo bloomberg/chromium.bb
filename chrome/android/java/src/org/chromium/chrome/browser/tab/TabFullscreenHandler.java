@@ -91,9 +91,6 @@ public final class TabFullscreenHandler extends EmptyTabObserver implements User
                     SelectionPopupController.fromWebContents(tab.getWebContents());
             controller.destroySelectActionMode();
         }
-
-        // We want to remove any cached thumbnail of the Tab.
-        tab.clearThumbnailPlaceholder();
     }
 
     @Override

@@ -627,28 +627,6 @@ void TabAndroid::SetWebappManifestScope(JNIEnv* env,
   web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
 }
 
-void TabAndroid::AttachToTabContentManager(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& jtab_content_manager) {
-  android::TabContentManager* tab_content_manager =
-      android::TabContentManager::FromJavaObject(jtab_content_manager);
-  if (tab_content_manager == tab_content_manager_)
-    return;
-
-  if (tab_content_manager_)
-    tab_content_manager_->DetachLiveLayer(GetAndroidId(), GetContentLayer());
-  tab_content_manager_ = tab_content_manager;
-  if (tab_content_manager_)
-    tab_content_manager_->AttachLiveLayer(GetAndroidId(), GetContentLayer());
-}
-
-void TabAndroid::ClearThumbnailPlaceholder(JNIEnv* env,
-                                           const JavaParamRef<jobject>& obj) {
-  if (tab_content_manager_)
-    tab_content_manager_->NativeRemoveTabThumbnail(GetAndroidId());
-}
-
 bool TabAndroid::AreRendererInputEventsIgnored(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {

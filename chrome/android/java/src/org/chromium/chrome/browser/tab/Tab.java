@@ -40,7 +40,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -913,8 +912,6 @@ public class Tab
      * new {@link WebContents} will be created for this {@link Tab}.
      * @param webContents       A {@link WebContents} object or {@code null} if one should be
      *                          created.
-     * @param tabContentManager A {@link TabContentManager} instance or {@code null} if the web
-     *                          content will be managed/displayed manually.
      * @param delegateFactory   The {@link TabDelegateFactory} to be used for delegate creation.
      * @param initiallyHidden   Only used if {@code webContents} is {@code null}.  Determines
      *                          whether or not the newly created {@link WebContents} will be hidden
@@ -922,8 +919,8 @@ public class Tab
      * @param unfreeze          Whether there should be an attempt to restore state at the end of
      *                          the initialization.
      */
-    public void initialize(WebContents webContents, TabContentManager tabContentManager,
-            TabDelegateFactory delegateFactory, boolean initiallyHidden, boolean unfreeze) {
+    public void initialize(WebContents webContents, TabDelegateFactory delegateFactory,
+            boolean initiallyHidden, boolean unfreeze) {
         try {
             TraceEvent.begin("Tab.initialize");
 
@@ -934,11 +931,6 @@ public class Tab
 
             mBrowserControlsVisibilityDelegate =
                     mDelegateFactory.createBrowserControlsVisibilityDelegate(this);
-
-            // Attach the TabContentManager if we have one.  This will bind this Tab's content layer
-            // to this manager.
-            // TODO(dtrainor): Remove this and move to a pull model instead of pushing the layer.
-            attachTabContentManager(tabContentManager);
 
             // If there is a frozen WebContents state or a pending lazy load, don't create a new
             // WebContents.
@@ -1030,7 +1022,6 @@ public class Tab
         // with an activity, and will crash. crbug.com/657007
         WebContents webContents = getWebContents();
         if (webContents != null) webContents.setTopLevelNativeWindow(null);
-        attachTabContentManager(null);
 
         TabModelSelector tabModelSelector = getTabModelSelector();
         if (tabModelSelector != null) {
@@ -1079,7 +1070,6 @@ public class Tab
         updateWindowAndroid(activity.getWindowAndroid());
 
         // Update for the controllers that need the Compositor from the new Activity.
-        attachTabContentManager(activity.getTabContentManager());
         mFullscreenManager = activity.getFullscreenManager();
         // Update the delegate factory, then recreate and propagate all delegates.
         mDelegateFactory = tabDelegateFactory;
@@ -1127,19 +1117,6 @@ public class Tab
         if (window == null) return true;
         Activity activity = WindowAndroid.activityFromContext(window.getContext().get());
         return !(activity instanceof ChromeActivity);
-    }
-
-    /**
-     * Attach the content layer for this tab to the given {@link TabContentManager}.
-     * @param tabContentManager {@link TabContentManager} to attach to.
-     */
-    public void attachTabContentManager(TabContentManager tabContentManager) {
-        if (mNativeTabAndroid == 0) return;
-        nativeAttachToTabContentManager(mNativeTabAndroid, tabContentManager);
-    }
-
-    void clearThumbnailPlaceholder() {
-        if (mNativeTabAndroid != 0) nativeClearThumbnailPlaceholder(mNativeTabAndroid);
     }
 
     /**
@@ -2214,9 +2191,6 @@ public class Tab
             long nativeTabAndroid, int constraints, int current, boolean animate);
     private native void nativeLoadOriginalImage(long nativeTabAndroid);
     private native long nativeGetBookmarkId(long nativeTabAndroid, boolean onlyEditable);
-    private native void nativeAttachToTabContentManager(long nativeTabAndroid,
-            TabContentManager tabContentManager);
-    private native void nativeClearThumbnailPlaceholder(long nativeTabAndroid);
     private native boolean nativeHasPrerenderedUrl(long nativeTabAndroid, String url);
     private native void nativeSetWebappManifestScope(long nativeTabAndroid, String scope);
     private native void nativeSetPictureInPictureEnabled(long nativeTabAndroid, boolean enabled);

@@ -105,8 +105,9 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
 
         doNothing().when(activityTabProvider).addObserverAndTrigger(
                 activityTabObserverCaptor.capture());
-        doNothing().when(tabFromFactory).initialize(webContentsCaptor.capture(), any(), any(),
-                anyBoolean(), anyBoolean());
+        doNothing()
+                .when(tabFromFactory)
+                .initialize(webContentsCaptor.capture(), any(), anyBoolean(), anyBoolean());
     }
 
     @Override
@@ -117,11 +118,13 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
 
     public CustomTabActivityTabController createTabController() {
         return new CustomTabActivityTabController(activity,
-                () -> customTabDelegateFactory, connection, intentDataProvider,
-                () -> tabContentManager, activityTabProvider,
-                tabObserverRegistrar, () -> compositorViewHolder, lifecycleDispatcher,
-                warmupManager, tabPersistencePolicy, tabFactory, () -> customTabObserver,
-                webContentsFactory, navigationEventObserver, tabProvider);
+                ()
+                        -> customTabDelegateFactory,
+                connection, intentDataProvider, activityTabProvider, tabObserverRegistrar,
+                ()
+                        -> compositorViewHolder,
+                lifecycleDispatcher, warmupManager, tabPersistencePolicy, tabFactory,
+                () -> customTabObserver, webContentsFactory, navigationEventObserver, tabProvider);
     }
 
     public CustomTabActivityNavigationController createNavigationController() {

@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.ServiceTabLauncher;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.LaunchSourceType;
@@ -79,7 +78,6 @@ public class CustomTabActivityTabController implements InflationObserver, Native
     private final ChromeActivity mActivity;
     private final CustomTabsConnection mConnection;
     private final CustomTabIntentDataProvider mIntentDataProvider;
-    private final Lazy<TabContentManager> mTabContentManager;
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final Lazy<CompositorViewHolder> mCompositorViewHolder;
     private final WarmupManager mWarmupManager;
@@ -107,8 +105,7 @@ public class CustomTabActivityTabController implements InflationObserver, Native
     public CustomTabActivityTabController(ChromeActivity activity,
             Lazy<CustomTabDelegateFactory> customTabDelegateFactory,
             CustomTabsConnection connection, CustomTabIntentDataProvider intentDataProvider,
-            Lazy<TabContentManager> tabContentManager, ActivityTabProvider activityTabProvider,
-            TabObserverRegistrar tabObserverRegistrar,
+            ActivityTabProvider activityTabProvider, TabObserverRegistrar tabObserverRegistrar,
             Lazy<CompositorViewHolder> compositorViewHolder,
             ActivityLifecycleDispatcher lifecycleDispatcher, WarmupManager warmupManager,
             CustomTabTabPersistencePolicy persistencePolicy, CustomTabActivityTabFactory tabFactory,
@@ -119,7 +116,6 @@ public class CustomTabActivityTabController implements InflationObserver, Native
         mActivity = activity;
         mConnection = connection;
         mIntentDataProvider = intentDataProvider;
-        mTabContentManager = tabContentManager;
         mTabObserverRegistrar = tabObserverRegistrar;
         mCompositorViewHolder = compositorViewHolder;
         mWarmupManager = warmupManager;
@@ -180,7 +176,7 @@ public class CustomTabActivityTabController implements InflationObserver, Native
             mTabFactory.initializeTabModels();
             Tab tab = getHiddenTab();
             if (tab == null) {
-                tab = createTab(null);
+                tab = createTab();
                 mTabProvider.setInitialTab(tab, TabCreationMode.EARLY);
             } else {
                 mTabProvider.setInitialTab(tab, TabCreationMode.HIDDEN);
@@ -238,17 +234,11 @@ public class CustomTabActivityTabController implements InflationObserver, Native
 
         if (tab == null) {
             // No tab was restored or created early, creating a new tab.
-            tab = createTab(mTabContentManager.get());
+            tab = createTab();
             mode = TabCreationMode.DEFAULT;
         }
 
         assert tab != null;
-
-        if (mode == TabCreationMode.EARLY || mode == TabCreationMode.HIDDEN) {
-            // When the tab is created early, we don't have the TabContentManager connected,
-            // since compositor related controllers were not initialized at that point.
-            tab.attachTabContentManager(mTabContentManager.get());
-        }
 
         if (mode != TabCreationMode.RESTORED) {
             tabModel.addTab(tab, 0, tab.getLaunchType());
@@ -300,7 +290,7 @@ public class CustomTabActivityTabController implements InflationObserver, Native
         return tab;
     }
 
-    private Tab createTab(@Nullable TabContentManager tabContentManager) {
+    private Tab createTab() {
         WebContents webContents = takeWebContents();
         Tab tab = mTabFactory.createTab();
         int launchSource = mIntent.getIntExtra(
@@ -312,8 +302,8 @@ public class CustomTabActivityTabController implements InflationObserver, Native
             tab.setAppAssociatedWith(mConnection.getClientPackageNameForSession(mSession));
         }
 
-        tab.initialize(webContents, tabContentManager, mCustomTabDelegateFactory.get(),
-                false /*initiallyHidden*/, false /*unfreeze*/);
+        tab.initialize(webContents, mCustomTabDelegateFactory.get(), false /*initiallyHidden*/,
+                false /*unfreeze*/);
 
         if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
             tab.enableEmbeddedMediaExperience(true);

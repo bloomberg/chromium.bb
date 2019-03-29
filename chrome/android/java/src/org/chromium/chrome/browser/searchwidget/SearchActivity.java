@@ -171,7 +171,7 @@ public class SearchActivity extends AsyncInitializationActivity
                        .setWindow(getWindowAndroid())
                        .setLaunchType(TabLaunchType.FROM_EXTERNAL_APP)
                        .build();
-        mTab.initialize(WebContentsFactory.createWebContents(false, false), null,
+        mTab.initialize(WebContentsFactory.createWebContents(false, false),
                 new TabDelegateFactory(), false, false);
         mTab.loadUrl(new LoadUrlParams(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL));
 
