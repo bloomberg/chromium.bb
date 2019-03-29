@@ -43,7 +43,7 @@ if use_head_revision:
   CLANG_REVISION = 'HEAD'
 
 # This is incremented when pushing a new build of Clang at the same revision.
-CLANG_SUB_REVISION=2
+CLANG_SUB_REVISION=3
 
 PACKAGE_VERSION = "%s-%s" % (CLANG_REVISION, CLANG_SUB_REVISION)
 
@@ -836,10 +836,8 @@ def UpdateClang(args):
         os.mkdir(os.path.join(build_dir))
       os.chdir(build_dir)
       target_triple = target_arch
-      abi_libs = 'c++abi'
       if target_arch == 'arm':
         target_triple = 'armv7'
-        abi_libs += ';unwind'
       target_triple += '-linux-android' + api_level
       cflags = ['--target=%s' % target_triple,
                 '--sysroot=%s/sysroot' % toolchain_dir,
@@ -852,8 +850,7 @@ def UpdateClang(args):
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_ASM_FLAGS=' + ' '.join(cflags),
-        '-DSANITIZER_CXX_ABI=none',
-        '-DSANITIZER_CXX_ABI_LIBRARY=' + abi_libs,
+        '-DSANITIZER_CXX_ABI=libcxxabi',
         '-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-u__cxa_demangle',
         '-DANDROID=1']
       RmCmakeCache('.')
