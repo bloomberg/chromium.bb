@@ -2508,14 +2508,14 @@ void TabStrip::GenerateIdealBounds() {
     const int available_width = (available_width_for_tabs_ < 0)
                                     ? GetTabAreaWidth()
                                     : available_width_for_tabs_;
-    const std::vector<gfx::Rect> tabs_bounds = CalculateBounds(
+    const std::vector<gfx::Rect> tab_bounds = CalculateTabBounds(
         GetTabSizeInfo(), GetPinnedTabCount(), tab_count(),
         controller_->GetActiveIndex(), TabStartX(), available_width,
         &current_active_width_, &current_inactive_width_);
-    DCHECK_EQ(static_cast<size_t>(tab_count()), tabs_bounds.size());
+    DCHECK_EQ(static_cast<size_t>(tab_count()), tab_bounds.size());
 
-    for (size_t i = 0; i < tabs_bounds.size(); ++i)
-      tabs_.set_ideal_bounds(i, tabs_bounds[i]);
+    for (size_t i = 0; i < tab_bounds.size(); ++i)
+      tabs_.set_ideal_bounds(i, tab_bounds[i]);
   }
 
   new_tab_button_bounds_.set_origin(gfx::Point(NewTabButtonIdealX(), 0));
