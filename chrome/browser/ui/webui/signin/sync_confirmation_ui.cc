@@ -88,7 +88,6 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     consent_feature_ = consent_auditor::Feature::CHROME_UNIFIED_CONSENT;
   } else {
     source->SetDefaultResource(IDR_SYNC_CONFIRMATION_HTML);
-    source->AddResourcePath("sync_confirmation.css", IDR_SYNC_CONFIRMATION_CSS);
     source->AddResourcePath("sync_confirmation.js", IDR_SYNC_CONFIRMATION_JS);
 
     source->AddBoolean("isSyncAllowed", is_sync_allowed);
