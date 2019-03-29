@@ -41,10 +41,6 @@ bool IsOfflinePagesCTEnabled();
 // Returns true if live page sharing of offline page is enabled.
 bool IsOfflinePagesLivePageSharingEnabled();
 
-// Returns true if saving a foreground tab that is taking too long using the
-// background scheduler is enabled.
-bool IsBackgroundLoaderForDownloadsEnabled();
-
 // Returns true if prefetching offline pages is enabled.
 bool IsPrefetchingOfflinePagesEnabled();
 

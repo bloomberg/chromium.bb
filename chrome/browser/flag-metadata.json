@@ -301,11 +301,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "background-loader-for-downloads",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "background-task-component-update",
     "owners": [ "sorin", "waffles", "tiborg" ],
     "expiry_milestone": 76

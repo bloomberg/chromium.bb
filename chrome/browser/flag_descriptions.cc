@@ -2186,12 +2186,6 @@ const char kAutofillAccessoryViewDescription[] =
     "Shows Autofill suggestions on top of the keyboard rather than in a "
     "dropdown.";
 
-const char kBackgroundLoaderForDownloadsName[] =
-    "Enables background downloading of pages.";
-const char kBackgroundLoaderForDownloadsDescription[] =
-    "Enables downloading pages in the background in case page is not yet "
-    "loaded in current tab.";
-
 const char kBackgroundTaskComponentUpdateName[] =
     "Background Task Component Updates";
 const char kBackgroundTaskComponentUpdateDescription[] =

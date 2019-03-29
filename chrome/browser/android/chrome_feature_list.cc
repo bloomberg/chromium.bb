@@ -181,7 +181,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &ntp_snippets::kArticleSuggestionsFeature,
     &ntp_snippets::kNotificationsFeature,
     &ntp_tiles::kSiteExplorationUiFeature,
-    &offline_pages::kBackgroundLoaderForDownloadsFeature,
     &offline_pages::kOfflineIndicatorFeature,
     &offline_pages::kOfflineIndicatorAlwaysHttpProbeFeature,
     &offline_pages::kOfflinePagesCTFeature,    // See crbug.com/620421.
