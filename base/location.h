@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <cassert>
+#include <functional>
 #include <string>
 
 #include "base/base_export.h"

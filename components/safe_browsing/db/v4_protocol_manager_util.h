@@ -8,6 +8,7 @@
 // A class that implements the stateless methods used by the GetHashUpdate and
 // GetFullHash stubby calls made by Chrome using the SafeBrowsing V4 protocol.
 
+#include <functional>
 #include <initializer_list>
 #include <memory>
 #include <ostream>

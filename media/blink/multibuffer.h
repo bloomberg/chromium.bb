@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <functional>
 #include <limits>
 #include <map>
 #include <memory>
