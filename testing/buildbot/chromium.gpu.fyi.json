@@ -2871,6 +2871,45 @@
     "isolated_scripts": [
       {
         "args": [
+          "pixel",
+          "--show-stdout",
+          "--browser=android-webview-instrumentation",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--dont-restore-color-profile-after-test",
+          "--refimg-cloud-storage-bucket",
+          "chromium-gpu-archive/reference-images",
+          "--os-type",
+          "android",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "android_webview_pixel_test",
+        "non_precommit_args": [
+          "--upload-refimg-to-cloud-storage"
+        ],
+        "precommit_args": [
+          "--download-refimg-from-cloud-storage"
+        ],
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
+          "idempotent": false
+        }
+      },
+      {
+        "args": [
           "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",

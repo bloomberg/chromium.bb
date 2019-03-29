@@ -20,7 +20,10 @@ group("telemetry_chrome_test") {
   data = []
 
   if (is_android) {
-    data_deps += [ "//chrome/android:chrome_public_apk" ]
+    data_deps += [
+      "//android_webview/test:webview_instrumentation_apk",
+      "//chrome/android:chrome_public_apk",
+    ]
 
     if (enable_chrome_android_internal) {
       data_deps += [ "//clank:telemetry_clank_test" ]
