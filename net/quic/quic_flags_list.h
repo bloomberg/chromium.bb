@@ -289,3 +289,17 @@ QUIC_FLAG(
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_uber_received_packet_manager,
           false)
+
+// If true and using Leto for QUIC shared-key calculations, GFE will react to a
+// failure to contact Leto by sending a REJ containing a fallback ServerConfig,
+// allowing the client to continue the handshake.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_send_quic_fallback_server_config_on_leto_error,
+    false)
+
+// If true, GFE will not request private keys when fetching QUIC ServerConfigs
+// from Leto.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_dont_fetch_quic_private_keys_from_leto,
+          false)
