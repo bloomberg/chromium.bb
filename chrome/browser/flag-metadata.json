@@ -173,8 +173,8 @@
   },
   {
     "name": "auto-fetch-on-net-error-page",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "harringtond", "offline-dev" ],
+    "expiry_milestone": 82
   },
   {
     "name": "autofill-always-show-server-cards-in-sync-transport",
