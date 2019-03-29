@@ -49,6 +49,7 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "base/mac/mach_logging.h"
 #include "sandbox/mac/system_services.h"
 #include "services/service_manager/sandbox/features.h"
 #endif
@@ -212,6 +213,28 @@ UtilityServiceFactory::CreateAudioService(
           service_manager::features::kAudioServiceSandbox)) {
     sandbox::DisableLaunchServices();
   }
+
+  // Set the audio process to run with similar scheduling parameters as the
+  // browser process.
+  task_category_policy category;
+  category.role = TASK_FOREGROUND_APPLICATION;
+  kern_return_t result = task_policy_set(
+      mach_task_self(), TASK_CATEGORY_POLICY,
+      reinterpret_cast<task_policy_t>(&category), TASK_CATEGORY_POLICY_COUNT);
+
+  MACH_LOG_IF(ERROR, result != KERN_SUCCESS, result)
+      << "task_policy_set TASK_CATEGORY_POLICY";
+
+  task_qos_policy qos;
+  qos.task_latency_qos_tier = LATENCY_QOS_TIER_0;
+  qos.task_throughput_qos_tier = THROUGHPUT_QOS_TIER_0;
+  result = task_policy_set(mach_task_self(), TASK_BASE_QOS_POLICY,
+                           reinterpret_cast<task_policy_t>(&qos),
+                           TASK_QOS_POLICY_COUNT);
+
+  MACH_LOG_IF(ERROR, result != KERN_SUCCESS, result)
+      << "task_policy_set TASK_QOS_POLICY";
+
 #endif
 
   return audio::CreateStandaloneService(std::move(audio_registry_),
