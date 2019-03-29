@@ -1104,7 +1104,7 @@ message DeviceLoginScreenSitePerProcessProto {
 
 // Setting to control if running virtual machines on Chrome OS is allowed.
 message VirtualMachinesAllowedProto {
-  optional bool virtual_machines_allowed = 1 [default = true];
+  optional bool virtual_machines_allowed = 1;
 }
 
 // Specifies if and how often Active Directory machine (computer) account
