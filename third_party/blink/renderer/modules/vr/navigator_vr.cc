@@ -21,7 +21,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/vr/vr_controller.h"
 #include "third_party/blink/renderer/modules/vr/vr_display.h"
-#include "third_party/blink/renderer/modules/vr/vr_get_devices_callback.h"
 #include "third_party/blink/renderer/modules/vr/vr_pose.h"
 #include "third_party/blink/renderer/modules/xr/xr.h"
 
