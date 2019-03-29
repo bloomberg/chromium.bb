@@ -55,10 +55,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail(
         'conformance2/glsl3/const-struct-from-array-as-function-parameter.html',
         ['win', 'nvidia', 'opengl'], bug=874620)
-    # TODO(shrekshao): Enable this test after moving the extension out of draft
-    # status.
-    self.Fail('conformance2/extensions/ext-float-blend.html',
-        ['win', 'mac', 'linux', 'android'], bug=945970)
     # TODO(shrekshao): Remove the following two Fail expectations
     # (draw-buffers and fs-color-type-mismatch-color-buffer-type)
     # after applying the new draw buffers validation
@@ -1356,6 +1352,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Basic failures that need to be investigated on multiple devices
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html',
         ['android'], bug=709351)
+    self.Fail('conformance2/uniforms/' +
+        'incompatible-texture-type-for-sampler.html',
+        ['android'], bug=947236)
     # Video uploads to some texture formats new in WebGL 2.0 are
     # failing.
     self.Fail('conformance2/textures/video/' +
@@ -1379,6 +1378,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['android', 'qualcomm'], bug=906740)
     self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
         ['android', 'qualcomm'], bug=906740)
+    # This test is failing on Android Pixel 2 and 3 (Qualcomm)
+    # Seems to be an OpenGL ES bug.
+    self.Fail('conformance2/rendering/vertex-id.html',
+        ['android', 'qualcomm'], bug=945903)
     self.Fail('deqp/functional/gles3/textureformat/unsized_2d_array.html',
         ['android', 'qualcomm'], bug=906740)
     self.Fail('deqp/functional/gles3/textureformat/unsized_3d.html',
