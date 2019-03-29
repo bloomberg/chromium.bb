@@ -25,6 +25,8 @@ class FlashDeprecationInfoBarDelegate : public ConfirmInfoBarDelegate {
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
+  base::string16 GetLinkText() const override;
+  GURL GetLinkURL() const override;
 };
 
 #endif  // CHROME_BROWSER_PLUGINS_FLASH_DEPRECATION_INFOBAR_DELEGATE_H_
