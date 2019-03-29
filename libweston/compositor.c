@@ -60,6 +60,7 @@
 #include "linux-dmabuf.h"
 #include "viewporter-server-protocol.h"
 #include "presentation-time-server-protocol.h"
+#include "xdg-output-unstable-v1-server-protocol.h"
 #include "linux-explicit-synchronization-unstable-v1-server-protocol.h"
 #include "linux-explicit-synchronization.h"
 #include "shared/fd-util.h"
@@ -122,6 +123,15 @@ weston_mode_switch_send_events(struct weston_head *head,
 
 		if (version >= WL_OUTPUT_DONE_SINCE_VERSION)
 			wl_output_send_done(resource);
+	}
+	wl_resource_for_each(resource, &head->xdg_output_resource_list) {
+		zxdg_output_v1_send_logical_position(resource,
+						     output->x,
+						     output->y);
+		zxdg_output_v1_send_logical_size(resource,
+						 output->width,
+						 output->height);
+		zxdg_output_v1_send_done(resource);
 	}
 }
 
@@ -4705,6 +4715,14 @@ weston_head_remove_global(struct weston_head *head)
 		wl_resource_set_destructor(resource, NULL);
 		wl_resource_set_user_data(resource, NULL);
 	}
+
+	wl_resource_for_each(resource, &head->xdg_output_resource_list) {
+		/* It's sufficient to unset the destructor, then the list elements
+		 * won't be accessed.
+		 */
+		wl_resource_set_destructor(resource, NULL);
+	}
+	wl_list_init(&head->xdg_output_resource_list);
 }
 
 /** Get the backing object of wl_output
@@ -4749,6 +4767,7 @@ weston_head_init(struct weston_head *head, const char *name)
 	wl_signal_init(&head->destroy_signal);
 	wl_list_init(&head->output_link);
 	wl_list_init(&head->resource_list);
+	wl_list_init(&head->xdg_output_resource_list);
 	head->name = strdup(name);
 }
 
@@ -5572,6 +5591,13 @@ weston_output_move(struct weston_output *output, int x, int y)
 			if (ver >= WL_OUTPUT_DONE_SINCE_VERSION)
 				wl_output_send_done(resource);
 		}
+
+		wl_resource_for_each(resource, &head->xdg_output_resource_list) {
+			zxdg_output_v1_send_logical_position(resource,
+							     output->x,
+							     output->y);
+			zxdg_output_v1_send_done(resource);
+		}
 	}
 }
 
@@ -5789,6 +5815,15 @@ weston_output_set_transform(struct weston_output *output,
 			ver = wl_resource_get_version(resource);
 			if (ver >= WL_OUTPUT_DONE_SINCE_VERSION)
 				wl_output_send_done(resource);
+		}
+		wl_resource_for_each(resource, &head->xdg_output_resource_list) {
+			zxdg_output_v1_send_logical_position(resource,
+							     output->x,
+							     output->y);
+			zxdg_output_v1_send_logical_size(resource,
+							 output->width,
+							 output->height);
+			zxdg_output_v1_send_done(resource);
 		}
 	}
 
@@ -6289,6 +6324,85 @@ weston_output_get_first_head(struct weston_output *output)
 
 	return container_of(output->head_list.next,
 			    struct weston_head, output_link);
+}
+
+static void
+xdg_output_unlist(struct wl_resource *resource)
+{
+	wl_list_remove(wl_resource_get_link(resource));
+}
+
+static void
+xdg_output_destroy(struct wl_client *client, struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static const struct zxdg_output_v1_interface xdg_output_interface = {
+	xdg_output_destroy
+};
+
+static void
+xdg_output_manager_destroy(struct wl_client *client,
+                           struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static void
+xdg_output_manager_get_xdg_output(struct wl_client *client,
+				  struct wl_resource *manager,
+				  uint32_t id,
+				  struct wl_resource *output_resource)
+{
+	int version = wl_resource_get_version(manager);
+	struct weston_head *head = wl_resource_get_user_data(output_resource);
+	struct weston_output *output = head->output;
+	struct wl_resource *resource;
+
+	resource = wl_resource_create(client, &zxdg_output_v1_interface,
+				      version, id);
+	if (resource == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	wl_list_insert(&head->xdg_output_resource_list,
+		       wl_resource_get_link(resource));
+
+	wl_resource_set_implementation(resource, &xdg_output_interface,
+				       NULL, xdg_output_unlist);
+
+	zxdg_output_v1_send_logical_position(resource, output->x, output->y);
+	zxdg_output_v1_send_logical_size(resource,
+					 output->width,
+					 output->height);
+	if (version >= ZXDG_OUTPUT_V1_NAME_SINCE_VERSION)
+		zxdg_output_v1_send_name(resource, head->name);
+
+	zxdg_output_v1_send_done(resource);
+}
+
+static const struct zxdg_output_manager_v1_interface xdg_output_manager_interface = {
+	xdg_output_manager_destroy,
+	xdg_output_manager_get_xdg_output
+};
+
+static void
+bind_xdg_output_manager(struct wl_client *client,
+			void *data, uint32_t version, uint32_t id)
+{
+	struct wl_resource *resource;
+
+	resource = wl_resource_create(client, &zxdg_output_manager_v1_interface,
+				      version, id);
+	if (resource == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	wl_resource_set_implementation(resource, &xdg_output_manager_interface,
+				       NULL, NULL);
 }
 
 static void
@@ -6914,6 +7028,10 @@ weston_compositor_create(struct wl_display *display,
 
 	if (!wl_global_create(ec->wl_display, &wp_viewporter_interface, 1,
 			      ec, bind_viewporter))
+		goto fail;
+
+	if (!wl_global_create(ec->wl_display, &zxdg_output_manager_v1_interface, 2,
+			      ec, bind_xdg_output_manager))
 		goto fail;
 
 	if (!wl_global_create(ec->wl_display, &wp_presentation_interface, 1,

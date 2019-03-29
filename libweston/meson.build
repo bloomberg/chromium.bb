@@ -52,6 +52,8 @@ srcs_libweston = [
 	weston_touch_calibration_server_protocol_h,
 	viewporter_protocol_c,
 	viewporter_server_protocol_h,
+	xdg_output_unstable_v1_protocol_c,
+	xdg_output_unstable_v1_server_protocol_h,
 	weston_debug_protocol_c,
 	weston_debug_server_protocol_h,
 ]

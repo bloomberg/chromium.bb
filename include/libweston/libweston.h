@@ -187,6 +187,8 @@ struct weston_head {
 	struct wl_list resource_list;	/**< wl_output protocol objects */
 	struct wl_global *global;	/**< wl_output global */
 
+	struct wl_list xdg_output_resource_list; /**< xdg_output protocol objects */
+
 	int32_t mm_width;		/**< physical image width in mm */
 	int32_t mm_height;		/**< physical image height in mm */
 	char *make;			/**< monitor manufacturer (PNP ID) */
