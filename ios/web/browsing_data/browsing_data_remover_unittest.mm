@@ -32,7 +32,16 @@ bool AddCookie() {
     NSHTTPCookieValue : @"value",
     NSHTTPCookieOriginURL : @"http://chromium.org"
   }];
+
+  // This is needed to forces the DataStore to be created, otherwise the cookie
+  // isn't set in some cases.
   __block bool cookie_set = false;
+  NSSet* data_types = [NSSet setWithObject:WKWebsiteDataTypeCookies];
+  [[WKWebsiteDataStore defaultDataStore]
+      fetchDataRecordsOfTypes:data_types
+            completionHandler:^(NSArray<WKWebsiteDataRecord*>* records){
+            }];
+
   [data_store.httpCookieStore setCookie:cookie
                       completionHandler:^{
                         cookie_set = true;
@@ -49,6 +58,15 @@ bool HasCookies(bool should_have_cookies) WARN_UNUSED_RESULT;
 bool HasCookies(bool should_have_cookies) {
   __block bool has_cookies = false;
   __block bool completion_called = false;
+
+  // This is needed to forces the DataStore to be created, otherwise the cookie
+  // isn't fetched in some cases.
+  NSSet* data_types = [NSSet setWithObject:WKWebsiteDataTypeCookies];
+  [[WKWebsiteDataStore defaultDataStore]
+      fetchDataRecordsOfTypes:data_types
+            completionHandler:^(NSArray<WKWebsiteDataRecord*>* records){
+            }];
+
   [[WKWebsiteDataStore defaultDataStore].httpCookieStore
       getAllCookies:^(NSArray<NSHTTPCookie*>* cookies) {
         has_cookies = cookies.count > 0;
@@ -115,13 +133,7 @@ TEST_F(BrowsingDataRemoverTest, DifferentRemoverForDifferentBrowserState) {
 }
 
 // Tests that removing the cookies remove them from the cookie store.
-// TODO(crbug.com/940880): Fix this test on devices.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_RemoveCookie RemoveCookie
-#else
-#define MAYBE_RemoveCookie DISABLED_RemoveCookie
-#endif
-TEST_F(BrowsingDataRemoverTest, MAYBE_RemoveCookie) {
+TEST_F(BrowsingDataRemoverTest, RemoveCookie) {
   ASSERT_TRUE(AddCookie());
   ASSERT_TRUE(HasCookies(true));
 
@@ -133,13 +145,7 @@ TEST_F(BrowsingDataRemoverTest, MAYBE_RemoveCookie) {
 }
 
 // Tests that removing the anything but cookies leave the cookies in the store.
-// TODO(crbug.com/940880): Fix this test for devices.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_RemoveNothing RemoveNothing
-#else
-#define MAYBE_RemoveNothing DISABLED_RemoveNothing
-#endif
-TEST_F(BrowsingDataRemoverTest, MAYBE_RemoveNothing) {
+TEST_F(BrowsingDataRemoverTest, RemoveNothing) {
   ASSERT_TRUE(AddCookie());
   ASSERT_TRUE(HasCookies(true));
 
