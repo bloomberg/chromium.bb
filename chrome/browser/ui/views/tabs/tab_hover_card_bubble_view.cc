@@ -314,11 +314,13 @@ void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {
 
   // If the preview image feature is not enabled, this will be null.
   if (preview_image_) {
-    // If there is no valid thumbnail data, remove the preview, else wait for
+    // If there is no valid thumbnail data, blank out the preview, else wait for
     // the image data to be decoded and update momentarily.
-    preview_image_->SetVisible(data.thumbnail.AsImageSkiaAsync(
-        base::BindOnce(&TabHoverCardBubbleView::UpdatePreviewImage,
-                       weak_factory_.GetWeakPtr())));
+    if (!data.thumbnail.AsImageSkiaAsync(
+            base::BindOnce(&TabHoverCardBubbleView::UpdatePreviewImage,
+                           weak_factory_.GetWeakPtr()))) {
+      preview_image_->SetImage(gfx::ImageSkia());
+    }
   }
 }
 
