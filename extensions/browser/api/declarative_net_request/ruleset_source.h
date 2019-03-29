@@ -77,7 +77,7 @@ struct IndexAndPersistJSONRulesetResult {
 };
 
 struct ReadJSONRulesResult {
-  enum class ReadJSONRulesStatus {
+  enum class Status {
     kSuccess,
     kFileDoesNotExist,
     kFileReadError,
@@ -85,7 +85,7 @@ struct ReadJSONRulesResult {
     kJSONIsNotList,
   };
 
-  static ReadJSONRulesResult CreateErrorResult(ReadJSONRulesStatus status,
+  static ReadJSONRulesResult CreateErrorResult(Status status,
                                                std::string error);
 
   ReadJSONRulesResult();
@@ -93,7 +93,7 @@ struct ReadJSONRulesResult {
   ReadJSONRulesResult(ReadJSONRulesResult&&);
   ReadJSONRulesResult& operator=(ReadJSONRulesResult&&);
 
-  ReadJSONRulesStatus status = ReadJSONRulesStatus::kSuccess;
+  Status status = Status::kSuccess;
 
   // Empty in case of an error.
   std::vector<api::declarative_net_request::Rule> rules;
