@@ -8,6 +8,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/time/clock.h"
 #include "components/history/core/browser/history_service.h"
@@ -25,7 +26,25 @@ namespace send_tab_to_self {
 
 namespace {
 
+// Status of the AddEntry when it ends, for UMA report.
+// These match tools/metrics/histograms/histograms.xml.
+
+enum UMAAddEntryStatus {
+  // The add entry call was successful.
+  SUCCESS = 0,
+  // The add entry call failed.
+  FAILURE = 1,
+  // The add entry call was a duplication.
+  DUPLICATE = 2,
+  // Update kMaxValue when new enums are added.
+  kMaxValue = DUPLICATE,
+};
+
 using syncer::ModelTypeStore;
+
+const base::TimeDelta kDedupeTime = base::TimeDelta::FromSeconds(5);
+
+const char kAddEntryStatus[] = "SendTabToSelf.Sync.AddEntryStatus";
 
 // Converts a time field from sync protobufs to a time object.
 base::Time ProtoTimeToTime(int64_t proto_t) {
@@ -55,6 +74,7 @@ SendTabToSelfBridge::SendTabToSelfBridge(
       clock_(clock),
       local_device_info_provider_(local_device_info_provider),
       history_service_(history_service),
+      mru_entry_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK(local_device_info_provider);
   DCHECK(clock_);
@@ -199,6 +219,7 @@ void SendTabToSelfBridge::DeleteAllEntries() {
     batch->DeleteData(guid);
   }
   entries_.clear();
+  mru_entry_ = nullptr;
 
   NotifyRemoteSendTabToSelfEntryDeleted(all_guids);
 }
@@ -218,15 +239,29 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
     base::Time navigation_time) {
   if (!change_processor()->IsTrackingMetadata()) {
     // TODO(crbug.com/940512) handle failure case.
+    UMA_HISTOGRAM_ENUMERATION(kAddEntryStatus, FAILURE);
     return nullptr;
   }
 
   if (navigation_time.is_null()) {
+    UMA_HISTOGRAM_ENUMERATION(kAddEntryStatus, FAILURE);
     return nullptr;
   }
 
   if (!url.is_valid()) {
+    UMA_HISTOGRAM_ENUMERATION(kAddEntryStatus, FAILURE);
     return nullptr;
+  }
+
+  // In the case where the user has attempted to send an identical URL
+  // within the last |kDedupeTime| we think it is likely that user still
+  // has the first sent tab in progress, and so we will not attempt to resend.
+  base::Time shared_time = clock_->Now();
+  if (mru_entry_ && url == mru_entry_->GetURL() &&
+      navigation_time == mru_entry_->GetOriginalNavigationTime() &&
+      shared_time - mru_entry_->GetSharedTime() < kDedupeTime) {
+    UMA_HISTOGRAM_ENUMERATION(kAddEntryStatus, DUPLICATE);
+    return mru_entry_;
   }
 
   std::string guid = base::GenerateGUID();
@@ -241,7 +276,7 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
   }
 
   auto entry = std::make_unique<SendTabToSelfEntry>(
-      guid, url, trimmed_title, clock_->Now(), navigation_time,
+      guid, url, trimmed_title, shared_time, navigation_time,
       local_device_name_);
 
   std::unique_ptr<ModelTypeStore::WriteBatch> batch =
@@ -258,7 +293,9 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
   batch->WriteData(guid, result->AsLocalProto().SerializeAsString());
 
   Commit(std::move(batch));
+  mru_entry_ = result;
 
+  UMA_HISTOGRAM_ENUMERATION(kAddEntryStatus, SUCCESS);
   return result;
 }
 
@@ -274,8 +311,13 @@ void SendTabToSelfBridge::DeleteEntry(const std::string& guid) {
       store_->CreateWriteBatch();
   change_processor()->Delete(guid, batch->GetMetadataChangeList());
 
+  if (mru_entry_ && mru_entry_->GetGUID() == guid) {
+    mru_entry_ = nullptr;
+  }
+
   entries_.erase(guid);
   batch->DeleteData(guid);
+
   Commit(std::move(batch));
 }
 
