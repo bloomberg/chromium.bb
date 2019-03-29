@@ -507,10 +507,11 @@ bool ImageResourceContent::IsAcceptableCompressionRatio(
     resource_length = static_cast<double>(GetImage()->Data()->size());
   }
 
-  // Calculate the image's adjusted compression ratio (in bytes per pixel). A
-  // constant allowance (1024 bytes) is provided to allow room for headers and
-  // to account for small images (which are harder to compress).
-  double compression_ratio = (resource_length - 1024) / pixels;
+  // Calculate the image's compression ratio (in bytes per pixel) with both 1k
+  // and 10k overhead. The constant overhead allowance is provided to allow room
+  // for headers and to account for small images (which are harder to compress).
+  double compression_ratio_1k = (resource_length - 1024) / pixels;
+  double compression_ratio_10k = (resource_length - 10240) / pixels;
 
   // Note that this approach may not always correctly identify the image (for
   // example, due to a misconfigured web server). This approach SHOULD work in
@@ -522,7 +523,13 @@ bool ImageResourceContent::IsAcceptableCompressionRatio(
     // Enforce the lossy image policy.
     return context.IsFeatureEnabled(
         mojom::FeaturePolicyFeature::kUnoptimizedLossyImages,
-        PolicyValue(compression_ratio), ReportOptions::kReportOnFailure);
+        PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure);
+  }
+  if (MIMETypeRegistry::IsLosslessImageMIMEType(mime_type)) {
+    // Enforce the lossless image policy.
+    return context.IsFeatureEnabled(
+        mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages,
+        PolicyValue(compression_ratio_10k), ReportOptions::kReportOnFailure);
   }
 
   return true;
