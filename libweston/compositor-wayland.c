@@ -58,7 +58,7 @@
 #include "xdg-shell-client-protocol.h"
 #include "presentation-time-server-protocol.h"
 #include "linux-dmabuf.h"
-#include "windowed-output-api.h"
+#include <libweston/windowed-output-api.h>
 
 #define WINDOW_TITLE "Weston Compositor"
 

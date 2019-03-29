@@ -57,7 +57,6 @@ srcs_libweston = [
 ]
 
 install_headers(
-	'windowed-output-api.h',
 	'../shared/config-parser.h',
 	'../shared/matrix.h',
 	'../shared/zalloc.h',

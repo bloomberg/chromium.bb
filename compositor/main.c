@@ -61,7 +61,7 @@
 #include <libweston/backend-fbdev.h>
 #include <libweston/backend-x11.h>
 #include <libweston/backend-wayland.h>
-#include "windowed-output-api.h"
+#include <libweston/windowed-output-api.h>
 #include "weston-debug.h"
 #include "../remoting/remoting-plugin.h"
 

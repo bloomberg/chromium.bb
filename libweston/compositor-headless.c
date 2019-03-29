@@ -39,7 +39,7 @@
 #include "linux-explicit-synchronization.h"
 #include "pixman-renderer.h"
 #include "presentation-time-server-protocol.h"
-#include "windowed-output-api.h"
+#include <libweston/windowed-output-api.h>
 
 struct headless_backend {
 	struct weston_backend base;

@@ -2,6 +2,7 @@ install_headers(
 	'libweston.h',
 	'plugin-registry.h',
 	'timeline-object.h',
+	'windowed-output-api.h',
 	subdir: dir_include_libweston_install
 )
 

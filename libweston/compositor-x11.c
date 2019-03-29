@@ -63,7 +63,7 @@
 #include "presentation-time-server-protocol.h"
 #include "linux-dmabuf.h"
 #include "linux-explicit-synchronization.h"
-#include "windowed-output-api.h"
+#include <libweston/windowed-output-api.h>
 
 #define DEFAULT_AXIS_STEP_DISTANCE 10
 
