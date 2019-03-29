@@ -74,6 +74,9 @@ AppListClientImpl::AppListClientImpl()
 }
 
 AppListClientImpl::~AppListClientImpl() {
+  app_list_controller_.reset();
+  SetProfile(nullptr);
+
   user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
 
   DCHECK_EQ(this, g_app_list_client_instance);
