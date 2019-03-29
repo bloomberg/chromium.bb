@@ -154,6 +154,8 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       additional_info(match.additional_info),
       duplicate_matches(match.duplicate_matches) {}
 
+AutocompleteMatch::AutocompleteMatch(AutocompleteMatch&& match) = default;
+
 AutocompleteMatch::~AutocompleteMatch() {
 }
 

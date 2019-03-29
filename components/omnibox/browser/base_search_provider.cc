@@ -495,9 +495,8 @@ void BaseSearchProvider::AddMatchToMap(
                                      i.first->second.duplicate_matches.end());
       i.first->second.duplicate_matches.clear();
       match.duplicate_matches.push_back(i.first->second);
-      i.first->second = match;
+      i.first->second = std::move(match);
     } else {
-      i.first->second.duplicate_matches.push_back(match);
       if (match.keyword == i.first->second.keyword) {
         // Old and new matches are from the same search provider. It is okay to
         // record one match's prefetch data onto a different match (for the same
@@ -517,6 +516,7 @@ void BaseSearchProvider::AddMatchToMap(
         if (should_prefetch)
           i.first->second.RecordAdditionalInfo(kSuggestMetadataKey, metadata);
       }
+      i.first->second.duplicate_matches.push_back(std::move(match));
     }
     // Copy over answer data from lower-ranking item, if necessary.
     // This depends on the lower-ranking item always being added last - see
