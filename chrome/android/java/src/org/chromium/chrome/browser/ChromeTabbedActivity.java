@@ -933,9 +933,11 @@ public class ChromeTabbedActivity
 
             CompositorViewHolder compositorViewHolder = getCompositorViewHolder();
             if (isTablet()) {
-                mLayoutManager = new LayoutManagerChromeTablet(compositorViewHolder);
+                mLayoutManager = new LayoutManagerChromeTablet(
+                        compositorViewHolder, mOverviewModeController);
             } else {
-                mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder);
+                mLayoutManager =
+                        new LayoutManagerChromePhone(compositorViewHolder, mOverviewModeController);
             }
             mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations());
             mOverviewModeController.overrideOverviewModeController(mLayoutManager);
