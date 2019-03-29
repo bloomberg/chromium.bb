@@ -277,7 +277,7 @@ void CrostiniSharePath::CallSeneschalSharePath(const std::string& vm_name,
   if (persist) {
     RegisterPersistedPath(path);
   }
-  RegisterSharedPath(path, vm_name);
+  RegisterSharedPath(vm_name, path);
 
   request.mutable_shared_path()->set_path(relative_path.value());
   request.mutable_shared_path()->set_writable(true);
@@ -392,7 +392,7 @@ void CrostiniSharePath::UnsharePath(
 
   CallSeneschalUnsharePath(vm_name, path, std::move(callback));
   for (Observer& observer : observers_) {
-    observer.OnUnshare(path, vm_name);
+    observer.OnUnshare(vm_name, path);
   }
 }
 
@@ -421,7 +421,7 @@ std::vector<base::FilePath> CrostiniSharePath::GetPersistedSharedPaths() {
     }
     migrated_paths.AppendString(path.value());
     result.emplace_back(path);
-    RegisterSharedPath(path, kCrostiniDefaultVmName);
+    RegisterSharedPath(kCrostiniDefaultVmName, path);
   }
 
   // If any paths were modified during migration, update prefs.
@@ -519,8 +519,8 @@ void CrostiniSharePath::StartFileWatcher(const base::FilePath& path) {
                                            base::Unretained(this)));
 }
 
-void CrostiniSharePath::RegisterSharedPath(const base::FilePath& path,
-                                           const std::string& vm_name) {
+void CrostiniSharePath::RegisterSharedPath(const std::string& vm_name,
+                                           const base::FilePath& path) {
   // Paths may be called to be shared multiple times for the same or different
   // vm.  If path is already registered, add vm_name to list of VMs shared with
   // and return.

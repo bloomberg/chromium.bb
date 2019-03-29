@@ -152,8 +152,8 @@ class EventRouter
   void OnFileSystemMountFailed() override;
 
   // crostini::CrostiniSharePath::Observer overrides
-  void OnUnshare(const base::FilePath& path,
-                 const std::string& vm_name) override;
+  void OnUnshare(const std::string& vm_name,
+                 const base::FilePath& path) override;
 
   // Returns a weak pointer for the event router.
   base::WeakPtr<EventRouter> GetWeakPtr();

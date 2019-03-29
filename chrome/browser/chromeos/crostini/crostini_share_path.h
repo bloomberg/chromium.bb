@@ -50,8 +50,8 @@ class CrostiniSharePath : public KeyedService,
                                    std::string failure_reason)>;
   class Observer {
    public:
-    virtual void OnUnshare(const base::FilePath& path,
-                           const std::string& vm_name) = 0;
+    virtual void OnUnshare(const std::string& vm_name,
+                           const base::FilePath& path) = 0;
   };
 
   static CrostiniSharePath* GetForProfile(Profile* profile);
@@ -113,8 +113,8 @@ class CrostiniSharePath : public KeyedService,
   // detect when the path has been deleted.  If the path is deleted, we unshare
   // the path, and remove it from prefs if it was persisted.
   // Visible for testing.
-  void RegisterSharedPath(const base::FilePath& path,
-                          const std::string& vm_name);
+  void RegisterSharedPath(const std::string& vm_name,
+                          const base::FilePath& path);
 
   // Runs on UI Thread to handle when a path is deleted.
   // Visible for testing.

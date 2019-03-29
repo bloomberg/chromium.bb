@@ -203,8 +203,8 @@ class CrostiniSharePathTest : public testing::Test {
     base::ListValue* shared_paths = update.Get();
     shared_paths->Append(std::make_unique<base::Value>(shared_path_.value()));
     volume_downloads_ = file_manager::Volume::CreateForDownloads(root_);
-    crostini_share_path_->RegisterSharedPath(shared_path_,
-                                             kCrostiniDefaultVmName);
+    crostini_share_path_->RegisterSharedPath(kCrostiniDefaultVmName,
+                                             shared_path_);
   }
 
   void SetUp() override {
