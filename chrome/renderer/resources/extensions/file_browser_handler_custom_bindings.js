@@ -6,11 +6,7 @@
 
 var fileBrowserNatives = requireNative('file_browser_handler');
 var GetExternalFileEntry = fileBrowserNatives.GetExternalFileEntry;
-var fileBrowserHandlerInternal =
-    getInternalApi ?
-        getInternalApi('fileBrowserHandlerInternal') :
-        require('binding').Binding.create('fileBrowserHandlerInternal')
-            .generate();
+var fileBrowserHandlerInternal = getInternalApi('fileBrowserHandlerInternal');
 
 bindingUtil.registerEventArgumentMassager('fileBrowserHandler.onExecute',
                                           function(args, dispatch) {

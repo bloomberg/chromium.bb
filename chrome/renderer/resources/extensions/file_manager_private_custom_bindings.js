@@ -8,9 +8,7 @@
 var fileManagerPrivateNatives = requireNative('file_manager_private');
 
 // Internals
-var fileManagerPrivateInternal = getInternalApi ?
-    getInternalApi('fileManagerPrivateInternal') :
-    require('binding').Binding.create('fileManagerPrivateInternal').generate();
+var fileManagerPrivateInternal = getInternalApi('fileManagerPrivateInternal');
 
 // Shorthands
 var GetFileSystem = fileManagerPrivateNatives.GetFileSystem;
