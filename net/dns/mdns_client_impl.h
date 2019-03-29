@@ -149,6 +149,8 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
 
     void OnConnectionError(int error) override;
 
+    MDnsCache* cache_for_testing() { return &cache_; }
+
    private:
     FRIEND_TEST_ALL_PREFIXES(MDnsTest, CacheCleanupWithShortTTL);
 
