@@ -409,8 +409,7 @@ TEST_F(DataReductionProxyIODataTest,
   EXPECT_TRUE(client.config->alternate_rules.Equals(expected_rules));
 }
 
-TEST_F(DataReductionProxyIODataTest,
-       TestCustomProxyConfigAssumesHttpsProxiesSupportQuic) {
+TEST_F(DataReductionProxyIODataTest, TestCustomProxyConfigProperties) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableDataReductionProxyWarmupURLFetch);
   DataReductionProxyIOData io_data(
@@ -432,6 +431,7 @@ TEST_F(DataReductionProxyIODataTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(client.config->assume_https_proxies_support_quic);
+  EXPECT_FALSE(client.config->can_use_proxy_on_http_url_redirect_cycles);
 }
 
 }  // namespace data_reduction_proxy

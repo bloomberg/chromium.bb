@@ -413,6 +413,7 @@ DataReductionProxyIOData::CreateCustomProxyConfig(
                                      base::nullopt);
 
   config->assume_https_proxies_support_quic = true;
+  config->can_use_proxy_on_http_url_redirect_cycles = false;
 
   return config;
 }

@@ -73,6 +73,15 @@ struct CustomProxyConfig {
   // stream in an attempt to use QUIC if possible.
   bool assume_https_proxies_support_quic = false;
 
+  // Whether the custom proxy config can be used on HTTP URLs whose fetching
+  // causes redirect cycles. If set to false, network service will try to
+  // bypass custom proxies on HTTP requests whose fetching causes redirect
+  // cycles. In such cases, the request will be fetched directly once the
+  // redirect cycle is detected.
+  // TODO(https://crbug.com/945892): Remove this boolean once Network
+  // Servicification is fully launched.
+  bool can_use_proxy_on_http_url_redirect_cycles = true;
+
   // The custom proxy can set these headers in this config which will be added
   // to all requests using the proxy. This allows setting headers that may be
   // privacy/security sensitive which we don't want to send to the renderer.
