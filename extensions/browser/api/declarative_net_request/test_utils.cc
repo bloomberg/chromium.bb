@@ -30,9 +30,9 @@ bool HasValidIndexedRuleset(const Extension& extension,
   }
 
   std::unique_ptr<RulesetMatcher> matcher;
-  return RulesetMatcher::CreateVerifiedMatcher(RulesetSource::Create(extension),
-                                               expected_checksum, &matcher) ==
-         RulesetMatcher::kLoadSuccess;
+  return RulesetMatcher::CreateVerifiedMatcher(
+             RulesetSource::CreateStatic(extension), expected_checksum,
+             &matcher) == RulesetMatcher::kLoadSuccess;
 }
 
 bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
@@ -66,12 +66,10 @@ bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
 RulesetSource CreateTemporarySource(size_t id,
                                     size_t priority,
                                     size_t rule_count_limit) {
-  base::FilePath json_path;
-  base::FilePath indexed_path;
-  CHECK(base::CreateTemporaryFile(&json_path));
-  CHECK(base::CreateTemporaryFile(&indexed_path));
-  return RulesetSource(std::move(json_path), std::move(indexed_path), id,
-                       priority, rule_count_limit);
+  std::unique_ptr<RulesetSource> source =
+      RulesetSource::CreateTemporarySource(id, priority, rule_count_limit);
+  CHECK(source);
+  return source->Clone();
 }
 
 }  // namespace declarative_net_request

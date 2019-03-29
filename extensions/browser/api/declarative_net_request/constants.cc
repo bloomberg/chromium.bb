@@ -42,6 +42,11 @@ const char kRuleNotParsedWarning[] =
 const char kTooManyParseFailuresWarning[] =
     "Declarative Net Request: Too many rule parse failures; Reporting the "
     "first *.";
+const char kInternalErrorUpdatingDynamicRules[] =
+    "Internal error while updating dynamic rules.";
+const char kInternalErrorGettingDynamicRules[] =
+    "Internal error while getting dynamic rules.";
+const char kDynamicRuleCountExceeded[] = "Dynamic rule count exceeded.";
 const char kIndexAndPersistRulesTimeHistogram[] =
     "Extensions.DeclarativeNetRequest.IndexAndPersistRulesTime";
 const char kManifestRulesCountHistogram[] =

@@ -59,6 +59,7 @@
 #include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
@@ -79,6 +80,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
+#include "extensions/common/value_builder.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "ipc/ipc_message.h"
 #include "net/base/net_errors.h"
@@ -391,6 +393,12 @@ class DeclarativeNetRequestBrowserTest
     background_page_ready_listener_->Reset();
   }
 
+  // Returns true if the navigation to given |url| is blocked.
+  bool IsNavigationBlocked(const GURL& url) {
+    ui_test_utils::NavigateToURL(browser(), url);
+    return !WasFrameWithScriptLoaded(GetMainFrame());
+  }
+
   void AddAllowedPages(const ExtensionId& extension_id,
                        const std::vector<std::string>& patterns) {
     UpdateAllowedPages(extension_id, patterns, "addAllowedPages");
@@ -430,6 +438,46 @@ class DeclarativeNetRequestBrowserTest
     }
 
     EXPECT_EQ(expected_patterns, patterns);
+  }
+
+  void AddDynamicRules(const ExtensionId& extension_id,
+                       const std::vector<TestRule>& rules) {
+    static constexpr char kScript[] = R"(
+      chrome.declarativeNetRequest.addDynamicRules($1, function () {
+        window.domAutomationController.send(chrome.runtime.lastError ?
+            chrome.runtime.lastError.message : 'success');
+      });
+    )";
+
+    // Serialize |rules|.
+    ListBuilder builder;
+    for (const auto& rule : rules)
+      builder.Append(rule.ToValue());
+
+    // A cast is necessary from ListValue to Value, else this fails to compile.
+    const std::string script = content::JsReplace(
+        kScript, static_cast<const base::Value&>(*builder.Build()));
+    ASSERT_EQ("success", ExecuteScriptInBackgroundPage(extension_id, script));
+  }
+
+  void RemoveDynamicRules(const ExtensionId& extension_id,
+                          const std::vector<int> rule_ids) {
+    static constexpr char kScript[] = R"(
+      chrome.declarativeNetRequest.removeDynamicRules($1, function () {
+        window.domAutomationController.send(chrome.runtime.lastError ?
+            chrome.runtime.lastError.message : 'success');
+      });
+    )";
+
+    // Serialize |rule_ids|.
+    ListBuilder builder;
+    for (int rule_id : rule_ids)
+      builder.Append(rule_id);
+
+    // A cast is necessary from ListValue to Value, else this fails to compile.
+    const std::string script = content::JsReplace(
+        kScript, static_cast<const base::Value&>(*builder.Build()));
+    ASSERT_EQ("success", ExecuteScriptInBackgroundPage(extension_id, script));
   }
 
   std::set<GURL> GetAndResetRequestsToServer() {
@@ -857,15 +905,24 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, Allow) {
 // enabled.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        Enable_Disable_Reload_Uninstall) {
-  // Block all main frame requests to example.com
+  set_has_background_script(true);
+
+  // Block all main frame requests to "index.html".
   TestRule rule = CreateGenericRule();
-  rule.condition->url_filter = std::string("example.com");
+  rule.condition->url_filter = std::string("index.html");
   rule.condition->resource_types = std::vector<std::string>({"main_frame"});
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
   const ExtensionId extension_id = last_loaded_extension_id();
 
-  GURL url = embedded_test_server()->GetURL("example.com",
-                                            "/pages_with_script/page.html");
+  // Add dynamic rule to block requests to "page.html".
+  rule.condition->url_filter = std::string("page.html");
+  ASSERT_NO_FATAL_FAILURE(AddDynamicRules(extension_id, {rule}));
+
+  GURL static_rule_url = embedded_test_server()->GetURL(
+      "example.com", "/pages_with_script/index.html");
+  GURL dynamic_rule_url = embedded_test_server()->GetURL(
+      "example.com", "/pages_with_script/page.html");
+
   auto test_extension_enabled = [&](bool expected_enabled) {
     // Wait for any pending actions caused by extension state change.
     content::RunAllTasksUntilIdle();
@@ -873,13 +930,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
               ExtensionRegistry::Get(profile())->enabled_extensions().Contains(
                   extension_id));
 
-    ui_test_utils::NavigateToURL(browser(), url);
-
-    // If the extension is enabled, the |url| should be blocked.
-    EXPECT_EQ(!expected_enabled, WasFrameWithScriptLoaded(GetMainFrame()));
-    content::PageType expected_page_type =
-        expected_enabled ? content::PAGE_TYPE_ERROR : content::PAGE_TYPE_NORMAL;
-    EXPECT_EQ(expected_page_type, GetPageType());
+    // If the extension is enabled, both the |static_rule_url| and
+    // |dynamic_rule_url| should be blocked.
+    EXPECT_EQ(expected_enabled, IsNavigationBlocked(static_rule_url));
+    EXPECT_EQ(expected_enabled, IsNavigationBlocked(dynamic_rule_url));
   };
 
   {
@@ -1245,14 +1299,25 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   // directory won't be persisted across browser restarts.
   ASSERT_EQ(ExtensionLoadType::PACKED, GetParam());
 
-  TestRule rule = CreateGenericRule();
-  rule.condition->url_filter = std::string("example.com");
-  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
+  set_has_background_script(true);
 
-  GURL url = embedded_test_server()->GetURL("example.com",
-                                            "/pages_with_script/page.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_FALSE(WasFrameWithScriptLoaded(GetMainFrame()));
+  // Block all main frame requests to "index.html".
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("index.html");
+  rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
+  const ExtensionId extension_id = last_loaded_extension_id();
+
+  // Add dynamic rule to block main-frame requests to "page.html".
+  rule.condition->url_filter = std::string("page.html");
+  ASSERT_NO_FATAL_FAILURE(AddDynamicRules(extension_id, {rule}));
+
+  EXPECT_TRUE(IsNavigationBlocked(embedded_test_server()->GetURL(
+      "example.com", "/pages_with_script/index.html")));
+  EXPECT_TRUE(IsNavigationBlocked(embedded_test_server()->GetURL(
+      "example.com", "/pages_with_script/page.html")));
+  EXPECT_FALSE(IsNavigationBlocked(embedded_test_server()->GetURL(
+      "example.com", "/pages_with_script/page2.html")));
 }
 
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
@@ -1263,10 +1328,12 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
 
   // Ensure that the DNR extension enabled in previous browser session still
   // correctly blocks network requests.
-  GURL url = embedded_test_server()->GetURL("example.com",
-                                            "/pages_with_script/page.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_FALSE(WasFrameWithScriptLoaded(GetMainFrame()));
+  EXPECT_TRUE(IsNavigationBlocked(embedded_test_server()->GetURL(
+      "example.com", "/pages_with_script/index.html")));
+  EXPECT_TRUE(IsNavigationBlocked(embedded_test_server()->GetURL(
+      "example.com", "/pages_with_script/page.html")));
+  EXPECT_FALSE(IsNavigationBlocked(embedded_test_server()->GetURL(
+      "example.com", "/pages_with_script/page2.html")));
 }
 
 // Ensure that Blink's in-memory cache is cleared on adding/removing rulesets.
@@ -1748,88 +1815,139 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
       &ruleset_count_waiter,
       base::WrapRefCounted(ExtensionSystem::Get(profile())->info_map()));
 
-  const GURL url = embedded_test_server()->GetURL(
-      "google.com", "/pages_with_script/index.html");
+  set_has_background_script(true);
 
-  // Verifies whether |url| was successfully loaded.
-  auto verify_page_load = [this, &url](bool success) {
-    ui_test_utils::NavigateToURL(browser(), url);
-    EXPECT_EQ(success, WasFrameWithScriptLoaded(GetMainFrame()));
-
-    content::PageType expected_page_type =
-        success ? content::PAGE_TYPE_NORMAL : content::PAGE_TYPE_ERROR;
-    EXPECT_EQ(expected_page_type, GetPageType());
-  };
-
-  // Initially no main frame requests should be blocked.
-  {
-    SCOPED_TRACE("Initial page load");
-    verify_page_load(true);
-  }
-
-  // Load an extension which blocks all main frame requests.
+  // Load an extension which blocks all main-frame requests to "google.com".
   TestRule rule = CreateGenericRule();
-  rule.condition->url_filter = std::string("*");
+  rule.condition->url_filter = std::string("||google.com");
   rule.condition->resource_types = std::vector<std::string>({"main_frame"});
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
   ruleset_count_waiter.WaitForRulesetCount(1);
 
   const ExtensionId extension_id = last_loaded_extension_id();
-  const base::FilePath extension_path =
-      extension_service()
-          ->GetExtensionById(extension_id, false /*include_disabled*/)
-          ->path();
 
-  // Loading the extension should cause main frame requests to be blocked.
+  // Add a dynamic rule to block main-frame requests to "example.com".
+  rule.condition->url_filter = std::string("||example.com");
+  ASSERT_NO_FATAL_FAILURE(AddDynamicRules(extension_id, {rule}));
+
+  const GURL static_rule_url = embedded_test_server()->GetURL(
+      "google.com", "/pages_with_script/index.html");
+  const GURL dynamic_rule_url = embedded_test_server()->GetURL(
+      "example.com", "/pages_with_script/index.html");
+  const GURL unblocked_url = embedded_test_server()->GetURL(
+      "yahoo.com", "/pages_with_script/index.html");
+
+  const Extension* extension = extension_service()->GetExtensionById(
+      extension_id, false /*include_disabled*/);
+  RulesetSource static_source = RulesetSource::CreateStatic(*extension);
+  RulesetSource dynamic_source =
+      RulesetSource::CreateDynamic(profile(), *extension);
+
+  // Loading the extension should cause some main frame requests to be blocked.
   {
     SCOPED_TRACE("Page load after loading extension");
-    verify_page_load(false);
+    EXPECT_TRUE(IsNavigationBlocked(static_rule_url));
+    EXPECT_TRUE(IsNavigationBlocked(dynamic_rule_url));
+    EXPECT_FALSE(IsNavigationBlocked(unblocked_url));
   }
 
-  // Overwrite the indexed ruleset file with arbitrary data to mimic corruption,
-  // while maintaining the correct version header.
-  {
-    base::ScopedAllowBlockingForTesting scoped_allow_blocking;
-    std::string corrupted_data = GetVersionHeaderForTesting() + "data";
-    ASSERT_EQ(static_cast<int>(corrupted_data.size()),
-              base::WriteFile(file_util::GetIndexedRulesetPath(extension_path),
-                              corrupted_data.c_str(), corrupted_data.size()));
-  }
+  // Helper to overwrite an indexed ruleset file with arbitrary data to mimic
+  // corruption, while maintaining the correct version header.
+  auto corrupt_file_for_checksum_mismatch =
+      [](const base::FilePath& indexed_path) {
+        base::ScopedAllowBlockingForTesting scoped_allow_blocking;
+        std::string corrupted_data = GetVersionHeaderForTesting() + "data";
+        ASSERT_EQ(static_cast<int>(corrupted_data.size()),
+                  base::WriteFile(indexed_path, corrupted_data.c_str(),
+                                  corrupted_data.size()));
+      };
 
-  // The extension should still continue to work since it doesn't need the
-  // indexed ruleset while it is loaded.
-  verify_page_load(false);
-
-  // Now reload the extension and verify that we detect indexed ruleset
-  // corruption and reindex the JSON ruleset.
-  {
+  // Helper to reload the extension and ensure it is working.
+  auto test_extension_works_after_reload = [&]() {
     DisableExtension(extension_id);
     ruleset_count_waiter.WaitForRulesetCount(0);
 
-    base::HistogramTester tester;
     EnableExtension(extension_id);
     ruleset_count_waiter.WaitForRulesetCount(1);
 
-    // Verify that loading the ruleset would have failed initially due to
-    // checksum mismatch and later succeeded.
-    EXPECT_EQ(1, tester.GetBucketCount(
-                     "Extensions.DeclarativeNetRequest.LoadRulesetResult",
-                     RulesetMatcher::LoadRulesetResult::
-                         kLoadErrorChecksumMismatch /*sample*/));
-    EXPECT_EQ(1,
-              tester.GetBucketCount(
-                  "Extensions.DeclarativeNetRequest.LoadRulesetResult",
-                  RulesetMatcher::LoadRulesetResult::kLoadSuccess /*sample*/));
+    EXPECT_TRUE(IsNavigationBlocked(static_rule_url));
+    EXPECT_TRUE(IsNavigationBlocked(dynamic_rule_url));
+    EXPECT_FALSE(IsNavigationBlocked(unblocked_url));
+  };
 
-    // Verify that reindexing succeeded.
-    tester.ExpectUniqueSample(
-        "Extensions.DeclarativeNetRequest.RulesetReindexSuccessful",
-        true /*sample*/, 1 /*count*/);
+  const char* kLoadRulesetResultHistogram =
+      "Extensions.DeclarativeNetRequest.LoadRulesetResult";
+  const char* kReindexHistogram =
+      "Extensions.DeclarativeNetRequest.RulesetReindexSuccessful";
 
-    // The reindexing of the ruleset should cause the extension to work
-    // correctly.
-    SCOPED_TRACE("Page load after ruleset corruption");
-    verify_page_load(false);
+  // Test static ruleset re-indexing.
+  {
+    SCOPED_TRACE("Static ruleset corruption");
+    corrupt_file_for_checksum_mismatch(static_source.indexed_path());
+
+    base::HistogramTester tester;
+    test_extension_works_after_reload();
+
+    // Loading the ruleset would have failed initially due to checksum mismatch
+    // and later succeeded.
+    tester.ExpectBucketCount(kLoadRulesetResultHistogram,
+                             RulesetMatcher::LoadRulesetResult::
+                                 kLoadErrorChecksumMismatch /* sample */,
+                             1 /* count */);
+    // Count of 2 because we load both static and dynamic rulesets.
+    tester.ExpectBucketCount(
+        kLoadRulesetResultHistogram,
+        RulesetMatcher::LoadRulesetResult::kLoadSuccess /* sample */,
+        2 /* count */);
+    // Verify that reindexing of the static ruleset succeeded.
+    tester.ExpectBucketCount(kReindexHistogram, true /*sample*/, 1 /*count*/);
+  }
+
+  // Test dynamic ruleset re-indexing.
+  {
+    SCOPED_TRACE("Dynamic ruleset corruption");
+    corrupt_file_for_checksum_mismatch(dynamic_source.indexed_path());
+
+    base::HistogramTester tester;
+    test_extension_works_after_reload();
+
+    // Loading the ruleset would have failed initially due to checksum mismatch
+    // and later succeeded.
+    tester.ExpectBucketCount(kLoadRulesetResultHistogram,
+                             RulesetMatcher::LoadRulesetResult::
+                                 kLoadErrorChecksumMismatch /* sample */,
+                             1 /* count */);
+    // Count of 2 because we load both static and dynamic rulesets.
+    tester.ExpectBucketCount(
+        kLoadRulesetResultHistogram,
+        RulesetMatcher::LoadRulesetResult::kLoadSuccess /* sample */,
+        2 /* count */);
+    // Verify that reindexing of the dynamic ruleset succeeded.
+    tester.ExpectBucketCount(kReindexHistogram, true /*sample*/, 1 /*count*/);
+  }
+
+  // Go crazy and corrupt both static and dynamic rulesets.
+  {
+    SCOPED_TRACE("Static and dynamic ruleset corruption");
+    corrupt_file_for_checksum_mismatch(dynamic_source.indexed_path());
+    corrupt_file_for_checksum_mismatch(static_source.indexed_path());
+
+    base::HistogramTester tester;
+    test_extension_works_after_reload();
+
+    // Loading the ruleset would have failed initially due to checksum mismatch
+    // and later succeeded.
+    tester.ExpectBucketCount(kLoadRulesetResultHistogram,
+                             RulesetMatcher::LoadRulesetResult::
+                                 kLoadErrorChecksumMismatch /* sample */,
+                             2 /* count */);
+    // Count of 2 because we load both static and dynamic rulesets.
+    tester.ExpectBucketCount(
+        kLoadRulesetResultHistogram,
+        RulesetMatcher::LoadRulesetResult::kLoadSuccess /* sample */,
+        2 /* count */);
+    // Verify that reindexing of both the rulesets succeeded.
+    tester.ExpectBucketCount(kReindexHistogram, true /*sample*/, 2 /*count*/);
   }
 }
 
@@ -1887,6 +2005,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 // version is not the same as one used by Chrome.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
                        ReindexOnRulesetVersionMismatch) {
+  set_has_background_script(true);
+
   // Set up an observer for RulesetMatcher to monitor the number of extension
   // rulesets.
   RulesetCountWaiter ruleset_count_waiter;
@@ -1903,6 +2023,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   const auto* rules_monitor_service = BrowserContextKeyedAPIFactory<
       declarative_net_request::RulesMonitorService>::Get(profile());
   EXPECT_TRUE(rules_monitor_service->HasRegisteredRuleset(extension_id));
+
+  // Add a dynamic rule.
+  AddDynamicRules(extension_id, {rule});
 
   DisableExtension(extension_id);
   ruleset_count_waiter.WaitForRulesetCount(0);
@@ -1921,20 +2044,20 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ruleset_count_waiter.WaitForRulesetCount(1);
   EXPECT_TRUE(rules_monitor_service->HasRegisteredRuleset(extension_id));
 
-  // Verify that loading the ruleset would have failed initially due to
-  // version header mismatch and later succeeded.
-  EXPECT_EQ(1, tester.GetBucketCount(
+  // Verify that loading the static and dynamic rulesets would have failed
+  // initially due to version header mismatch and later succeeded.
+  EXPECT_EQ(2, tester.GetBucketCount(
                    "Extensions.DeclarativeNetRequest.LoadRulesetResult",
                    RulesetMatcher::LoadRulesetResult::
                        kLoadErrorVersionMismatch /*sample*/));
-  EXPECT_EQ(1, tester.GetBucketCount(
+  EXPECT_EQ(2, tester.GetBucketCount(
                    "Extensions.DeclarativeNetRequest.LoadRulesetResult",
                    RulesetMatcher::LoadRulesetResult::kLoadSuccess /*sample*/));
 
   // Verify that reindexing succeeded.
   tester.ExpectUniqueSample(
       "Extensions.DeclarativeNetRequest.RulesetReindexSuccessful",
-      true /*sample*/, 1 /*count*/);
+      true /*sample*/, 2 /*count*/);
 }
 
 // Tests that redirecting requests using the declarativeNetRequest API works
@@ -2112,6 +2235,75 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                                embedded_test_server()->GetURL(
                                    "foo.com", "/pages_with_script/index.html"));
   EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+}
+
+// Tests the dynamic rule support.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, DynamicRules) {
+  set_has_background_script(true);
+
+  // Add an extension which blocks main-frame requests to "yahoo.com".
+  TestRule block_static_rule = CreateGenericRule();
+  block_static_rule.condition->resource_types =
+      std::vector<std::string>({"main_frame"});
+  block_static_rule.condition->url_filter = std::string("||yahoo.com");
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      {block_static_rule}, "test_extension", {URLPattern::kAllUrlsPattern}));
+
+  const char* kUrlPath = "/pages_with_script/index.html";
+  GURL yahoo_url = embedded_test_server()->GetURL("yahoo.com", kUrlPath);
+  GURL google_url = embedded_test_server()->GetURL("google.com", kUrlPath);
+  EXPECT_TRUE(IsNavigationBlocked(yahoo_url));
+  EXPECT_FALSE(IsNavigationBlocked(google_url));
+
+  // Add dynamic rules to block "google.com" and redirect pages on "example.com"
+  // to |dynamic_redirect_url|.
+  TestRule block_dynamic_rule = block_static_rule;
+  block_dynamic_rule.condition->url_filter = std::string("||google.com");
+  block_dynamic_rule.id = kMinValidID;
+
+  GURL dynamic_redirect_url =
+      embedded_test_server()->GetURL("dynamic.com", kUrlPath);
+  TestRule redirect_rule = CreateGenericRule();
+  redirect_rule.condition->url_filter = std::string("||example.com");
+  redirect_rule.condition->resource_types =
+      std::vector<std::string>({"main_frame"});
+  redirect_rule.priority = kMinValidPriority;
+  redirect_rule.action->type = std::string("redirect");
+  redirect_rule.action->redirect_url = dynamic_redirect_url.spec();
+  redirect_rule.id = kMinValidID + 1;
+
+  ASSERT_NO_FATAL_FAILURE(AddDynamicRules(last_loaded_extension_id(),
+                                          {block_dynamic_rule, redirect_rule}));
+
+  EXPECT_TRUE(IsNavigationBlocked(google_url));
+  EXPECT_TRUE(IsNavigationBlocked(yahoo_url));
+
+  // Navigate to a page on "example.com". It should be redirected to
+  // |dynamic_redirect_url|.
+  GURL example_url = embedded_test_server()->GetURL("example.com", kUrlPath);
+  ui_test_utils::NavigateToURL(browser(), example_url);
+  EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
+  EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+  EXPECT_EQ(dynamic_redirect_url, web_contents()->GetLastCommittedURL());
+
+  // Now add a dynamic rule to allow requests to yahoo.com.
+  TestRule allow_rule = block_static_rule;
+  allow_rule.id = kMinValidID + 2;
+  allow_rule.action->type = std::string("allow");
+  ASSERT_NO_FATAL_FAILURE(
+      AddDynamicRules(last_loaded_extension_id(), {allow_rule}));
+
+  // Dynamic ruleset gets more priority over the static ruleset and yahoo.com is
+  // not blocked.
+  EXPECT_FALSE(IsNavigationBlocked(yahoo_url));
+
+  // Now remove the |block_rule| and |allow_rule|. Rule ids not present will be
+  // ignored.
+  ASSERT_NO_FATAL_FAILURE(RemoveDynamicRules(
+      last_loaded_extension_id(),
+      {*block_dynamic_rule.id, *allow_rule.id, kMinValidID + 100}));
+  EXPECT_FALSE(IsNavigationBlocked(google_url));
+  EXPECT_TRUE(IsNavigationBlocked(yahoo_url));
 }
 
 // Test fixture to verify that host permissions for the request url and the

@@ -14,7 +14,11 @@
 #include "base/hash/hash.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "components/url_pattern_index/url_pattern_index.h"
+#include "components/web_cache/browser/web_cache_manager.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "third_party/flatbuffers/src/include/flatbuffers/flatbuffers.h"
 
@@ -63,6 +67,10 @@ int GetChecksum(base::span<const uint8_t> data) {
   // Strip off the sign bit since this needs to be persisted in preferences
   // which don't support unsigned ints.
   return static_cast<int>(hash & 0x7fffffff);
+}
+
+void ClearRendererCacheOnUI() {
+  web_cache::WebCacheManager::GetInstance()->ClearCacheOnNavigation();
 }
 
 }  // namespace
@@ -133,6 +141,16 @@ bool PersistIndexedRuleset(const base::FilePath& path,
 
   *ruleset_checksum = GetChecksum(data);
   return true;
+}
+
+// Helper to clear each renderer's in-memory cache the next time it navigates.
+void ClearRendererCacheOnNavigation() {
+  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+    ClearRendererCacheOnUI();
+  } else {
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             base::BindOnce(&ClearRendererCacheOnUI));
+  }
 }
 
 }  // namespace declarative_net_request

@@ -33,6 +33,12 @@ enum class ParseResult {
   ERROR_INVALID_URL_FILTER,
 };
 
+// Whether dynamic rules are to be added or removed.
+enum class DynamicRuleUpdateAction {
+  kAdd,
+  kRemove,
+};
+
 // Rule parsing errors.
 extern const char kErrorResourceTypeDuplicated[];
 extern const char kErrorEmptyRedirectRuleKey[];
@@ -52,6 +58,11 @@ extern const char kErrorListNotPassed[];
 extern const char kRuleCountExceeded[];
 extern const char kRuleNotParsedWarning[];
 extern const char kTooManyParseFailuresWarning[];
+
+// Dynamic rules API errors.
+extern const char kInternalErrorUpdatingDynamicRules[];
+extern const char kInternalErrorGettingDynamicRules[];
+extern const char kDynamicRuleCountExceeded[];
 
 // Histogram names.
 extern const char kIndexAndPersistRulesTimeHistogram[];

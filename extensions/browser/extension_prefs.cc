@@ -201,6 +201,9 @@ constexpr const char kPrefDNRRulesetChecksum[] = "dnr_ruleset_checksum";
 // extension for the Declarative Net Request API.
 constexpr const char kPrefDNRAllowedPages[] = "dnr_whitelisted_pages";
 
+constexpr const char kPrefDNRDynamicRulesetChecksum[] =
+    "dnr_dynamic_ruleset_checksum";
+
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public prefs::ScopedDictionaryPrefUpdate {
  public:
@@ -1743,15 +1746,28 @@ void ExtensionPrefs::SetNeedsSync(const std::string& extension_id,
 }
 
 bool ExtensionPrefs::GetDNRRulesetChecksum(const ExtensionId& extension_id,
-                                           int* dnr_ruleset_checksum) const {
-  return ReadPrefAsInteger(extension_id, kPrefDNRRulesetChecksum,
-                           dnr_ruleset_checksum);
+                                           int* checksum) const {
+  return ReadPrefAsInteger(extension_id, kPrefDNRRulesetChecksum, checksum);
 }
 
 void ExtensionPrefs::SetDNRRulesetChecksum(const ExtensionId& extension_id,
-                                           int dnr_ruleset_checksum) {
+                                           int checksum) {
   UpdateExtensionPref(extension_id, kPrefDNRRulesetChecksum,
-                      std::make_unique<base::Value>(dnr_ruleset_checksum));
+                      std::make_unique<base::Value>(checksum));
+}
+
+bool ExtensionPrefs::GetDNRDynamicRulesetChecksum(
+    const ExtensionId& extension_id,
+    int* checksum) const {
+  return ReadPrefAsInteger(extension_id, kPrefDNRDynamicRulesetChecksum,
+                           checksum);
+}
+
+void ExtensionPrefs::SetDNRDynamicRulesetChecksum(
+    const ExtensionId& extension_id,
+    int checksum) {
+  UpdateExtensionPref(extension_id, kPrefDNRDynamicRulesetChecksum,
+                      std::make_unique<base::Value>(checksum));
 }
 
 void ExtensionPrefs::SetDNRAllowedPages(const ExtensionId& extension_id,

@@ -574,11 +574,20 @@ class ExtensionPrefs : public KeyedService {
 
   // Returns false if there is no ruleset checksum corresponding to
   // |extension_id|. On success, returns true and populates
-  // |dnr_ruleset_checksum|.
+  // the checksum.
   bool GetDNRRulesetChecksum(const ExtensionId& extension_id,
-                             int* dnr_ruleset_checksum) const;
-  void SetDNRRulesetChecksum(const ExtensionId& extension_id,
-                             int dnr_ruleset_checksum);
+                             int* checksum) const;
+  void SetDNRRulesetChecksum(const ExtensionId& extension_id, int checksum);
+
+  // Returns false if there is no dynamic ruleset corresponding to
+  // |extension_id|. On success, returns true and populates the checksum.
+  // TODO(crbug.com/930961): Use a single dictionary to store checksums for
+  // static and dynamic rulesets. This will be more relevant if and when we do
+  // support multiple static rulesets.
+  bool GetDNRDynamicRulesetChecksum(const ExtensionId& extension_id,
+                                    int* checksum) const;
+  void SetDNRDynamicRulesetChecksum(const ExtensionId& extension_id,
+                                    int checksum);
 
   // Sets the set of allowed pages for the given |extension_id|.
   void SetDNRAllowedPages(const ExtensionId& extension_id, URLPatternSet set);

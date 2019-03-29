@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULESET_SOURCE_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULESET_SOURCE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,6 +16,10 @@
 namespace base {
 class Token;
 }  // namespace base
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace service_manager {
 class Connector;
@@ -106,9 +111,24 @@ struct ReadJSONRulesResult {
 // Holds paths for an extension ruleset.
 class RulesetSource {
  public:
-  // This must only be called for extensions which specified a declarative
-  // ruleset.
-  static RulesetSource Create(const Extension& extension);
+  const static size_t kStaticRulesetID;
+  const static size_t kDynamicRulesetID;
+
+  // Creates RulesetSource corresponding to the static ruleset in the extension
+  // package. This must only be called for extensions which specified a
+  // declarative ruleset.
+  static RulesetSource CreateStatic(const Extension& extension);
+
+  // Creates RulesetSource corresponding to the dynamic rules added by the
+  // extension. This must only be called for extensions which specified a
+  // declarative ruleset.
+  static RulesetSource CreateDynamic(const content::BrowserContext* context,
+                                     const Extension& extension);
+
+  // Creates a temporary source i.e. a source corresponding to temporary files.
+  // Returns null on failure.
+  static std::unique_ptr<RulesetSource>
+  CreateTemporarySource(size_t id, size_t priority, size_t rule_count_limit);
 
   RulesetSource(base::FilePath json_path,
                 base::FilePath indexed_path,
@@ -163,6 +183,10 @@ class RulesetSource {
   // Reads JSON rules synchronously. Callers should only use this if the JSON is
   // trusted. Must be called on a sequence which supports file IO.
   ReadJSONRulesResult ReadJSONRulesUnsafe() const;
+
+  // Serializes and writes |rules| to the json path. Returns false on failure.
+  bool WriteRulesToJSON(
+      const std::vector<api::declarative_net_request::Rule>& rules) const;
 
  private:
   base::FilePath json_path_;

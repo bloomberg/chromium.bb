@@ -689,7 +689,7 @@ void SandboxedUnpacker::IndexAndPersistJSONRulesetIfNeeded(
   }
 
   auto ruleset_source =
-      declarative_net_request::RulesetSource::Create(*extension_);
+      declarative_net_request::RulesetSource::CreateStatic(*extension_);
   ruleset_source.IndexAndPersistJSONRuleset(
       connector_.get(), *data_decoder_service_filter_.instance_id(),
       base::BindOnce(&SandboxedUnpacker::OnJSONRulesetIndexed, this,

@@ -50,6 +50,9 @@ bool PersistIndexedRuleset(const base::FilePath& path,
                            base::span<const uint8_t> data,
                            int* ruleset_checksum);
 
+// Helper to clear each renderer's in-memory cache the next time it navigates.
+void ClearRendererCacheOnNavigation();
+
 }  // namespace declarative_net_request
 }  // namespace extensions
 

@@ -13,12 +13,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "components/web_cache/browser/web_cache_manager.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/api/web_request/web_request_permissions.h"
@@ -46,20 +44,6 @@ enum class PageAllowingInitiatorCheck {
   kBothCandidatesMatchInitiator = 4,
   kMaxValue = kBothCandidatesMatchInitiator,
 };
-
-void ClearRendererCacheOnUI() {
-  web_cache::WebCacheManager::GetInstance()->ClearCacheOnNavigation();
-}
-
-// Helper to clear each renderer's in-memory cache the next time it navigates.
-void ClearRendererCacheOnNavigation() {
-  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    ClearRendererCacheOnUI();
-  } else {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(&ClearRendererCacheOnUI));
-  }
-}
 
 // Returns true if |request| came from a page from the set of
 // |allowed_pages|. This necessitates finding the main frame url
@@ -244,6 +228,28 @@ void RulesetManager::RemoveRuleset(const ExtensionId& extension_id) {
   // Clear the renderers' cache so that they take the removed rules into
   // account.
   ClearRendererCacheOnNavigation();
+}
+
+CompositeMatcher* RulesetManager::GetMatcherForExtension(
+    const ExtensionId& extension_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(IsAPIAvailable());
+
+  // This is O(n) but it's ok since the number of extensions will be small and
+  // we have to maintain the rulesets sorted in decreasing order of installation
+  // time.
+  auto iter =
+      std::find_if(rulesets_.begin(), rulesets_.end(),
+                   [&extension_id](const ExtensionRulesetData& ruleset) {
+                     return ruleset.extension_id == extension_id;
+                   });
+
+  // There must be ExtensionRulesetData corresponding to this |extension_id|.
+  if (iter == rulesets_.end())
+    return nullptr;
+
+  DCHECK(iter->matcher);
+  return iter->matcher.get();
 }
 
 void RulesetManager::UpdateAllowedPages(const ExtensionId& extension_id,

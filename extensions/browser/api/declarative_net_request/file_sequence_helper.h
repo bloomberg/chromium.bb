@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_FILE_SEQUENCE_HELPER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -21,7 +22,15 @@ class Connector;
 }  // namespace service_manager
 
 namespace extensions {
+
+namespace api {
 namespace declarative_net_request {
+struct Rule;
+}  // namespace declarative_net_request
+}  // namespace api
+
+namespace declarative_net_request {
+enum class DynamicRuleUpdateAction;
 
 // Holds the data relating to the loading of a single ruleset.
 class RulesetInfo {
@@ -55,9 +64,10 @@ class RulesetInfo {
   // Must be called after CreateVerifiedMatcher.
   RulesetMatcher::LoadRulesetResult load_ruleset_result() const;
 
-  // Must be called after CreateVerifiedMatcher.
+  // Whether the ruleset loaded successfully.
   bool did_load_successfully() const {
-    return load_ruleset_result() == RulesetMatcher::kLoadSuccess;
+    return load_ruleset_result_ &&
+           *load_ruleset_result_ == RulesetMatcher::kLoadSuccess;
   }
 
   // Must be invoked on the extension file task runner. Must only be called
@@ -98,19 +108,29 @@ struct LoadRequestData {
   DISALLOW_COPY_AND_ASSIGN(LoadRequestData);
 };
 
-//  Helper class to load indexed rulesets. Can be created on any sequence but
-//  must be used on the extension file task runner. Also tries to reindex the
-//  rulesets on failure.
+//  Helper class for file sequence operations for the declarative net request
+//  API. Can be created on any sequence but must be used on the extension file
+//  task runner.
 class FileSequenceHelper {
  public:
   FileSequenceHelper();
   ~FileSequenceHelper();
 
   // Loads rulesets for |load_data|. Invokes |ui_callback| on the UI thread once
-  // loading is done.
+  // loading is done. Also tries to reindex the rulesets on failure.
   using LoadRulesetsUICallback = base::OnceCallback<void(LoadRequestData)>;
   void LoadRulesets(LoadRequestData load_data,
                     LoadRulesetsUICallback ui_callback) const;
+
+  // Updates dynamic rules for |load_data|. Invokes |ui_callback| on the UI
+  // thread once loading is done with the LoadRequestData and an optional error
+  // string.
+  using UpdateDynamicRulesUICallback =
+      base::OnceCallback<void(LoadRequestData, base::Optional<std::string>)>;
+  void UpdateDynamicRules(LoadRequestData load_data,
+                          std::vector<api::declarative_net_request::Rule> rules,
+                          DynamicRuleUpdateAction action,
+                          UpdateDynamicRulesUICallback ui_callback) const;
 
  private:
   // Callback invoked when the JSON rulesets are reindexed.

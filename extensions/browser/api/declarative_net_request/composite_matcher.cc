@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -41,18 +42,35 @@ bool AreSortedPrioritiesUnique(const CompositeMatcher::MatcherList& matchers) {
 
 CompositeMatcher::CompositeMatcher(MatcherList matchers)
     : matchers_(std::move(matchers)) {
-  // Sort in descending order of priority.
-  std::sort(matchers_.begin(), matchers_.end(),
-            [](const std::unique_ptr<RulesetMatcher>& a,
-               const std::unique_ptr<RulesetMatcher>& b) {
-              return a->priority() > b->priority();
-            });
-
+  SortMatchersByPriority();
   DCHECK(AreIDsUnique(matchers_));
-  DCHECK(AreSortedPrioritiesUnique(matchers_));
 }
 
 CompositeMatcher::~CompositeMatcher() = default;
+
+void CompositeMatcher::AddOrUpdateRuleset(
+    std::unique_ptr<RulesetMatcher> new_matcher) {
+  // A linear search is ok since the number of rulesets per extension is
+  // expected to be quite small.
+  auto it = std::find_if(
+      matchers_.begin(), matchers_.end(),
+      [&new_matcher](const std::unique_ptr<RulesetMatcher>& matcher) {
+        return new_matcher->id() == matcher->id();
+      });
+
+  if (it == matchers_.end()) {
+    matchers_.push_back(std::move(new_matcher));
+    SortMatchersByPriority();
+  } else {
+    // Update the matcher. The priority for a given ID should remain the same.
+    DCHECK_EQ(new_matcher->priority(), (*it)->priority());
+    *it = std::move(new_matcher);
+  }
+
+  // Clear the renderers' cache so that they take the updated rules into
+  // account.
+  ClearRendererCacheOnNavigation();
+}
 
 bool CompositeMatcher::ShouldBlockRequest(const RequestParams& params) const {
   // TODO(karandeepb): change this to report time in micro-seconds.
@@ -82,6 +100,15 @@ bool CompositeMatcher::ShouldRedirectRequest(const RequestParams& params,
   }
 
   return false;
+}
+
+void CompositeMatcher::SortMatchersByPriority() {
+  std::sort(matchers_.begin(), matchers_.end(),
+            [](const std::unique_ptr<RulesetMatcher>& a,
+               const std::unique_ptr<RulesetMatcher>& b) {
+              return a->priority() > b->priority();
+            });
+  DCHECK(AreSortedPrioritiesUnique(matchers_));
 }
 
 }  // namespace declarative_net_request
