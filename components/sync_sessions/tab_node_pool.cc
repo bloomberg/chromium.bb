@@ -20,7 +20,7 @@ const size_t TabNodePool::kFreeNodesLowWatermark = 25;
 const size_t TabNodePool::kFreeNodesHighWatermark = 100;
 
 const base::Feature kTabNodePoolImmediateDeletion{
-    "TabNodePoolImmediateDeletion", base::FEATURE_DISABLED_BY_DEFAULT};
+    "TabNodePoolImmediateDeletion", base::FEATURE_ENABLED_BY_DEFAULT};
 
 TabNodePool::TabNodePool() : max_used_tab_node_id_(kInvalidTabNodeID) {}
 
@@ -147,7 +147,7 @@ SessionID TabNodePool::GetTabIdFromTabNodeId(int tab_node_id) const {
   return SessionID::InvalidValue();
 }
 
-std::set<int> TabNodePool::CleanupTabNodes() {
+std::set<int> TabNodePool::CleanupFreeTabNodes() {
   if (base::FeatureList::IsEnabled(kTabNodePoolImmediateDeletion)) {
     // Convert all free nodes into missing nodes, each representing a deletion.
     missing_nodes_pool_.insert(free_nodes_pool_.begin(),

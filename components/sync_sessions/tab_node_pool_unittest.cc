@@ -19,7 +19,6 @@ using testing::UnorderedElementsAre;
 
 const int kTabNodeId1 = 10;
 const int kTabNodeId2 = 5;
-const int kTabNodeId3 = 30;
 const SessionID kTabId1 = SessionID::FromSerializedValue(1010);
 const SessionID kTabId2 = SessionID::FromSerializedValue(1020);
 const SessionID kTabId3 = SessionID::FromSerializedValue(1030);
@@ -44,31 +43,48 @@ class SyncTabNodePoolTest : public testing::Test {
   TabNodePool pool_;
 };
 
-TEST_F(SyncTabNodePoolTest, TabNodeIdIncreases) {
-  // max_used_tab_node_ always increases.
-  pool_.ReassociateTabNode(kTabNodeId1, kTabId1);
-  EXPECT_EQ(kTabNodeId1, GetMaxUsedTabNodeId());
-  pool_.ReassociateTabNode(kTabNodeId2, kTabId2);
-  EXPECT_EQ(kTabNodeId1, GetMaxUsedTabNodeId());
-  pool_.ReassociateTabNode(kTabNodeId3, kTabId3);
-  EXPECT_EQ(kTabNodeId3, GetMaxUsedTabNodeId());
-  // Freeing a tab node does not change max_used_tab_node_id_.
+TEST_F(SyncTabNodePoolTest, MaxTabNodeIdShouldIncrease) {
+  EXPECT_EQ(-1, GetMaxUsedTabNodeId());
+  pool_.ReassociateTabNode(10, kTabId1);
+  EXPECT_EQ(10, GetMaxUsedTabNodeId());
+  pool_.ReassociateTabNode(5, kTabId2);
+  EXPECT_EQ(10, GetMaxUsedTabNodeId());
+  pool_.ReassociateTabNode(20, kTabId3);
+  EXPECT_EQ(20, GetMaxUsedTabNodeId());
+}
+
+TEST_F(SyncTabNodePoolTest, MaxTabNodeIdShouldDecrease) {
+  pool_.ReassociateTabNode(10, kTabId1);
+  pool_.ReassociateTabNode(5, kTabId2);
+  pool_.ReassociateTabNode(20, kTabId3);
+  EXPECT_EQ(20, GetMaxUsedTabNodeId());
+
   pool_.FreeTab(kTabId3);
-  pool_.CleanupTabNodes();
-  pool_.FreeTab(kTabId2);
-  EXPECT_THAT(pool_.CleanupTabNodes(), IsEmpty());
+  ASSERT_THAT(pool_.CleanupFreeTabNodes(), ElementsAre(20));
+  EXPECT_EQ(10, GetMaxUsedTabNodeId());
+
   pool_.FreeTab(kTabId1);
-  EXPECT_THAT(pool_.CleanupTabNodes(), IsEmpty());
-  for (int i = 0; i < 3; ++i) {
-    const SessionID tab_id = SessionID::FromSerializedValue(i + 1);
-    ASSERT_EQ(TabNodePool::kInvalidTabNodeID,
-              pool_.GetTabNodeIdFromTabId(tab_id));
-    EXPECT_NE(TabNodePool::kInvalidTabNodeID,
-              pool_.AssociateWithFreeTabNode(tab_id));
-    EXPECT_EQ(kTabNodeId3, GetMaxUsedTabNodeId());
-  }
-  EXPECT_THAT(pool_.CleanupTabNodes(), IsEmpty());
-  EXPECT_EQ(kTabNodeId3, GetMaxUsedTabNodeId());
+  ASSERT_THAT(pool_.CleanupFreeTabNodes(), ElementsAre(10));
+  EXPECT_EQ(5, GetMaxUsedTabNodeId());
+
+  pool_.FreeTab(kTabId2);
+  ASSERT_THAT(pool_.CleanupFreeTabNodes(), ElementsAre(5));
+  EXPECT_EQ(-1, GetMaxUsedTabNodeId());
+}
+
+TEST_F(SyncTabNodePoolTest, MaxTabNodeIdShouldNotChange) {
+  pool_.ReassociateTabNode(10, kTabId1);
+  pool_.ReassociateTabNode(5, kTabId2);
+  pool_.ReassociateTabNode(20, kTabId3);
+  EXPECT_EQ(20, GetMaxUsedTabNodeId());
+
+  pool_.FreeTab(kTabId1);
+  ASSERT_THAT(pool_.CleanupFreeTabNodes(), ElementsAre(10));
+  EXPECT_EQ(20, GetMaxUsedTabNodeId());
+
+  pool_.FreeTab(kTabId2);
+  ASSERT_THAT(pool_.CleanupFreeTabNodes(), ElementsAre(5));
+  EXPECT_EQ(20, GetMaxUsedTabNodeId());
 }
 
 TEST_F(SyncTabNodePoolTest, Reassociation) {
@@ -136,7 +152,10 @@ TEST_F(SyncTabNodePoolTest, AssociateWithFreeTabNode) {
   EXPECT_EQ(0, pool_.AssociateWithFreeTabNode(kTabId3));
 }
 
-TEST_F(SyncTabNodePoolTest, TabPoolFreeNodeLimits) {
+TEST_F(SyncTabNodePoolTest, TabPoolFreeNodeWatermarkLimits) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(kTabNodePoolImmediateDeletion);
+
   // Allocate TabNodePool::kFreeNodesHighWatermark + 1 nodes and verify that
   // freeing the last node reduces the free node pool size to
   // kFreeNodesLowWatermark.
@@ -151,17 +170,16 @@ TEST_F(SyncTabNodePoolTest, TabPoolFreeNodeLimits) {
 
   for (size_t i = 1; i <= used_sync_ids.size(); ++i) {
     pool_.FreeTab(SessionID::FromSerializedValue(i));
-    EXPECT_THAT(pool_.CleanupTabNodes(), IsEmpty());
+    EXPECT_THAT(pool_.CleanupFreeTabNodes(), IsEmpty());
   }
 
   // Freeing the last sync node should drop the free nodes to
   // kFreeNodesLowWatermark.
   pool_.FreeTab(
       SessionID::FromSerializedValue(TabNodePool::kFreeNodesHighWatermark + 1));
-  std::set<int> deleted_node_ids = pool_.CleanupTabNodes();
-  EXPECT_EQ(TabNodePool::kFreeNodesHighWatermark + 1 -
-                TabNodePool::kFreeNodesLowWatermark,
-            deleted_node_ids.size());
+  std::set<int> deleted_node_ids = pool_.CleanupFreeTabNodes();
+  EXPECT_EQ(deleted_node_ids.size(), TabNodePool::kFreeNodesHighWatermark + 1 -
+                                         TabNodePool::kFreeNodesLowWatermark);
   // Make sure the highest ones are deleted.
   EXPECT_EQ(0U,
             deleted_node_ids.count(TabNodePool::kFreeNodesLowWatermark - 1));
@@ -191,42 +209,33 @@ TEST_F(SyncTabNodePoolTest, AssociateWithFreeTabNodeReturnsMinimum) {
   EXPECT_EQ(2, pool_.AssociateWithFreeTabNode(kTabId5));
 }
 
-TEST_F(SyncTabNodePoolTest, AggressiveCleanupTabNodesMiddle) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kTabNodePoolImmediateDeletion);
-
+TEST_F(SyncTabNodePoolTest, AggressiveCleanupFreeTabNodesMiddle) {
   pool_.ReassociateTabNode(/*tab_node_id=*/0, kTabId1);
   pool_.ReassociateTabNode(/*tab_node_id=*/1, kTabId2);
   pool_.ReassociateTabNode(/*tab_node_id=*/2, kTabId3);
 
   pool_.FreeTab(kTabId2);
 
-  EXPECT_THAT(pool_.CleanupTabNodes(), UnorderedElementsAre(1));
+  EXPECT_THAT(pool_.CleanupFreeTabNodes(), ElementsAre(1));
   EXPECT_EQ(2, GetMaxUsedTabNodeId());
   EXPECT_EQ(1, pool_.AssociateWithFreeTabNode(kTabId4));
   EXPECT_EQ(3, pool_.AssociateWithFreeTabNode(kTabId5));
 }
 
-TEST_F(SyncTabNodePoolTest, AggressiveCleanupTabNodesMax) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kTabNodePoolImmediateDeletion);
-
+TEST_F(SyncTabNodePoolTest, AggressiveCleanupFreeTabNodesMax) {
   pool_.ReassociateTabNode(/*tab_node_id=*/0, kTabId1);
   pool_.ReassociateTabNode(/*tab_node_id=*/1, kTabId2);
   pool_.ReassociateTabNode(/*tab_node_id=*/2, kTabId3);
 
   pool_.FreeTab(kTabId3);
 
-  EXPECT_THAT(pool_.CleanupTabNodes(), UnorderedElementsAre(2));
+  EXPECT_THAT(pool_.CleanupFreeTabNodes(), ElementsAre(2));
   EXPECT_EQ(1, GetMaxUsedTabNodeId());
   EXPECT_EQ(2, pool_.AssociateWithFreeTabNode(kTabId4));
   EXPECT_EQ(3, pool_.AssociateWithFreeTabNode(kTabId5));
 }
 
-TEST_F(SyncTabNodePoolTest, AggressiveCleanupTabNodesMultiple) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kTabNodePoolImmediateDeletion);
-
+TEST_F(SyncTabNodePoolTest, AggressiveCleanupFreeTabNodesMultiple) {
   pool_.ReassociateTabNode(/*tab_node_id=*/0, kTabId1);
   pool_.ReassociateTabNode(/*tab_node_id=*/1, kTabId2);
   pool_.ReassociateTabNode(/*tab_node_id=*/2, kTabId3);
@@ -234,22 +243,19 @@ TEST_F(SyncTabNodePoolTest, AggressiveCleanupTabNodesMultiple) {
   pool_.FreeTab(kTabId1);
   pool_.FreeTab(kTabId2);
 
-  EXPECT_THAT(pool_.CleanupTabNodes(), UnorderedElementsAre(0, 1));
+  EXPECT_THAT(pool_.CleanupFreeTabNodes(), UnorderedElementsAre(0, 1));
   EXPECT_EQ(2, GetMaxUsedTabNodeId());
   EXPECT_EQ(0, pool_.AssociateWithFreeTabNode(kTabId4));
   EXPECT_EQ(1, pool_.AssociateWithFreeTabNode(kTabId5));
   EXPECT_EQ(3, pool_.AssociateWithFreeTabNode(kTabId6));
 }
 
-TEST_F(SyncTabNodePoolTest, AggressiveCleanupTabNodesAll) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kTabNodePoolImmediateDeletion);
-
+TEST_F(SyncTabNodePoolTest, AggressiveCleanupFreeTabNodesAll) {
   pool_.ReassociateTabNode(/*tab_node_id=*/0, kTabId1);
 
   pool_.FreeTab(kTabId1);
 
-  EXPECT_THAT(pool_.CleanupTabNodes(), UnorderedElementsAre(0));
+  EXPECT_THAT(pool_.CleanupFreeTabNodes(), ElementsAre(0));
   EXPECT_EQ(-1, GetMaxUsedTabNodeId());
   EXPECT_EQ(0, pool_.AssociateWithFreeTabNode(kTabId4));
 }

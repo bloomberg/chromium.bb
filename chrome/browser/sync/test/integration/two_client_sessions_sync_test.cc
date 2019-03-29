@@ -94,12 +94,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, SingleClientClosed) {
 
   std::vector<sync_pb::SyncEntity> entities =
       GetFakeServer()->GetSyncEntitiesByModelType(syncer::SESSIONS);
-  // Two header entities and two tab entities (one of the two has been closed
-  // but considered "free" for future recycling, i.e. not deleted).
-  ASSERT_EQ(4U, entities.size());
-  for (const auto& entity : entities) {
-    EXPECT_FALSE(entity.deleted());
-  }
+  // Two header entities and one tab entity (the other one has been deleted).
+  EXPECT_EQ(3U, entities.size());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, E2E_ENABLED(AllChanged)) {
