@@ -418,7 +418,6 @@ source_set("blink_headers") {
     "web/web_context_features.h",
     "web/web_context_menu_data.h",
     "web/web_crypto_normalize.h",
-    "web/web_css_parser.h",
     "web/web_custom_element.h",
     "web/web_date_time_chooser_completion.h",
     "web/web_date_time_chooser_params.h",
