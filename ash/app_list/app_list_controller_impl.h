@@ -255,6 +255,8 @@ class ASH_EXPORT AppListControllerImpl
       UpdateAnimationSettingsCallback callback) override;
   void UpdateAfterHomeLauncherShown() override;
   base::Optional<base::TimeDelta> GetOptionalAnimationDuration() override;
+  bool ShouldShowShelfOnHomeScreen() const override;
+  bool ShouldShowStatusAreaOnHomeScreen() const override;
 
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 

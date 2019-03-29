@@ -683,6 +683,14 @@ AppListControllerImpl::GetOptionalAnimationDuration() {
   return base::nullopt;
 }
 
+bool AppListControllerImpl::ShouldShowShelfOnHomeScreen() const {
+  return true;
+}
+
+bool AppListControllerImpl::ShouldShowStatusAreaOnHomeScreen() const {
+  return true;
+}
+
 void AppListControllerImpl::Back() {
   presenter_.GetView()->Back();
 }
