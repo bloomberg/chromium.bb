@@ -2911,18 +2911,20 @@ TEST_F(NetworkContextTest, ResolveHost_CloseClient) {
 // net::ContextHostResolver. Keeps pointers to all created resolvers.
 class TestResolverFactory : public net::HostResolver::Factory {
  public:
-  static TestResolverFactory* CreateAndSetFactory(NetworkContext* context) {
+  static TestResolverFactory* CreateAndSetFactory(NetworkService* service) {
     auto factory = std::make_unique<TestResolverFactory>();
     auto* factory_ptr = factory.get();
-    context->set_host_resolver_factory_for_testing(std::move(factory));
+    service->set_host_resolver_factory_for_testing(std::move(factory));
     return factory_ptr;
   }
 
   std::unique_ptr<net::HostResolver> CreateResolver(
       net::HostResolverManager* manager,
       base::StringPiece host_mapping_rules) override {
-    NOTIMPLEMENTED();
-    return nullptr;
+    DCHECK(host_mapping_rules.empty());
+    auto resolver = std::make_unique<net::ContextHostResolver>(manager);
+    resolvers_.push_back(resolver.get());
+    return resolver;
   }
 
   std::unique_ptr<net::HostResolver> CreateStandaloneResolver(
@@ -2940,23 +2942,29 @@ class TestResolverFactory : public net::HostResolver::Factory {
     return resolvers_;
   }
 
+  void ForgetResolvers() { resolvers_.clear(); }
+
  private:
   std::vector<net::ContextHostResolver*> resolvers_;
 };
 
 TEST_F(NetworkContextTest, CreateHostResolver) {
+  // Inject a factory to control and capture created net::HostResolvers.
+  TestResolverFactory* factory =
+      TestResolverFactory::CreateAndSetFactory(network_service_.get());
+
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
-  // Inject a factory to control and capture created net::HostResolvers.
-  TestResolverFactory* factory =
-      TestResolverFactory::CreateAndSetFactory(network_context.get());
+  // Creates single shared (within the NetworkContext) internal HostResolver.
+  EXPECT_EQ(1u, factory->resolvers().size());
+  factory->ForgetResolvers();
 
   mojom::HostResolverPtr resolver;
   network_context->CreateHostResolver(base::nullopt,
                                       mojo::MakeRequest(&resolver));
 
-  // Expected to use shared internal HostResolver.
+  // Expected to reuse shared (within the NetworkContext) internal HostResolver.
   EXPECT_TRUE(factory->resolvers().empty());
 
   base::RunLoop run_loop;
@@ -3073,12 +3081,16 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseContext) {
 }
 
 TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
+  // Inject a factory to control and capture created net::HostResolvers.
+  TestResolverFactory* factory =
+      TestResolverFactory::CreateAndSetFactory(network_service_.get());
+
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
-  // Inject a factory to control and capture created net::HostResolvers.
-  TestResolverFactory* factory =
-      TestResolverFactory::CreateAndSetFactory(network_context.get());
+  // Creates single shared (within the NetworkContext) internal HostResolver.
+  EXPECT_EQ(1u, factory->resolvers().size());
+  factory->ForgetResolvers();
 
   net::DnsConfigOverrides overrides;
   overrides.nameservers = std::vector<net::IPEndPoint>{
@@ -4734,9 +4746,12 @@ TEST_F(NetworkContextTest, HangingHeaderClientSuspendThenCallback) {
 class NetworkContextMockHostTest : public NetworkContextTest {
  public:
   NetworkContextMockHostTest() {
-    auto host_resolver = std::make_unique<net::MockHostResolver>();
-    host_resolver->rules()->AddRule(kMockHost, "127.0.0.1");
-    network_service_->SetHostResolver(std::move(host_resolver));
+    scoped_refptr<net::RuleBasedHostResolverProc> rules =
+        net::CreateCatchAllHostResolverProc();
+    rules->AddRule(kMockHost, "127.0.0.1");
+
+    network_service_->set_host_resolver_factory_for_testing(
+        std::make_unique<net::MockHostResolverFactory>(std::move(rules)));
   }
 
  protected:
@@ -4988,6 +5003,7 @@ TEST_F(NetworkContextMockHostTest,
       test_server, "/echoheader?pre_foo&post_foo&pre_bar&post_bar");
   std::unique_ptr<TestURLLoaderClient> client =
       FetchRequest(request, network_context.get());
+  ASSERT_TRUE(client->response_body());
   std::string response;
   EXPECT_TRUE(
       mojo::BlockingCopyToString(client->response_body_release(), &response));

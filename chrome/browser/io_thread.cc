@@ -60,7 +60,6 @@
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
-#include "net/dns/host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_transaction_factory.h"
@@ -141,23 +140,6 @@ void ObserveKeychainEvents() {
   net::CertDatabase::GetInstance()->StartListeningForKeychainEvents();
 }
 #endif
-
-std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
-    net::NetLog* net_log) {
-  TRACE_EVENT0("startup", "IOThread::CreateGlobalHostResolver");
-
-  // Use hostname remappings if specified on the command-line. This allows
-  // forwarding all requests through a designated test server.
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  std::string host_mapping_rules =
-      command_line.GetSwitchValueASCII(network::switches::kHostResolverRules);
-
-  // TODO(crbug.com/934402): Use a shared HostResolverManager instead of a
-  // global HostResolver.
-  return net::HostResolver::CreateStandaloneResolver(
-      net_log, net::HostResolver::Options(), host_mapping_rules);
-}
 
 }  // namespace
 
@@ -402,9 +384,6 @@ void IOThread::ConstructSystemRequestContext() {
     builder->set_file_enabled(true);
 
     network::NetworkService* network_service = content::GetNetworkServiceImpl();
-    network_service->SetHostResolver(CreateGlobalHostResolver(net_log_));
-
-    // These must be done after the SetHostResolver call.
     network_service->SetUpHttpAuth(std::move(http_auth_static_params_));
     network_service->ConfigureHttpAuthPrefs(
         std::move(http_auth_dynamic_params_));

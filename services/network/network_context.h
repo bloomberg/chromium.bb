@@ -373,11 +373,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     return proxy_delegate_.get();
   }
 
-  void set_host_resolver_factory_for_testing(
-      std::unique_ptr<net::HostResolver::Factory> factory) {
-    host_resolver_factory_ = std::move(factory);
-  }
-
   void set_network_qualities_pref_delegate_for_testing(
       std::unique_ptr<NetworkQualitiesPrefDelegate>
           network_qualities_pref_delegate) {
@@ -552,8 +547,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
            std::unique_ptr<net::HostResolver>,
            base::UniquePtrComparator>
       host_resolvers_;
-  // Factory used to create any needed private internal net::HostResolvers.
-  std::unique_ptr<net::HostResolver::Factory> host_resolver_factory_;
 
   std::unique_ptr<NetworkServiceProxyDelegate> proxy_delegate_;
 

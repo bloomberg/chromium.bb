@@ -30,6 +30,7 @@
 #include "net/cert/signed_tree_head.h"
 #include "net/dns/dns_config_overrides.h"
 #include "net/dns/host_resolver.h"
+#include "net/dns/host_resolver_manager.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log.h"
@@ -107,20 +108,6 @@ std::unique_ptr<net::NetworkChangeNotifier> CreateNetworkChangeNotifierIfNeeded(
 #endif
   }
   return nullptr;
-}
-
-std::unique_ptr<net::HostResolver> CreateHostResolver(net::NetLog* net_log) {
-  // Use hostname remappings if specified on the command-line. This allows
-  // forwarding all requests through a designated test server.
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  std::string host_mapping_rules =
-      command_line.GetSwitchValueASCII(switches::kHostResolverRules);
-
-  // TODO(crbug.com/934402): Use a shared HostResolverManager instead of a
-  // global HostResolver.
-  return net::HostResolver::CreateStandaloneResolver(
-      net_log, net::HostResolver::Options(), host_mapping_rules);
 }
 
 // This is duplicated in content/browser/loader/resource_dispatcher_host_impl.cc
@@ -313,7 +300,9 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params) {
 
   dns_config_change_manager_ = std::make_unique<DnsConfigChangeManager>();
 
-  host_resolver_ = CreateHostResolver(net_log_);
+  host_resolver_manager_ = std::make_unique<net::HostResolverManager>(
+      net::HostResolver::Options(), net_log_);
+  host_resolver_factory_ = std::make_unique<net::HostResolver::Factory>();
 
   network_usage_accumulator_ = std::make_unique<NetworkUsageAccumulator>();
 
@@ -368,12 +357,6 @@ NetworkService::CreateNetworkContextWithBuilder(
                                        std::move(params), std::move(builder));
   *url_request_context = network_context->url_request_context();
   return network_context;
-}
-
-void NetworkService::SetHostResolver(
-    std::unique_ptr<net::HostResolver> host_resolver) {
-  DCHECK(network_contexts_.empty());
-  host_resolver_ = std::move(host_resolver);
 }
 
 std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {
@@ -465,11 +448,11 @@ void NetworkService::ConfigureStubHostResolver(
 
   // Enable or disable the stub resolver, as needed. "DnsClient" is class that
   // implements the stub resolver.
-  host_resolver_->SetDnsClientEnabled(stub_resolver_enabled);
+  host_resolver_manager_->SetDnsClientEnabled(stub_resolver_enabled);
 
   // Configure DNS over HTTPS.
   if (!dns_over_https_servers || dns_over_https_servers.value().empty()) {
-    host_resolver_->SetDnsConfigOverrides(net::DnsConfigOverrides());
+    host_resolver_manager_->SetDnsConfigOverrides(net::DnsConfigOverrides());
     return;
   }
 
@@ -477,7 +460,8 @@ void NetworkService::ConfigureStubHostResolver(
     if (!network_context->IsPrimaryNetworkContext())
       continue;
 
-    host_resolver_->SetRequestContext(network_context->url_request_context());
+    host_resolver_manager_->SetRequestContext(
+        network_context->url_request_context());
 
     net::DnsConfigOverrides overrides;
     overrides.dns_over_https_servers.emplace();
@@ -485,7 +469,7 @@ void NetworkService::ConfigureStubHostResolver(
       overrides.dns_over_https_servers.value().emplace_back(
           doh_server->server_template, doh_server->use_post);
     }
-    host_resolver_->SetDnsConfigOverrides(overrides);
+    host_resolver_manager_->SetDnsConfigOverrides(overrides);
 
     return;
   }
@@ -721,9 +705,9 @@ void NetworkService::DestroyNetworkContexts() {
   // The SetDnsConfigOverrides() call will will fail any in-progress DNS
   // lookups, but only if there are current config overrides (which there will
   // be if DNS over HTTPS is currently enabled).
-  if (host_resolver_) {
-    host_resolver_->SetDnsConfigOverrides(net::DnsConfigOverrides());
-    host_resolver_->SetRequestContext(nullptr);
+  if (host_resolver_manager_) {
+    host_resolver_manager_->SetDnsConfigOverrides(net::DnsConfigOverrides());
+    host_resolver_manager_->SetRequestContext(nullptr);
   }
 
   DCHECK_LE(owned_network_contexts_.size(), 1u);

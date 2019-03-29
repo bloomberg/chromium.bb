@@ -9,6 +9,7 @@
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_transaction.h"
 #include "net/dns/host_resolver.h"
+#include "net/dns/host_resolver_manager.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/http/http_stream_factory_test_util.h"
 #include "net/log/net_log.h"
@@ -70,6 +71,7 @@ class HttpWithDnsOverHttpsTest : public TestWithScopedTaskEnvironment {
     config.dns_over_https_servers.emplace_back(url.spec(), true /* use_post */);
     dns_client->SetConfig(config);
     resolver_->SetRequestContext(&request_context_);
+    resolver_->GetManagerForTesting()->SetRequestContext(&request_context_);
     resolver_->SetProcParamsForTesting(
         ProcTaskParams(new TestHostResolverProc(), 1));
     resolver_->SetDnsClientForTesting(std::move(dns_client));

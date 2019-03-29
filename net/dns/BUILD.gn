@@ -142,10 +142,6 @@ source_set("host_resolver") {
   # Whitelist-only access so we can keep track of all usage external to the
   # network stack and network service.
   friend = [
-    # chrome/browser/io_thread.cc
-    # Used to build in-process HostResolver when network service disabled.
-    "//chrome/browser",
-
     # chromecast/browser/url_request_context_factory.cc
     # URLRequestContext creation for chromecast.
     "//chromecast/browser",

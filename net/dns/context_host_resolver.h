@@ -22,15 +22,13 @@ class DnsClient;
 struct DnsConfig;
 class HostResolverManager;
 struct ProcTaskParams;
+class URLRequestContext;
 
 // Wrapper for HostResolverManager that sets per-context parameters for created
 // requests. Except for tests, typically only interacted with through the
 // HostResolver interface.
 //
 // See HostResolver::Create[...]() methods for construction.
-//
-// TODO(crbug.com/934402): Construct individually for each URLRequestContext
-// rather than using this as the singleton shared resolver.
 class NET_EXPORT ContextHostResolver : public HostResolver {
  public:
   // Creates a ContextHostResolver that forwards all of its requests through
@@ -63,6 +61,8 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
   void SetRequestContext(URLRequestContext* request_context) override;
   const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
   GetDnsOverHttpsServersForTesting() const override;
+  HostResolverManager* GetManagerForTesting() override;
+  const URLRequestContext* GetContextForTesting() const override;
 
   // Returns the number of host cache entries that were restored, or 0 if there
   // is no cache.
@@ -78,6 +78,8 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
  private:
   HostResolverManager* const manager_;
   std::unique_ptr<HostResolverManager> owned_manager_;
+
+  URLRequestContext* context_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ContextHostResolver);
 };

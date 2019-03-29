@@ -475,6 +475,11 @@ std::unique_ptr<base::Value> StaleHostResolver::GetDnsConfigAsValue() const {
   return inner_resolver_->GetDnsConfigAsValue();
 }
 
+void StaleHostResolver::SetRequestContext(
+    net::URLRequestContext* request_context) {
+  inner_resolver_->SetRequestContext(request_context);
+}
+
 void StaleHostResolver::OnNetworkRequestComplete(
     ResolveHostRequest* network_request,
     base::WeakPtr<RequestImpl> stale_request,
