@@ -10,6 +10,7 @@ source_set("banners") {
     "infobar_banner_view_controller.mm",
   ]
   deps = [
+    "//base",
     "//ios/chrome/browser/ui/util",
   ]
 }

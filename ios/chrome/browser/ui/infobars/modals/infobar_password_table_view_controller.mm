@@ -45,7 +45,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Configure the NavigationBar.
   UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                           target:self.infobarModalDelegate
+                           target:self
                            action:@selector(dismissInfobarModal:)];
   UIImage* settingsImage = [[UIImage imageNamed:@"infobar_settings_icon"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
@@ -122,6 +122,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   return cell;
+}
+
+#pragma mark - Private Methods
+
+- (void)dismissInfobarModal:(UIButton*)sender {
+  [self.infobarModalDelegate dismissInfobarModal:sender completion:nil];
 }
 
 @end
