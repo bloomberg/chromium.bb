@@ -325,6 +325,7 @@ class TabStrip : public views::AccessiblePaneView,
   friend class TabDragController;
   friend class TabDragControllerTest;
   friend class TabHoverCardBubbleViewBrowserTest;
+  friend class TabHoverCardBubbleViewInteractiveUiTest;
   friend class TabStripTest;
 
   // Used during a drop session of a url. Tracks the position of the drop as
