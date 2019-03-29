@@ -123,7 +123,10 @@ class WebRequestProxyingWebSocket
 
   void PauseIncomingMethodCallProcessing();
   void ResumeIncomingMethodCallProcessing();
-  void OnError(int result);
+  void DoErrorOccurredIfNeeded(int error_code);
+  void OnMojoError();
+  void HandleErrorDuringHandshake(int error_code);
+  void HandleGenericError(int error_code);
 
   const int process_id_;
   const int render_frame_id_;
@@ -150,7 +153,7 @@ class WebRequestProxyingWebSocket
   OnHeadersReceivedCallback on_headers_received_callback_;
 
   GURL redirect_url_;
-  bool is_done_ = false;
+  bool is_handshake_done_ = false;
   bool waiting_for_header_client_headers_received_ = false;
 
   base::Optional<WebRequestInfo> info_;
