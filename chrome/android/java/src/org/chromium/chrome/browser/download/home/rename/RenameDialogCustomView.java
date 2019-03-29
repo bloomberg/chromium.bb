@@ -4,19 +4,23 @@
 
 package org.chromium.chrome.browser.download.home.rename;
 
+import static android.content.Context.INPUT_METHOD_SERVICE;
+
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import org.chromium.base.FileUtils;
 import org.chromium.chrome.browser.widget.AlertDialogEditText;
 import org.chromium.chrome.download.R;
 import org.chromium.components.offline_items_collection.RenameResult;
 
 /**
- * Content View of dialog in Download Home that allows users to rename a downloaded file
+ * Content View of dialog in Download Home that allows users to rename a downloaded file.
  */
 public class RenameDialogCustomView extends ScrollView {
     private TextView mSubtitleView;
@@ -35,21 +39,17 @@ public class RenameDialogCustomView extends ScrollView {
     }
 
     /**
-     * @param suggestedName The suggested file name to fill the initialized edit text.
-     */
-    public void initializeView(String suggestedName) {
-        if (TextUtils.isEmpty(suggestedName)) return;
-        mFileName.setText(suggestedName);
-        mSubtitleView.setVisibility(View.GONE);
-    }
-
-    /**
      * @param renameResult RenameResult to distinguish dialog type, used for updating the subtitle
      *         view.
+     * @param suggestedName The content to update the display on EditText box.
      */
-    public void updateSubtitleView(@RenameResult int renameResult) {
+    public void updateToErrorView(String suggestedName, @RenameResult int renameResult) {
         if (renameResult == RenameResult.SUCCESS) return;
-
+        if (!TextUtils.isEmpty(suggestedName)) {
+            mFileName.setText(suggestedName);
+        }
+        mFileName.clearFocus();
+        highlightEditText(suggestedName);
         mSubtitleView.setVisibility(View.VISIBLE);
         switch (renameResult) {
             case RenameResult.FAILURE_NAME_CONFLICT:
@@ -70,9 +70,60 @@ public class RenameDialogCustomView extends ScrollView {
     }
 
     /**
-     * @return a string from user input for the target name.
+     * @param suggestedName String value display in the EditTextBox.
+     * Initialize components in view: hide subtitle and reset value in the editTextBox.
+     */
+    public void initializeView(String suggestedName) {
+        mSubtitleView.setVisibility(View.GONE);
+        if (!TextUtils.isEmpty(suggestedName)) {
+            mFileName.setText(suggestedName);
+        }
+        mFileName.clearFocus();
+        highlightEditText(suggestedName);
+    }
+
+    /**
+     * @return A String from user input for the target name.
      */
     public String getTargetName() {
         return mFileName.getText().toString();
+    }
+
+    private void highlightEditText(String name) {
+        // TODO(hesen): Use backend getExtension instead.
+        int pos = name.length() - FileUtils.getExtension(name).length() - 1;
+        highlightEditText(0, pos);
+    }
+
+    /**
+     * @param startIndex Start index of selection.
+     * @param endIndex End index of selection.
+     * Select renamable title portion, require focus and acquire the soft keyboard.
+     */
+    private void highlightEditText(int startIndex, int endIndex) {
+        mFileName.setOnFocusChangeListener(new OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) return;
+
+                if (endIndex <= 0 || startIndex > endIndex
+                        || endIndex >= getTargetName().length() - 1) {
+                    mFileName.selectAll();
+                } else {
+                    mFileName.setSelection(startIndex, endIndex);
+                }
+            }
+        });
+
+        post(this::showSoftInput);
+    }
+
+    private void showSoftInput() {
+        if (mFileName.requestFocus()) {
+            InputMethodManager inputMethodManager =
+                    (InputMethodManager) mFileName.getContext().getSystemService(
+                            INPUT_METHOD_SERVICE);
+            inputMethodManager.showSoftInput(mFileName, InputMethodManager.SHOW_FORCED);
+        }
     }
 }
