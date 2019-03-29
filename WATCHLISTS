@@ -1716,6 +1716,7 @@
       # Includes VR, AR, and XR.
       'filepath': '/vr/'\
                   '|/xr'\
+                  '|webxr'\
                   '|isolated_xr_device'\
                   '|third_party/arcore'\
                   '|third_party/gvr'\
