@@ -42,6 +42,7 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
 
  private:
   friend class TabHoverCardBubbleViewBrowserTest;
+  friend class TabHoverCardBubbleViewInteractiveUiTest;
   class WidgetFadeAnimationDelegate;
 
   // Get delay in milliseconds based on tab width.
