@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder_test.h"
 
+#include "cc/test/fake_layer_tree_host_client.h"
+#include "cc/trees/effect_node.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
@@ -15,7 +17,9 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/testing/layer_tree_host_embedder.h"
 
 namespace blink {
 
@@ -6413,6 +6417,68 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootCompositedClipPath) {
 
     EXPECT_EQ(nullptr, properties->ClipPath());
   }
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, SimpleOpacityChangeDoesNotCausePacUpdate) {
+  // This is a BGPT test only.
+  // TODO(vmpstr): For CAP, we don't seem to get a cc_effect, which we need to
+  // investigate.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      div {
+        width: 100px;
+        height: 100px;
+        opacity: 0.5;
+        will-change: opacity;
+      }
+    </style>
+    <div id="element"></div>
+  )HTML");
+
+  auto* pac = GetDocument().View()->GetPaintArtifactCompositor();
+  ASSERT_TRUE(pac);
+
+  cc::FakeLayerTreeHostClient layer_tree_host_client;
+  auto layer_tree =
+      std::make_unique<LayerTreeHostEmbedder>(&layer_tree_host_client,
+                                              /*single_thread_client=*/nullptr);
+  layer_tree_host_client.SetLayerTreeHost(layer_tree->layer_tree_host());
+  layer_tree->layer_tree_host()->SetRootLayer(pac->RootLayer());
+
+  UpdateAllLifecyclePhasesForTest();
+
+  const auto* properties = PaintPropertiesForElement("element");
+  ASSERT_TRUE(properties);
+  ASSERT_TRUE(properties->Effect());
+  EXPECT_FLOAT_EQ(properties->Effect()->Opacity(), 0.5f);
+  EXPECT_FALSE(pac->NeedsUpdate());
+
+  cc::EffectNode* cc_effect =
+      layer_tree->layer_tree_host()
+          ->property_trees()
+          ->effect_tree.FindNodeFromElementId(
+              properties->Effect()->GetCompositorElementId());
+  ASSERT_TRUE(cc_effect);
+  EXPECT_FLOAT_EQ(cc_effect->opacity, 0.5f);
+  EXPECT_FALSE(cc_effect->effect_changed);
+  EXPECT_FALSE(layer_tree->layer_tree_host()
+                   ->property_trees()
+                   ->effect_tree.needs_update());
+
+  Element* element = GetDocument().getElementById("element");
+  element->setAttribute(html_names::kStyleAttr, "opacity: 0.9");
+
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_FLOAT_EQ(properties->Effect()->Opacity(), 0.9f);
+  EXPECT_FLOAT_EQ(cc_effect->opacity, 0.9f);
+  EXPECT_TRUE(cc_effect->effect_changed);
+  EXPECT_FALSE(pac->NeedsUpdate());
+  EXPECT_TRUE(layer_tree->layer_tree_host()
+                  ->property_trees()
+                  ->effect_tree.needs_update());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,

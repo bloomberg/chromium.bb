@@ -4062,6 +4062,11 @@ void LocalFrameView::SetPaintArtifactCompositorNeedsUpdate() const {
     root->paint_artifact_compositor_->SetNeedsUpdate();
 }
 
+PaintArtifactCompositor* LocalFrameView::GetPaintArtifactCompositor() const {
+  LocalFrameView* root = GetFrame().LocalFrameRoot().View();
+  return root ? root->paint_artifact_compositor_.get() : nullptr;
+}
+
 unsigned LocalFrameView::GetIntersectionObservationFlags(
     unsigned parent_flags) const {
   unsigned flags = 0;

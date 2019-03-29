@@ -145,7 +145,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       }
       if (animation_state.is_running_animation_on_compositor &&
           transform_changed) {
-        return PaintPropertyChangeType::kChangedOnlyCompositedAnimationValues;
+        return PaintPropertyChangeType::kChangedOnlyCompositedValues;
       }
       return PaintPropertyChangeType::kUnchanged;
     }

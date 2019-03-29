@@ -986,6 +986,23 @@ void PaintArtifactCompositor::Update(
 #endif
 }
 
+bool PaintArtifactCompositor::DirectlyUpdateCompositedOpacityValue(
+    const EffectPaintPropertyNode& effect) {
+  // Don't bother updating the effect if we need to rebuild the tree anyway.
+  if (needs_update_)
+    return false;
+
+  if (!root_layer_)
+    return false;
+
+  auto* host = root_layer_->layer_tree_host();
+  if (!host)
+    return false;
+
+  return property_tree_manager_.DirectlyUpdateCompositedOpacityValue(
+      host->property_trees(), effect);
+}
+
 static bool IsRenderSurfaceCandidate(
     const cc::EffectNode& effect,
     const Vector<const EffectPaintPropertyNode*>& blink_effects) {

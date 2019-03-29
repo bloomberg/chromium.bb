@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
 #include "third_party/blink/renderer/core/paint/svg_root_painter.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
@@ -986,8 +987,26 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
           style.IsRunningOpacityAnimationOnCompositor();
       animation_state.is_running_backdrop_filter_animation_on_compositor =
           style.IsRunningBackdropFilterAnimationOnCompositor();
-      OnUpdate(properties_->UpdateEffect(*context_.current_effect,
-                                         std::move(state), animation_state));
+      auto effective_change_type = properties_->UpdateEffect(
+          *context_.current_effect, std::move(state), animation_state);
+      // If we have simple value change, which means opacity, we should try to
+      // directly update it on the PaintArtifactCompositor in order to avoid
+      // doing a full rebuild.
+      if (effective_change_type ==
+          PaintPropertyChangeType::kChangedOnlySimpleValues) {
+        if (auto* paint_artifact_compositor =
+                object_.GetFrameView()->GetPaintArtifactCompositor()) {
+          bool updated =
+              paint_artifact_compositor->DirectlyUpdateCompositedOpacityValue(
+                  *properties_->Effect());
+          if (updated) {
+            effective_change_type =
+                PaintPropertyChangeType::kChangedOnlyCompositedValues;
+            properties_->Effect()->SetChangeType(effective_change_type);
+          }
+        }
+      }
+      OnUpdate(effective_change_type);
 
       if (mask_clip || has_spv1_composited_clip_path) {
         EffectPaintPropertyNode::State mask_state;

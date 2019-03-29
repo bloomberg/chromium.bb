@@ -53,6 +53,7 @@ void PropertyTreeManager::Initialize(cc::PropertyTrees* property_trees,
   transform_node_map_.clear();
   clip_node_map_.clear();
   scroll_node_map_.clear();
+  effect_node_map_.clear();
 
   SetupRootTransformNode();
   SetupRootClipNode();
@@ -75,6 +76,22 @@ void PropertyTreeManager::Finalize() {
   DCHECK(initialized_);
   initialized_ = false;
 #endif
+}
+
+bool PropertyTreeManager::DirectlyUpdateCompositedOpacityValue(
+    cc::PropertyTrees* property_trees,
+    const EffectPaintPropertyNode& effect) {
+  auto it = effect_node_map_.find(&effect);
+  if (it == effect_node_map_.end())
+    return false;
+  auto* cc_effect = property_trees->effect_tree.Node(it->value);
+  if (!cc_effect)
+    return false;
+
+  cc_effect->opacity = effect.Opacity();
+  cc_effect->effect_changed = true;
+  property_trees->effect_tree.set_needs_update(true);
+  return true;
 }
 
 cc::TransformTree& PropertyTreeManager::GetTransformTree() {
@@ -731,8 +748,10 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
   std::tie(blend_mode, output_clip, output_clip_id) =
       GetBlendModeAndOutputClipForEffect(next_effect);
 
-  auto& effect_node = *GetEffectTree().Node(
-      GetEffectTree().Insert(cc::EffectNode(), current_.effect_id));
+  int effect_node_id =
+      GetEffectTree().Insert(cc::EffectNode(), current_.effect_id);
+  auto& effect_node = *GetEffectTree().Node(effect_node_id);
+  effect_node_map_.Set(&next_effect, effect_node_id);
 
   PopulateCcEffectNode(effect_node, next_effect, output_clip_id, blend_mode);
 

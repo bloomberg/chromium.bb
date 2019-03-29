@@ -30,8 +30,11 @@ class TransformPaintPropertyNode;
 enum class PaintPropertyChangeType : unsigned char {
   // Nothing has changed.
   kUnchanged,
-  // We only changed values that are mutated by compositor animations.
-  kChangedOnlyCompositedAnimationValues,
+  // We only changed values that are either mutated by compositor animations
+  // which are updated automatically during the compositor-side animation tick,
+  // or have been updated directly on the associated compositor node during the
+  // PrePaint lifecycle phase.
+  kChangedOnlyCompositedValues,
   // We only changed values that don't require re-raster (e.g. compositor
   // element id changed).
   kChangedOnlyNonRerasterValues,
@@ -117,6 +120,8 @@ class PaintPropertyNode : public RefCounted<NodeType> {
       node = node->Parent();
     return *node;
   }
+
+  void SetChangeType(PaintPropertyChangeType type) const { changed_ = type; }
 
   String ToString() const {
     auto s = static_cast<const NodeType*>(this)->ToJSON()->ToJSONString();

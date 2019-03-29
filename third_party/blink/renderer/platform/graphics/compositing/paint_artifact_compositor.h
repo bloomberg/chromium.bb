@@ -85,6 +85,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
               const ViewportProperties& viewport_properties,
               const Settings& settings);
 
+  bool DirectlyUpdateCompositedOpacityValue(const EffectPaintPropertyNode&);
+
   // The root layer of the tree managed by this object.
   cc::Layer* RootLayer() const { return root_layer_.get(); }
 
