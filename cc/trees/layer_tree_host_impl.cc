@@ -4692,8 +4692,8 @@ void LayerTreeHostImpl::ScrollEnd(ScrollState* scroll_state, bool should_snap) {
     deferred_scroll_end_state_ = *scroll_state;
     return;
   }
-  deferred_scroll_end_state_.reset();
   ScrollEndImpl(scroll_state);
+  deferred_scroll_end_state_.reset();
   scroll_gesture_did_end_ = true;
   client_->SetNeedsCommitOnImplThread();
 }
