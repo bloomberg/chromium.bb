@@ -102,7 +102,7 @@ Document* XSLTProcessor::CreateDocumentFromSource(
       result->SetCookieURL(old_document->CookieURL());
       result->EnforceSandboxFlags(old_document->GetSandboxFlags());
 
-      ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+      auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
       csp->CopyStateFrom(old_document->GetContentSecurityPolicy());
       result->InitContentSecurityPolicy(csp);
     }

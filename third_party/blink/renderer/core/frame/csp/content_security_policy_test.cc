@@ -26,7 +26,7 @@ namespace blink {
 class ContentSecurityPolicyTest : public testing::Test {
  public:
   ContentSecurityPolicyTest()
-      : csp(ContentSecurityPolicy::Create()),
+      : csp(MakeGarbageCollected<ContentSecurityPolicy>()),
         secure_url("https://example.test/image.png"),
         secure_origin(SecurityOrigin::Create(secure_url)) {}
 
@@ -63,7 +63,7 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
   for (const auto& test : cases) {
     SCOPED_TRACE(testing::Message()
                  << "[Enforce] Header: `" << test.header << "`");
-    csp = ContentSecurityPolicy::Create();
+    csp = MakeGarbageCollected<ContentSecurityPolicy>();
     csp->DidReceiveHeader(test.header, kContentSecurityPolicyHeaderTypeEnforce,
                           kContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(test.expected_policy, csp->GetInsecureRequestPolicy());
@@ -83,7 +83,7 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
   for (const auto& test : cases) {
     SCOPED_TRACE(testing::Message()
                  << "[Report-Only] Header: `" << test.header << "`");
-    csp = ContentSecurityPolicy::Create();
+    csp = MakeGarbageCollected<ContentSecurityPolicy>();
     csp->DidReceiveHeader(test.header, kContentSecurityPolicyHeaderTypeReport,
                           kContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(kLeaveInsecureRequestsAlone, csp->GetInsecureRequestPolicy());
@@ -133,7 +133,7 @@ TEST_F(ContentSecurityPolicyTest, CopyStateFrom) {
   const KURL example_url("http://example.com");
   const KURL not_example_url("http://not-example.com");
 
-  ContentSecurityPolicy* csp2 = ContentSecurityPolicy::Create();
+  auto* csp2 = MakeGarbageCollected<ContentSecurityPolicy>();
   csp2->CopyStateFrom(csp.Get());
   EXPECT_FALSE(csp2->AllowScriptFromSource(
       example_url, String(), IntegrityMetadataSet(), kParserInserted,
@@ -167,7 +167,7 @@ TEST_F(ContentSecurityPolicyTest, CopyPluginTypesFrom) {
   const KURL example_url("http://example.com");
   const KURL not_example_url("http://not-example.com");
 
-  ContentSecurityPolicy* csp2 = ContentSecurityPolicy::Create();
+  auto* csp2 = MakeGarbageCollected<ContentSecurityPolicy>();
   csp2->CopyPluginTypesFrom(csp.Get());
   EXPECT_TRUE(csp2->AllowScriptFromSource(
       example_url, String(), IntegrityMetadataSet(), kParserInserted,
@@ -321,7 +321,8 @@ TEST_F(ContentSecurityPolicyTest, ConnectSrc) {
 TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderMissingIntegrity) {
   const KURL url("https://example.test");
   // Enforce
-  Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::Create();
+  Persistent<ContentSecurityPolicy> policy =
+      MakeGarbageCollected<ContentSecurityPolicy>();
   policy->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   policy->DidReceiveHeader("require-sri-for script style",
                            kContentSecurityPolicyHeaderTypeEnforce,
@@ -357,7 +358,7 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderMissingIntegrity) {
       kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
       SecurityViolationReportingPolicy::kSuppressReporting));
   // Report
-  policy = ContentSecurityPolicy::Create();
+  policy = MakeGarbageCollected<ContentSecurityPolicy>();
   policy->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   policy->DidReceiveHeader("require-sri-for script style",
                            kContentSecurityPolicyHeaderTypeReport,
@@ -403,7 +404,8 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderPresentIntegrity) {
       IntegrityMetadata("1234", IntegrityAlgorithm::kSha384).ToPair());
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   // Enforce
-  Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::Create();
+  Persistent<ContentSecurityPolicy> policy =
+      MakeGarbageCollected<ContentSecurityPolicy>();
   policy->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   policy->DidReceiveHeader("require-sri-for script style",
                            kContentSecurityPolicyHeaderTypeEnforce,
@@ -440,7 +442,7 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderPresentIntegrity) {
       SecurityViolationReportingPolicy::kSuppressReporting));
   // Content-Security-Policy-Report-Only is not supported in meta element,
   // so nothing should be blocked
-  policy = ContentSecurityPolicy::Create();
+  policy = MakeGarbageCollected<ContentSecurityPolicy>();
   policy->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   policy->DidReceiveHeader("require-sri-for script style",
                            kContentSecurityPolicyHeaderTypeReport,
@@ -482,7 +484,8 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderPresentIntegrity) {
 TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaMissingIntegrity) {
   const KURL url("https://example.test");
   // Enforce
-  Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::Create();
+  Persistent<ContentSecurityPolicy> policy =
+      MakeGarbageCollected<ContentSecurityPolicy>();
   policy->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   policy->DidReceiveHeader("require-sri-for script style",
                            kContentSecurityPolicyHeaderTypeEnforce,
@@ -519,7 +522,7 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaMissingIntegrity) {
       SecurityViolationReportingPolicy::kSuppressReporting));
   // Content-Security-Policy-Report-Only is not supported in meta element,
   // so nothing should be blocked
-  policy = ContentSecurityPolicy::Create();
+  policy = MakeGarbageCollected<ContentSecurityPolicy>();
   policy->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   policy->DidReceiveHeader("require-sri-for script style",
                            kContentSecurityPolicyHeaderTypeReport,
@@ -565,7 +568,8 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaPresentIntegrity) {
       IntegrityMetadata("1234", IntegrityAlgorithm::kSha384).ToPair());
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   // Enforce
-  Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::Create();
+  Persistent<ContentSecurityPolicy> policy =
+      MakeGarbageCollected<ContentSecurityPolicy>();
   policy->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   policy->DidReceiveHeader("require-sri-for script style",
                            kContentSecurityPolicyHeaderTypeEnforce,
@@ -602,7 +606,7 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaPresentIntegrity) {
       SecurityViolationReportingPolicy::kSuppressReporting));
   // Content-Security-Policy-Report-Only is not supported in meta element,
   // so nothing should be blocked
-  policy = ContentSecurityPolicy::Create();
+  policy = MakeGarbageCollected<ContentSecurityPolicy>();
   policy->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   policy->DidReceiveHeader("require-sri-for script style",
                            kContentSecurityPolicyHeaderTypeReport,
@@ -665,7 +669,8 @@ TEST_F(ContentSecurityPolicyTest, NonceSinglePolicy) {
     unsigned expected_reports = test.allowed ? 0u : 1u;
 
     // Single enforce-mode policy should match `test.expected`:
-    Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::Create();
+    Persistent<ContentSecurityPolicy> policy =
+        MakeGarbageCollected<ContentSecurityPolicy>();
     policy->BindToDelegate(
         execution_context->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(test.policy,
@@ -679,7 +684,7 @@ TEST_F(ContentSecurityPolicyTest, NonceSinglePolicy) {
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Single report-mode policy should always be `true`:
-    policy = ContentSecurityPolicy::Create();
+    policy = MakeGarbageCollected<ContentSecurityPolicy>();
     policy->BindToDelegate(
         execution_context->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(test.policy,
@@ -727,7 +732,8 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
         HTMLScriptElement::Create(*document, CreateElementFlags::ByParser());
 
     // Enforce 'script-src'
-    Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::Create();
+    Persistent<ContentSecurityPolicy> policy =
+        MakeGarbageCollected<ContentSecurityPolicy>();
     policy->BindToDelegate(document->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(String("script-src ") + test.policy,
                              kContentSecurityPolicyHeaderTypeEnforce,
@@ -739,7 +745,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Enforce 'style-src'
-    policy = ContentSecurityPolicy::Create();
+    policy = MakeGarbageCollected<ContentSecurityPolicy>();
     policy->BindToDelegate(document->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(String("style-src ") + test.policy,
                              kContentSecurityPolicyHeaderTypeEnforce,
@@ -751,7 +757,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Report 'script-src'
-    policy = ContentSecurityPolicy::Create();
+    policy = MakeGarbageCollected<ContentSecurityPolicy>();
     policy->BindToDelegate(document->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(String("script-src ") + test.policy,
                              kContentSecurityPolicyHeaderTypeReport,
@@ -762,7 +768,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Report 'style-src'
-    policy = ContentSecurityPolicy::Create();
+    policy = MakeGarbageCollected<ContentSecurityPolicy>();
     policy->BindToDelegate(document->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(String("style-src ") + test.policy,
                              kContentSecurityPolicyHeaderTypeReport,
@@ -832,7 +838,8 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
         test.allowed1 != test.allowed2 ? 1u : (test.allowed1 ? 0u : 2u);
 
     // Enforce / Report
-    Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::Create();
+    Persistent<ContentSecurityPolicy> policy =
+        MakeGarbageCollected<ContentSecurityPolicy>();
     policy->BindToDelegate(
         execution_context->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(test.policy1,
@@ -855,7 +862,7 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Report / Enforce
-    policy = ContentSecurityPolicy::Create();
+    policy = MakeGarbageCollected<ContentSecurityPolicy>();
     policy->BindToDelegate(
         execution_context->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(test.policy1,
@@ -878,7 +885,7 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Enforce / Enforce
-    policy = ContentSecurityPolicy::Create();
+    policy = MakeGarbageCollected<ContentSecurityPolicy>();
     policy->BindToDelegate(
         execution_context->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(test.policy1,
@@ -896,7 +903,7 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Report / Report
-    policy = ContentSecurityPolicy::Create();
+    policy = MakeGarbageCollected<ContentSecurityPolicy>();
     policy->BindToDelegate(
         execution_context->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(test.policy1,
@@ -1021,7 +1028,7 @@ TEST_F(ContentSecurityPolicyTest, DirectiveType) {
 }
 
 TEST_F(ContentSecurityPolicyTest, Subsumes) {
-  ContentSecurityPolicy* other = ContentSecurityPolicy::Create();
+  auto* other = MakeGarbageCollected<ContentSecurityPolicy>();
   EXPECT_TRUE(csp->Subsumes(*other));
   EXPECT_TRUE(other->Subsumes(*csp));
 
@@ -1478,7 +1485,7 @@ TEST_F(ContentSecurityPolicyTest, DirectiveNameCaseInsensitive) {
   KURL not_example_url("http://not-example.com");
 
   // Directive name is case insensitive.
-  csp = ContentSecurityPolicy::Create();
+  csp = MakeGarbageCollected<ContentSecurityPolicy>();
   csp->DidReceiveHeader("sCrIpt-sRc http://example.com",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
@@ -1491,7 +1498,7 @@ TEST_F(ContentSecurityPolicyTest, DirectiveNameCaseInsensitive) {
 
   // Duplicate directive that is in a different case pattern is
   // correctly treated as a duplicate directive and ignored.
-  csp = ContentSecurityPolicy::Create();
+  csp = MakeGarbageCollected<ContentSecurityPolicy>();
   csp->DidReceiveHeader(
       "SCRipt-SRC http://example.com; script-src http://not-example.com;",
       kContentSecurityPolicyHeaderTypeEnforce,
@@ -1507,7 +1514,7 @@ TEST_F(ContentSecurityPolicyTest, DirectiveNameCaseInsensitive) {
 // Tests that using an empty CSP works and doesn't impose any policy
 // restrictions.
 TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
-  csp = ContentSecurityPolicy::Create();
+  csp = MakeGarbageCollected<ContentSecurityPolicy>();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
 
   const KURL example_url("http://example.com");

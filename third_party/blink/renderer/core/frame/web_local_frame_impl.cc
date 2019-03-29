@@ -1685,7 +1685,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   // observable, it will have the real FrameOwner, and any subsequent real
   // documents will correctly inherit sandbox flags from the owner.
   web_frame->InitializeCoreFrame(*previous_frame->GetPage(),
-                                 DummyFrameOwner::Create(),
+                                 MakeGarbageCollected<DummyFrameOwner>(),
                                  previous_frame->Tree().GetName());
 
   LocalFrame* new_frame = web_frame->GetFrame();
@@ -1730,7 +1730,8 @@ WebLocalFrameImpl::WebLocalFrameImpl(
           this,
           std::move(document_interface_broker_handle))),
       autofill_client_(nullptr),
-      find_in_page_(FindInPage::Create(*this, interface_registry)),
+      find_in_page_(
+          MakeGarbageCollected<FindInPage>(*this, interface_registry)),
       interface_registry_(interface_registry),
       input_method_controller_(*this),
       spell_check_panel_host_client_(nullptr),

@@ -969,7 +969,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
       spell_checker_(MakeGarbageCollected<SpellChecker>(*this)),
       selection_(MakeGarbageCollected<FrameSelection>(*this)),
       event_handler_(MakeGarbageCollected<EventHandler>(*this)),
-      console_(FrameConsole::Create(*this)),
+      console_(MakeGarbageCollected<FrameConsole>(*this)),
       input_method_controller_(
           MakeGarbageCollected<InputMethodController>(*this)),
       text_suggestion_controller_(

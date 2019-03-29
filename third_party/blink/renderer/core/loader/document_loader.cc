@@ -738,7 +738,7 @@ bool DocumentLoader::ShouldReportTimingInfoToParent() {
 ContentSecurityPolicy* DocumentLoader::CreateCSP(
     const ResourceResponse& response,
     const String& origin_policy_string) {
-  ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+  auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
   csp->SetOverrideURLForSelf(response.CurrentRequestUrl());
 
   if (!frame_->GetSettings()->BypassCSP()) {
@@ -775,7 +775,7 @@ ContentSecurityPolicy* DocumentLoader::CreateCSP(
                                     kContentSecurityPolicyHeaderTypeEnforce,
                                     kContentSecurityPolicyHeaderSourceHTTP);
     } else {
-      ContentSecurityPolicy* required_csp = ContentSecurityPolicy::Create();
+      auto* required_csp = MakeGarbageCollected<ContentSecurityPolicy>();
       required_csp->AddPolicyFromHeaderValue(
           GetFrameLoader().RequiredCSP(),
           kContentSecurityPolicyHeaderTypeEnforce,

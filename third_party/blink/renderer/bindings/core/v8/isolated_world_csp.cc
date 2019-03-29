@@ -168,7 +168,7 @@ ContentSecurityPolicy* IsolatedWorldCSP::CreateIsolatedWorldCSP(
 
   const bool apply_policy = RuntimeEnabledFeatures::IsolatedWorldCSPEnabled();
 
-  ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+  auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
 
   IsolatedWorldCSPDelegate* delegate =
       MakeGarbageCollected<IsolatedWorldCSPDelegate>(

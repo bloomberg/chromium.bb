@@ -45,7 +45,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   }
 
   // Construct and initialize a policy from the string.
-  ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+  auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
   csp->DidReceiveHeader(header, header_type, header_source);
   g_page_holder->GetDocument().InitContentSecurityPolicy(csp);
 

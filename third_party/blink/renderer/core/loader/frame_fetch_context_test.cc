@@ -142,7 +142,7 @@ class FrameFetchContextTest : public testing::Test {
     dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
     dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);
     document = &dummy_page_holder->GetDocument();
-    owner = DummyFrameOwner::Create();
+    owner = MakeGarbageCollected<DummyFrameOwner>();
   }
 
   void TearDown() override {
@@ -295,7 +295,7 @@ class FrameFetchContextMockedLocalFrameClientTest
     Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
     document = &dummy_page_holder->GetDocument();
     document->SetURL(main_resource_url);
-    owner = DummyFrameOwner::Create();
+    owner = MakeGarbageCollected<DummyFrameOwner>();
   }
 
   KURL url;

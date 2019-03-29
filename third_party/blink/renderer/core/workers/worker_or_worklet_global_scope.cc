@@ -316,8 +316,7 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateOutsideSettingsFetcher(
     const FetchClientSettingsObject& outside_settings_object) {
   DCHECK(IsContextThread());
 
-  ContentSecurityPolicy* content_security_policy =
-      ContentSecurityPolicy::Create();
+  auto* content_security_policy = MakeGarbageCollected<ContentSecurityPolicy>();
   for (const auto& policy_and_type : outside_content_security_policy_headers_) {
     content_security_policy->DidReceiveHeader(
         policy_and_type.first, policy_and_type.second,
@@ -383,7 +382,7 @@ void WorkerOrWorkletGlobalScope::SetOutsideContentSecurityPolicyHeaders(
 void WorkerOrWorkletGlobalScope::InitContentSecurityPolicyFromVector(
     const Vector<CSPHeaderAndType>& headers) {
   if (!GetContentSecurityPolicy()) {
-    ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+    auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
     SetContentSecurityPolicy(csp);
   }
   for (const auto& policy_and_type : headers) {

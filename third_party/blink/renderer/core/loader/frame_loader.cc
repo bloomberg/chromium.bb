@@ -890,7 +890,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   }
 
   if (origin_document && origin_document->GetContentSecurityPolicy()) {
-    last_origin_document_csp_ = ContentSecurityPolicy::Create();
+    last_origin_document_csp_ = MakeGarbageCollected<ContentSecurityPolicy>();
     last_origin_document_csp_->CopyStateFrom(
         origin_document->GetContentSecurityPolicy());
     last_origin_document_csp_->CopyPluginTypesFrom(

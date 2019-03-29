@@ -200,7 +200,7 @@ static void UntrackAllBeforeUnloadEventListeners(LocalDOMWindow* dom_window) {
 
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     : DOMWindow(frame),
-      visualViewport_(DOMVisualViewport::Create(this)),
+      visualViewport_(MakeGarbageCollected<DOMVisualViewport>(this)),
       unused_preloads_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
                              this,
                              &LocalDOMWindow::WarnUnusedPreloads),
@@ -468,43 +468,49 @@ Screen* LocalDOMWindow::screen() const {
 
 History* LocalDOMWindow::history() const {
   if (!history_)
-    history_ = History::Create(GetFrame());
+    history_ = MakeGarbageCollected<History>(GetFrame());
   return history_.Get();
 }
 
 BarProp* LocalDOMWindow::locationbar() const {
-  if (!locationbar_)
-    locationbar_ = BarProp::Create(GetFrame(), BarProp::kLocationbar);
+  if (!locationbar_) {
+    locationbar_ =
+        MakeGarbageCollected<BarProp>(GetFrame(), BarProp::kLocationbar);
+  }
   return locationbar_.Get();
 }
 
 BarProp* LocalDOMWindow::menubar() const {
   if (!menubar_)
-    menubar_ = BarProp::Create(GetFrame(), BarProp::kMenubar);
+    menubar_ = MakeGarbageCollected<BarProp>(GetFrame(), BarProp::kMenubar);
   return menubar_.Get();
 }
 
 BarProp* LocalDOMWindow::personalbar() const {
-  if (!personalbar_)
-    personalbar_ = BarProp::Create(GetFrame(), BarProp::kPersonalbar);
+  if (!personalbar_) {
+    personalbar_ =
+        MakeGarbageCollected<BarProp>(GetFrame(), BarProp::kPersonalbar);
+  }
   return personalbar_.Get();
 }
 
 BarProp* LocalDOMWindow::scrollbars() const {
-  if (!scrollbars_)
-    scrollbars_ = BarProp::Create(GetFrame(), BarProp::kScrollbars);
+  if (!scrollbars_) {
+    scrollbars_ =
+        MakeGarbageCollected<BarProp>(GetFrame(), BarProp::kScrollbars);
+  }
   return scrollbars_.Get();
 }
 
 BarProp* LocalDOMWindow::statusbar() const {
   if (!statusbar_)
-    statusbar_ = BarProp::Create(GetFrame(), BarProp::kStatusbar);
+    statusbar_ = MakeGarbageCollected<BarProp>(GetFrame(), BarProp::kStatusbar);
   return statusbar_.Get();
 }
 
 BarProp* LocalDOMWindow::toolbar() const {
   if (!toolbar_)
-    toolbar_ = BarProp::Create(GetFrame(), BarProp::kToolbar);
+    toolbar_ = MakeGarbageCollected<BarProp>(GetFrame(), BarProp::kToolbar);
   return toolbar_.Get();
 }
 
