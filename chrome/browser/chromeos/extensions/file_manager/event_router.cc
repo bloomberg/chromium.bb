@@ -1107,8 +1107,8 @@ void EventRouter::PopulateCrostiniUnshareEvent(
   event.entries.emplace_back(std::move(entry));
 }
 
-void EventRouter::OnUnshare(const base::FilePath& path,
-                            const std::string& vm_name) {
+void EventRouter::OnUnshare(const std::string& vm_name,
+                            const base::FilePath& path) {
   if (vm_name != crostini::kCrostiniDefaultVmName) {
     return;
   }
