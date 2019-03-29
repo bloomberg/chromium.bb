@@ -39,6 +39,7 @@
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
@@ -80,8 +81,12 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
 // CollectionsViewController.
 @property(nonatomic, assign) ClearBrowsingDataListType listType;
 
+// TODO(crbug.com/947456): Prune
+// ClearBrowsingDataCollectionViewController-related code when it is dropped.
 @property(nonatomic, strong)
     LegacySettingsDetailItem* collectionViewTimeRangeItem;
+
+@property(nonatomic, strong) TableViewDetailIconItem* tableViewTimeRangeItem;
 
 @end
 
@@ -113,8 +118,7 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
 - (void)loadModel:(ListModel*)model {
   // Time range section.
   // Only implementing new UI for kListTypeCollectionView.
-  if (IsNewClearBrowsingDataUIEnabled() &&
-      self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
+  if (IsNewClearBrowsingDataUIEnabled()) {
     [model addSectionWithIdentifier:SectionIdentifierTimeRange];
     ListItem* timeRangeItem = [self timeRangeItem];
     [model addItem:timeRangeItem
@@ -122,6 +126,10 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
     if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
       self.collectionViewTimeRangeItem =
           base::mac::ObjCCastStrict<LegacySettingsDetailItem>(timeRangeItem);
+    } else {
+      DCHECK(self.listType == ClearBrowsingDataListType::kListTypeTableView);
+      self.tableViewTimeRangeItem =
+          base::mac::ObjCCastStrict<TableViewDetailIconItem>(timeRangeItem);
     }
   }
 
@@ -513,8 +521,22 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
         MDCCollectionViewCellAccessoryDisclosureIndicator;
     collectionTimeRangeItem.accessibilityTraits |= UIAccessibilityTraitButton;
     timeRangeItem = collectionTimeRangeItem;
-  }
+  } else {
+    DCHECK(self.listType == ClearBrowsingDataListType::kListTypeTableView);
+    TableViewDetailIconItem* tableTimeRangeItem =
+        [[TableViewDetailIconItem alloc] initWithType:ItemTypeTimeRange];
+    tableTimeRangeItem.text = l10n_util::GetNSString(
+        IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE);
+    NSString* detailText = [TimeRangeSelectorTableViewController
+        timePeriodLabelForPrefs:self.browserState->GetPrefs()];
+    DCHECK(detailText);
 
+    tableTimeRangeItem.detailText = detailText;
+    tableTimeRangeItem.accessoryType =
+        UITableViewCellAccessoryDisclosureIndicator;
+    tableTimeRangeItem.accessibilityTraits |= UIAccessibilityTraitButton;
+    timeRangeItem = tableTimeRangeItem;
+  }
   return timeRangeItem;
 }
 
@@ -681,8 +703,14 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
                     didSelectTimePeriod:(browsing_data::TimePeriod)timePeriod {
   NSString* detailText = [TimeRangeSelectorTableViewController
       timePeriodLabelForPrefs:self.browserState->GetPrefs()];
-  self.collectionViewTimeRangeItem.detailText = detailText;
-  [self.consumer updateCellsForItem:self.collectionViewTimeRangeItem];
+  if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
+    self.collectionViewTimeRangeItem.detailText = detailText;
+    [self.consumer updateCellsForItem:self.collectionViewTimeRangeItem];
+  } else {
+    DCHECK(self.listType == ClearBrowsingDataListType::kListTypeTableView);
+    self.tableViewTimeRangeItem.detailText = detailText;
+    [self.consumer updateCellsForItem:self.tableViewTimeRangeItem];
+  }
 }
 
 @end
