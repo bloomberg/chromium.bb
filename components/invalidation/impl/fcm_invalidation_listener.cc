@@ -50,6 +50,8 @@ void FCMInvalidationListener::Start(
       base::BindRepeating(&FCMInvalidationListener::InformTokenReceived,
                           weak_factory_.GetWeakPtr()));
   subscription_channel_state_ = SubscriptionChannelState::ENABLED;
+
+  network_channel_->StartListening();
   EmitStateChange();
   DoRegistrationUpdate();
 }
@@ -192,6 +194,7 @@ void FCMInvalidationListener::Stop() {
     per_user_topic_registration_manager_->RemoveObserver(this);
   }
   per_user_topic_registration_manager_.reset();
+  network_channel_->StopListening();
 
   subscription_channel_state_ = SubscriptionChannelState::NOT_STARTED;
   fcm_network_state_ = FcmChannelState::NOT_STARTED;

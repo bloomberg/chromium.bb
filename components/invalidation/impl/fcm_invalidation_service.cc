@@ -239,12 +239,13 @@ void FCMInvalidationService::StartInvalidator() {
   // We should start listening before requesting the id, because
   // valid id is only generated, once there is an app handler
   // for the app. StartListening registers the app handler.
-  network->StartListening();
-  PopulateClientID();
-
+  // We should create invalidator first, because it registers the handler
+  // for the incoming messages, which is crutial on Android, because on the
+  // startup cached messages might exists.
   invalidator_ = std::make_unique<syncer::FCMInvalidator>(
       std::move(network), identity_provider_, pref_service_, loader_factory_,
       parse_json_, kInvalidationGCMSenderId);
+  PopulateClientID();
   invalidator_->RegisterHandler(this);
   DoUpdateRegisteredIdsIfNeeded();
 }

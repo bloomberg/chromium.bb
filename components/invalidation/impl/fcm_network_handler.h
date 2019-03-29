@@ -66,10 +66,12 @@ class FCMNetworkHandler : public gcm::GCMAppHandler,
 
   ~FCMNetworkHandler() override;
 
-  void StartListening();
-  void StopListening();
   bool IsListening() const;
   void UpdateChannelState(FcmChannelState state);
+
+  // FCMSyncNetworkChannel overrides.
+  void StartListening() override;
+  void StopListening() override;
 
   // GCMAppHandler overrides.
   void ShutdownHandler() override;
