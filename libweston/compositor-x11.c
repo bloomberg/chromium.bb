@@ -51,7 +51,7 @@
 #include <xkbcommon/xkbcommon.h>
 
 #include <libweston/libweston.h>
-#include "compositor-x11.h"
+#include <libweston/backend-x11.h>
 #include "shared/config-parser.h"
 #include "shared/helpers.h"
 #include "shared/image-loader.h"

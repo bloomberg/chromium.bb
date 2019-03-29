@@ -51,7 +51,7 @@
 #include <libudev.h>
 
 #include <libweston/libweston.h>
-#include "compositor-drm.h"
+#include <libweston/backend-drm.h>
 #include "weston-debug.h"
 #include "shared/helpers.h"
 #include "shared/timespec-util.h"

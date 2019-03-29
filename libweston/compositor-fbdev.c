@@ -46,7 +46,7 @@
 
 #include "shared/helpers.h"
 #include <libweston/libweston.h>
-#include "compositor-fbdev.h"
+#include <libweston/backend-fbdev.h>
 #include "launcher-util.h"
 #include "pixman-renderer.h"
 #include "libinput-seat.h"

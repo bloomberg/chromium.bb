@@ -45,7 +45,7 @@
 #endif
 
 #include <libweston/libweston.h>
-#include "compositor-wayland.h"
+#include <libweston/backend-wayland.h>
 #include "gl-renderer.h"
 #include "weston-egl-ext.h"
 #include "pixman-renderer.h"

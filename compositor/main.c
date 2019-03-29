@@ -55,12 +55,12 @@
 #include "version.h"
 #include "weston.h"
 
-#include "compositor-drm.h"
-#include "compositor-headless.h"
-#include "compositor-rdp.h"
-#include "compositor-fbdev.h"
-#include "compositor-x11.h"
-#include "compositor-wayland.h"
+#include <libweston/backend-drm.h>
+#include <libweston/backend-headless.h>
+#include <libweston/backend-rdp.h>
+#include <libweston/backend-fbdev.h>
+#include <libweston/backend-x11.h>
+#include <libweston/backend-wayland.h>
 #include "windowed-output-api.h"
 #include "weston-debug.h"
 #include "../remoting/remoting-plugin.h"

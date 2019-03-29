@@ -34,7 +34,7 @@
 #include <stdbool.h>
 
 #include <libweston/libweston.h>
-#include "compositor-headless.h"
+#include <libweston/backend-headless.h>
 #include "shared/helpers.h"
 #include "linux-explicit-synchronization.h"
 #include "pixman-renderer.h"

@@ -44,7 +44,7 @@
 #include <gst/video/gstvideometa.h>
 
 #include "remoting-plugin.h"
-#include "compositor-drm.h"
+#include <libweston/backend-drm.h>
 #include "shared/helpers.h"
 #include "shared/timespec-util.h"
 

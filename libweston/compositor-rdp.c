@@ -99,7 +99,7 @@
 #include "shared/helpers.h"
 #include "shared/timespec-util.h"
 #include <libweston/libweston.h>
-#include "compositor-rdp.h"
+#include <libweston/backend-rdp.h>
 #include "pixman-renderer.h"
 
 #define MAX_FREERDP_FDS 32
