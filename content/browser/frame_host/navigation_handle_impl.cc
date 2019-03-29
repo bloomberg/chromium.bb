@@ -515,6 +515,16 @@ const base::Optional<url::Origin>& NavigationHandleImpl::GetInitiatorOrigin() {
   return navigation_request_->common_params().initiator_origin;
 }
 
+bool NavigationHandleImpl::IsSameProcess() {
+  DCHECK(state_ == NavigationRequest::DID_COMMIT ||
+         state_ == NavigationRequest::DID_COMMIT_ERROR_PAGE);
+  return is_same_process_;
+}
+
+int NavigationHandleImpl::GetNavigationEntryOffset() {
+  return navigation_request_->navigation_entry_offset();
+}
+
 bool NavigationHandleImpl::IsSignedExchangeInnerResponse() {
   return navigation_request_->response()
              ? navigation_request_->response()

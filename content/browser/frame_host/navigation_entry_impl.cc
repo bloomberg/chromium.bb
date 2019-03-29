@@ -592,6 +592,10 @@ void NavigationEntryImpl::AddExtraHeaders(
   extra_headers_ += more_extra_headers;
 }
 
+int64_t NavigationEntryImpl::GetMainFrameDocumentSequenceNumber() {
+  return frame_tree_->frame_entry->document_sequence_number();
+}
+
 void NavigationEntryImpl::SetCanLoadLocalResources(bool allow) {
   can_load_local_resources_ = allow;
 }

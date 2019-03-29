@@ -4083,6 +4083,14 @@ be describing additional metrics about the same event.
       meaningful input with longest queuing delay per navigation. In ms.
     </summary>
   </metric>
+  <metric name="IsCrossProcessNavigation">
+    <owner>altimin@chromium.org</owner>
+    <owner>arthursonzogni@chromium.org</owner>
+    <summary>
+      Whether the navigation resulted in the main frame being hosted in a
+      different renderer process than the current document or not.
+    </summary>
+  </metric>
   <metric name="IsSignedExchangeInnerResponse">
     <summary>
       Set to 1 if the main resource is an inner response of a signed exchange.
@@ -4092,6 +4100,15 @@ be describing additional metrics about the same event.
     <summary>
       Measures the amount of layout jank (bit.ly/lsm-explainer) that has
       occurred during the session.
+    </summary>
+  </metric>
+  <metric name="MainDocumentSequenceNumber">
+    <owner>altimin@chromium.org</owner>
+    <owner>arthursonzogni@chromium.org</owner>
+    <summary>
+      An id for the main frame's document associated with the current
+      navigation. It doesn't change for same-document navigations and when
+      navigating back to the same document. Unique during the browsing session.
     </summary>
   </metric>
   <metric name="MainFrameResource.ConnectDelay">
@@ -4162,6 +4179,14 @@ be describing additional metrics about the same event.
   <metric name="Navigation.PageTransition">
     <summary>
       The |ui::PageTransition| for the main frame navigation of this page load.
+    </summary>
+  </metric>
+  <metric name="NavigationEntryOffset">
+    <owner>altimin@chromium.org</owner>
+    <owner>arthursonzogni@chromium.org</owner>
+    <summary>
+      Difference between the last committed navigation entry index before and
+      after the commit of this navigation.
     </summary>
   </metric>
   <metric name="Net.CacheBytes">

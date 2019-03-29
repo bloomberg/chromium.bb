@@ -119,6 +119,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   const net::ProxyServer& GetProxyServer() override;
   const std::string& GetHrefTranslate() override;
   const base::Optional<url::Origin>& GetInitiatorOrigin() override;
+  bool IsSameProcess() override;
+  int GetNavigationEntryOffset() override;
 
   // Returns the NavigationRequest which owns this NavigationHandle.
   NavigationRequest* navigation_request() { return navigation_request_; }
