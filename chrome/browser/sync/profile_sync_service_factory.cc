@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/invalidation_switches.h"
@@ -184,6 +186,9 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.network_connection_tracker =
       content::GetNetworkConnectionTracker();
   init_params.debug_identifier = profile->GetDebugName();
+  init_params.autofill_enable_account_wallet_storage =
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableAccountWalletStorage);
 
   bool local_sync_backend_enabled = false;
 

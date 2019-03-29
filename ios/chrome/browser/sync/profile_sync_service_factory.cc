@@ -7,9 +7,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/invalidation_switches.h"
@@ -167,6 +169,9 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.network_connection_tracker =
       GetApplicationContext()->GetNetworkConnectionTracker();
   init_params.debug_identifier = browser_state->GetDebugName();
+  init_params.autofill_enable_account_wallet_storage =
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableAccountWalletStorage);
 
   bool use_fcm_invalidations =
       base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);
