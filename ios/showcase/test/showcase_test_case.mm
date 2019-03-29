@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "ios/showcase/core/app_delegate.h"
-#include "testing/coverage_util_ios.h"
+#import "ios/testing/earl_grey/coverage_utils.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -18,7 +18,7 @@
 @implementation ShowcaseTestCase
 
 + (void)setUp {
-  coverage_util::ConfigureCoverageReportPath();
+  [CoverageUtils configureCoverageReportPath];
 }
 
 // Overrides testInvocations so the set of tests run can be modified, as

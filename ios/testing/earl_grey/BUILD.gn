@@ -10,9 +10,12 @@ source_set("earl_grey_support") {
   deps = [
     "//base/test:test_support",
     "//ios/third_party/earl_grey:earl_grey+link",
+    "//testing/gtest:gtest",
   ]
 
   sources = [
+    "coverage_utils.h",
+    "coverage_utils.mm",
     "disabled_test_macros.h",
     "earl_grey_app.h",
     "earl_grey_test.h",
@@ -29,9 +32,12 @@ source_set("eg_app_support+eg2") {
   deps = [
     "//base/test:test_support",
     "//ios/third_party/earl_grey2:app_framework+link",
+    "//testing/gtest:gtest",
   ]
 
   sources = [
+    "coverage_utils.h",
+    "coverage_utils.mm",
     "earl_grey_app.h",
     "matchers.h",
     "matchers.mm",
@@ -43,11 +49,14 @@ source_set("eg_test_support+eg2") {
   testonly = true
 
   sources = [
+    "coverage_utils.h",
+    "coverage_utils_stub.mm",
     "disabled_test_macros.h",
     "earl_grey_test.h",
   ]
 
   deps = [
     "//ios/third_party/earl_grey2:test_lib",
+    "//testing/gtest:gtest",
   ]
 }

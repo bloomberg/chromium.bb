@@ -5,6 +5,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#import "ios/testing/earl_grey/coverage_utils.h"
 #import "ios/third_party/earl_grey2/src/TestLib/EarlGreyImpl/EarlGrey.h"
 #import "ios/web/shell/test/earl_grey/web_shell_test_case.h"
 
@@ -28,6 +29,10 @@
   });
 
   [super setUp];
+}
+
+- (void)testEmptyTest {
+  // This test intentionally left blank, to test this class's setUp method.
 }
 
 @end
