@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/profile_sync_service.h"
 
 #include <cstddef>
 #include <utility>
@@ -14,8 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/autofill/core/common/autofill_features.h"
-#include "components/browser_sync/browser_sync_switches.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -44,7 +42,6 @@
 #include "components/sync/model/sync_error.h"
 #include "components/sync/syncable/base_transaction.h"
 #include "components/sync/syncable/directory.h"
-#include "components/sync_sessions/session_sync_service.h"
 #include "components/version_info/version_info_values.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
@@ -149,6 +146,8 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
           base::BindRepeating(&ProfileSyncService::CredentialsChanged,
                               base::Unretained(this)))),
       debug_identifier_(init_params.debug_identifier),
+      autofill_enable_account_wallet_storage_(
+          init_params.autofill_enable_account_wallet_storage),
       sync_service_url_(
           syncer::GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
                                     sync_client_->GetDeviceInfoSyncService()
@@ -1367,8 +1366,7 @@ void ProfileSyncService::ConfigureDataTypeManager(
   if (use_transport_only_mode) {
     syncer::ModelTypeSet allowed_types = {syncer::USER_CONSENTS};
 
-    if (base::FeatureList::IsEnabled(
-            autofill::features::kAutofillEnableAccountWalletStorage) &&
+    if (autofill_enable_account_wallet_storage_ &&
         base::FeatureList::IsEnabled(switches::kSyncUSSAutofillWalletData)) {
       if (!GetUserSettings()->IsUsingSecondaryPassphrase() ||
           base::FeatureList::IsEnabled(

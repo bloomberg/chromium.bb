@@ -4,7 +4,17 @@
 
 #include "components/sync/driver/sync_driver_switches.h"
 
+#include "base/command_line.h"
+
 namespace switches {
+
+bool IsSyncAllowedByFlag() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableSync);
+}
+
+// Disables syncing browser data to a Google Account.
+const char kDisableSync[] = "disable-sync";
 
 // Allows overriding the deferred init fallback timeout.
 const char kSyncDeferredStartupTimeoutSeconds[] =
@@ -38,6 +48,10 @@ const char kSyncShortNudgeDelayForTest[] = "sync-short-nudge-delay-for-test";
 const base::Feature kSyncAllowWalletDataInTransportModeWithCustomPassphrase{
     "SyncAllowAutofillWalletDataInTransportModeWithCustomPassphrase",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, the sync engine will be shut down in the "paused" state.
+const base::Feature kStopSyncInPausedState{"StopSyncInPausedState",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // For each below, if enabled, the SyncableService implementation of the
 // corresponding datatype(s) is wrapped within the USS architecture.

@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/time/time.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -95,6 +97,9 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
       WebViewProfileInvalidationProviderFactory::GetForBrowserState(
           browser_state)
           ->GetIdentityProvider());
+  init_params.autofill_enable_account_wallet_storage =
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableAccountWalletStorage);
 
   auto profile_sync_service =
       std::make_unique<browser_sync::ProfileSyncService>(
