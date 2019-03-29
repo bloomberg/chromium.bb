@@ -248,6 +248,9 @@ void ThumbnailTabHelper::MaybeScheduleAnotherCapture(
 }
 
 bool ThumbnailTabHelper::CanCaptureThumbnail(CaptureSchedule schedule) const {
+  if (adapter_.is_unloading())
+    return false;
+
   // Destroying a WebContents may trigger it to be hidden, prompting a snapshot
   // which would be unwise to attempt <http://crbug.com/130097>. If the
   // WebContents is in the middle of destruction, do not risk it.

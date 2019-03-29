@@ -26,6 +26,8 @@ class ThumbnailPageEventAdapter : public content::WebContentsObserver {
   explicit ThumbnailPageEventAdapter(content::WebContents* contents);
   ~ThumbnailPageEventAdapter() override;
 
+  bool is_unloading() const { return is_unloading_; }
+
   void AddObserver(ThumbnailPageObserver* observer);
   void RemoveObserver(ThumbnailPageObserver* observer);
 
@@ -49,9 +51,16 @@ class ThumbnailPageEventAdapter : public content::WebContentsObserver {
   void MainFrameWasResized(bool width_changed) override;
   void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
                         const gfx::Size& frame_size) override;
+  void BeforeUnloadFired(bool proceed,
+                         const base::TimeTicks& proceed_time) override;
+  void BeforeUnloadDialogCancelled() override;
 
  private:
   base::ObserverList<ThumbnailPageObserver> observers_;
+
+  // True if the current page is in the process of being unloaded from the
+  // browser (e.g. on a tab or window close).
+  bool is_unloading_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailPageEventAdapter);
 };

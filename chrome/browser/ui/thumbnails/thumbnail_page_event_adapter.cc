@@ -118,4 +118,14 @@ void ThumbnailPageEventAdapter::NavigationStopped() {
   }
 }
 
+void ThumbnailPageEventAdapter::BeforeUnloadFired(
+    bool proceed,
+    const base::TimeTicks& proceed_time) {
+  is_unloading_ = true;
+}
+
+void ThumbnailPageEventAdapter::BeforeUnloadDialogCancelled() {
+  is_unloading_ = false;
+}
+
 }  // namespace thumbnails
