@@ -140,37 +140,27 @@ bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
     occlusion_state = FrameOcclusionState::kUnknown;
   }
 
-  // TODO(szager): There are some redundant IPC's here; clean them up.
+  if (viewport_intersection != last_viewport_intersection_ ||
+      occlusion_state != last_occlusion_state_) {
+    last_viewport_intersection_ = viewport_intersection;
+    last_occlusion_state_ = occlusion_state;
+    remote_frame_->Client()->UpdateRemoteViewportIntersection(
+        viewport_intersection, occlusion_state);
+  }
+
+  // TODO(szager): There is redundant functionality here; clean it up.
+  // UpdateVisibility controls RenderFrameHostImpl::visibility_ for the iframe,
+  // and RenderWidget::is_hidden_ in the iframe process. When an OOPIF is marked
+  // "hidden", it stops running lifecycle updates altogether.
+  // UpdateRenderThrottlingStatus sets the hidden_for_throttling_ and
+  // subtree_throttled_ flags on LocalFrameView in the iframe process. They
+  // control whether the iframe skips doing rendering work during lifecycle
+  // updates.
   bool is_visible_for_throttling = !viewport_intersection.IsEmpty();
-  if (is_visible_for_throttling != scroll_visible_) {
-    // TODO(szager): There's no obvious reason why the calls to UpdateVisiblity
-    // and UpdateRenderThrottlingStatus should be scheduled via PostTask rather
-    // than running synchronously here, but doing so caused a performance
-    // regression (crbug.com/941116). Figure out why that's the case, and
-    // ideally get rid of the PostTask.
-    owner_element->GetDocument()
-        .GetTaskRunner(TaskType::kInternalIntersectionObserver)
-        ->PostTask(FROM_HERE,
-                   WTF::Bind(
-                       [](RemoteFrameView* remote_view, bool scroll_visible) {
-                         remote_view->UpdateVisibility(scroll_visible);
-                         remote_view->UpdateRenderThrottlingStatus(
-                             !scroll_visible,
-                             remote_view->is_attached_ &&
-                                 remote_view->ParentFrameView()->CanThrottleRendering());
-                       },
-                       WrapWeakPersistent(this), is_visible_for_throttling));
-  }
-
-  if (viewport_intersection == last_viewport_intersection_ &&
-      occlusion_state == last_occlusion_state_) {
-    return needs_occlusion_tracking_;
-  }
-
-  last_viewport_intersection_ = viewport_intersection;
-  last_occlusion_state_ = occlusion_state;
-  remote_frame_->Client()->UpdateRemoteViewportIntersection(
-      viewport_intersection, occlusion_state);
+  UpdateVisibility(is_visible_for_throttling);
+  UpdateRenderThrottlingStatus(
+      !is_visible_for_throttling,
+      is_attached_ && ParentFrameView()->CanThrottleRendering());
 
   return needs_occlusion_tracking_;
 }
