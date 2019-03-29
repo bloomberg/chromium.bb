@@ -63,14 +63,17 @@ def cmp_tests(a, b):
 
 
 class GPUTelemetryTestGenerator(BaseGenerator):
-  def __init__(self, bb_gen):
+
+  def __init__(self, bb_gen, is_android_webview=False):
     super(GPUTelemetryTestGenerator, self).__init__(bb_gen)
+    self._is_android_webview = is_android_webview
 
   def generate(self, waterfall, tester_name, tester_config, input_tests):
     isolated_scripts = []
     for test_name, test_config in sorted(input_tests.iteritems()):
       test = self.bb_gen.generate_gpu_telemetry_test(
-        waterfall, tester_name, tester_config, test_name, test_config)
+          waterfall, tester_name, tester_config, test_name, test_config,
+          self._is_android_webview)
       if test:
         isolated_scripts.append(test)
     return isolated_scripts
@@ -602,7 +605,7 @@ class BBJSONGenerator(object):
     return [string.Template(arg).safe_substitute(substitutions) for arg in args]
 
   def generate_gpu_telemetry_test(self, waterfall, tester_name, tester_config,
-                                  test_name, test_config):
+                                  test_name, test_config, is_android_webview):
     # These are all just specializations of isolated script tests with
     # a bunch of boilerplate command line arguments added.
 
@@ -632,16 +635,18 @@ class BBJSONGenerator(object):
     # queue.
     result['should_retry_with_patch'] = False
 
+    browser = ('android-webview-instrumentation'
+               if is_android_webview else tester_config['browser_config'])
     args = [
-      test_to_run,
-      '--show-stdout',
-      '--browser=%s' % tester_config['browser_config'],
-      # --passthrough displays more of the logging in Telemetry when
-      # run via typ, in particular some of the warnings about tests
-      # being expected to fail, but passing.
-      '--passthrough',
-      '-v',
-      '--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc',
+        test_to_run,
+        '--show-stdout',
+        '--browser=%s' % browser,
+        # --passthrough displays more of the logging in Telemetry when
+        # run via typ, in particular some of the warnings about tests
+        # being expected to fail, but passing.
+        '--passthrough',
+        '-v',
+        '--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc',
     ] + args
     result['args'] = self.maybe_fixup_args_array(self.substitute_gpu_args(
       tester_config, result['swarming'], args))
@@ -649,19 +654,29 @@ class BBJSONGenerator(object):
 
   def get_test_generator_map(self):
     return {
-      'cts_tests': CTSGenerator(self),
-      'gpu_telemetry_tests': GPUTelemetryTestGenerator(self),
-      'gtest_tests': GTestGenerator(self),
-      'instrumentation_tests': InstrumentationTestGenerator(self),
-      'isolated_scripts': IsolatedScriptTestGenerator(self),
-      'junit_tests': JUnitGenerator(self),
-      'scripts': ScriptGenerator(self),
+        'android_webview_gpu_telemetry_tests':
+            GPUTelemetryTestGenerator(self, is_android_webview=True),
+        'cts_tests':
+            CTSGenerator(self),
+        'gpu_telemetry_tests':
+            GPUTelemetryTestGenerator(self),
+        'gtest_tests':
+            GTestGenerator(self),
+        'instrumentation_tests':
+            InstrumentationTestGenerator(self),
+        'isolated_scripts':
+            IsolatedScriptTestGenerator(self),
+        'junit_tests':
+            JUnitGenerator(self),
+        'scripts':
+            ScriptGenerator(self),
     }
 
   def get_test_type_remapper(self):
     return {
       # These are a specialization of isolated_scripts with a bunch of
       # boilerplate command line arguments added to each one.
+      'android_webview_gpu_telemetry_tests': 'isolated_scripts',
       'gpu_telemetry_tests': 'isolated_scripts',
     }
 
