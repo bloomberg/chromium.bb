@@ -97,7 +97,7 @@ public class TabGroupUiMediator {
             @Override
             public void restoreCompleted() {
                 Tab currentTab = mTabModelSelector.getCurrentTab();
-                mResetHandler.resetStripWithListOfTabs(getRelatedTabsForId(currentTab.getId()));
+                resetTabStripWithRelatedTabsForId(currentTab.getId());
             }
         };
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
