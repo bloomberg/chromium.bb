@@ -2,6 +2,13 @@
 <html dir="$i18n{textdirection}" lang="$i18n{language}" $i18n{dark}>
   <head>
     <meta charset="utf-8">
+    <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
+    <style>
+      html {
+        background-color: var(--md-background-color);
+      }
+    </style>
+    </custom-style>
     <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
     <link rel="import" href="chrome://resources/html/polymer.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -73,7 +80,7 @@
         }
 
         .message-container .body {
-          color: #646464;
+          color: var(--cr-secondary-text-color);
         }
 
         .message-container .text {
@@ -108,7 +115,7 @@
         }
 
         #checkmark-circle {
-          background: rgb(66, 133, 244);
+          background: var(--google-blue-refresh-500);
           border: 2px solid #fff;
           border-radius: 50%;
           bottom: 0;
@@ -117,6 +124,11 @@
           right: 0;
           transform: scale(0);
           width: 24px;
+        }
+
+        [dark] #checkmark-circle {
+          background: var(--google-blue-refresh-300);
+          border-color: var(--google-grey-900);
         }
 
         .loaded #checkmark-circle {
@@ -150,17 +162,23 @@
         }
 
         #icons > div {
+          -webkit-mask-repeat: no-repeat;
+          -webkit-mask-size: cover;
           animation-delay: 200ms;
           animation-duration: 1.4s;
           animation-fill-mode: forwards;
           animation-timing-function: cubic-bezier(0.25, 0.45, 0.4, 0.7);
-          background-size: cover;
+          background-color: black;
           opacity: 0;
           position: absolute;
         }
 
+        [dark] #icons > div {
+          background-color: white;
+        }
+
         #icon-bookmarks {
-          background: url(../../../../../ui/webui/resources/images/icon_bookmarks.svg);
+          -webkit-mask-image: url(../../../../../ui/webui/resources/images/icon_bookmarks.svg);
           height: 36px;
           left: 58px;
           top: 0;
@@ -168,7 +186,7 @@
         }
 
         #icon-extensions {
-          background: url(../../../../../ui/webui/resources/images/icon_extensions.svg);
+          -webkit-mask-image: url(../../../../../ui/webui/resources/images/icon_extensions.svg);
           height: 24px;
           left: 30px;
           top: 30px;
@@ -176,7 +194,7 @@
         }
 
         #icon-passwords {
-          background: url(../../../../../ui/webui/resources/images/icon_passwords.svg);
+          -webkit-mask-image: url(../../../../../ui/webui/resources/images/icon_passwords.svg);
           height: 30px;
           left: 38px;
           top: 66px;
@@ -184,7 +202,7 @@
         }
 
         #icon-history {
-          background: url(../../../../../ui/webui/resources/images/icon_history.svg);
+          -webkit-mask-image: url(../../../../../ui/webui/resources/images/icon_history.svg);
           height: 36px;
           left: 190px;
           top: 6px;
@@ -192,7 +210,7 @@
         }
 
         #icon-tabs {
-          background: url(../../../../../ui/webui/resources/images/icon_tabs.svg);
+          -webkit-mask-image: url(../../../../../ui/webui/resources/images/icon_tabs.svg);
           height: 24px;
           left: 222px;
           top: 44px;
@@ -200,7 +218,7 @@
         }
 
         #icon-themes {
-          background: url(../../../../../ui/webui/resources/images/icon_themes.svg);
+          -webkit-mask-image: url(../../../../../ui/webui/resources/images/icon_themes.svg);
           height: 30px;
           left: 184px;
           top: 62px;
@@ -216,8 +234,11 @@
           width: 8px;
         }
 
+        [dark] #icon-circle-open {
+          border-color: white;
+        }
+
         .icon-circle {
-          background: #000;
           border-radius: 50%;
           height: 4px;
           width: 4px;
@@ -426,9 +447,9 @@
       </div>
     </div>
   </body>
-  <script src="chrome://resources/js/cr.js"></script>
-  <script src="chrome://resources/js/load_time_data.js"></script>
-  <script src="chrome://resources/js/util.js"></script>
+  <link rel="import" href="chrome://resources/html/cr.html">
+  <link rel="import" href="chrome://resources/html/load_time_data.html">
+  <link rel="import" href="chrome://resources/html/util.html">
   <script src="sync_confirmation.js"></script>
   <script src="chrome://sync-confirmation/strings.js"></script>
   <link rel="import" href="chrome://resources/html/dark_mode.html">
