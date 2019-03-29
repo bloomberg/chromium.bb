@@ -6148,20 +6148,6 @@ crbug.com/942411 [ Win7 Linux ] virtual/binary-for-devtools/http/tests/devtools/
 crbug.com/947383 inspector-protocol/css/reattach-after-editing-styles.js [ Pass Timeout ]
 
 ### external/wpt/fetch/sec-metadata/
-crbug.com/947023 external/wpt/fetch/sec-metadata/embed.tentative.https.sub.html [ Pass Failure ]
 crbug.com/947023 external/wpt/fetch/sec-metadata/font.tentative.https.sub.html [ Pass Failure ]
-crbug.com/947023 external/wpt/fetch/sec-metadata/object.tentative.https.sub.html [ Pass Failure ]
 crbug.com/947023 external/wpt/fetch/sec-metadata/report.tentative.https.sub.html [ Pass Timeout ]
-crbug.com/947023 external/wpt/fetch/sec-metadata/serviceworker.tentative.https.sub.html [ Pass Failure ]
-crbug.com/947023 external/wpt/fetch/sec-metadata/sharedworker.tentative.https.sub.html [ Pass Failure ]
-crbug.com/947023 external/wpt/fetch/sec-metadata/style.tentative.https.sub.html [ Pass Failure ]
-crbug.com/947023 external/wpt/fetch/sec-metadata/track.tentative.https.sub.html [ Pass Failure Timeout ]
-crbug.com/947023 external/wpt/fetch/sec-metadata/worker.tentative.https.sub.html [ Pass Failure ]
 crbug.com/947023 external/wpt/fetch/sec-metadata/xslt.tentative.https.sub.html [ Pass Failure ]
-
-### external/wpt/fetch/sec-metadata/redirect/
-crbug.com/947023 external/wpt/fetch/sec-metadata/redirect/cross-site-redirect.tentative.https.sub.html [ Pass Failure ]
-crbug.com/947023 external/wpt/fetch/sec-metadata/redirect/multiple-redirect-cross-site.tentative.https.sub.html [ Pass Failure ]
-crbug.com/947023 external/wpt/fetch/sec-metadata/redirect/multiple-redirect-same-site.tentative.https.sub.html [ Pass Failure ]
-crbug.com/947023 external/wpt/fetch/sec-metadata/redirect/same-origin-redirect.tentative.https.sub.html [ Pass Failure ]
-crbug.com/947023 external/wpt/fetch/sec-metadata/redirect/same-site-redirect.tentative.https.sub.html [ Pass Failure ]
