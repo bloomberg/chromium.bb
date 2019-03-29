@@ -5260,6 +5260,25 @@
             ]
         }
     ],
+    "UseAlternateFakeboxOnNtp": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "UseAlternateFakeboxOnNtp",
+                    "enable_features": [
+                        "FakeboxSearchIconOnNtp",
+                        "UseAlternateFakeboxOnNtp"
+                    ]
+                }
+            ]
+        }
+    ],
     "UseGoogleLocalNtp": [
         {
             "platforms": [
