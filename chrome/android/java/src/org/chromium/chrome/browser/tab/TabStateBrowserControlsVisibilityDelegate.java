@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.os.Handler;
 import android.os.Message;
 
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.modaldialog.TabModalPresenter;
@@ -132,6 +133,11 @@ public class TabStateBrowserControlsVisibilityDelegate
 
     @Override
     public boolean canAutoHideBrowserControls() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DONT_AUTO_HIDE_BROWSER_CONTROLS)
+                && mTab.getActivity().getToolbarManager().getBottomToolbarCoordinator() != null) {
+            return false;
+        }
+
         WebContents webContents = mTab.getWebContents();
         if (webContents == null || webContents.isDestroyed()) return false;
 
