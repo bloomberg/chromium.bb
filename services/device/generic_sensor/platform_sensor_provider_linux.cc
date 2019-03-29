@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
+#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "services/device/generic_sensor/absolute_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_magnetometer.h"
 #include "services/device/generic_sensor/linear_acceleration_fusion_algorithm_using_accelerometer.h"
@@ -23,6 +24,11 @@
 
 namespace device {
 namespace {
+
+constexpr base::TaskTraits kBlockingTaskRunnerTraits = {
+    base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
+
 bool IsFusionSensorType(mojom::SensorType type) {
   switch (type) {
     case mojom::SensorType::LINEAR_ACCELERATION:
@@ -47,25 +53,30 @@ PlatformSensorProviderLinux* PlatformSensorProviderLinux::GetInstance() {
 PlatformSensorProviderLinux::PlatformSensorProviderLinux()
     : sensor_nodes_enumerated_(false),
       sensor_nodes_enumeration_started_(false),
-      sensor_device_manager_(nullptr) {}
-
-PlatformSensorProviderLinux::~PlatformSensorProviderLinux() {
-  Shutdown();
+      blocking_task_runner_(
+          base::CreateSequencedTaskRunnerWithTraits(kBlockingTaskRunnerTraits)),
+      sensor_device_manager_(nullptr,
+                             base::OnTaskRunnerDeleter(blocking_task_runner_)),
+      weak_ptr_factory_(this) {
+  sensor_device_manager_.reset(
+      new SensorDeviceManager(weak_ptr_factory_.GetWeakPtr()));
 }
+
+PlatformSensorProviderLinux::~PlatformSensorProviderLinux() = default;
 
 void PlatformSensorProviderLinux::CreateSensorInternal(
     mojom::SensorType type,
     SensorReadingSharedBuffer* reading_buffer,
     const CreateSensorCallback& callback) {
-  if (!sensor_device_manager_)
-    sensor_device_manager_.reset(new SensorDeviceManager());
-
   if (!sensor_nodes_enumerated_) {
     if (!sensor_nodes_enumeration_started_) {
-      sensor_nodes_enumeration_started_ = file_task_runner_->PostTask(
+      // Unretained() is safe because the deletion of |sensor_device_manager_|
+      // is scheduled on |blocking_task_runner_| when
+      // PlatformSensorProviderLinux is deleted.
+      sensor_nodes_enumeration_started_ = blocking_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&SensorDeviceManager::Start,
-                         base::Unretained(sensor_device_manager_.get()), this));
+                         base::Unretained(sensor_device_manager_.get())));
     }
     return;
   }
@@ -97,25 +108,8 @@ void PlatformSensorProviderLinux::SensorDeviceFound(
   callback.Run(sensor);
 }
 
-void PlatformSensorProviderLinux::SetFileTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!file_task_runner_)
-    file_task_runner_ = file_task_runner;
-}
-
 void PlatformSensorProviderLinux::FreeResources() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-}
-
-void PlatformSensorProviderLinux::Shutdown() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  const bool did_post_task = file_task_runner_->DeleteSoon(
-      FROM_HERE, sensor_device_manager_.release());
-  DCHECK(did_post_task);
-  sensor_nodes_enumerated_ = false;
-  sensor_nodes_enumeration_started_ = false;
-  sensor_devices_by_type_.clear();
 }
 
 SensorInfoLinux* PlatformSensorProviderLinux::GetSensorDevice(
@@ -136,14 +130,7 @@ void PlatformSensorProviderLinux::GetAllSensorDevices() {
 void PlatformSensorProviderLinux::SetSensorDeviceManagerForTesting(
     std::unique_ptr<SensorDeviceManager> sensor_device_manager) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  Shutdown();
-  sensor_device_manager_ = std::move(sensor_device_manager);
-}
-
-void PlatformSensorProviderLinux::SetFileTaskRunnerForTesting(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  file_task_runner_ = std::move(task_runner);
+  sensor_device_manager_.reset(sensor_device_manager.release());
 }
 
 void PlatformSensorProviderLinux::ProcessStoredRequests() {
