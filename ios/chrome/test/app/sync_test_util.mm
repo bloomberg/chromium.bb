@@ -183,8 +183,8 @@ void InjectAutofillProfileOnFakeSyncServer(std::string guid,
 
   std::unique_ptr<syncer::LoopbackServerEntity> entity =
       syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
-          /*non_unique_name=*/std::string(), /*client_tag=*/guid,
-          entity_specifics, 12345, 12345);
+          /*non_unique_name=*/guid, /*client_tag=*/guid, entity_specifics,
+          12345, 12345);
   gSyncFakeServer->InjectEntity(std::move(entity));
 }
 
