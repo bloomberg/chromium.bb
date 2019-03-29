@@ -71,7 +71,6 @@ ServiceWorkerNetworkProviderForFrame::Create(
       std::move(provider_info->client_request),
       std::move(provider_info->host_ptr_info), std::move(controller_info),
       std::move(fallback_loader_factory));
-  provider->context_->NotifyProviderCreated();
 
   return provider;
 }

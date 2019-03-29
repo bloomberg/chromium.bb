@@ -124,9 +124,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   //
   // The returned host stays alive as long as the filled |out_provider_info|
   // stays alive (namely, as long as |out_provider_info->host_ptr_info| stays
-  // alive). Upon successful navigation, another Mojo call
-  // ServiceWorkerContainerHost::OnProviderCreated() coming from the renderer
-  // process will complete initialization for it.
+  // alive). Upon navigation commit, OnBeginNavigationCommit() will complete
+  // initialization for it.
   static base::WeakPtr<ServiceWorkerProviderHost> PreCreateNavigationHost(
       base::WeakPtr<ServiceWorkerContextCore> context,
       bool are_ancestors_secure,
@@ -355,10 +354,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       scoped_refptr<ServiceWorkerRegistration> registration);
 
   // For service worker window clients. Called when the navigation is ready to
-  // commit in the browser process to set up some information (renderer process
-  // id and frame id) already available for the pre-created instance. Later the
-  // Mojo call ServiceWorkerContainerHost::OnProviderCreated() will be triggered
-  // from the renderer process to complete the initialization.
+  // commit in the browser process to complete the initialization for the
+  // pre-created instance.
   void OnBeginNavigationCommit(int render_process_id, int render_frame_id);
 
   // For service worker execution contexts. Completes initialization of this
@@ -455,8 +452,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // to renderer.
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag
   bool is_execution_ready() const;
-
-  void CallOnProviderCreatedForTesting();
 
  private:
   // For service worker clients. The flow is kInitial -> kResponseCommitted ->
@@ -563,7 +558,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                               container_host_request) override;
   void Ping(PingCallback callback) override;
   void HintToUpdateServiceWorker() override;
-  void OnProviderCreated() override;
   void OnExecutionReady() override;
 
   // Callback for ServiceWorkerContextCore::RegisterServiceWorker().
