@@ -6126,7 +6126,7 @@ crbug.com/946323 [ Mac ] editing/caret/caret-painting-low-dpi.html [ Failure Pas
 crbug.com/946624 virtual/user-activation-v2/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Failure Pass ]
 
 # Sheriff 2019-03-28
-crbug.com/946890 external/wpt/html/semantics/embedded-content/media-elements/location-of-the-media-resource/currentSrc.html [ Failure Pass ]
+crbug.com/946890 external/wpt/html/semantics/embedded-content/media-elements/location-of-the-media-resource/currentSrc.html [ Failure Pass Crash ]
 crbug.com/946990 http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout ]
 crbug.com/946990 virtual/binary-for-devtools/http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout ]
 crbug.com/946719 http/tests/serviceworker/resolve-after-window-close.html [ Crash Pass ]
