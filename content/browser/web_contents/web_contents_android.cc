@@ -599,7 +599,7 @@ jboolean WebContentsAndroid::HasAccessedInitialDocument(
 
 jint WebContentsAndroid::GetThemeColor(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj) {
-  return web_contents_->GetThemeColor();
+  return web_contents_->GetThemeColor().value_or(SK_ColorTRANSPARENT);
 }
 
 void WebContentsAndroid::RequestSmartClipExtract(
