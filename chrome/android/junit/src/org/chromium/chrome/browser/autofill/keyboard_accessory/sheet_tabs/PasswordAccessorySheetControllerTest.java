@@ -13,6 +13,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingMetricsRecorder.UMA_KEYBOARD_ACCESSORY_ACTION_IMPRESSION;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingMetricsRecorder.getHistogramForType;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_tabs.AccessorySheetTabMetricsRecorder.UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.Type.FOOTER_COMMAND;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.Type.PASSWORD_INFO;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.Type.TITLE;
@@ -36,7 +39,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.FallbackSheetType;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryMetricsRecorder;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData.FooterCommand;
@@ -184,9 +186,8 @@ public class PasswordAccessorySheetControllerTest {
     public void testRecordsSuggestionsImpressionsWhenShown() {
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         mCoordinator.registerDataProvider(testProvider);
-        assertThat(
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS),
+        assertThat(RecordHistogram.getHistogramTotalCountForTesting(
+                           UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS),
                 is(0));
         assertThat(getSuggestionsImpressions(AccessoryTabType.PASSWORDS, 0), is(0));
         assertThat(getSuggestionsImpressions(AccessoryTabType.ALL, 0), is(0));
@@ -224,15 +225,12 @@ public class PasswordAccessorySheetControllerTest {
 
     private int getActionImpressions(@AccessoryAction int bucket) {
         return RecordHistogram.getHistogramValueCountForTesting(
-                KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_ACTION_IMPRESSION, bucket);
+                UMA_KEYBOARD_ACCESSORY_ACTION_IMPRESSION, bucket);
     }
 
     private int getSuggestionsImpressions(@AccessoryTabType int type, int sample) {
         return RecordHistogram.getHistogramValueCountForTesting(
-                KeyboardAccessoryMetricsRecorder.getHistogramForType(
-                        KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS,
-                        type),
-                sample);
+                getHistogramForType(UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS, type), sample);
     }
 
     private void setAutofillFeature(boolean enabled) {

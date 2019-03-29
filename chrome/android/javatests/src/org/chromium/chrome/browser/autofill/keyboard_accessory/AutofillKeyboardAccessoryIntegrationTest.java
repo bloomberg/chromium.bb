@@ -110,6 +110,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
         mHelper.clickNodeAndShowKeyboard("NAME_FIRST");
         mHelper.waitForKeyboardAccessoryToBeShown();
 
+        CriteriaHelper.pollUiThread(() -> getFirstSuggestion() != null);
         TestThreadUtils.runOnUiThreadBlocking(() -> getFirstSuggestion().performClick());
         mHelper.waitForKeyboardAccessoryToDisappear();
     }

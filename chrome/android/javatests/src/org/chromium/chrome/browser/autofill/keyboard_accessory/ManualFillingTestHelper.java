@@ -46,8 +46,6 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAcce
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.components.autofill.AutofillDelegate;
-import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
@@ -57,7 +55,6 @@ import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
-import org.chromium.ui.DropdownItem;
 import org.chromium.ui.DropdownPopupWindowInterface;
 
 import java.util.concurrent.ExecutionException;
@@ -412,33 +409,6 @@ public class ManualFillingTestHelper {
             generationActionProvider.notifyObservers(new KeyboardAccessoryData.Action[] {
                     new KeyboardAccessoryData.Action("Generate Password",
                             AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, result -> {})});
-        });
-    }
-
-    public void addAutofillChips() {
-        PropertyProvider<AutofillSuggestion[]> suggestionProvider =
-                new PropertyProvider<>(AccessoryAction.AUTOFILL_SUGGESTION);
-        mActivityTestRule.getActivity()
-                .getManualFillingController()
-                .getKeyboardAccessory()
-                .registerAutofillProvider(suggestionProvider, new AutofillDelegate() {
-                    @Override
-                    public void dismissed() {}
-                    @Override
-                    public void suggestionSelected(int listIndex) {}
-                    @Override
-                    public void deleteSuggestion(int listIndex) {}
-                    @Override
-                    public void accessibilityFocusCleared() {}
-                });
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            suggestionProvider.notifyObservers(new AutofillSuggestion[] {
-                    new AutofillSuggestion("Johnathan", "Smithonian-Jackson", DropdownItem.NO_ICON,
-                            false, 0, false, false, false),
-                    new AutofillSuggestion("Jane Erika", "Donovanova", DropdownItem.NO_ICON, false,
-                            1, false, false, false),
-                    new AutofillSuggestion("Marcus", "McSpartangregor", DropdownItem.NO_ICON, false,
-                            2, false, false, false)});
         });
     }
 }

@@ -35,7 +35,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryBarContents;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryTabType;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryMetricsRecorder;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingMetricsRecorder;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryProperties.AutofillBarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
@@ -499,7 +499,7 @@ public class KeyboardAccessoryControllerTest {
                                        new Action("One", GENERATE_PASSWORD_AUTOMATIC, null)),
                         new BarItem(BarItem.Type.ACTION_BUTTON,
                                 new Action("Two", GENERATE_PASSWORD_AUTOMATIC, null))});
-        assertThat(getActionImpressionCount(GENERATE_PASSWORD_AUTOMATIC), is(1));
+        assertThat(getGenerationImpressionCount(), is(1));
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
 
         // Adding another action leaves bar impressions unchanged but affects the actions bucket.
@@ -509,12 +509,13 @@ public class KeyboardAccessoryControllerTest {
                         new BarItem(BarItem.Type.ACTION_BUTTON,
                                 new Action("Dos", GENERATE_PASSWORD_AUTOMATIC, null))});
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
-        assertThat(getActionImpressionCount(GENERATE_PASSWORD_AUTOMATIC), is(2));
+        assertThat(getGenerationImpressionCount(), is(2));
     }
 
-    private int getActionImpressionCount(@AccessoryAction int bucket) {
+    private int getGenerationImpressionCount() {
         return RecordHistogram.getHistogramValueCountForTesting(
-                KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_ACTION_IMPRESSION, bucket);
+                ManualFillingMetricsRecorder.UMA_KEYBOARD_ACCESSORY_ACTION_IMPRESSION,
+                AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
     }
 
     private int getShownMetricsCount(@AccessoryBarContents int bucket) {

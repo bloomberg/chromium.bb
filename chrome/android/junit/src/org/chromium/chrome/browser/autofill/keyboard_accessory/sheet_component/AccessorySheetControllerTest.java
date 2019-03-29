@@ -34,7 +34,7 @@ import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTrigger;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryMetricsRecorder;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingMetricsRecorder;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData.Tab;
 import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -246,7 +246,7 @@ public class AccessorySheetControllerTest {
     @Test
     public void testRecordsSheetClosure() {
         assertThat(RecordHistogram.getHistogramTotalCountForTesting(
-                           KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_SHEET_TRIGGERED),
+                           ManualFillingMetricsRecorder.UMA_KEYBOARD_ACCESSORY_SHEET_TRIGGERED),
                 is(0));
 
         // Although sheets must be opened manually as of now, don't assume that every opened sheet
@@ -263,6 +263,6 @@ public class AccessorySheetControllerTest {
 
     private int getTriggerMetricsCount(@AccessorySheetTrigger int bucket) {
         return RecordHistogram.getHistogramValueCountForTesting(
-                KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_SHEET_TRIGGERED, bucket);
+                ManualFillingMetricsRecorder.UMA_KEYBOARD_ACCESSORY_SHEET_TRIGGERED, bucket);
     }
 }
