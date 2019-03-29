@@ -45,6 +45,14 @@ class PluginUtils {
       const GURL& plugin_url,
       bool* is_managed);
 
+  // Returns the raw default content setting for Flash. This should not be used
+  // to actually run Flash, as it bypasses the origin scheme filter, legacy
+  // guardrails, and plugin-specific content settings. Hence "unsafe".
+  // It's used only for displaying Flash deprecation advisories.
+  static ContentSetting UnsafeGetRawDefaultFlashContentSetting(
+      const HostContentSettingsMap* host_content_settings_map,
+      bool* is_managed);
+
   // Remember that the user has changed the Flash permission for
   // |top_level_url|.
   static void RememberFlashChangedForSite(

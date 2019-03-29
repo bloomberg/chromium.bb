@@ -133,6 +133,23 @@ ContentSetting PluginUtils::GetFlashPluginContentSetting(
 }
 
 // static
+ContentSetting PluginUtils::UnsafeGetRawDefaultFlashContentSetting(
+    const HostContentSettingsMap* host_content_settings_map,
+    bool* is_managed) {
+  std::string provider_id;
+  ContentSetting plugin_setting =
+      host_content_settings_map->GetDefaultContentSetting(
+          CONTENT_SETTINGS_TYPE_PLUGINS, &provider_id);
+
+  if (is_managed) {
+    *is_managed = HostContentSettingsMap::GetProviderTypeFromSource(
+                      provider_id) == HostContentSettingsMap::POLICY_PROVIDER;
+  }
+
+  return plugin_setting;
+}
+
+// static
 void PluginUtils::RememberFlashChangedForSite(
     HostContentSettingsMap* host_content_settings_map,
     const GURL& top_level_url) {
