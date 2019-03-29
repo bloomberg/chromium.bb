@@ -287,7 +287,8 @@ void AppCache::ToResourceInfoVector(
     info.is_fallback = pair.second.IsFallback();
     info.is_foreign = pair.second.IsForeign();
     info.is_explicit = pair.second.IsExplicit();
-    info.size = pair.second.response_size();
+    info.response_size = pair.second.response_size();
+    info.padding_size = pair.second.padding_size();
     info.response_id = pair.second.response_id();
   }
 }

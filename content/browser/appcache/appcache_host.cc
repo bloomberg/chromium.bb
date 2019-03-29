@@ -52,7 +52,8 @@ blink::mojom::AppCacheInfoPtr CreateCacheInfo(
   info->group_id = cache->owning_group()->group_id();
   info->last_update_time = cache->update_time();
   info->creation_time = cache->owning_group()->creation_time();
-  info->size = cache->cache_size();
+  info->response_sizes = cache->cache_size();
+  info->padding_sizes = cache->padding_size();
   return info;
 }
 

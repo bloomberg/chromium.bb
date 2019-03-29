@@ -37,7 +37,11 @@
               </div>
               <div class="appcache-size">
                 <span> Size: </span>
-                <span jscontent="size"></span>
+                <span jscontent="totalSize"></span>
+                =
+                <span jscontent="responseSizes"></span> (response)
+                +
+                <span jscontent="paddingSizes"></span> (padding)
               </div>
               <div class="appcache-dates">
                 <ul>
@@ -82,7 +86,11 @@
                       jscontent="fileUrl" jsvalues=".responseId:responseId">
           </a>
         </span>
-        <span jscontent="size"></span>
+        <span jscontent="totalSize"></span>
+        =
+        <span jscontent="responseSize"></span> (response)
+        +
+        <span jscontent="paddingSize"></span> (padding)
         <span jscontent="properties"></span>
       </div>
     </div>
