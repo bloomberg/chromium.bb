@@ -6069,9 +6069,6 @@ crbug.com/942517 [ Linux ] virtual/binary-for-inspector-protocol/http/tests/insp
 crbug.com/943388 [ Win ] http/tests/devtools/network/network-recording-after-reload-with-screenshots-enabled.js [ Pass Failure ]
 crbug.com/943388 [ Win ] virtual/binary-for-devtools/http/tests/devtools/network/network-recording-after-reload-with-screenshots-enabled.js [ Pass Failure ]
 
-# Trooper 2019-03-19
-crbug.com/941565 external/wpt/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Pass Failure ]
-
 # Sheriff 2019-03-20
 crbug.com/732103 [ Mac10.11 ] http/tests/shapedetection/shapedetection-cross-origin.html [ Timeout Pass ]
 crbug.com/943969 [ Win ] inspector-protocol/animation/animation-pause-infinite.js [ Pass Failure ]
