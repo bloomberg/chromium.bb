@@ -152,6 +152,22 @@ class UkmPageLoadMetricsObserver
   // The browser context this navigation is operating in.
   content::BrowserContext* browser_context_ = nullptr;
 
+  // Whether the navigation resulted in the main frame being hosted in
+  // a different process.
+  bool navigation_is_cross_process_ = false;
+
+  // Difference between indices of the previous and current navigation entries
+  // (i.e. item history for the current tab).
+  // Typically -1/0/1 for back navigations / reloads / forward navigations.
+  // 0 for most of navigations with replacement (e.g. location.replace).
+  // 1 for regular navigations (link click / omnibox / etc).
+  int navigation_entry_offset_ = 0;
+
+  // Id for the main document, which persists across history navigations to the
+  // same document.
+  // Unique across the lifetime of the browser process.
+  int main_document_sequence_number_ = -1;
+
   // The connection info for the committed URL.
   base::Optional<net::HttpResponseInfo::ConnectionInfo> connection_info_;
 

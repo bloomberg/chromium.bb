@@ -231,6 +231,11 @@ class NavigationEntry {
 
   // Adds more extra headers (separated by \r\n) to send during the request.
   virtual void AddExtraHeaders(const std::string& extra_headers) = 0;
+
+  // Returns a unique value identifying the main document for this navigation.
+  // This persists across same-document navigations and stays the same after
+  // a history navigation to an already visited document.
+  virtual int64_t GetMainFrameDocumentSequenceNumber() = 0;
 };
 
 }  // namespace content

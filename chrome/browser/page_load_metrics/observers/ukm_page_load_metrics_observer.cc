@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/offline_pages/buildflags/buildflags.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/http_response_headers.h"
@@ -165,6 +166,12 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
   is_signed_exchange_inner_response_ =
       navigation_handle->IsSignedExchangeInnerResponse();
   RecordNoStatePrefetchMetrics(navigation_handle, source_id);
+  navigation_is_cross_process_ = !navigation_handle->IsSameProcess();
+  navigation_entry_offset_ = navigation_handle->GetNavigationEntryOffset();
+  main_document_sequence_number_ = navigation_handle->GetWebContents()
+                                       ->GetController()
+                                       .GetLastCommittedEntry()
+                                       ->GetMainFrameDocumentSequenceNumber();
   return CONTINUE_OBSERVING;
 }
 
@@ -419,6 +426,13 @@ void UkmPageLoadMetricsObserver::RecordPageLoadExtraInfoMetrics(
   }
   if (info.did_commit && is_signed_exchange_inner_response_) {
     builder.SetIsSignedExchangeInnerResponse(1);
+  }
+  if (info.did_commit && navigation_is_cross_process_) {
+    builder.SetIsCrossProcessNavigation(navigation_is_cross_process_);
+  }
+  if (info.did_commit) {
+    builder.SetNavigationEntryOffset(navigation_entry_offset_);
+    builder.SetMainDocumentSequenceNumber(main_document_sequence_number_);
   }
   builder.Record(ukm::UkmRecorder::Get());
 }

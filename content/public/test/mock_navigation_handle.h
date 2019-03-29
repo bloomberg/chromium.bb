@@ -94,6 +94,8 @@ class MockNavigationHandle : public NavigationHandle {
   NavigationData* GetNavigationData() override { return nullptr; }
   MOCK_METHOD1(RegisterSubresourceOverride,
                void(mojom::TransferrableURLLoaderPtr));
+  MOCK_METHOD0(IsSameProcess, bool());
+  MOCK_METHOD0(GetNavigationEntryOffset, int());
 
   void set_url(const GURL& url) { url_ = url; }
   void set_starting_site_instance(SiteInstance* site_instance) {

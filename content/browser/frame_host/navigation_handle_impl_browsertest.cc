@@ -2552,4 +2552,195 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest, Disallowed) {
   EXPECT_FALSE(handle_observer.is_download());
 }
 
+class NavigationHandleImplBackForwardBrowserTest
+    : public NavigationHandleImplBrowserTest,
+      public WebContentsObserver {
+ protected:
+  void SetUpOnMainThread() override {
+    NavigationHandleImplBrowserTest::SetUpOnMainThread();
+
+    WebContentsObserver::Observe(shell()->web_contents());
+  }
+
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    if (navigation_handle->HasCommitted()) {
+      offsets_.push_back(navigation_handle->GetNavigationEntryOffset());
+    }
+  }
+
+  std::vector<int64_t> offsets_;
+};
+
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBackForwardBrowserTest,
+                       NavigationEntryOffsets) {
+  const GURL url1(embedded_test_server()->GetURL("/title1.html"));
+  const GURL url2(embedded_test_server()->GetURL("/title2.html"));
+  const GURL url3(embedded_test_server()->GetURL("/title3.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  // The navigation entries are:
+  // [*url1].
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents());
+    shell()->Reload();
+    navigation_observer.WaitForNavigationFinished();
+  }
+  // The navigation entries are:
+  // [*url1].
+
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+  // The navigation entries are:
+  // [url1, *url2].
+
+  EXPECT_TRUE(NavigateToURL(shell(), url3));
+  // The navigation entries are:
+  // [url1, url2, *url3].
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents());
+    shell()->GoBackOrForward(-1);
+    navigation_observer.WaitForNavigationFinished();
+  }
+  // The navigation entries are:
+  // [url1, *url2, url3].
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents());
+    shell()->GoBackOrForward(-1);
+    navigation_observer.WaitForNavigationFinished();
+  }
+  // The navigation entries are:
+  // [*url1, url2, url3].
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents());
+    shell()->GoBackOrForward(1);
+    navigation_observer.WaitForNavigationFinished();
+  }
+  // The navigation entries are:
+  // [url1, *url2, url3].
+
+  // Navigations 1, 3, 4 are regular navigations.
+  // Navigation 2 is a reload.
+  // Navigaations 5 and 6 are back navigations.
+  // Navigation 7 is a forward navigation.
+  EXPECT_THAT(offsets_, testing::ElementsAre(1, 0, 1, 1, -1, -1, 1));
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBackForwardBrowserTest,
+                       NavigationEntryOffsetsForSubframes) {
+  const GURL url1(embedded_test_server()->GetURL("/title1.html"));
+  const GURL url1_fragment1(
+      embedded_test_server()->GetURL("/title1.html#id_1"));
+  const GURL url2(
+      embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
+  const char kChildFrameId[] = "child0";
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  // The navigation entries are:
+  // [*url1].
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1_fragment1));
+  // The navigation entries are:
+  // [url1, *url1_fragment1].
+
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+  // The navigation entries are:
+  // [url1, url1_fragment1, *url2(subframe)].
+
+  EXPECT_TRUE(
+      NavigateIframeToURL(shell()->web_contents(), kChildFrameId, url1));
+  // The navigation entries are:
+  // [url1, url1_fragment1, url2(subframe), *url2(url1)].
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  // The navigation entries are:
+  // [url1, url1_fragment1, url2(subframe), url2(url1), *url1].
+
+  {
+    // We are waiting for two navigations here: main frame and subframe.
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 2);
+    shell()->GoBackOrForward(-1);
+    navigation_observer.WaitForNavigationFinished();
+  }
+  // The navigation entries are:
+  // [url1, url1_fragment1, url2(subframe), *url2(url1), url1].
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents());
+    shell()->GoBackOrForward(-1);
+    navigation_observer.WaitForNavigationFinished();
+  }
+  // The navigation entries are:
+  // [url1, url1_fragment1, *url2(subframe), url2(url1), url1].
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents());
+    shell()->GoBackOrForward(-1);
+    navigation_observer.WaitForNavigationFinished();
+  }
+  // The navigation entries are:
+  // [url1, *url1_fragment1, url2(subframe), url2(url1), url1].
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents());
+    shell()->GoBackOrForward(-1);
+    navigation_observer.WaitForNavigationFinished();
+  }
+  // The navigation entries are:
+  // [*url1, url1_fragment1, url2(subframe), url2(url1), url1].
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents());
+    shell()->GoBackOrForward(4);
+    navigation_observer.WaitForNavigationFinished();
+  }
+  // The navigation entries are:
+  // [url1, url1_fragment1, url2(subframe), url2(url1), *url1].
+
+  // New navigations have offset 1, back navigations have offset -1 and the last
+  // navigations have offset 3 as requested.
+  // Note that all subframe navigations have offset 1 regardless of whether they
+  // result in a new entry being generated or not.
+  EXPECT_THAT(offsets_,
+              testing::ElementsAre(1, 1, 1, 0, 1, 1, -1, 1, -1, -1, -1, 4));
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBackForwardBrowserTest,
+                       NavigationEntryLimit) {
+  const GURL url1(embedded_test_server()->GetURL("/title1.html"));
+
+  static_cast<NavigationControllerImpl*>(
+      &shell()->web_contents()->GetController())
+      ->set_max_entry_count_for_testing(3);
+
+  for (int i = 0; i < 5; ++i) {
+    EXPECT_TRUE(NavigateToURL(shell(), url1));
+  }
+
+  // Expect that the offsets are still 1 even when we hit the entry count limit.
+  EXPECT_THAT(offsets_, testing::ElementsAre(1, 1, 1, 1, 1));
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBackForwardBrowserTest,
+                       LocationReplace) {
+  const GURL url1(embedded_test_server()->GetURL("/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents());
+    EXPECT_TRUE(ExecuteScript(root, "window.location.replace('#frag');"));
+    navigation_observer.WaitForNavigationFinished();
+  }
+
+  // The second navigation replaces the current navigation entry and should have
+  // offset of zero.
+  EXPECT_THAT(offsets_, testing::ElementsAre(1, 0));
+}
+
 }  // namespace content

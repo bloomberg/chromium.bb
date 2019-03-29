@@ -636,6 +636,8 @@ NavigationRequest::NavigationRequest(
       common_params_.initiator_csp_info.initiator_csp,
       common_params_.initiator_csp_info.initiator_self_source,
       std::move(navigation_initiator)));
+
+  navigation_entry_offset_ = EstimateHistoryOffset();
 }
 
 NavigationRequest::~NavigationRequest() {
@@ -2217,6 +2219,25 @@ void NavigationRequest::VerifyLoaderAndRenderFrameHostExpectations() {
   base::debug::Alias(&state);
   DEBUG_ALIAS_FOR_GURL(url, common_params_.url);
   base::debug::DumpWithoutCrashing();
+}
+
+int NavigationRequest::EstimateHistoryOffset() {
+  if (common_params_.should_replace_current_entry)
+    return 0;
+
+  NavigationController* controller =
+      frame_tree_node_->navigator()->GetController();
+  if (!controller)  // Interstitial page.
+    return 1;
+
+  int current_index = controller->GetLastCommittedEntryIndex();
+  int pending_index = controller->GetPendingEntryIndex();
+
+  // +1 for non history navigation.
+  if (current_index == -1 || pending_index == -1)
+    return 1;
+
+  return pending_index - current_index;
 }
 
 }  // namespace content

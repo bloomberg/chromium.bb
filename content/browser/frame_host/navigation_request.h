@@ -292,6 +292,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   bool IsSameDocument() const;
 
+  int navigation_entry_offset() { return navigation_entry_offset_; }
+
  private:
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     const CommonNavigationParams& common_params,
@@ -443,6 +445,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // TODO(https://crbug.com/936962): Remove this when the bug is fixed.
   void VerifyLoaderAndRenderFrameHostExpectations();
 
+  // Compute the history offset of the new document compared to the current one.
+  // See navigation_history_offset_ for more details.
+  int EstimateHistoryOffset();
+
   FrameTreeNode* frame_tree_node_;
 
   RenderFrameHostImpl* render_frame_host_ = nullptr;
@@ -563,6 +569,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // HTTPS. This is used only on subframe navigations, when
   // upgrade-insecure-requests is set as a CSP policy.
   bool upgrade_if_insecure_ = false;
+
+  // The offset of the new document in the history.
+  // See NavigationHandle::GetNavigationEntryOffset() for details.
+  int navigation_entry_offset_ = 0;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_;
 

@@ -9399,4 +9399,118 @@ IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerBrowserTest,
   histogram.ExpectTotalCount(kWithinSubtreeHistogram, 0);
 }
 
+class NavigationControllerMainDocumentSequenceNumberBrowserTest
+    : public NavigationControllerBrowserTest,
+      public WebContentsObserver {
+ protected:
+  void SetUpOnMainThread() override {
+    NavigationControllerBrowserTest::SetUpOnMainThread();
+
+    WebContentsObserver::Observe(shell()->web_contents());
+  }
+
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    main_frame_document_sequence_numbers_.push_back(
+        shell()
+            ->web_contents()
+            ->GetController()
+            .GetLastCommittedEntry()
+            ->GetMainFrameDocumentSequenceNumber());
+  }
+
+  // Document sequence numbers monotonically increase during the entire lifetime
+  // of the browser process. Renumber them starting at 1 to make testing easier.
+  std::vector<int64_t> GetProcessedMainDocumentSequenceNumbers() {
+    std::vector<int64_t> ids = main_frame_document_sequence_numbers_;
+    std::sort(ids.begin(), ids.end());
+
+    std::map<int64_t, int64_t> compressor;
+    int current_id = 0;
+    for (int64_t value : ids) {
+      if (compressor.find(value) == compressor.end())
+        compressor[value] = ++current_id;
+    }
+
+    std::vector<int64_t> result;
+    for (int64_t value : main_frame_document_sequence_numbers_)
+      result.push_back(compressor[value]);
+
+    return result;
+  }
+
+ private:
+  std::vector<int64_t> main_frame_document_sequence_numbers_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    NavigationControllerMainDocumentSequenceNumberBrowserTest,
+    SubframeNavigation) {
+  const GURL url1(
+      embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
+  const GURL url2(embedded_test_server()->GetURL("/title1.html"));
+  const GURL url3(embedded_test_server()->GetURL("/title2.html"));
+  const char kChildFrameId[] = "child0";
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  // The navigation entries are:
+  // [*url1(subframe)]
+
+  EXPECT_TRUE(
+      NavigateIframeToURL(shell()->web_contents(), kChildFrameId, url2));
+  // The navigation entries are:
+  // [url1(subframe), *url1(url2)]
+
+  EXPECT_TRUE(NavigateToURL(shell(), url3));
+  // The navigation entries are:
+  // [url1(subframe), url1(url2), *url3]
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 2);
+    shell()->GoBackOrForward(-1);
+    navigation_observer.WaitForNavigationFinished();
+  }
+  // The navigation entries are:
+  // [url1(subframe), *url1(url2), url3]
+
+  // Main document and child document navigation from the first NavigateToURL
+  // and the subframe navigation from NavigateIframeToURL are related to the
+  // first main document.
+  // The second NavigateToURL navigates to a new main document.
+  // The back navigation navigates back both main document and a child document
+  // and they are related to the first main document.
+  EXPECT_THAT(GetProcessedMainDocumentSequenceNumbers(),
+              ElementsAre(1, 1, 1, 2, 1, 1));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    NavigationControllerMainDocumentSequenceNumberBrowserTest,
+    SameDocument) {
+  const GURL url1(embedded_test_server()->GetURL("/title1.html"));
+  const GURL url1_fragment(embedded_test_server()->GetURL("/title1.html#id_1"));
+  const GURL url2(embedded_test_server()->GetURL("/title2.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  // The navigation entries are:
+  // [*url1]
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1_fragment));
+  // The navigation entries are:
+  // [url1, *url1_fragment]
+
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+  // The navigation entries are:
+  // [url1, url1_fragment, *url2]
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents());
+    shell()->GoBackOrForward(-1);
+    navigation_observer.WaitForNavigationFinished();
+  }
+  // The navigation entries are:
+  // [url1, *url1_fragment, url2]
+
+  EXPECT_THAT(GetProcessedMainDocumentSequenceNumbers(),
+              ElementsAre(1, 1, 2, 1));
+}
+
 }  // namespace content
