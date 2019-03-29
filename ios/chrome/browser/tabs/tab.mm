@@ -102,10 +102,6 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kTabUrlStartedLoadingNotificationForCrashReporting =
-    @"kTabUrlStartedLoadingNotificationForCrashReporting";
-NSString* const kTabUrlMayStartLoadingNotificationForCrashReporting =
-    @"kTabUrlMayStartLoadingNotificationForCrashReporting";
 NSString* const kTabIsShowingExportableNotificationForCrashReporting =
     @"kTabIsShowingExportableNotificationForCrashReporting";
 NSString* const kTabClosingCurrentDocumentNotificationForCrashReporting =
@@ -193,23 +189,10 @@ NSString* const kTabUrlKey = @"url";
   [self.webController dismissModals];
 }
 
-- (void)notifyTabOfUrlMayStartLoading:(const GURL&)url {
-  NSString* urlString = base::SysUTF8ToNSString(url.spec());
-  if ([urlString length]) {
-    [[NSNotificationCenter defaultCenter]
-        postNotificationName:kTabUrlMayStartLoadingNotificationForCrashReporting
-                      object:self
-                    userInfo:@{kTabUrlKey : urlString}];
-  }
-}
-
 #pragma mark - CRWWebStateObserver protocol
 
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
-  // Notify tab of Url may start loading, this notification is not sent in cases
-  // of app launching, history api navigations, and hash change navigations.
-  [self notifyTabOfUrlMayStartLoading:navigation->GetUrl()];
 
   [self.dialogDelegate cancelDialogForTab:self];
   [_openInController disable];
