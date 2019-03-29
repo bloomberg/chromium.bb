@@ -265,6 +265,7 @@ static const char *level_fail_messages[TARGET_LEVEL_FAIL_IDS] = {
 static double get_min_cr(const AV1LevelSpec *const level_spec, int tier,
                          int is_still_picture, int64_t decoded_sample_rate) {
   if (is_still_picture) return 0.8;
+  if (level_spec->level < SEQ_LEVEL_4_0) tier = 0;
   const double min_cr_basis = tier ? level_spec->high_cr : level_spec->main_cr;
   const double speed_adj =
       (double)decoded_sample_rate / level_spec->max_display_rate;
