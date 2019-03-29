@@ -61,7 +61,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
       modality_(params.modality),
       description_label_(new views::Label()),
       audio_share_checkbox_(nullptr),
-      pane_(new views::TabbedPane()) {
+      pane_(new views::TabbedPane()),
+      created_by_extension_(params.created_by_extension) {
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(

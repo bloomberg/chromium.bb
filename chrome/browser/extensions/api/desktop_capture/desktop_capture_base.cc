@@ -155,6 +155,7 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
   picker_params.app_name = base::UTF8ToUTF16(GetCallerDisplayName());
   picker_params.target_name = target_name;
   picker_params.request_audio = request_audio;
+  picker_params.created_by_extension = true;
   picker_->Show(picker_params, std::move(source_lists), callback);
   origin_ = origin;
   return true;

@@ -65,6 +65,8 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
       content::DesktopMediaID::Type source_type) const;
   views::TabbedPane* GetPaneForTesting() const;
 
+  bool IsCreatedByExtension() const { return created_by_extension_; }
+
  private:
   void OnSourceTypeSwitched(int index);
 
@@ -78,6 +80,8 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   views::TabbedPane* pane_;
   std::vector<DesktopMediaListView*> list_views_;
   std::vector<content::DesktopMediaID::Type> source_types_;
+
+  bool created_by_extension_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopMediaPickerDialogView);
 };

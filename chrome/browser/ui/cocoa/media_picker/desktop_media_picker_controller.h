@@ -64,6 +64,9 @@
 
   // Used to create |DesktopMediaPickerItem|s with unique IDs.
   int lastImageUID_;
+
+  // Save input |params| for future use.
+  DesktopMediaPicker::Params params_;
 }
 
 // Designated initializer.

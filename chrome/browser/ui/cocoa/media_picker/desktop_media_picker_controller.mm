@@ -147,6 +147,7 @@ NSString* const kDesktopMediaPickerTitleId = @"title";
 
     [self initializeContentsWithParams:params];
     doneCallback_ = callback;
+    params_ = params;
 
     bridge_.reset(new DesktopMediaPickerBridge(self));
   }
@@ -614,8 +615,11 @@ NSString* const kDesktopMediaPickerTitleId = @"title";
 
   [tabBrowser_ selectRowIndexes:indexes byExtendingSelection:NO];
 
-  // Enable or disable the OK button based on whether we have a selection.
-  [shareButton_ setEnabled:(index >= 0)];
+  DesktopMediaID::Type selectedType = [self selectedSourceType];
+  if (selectedType == DesktopMediaID::TYPE_WEB_CONTENTS) {
+    // Enable or disable the OK button based on whether we have a selection.
+    [shareButton_ setEnabled:(index >= 0)];
+  }
 }
 
 #pragma mark NSWindowDelegate
@@ -742,7 +746,11 @@ NSString* const kDesktopMediaPickerTitleId = @"title";
     // Memorizing selection.
     [self setTabBrowserIndex:selectedIndex];
   } else if (sourceType == DesktopMediaID::TYPE_SCREEN) {
-    if ([items count] == 2) {
+    if ([items count] == 1 && params_.created_by_extension) {
+      // Preselect the first screen source for desktopCapture API only.
+      [browser setSelectionIndexes:[NSIndexSet indexSetWithIndex:0]
+              byExtendingSelection:NO];
+    } else if ([items count] == 2) {
       // Switch to multiple sources mode.
       [browser setCellSize:NSMakeSize(kDesktopMediaPickerMultipleScreenWidth,
                                       kDesktopMediaPickerMultipleScreenHeight)];

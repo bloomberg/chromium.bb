@@ -194,6 +194,11 @@ void DesktopMediaListView::OnSourceAdded(DesktopMediaList* list, int index) {
   if ((child_count() - 1) % active_style_->columns == 0)
     parent_->OnMediaListRowsChanged();
 
+  // Auto select the first screen for extension desktopCapture API only.
+  if (index == 0 && source.id.type == DesktopMediaID::TYPE_SCREEN &&
+      parent_->IsCreatedByExtension())
+    source_view->RequestFocus();
+
   PreferredSizeChanged();
 
   std::string autoselect_source =
