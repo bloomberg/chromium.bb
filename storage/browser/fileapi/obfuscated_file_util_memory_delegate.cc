@@ -421,6 +421,37 @@ int ObfuscatedFileUtilMemoryDelegate::ReadFile(const base::FilePath& path,
   return buf_len;
 }
 
+int ObfuscatedFileUtilMemoryDelegate::WriteFile(const base::FilePath& path,
+                                                int64_t offset,
+                                                net::IOBuffer* buf,
+                                                int buf_len) {
+  base::Optional<DecomposedPath> dp = ParsePath(path);
+
+  if (!dp || dp->entry->type != Entry::kFile)
+    return net::ERR_FILE_NOT_FOUND;
+
+  size_t offset_u = static_cast<size_t>(offset);
+  // Fail if |offset| or |buf_len| not valid.
+  if (offset < 0 || buf_len < 0 || offset_u > dp->entry->file_content.size())
+    return net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
+
+  // Fail if result doesn't fit in a std::vector.
+  if (std::numeric_limits<size_t>::max() - offset_u <
+      static_cast<size_t>(buf_len))
+    return net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
+
+  if (offset_u == dp->entry->file_content.size()) {
+    dp->entry->file_content.insert(dp->entry->file_content.end(), buf->data(),
+                                   buf->data() + buf_len);
+  } else {
+    if (offset_u + buf_len > dp->entry->file_content.size())
+      dp->entry->file_content.resize(offset_u + buf_len);
+
+    memcpy(dp->entry->file_content.data() + offset, buf->data(), buf_len);
+  }
+  return buf_len;
+}
+
 base::File::Error ObfuscatedFileUtilMemoryDelegate::CreateFileForTesting(
     const base::FilePath& path,
     base::span<const char> content) {
