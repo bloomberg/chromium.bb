@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
+#include "storage/browser/fileapi/obfuscated_file_util_memory_delegate.h"
 
 namespace storage {
 
@@ -35,6 +36,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) MemoryFileStreamWriter
       OpenOrCreate open_or_create);
 
   base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> memory_file_util_;
+
+  const base::FilePath file_path_;
+  int64_t offset_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryFileStreamWriter);
 };

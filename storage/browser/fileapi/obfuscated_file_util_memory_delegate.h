@@ -81,6 +81,14 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtilMemoryDelegate
                net::IOBuffer* buf,
                int buf_len);
 
+  // Writes |buf_len| bytes to the file at |path|, starting from |offset|.
+  // If successful, returns the actual number of written bytes, otherwise a
+  // net::Error value is returned.
+  int WriteFile(const base::FilePath& path,
+                int64_t offset,
+                net::IOBuffer* buf,
+                int buf_len);
+
   base::File::Error CreateFileForTesting(const base::FilePath& path,
                                          base::span<const char> content);
 

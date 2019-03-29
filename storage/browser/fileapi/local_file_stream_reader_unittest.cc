@@ -26,7 +26,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
-#include "storage/browser/fileapi/file_stream_reader_test_utils.h"
+#include "storage/browser/fileapi/file_stream_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using storage::LocalFileStreamReader;

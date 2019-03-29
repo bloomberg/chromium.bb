@@ -21,7 +21,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "storage/browser/fileapi/external_mount_points.h"
-#include "storage/browser/fileapi/file_stream_reader_test_utils.h"
+#include "storage/browser/fileapi/file_stream_test_utils.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/test/async_file_test_helper.h"
