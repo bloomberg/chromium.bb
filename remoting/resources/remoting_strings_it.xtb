@@ -315,7 +315,7 @@ Per attivare questa funzionalità, seleziona "<ph name="BUTTON_NAME" />" per vis
 <translation id="8041721485428375115">Se scarichi il programma di installazione di Chrome Remote Desktop Host, accetti i <ph name="LINK_BEGIN" />Termini di servizio<ph name="LINK_END" /> di Google.</translation>
 <translation id="8060029310790625334">Centro assistenza</translation>
 <translation id="806699900641041263">Connessione a <ph name="HOSTNAME" /> in corso</translation>
-<translation id="8073845705237259513">Per poter utilizzare Chrome Remote Desktop devi aggiungere un account Google sul dispositivo.</translation>
+<translation id="8073845705237259513">Per poter utilizzare Chrome Remote Desktop devi aggiungere un Account Google sul dispositivo.</translation>
 <translation id="80739703311984697">L'host remoto richiede l'autenticazione su un sito web di terze parti. Per continuare, devi concedere a Chromoting ulteriori autorizzazioni per accedere a questo indirizzo:</translation>
 <translation id="809687642899217504">I miei computer</translation>
 <translation id="811307782653349804">Accedi al tuo computer ovunque tu sia.</translation>
@@ -329,7 +329,7 @@ Per attivare questa funzionalità, seleziona "<ph name="BUTTON_NAME" />" per vis
 <translation id="8355326866731426344">Questo codice di accesso scadrà tra <ph name="TIMEOUT" /></translation>
 <translation id="8355485110405946777">Includi log dell'applicazione per aiutarci a risolvere il tuo problema (i log potrebbero includere informazioni private).</translation>
 <translation id="837021510621780684">Da questo computer</translation>
-<translation id="8383794970363966105">Per poter utilizzare Chromoting devi aggiungere un account Google sul dispositivo.</translation>
+<translation id="8383794970363966105">Per poter utilizzare Chromoting devi aggiungere un Account Google sul dispositivo.</translation>
 <translation id="8386846956409881180">L'host è stato configurato con credenziali OAuth non valide.</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8445362773033888690">Visualizza nel Google Play Store</translation>

@@ -3329,9 +3329,6 @@
 <translation id="7339315111520512972">Tvinga nätverkskod att köras i webbläsarprocessen</translation>
 <translation id="7340034977315324840">Rapportera aktivitetstider för enhet</translation>
 <translation id="7343497214039883642">Skivarkonfigurationsfil för företagsenheter</translation>
-<translation id="7349338075015720646">Anger en lista över webbplatser som installeras obemärkt utan att användaren gör något och som användaren inte kan avinstallera eller inaktivera.
-
-      Varje post i principens listan är ett objekt med två medlemmar: "url" och "launch_container". "url" bör vara webbadressen till webbappen som ska installeras och "launch_container" ska anges antingen som "window" eller "tab" för att visa hur webbappen ska öppnas när den har installerats. Om "launch_container" utelämnas öppnas appen i ett fönster om den anses vara en progressiv webbapp i Chrome och på en flik i annat fall.</translation>
 <translation id="735902178936442460">Den här principen styr om information som kan användas för att identifiera enheter ska rapporteras. Det kan till exempel vara enhetens namn och nätverksadress.
 
       När principen har lämnats utan inställning eller är inställd på sant samlas information som kan användas för att identifiera enheter in.

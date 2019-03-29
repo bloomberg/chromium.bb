@@ -35,6 +35,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Pilih semu&amp;a</translation>
 <translation id="1938451708255335766">Untuk menyesuaikan kepadatan tampilan jendela, mulai ulang aplikasi.</translation>
+<translation id="208586643495776849">Coba lagi</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1h}other{#h}}</translation>
 <translation id="2148716181193084225">Hari ini</translation>
 <translation id="2168039046890040389">Page Up</translation>
@@ -59,7 +60,7 @@
 <translation id="2743387203779672305">Salin ke papan klip</translation>
 <translation id="2803313416453193357">Buka folder</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 tahun yang lalu}other{# tahun yang lalu}}</translation>
-<translation id="2907671656515444832">{DAYS,plural, =1{dalam 1 hr}other{dalam # hr}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{dalam 1 h}other{dalam # h}}</translation>
 <translation id="2931838996092594335">klik</translation>
 <translation id="3036649622769666520">Buka File</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -118,7 +119,7 @@
 <translation id="5613020302032141669">Panah Kiri</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 mnt}other{# mnt}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 hari dan }other{# hari dan }}</translation>
-<translation id="5866104238061687188">{YEARS,plural, =1{dalam 1 thn}other{dalam # thn}}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{dalam 1 t}other{dalam # t}}</translation>
 <translation id="5895138241574237353">Mulai Ulang</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 detik lagi}other{# detik lagi}}</translation>
 <translation id="5941711191222866238">Perkecil</translation>
@@ -174,7 +175,7 @@
 <translation id="7907591526440419938">Buka File</translation>
 <translation id="7969046989155602842">Tombol Perintah</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Lebih dari 1 notifikasi belum dibaca}other{Lebih dari # notifikasi belum dibaca}}</translation>
-<translation id="8086866675552927481">{MINUTES,plural, =1{dalam 1 mnt}other{dalam # mnt}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{dalam 1 m}other{dalam # m}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 jam yang lalu}other{# jam yang lalu}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 dtk lagi}other{# dtk lagi}}</translation>

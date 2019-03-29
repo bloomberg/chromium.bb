@@ -204,7 +204,6 @@
 <translation id="4049507953662678203">تأكد من اتصالك بالشبكة، وأعد المحاولة.</translation>
 <translation id="4082688844002261427">التحكُّم في كيفية استخدام سجلّ التصفُّح لتخصيص البحث والإعلانات والمزيد</translation>
 <translation id="408404951701638773">أصبح الوصول إلى شريط البحث أسهل الآن</translation>
-<translation id="4084682180776658562">إشارة</translation>
 <translation id="411254640334432676">فشلت عملية التنزيل</translation>
 <translation id="4112644173421521737">بحث</translation>
 <translation id="4121993058175073134">لإرسال بيانات تصدير الشبكة، يُرجى تهيئة حساب بريدك الإلكتروني في التطبيق "الإعدادات".</translation>
@@ -284,7 +283,7 @@
 <translation id="5548760955356983418">‏يتيح لك Handoff بدء تصفح موقع على هذا الجهاز ثم متابعة التصفح بسهولة على جهاز Mac. سيظهر الموقع المفتوح حاليًا على Dock بـ Mac.
 
 لابد من تفعيل Handoff كذلك في القسم العام من الإعدادات، ولابد من استخدام أجهزتك لنفس حساب iCloud.</translation>
-<translation id="5556459405103347317">إعادة تحميل</translation>
+<translation id="5556459405103347317">إعادة التحميل</translation>
 <translation id="5614553682702429503">هل تريد حفظ كلمة المرور؟</translation>
 <translation id="5626245204502895507">تعذر تنزيل الملف في الوقت الحالي.</translation>
 <translation id="5659593005791499971">البريد الإلكتروني</translation>
@@ -367,7 +366,6 @@
 <translation id="6657585470893396449">كلمة المرور</translation>
 <translation id="667999046851023355">مستند</translation>
 <translation id="6691331417640343772">‏إدارة البيانات المتزامنة على لوحة بيانات Google</translation>
-<translation id="6709334795756764830">تعديل الإشارة المرجعية</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">يتعذّر تصدير كلمات المرور</translation>
 <translation id="6780034285637185932">الرمز البريدي</translation>
@@ -470,7 +468,7 @@
 <translation id="8487700953926739672">التوفر بلا إنترنت</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>
 <translation id="850600235656508448">فتح في وضع التصفح المتخفي</translation>
-<translation id="8517375800490286174">تراخيص البرامج مفتوحة المصدر</translation>
+<translation id="8517375800490286174">تراخيص البرامج المفتوحة المصدر</translation>
 <translation id="8524799873541103884">علامات تبويب <ph name="INCOGNITO" /><ph name="FIRST_VISIBLE_TAB" /> عبر <ph name="LAST_VISIBLE_TAB" /> من <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8532105204136943229">عام انتهاء الصلاحية</translation>
 <translation id="8534481786647257214">‏اكتمل النشر على Google+‎.</translation>

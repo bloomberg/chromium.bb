@@ -24,7 +24,6 @@
 <translation id="1103523840287552314">Siempre traducir <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Si marcas esta opción, Chrome almacenará una copia de la tarjeta en el dispositivo para completar más rápidamente los formularios.</translation>
 <translation id="1110994991967754504">Selecciona el permiso para <ph name="PERMISSION_NAME" /></translation>
-<translation id="1111153019813902504">Favoritos recientes</translation>
 <translation id="1113869188872983271">&amp;Deshacer Reorganizar</translation>
 <translation id="1125573121925420732">Las advertencias pueden ser habituales cuando las páginas web actualizan su seguridad. Esto debería mejorar pronto.</translation>
 <translation id="1126551341858583091">El tamaño del almacenamiento local es <ph name="CRASH_SIZE" />.</translation>
@@ -50,7 +49,6 @@
 <translation id="1228893227497259893">El identificador de la entidad es incorrecto.</translation>
 <translation id="1232569758102978740">Sin título</translation>
 <translation id="1240347957665416060">Tu nombre de dispositivo</translation>
-<translation id="124116460088058876">Más idiomas</translation>
 <translation id="1250759482327835220">Para realizar pagos de forma más rápida la próxima vez, guarda tu tarjeta, nombre y dirección de facturación en tu cuenta de Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sincronizados)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Si intentas visitar un sitio web y no se abre, primero intenta corregir el error con estos pasos para solucionar problemas:&lt;/p&gt;
@@ -129,7 +127,7 @@
       &lt;p&gt;Ajusta la fecha y la hora desde la sección &lt;strong&gt;General&lt;/strong&gt; de la app de &lt;strong&gt;Configuración&lt;/strong&gt; .&lt;/p&gt;</translation>
 <translation id="1569487616857761740">Ingresa una fecha de vencimiento</translation>
 <translation id="1581080074034554886">CVC</translation>
-<translation id="1583429793053364125">Se produjo un error al mostrar la página web.</translation>
+<translation id="1583429793053364125">Se produjo un error cuando se mostraba la página web.</translation>
 <translation id="1592005682883173041">Acceso a datos locales</translation>
 <translation id="1594030484168838125">Seleccionar</translation>
 <translation id="161042844686301425">Cian</translation>
@@ -486,6 +484,7 @@
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3614103345592970299">Tamaño 2</translation>
+<translation id="361438452008624280">Entrada de lista "<ph name="LANGUAGE_ID" />": El idioma es desconocido o no es compatible.</translation>
 <translation id="3615877443314183785">Ingresa una fecha de vencimiento válida</translation>
 <translation id="36224234498066874">Borrar datos de navegación...</translation>
 <translation id="362276910939193118">Mostrar historial completo</translation>
@@ -553,6 +552,7 @@
 <translation id="40103911065039147">{URL_count,plural, =1{1 página web cercana}other{# páginas web cercanas}}</translation>
 <translation id="4030383055268325496">&amp;Deshacer Agregar</translation>
 <translation id="4032320456957708163"><ph name="ENROLLMENT_DOMAIN" /> administra tu navegador</translation>
+<translation id="4034375457890803692">El vínculo que abriste te dirige a un sitio que no visitas con frecuencia. Es posible que quiera engañarte.</translation>
 <translation id="4058922952496707368">Clave "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (Envelope)</translation>
 <translation id="4067947977115446013">Agregar una dirección válida</translation>
@@ -1052,9 +1052,11 @@
 <translation id="6957887021205513506">El certificado del servidor parece falso.</translation>
 <translation id="6964255747740675745">No se pudo analizar la configuración de red (JSON no válido).</translation>
 <translation id="6965382102122355670">Aceptar</translation>
+<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Se especifican servidores proxy fijos y URL de secuencias de comandos .pac.</translation>
+<translation id="6973932557599545801">No puedo ayudarte. Continúa por tus propios medios.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Silenciar (predeterminado)</translation>
 <translation id="6984479912851154518">Saldrás del modo privado para pagar mediante una aplicación externa. ¿Deseas continuar?</translation>
@@ -1332,7 +1334,6 @@ Detalles adicionales:
 <translation id="8371889962595521444">Certificados raíz personalizados</translation>
 <translation id="8380941800586852976">Peligrosa</translation>
 <translation id="8381674639488873545">Estos cargos pueden ser únicos o recurrentes, y es posible que no sean evidentes. <ph name="BEGIN_LINK" />Mostrar de todos modos<ph name="END_LINK" /></translation>
-<translation id="8382348898565613901">Los favoritos que visitaste recientemente aparecen aquí</translation>
 <translation id="8398259832188219207">El informe de fallos se cargó el <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Bloqueos (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Debes ingresar la misma frase de contraseña dos veces.</translation>
@@ -1388,6 +1389,7 @@ Detalles adicionales:
 <translation id="8790007591277257123">&amp;Rehacer Eliminar</translation>
 <translation id="8792621596287649091">Es posible que hayas perdido el acceso a tu cuenta de <ph name="ORG_NAME" /> o sufrido un robo de identidad. Chromium te recomienda que cambies la contraseña ahora.</translation>
 <translation id="8800988563907321413">Las sugerencias de la sección Cercanas aparecen aquí</translation>
+<translation id="8805819170075074995">Entrada de lista "<ph name="LANGUAGE_ID" />": Se ignorará la entrada porque también se incluye en la política SpellcheckLanguage.</translation>
 <translation id="8820817407110198400">Favoritos</translation>
 <translation id="883848425547221593">Otros favoritos</translation>
 <translation id="884264119367021077">Dirección de envío</translation>
@@ -1411,6 +1413,7 @@ Detalles adicionales:
 <translation id="8968766641738584599">Guardar la tarjeta</translation>
 <translation id="8971063699422889582">El certificado del servidor ha caducado.</translation>
 <translation id="8975012916872825179">Incluye información, como números de teléfono, direcciones de correo electrónico y direcciones de envío</translation>
+<translation id="8975263830901772334">Nombres de los archivos que imprimes</translation>
 <translation id="8978053250194585037">Recientemente, la navegación segura de Google <ph name="BEGIN_LINK" />detectó un intento de suplantación de identidad (phishing)<ph name="END_LINK" /> en <ph name="SITE" />. Los sitios de suplantación de identidad imitan a otros sitios web para engañarte.</translation>
 <translation id="8983003182662520383">Formas de pago y direcciones con Google Pay</translation>
 <translation id="8987927404178983737">Mes</translation>

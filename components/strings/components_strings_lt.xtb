@@ -24,7 +24,6 @@
 <translation id="1103523840287552314">Visada versti <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Jei pažymėta, „Chrome“ išsaugos kortelės kopiją įrenginyje, kad galėtumėte greičiau užpildyti formas.</translation>
 <translation id="1110994991967754504"><ph name="PERMISSION_NAME" />: pasirinkite leidimą</translation>
-<translation id="1111153019813902504">Naujausios žymės</translation>
 <translation id="1113869188872983271">&amp;Anuliuoti pertvarkymą</translation>
 <translation id="1125573121925420732">Kol atnaujinami svetainių saugos nustatymai, gali būti dažnai rodomi įspėjimai. Netrukus tai turėtų būti išspręsta.</translation>
 <translation id="1126551341858583091">Dydis vietinėje saugykloje yra <ph name="CRASH_SIZE" />.</translation>
@@ -50,7 +49,6 @@
 <translation id="1228893227497259893">Netinkamas subjekto identifikatorius</translation>
 <translation id="1232569758102978740">Be pavadinimo</translation>
 <translation id="1240347957665416060">Įrenginio pavadinimas</translation>
-<translation id="124116460088058876">Daugiau kalbų</translation>
 <translation id="1250759482327835220">Kad kitą kartą galėtumėte greičiau atlikti mokėjimą, išsaugokite kortelę, vardą bei pavardę ir atsiskaitymo adresą „Google“ paskyroje.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sinchronizuota)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Jei bandote apsilankyti svetainėje, bet nepavyksta jos atidaryti, pirma pabandykite ištaisyti klaidą atlikdami toliau nurodytus trikčių šalinimo veiksmus.&lt;/p&gt;
@@ -1336,7 +1334,6 @@ Papildoma išsami informacija:
 <translation id="8371889962595521444">Tinkinti šakniniai sertifikatai</translation>
 <translation id="8380941800586852976">Pavojingas</translation>
 <translation id="8381674639488873545">Šie mokesčiai gali būti vienkartiniai arba pasikartojantys ir gali būti neaiškūs. <ph name="BEGIN_LINK" />Vis tiek rodyti<ph name="END_LINK" /></translation>
-<translation id="8382348898565613901">Čia rodomos žymės, kurias naudojote pastaruoju metu</translation>
 <translation id="8398259832188219207">Strigčių ataskaita įkelta <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Strigtys (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Reikia du kartus įvesti tą pačią slaptafrazę.</translation>

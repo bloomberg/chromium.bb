@@ -19,7 +19,7 @@
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 nedladdning väntar.}other{# nedladdningar väntar.}}</translation>
 <translation id="1145536944570833626">Radera befintlig data.</translation>
 <translation id="1146678959555564648">Kliv in i VR</translation>
-<translation id="116280672541001035">Använd</translation>
+<translation id="116280672541001035">Använt</translation>
 <translation id="1172593791219290334">Startflik</translation>
 <translation id="1173894706177603556">Ändra namn</translation>
 <translation id="1175310183703641346">Bokmärken, historik, lösenord med mera synkroniseras inte längre med ditt Google-konto</translation>
@@ -244,7 +244,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder kvar</translation>
 <translation id="2779651927720337254">misslyckades</translation>
 <translation id="2781151931089541271">1 sekund kvar</translation>
-<translation id="2784212955220061919">I begränsat läge läses sidorna in snabbare och dataförbrukningen minskar med upp till 60 procent. Sidorna du besöker optimeras med Googles molnteknik.</translation>
 <translation id="2803478378562657435">Sparade lösenord och lösenordsalternativ visas</translation>
 <translation id="2810645512293415242">Förenklad sida visades för att spara data och minska inläsningstiden.</translation>
 <translation id="281504910091592009">Visa och hantera sparade lösenord i <ph name="BEGIN_LINK" />Google-kontot<ph name="END_LINK" /></translation>
@@ -445,7 +444,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4411535500181276704">Begränsat läge</translation>
 <translation id="4432792777822557199">Sidor på <ph name="SOURCE_LANGUAGE" /> översätts till <ph name="TARGET_LANGUAGE" /> från och med nu</translation>
 <translation id="4433925000917964731">Lite-sida tillhandahållen av Google</translation>
-<translation id="4434045419905280838">Popup-fönster och omdirigeringar</translation>
+<translation id="4434045419905280838">Popup och omdirigeringar</translation>
 <translation id="4440958355523780886">Lite-sida tillhandahållen av Google. Tryck för att läsa in originalet.</translation>
 <translation id="4452411734226507615">Stäng fliken <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Bokmärkt i <ph name="FOLDER_NAME" /></translation>

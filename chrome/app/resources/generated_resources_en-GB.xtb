@@ -116,7 +116,9 @@
 <translation id="1168100932582989117">Google name servers</translation>
 <translation id="1169909785351611170">PIN incorrect.</translation>
 <translation id="1171135284592304528">Highlight the object with keyboard focus when it changes</translation>
+<translation id="1172750555846831341">Flip on short edge</translation>
 <translation id="1173894706177603556">Rename</translation>
+<translation id="1173919438868967364">Select Account</translation>
 <translation id="1174073918202301297">Shortcut added</translation>
 <translation id="117445914942805388">To clear browsing data from all of your synced devices and your Google Account, <ph name="BEGIN_LINK" />visit sync settings<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;Print...</translation>
@@ -183,7 +185,6 @@
 <translation id="126156426083987769">A problem with demo mode device licences occurred.</translation>
 <translation id="126710816202626562">Translation language:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="1270277066486377738">Please touch the same security key again to confirm the reset. This will erase all credentials stored on the security key and remove any configured PIN.</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1272978324304772054">This user account does not belong to the domain that the device is enrolled to.  If you want to enrol to a different domain you need to go through device recovery first.</translation>
 <translation id="1274977772557788323">Adobe Flash Player Storage settings</translation>
@@ -222,7 +223,6 @@
 <translation id="1330145147221172764">Enable on-screen keyboard</translation>
 <translation id="1331977651797684645">This was me.</translation>
 <translation id="133535873114485416">Preferred input</translation>
-<translation id="1338776410427958681">Collapse <ph name="FOLDER_NAME" /></translation>
 <translation id="1338950911836659113">Deleting...</translation>
 <translation id="1340527397989195812">Back up media from the device using the Files app.</translation>
 <translation id="1341988552785875222">The current wallpaper is set by '<ph name="APP_NAME" />'. You may need to uninstall '<ph name="APP_NAME" />' before selecting a different wallpaper.</translation>
@@ -303,6 +303,7 @@
 <translation id="1465827627707997754">Pizza slice</translation>
 <translation id="1468571364034902819">Can't use this profile</translation>
 <translation id="1470811252759861213">To get your extensions on all your computers, <ph name="SIGN_IN_LINK" />.</translation>
+<translation id="1470967055429794975">This will erase all data on the security key, including its PIN</translation>
 <translation id="1475502736924165259">You have certificates on file that do not fit into any of the other categories</translation>
 <translation id="1476607407192946488">&amp;Language Settings</translation>
 <translation id="1477301030751268706">Identity API Token Cache</translation>
@@ -337,7 +338,7 @@
 <translation id="1521442365706402292">Manage certificates</translation>
 <translation id="152234381334907219">Never Saved</translation>
 <translation id="1524430321211440688">Keyboard</translation>
-<translation id="1524563461097350801">No, Thanks</translation>
+<translation id="1524563461097350801">No, thanks</translation>
 <translation id="1525740877599838384">Use only Wi-Fi to determine location</translation>
 <translation id="1526560967942511387">Untitled Document</translation>
 <translation id="1529891865407786369">Power source</translation>
@@ -376,7 +377,6 @@
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1587275751631642843">&amp;JavaScript console</translation>
 <translation id="1587907146729660231">Touch the power button with your finger</translation>
-<translation id="1587949806845069687">Enter new PIN. A PIN must be at least four characters long and can contain letters, numbers and other characters.</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="158849752021629804">Need home network</translation>
 <translation id="1588870296199743671">Open Link With...</translation>
@@ -390,7 +390,6 @@
 <translation id="1600857548979126453">Access the page debugger backend</translation>
 <translation id="1601560923496285236">Apply</translation>
 <translation id="1603914832182249871">(Incognito)</translation>
-<translation id="1606402239727171183">Please insert and touch your security key to begin setting or changing a PIN</translation>
 <translation id="1607139524282324606">Clear entry</translation>
 <translation id="1608626060424371292">Remove this user</translation>
 <translation id="1609170755653088773">Sync this password to your iPhone</translation>
@@ -558,6 +557,7 @@
 <translation id="1856715684130786728">Add location...</translation>
 <translation id="1858585891038687145">Trust this certificate for identifying software makers</translation>
 <translation id="1861262398884155592">This folder is empty</translation>
+<translation id="1863182668524159459">No serial ports found</translation>
 <translation id="1864111464094315414">Login</translation>
 <translation id="1864400682872660285">Cooler</translation>
 <translation id="1864454756846565995">USB-C device (rear port)</translation>
@@ -587,6 +587,7 @@
 <translation id="1904394285866191268">{NUM_TABS,plural, =1{Mute tab}other{Mute tabs}}</translation>
 <translation id="1905375423839394163">Chromebook device name</translation>
 <translation id="1905710495812624430">Maximum allowed attempts exceeded.</translation>
+<translation id="1906828677882361942">Do not allow any sites to access serial ports</translation>
 <translation id="1909880997794698664">Are you sure you want to permanently keep this device in kiosk mode?</translation>
 <translation id="1910721550319506122">Welcome!</translation>
 <translation id="1914326953223720820">Unzip Service</translation>
@@ -629,6 +630,7 @@
 <translation id="1976323404609382849">Cookies from multiple sites blocked.</translation>
 <translation id="1977965994116744507">Bring your phone closer to unlock your <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">You are changing to a channel with an older version of <ph name="PRODUCT_NAME" />. The channel change will be applied when the channel version matches the version currently installed on your device.</translation>
+<translation id="1981544341227357861">Remove your security key from your device, then reinsert and touch it.</translation>
 <translation id="1982354452682152483">No description is available.</translation>
 <translation id="1983959805486816857">After you create a new supervised user, you can manage the settings at any time from any device at <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1987317783729300807">Accounts</translation>
@@ -638,7 +640,6 @@
 <translation id="1997484222658892567"><ph name="URL" /> wants to permanently store large data on your local computer</translation>
 <translation id="1997616988432401742">Your certificates</translation>
 <translation id="1999115740519098545">On start-up</translation>
-<translation id="1999763610967697511">Drag and drop</translation>
 <translation id="2000419248597011803">Sends some cookies and searches from the address bar and search box to your default search engine</translation>
 <translation id="2002109485265116295">Real-time</translation>
 <translation id="2003130567827682533">To activate '<ph name="NAME" />' data, first connect to a Wi-Fi network</translation>
@@ -763,7 +764,7 @@
 <translation id="2203484353475059657">Confirmation does not match.</translation>
 <translation id="2203682048752833055">Search engine used in the <ph name="BEGIN_LINK" />address bar<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Read and change anything that you type</translation>
-<translation id="220792432208469595">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
+<translation id="220792432208469595">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Please enter this PIN code on "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2213140827792212876">Remove sharing</translation>
 <translation id="2214018885812055163">Shared folders</translation>
@@ -835,16 +836,18 @@
 <translation id="230927227160767054">This page wants to install a service handler.</translation>
 <translation id="2309620859903500144">This site has been blocked from accessing your motion or light sensors.</translation>
 <translation id="2315414688463285945">Error configuring Linux files. Please try again.</translation>
-<translation id="2316129865977710310">No, thank you</translation>
+<translation id="2316129865977710310">No, thanks</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% done</translation>
 <translation id="2318143611928805047">Paper size</translation>
 <translation id="2318817390901984578">To use Android apps, charge &amp; update your <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2318923050469484167">Current incognito session (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">Headers and footers</translation>
+<translation id="2322318151094136999">Ask when a site wants to access serial ports (recommended)</translation>
 <translation id="2326931316514688470">&amp;Reload app</translation>
 <translation id="2327492829706409234">Enable app</translation>
 <translation id="2329597144923131178">Sign in to get your bookmarks, history, passwords and other settings on all your devices</translation>
 <translation id="2332131598580221120">View in store</translation>
+<translation id="2332192922827071008">Open preferences</translation>
 <translation id="2332742915001411729">Reset to default</translation>
 <translation id="2335122562899522968">This page has set cookies.</translation>
 <translation id="2336228925368920074">Bookmark All Tabs...</translation>
@@ -897,7 +900,6 @@
           <ph name="TIME" />. This doesn't include payment methods and addresses from Google Pay.</translation>
 <translation id="2419706071571366386">For security, sign out when your computer isn't being used.</translation>
 <translation id="2423578206845792524">Sa&amp;ve image as...</translation>
-<translation id="2427507373259914951">Left click</translation>
 <translation id="2428510569851653187">Describe what you were doing when the tab crashed</translation>
 <translation id="2431027948063157455">Google Assistant was unable to load. Please check your network connection and retry.</translation>
 <translation id="2432753757290432042">Linux (Beta) update required</translation>
@@ -908,7 +910,9 @@
 <translation id="2435457462613246316">Show password</translation>
 <translation id="2436186046335138073">Allow <ph name="HANDLER_HOSTNAME" /> to open all <ph name="PROTOCOL" /> links?</translation>
 <translation id="2436707352762155834">Minimum</translation>
+<translation id="2439545803278355377">Enter your new PIN. A PIN must be at least four characters long and can contain letters, numbers and other characters.</translation>
 <translation id="2440604414813129000">View s&amp;ource</translation>
+<translation id="2442182690962765671">The page isn't responding. You can wait or take off the headset.</translation>
 <translation id="2445081178310039857">Extension root directory is required.</translation>
 <translation id="2445484935443597917">Create a New Profile</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> wants to verify your identity</translation>
@@ -932,7 +936,7 @@
 <translation id="2470702053775288986">Unsupported extensions disabled</translation>
 <translation id="2473195200299095979">Translate this page</translation>
 <translation id="2475982808118771221">An error occurred</translation>
-<translation id="2476578072172137802">Site Settings</translation>
+<translation id="2476578072172137802">Site settings</translation>
 <translation id="2478176599153288112">Media-File Permissions for "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Share audio</translation>
 <translation id="2480868415629598489">Modify data that you copy and paste</translation>
@@ -1010,11 +1014,10 @@
 <translation id="2585724835339714757">This tab is sharing your screen.</translation>
 <translation id="2586657967955657006">Clipboard</translation>
 <translation id="2586672484245266891">Please enter a shorter URL</translation>
-<translation id="2587922270115112871">Creating a supervised user does not create a Google account, and their settings and data will not follow them to other devices with Chrome Sync. A supervised user applies only to this device.</translation>
+<translation id="2587922270115112871">Creating a supervised user does not create a Google Account, and their settings and data will not follow them to other devices with Chrome Sync. A supervised user applies only to this device.</translation>
 <translation id="2588636910004461974">Devices from <ph name="VENDOR_NAME" /></translation>
 <translation id="258932246702879617">Select <ph name="BEGIN_BOLD" />Pin to taskbar<ph name="END_BOLD" /></translation>
 <translation id="2594999711683503743">Search Google or type URL</translation>
-<translation id="2600730035760241059">Reset devices, set and change PINs.</translation>
 <translation id="2603115962224169880">Clean up computer</translation>
 <translation id="2603463522847370204">Open in &amp;Incognito window</translation>
 <translation id="2604255671529671813">Network connection error</translation>
@@ -1030,7 +1033,6 @@
 <translation id="2617342710774726426">SIM card is locked</translation>
 <translation id="2619761439309613843">Daily Refresh</translation>
 <translation id="2620436844016719705">System</translation>
-<translation id="2622053291576368721">Please remove, reinsert and then touch your security key to begin the reset process.</translation>
 <translation id="26224892172169984">Do not allow any site to handle protocols</translation>
 <translation id="2624142942574147739">This page is accessing your camera and microphone.</translation>
 <translation id="2626799779920242286">Please try again later.</translation>
@@ -1040,7 +1042,7 @@
 <translation id="2633199387167390344"><ph name="NAME" /> is using <ph name="USAGE" /> MB of disk space.</translation>
 <translation id="2633212996805280240">Remove "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> couldn't complete installation, but will continue to run from its disk image.</translation>
-<translation id="2634486338302512222">Enter your &lt;i&gt;current&lt;/i&gt; PIN to change it. If you do not know the current PIN then the token has to be reset to clear it.</translation>
+<translation id="2633764681656412085">FIDO</translation>
 <translation id="2635094637295383009">Twitter</translation>
 <translation id="2635276683026132559">Signing</translation>
 <translation id="2636625531157955190">Chrome cannot access the image.</translation>
@@ -1164,7 +1166,7 @@
 <translation id="2812989263793994277">Do not show any images</translation>
 <translation id="281390819046738856">Request could not be signed.</translation>
 <translation id="2814489978934728345">Stop loading this page</translation>
-<translation id="281504910091592009">View and manage saved passwords in your <ph name="BEGIN_LINK" />Google account<ph name="END_LINK" /></translation>
+<translation id="281504910091592009">View and manage saved passwords in your <ph name="BEGIN_LINK" />Google Account<ph name="END_LINK" /></translation>
 <translation id="2815693974042551705">Bookmark folder</translation>
 <translation id="2818476747334107629">Printer details</translation>
 <translation id="2820957248982571256">Scanning...</translation>
@@ -1243,7 +1245,7 @@
 <translation id="2941112035454246133">Low</translation>
 <translation id="2942560570858569904">Waiting...</translation>
 <translation id="2942581856830209953">Customise this page</translation>
-<translation id="2944060181911631861">Send usage and diagnostic data. Help improve your Android experience by automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
+<translation id="2944060181911631861">Send usage and diagnostic data. Help improve your Android experience by automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="2946119680249604491">Add connection</translation>
 <translation id="2948300991547862301">Go to <ph name="PAGE_TITLE" /></translation>
 <translation id="29488703364906173">A fast, simple and secure web browser, built for the modern web.</translation>
@@ -1256,7 +1258,6 @@
 <translation id="2966937470348689686">Manage Android preferences</translation>
 <translation id="2972557485845626008">Firmware</translation>
 <translation id="2972581237482394796">&amp;Redo</translation>
-<translation id="2972642118232180842">Run only important content (recommended)</translation>
 <translation id="2973324205039581528">Mute Site</translation>
 <translation id="2977480621796371840">Remove from group</translation>
 <translation id="2979639724566107830">Open in new window</translation>
@@ -1269,6 +1270,7 @@
 <translation id="2993517869960930405">App Info</translation>
 <translation id="299483336428448530">Installed by your parent.</translation>
 <translation id="2996286169319737844">Data is encrypted with your sync passphrase. This doesn't include payment methods and addresses from Google Pay.</translation>
+<translation id="2996722619877761919">Flip on long edge</translation>
 <translation id="3003144360685731741">Preferred networks</translation>
 <translation id="3003623123441819449">CSS Cache</translation>
 <translation id="3003828226041301643">Can't join the device to the domain. Check your account to make sure that you have privileges to add devices.</translation>
@@ -1337,6 +1339,7 @@
 <translation id="3101709781009526431">Date and time</translation>
 <translation id="310671807099593501">Site is using Bluetooth</translation>
 <translation id="3115147772012638511">Waiting for cache...</translation>
+<translation id="3115580024857770654">Collapse all</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> Help</translation>
 <translation id="3120430004221004537">Insufficient encryption for a given operation on: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="3121793941267913344">Reset this <ph name="IDS_SHORT_PRODUCT_NAME" /> device</translation>
@@ -1378,7 +1381,6 @@
 <translation id="3161522574479303604">All languages</translation>
 <translation id="3163201441334626963">Unknown product <ph name="PRODUCT_ID" /> from vendor <ph name="VENDOR_ID" /></translation>
 <translation id="3165390001037658081">Some operators might block this feature.</translation>
-<translation id="316854673539778496">To get all your extensions on all your devices, sign in and turn on sync.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">You may also skip signing in and <ph name="LINK_START" />browse as Guest<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">A site is accessing video input</translation>
@@ -1431,7 +1433,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> wants to connect</translation>
 <translation id="3274763671541996799">You have gone full screen.</translation>
 <translation id="3275778913554317645">Open as window</translation>
-<translation id="3278001907972365362">Your Google account(s) need attention</translation>
+<translation id="3278001907972365362">Your Google Account(s) need attention</translation>
 <translation id="3279230909244266691">This process may take a few minutes. Starting the virtual machine.</translation>
 <translation id="3279741024917655738">Show full screen videos on</translation>
 <translation id="3280237271814976245">Save &amp;as...</translation>
@@ -1458,7 +1460,6 @@
 <translation id="3308006649705061278">Organisational Unit (OU)</translation>
 <translation id="3308116878371095290">This page was prevented from setting cookies.</translation>
 <translation id="3308134619352333507">Hide Button</translation>
-<translation id="3308634184507184485">Security Keys</translation>
 <translation id="3308852433423051161">Loading Google Assistant...</translation>
 <translation id="3312424061798279731">Enabled languages</translation>
 <translation id="3313590242757056087">To set which websites the supervised user can view, you can configure restrictions
@@ -1494,7 +1495,6 @@
 <translation id="337286756654493126">Read folders that you open in the application</translation>
 <translation id="3378503599595235699">Keep local data only until you quit your browser</translation>
 <translation id="3378572629723696641">This extension may have been corrupted.</translation>
-<translation id="3378630551672149129">Sign in, press the tab key to interact with input elements</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> will be installed.</translation>
 <translation id="3380365263193509176">Unknown error</translation>
 <translation id="3382073616108123819">Oops!  The system failed to determine device identifiers for this device.</translation>
@@ -1561,11 +1561,12 @@
 <translation id="3470442499439619530">Remove This User</translation>
 <translation id="3473479545200714844">Screen magnifier</translation>
 <translation id="3475843873335999118">Sorry, your fingerprint is still not recognised. Please enter your password.</translation>
-<translation id="3476303763173086583">Send usage and diagnostic data. Help improve your child's Android experience by automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This <ph name="BEGIN_LINK1" />setting<ph name="END_LINK1" /> is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google account. <ph name="BEGIN_LINK2" />Find out more<ph name="END_LINK2" /></translation>
+<translation id="3476303763173086583">Send usage and diagnostic data. Help improve your child's Android experience by automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This <ph name="BEGIN_LINK1" />setting<ph name="END_LINK1" /> is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK2" />Find out more<ph name="END_LINK2" /></translation>
 <translation id="347670947055184738">Oops!  The system failed to fetch policy for your device.</translation>
 <translation id="347785443197175480">Continue allowing <ph name="HOST" /> to access your camera and microphone</translation>
 <translation id="3478685642445675458">Please unlock your profile before removing a person.</translation>
 <translation id="3479552764303398839">Not now</translation>
+<translation id="3481268647794498892">Opening in <ph name="ALTERNATIVE_BROWSER_NAME" /> in <ph name="COUNTDOWN_SECONDS" /> seconds</translation>
 <translation id="3484273680291419129">Removing harmful software...</translation>
 <translation id="3484869148456018791">Get new certificate</translation>
 <translation id="3487007233252413104">anonymous function</translation>
@@ -1638,7 +1639,7 @@
 <translation id="359283478042092570">Enter</translation>
 <translation id="3593965109698325041">Certificate Name Constraints</translation>
 <translation id="3596235046596950091">Enable cloud services</translation>
-<translation id="3599863153486145794">Clears history from all signed-in devices. Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="3599863153486145794">Clears history from all signed-in devices. Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600051066689725006">Web request info</translation>
 <translation id="3600792891314830896">Mute sites that play sound</translation>
 <translation id="360180734785106144">Offer new features as they become available</translation>
@@ -1656,7 +1657,7 @@
 <translation id="3616741288025931835">&amp;Clear Browsing Data...</translation>
 <translation id="3617891479562106823">Backgrounds are unavailable. Try again later.</translation>
 <translation id="3623574769078102674">This supervised user will be managed by <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3624567683873126087">Unlock device and sign in to Google account</translation>
+<translation id="3624567683873126087">Unlock device and sign in to Google Account</translation>
 <translation id="3625258641415618104">Screenshots disabled</translation>
 <translation id="3625481642044239431">Invalid file selected. Try again.</translation>
 <translation id="3627320433825461852">Less than 1 minute left</translation>
@@ -1684,6 +1685,7 @@
 <translation id="3654045516529121250">Read your accessibility settings</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{It has permanent access to one file.}other{It has permanent access to # files.}}</translation>
 <translation id="3660234220361471169">Untrusted</translation>
+<translation id="3661172646479098821">Only Android devices are currently supported.</translation>
 <translation id="3664511988987167893">Extension Icon</translation>
 <translation id="3665589677786828986">Chrome detected that some of your settings were corrupted by another program and reset them to their original defaults.</translation>
 <translation id="3668570675727296296">Language settings</translation>
@@ -1750,7 +1752,6 @@
 <translation id="3752673729237782832">My devices</translation>
 <translation id="3755411799582650620">Your <ph name="PHONE_NAME" /> can now unlock this <ph name="DEVICE_TYPE" /> too.</translation>
 <translation id="375636864092143889">Site is using your microphone</translation>
-<translation id="3756578970075173856">Set PIN</translation>
 <translation id="3757733214359997190">No sites found</translation>
 <translation id="375841316537350618">Downloading proxy script...</translation>
 <translation id="3758842566811519622">Cookies set</translation>
@@ -1765,6 +1766,7 @@
 <translation id="3768037234834996183">Syncing your preferences...</translation>
 <translation id="3771294271822695279">Video Files</translation>
 <translation id="3775432569830822555">SSL Server Certificate</translation>
+<translation id="3775705724665058594">Send to your devices</translation>
 <translation id="3776796446459804932">This extension violates the Chrome Web Store policy.</translation>
 <translation id="3777806571986431400">Extension Enabled</translation>
 <translation id="3778152852029592020">Download was cancelled.</translation>
@@ -1975,6 +1977,7 @@
 <translation id="4081242589061676262">Unable to cast file.</translation>
 <translation id="4084682180776658562">Bookmark</translation>
 <translation id="4084835346725913160">Close <ph name="TAB_NAME" /></translation>
+<translation id="4085270836953633510">Ask when a site wants to access serial ports</translation>
 <translation id="4085298594534903246">JavaScript was blocked on this page.</translation>
 <translation id="4087089424473531098">Created the extension:
 
@@ -2049,7 +2052,7 @@
 <translation id="4209092469652827314">Large</translation>
 <translation id="4209464433672152343">Documents are <ph name="BEGIN_LINK_HELP" />sent to Google<ph name="END_LINK_HELP" /> to prepare them for printing. View, edit and manage your printers and printer history on the <ph name="BEGIN_LINK_DASHBOARD" />Google Cloud Print dashboard<ph name="END_LINK_DASHBOARD" />.</translation>
 <translation id="421182450098841253">&amp;Show Bookmarks Bar</translation>
-<translation id="4211851069413100178">Send usage and diagnostic data. Help improve your Android experience by automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This <ph name="BEGIN_LINK1" />setting<ph name="END_LINK1" /> is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google account. <ph name="BEGIN_LINK2" />Find out more<ph name="END_LINK2" /></translation>
+<translation id="4211851069413100178">Send usage and diagnostic data. Help improve your Android experience by automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This <ph name="BEGIN_LINK1" />setting<ph name="END_LINK1" /> is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK2" />Find out more<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">Export</translation>
 <translation id="42137655013211669">Access to this resource was forbidden by the server.</translation>
 <translation id="4215350869199060536">Oops, illegal symbols in name!</translation>
@@ -2077,6 +2080,7 @@
 <translation id="4258348331913189841">File System</translation>
 <translation id="4263757076580287579">Printer registration has been cancelled.</translation>
 <translation id="426564820080660648">To check for updates, please use Ethernet, Wi-Fi or mobile data.</translation>
+<translation id="4267953847983678297">Automatically connect to mobile network</translation>
 <translation id="4268025649754414643">Key Encipherment</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">No matches</translation>
@@ -2123,6 +2127,7 @@
 <translation id="4354344420232759511">Sites that you visit will appear here</translation>
 <translation id="435527878592612277">Select your photo</translation>
 <translation id="4356334633973342967">Or specify your own driver:</translation>
+<translation id="4358169392473932247">That security key does not support internal storage of credentials, but that feature was requested.</translation>
 <translation id="4358353773267946514"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /></translation>
 <translation id="4359408040881008151">Installed because of dependent extension(s).</translation>
 <translation id="4359717112757026264">Cityscape</translation>
@@ -2159,7 +2164,7 @@
 <translation id="44141919652824029">Allow '<ph name="APP_NAME" />' to get the list of your attached USB devices?</translation>
 <translation id="4414232939543644979">New &amp;Incognito Window</translation>
 <translation id="4415245286584082850">No devices found. Open a help centre article in a new tab.</translation>
-<translation id="4415276339145661267">Manage your Google account</translation>
+<translation id="4415276339145661267">Manage yourGoogle Account</translation>
 <translation id="4415748029120993980">SECG elliptic curve secp384r1 (aka NIST P-384)</translation>
 <translation id="4416582610654027550">Type a valid URL</translation>
 <translation id="4419409365248380979">Always allow <ph name="HOST" /> to set cookies</translation>
@@ -2187,7 +2192,6 @@
 <translation id="4451757071857432900">Blocked on sites that show intrusive or misleading ads (recommended)</translation>
 <translation id="4453946976636652378">Search <ph name="SEARCH_ENGINE_NAME" /> or type a URL</translation>
 <translation id="4462159676511157176">Custom name servers</translation>
-<translation id="4467101674048705704">Expand <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Blocked on sites that show intrusive or misleading ads</translation>
 <translation id="447252321002412580">Help improve Chrome's features and performance</translation>
 <translation id="4472575034687746823">Get started</translation>
@@ -2235,7 +2239,7 @@
 <translation id="454547174531670764">Sync to another account</translation>
 <translation id="4545759655004063573">Cannot save due to insufficient permissions. Please save to another location.</translation>
 <translation id="4546308221697447294">Browse fast with Google Chrome</translation>
-<translation id="4547659257713117923">No Tabs From Other Devices</translation>
+<translation id="4547659257713117923">No tabs from other devices</translation>
 <translation id="4547672827276975204">Set automatically</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">External extension is at the same or lower version compared to the existing one.</translation>
@@ -2303,6 +2307,7 @@
 <translation id="4665014895760275686">Manufacturer</translation>
 <translation id="4665446389743427678">All data stored by <ph name="SITE" /> will be deleted.</translation>
 <translation id="4668721319092543482">Click to enable <ph name="PLUGIN_NAME" /></translation>
+<translation id="4670688170798478686">Confirm reset</translation>
 <translation id="4672657274720418656">Distill Page</translation>
 <translation id="4673442866648850031">Open stylus tools when the stylus is removed</translation>
 <translation id="4677585247300749148"><ph name="URL" /> wants to respond to accessibility events</translation>
@@ -2376,7 +2381,7 @@
 <translation id="4788092183367008521">Please check your network connection and try again.</translation>
 <translation id="4790972063719531840">Automatically send diagnostic and usage data to Google</translation>
 <translation id="4792711294155034829">&amp;Report an Issue...</translation>
-<translation id="4795022432560487924">Send usage and diagnostic data. Help improve your child's Android experience by automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
+<translation id="4795022432560487924">Send usage and diagnostic data. Help improve your child's Android experience by automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Web Page, HTML Only</translation>
 <translation id="4798236378408895261">Attach <ph name="BEGIN_LINK" />Bluetooth Logs<ph name="END_LINK" /> (Google internal)</translation>
 <translation id="4801448226354548035">Hide accounts</translation>
@@ -2412,7 +2417,6 @@
 <translation id="4850669014075537160">Scrolling</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4853020600495124913">Open in &amp;new window</translation>
-<translation id="485592688953820832">No action (pause)</translation>
 <translation id="4856478137399998590">Your data service is activated and ready to use</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Open All in &amp;incognito Window}=1{Open in &amp;incognito Window}other{Open All (#) in &amp;incognito Window}}</translation>
 <translation id="4858913220355269194">Footy</translation>
@@ -2455,7 +2459,7 @@
 <translation id="4907161631261076876">This file is not commonly downloaded and may be dangerous.</translation>
 <translation id="4907306957610201395">Permission Category</translation>
 <translation id="4908811072292128752">Open a new tab to browse two sites at once</translation>
-<translation id="4909038193460299775">Because this account is managed by <ph name="DOMAIN" />, your bookmarks, history, passwords and other settings will be cleared from this device. However, your data will remain stored in your Google account and can be managed on <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
+<translation id="4909038193460299775">Because this account is managed by <ph name="DOMAIN" />, your bookmarks, history, passwords and other settings will be cleared from this device. However, your data will remain stored in your Google Accountand can be managed on <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
 <translation id="4909359680501173791">You are enrolled successfully</translation>
 <translation id="4912643508233590958">Idle Wake Ups</translation>
 <translation id="491691592645955587">Switch to a secure browser</translation>
@@ -2486,7 +2490,7 @@
 <translation id="4955710816792587366">Choose your PIN</translation>
 <translation id="4955814292505481804">Annual</translation>
 <translation id="4957949153200969297">Only enable features related to <ph name="IDS_SHORT_PRODUCT_NAME" /> Sync</translation>
-<translation id="4959262764292427323">Passwords are saved in your Google account so that you can use them on any device</translation>
+<translation id="4959262764292427323">Passwords are saved in your Google Accountso that you can use them on any device</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> – <ph name="PROFILE_NAME" /></translation>
 <translation id="4964455510556214366">Arrangement</translation>
 <translation id="4964673849688379040">Checking...</translation>
@@ -2510,7 +2514,6 @@
 <translation id="4992458225095111526">Confirm Powerwash</translation>
 <translation id="4992473555164495036">Your administrator has limited the available input methods.</translation>
 <translation id="4992926179187649719">Turn on "Ok Google"</translation>
-<translation id="4994021816031734614">Reset Security Key</translation>
 <translation id="4994474651455208930">Allow sites to ask to become default handlers for protocols</translation>
 <translation id="4994754230098574403">Setting up</translation>
 <translation id="4996978546172906250">Share via</translation>
@@ -2534,6 +2537,7 @@
 <translation id="5037676449506322593">Select All</translation>
 <translation id="5038863510258510803">Enabling...</translation>
 <translation id="5039804452771397117">Allow</translation>
+<translation id="5042282098504489593">Open Settings to connect <ph name="USB_DEVICE_NAME" /> to Linux</translation>
 <translation id="5045550434625856497">Incorrect password</translation>
 <translation id="504561833207953641">Opening in existing browser session.</translation>
 <translation id="5047421709274785093">Block sites from using motion and light sensors</translation>
@@ -2700,6 +2704,7 @@
 <translation id="5319359161174645648">Google recommends Chrome</translation>
 <translation id="5319566035256672173">This device will no longer receive the latest software updates. Please consider upgrading.</translation>
 <translation id="532247166573571973">The server may be unreachable. Try again later.</translation>
+<translation id="5324245805087635250">Enter your &lt;i&gt;current&lt;/i&gt; PIN to change it. If you do not know the current PIN then the security key has to be reset to clear it.</translation>
 <translation id="5324780743567488672">Set time zone automatically using your location</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5327570636534774768">This device is marked for management by a different domain. Deprovision it from that domain before setting up demo mode.</translation>
@@ -2708,7 +2713,6 @@
 <translation id="5331069282670671859">You have no certificates in this category</translation>
 <translation id="5331425616433531170">"<ph name="CHROME_EXTENSION_NAME" />" wants to pair</translation>
 <translation id="5331975486040154427">USB-C device (left side back port)</translation>
-<translation id="5332624210073556029">Time zone:</translation>
 <translation id="5334142896108694079">Script Cache</translation>
 <translation id="5336126339807372270">Do not allow any sites to access USB devices</translation>
 <translation id="5337771866151525739">Installed by a third party.</translation>
@@ -2752,7 +2756,6 @@
 <translation id="5411472733320185105">Do not use the proxy settings for these hosts and domains:</translation>
 <translation id="5414566801737831689">Read the icons of the websites that you visit</translation>
 <translation id="5417312524372586921">Browser themes</translation>
-<translation id="5419294236999569767">System time</translation>
 <translation id="5419405654816502573">Voice match</translation>
 <translation id="5420438158931847627">Determines sharpness of text and images</translation>
 <translation id="5422221874247253874">Access Point</translation>
@@ -2864,13 +2867,11 @@
 <translation id="5567989639534621706">Application Caches</translation>
 <translation id="5568069709869097550">Can't sign in</translation>
 <translation id="5568144734023334204">Android storage</translation>
-<translation id="5573248369095789351">Dwell action</translation>
 <translation id="5575473780076478375">Incognito Extension: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">A problem with demo registration request occurred.</translation>
 <translation id="557722062034137776">Resetting your device will not affect your Google accounts or any data synced to these accounts. However, all files saved locally on your device will be deleted.</translation>
 <translation id="5578059481725149024">Auto sign-in</translation>
 <translation id="558170650521898289">Microsoft Windows Hardware Driver Verification</translation>
-<translation id="5582778940656297282">Only some devices are currently supported.</translation>
 <translation id="5582839680698949063">Main menu</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5584088138253955452">Save username?</translation>
@@ -2903,7 +2904,6 @@
 <translation id="561698261642843490">Close Firefox</translation>
 <translation id="5618075537869101857">Oh no, the kiosk application could not be launched.</translation>
 <translation id="5618333180342767515">(this might take a few minutes)</translation>
-<translation id="5618972959246891967">System date</translation>
 <translation id="56197088284879152">Connection is congested to remote device: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5620568081365989559">DevTools requests full access to <ph name="FOLDER_PATH" />. Make sure that you do not expose any sensitive information.</translation>
 <translation id="5620612546311710611">usage statistics</translation>
@@ -2921,6 +2921,7 @@
 <translation id="5637476008227280525">Mobile data enable</translation>
 <translation id="5638309510554459422">Find extensions and themes in the <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /></translation>
 <translation id="5639549361331209298">Reload this page, hold to see more options</translation>
+<translation id="5640133431808313291">Manage security keys</translation>
 <translation id="5642508497713047">CRL Signer</translation>
 <translation id="5643620609347735571">Clear and continue</translation>
 <translation id="5646376287012673985">Location</translation>
@@ -3020,6 +3021,7 @@
 <translation id="5804241973901381774">Permissions</translation>
 <translation id="5805697420284793859">Window manager</translation>
 <translation id="5811750797187914944">All set</translation>
+<translation id="5812674658566766066">Expand all</translation>
 <translation id="5814126672212206791">Connection type</translation>
 <translation id="5815645614496570556">X.400 Address</translation>
 <translation id="5816434091619127343">Requested printer changes would make the printer unusable.</translation>
@@ -3113,7 +3115,7 @@
 <translation id="5941153596444580863">Add person</translation>
 <translation id="5941343993301164315">Please sign in to <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Minimise</translation>
-<translation id="5945188205370098537">Send usage and diagnostic data. Help improve your Android experience by automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
+<translation id="5945188205370098537">Send usage and diagnostic data. Help improve your Android experience by automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Report ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Unable to parse file</translation>
 <translation id="5955282598396714173">Your password has expired. Please sign out then sign in again to change it.</translation>
@@ -3132,6 +3134,7 @@
 <translation id="5972666587303800813">No-op Service</translation>
 <translation id="5972708806901999743">Move to the top</translation>
 <translation id="5972826969634861500">Start <ph name="PRODUCT_NAME" /></translation>
+<translation id="5973605538625120605">Change a PIN</translation>
 <translation id="5975792506968920132">Battery Charge Percentage</translation>
 <translation id="5976160379964388480">Others</translation>
 <translation id="5979421442488174909">&amp;Translate to <ph name="LANGUAGE" /></translation>
@@ -3236,7 +3239,6 @@
 <translation id="6125479973208104919">Unfortunately, you'll need to add your account to this <ph name="DEVICE_TYPE" /> again.</translation>
 <translation id="6129691635767514872">The selected data has been removed from Chrome and synced devices. Your Google Account may have other forms of browsing history such as searches and activity from other Google services at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Netscape Certificate Comment</translation>
-<translation id="6132383530370527946">The small print</translation>
 <translation id="6135622770221372891">Channel IDs</translation>
 <translation id="6136114942382973861">Close downloads bar</translation>
 <translation id="6137767437444130246">User certificate</translation>
@@ -3255,6 +3257,7 @@
 <translation id="6156323911414505561">Show bookmarks bar</translation>
 <translation id="6156863943908443225">Script cache</translation>
 <translation id="6156960295318603523">Language Settings</translation>
+<translation id="6159328879826063795">Security key does not support requested feature.</translation>
 <translation id="6160625263637492097">Provide certificates for authentication</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Expand all...</translation>
@@ -3305,6 +3308,7 @@
 <translation id="6238923052227198598">Keep latest note on lock screen</translation>
 <translation id="6239558157302047471">Reload &amp;frame</translation>
 <translation id="6241530762627360640">Access information about Bluetooth devices paired with your system and discover nearby Bluetooth devices.</translation>
+<translation id="6242589501614145408">Reset your security key</translation>
 <translation id="6242852299490624841">Focus this tab</translation>
 <translation id="6243280677745499710">Currently set</translation>
 <translation id="6243774244933267674">Server unavailable</translation>
@@ -3341,6 +3345,7 @@
 <translation id="6291953229176937411">&amp;Show in Finder</translation>
 <translation id="6295158916970320988">All sites</translation>
 <translation id="6295855836753816081">Saving...</translation>
+<translation id="629730747756840877">Account</translation>
 <translation id="6298962879096096191">Use Google Play to install Android apps</translation>
 <translation id="630065524203833229">E&amp;xit</translation>
 <translation id="6305607932814307878">Global Policy:</translation>
@@ -3512,14 +3517,13 @@
 <translation id="6578664922716508575">Encrypt synced passwords with your Google username and password</translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> – Desktop content shared</translation>
 <translation id="6580151766480067746">ARC Version</translation>
-<translation id="6580231304296467005">Set a PIN on a security key to identify yourself</translation>
 <translation id="6582080224869403177">Reset your <ph name="DEVICE_TYPE" /> to upgrade your security.</translation>
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
 <translation id="6586451623538375658">Swap the primary mouse button</translation>
 <translation id="6589660129740381104">To help you more easily manage your experience in <ph name="IDS_SHORT_PRODUCT_NAME" />, features related to sync and personalisation are now under a single control. Turning this on may change your current settings.</translation>
 <translation id="6590458744723262880">Rename folder</translation>
 <translation id="6592267180249644460">WebRTC log captured <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
-<translation id="6594883168703494535">Use Smart Lock to sign in to your Google account</translation>
+<translation id="6594883168703494535">Use Smart Lock to sign in to your Google Account</translation>
 <translation id="6596325263575161958">Encryption options</translation>
 <translation id="6596816719288285829">IP Address</translation>
 <translation id="6597017209724497268">Samples</translation>
@@ -3609,7 +3613,7 @@
 <translation id="6723839937902243910">Power</translation>
 <translation id="6725073593266469338">UI service</translation>
 <translation id="6725206449694821596">Internet Printing Protocol (IPP)</translation>
-<translation id="67269783048918309">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This <ph name="BEGIN_LINK1" />setting<ph name="END_LINK1" /> is enforced by the owner. If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google account. <ph name="BEGIN_LINK2" />Find out more<ph name="END_LINK2" /></translation>
+<translation id="67269783048918309">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This <ph name="BEGIN_LINK1" />setting<ph name="END_LINK1" /> is enforced by the owner. If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK2" />Find out more<ph name="END_LINK2" /></translation>
 <translation id="6732801395666424405">Certificates not loaded</translation>
 <translation id="6732900235521116609">Can’t remove shortcut</translation>
 <translation id="6735304988756581115">Show cookies and other site data...</translation>
@@ -3690,7 +3694,7 @@
 <translation id="6857699260879628349">Get configuration info</translation>
 <translation id="6860097299815761905">Proxy settings...</translation>
 <translation id="6860427144121307915">Open in a Tab</translation>
-<translation id="6865313869410766144">Autofill form data</translation>
+<translation id="6865313869410766144">Auto-fill form data</translation>
 <translation id="6865708901122695652">WebRTC event logs (<ph name="WEBRTC_EVENT_LOG_COUNT" />)</translation>
 <translation id="686664946474413495">Colour temperature</translation>
 <translation id="6870888490422746447">Choose an app to share to:</translation>
@@ -3722,6 +3726,7 @@
 <translation id="6916590542764765824">Manage Extensions</translation>
 <translation id="6920989436227028121">Open as standard tab</translation>
 <translation id="6921104647315081813">Clear activities</translation>
+<translation id="692114467174262153"><ph name="ALTERNATIVE_BROWSER_NAME" /> could not be opened</translation>
 <translation id="6921709132208495314">Stop using data on this page</translation>
 <translation id="6922128026973287222">Save data and browse faster using Google Data Saver. Click to learn more.</translation>
 <translation id="6923132443355966645">Scroll/Click</translation>
@@ -3810,6 +3815,7 @@
 <translation id="7063129466199351735">Processing shortcuts...</translation>
 <translation id="7063311912041006059">URL with <ph name="SPECIAL_SYMBOL" /> in place of query</translation>
 <translation id="7063957500469387217">Set up or manage printers in Google Cloud Print.</translation>
+<translation id="7064482796689484940">That security key does not support any method of personal identification (e.g. a fingerprint reader or PIN entry), but that feature was requested.</translation>
 <translation id="7065223852455347715">This device is locked in a mode that prevents enterprise enrolment.  If you want to enrol the device you need to go through device recovery first.</translation>
 <translation id="7065534935986314333">About System</translation>
 <translation id="706626672220389329">Error mounting share. The specified share is already mounted.</translation>
@@ -3826,7 +3832,6 @@
 <translation id="708060913198414444">C&amp;opy audio address</translation>
 <translation id="7081952801286122383">You're incognito</translation>
 <translation id="708278670402572152">Disconnect to enable scanning</translation>
-<translation id="7084192839369222683">Run only important content</translation>
 <translation id="7085389578340536476">Allow Chrome to record audio?</translation>
 <translation id="7088434364990739311">Update check failed to start (error code <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver – Open and pack ZIP files in Files app.</translation>
@@ -3848,15 +3853,14 @@
 <translation id="7109543803214225826">Shortcut removed</translation>
 <translation id="7113502843173351041">Know your email address</translation>
 <translation id="7114054701490058191">Passwords don't match</translation>
-<translation id="7114648273807173152">To use Smart Lock to sign in to your Google account, go to Settings &gt; Connected devices &gt; Your phone &gt; Smart Lock.</translation>
+<translation id="7114648273807173152">To use Smart Lock to sign in to your Google Account, go to Settings &gt; Connected devices &gt; Your phone &gt; Smart Lock.</translation>
 <translation id="7117228822971127758">Please try again later</translation>
 <translation id="7117247127439884114">Sign in Again...</translation>
 <translation id="711840821796638741">Show Managed Bookmarks</translation>
 <translation id="711902386174337313">Read the list of your signed-in devices</translation>
-<translation id="7120683273130936452">A PIN consists of four or more characters and serves to prove that the owner of a security key is present during certain operations. Once set, a PIN can be changed but cannot be removed without fully resetting the security key.</translation>
 <translation id="7120865473764644444">Couldn't connect to the sync server. Retrying...</translation>
-<translation id="7121362699166175603">Clears history and autocompletions in the address bar. Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
+<translation id="7121362699166175603">Clears history and auto-completions in the address bar. Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="7121389946694989825">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="7123360114020465152">No longer supported</translation>
 <translation id="7124929488592184705">Error printing <ph name="DOCUMENT_NAME" /></translation>
 <translation id="7127980134843952133">Download history</translation>
@@ -3872,6 +3876,7 @@
 <translation id="713888829801648570">Sorry, your password could not be verified because you are offline.</translation>
 <translation id="7140928199327930795">No other available devices.</translation>
 <translation id="7141105143012495934">Sign-in failed because your account details could not be retrieved. Please contact your administrator or try again.</translation>
+<translation id="714285394257538643">To confirm that you want to reset your security key, touch it again. All credentials stored on the security key and its PIN will be erased.</translation>
 <translation id="7143092389027215216">Starting demo mode</translation>
 <translation id="7143207342074048698">Connecting ...</translation>
 <translation id="7144878232160441200">Retry</translation>
@@ -4010,6 +4015,7 @@
 <translation id="7364796246159120393">Choose file</translation>
 <translation id="7366415735885268578">Add a site</translation>
 <translation id="7366909168761621528">Browsing data</translation>
+<translation id="736877393389250337"><ph name="URL" /> could not be open in <ph name="ALTERNATIVE_BROWSER_NAME" />. Please contact your system administrator.</translation>
 <translation id="7371006317849674875">Start time</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Highlight the mouse cursor when it's moving</translation>
@@ -4018,6 +4024,7 @@
 <translation id="7378627244592794276">Nope</translation>
 <translation id="73786666777299047">Open Chrome Web Store</translation>
 <translation id="7378812711085314936">Get data connection</translation>
+<translation id="7380768571499464492">Updated <ph name="PRINTER_NAME" /></translation>
 <translation id="7384292194278095697">This device is no longer supported</translation>
 <translation id="7385854874724088939">Something went wrong when trying to print.  Please check your printer and try again.</translation>
 <translation id="7385896526023870365">This extension has no additional site access.</translation>
@@ -4049,11 +4056,13 @@
 <translation id="7433692219247014412">{COUNT,plural, =0{Open All in &amp;New Window}=1{Open in &amp;New Window}other{Open All (#) in &amp;New Window}}</translation>
 <translation id="7434509671034404296">Developer</translation>
 <translation id="7436921188514130341">Oh no! There was an error during renaming.</translation>
+<translation id="7438976808740265764">Flash Player will no longer be supported after December 2020.</translation>
 <translation id="7441736921018636843">To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /> to remove your sync passphrase</translation>
 <translation id="7441830548568730290">Other users</translation>
 <translation id="7442465037756169001">Your Hangouts Meet hardware is ready to be set up.</translation>
 <translation id="744341768939279100">Create a new profile</translation>
 <translation id="7444983668544353857">Disable <ph name="NETWORKDEVICE" /></translation>
+<translation id="7450761244949417357">Opening in <ph name="ALTERNATIVE_BROWSER_NAME" /> now</translation>
 <translation id="7453008956351770337">By selecting this printer, you are giving the following extension the permission to access your printer:</translation>
 <translation id="7456142309650173560">dev</translation>
 <translation id="7456847797759667638">Open Location...</translation>
@@ -4063,7 +4072,7 @@
 <translation id="7465778193084373987">Netscape Certificate Revocation URL</translation>
 <translation id="7469894403370665791">Automatically connect to this network</translation>
 <translation id="747114903913869239">Error: Unable to decode extension</translation>
-<translation id="7473891865547856676">No Thanks</translation>
+<translation id="7473891865547856676">No, thanks</translation>
 <translation id="747459581954555080">Restore all</translation>
 <translation id="7475671414023905704">Netscape Lost Password URL</translation>
 <translation id="7476454130948140105">Battery too low for update (<ph name="BATTERY_PERCENT" />%)</translation>
@@ -4158,7 +4167,9 @@
 <translation id="7631014249255418691">Linux apps &amp; files have been successfully backed up</translation>
 <translation id="7631887513477658702">&amp;Always Open Files of This Type</translation>
 <translation id="7632948528260659758">The following kiosk apps have been failed for updating:</translation>
+<translation id="76341863042884733">A PIN protects your security key</translation>
 <translation id="763632859238619983">Do not allow any site to install payment handlers</translation>
+<translation id="7638605456503525968">Serial ports</translation>
 <translation id="7639178625568735185">Got it!</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> automatically signs you in to eligible sites with passwords that you saved.</translation>
 <translation id="7642778300616172920">Hide sensitive content</translation>
@@ -4170,6 +4181,7 @@
 <translation id="7650511557061837441">"<ph name="TRIGGERING_EXTENSION_NAME" />" would like to remove "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="7652808307838961528">Edit person, <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Apps, extensions and user scripts cannot be added from this website</translation>
+<translation id="7652954539215530680">Create a PIN</translation>
 <translation id="7654941827281939388">This account is already being used on this computer.</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7659584679870740384">You are not authorised to use this device. Please contact the administrator for sign-in permission.</translation>
@@ -4267,7 +4279,7 @@
 <translation id="7792388396321542707">Stop sharing</translation>
 <translation id="7799299114731150374">Wallpaper set successfully</translation>
 <translation id="7800518121066352902">Rotate A&amp;nti-clockwise</translation>
-<translation id="780301667611848630">No, thank you</translation>
+<translation id="780301667611848630">No, thanks</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7807067443225230855">Search and Assistant</translation>
 <translation id="7807711621188256451">Always allow <ph name="HOST" /> to access your camera</translation>
@@ -4378,7 +4390,7 @@
 <translation id="794676567536738329">Confirm Permission</translation>
 <translation id="7947962633355574091">C&amp;opy Video Address</translation>
 <translation id="7950040156882184764">Internet Printing Protocol (HTTP)</translation>
-<translation id="7951265006188088697">To add or manage Google Pay payment methods, visit your <ph name="BEGIN_LINK" />Google account<ph name="END_LINK" /></translation>
+<translation id="7951265006188088697">To add or manage Google Pay payment methods, visit your <ph name="BEGIN_LINK" />Google Account<ph name="END_LINK" /></translation>
 <translation id="795282463722894016">Restore complete</translation>
 <translation id="7952904276017482715">Expected ID '<ph name="EXPECTED_ID" />', but ID was '<ph name="NEW_ID" />'</translation>
 <translation id="7953955868932471628">Manage shortcuts</translation>
@@ -4431,7 +4443,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Shortcut edited</translation>
 <translation id="8018313076035239964">Control what information websites can use and what content they can show you</translation>
-<translation id="802376096974994842">Resetting a Security Key will erase all keys associated with the device and clear all configured PINs.</translation>
 <translation id="8023801379949507775">Update extensions now</translation>
 <translation id="8024483450737722621">Apps that you’ve downloaded from Google Play will be deleted from this Chromebook.
       <ph name="LINE_BREAKS1" />
@@ -4473,7 +4484,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8074127646604999664">Allow recently closed sites to finish sending and receiving data</translation>
 <translation id="8076492880354921740">Tabs</translation>
 <translation id="8076835018653442223">Access to local files on your device is disabled by your administrator</translation>
-<translation id="8079938625609335826">To get all your extensions on all your devices, turn on sync.</translation>
 <translation id="8084114998886531721">Saved password</translation>
 <translation id="8086015605808120405">Configuring <ph name="PRINTER_NAME" /> ...</translation>
 <translation id="8090234456044969073">Read a list of your most frequently visited websites</translation>
@@ -4483,6 +4493,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <ph name="BEGIN_PARAGRAPH3" />App data can be any data that an app has saved (based on developer settings), including data such as contacts, messages and photos.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />Backup data will not count toward your Drive storage quota.<ph name="END_PARAGRAPH4" />
     <ph name="BEGIN_PARAGRAPH5" />You can turn this service off in Settings.<ph name="END_PARAGRAPH5" /></translation>
+<translation id="8096438328987289870">Select an account to log in with:</translation>
 <translation id="80974698889265265">PINs do not match</translation>
 <translation id="8101987792947961127">Powerwash required on next reboot</translation>
 <translation id="8102159139658438129">Go to <ph name="LINK_BEGIN" />Settings<ph name="LINK_END" /> to see options for your connected phone</translation>
@@ -4511,7 +4522,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8140778357236808512">Import an existing supervised user</translation>
 <translation id="8141584439523427891">Opening in alternative browser now</translation>
 <translation id="8141725884565838206">Manage your passwords</translation>
-<translation id="8142441511840089262">Double click</translation>
 <translation id="8143442547342702591">Invalid application</translation>
 <translation id="8146177459103116374">If you've already registered on this device, you can <ph name="LINK2_START" />sign in as an existing user<ph name="LINK2_END" />.</translation>
 <translation id="8146793085009540321">Sign-in failed. Please contact your administrator or try again.</translation>
@@ -4527,7 +4537,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8177196903785554304">Network Details</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">page</translation>
-<translation id="8180294223783876911">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
+<translation id="8180294223783876911">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />" can read and delete images, video and sound files in the ticked locations.</translation>
 <translation id="8181215761849004992">Can't join the domain. Check your account to see if you have sufficient privileges to add devices.</translation>
 <translation id="8182664696082410784"><ph name="REASON" />
@@ -4547,9 +4557,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8200772114523450471">Resume</translation>
 <translation id="8202160505685531999">Please re-enter your password to update your <ph name="DEVICE_TYPE" /> profile.</translation>
 <translation id="8203732864715032075">Send you notifications and default to remembering this computer for Messages. <ph name="LINK_BEGIN" />Find out more<ph name="LINK_END" /></translation>
-<translation id="8203795194971602413">Right click</translation>
 <translation id="8206354486702514201">This setting is enforced by your administrator.</translation>
-<translation id="8206581664590136590">Send usage and diagnostic data. Help improve your child's Android experience by automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
+<translation id="8206581664590136590">Send usage and diagnostic data. Help improve your child's Android experience by automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Bluesy</translation>
 <translation id="8209677645716428427">A supervised user can explore the web with your guidance. As the manager of a supervised user in Chrome, you can:</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Download is in progress}other{Downloads are in progress}}</translation>
@@ -4572,8 +4581,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8244514732452879619">Lights out soon</translation>
 <translation id="8246209727385807362">Unknown operator</translation>
 <translation id="8248050856337841185">&amp;Paste</translation>
-<translation id="8248880015234923589">Factory-reset a security key</translation>
 <translation id="8249048954461686687">OEM folder</translation>
+<translation id="8249615410597138718">Send to Your Devices</translation>
 <translation id="8249672078237421304">Offer to translate pages that aren't in a language you read</translation>
 <translation id="8251578425305135684">Thumbnail removed.</translation>
 <translation id="8252569384384439529">Uploading…</translation>
@@ -4724,6 +4733,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8502536196501630039">To use apps from Google Play, you must first restore your apps. Some data may have been lost.</translation>
 <translation id="8503813439785031346">Username</translation>
 <translation id="850875081535031620">No harmful software found</translation>
+<translation id="8509177919508253835">Reset security keys and create PINs</translation>
 <translation id="8509646642152301857">Spell check dictionary download failed.</translation>
 <translation id="8512476990829870887">End Process</translation>
 <translation id="851263357009351303">Always allow <ph name="HOST" /> to show images</translation>
@@ -4731,7 +4741,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8521475323816527629">Get to your apps fast</translation>
 <translation id="8523493869875972733">Keep Changes</translation>
 <translation id="8523849605371521713">Added by policy</translation>
-<translation id="8524783101666974011">Save cards in your Google account</translation>
+<translation id="8524783101666974011">Save cards in your Google Account</translation>
 <translation id="8525306231823319788">Full screen</translation>
 <translation id="8528074251912154910">Add languages</translation>
 <translation id="8528962588711550376">Signing in.</translation>
@@ -4770,7 +4780,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8588868914509452556"><ph name="WINDOW_TITLE" /> - VR presenting to headset</translation>
 <translation id="8590375307970699841">Set up automatic updates</translation>
 <translation id="8592141010104017453">Don't show notifications at all</translation>
-<translation id="8593121833493516339">Send usage and diagnostic data. Help improve your child's Android experience by automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If additional Web &amp; App Activity is turned on for your child, this data may be saved to their Google account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
+<translation id="8593121833493516339">Send usage and diagnostic data. Help improve your child's Android experience by automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If additional Web &amp; App Activity is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="8594908476761052472">Capture video</translation>
 <translation id="8596540852772265699">Customised Files</translation>
 <translation id="8597845839771543242">Property format:</translation>
@@ -4861,7 +4871,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8719653885894320876"><ph name="PLUGIN_NAME" /> download failed</translation>
 <translation id="8720200012906404956">Looking for a mobile network. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="8720816553731218127">The initialisation of the installation-time attributes has timed out.</translation>
-<translation id="8722912030556880711">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google account. <ph name="BEGIN_LINK2" />Find out more<ph name="END_LINK2" /></translation>
+<translation id="8722912030556880711">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK2" />Find out more<ph name="END_LINK2" /></translation>
 <translation id="8724405322205516354">When you see this icon, use your fingerprint for identification or to approve purchases.</translation>
 <translation id="8724409975248965964">Fingerprint added</translation>
 <translation id="8724859055372736596">&amp;Show in Folder</translation>
@@ -4911,7 +4921,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8784626084144195648">Binned Average</translation>
 <translation id="8785622406424941542">Stylus</translation>
 <translation id="8787254343425541995">Allow proxies for shared networks</translation>
-<translation id="8791534160414513928">Send a "Do Not Track" request with your browsing traffic</translation>
+<translation id="8791534160414513928">Send a ‘Do Not Track’ request with your browsing traffic</translation>
 <translation id="8794025342371547160">Restricted IP</translation>
 <translation id="879413103056696865">While the hotspot is on, your <ph name="PHONE_NAME" /> will:</translation>
 <translation id="8795916974678578410">New Window</translation>
@@ -4947,6 +4957,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8838770651474809439">Hamburger</translation>
 <translation id="883911313571074303">Annotate image</translation>
 <translation id="8845001906332463065">Get help</translation>
+<translation id="8845164297565101021">Insert and touch your security key to create or change a PIN.</translation>
 <translation id="8846132060409673887">Read the manufacturer and model of this computer</translation>
 <translation id="8846141544112579928">Searching for keyboard...</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -4988,10 +4999,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="890616557918890486">Change source</translation>
 <translation id="8909833622202089127">Site is tracking your location</translation>
 <translation id="8910146161325739742">Share your screen</translation>
-<translation id="8910222113987937043">Changes to your bookmarks, history, passwords and other settings will no longer be synced to your Google account. However, your existing data will remain stored in your Google account and can be managed on <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
+<translation id="8910222113987937043">Changes to your bookmarks, history, passwords and other settings will no longer be synced to your Google Account. However, your existing data will remain stored in your Google Account and can be managed on <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8912793549644936705">Stretch</translation>
-<translation id="891365694296252935">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. If additional Web &amp; App Activity is turned on for your child, this data may be saved to their Google account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
+<translation id="891365694296252935">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. If additional Web &amp; App Activity is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Loading suggestion</translation>
 <translation id="8916476537757519021">Incognito Subframe: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8917490105272468696">Yes, I'm In</translation>
@@ -5078,6 +5089,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="9052208328806230490">You have registered your printers with <ph name="CLOUD_PRINT_NAME" />, using the account <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Continue blocking</translation>
 <translation id="9053091947372579468">Your device includes a Chrome licence, but your username is not associated with an Admin console. Please create an Admin console account to proceed with enrolment. Note: If you choose to use your own domain to create a new Admin console account, you must also complete domain verification after sign-up. https://g.co/ChromeEnterpriseAccount</translation>
+<translation id="9053563360605707198">Print on both sides</translation>
 <translation id="9053893665344928494">Remember my choice</translation>
 <translation id="9055636786322918818">Enforce RC4 encryption. Using this option increases your risk, as the RC4 ciphers are insecure.</translation>
 <translation id="9056810968620647706">No matches were found.</translation>
@@ -5086,7 +5098,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Error from line <ph name="ERROR_LINE_START" /> to <ph name="ERROR_LINE_END" /></translation>
 <translation id="9064142312330104323">Google Profile photo (loading)</translation>
-<translation id="9064275926664971810">Enable Autofill to fill out forms in a single click</translation>
+<translation id="9064275926664971810">Enable Auto-fill to fill out forms in a single click</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9066773882585798925">Hear text read aloud</translation>
 <translation id="9066782832737749352">Text-to-Speech</translation>
@@ -5106,7 +5118,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="9101691533782776290">Launch app</translation>
 <translation id="9102610709270966160">Enable Extension</translation>
 <translation id="9103868373786083162">Press to go back, context menu to see history</translation>
-<translation id="9104396740804929809">Send usage and diagnostic data. Help improve your Android experience by automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
+<translation id="9104396740804929809">Send usage and diagnostic data. Help improve your Android experience by automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">To free up space, delete files from device storage.</translation>
 <translation id="9111102763498581341">Unlock</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE" />: <ph name="STATUS" /></translation>
@@ -5145,14 +5157,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="9170848237812810038">&amp;Undo</translation>
 <translation id="9170884462774788842">Another programme on your computer added a theme that may change the way Chrome works.</translation>
 <translation id="9173995187295789444">Scanning for Bluetooth devices...</translation>
-<translation id="9176476835295860688">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This <ph name="BEGIN_LINK1" />setting<ph name="END_LINK1" /> is enforced by the owner. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google account. <ph name="BEGIN_LINK2" />Find out more<ph name="END_LINK2" /></translation>
+<translation id="9176476835295860688">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This <ph name="BEGIN_LINK1" />setting<ph name="END_LINK1" /> is enforced by the owner. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK2" />Find out more<ph name="END_LINK2" /></translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> – Bluetooth device connected</translation>
 <translation id="9177499212658576372">You are currently connected to the <ph name="NETWORK_TYPE" /> network.</translation>
 <translation id="9179734824669616955">Set up Linux (Beta) on your <ph name="DEVICE_TYPE" /></translation>
 <translation id="9180281769944411366">This process may take a few minutes. Starting the Linux container.</translation>
 <translation id="9180380851667544951">Site can share your screen</translation>
 <translation id="9188441292293901223">Please update your phone to a newer version of Android to unlock this <ph name="DEVICE_TYPE" />.</translation>
-<translation id="9188732951356337132">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google account. <ph name="BEGIN_LINK2" />Find out more<ph name="END_LINK2" /></translation>
+<translation id="9188732951356337132">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK2" />Find out more<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPSec + Preshared key</translation>
 <translation id="920045321358709304">Search <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201220332032049474">Screen lock options</translation>
@@ -5173,7 +5185,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="93343527085570547">Go to the <ph name="BEGIN_LINK1" />Legal Help page<ph name="END_LINK1" /> to request content changes for legal reasons. Some account and system information may be sent to Google. We will use the information that you give us to help address technical issues and to improve our services, subject to our <ph name="BEGIN_LINK2" />Privacy Policy<ph name="END_LINK2" /> and <ph name="BEGIN_LINK3" />Terms of Service<ph name="END_LINK3" />.</translation>
 <translation id="93393615658292258">Password only</translation>
 <translation id="934503638756687833">Items not listed here will also be removed, if needed. Learn more about &lt;a href="<ph name="URL" />"&gt;unwanted software protection&lt;/a&gt; in the Chrome privacy white paper.</translation>
-<translation id="935490618240037774">Your bookmarks, history, passwords and other settings will be synced to your Google account so that you can use them on all of your devices.</translation>
+<translation id="935490618240037774">Your bookmarks, history, passwords and other settings will be synced to yourGoogle Accountso that you can use them on all of your devices.</translation>
 <translation id="935854577147268200">Smart Lock phone changed. Enter your password to update Smart Lock. Next time, your phone will unlock your <ph name="DEVICE_TYPE" />. You can turn off Smart Lock in Settings</translation>
 <translation id="936801553271523408">System diagnostic data</translation>
 <translation id="93766956588638423">Repair extension</translation>
@@ -5194,7 +5206,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="962802172452141067">Bookmark folder tree</translation>
 <translation id="964286338916298286">Your IT administrator has disabled Chrome Goodies for your device.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Application}other{Applications}}</translation>
-<translation id="967007123645306417">This will sign you out of your Google accounts. Changes to your bookmarks, history, passwords and other settings will no longer be synced to your Google account. However, your existing data will remain stored in your Google account and can be managed on <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
+<translation id="967007123645306417">This will sign you out of your Google Accounts. Changes to your bookmarks, history, passwords and other settings will no longer be synced to your Google Account. However, your existing data will remain stored in your Google Account and can be managed on <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
 <translation id="967624055006145463">Data stored</translation>
 <translation id="968000525894980488">Turn on Google Play services.</translation>
 <translation id="968037381421390582">Paste and Search for '<ph name="SEARCH_TERMS" />'</translation>

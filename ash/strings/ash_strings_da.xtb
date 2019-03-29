@@ -131,7 +131,7 @@
 <translation id="2961963223658824723">Der opstod en fejl. Prøv igen om et par sekunder.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2970920913501714344">Installer apps, udvidelser og temaer</translation>
-<translation id="2977598380246111477">Næste nummer</translation>
+<translation id="2977598380246111477">Næste tal</translation>
 <translation id="2995447421581609334">Vis Cast-enheder.</translation>
 <translation id="2996462380875591307">Fastgjort lupvindue er aktiveret. Tryk på Ctrl+Søg+D igen for at deaktivere tilstanden.</translation>
 <translation id="3000461861112256445">Monolyd</translation>
@@ -230,6 +230,7 @@
 <translation id="4527045527269911712">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse.</translation>
 <translation id="453661520163887813">Fuldt opladet om <ph name="TIME" /></translation>
 <translation id="4544944664594876241">Genvejen til at låse skærmen er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Knap for Tekstoplæsning</translation>
 <translation id="4585337515783392668">Stop med at caste på en ukendt modtager</translation>
 <translation id="4628757576491864469">Enheder</translation>
@@ -237,6 +238,7 @@
 <translation id="4696813013609194136">Lås enheden op med forældrekode</translation>
 <translation id="4731797938093519117">Forældreadgang</translation>
 <translation id="4734965478015604180">Vandret</translation>
+<translation id="476166673298332917">Administratoren af enheden kan overvåge din browseraktivitet.</translation>
 <translation id="4774338217796918551">Kom tilbage i morgen kl. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Adgangskode for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google Assistent er ikke tilgængelig i en demosession.</translation>

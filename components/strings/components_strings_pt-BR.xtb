@@ -24,7 +24,6 @@
 <translation id="1103523840287552314">Sempre traduzir do <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Se esta opção for selecionada, o Chrome armazenará uma cópia do seu cartão neste dispositivo para preenchimento de formulários mais rapidamente.</translation>
 <translation id="1110994991967754504">Selecione uma permissão para <ph name="PERMISSION_NAME" /></translation>
-<translation id="1111153019813902504">Favoritos recentes</translation>
 <translation id="1113869188872983271">&amp;Desfazer reordenar</translation>
 <translation id="1125573121925420732">Avisos podem ser comuns enquanto os sites atualizam a segurança. Isso deve melhorar em breve.</translation>
 <translation id="1126551341858583091">O tamanho no armazenamento local é de <ph name="CRASH_SIZE" />.</translation>
@@ -50,7 +49,6 @@
 <translation id="1228893227497259893">Identificador de entidade incorreto</translation>
 <translation id="1232569758102978740">Sem título</translation>
 <translation id="1240347957665416060">O nome do seu dispositivo</translation>
-<translation id="124116460088058876">Mais idiomas</translation>
 <translation id="1250759482327835220">Para agilizar o pagamento na próxima vez, salve o cartão, seu nome e o endereço de faturamento na sua Conta do Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sincronizados)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Se você tentar visitar um site e ele não abrir, primeiro tente corrigir o erro com estas etapas de solução de problemas:&lt;/p&gt;
@@ -1335,7 +1333,6 @@ Mais detalhes:
 <translation id="8371889962595521444">Personalizar certificados raiz</translation>
 <translation id="8380941800586852976">Perigoso</translation>
 <translation id="8381674639488873545">Essas cobranças podem ser únicas ou recorrentes e talvez não sejam óbvias. <ph name="BEGIN_LINK" />Mostrar mesmo assim<ph name="END_LINK" /></translation>
-<translation id="8382348898565613901">Os favoritos visitados recentemente aparecerão aqui</translation>
 <translation id="8398259832188219207">Relatório de erros enviado em <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Falhas (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Você deve inserir a mesma senha duas vezes.</translation>

@@ -183,7 +183,7 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
 
       Erzwingt die Ausführung der Google Websuche mit aktivierter SafeSearch-Funktion und verhindert, dass Nutzer diese Einstellung ändern. Durch diese Einstellung wird auf YouTube auch der moderate eingeschränkte Modus erzwungen.
 
-      Wenn Sie diese Einstellung aktivieren, ist in der Google-Suche SafeSearch und auf YouTube der moderate eingeschränkte Modus immer aktiv.
+      Wenn Sie diese Einstellung aktivieren, sind in der Google-Suche SafeSearch und auf YouTube der moderate eingeschränkte Modus immer aktiv.
 
       Wenn Sie diese Einstellung deaktivieren oder keinen Wert festlegen, werden SafeSearch in der Google-Suche und der eingeschränkte Modus auf YouTube nicht erzwungen.</translation>
 <translation id="1352174694615491349">Mit dieser Richtlinie wird das Zusammenführen von HTTP/2-Verbindungen zugelassen, wenn Clientzertifikate verwendet werden. Dazu müssen der Hostname der potenziellen neuen Verbindung und der Hostname einer vorhandenen Verbindung mit einem oder mehreren Mustern übereinstimmen, die durch diese Richtlinie beschrieben werden. Die Richtlinie ist eine Liste von Hosts unter Verwendung des URLBlacklist-Filterformats: "example.com" entspricht "example.com" sowie allen Subdomains wie "sub.example.com", während ".example.net" nur "example.net" entspricht.
@@ -444,7 +444,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Wird die Richtlinie auf "true" gesetzt oder nicht konfiguriert, werden Statistiken gemeldet.</translation>
 <translation id="1843117931376765605">Aktualisierungsrate für Nutzerrichtlinien</translation>
 <translation id="1844620919405873871">Konfiguriert Richtlinien zum schnellen Entsperren.</translation>
-<translation id="1845405905602899692">Kiosk-Einstellungen</translation>
+<translation id="1845405905602899692">Kioskeinstellungen</translation>
 <translation id="1845429996559814839">PIN-Druckmodus einschränken</translation>
 <translation id="1847960418907100918">Gibt die Parameter für die Suche im Voraus mit POST an. Sie besteht aus durch Komma getrennten Name/Wert-Paaren. Wenn ein Wert ein Vorlagenparameter wie z. B. {searchTerms} im obigen Beispiel ist, wird er durch echte Suchbegriffsdaten ersetzt.
 
@@ -545,7 +545,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 
       Ist diese Richtlinie auf "true" gesetzt, versucht <ph name="PRODUCT_OS_NAME" />, die Nutzdaten automatischer Updates über HTTP herunterzuladen. Ist die Richtlinie auf "false" gesetzt oder nicht festgelegt, wird für solche Downloads HTTPS verwendet.</translation>
 <translation id="199764499252435679">Komponentenupdates in <ph name="PRODUCT_NAME" /> aktivieren</translation>
-<translation id="1997994951395619441">Falls Sie diese Einstellung aktivieren, wird in <ph name="PRODUCT_NAME" /> eine Lesezeichenleiste angezeigt.
+<translation id="1997994951395619441">Wenn Sie diese Einstellung aktivieren, wird in <ph name="PRODUCT_NAME" /> eine Lesezeichenleiste angezeigt.
 
       Ist die Einstellung deaktiviert, sehen die Nutzer keine Lesezeichenleiste.
 
@@ -571,7 +571,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 
           Wenn diese Einstellung deaktiviert ist, können keine Dateien übertragen werden. Ist die Einstellung aktiviert oder nicht konfiguriert, ist eine Dateiübertragung möglich.</translation>
 <translation id="2057317273526988987">Zugriff auf eine Liste mit URLs erlauben</translation>
-<translation id="2061810934846663491">Erforderliche Domainnamen für Hosts für den Remotezugriff konfigurieren</translation>
+<translation id="2061810934846663491">Erforderliche Domainnamen für Remotezugriff-Hosts konfigurieren</translation>
 <translation id="206623763829450685">Gibt an, welche HTTP-Authentifizierungsschemas von <ph name="PRODUCT_NAME" /> unterstützt werden.
 
           Mögliche Werte sind "basic", "digest", "ntlm" und "negotiate". Trennen Sie mehrere Werte durch Kommas.
@@ -630,7 +630,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 
           Seit <ph name="PRODUCT_NAME" /> 21 ist die Installation von Erweiterungen, Apps und Nutzerskripten von Quellen außerhalb des Chrome Web Stores schwieriger geworden. In den Vorgängerversionen konnten Nutzer auf den Link zu einer CRX-Datei klicken und die Datei nach einigen Hinweisen in <ph name="PRODUCT_NAME" /> installieren. In allen Versionen ab <ph name="PRODUCT_NAME" /> 21 müssen solche Dateien zuerst heruntergeladen und dann auf die Seite "Einstellungen" in <ph name="PRODUCT_NAME" /> gezogen werden. Anhand dieser Einstellung kann bei bestimmten URLs der alte, einfachere Installationsvorgang angewendet werden.
 
-          Bei den Einträgen in dieser Liste handelt es sich um auf die Erweiterung angepasste Übereinstimmungsmuster (siehe https://developer.chrome.com/extensions/match_patterns). Wenn eine URL mit einem Eintrag in dieser Liste übereinstimmt, können Nutzer ihn ganz einfach über diese URL installieren. Sowohl der Speicherort der CRX-Datei als auch die Seite, über die der Download gestartet wird, also die Verweis-URL, müssen durch diese Muster zugelassen sein.
+          Bei den Einträgen in dieser Liste handelt es sich um auf die Erweiterung angepasste Übereinstimmungsmuster (siehe https://developer.chrome.com/extensions/match_patterns). Wenn eine URL mit einem Eintrag in dieser Liste übereinstimmt, können Nutzer eine Datei ganz einfach über diese URL installieren. Sowohl der Speicherort der CRX-Datei als auch die Seite, über die der Download gestartet wird, also die Verweis-URL, müssen durch diese Muster zugelassen sein.
 
           "<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />" hat Vorrang vor dieser Richtlinie. Eine Erweiterung auf der schwarzen Liste wird folglich nicht installiert, auch wenn sie von einer Website auf dieser Liste stammt.</translation>
 <translation id="214901426630414675">Duplexdruck einschränken</translation>
@@ -694,7 +694,7 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
 <translation id="2240879329269430151">Ermöglicht Ihnen zu bestimmen, ob Websites Pop-ups anzeigen dürfen. Das Anzeigen von Pop-ups kann entweder allen Websites gestattet oder für alle unterbunden werden. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "BlockPopups" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
 <translation id="2255326053989409609">Die Aktivierung dieser Einstellung verhindert, dass Webseiten auf den Grafikprozessor (GPU) zugreifen können. Insbesondere können Webseiten nicht auf die WebGL API zugreifen und Plug-ins können die Pepper 3D API nicht verwenden.
 
-      Ist diese Einstellung deaktiviert oder nicht konfiguriert, können Webseiten möglicherweise auf die WebGL API zugreifen und Plug-ins können die Pepper 3D API verwenden. Durch die Standardeinstellungen des Browsers kann es weiterhin erforderlich sein, dass zur Verwendung dieser APIs Argumente über die Befehlszeile übergeben werden müssen.
+      Ist diese Einstellung deaktiviert oder nicht konfiguriert, können Webseiten möglicherweise auf die WebGL API zugreifen und Plug-ins die Pepper 3D API verwenden. Durch die Standardeinstellungen des Browsers kann es weiterhin erforderlich sein, dass zur Verwendung dieser APIs Argumente über die Befehlszeile übergeben werden müssen.
 
       Wenn "HardwareAccelerationModeEnabled" auf "false" gesetzt ist, wird "Disable3DAPIs" ignoriert, als ob "Disable3DAPIs" auf "true" gesetzt wäre.</translation>
 <translation id="2258126710006312594">Nutzern mit Remotezugriff die Übertragung von Dateien vom/zum Host gestatten</translation>
@@ -1105,7 +1105,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 
           Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie sich für eine andere Methode zur Festlegung der Proxyrichtlinien entschieden haben.
 
-          Weitere Optionen und ausführlichere Beispiele finden Sie unter
+          Weitere Optionen und ausführliche Beispiele finden Sie unter
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3034580675120919256">Ermöglicht Ihnen festzulegen, ob Websites JavaScript ausführen dürfen. Das Ausführen von JavaScript kann entweder allen Websites gestattet oder für alle unterbunden werden. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AllowJavaScript" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
 <translation id="3038323923255997294">Apps weiter im Hintergrund ausführen, wenn <ph name="PRODUCT_NAME" /> geschlossen ist</translation>
@@ -1242,15 +1242,15 @@ Diese Richtlinie kann nur als Empfehlung festgelegt werden. Mithilfe dieser Rich
 <translation id="3381968327636295719">Standardmäßig Host-Browser verwenden</translation>
 <translation id="3384115339826100753">Hiermit können Sie die Energieverwaltungsrichtlinie zum Umschalten bei Leistungsspitzen aktivieren.
 
-          Das Umschalten bei Leistungsspitzen ist eine Richtlinie, mit der Energie gespart werden kann. Dazu wird die Nutzung des Netzstroms während der Tageszeiten mit Spitzenlasten minimiert. Für jeden Wochentag kann eine Start- und eine Endzeit für den Modus zum Umschalten bei Leistungsspitzen festgelegt werden. Während dieser Zeiträume wird das System über den Akku mit Strom versorgt, solange der Ladezustand des Akkus einen bestimmten Schwellenwert nicht unterschreitet – auch dann, wenn das System an das Stromnetz angeschlossen ist. Nach der angegebenen Endzeit wird das System wieder über Netzstrom versorgt, der Akku jedoch nicht geladen. Das System wird wieder auf den normalen Betrieb mit Netzstrom umgestellt, nachdem die festgelegte Startzeit zum Laden erreicht wurde.
+          Das Umschalten bei Leistungsspitzen ist eine Richtlinie, mit der Energie gespart werden kann. Dazu wird die Nutzung des Netzstroms während der Tageszeiten mit Spitzenlasten minimiert. Für jeden Wochentag kann eine Start- und eine Endzeit für den Modus zum Umschalten bei Leistungsspitzen festgelegt werden. Während dieser Zeiträume wird das System über den Akku mit Strom versorgt, solange der Ladezustand des Akkus einen bestimmten Schwellenwert nicht unterschreitet – auch dann, wenn das System an das Stromnetz angeschlossen ist. Nach der angegebenen Endzeit wird das System wieder über Netzstrom versorgt, der Akku jedoch nicht geladen. Das System wird wieder auf den normalen Betrieb mit Netzstrom umgestellt und der Akku aufgeladen, nachdem die festgelegte Startzeit zum Laden erreicht wurde.
 
           Wenn diese Richtlinie auf "true" gesetzt ist und "DevicePowerPeakShiftBatteryThreshold" und "DevicePowerPeakShiftDayConfig" festgelegt sind, ist das Umschalten bei Leistungsspitzen immer aktiviert, sofern die Funktion vom Gerät unterstützt wird.
 
-          Falls die Richtlinie auf "false" festgelegt ist, ist das Umschalten bei Leistungsspitzen immer deaktiviert.
+          Wenn die Richtlinie auf "false" festgelegt ist, ist das Umschalten bei Leistungsspitzen immer deaktiviert.
 
           Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
 
-          Wird die Richtlinie nicht festgelegt, ist das Umschalten bei Leistungsspitzen zuerst deaktiviert, kann vom Nutzer aber aktiviert werden.</translation>
+          Wird die Richtlinie nicht festgelegt, ist das Umschalten bei Leistungsspitzen zuerst deaktiviert und kann vom Nutzer nicht aktiviert werden.</translation>
 <translation id="3388153794103186066">Ermöglicht das Erstellen einer Liste mit URLs, deren Websites automatisch auf ein USB-Gerät mit einem bestimmten Anbieter und einer bestimmten Produkt-ID zugreifen dürfen. Damit die Richtlinie gültig ist, muss jeder Eintrag in der Liste sowohl Geräte als auch URLs enthalten. Jeder Geräteeintrag kann ein Feld für eine Anbieter-ID und eine Produkt-ID enthalten. Fehlende IDs werden wie Platzhalter gehandhabt. Dabei gibt es jedoch eine Ausnahme: Produkt-IDs können nur spezifiziert werden, wenn auch die entsprechende Anbieter-ID angegeben ist. Andernfalls ist die Richtlinie ungültig und wird ignoriert.
 
         Im USB-Berechtigungsmodell wird die URL der anfragenden Website ("anfragende URL") verwendet und die URL der Frame-Website der obersten Ebene ("einbettende URL"). Dabei wird der anfragenden URL die Berechtigung erteilt, auf das USB-Gerät zuzugreifen. Wenn die anfragende Website in einen iFrame geladen wird, kann die anfragende von der einbettenden URL abweichen. Deshalb kann das Feld "urls" bis zu zwei durch ein Komma voneinander getrennte URL-Strings enthalten: die anfragende URL und die einbettende URL. Wenn nur eine einzige URL angegeben ist, wird der Zugriff auf die entsprechenden USB-Geräte gewährt, wenn unabhängig vom Einbettungsstatus die URL der anfragenden Website mit dieser URL übereinstimmt. Die URLs im Feld "urls" müssen gültig sein, da ansonsten die Richtlinie ignoriert wird.
@@ -1573,7 +1573,7 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4018000735882846261">Mit dieser Richtlinie erhält Google Assistant die Berechtigung, bei Gesprächen zuzuhören und so zu prüfen, ob die Wortgruppe für die Sprachaktivierung genannt wird.
 
       Wenn die Richtlinie aktiviert ist, hört Google Assistant bei Gesprächen zu und prüft, ob die Wortgruppe für die Sprachaktivierung genannt wird.
-      Falls die Richtlinie deaktiviert ist, hört Google Assistant bei Gesprächen nicht zu und prüft nicht, ob die Wortgruppe für die Sprachaktivierung genannt wird.
+      Wenn die Richtlinie deaktiviert ist, hört Google Assistant bei Gesprächen nicht zu und prüft nicht, ob die Wortgruppe für die Sprachaktivierung genannt wird.
       Wird die Richtlinie nicht festgelegt, hört Google Assistant bei Gesprächen nicht zu und prüft nicht, ob die Wortgruppe für die Sprachaktivierung genannt wird.
       </translation>
 <translation id="4020682745012723568">In das Nutzerprofil übertragene Cookies sind für Android-Apps nicht zugänglich.</translation>
@@ -1639,7 +1639,7 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 
           Wenn diese Einstellung aktiviert ist, können nur Clients aus einer der angegebenen Domains eine Verbindung zum Host herstellen.
 
-          Ist diese Einstellung deaktiviert oder nicht konfiguriert, wird die Standardrichtlinie für den Verbindungstyp angewendet. Zu Zwecken der Remote-Unterstützung können Clients aus jeder beliebigen Domain einer Verbindung zum Host herstellen, bei einem stetigen Remotezugriff kann nur der Hosteigentümer eine Verbindung herstellen.
+          Ist diese Einstellung deaktiviert oder nicht konfiguriert, wird die Standardrichtlinie für den Verbindungstyp angewendet. Zu Zwecken der Remote-Unterstützung können Clients aus jeder beliebigen Domain eine Verbindung zum Host herstellen, bei einem stetigen Remotezugriff kann nur der Hosteigentümer eine Verbindung herstellen.
 
           Mit dieser Einstellung wird "RemoteAccessHostClientDomain" falls vorhanden überschrieben.
 
@@ -1732,7 +1732,7 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
       Verwenden Sie das Platzhalterzeichen "*", um null oder mehr beliebige Zeichen zuzuordnen. Als Escapezeichen wird "\" verwendet. Setzen Sie es vor "*" oder "\", um nach diesen Zeichen (Sternchen bzw. umgekehrter Schrägstrich) zu suchen.
 
       Wenn diese Richtlinie nicht festgelegt wird, sind alle Google-Konten auf dem Gerät in <ph name="PRODUCT_NAME" /> sichtbar.</translation>
-<translation id="4360826270668210664">Wenn diese Richtlinie konfiguriert ist, benötigt der Host für den Remotezugriff Authentifizierungsclients, um ein Authentifizierungstoken von dieser URL zum Aufbau einer Verbindung anzufordern. Diese Richtlinie muss in Verbindung mit "RemoteAccessHostTokenValidationUrl" verwendet werden.
+<translation id="4360826270668210664">Wenn diese Richtlinie konfiguriert ist, verlangt der Host für den Remotezugriff von Clients, die sich authentifizieren, ein Authentifizierungstoken von dieser URL, damit eine Verbindung aufgebaut werden kann. Diese Richtlinie muss in Verbindung mit "RemoteAccessHostTokenValidationUrl" verwendet werden.
 
           Diese Funktion ist derzeit serverseitig deaktiviert.</translation>
 <translation id="436581050240847513">Gerätenetzwerk-Schnittstellen melden</translation>
@@ -2059,7 +2059,7 @@ Sollte die Richtlinie nicht konfiguriert sein, so wird der Standardsuchanbieter 
 
           Bei Auswahl manueller Proxyeinstellungen können Sie in "Adresse oder URL des Proxyservers", "URL einer PAC-Proxy-Datei" und "Kommagetrennte Liste der Proxy-Umgehungsregeln" weitere Optionen festlegen. Nur der HTTP-Proxyserver mit der höchsten Priorität ist für ARC-Apps verfügbar.
 
-          Ausführlichere Beispiele finden Sie unter
+          Ausführliche Beispiele finden Sie unter
           <ph name="PROXY_HELP_URL" />.
 
           Wenn Sie diese Einstellung aktivieren, werden alle Proxyoptionen, die über die Befehlszeile eingegeben werden, von <ph name="PRODUCT_NAME" /> ignoriert.
@@ -2324,7 +2324,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 
       Ist die Einstellung deaktiviert, können Nutzer Instant Tethering nicht verwenden.
 
-      Wenn diese Richtlinie nicht konfiguriert ist, gilt die Standardeinstellung: Vom Unternehmen verwaltete Nutzer können die Funktion nicht verwenden, während sie verwalteten Nutzern zur Verfügung steht.</translation>
+      Wenn diese Richtlinie nicht konfiguriert ist, gilt die Standardeinstellung: Vom Unternehmen verwaltete Nutzer können die Funktion nicht verwenden, während sie für nicht verwaltete Nutzer zur Verfügung steht.</translation>
 <translation id="5584132346604748282">Standortdienste von Google unter Android konfigurieren</translation>
 <translation id="5586942249556966598">Nichts tun</translation>
 <translation id="5590494712401018042">Hiermit wird der Prozentsatz angegeben, um den die Verzögerung für die Bildschirmabdunkelung skaliert wird, wenn sich das Gerät im Präsentationsmodus befindet.
@@ -2617,7 +2617,7 @@ Für diese Richtlinie wird die Installation von <ph name="CHROME_REPORTING_EXTEN
 
           Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie sich für eine andere Methode zur Festlegung der Proxyrichtlinien entschieden haben.
 
-          Ausführlichere Beispiele finden Sie unter
+          Ausführliche Beispiele finden Sie unter
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="6178075938488052838">Diese Richtlinie gibt vor, wer eine <ph name="PRODUCT_OS_NAME" />-Sitzung starten darf. Sie verhindert nicht, dass sich Nutzer in weiteren Google-Konten innerhalb von Android anmelden. Wenn Sie dies verhindern möchten, konfigurieren Sie die Android-spezifische Richtlinie "<ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" />" im Rahmen von "<ph name="ARC_POLICY_POLICY_NAME" />".</translation>
 <translation id="6181608880636987460">Ermöglicht die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />" nicht gestattet ist.
@@ -2736,7 +2736,7 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 
       Wenn diese Einstellung aktiviert ist, wird auf YouTube immer mindestens der eingeschränkte Modus "Moderat" erzwungen.
 
-      Ist diese Einstellung deaktiviert oder ist kein Wert festgelegt, wird der eingeschränkte Modus auf YouTube nicht durch <ph name="PRODUCT_NAME" /> erzwungen, jedoch möglicherweise durch externe Richtlinien wie YouTube-Richtlinien.</translation>
+      Ist diese Einstellung deaktiviert oder ist kein Wert festgelegt, wird der eingeschränkte Modus auf YouTube nicht durch <ph name="PRODUCT_NAME" /> erzwungen. Der eingeschränkte Modus kann möglicherweise jedoch trotzdem durch externe Richtlinien wie YouTube-Richtlinien erzwungen werden.</translation>
 <translation id="6495328383950074966">Konfigurieren Sie die Liste der Domains, die von Safe Browsing als vertrauenswürdig eingestuft werden. Dies bedeutet:
       Es findet keine Prüfung auf gefährliche Ressourcen wie Phishing, Malware oder unerwünschte Software durch Safe Browsing statt, wenn die URLs dieser Ressourcen mit diesen Domains übereinstimmen.
       Es findet keine Prüfung von in diesen Domains gehosteten Downloads durch den Downloadschutzdienst von Safe Browsing statt.
@@ -3084,7 +3084,7 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Bildschirm-Wakelock-Anfrag
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Für Updates zugelassene Verbindungstypen</translation>
 <translation id="7194407337890404814">Name der Standardsuchmaschine</translation>
-<translation id="7199304109870655950">Konfigurieren Sie die Optionen für den Remotezugriff im Chrome Remote Desktop-Host.
+<translation id="7199304109870655950">Konfiguriert die Optionen für den Remotezugriff im Chrome Remote Desktop-Host.
 
       Der Chrome Remote Desktop-Host ist ein nativer Dienst, der auf dem Zielgerät ausgeführt wird, auf das ein Nutzer über die Chrome Remote Desktop-Anwendung zugreifen kann.  Der native Dienst wird separat vom <ph name="PRODUCT_NAME" />-Browser gepackt und ausgeführt.
 
@@ -3160,7 +3160,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Wird diese Einstellung deaktiviert, können Nutzer Smart Lock nicht verwenden.
 
-      Wenn diese Richtlinie nicht konfiguriert ist, gilt die Standardeinstellung: Vom Unternehmen verwaltete Nutzer können die Funktion nicht verwenden, während sie verwalteten Nutzern zur Verfügung steht.</translation>
+      Wenn diese Richtlinie nicht konfiguriert ist, gilt die Standardeinstellung: Vom Unternehmen verwaltete Nutzer können die Funktion nicht verwenden, während sie für nicht verwaltete Nutzer zur Verfügung steht.</translation>
 <translation id="7295019613773647480">Betreute Nutzer aktivieren</translation>
 <translation id="7301543427086558500">Definiert eine Liste alternativer URLs, mit denen Suchbegriffe aus der Suchmaschine extrahiert werden können. Die URLs sollten den String <ph name="SEARCH_TERM_MARKER" /> enthalten, der zum Extrahieren der Suchbegriffe verwendet wird.
 
@@ -3206,9 +3206,6 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="7339315111520512972">Ausführung des Netzwerkcodes im Browserprozess erzwingen</translation>
 <translation id="7340034977315324840">Aktivitätszeit von Geräten melden</translation>
 <translation id="7343497214039883642">Unternehmensdrucker-Konfigurationsdatei für Geräte</translation>
-<translation id="7349338075015720646">Hierdurch wird eine Liste von Websites festgelegt, die automatisch installiert werden, also ohne Interaktion des Nutzers, und die nicht wieder vom Nutzer deinstalliert werden können.
-
-      Jedes Listenelement der Richtlinie ist ein Objekt mit zwei Teilen: "url" und "launch_container". Bei "url" handelt es sich um die URL der Web-App, die installiert werden soll. Der "Launch_container" sollte entweder ein Fenster oder ein Tab sein, um festzulegen, wie die Web-App nach der Installation geöffnet wird. Wird "launch_container" nicht festgelegt, wird die App in einem Fenster geöffnet, wenn sie von Chrome als progressive Web-App erachtet wird. Andernfalls wird sie in einem Tab geöffnet.</translation>
 <translation id="735902178936442460">Mit dieser Richtlinie wird festgelegt, ob Daten erfasst werden, mit denen Geräte identifiziert werden können, etwa Gerätenamen und Netzwerkadressen.
 
 Wenn die Richtlinie auf "true" gesetzt oder gar nicht festgelegt wird, werden Daten, mit denen Geräte identifiziert werden können, erfasst.
@@ -3852,7 +3849,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 
           Wenn Sie sich für ein PAC-Proxyskript entscheiden, müssen Sie die URL des Skripts unter "URL einer PAC-Proxy-Datei" angeben.
 
-          Ausführlichere Beispiele finden Sie unter
+          Ausführliche Beispiele finden Sie unter
           <ph name="PROXY_HELP_URL" />.
 
           Wenn Sie diese Einstellung aktivieren, werden alle Proxyoptionen, die über die Befehlszeile eingegeben werden, von <ph name="PRODUCT_NAME" /> und ARC-Apps ignoriert.
@@ -3981,7 +3978,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Ist die Richtlinie nicht konfiguriert, kann der Nutzer sein Avatarbild für den Anmeldebildschirm selbst auswählen.</translation>
 <translation id="9035964157729712237">Aus der schwarzen Liste auszuschließende Erweiterungs-IDs</translation>
 <translation id="9038839118379817310">WLAN aktivieren</translation>
-<translation id="9039822628127365650">Wenn diese Richtlinie konfiguriert ist, wird damit die maximale Zeitdauer festgelegt, nach der ein Nutzer automatisch abgemeldet und die Sitzung beendet wird. Der Nutzer erfährt über einen Countdown-Timer in der Taskleiste, wie viel Zeit er noch hat.
+<translation id="9039822628127365650">Wenn diese Richtlinie konfiguriert ist, wird damit die Zeitdauer festgelegt, nach der ein Nutzer automatisch abgemeldet und die Sitzung beendet wird. Der Nutzer erfährt über einen Countdown-Timer in der Taskleiste, wie viel Zeit er noch hat.
 
       Wenn diese Richtlinie nicht konfiguriert wurde, ist die Sitzungsdauer unbegrenzt.
 
@@ -4083,7 +4080,7 @@ Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älte
 
           Wenn diese Richtlinie nicht konfiguriert ist, wird die Einstellung "3" verwendet, die vom Nutzer später geändert werden kann.</translation>
 <translation id="9167719789236691545">Synchronisierung zwischen Drive und der App "Dateien" von <ph name="PRODUCT_OS_NAME" /> deaktivieren</translation>
-<translation id="9185107612228451403">Hiermit werden erweiterungsbezogene Richtlinien konfiguriert. Auf die schwarze Liste gesetzte Erweiterungen können vom Nutzer nur installiert werden, wenn diese in der weißen Liste enthalten sind. Sie können Erweiterungen auch in "<ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />" angeben, um ihre automatische Installation durch <ph name="PRODUCT_NAME" /> zu erzwingen. Erweiterungen mit erzwungener Installation werden immer installiert, unabhängig davon, ob sie sich auf der schwarzen Liste befinden.</translation>
+<translation id="9185107612228451403">Hiermit werden erweiterungsbezogene Richtlinien konfiguriert. Auf die schwarze Liste gesetzte Erweiterungen können vom Nutzer nur installiert werden, wenn diese in der weißen Liste enthalten sind. Wenn Sie die automatische Installation von bestimmten Erweiterungen durch <ph name="PRODUCT_NAME" /> erzwingen möchten, können Sie die Erweiterungen in "<ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />" angeben. Erweiterungen mit erzwungener Installation werden immer installiert, unabhängig davon, ob sie sich auf der schwarzen Liste befinden.</translation>
 <translation id="9187743794267626640">Bereitstellen von externem Speicher deaktivieren</translation>
 <translation id="9197740283131855199">Prozentsatz für die Skalierung der Spanne für die Bildschirmabdunkelung, wenn der Nutzer nach der Abdunkelung aktiv wird</translation>
 <translation id="9200828125069750521">Parameter für URL der Bildsuche, die POST verwendet</translation>

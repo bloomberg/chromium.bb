@@ -230,6 +230,7 @@
 <translation id="4527045527269911712">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> til batteriet er fulladet</translation>
 <translation id="4544944664594876241">Snarveien for å låse skjermen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Tekstopplesingsknapp</translation>
 <translation id="4585337515783392668">Stopp casting på en ukjent mottaker</translation>
 <translation id="4628757576491864469">Enheter</translation>
@@ -237,6 +238,7 @@
 <translation id="4696813013609194136">Lås opp enheten med foreldrekode</translation>
 <translation id="4731797938093519117">Foreldretilgang</translation>
 <translation id="4734965478015604180">Horisontal</translation>
+<translation id="476166673298332917">Enhetsadministratoren har tilgang til nettleseraktiviteten din.</translation>
 <translation id="4774338217796918551">Kom tilbake i morgen <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Passord for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google-assistenten er ikke tilgjengelig under demonstrasjonsøkter.</translation>

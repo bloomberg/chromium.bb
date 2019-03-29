@@ -33,7 +33,7 @@
 <translation id="1377255359165588604">La sincronizzazione si è interrotta.</translation>
 <translation id="1377321085342047638">Numero carta</translation>
 <translation id="1383876407941801731">Cerca</translation>
-<translation id="1389974829397082527">Nessun Preferito qui</translation>
+<translation id="1389974829397082527">Nessun preferito qui</translation>
 <translation id="1400642268715879018">Ultime quattro settimane</translation>
 <translation id="1407135791313364759">Apri tutte</translation>
 <translation id="1430915738399379752">Stampa</translation>
@@ -146,7 +146,7 @@
 <translation id="3112556859945124369">Segna come…</translation>
 <translation id="3157684681743766797">Segna tutti come...</translation>
 <translation id="3175081911749765310">Servizi web</translation>
-<translation id="3207960819495026254">Aggiunto ai Preferiti</translation>
+<translation id="3207960819495026254">Aggiunto ai preferiti</translation>
 <translation id="3224641773458703735">Per esportare le password devi innanzitutto impostare un passcode sul dispositivo.</translation>
 <translation id="3240426699337459095">Link copiato</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -204,7 +204,6 @@
 <translation id="4049507953662678203">Controlla la connessione di rete e riprova.</translation>
 <translation id="4082688844002261427">Gestisci la modalità di utilizzo della cronologia di navigazione per personalizzare la Ricerca, gli annunci e non solo</translation>
 <translation id="408404951701638773">Ora è più facile raggiungere la barra di ricerca</translation>
-<translation id="4084682180776658562">Aggiungi ai Preferiti</translation>
 <translation id="411254640334432676">Download non riuscito.</translation>
 <translation id="4112644173421521737">Cerca</translation>
 <translation id="4121993058175073134">Per inviare dati net-export, configura il tuo account email nell'app Impostazioni.</translation>
@@ -254,7 +253,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="4904877109095351937">Segna come già letti</translation>
 <translation id="4930268273022498155">Elimina i dati esistenti. Puoi recuperarli tornando all'account <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Spiacenti, si è verificato un problema di condivisione.</translation>
-<translation id="4979397965658815378">Accedi con il tuo account Google per avere preferiti, password, cronologia e altre impostazioni su tutti i tuoi dispositivi</translation>
+<translation id="4979397965658815378">Accedi con il tuo Account Google per avere preferiti, password, cronologia e altre impostazioni su tutti i tuoi dispositivi</translation>
 <translation id="5005498671520578047">Copia password</translation>
 <translation id="5010803260590204777">Apri una scheda di navigazione in incognito per navigare sul Web in privato.</translation>
 <translation id="5011684439661633295">Salve, <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -367,7 +366,6 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="6657585470893396449">Password</translation>
 <translation id="667999046851023355">Documento</translation>
 <translation id="6691331417640343772">Gestisci dati sincronizzati sulla Dashboard di Google</translation>
-<translation id="6709334795756764830">Modifica preferito</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Impossibile esportare le password</translation>
 <translation id="6780034285637185932">Codice postale</translation>
@@ -410,7 +408,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7346909386216857016">OK</translation>
 <translation id="7383797227493018512">Elenco di lettura</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7425346204213733349">Le modifiche ai preferiti, alla cronologia, alle password e ad altre impostazioni non verranno più sincronizzate con il tuo account Google. Tuttavia, i dati esistenti rimarranno memorizzati.</translation>
+<translation id="7425346204213733349">Le modifiche ai preferiti, alla cronologia, alle password e ad altre impostazioni non verranno più sincronizzate con il tuo Account Google. Tuttavia, i dati esistenti rimarranno memorizzati.</translation>
 <translation id="744343212394640790">Non sono <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Stato/contea</translation>
 <translation id="7456847797759667638">Apri percorso...</translation>
@@ -484,11 +482,11 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="8721297211384281569">Menu Strumenti</translation>
 <translation id="8725066075913043281">Riprova</translation>
 <translation id="8730621377337864115">Fine</translation>
-<translation id="8741995161408053644">Il tuo account Google potrebbe avere altre forme di cronologia di navigazione all'indirizzo <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
+<translation id="8741995161408053644">Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione all'indirizzo <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8756969031206844760">Aggiornare la password?</translation>
 <translation id="8775144690796719618">URL non valido</translation>
 <translation id="8820817407110198400">Preferiti</translation>
-<translation id="8840513115188359703">Non verrai scollegato dal tuo account Google.</translation>
+<translation id="8840513115188359703">Non verrai disconnesso dal tuo Account Google.</translation>
 <translation id="8870413625673593573">Chiusi di recente</translation>
 <translation id="8881801611828450202">Cerca questa immagine su <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Sincronizzazione Google Chrome</translation>
@@ -498,7 +496,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="8981454092730389528">Gestione attività di Google</translation>
 <translation id="8985320356172329008">Accesso effettuato a Google come</translation>
 <translation id="902659348151742535">Google può utilizzare la tua cronologia di navigazione per personalizzare la Ricerca, gli annunci e altri servizi Google.</translation>
-<translation id="9034759925968272072">Non verrai scollegato dal tuo account Google. Il tuo account Google potrebbe avere altre forme di cronologia di navigazione alla pagina <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
+<translation id="9034759925968272072">Non verrai disconnesso dal tuo Account Google. Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione alla pagina <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Larghezza di banda</translation>
 <translation id="9055772144595778347">Impossibile accedere</translation>
 <translation id="9065203028668620118">Modifica</translation>
@@ -512,7 +510,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="9188680907066685419">Esci dall'account gestito</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Rapporto sugli arresti anomali inviato.</translation>
-<translation id="935490618240037774">I tuoi preferiti, la cronologia, le password e altre impostazioni verranno sincronizzati con il tuo account Google per consentirti di utilizzarli su tutti i tuoi dispositivi.</translation>
+<translation id="935490618240037774">I tuoi preferiti, la cronologia, le password e altre impostazioni verranno sincronizzati con il tuo Account Google per consentirti di utilizzarli su tutti i tuoi dispositivi.</translation>
 <translation id="976982866697960176">Gestisci dati sincronizzati…</translation>
 <translation id="988141524645182168">Altri dispositivi</translation>
 <translation id="989988560359834682">Modifica indirizzo</translation>

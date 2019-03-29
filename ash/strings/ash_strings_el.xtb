@@ -199,6 +199,7 @@
 <translation id="397105322502079400">Υπολογισμός…</translation>
 <translation id="3995138139523574647">Συσκευή USB-C (πίσω δεξιά θύρα)</translation>
 <translation id="4017989525502048489">Δείκτης λέιζερ</translation>
+<translation id="4042660782729322247">Μοιράζεστε την οθόνη σας</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Απενεργοποιημένες για κάποια εφαρμογή}other{Απενεργοποιημένες για # εφαρμογές}}</translation>
 <translation id="4072264167173457037">Μεσαίο σήμα</translation>
 <translation id="4129129681837227511">Για να βλέπετε ειδοποιήσεις στην οθόνη κλειδώματος, ξεκλειδώστε τη συσκευή για να αλλάξετε τη ρύθμιση</translation>
@@ -230,6 +231,7 @@
 <translation id="4527045527269911712">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> για να ολοκληρωθεί η φόρτιση</translation>
 <translation id="4544944664594876241">Η συντόμευση για το κλείδωμα της οθόνης άλλαξε. Χρησιμοποιήστε το <ph name="NEW_SHORTCUT" /> αντί για το <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Κουμπί "Επιλέξτε για αυτόματη ανάγνωση"</translation>
 <translation id="4585337515783392668">Διακοπή μετάδοσης σε άγνωστο δέκτη</translation>
 <translation id="4628757576491864469">Συσκευές</translation>
@@ -237,6 +239,7 @@
 <translation id="4696813013609194136">Ξεκλείδωμα συσκευής με κωδικό γονέα</translation>
 <translation id="4731797938093519117">Γονική πρόσβαση</translation>
 <translation id="4734965478015604180">Οριζόντια περιστροφή</translation>
+<translation id="476166673298332917">Ο διαχειριστής της συσκευής μπορεί να παρακολουθεί τη δραστηριότητα περιήγησής σας.</translation>
 <translation id="4774338217796918551">Επιστρέψτε ξανά αύριο στις <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Κωδικός πρόσβασης για <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Ο Βοηθός Google δεν είναι διαθέσιμος σε περίοδο λειτουργίας επίδειξης.</translation>
@@ -373,6 +376,7 @@
 <translation id="7067196344162293536">Αυτόματη περιστροφή</translation>
 <translation id="7068360136237591149">Άνοιγμα αρχείων</translation>
 <translation id="7076293881109082629">Σύνδεση</translation>
+<translation id="7088960765736518739">Αλλαγή πρόσβασης</translation>
 <translation id="7092922358121866860">Εμφάνιση ρυθμίσεων Νυχτερινού φωτισμού</translation>
 <translation id="7098389117866926363">Συσκευή USB-C (πίσω αριστερή θύρα)</translation>
 <translation id="7131634465328662194">Θα αποσυνδεθείτε αυτόματα.</translation>
@@ -499,6 +503,7 @@
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Το μικρόφωνο χρησιμοποιείται.</translation>
+<translation id="9084606467167974638">Εναλλαγή θέσης μενού</translation>
 <translation id="9089416786594320554">Μέθοδοι εισαγωγής</translation>
 <translation id="9091626656156419976">Κατάργηση οθόνης <ph name="DISPLAY_NAME" /></translation>
 <translation id="9151726767154816831">Για να ολοκληρωθεί η ενημέρωση, πρέπει να γίνει επανεκκίνηση και powerwash</translation>

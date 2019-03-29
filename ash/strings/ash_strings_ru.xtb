@@ -230,6 +230,7 @@
 <translation id="4527045527269911712">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth.</translation>
 <translation id="453661520163887813">До полной зарядки <ph name="TIME" /></translation>
 <translation id="4544944664594876241">Изменились быстрые клавиши для блокировки экрана. Используйте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Кнопка "Озвучивание при нажатии"</translation>
 <translation id="4585337515783392668">Остановить трансляцию на неизвестное устройство</translation>
 <translation id="4628757576491864469">Устройства</translation>
@@ -237,6 +238,7 @@
 <translation id="4696813013609194136">Требуется родительский код доступа</translation>
 <translation id="4731797938093519117">Родительский доступ</translation>
 <translation id="4734965478015604180">Горизонтальная ориентация</translation>
+<translation id="476166673298332917">Администратору устройства доступна информация о том, какие страницы вы просматриваете в браузере.</translation>
 <translation id="4774338217796918551">Возвращайтесь завтра в <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Пароль для адреса электронной почты <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google Ассистент в демонстрационном сеансе недоступен</translation>
@@ -292,7 +294,7 @@
 <translation id="57838592816432529">Отключить звук</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Остановить трансляцию <ph name="ROUTE_TITLE" /> на устройство "<ph name="RECEIVER_NAME" />"</translation>
-<translation id="5860033963881614850">Выкл.</translation>
+<translation id="5860033963881614850">ВЫКЛ</translation>
 <translation id="5895138241574237353">Перезапустить</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>

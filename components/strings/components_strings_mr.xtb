@@ -24,7 +24,6 @@
 <translation id="1103523840287552314">नेहमी भाषांतर करा <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">चेक केल्यास, अधिक जलद फॉर्म भरण्यासाठी या डिव्हाइसवर Chrome आपल्या कार्डची एक प्रत संचयित करेल.</translation>
 <translation id="1110994991967754504"><ph name="PERMISSION_NAME" /> ची परवानगी निवडा</translation>
-<translation id="1111153019813902504">अलीकडील बुकमार्क</translation>
 <translation id="1113869188872983271">&amp;पुनर्क्रमित करा पूर्ववत करा</translation>
 <translation id="1125573121925420732">वेबसाइट त्यांची सीक्युरिटी अपडेट करत असताना चेतावण्या सामान्य असू शकतात. यात लवकरच सुधारणा व्हावी.</translation>
 <translation id="1126551341858583091">स्थानिक संचयावरील आकार <ph name="CRASH_SIZE" /> आहे.</translation>
@@ -50,7 +49,6 @@
 <translation id="1228893227497259893">चुकीचा अस्तित्व ओळखकर्ता</translation>
 <translation id="1232569758102978740">अशीर्षकांकित</translation>
 <translation id="1240347957665416060">तुमच्या डिव्हाइसचे नाव</translation>
-<translation id="124116460088058876">आणखी भाषा...</translation>
 <translation id="1250759482327835220">पुढील वेळेस जलद पेमेंट करण्यासाठी, तुमच्या Google खात्यावर तुमचे कार्ड आणि बिलिंग पत्ता सेव्ह करा.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (सिंक केलेले)</translation>
 <translation id="1256368399071562588">&lt;p&gt;जर तुम्ही एखाद्या वेबसाइटला भेट देण्याचा प्रयत्न केला आणि ती उघडली नाही, तर सगळ्यात आधी ट्रबलशूटिंग पायऱ्यांद्वारे या एररवर उपाय काढण्याचा प्रयत्न करा:&lt;/p&gt;
@@ -1057,6 +1055,7 @@
 <translation id="6965978654500191972">डिव्हाइस</translation>
 <translation id="6970216967273061347">जिल्हा</translation>
 <translation id="6973656660372572881">निश्चित प्रॉक्सी सर्व्हर आणि .pac स्क्रिप्ट URL निर्दिष्‍ट करण्‍यात आले आहेत.</translation>
+<translation id="6973932557599545801">सॉरी मला मदत करता आली नाही कृपया तुम्ही स्वतःच सुरू ठेवा.</translation>
 <translation id="6979158407327259162">Google ड्राइव्ह</translation>
 <translation id="6979440798594660689">निःशब्द करा (डीफॉल्ट)</translation>
 <translation id="6984479912851154518">बाह्य अॅप्लिकेशनने पैसे भरण्यासाठी खाजगी मोड सोडत आहे. सुरू ठेवायचे का?</translation>
@@ -1334,7 +1333,6 @@
 <translation id="8371889962595521444">कस्टम रूट सर्टिफिकेट</translation>
 <translation id="8380941800586852976">धोकादायक</translation>
 <translation id="8381674639488873545">हे शुल्क एका वेळचे किंवा आवर्ती असू शकते आणि ते उघड नसणे शक्य आहे. <ph name="BEGIN_LINK" />तरीही दाखवा<ph name="END_LINK" /></translation>
-<translation id="8382348898565613901">तुम्ही अलिकडेच भेट दिलेले बुकमार्क येथे दिसतील</translation>
 <translation id="8398259832188219207">क्रॅश अहवाल <ph name="UPLOAD_TIME" /> वाजता अपलोड केला</translation>
 <translation id="8412145213513410671">क्रॅश (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">तुम्ही समान सांकेतिक वाक्यांश दोनदा एंटर करणे आवश्यक आहे.</translation>

@@ -35,6 +35,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Изабери &amp;све</translation>
 <translation id="1938451708255335766">Да бисте подесили густину приказа прозора, поново покрените апликацију.</translation>
+<translation id="208586643495776849">Пробајте поново</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 д}one{# д}few{# д}other{# д}}</translation>
 <translation id="2148716181193084225">Данас</translation>
 <translation id="2168039046890040389">Страница нагоре</translation>
@@ -59,7 +60,7 @@
 <translation id="2743387203779672305">Копирај у меморију</translation>
 <translation id="2803313416453193357">Отворите директоријум</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Пре годину дана}one{Пре # годину}few{Пре # године}other{Пре # година}}</translation>
-<translation id="2907671656515444832">{DAYS,plural, =1{за 1 дан}one{за # дан}few{за # дана}other{за # дана}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{за 1 д}one{за # д}few{за # д}other{за # д}}</translation>
 <translation id="2931838996092594335">клик</translation>
 <translation id="3036649622769666520">Отварање датотека</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -118,7 +119,7 @@
 <translation id="5613020302032141669">Стрелица налево</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 мин}one{# мин}few{# мин}other{# мин}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 дан и }one{# дан и }few{# дана и }other{# дана и }}</translation>
-<translation id="5866104238061687188">{YEARS,plural, =1{за 1 год}one{за # год}few{за # год}other{за # год}}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{за 1 г}one{за # г}few{за # г}other{за # г}}</translation>
 <translation id="5895138241574237353">Покрени поново</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Још 1 секунда}one{Још # секунда}few{Још # секунде}other{Још # секунди}}</translation>
 <translation id="5941711191222866238">Смањи</translation>

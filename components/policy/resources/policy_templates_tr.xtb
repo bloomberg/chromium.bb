@@ -1258,9 +1258,9 @@
       Bu politika yalnızca öneride bulunabilir. Önerilen yerel ayarları en üste taşımak için bu politikayı kullanabilirsiniz, ancak kullanıcıların oturumları için <ph name="PRODUCT_OS_NAME" /> tarafından desteklenen herhangi bir yerel ayarı seçmesine her zaman izin verilir.
       </translation>
 <translation id="3381968327636295719">Varsayılan olarak ana makine tarayıcısını kullan</translation>
-<translation id="3384115339826100753">Güç tüketimi en üst düzeydeyken pil kullanımına geçme güç yönetimi politikasını etkinleştir.
+<translation id="3384115339826100753">Güç tüketimi en üst düzeydeyken pil kullanımına geçme güç yönetimi politikasını etkinleştirir.
 
-          Güç Tüketimi En Üst Düzeydeyken Pil Kullanımına Geçme, gün içinde kullanımın en yüksek olduğu zamanlarda alternatif akım kullanımını minimuma indiren bir güç tasarrufu politikasıdır. Hafta içi her gün için Güç Tüketimi En Üst Düzeydeyken Pil Kullanımına Geçme modu için bir başlangıç ve bitiş saati ayarlanabilir. Bu saatler sırasında, alternatif akım takılı olsa bile, pil belirtilen eşiğin üzerinde olduğu sürece sistem pille çalışır. Bitiş saati sona erdikten sonra sistem, takılı haldeyse alternatif akımı kullanarak çalışır, ancak pil şarj olmaz. Sistem, alternatif akımı kullanarak ve belirtilen Şarj Başlangıç saatinden sonra pil yeniden şarj edilerek tekrar normal şekilde çalışır.
+          Güç Tüketimi En Üst Düzeydeyken Pil Kullanımına Geçme, gün içinde kullanımın en yüksek olduğu zamanlarda alternatif akım kullanımını minimuma indiren bir güç tasarrufu politikasıdır. Hafta içi her gün için Güç Tüketimi En Üst Düzeydeyken Pil Kullanımına Geçme modu için bir başlangıç ve bitiş saati ayarlanabilir. Bu saatler sırasında, alternatif akım takılı olsa bile, pil belirtilen eşiğin üzerinde olduğu sürece sistem pille çalışır. Bitiş saati sona erdikten sonra sistem, takılı haldeyse alternatif akımı kullanarak çalışır, ancak pil şarj olmaz. Sistem, belirtilen Şarj Başlangıç saatinden sonra alternatif akımı kullanarak ve pili şarj ederek tekrar normal şekilde çalışır.
 
           Politika true (doğru) olarak ayarlanırsa ve DevicePowerPeakShiftBatteryThreshold, DevicePowerPeakShiftDayConfig ayarlanırsa, cihazda destekleniyorsa güç tüketimi en üst düzeydeyken pil kullanımına geçme ayarı her zaman etkinleştirilir.
 
@@ -1984,7 +1984,7 @@ politikayı geçersiz kılamaz.
 
       Bu politika yalnızca platform olarak kullanılabilir.
       </translation>
-<translation id="5034604678285451405">Güç tüketimi en üst düzeydeyken pil kullanımına geçme eşiği yüzdesini ayarla.
+<translation id="5034604678285451405">Güç tüketimi en üst düzeydeyken pil kullanımına geçme eşiği yüzdesini ayarlar.
 
           Bu politika sadece DevicePowerPeakShiftEnabled, true (doğru) değerine ayarlanırsa kullanılır.
 
@@ -3288,9 +3288,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7339315111520512972">Ağ iletişimi kodunu tarayıcı işleminde çalışmaya zorla</translation>
 <translation id="7340034977315324840">Cihaz etkinlik zamanlarını rapor et</translation>
 <translation id="7343497214039883642">Cihazlar için kurumsal yazıcı yapılandırma dosyası</translation>
-<translation id="7349338075015720646">Kullanıcı etkileşimi olmadan, sessizce yüklenen ve kullanıcı tarafından yüklemesi kaldırılamayan veya devre dışı bırakılamayan web sitelerinin bir listesini belirtir.
-
-      Politikanın her liste öğesi, iki üyeli bir nesnedir: "url" ve "launch_container". "url", yüklenecek web uygulamasının URL'si olmalı ve "launch_container", Web Uygulamasının yüklendikten sonra nasıl açılacağını belirtmek için "window" veya "tab" değerini almalıdır. "launch_container" değeri ihmal edilirse ve Chrome, uygulamayı bir Progresif Web Uygulaması olarak değerlendirirse uygulama bir pencerede; aksi halde, bir sekmede başlar.</translation>
 <translation id="735902178936442460">Bu politika, makine adı ve ağ adresleri gibi makineleri tanımlamak için kullanılabilecek bilgilerin bildirilip bildirilmeyeceğini kontrol eder.
 
       Bu politika ayarlanmadan bırakıldığında veya True (Doğru) değerine ayarlandığında, makineleri tanımlamak için kullanılabilecek bilgiler toplanır.
@@ -3887,7 +3884,7 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 <translation id="8685024486845674965">Şifre koruma uyarısı, şifre yeniden kullanımıyla tetiklendi</translation>
 <translation id="8693243869659262736">Dahili DNS istemcisini kullan</translation>
 <translation id="8703488928438047864">Kart durumunu bildir</translation>
-<translation id="8703872185032220081">Güç tüketimi en üst düzeydeyken pil kullanımına geçilecek gün yapılandırmasını ayarla.
+<translation id="8703872185032220081">Güç tüketimi en üst düzeydeyken pil kullanımına geçilecek gün yapılandırmasını ayarlar.
 
           Bu politika sadece DevicePowerPeakShiftEnabled, true (doğru) değerine ayarlanırsa kullanılır.
 

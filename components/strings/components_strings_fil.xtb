@@ -24,7 +24,6 @@
 <translation id="1103523840287552314">Palaging i-translate ang <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Kung lalagyan ng check, mag-iimbak ang Chrome ng kopya ng iyong card sa device na ito para sa mas mabilis na pagsagot sa form.</translation>
 <translation id="1110994991967754504">Pumili ng pahintulot para sa <ph name="PERMISSION_NAME" /></translation>
-<translation id="1111153019813902504">Mga kamakailang bookmark</translation>
 <translation id="1113869188872983271">&amp;I-undo ang pagbabago sa ayos</translation>
 <translation id="1125573121925420732">Maaaring karaniwang may mga babala habang nag-a-update para sa seguridad ang mga website. Maaayos din ito sa lalong madaling panahon.</translation>
 <translation id="1126551341858583091">Ang laki sa lokal na storage ay <ph name="CRASH_SIZE" />.</translation>
@@ -50,7 +49,6 @@
 <translation id="1228893227497259893">Maling tagatukoy ng entity</translation>
 <translation id="1232569758102978740">Walang pamagat</translation>
 <translation id="1240347957665416060">Ang pangalan ng iyong device</translation>
-<translation id="124116460088058876">Higit pang wika</translation>
 <translation id="1250759482327835220">Para mas mabilis na makapagbayad sa susunod, i-save ang iyong card, pangalan, at billing address sa Google Account mo.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (naka-sync)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Kung sinubukan mong bisitahin ang isang website at hindi ito bumukas, subukan munang ayusin ang error gamit ang mga hakbang sa pag-troubleshoot na ito:&lt;/p&gt;
@@ -1057,6 +1055,7 @@
 <translation id="6965978654500191972">Device</translation>
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Tinukoy ang parehong mga hindi nababagong proxy server at isang .pac script URL.</translation>
+<translation id="6973932557599545801">Paumanhin, hindi ako makatulong, mangyaring magpatuloy nang mag-isa.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">I-mute (default)</translation>
 <translation id="6984479912851154518">Aalis sa pribadong mode para magbayad sa pamamagitan ng external na application. Magpatuloy?</translation>
@@ -1334,7 +1333,6 @@ Mga karagdagang detalye:
 <translation id="8371889962595521444">Mga custom na root certificate</translation>
 <translation id="8380941800586852976">Mapanganib</translation>
 <translation id="8381674639488873545">Ang mga singil na ito ay maaaring isang beses o umuulit, at maaaring hindi mapansin. <ph name="BEGIN_LINK" />Ipakita pa rin<ph name="END_LINK" /></translation>
-<translation id="8382348898565613901">Lalabas dito ang iyong mga kamakailang binisitang bookmark</translation>
 <translation id="8398259832188219207">Na-upload ang ulat ng pag-crash noong <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Mga Pag-crash (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Dapat mong ilagay ang parehong passphrase nang dalawang beses.</translation>

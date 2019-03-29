@@ -1269,7 +1269,7 @@
 <translation id="3381968327636295719"> gebruiken</translation>
 <translation id="3384115339826100753">Schakel het beleid voor het beheer van stroompiekverschuiving in.
 
-          Piekverschuiving is een energiebesparingsbeleid waarmee het gebruik van wisselstroom op piekuren gedurende de dag wordt geminimaliseerd. Voor elke dag van de week kan een begin- en eindtijd voor uitvoering van de modus voor stroompiekverschuiving worden ingesteld. Op deze tijden gebruikt het systeem de batterij, ook als de wisselstroom is aangesloten, zolang het batterijniveau maar boven de opgegeven drempel blijft. Na de opgegeven eindtijd gebruikt het systeem wisselstroom als deze is aangesloten maar wordt de batterij niet opgeladen. Het systeem keert terug naar de normale werking waarbij wisselstroom wordt gebruikt en de batterij wordt opgeladen na de opgegeven starttijd voor opladen.
+          Piekverschuiving is een energiebesparingsbeleid waarmee het gebruik van wisselstroom op piekuren gedurende de dag wordt geminimaliseerd. Voor elke dag van de week kan een begin- en eindtijd voor stroompiekverschuiving worden ingesteld. Op deze tijden gebruikt het systeem de batterij, ook als de wisselstroom is aangesloten, zolang het batterijniveau maar boven de opgegeven drempel blijft. Na de opgegeven eindtijd gebruikt het systeem wisselstroom als deze is aangesloten maar wordt de batterij niet opgeladen. Het systeem keert terug naar de normale werking waarbij wisselstroom wordt gebruikt en de batterij wordt opgeladen na de opgegeven starttijd voor opladen.
 
           Als dit beleid is ingesteld op 'true' en DevicePowerPeakShiftBatteryThreshold en DevicePowerPeakShiftDayConfig zijn ingesteld, wordt stroompiekverschuiving altijd ingeschakeld als dit wordt ondersteund door het apparaat.
 
@@ -1996,7 +1996,7 @@
       </translation>
 <translation id="5034604678285451405">Stel de drempel voor stroompiekverschuiving van de batterij in procenten in.
 
-          Dit beleid wordt alleen gebruikt als DevicePowerPeakShiftEnabled is ingesteld op True.
+          Dit beleid wordt alleen gebruikt als DevicePowerPeakShiftEnabled is ingesteld op 'true'.
 
           Als dit beleid niet is geconfigureerd of niet is ingesteld, is stroompiekverschuiving altijd uitgeschakeld.</translation>
 <translation id="5047604665028708335">Toegang toestaan tot sites die zich niet in de inhoudspakketten bevinden</translation>
@@ -2433,7 +2433,7 @@ Anders dan bij <ph name="URL_LIST_POLICY_NAME" /> kunnen regels in twee richting
 <translation id="5693469654327063861">Gegevensmigratie toestaan</translation>
 <translation id="5694594914843889579">Wanneer de instelling is ingesteld op 'True', is externe opslag niet beschikbaar in de bestandsbrowser.
 
-      Deze instelling is van toepassing op alle typen opslagmedia. Bijvoorbeeld: USB-flashdrives, externe harde schijven, SD-kaarten en andere geheugenkaarten, optische opslag, enzovoort. Deze is niet van toepassing op interne opslag, dus bestanden die zijn opgeslagen in de downloadmap, zijn nog steeds toegankelijk. De instelling is ook niet van toepassing op Google Drive.
+      Deze instelling is van toepassing op alle typen opslagmedia. Bijvoorbeeld: USB-flashdrives, externe harde schijven, SD-passen en andere geheugenpassen, optische opslag, enzovoort. Deze is niet van toepassing op interne opslag, dus bestanden die zijn opgeslagen in de downloadmap, zijn nog steeds toegankelijk. De instelling is ook niet van toepassing op Google Drive.
 
       Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen gebruikers alle ondersteunde typen externe opslag gebruiken op hun apparaat.</translation>
 <translation id="5697306356229823047">Apparaatgebruikers melden</translation>
@@ -3298,9 +3298,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7339315111520512972">Afdwingen dat netwerkcode wordt uitgevoerd in het browserproces</translation>
 <translation id="7340034977315324840">Tijdsduur van apparaatgebruik melden</translation>
 <translation id="7343497214039883642">Configuratiebestand voor zakelijke printers voor apparaten</translation>
-<translation id="7349338075015720646">Specificeert een lijst met web-apps die op de achtergrond worden geïnstalleerd zonder interactie van de gebruiker en die niet kunnen worden verwijderd of uitgeschakeld door de gebruiker.
-
-      Elk lijstitem van het beleid is een tweeledig object, bestaande uit 'url' en 'launch_container'. 'url' moet de URL van de te installeren web-app zijn en 'launch_container' moet 'window' of 'tab' zijn om aan te duiden hoe de web-app na de installatie wordt geopend. Als 'launch_container' wordt weggelaten, wordt de app geopend in een venster indien Chrome de app als progressieve web-app beschouwt en op een tabblad indien de app niet als progressieve web-app wordt beschouwd.</translation>
 <translation id="735902178936442460">Met dit beleid wordt bepaald of er informatie moet worden gerapporteerd die gebruikt kan worden om machines te identificeren, zoals de machinenaam en netwerkadressen.
 
       Als dit beleid niet is ingesteld of op 'True' is ingesteld, worden er gegevens verzameld die kunnen worden gebruikt om machines te identificeren.
@@ -3864,11 +3861,11 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 
       Gebruikers kunnen deze instelling niet wijzigen of overschrijven.</translation>
 <translation id="8631434304112909927">tot versie <ph name="UNTIL_VERSION" /></translation>
-<translation id="8649763579836720255">Chrome OS-apparaten kunnen externe verificatie (geverifieerde toegang) gebruiken om een certificaat te ontvangen dat is uitgegeven door de certificaatautoriteit voor Chrome OS en waarin het apparaat uniek wordt geïdentificeerd.
+<translation id="8649763579836720255">Chrome OS-apparaten kunnen externe bevestiging (geverifieerde toegang) gebruiken om een certificaat door Chrome OS te laten uitgeven waarin het apparaat uniek wordt geïdentificeerd en geschikt bevonden voor beschermde content.
 
-          Als deze instelling is ingesteld op 'False', gebruikt het apparaat geen externe verificatie om content te beveiligen en kan het apparaat beveiligde content mogelijk niet afspelen.
+          Als deze instelling aanstaat, gebruikt het apparaat geen externe bevestiging om content te beveiligen en kan het apparaat beschermde content mogelijk niet afspelen.
 
-          Als deze instelling is ingesteld op 'True' of als deze niet is geconfigureerd, kan externe verificatie worden gebruikt voor het beveiligen van content.</translation>
+          Als deze instelling uitstaat of niet is geconfigureerd, kan externe bevestiging worden gebruikt voor contentbescherming.</translation>
 <translation id="8650974590712548439">Locatie van Windows-register voor Windows-clients:</translation>
 <translation id="8654286232573430130">Hiermee wordt gespecificeerd welke servers op de witte lijst voor geïntegreerde verificatie moeten worden geplaatst. Geïntegreerde verificatie wordt alleen ingeschakeld wanneer <ph name="PRODUCT_NAME" /> een verificatieverzoek ontvangt van een proxy of van een server die op deze toegestane lijst staat.
 
@@ -3888,7 +3885,7 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="8703488928438047864">Boardstatus rapporteren</translation>
 <translation id="8703872185032220081">Stel de dagelijkse configuratie voor stroompiekverschuiving in.
 
-          Dit beleid wordt alleen gebruikt als DevicePowerPeakShiftEnabled is ingesteld op True.
+          Dit beleid wordt alleen gebruikt als DevicePowerPeakShiftEnabled is ingesteld op 'true'.
 
           Als dit beleid niet is geconfigureerd of niet is ingesteld, is stroompiekverschuiving altijd uitgeschakeld.
 

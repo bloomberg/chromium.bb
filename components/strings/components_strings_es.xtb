@@ -24,7 +24,6 @@
 <translation id="1103523840287552314">Traducir siempre del <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Si se selecciona, Chrome almacenará una copia de tu tarjeta en este dispositivo para completar formularios más rápidamente.</translation>
 <translation id="1110994991967754504">Seleccionar permiso de <ph name="PERMISSION_NAME" /></translation>
-<translation id="1111153019813902504">Marcadores visitados recientemente</translation>
 <translation id="1113869188872983271">&amp;Deshacer reorganización</translation>
 <translation id="1125573121925420732">Es probable que se muestren advertencias mientras se actualiza la seguridad de los sitios web, pero pronto se solucionará.</translation>
 <translation id="1126551341858583091">El tamaño del almacenamiento local es de <ph name="CRASH_SIZE" />.</translation>
@@ -50,7 +49,6 @@
 <translation id="1228893227497259893">Identificador de entidad incorrecto</translation>
 <translation id="1232569758102978740">Sin título</translation>
 <translation id="1240347957665416060">El nombre de tu dispositivo</translation>
-<translation id="124116460088058876">Más idiomas</translation>
 <translation id="1250759482327835220">Para pagar más rápido la próxima vez, guarda tu tarjeta, tu nombre y tu dirección de facturación en tu cuenta de Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sincronizados)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Si intentas acceder a un sitio web y no se abre, prueba estos pasos para solucionar problemas:&lt;/p&gt;
@@ -927,7 +925,7 @@
 <translation id="6157877588268064908">Selecciona una dirección para ver los métodos de envío y los requisitos</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6169916984152623906">Ahora puedes navegar de forma privada; las otras personas que usen este dispositivo no verán tu actividad. No obstante, se guardarán las descargas y los marcadores.</translation>
-<translation id="6177128806592000436">Tu conexión con este sitio web no es segura</translation>
+<translation id="6177128806592000436">La conexión con este sitio web no es segura</translation>
 <translation id="6203231073485539293">Comprueba tu conexión a Internet</translation>
 <translation id="6218753634732582820">¿Quitar dirección de Chromium?</translation>
 <translation id="6221345481584921695">Recientemente, la función de Navegación Segura de Google <ph name="BEGIN_LINK" />ha detectado software malicioso<ph name="END_LINK" /> en <ph name="SITE" />. En ocasiones, los sitios web que normalmente son seguros contienen software malicioso. Este contenido malintencionado procede de <ph name="SUBRESOURCE_HOST" />, un conocido distribuidor de software malicioso.</translation>
@@ -1324,7 +1322,6 @@ Más información:
 <translation id="8371889962595521444">Certificados raíz personalizados</translation>
 <translation id="8380941800586852976">Peligroso</translation>
 <translation id="8381674639488873545">Estos cargos pueden ser únicos o periódicos, y es posible que no se indiquen de una forma evidente. <ph name="BEGIN_LINK" />Mostrar de todos modos<ph name="END_LINK" /></translation>
-<translation id="8382348898565613901">Los marcadores a los que hayas accedido recientemente aparecen aquí</translation>
 <translation id="8398259832188219207">Informe sobre fallos subido el <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Fallos (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Debes introducir la misma frase de contraseña dos veces.</translation>

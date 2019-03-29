@@ -131,7 +131,7 @@
 <translation id="2961963223658824723">ఏదో తప్పు జరిగింది. కొన్ని క్షణాల తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2970920913501714344">యాప్‌లు, ఎక్స్‌టెన్షన్‌లు, థీమ్‌లను ఇన్‌స్టాల్ చేయండి</translation>
-<translation id="2977598380246111477">తర్వాత నంబర్</translation>
+<translation id="2977598380246111477">తర్వాతి నంబర్</translation>
 <translation id="2995447421581609334">ప్రసార పరికరాలను చూపుతుంది.</translation>
 <translation id="2996462380875591307">డాక్ చేయబడిన మాగ్నిఫైయర్ ప్రారంభించబడింది. దాన్ని టోగుల్ ఆఫ్ చేయడానికి మళ్లీ Ctrl+Search+Dని నొక్కండి.</translation>
 <translation id="3000461861112256445">మోనో ఆడియో</translation>
@@ -231,6 +231,7 @@
 <translation id="4527045527269911712">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత కావడానికి అనుమతి కోరుతోంది.</translation>
 <translation id="453661520163887813">పూర్తి కావడానికి <ph name="TIME" /> పడుతుంది</translation>
 <translation id="4544944664594876241">స్క్రీన్‌ను లాక్ చేసే షార్ట్‌కట్ మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కు బదులుగా <ph name="NEW_SHORTCUT" />ను ఉపయోగించండి.</translation>
+<translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">వినడానికి ఎంచుకోండి బటన్</translation>
 <translation id="4585337515783392668">తెలియని రిసీవర్‌లో ప్రసారం చేయడాన్ని ఆపివేయి</translation>
 <translation id="4628757576491864469">పరికరాలు</translation>
@@ -238,6 +239,7 @@
 <translation id="4696813013609194136">తల్లి/తండ్రి కోడ్‌తో పరికరాన్ని అన్‌లాక్ చేయండి</translation>
 <translation id="4731797938093519117">తల్లి/తండ్రి యాక్సెస్</translation>
 <translation id="4734965478015604180">అడ్డంగా ఉంది</translation>
+<translation id="476166673298332917">పరికర నిర్వాహకులు మీ బ్రౌజింగ్ కార్యకలాపాన్ని పర్యవేక్షించవచ్చు.</translation>
 <translation id="4774338217796918551">రేపు <ph name="COME_BACK_TIME" />కి తిరిగి రండి.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> కోసం పాస్‌వర్డ్</translation>
 <translation id="4778095205580009397">Google అసిస్టెంట్ డెమో సెషన్‌లో అందుబాటులో లేదు.</translation>

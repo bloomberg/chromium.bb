@@ -24,7 +24,6 @@
 <translation id="1103523840287552314">一律翻譯<ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">勾選後，Chrome 會在這個裝置上儲存您的信用卡複本，以便更快填寫資訊。</translation>
 <translation id="1110994991967754504">選取<ph name="PERMISSION_NAME" />權限設定</translation>
-<translation id="1111153019813902504">最近使用過的書籤</translation>
 <translation id="1113869188872983271">復原重新排序(&amp;U)</translation>
 <translation id="1125573121925420732">網站更新安全性設定期間，可能會經常顯示警告。這項行為將於近期內改善。</translation>
 <translation id="1126551341858583091">佔用的本機儲存空間大小：<ph name="CRASH_SIZE" />。</translation>
@@ -50,7 +49,6 @@
 <translation id="1228893227497259893">實體識別碼錯誤</translation>
 <translation id="1232569758102978740">未命名</translation>
 <translation id="1240347957665416060">你的裝置名稱</translation>
-<translation id="124116460088058876">更多語言</translation>
 <translation id="1250759482327835220">只要將你的卡片資訊、姓名與帳單地址儲存到你的 Google 帳戶中，下次即可更快完成付款程序。</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />、<ph name="TYPE_2" /> (已同步)</translation>
 <translation id="1256368399071562588">&lt;p&gt;如果您無法順利開啟網站，請先嘗試按照以下疑難排解步驟修正相關錯誤：&lt;/p&gt;
@@ -165,7 +163,7 @@
 <translation id="1740951997222943430">請輸入有效的到期月份</translation>
 <translation id="1743520634839655729">只要將你的卡片資訊、姓名與帳單地址儲存到你的 Google 帳戶中和這部裝置上，下次即可更快完成付款程序。</translation>
 <translation id="1745880797583122200">你的瀏覽器受到管理</translation>
-<translation id="17513872634828108">開啟分頁</translation>
+<translation id="17513872634828108">開啟的分頁</translation>
 <translation id="1753706481035618306">頁碼</translation>
 <translation id="1763864636252898013">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得你裝置作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />嘗試執行 Windows 網路診斷<ph name="END_LINK" />。</translation>
@@ -423,7 +421,7 @@
 <translation id="3270847123878663523">復原重新排序(&amp;U)</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
 <translation id="3282497668470633863">新增持卡人姓名</translation>
-<translation id="3287510313208355388">上線時進行下載</translation>
+<translation id="3287510313208355388">等到可連線時再下載網頁內容</translation>
 <translation id="3293642807462928945">進一步瞭解 <ph name="POLICY_NAME" /> 政策</translation>
 <translation id="3303855915957856445">找不到相符的搜尋結果</translation>
 <translation id="3320021301628644560">新增帳單地址</translation>
@@ -560,7 +558,7 @@
 <translation id="4072486802667267160">處理你的訂單時發生錯誤，請再試一次。</translation>
 <translation id="4075732493274867456">用戶端和伺服器不支援一般 SSL 通訊協定版本或加密套件。</translation>
 <translation id="4079302484614802869">Proxy 設定已設為使用 .pac 指令碼網址，而非固定的 Proxy 伺服器。</translation>
-<translation id="4098354747657067197">您即將前往詐騙網站</translation>
+<translation id="4098354747657067197">你要瀏覽的是詐騙網站</translation>
 <translation id="4103249731201008433">裝置序號無效</translation>
 <translation id="410351446219883937">自動播放</translation>
 <translation id="4103763322291513355">請前往 &lt;strong&gt;chrome://policy&lt;/strong&gt; 查看列入黑名單的網址清單，以及其他系統管理員強制執行的政策。</translation>
@@ -688,7 +686,7 @@
 <translation id="4756388243121344051">記錄(&amp;H)</translation>
 <translation id="4758311279753947758">新增聯絡資訊</translation>
 <translation id="4759118997339041434">付款資訊自動填入功能已停用</translation>
-<translation id="4764776831041365478"><ph name="URL" /> 的網頁可能暫時無法使用或被永久移至新網址。</translation>
+<translation id="4764776831041365478"><ph name="URL" /> 的網頁可能暫時離線，或是已經遷移到另一個網址。</translation>
 <translation id="4771973620359291008">發生不明的錯誤。</translation>
 <translation id="4785689107224900852">切換至這個分頁</translation>
 <translation id="4798078619018708837">請輸入 <ph name="CREDIT_CARD" /> 的到期日和信用卡安全碼，以更新你的信用卡詳細資料。經你確認後，這個網站就會取得你的 Google 帳戶中的信用卡詳細資料。</translation>
@@ -1057,6 +1055,7 @@
 <translation id="6965978654500191972">裝置</translation>
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">已指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
+<translation id="6973932557599545801">抱歉，目前無法提供協助，請您自行填入資料。</translation>
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
 <translation id="6979440798594660689">靜音 (預設)</translation>
 <translation id="6984479912851154518">即將離開私密模式，改為使用外部應用程式付款，要繼續嗎？</translation>
@@ -1334,7 +1333,6 @@
 <translation id="8371889962595521444">自訂根憑證</translation>
 <translation id="8380941800586852976">不安全</translation>
 <translation id="8381674639488873545">這些費用可能是一次性或週期性的費用，而且可能難以察覺。<ph name="BEGIN_LINK" />仍要顯示<ph name="END_LINK" /></translation>
-<translation id="8382348898565613901">這裡會顯示你最近造訪過的書籤</translation>
 <translation id="8398259832188219207">當機報告上傳時間：<ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">當機次數 (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">你必須輸入兩次相同的通關密語。</translation>

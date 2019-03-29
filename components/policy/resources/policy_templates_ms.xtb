@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
+<translation id="1002439864875515590">Jika dasar ini ditetapkan kepada rentetan kosong atau tidak dikonfigurasikan, <ph name="PRODUCT_OS_NAME" /> tidak akan memaparkan pilihan autolengkap semasa aliran log masuk pengguna.
+      Jika dasar ini ditetapkan kepada rentetan yang mewakili nama domain, <ph name="PRODUCT_OS_NAME" /> akan memaparkan pilihan autolengkap semasa log masuk pengguna yang membenarkan pengguna menaip hanya nama penggunanya tanpa sambungan nama domain.  Pengguna akan dapat menulis ganti sambungan nama domain ini.
+      Jika nilai dasar ini bukan merupakan domain yang sah, dasar ini tidak akan digunakan.</translation>
 <translation id="101438888985615157">Putar skrin 180 darjah</translation>
 <translation id="1016912092715201525">Mengkonfigurasi semakan penyemak imbas lalai dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan ini.
 
@@ -387,7 +390,7 @@
 
       <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Jika ditetapkan kepada <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, pengguna akan dapat mencetuskan aliran powerwash untuk memasang kemas kini perisian tegar <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Jika ditetapkan kepada <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, pengguna akan dapat merayu aliran kemas kini perisian tegar <ph name="TPM_FIRMWARE_UPDATE_TPM" /> yang mengekalkan keadaan seluruh peranti (termasuk pendaftaran perusahaan), tetapi akan kehilangan data pengguna. Aliran kemas kini ini tersedia bermula daripada versi 68.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Jika ditetapkan kepada <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, pengguna akan dapat menggunakan aliran kemas kini perisian tegar <ph name="TPM_FIRMWARE_UPDATE_TPM" /> yang mengekalkan keadaan seluruh peranti (termasuk pendaftaran perusahaan), tetapi akan kehilangan data pengguna. Aliran kemas kini ini tersedia bermula daripada versi 68.
 
       <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Mengawal cara kemas kini perisian tegar <ph name="TPM_FIRMWARE_UPDATE_TPM" /> automatik dikuatkuasakan untuk perisian tegar <ph name="TPM_FIRMWARE_UPDATE_TPM" /> yang rentan. Semua aliran mengekalkan keadaan peranti setempat.
         Jika ditetapkan kepada 1 atau dibiarkan tidak ditetapkan, kemas kini perisian tegar TPM tidak dikuatkuasakan.
@@ -949,6 +952,16 @@
       Jika tetapan ini dilumpuhkan, halaman web tidak dapat menggunakan JavaScript dan pengguna tidak boleh mengubah tetapan tersebut.
 
       Jika tetapan ini didayakan atau tidak ditetapkan, halaman web boleh menggunakan JavaScript tetapi pengguna boleh mengubah tetapan tersebut.</translation>
+<translation id="2747157663401642394">Mengkonfigurasikan tetapan pengurusan sambungan untuk <ph name="PRODUCT_NAME" />.
+
+          Dasar ini mengawal berbilang tetapan, termasuk tetapan yang dikawal oleh sebarang dasar yang sedia ada berkaitan sambungan. Dasar ini akan membatalkan mana-mana dasar lama jika kedua-dua dasar ditetapkan.
+
+          Dasar ini memetakan ID sambungan atau URL kemas kini pada konfigurasi dasar. Dengan ID sambungan, konfigurasi akan digunakan pada sambungan yang ditentukan sahaja. Konfigurasi lalai boleh ditetapkan untuk ID khas <ph name="DEFAULT_SCOPE" />, yang akan digunakan pada semua sambungan yang tidak ditetapkan konfigurasi tersuai dalam dasar ini. Dengan URL kemas kini, konfigurasi akan digunakan pada semua sambungan dengan URL kemas kini tepat seperti yang dinyatakan dalam manifes sambungan ini, seperti yang diperihalkan di <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Untuk tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />, pemasangan paksa adalah terhad kepada apl dan sambungan yang disenaraikan di Gedung Web Chrome.
+
+          Untuk mendapatkan perihalan penuh tentang tetapan dan struktur berkemungkinan dasar ini, sila lawati https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="2753637905605932878">Hadkan julat port UDP setempat yang digunakan oleh WebRTC</translation>
 <translation id="2755385841634849932">Dasar ini mengawal ketersediaan sandaran dan pemulihan Android.
 
@@ -1611,7 +1624,7 @@
 
       Jika dasar ini didayakan, Google Assistant akan mendengar ungkapan pengaktifan suara.
       Jika dasar ini dilumpuhkan, Google Assistant tidak akan mendengar ungkapan pengaktifan suara.
-      Jika dsar ini tidak ditetapkan, Google Assistant tidak akan mendengar ungkapan pengaktifan suara.
+      Jika dasar ini tidak ditetapkan, Google Assistant tidak akan mendengar ungkapan pengaktifan suara.
       </translation>
 <translation id="4020682745012723568">Kuki yang dipindahkan ke profil pengguna tidak boleh diakses oleh apl Android.</translation>
 <translation id="402759845255257575">Jangan benarkan mana-mana tapak untuk menjalankan JavaScript</translation>
@@ -2086,6 +2099,7 @@ Apabila dasar ini dibiarkan tanpa ditetapkan, tiada tapak web akan ditambahkan p
 Apabila dasar ini ditetapkan, setiap item akan dikendalikan sebagai peraturan, sama seperti dasar <ph name="URL_LIST_POLICY_NAME" />. Walau bagaimanapun, logik akan diterbalikkan: peraturan yang sepadan tidak akan membuka penyemak imbas alternatif.
 
 Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua-dua hala. Maknanya, apabila terdapat alat tambah Internet Explorer dan alat itu didayakan, peraturan tersebut juga mengawal sama ada <ph name="IE_PRODUCT_NAME" /> harus membuka URL ini dalam <ph name="PRODUCT_NAME" />.</translation>
+<translation id="5124368997194894978">Dayakan but AC (arus ulang-alik)</translation>
 <translation id="5130288486815037971">Sama ada suit sifer RC4 dalam TLS didayakan</translation>
 <translation id="5141670636904227950">Tetapkan jenis penggadang skrin lalai yang didayakan pada skrin log masuk</translation>
 <translation id="5142301680741828703">Sentiasa paparkan corak URL berikut dalam <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2893,6 +2907,17 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Jika dasar ini dibiarkan tanpa ditetapkan, '3' akan digunakan dan pengguna akan dapat mengubahnya.</translation>
 <translation id="663685822663765995">Hadkan mod warna pencetakan</translation>
 <translation id="6641981670621198190">Lumpuhkan sokongan untuk API grafik 3D</translation>
+<translation id="6646056064606561298">Dayakan but pada dasar pengurusan kuasa AC.
+
+          But pada AC memberikan peluang untuk sistem mengebut daripada keadaan DIMATIKAN/Hibernat secara automatik apabila talian kuasa disambungkan.
+
+          Jika dasar ini ditetapkan kepada benar, maka but pada AC akan sentiasa didayakan jika disokong pada peranti.
+
+          Jika dasar ini ditetapkan kepada palsu, but pada AC akan sentiasa dilumpuhkan.
+
+          Jika anda menetapkan dasar ini, pengguna tidak boleh mengubah atau membatalkannya.
+
+          Jika dasar ini dibiarkan tidak ditetapkan, but pada AC dilumpuhkan dan tidak dapat didayakan oleh pengguna.</translation>
 <translation id="6647965994887675196">Jika ditetapkan kepada benar, pengguna diselia boleh dihasilkan dan digunakan.
 
           Jika ditetapkan kepada palsu atau tidak dikonfigurasi, penghasilan dan log masuk pengguna diselia akan dilumpuhkan. Semua pengguna diselia yang sedia ada akan disembunyikan.
@@ -3320,9 +3345,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7339315111520512972">Paksa kod rangkaian dijalankan dalam proses penyemak imbas</translation>
 <translation id="7340034977315324840">Laporkan masa aktiviti peranti</translation>
 <translation id="7343497214039883642">Fail konfigurasi pencetak perusahaan untuk peranti</translation>
-<translation id="7349338075015720646">Menyatakan senarai tapak web yang dipasang secara senyap, tanpa interaksi pengguna dan tidak boleh dinyahpasang mahupun dilumpuhkan oleh pengguna.
-
-      Setiap senarai item dasar ialah objek dengan dua ahli: "url" dan "launch_container". "url" ialah URL apl web yang hendak dipasang dan "launch_container" ialah "tetingkap" atau "tab" untuk menunjukkan cara Apl Web akan dibuka setelah dipasang. Jika "launch_container" tidak dimasukkan, apl akan dilancarkan dalam tetingkap jika Chrome menganggapnya sebagai Apl Web Progresif dan jika sebaliknya, apl akan dilancarkan dalam tab.</translation>
 <translation id="735902178936442460">Dasar ini mengawal sama ada hendak melaporkan maklumat yang boleh digunakan untuk mengenal pasti peranti, seperti nama peranti dan alamat rangkaian.
 
       Apabila dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada Benar, maklumat yang boleh digunakan untuk mengenal pasti peranti akan dikumpulkan.

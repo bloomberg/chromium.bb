@@ -35,6 +35,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;Alles auswählen</translation>
 <translation id="1938451708255335766">Wenn Sie die Anzeigedichte der App-Fenster anpassen möchten, starten Sie die App neu.</translation>
+<translation id="208586643495776849">Versuchen Sie es bitte noch einmal</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 Tag}other{# Tage}}</translation>
 <translation id="2148716181193084225">Heute</translation>
 <translation id="2168039046890040389">Nach oben</translation>
@@ -59,7 +60,7 @@
 <translation id="2743387203779672305">In Zwischenablage kopieren</translation>
 <translation id="2803313416453193357">Ordner öffnen</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{vor 1 Jahr}other{vor # Jahren}}</translation>
-<translation id="2907671656515444832">{DAYS,plural, =1{in 1 d}other{in # d}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{in 1 T.}other{in # T.}}</translation>
 <translation id="2931838996092594335">Klicken</translation>
 <translation id="3036649622769666520">Dateien öffnen</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -118,7 +119,7 @@
 <translation id="5613020302032141669">Linkspfeil</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 Min.}other{# Min.}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 Tag und  }other{# Tage und  }}</translation>
-<translation id="5866104238061687188">{YEARS,plural, =1{in 1 a}other{in # a}}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{in 1 J.}other{in # J.}}</translation>
 <translation id="5895138241574237353">Neu starten</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 Sekunde übrig}other{# Sekunden übrig}}</translation>
 <translation id="5941711191222866238">Verkleinern</translation>

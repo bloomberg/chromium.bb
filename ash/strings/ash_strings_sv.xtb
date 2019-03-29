@@ -230,6 +230,7 @@
 <translation id="4527045527269911712">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> tills batteriet är fullt</translation>
 <translation id="4544944664594876241">Kortkommandot för att låsa skärmen har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Knappen Textuppläsning</translation>
 <translation id="4585337515783392668">Sluta casta till en okänd mottagare</translation>
 <translation id="4628757576491864469">Enheter</translation>
@@ -237,6 +238,7 @@
 <translation id="4696813013609194136">Lås upp enheten med föräldrakod</translation>
 <translation id="4731797938093519117">Föräldraåtkomst</translation>
 <translation id="4734965478015604180">Horisontell</translation>
+<translation id="476166673298332917">Enhetens administratör kan övervaka din webbhistorik</translation>
 <translation id="4774338217796918551">Prova igen i morgon klockan <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Lösenord för <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google-assistenten är inte tillgänglig i en demosession.</translation>

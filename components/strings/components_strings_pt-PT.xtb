@@ -24,7 +24,6 @@
 <translation id="1103523840287552314">Traduzir sempre <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Se marcada, o Chrome armazena uma cópia do seu cartão neste dispositivo para preencher formulários mais rapidamente.</translation>
 <translation id="1110994991967754504">Selecionar autorização para <ph name="PERMISSION_NAME" /></translation>
-<translation id="1111153019813902504">Marcadores recentes</translation>
 <translation id="1113869188872983271">&amp;Anular reordenação</translation>
 <translation id="1125573121925420732">Pode ser frequente a apresentação de avisos enquanto os Websites atualizam a respetiva segurança. Esta situação deve melhorar brevemente.</translation>
 <translation id="1126551341858583091">O tamanho no armazenamento local é de <ph name="CRASH_SIZE" />.</translation>
@@ -50,7 +49,6 @@
 <translation id="1228893227497259893">Identificador de entidade errado</translation>
 <translation id="1232569758102978740">Sem nome</translation>
 <translation id="1240347957665416060">O nome do dispositivo</translation>
-<translation id="124116460088058876">Mais idiomas</translation>
 <translation id="1250759482327835220">Para pagar mais rapidamente da próxima vez, guarde o cartão, o nome e o endereço de faturação na sua Conta Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sincronizados)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Se tentar aceder a um Website e este não abrir, primeiro, tente corrigir o erro com estes passos de resolução de problemas:&lt;/p&gt;
@@ -759,7 +757,7 @@
 <translation id="5159010409087891077">Abrir a página numa nova janela de navegação anónima (⇧⌘N)</translation>
 <translation id="516920405563544094">Introduza o Código de Segurança/CVC de <ph name="CREDIT_CARD" />. Depois de confirmar, os detalhes do cartão da sua Conta Google são partilhados com este site.</translation>
 <translation id="5169827969064885044">Pode perder o acesso à conta da sua entidade ou ser vítima de roubo de identidade. O Chrome recomenda a alteração da palavra-passe agora.</translation>
-<translation id="5171045022955879922">Pesquisar ou escrever URL</translation>
+<translation id="5171045022955879922">Pesquise ou escreva URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Equipamento</translation>
 <translation id="5179510805599951267">Não está em <ph name="ORIGINAL_LANGUAGE" />? Comunicar este erro</translation>
@@ -1254,7 +1252,7 @@ Detalhes adicionais:
 <translation id="7942349550061667556">Vermelho</translation>
 <translation id="7947285636476623132">Verifique o ano de validade e tente novamente</translation>
 <translation id="7951415247503192394">32 bits</translation>
-<translation id="7956713633345437162">Marcadores do telemóvel</translation>
+<translation id="7956713633345437162">Marcadores telemóvel</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7977894662897852582">Edp</translation>
 <translation id="7995512525968007366">Não especificado</translation>
@@ -1334,7 +1332,6 @@ Detalhes adicionais:
 <translation id="8371889962595521444">Certificados de raiz personalizados</translation>
 <translation id="8380941800586852976">Perigosa</translation>
 <translation id="8381674639488873545">Estas cobranças podem ser únicas ou recorrentes e podem não ser óbvias. <ph name="BEGIN_LINK" />Mostrar mesmo assim<ph name="END_LINK" /></translation>
-<translation id="8382348898565613901">Os seus marcadores visitados recentemente são apresentados aqui.</translation>
 <translation id="8398259832188219207">Relatório de falhas carregado no(a) <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Falhas (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Tem de introduzir a mesma frase de acesso duas vezes.</translation>

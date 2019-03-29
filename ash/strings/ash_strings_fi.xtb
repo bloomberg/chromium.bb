@@ -231,6 +231,7 @@
 <translation id="4527045527269911712">Bluetooth-laite <ph name="DEVICE_NAME" /> pyytää lupaa laiteparin muodostamiseen.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> jäljellä, kunnes akku on täynnä</translation>
 <translation id="4544944664594876241">Näytön lukituksen pikanäppäin on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
+<translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Teksti puhuttuna ‑painike</translation>
 <translation id="4585337515783392668">Lopeta suoratoisto tuntemattomaan kohteeseen</translation>
 <translation id="4628757576491864469">Laitteet</translation>
@@ -238,6 +239,7 @@
 <translation id="4696813013609194136">Avaa lukitus vanhemman koodilla</translation>
 <translation id="4731797938093519117">Avaus vanhemmille</translation>
 <translation id="4734965478015604180">Vaakasuora</translation>
+<translation id="476166673298332917">Laitteen järjestelmänvalvoja voi valvoa selaustoimintaasi.</translation>
 <translation id="4774338217796918551">Palaa huomenna kello <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Osoitteen <ph name="USER_EMAIL_ADDRESS" /> salasana</translation>
 <translation id="4778095205580009397">Google Assistantia ei voi käyttää demo-käyttökerralla.</translation>

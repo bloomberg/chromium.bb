@@ -3322,9 +3322,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7339315111520512972">Sapilitang paganahin ang networking code sa proseso ng browser</translation>
 <translation id="7340034977315324840">Iulat ang mga panahon ng aktibidad ng device</translation>
 <translation id="7343497214039883642">File ng configuration para sa mga device ng printer ng enterprise</translation>
-<translation id="7349338075015720646">Tumutukoy ng listahan ng mga website na na-install nang hindi napapansin, nang walang pakikipag-ugnayan ng user, at hindi maa-uninstall o madi-disable ng user.
-
-      Ang bawat item ng patakaran ay isang object na may dalawang miyembro: "url" at "launch_container." Ang "url" ay dapat ang URL ng web app na ii-install at ang "launch_container" ay dapat alinman sa "window" o "tab" para maisaad kung paano bubuksan ang Web App kapag na-install na. Kung tatanggalin ang "launch_container," ilulunsad ang app sa window kung ituturing ito ng Chrome na Progressive Web App at kung hindi naman, ilulunsad ito sa tab.</translation>
 <translation id="735902178936442460">Kinokontrol ng patakarang ito kung mag-uulat ng impormasyong magagamit para makilala ang mga machine, gaya ng pangalan ng machine at mga address ng network.
 
       Kapag hinayaang hindi nakatakda o nakatakda sa True ang patakarang ito, kukuha ng impormasyong magagamit sa pagkilala ng mga machine.

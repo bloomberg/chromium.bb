@@ -352,7 +352,7 @@
 <translation id="1615221548356595305">Leisti šių prieglobų HTTP/2 ryšių susijungimą, net jei naudojami kliento sertifikatai</translation>
 <translation id="1615855314789673708">Pateikiama „Wilco“ DTC (diagnostikos ir telemetrijos valdiklio) konfigūracija.
 
-      Pagal šią politiką leidžiama pateikti „Wilco“ DTC konfigūraciją, kurią leidžiama taikyti, jei „Wilco“ DTC pasiekiamas nurodytame įrenginyje ir leidžiamas pagal politiką. Konfigūracijos failas negali būti didesnis nei 1 MB (1 000 000 bailų) ir turi būti užkoduotas naudojant JSON. „Wilco“ DTC atsakingas už jo apdorojimą. Atsisiųsto failo vientisumas patikrinamas naudojant kriptografinę maišą.
+      Pagal šią politiką leidžiama pateikti „Wilco“ DTC konfigūraciją, kurią leidžiama taikyti, jei „Wilco“ DTC pasiekiamas nurodytame įrenginyje ir leidžiamas pagal politiką. Konfigūracijos failas negali būti didesnis nei 1 MB (1 000 000 baitų) ir turi būti užkoduotas naudojant JSON. „Wilco“ DTC atsakingas už jo apdorojimą. Atsisiųsto failo vientisumas patikrinamas naudojant kriptografinę maišą.
 
       Konfigūravimo failas atsisiunčiamas ir išsaugomas talpykloje. Jis bus pakartotinai atsisiųstas pakeitus URL ar maišą.
 
@@ -3324,9 +3324,6 @@
 <translation id="7339315111520512972">Priverstinis darbo tinkle kodo vykdymas naršyklės procese</translation>
 <translation id="7340034977315324840">Pranešti įrenginio veiklos laiką</translation>
 <translation id="7343497214039883642">Įrenginiams skirtas įmonės spausdintuvų konfigūracijos failas</translation>
-<translation id="7349338075015720646">Nurodomas svetainių, įdiegtų automatiškai, naudotojui neatliekant jokių veiksmų, sąrašas. Naudotojas negali jų nei išdiegti, nei išjungti.
-
-      Kiekvienas politikos sąrašo elementas yra objektas iš dviejų narių: „url“ ir „launch_container“. „url“ turėtų būti diegiamos žiniatinklio programos URL, o „launch_container“ – „window“ arba „tab“, skirti atskirti, kaip žiniatinklio programa atidaroma įdiegus. Praleidus „launch_container“, programa bus paleista lange, jei „Chrome“ įvertins ją kaip laipsniškąją žiniatinklio programą, skirtuke – jei įvertins kitaip.</translation>
 <translation id="735902178936442460">Ši politika valdo, ar pranešti informaciją, kurią galima naudoti įrenginiams identifikuoti, pvz., įrenginio pavadinimą ir tinklo adresus.
 
       Kai ši politika nenustatyta arba nustatyta kaip „Tiesa“, informacija, kurią galima naudoti įrenginiams identifikuoti, renkama.

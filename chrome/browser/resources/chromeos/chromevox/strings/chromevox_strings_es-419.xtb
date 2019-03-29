@@ -54,6 +54,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="1319608975892113573">No hay ninguna etiqueta "blockquote" anterior.</translation>
 <translation id="1321576897702511272">Ocultar ayuda de ChromeVox</translation>
 <translation id="1325946044405407859">Canela</translation>
+<translation id="1331634987653814322">Configuración de braille</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> de <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">reproducción oral de caracteres y palabras</translation>
 <translation id="1334570596456017464">Subíndice</translation>
@@ -548,6 +549,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="489907760999452556">Vínculo interno</translation>
 <translation id="4915087353619183190">Se está iniciando el modo de aprendizaje. Presiona una tecla del teclado QWERTY, una tecla de la línea braille o un gesto táctil para conocer su función. Presiona Ctrl+W o Esc para salir.</translation>
 <translation id="492295894462528572">Prefacio</translation>
+<translation id="4943781537993885772">Estilo de la imagen</translation>
 <translation id="495170559598752135">Acciones</translation>
 <translation id="4953585991029886728">Editar texto</translation>
 <translation id="4954534434583049121">Cita de bloque anterior</translation>
@@ -713,6 +715,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="6006050241733874051">Formulario</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{barra diagonal inversa}other{# barras diagonales inversas}}</translation>
 <translation id="6017514345406065928">Verde</translation>
+<translation id="6021969570711251331">Intercalar</translation>
 <translation id="6034000775414344507">Gris claro</translation>
 <translation id="6037602951055904232">Desplazar hacia delante</translation>
 <translation id="6042826534790431634">Presiona la tecla de búsqueda+barra espaciadora para activar una opción.</translation>
@@ -763,6 +766,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="6438968337250688271"><ph name="NAME" />, menú</translation>
 <translation id="6444046323172968959">Cuadro de diálogo de alerta</translation>
 <translation id="6452403590345320472">Índice</translation>
+<translation id="6454456397828627257">Lado a lado</translation>
 <translation id="6459511626086141404">Mapa de teclado plano</translation>
 <translation id="6468049171101508116">Botón Siguiente</translation>
 <translation id="646954774886932461">Índice</translation>

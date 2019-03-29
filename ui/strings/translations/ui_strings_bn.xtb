@@ -35,6 +35,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;সকল বেছে নিন</translation>
 <translation id="1938451708255335766">উইন্ডো স্ক্রিনের রেজোলিউশন অ্যাডজাস্ট করতে অ্যাপটি রিস্টার্ট করুন।</translation>
+<translation id="208586643495776849">আবার চেষ্টা করুন</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{১ দিন}one{# দিন}other{# দিন}}</translation>
 <translation id="2148716181193084225">আজ</translation>
 <translation id="2168039046890040389">পৃষ্ঠা নিচে</translation>
@@ -52,10 +53,10 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">ক্রমাঙ্কন সম্পূর্ণ হয়েছে</translation>
 <translation id="252373100621549798">অজানা প্রদর্শন</translation>
-<translation id="2573731672208488250">{HOURS,plural, =1{১ ঘন্টার মধ্যে}one{# ঘন্টার মধ্যে}other{# ঘন্টার মধ্যে}}</translation>
+<translation id="2573731672208488250">{HOURS,plural, =1{১ ঘণ্টার মধ্যে}one{# ঘণ্টার মধ্যে}other{# ঘণ্টার মধ্যে}}</translation>
 <translation id="2583543531130364912">আপনার টাচস্ক্রীন ক্রমাঙ্কন করুন</translation>
 <translation id="2666092431469916601">শীর্ষ</translation>
-<translation id="2701330563083355633"><ph name="DEVICE_NAME" />-এর থেকে শেয়ার করা হয়েছে</translation>
+<translation id="2701330563083355633"><ph name="DEVICE_NAME" /> থেকে শেয়ার করা হয়েছে</translation>
 <translation id="2743387203779672305">ক্লিপবোর্ডে কপি করুন</translation>
 <translation id="2803313416453193357">ফোল্ডার খুলুন</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{১ বছর আগে}one{# বছর আগে}other{# বছর আগে}}</translation>

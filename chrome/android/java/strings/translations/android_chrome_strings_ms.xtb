@@ -244,7 +244,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> saat lagi</translation>
 <translation id="2779651927720337254">gagal</translation>
 <translation id="2781151931089541271">1 saat lagi</translation>
-<translation id="2784212955220061919">Dalam mod Ringkas, Chrome memuatkan halaman lebih pantas dan mengurangkan penggunaan data sehingga 60 peratus. Teknologi awan Google mengoptimumkan halaman yang anda lawati.</translation>
 <translation id="2803478378562657435">Menunjukkan kata laluan yang disimpan dan pilihan kata laluan</translation>
 <translation id="2810645512293415242">Halaman diringkaskan untuk menjimatkan data dan memuatkan dengan lebih cepat.</translation>
 <translation id="281504910091592009">Lihat dan urus kata laluan yang disimpan dalam <ph name="BEGIN_LINK" />Akaun Google<ph name="END_LINK" /> anda</translation>
@@ -263,6 +262,7 @@
 <translation id="290376772003165898">Halaman bukan dalam <ph name="LANGUAGE" />?</translation>
 <translation id="2910701580606108292">Tanya sebelum membenarkan tapak memainkan kandungan yang dilindungi</translation>
 <translation id="2913331724188855103">Benarkan tapak untuk menyimpan dan membaca data kuki (disyorkan)</translation>
+<translation id="2923908459366352541">Nama tidak sah</translation>
 <translation id="2932150158123903946">Storan Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Akaun ini diurus oleh <ph name="PARENT_NAME_1" /> dan <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Hak Cipta <ph name="YEAR" /> Google Inc. Hak cipta terpelihara.</translation>
@@ -364,6 +364,7 @@
 <translation id="3745176700485982507">Pautan ke tapak web kegemaran anda boleh didapati di halaman ini</translation>
 <translation id="3771001275138982843">Tidak dapat memuat turun kemas kini</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Hidupkan Bluetooth<ph name="END_LINK" /> untuk membenarkan penggandingan</translation>
+<translation id="3775705724665058594">Hantar ke peranti anda</translation>
 <translation id="3778956594442850293">Ditambahkan pada Skrin utama</translation>
 <translation id="3781011235031427080">Lagi seperti ini dibuka pada ketinggian separa</translation>
 <translation id="3789841737615482174">Pasang</translation>
@@ -529,6 +530,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> berkongsi skrin anda</translation>
 <translation id="4961107849584082341">Terjemahkan halaman ini ke sebarang bahasa</translation>
 <translation id="4961700429721424617">Anda log keluar daripada akaun yang diurus oleh <ph name="MANAGED_DOMAIN" />. Tindakan ini akan memadamkan data Chrome anda daripada peranti ini, tetapi data anda akan kekal dalam Akaun Google anda.</translation>
+<translation id="4970824347203572753">Tidak tersedia di lokasi anda</translation>
 <translation id="497421865427891073">Ke hadapan</translation>
 <translation id="4988210275050210843">Memuat turun fail (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Halaman</translation>
@@ -598,6 +600,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5487521232677179737">Kosongkan data</translation>
 <translation id="5494752089476963479">Sekat iklan di tapak yang menyiarkan iklan yang mengganggu atau mengelirukan</translation>
 <translation id="5497272504048921382">Tab dibuka</translation>
+<translation id="5500777121964041360">Mungkin tidak tersedia di lokasi anda</translation>
 <translation id="550684401320795253">Mengemas kini Chrome...</translation>
 <translation id="5512137114520586844">Akaun ini diurus oleh <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Dilumpuhkan oleh pentadbir peranti ini</translation>
@@ -849,6 +852,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> dipilih</translation>
 <translation id="7253272406652746122">Tambahkan Akaun Google daripada halaman Akaun dalam apl Tetapan peranti anda.</translation>
 <translation id="7274013316676448362">Tapak yang disekat</translation>
+<translation id="7290209999329137901">Penamaan semula tidak tersedia</translation>
 <translation id="7291387454912369099">Assistant Mencetuskan Pembayaran</translation>
 <translation id="729975465115245577">Peranti anda tiada apl untuk menyimpan fail kata laluan.</translation>
 <translation id="7302081693174882195">Butiran: Diisih mengikut jumlah penjimatan data</translation>
@@ -982,6 +986,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8200772114523450471">Sambung semula</translation>
 <translation id="8209050860603202033">Buka imej</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB dimuat turun</translation>
+<translation id="8224471946457685718">Muat turun artikel untuk anda apabila menggunakan Wi-Fi</translation>
 <translation id="8232956427053453090">Kekalkan data</translation>
 <translation id="8249310407154411074">Alihkan ke atas</translation>
 <translation id="8250920743982581267">Dokumen</translation>

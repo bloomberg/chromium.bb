@@ -35,6 +35,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Selecciona-ho &amp;tot</translation>
 <translation id="1938451708255335766">Per ajustar la densitat de visualització de la finestra, reinicia l'aplicació.</translation>
+<translation id="208586643495776849">Torna-ho a provar</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}other{# d}}</translation>
 <translation id="2148716181193084225">Avui</translation>
 <translation id="2168039046890040389">Re Pàg</translation>
@@ -55,7 +56,7 @@
 <translation id="2573731672208488250">{HOURS,plural, =1{d'aquí a 1 h}other{d'aquí a # h}}</translation>
 <translation id="2583543531130364912">Calibra la pantalla tàctil</translation>
 <translation id="2666092431469916601">Superior</translation>
-<translation id="2701330563083355633">S'ha compartit des de: <ph name="DEVICE_NAME" /></translation>
+<translation id="2701330563083355633">S'ha compartit des del dispositiu <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Copia al porta-retalls</translation>
 <translation id="2803313416453193357">Obre la carpeta</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Fa 1 any}other{Fa # anys}}</translation>
@@ -174,7 +175,7 @@
 <translation id="7907591526440419938">Obre un fitxer</translation>
 <translation id="7969046989155602842">Ordre</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Més d'una notificació no llegida}other{Més de # notificacions no llegides}}</translation>
-<translation id="8086866675552927481">{MINUTES,plural, =1{d'aquí a 1 m}other{d'aquí a # m}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{d'aquí a 1 min}other{d'aquí a # min}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{fa 1 hora}other{fa # hores}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 s restant}other{# s restants}}</translation>

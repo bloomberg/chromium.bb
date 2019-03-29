@@ -33,7 +33,7 @@
 <translation id="1377255359165588604">Synchronizacja przestała działać.</translation>
 <translation id="1377321085342047638">Numer karty</translation>
 <translation id="1383876407941801731">Szukaj</translation>
-<translation id="1389974829397082527">Tu nie ma zakładek</translation>
+<translation id="1389974829397082527">Brak zakładek</translation>
 <translation id="1400642268715879018">Ostatnie cztery tygodnie</translation>
 <translation id="1407135791313364759">Otwórz wszystkie</translation>
 <translation id="1430915738399379752">Drukuj</translation>
@@ -204,7 +204,6 @@
 <translation id="4049507953662678203">Upewnij się, że masz połączenie z siecią, i spróbuj ponownie.</translation>
 <translation id="4082688844002261427">Zarządzaj personalizacją wyszukiwarki, reklam i innych usług na podstawie historii przeglądania</translation>
 <translation id="408404951701638773">Pasek wyszukiwania jest teraz łatwiej dostępny</translation>
-<translation id="4084682180776658562">Dodaj do zakładek</translation>
 <translation id="411254640334432676">Błąd pobierania.</translation>
 <translation id="4112644173421521737">Szukaj</translation>
 <translation id="4121993058175073134">Aby wysłać dane net-export, skonfiguruj konto e-mail w aplikacji Ustawienia.</translation>
@@ -365,9 +364,9 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="6656103420185847513">Folder edytora</translation>
 <translation id="6657585470893396449">Hasło</translation>
+<translation id="6668619169535738264">Edytuj zakładkę</translation>
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6691331417640343772">Zarządzaj synchronizowanymi danymi w Panelu Google</translation>
-<translation id="6709334795756764830">Edytuj zakładkę</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Nie można wyeksportować haseł</translation>
 <translation id="6780034285637185932">Kod pocztowy</translation>
@@ -408,9 +407,10 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7291368939935408496">Przygotowuję hasła…</translation>
 <translation id="7336264872878993241">Pobrano <ph name="PERCENT" /> procent</translation>
 <translation id="7346909386216857016">Rozumiem</translation>
+<translation id="7348502496356775519">Dodaj do zakładek</translation>
 <translation id="7383797227493018512">Do przeczytania</translation>
 <translation id="7400418766976504921">Adres URL</translation>
-<translation id="7425346204213733349">Zmiany w zakładkach, historii, hasłach i innych ustawieniach nie będą już synchronizowane z kontem Google. Twoje istniejące dane będą jednak nadal na nim przechowywane.</translation>
+<translation id="7425346204213733349">Zmiany w zakładkach, historii, hasłach i innych ustawieniach nie będą już synchronizowane z kontem Google. Twoje obecne dane będą jednak nadal na nim przechowywane.</translation>
 <translation id="744343212394640790">Konto <ph name="EMAIL" /> nie jest moje</translation>
 <translation id="7454057999980797137">Stan/region</translation>
 <translation id="7456847797759667638">Otwórz lokalizację...</translation>

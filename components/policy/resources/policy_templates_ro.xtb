@@ -616,7 +616,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă activezi această setare, orice pagină de autentificare prin portalul captiv (de exemplu, toate paginile începând cu pagina de conectare la portalul captiv până când <ph name="PRODUCT_NAME" /> detectează o conexiune stabilă la internet) va fi afișată într-o fereastră separată, ignorând toate setările și restricțiile politicii pentru utilizatorul actual.
 
       Dacă dezactivezi această setare sau nu o configurezi, orice pagină de autentificare prin portalul captiv va fi afișată într-o filă nouă (obișnuită) a browserului, folosind setările de proxy ale utilizatorului actual.</translation>
-<translation id="21394354835637379">Cu această politică poți să specifici care adrese URL au permisiunea de a instala extensii, aplicații și teme.
+<translation id="21394354835637379">Cu această politică poți să specifici adresele URL care au permisiunea de a instala extensii, aplicații și teme.
 
           Începând cu <ph name="PRODUCT_NAME" /> versiunea 21, devine mai dificilă instalarea extensiilor, aplicațiilor și scripturilor de utilizator care nu provin din Magazinul web Chrome. Anterior, utilizatorii puteau da clic pe un link care trimitea la un fișier *.crx, iar <ph name="PRODUCT_NAME" /> permitea instalarea fișierului după câteva avertismente. După <ph name="PRODUCT_NAME" /> versiunea 21, astfel de fișiere trebuie să fie descărcate și trase în pagina de setări <ph name="PRODUCT_NAME" />. Această setare permite anumitor adrese URL să beneficieze de fluxul de instalare anterior, mai facil.
 
@@ -878,7 +878,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="2633084400146331575">Activați feedbackul vocal</translation>
 <translation id="2646290749315461919">Vă permite să setați dacă site-urile web au permisiunea să urmărească locația fizică a utilizatorilor. Urmărirea locației fizice a utilizatorilor poate fi permisă în mod prestabilit, refuzată în mod prestabilit sau utilizatorul poate fi întrebat de fiecare dată când un site web solicită locația fizică. Dacă politica este lăsată nesetată, va fi utilizată politica „AskGeolocation”, dar utilizatorul va putea să o schimbe.</translation>
 <translation id="2647069081229792812">Activează sau dezactivează modificarea marcajelor</translation>
-<translation id="2649896281375932517">Permite utilizatorilor să decidă</translation>
+<translation id="2649896281375932517">Lasă utilizatorii să decidă</translation>
 <translation id="2650049181907741121">Măsura care se va lua atunci când utilizatorul închide capacul</translation>
 <translation id="2655233147335439767">Specifică adresa URL a motorului de căutare folosit la o căutare prestabilită. Adresa URL trebuie să conțină șirul „<ph name="SEARCH_TERM_MARKER" />”, care va fi înlocuit în momentul interogării cu termenii căutați de utilizator.
 
@@ -1235,15 +1235,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="3381968327636295719">Utilizează în mod prestabilit browserul gazdă</translation>
 <translation id="3384115339826100753">Activează politica Peak shift (Comutare perioadă de vârf) de gestionare a alimentării.
 
-          Peak Shift (Comutare perioadă de vârf) este politica de economisire a energiei care minimizează utilizarea curentului alternativ în timpul orelor de vârf de utilizare în timpul zilei. Poate fi setată o oră de începere și o oră de încheiere pentru funcționarea în modul Peak Shift (Comutare perioadă de vârf) pentru fiecare zi a săptămânii. În timpul acestor ore, sistemul se va alimenta de la baterie, chiar dacă este atașată sursa de alimentare de curent alternativ , atât timp cât bateria rămâne peste limita specificată. După ora de încheiere specificată, sistemul se va alimenta de la sursa de curent alternativ dacă este conectat, însă nu va încărca bateria. Sistemul va funcționa din nou în mod normal, folosind curentul alternativ și încărcând bateria după ora de începere specificată a încărcării.
+          Peak Shift este politica de economisire a energiei care minimizează folosirea curentului alternativ în orele de vârf de utilizare din timpul zilei. Poate fi setată o oră de începere și o oră de încheiere pentru funcționarea în modul Peak Shift pentru fiecare zi a săptămânii. În timpul acestor ore, sistemul se va alimenta de la baterie, chiar dacă este atașată sursa de alimentare de curent alternativ, atât timp cât bateria rămâne peste limita specificată. După ora de încheiere specificată, sistemul se va alimenta de la sursa de curent alternativ dacă este conectat, însă nu va încărca bateria. Sistemul va funcționa din nou în mod normal, folosind curentul alternativ și încărcând bateria după ora de începere specificată a încărcării.
 
-          Dacă această politică este activată, iar politicile DevicePowerPeakShiftBatteryThreshold și DevicePowerPeakShiftDayConfig sunt setate, modul de alimentare Peak shift (Comutare perioadă de vârf) va fi activat întotdeauna dacă dispozitivul îl acceptă.
+          Dacă această politică este activată, iar politicile DevicePowerPeakShiftBatteryThreshold și DevicePowerPeakShiftDayConfig sunt setate, modul de alimentare Peak shift va fi activat întotdeauna dacă dispozitivul îl acceptă.
 
-          Dacă politica este dezactivată, modul de alimentare Peak shift (Comutare perioadă de vârf) va fi dezactivat întotdeauna.
+          Dacă politica este dezactivată, modul de alimentare Peak shift va fi dezactivat întotdeauna.
 
           Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
 
-          Dacă politica nu este setată, modul de alimentare Peak shift (Comutare perioadă de vârf) este dezactivat inițial și nu poate fi activat de utilizator.</translation>
+          Dacă politica nu este setată, modul de alimentare Peak shift este dezactivat inițial și nu poate fi activat de utilizator.</translation>
 <translation id="3388153794103186066">Îți permite să setezi o listă de adrese URL ce specifică site-urile care vor primi automat permisiunea să acceseze un dispozitiv USB cu ID-ul de furnizor și de produs oferit. Fiecare articol din listă trebuie să conțină atât dispozitivele, cât și adresele URL pentru ca politica să fie validă. Fiecare articol din dispozitive poate conține un câmp pentru ID-ul furnizorului și ID-ul produsului. Orice ID omis este considerat un metacaracter, cu o excepție: un ID de produs nu poate fi specificat fără să fie specificat și un ID de furnizor. În caz contrar, politica nu va fi validă și va fi ignorată.
 
         Modelul permisiunii USB folosește adresa URL a site-ului care face solicitarea („adresa URL solicitantă”) și adresa URL a site-ului cadru de nivel superior („adresa URL încorporantă”) pentru a acorda permisiunea adresei URL solicitante de a accesa dispozitivul USB. Adresa URL solicitantă poate fi diferită de adresa URL încorporantă când site-ul solicitant este încărcat într-un iframe. De aceea, câmpul „urls” poate conține până la două șiruri separate cu o virgulă pentru a specifica adresa URL încorporantă și, respectiv, solicitantă. Dacă este specificată o singură adresă URL, accesul la dispozitivele USB corespunzătoare va fi acordat când adresa URL a site-ului solicitant este aceeași cu această adresă URL, indiferent de starea încorporării. Adresele URL din „urls” trebuie să fie adrese URL valide; în caz contrar, politica va fi ignorată.
@@ -1958,7 +1958,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
           Această politică este folosită numai dacă politica DevicePowerPeakShiftEnabled este activată.
 
-          Dacă politica nu este configurată sau nu este activată, modul de alimentare Peak shift (Comutare perioadă de vârf) va fi dezactivat întotdeauna.</translation>
+          Dacă politica nu este configurată sau nu este activată, modul de alimentare Peak shift va fi dezactivat întotdeauna.</translation>
 <translation id="5047604665028708335">Se permite accesul la site-urile din afara pachetelor de conținut</translation>
 <translation id="5052081091120171147">Dacă este activată, această politică forțează importarea istoricului de navigare din browserul prestabilit actual. Dacă este activată, această politică afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, istoricul de navigare nu va fi importat. În cazul în care nu este setată, utilizatorul poate fi întrebat dacă dorește importarea sau aceasta poate avea loc în mod automat.</translation>
 <translation id="5055312535952606505">Configurează setările de proxy pentru <ph name="PRODUCT_NAME" />. Aceste setări de proxy vor fi disponibile și pentru aplicațiile ARC.
@@ -1969,7 +1969,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
           Dacă politica <ph name="PROXY_SETTINGS_POLICY_NAME" /> este configurată, va anula toate politicile individuale <ph name="PROXY_MODE_POLICY_NAME" />, <ph name="PROXY_PAC_URL_POLICY_NAME" />, <ph name="PROXY_SERVER_POLICY_NAME" />, <ph name="PROXY_BYPASS_POLICY_NAME" /> și <ph name="PROXY_SERVER_MODE_POLICY_NAME" />.
 
-          În câmpul <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> poți specifica serverul proxy folosit de <ph name="PRODUCT_NAME" /> și poți împiedica utilizatorii să modifice setările proxy.
+          În câmpul <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> poți să specifici serverul proxy folosit de <ph name="PRODUCT_NAME" /> și împiedici utilizatorii să modifice setările proxy.
 
           Câmpul <ph name="PROXY_PAC_URL_PROXY_SETTINGS_FIELD" /> este o adresă URL a unui fișier .pac pentru proxy.
 
@@ -3231,9 +3231,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7339315111520512972">Forțează codul de rețea să ruleze în procesul browserului</translation>
 <translation id="7340034977315324840">Raportați perioadele de activitate ale dispozitivului</translation>
 <translation id="7343497214039883642">Fișierul de configurare a imprimantelor companiei pentru dispozitive</translation>
-<translation id="7349338075015720646">Specifică o listă cu site-uri care sunt instalate silențios, fără intervenția utilizatorului și care nu pot fi dezinstalate sau dezactivate de utilizator.
-
-      Fiecare element din lista politicii este un obiect cu două componente: „url” și „launch_container”. „url” trebuie să fie adresa URL a aplicației web de instalat, iar „launch_container” trebuie să fie „window” sau „tab” pentru a indica modul în care va fi deschisă aplicația web după instalare. Dacă se omite „launch_container”, aplicația se va lansa într-o fereastră dacă Chrome o consideră a fi o aplicație web progresivă și într-o filă în caz contrar.</translation>
 <translation id="735902178936442460">Această politică stabilește dacă se raportează informațiile care se pot folosi pentru a identifica dispozitivele, cum ar fi numele și adresele de rețea ale acestora.
 
       Când politica nu este setată sau este activată, se colectează informații care se pot folosi pentru a identifica dispozitivele.
@@ -3827,7 +3824,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 
           Această politică este folosită numai dacă politica DevicePowerPeakShiftEnabled este activată.
 
-          Dacă politica nu este configurată sau nu este activată, modul de alimentare Peak shift (Comutare perioadă de vârf) va fi dezactivat întotdeauna.
+          Dacă politica nu este configurată sau nu este activată, modul de alimentare Peak shift va fi dezactivat întotdeauna.
 
           Notă: valorile permise pentru câmpul <ph name="MINUTE_FIELD_NAME" /> în <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> și <ph name="CHARGE_START_TIME_FIELD_NAME" /> sunt: 0, 15, 30, 45.</translation>
 <translation id="8704831857353097849">Lista pluginurilor dezactivate</translation>

@@ -63,7 +63,7 @@
 <translation id="1752547299766512813">Απ. κωδ. πρόσβ.</translation>
 <translation id="1753905327828125965">Πιο Δημοφιλή</translation>
 <translation id="1809939268435598390">Διαγραφή φακέλου</translation>
-<translation id="1813414402673211292">Διαγραφή δεδομένων περιήγησης</translation>
+<translation id="1813414402673211292">Διαγραφή δεδ. περιήγ.</translation>
 <translation id="1820259098641718022">Προστέθηκε στη λίστα ανάγνωσης</translation>
 <translation id="1828824471510190776">Πρόταση κωδ. πρόσβ…</translation>
 <translation id="1876721852596493031">Αποστ. δεδομ. χρήσης</translation>
@@ -204,7 +204,6 @@
 <translation id="4049507953662678203">Βεβαιωθείτε ότι έχετε μια σύνδεση δικτύου και δοκιμάστε ξανά.</translation>
 <translation id="4082688844002261427">Ελέγξτε τον τρόπο με τον οποίο χρησιμοποιείται το ιστορικό περιήγησής σας για την εξατομίκευση της Αναζήτησης, των διαφημίσεων και άλλων στοιχείων</translation>
 <translation id="408404951701638773">Η πρόσβαση στη γραμμή αναζήτησης είναι πλέον πιο εύκολη</translation>
-<translation id="4084682180776658562">Σελιδοδείκτης</translation>
 <translation id="411254640334432676">Αποτυχία λήψης.</translation>
 <translation id="4112644173421521737">Αναζήτηση</translation>
 <translation id="4121993058175073134">Για αποστ. δεδομ.εξαγ.δικτ.,διαμορφ. το email σας στην εφ. "Ρυθμίσεις"</translation>
@@ -254,7 +253,7 @@
 <translation id="4904877109095351937">Επισήμ. ως αναγνωσμένων</translation>
 <translation id="4930268273022498155">Διαγραφή υπαρχόντων δεδομένων. Μπορείτε να τα επαναφέρετε επιστρέφοντας στον λογαριασμό <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Παρουσιάστηκε πρόβλημα με την κοινοποίηση του στοιχείου σας.</translation>
-<translation id="4979397965658815378">Συνδεθείτε στον Λογαριασμό σας Google για να λάβετε τους σελιδοδείκτες, τους κωδικούς πρόσβασης, το ιστορικό και άλλες ρυθμίσεις σε όλες τις συσκευές σας</translation>
+<translation id="4979397965658815378">Συνδεθείτε στον Λογαριασμό σας Google για να λάβετε τους σελιδοδείκτες, τους κωδικούς πρόσβασης, το ιστορικό και άλλες ρυθμίσεις σε όλες τις συσκευές σας.</translation>
 <translation id="5005498671520578047">Αντιγραφή κωδικού πρόσβασης</translation>
 <translation id="5010803260590204777">Άνοιγμα καρτέλας ανώνυμης περιήγησης για ιδιωτική περιήγηση στον ιστό</translation>
 <translation id="5011684439661633295">Γεια σας, <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -366,9 +365,9 @@
 <translation id="6643016212128521049">Διαγραφή</translation>
 <translation id="6656103420185847513">Επεξεργασία φακέλου</translation>
 <translation id="6657585470893396449">Κωδικός πρόσβασης</translation>
+<translation id="6668619169535738264">Επεξεργασία σελιδοδείκτη</translation>
 <translation id="667999046851023355">Έγγραφο</translation>
 <translation id="6691331417640343772">Διαχείριση συγχρονισμένων δεδομένων στον Πίνακα ελέγχου Google</translation>
-<translation id="6709334795756764830">Επεξεργασία σελιδοδείκτη</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Δεν είναι δυνατή η εξαγωγή κωδικών πρόσβασης</translation>
 <translation id="6780034285637185932">Ταχυδρομικός κώδικας</translation>
@@ -388,7 +387,7 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">Πρόσφατες καρτέλες</translation>
 <translation id="7006788746334555276">Ρυθμίσεις περιεχομένου</translation>
-<translation id="7029809446516969842">Κωδικοί πρόσβασης</translation>
+<translation id="7029809446516969842">Κωδ. πρόσβασης</translation>
 <translation id="7031882061095297553">Συγχρονισμός με</translation>
 <translation id="7053983685419859001">Αποκλεισμός</translation>
 <translation id="7062545763355031412">Αποδοχή και εναλλαγή λογαριασμών</translation>
@@ -399,7 +398,7 @@
 <translation id="7136892417564438900">Η κάμερα δεν είναι διαθέσιμη</translation>
 <translation id="7159472599653637159">Αίτηση ιστότ. για κινητά</translation>
 <translation id="7167621057293532233">Τύποι δεδομένων</translation>
-<translation id="7189598951263744875">Μοιραστείτε…</translation>
+<translation id="7189598951263744875">Κοινοποίηση…</translation>
 <translation id="7192050974311852563">Έναρξη καταγραφής</translation>
 <translation id="7203585745079012652">Εκφώνηση απαντήσεων</translation>
 <translation id="722055596168483966">Εξατομίκευση υπηρεσιών Google</translation>
@@ -409,6 +408,7 @@
 <translation id="7291368939935408496">Προετοιμασία κωδικών πρόσβασης…</translation>
 <translation id="7336264872878993241">Έγινε λήψη του <ph name="PERCENT" /> τοις εκατό</translation>
 <translation id="7346909386216857016">OK, το κατάλαβα</translation>
+<translation id="7348502496356775519">Σελιδοδείκτης</translation>
 <translation id="7383797227493018512">Λίστα ανάγνωσης</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7425346204213733349">Οι αλλαγές στους σελιδοδείκτες, το ιστορικό, τους κωδικούς πρόσβασης και σε άλλες ρυθμίσεις δεν θα συγχρονίζονται πλέον με το Λογαριασμό σας Google. Ωστόσο, τα υπάρχοντα δεδομένα σας θα παραμείνουν αποθηκευμένα στο Λογαριασμό σας Google.</translation>

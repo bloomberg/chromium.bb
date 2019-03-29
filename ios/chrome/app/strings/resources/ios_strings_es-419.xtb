@@ -42,6 +42,7 @@
 <translation id="152234381334907219">Nunca guardado</translation>
 <translation id="1540800554400757039">Dirección 1</translation>
 <translation id="1545749641540134597">Escanear código QR</translation>
+<translation id="1552525382687785070">Tu administrador inhabilitó la sincronización</translation>
 <translation id="1558704936695638228">Mantén presionado el botón para obtener más opciones de pestañas</translation>
 <translation id="1580783302095112590">Correo enviado</translation>
 <translation id="1582732959743469162">Esta acción detendrá el progreso de la descarga actual.</translation>
@@ -203,7 +204,6 @@
 <translation id="4049507953662678203">Asegúrate de tener una conexión de red y vuelve a intentarlo.</translation>
 <translation id="4082688844002261427">Controla cómo se usa tu historial de navegación para personalizar la Búsqueda, los anuncios y mucho más</translation>
 <translation id="408404951701638773">La barra de búsqueda ahora está al alcance de la mano</translation>
-<translation id="4084682180776658562">Marcador</translation>
 <translation id="411254640334432676">Se produjo un error durante la descarga.</translation>
 <translation id="4112644173421521737">Buscar</translation>
 <translation id="4121993058175073134">Configura cuenta en Configuración p/ enviar datos exportaciones netas.</translation>
@@ -366,7 +366,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="667999046851023355">Documento</translation>
 <translation id="6691331417640343772">Administrar los datos sincronizados en el Panel de control de Google</translation>
-<translation id="6709334795756764830">Editar favorito</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">No se pueden exportar las contraseñas</translation>
 <translation id="6780034285637185932">Código postal</translation>

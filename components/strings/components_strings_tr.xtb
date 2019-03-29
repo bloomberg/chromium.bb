@@ -24,7 +24,6 @@
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> dilini daima çevir</translation>
 <translation id="1107591249535594099">İşaretlenirse Chrome, formları daha hızlı doldurma amacıyla kartınızın bir kopyasını bu cihazda depolar.</translation>
 <translation id="1110994991967754504"><ph name="PERMISSION_NAME" /> için izin seçin</translation>
-<translation id="1111153019813902504">Son yer işaretleri</translation>
 <translation id="1113869188872983271">Sıralama değişikliğini &amp;geri al</translation>
 <translation id="1125573121925420732">Web siteleri güvenliklerini güncellerken uyarılar yaygın olarak görülebilir. Yakında bu işlev iyileştirilecektir.</translation>
 <translation id="1126551341858583091">Yerel depolama alanındaki boyut <ph name="CRASH_SIZE" />.</translation>
@@ -50,7 +49,6 @@
 <translation id="1228893227497259893">Yanlış varlık tanımlayıcı</translation>
 <translation id="1232569758102978740">Adsız</translation>
 <translation id="1240347957665416060">Cihazınızın adı</translation>
-<translation id="124116460088058876">Diğer diller</translation>
 <translation id="1250759482327835220">Bir dahaki sefere daha hızlı ödeme yapmak için kartınızı ve fatura adresinizi Google Hesabınıza kaydedin.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (senkronize edildi)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Bir web sitesini ziyaret etmeye çalıştığınızda site açılmıyorsa sorunu düzeltmek için ilk olarak aşağıdaki sorun giderme adımlarını deneyin:&lt;/p&gt;
@@ -553,7 +551,7 @@
 <translation id="40103911065039147">{URL_count,plural, =1{Yakındaki 1 web sayfası}other{Yakındaki # web sayfası}}</translation>
 <translation id="4030383055268325496">Eklemeyi &amp;geri al</translation>
 <translation id="4032320456957708163">Tarayıcınız <ph name="ENROLLMENT_DOMAIN" /> tarafından yönetilmektedir</translation>
-<translation id="4034375457890803692">Açtığınız bağlantı, genellikle ziyaret etmediğiniz bir siteye göndermektedir. Kafanızı karıştırmaya çalışıyor olabilir.</translation>
+<translation id="4034375457890803692">Açtığınız bağlantı, genellikle ziyaret etmediğiniz bir siteye yönlendiriyor. Kafanızı karıştırmaya çalışıyor olabilir.</translation>
 <translation id="4058922952496707368">"<ph name="SUBKEY" />" anahtarı: <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (Zarf)</translation>
 <translation id="4067947977115446013">Geçerli Adres Ekleyin</translation>
@@ -753,7 +751,7 @@
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5135404736266831032">Adresleri yönet...</translation>
 <translation id="5138227688689900538">Daha az göster</translation>
-<translation id="5141240743006678641">Senkronize edilen şifreleri Google kimlik bilgilerinizle şifreleyin</translation>
+<translation id="5141240743006678641">Senkronize edilen şifreleri Google kimlik bilgileriyle şifrele</translation>
 <translation id="5145883236150621069">Politika yanıtında hata kodu var</translation>
 <translation id="515292512908731282">C4 (Zarf)</translation>
 <translation id="5159010409087891077">Sayfayı yeni Gizli pencerede açın (⇧⌘N)</translation>
@@ -1057,6 +1055,7 @@
 <translation id="6965978654500191972">Cihaz</translation>
 <translation id="6970216967273061347">Bölge</translation>
 <translation id="6973656660372572881">Hem sabit proxy sunucular hem de bir .pac komut dosyası URL'si belirtildi.</translation>
+<translation id="6973932557599545801">Maalesef daha fazla yardımcı olamıyorum, lütfen kendiniz devam edin.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Sesi kapat (varsayılan)</translation>
 <translation id="6984479912851154518">Harici bir uygulama üzerinden ödeme gerçekleştirmek için gizli moddan çıkılacak. Devam edilsin mi?</translation>
@@ -1334,7 +1333,6 @@ Ek ayrıntılar:
 <translation id="8371889962595521444">Özel kök sertifikalar</translation>
 <translation id="8380941800586852976">Tehlikeli</translation>
 <translation id="8381674639488873545">Bu ödemeler bir defalık alınabileceği gibi yinelenen ödemeler de olabilir ve bu durum açıkça belli olmayabilir. <ph name="BEGIN_LINK" />Yine de göster<ph name="END_LINK" /></translation>
-<translation id="8382348898565613901">Son ziyaret ettiğiniz yer işaretleri burada görünür</translation>
 <translation id="8398259832188219207">Kilitlenme raporunun yüklenme zamanı: <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Kilitlenme Sayısı (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Aynı parolayı iki kez girmelisiniz.</translation>
@@ -1346,7 +1344,7 @@ Ek ayrıntılar:
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8433057134996913067">Bu işlem, çoğu web sitesinden çıkış yapmanıza neden olacak.</translation>
 <translation id="8437238597147034694">Taşımayı &amp;geri al</translation>
-<translation id="8461694314515752532">Senkronize edilen verileri kendi senkronizasyon parolanızla şifreleyin</translation>
+<translation id="8461694314515752532">Senkronize edilen verileri senkronizasyon parolanızı kullanarak şifrele</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kredi kartı}other{# kredi kartı}}</translation>
 <translation id="8473863474539038330">Adresler ve daha fazlası</translation>
 <translation id="8483780878231876732">Google Hesabınızda kayıtlı kartları kullanmak için Chrome'da oturum açın</translation>

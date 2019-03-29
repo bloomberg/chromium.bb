@@ -55,7 +55,7 @@
 <translation id="1376578503827013741">Beregner …</translation>
 <translation id="138361230106469022">Hei, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Søk</translation>
-<translation id="1384959399684842514">Nedlasting stanset midlertidig</translation>
+<translation id="1384959399684842514">Nedlastingen er satt på pause</translation>
 <translation id="1389974829397082527">Det er ingen bokmerker her</translation>
 <translation id="1397811292916898096">Søk med <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Innbygd i <ph name="WEBSITE_URL" /></translation>
@@ -244,7 +244,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder igjen</translation>
 <translation id="2779651927720337254">mislyktes</translation>
 <translation id="2781151931089541271">1 sekund igjen</translation>
-<translation id="2784212955220061919">I forenklet modus laster Chrome inn sider raskere og bruker opptil 60 prosent mindre data. Googles skyteknologi optimaliserer sidene du besøker.</translation>
 <translation id="2803478378562657435">Viser lagrede passord og passordalternativer</translation>
 <translation id="2810645512293415242">Siden er forenklet for å spare data og laste den inn raskere.</translation>
 <translation id="281504910091592009">Se og administrer lagrede passord i <ph name="BEGIN_LINK" />Google-kontoen<ph name="END_LINK" /> din</translation>
@@ -816,7 +815,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6989267951144302301">Kunne ikke laste ned</translation>
 <translation id="6990079615885386641">Last ned appen fra Google Play Butikk: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Spør før nettsteder får bruke mikrofonen (anbefales)</translation>
-<translation id="7016516562562142042">Tillatt for den aktive søkemotoren</translation>
+<translation id="7016516562562142042">tillatt for den aktive søkemotoren</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> er lastet ned</translation>
 <translation id="7022756207310403729">Åpne i nettleseren</translation>
 <translation id="702463548815491781">Anbefalt når TalkBack eller brytertilgang er på</translation>

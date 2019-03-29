@@ -131,6 +131,7 @@
 <translation id="2961963223658824723">エラーが発生しました。数秒後にもう一度お試しください。</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2970920913501714344">アプリ、拡張機能、テーマをインストールする</translation>
+<translation id="2977598380246111477">次の数字</translation>
 <translation id="2995447421581609334">キャスト デバイスを表示します。</translation>
 <translation id="2996462380875591307">拡大鏡（ドッキング）がオンになっています。オフにするには Ctrl+検索+D キーをもう一度押します。</translation>
 <translation id="3000461861112256445">モノラル音声</translation>
@@ -229,6 +230,7 @@
 <translation id="4527045527269911712">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。</translation>
 <translation id="453661520163887813">あと <ph name="TIME" /> で充電完了</translation>
 <translation id="4544944664594876241">画面をロックするショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
+<translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">[選択して読み上げ] ボタン</translation>
 <translation id="4585337515783392668">不明な受信デバイスへのキャストを停止します</translation>
 <translation id="4628757576491864469">デバイス</translation>
@@ -236,6 +238,7 @@
 <translation id="4696813013609194136">保護者のコードでデバイスをロック解除</translation>
 <translation id="4731797938093519117">保護者によるアクセス</translation>
 <translation id="4734965478015604180">横</translation>
+<translation id="476166673298332917">デバイス管理者が閲覧アクティビティを監視している可能性があります。</translation>
 <translation id="4774338217796918551">明日の <ph name="COME_BACK_TIME" /> になったら利用を再開できます。</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> のパスワード</translation>
 <translation id="4778095205580009397">Google アシスタントは、デモセッションではご利用いただけません。</translation>
