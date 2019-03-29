@@ -30,6 +30,348 @@
 
 namespace blink {
 
+class ReadableStreamNative::TeeEngine final
+    : public GarbageCollectedFinalized<TeeEngine> {
+ public:
+  TeeEngine() = default;
+
+  // Create the streams and start copying data.
+  void Start(ScriptState*, ReadableStreamNative*, ExceptionState&);
+
+  // Branch1() and Branch2() are null until Start() is called.
+  ReadableStreamNative* Branch1() const { return branch_[0]; }
+  ReadableStreamNative* Branch2() const { return branch_[1]; }
+
+  void Trace(Visitor* visitor) {
+    visitor->Trace(stream_);
+    visitor->Trace(reader_);
+    visitor->Trace(reason_[0]);
+    visitor->Trace(reason_[1]);
+    visitor->Trace(branch_[0]);
+    visitor->Trace(branch_[1]);
+    visitor->Trace(controller_[0]);
+    visitor->Trace(controller_[1]);
+    visitor->Trace(cancel_promise_);
+  }
+
+ private:
+  class PullAlgorithm;
+  class CancelAlgorithm;
+
+  TraceWrapperMember<ReadableStreamNative> stream_;
+  TraceWrapperMember<ReadableStreamDefaultReader> reader_;
+  TraceWrapperMember<StreamPromiseResolver> cancel_promise_;
+  bool closed_ = false;
+
+  // The standard contains a number of pairs of variables with one for each
+  // stream. These are implemented as arrays here. While they are 1-indexed in
+  // the standard, they are 0-indexed here; ie. "canceled_[0]" here corresponds
+  // to "canceled1" in the standard.
+  bool canceled_[2] = {false, false};
+  TraceWrapperV8Reference<v8::Value> reason_[2];
+  TraceWrapperMember<ReadableStreamNative> branch_[2];
+  TraceWrapperMember<ReadableStreamDefaultController> controller_[2];
+
+  DISALLOW_COPY_AND_ASSIGN(TeeEngine);
+};
+
+class ReadableStreamNative::TeeEngine::PullAlgorithm final
+    : public StreamAlgorithm {
+ public:
+  explicit PullAlgorithm(TeeEngine* engine) : engine_(engine) {}
+
+  v8::Local<v8::Promise> Run(ScriptState* script_state,
+                             int,
+                             v8::Local<v8::Value>[]) override {
+    // https://streams.spec.whatwg.org/#readable-stream-tee
+    // 12. Let pullAlgorithm be the following steps:
+    //   a. Return the result of transforming ! ReadableStreamDefaultReaderRead(
+    //      reader) with a fulfillment handler which takes the argument result
+    //      and performs the following steps:
+    return StreamThenPromise(
+        script_state->GetContext(),
+        ReadableStreamDefaultReader::Read(script_state, engine_->reader_)
+            ->V8Promise(script_state->GetIsolate()),
+        MakeGarbageCollected<ResolveFunction>(script_state, engine_));
+  }
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(engine_);
+    StreamAlgorithm::Trace(visitor);
+  }
+
+ private:
+  class ResolveFunction final : public StreamScriptFunction {
+   public:
+    ResolveFunction(ScriptState* script_state, TeeEngine* engine)
+        : StreamScriptFunction(script_state), engine_(engine) {}
+
+    void CallWithLocal(v8::Local<v8::Value> result) override {
+      //    i. If closed is true, return.
+      if (engine_->closed_) {
+        return;
+      }
+
+      //   ii. Assert: Type(result) is Object.
+      DCHECK(result->IsObject());
+
+      auto* script_state = GetScriptState();
+      auto* isolate = script_state->GetIsolate();
+
+      //  iii. Let done be ! Get(result, "done").
+      //   vi. Let value be ! Get(result, "value").
+      // The precise order of operations is not important here, because |result|
+      // is guaranteed to have own properties of "value" and "done" and so the
+      // "Get" operations cannot have side-effects.
+      v8::Local<v8::Value> value;
+      bool done = false;
+      bool unpack_succeeded =
+          V8UnpackIteratorResult(script_state, result.As<v8::Object>(), &done)
+              .ToLocal(&value);
+      CHECK(unpack_succeeded);
+
+      //   vi. Assert: Type(done) is Boolean.
+      //    v. If done is true,
+      if (done) {
+        //    1. If canceled1 is false,
+        //        a. Perform ! ReadableStreamDefaultControllerClose(branch1.
+        //           [[readableStreamController]]).
+        //    2. If canceled2 is false,
+        //        b. Perform ! ReadableStreamDefaultControllerClose(branch2.
+        //           [[readableStreamController]]).
+        for (int branch = 0; branch < 2; ++branch) {
+          if (!engine_->canceled_[branch]) {
+            ReadableStreamDefaultController::Close(
+                script_state, engine_->controller_[branch]);
+          }
+        }
+        //    3. Set closed to true.
+        engine_->closed_ = true;
+
+        //    4. Return.
+        return;
+      }
+      ExceptionState exception_state(isolate, ExceptionState::kUnknownContext,
+                                     "", "");
+      //  vii. Let value1 and value2 be value.
+      // viii. If canceled2 is false and cloneForBranch2 is true, set value2 to
+      //       ? StructuredDeserialize(? StructuredSerialize(value2), the
+      //       current Realm Record).
+      // TODO(ricea): Support cloneForBranch2
+
+      //   ix. If canceled1 is false, perform ?
+      //       ReadableStreamDefaultControllerEnqueue(branch1.
+      //       [[readableStreamController]], value1).
+      //    x. If canceled2 is false, perform ?
+      //       ReadableStreamDefaultControllerEnqueue(branch2.
+      //       [[readableStreamController]], value2).
+      for (int branch = 0; branch < 2; ++branch) {
+        if (!engine_->canceled_[branch]) {
+          ReadableStreamDefaultController::Enqueue(script_state,
+                                                   engine_->controller_[branch],
+                                                   value, exception_state);
+          if (exception_state.HadException()) {
+            // Instead of returning a rejection, which is inconvenient here,
+            // call ControllerError(). The only difference this makes is that
+            // it happens synchronously, but that should not be observable.
+            ReadableStreamDefaultController::Error(
+                script_state, engine_->controller_[branch],
+                exception_state.GetException());
+            exception_state.ClearException();
+            return;
+          }
+        }
+      }
+    }
+
+    void Trace(Visitor* visitor) override {
+      visitor->Trace(engine_);
+      StreamScriptFunction::Trace(visitor);
+    }
+
+   private:
+    TraceWrapperMember<TeeEngine> engine_;
+  };
+
+  TraceWrapperMember<TeeEngine> engine_;
+};
+
+class ReadableStreamNative::TeeEngine::CancelAlgorithm final
+    : public StreamAlgorithm {
+ public:
+  CancelAlgorithm(TeeEngine* engine, int branch)
+      : engine_(engine), branch_(branch) {
+    DCHECK(branch == 0 || branch == 1);
+  }
+
+  v8::Local<v8::Promise> Run(ScriptState* script_state,
+                             int argc,
+                             v8::Local<v8::Value> argv[]) override {
+    // https://streams.spec.whatwg.org/#readable-stream-tee
+    // This implements both cancel1Algorithm and cancel2Algorithm as they are
+    // identical except for the index they operate on. Standard comments are
+    // from cancel1Algorithm.
+    // 13. Let cancel1Algorithm be the following steps, taking a reason
+    //     argument:
+    auto* isolate = script_state->GetIsolate();
+
+    // a. Set canceled1 to true.
+    engine_->canceled_[branch_] = true;
+    DCHECK_EQ(argc, 1);
+
+    // b. Set reason1 to reason.
+    engine_->reason_[branch_].Set(isolate, argv[0]);
+
+    const int other_branch = 1 - branch_;
+
+    // c. If canceled2 is true,
+    if (engine_->canceled_[other_branch]) {
+      // i. Let compositeReason be ! CreateArrayFromList(« reason1, reason2 »).
+      v8::Local<v8::Value> reason[] = {engine_->reason_[0].NewLocal(isolate),
+                                       engine_->reason_[1].NewLocal(isolate)};
+      v8::Local<v8::Value> composite_reason =
+          v8::Array::New(script_state->GetIsolate(), reason, 2);
+
+      // ii. Let cancelResult be ! ReadableStreamCancel(stream,
+      //    compositeReason).
+      auto cancel_result = ReadableStreamNative::Cancel(
+          script_state, engine_->stream_, composite_reason);
+
+      // iii. Resolve cancelPromise with cancelResult.
+      engine_->cancel_promise_->Resolve(script_state, cancel_result);
+    }
+    return engine_->cancel_promise_->V8Promise(isolate);
+  }
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(engine_);
+    StreamAlgorithm::Trace(visitor);
+  }
+
+ private:
+  TraceWrapperMember<TeeEngine> engine_;
+  const int branch_;
+};
+
+void ReadableStreamNative::TeeEngine::Start(ScriptState* script_state,
+                                            ReadableStreamNative* stream,
+                                            ExceptionState& exception_state) {
+  // https://streams.spec.whatwg.org/#readable-stream-tee
+  //  1. Assert: ! IsReadableStream(stream) is true.
+  DCHECK(stream);
+
+  // TODO(ricea):  2. Assert: Type(cloneForBranch2) is Boolean.
+
+  stream_ = stream;
+
+  // 3. Let reader be ? AcquireReadableStreamDefaultReader(stream).
+  reader_ = ReadableStreamNative::AcquireDefaultReader(script_state, stream,
+                                                       false, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  // These steps are performed by the constructor:
+  //  4. Let closed be false.
+  DCHECK(!closed_);
+
+  //  5. Let canceled1 be false.
+  DCHECK(!canceled_[0]);
+
+  //  6. Let canceled2 be false.
+  DCHECK(!canceled_[1]);
+
+  //  7. Let reason1 be undefined.
+  DCHECK(reason_[0].IsEmpty());
+
+  //  8. Let reason2 be undefined.
+  DCHECK(reason_[1].IsEmpty());
+
+  //  9. Let branch1 be undefined.
+  DCHECK(!branch_[0]);
+
+  // 10. Let branch2 be undefined.
+  DCHECK(!branch_[1]);
+
+  // 11. Let cancelPromise be a new promise.
+  cancel_promise_ = MakeGarbageCollected<StreamPromiseResolver>(script_state);
+
+  // 12. Let pullAlgorithm be the following steps:
+  // (steps are defined in PullAlgorithm::Run()).
+  auto* pull_algorithm = MakeGarbageCollected<PullAlgorithm>(this);
+
+  // 13. Let cancel1Algorithm be the following steps, taking a reason argument:
+  // (see CancelAlgorithm::Run()).
+  auto* cancel1_algorithm = MakeGarbageCollected<CancelAlgorithm>(this, 0);
+
+  // 14. Let cancel2Algorithm be the following steps, taking a reason argument:
+  // (both algorithms share a single implementation).
+  auto* cancel2_algorithm = MakeGarbageCollected<CancelAlgorithm>(this, 1);
+
+  // 15. Let startAlgorithm be an algorithm that returns undefined.
+  auto* start_algorithm = CreateTrivialStartAlgorithm();
+
+  auto* size_algorithm = CreateDefaultSizeAlgorithm();
+
+  // 16. Set branch1 to ! CreateReadableStream(startAlgorithm, pullAlgorithm,
+  //   cancel1Algorithm).
+  branch_[0] = ReadableStreamNative::Create(
+      script_state, start_algorithm, pull_algorithm, cancel1_algorithm, 1.0,
+      size_algorithm, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  // 17. Set branch2 to ! CreateReadableStream(startAlgorithm, pullAlgorithm,
+  //   cancel2Algorithm).
+  branch_[1] = ReadableStreamNative::Create(
+      script_state, start_algorithm, pull_algorithm, cancel2_algorithm, 1.0,
+      size_algorithm, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  for (int branch = 0; branch < 2; ++branch) {
+    controller_[branch] = branch_[branch]->readable_stream_controller_;
+  }
+
+  class RejectFunction final : public StreamScriptFunction {
+   public:
+    RejectFunction(ScriptState* script_state, TeeEngine* engine)
+        : StreamScriptFunction(script_state), engine_(engine) {}
+
+    void CallWithLocal(v8::Local<v8::Value> r) override {
+      // 18. Upon rejection of reader.[[closedPromise]] with reason r,
+      //   a. Perform ! ReadableStreamDefaultControllerError(branch1.
+      //      [[readableStreamController]], r).
+      ReadableStreamDefaultController::Error(GetScriptState(),
+                                             engine_->controller_[0], r);
+
+      //   b. Perform ! ReadableStreamDefaultControllerError(branch2.
+      //      [[readableStreamController]], r).
+      ReadableStreamDefaultController::Error(GetScriptState(),
+                                             engine_->controller_[1], r);
+    }
+
+    void Trace(Visitor* visitor) override {
+      visitor->Trace(engine_);
+      StreamScriptFunction::Trace(visitor);
+    }
+
+   private:
+    TraceWrapperMember<TeeEngine> engine_;
+  };
+
+  // 18. Upon rejection of reader.[[closedPromise]] with reason r,
+  StreamThenPromise(
+      script_state->GetContext(),
+      reader_->closed_promise_->V8Promise(script_state->GetIsolate()), nullptr,
+      MakeGarbageCollected<RejectFunction>(script_state, this));
+
+  // Step "19. Return « branch1, branch2 »."
+  // is performed by the caller.
+}
+
 class ReadableStreamNative::ReadHandleImpl final
     : public ReadableStream::ReadHandle {
  public:
@@ -428,7 +770,16 @@ void ReadableStreamNative::Tee(ScriptState* script_state,
                                ReadableStream** branch1,
                                ReadableStream** branch2,
                                ExceptionState& exception_state) {
-  exception_state.ThrowTypeError("tee not yet implemented");
+  auto* engine = MakeGarbageCollected<TeeEngine>();
+  engine->Start(script_state, this, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  // Instead of returning a List like ReadableStreamTee in the standard, the
+  // branches are returned via output parameters.
+  *branch1 = engine->Branch1();
+  *branch2 = engine->Branch2();
 }
 
 ReadableStream::ReadHandle* ReadableStreamNative::GetReadHandle(

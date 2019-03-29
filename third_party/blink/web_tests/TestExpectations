@@ -4464,8 +4464,9 @@ crbug.com/916975 virtual/threaded/http/tests/devtools/tracing/timeline-misc/time
 # Importing 'fetch' tests from WPT.
 crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
 crbug.com/705490 virtual/outofblink-cors/external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
+crbug.com/705490 virtual/streams-native/external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
 crbug.com/820334 external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout Pass ]
-crbug.com/820334 virtual/outofblink-cors/external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout Pass ]
+crbug.com/820334 virtual/streams-native/external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout Pass ]
 
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.html [ Failure Timeout ]
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Failure Timeout ]
@@ -5704,13 +5705,9 @@ crbug.com/902633 virtual/streams-native/http/tests/streams/transferable/writable
 crbug.com/902633 virtual/streams-native/http/tests/streams/transferable/shared-worker.html [ Pass Failure ]
 crbug.com/902633 virtual/streams-native/http/tests/streams/transferable/worker.html [ Pass Failure ]
 
-# PipeTo() and Tee() are currently disabled in the StreamsNative implementation
-# of streams, which causes these timeouts.
-### virtual/streams-native/external/wpt/fetch/api/basic/
-crbug.com/902633 virtual/streams-native/external/wpt/fetch/api/basic/error-after-response.html [ Timeout ]
-
+# PipeTo() is currently disabled in the StreamsNative implementation of streams,
+# which causes these timeouts.
 ### virtual/streams-native/external/wpt/fetch/api/request/
-crbug.com/902633 virtual/streams-native/external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout ]
 crbug.com/902633 virtual/streams-native/external/wpt/fetch/api/request/request-keepalive-quota.html [ Timeout ]
 
 ### virtual/streams-native/external/wpt/fetch/api/response/
