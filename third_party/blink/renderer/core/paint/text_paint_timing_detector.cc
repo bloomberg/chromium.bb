@@ -63,7 +63,7 @@ void TextPaintTimingDetector::PopulateTraceValue(
 
 void TextPaintTimingDetector::OnLargestTextDetected(
     const TextRecord& largest_text_record) {
-  largest_text_paint_ = largest_text_record.first_paint_time;
+  largest_text_paint_ = largest_text_record.paint_time;
   largest_text_paint_size_ = largest_text_record.first_size;
   auto value = std::make_unique<TracedValue>();
   PopulateTraceValue(*value, largest_text_record,
@@ -81,8 +81,8 @@ void TextPaintTimingDetector::TimerFired(TimerBase* time) {
 
 void TextPaintTimingDetector::Analyze() {
   TextRecord* candidate = records_manager_.FindLargestPaintCandidate();
-  DCHECK(!candidate || !candidate->first_paint_time.is_null());
-  if (candidate && candidate->first_paint_time != largest_text_paint_) {
+  DCHECK(!candidate || !candidate->paint_time.is_null());
+  if (candidate && candidate->paint_time != largest_text_paint_) {
     OnLargestTextDetected(*candidate);
     frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
   }
@@ -202,11 +202,11 @@ void TextPaintTimingDetector::Trace(blink::Visitor* visitor) {
 TextRecordsManager::TextRecordsManager() : size_ordered_set_(&LargeTextFirst) {}
 
 bool TextRecordsManager::AreAllVisibleNodesDetached() const {
-  return visible_node_map.size() == detached_ids_.size();
+  return visible_node_map_.size() == detached_ids_.size();
 }
 
 void TextRecordsManager::SetNodeDetachedIfNeeded(const DOMNodeId& node_id) {
-  if (!visible_node_map.Contains(node_id))
+  if (!visible_node_map_.Contains(node_id))
     return;
   if (detached_ids_.Contains(node_id))
     return;
@@ -222,10 +222,10 @@ void TextRecordsManager::AssignPaintTimeToQueuedNodes(
   DCHECK_GT(texts_queued_for_paint_time_.size(), 0UL);
   while (!texts_queued_for_paint_time_.empty()) {
     DOMNodeId node_id = texts_queued_for_paint_time_.front();
-    DCHECK(visible_node_map.Contains(node_id));
-    TextRecord* record = visible_node_map.at(node_id);
-    DCHECK_EQ(record->first_paint_time, base::TimeTicks());
-    record->first_paint_time = timestamp;
+    DCHECK(visible_node_map_.Contains(node_id));
+    TextRecord* record = visible_node_map_.at(node_id);
+    DCHECK_EQ(record->paint_time, base::TimeTicks());
+    record->paint_time = timestamp;
 
     texts_queued_for_paint_time_.pop();
     is_result_invalidated_ = true;
@@ -235,14 +235,14 @@ void TextRecordsManager::AssignPaintTimeToQueuedNodes(
 void TextRecordsManager::MarkNodeReattachedIfNeeded(const DOMNodeId& node_id) {
   if (!detached_ids_.Contains(node_id))
     return;
-  DCHECK(visible_node_map.Contains(node_id) ||
+  DCHECK(visible_node_map_.Contains(node_id) ||
          invisible_node_ids_.Contains(node_id));
   detached_ids_.erase(node_id);
   is_result_invalidated_ = true;
 }
 
 bool TextRecordsManager::HasRecorded(const DOMNodeId& node_id) const {
-  return visible_node_map.Contains(node_id) ||
+  return visible_node_map_.Contains(node_id) ||
          invisible_node_ids_.Contains(node_id);
 }
 
@@ -270,7 +270,7 @@ void TextRecordsManager::RecordVisibleNode(const DOMNodeId& node_id,
   record->text = text;
 #endif
   size_ordered_set_.insert(record->AsWeakPtr());
-  visible_node_map.insert(node_id, std::move(record));
+  visible_node_map_.insert(node_id, std::move(record));
   is_result_invalidated_ = true;
 }
 
@@ -279,7 +279,7 @@ void TextRecordsManager::QueueToMeasurePaintTime(const DOMNodeId& node_id) {
 }
 
 bool TextRecordsManager::HasTooManyNodes() const {
-  return visible_node_map.size() + invisible_node_ids_.size() >=
+  return visible_node_map_.size() + invisible_node_ids_.size() >=
          kTextNodeNumberLimit;
 }
 
@@ -287,7 +287,7 @@ TextRecord* TextRecordsManager::FindLargestPaintCandidate() {
   // TODO(crbug/944248): An identified bug here is that the records with the
   // same size will be silently ignored by |size_ordered_set_|. This is what
   // causes these two sizes to be different.
-  DCHECK_EQ(visible_node_map.size(), size_ordered_set_.size());
+  DCHECK_EQ(visible_node_map_.size(), size_ordered_set_.size());
   if (!is_result_invalidated_)
     return cached_largest_paint_candidate_;
   TextRecord* new_largest_paint_candidate = nullptr;
@@ -297,9 +297,9 @@ TextRecord* TextRecordsManager::FindLargestPaintCandidate() {
     TextRecord* text_record = (*it).get();
     DCHECK(text_record);
     if (detached_ids_.Contains(text_record->node_id) ||
-        text_record->first_paint_time.is_null())
+        text_record->paint_time.is_null())
       continue;
-    DCHECK(visible_node_map.Contains(text_record->node_id));
+    DCHECK(visible_node_map_.Contains(text_record->node_id));
     new_largest_paint_candidate = text_record;
     break;
   }

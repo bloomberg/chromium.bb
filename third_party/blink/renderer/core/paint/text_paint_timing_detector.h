@@ -29,8 +29,8 @@ class TextRecord : public base::SupportsWeakPtr<TextRecord> {
 
   DOMNodeId node_id = kInvalidDOMNodeId;
   uint64_t first_size = 0;
-  // This is treated as unset.
-  base::TimeTicks first_paint_time = base::TimeTicks();
+  // The time of the first paint after fully loaded.
+  base::TimeTicks paint_time = base::TimeTicks();
 #ifndef NDEBUG
   String text = "";
 #endif
@@ -65,11 +65,11 @@ class TextRecordsManager {
   bool HasTooManyNodes() const;
   bool HasRecorded(const DOMNodeId&) const;
 
-  size_t CountVisibleNodes() const { return visible_node_map.size(); }
+  size_t CountVisibleNodes() const { return visible_node_map_.size(); }
   size_t CountInvisibleNodes() const { return invisible_node_ids_.size(); }
 
   bool IsKnownVisibleNode(const DOMNodeId& node_id) const {
-    return visible_node_map.Contains(node_id);
+    return visible_node_map_.Contains(node_id);
   }
 
  private:
@@ -77,12 +77,12 @@ class TextRecordsManager {
   // The result will be invalidated whenever any change is done to the variables
   // used in |FindLargestPaintCandidate|.
   bool is_result_invalidated_ = false;
-  HashMap<DOMNodeId, std::unique_ptr<TextRecord>> visible_node_map;
+  HashMap<DOMNodeId, std::unique_ptr<TextRecord>> visible_node_map_;
   HashSet<DOMNodeId> invisible_node_ids_;
   HashSet<DOMNodeId> detached_ids_;
-  // This is used to order the nodes in |visible_node_map| so that we can find
+  // This is used to order the nodes in |visible_node_map_| so that we can find
   // the largest node efficiently. Note that the entries in |size_ordered_set_|
-  // and |visible_node_map| should always be added/deleted together.
+  // and |visible_node_map_| should always be added/deleted together.
   TextRecordSet size_ordered_set_;
   std::queue<DOMNodeId> texts_queued_for_paint_time_;
   TextRecord* cached_largest_paint_candidate_;

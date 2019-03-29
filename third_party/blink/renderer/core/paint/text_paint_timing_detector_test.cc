@@ -40,7 +40,7 @@ class TextPaintTimingDetectorTest
   unsigned CountVisibleTexts() {
     return GetPaintTimingDetector()
                .GetTextPaintTimingDetector()
-               .records_manager_.visible_node_map.size() -
+               .records_manager_.visible_node_map_.size() -
            GetPaintTimingDetector()
                .GetTextPaintTimingDetector()
                .records_manager_.detached_ids_.size();
@@ -267,9 +267,9 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportFirstPaintTime) {
 
   TextRecord* record = TextRecordOfLargestTextPaint();
   EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(long_text));
-  TimeTicks firing_time = record->first_paint_time;
-  EXPECT_GE(firing_time, time1);
-  EXPECT_GE(time2, firing_time);
+  TimeTicks paint_time = record->paint_time;
+  EXPECT_GE(paint_time, time1);
+  EXPECT_GE(time2, paint_time);
 }
 
 TEST_F(TextPaintTimingDetectorTest,
