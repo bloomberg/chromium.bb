@@ -86,8 +86,10 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   if (send_tab_to_self::ShouldOfferFeature(
           tab_strip->profile(), tab_strip->GetWebContentsAt(index))) {
     base::RecordAction(UserMetricsAction("TabContextMenu_SendTabToSelf_Shown"));
-    AddItemWithStringId(TabStripModel::CommandSendTabToSelf,
-                        IDS_CONTEXT_MENU_SEND_TAB_TO_SELF);
+    AddSeparator(ui::NORMAL_SEPARATOR);
+    AddItemWithStringIdAndIcon(TabStripModel::CommandSendTabToSelf,
+                               IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
+                               *send_tab_to_self::GetImageSkia());
   }
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItem(TabStripModel::CommandCloseTab,

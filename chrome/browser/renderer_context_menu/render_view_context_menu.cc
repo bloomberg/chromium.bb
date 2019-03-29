@@ -1359,8 +1359,11 @@ void RenderViewContextMenu::AppendPageItems() {
           GetBrowser()->tab_strip_model()->GetActiveWebContents())) {
     base::RecordAction(
         UserMetricsAction("ViewContextMenu_SendTabToSelf_Shown"));
-    menu_model_.AddItemWithStringId(IDC_SEND_TAB_TO_SELF,
-                                    IDS_CONTEXT_MENU_SEND_TAB_TO_SELF);
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_.AddItemWithStringIdAndIcon(IDC_SEND_TAB_TO_SELF,
+                                           IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
+                                           *send_tab_to_self::GetImageSkia());
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
   if (TranslateService::IsTranslatableURL(params_.page_url)) {
     std::unique_ptr<translate::TranslatePrefs> prefs(

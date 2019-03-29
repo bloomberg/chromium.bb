@@ -13,6 +13,9 @@
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
 
 namespace send_tab_to_self {
@@ -35,6 +38,15 @@ void CreateNewEntry(content::WebContents* tab, Profile* profile) {
   } else {
     DesktopNotificationHandler(profile).DisplayFailureMessage(url);
   }
+}
+
+gfx::ImageSkia* GetImageSkia() {
+  const ui::NativeTheme* native_theme =
+      ui::NativeTheme::GetInstanceForNativeUi();
+  bool is_dark = native_theme && native_theme->SystemDarkModeEnabled();
+  int resource_id = is_dark ? IDR_SEND_TAB_TO_SELF_ICON_DARK
+                            : IDR_SEND_TAB_TO_SELF_ICON_LIGHT;
+  return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
 }
 
 }  // namespace send_tab_to_self

@@ -63,6 +63,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
@@ -1718,10 +1719,15 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
           location_bar_view_->profile(),
           location_bar_view_->GetWebContents())) {
     RecordSendTabToSelf(UmaEnumOmniboxSendTabToSelf::kShowItem);
-    int position = menu_contents->GetIndexOfCommandId(IDS_APP_UNDO);
-    menu_contents->InsertSeparatorAt(position, ui::NORMAL_SEPARATOR);
-    menu_contents->InsertItemWithStringIdAt(position, IDC_SEND_TAB_TO_SELF,
+    int index = menu_contents->GetIndexOfCommandId(IDS_APP_UNDO);
+    // Add a separator if this is not the first item.
+    if (index)
+      menu_contents->InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
+    menu_contents->InsertItemWithStringIdAt(index, IDC_SEND_TAB_TO_SELF,
                                             IDS_CONTEXT_MENU_SEND_TAB_TO_SELF);
+    menu_contents->SetIcon(index,
+                           gfx::Image(*send_tab_to_self::GetImageSkia()));
+    menu_contents->InsertSeparatorAt(++index, ui::NORMAL_SEPARATOR);
   }
 
   int paste_position = menu_contents->GetIndexOfCommandId(IDS_APP_PASTE);
