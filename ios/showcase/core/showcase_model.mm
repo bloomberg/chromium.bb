@@ -107,6 +107,11 @@
       showcase::kClassForInstantiationKey : @"SCOmniboxPopupCoordinator",
       showcase::kUseCaseKey : @"Omnibox popup table view",
     },
+    @{
+      showcase::kClassForDisplayKey : @"InfobarBannerViewController",
+      showcase::kClassForInstantiationKey : @"SCInfobarBannerCoordinator",
+      showcase::kUseCaseKey : @"Infobar Banner",
+    },
   ];
 }
 
