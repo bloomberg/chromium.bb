@@ -132,7 +132,7 @@
     {
       name: "OversizedImages",
       feature_policy_name: "oversized-images",
-      depends_on: ["ExperimentalProductivityFeatures"],
+      depends_on: ["UnoptimizedImagePolicies"],
     },
     {
       name: "Payment",
@@ -195,7 +195,7 @@
     {
       name: "UnoptimizedLossyImages",
       feature_policy_name: "unoptimized-lossy-images",
-      depends_on: ["ExperimentalProductivityFeatures"],
+      depends_on: ["UnoptimizedImagePolicies"],
     },
     {
       name: "UnsizedMedia",
