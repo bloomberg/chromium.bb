@@ -33,8 +33,43 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
+
+// An array of pairs of some sandbox flags and their corresponding
+// FeaturePolicies that implement them. Eventually almost all sandbox flags
+// should be converted to feature policies (https://crbug.com/812381).
+using SandboxFlagFeaturePolicyPairs =
+    Vector<std::pair<SandboxFlags, mojom::FeaturePolicyFeature>>;
+const SandboxFlagFeaturePolicyPairs& SandboxFlagsWithFeaturePolicies() {
+  DEFINE_STATIC_LOCAL(
+      SandboxFlagFeaturePolicyPairs, array,
+      ({{kSandboxTopNavigation, mojom::FeaturePolicyFeature::kTopNavigation},
+        {kSandboxForms, mojom::FeaturePolicyFeature::kFormSubmission},
+        {kSandboxScripts, mojom::FeaturePolicyFeature::kScript},
+        {kSandboxPopups, mojom::FeaturePolicyFeature::kPopups},
+        {kSandboxPointerLock, mojom::FeaturePolicyFeature::kPointerLock},
+        {kSandboxModals, mojom::FeaturePolicyFeature::kModals},
+        {kSandboxOrientationLock,
+         mojom::FeaturePolicyFeature::kOrientationLock},
+        {kSandboxPresentationController,
+         mojom::FeaturePolicyFeature::kPresentation}}));
+  return array;
+}
+
+// This returns a super mask which indicates the set of all flags that have
+// corresponding feature policies. With FeaturePolicyForSandbox, these flags
+// are always removed from the set of sandbox flags set for a sandboxed
+// <iframe> (those sandbox flags are now contained in the |ContainerPolicy|).
+SandboxFlags SandboxFlagsImplementedByFeaturePolicy() {
+  DEFINE_STATIC_LOCAL(SandboxFlags, mask, (kSandboxNone));
+  if (mask == kSandboxNone) {
+    for (const auto& pair : SandboxFlagsWithFeaturePolicies())
+      mask |= pair.first;
+  }
+  return mask;
+}
 
 SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
                                 String& invalid_tokens_error_message) {
@@ -95,40 +130,20 @@ SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
   return flags;
 }
 
+// Removes a certain set of flags from |sandbox_flags| for which we have feature
+// policies implemented.
+SandboxFlags GetSandboxFlagsNotImplementedAsFeaturePolicy(
+    SandboxFlags sandbox_flags) {
+  // Punch all the sandbox flags which are converted to feature policy.
+  return sandbox_flags & ~SandboxFlagsImplementedByFeaturePolicy();
+}
+
 void ApplySandboxFlagsToParsedFeaturePolicy(
     SandboxFlags sandbox_flags,
     ParsedFeaturePolicy& parsed_feature_policy) {
-  if ((sandbox_flags & kSandboxTopNavigation)) {
-    DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kTopNavigation,
-                                parsed_feature_policy);
-  }
-  if ((sandbox_flags & kSandboxForms)) {
-    DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kFormSubmission,
-                                parsed_feature_policy);
-  }
-  if ((sandbox_flags & kSandboxScripts)) {
-    DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kScript,
-                                parsed_feature_policy);
-  }
-  if ((sandbox_flags & kSandboxPopups)) {
-    DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kPopups,
-                                parsed_feature_policy);
-  }
-  if ((sandbox_flags & kSandboxPointerLock)) {
-    DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kPointerLock,
-                                parsed_feature_policy);
-  }
-  if ((sandbox_flags & kSandboxModals)) {
-    DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kModals,
-                                parsed_feature_policy);
-  }
-  if ((sandbox_flags & kSandboxOrientationLock)) {
-    DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kOrientationLock,
-                                parsed_feature_policy);
-  }
-  if ((sandbox_flags & kSandboxPresentationController)) {
-    DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kPresentation,
-                                parsed_feature_policy);
+  for (const auto& pair : SandboxFlagsWithFeaturePolicies()) {
+    if (sandbox_flags & pair.first)
+      DisallowFeatureIfNotPresent(pair.second, parsed_feature_policy);
   }
 }
 

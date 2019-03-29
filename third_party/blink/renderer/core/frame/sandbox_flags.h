@@ -70,6 +70,11 @@ typedef int SandboxFlags;
 SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
                                 String& invalid_tokens_error_message);
 
+// With FeaturePolicyForSandbox most sandbox flags will be represented with
+// features. This method returns the part of sandbox flags which were not mapped
+// to corresponding features.
+SandboxFlags GetSandboxFlagsNotImplementedAsFeaturePolicy(SandboxFlags);
+
 // Applies the sandbox flags as parsed feature policies; If a flag is present
 // both in the provided flags and in the parsed feature as a feature policy,
 // the parsed policy takes precedence.

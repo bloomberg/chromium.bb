@@ -147,9 +147,26 @@ void HTMLIFrameElement::ParseAttribute(
   } else if (name == kSandboxAttr) {
     sandbox_->DidUpdateAttributeValue(params.old_value, value);
     String invalid_tokens;
-    SetSandboxFlags(value.IsNull() ? kSandboxNone
-                                   : ParseSandboxPolicy(sandbox_->TokenSet(),
-                                                        invalid_tokens));
+    bool feature_policy_for_sandbox =
+        RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled();
+    SandboxFlags current_flags =
+        value.IsNull()
+            ? kSandboxNone
+            : ParseSandboxPolicy(sandbox_->TokenSet(), invalid_tokens);
+    // With FeaturePolicyForSandbox, sandbox flags are represented as part of
+    // the container policies. However, not all sandbox flags are yet converted
+    // and for now the residue will stay around in the stored flags.
+    // (see https://crbug.com/812381).
+    SandboxFlags sandbox_to_set = current_flags;
+    sandbox_flags_converted_to_feature_policies_ = kSandboxNone;
+    if (feature_policy_for_sandbox && current_flags != kSandboxNone) {
+      // The part of sandbox which will be mapped to feature policies.
+      sandbox_flags_converted_to_feature_policies_ = current_flags;
+      // Residue sandbox which will not be mapped to feature policies.
+      sandbox_to_set =
+          GetSandboxFlagsNotImplementedAsFeaturePolicy(current_flags);
+    }
+    SetSandboxFlags(sandbox_to_set);
     if (!invalid_tokens.IsNull()) {
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
           mojom::ConsoleMessageSource::kOther,
@@ -268,12 +285,12 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
   // Next, process sandbox flags. These all only take effect if a corresponding
   // policy does *not* exist in the allow attribute's value.
   if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
-    SandboxFlags sandbox_flags = GetSandboxFlags();
-
     // If the frame is sandboxed at all, then warn if feature policy attributes
     // will override the sandbox attributes.
-    if (messages && (sandbox_flags & kSandboxNavigation)) {
-      if (!(sandbox_flags & kSandboxForms) &&
+    // TODO(ekaramad): Add similar messages for all the converted sandbox flags.
+    if (messages &&
+        (sandbox_flags_converted_to_feature_policies_ & kSandboxNavigation)) {
+      if (!(sandbox_flags_converted_to_feature_policies_ & kSandboxForms) &&
           IsFeatureDeclared(mojom::FeaturePolicyFeature::kFormSubmission,
                             container_policy)) {
         messages->push_back(
@@ -281,7 +298,8 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
             "precedence.");
       }
     }
-    ApplySandboxFlagsToParsedFeaturePolicy(sandbox_flags, container_policy);
+    ApplySandboxFlagsToParsedFeaturePolicy(
+        sandbox_flags_converted_to_feature_policies_, container_policy);
   }
 
   // Finally, process the allow* attribuets. Like sandbox attributes, they only
