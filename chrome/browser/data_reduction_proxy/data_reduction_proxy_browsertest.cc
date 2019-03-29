@@ -253,6 +253,10 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, ChromeProxyHeaderSet) {
   std::string body = GetBody();
   EXPECT_THAT(body, HasSubstr(kSessionKey));
   EXPECT_THAT(body, HasSubstr("pid="));
+  EXPECT_THAT(body, HasSubstr("s="));
+  EXPECT_THAT(body, HasSubstr("c="));
+  EXPECT_THAT(body, HasSubstr("b="));
+  EXPECT_THAT(body, HasSubstr("p="));
 }
 
 // Gets the response body for an XHR to |url| (as seen by the renderer).
@@ -303,6 +307,10 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
 
   EXPECT_THAT(result, HasSubstr(kSessionKey));
   EXPECT_THAT(result, Not(HasSubstr("pid=")));
+  EXPECT_THAT(result, HasSubstr("s="));
+  EXPECT_THAT(result, HasSubstr("c="));
+  EXPECT_THAT(result, HasSubstr("b="));
+  EXPECT_THAT(result, HasSubstr("p="));
 }
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, ChromeProxyEctHeaderSet) {

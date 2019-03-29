@@ -204,8 +204,9 @@ class Video(IntegrationTest):
             video_etag = rh['etag']
           else:
             self.assertEqual(video_etag, rh['etag'])
-          if ('range' in response.request_headers and
-              response.request_headers['range'] != 'bytes=0-'):
+          if ('status' in rh and rh['status']=='206' and 'content-range' in rh
+              and rh['content-range'].startswith('bytes ') and
+              not rh['content-range'].startswith('bytes 0-')):
             num_partial_requests += 1
       # Also make sure that we had at least one partial Range request.
       self.assertGreaterEqual(num_partial_requests, 1)
