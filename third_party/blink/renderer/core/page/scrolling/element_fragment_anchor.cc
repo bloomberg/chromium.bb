@@ -104,7 +104,7 @@ ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
     target->DispatchActivateInvisibleEventIfNeeded();
   }
 
-  if (doc.IsSVGDocument() && !frame.IsMainFrame())
+  if (doc.IsSVGDocument() && (!frame.IsMainFrame() || !target))
     return nullptr;
 
   if (!anchor_node)
