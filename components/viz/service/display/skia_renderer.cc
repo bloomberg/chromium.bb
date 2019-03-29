@@ -768,6 +768,9 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
   // TODO(michaelludwig): By the end of the Skia API update, this switch will
   // hold all quad draw types and resemble the old DoDrawSingleQuad.
   switch (quad->material) {
+    case DrawQuad::DEBUG_BORDER:
+      DrawDebugBorderQuad(DebugBorderDrawQuad::MaterialCast(quad), params);
+      break;
     case DrawQuad::SOLID_COLOR:
       DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad), params);
       break;
@@ -998,6 +1001,33 @@ void SkiaRenderer::DrawSingleImage(const DrawQuadParams& params,
                                                    nullptr, paint);
 }
 
+void SkiaRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
+                                       const DrawQuadParams& params) {
+  DCHECK(batched_quads_.empty());
+
+  SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
+  // We need to apply the matrix manually to have pixel-sized stroke width.
+  PrepareCanvas(params.has_scissor_rect ? &scissor_rect_ : nullptr, nullptr);
+  SkMatrix cdt;
+  gfx::TransformToFlattenedSkMatrix(params.content_device_transform, &cdt);
+
+  SkPath path;
+  if (params.draw_region.has_value()) {
+    path.addPoly(params.draw_region->points, 4, true /* close */);
+  } else {
+    path.addRect(gfx::RectFToSkRect(params.visible_rect));
+  }
+  path.transform(cdt);
+
+  SkPaint paint = params.paint();
+  paint.setColor(quad->color);  // Must correct alpha afterwards
+  paint.setAlphaf(params.opacity * paint.getAlphaf());
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeJoin(SkPaint::kMiter_Join);
+  paint.setStrokeWidth(quad->width);
+  current_canvas_->drawPath(path, paint);
+}
+
 void SkiaRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
                                       const DrawQuadParams& params) {
   DrawColoredQuad(params, quad->color);
@@ -1215,7 +1245,7 @@ void SkiaRenderer::DoSingleDrawQuad(const DrawQuad* quad,
 
   switch (quad->material) {
     case DrawQuad::DEBUG_BORDER:
-      DrawDebugBorderQuad(DebugBorderDrawQuad::MaterialCast(quad), &paint);
+      NOTREACHED();
       break;
     case DrawQuad::PICTURE_CONTENT:
       DrawPictureQuad(PictureDrawQuad::MaterialCast(quad), &paint);
@@ -1285,25 +1315,6 @@ void SkiaRenderer::PrepareCanvasForDrawQuads(
     draw_region_clip_path.addPoly(clip_points, 4, true);
     current_canvas_->clipPath(draw_region_clip_path);
   }
-}
-
-void SkiaRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
-                                       SkPaint* paint) {
-  DCHECK(paint);
-  // We need to apply the matrix manually to have pixel-sized stroke width.
-  SkPoint vertices[4];
-  gfx::RectToSkRect(quad->rect).toQuad(vertices);
-  SkPoint transformed_vertices[4];
-  current_canvas_->getTotalMatrix().mapPoints(transformed_vertices, vertices,
-                                              4);
-  current_canvas_->resetMatrix();
-
-  paint->setColor(quad->color);
-  paint->setAlpha(quad->shared_quad_state->opacity * SkColorGetA(quad->color));
-  paint->setStyle(SkPaint::kStroke_Style);
-  paint->setStrokeWidth(quad->width);
-  current_canvas_->drawPoints(SkCanvas::kPolygon_PointMode, 4,
-                              transformed_vertices, *paint);
 }
 
 void SkiaRenderer::DrawPictureQuad(const PictureDrawQuad* quad,
