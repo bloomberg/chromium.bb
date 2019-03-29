@@ -739,14 +739,22 @@ void KeyboardController::ShowKeyboardInDisplay(
 }
 
 void KeyboardController::LoadKeyboardWindowInBackground() {
-  // ShowKeyboardInternal may trigger RootControllerWindow::ActiveKeyboard which
-  // will cause LoadKeyboardWindowInBackground to potentially run even though
-  // the keyboard has been initialized.
-  if (state_ != KeyboardControllerState::INITIAL)
-    return;
+  DCHECK_EQ(state_, KeyboardControllerState::INITIAL);
 
-  PopulateKeyboardContent(layout_delegate_->GetContainerForDefaultDisplay(),
-                          false);
+  TRACE_EVENT0("vk", "LoadKeyboardWindowInBackground");
+
+  // For now, using Unretained is safe here because the |ui_| is owned by
+  // |this| and the callback does not outlive |ui_|.
+  // TODO(https://crbug.com/845780): Use a weak ptr here in case this
+  // assumption changes.
+  DVLOG(1) << "LoadKeyboardWindow";
+  aura::Window* keyboard_window = ui_->LoadKeyboardWindow(base::BindOnce(
+      &KeyboardController::NotifyKeyboardWindowLoaded, base::Unretained(this)));
+  keyboard_window->AddPreTargetHandler(&event_filter_);
+  keyboard_window->AddObserver(this);
+  parent_container_->AddChild(keyboard_window);
+
+  ChangeState(KeyboardControllerState::LOADING_EXTENSION);
 }
 
 ui::InputMethod* KeyboardController::GetInputMethodForTest() {
@@ -872,31 +880,16 @@ void KeyboardController::OnShowVirtualKeyboardIfEnabled() {
 
 void KeyboardController::ShowKeyboardInternal(aura::Window* target_container) {
   MarkKeyboardLoadStarted();
-  PopulateKeyboardContent(target_container, true);
+  PopulateKeyboardContent(target_container);
   UpdateInputMethodObserver();
 }
 
-void KeyboardController::PopulateKeyboardContent(aura::Window* target_container,
-                                                 bool show_keyboard) {
-  DCHECK(show_keyboard || state_ == KeyboardControllerState::INITIAL);
+void KeyboardController::PopulateKeyboardContent(
+    aura::Window* target_container) {
+  DCHECK_NE(state_, KeyboardControllerState::INITIAL);
 
   DVLOG(1) << "PopulateKeyboardContent: " << StateToStr(state_);
   TRACE_EVENT0("vk", "PopulateKeyboardContent");
-
-  if (parent_container_->children().empty()) {
-    DCHECK_EQ(state_, KeyboardControllerState::INITIAL);
-    // For now, using Unretained is safe here because the |ui_| is owned by
-    // |this| and the callback does not outlive |ui_|.
-    // TODO(https://crbug.com/845780): Use a weak ptr here in case this
-    // assumption changes.
-    DVLOG(1) << "LoadKeyboardWindow";
-    aura::Window* keyboard_window = ui_->LoadKeyboardWindow(
-        base::BindOnce(&KeyboardController::NotifyKeyboardWindowLoaded,
-                       base::Unretained(this)));
-    keyboard_window->AddPreTargetHandler(&event_filter_);
-    keyboard_window->AddObserver(this);
-    parent_container_->AddChild(keyboard_window);
-  }
 
   MoveToParentContainer(target_container);
 
@@ -908,7 +901,7 @@ void KeyboardController::PopulateKeyboardContent(aura::Window* target_container,
     case KeyboardControllerState::SHOWN:
       return;
     case KeyboardControllerState::LOADING_EXTENSION:
-      show_on_keyboard_window_load_ |= show_keyboard;
+      show_on_keyboard_window_load_ = true;
       return;
     default:
       break;
@@ -916,14 +909,9 @@ void KeyboardController::PopulateKeyboardContent(aura::Window* target_container,
 
   ui_->ReloadKeyboardIfNeeded();
 
-  SetTouchEventLogging(!show_keyboard /* enable */);
+  SetTouchEventLogging(false /* enable */);
 
   switch (state_) {
-    case KeyboardControllerState::INITIAL:
-      DCHECK(!IsKeyboardVisible());
-      show_on_keyboard_window_load_ = show_keyboard;
-      ChangeState(KeyboardControllerState::LOADING_EXTENSION);
-      return;
     case KeyboardControllerState::WILL_HIDE:
       ChangeState(KeyboardControllerState::SHOWN);
       return;
