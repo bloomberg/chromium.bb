@@ -490,18 +490,6 @@ ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
   return UpdateImageResult::kNoDecodeError;
 }
 
-// Return true if the image type is one of the hard-coded 'modern' image
-// formats.
-// TODO(crbug.com/838263): Support site-defined list of acceptable formats
-// through feature policy declarations.
-bool ImageResourceContent::IsAcceptableContentType() {
-  AtomicString mime_type = GetResponse().HttpContentType();
-  // If this was loaded from disk, there is no mime type. Return true for now.
-  if (mime_type.IsNull())
-    return true;
-  return MIMETypeRegistry::IsModernImageMIMEType(mime_type);
-}
-
 // Return true if the image content is well-compressed (and not full of
 // extraneous metadata). "well-compressed" is determined by comparing the
 // image's compression ratio against a specific value that is defined by an

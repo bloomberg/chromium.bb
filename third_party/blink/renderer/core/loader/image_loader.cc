@@ -102,27 +102,10 @@ bool IsLazyLoadableImage(const LocalFrame* frame,
   return true;
 }
 
-bool CheckForOptimizedImagePolicy(const Document& document,
-                                  ImageResourceContent* new_image) {
+bool CheckForUnoptimizedImagePolicy(const Document& document,
+                                    ImageResourceContent* new_image) {
   if (!new_image)
     return false;
-  // Render the image as a placeholder image if the document does not have the
-  // 'legacy-image-formats' feature enabled, and the image is not one of the
-  // allowed formats.
-  if (!new_image->IsAcceptableContentType()) {
-    // If the image violates the 'legacy-image-formats' policy, record violation
-    // Blink.UseCounter.FeaturePolicy.PotentialVioation. Note that violation
-    // report is up to once per page load.
-    document.CountPotentialFeaturePolicyViolation(
-        mojom::FeaturePolicyFeature::kLegacyImageFormats);
-    // Check if 'legacy-image-formats' policy is disallowed by feature policy.
-    if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-        !document.IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kLegacyImageFormats,
-            ReportOptions::kReportOnFailure)) {
-      return true;
-    }
-  }
 
   // Render the image as a placeholder image if the image is not sufficiently
   // well-compressed, according to the unoptimized image feature policies on
@@ -798,10 +781,10 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
     }
   }
 
-  // TODO(loonybear): support image policies on  other images in addition to
+  // TODO(loonybear): support image policies on other images in addition to
   // HTMLImageElement.
   // crbug.com/930281
-  if (CheckForOptimizedImagePolicy(element_->GetDocument(), image_content_) &&
+  if (CheckForUnoptimizedImagePolicy(element_->GetDocument(), image_content_) &&
       IsHTMLImageElement(element_))
     ToHTMLImageElement(element_)->SetImagePolicyViolated();
 

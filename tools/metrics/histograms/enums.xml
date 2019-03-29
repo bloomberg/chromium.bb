@@ -22645,6 +22645,9 @@ Called by update_net_error_codes.py.-->
 <enum name="FeaturePolicyFeature">
 <!-- Generated from third_party/blink/public/mojom/feature_policy/feature_policy.mojom.-->
 
+<!-- Obsolete / deprecated features in this enum should be prefixed with
+"Deprecated: " -->
+
   <int value="0" label="NotFound"/>
   <int value="1" label="Autoplay"/>
   <int value="2" label="Camera"/>
@@ -22667,7 +22670,7 @@ Called by update_net_error_codes.py.-->
   <int value="19" label="Gyroscope"/>
   <int value="20" label="Magnetometer"/>
   <int value="21" label="UnsizedMedia"/>
-  <int value="22" label="LegacyImageFormats"/>
+  <int value="22" label="Deprecated: LegacyImageFormats"/>
   <int value="23" label="Deprecated: UnoptimizedImages"/>
   <int value="24" label="Animations"/>
   <int value="25" label="OversizedImages"/>

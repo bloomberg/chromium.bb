@@ -17,7 +17,6 @@ hid
 idle-detection
 layout-animations
 lazyload
-legacy-image-formats
 magnetometer
 microphone
 midi
