@@ -549,8 +549,8 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 #endif  // !defined(OS_ANDROID)
     case syncer::HISTORY_DELETE_DIRECTIVES: {
       history::HistoryService* history = GetHistoryService();
-      return history ? history->AsWeakPtr()
-                     : base::WeakPtr<history::HistoryService>();
+      return history ? history->GetDeleteDirectivesSyncableService()
+                     : base::WeakPtr<syncer::SyncableService>();
     }
 #if BUILDFLAG(ENABLE_SPELLCHECK)
     case syncer::DICTIONARY:

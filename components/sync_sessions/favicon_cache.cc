@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/time.h"
 #include "components/sync/protocol/favicon_image_specifics.pb.h"
 #include "components/sync/protocol/favicon_tracking_specifics.pb.h"
