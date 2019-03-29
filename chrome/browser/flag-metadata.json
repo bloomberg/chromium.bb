@@ -34,7 +34,7 @@
   },
   {
     "name": "BundledConnectionHelp",
-    // "owners": [ "your-team" ],
+    "owners": [ "carlosil" ],
     "expiry_milestone": 76
   },
   {
@@ -44,8 +44,8 @@
   },
   {
     "name": "SupervisedUserCommittedInterstitials",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "carlosil" ],
+    "expiry_milestone": 77
   },
   {
     "name": "account-consistency",
