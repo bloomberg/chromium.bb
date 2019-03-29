@@ -18,6 +18,7 @@
 #include "ash/host/root_window_transformer.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
@@ -248,7 +249,8 @@ void WindowTreeHostManager::Shutdown() {
 void WindowTreeHostManager::CreatePrimaryHost(
     const AshWindowTreeHostInitParams& init_params) {
   auto* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(
+  if (!features::ShouldUseShaderRoundedCorner() &&
+      !command_line->HasSwitch(
           switches::kUiCompositorMemoryLimitWhenVisibleMB)) {
     command_line->AppendSwitchASCII(
         switches::kUiCompositorMemoryLimitWhenVisibleMB,
