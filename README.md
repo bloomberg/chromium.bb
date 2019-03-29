@@ -158,7 +158,7 @@ the build flags available.
   ./out/Default/unittests
 ```
 
-## Continuous build and try jobs 
+## Continuous build and try jobs
 
 openscreen uses [LUCI builders](https://ci.chromium.org/p/openscreen/builders)
 to monitor the build and test health of the library.  Current builders include:
@@ -195,7 +195,7 @@ committed changes locally, simply run:
 ```
 
 This will run our `PRESUBMIT.sh` script to check style, and if it passes, a new
-code review will be posted on `chromium-review.googlesource.com`. 
+code review will be posted on `chromium-review.googlesource.com`.
 
 If you make additional commits to your local branch, then running `git cl
 upload` again in the same branch will merge those commits into the ongoing
@@ -234,3 +234,16 @@ After your patch has received one or more LGTM commit it by clicking the
 `SUBMIT` button (or, confusingly, `COMMIT QUEUE +2`) in Gerrit.  This will run
 your patch through the builders again before committing to the main openscreen
 repository.
+
+## Chromium Build Differences
+
+Currently, openscreen is also built in Chromium, with some build differences.
+The files that are built are determined by the following build variables:
+ - `build_with_chromium`: `true` when building as part of a Chromium checkout,
+ `false` otherwise.  Set by `//build_overrides/build.gni`.
+ - `use_mdns_responder`: `true` by default, `false` when `build_with_chromium`
+ is `true`.  Controls whether the default mDNSResponder mDNS implementation is
+ used.  Set by `//build/config/services.gni`.
+ - `use_chromium_quic`: `true` by default, `false` when `build_with_chromium`
+ is `true`.  Controls whether the Chromium QUIC implementation clone is used.
+ Set by `//build/config/services.gni`.

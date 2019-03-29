@@ -9,12 +9,12 @@
 #include <memory>
 #include <string>
 
+#include "absl/types/optional.h"
 #include "api/public/presentation/presentation_connection.h"
 #include "api/public/protocol_connection.h"
 #include "api/public/service_listener.h"
 #include "base/error.h"
 #include "platform/api/time.h"
-#include "third_party/abseil/src/absl/types/optional.h"
 
 namespace openscreen {
 namespace presentation {

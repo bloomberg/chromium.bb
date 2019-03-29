@@ -12,9 +12,9 @@
 #include <sstream>
 #include <vector>
 
+#include "absl/strings/ascii.h"
+#include "absl/strings/match.h"
 #include "platform/api/logging.h"
-#include "third_party/abseil/src/absl/strings/ascii.h"
-#include "third_party/abseil/src/absl/strings/match.h"
 
 static_assert(sizeof(absl::string_view::size_type) == sizeof(size_t),
               "We assume string_view's size_type is the same as size_t. If "

@@ -2,16 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("../../build/config/services.gni")
+
 source_set("impl") {
   sources = [
-    "internal_services.cc",
-    "internal_services.h",
     "mdns_platform_service.cc",
     "mdns_platform_service.h",
-    "mdns_responder_service.cc",
-    "mdns_responder_service.h",
-    "mdns_service_listener_factory.cc",
-    "mdns_service_publisher_factory.cc",
     "network_service_manager.cc",
     "presentation/presentation_common.cc",
     "presentation/presentation_common.h",
@@ -28,34 +24,48 @@ source_set("impl") {
     "service_publisher_impl.h",
   ]
 
+  if (use_mdns_responder) {
+    sources += [
+      "internal_services.cc",
+      "internal_services.h",
+      "mdns_responder_service.cc",
+      "mdns_responder_service.h",
+      "mdns_service_listener_factory.cc",
+      "mdns_service_publisher_factory.cc",
+    ]
+  }
+
   public_deps = [
+    "../../msgs",
     "../public:api",
-    "//msgs",
   ]
   deps = [
+    "../../base",
+    "../../platform",
     "quic",
-    "//base",
-    "//platform",
   ]
+  configs += [ "../..:root_config_overrides" ]
 }
 
-source_set("chromium_quic_integration") {
-  sources = [
-    "protocol_connection_client_factory.cc",
-    "protocol_connection_server_factory.cc",
-    "quic/quic_connection_factory_impl.cc",
-    "quic/quic_connection_factory_impl.h",
-    "quic/quic_connection_impl.cc",
-    "quic/quic_connection_impl.h",
-  ]
+if (use_chromium_quic) {
+  source_set("chromium_quic_integration") {
+    sources = [
+      "protocol_connection_client_factory.cc",
+      "protocol_connection_server_factory.cc",
+      "quic/quic_connection_factory_impl.cc",
+      "quic/quic_connection_factory_impl.h",
+      "quic/quic_connection_impl.cc",
+      "quic/quic_connection_impl.h",
+    ]
 
-  public_configs = [ "//third_party/chromium_quic:chromium_quic_config" ]
+    public_configs = [ "//third_party/chromium_quic:chromium_quic_config" ]
 
-  deps = [
-    "quic",
-    "//base",
-    "//msgs",
-    "//platform",
-    "//third_party/chromium_quic",
-  ]
+    deps = [
+      "quic",
+      "//base",
+      "//msgs",
+      "//platform",
+      "//third_party/chromium_quic",
+    ]
+  }
 }

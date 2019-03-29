@@ -23,10 +23,10 @@
 #include <algorithm>
 #include <cstring>
 
+#include "absl/strings/string_view.h"
 #include "base/ip_address.h"
 #include "base/scoped_pipe.h"
 #include "platform/api/logging.h"
-#include "third_party/abseil/src/absl/strings/string_view.h"
 
 namespace openscreen {
 namespace platform {

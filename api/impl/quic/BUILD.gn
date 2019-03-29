@@ -16,9 +16,10 @@ source_set("quic") {
 
   deps = [
     "../../public:api",
-    "//base",
-    "//platform",
+    "../../../base",
+    "../../../platform",
   ]
+  configs += [ "../../..:root_config_overrides" ]
 }
 
 source_set("test_support") {
@@ -33,9 +34,10 @@ source_set("test_support") {
   ]
 
   deps = [
-    "//base",
-    "//msgs",
-    "//platform",
+    "../../../base",
+    "../../../msgs",
+    "../../../platform",
     "//third_party/googletest:gmock",
   ]
+  configs += [ "../../..:root_config_overrides" ]
 }

@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "third_party/abseil/src/absl/strings/string_view.h"
+#include "absl/strings/string_view.h"
 
 struct AstNode {
   // These types all correspond to types in the grammar, which can be found in

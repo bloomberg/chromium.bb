@@ -11,13 +11,13 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "api/public/message_demuxer.h"
 #include "base/ip_address.h"
 #include "base/macros.h"
 #include "platform/api/logging.h"
 #include "platform/api/time.h"
-#include "third_party/abseil/src/absl/strings/string_view.h"
-#include "third_party/abseil/src/absl/types/optional.h"
 
 namespace openscreen {
 

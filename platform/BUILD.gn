@@ -16,29 +16,23 @@ source_set("platform") {
     "api/network_interface.h",
     "api/socket.h.",
     "api/time.h",
-    "base/event_loop.cc",  # TODO: separate API from impl.
-    "base/event_loop.h",  # TODO: separate API from impl.
+    "base/event_loop.cc",
+    "base/event_loop.h",
+    "base/time.cc",
   ]
 
+  deps = []
   public_deps = [
-    "//base",
-    "//third_party/abseil",
+    "../base",
+    "../third_party/abseil",
   ]
+  configs += [ "..:root_config_overrides" ]
 
   if (build_with_chromium) {
-    sources += [
-      "chromium/event_waiter.cc",
-      "chromium/logging.cc",
-      "chromium/network_interface.cc",
-      "chromium/socket.cc",
-      "chromium/socket.h",
-      "chromium/time.cc",
-    ]
+    deps += [ ":chromium" ]
+    public_deps += [ "//base" ]
   } else {  # !build_with_chromium
-    sources += [
-      "base/logging.cc",
-      "base/time.cc",
-    ]
+    sources += [ "base/logging.cc" ]
 
     if (is_linux) {
       sources += [ "linux/network_interface.cc" ]
@@ -61,6 +55,21 @@ source_set("platform") {
   }
 }
 
+if (build_with_chromium) {
+  source_set("chromium") {
+    sources = [
+      "chromium/logging.cc",
+    ]
+
+    deps = [
+      "../third_party/abseil",
+      "//base",
+    ]
+
+    configs += [ "..:root_config_overrides" ]
+  }
+}
+
 source_set("platform_unittests") {
   testonly = true
 
@@ -78,4 +87,6 @@ source_set("platform_unittests") {
     ":platform",
     "//third_party/googletest:gtest",
   ]
+
+  configs += [ "..:root_config_overrides" ]
 }

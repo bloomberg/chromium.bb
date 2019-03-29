@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "third_party/abseil/src/absl/types/optional.h"
+#include "absl/types/optional.h"
 
 // Convert '-' to '_' to use a CDDL identifier as a C identifier.
 std::string ToUnderscoreId(const std::string& x) {

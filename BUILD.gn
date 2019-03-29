@@ -2,47 +2,91 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build_overrides/build.gni")
+import("build/config/services.gni")
+
+config("root_config_overrides") {
+  if (build_with_chromium) {
+    include_dirs = [ "." ]
+  }
+}
+
 # All compilable non-test targets in the repository (both executables and
 # source_sets).
 group("gn_all") {
   deps = [
-    "//api",
-    "//base",
-    "//discovery/mdns:embedder_demo",
-    "//platform",
-    "//sample:hello",
-    "//third_party/abseil",
-    "//third_party/chromium_quic",
-    "//third_party/chromium_quic:demo_client",
-    "//third_party/chromium_quic:demo_server",
-    "//third_party/tinycbor",
-    "//tools/cddl",
+    "api",
+    "base",
+    "msgs",
+    "platform",
+    "sample:hello",
+    "third_party/abseil",
+    "third_party/tinycbor",
+    "tools/cddl",
   ]
+
+  if (use_mdns_responder) {
+    deps += [ "discovery/mdns:embedder_demo" ]
+  }
+
+  if (use_chromium_quic) {
+    deps += [
+      "third_party/chromium_quic",
+      "third_party/chromium_quic:demo_client",
+      "third_party/chromium_quic:demo_server",
+    ]
+  }
 }
 
-executable("demo") {
-  sources = [
-    "//demo/demo.cc",
-  ]
-
-  deps = [
-    "//api:api_with_chromium_quic",
-    "//base",
-    "//discovery/mdns",
-    "//platform",
-  ]
-}
-
-executable("unittests") {
+executable("openscreen_unittests") {
   testonly = true
   deps = [
-    "//api:api_unittests",
-    "//base:base_unittests",
-    "//discovery/mdns:mdns_unittests",
-    "//msgs:unittests",
-    "//platform:platform_unittests",
-    "//sample:hello_unittests",
-    "//third_party/abseil",
+    "api:api_unittests",
+    "base:base_unittests",
+    "discovery/mdns:mdns_unittests",
+    "msgs:unittests",
+    "platform:platform_unittests",
+    "sample:hello_unittests",
+    "third_party/abseil",
     "//third_party/googletest:gtest_main",
   ]
+}
+
+if (!build_with_chromium) {
+  # TODO(btolsch): This is to keep the openscreen bots happy with a `unittests`
+  # target and executable.  Remove this after the bot recipe can be updated.
+  group("unittests") {
+    testonly = true
+    deps = [
+      ":openscreen_unittests",
+    ]
+  }
+
+  copy("unittests_rename") {
+    testonly = true
+    sources = [
+      "$root_out_dir/openscreen_unittests",
+    ]
+    outputs = [
+      "$root_out_dir/unittests",
+    ]
+    deps = [
+      ":openscreen_unittests",
+    ]
+  }
+}
+
+if (use_chromium_quic && use_mdns_responder) {
+  executable("demo") {
+    sources = [
+      "demo/demo.cc",
+    ]
+
+    deps = [
+      "api:api_with_chromium_quic",
+      "base",
+      "discovery/mdns",
+      "platform",
+    ]
+  }
 }

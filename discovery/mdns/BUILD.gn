@@ -2,36 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-executable("embedder_demo") {
-  sources = [
-    "embedder_demo.cc",
-  ]
+import("../../build/config/services.gni")
 
-  deps = [
-    ":mdns",
-  ]
-}
-
-source_set("mdns") {
+source_set("mdns_interface") {
   sources = [
     "domain_name.cc",
     "domain_name.h",
     "mdns_responder_adapter.cc",
     "mdns_responder_adapter.h",
-    "mdns_responder_adapter_impl.cc",
-    "mdns_responder_adapter_impl.h",
-    "mdns_responder_platform.cc",
-    "mdns_responder_platform.h",
   ]
 
   public_deps = [
-    "//base",
-    "//platform",
+    "../../base",
+    "../../platform",
   ]
-
-  deps = [
-    "//third_party/mDNSResponder:core",
-  ]
+  configs += [ "../..:root_config_overrides" ]
 }
 
 source_set("mdns_unittests") {
@@ -39,12 +24,48 @@ source_set("mdns_unittests") {
 
   sources = [
     "domain_name_unittest.cc",
-    "mdns_responder_adapter_impl_unittest.cc",
   ]
 
   deps = [
-    ":mdns",
+    ":mdns_interface",
     "//third_party/googletest:gmock",
     "//third_party/googletest:gtest",
   ]
+  configs += [ "../..:root_config_overrides" ]
+
+  if (use_mdns_responder) {
+    sources += [ "mdns_responder_adapter_impl_unittest.cc" ]
+    deps += [ ":mdns" ]
+  }
+}
+
+if (use_mdns_responder) {
+  executable("embedder_demo") {
+    sources = [
+      "embedder_demo.cc",
+    ]
+
+    deps = [
+      ":mdns",
+    ]
+  }
+
+  source_set("mdns") {
+    sources = [
+      "mdns_responder_adapter_impl.cc",
+      "mdns_responder_adapter_impl.h",
+      "mdns_responder_platform.cc",
+      "mdns_responder_platform.h",
+    ]
+
+    public_deps = [
+      ":mdns_interface",
+      "../../base",
+      "../../platform",
+    ]
+
+    deps = [
+      "../../third_party/mDNSResponder:core",
+    ]
+  }
 }

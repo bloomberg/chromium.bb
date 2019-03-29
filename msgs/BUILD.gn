@@ -12,17 +12,18 @@ source_set("msgs") {
     ":cddl_gen",
   ]
   deps = [
-    "//third_party/abseil",
-    "//third_party/tinycbor",
+    "../third_party/abseil",
+    "../third_party/tinycbor",
   ]
+  configs += [ "..:root_config_overrides" ]
 }
 
 config("cddl_gen_config") {
-  include_dirs = [ "$root_gen_dir" ]
+  include_dirs = [ "$root_gen_dir" + "/" + rebase_path("..", "//") ]
 }
 
 action("cddl_gen") {
-  script = "//tools/cddl/cddl.py"
+  script = "../tools/cddl/cddl.py"
   sources = [
     "osp_messages.cddl",
   ]
@@ -47,7 +48,7 @@ action("cddl_gen") {
          ] + rebase_path(sources, root_build_dir)
 
   deps = [
-    "//tools/cddl",
+    "../tools/cddl",
   ]
 }
 
@@ -62,4 +63,5 @@ source_set("unittests") {
     ":msgs",
     "//third_party/googletest:gtest",
   ]
+  configs += [ "..:root_config_overrides" ]
 }

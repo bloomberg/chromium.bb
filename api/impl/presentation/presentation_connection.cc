@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "absl/strings/string_view.h"
 #include "api/impl/presentation/presentation_common.h"
 #include "api/public/network_service_manager.h"
 #include "api/public/presentation/presentation_controller.h"
@@ -15,7 +16,6 @@
 #include "base/std_util.h"
 #include "msgs/osp_messages.h"
 #include "platform/api/logging.h"
-#include "third_party/abseil/src/absl/strings/string_view.h"
 
 // TODO(issue/27): Address TODOs in this file
 namespace openscreen {

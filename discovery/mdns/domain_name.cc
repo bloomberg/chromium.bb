@@ -87,7 +87,7 @@ Error DomainName::Append(const DomainName& after) {
 }
 
 std::vector<std::string> DomainName::GetLabels() const {
-  OSP_DCHECK_GT(domain_name_.size(), 0);
+  OSP_DCHECK_GT(domain_name_.size(), 0u);
   std::vector<std::string> result;
   auto it = domain_name_.begin();
   while (*it != 0) {
@@ -106,7 +106,7 @@ bool DomainNameComparator::operator()(const DomainName& a,
 
 std::ostream& operator<<(std::ostream& os, const DomainName& domain_name) {
   const auto& data = domain_name.domain_name();
-  OSP_DCHECK_GT(data.size(), 0);
+  OSP_DCHECK_GT(data.size(), 0u);
   auto it = data.begin();
   while (*it != 0) {
     size_t length = *it++;

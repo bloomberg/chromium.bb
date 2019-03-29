@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "api/public/mdns_service_listener_factory.h"
 #include "api/public/mdns_service_publisher_factory.h"
 #include "api/public/message_demuxer.h"
@@ -28,7 +29,6 @@
 #include "platform/api/logging.h"
 #include "platform/api/network_interface.h"
 #include "platform/api/time.h"
-#include "third_party/abseil/src/absl/strings/string_view.h"
 #include "third_party/tinycbor/src/src/cbor.h"
 
 namespace openscreen {

@@ -7,8 +7,8 @@
 #include <cstring>
 #include <iomanip>
 
+#include "absl/types/optional.h"
 #include "platform/api/logging.h"
-#include "third_party/abseil/src/absl/types/optional.h"
 
 namespace openscreen {
 

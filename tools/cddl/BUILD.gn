@@ -14,7 +14,8 @@ executable("cddl") {
   ]
 
   deps = [
-    "//platform",
-    "//third_party/abseil",
+    "../../platform",
+    "../../third_party/abseil",
   ]
+  configs += [ "../..:root_config_overrides" ]
 }

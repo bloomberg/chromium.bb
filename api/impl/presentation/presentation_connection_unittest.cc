@@ -6,13 +6,13 @@
 
 #include <memory>
 
+#include "absl/strings/string_view.h"
 #include "api/impl/quic/testing/fake_quic_connection.h"
 #include "api/impl/quic/testing/fake_quic_connection_factory.h"
 #include "api/impl/quic/testing/quic_test_support.h"
 #include "api/impl/testing/fake_clock.h"
 #include "api/public/network_service_manager.h"
 #include "api/public/presentation/presentation_controller.h"
-#include "third_party/abseil/src/absl/strings/string_view.h"
 #include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 

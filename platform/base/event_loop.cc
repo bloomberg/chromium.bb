@@ -24,7 +24,7 @@ Error ReceiveDataFromEvent(const UdpSocketReadableEvent& read_event,
                   << len.error().message();
     return len.error();
   }
-  OSP_DCHECK_LE(len.value(), kUdpMaxPacketSize);
+  OSP_DCHECK_LE(len.value(), static_cast<size_t>(kUdpMaxPacketSize));
   data->length = len.value();
   data->socket = read_event.socket;
   return Error::None();

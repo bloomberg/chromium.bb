@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "third_party/abseil/src/absl/types/optional.h"
+#include "absl/types/optional.h"
 #include "tools/cddl/parse.h"
 
 struct CddlGroup;

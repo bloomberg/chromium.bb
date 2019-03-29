@@ -7,10 +7,10 @@
 #include <limits>
 #include <memory>
 
+#include "absl/types/optional.h"
 #include "api/impl/quic/quic_connection_factory_impl.h"
 #include "base/error.h"
 #include "platform/api/logging.h"
-#include "third_party/abseil/src/absl/types/optional.h"
 #include "third_party/chromium_quic/src/net/third_party/quic/platform/impl/quic_chromium_clock.h"
 
 namespace openscreen {

@@ -23,6 +23,7 @@ source_set("hello_unittests") {
     "//third_party/googletest:gmock",
     "//third_party/googletest:gtest",
   ]
+  configs += [ "..:root_config_overrides" ]
 }
 
 shared_library("hello_shared") {
@@ -32,6 +33,7 @@ shared_library("hello_shared") {
   ]
 
   defines = [ "OPENSCREEN_SHARED_IMPLEMENTATION" ]
+  public_configs = [ "..:root_config_overrides" ]
 }
 
 static_library("hello_static") {
@@ -39,4 +41,5 @@ static_library("hello_static") {
     "hello_static.cc",
     "hello_static.h",
   ]
+  public_configs = [ "..:root_config_overrides" ]
 }

@@ -7,7 +7,7 @@
 
 #include <sstream>
 
-#include "third_party/abseil/src/absl/strings/string_view.h"
+#include "absl/strings/string_view.h"
 
 namespace openscreen {
 namespace platform {
@@ -64,9 +64,6 @@ class LogMessage {
                                    __FILE__, __LINE__)                       \
       .stream()
 
-// Necessary for auto macro in OSP_LOG_IF
-#define OSP_LOG_VERBOSE OSP_VLOG
-
 #define OSP_LOG_INFO                                                      \
   openscreen::platform::LogMessage(openscreen::platform::LogLevel::kInfo, \
                                    __FILE__, __LINE__)                    \
@@ -99,6 +96,7 @@ class Voidify {
 #define OSP_LAZY_STREAM(stream, condition) \
   !(condition) ? (void)0 : openscreen::platform::detail::Voidify() & (stream)
 #define OSP_EAT_STREAM OSP_LAZY_STREAM(OSP_LOG, false)
+#define OSP_VLOG_IF(condition) OSP_LAZY_STREAM(OSP_VLOG, (condition))
 #define OSP_LOG_IF(level, condition) \
   OSP_LAZY_STREAM(OSP_LOG_##level, (condition))
 
@@ -141,11 +139,12 @@ class Voidify {
 #define OSP_DCHECK_GE(a, b) OSP_EAT_STREAM << !((a) >= (b))
 #endif
 
-#define OSP_DVLOG OSP_LOG_IF(VERBOSE, OSP_DCHECK_IS_ON())
+#define OSP_DVLOG OSP_VLOG_IF(OSP_DCHECK_IS_ON())
 #define OSP_DLOG_INFO OSP_LOG_IF(INFO, OSP_DCHECK_IS_ON())
 #define OSP_DLOG_WARN OSP_LOG_IF(WARN, OSP_DCHECK_IS_ON())
 #define OSP_DLOG_ERROR OSP_LOG_IF(ERROR, OSP_DCHECK_IS_ON())
 #define OSP_DLOG_FATAL OSP_LOG_IF(FATAL, OSP_DCHECK_IS_ON())
+#define OSP_DVLOG_IF(condition) OSP_VLOG_IF(OSP_DCHECK_IS_ON() && (condition))
 #define OSP_DLOG_IF(level, condition) \
   OSP_LOG_IF(level, OSP_DCHECK_IS_ON() && (condition))
 

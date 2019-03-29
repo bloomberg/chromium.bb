@@ -14,9 +14,9 @@
 #include <string>
 #include <vector>
 
-#include "third_party/abseil/src/absl/strings/numbers.h"
-#include "third_party/abseil/src/absl/strings/string_view.h"
-#include "third_party/abseil/src/absl/types/optional.h"
+#include "absl/strings/numbers.h"
+#include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 
 CddlType::CddlType()
     : map(nullptr), op(CddlType::Op::kNone), constraint_type(nullptr) {}

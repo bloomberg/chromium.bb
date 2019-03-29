@@ -4,7 +4,7 @@
 
 #include "api/impl/presentation/presentation_common.h"
 
-#include "third_party/abseil/src/absl/strings/ascii.h"
+#include "absl/strings/ascii.h"
 
 namespace openscreen {
 namespace presentation {
