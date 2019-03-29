@@ -7,13 +7,14 @@
 #include "media/device_monitors/device_monitor_udev.h"
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/sequence_checker.h"
 #include "base/system/system_monitor.h"
 #include "base/task/post_task.h"
 #include "device/udev_linux/udev.h"
-#include "device/udev_linux/udev_linux.h"
+#include "device/udev_linux/udev_watcher.h"
 
 namespace {
 
@@ -36,20 +37,25 @@ const SubsystemMap kSubsystemMap[] = {
 
 namespace media {
 
-// Wraps a device::UdevLinux with an API that makes it easier to use from
+// Wraps a device::UdevWatcher with an API that makes it easier to use from
 // DeviceMonitorLinux. Since it is essentially a wrapper around blocking udev
 // calls, Initialize() must be called from a task runner that can block.
-class DeviceMonitorLinux::BlockingTaskRunnerHelper {
+class DeviceMonitorLinux::BlockingTaskRunnerHelper
+    : public device::UdevWatcher::Observer {
  public:
   BlockingTaskRunnerHelper();
-  ~BlockingTaskRunnerHelper() = default;
+  ~BlockingTaskRunnerHelper() override = default;
 
   void Initialize();
 
  private:
-  void OnDevicesChanged(udev_device* device);
+  void OnDevicesChanged(device::ScopedUdevDevicePtr device);
 
-  std::unique_ptr<device::UdevLinux> udev_;
+  // device::UdevWatcher::Observer overrides
+  void OnDeviceAdded(device::ScopedUdevDevicePtr device) override;
+  void OnDeviceRemoved(device::ScopedUdevDevicePtr device) override;
+
+  std::unique_ptr<device::UdevWatcher> udev_watcher_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -64,24 +70,30 @@ DeviceMonitorLinux::BlockingTaskRunnerHelper::BlockingTaskRunnerHelper() {
 
 void DeviceMonitorLinux::BlockingTaskRunnerHelper::Initialize() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::vector<device::UdevLinux::UdevMonitorFilter> filters;
+  std::vector<device::UdevWatcher::Filter> filters;
   for (const SubsystemMap& entry : kSubsystemMap) {
-    filters.push_back(
-        device::UdevLinux::UdevMonitorFilter(entry.subsystem, entry.devtype));
+    filters.emplace_back(entry.subsystem, entry.devtype);
   }
-  udev_ = std::make_unique<device::UdevLinux>(
-      filters, base::BindRepeating(&BlockingTaskRunnerHelper::OnDevicesChanged,
-                                   base::Unretained(this)));
+  udev_watcher_ = device::UdevWatcher::StartWatching(this, filters);
+}
+
+void DeviceMonitorLinux::BlockingTaskRunnerHelper::OnDeviceAdded(
+    device::ScopedUdevDevicePtr device) {
+  OnDevicesChanged(std::move(device));
+}
+
+void DeviceMonitorLinux::BlockingTaskRunnerHelper::OnDeviceRemoved(
+    device::ScopedUdevDevicePtr device) {
+  OnDevicesChanged(std::move(device));
 }
 
 void DeviceMonitorLinux::BlockingTaskRunnerHelper::OnDevicesChanged(
-    udev_device* device) {
+    device::ScopedUdevDevicePtr device) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(device);
 
   base::SystemMonitor::DeviceType device_type =
       base::SystemMonitor::DEVTYPE_UNKNOWN;
-  const std::string subsystem(device::udev_device_get_subsystem(device));
+  const std::string subsystem(device::udev_device_get_subsystem(device.get()));
   for (const SubsystemMap& entry : kSubsystemMap) {
     if (subsystem == entry.subsystem) {
       device_type = entry.device_type;

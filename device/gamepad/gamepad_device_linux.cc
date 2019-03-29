@@ -17,7 +17,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
-#include "device/udev_linux/udev_linux.h"
+#include "device/udev_linux/udev.h"
 
 namespace device {
 

@@ -27,7 +27,7 @@
 #include "device/gamepad/gamepad_platform_data_fetcher_mac.h"
 #include "device/gamepad/nintendo_data_fetcher.h"
 #include "device/gamepad/xbox_data_fetcher_mac.h"
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) && defined(USE_UDEV)
 #include "device/gamepad/gamepad_platform_data_fetcher_linux.h"
 #include "device/gamepad/nintendo_data_fetcher.h"
 #endif

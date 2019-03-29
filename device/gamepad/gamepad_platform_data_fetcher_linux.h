@@ -16,19 +16,17 @@
 #include "device/gamepad/gamepad_device_linux.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/gamepad/udev_gamepad_linux.h"
+#include "device/udev_linux/udev_watcher.h"
 
 extern "C" {
 struct udev_device;
 }
 
 namespace device {
-class UdevLinux;
-}
-
-namespace device {
 
 class DEVICE_GAMEPAD_EXPORT GamepadPlatformDataFetcherLinux
-    : public GamepadDataFetcher {
+    : public GamepadDataFetcher,
+      public UdevWatcher::Observer {
  public:
   using Factory = GamepadDataFetcherFactoryImpl<GamepadPlatformDataFetcherLinux,
                                                 GAMEPAD_SOURCE_LINUX_UDEV>;
@@ -59,7 +57,6 @@ class DEVICE_GAMEPAD_EXPORT GamepadPlatformDataFetcherLinux
   void RefreshJoydevDevice(udev_device* dev, const UdevGamepadLinux& pad_info);
   void RefreshEvdevDevice(udev_device* dev, const UdevGamepadLinux& pad_info);
   void RefreshHidrawDevice(udev_device* dev, const UdevGamepadLinux& pad_info);
-  void EnumerateSubsystemDevices(const std::string& subsystem);
   void ReadDeviceData(size_t index);
 
   GamepadDeviceLinux* GetDeviceWithJoydevIndex(int joydev_index);
@@ -68,9 +65,13 @@ class DEVICE_GAMEPAD_EXPORT GamepadPlatformDataFetcherLinux
   void RemoveDevice(GamepadDeviceLinux* device);
   void RemoveDeviceAtIndex(int index);
 
+  // UdevWatcher::Observer overrides
+  void OnDeviceAdded(ScopedUdevDevicePtr device) override;
+  void OnDeviceRemoved(ScopedUdevDevicePtr device) override;
+
   std::unordered_set<std::unique_ptr<GamepadDeviceLinux>> devices_;
 
-  std::unique_ptr<device::UdevLinux> udev_;
+  std::unique_ptr<device::UdevWatcher> udev_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadPlatformDataFetcherLinux);
 };

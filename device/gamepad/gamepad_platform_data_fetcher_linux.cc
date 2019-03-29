@@ -21,7 +21,6 @@
 #include "device/gamepad/gamepad_uma.h"
 #include "device/gamepad/nintendo_controller.h"
 #include "device/udev_linux/scoped_udev.h"
-#include "device/udev_linux/udev_linux.h"
 
 namespace device {
 
@@ -39,21 +38,26 @@ GamepadSource GamepadPlatformDataFetcherLinux::source() {
 }
 
 void GamepadPlatformDataFetcherLinux::OnAddedToProvider() {
-  std::vector<UdevLinux::UdevMonitorFilter> filters;
-  filters.push_back(
-      UdevLinux::UdevMonitorFilter(UdevGamepadLinux::kInputSubsystem, nullptr));
-  filters.push_back(UdevLinux::UdevMonitorFilter(
-      UdevGamepadLinux::kHidrawSubsystem, nullptr));
-  udev_.reset(new UdevLinux(
-      filters, base::Bind(&GamepadPlatformDataFetcherLinux::RefreshDevice,
-                          base::Unretained(this))));
+  std::vector<UdevWatcher::Filter> filters;
+  filters.emplace_back(UdevGamepadLinux::kInputSubsystem, nullptr);
+  filters.emplace_back(UdevGamepadLinux::kHidrawSubsystem, nullptr);
+  udev_watcher_ = UdevWatcher::StartWatching(this, filters);
 
   for (auto it = devices_.begin(); it != devices_.end(); ++it)
     it->get()->Shutdown();
   devices_.clear();
 
-  EnumerateSubsystemDevices(UdevGamepadLinux::kInputSubsystem);
-  EnumerateSubsystemDevices(UdevGamepadLinux::kHidrawSubsystem);
+  udev_watcher_->EnumerateExistingDevices();
+}
+
+void GamepadPlatformDataFetcherLinux::OnDeviceAdded(
+    ScopedUdevDevicePtr device) {
+  RefreshDevice(device.get());
+}
+
+void GamepadPlatformDataFetcherLinux::OnDeviceRemoved(
+    ScopedUdevDevicePtr device) {
+  RefreshDevice(device.get());
 }
 
 void GamepadPlatformDataFetcherLinux::GetGamepadData(bool) {
@@ -263,37 +267,6 @@ void GamepadPlatformDataFetcherLinux::RefreshHidrawDevice(
       Gamepad& pad = state->data;
       pad.vibration_actuator.not_null = device->SupportsVibration();
     }
-  }
-}
-
-void GamepadPlatformDataFetcherLinux::EnumerateSubsystemDevices(
-    const std::string& subsystem) {
-  if (!udev_->udev_handle())
-    return;
-  ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev_->udev_handle()));
-  if (!enumerate)
-    return;
-  int ret =
-      udev_enumerate_add_match_subsystem(enumerate.get(), subsystem.c_str());
-  if (ret != 0)
-    return;
-  ret = udev_enumerate_scan_devices(enumerate.get());
-  if (ret != 0)
-    return;
-
-  udev_list_entry* devices = udev_enumerate_get_list_entry(enumerate.get());
-  for (udev_list_entry* dev_list_entry = devices; dev_list_entry != nullptr;
-       dev_list_entry = udev_list_entry_get_next(dev_list_entry)) {
-    // Get the filename of the /sys entry for the device and create a
-    // udev_device object (dev) representing it
-    const char* path = udev_list_entry_get_name(dev_list_entry);
-    if (!path)
-      continue;
-    ScopedUdevDevicePtr dev(
-        udev_device_new_from_syspath(udev_->udev_handle(), path));
-    if (!dev)
-      continue;
-    RefreshDevice(dev.get());
   }
 }
 

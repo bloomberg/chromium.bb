@@ -16,7 +16,9 @@ void UdevWatcher::Observer::OnDeviceAdded(ScopedUdevDevicePtr device) {}
 
 void UdevWatcher::Observer::OnDeviceRemoved(ScopedUdevDevicePtr device) {}
 
-std::unique_ptr<UdevWatcher> UdevWatcher::StartWatching(Observer* observer) {
+std::unique_ptr<UdevWatcher> UdevWatcher::StartWatching(
+    Observer* observer,
+    const std::vector<Filter>& filters) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   ScopedUdevPtr udev(udev_new());
@@ -32,6 +34,12 @@ std::unique_ptr<UdevWatcher> UdevWatcher::StartWatching(Observer* observer) {
     return nullptr;
   }
 
+  for (const Filter& filter : filters) {
+    const int ret = udev_monitor_filter_add_match_subsystem_devtype(
+        udev_monitor.get(), filter.subsystem.c_str(), filter.devtype.c_str());
+    CHECK_EQ(0, ret);
+  }
+
   if (udev_monitor_enable_receiving(udev_monitor.get()) != 0) {
     LOG(ERROR) << "Failed to enable receiving udev events.";
     return nullptr;
@@ -44,7 +52,7 @@ std::unique_ptr<UdevWatcher> UdevWatcher::StartWatching(Observer* observer) {
   }
 
   return base::WrapUnique(new UdevWatcher(
-      std::move(udev), std::move(udev_monitor), monitor_fd, observer));
+      std::move(udev), std::move(udev_monitor), monitor_fd, observer, filters));
 }
 
 UdevWatcher::~UdevWatcher() {
@@ -59,6 +67,12 @@ void UdevWatcher::EnumerateExistingDevices() {
   if (!enumerate) {
     LOG(ERROR) << "Failed to initialize a udev enumerator.";
     return;
+  }
+
+  for (const Filter& filter : udev_filters_) {
+    const int ret = udev_enumerate_add_match_subsystem(
+        enumerate.get(), filter.subsystem.c_str());
+    CHECK_EQ(0, ret);
   }
 
   if (udev_enumerate_scan_devices(enumerate.get()) != 0) {
@@ -79,10 +93,12 @@ void UdevWatcher::EnumerateExistingDevices() {
 UdevWatcher::UdevWatcher(ScopedUdevPtr udev,
                          ScopedUdevMonitorPtr udev_monitor,
                          int monitor_fd,
-                         Observer* observer)
+                         Observer* observer,
+                         const std::vector<Filter>& filters)
     : udev_(std::move(udev)),
       udev_monitor_(std::move(udev_monitor)),
-      observer_(observer) {
+      observer_(observer),
+      udev_filters_(filters) {
   file_watcher_ = base::FileDescriptorWatcher::WatchReadable(
       monitor_fd,
       base::Bind(&UdevWatcher::OnMonitorReadable, base::Unretained(this)));
