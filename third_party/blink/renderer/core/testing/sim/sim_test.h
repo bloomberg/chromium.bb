@@ -32,7 +32,7 @@ class SimTest : public testing::Test {
   // web runtime features.
   // These methods should be accessed inside test body after a call to SetUp.
   LocalDOMWindow& Window();
-  SimPage& Page();
+  SimPage& GetPage();
   Document& GetDocument();
   WebViewImpl& WebView();
   WebLocalFrameImpl& MainFrame();
