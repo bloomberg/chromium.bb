@@ -7,7 +7,7 @@
 #include <memory>
 #include <stdint.h>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"

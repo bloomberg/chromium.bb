@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"

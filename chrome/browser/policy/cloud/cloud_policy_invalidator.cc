@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"

@@ -15,7 +15,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/hash/sha1.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"

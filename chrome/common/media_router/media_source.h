@@ -8,7 +8,7 @@
 #include <iosfwd>
 #include <string>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "url/gurl.h"
 
 // TODO(mfoltz): Right now this is a wrapper for std::string.  Factor methods

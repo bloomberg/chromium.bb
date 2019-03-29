@@ -12,7 +12,7 @@
 #include <iosfwd>
 #include <memory>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "cc/cc_export.h"
 
 namespace base {

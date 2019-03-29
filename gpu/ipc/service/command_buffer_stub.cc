@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "components/crash/core/common/crash_key.h"
 
 namespace gpu {

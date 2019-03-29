@@ -10,7 +10,7 @@
 #include <tuple>
 
 #include "base/command_line.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"

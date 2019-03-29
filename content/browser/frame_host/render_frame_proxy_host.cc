@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/lazy_instance.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"

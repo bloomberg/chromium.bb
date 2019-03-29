@@ -14,7 +14,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"

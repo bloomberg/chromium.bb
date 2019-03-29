@@ -9,7 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/debug/alias.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"

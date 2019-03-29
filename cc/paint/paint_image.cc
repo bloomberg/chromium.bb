@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/atomic_sequence_num.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_image_generator.h"
 #include "cc/paint/paint_record.h"

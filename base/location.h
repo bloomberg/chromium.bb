@@ -13,7 +13,7 @@
 
 #include "base/base_export.h"
 #include "base/debug/debugging_buildflags.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 
 namespace base {
 

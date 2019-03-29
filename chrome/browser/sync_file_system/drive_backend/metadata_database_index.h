@@ -16,7 +16,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/macros.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index_interface.h"
 #include "chrome/browser/sync_file_system/drive_backend/tracker_id_set.h"

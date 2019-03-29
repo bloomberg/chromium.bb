@@ -14,7 +14,7 @@
 #include <utility>
 
 #include "base/feature_list.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"

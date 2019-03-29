@@ -20,7 +20,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
