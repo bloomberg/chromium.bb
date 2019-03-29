@@ -392,7 +392,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
       if config.build_affinity:
         self.assertIn(config.luci_builder,
                       (config_lib.LUCI_BUILDER_INCREMENTAL,
-                       config_lib.LUCI_BUILDER_CQ),
+                       config_lib.LUCI_BUILDER_COMMITQUEUE),
                       'Non affinity luci_builder "%s" on "%s"' %
                       (config.luci_builder, build_name))
 

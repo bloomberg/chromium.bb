@@ -186,6 +186,7 @@ def GeneralTemplates(site_config):
       display_label=config_lib.DISPLAY_LABEL_CQ,
       build_type=constants.PALADIN_TYPE,
       overlays=constants.PUBLIC_OVERLAYS,
+      luci_builder=config_lib.LUCI_BUILDER_COMMITQUEUE,
       manifest_version=True,
       description='Commit Queue',
       upload_standalone_images=False,
@@ -209,6 +210,7 @@ def GeneralTemplates(site_config):
       display_label=config_lib.DISPLAY_LABEL_CQ,
       build_type=constants.PALADIN_TYPE,
       overlays=constants.PUBLIC_OVERLAYS,
+      luci_builder=config_lib.LUCI_BUILDER_COMMITQUEUE,
       manifest_version=True,
       unittests=True,
       compilecheck=True,
@@ -409,7 +411,7 @@ def GeneralTemplates(site_config):
       'asan',
       site_config.templates.full,
       profile='asan',
-      luci_builder=config_lib.LUCI_BUILDER_PROD,
+      luci_builder=config_lib.LUCI_BUILDER_COMMITQUEUE,
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='16gb-rootfs',
       # TODO(deymo): ASan builders generate bigger files, in particular a bigger
@@ -802,6 +804,7 @@ def GeneralTemplates(site_config):
       site_config.templates.no_unittest_builder,
       display_label=config_lib.DISPLAY_LABEL_TRYJOB,
       build_type=constants.PAYLOADS_TYPE,
+      luci_builder=config_lib.LUCI_BUILDER_RELEASE,
       builder_class_name='release_builders.GeneratePayloadsBuilder',
       description='Regenerate release payloads.',
       # Sync to the code used to do the build the first time.
@@ -1235,6 +1238,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       boards=[],
       display_label=config_lib.DISPLAY_LABEL_PRECQ,
       build_type=constants.PRE_CQ_LAUNCHER_TYPE,
+      luci_builder=config_lib.LUCI_BUILDER_INFRA,
       description='Launcher for Pre-CQ builders',
       manifest_version=False,
       doc='https://dev.chromium.org/chromium-os/build/builder-overview#'
@@ -1881,7 +1885,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   site_config.AddTemplate(
       'cq_luci_slave',
       build_affinity=True,
-      luci_builder=config_lib.LUCI_BUILDER_CQ,
   )
 
 
@@ -3597,7 +3600,6 @@ def PayloadBuilders(site_config, boards_dict):
           '%s-payloads' % board,
           site_config.templates.payloads,
           boards=[board],
-          luci_builder=config_lib.LUCI_BUILDER_PROD,
       )
 
 
@@ -3864,7 +3866,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_vmtest_builder,
       boards=[],
       display_label=config_lib.DISPLAY_LABEL_TRYJOB,
-      luci_builder=config_lib.LUCI_BUILDER_PROD,
+      luci_builder=config_lib.LUCI_BUILDER_COMMITQUEUE,
       builder_class_name='test_builders.SucessBuilder',
       description='Used by sync_stages_unittest.',
   )
