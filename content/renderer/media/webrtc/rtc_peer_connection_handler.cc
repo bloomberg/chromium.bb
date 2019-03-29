@@ -2210,7 +2210,7 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
     web_transceivers[i] =
         CreateOrUpdateTransceiver(std::move(transceiver_states[i]));
 
-    // Log a "transcieverAdded" or "transceiverModified" event in
+    // Log a "transceiverAdded" or "transceiverModified" event in
     // chrome://webrtc-internals if new or modified.
     if (peer_connection_tracker_ &&
         (transceiver_is_new || transceiver_was_modified)) {
