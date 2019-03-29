@@ -39,7 +39,7 @@ bool HitTestManager::OnSurfaceDamaged(const SurfaceId& surface_id,
   return false;
 }
 
-void HitTestManager::OnSurfaceDiscarded(const SurfaceId& surface_id) {
+void HitTestManager::OnSurfaceDestroyed(const SurfaceId& surface_id) {
   hit_test_region_lists_.erase(surface_id);
 }
 

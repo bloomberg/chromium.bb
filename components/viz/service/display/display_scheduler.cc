@@ -317,7 +317,8 @@ void DisplayScheduler::OnSurfaceActivated(
     const SurfaceId& surface_id,
     base::Optional<base::TimeDelta> duration) {}
 
-void DisplayScheduler::OnSurfaceDestroyed(const SurfaceId& surface_id) {
+void DisplayScheduler::OnSurfaceMarkedForDestruction(
+    const SurfaceId& surface_id) {
   auto it = surface_states_.find(surface_id);
   if (it == surface_states_.end())
     return;
@@ -334,8 +335,8 @@ bool DisplayScheduler::OnSurfaceDamaged(const SurfaceId& surface_id,
   return damaged;
 }
 
-void DisplayScheduler::OnSurfaceDiscarded(const SurfaceId& surface_id) {
-  client_->SurfaceDiscarded(surface_id);
+void DisplayScheduler::OnSurfaceDestroyed(const SurfaceId& surface_id) {
+  client_->SurfaceDestroyed(surface_id);
 }
 
 void DisplayScheduler::OnSurfaceDamageExpected(const SurfaceId& surface_id,

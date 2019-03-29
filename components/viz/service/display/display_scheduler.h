@@ -31,7 +31,7 @@ class VIZ_SERVICE_EXPORT DisplaySchedulerClient {
   virtual bool SurfaceHasUnackedFrame(const SurfaceId& surface_id) const = 0;
   virtual bool SurfaceDamaged(const SurfaceId& surface_id,
                               const BeginFrameAck& ack) = 0;
-  virtual void SurfaceDiscarded(const SurfaceId& surface_id) = 0;
+  virtual void SurfaceDestroyed(const SurfaceId& surface_id) = 0;
   virtual void DidFinishFrame(const BeginFrameAck& ack) = 0;
 };
 
@@ -80,10 +80,10 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public BeginFrameObserverBase,
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override;
   void OnSurfaceActivated(const SurfaceId& surface_id,
                           base::Optional<base::TimeDelta> duration) override;
-  void OnSurfaceDestroyed(const SurfaceId& surface_id) override;
+  void OnSurfaceMarkedForDestruction(const SurfaceId& surface_id) override;
   bool OnSurfaceDamaged(const SurfaceId& surface_id,
                         const BeginFrameAck& ack) override;
-  void OnSurfaceDiscarded(const SurfaceId& surface_id) override;
+  void OnSurfaceDestroyed(const SurfaceId& surface_id) override;
   void OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                const BeginFrameArgs& args) override;
 

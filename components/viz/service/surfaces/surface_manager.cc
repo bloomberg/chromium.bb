@@ -141,11 +141,11 @@ Surface* SurfaceManager::CreateSurface(
   return surface_map_[surface_info.id()].get();
 }
 
-void SurfaceManager::DestroySurface(const SurfaceId& surface_id) {
+void SurfaceManager::MarkSurfaceForDestruction(const SurfaceId& surface_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(surface_map_.count(surface_id));
   for (auto& observer : observer_list_)
-    observer.OnSurfaceDestroyed(surface_id);
+    observer.OnSurfaceMarkedForDestruction(surface_id);
   surfaces_to_destroy_.insert(surface_id);
 }
 
@@ -503,9 +503,9 @@ void SurfaceManager::SurfaceDependenciesChanged(
                                                    removed_dependencies);
 }
 
-void SurfaceManager::SurfaceDiscarded(Surface* surface) {
+void SurfaceManager::SurfaceDestroyed(Surface* surface) {
   for (auto& observer : observer_list_)
-    observer.OnSurfaceDiscarded(surface->surface_id());
+    observer.OnSurfaceDestroyed(surface->surface_id());
   dependency_tracker_.OnSurfaceDiscarded(surface);
 }
 

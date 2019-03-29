@@ -29,7 +29,11 @@ class SurfaceObserver {
   virtual void OnSurfaceActivated(const SurfaceId& surface_id,
                                   base::Optional<base::TimeDelta> duration) = 0;
 
-  // Called when a Surface was marked to be destroyed.
+  // Called when a surface is marked for destruction (i.e. becomes a candidate
+  // for garbage collection).
+  virtual void OnSurfaceMarkedForDestruction(const SurfaceId& surface_id) = 0;
+
+  // Called when a surface is destroyed.
   virtual void OnSurfaceDestroyed(const SurfaceId& surface_id) = 0;
 
   // Called when a Surface is modified, e.g. when a CompositorFrame is
@@ -40,9 +44,6 @@ class SurfaceObserver {
   // Should return true if this causes a Display to be damaged.
   virtual bool OnSurfaceDamaged(const SurfaceId& surface_id,
                                 const BeginFrameAck& ack) = 0;
-
-  // Called when a surface is garbage-collected.
-  virtual void OnSurfaceDiscarded(const SurfaceId& surface_id) = 0;
 
   // Called when a Surface's CompositorFrame producer has received a BeginFrame
   // and, thus, is expected to produce damage soon.

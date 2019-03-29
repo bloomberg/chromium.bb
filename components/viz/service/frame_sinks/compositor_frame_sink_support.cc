@@ -61,7 +61,7 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   if (last_activated_surface_id_.is_valid())
     EvictLastActiveSurface();
   if (last_created_surface_id_.is_valid())
-    surface_manager_->DestroySurface(last_created_surface_id_);
+    surface_manager_->MarkSurfaceForDestruction(last_created_surface_id_);
   frame_sink_manager_->UnregisterCompositorFrameSinkSupport(frame_sink_id_);
 
   // The display compositor has ownership of shared memory for each
@@ -127,7 +127,7 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
           surface_manager_->GetSurfaceForId(last_activated_surface_id_);
       DCHECK(prev_surface);
       surface->SetPreviousFrameSurface(prev_surface);
-      surface_manager_->DestroySurface(prev_surface->surface_id());
+      surface_manager_->MarkSurfaceForDestruction(prev_surface->surface_id());
     }
     last_activated_surface_id_ = surface->surface_id();
   } else if (surface->surface_id() < last_activated_surface_id_) {
@@ -135,7 +135,7 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
     // deferred until after a parent-initiated synchronization happens resulting
     // in activations happening out of order. In that case, we simply discard
     // the stale surface.
-    surface_manager_->DestroySurface(surface->surface_id());
+    surface_manager_->MarkSurfaceForDestruction(surface->surface_id());
   }
 
   DCHECK(surface->HasActiveFrame());
@@ -182,7 +182,7 @@ void CompositorFrameSinkSupport::OnSurfaceAggregatedDamage(
   }
 }
 
-void CompositorFrameSinkSupport::OnSurfaceDiscarded(Surface* surface) {
+void CompositorFrameSinkSupport::OnSurfaceDestroyed(Surface* surface) {
   if (surface->surface_id() == last_activated_surface_id_)
     last_activated_surface_id_ = SurfaceId();
 
@@ -252,7 +252,7 @@ void CompositorFrameSinkSupport::MaybeEvictSurfaces() {
   if (last_created_surface_id_.is_valid() &&
       last_created_surface_id_.local_surface_id().parent_sequence_number() <=
           last_evicted_parent_sequence_number_) {
-    surface_manager_->DestroySurface(last_created_surface_id_);
+    surface_manager_->MarkSurfaceForDestruction(last_created_surface_id_);
     last_created_surface_id_ = SurfaceId();
   }
 }
@@ -262,7 +262,7 @@ void CompositorFrameSinkSupport::EvictLastActiveSurface() {
   if (last_created_surface_id_ == last_activated_surface_id_)
     last_created_surface_id_ = SurfaceId();
   last_activated_surface_id_ = SurfaceId();
-  surface_manager_->DestroySurface(to_destroy_surface_id);
+  surface_manager_->MarkSurfaceForDestruction(to_destroy_surface_id);
 
   // For display root surfaces the surface is no longer going to be visible.
   // Make it unreachable from the top-level root.

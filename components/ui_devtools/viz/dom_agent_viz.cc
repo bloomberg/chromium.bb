@@ -100,7 +100,7 @@ bool DOMAgentViz::OnSurfaceDamaged(const viz::SurfaceId& surface_id,
   return false;
 }
 
-void DOMAgentViz::OnSurfaceDiscarded(const viz::SurfaceId& surface_id) {
+void DOMAgentViz::OnSurfaceDestroyed(const viz::SurfaceId& surface_id) {
   // We may come across the case where we delete element, but its children
   // are still alive. Therefore we should attach children to the RootElement
   // and then delete this element.

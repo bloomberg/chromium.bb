@@ -77,7 +77,7 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   const base::TickClock* tick_clock() { return tick_clock_; }
 
   // Creates a Surface for the given SurfaceClient. The surface will be
-  // destroyed when DestroySurface is called, all of its destruction
+  // destroyed when MarkSurfaceForDestruction is called, all of its destruction
   // dependencies are satisfied, and it is not reachable from the root surface.
   // A temporary reference will be added to the new Surface.
   Surface* CreateSurface(base::WeakPtr<SurfaceClient> surface_client,
@@ -86,8 +86,10 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
                          bool needs_sync_tokens,
                          bool block_activation_on_parent);
 
-  // Destroy the Surface once a set of sequence numbers has been satisfied.
-  void DestroySurface(const SurfaceId& surface_id);
+  // Marks |surface_id| for destruction. The surface will get destroyed when
+  // it's not reachable from the root or any other surface that is not marked
+  // for destruction.
+  void MarkSurfaceForDestruction(const SurfaceId& surface_id);
 
   // Returns a Surface corresponding to the provided |surface_id|.
   Surface* GetSurfaceForId(const SurfaceId& surface_id);
@@ -127,7 +129,7 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
       const base::flat_set<FrameSinkId>& removed_dependencies);
 
   // Called when |surface| is being destroyed.
-  void SurfaceDiscarded(Surface* surface);
+  void SurfaceDestroyed(Surface* surface);
 
   // Called when a Surface's CompositorFrame producer has received a BeginFrame
   // and, thus, is expected to produce damage soon.
