@@ -1222,6 +1222,7 @@ void BackgroundSyncManager::EventCompleteImpl(
 
   // The event ran to completion, we should count it, no matter what happens
   // from here.
+  bool succeeded = status_code == blink::ServiceWorkerStatusCode::kOk;
   ServiceWorkerRegistration* sw_registration =
       service_worker_context_->GetLiveRegistration(
           registration_info->service_worker_registration_id);
@@ -1230,8 +1231,7 @@ void BackgroundSyncManager::EventCompleteImpl(
   if (sw_registration) {
     HasMainFrameProviderHost(
         origin,
-        base::BindOnce(&BackgroundSyncMetrics::RecordEventResult,
-                       status_code == blink::ServiceWorkerStatusCode::kOk));
+        base::BindOnce(&BackgroundSyncMetrics::RecordEventResult, succeeded));
   }
 
   bool registration_completed = true;
@@ -1243,8 +1243,8 @@ void BackgroundSyncManager::EventCompleteImpl(
     registration->set_sync_state(blink::mojom::BackgroundSyncState::PENDING);
     registration->set_num_attempts(0);
     registration_completed = false;
-  } else if (status_code != blink::ServiceWorkerStatusCode::kOk &&
-             can_retry) {  // Sync failed but can retry
+  } else if (!succeeded && can_retry) {
+    // Sync failed but can retry.
     registration->set_sync_state(blink::mojom::BackgroundSyncState::PENDING);
     base::TimeDelta delay =
         parameters_->initial_retry_delay *
@@ -1266,18 +1266,20 @@ void BackgroundSyncManager::EventCompleteImpl(
   }
 
   if (registration_completed) {
+    BackgroundSyncMetrics::RecordRegistrationComplete(
+        succeeded, registration->num_attempts());
+
     RemoveActiveRegistration(*registration_info);
 
     if (devtools_context_->IsRecording(devtools::proto::BACKGROUND_SYNC) &&
         registration_info->sync_type ==
             blink::mojom::BackgroundSyncType::ONE_SHOT) {
-      bool succeded = status_code == blink::ServiceWorkerStatusCode::kOk;
       devtools_context_->LogBackgroundServiceEvent(
           sw_registration->id(), origin, devtools::proto::BACKGROUND_SYNC,
           /* event_name= */ "sync complete",
           /* instance_id= */ registration_info->tag,
           /* event_metadata= */
-          {{"succeeded", succeded ? "yes" : "no"}});
+          {{"succeeded", succeeded ? "yes" : "no"}});
     }
   }
 
