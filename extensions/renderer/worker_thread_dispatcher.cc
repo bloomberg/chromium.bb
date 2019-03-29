@@ -18,8 +18,8 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/dispatcher.h"
-#include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/extensions_renderer_client.h"
+#include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/renderer_messaging_service.h"
 #include "extensions/renderer/service_worker_data.h"
 #include "extensions/renderer/worker_script_context_set.h"
@@ -57,7 +57,7 @@ void WorkerThreadDispatcher::Init(content::RenderThread* render_thread) {
 }
 
 // static
-ExtensionBindingsSystem* WorkerThreadDispatcher::GetBindingsSystem() {
+NativeExtensionBindingsSystem* WorkerThreadDispatcher::GetBindingsSystem() {
   return GetServiceWorkerData()->bindings_system();
 }
 
@@ -209,7 +209,7 @@ void WorkerThreadDispatcher::OnDispatchOnDisconnect(
 void WorkerThreadDispatcher::AddWorkerData(
     int64_t service_worker_version_id,
     ScriptContext* context,
-    std::unique_ptr<ExtensionBindingsSystem> bindings_system) {
+    std::unique_ptr<NativeExtensionBindingsSystem> bindings_system) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   if (!data) {
     ServiceWorkerData* new_data = new ServiceWorkerData(

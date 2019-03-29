@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "content/public/renderer/v8_value_converter.h"
-#include "extensions/renderer/extension_bindings_system.h"
+#include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
@@ -27,7 +27,7 @@ const char kSessionNotFound[] = "Session not found";
 
 DisplaySourceCustomBindings::DisplaySourceCustomBindings(
     ScriptContext* context,
-    ExtensionBindingsSystem* bindings_system)
+    NativeExtensionBindingsSystem* bindings_system)
     : ObjectBackedNativeHandler(context),
       bindings_system_(bindings_system),
       weak_factory_(this) {}

@@ -29,7 +29,7 @@ struct ExtensionMsg_TabConnectionInfo;
 struct ExtensionMsg_ExternalConnectionInfo;
 
 namespace extensions {
-class ExtensionBindingsSystem;
+class NativeExtensionBindingsSystem;
 class ScriptContext;
 class V8SchemaRegistry;
 struct Message;
@@ -49,7 +49,7 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
 
   // Thread safe.
   static WorkerThreadDispatcher* Get();
-  static ExtensionBindingsSystem* GetBindingsSystem();
+  static NativeExtensionBindingsSystem* GetBindingsSystem();
   static V8SchemaRegistry* GetV8SchemaRegistry();
   static ScriptContext* GetScriptContext();
 
@@ -58,9 +58,10 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
   // IPC::Sender:
   bool Send(IPC::Message* message) override;
 
-  void AddWorkerData(int64_t service_worker_version_id,
-                     ScriptContext* context,
-                     std::unique_ptr<ExtensionBindingsSystem> bindings_system);
+  void AddWorkerData(
+      int64_t service_worker_version_id,
+      ScriptContext* context,
+      std::unique_ptr<NativeExtensionBindingsSystem> bindings_system);
   void RemoveWorkerData(int64_t service_worker_version_id);
 
   // Called when a service worker context was initialized.

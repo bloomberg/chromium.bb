@@ -19,9 +19,9 @@
 #include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_messages.h"
-#include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/messaging_util.h"
+#include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set_iterable.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -34,7 +34,7 @@
 namespace extensions {
 
 RendererMessagingService::RendererMessagingService(
-    ExtensionBindingsSystem* bindings_system)
+    NativeExtensionBindingsSystem* bindings_system)
     : bindings_system_(bindings_system) {}
 RendererMessagingService::~RendererMessagingService() {}
 

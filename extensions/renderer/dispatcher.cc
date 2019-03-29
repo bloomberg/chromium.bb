@@ -412,7 +412,7 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
     ModuleSystem* module_system = context->module_system();
     // Enable natives in startup.
     ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system);
-    ExtensionBindingsSystem* worker_bindings_system =
+    NativeExtensionBindingsSystem* worker_bindings_system =
         WorkerThreadDispatcher::GetBindingsSystem();
     RegisterNativeHandlers(module_system, context, worker_bindings_system,
                            WorkerThreadDispatcher::GetV8SchemaRegistry());
@@ -520,7 +520,7 @@ void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     // TODO(lazyboy/devlin): Should this cleanup happen in a worker class, like
     // WorkerThreadDispatcher? If so, we should move the initialization as well.
     ScriptContext* script_context = WorkerThreadDispatcher::GetScriptContext();
-    ExtensionBindingsSystem* worker_bindings_system =
+    NativeExtensionBindingsSystem* worker_bindings_system =
         WorkerThreadDispatcher::GetBindingsSystem();
     worker_bindings_system->WillReleaseScriptContext(script_context);
     WorkerThreadDispatcher::Get()->DidStopContext(service_worker_scope,
@@ -619,7 +619,7 @@ void Dispatcher::DispatchEvent(const std::string& extension_id,
                                const EventFilteringInfo* filtering_info) const {
   script_context_set_->ForEach(
       extension_id, nullptr,
-      base::Bind(&ExtensionBindingsSystem::DispatchEventInContext,
+      base::Bind(&NativeExtensionBindingsSystem::DispatchEventInContext,
                  base::Unretained(bindings_system_.get()), event_name,
                  &event_args, filtering_info));
 }
@@ -721,7 +721,7 @@ void Dispatcher::RegisterNativeHandlers(
     ModuleSystem* module_system,
     ScriptContext* context,
     Dispatcher* dispatcher,
-    ExtensionBindingsSystem* bindings_system,
+    NativeExtensionBindingsSystem* bindings_system,
     V8SchemaRegistry* v8_schema_registry) {
   module_system->RegisterNativeHandler(
       "chrome",
@@ -1102,7 +1102,7 @@ void Dispatcher::OnUnloaded(const std::string& id) {
   // themselves.
   script_context_set_->ForEach(
       id, nullptr,
-      base::Bind(&ExtensionBindingsSystem::WillReleaseScriptContext,
+      base::Bind(&NativeExtensionBindingsSystem::WillReleaseScriptContext,
                  base::Unretained(bindings_system_.get())));
   script_context_set_->OnExtensionUnloaded(id);
 
@@ -1295,7 +1295,7 @@ void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
 void Dispatcher::RegisterNativeHandlers(
     ModuleSystem* module_system,
     ScriptContext* context,
-    ExtensionBindingsSystem* bindings_system,
+    NativeExtensionBindingsSystem* bindings_system,
     V8SchemaRegistry* v8_schema_registry) {
   RegisterNativeHandlers(module_system, context, this, bindings_system,
                          v8_schema_registry);
@@ -1416,7 +1416,7 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   }
 }
 
-std::unique_ptr<ExtensionBindingsSystem> Dispatcher::CreateBindingsSystem(
+std::unique_ptr<NativeExtensionBindingsSystem> Dispatcher::CreateBindingsSystem(
     std::unique_ptr<IPCMessageSender> ipc_sender) {
   auto bindings_system =
       std::make_unique<NativeExtensionBindingsSystem>(std::move(ipc_sender));

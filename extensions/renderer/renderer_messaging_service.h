@@ -18,7 +18,7 @@ class RenderFrame;
 }
 
 namespace extensions {
-class ExtensionBindingsSystem;
+class NativeExtensionBindingsSystem;
 class ScriptContext;
 class ScriptContextSetIterable;
 struct Message;
@@ -28,7 +28,8 @@ struct PortId;
 // NativeRendererMessagingService); consolidate the classes.
 class RendererMessagingService {
  public:
-  explicit RendererMessagingService(ExtensionBindingsSystem* bindings_system);
+  explicit RendererMessagingService(
+      NativeExtensionBindingsSystem* bindings_system);
   virtual ~RendererMessagingService();
 
   // Checks whether the port exists in the given frame. If it does not, a reply
@@ -109,8 +110,9 @@ class RendererMessagingService {
                                                const PortId& port_id,
                                                const std::string& error) = 0;
 
-  // The associated ExtensionBindingsSystem; guaranteed to outlive this object.
-  ExtensionBindingsSystem* const bindings_system_;
+  // The associated NativeExtensionBindingsSystem; guaranteed to outlive this
+  // object.
+  NativeExtensionBindingsSystem* const bindings_system_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererMessagingService);
 };

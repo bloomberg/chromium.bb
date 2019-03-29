@@ -34,7 +34,7 @@
 #include "content/public/renderer/media_stream_utils.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension.h"
-#include "extensions/renderer/extension_bindings_system.h"
+#include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/script_context.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/limits.h"
@@ -319,7 +319,7 @@ void FromFrameSenderConfig(const FrameSenderConfig& config,
 // unlikely to happen in normal use cases.
 CastStreamingNativeHandler::CastStreamingNativeHandler(
     ScriptContext* context,
-    ExtensionBindingsSystem* bindings_system)
+    NativeExtensionBindingsSystem* bindings_system)
     : ObjectBackedNativeHandler(context),
       last_transport_id_(
           context->extension()
