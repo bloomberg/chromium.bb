@@ -396,6 +396,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle interface_pipe) override;
+  void BindCredentialManagerRequest(
+      content::RenderFrameHost* render_frame_host,
+      blink::mojom::CredentialManagerRequest request) override;
   bool BindAssociatedInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,

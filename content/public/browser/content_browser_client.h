@@ -53,6 +53,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom-forward.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-forward.h"
 #include "third_party/blink/public/mojom/window_features/window_features.mojom-forward.h"
@@ -957,6 +958,12 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle interface_pipe) {}
+
+  // Content was unable to bind a CredentialManager request, so the embedder
+  // should try.
+  virtual void BindCredentialManagerRequest(
+      RenderFrameHost* render_frame_host,
+      blink::mojom::CredentialManagerRequest request) {}
 
   // Content was unable to bind a request for this associated interface, so the
   // embedder should try. Returns true if the |handle| was actually taken and

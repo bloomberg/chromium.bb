@@ -855,6 +855,12 @@ class TestSimpleDocumentInterfaceBrokerImpl
   }
   void GetAudioContextManager(
       blink::mojom::AudioContextManagerRequest) override {}
+  void GetCredentialManager(
+      blink::mojom::CredentialManagerRequest request) override {}
+  void GetAuthenticator(blink::mojom::AuthenticatorRequest request) override {}
+  void GetVirtualAuthenticatorManager(
+      blink::test::mojom::VirtualAuthenticatorManagerRequest request) override {
+  }
 
   mojo::Binding<blink::mojom::DocumentInterfaceBroker> binding_;
   BinderCallback binder_callback_;
