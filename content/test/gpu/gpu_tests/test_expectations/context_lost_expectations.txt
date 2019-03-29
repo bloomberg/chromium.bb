@@ -1,6 +1,6 @@
 # tags: [ android linux lion mac mountainlion win win7 win8 ]
 # tags: [ debug ]
-# tags: [ amd-0x6779 nvidia qualcomm-Adreno-(TM)-418 qualcomm-Adreno-(TM)-420 ]
+# tags: [ amd-0x6779 nvidia qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420 ]
 # tags: [ asan no-asan ]
 
 # AMD Radeon 6450
@@ -34,12 +34,12 @@ crbug.com/609629 [ android ] ContextLost_WebGLContextLostFromGPUProcessExit [ Sk
 crbug.com/609629 [ android ] ContextLost_WebGLContextLostInHiddenTab [ Skip ]
 
 # Flaking on Nexus 5X
-crbug.com/879423 [ android qualcomm-Adreno-(TM)-418 ] ContextLost_WebGLUnblockedAfterUserInitiatedReload [ RetryOnFailure ]
+crbug.com/879423 [ android qualcomm-adreno-(tm)-418 ] ContextLost_WebGLUnblockedAfterUserInitiatedReload [ RetryOnFailure ]
 crbug.com/880078 [ android ] ContextLost_WorkerRAFAfterGPUCrash [ Failure ]
 crbug.com/880078 [ android ] ContextLost_WorkerRAFAfterGPUCrash_OOPD [ Failure ]
 
 # Nexus 6
 # The Nexus 6 times out on these tests while waiting for the JS to complete
-crbug.com/611906 [ android qualcomm-Adreno-(TM)-420 ] ContextLost_WebGLContextLostFromLoseContextExtension [ Failure ]
-crbug.com/611906 [ android qualcomm-Adreno-(TM)-420 ] ContextLost_WebGLContextLostFromQuantity [ Failure ]
+crbug.com/611906 [ android qualcomm-adreno-(tm)-420 ] ContextLost_WebGLContextLostFromLoseContextExtension [ Failure ]
+crbug.com/611906 [ android qualcomm-adreno-(tm)-420 ] ContextLost_WebGLContextLostFromQuantity [ Failure ]
 
