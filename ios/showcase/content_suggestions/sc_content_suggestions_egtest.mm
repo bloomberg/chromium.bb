@@ -52,14 +52,6 @@ GREYElementInteraction* CellWithID(NSString* ID) {
   return CellWithMatcher(grey_accessibilityID(ID));
 }
 
-// Returns the string displayed when the Reading List section is empty.
-NSString* ReadingListEmptySection() {
-  return [NSString
-      stringWithFormat:@"%@, %@",
-                       l10n_util::GetNSString(IDS_NTP_TITLE_NO_SUGGESTIONS),
-                       l10n_util::GetNSString(
-                           IDS_NTP_READING_LIST_SUGGESTIONS_SECTION_EMPTY)];
-}
 }  // namespace
 
 // Tests for the suggestions view controller.
@@ -81,11 +73,8 @@ NSString* ReadingListEmptySection() {
 // Tests launching ContentSuggestionsViewController.
 - (void)testLaunch {
   showcase_utils::Open(@"ContentSuggestionsViewController");
-  NSString* section_header = l10n_util::GetNSStringWithFixup(
-      IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER);
-  if (IsUIRefreshPhase1Enabled()) {
-    section_header = [section_header uppercaseString];
-  }
+  NSString* section_header = [l10n_util::GetNSStringWithFixup(
+      IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER) uppercaseString];
   [CellWithMatcher(chrome_test_util::StaticTextWithAccessibilityLabel(
       section_header)) assertWithMatcher:grey_notNil()];
   [CellWithMatcher(chrome_test_util::ButtonWithAccessibilityLabelId(
@@ -150,35 +139,6 @@ NSString* ReadingListEmptySection() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
                                           @"protocol_alerter_done")]
       performAction:grey_tap()];
-
-  showcase_utils::Close();
-}
-
-// Tests that swipe-to-dismiss on empty item does nothing.
-- (void)testNoSwipeToDismissEmptyItem {
-  if (IsUIRefreshPhase1Enabled()) {
-    EARL_GREY_TEST_DISABLED(
-        @"Test disabled in UI Refresh as there's no reading list.");
-  }
-  showcase_utils::Open(@"ContentSuggestionsViewController");
-  [CellWithID([SCContentSuggestionsDataSource titleReadingListItem])
-      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
-
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
-                                          @"protocol_alerter_done")]
-      performAction:grey_tap()];
-
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
-                                          ReadingListEmptySection())]
-      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
-
-  // Check that it is not dismissed.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
-                                          @"protocol_alerter_done")]
-      assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
-                                          ReadingListEmptySection())]
-      assertWithMatcher:grey_sufficientlyVisible()];
 
   showcase_utils::Close();
 }

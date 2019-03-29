@@ -7,7 +7,6 @@
 #import <Foundation/Foundation.h>
 
 #import "base/mac/foundation_util.h"
-#import "base/test/ios/wait_util.h"
 #import "ios/chrome/app/main_controller_private.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
@@ -17,7 +16,6 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/main/tab_switcher.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
@@ -26,8 +24,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace chrome_test_util {
 
@@ -195,14 +191,6 @@ BOOL CloseAllIncognitoTabs() {
       GetMainController().interfaceProvider.incognitoInterface.tabModel;
   DCHECK(tabModel);
   [tabModel closeAllTabs];
-  if (!IsIPadIdiom() && !IsUIRefreshPhase1Enabled()) {
-    // If the OTR BVC is active, wait until it isn't (since all of the
-    // tabs are now closed)
-    return WaitUntilConditionOrTimeout(
-        base::test::ios::kWaitForUIElementTimeout, ^{
-          return !IsIncognitoMode();
-        });
-  }
   return YES;
 }
 
