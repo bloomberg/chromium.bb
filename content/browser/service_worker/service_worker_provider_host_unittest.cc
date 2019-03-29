@@ -166,10 +166,6 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     // process right before navigation commit.
     host->OnBeginNavigationCommit(helper_->mock_render_process_id(),
                                   1 /* route_id */);
-    // In production code this is a Mojo call
-    // ServiceWorkerContainerHost::OnProviderCreated() triggered from the
-    // renderer process.
-    host->OnProviderCreated();
   }
 
   blink::mojom::ServiceWorkerErrorType Register(

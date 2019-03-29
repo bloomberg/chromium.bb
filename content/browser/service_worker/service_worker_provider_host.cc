@@ -710,6 +710,8 @@ void ServiceWorkerProviderHost::OnBeginNavigationCommit(int render_process_id,
   DCHECK_EQ(MSG_ROUTING_NONE, frame_id_);
   DCHECK_NE(MSG_ROUTING_NONE, render_frame_id);
   frame_id_ = render_frame_id;
+
+  TransitionToClientPhase(ClientPhase::kResponseCommitted);
 }
 
 blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr
@@ -1194,17 +1196,6 @@ void ServiceWorkerProviderHost::HintToUpdateServiceWorker() {
   versions_to_update_.clear();
 }
 
-void ServiceWorkerProviderHost::OnProviderCreated() {
-  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow, type_);
-  DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
-  // |frame_id_| and |render_process_id_| have already been set by
-  // OnBeginNavigationCommit().
-  DCHECK_NE(MSG_ROUTING_NONE, frame_id_);
-  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
-
-  TransitionToClientPhase(ClientPhase::kResponseCommitted);
-}
-
 void ServiceWorkerProviderHost::OnExecutionReady() {
   if (!IsProviderForClient()) {
     mojo::ReportBadMessage("SWPH_OER_NOT_CLIENT");
@@ -1365,10 +1356,6 @@ bool ServiceWorkerProviderHost::is_response_committed() const {
 bool ServiceWorkerProviderHost::is_execution_ready() const {
   DCHECK(IsProviderForClient());
   return client_phase_ == ClientPhase::kExecutionReady;
-}
-
-void ServiceWorkerProviderHost::CallOnProviderCreatedForTesting() {
-  OnProviderCreated();
 }
 
 void ServiceWorkerProviderHost::SetExecutionReady() {

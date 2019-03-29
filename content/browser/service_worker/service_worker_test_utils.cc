@@ -247,10 +247,6 @@ base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
   // In production code this is called from NavigationRequest in the browser
   // process right before navigation commit.
   host->OnBeginNavigationCommit(process_id, 1 /* route_id */);
-  // In production code this is a Mojo call
-  // ServiceWorkerContainerHost::OnProviderCreated() triggered from the renderer
-  // process.
-  host->CallOnProviderCreatedForTesting();
   return host;
 }
 

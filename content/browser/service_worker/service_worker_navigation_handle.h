@@ -37,17 +37,10 @@ class ServiceWorkerNavigationHandleCore;
 //
 //   4) When the navigation is ready to commit, the NavigationRequest will
 //   call ServiceWorkerNavigationHandle::OnBeginNavigationCommit() to
-//     - update the render process id and the frame id for the
-//     ServiceWorkerProviderHost.
+//     - complete the initialization for the ServiceWorkerProviderHost.
 //     - take out the provider info to be sent as part of navigation commit IPC.
 //
-//   5) If the commit leads to the creation of a
-//   ServiceWorkerNetworkProviderForFrame based on the provider info in the
-//   renderer, a ServiceWorkerContainerHost::OnProviderCreated() Mojo call will
-//   be received by the ServiceWorkerProviderHost to complete its
-//   initialization.
-//
-//   6) When the navigation finishes, the ServiceWorkerNavigationHandle is
+//   5) When the navigation finishes, the ServiceWorkerNavigationHandle is
 //   destroyed. The destructor of the ServiceWorkerNavigationHandle destroys
 //   the provider info which in turn leads to the destruction of an unclaimed
 //   ServiceWorkerProviderHost, and posts a task to destroy the
