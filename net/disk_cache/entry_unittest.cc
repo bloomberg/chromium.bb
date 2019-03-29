@@ -92,6 +92,7 @@ class DiskCacheEntryTest : public DiskCacheTestWithCache {
   void UseAfterBackendDestruction();
   void CloseSparseAfterBackendDestruction();
   void LastUsedTimePersists();
+  void TruncateBackwards();
 };
 
 // This part of the test runs on the background thread.
@@ -5047,6 +5048,64 @@ TEST_F(DiskCacheEntryTest, SimpleLastUsedTimePersists) {
 TEST_F(DiskCacheEntryTest, MemoryOnlyLastUsedTimePersists) {
   SetMemoryOnlyMode();
   LastUsedTimePersists();
+}
+
+void DiskCacheEntryTest::TruncateBackwards() {
+  const char kKey[] = "a key";
+
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry(kKey, &entry), IsOk());
+  ASSERT_TRUE(entry != nullptr);
+
+  const int kBigSize = 40 * 1024;
+  const int kSmallSize = 9727;
+
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kBigSize);
+  CacheTestFillBuffer(buffer->data(), kBigSize, false);
+  scoped_refptr<net::IOBuffer> read_buf =
+      base::MakeRefCounted<net::IOBuffer>(kBigSize);
+
+  ASSERT_EQ(kSmallSize, WriteData(entry, /* stream_index = */ 0,
+                                  /* offset = */ kBigSize, buffer.get(),
+                                  /* size = */ kSmallSize,
+                                  /* truncate = */ false));
+  memset(read_buf->data(), 0, kBigSize);
+  ASSERT_EQ(kSmallSize, ReadData(entry, /* stream_index = */ 0,
+                                 /* offset = */ kBigSize, read_buf.get(),
+                                 /* size = */ kSmallSize));
+  EXPECT_EQ(0, memcmp(read_buf->data(), buffer->data(), kSmallSize));
+
+  // A partly overlapping truncate before the previous write.
+  ASSERT_EQ(kBigSize,
+            WriteData(entry, /* stream_index = */ 0,
+                      /* offset = */ 3, buffer.get(), /* size = */ kBigSize,
+                      /* truncate = */ true));
+  memset(read_buf->data(), 0, kBigSize);
+  ASSERT_EQ(kBigSize,
+            ReadData(entry, /* stream_index = */ 0,
+                     /* offset = */ 3, read_buf.get(), /* size = */ kBigSize));
+  EXPECT_EQ(0, memcmp(read_buf->data(), buffer->data(), kBigSize));
+  EXPECT_EQ(kBigSize + 3, entry->GetDataSize(0));
+  entry->Close();
+}
+
+TEST_F(DiskCacheEntryTest, TruncateBackwards) {
+  // https://crbug.com/946539/
+  InitCache();
+  TruncateBackwards();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleTruncateBackwards) {
+  SetSimpleCacheMode();
+  InitCache();
+  TruncateBackwards();
+}
+
+TEST_F(DiskCacheEntryTest, MemoryOnlyTruncateBackwards) {
+  SetMemoryOnlyMode();
+  InitCache();
+  TruncateBackwards();
 }
 
 TEST_F(DiskCacheEntryTest, SimpleCacheCloseResurrection) {
