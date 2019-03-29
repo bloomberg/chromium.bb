@@ -219,15 +219,17 @@ In the [chromium/src] workspace:
 
 In the [infradata/config] workspace (Google internal only, sorry):
 
-*   [configs/chromium-swarm/bots.cfg]
+*   [gpu.star]
     *   Defines a `Chrome-GPU` Swarming pool which contains most of the
         specialized hardware: as of this writing, the Windows and Linux NVIDIA
         bots, the Windows AMD bots, and the MacBook Pros with NVIDIA and AMD
         GPUs. New GPU hardware should be added to this pool.
 
 [infradata/config]:                https://chrome-internal.googlesource.com/infradata/config
-[configs/chromium-swarm/bots.cfg]: https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/bots.cfg
 [bot_config.py]:                   https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/scripts/bot_config.py
+[gen.star]:                        https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/gen.star
+[gpu.star]:                        https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/starlark/bots/chromium/gpu.star
+[vms.cfg]:                         https://chrome-internal.googlesource.com/infradata/config/+/master/configs/gce-provider/vms.cfg
 
 ## Walkthroughs of various maintenance scenarios
 
@@ -251,29 +253,56 @@ for the hosts.
 
     1.  File a Chrome Infrastructure Labs ticket requesting 2 virtual machines
         for the testers. See this [example ticket](http://crbug.com/838975).
+    1.  Follow the instructions below to add an association between those VM
+        names and the bot names you're adding to [`gpu.star`][gpu.star] and
+        regenerate the auto-generated files.
 
-1. If you need a non-Mac VM, VMs are allocated using the Machine Provider APIs:
+1. If you need a non-Mac VM, VMs are allocated using the GCE Provider APIs:
 
     1.  Create a CL in the [`infradata/config`][infradata/config] (Google
         internal) workspace which does the following. Git configure your
-        user.email to @google.com if necessary. See
-        [example CL](https://chrome-internal-review.googlesource.com/718221)
-        for relevant Linux sections and
-        [example CL](https://chrome-internal-review.googlesource.com/715834)
-        for Windows.
-    1.  Adds a new "bot_group" block in the Chromium GPU FYI section of
-        [`configs/chromium-swarm/bots.cfg`][bots.cfg]. If setting up a Release/
-        Debug bot pair, you would add two separate bot_group blocks. If
-        setting up a new optional tryserver, for example, you would add one
-        new bot_group block. Copy the closest configuration you can find
-        -- for example, Windows, Android, etc.
-    1.  In [`configs/gce-backend/managers.cfg`][managers.cfg], choose a zone
-        in which to allocate the VMs. Make sure that you choose one with the
-        correct configuration (either gce-trusty or win10) and find a zone
-        which hasn't yet reached its maximum allocation. Increase the
-        maximum_size by the number of VMs being allocated.
-    1.  Get this reviewed and landed. This step associates the VM with the
-        bot's name on the waterfall.
+        user.email to @google.com if necessary. For reference, see these example
+        CLs:
+
+        1. [Adding both Linux and Windows
+        VMs](https://chrome-internal-review.googlesource.com/1068669) for
+        trybots.
+        1. [Adding a Linux
+        VM](https://chrome-internal-review.googlesource.com/1095060) for
+        a waterfall bot.
+        1. [Adding a Windows
+        VM](https://chrome-internal-review.googlesource.com/1111456) for a
+        waterfall bot.
+
+    1.  Edit [gpu.star] to add an entry for the new bot. Currently, the only way
+        to limit the number of concurrent builds per bot is to limit the number
+        of VMs associated with it. This means that each new bot requires a new
+        prefix. Add your new entry to the correct block:
+        1. Put waterfall bots under `gpu_ci_bots`. For example: <br>
+           `swarming.gce_provider('linux-fyi-skiarenderer-vulkan-nvidia')` or
+           <br> `swarming.gce_provider('win10-fyi-release-amd-rx-550')`.
+        1. Put trybots under the appropriate `gpu_try_bots` block (optional GPU
+           trybots, ANGLE trybots, etc.). For example: <br>
+           `swarming.gce_provider('gpu-manual-try-linux-intel-exp')`.
+
+    1.  Edit [vms.cfg] to add an entry for the new bot. Trybots should be added
+        to the `luci.chromium.try` pool; see the configurations of other similar
+        trybots to choose the machine type and number of bots. Waterfall bots
+        should be added to the `luci.chromium.ci` pool, in the chromium.gpu /
+        chromium.gpu.fyi block at the bottom, should use the second-smallest
+        configuration (n1-standard-2), and should have only 1 associated VM.
+
+        Note that part of the difficulty here is choosing a zone. This should
+        soon no longer be necessary per
+        [crbug.com/942301](http://crbug.com/942301), but consult with the Chrome
+        Infra team to find out which of the
+        [zones](https://cloud.google.com/compute/docs/regions-zones/) has
+        available capacity.
+
+    1.  Run [gen.star] to regenerate `configs/chromium-swarm/bots.cfg`.
+        Double-check your work there.
+    1.  Get this reviewed and landed. This step associates the VM or pool of VMs
+        with the bot's name on the waterfall.
 
 ### How to add a new tester bot to the chromium.gpu.fyi waterfall
 
@@ -304,13 +333,19 @@ Builder].
     need to be updated for Android bots which don't have PCI buses.)
 
     1.  Make sure to add these new machines to the Chrome-GPU Swarming pool by
-        creating a CL against [`configs/chromium-swarm/bots.cfg`][bots.cfg] in
-        the [infradata/config] (Google internal) workspace. Git configure your
-        user.email to @google.com if necessary. Here is an [example
-        CL](https://chrome-internal-review.googlesource.com/524420).
+        creating a CL against [gpu.star] in the [infradata/config] (Google
+        internal) workspace. Git configure your user.email to @google.com if
+        necessary. Here is one [example
+        CL](https://chrome-internal-review.googlesource.com/913528) and a
+        [second
+        example](https://chrome-internal-review.googlesource.com/1111456).
 
-1.  Allocate new virtual machines for the bots as described in
-    [How to set up new virtual machine instances].
+    1.  Run [gen.star] to regenerate `configs/chromium-swarm/bots.cfg`.
+        Double-check your work there.
+
+1.  Allocate new virtual machines for the bots as described in [How to set up
+    new virtual machine
+    instances](#How-to-set-up-new-virtual-machine-instances).
 
 1.  Create a CL in the Chromium workspace which does the following. Here's an
     [example CL](https://chromium-review.googlesource.com/1041164).
@@ -389,7 +424,6 @@ Builder].
    will cause the builders to fail. You can and should prepare the tools/build
    CL in advance, but make sure it doesn't land until the bot's on the console.
 
-[bots.cfg]:            https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/bots.cfg
 [infradata/config]:    https://chrome-internal.googlesource.com/infradata/config/
 [cr-buildbucket.cfg]:  https://chromium.googlesource.com/chromium/src/+/master/infra/config/cr-buildbucket.cfg
 [luci-milo.cfg]:  https://chromium.googlesource.com/chromium/src/+/master/infra/config/luci-milo.cfg
@@ -441,10 +475,10 @@ particular GPU type. Let's consider that we are adding a manually-triggered
 trybot for the Win7 NVIDIA GPUs in Release mode. We will call the new bot
 `gpu_manual_try_win7_nvidia_rel`.
 
-1.  Allocate new virtual machines for the bots as described in
-    [How to set up new virtual machine instances]. The "dimensions" tag in the
-    new bot_group block contains the name of the trybot, e.g.:
-    "builder:gpu_manual_try_win7_nvidia_rel".
+1.  Allocate new virtual machines for the bots as described in [How to set up
+    new virtual machine
+    instances](#How-to-set-up-new-virtual-machine-instances), following the
+    "trybot" instructions.
 
 1.  Create a CL in the Chromium workspace which does the following. Here's an
     [example CL](https://chromium-review.googlesource.com/1044767).
