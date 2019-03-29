@@ -110,13 +110,16 @@ bool VP8Encoder::PrepareEncodeJob(EncodeJob* encode_job) {
   UpdateFrameHeader(encode_job->IsKeyframeRequested());
   *picture->frame_hdr = current_frame_hdr_;
 
-  std::array<bool, kNumVp8ReferenceBuffers> ref_frames_used{true, true, true};
+  // We only use |last_frame| for a reference frame. This follows the behavior
+  // of libvpx encoder in chromium webrtc use case.
+  std::array<bool, kNumVp8ReferenceBuffers> ref_frames_used{true, false, false};
 
   if (current_frame_hdr_.IsKeyframe()) {
     // A driver should ignore |ref_frames_used| values if keyframe is requested.
     // But we fill false in |ref_frames_used| just in case.
     std::fill(std::begin(ref_frames_used), std::end(ref_frames_used), false);
   }
+
   if (!accelerator_->SubmitFrameParameters(encode_job, current_params_, picture,
                                            reference_frames_,
                                            ref_frames_used)) {
