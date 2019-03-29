@@ -206,6 +206,12 @@ AutofillWalletSyncableService::AutofillWalletSyncableService(
 
 AutofillWalletSyncableService::~AutofillWalletSyncableService() {}
 
+void AutofillWalletSyncableService::WaitUntilReadyToSync(
+    base::OnceClosure done) {
+  // Not used in the legacy directory-based architecture.
+  NOTREACHED();
+}
+
 syncer::SyncMergeResult AutofillWalletSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
