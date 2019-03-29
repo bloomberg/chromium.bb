@@ -9,6 +9,6 @@ PASS cancel() inside size() should work
 FAIL pipeTo() inside size() should behave as expected assert_array_equals: ws should contain two chunks lengths differ, expected 4 got 0
 PASS read() inside of size() should behave as expected
 PASS getReader() inside size() should work
-FAIL tee() inside size() should work Failed to execute 'tee' on 'ReadableStream': tee not yet implemented
+PASS tee() inside size() should work
 Harness: the test ran to completion.
 

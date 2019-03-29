@@ -191,6 +191,7 @@ class ReadableStreamNative : public ReadableStream {
   friend class ReadableStreamDefaultReader;
 
   class ReadHandleImpl;
+  class TeeEngine;
 
   // https://streams.spec.whatwg.org/#initialize-readable-stream
   static void Initialize(ReadableStreamNative*);

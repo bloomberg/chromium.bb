@@ -270,6 +270,14 @@ class JavaScriptStreamStartAlgorithm : public StreamStartAlgorithm {
   TraceWrapperV8Reference<v8::Value> controller_;
 };
 
+class TrivialStartAlgorithm : public StreamStartAlgorithm {
+ public:
+  v8::MaybeLocal<v8::Promise> Run(ScriptState* script_state,
+                                  ExceptionState&) override {
+    return PromiseResolveWithUndefined(script_state);
+  }
+};
+
 }  // namespace
 
 // TODO(ricea): For optimal performance, method_name should be cached as an
@@ -324,6 +332,10 @@ CORE_EXPORT StreamStartAlgorithm* CreateStartAlgorithm(
   return MakeGarbageCollected<JavaScriptStreamStartAlgorithm>(
       script_state->GetIsolate(), underlying_object, method_name_for_error,
       controller);
+}
+
+CORE_EXPORT StreamStartAlgorithm* CreateTrivialStartAlgorithm() {
+  return MakeGarbageCollected<TrivialStartAlgorithm>();
 }
 
 CORE_EXPORT v8::MaybeLocal<v8::Value> CallOrNoop1(
@@ -422,6 +434,10 @@ CORE_EXPORT StrategySizeAlgorithm* MakeSizeAlgorithmFromSizeFunction(
   //    a. Return ? Call(size, undefined, « chunk »).
   return MakeGarbageCollected<JavaScriptSizeAlgorithm>(
       script_state->GetIsolate(), size.As<v8::Function>());
+}
+
+CORE_EXPORT StrategySizeAlgorithm* CreateDefaultSizeAlgorithm() {
+  return MakeGarbageCollected<DefaultSizeAlgorithm>();
 }
 
 // PromiseResolve implements Promise.resolve(_x_) from the ECMASCRIPT standard,

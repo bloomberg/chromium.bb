@@ -49,6 +49,10 @@ CORE_EXPORT StreamStartAlgorithm* CreateStartAlgorithm(
     const char* method_name_for_error,
     v8::Local<v8::Value> controller);
 
+// Returns a startAlgorithm that always returns a promise resolved with
+// undefined.
+CORE_EXPORT StreamStartAlgorithm* CreateTrivialStartAlgorithm();
+
 // Used in place of InvokeOrNoop in spec. Always takes 1 argument.
 // https://streams.spec.whatwg.org/#invoke-or-noop
 CORE_EXPORT v8::MaybeLocal<v8::Value> CallOrNoop1(ScriptState*,
@@ -80,6 +84,8 @@ CORE_EXPORT StrategySizeAlgorithm* MakeSizeAlgorithmFromSizeFunction(
     ScriptState*,
     v8::Local<v8::Value> size,
     ExceptionState&);
+
+CORE_EXPORT StrategySizeAlgorithm* CreateDefaultSizeAlgorithm();
 
 // Implements "a promise rejected with" from the INFRA standard.
 // https://www.w3.org/2001/tag/doc/promises-guide/#a-promise-rejected-with

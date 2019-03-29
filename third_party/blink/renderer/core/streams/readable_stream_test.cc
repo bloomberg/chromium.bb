@@ -272,12 +272,6 @@ TEST_P(ReadableStreamTest, CancelWithNull) {
 // TODO(yhirano): Write tests for pipeThrough and pipeTo.
 
 TEST_P(ReadableStreamTest, Tee) {
-  if (GetParam()) {
-    // This test is temporarily disabled with the new implementation until Tee()
-    // is implemented.
-    // TODO(ricea): Turn this back on.
-    return;
-  }
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
 
