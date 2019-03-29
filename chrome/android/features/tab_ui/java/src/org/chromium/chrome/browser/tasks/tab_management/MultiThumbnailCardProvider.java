@@ -109,6 +109,7 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
                             }
                         });
                     } else {
+                        drawBitmapOnCanvasWithFrame(null, i, mEmptyThumbnailPaint);
                         if (mThumbnailsToFetch.decrementAndGet() == 0) {
                             PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE,
                                     () -> mFinalCallback.onResult(mMultiThumbnailBitmap));
