@@ -8,48 +8,26 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/notifications/scheduler/impression_history_tracker.h"
+#include "chrome/browser/notifications/scheduler/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace notifications {
 namespace {
 
-// Flattened type state data used in test without smart pointers and sorted
-// containers.
-struct ImpressionTestData {
-  SchedulerClientType type;
-  int current_max_daily_show;
-  std::vector<Impression> impressions;
-  base::Optional<SuppressionInfo> suppression_info;
-};
-
 struct TestCase {
   // Input data that will be pushed to the target class.
-  std::vector<ImpressionTestData> input;
+  std::vector<test::ImpressionTestData> input;
 
   // Expected output data.
-  std::vector<ImpressionTestData> expected;
+  std::vector<test::ImpressionTestData> expected;
 };
 
-// Adds |test_data| to |type_states| container.
-void AddTestData(const std::vector<ImpressionTestData>& test_data,
-                 ImpressionHistoryTracker::TypeStates* type_states) {
-  DCHECK(type_states);
-  for (const auto& test_data : test_data) {
-    auto type_state = std::make_unique<TypeState>(test_data.type);
-    type_state->current_max_daily_show = test_data.current_max_daily_show;
-    for (const auto& impression : test_data.impressions)
-      type_state->impressions.emplace(impression.create_time, impression);
-    type_state->suppression_info = test_data.suppression_info;
-
-    type_states->emplace(test_data.type, std::move(type_state));
-  }
-}
-
 // Verifies the |output|.
-void VerifyTypeStates(const std::vector<ImpressionTestData>& expected_test_data,
-                      const ImpressionHistoryTracker::TypeStates& output) {
+void VerifyTypeStates(
+    const std::vector<test::ImpressionTestData>& expected_test_data,
+    const ImpressionHistoryTracker::TypeStates& output) {
   ImpressionHistoryTracker::TypeStates expected_type_states;
-  AddTestData(expected_test_data, &expected_type_states);
+  test::AddImpressionTestData(expected_test_data, &expected_type_states);
 
   DCHECK_EQ(expected_type_states.size(), output.size());
   for (const auto& expected : expected_type_states) {
@@ -77,7 +55,7 @@ class ImpressionHistoryTrackerTest : public testing::Test {
   void RunTestCase(TestCase test_case) {
     // Prepare test input data.
     ImpressionHistoryTracker::TypeStates input_states;
-    AddTestData(test_case.input, &input_states);
+    test::AddImpressionTestData(test_case.input, &input_states);
 
     // Do stuff.
     CreateTracker(std::move(input_states));
