@@ -229,14 +229,12 @@ Database::Database(DatabaseContext* database_context,
       guid_(0),
       opened_(false),
       new_(false),
+      database_authorizer_(kInfoTableName),
       transaction_in_progress_(false),
       is_transaction_queue_enabled_(true) {
   DCHECK(IsMainThread());
   context_thread_security_origin_ =
       database_context_->GetSecurityOrigin()->IsolatedCopy();
-
-  database_authorizer_ =
-      DatabaseAuthorizer::Create(database_context, kInfoTableName);
 
   if (name_.IsNull())
     name_ = "";
@@ -273,8 +271,6 @@ Database::~Database() {
 
 void Database::Trace(blink::Visitor* visitor) {
   visitor->Trace(database_context_);
-  visitor->Trace(sqlite_database_);
-  visitor->Trace(database_authorizer_);
   ScriptWrappable::Trace(visitor);
 }
 
@@ -585,8 +581,7 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
     return false;
   }
 
-  DCHECK(database_authorizer_);
-  sqlite_database_.SetAuthorizer(database_authorizer_.Get());
+  sqlite_database_.SetAuthorizer(&database_authorizer_);
 
   // See comment at the top this file regarding calling addOpenDatabase().
   DatabaseTracker::Tracker().AddOpenDatabase(this);
@@ -631,7 +626,7 @@ bool Database::GetVersionFromDatabase(String& version,
   String query(String("SELECT value FROM ") + kInfoTableName +
                " WHERE key = '" + kVersionKey + "';");
 
-  database_authorizer_->Disable();
+  database_authorizer_.Disable();
 
   bool result =
       RetrieveTextResultFromDatabase(sqlite_database_, query, version);
@@ -643,7 +638,7 @@ bool Database::GetVersionFromDatabase(String& version,
                 << DatabaseDebugName();
   }
 
-  database_authorizer_->Enable();
+  database_authorizer_.Enable();
 
   return result;
 }
@@ -656,7 +651,7 @@ bool Database::SetVersionInDatabase(const String& version,
   String query(String("INSERT INTO ") + kInfoTableName +
                " (key, value) VALUES ('" + kVersionKey + "', ?);");
 
-  database_authorizer_->Disable();
+  database_authorizer_.Disable();
 
   bool result = SetTextValueInDatabase(sqlite_database_, query, version);
   if (result) {
@@ -667,7 +662,7 @@ bool Database::SetVersionInDatabase(const String& version,
                 << query << ")";
   }
 
-  database_authorizer_->Enable();
+  database_authorizer_.Enable();
 
   return result;
 }
@@ -696,43 +691,35 @@ bool Database::GetActualVersionForTransaction(String& actual_version) {
 }
 
 void Database::DisableAuthorizer() {
-  DCHECK(database_authorizer_);
-  database_authorizer_->Disable();
+  database_authorizer_.Disable();
 }
 
 void Database::EnableAuthorizer() {
-  DCHECK(database_authorizer_);
-  database_authorizer_->Enable();
+  database_authorizer_.Enable();
 }
 
 void Database::SetAuthorizerPermissions(int permissions) {
-  DCHECK(database_authorizer_);
-  database_authorizer_->SetPermissions(permissions);
+  database_authorizer_.SetPermissions(permissions);
 }
 
 bool Database::LastActionChangedDatabase() {
-  DCHECK(database_authorizer_);
-  return database_authorizer_->LastActionChangedDatabase();
+  return database_authorizer_.LastActionChangedDatabase();
 }
 
 bool Database::LastActionWasInsert() {
-  DCHECK(database_authorizer_);
-  return database_authorizer_->LastActionWasInsert();
+  return database_authorizer_.LastActionWasInsert();
 }
 
 void Database::ResetDeletes() {
-  DCHECK(database_authorizer_);
-  database_authorizer_->ResetDeletes();
+  database_authorizer_.ResetDeletes();
 }
 
 bool Database::HadDeletes() {
-  DCHECK(database_authorizer_);
-  return database_authorizer_->HadDeletes();
+  return database_authorizer_.HadDeletes();
 }
 
 void Database::ResetAuthorizer() {
-  if (database_authorizer_)
-    database_authorizer_->Reset();
+  database_authorizer_.Reset();
 }
 
 uint64_t Database::MaximumSize() const {

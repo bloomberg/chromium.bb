@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/modules/webdatabase/database_authorizer.h"
 
 #include "third_party/blink/renderer/core/frame/use_counter.h"
-#include "third_party/blink/renderer/modules/webdatabase/database_context.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
@@ -37,22 +36,15 @@
 
 namespace blink {
 
-DatabaseAuthorizer* DatabaseAuthorizer::Create(
-    DatabaseContext* database_context,
-    const String& database_info_table_name) {
-  return MakeGarbageCollected<DatabaseAuthorizer>(database_context,
-                                                  database_info_table_name);
-}
-
-DatabaseAuthorizer::DatabaseAuthorizer(DatabaseContext* database_context,
-                                       const String& database_info_table_name)
+DatabaseAuthorizer::DatabaseAuthorizer(const String& database_info_table_name)
     : security_enabled_(false),
-      database_info_table_name_(database_info_table_name),
-      database_context_(database_context) {
+      database_info_table_name_(database_info_table_name) {
   DCHECK(IsMainThread());
 
   Reset();
 }
+
+DatabaseAuthorizer::~DatabaseAuthorizer() = default;
 
 void DatabaseAuthorizer::Reset() {
   last_action_was_insert_ = false;
@@ -253,8 +245,6 @@ int DatabaseAuthorizer::CreateVTable(const String& table_name,
   if (!DeprecatedEqualIgnoringCase(module_name, "fts3"))
     return kSQLAuthDeny;
 
-  UseCounter::Count(database_context_->GetExecutionContext(),
-                    WebFeature::kWebDatabaseCreateDropFTS3Table);
   last_action_changed_database_ = true;
   return DenyBasedOnTableName(table_name);
 }
@@ -268,8 +258,6 @@ int DatabaseAuthorizer::DropVTable(const String& table_name,
   if (!DeprecatedEqualIgnoringCase(module_name, "fts3"))
     return kSQLAuthDeny;
 
-  UseCounter::Count(database_context_->GetExecutionContext(),
-                    WebFeature::kWebDatabaseCreateDropFTS3Table);
   return UpdateDeletesBasedOnTableName(table_name);
 }
 
@@ -369,10 +357,6 @@ int DatabaseAuthorizer::UpdateDeletesBasedOnTableName(
   if (allow)
     had_deletes_ = true;
   return allow;
-}
-
-void DatabaseAuthorizer::Trace(blink::Visitor* visitor) {
-  visitor->Trace(database_context_);
 }
 
 }  // namespace blink

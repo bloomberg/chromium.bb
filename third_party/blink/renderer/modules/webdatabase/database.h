@@ -29,6 +29,7 @@
 #include <atomic>
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_database_callback.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_authorizer.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_basic_types.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_error.h"
 #include "third_party/blink/renderer/modules/webdatabase/sql_transaction.h"
@@ -189,9 +190,9 @@ class Database final : public ScriptWrappable {
 
   bool new_;
 
+  DatabaseAuthorizer database_authorizer_;
   SQLiteDatabase sqlite_database_;
 
-  Member<DatabaseAuthorizer> database_authorizer_;
   Deque<CrossThreadPersistent<SQLTransactionBackend>> transaction_queue_;
   Mutex transaction_in_progress_mutex_;
   bool transaction_in_progress_;

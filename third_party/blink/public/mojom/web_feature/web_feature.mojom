@@ -1451,7 +1451,6 @@ enum WebFeature {
   kCrossOriginPropertyAccess = 1977,
   kCrossOriginPropertyAccessFromOpener = 1978,
   kCredentialManagerCreate = 1979,
-  kWebDatabaseCreateDropFTS3Table = 1980,
   kFieldEditInSecureContext = 1981,
   kFieldEditInNonSecureContext = 1982,
   kCredentialManagerGetMediationRequired = 1984,
