@@ -204,9 +204,15 @@ void MakeCredentialRequestHandler::DispatchRequest(
 
   CtapMakeCredentialRequest request(request_);
   if (authenticator->Options()) {
+    // If the authenticator has UV configured then UV will be required in
+    // order to create a credential (as specified by CTAP 2.0), even if
+    // user-verification is "discouraged". However, if the request is U2F-only
+    // then that doesn't apply and UV must be set to discouraged so that the
+    // request can be translated to U2F.
     if (authenticator->Options()->user_verification_availability ==
-        AuthenticatorSupportedOptions::UserVerificationAvailability::
-            kSupportedAndConfigured) {
+            AuthenticatorSupportedOptions::UserVerificationAvailability::
+                kSupportedAndConfigured &&
+        !request_.is_u2f_only()) {
       request.SetUserVerification(UserVerificationRequirement::kRequired);
     } else {
       request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
