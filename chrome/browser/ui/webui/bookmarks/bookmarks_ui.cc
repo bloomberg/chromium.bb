@@ -47,8 +47,8 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
 
   // Build an Accelerator to describe undo shortcut
   // NOTE: the undo shortcut is also defined in bookmarks/command_manager.js
-  // TODO(b/893033): de-duplicate shortcut by moving all shortcut definitions
-  // from JS to C++.
+  // TODO(crbug/893033): de-duplicate shortcut by moving all shortcut
+  // definitions from JS to C++.
   ui::Accelerator undoAccelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
   source->AddString("undoDescription", l10n_util::GetStringFUTF16(
                                            IDS_BOOKMARK_BAR_UNDO_DESCRIPTION,
