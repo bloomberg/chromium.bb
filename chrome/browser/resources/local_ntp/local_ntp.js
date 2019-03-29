@@ -321,6 +321,15 @@ function createExecutableTimeout(timeout, delay) {
 
 
 /**
+ * Called by tests to override the executable timeout with a test timeout.
+ * @param {!Function} timeout The timeout function. Requires a boolean param.
+ */
+function overrideExecutableTimeoutForTesting(timeout) {
+  createExecutableTimeout = timeout;
+}
+
+
+/**
  * Returns theme background info, first checking for history.state.notheme. If
  * the page has notheme set, returns a fallback light-colored theme (or dark-
  * colored theme if dark mode is enabled). This is used when the doodle is
@@ -1467,9 +1476,10 @@ function injectOneGoogleBar(ogb) {
 return {
   init: init,  // Exposed for testing.
   listen: listen,
-  disableIframesAndVoiceSearchForTesting: disableIframesAndVoiceSearchForTesting
+  disableIframesAndVoiceSearchForTesting:
+      disableIframesAndVoiceSearchForTesting,
+  overrideExecutableTimeoutForTesting: overrideExecutableTimeoutForTesting
 };
-
 }
 
 if (!window.localNTPUnitTest) {
