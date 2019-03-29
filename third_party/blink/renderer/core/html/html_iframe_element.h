@@ -94,6 +94,10 @@ class CORE_EXPORT HTMLIFrameElement final
   bool collapsed_by_client_;
   TraceWrapperMember<HTMLIFrameElementSandbox> sandbox_;
   Member<DOMFeaturePolicy> policy_;
+  // This represents a subset of sandbox flags set through 'sandbox' attribute
+  // that will be converted to feature policies as part of the container
+  // policies.
+  SandboxFlags sandbox_flags_converted_to_feature_policies_ = kSandboxNone;
 
   network::mojom::ReferrerPolicy referrer_policy_;
 };
