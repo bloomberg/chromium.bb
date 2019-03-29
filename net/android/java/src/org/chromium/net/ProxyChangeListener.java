@@ -87,6 +87,8 @@ public class ProxyChangeListener {
         public final int mPort;
         public final String mPacUrl;
         public final String[] mExclusionList;
+
+        public static final ProxyConfig DIRECT = new ProxyConfig("", 0, "", new String[0]);
     }
 
     /**
@@ -224,7 +226,8 @@ public class ProxyChangeListener {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.CONNECTIVITY_SERVICE);
-        return ProxyConfig.fromProxyInfo(connectivityManager.getDefaultProxy());
+        ProxyInfo proxyInfo = connectivityManager.getDefaultProxy();
+        return proxyInfo == null ? ProxyConfig.DIRECT : ProxyConfig.fromProxyInfo(proxyInfo);
     }
 
     /* package */ void updateProxyConfigFromConnectivityManager() {

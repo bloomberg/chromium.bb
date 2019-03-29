@@ -530,6 +530,14 @@ ProxyConfigServiceAndroid::ProxyConfigServiceAndroid(
   delegate_->FetchInitialConfig();
 }
 
+void ProxyConfigServiceAndroid::ProxySettingsChangedTo(
+    const std::string& host,
+    int port,
+    const std::string& pac_url,
+    const std::vector<std::string>& exclusion_list) {
+  delegate_->ProxySettingsChangedTo(host, port, pac_url, exclusion_list);
+}
+
 void ProxyConfigServiceAndroid::ProxySettingsChanged() {
   delegate_->ProxySettingsChanged();
 }
