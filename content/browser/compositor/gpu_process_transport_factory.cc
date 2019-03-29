@@ -878,7 +878,7 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   bool support_locking = false;
   bool support_gles2_interface = true;
   bool support_raster_interface = true;
-  bool support_grcontext = true;
+  bool support_grcontext = false;
   shared_main_thread_contexts_ = CreateContextCommon(
       std::move(gpu_channel_host), gpu::kNullSurfaceHandle, need_alpha_channel,
       false, support_locking, support_gles2_interface, support_raster_interface,
