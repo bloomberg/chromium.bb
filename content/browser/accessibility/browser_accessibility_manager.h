@@ -88,6 +88,10 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() = 0;
   virtual gfx::NativeViewAccessible
   AccessibilityGetNativeViewAccessibleForWindow() = 0;
+
+  // Returns true if this delegate represents the main (topmost) frame in a
+  // tree of frames.
+  virtual bool AccessibilityIsMainFrame() = 0;
 };
 
 class CONTENT_EXPORT BrowserAccessibilityFactory {

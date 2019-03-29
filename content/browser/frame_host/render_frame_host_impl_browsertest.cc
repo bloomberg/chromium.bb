@@ -2278,4 +2278,19 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_EQ(0, popup->GetController().GetEntryCount());
 }
 
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       AccessibilityIsRootIframe) {
+  GURL main_url(
+      embedded_test_server()->GetURL("foo.com", "/page_with_iframe.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+  RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  EXPECT_TRUE(main_frame->AccessibilityIsMainFrame());
+
+  ASSERT_EQ(1u, main_frame->child_count());
+  RenderFrameHostImpl* iframe = main_frame->child_at(0)->current_frame_host();
+  EXPECT_FALSE(iframe->AccessibilityIsMainFrame());
+}
+
 }  // namespace content
