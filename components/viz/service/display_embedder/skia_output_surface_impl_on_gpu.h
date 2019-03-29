@@ -18,6 +18,7 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/resource_metadata.h"
+#include "components/viz/service/display_embedder/skia_output_device.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
@@ -59,7 +60,6 @@ namespace viz {
 class DirectContextProvider;
 class GLRendererCopier;
 class GpuServiceImpl;
-class SkiaOutputDevice;
 class TextureDeleter;
 class VulkanContextProvider;
 
@@ -181,6 +181,10 @@ class SkiaOutputSurfaceImplOnGpu {
 
   bool is_using_vulkan() const { return !!vulkan_context_provider_; }
 
+  SkSurface* output_sk_surface() const {
+    return output_device_->draw_surface();
+  }
+
   const gpu::SurfaceHandle surface_handle_;
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
   gpu::MailboxManager* const mailbox_manager_;
@@ -203,7 +207,6 @@ class SkiaOutputSurfaceImplOnGpu {
   gfx::Size size_;
   gfx::ColorSpace color_space_;
   scoped_refptr<gl::GLSurface> gl_surface_;
-  sk_sp<SkSurface> sk_surface_;
   scoped_refptr<gpu::SharedContextState> context_state_;
   const gl::GLVersionInfo* gl_version_info_ = nullptr;
   OutputSurface::Capabilities capabilities_;
