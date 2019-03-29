@@ -16,6 +16,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.WindowAndroid.OnCloseContextMenuListener;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -187,9 +188,7 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
                 put(ContextMenuItemId.OPEN_IN_NEW_WINDOW,
                         R.string.contextmenu_open_in_other_window);
                 put(ContextMenuItemId.OPEN_IN_NEW_TAB,
-                        ChromeFeatureList.isInitialized()
-                                        && ChromeFeatureList.isEnabled(
-                                                ChromeFeatureList.TAB_GROUPS_ANDROID)
+                        FeatureUtilities.isTabGroupsAndroidEnabled()
                                 ? R.string.contextmenu_open_in_new_tab_group
                                 : R.string.contextmenu_open_in_new_tab);
                 put(ContextMenuItemId.OPEN_IN_INCOGNITO_TAB,
