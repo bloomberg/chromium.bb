@@ -41,7 +41,17 @@ constexpr char kKrb5ConfFile[] = "krb5.conf";
 
 // Writes |blob| into file <UserPath>/kerberos/|file_name|. First writes into
 // temporary file and then replaces existing one.
-void WriteFile(const std::string& file_name, const std::string& blob) {
+void WriteFile(const base::FilePath& path, base::Optional<std::string> blob) {
+  if (!blob.has_value())
+    return;
+  if (!base::ImportantFileWriter::WriteFileAtomically(path, blob.value()))
+    LOG(ERROR) << "Failed to write file " << path.value();
+}
+
+// Writes |krb5cc| to <DIR_HOME>/kerberos/krb5cc and |krb5config| to
+// <DIR_HOME>/kerberos/krb5.conf if set. Creates directories if necessary.
+void WriteFiles(base::Optional<std::string> krb5cc,
+                base::Optional<std::string> krb5config) {
   base::FilePath dir;
   base::PathService::Get(base::DIR_HOME, &dir);
   dir = dir.Append(kKrb5Directory);
@@ -51,19 +61,22 @@ void WriteFile(const std::string& file_name, const std::string& blob) {
                << "' directory: " << base::File::ErrorToString(error);
     return;
   }
-  base::FilePath dest_file = dir.Append(file_name);
-  if (!base::ImportantFileWriter::WriteFileAtomically(dest_file, blob)) {
-    LOG(ERROR) << "Failed to write file " << dest_file.value();
-  }
+
+  WriteFile(dir.Append(kKrb5CCFile), std::move(krb5cc));
+  WriteFile(dir.Append(kKrb5ConfFile), std::move(krb5config));
 }
 
-// Put canonicalization settings first depending on user policy. Whatever
-// setting comes first wins, so even if krb5.conf sets rdns or
-// dns_canonicalize_hostname below, it would get overridden.
-std::string AdjustConfig(const std::string& config, bool is_dns_cname_enabled) {
+// If |config| has a value, puts canonicalization settings first depending on
+// user policy. Whatever setting comes first wins, so even if krb5.conf sets
+// rdns or dns_canonicalize_hostname below, it would get overridden.
+base::Optional<std::string> MaybeAdjustConfig(
+    base::Optional<std::string> config,
+    bool is_dns_cname_enabled) {
+  if (!config.has_value())
+    return base::nullopt;
   std::string adjusted_config = base::StringPrintf(
       kKrb5CnameSettings, is_dns_cname_enabled ? "true" : "false");
-  adjusted_config.append(config);
+  adjusted_config.append(config.value());
   return adjusted_config;
 }
 
@@ -112,28 +125,30 @@ KerberosFilesHandler::~KerberosFilesHandler() = default;
 
 void KerberosFilesHandler::SetFiles(base::Optional<std::string> krb5cc,
                                     base::Optional<std::string> krb5conf) {
-  if (krb5cc.has_value()) {
-    base::PostTaskWithTraits(
-        FROM_HERE,
-        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-        base::BindOnce(&WriteFile, kKrb5CCFile, krb5cc.value()));
-  }
-  if (krb5conf.has_value()) {
-    base::PostTaskWithTraits(
-        FROM_HERE,
-        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-        base::BindOnce(
-            &WriteFile, kKrb5ConfFile,
-            AdjustConfig(krb5conf.value(),
-                         !negotiate_disable_cname_lookup_.GetValue())));
-  }
+  krb5conf =
+      MaybeAdjustConfig(krb5conf, !negotiate_disable_cname_lookup_.GetValue());
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&WriteFiles, std::move(krb5cc), std::move(krb5conf)),
+      base::BindOnce(&KerberosFilesHandler::OnFilesChanged,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void KerberosFilesHandler::SetFilesChangedForTesting(
+    base::OnceClosure callback) {
+  files_changed_for_testing_ = std::move(callback);
 }
 
 void KerberosFilesHandler::OnDisabledAuthNegotiateCnameLookupChanged() {
   // Refresh kerberos files to adjust config for changed pref.
   get_kerberos_files_.Run();
+}
+
+void KerberosFilesHandler::OnFilesChanged() {
+  if (files_changed_for_testing_)
+    std::move(files_changed_for_testing_).Run();
 }
 
 }  // namespace chromeos
