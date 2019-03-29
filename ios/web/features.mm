@@ -17,7 +17,7 @@ bool StorePendingItemInContext() {
 }
 
 const base::Feature kIgnoresViewportScaleLimits{
-    "IgnoresViewportScaleLimits", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IgnoresViewportScaleLimits", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSlimNavigationManager{"SlimNavigationManager",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
