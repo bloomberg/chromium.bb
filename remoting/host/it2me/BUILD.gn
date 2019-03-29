@@ -43,13 +43,10 @@ source_set("common") {
     "//remoting/build/config:version",
   ]
 
-  public_deps = [
-    "//net",
-  ]
-
   deps = [
     "//base:i18n",
     "//mojo/core/embedder",
+    "//net",
     "//remoting/base",
     "//remoting/host:common",
     "//remoting/protocol",

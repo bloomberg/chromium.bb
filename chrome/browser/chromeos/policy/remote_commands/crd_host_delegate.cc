@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
-#include "chrome/browser/net/system_network_context_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -307,8 +306,6 @@ void CRDHostDelegate::StartCRDHostAndGetCode(
   // TODO(antrim): set up watchdog timer (reasonable cutoff).
   host_ = remoting::CreateIt2MeNativeMessagingHostForChromeOS(
       g_browser_process->system_request_context(),
-      g_browser_process->system_network_context_manager()
-          ->GetSharedURLLoaderFactory(),
       base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::IO}),
       base::CreateSingleThreadTaskRunnerWithTraits(

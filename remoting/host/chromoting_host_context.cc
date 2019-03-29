@@ -37,7 +37,6 @@ ChromotingHostContext::ChromotingHostContext(
     scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner,
     scoped_refptr<AutoThreadTaskRunner> video_encode_task_runner,
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
-    scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
     ui::SystemInputInjectorFactory* system_input_injector_factory)
     : ui_task_runner_(ui_task_runner),
       audio_task_runner_(audio_task_runner),
@@ -47,7 +46,6 @@ ChromotingHostContext::ChromotingHostContext(
       video_capture_task_runner_(video_capture_task_runner),
       video_encode_task_runner_(video_encode_task_runner),
       url_request_context_getter_(url_request_context_getter),
-      system_url_loader_factory_(system_url_loader_factory),
       system_input_injector_factory_(system_input_injector_factory) {}
 
 ChromotingHostContext::~ChromotingHostContext() {
@@ -61,7 +59,7 @@ std::unique_ptr<ChromotingHostContext> ChromotingHostContext::Copy() {
       ui_task_runner_, audio_task_runner_, file_task_runner_,
       input_task_runner_, network_task_runner_, video_capture_task_runner_,
       video_encode_task_runner_, url_request_context_getter_,
-      system_url_loader_factory_, system_input_injector_factory_));
+      system_input_injector_factory_));
 }
 
 scoped_refptr<AutoThreadTaskRunner> ChromotingHostContext::audio_task_runner()
@@ -107,8 +105,6 @@ ChromotingHostContext::url_request_context_getter() const {
 scoped_refptr<network::SharedURLLoaderFactory>
 ChromotingHostContext::url_loader_factory() {
   DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
-  if (system_url_loader_factory_)
-    return system_url_loader_factory_;
   if (!url_loader_factory_owner_) {
     url_loader_factory_owner_ =
         std::make_unique<network::TransitionalURLLoaderFactoryOwner>(
@@ -160,8 +156,7 @@ std::unique_ptr<ChromotingHostContext> ChromotingHostContext::Create(
 #endif
       AutoThread::Create("ChromotingEncodeThread", ui_task_runner),
       base::MakeRefCounted<URLRequestContextGetter>(network_task_runner),
-      /*system_url_loader_factory=*/nullptr,
-      /*system_input_injector_factory=*/nullptr));
+      nullptr));
 }
 
 #if defined(OS_CHROMEOS)
@@ -169,7 +164,6 @@ std::unique_ptr<ChromotingHostContext> ChromotingHostContext::Create(
 // static
 std::unique_ptr<ChromotingHostContext> ChromotingHostContext::CreateForChromeOS(
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
-    scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
@@ -199,8 +193,7 @@ std::unique_ptr<ChromotingHostContext> ChromotingHostContext::CreateForChromeOS(
       io_auto_task_runner,  // network_task_runner
       ui_auto_task_runner,  // video_capture_task_runner
       AutoThread::Create("ChromotingEncodeThread", file_auto_task_runner),
-      url_request_context_getter, system_url_loader_factory,
-      system_input_injector_factory));
+      url_request_context_getter, system_input_injector_factory));
 }
 #endif  // defined(OS_CHROMEOS)
 
