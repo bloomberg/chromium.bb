@@ -36,6 +36,9 @@ class RarReader {
 
     // Whether the entry has encrypted contents.
     bool is_encrypted;
+
+    // The actual size of the entry.
+    size_t file_size;
   };
 
   RarReader();
