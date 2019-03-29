@@ -6,10 +6,12 @@
 #define DEVICE_UDEV_LINUX_UDEV_WATCHER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/files/file_descriptor_watcher_posix.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "base/strings/string_piece.h"
 #include "device/udev_linux/scoped_udev.h"
 
 namespace device {
@@ -25,7 +27,18 @@ class UdevWatcher {
     virtual void OnDeviceRemoved(ScopedUdevDevicePtr device);
   };
 
-  static std::unique_ptr<UdevWatcher> StartWatching(Observer* observer);
+  // subsystem and devtype parameter for
+  // udev_monitor_filter_add_match_subsystem_devtype().
+  struct Filter {
+    Filter(base::StringPiece subsystem_in, base::StringPiece devtype_in)
+        : subsystem(subsystem_in), devtype(devtype_in) {}
+    const std::string subsystem;
+    const std::string devtype;
+  };
+
+  static std::unique_ptr<UdevWatcher> StartWatching(
+      Observer* observer,
+      const std::vector<Filter>& filters = {});
 
   ~UdevWatcher();
 
@@ -37,13 +50,15 @@ class UdevWatcher {
   UdevWatcher(ScopedUdevPtr udev,
               ScopedUdevMonitorPtr udev_monitor,
               int monitor_fd,
-              Observer* observer);
+              Observer* observer,
+              const std::vector<Filter>& filters);
 
   void OnMonitorReadable();
 
   ScopedUdevPtr udev_;
   ScopedUdevMonitorPtr udev_monitor_;
   Observer* observer_;
+  const std::vector<Filter> udev_filters_;
   std::unique_ptr<base::FileDescriptorWatcher::Controller> file_watcher_;
   base::SequenceChecker sequence_checker_;
 
