@@ -28,6 +28,12 @@ void FakeFindInPageManagerDelegate::DidCountMatches(WebState* web_state,
 }
 
 void FakeFindInPageManagerDelegate::DidHighlightMatch(WebState* web_state,
-                                                      int index) {}
+                                                      int index) {
+  if (!delegate_state_) {
+    delegate_state_ = std::make_unique<State>();
+  }
+  delegate_state_->web_state = web_state;
+  delegate_state_->index = index;
+}
 
 }  // namespace web
