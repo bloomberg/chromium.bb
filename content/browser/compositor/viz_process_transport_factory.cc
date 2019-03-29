@@ -459,7 +459,7 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
     constexpr bool kCompositorContextSupportsLocking = false;
     constexpr bool kCompositorContextSupportsGLES2 = true;
     constexpr bool kCompositorContextSupportsRaster = true;
-    constexpr bool kCompositorContextSupportsGrContext = true;
+    constexpr bool kCompositorContextSupportsGrContext = false;
     constexpr bool kCompositorContextSupportsOOPR = false;
 
     main_context_provider_ = CreateContextProviderImpl(
