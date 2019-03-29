@@ -1233,6 +1233,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/ChromeBaseCheckBoxPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/ChromeBaseListPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/ChromeBasePreference.java",
+  "java/src/org/chromium/chrome/browser/preferences/ChromeImageViewPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/ChromePreferenceManager.java",
   "java/src/org/chromium/chrome/browser/preferences/ChromeSwitchPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/ClearBrowsingDataCheckBoxPreference.java",
