@@ -28,7 +28,8 @@ class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
   DOMNodeId node_id = kInvalidDOMNodeId;
   uint64_t first_size = 0;
   unsigned frame_index = 0;
-  base::TimeTicks first_paint_time_after_loaded = base::TimeTicks();
+  // The time of the first paint after fully loaded.
+  base::TimeTicks paint_time = base::TimeTicks();
   bool loaded = false;
 #ifndef NDEBUG
   String image_url = "";
@@ -74,9 +75,8 @@ class CORE_EXPORT ImagePaintTimingDetector final
   ImageRecord* FindLargestPaintCandidate();
   void NotifyNodeRemoved(DOMNodeId);
   base::TimeTicks LargestImagePaint() const {
-    return !largest_image_paint_
-               ? base::TimeTicks()
-               : largest_image_paint_->first_paint_time_after_loaded;
+    return !largest_image_paint_ ? base::TimeTicks()
+                                 : largest_image_paint_->paint_time;
   }
   uint64_t LargestImagePaintSize() const {
     return !largest_image_paint_ ? 0 : largest_image_paint_->first_size;
@@ -95,7 +95,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
                           const ImageRecord& first_image_paint,
                           unsigned report_count) const;
   // This is provided for unit test to force invoking swap promise callback.
-  void ReportSwapTime(unsigned max_frame_index_to_time,
+  void ReportSwapTime(unsigned last_queued_frame_index,
                       WebLayerTreeView::SwapResult,
                       base::TimeTicks);
   void RegisterNotifySwapTime();
@@ -107,24 +107,24 @@ class CORE_EXPORT ImagePaintTimingDetector final
   base::RepeatingCallback<void(WebLayerTreeView::ReportTimeCallback)>
       notify_swap_time_override_for_testing_;
 
-  HashSet<DOMNodeId> size_zero_ids_;
-  // We will never destroy the pointers within |id_record_map_|. Once created
-  // they will exist for the whole life cycle of |id_record_map_|.
-  HashMap<DOMNodeId, std::unique_ptr<ImageRecord>> id_record_map_;
+  HashSet<DOMNodeId> invisible_node_ids_;
+  // We will never destroy the pointers within |visible_node_map_|. Once created
+  // they will exist for the whole life cycle of |visible_node_map_|.
+  HashMap<DOMNodeId, std::unique_ptr<ImageRecord>> visible_node_map_;
   ImageRecordSet size_ordered_set_;
   HashSet<DOMNodeId> detached_ids_;
 
   // Node-ids of records pending swap time are stored in this queue until they
   // get a swap time.
-  std::queue<DOMNodeId> records_pending_timing_;
+  std::queue<DOMNodeId> images_queued_for_paint_time_;
 
-  // Used to report the last candidates of each metric
+  // Used to report the last candidates of each metric.
   unsigned largest_image_candidate_index_max_ = 0;
 
   // Used to decide which frame a record belongs to.
   unsigned frame_index_ = 1;
 
-  unsigned last_frame_index_queued_for_timing_ = 0;
+  unsigned last_queued_frame_index_ = 0;
   // Used to control if we record new image entries and image removal, but has
   // no effect on recording the loading status.
   bool is_recording_ = true;

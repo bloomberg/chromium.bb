@@ -77,13 +77,13 @@ class ImagePaintTimingDetectorTest
   unsigned CountRecords() {
     return GetPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        .id_record_map_.size();
+        .visible_node_map_.size();
   }
 
   unsigned CountChildFrameRecords() {
     return GetChildPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        .id_record_map_.size();
+        .visible_node_map_.size();
   }
 
   size_t CountRankingSetRecords() {
@@ -100,7 +100,7 @@ class ImagePaintTimingDetectorTest
     ImageRecord* record = GetPaintTimingDetector()
                               .GetImagePaintTimingDetector()
                               .largest_image_paint_;
-    return !record ? base::TimeTicks() : record->first_paint_time_after_loaded;
+    return !record ? base::TimeTicks() : record->paint_time;
   }
 
   void UpdateAllLifecyclePhasesAndInvokeCallbackIfAny() {
@@ -296,8 +296,7 @@ TEST_F(ImagePaintTimingDetectorTest,
   ImageRecord* record;
   record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
-  EXPECT_EQ(record->first_paint_time_after_loaded,
-            base::TimeTicks() + TimeDelta::FromSecondsD(1));
+  EXPECT_EQ(record->paint_time, base::TimeTicks() + TimeDelta::FromSecondsD(1));
 
   GetDocument().getElementById("parent")->RemoveChild(image);
   clock.Advance(TimeDelta::FromSecondsD(1));
@@ -311,8 +310,7 @@ TEST_F(ImagePaintTimingDetectorTest,
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
-  EXPECT_EQ(record->first_paint_time_after_loaded,
-            base::TimeTicks() + TimeDelta::FromSecondsD(1));
+  EXPECT_EQ(record->paint_time, base::TimeTicks() + TimeDelta::FromSecondsD(1));
 }
 
 // This is to prove that a swap time is assigned only to nodes of the frame who
@@ -333,14 +331,14 @@ TEST_F(ImagePaintTimingDetectorTest, MatchSwapTimeToNodesOfDifferentFrames) {
   InvokeCallback();
   // record1 is the larger.
   ImageRecord* record1 = FindLargestPaintCandidate();
-  const base::TimeTicks record1Time = record1->first_paint_time_after_loaded;
+  const base::TimeTicks record1Time = record1->paint_time;
   GetDocument().getElementById("parent")->RemoveChild(
       GetDocument().getElementById("larger"));
   UpdateAllLifecyclePhasesForTest();
   InvokeCallback();
   // record2 is the smaller.
   ImageRecord* record2 = FindLargestPaintCandidate();
-  EXPECT_NE(record1Time, record2->first_paint_time_after_loaded);
+  EXPECT_NE(record1Time, record2->paint_time);
 }
 
 TEST_F(ImagePaintTimingDetectorTest,
@@ -387,14 +385,14 @@ TEST_F(ImagePaintTimingDetectorTest, OneSwapPromiseForOneFrame) {
   record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
   EXPECT_EQ(record->first_size, 81ul);
-  EXPECT_TRUE(record->first_paint_time_after_loaded.is_null());
+  EXPECT_TRUE(record->paint_time.is_null());
 
   // This callback assigns a time to the 9x9 image.
   InvokeCallback();
   record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
   EXPECT_EQ(record->first_size, 81ul);
-  EXPECT_FALSE(record->first_paint_time_after_loaded.is_null());
+  EXPECT_FALSE(record->paint_time.is_null());
 }
 
 TEST_F(ImagePaintTimingDetectorTest, VideoImage) {
