@@ -1,7 +1,6 @@
 blundell@chromium.org
 caitkp@chromium.org
 jochen@chromium.org
-sdefresne@chromium.org
 
 per-file app_modal_strings.grdp=file://components/app_modal/OWNERS
 per-file autofill_assistant_strings.grdp=file://components/autofill_assistant/OWNERS
