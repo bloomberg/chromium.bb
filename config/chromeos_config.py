@@ -1994,6 +1994,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'rammus',
       'reef',
       'romer',
+      'sarien',
       'samus',
       'samus-kernelnext',
       'scarlet',

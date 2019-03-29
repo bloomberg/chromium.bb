@@ -127,6 +127,7 @@
     romer-paladin
     samus-kernelnext-paladin
     samus-paladin
+    sarien-paladin
     scarlet-paladin
     sentry-paladin
     sludge-paladin
@@ -2683,6 +2684,7 @@
     romer-paladin-tryjob
     samus-kernelnext-paladin-tryjob
     samus-paladin-tryjob
+    sarien-paladin-tryjob
     scarlet-paladin-tryjob
     sentry-paladin-tryjob
     sludge-paladin-tryjob
