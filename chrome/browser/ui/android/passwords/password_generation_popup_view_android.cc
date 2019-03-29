@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/android/autofill/password_generation_popup_view_android.h"
+#include "chrome/browser/ui/android/passwords/password_generation_popup_view_android.h"
 
 #include <jni.h>
 
@@ -24,7 +24,6 @@ using base::android::ScopedJavaLocalRef;
 PasswordGenerationPopupViewAndroid::PasswordGenerationPopupViewAndroid(
     PasswordGenerationPopupController* controller)
     : controller_(controller) {}
-
 
 void PasswordGenerationPopupViewAndroid::Dismissed(
     JNIEnv* env,
@@ -54,7 +53,7 @@ void PasswordGenerationPopupViewAndroid::Show() {
   if (view.is_null())
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
-  java_object_.Reset(autofill::Java_PasswordGenerationPopupBridge_create(
+  java_object_.Reset(Java_PasswordGenerationPopupBridge_create(
       env, view, reinterpret_cast<intptr_t>(this),
       view_android->GetWindowAndroid()->GetJavaObject()));
 
@@ -65,7 +64,7 @@ void PasswordGenerationPopupViewAndroid::Hide() {
   controller_ = NULL;
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!java_object_.is_null()) {
-    autofill::Java_PasswordGenerationPopupBridge_hide(env, java_object_);
+    Java_PasswordGenerationPopupBridge_hide(env, java_object_);
   } else {
     // Hide() should delete |this| either via Java dismiss or directly.
     delete this;
@@ -90,12 +89,12 @@ void PasswordGenerationPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
   ScopedJavaLocalRef<jstring> password =
       base::android::ConvertUTF16ToJavaString(env, controller_->password());
   ScopedJavaLocalRef<jstring> suggestion =
-      base::android::ConvertUTF16ToJavaString(
-          env, controller_->SuggestedText());
+      base::android::ConvertUTF16ToJavaString(env,
+                                              controller_->SuggestedText());
   ScopedJavaLocalRef<jstring> help =
       base::android::ConvertUTF16ToJavaString(env, controller_->HelpText());
 
-  autofill::Java_PasswordGenerationPopupBridge_show(
+  Java_PasswordGenerationPopupBridge_show(
       env, java_object_, controller_->IsRTL(),
       controller_->state() ==
           PasswordGenerationPopupController::kOfferGeneration,
@@ -105,7 +104,7 @@ void PasswordGenerationPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
 void PasswordGenerationPopupViewAndroid::PasswordSelectionUpdated() {}
 
 bool PasswordGenerationPopupViewAndroid::IsPointInPasswordBounds(
-        const gfx::Point& point) {
+    const gfx::Point& point) {
   NOTREACHED();
   return false;
 }
