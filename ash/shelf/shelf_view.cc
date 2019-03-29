@@ -1633,9 +1633,7 @@ void ShelfView::MoveDragViewTo(int primary_axis_coordinate) {
   }
 
   int target_index = views::ViewModelUtils::DetermineMoveIndex(
-      *view_model_, drag_view_,
-      shelf_->IsHorizontalAlignment() ? views::ViewModelUtils::HORIZONTAL
-                                      : views::ViewModelUtils::VERTICAL,
+      *view_model_, drag_view_, shelf_->IsHorizontalAlignment(),
       drag_view_->x(), drag_view_->y());
   target_index =
       std::min(indices.second, std::max(target_index, indices.first));
