@@ -93,8 +93,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   LocalDOMWindow* Window();
 
   // WebWidget implementation.
-  void CompositeAndReadbackAsync(
-      base::OnceCallback<void(const SkBitmap&)> callback) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;
 
   // WebPagePopup implementation.

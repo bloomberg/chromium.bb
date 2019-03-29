@@ -90,8 +90,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void UpdateLifecycle(LifecycleUpdate requested_update,
                        LifecycleUpdateReason reason) override;
   void PaintContent(cc::PaintCanvas*, const WebRect&) override;
-  void CompositeAndReadbackAsync(
-      base::OnceCallback<void(const SkBitmap&)> callback) override;
   void ThemeChanged() override;
   WebHitTestResult HitTestResultAt(const gfx::Point&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;

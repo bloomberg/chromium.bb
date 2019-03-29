@@ -42,7 +42,6 @@
 #include "content/renderer/compositor/compositor_dependencies.h"
 #include "content/renderer/media/audio/audio_input_ipc_factory.h"
 #include "content/renderer/media/audio/audio_output_ipc_factory.h"
-#include "content/renderer/web_test_dependencies.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/media_buildflags.h"
@@ -275,25 +274,11 @@ class CONTENT_EXPORT RenderThreadImpl
 
   blink::AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry();
 
-  std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForWebTest(
-      int32_t widget_routing_id,
-      std::unique_ptr<viz::CopyOutputRequest> request);
-
   // True if we are running web tests. This currently disables forwarding
   // various status messages to the console, skips network error pages, and
   // short circuits size update and focus events.
-  bool web_test_mode() const { return !!web_test_deps_; }
-  void set_web_test_dependencies(std::unique_ptr<WebTestDependencies> deps) {
-    web_test_deps_ = std::move(deps);
-  }
-  // Returns whether we are running web tests with display compositor for
-  // pixel dump enabled. It is meant to disable feature that require display
-  // compositor while it is not enabled by default.
-  // This should only be called if currently running in web tests.
-  bool WebTestModeUsesDisplayCompositorPixelDump() const {
-    DCHECK(web_test_deps_);
-    return web_test_deps_->UseDisplayCompositorPixelDump();
-  }
+  bool web_test_mode() const { return web_test_mode_; }
+  void enable_web_test_mode() { web_test_mode_ = true; }
 
   discardable_memory::ClientDiscardableSharedMemoryManager*
   GetDiscardableSharedMemoryManagerForTest() {
@@ -624,7 +609,7 @@ class CONTENT_EXPORT RenderThreadImpl
   blink::UserAgentMetadata user_agent_metadata_;
 
   // Used to control web test specific behavior.
-  std::unique_ptr<WebTestDependencies> web_test_deps_;
+  bool web_test_mode_ = false;
 
   // Sticky once true, indicates that compositing is done without Gpu, so
   // resources given to the compositor or to the viz service should be

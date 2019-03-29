@@ -625,8 +625,6 @@ void BlinkTestController::OnInitiateCaptureDump(bool capture_navigation_history,
   waiting_for_main_frame_dump_ = true;
 
   if (capture_pixels) {
-    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableDisplayCompositorPixelDump));
     waiting_for_pixel_results_ = true;
     auto* rwhv = main_window_->web_contents()->GetRenderWidgetHostView();
     // If we're running in threaded mode, then the frames will be produced via a

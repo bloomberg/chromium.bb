@@ -446,8 +446,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void RequestPresentationCallbackForTesting(
       base::OnceClosure callback) override;
   void PaintContent(cc::PaintCanvas*, const WebRect&) override;
-  void CompositeAndReadbackAsync(
-      base::OnceCallback<void(const SkBitmap&)> callback) override;
   void ThemeChanged() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;

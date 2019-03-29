@@ -36,8 +36,6 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
   void DidCompletePageScaleAnimation() override {}
   void UpdateVisualState() override {}
   void WillBeginCompositorFrame() override {}
-  std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForWebTest(
-      std::unique_ptr<viz::CopyOutputRequest> request) override;
 };
 
 }  // namespace content

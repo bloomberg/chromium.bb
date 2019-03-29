@@ -87,7 +87,6 @@ class TestRunner : public WebTestRunner {
   bool IsRecursiveLayoutDumpRequested() override;
   std::string DumpLayout(blink::WebLocalFrame* frame) override;
   bool ShouldDumpSelectionRect() const override;
-  // Returns true if the browser should capture the pixels instead.
   bool DumpPixelsAsync(
       blink::WebLocalFrame* frame,
       base::OnceCallback<void(const SkBitmap&)> callback) override;

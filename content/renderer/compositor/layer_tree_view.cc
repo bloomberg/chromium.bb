@@ -27,7 +27,6 @@
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/layers/layer.h"
-#include "cc/trees/latency_info_swap_promise.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
@@ -36,14 +35,11 @@
 #include "cc/trees/ukm_manager.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
-#include "components/viz/common/frame_sinks/copy_output_request.h"
-#include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "content/renderer/compositor/layer_tree_view_delegate.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/blink.h"
 #include "ui/gfx/presentation_feedback.h"
 
@@ -354,49 +350,7 @@ void LayerTreeView::SetLayerTreeFrameSink(
   layer_tree_host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
 
-void LayerTreeView::CompositeAndReadbackAsync(
-    base::OnceCallback<void(const SkBitmap&)> callback) {
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
-      layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner();
-  std::unique_ptr<viz::CopyOutputRequest> request =
-      std::make_unique<viz::CopyOutputRequest>(
-          viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-          base::BindOnce(
-              [](base::OnceCallback<void(const SkBitmap&)> callback,
-                 scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                 std::unique_ptr<viz::CopyOutputResult> result) {
-                task_runner->PostTask(
-                    FROM_HERE,
-                    base::BindOnce(std::move(callback), result->AsSkBitmap()));
-              },
-              std::move(callback), std::move(main_thread_task_runner)));
-  auto swap_promise =
-      delegate_->RequestCopyOfOutputForWebTest(std::move(request));
-
-  // Force a commit to happen. The temporary copy output request will
-  // be installed after layout which will happen as a part of the commit, for
-  // widgets that delay the creation of their output surface.
-  if (CompositeIsSynchronous()) {
-    // Since the composite is required for a pixel dump, we need to raster.
-    // Note that we defer queuing the SwapPromise until the requested Composite
-    // with rasterization is done.
-    const bool raster = true;
-    layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&LayerTreeView::SynchronouslyComposite,
-                                  weak_factory_.GetWeakPtr(), raster,
-                                  std::move(swap_promise)));
-  } else {
-    // Force a redraw to ensure that the copy swap promise isn't cancelled due
-    // to no damage.
-    SetNeedsForcedRedraw();
-    layer_tree_host_->QueueSwapPromise(std::move(swap_promise));
-    layer_tree_host_->SetNeedsCommit();
-  }
-}
-
-void LayerTreeView::SynchronouslyComposite(
-    bool raster,
-    std::unique_ptr<cc::SwapPromise> swap_promise) {
+void LayerTreeView::SynchronouslyComposite(bool raster) {
   DCHECK(CompositeIsSynchronous());
   if (!layer_tree_host_->IsVisible())
     return;
@@ -408,13 +362,6 @@ void LayerTreeView::SynchronouslyComposite(
     delegate_->BeginMainFrame(base::TimeTicks::Now());
     delegate_->UpdateVisualState();
     return;
-  }
-
-  if (swap_promise) {
-    // Force a redraw to ensure that the copy swap promise isn't cancelled due
-    // to no damage.
-    SetNeedsForcedRedraw();
-    layer_tree_host_->QueueSwapPromise(std::move(swap_promise));
   }
 
   DCHECK(!in_synchronous_compositor_update_);
@@ -470,7 +417,7 @@ void LayerTreeView::RequestDecode(const cc::PaintImage& image,
     const bool raster = true;
     layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&LayerTreeView::SynchronouslyComposite,
-                                  weak_factory_.GetWeakPtr(), raster, nullptr));
+                                  weak_factory_.GetWeakPtr(), raster));
   }
 }
 
@@ -484,9 +431,8 @@ void LayerTreeView::RequestPresentationCallback(base::OnceClosure callback) {
   SetNeedsForcedRedraw();
   if (CompositeIsSynchronous()) {
     main_thread_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&LayerTreeView::SynchronouslyComposite,
-                       weak_factory_.GetWeakPtr(), /*raster=*/true, nullptr));
+        FROM_HERE, base::BindOnce(&LayerTreeView::SynchronouslyComposite,
+                                  weak_factory_.GetWeakPtr(), /*raster=*/true));
   } else {
     layer_tree_host_->SetNeedsCommit();
   }

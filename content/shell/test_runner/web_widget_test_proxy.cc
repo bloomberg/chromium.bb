@@ -111,8 +111,7 @@ void WebWidgetTestProxy::EndSyntheticGestures() {
 }
 
 void WebWidgetTestProxy::SynchronouslyComposite(bool do_raster) {
-  layer_tree_view()->SynchronouslyComposite(do_raster,
-                                            /*swap_promise=*/nullptr);
+  layer_tree_view()->SynchronouslyComposite(do_raster);
 
   // If the RenderWidget is for the main frame, we also composite the current
   // PagePopup afterward.
@@ -125,8 +124,7 @@ void WebWidgetTestProxy::SynchronouslyComposite(bool do_raster) {
     if (blink::WebPagePopup* popup = view->GetPagePopup()) {
       auto* popup_render_widget =
           static_cast<RenderWidget*>(popup->GetClientForTesting());
-      popup_render_widget->layer_tree_view()->SynchronouslyComposite(
-          do_raster, /*swap_promise=*/nullptr);
+      popup_render_widget->layer_tree_view()->SynchronouslyComposite(do_raster);
     }
   }
 }

@@ -14,13 +14,8 @@
 
 namespace cc {
 class LayerTreeFrameSink;
-class SwapPromise;
 struct ElementId;
 }  // namespace cc
-
-namespace viz {
-class CopyOutputRequest;
-}
 
 namespace content {
 
@@ -94,11 +89,6 @@ class LayerTreeViewDelegate {
   // we are in a frame that shoujld capture metrics data, and the local frame's
   // UKM aggregator must be informed that the frame is starting.
   virtual void WillBeginCompositorFrame() = 0;
-
-  // For use in web test mode only, attempts to copy the full content of the
-  // compositor.
-  virtual std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForWebTest(
-      std::unique_ptr<viz::CopyOutputRequest> request) = 0;
 
  protected:
   virtual ~LayerTreeViewDelegate() {}

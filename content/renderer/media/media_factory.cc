@@ -141,15 +141,6 @@ namespace content {
 // static
 blink::WebMediaPlayer::SurfaceLayerMode
 MediaFactory::GetVideoSurfaceLayerMode() {
-  // Web tests do not support SurfaceLayer by default at the moment.
-  // See https://crbug.com/838128
-  content::RenderThreadImpl* render_thread =
-      content::RenderThreadImpl::current();
-  if (render_thread && render_thread->web_test_mode() &&
-      !render_thread->WebTestModeUsesDisplayCompositorPixelDump()) {
-    return blink::WebMediaPlayer::SurfaceLayerMode::kNever;
-  }
-
   if (features::IsMultiProcessMash())
     return blink::WebMediaPlayer::SurfaceLayerMode::kNever;
 

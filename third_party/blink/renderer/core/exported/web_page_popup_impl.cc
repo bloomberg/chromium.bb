@@ -577,12 +577,6 @@ LocalDOMWindow* WebPagePopupImpl::Window() {
   return MainFrame().DomWindow();
 }
 
-void WebPagePopupImpl::CompositeAndReadbackAsync(
-    base::OnceCallback<void(const SkBitmap&)> callback) {
-  DCHECK(IsAcceleratedCompositingActive());
-  layer_tree_view_->CompositeAndReadbackAsync(std::move(callback));
-}
-
 WebPoint WebPagePopupImpl::PositionRelativeToOwner() {
   WebRect root_window_rect = WindowRectInScreen();
   WebRect window_rect = WindowRectInScreen();
