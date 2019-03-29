@@ -160,7 +160,13 @@ void AudioWorkletHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
 
 double AudioWorkletHandler::TailTime() const {
   DCHECK(Context()->IsAudioThread());
-  return tail_time_;
+  return 0;
+}
+
+bool AudioWorkletHandler::PropagatesSilence() const {
+  // Can't assume silent inputs produce silent outputs since the behavior
+  // depends on the user-specified script.
+  return false;
 }
 
 void AudioWorkletHandler::SetProcessorOnRenderThread(
@@ -200,7 +206,6 @@ void AudioWorkletHandler::FinishProcessorOnRenderThread() {
   // and ready for GC.
   Context()->NotifySourceNodeFinishedProcessing(this);
   processor_.Clear();
-  tail_time_ = 0;
 }
 
 void AudioWorkletHandler::NotifyProcessorError(
