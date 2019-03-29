@@ -14,6 +14,12 @@ constexpr base::TimeDelta kDefaultImpressionExpiration =
 constexpr base::TimeDelta kDefaultSuppressionDuration =
     base::TimeDelta::FromDays(56);
 
+// The morning task by default will run at 7am.
+constexpr int kDefaultMorningTaskHour = 7;
+
+// The evening task by default will run at 6pm.
+constexpr int kDefaultEveningTaskHour = 18;
+
 // Check consecutive notification dismisses in this duration to generate a
 // dismiss event.
 constexpr base::TimeDelta kDefaultDimissDuration = base::TimeDelta::FromDays(7);
@@ -29,7 +35,9 @@ SchedulerConfig::SchedulerConfig()
       impression_expiration(kDefaultImpressionExpiration),
       suppression_duration(kDefaultSuppressionDuration),
       dismiss_count(3),
-      dismiss_duration(kDefaultDimissDuration) {
+      dismiss_duration(kDefaultDimissDuration),
+      morning_task_hour(kDefaultMorningTaskHour),
+      evening_task_hour(kDefaultEveningTaskHour) {
   // TODO(xingliu): Add constructor using finch data.
 }
 

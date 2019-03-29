@@ -41,6 +41,14 @@ struct SchedulerConfig {
   // in this duration, to generate a dismiss event.
   base::TimeDelta dismiss_duration;
 
+  // The hour (from 0 to 23) to run the morning background task for notification
+  // scheduler.
+  int morning_task_hour;
+
+  // The hour (from 0 to 23) to run the evening background task for notification
+  // scheduler.
+  int evening_task_hour;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerConfig);
 };

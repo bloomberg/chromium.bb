@@ -10,16 +10,16 @@ namespace notifications {
 // Specifies when to show the scheduled notification, and throttling details.
 struct ScheduleParams {
   enum class Priority {
-    // No notification throttling logic is applied, every notification scheduled
-    // will be delivered.
-    NO_THROTTLE,
-    // Notification may be delivered if picked by display decision layer. Has
-    // higher chance to pick as the next notification to deliver than low
-    // priority.
-    HIGH,
     // Notification may be delivered if picked by display decision layer. Most
     // notification types should use this priority.
-    LOW,
+    kLow,
+    // Notification may be delivered if picked by display decision layer. Has
+    // higher priority to pick as the next notification to deliver. Should not
+    // be used by feature frequently send notifications.
+    kHigh,
+    // No notification throttling logic is applied, every notification scheduled
+    // will be delivered.
+    kNoThrottle,
   };
 
   ScheduleParams();
