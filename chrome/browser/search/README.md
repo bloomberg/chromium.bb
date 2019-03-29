@@ -22,10 +22,15 @@ As of 2017-12-05, Bing and Yandex have implemented third-party NTPs. The
 full list is in [`prepopulated_engines.json`][engines], under the key
 `"new_tab_url"`.
 
-All variants show up to 8 **NTP Tiles**. Each NTP tile represents a site
-that Chrome believes the user is likely to want to visit. On Desktop,
-NTP tiles have a title, a thumbnail, and an “X” button so that the user
-can remove tiles that they don’t want.
+Non-Google variants show up to 8 **NTP Tiles**. Each NTP tile represents a site
+that Chrome believes the user is likely to want to visit. On Desktop, NTP tiles
+have a title, a large icon, and an “X” button so that the user can remove tiles
+that they don’t want.
+
+Google variants show up to 10 **NTP Tiles** (now called shortcuts) and give
+users the ability to customize them. This includes adding new shortcuts using
+the "Add shortcut" button, deleting/editing shortcuts from the three-dot "Edit
+shortcut" menu (replaces the "X" button), and reordering via click-and-drag.
 
 [remote-ntp]:       #remote-ntp
 [local-ntp]:        #local-ntp
