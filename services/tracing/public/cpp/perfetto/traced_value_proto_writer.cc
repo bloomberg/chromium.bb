@@ -6,7 +6,7 @@
 #include <memory>
 #include <stack>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/json/string_escape.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"

@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/metrics/histogram_functions.h"
 #include "content/public/browser/browser_context.h"
 #include "device/bluetooth/bluetooth_adapter.h"

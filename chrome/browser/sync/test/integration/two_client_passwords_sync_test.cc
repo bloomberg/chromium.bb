@@ -8,7 +8,7 @@
 #include <tuple>
 
 #include "base/guid.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"

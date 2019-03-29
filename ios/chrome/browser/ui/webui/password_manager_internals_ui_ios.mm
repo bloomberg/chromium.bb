@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/ui/webui/password_manager_internals_ui_ios.h"
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "components/grit/components_resources.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"

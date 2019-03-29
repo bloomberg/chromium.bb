@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"

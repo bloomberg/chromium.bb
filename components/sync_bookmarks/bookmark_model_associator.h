@@ -17,7 +17,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/stack.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"

@@ -7,7 +7,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/containers/mru_cache.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "gpu/gpu_gles2_export.h"

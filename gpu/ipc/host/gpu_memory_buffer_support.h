@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "ui/gfx/buffer_types.h"
 
 namespace gpu {

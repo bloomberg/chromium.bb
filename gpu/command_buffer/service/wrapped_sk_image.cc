@@ -4,7 +4,7 @@
 
 #include "gpu/command_buffer/service/wrapped_sk_image.h"
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"

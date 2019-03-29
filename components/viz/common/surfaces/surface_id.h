@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/format_macros.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/viz_common_export.h"
