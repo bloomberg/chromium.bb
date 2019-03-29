@@ -27,9 +27,21 @@ const char* const kDroppedFrameRatioBaseTreeTaskName =
 // Dropped frame ratio, default+FeatureLibrary features, regression tree.
 const char* const kDroppedFrameRatioEnhancedTreeTaskName =
     "DroppedFrameRatioEnhancedTreeTask";
+// Dropped frame ratio, default+FeatureLibrary features, regression tree,
+// examples are unweighted.
+const char* const kDroppedFrameRatioEnhancedUnweightedTreeTaskName =
+    "DroppedFrameRatioEnhancedUnweightedTreeTask";
+// Binary smoothness, default+FeatureLibrary features, regression tree,
+// examples are unweighted.
+const char* const kBinarySmoothnessEnhancedUnweightedTreeTaskName =
+    "BinarySmoothnessTreeTask";
 // Dropped frame ratio, default features, lookup table.
 const char* const kDroppedFrameRatioBaseTableTaskName =
     "DroppedFrameRatioBaseTableTask";
+
+// Threshold for the dropped frame to total frame ratio, at which we'll decide
+// that the playback was not smooth.
+constexpr double kSmoothnessThreshold = 0.1;
 
 LearningHelper::LearningHelper(FeatureProviderFactoryCB feature_factory) {
   // Create the LearningSession on a background task runner.  In the future,
@@ -56,6 +68,8 @@ LearningHelper::LearningHelper(FeatureProviderFactoryCB feature_factory) {
       },
       LearningTask::ValueDescription(
           {"dropped_ratio", LearningTask::Ordering::kNumeric}));
+
+  dropped_frame_task.smoothness_threshold = kSmoothnessThreshold;
 
   // Enable hacky reporting of accuracy.
   dropped_frame_task.uma_hacky_confusion_matrix =
@@ -90,6 +104,40 @@ LearningHelper::LearningHelper(FeatureProviderFactoryCB feature_factory) {
                                     feature_factory.Run(dropped_frame_task));
     enhanced_tree_controller_ =
         learning_session_->GetController(dropped_frame_task.name);
+
+    // Duplicate the task with a new name and UMA histogram.  We'll add
+    // unweighted examples to it to see which one does better.
+    dropped_frame_task.name = kDroppedFrameRatioEnhancedUnweightedTreeTaskName;
+    dropped_frame_task.uma_hacky_confusion_matrix =
+        "Media.Learning.MediaCapabilities.DroppedFrameRatioTask."
+        "EnhancedUnweightedTree";
+    learning_session_->RegisterTask(dropped_frame_task,
+                                    feature_factory.Run(dropped_frame_task));
+    unweighted_tree_controller_ =
+        learning_session_->GetController(dropped_frame_task.name);
+
+    // Set up the binary smoothness task.  This has a nominal target, with
+    // "smooth" as 0, and "not smooth" as 1.  This is so that the low numbers
+    // are still smooth, and the hight numbers are still not smooth.  It makes
+    // reporting the same for both.
+    dropped_frame_task.name = kBinarySmoothnessEnhancedUnweightedTreeTaskName;
+    /* TODO(liberato): DistributionReporter only supports regression, so we
+       leave it as kNumeric.  Since we only add 0,1 as targets, it's probably
+       fairly close to the same thing.
+    dropped_frame_task.target_description = {
+        "is_smooth", ::media::learning::LearningTask::Ordering::kUnordered};
+    */
+    dropped_frame_task.uma_hacky_confusion_matrix =
+        "Media.Learning.MediaCapabilities.DroppedFrameRatioTask."
+        "BinarySmoothnessTree";
+    // We'll threshold the ratio when figuring out the binary label, so we just
+    // want to pick the majority.  Note that I have no idea if this is actually
+    // the best threshold, but it seems like a good place to start.
+    dropped_frame_task.smoothness_threshold = 0.5;
+    learning_session_->RegisterTask(dropped_frame_task,
+                                    feature_factory.Run(dropped_frame_task));
+    binary_tree_controller_ =
+        learning_session_->GetController(dropped_frame_task.name);
   }
 }
 
@@ -115,7 +163,6 @@ void LearningHelper::AppendStats(
   example.features.push_back(FeatureValue(video_key.size.width()));
   example.features.push_back(FeatureValue(video_key.size.height()));
   example.features.push_back(FeatureValue(video_key.frame_rate));
-  // TODO(liberato): Other features?
 
   // Record the ratio of dropped frames to non-dropped frames.  Weight this
   // example by the total number of frames, since we want to predict the
@@ -136,6 +183,15 @@ void LearningHelper::AppendStats(
   if (enhanced_tree_controller_) {
     example.features.push_back(origin);
     AddExample(enhanced_tree_controller_.get(), example);
+
+    // Also add to the unweighted model.
+    example.weight = 1u;
+    AddExample(unweighted_tree_controller_.get(), example);
+
+    // Threshold the target to 0 for "smooth", and 1 for "not smooth".
+    example.target_value =
+        TargetValue(example.target_value.value() > kSmoothnessThreshold);
+    AddExample(binary_tree_controller_.get(), example);
   }
 }
 
