@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/component_export.h"
@@ -41,7 +42,7 @@
 
 namespace net {
 class FileNetLogObserver;
-class HostResolver;
+class HostResolverManager;
 class HttpAuthHandlerFactory;
 class LoggingNetworkChangeObserver;
 class NetworkQualityEstimator;
@@ -102,12 +103,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       mojom::NetworkContextParamsPtr params,
       std::unique_ptr<URLRequestContextBuilderMojo> builder,
       net::URLRequestContext** url_request_context);
-
-  // Sets the HostResolver used by the NetworkService. Must be called before any
-  // NetworkContexts have been created. Used in the legacy path only.
-  // TODO(mmenke): Remove once the NetworkService can create a correct
-  // HostResolver for ChromeOS.
-  void SetHostResolver(std::unique_ptr<net::HostResolver> host_resolver);
 
   // Allows late binding if the mojo request wasn't specified in the
   // constructor.
@@ -221,7 +216,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   KeepaliveStatisticsRecorder* keepalive_statistics_recorder() {
     return &keepalive_statistics_recorder_;
   }
-  net::HostResolver* host_resolver() { return host_resolver_.get(); }
+  net::HostResolverManager* host_resolver_manager() {
+    return host_resolver_manager_.get();
+  }
+  net::HostResolver::Factory* host_resolver_factory() {
+    return host_resolver_factory_.get();
+  }
   NetworkUsageAccumulator* network_usage_accumulator() {
     return network_usage_accumulator_.get();
   }
@@ -238,6 +238,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   }
 
   bool os_crypt_config_set() const { return os_crypt_config_set_; }
+
+  void set_host_resolver_factory_for_testing(
+      std::unique_ptr<net::HostResolver::Factory> host_resolver_factory) {
+    host_resolver_factory_ = std::move(host_resolver_factory);
+  }
 
   static NetworkService* GetNetworkServiceForTesting();
 
@@ -300,7 +305,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   std::unique_ptr<DnsConfigChangeManager> dns_config_change_manager_;
 
-  std::unique_ptr<net::HostResolver> host_resolver_;
+  std::unique_ptr<net::HostResolverManager> host_resolver_manager_;
+  std::unique_ptr<net::HostResolver::Factory> host_resolver_factory_;
   std::unique_ptr<NetworkUsageAccumulator> network_usage_accumulator_;
 
   // Must be above |http_auth_handler_factory_|, since it depends on this.

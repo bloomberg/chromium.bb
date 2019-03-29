@@ -25,6 +25,7 @@
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
+#include "net/dns/host_resolver_manager.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
@@ -324,23 +325,28 @@ void URLRequestContextBuilder::SetProtocolHandler(
 
 void URLRequestContextBuilder::set_host_resolver(
     std::unique_ptr<HostResolver> host_resolver) {
-  DCHECK(!shared_host_resolver_);
+  DCHECK(!host_resolver_manager_);
   DCHECK(host_mapping_rules_.empty());
+  DCHECK(!host_resolver_factory_);
   host_resolver_ = std::move(host_resolver);
 }
 
 void URLRequestContextBuilder::set_host_mapping_rules(
     std::string host_mapping_rules) {
   DCHECK(!host_resolver_);
-  DCHECK(!shared_host_resolver_);
   host_mapping_rules_ = std::move(host_mapping_rules);
 }
 
-void URLRequestContextBuilder::set_shared_host_resolver(
-    HostResolver* shared_host_resolver) {
+void URLRequestContextBuilder::set_host_resolver_manager(
+    HostResolverManager* manager) {
   DCHECK(!host_resolver_);
-  DCHECK(host_mapping_rules_.empty());
-  shared_host_resolver_ = shared_host_resolver;
+  host_resolver_manager_ = manager;
+}
+
+void URLRequestContextBuilder::set_host_resolver_factory(
+    HostResolver::Factory* factory) {
+  DCHECK(!host_resolver_);
+  host_resolver_factory_ = factory;
 }
 
 void URLRequestContextBuilder::SetCreateLayeredNetworkDelegateCallback(
@@ -420,20 +426,30 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   if (host_resolver_) {
-    DCHECK(!shared_host_resolver_);
     DCHECK(host_mapping_rules_.empty());
-    storage->set_host_resolver(std::move(host_resolver_));
-  } else if (shared_host_resolver_) {
-    // TODO(crbug.com/934402): Use a shared HostResolverManager instead of a
-    // global HostResolver.
-    DCHECK(host_mapping_rules_.empty());
-    context->set_host_resolver(shared_host_resolver_);
+    DCHECK(!host_resolver_manager_);
+    DCHECK(!host_resolver_factory_);
+  } else if (host_resolver_manager_) {
+    if (host_resolver_factory_) {
+      host_resolver_ = host_resolver_factory_->CreateResolver(
+          host_resolver_manager_, host_mapping_rules_);
+    } else {
+      host_resolver_ = HostResolver::CreateResolver(host_resolver_manager_,
+                                                    host_mapping_rules_);
+    }
   } else {
     // TODO(crbug.com/934402): Make setting a resolver or manager required, so
     // the builder should never have to create a standalone resolver.
-    storage->set_host_resolver(HostResolver::CreateStandaloneResolver(
-        context->net_log(), HostResolver::Options(), host_mapping_rules_));
+    if (host_resolver_factory_) {
+      host_resolver_ = host_resolver_factory_->CreateStandaloneResolver(
+          context->net_log(), HostResolver::Options(), host_mapping_rules_);
+    } else {
+      host_resolver_ = HostResolver::CreateStandaloneResolver(
+          context->net_log(), HostResolver::Options(), host_mapping_rules_);
+    }
   }
+  host_resolver_->SetRequestContext(context.get());
+  storage->set_host_resolver(std::move(host_resolver_));
 
   if (ssl_config_service_) {
     storage->set_ssl_config_service(std::move(ssl_config_service_));

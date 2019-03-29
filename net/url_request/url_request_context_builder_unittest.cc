@@ -7,6 +7,8 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "net/base/request_priority.h"
+#include "net/dns/host_resolver.h"
+#include "net/dns/host_resolver_manager.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler.h"
@@ -27,7 +29,6 @@
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_REPORTING)
-#include "net/dns/mock_host_resolver.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
@@ -188,6 +189,28 @@ TEST_F(URLRequestContextBuilderTest, ShutDownNELAndReportingWithPendingUpload) {
   context.reset();
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
+
+TEST_F(URLRequestContextBuilderTest, DefaultHostResolver) {
+  auto manager =
+      std::make_unique<HostResolverManager>(HostResolver::Options(), nullptr);
+
+  builder_.set_host_resolver_manager(manager.get());
+  std::unique_ptr<URLRequestContext> context = builder_.Build();
+
+  EXPECT_EQ(context.get(), context->host_resolver()->GetContextForTesting());
+  EXPECT_EQ(manager.get(), context->host_resolver()->GetManagerForTesting());
+}
+
+TEST_F(URLRequestContextBuilderTest, CustomHostResolver) {
+  std::unique_ptr<HostResolver> resolver =
+      HostResolver::CreateStandaloneResolver(nullptr);
+  ASSERT_FALSE(resolver->GetContextForTesting());
+
+  builder_.set_host_resolver(std::move(resolver));
+  std::unique_ptr<URLRequestContext> context = builder_.Build();
+
+  EXPECT_EQ(context.get(), context->host_resolver()->GetContextForTesting());
+}
 
 }  // namespace
 

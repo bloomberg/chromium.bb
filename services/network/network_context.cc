@@ -528,8 +528,7 @@ NetworkContext::NetworkContext(
       app_status_listener_(
           std::make_unique<NetworkContextApplicationStatusListener>()),
 #endif
-      binding_(this, std::move(request)),
-      host_resolver_factory_(std::make_unique<net::HostResolver::Factory>()) {
+      binding_(this, std::move(request)) {
   url_request_context_owner_ = MakeURLRequestContext();
   url_request_context_ = url_request_context_owner_.url_request_context.get();
 
@@ -565,8 +564,7 @@ NetworkContext::NetworkContext(
       app_status_listener_(
           std::make_unique<NetworkContextApplicationStatusListener>()),
 #endif
-      binding_(this, std::move(request)),
-      host_resolver_factory_(std::make_unique<net::HostResolver::Factory>()) {
+      binding_(this, std::move(request)) {
   url_request_context_owner_ = ApplyContextParamsToBuilder(builder.get());
   url_request_context_ = url_request_context_owner_.url_request_context.get();
 
@@ -595,8 +593,7 @@ NetworkContext::NetworkContext(NetworkService* network_service,
                                           nullptr)),
       socket_factory_(
           std::make_unique<SocketFactory>(url_request_context_->net_log(),
-                                          url_request_context)),
-      host_resolver_factory_(std::make_unique<net::HostResolver::Factory>()) {
+                                          url_request_context)) {
   // May be nullptr in tests.
   if (network_service_)
     network_service_->RegisterNetworkContext(this);
@@ -1355,8 +1352,9 @@ void NetworkContext::CreateHostResolver(
     options.enable_caching = false;
 
     private_internal_resolver =
-        host_resolver_factory_->CreateStandaloneResolver(
+        network_service_->host_resolver_factory()->CreateStandaloneResolver(
             url_request_context_->net_log(), options, "");
+    private_internal_resolver->SetRequestContext(url_request_context_);
     internal_resolver = private_internal_resolver.get();
 
     internal_resolver->SetDnsClientEnabled(true);
@@ -1725,7 +1723,10 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   if (network_service_) {
     net_log = network_service_->net_log();
     builder->set_net_log(net_log);
-    builder->set_shared_host_resolver(network_service_->host_resolver());
+    builder->set_host_resolver_manager(
+        network_service_->host_resolver_manager());
+    builder->set_host_resolver_factory(
+        network_service_->host_resolver_factory());
     builder->set_shared_http_auth_handler_factory(
         network_service_->GetHttpAuthHandlerFactory());
     builder->set_network_quality_estimator(
@@ -1963,6 +1964,11 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     builder->set_ct_verifier(std::move(ct_verifier));
   }
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
+
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  builder->set_host_mapping_rules(
+      command_line->GetSwitchValueASCII(switches::kHostResolverRules));
 
   auto result =
       URLRequestContextOwner(std::move(pref_service), builder->Build());

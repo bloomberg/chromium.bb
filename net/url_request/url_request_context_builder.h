@@ -58,6 +58,7 @@ class HttpAuthHandlerFactory;
 class HttpTransactionFactory;
 class HttpUserAgentSettings;
 class HttpServerProperties;
+class HostResolverManager;
 class NetworkQualityEstimator;
 class ProxyConfigService;
 class URLRequestContext;
@@ -237,21 +238,30 @@ class NET_EXPORT URLRequestContextBuilder {
   // set their own NetLog::Observers instead.
   void set_net_log(NetLog* net_log) { net_log_ = net_log; }
 
-  // By default host_resolver is constructed with
-  // HostResolver::CreateStandaloneResolver().
+  // Sets a HostResolver instance to be used instead of default construction.
+  // Should not be used if set_host_resolver_manager(),
+  // set_host_mapping_rules(), or set_host_resolver_factory() are used. On
+  // building the context, will call HostResolver::SetRequestContext, so
+  // |host_resolver| may not already be associated with a context.
   void set_host_resolver(std::unique_ptr<HostResolver> host_resolver);
+
   // If set to non-empty, the mapping rules will be applied to requests to the
   // created host resolver. See MappedHostResolver for details. Should not be
-  // used if set_host_resolver() or set_shared_host_resolver() are used.
+  // used if set_host_resolver() is used.
   void set_host_mapping_rules(std::string host_mapping_rules);
-  // Allows sharing the HostResolver with other URLRequestContexts. Should not
-  // be used if set_host_resolver() or set_host_mapping_rules() are used. The
-  // consumer must ensure the HostResolver outlives the URLRequestContext
-  // returned by the builder.
+
+  // Sets a shared HostResolverManager to be used for created HostResolvers.
+  // Should not be used if set_host_resolver() is used. The consumer must ensure
+  // |manager| outlives the URLRequestContext returned by the builder.
   //
-  // TODO(mmenke): Figure out the cost/benefits of not supporting sharing
-  // HostResolvers between URLRequestContexts. See: https://crbug.com/743251.
-  void set_shared_host_resolver(HostResolver* host_resolver);
+  // TODO(crbug.com/934402): Make this required if set_host_resolver() not
+  // called to force sharing managers when reasonable.
+  void set_host_resolver_manager(HostResolverManager* manager);
+
+  // Sets the factory used for any HostResolverCreation. By default, a default
+  // implementation will be used. Should not be used if set_host_resolver() is
+  // used.
+  void set_host_resolver_factory(HostResolver::Factory* factory);
 
   // Uses BasicNetworkDelegate by default. Note that calling Build will unset
   // any custom delegate in builder, so this must be called each time before
@@ -406,7 +416,8 @@ class NET_EXPORT URLRequestContextBuilder {
   NetLog* net_log_ = nullptr;
   std::unique_ptr<HostResolver> host_resolver_;
   std::string host_mapping_rules_;
-  HostResolver* shared_host_resolver_ = nullptr;
+  HostResolverManager* host_resolver_manager_ = nullptr;
+  HostResolver::Factory* host_resolver_factory_ = nullptr;
   std::unique_ptr<ProxyConfigService> proxy_config_service_;
   bool pac_quick_check_enabled_ = true;
   ProxyResolutionService::SanitizeUrlPolicy pac_sanitize_url_policy_ =

@@ -41,6 +41,7 @@
 #include "base/no_destructor.h"
 #include "base/numerics/checked_math.h"
 #include "base/rand_util.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -510,6 +511,7 @@ class HostResolverManager::RequestImpl
   ~RequestImpl() override;
 
   int Start(CompletionOnceCallback callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(callback);
     // Start() may only be called once per request.
     DCHECK(!job_);
@@ -661,6 +663,8 @@ class HostResolverManager::RequestImpl
   base::Optional<HostCache::EntryStaleness> stale_info_;
 
   base::TimeTicks request_time_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(RequestImpl);
 };
@@ -2228,6 +2232,8 @@ HostResolverManager::~HostResolverManager() {
 }
 
 void HostResolverManager::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   // DnsClient and config must be updated before aborting DnsTasks, since doing
   // so may start new jobs.
   dns_client_ = std::move(dns_client);
@@ -2251,6 +2257,7 @@ HostResolverManager::CreateRequest(
     const HostPortPair& host,
     const NetLogWithSource& net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return std::make_unique<RequestImpl>(net_log, host, optional_parameters,
                                        weak_ptr_factory_.GetWeakPtr());
 }
@@ -2258,6 +2265,7 @@ HostResolverManager::CreateRequest(
 std::unique_ptr<HostResolver::MdnsListener>
 HostResolverManager::CreateMdnsListener(const HostPortPair& host,
                                         DnsQueryType query_type) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_NE(DnsQueryType::UNSPECIFIED, query_type);
 
   auto listener =
@@ -2288,6 +2296,7 @@ void HostResolverManager::SetDnsClientEnabled(bool enabled) {
 }
 
 HostCache* HostResolverManager::GetHostCache() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return cache_.get();
 }
 
@@ -2295,6 +2304,8 @@ bool HostResolverManager::HasCached(base::StringPiece hostname,
                                     HostCache::Entry::Source* source_out,
                                     HostCache::EntryStaleness* stale_out,
                                     bool* secure_out) const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (!cache_)
     return false;
 
@@ -2306,6 +2317,8 @@ bool HostResolverManager::HasCached(base::StringPiece hostname,
 }
 
 std::unique_ptr<base::Value> HostResolverManager::GetDnsConfigAsValue() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   // Check if async DNS is disabled.
   if (!dns_client_.get())
     return nullptr;
@@ -2337,11 +2350,14 @@ void HostResolverManager::SetNoIPv6OnWifi(bool no_ipv6_on_wifi) {
 }
 
 bool HostResolverManager::GetNoIPv6OnWifi() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return assume_ipv6_failure_on_wifi_;
 }
 
 void HostResolverManager::SetDnsConfigOverrides(
     const DnsConfigOverrides& overrides) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (dns_config_overrides_ == overrides)
     return;
 
@@ -2351,6 +2367,8 @@ void HostResolverManager::SetDnsConfigOverrides(
 }
 
 void HostResolverManager::SetRequestContext(URLRequestContext* context) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (context != url_request_context_) {
     url_request_context_ = context;
   }
@@ -2408,6 +2426,7 @@ void HostResolverManager::SetTaskRunnerForTesting(
 }
 
 int HostResolverManager::Resolve(RequestImpl* request) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Request should not yet have a scheduled Job.
   DCHECK(!request->job());
   // Request may only be resolved once.
@@ -3115,12 +3134,14 @@ void HostResolverManager::UpdateModeForHistogram(const DnsConfig& dns_config) {
 }
 
 HostResolverManager::RequestImpl::~RequestImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (job_)
     job_->CancelRequest(this);
 }
 
 void HostResolverManager::RequestImpl::ChangeRequestPriority(
     RequestPriority priority) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(job_);
   job_->ChangeRequestPriority(this, priority);
 }

@@ -13,6 +13,7 @@
 #include "net/dns/dns_config.h"
 #include "net/dns/host_resolver_manager.h"
 #include "net/dns/host_resolver_proc.h"
+#include "net/url_request/url_request_context.h"
 
 namespace net {
 
@@ -37,6 +38,7 @@ ContextHostResolver::CreateRequest(
     const HostPortPair& host,
     const NetLogWithSource& source_net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
+  // TODO(crbug.com/934402): DHCECK |context_| once universally set.
   return manager_->CreateRequest(host, source_net_log, optional_parameters);
 }
 
@@ -80,12 +82,23 @@ void ContextHostResolver::SetDnsConfigOverrides(
 
 void ContextHostResolver::SetRequestContext(
     URLRequestContext* request_context) {
-  manager_->SetRequestContext(request_context);
+  DCHECK(request_context);
+  DCHECK(!context_);
+
+  context_ = request_context;
 }
 
 const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
 ContextHostResolver::GetDnsOverHttpsServersForTesting() const {
   return manager_->GetDnsOverHttpsServersForTesting();
+}
+
+HostResolverManager* ContextHostResolver::GetManagerForTesting() {
+  return manager_;
+}
+
+const URLRequestContext* ContextHostResolver::GetContextForTesting() const {
+  return context_;
 }
 
 size_t ContextHostResolver::LastRestoredCacheSize() const {

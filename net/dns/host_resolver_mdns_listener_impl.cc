@@ -36,12 +36,15 @@ HostResolverMdnsListenerImpl::HostResolverMdnsListenerImpl(
 }
 
 HostResolverMdnsListenerImpl::~HostResolverMdnsListenerImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Destroy |inner_listener_| first to cancel listening and callbacks to |this|
   // before anything else becomes invalid.
   inner_listener_ = nullptr;
 }
 
 int HostResolverMdnsListenerImpl::Start(Delegate* delegate) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(delegate);
 
   if (initialization_error_ != OK)

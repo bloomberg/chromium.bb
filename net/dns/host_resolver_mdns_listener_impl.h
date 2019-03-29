@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/sequence_checker.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mdns_client.h"
@@ -56,6 +57,8 @@ class HostResolverMdnsListenerImpl : public HostResolver::MdnsListener,
   int initialization_error_ = OK;
   std::unique_ptr<net::MDnsListener> inner_listener_;
   Delegate* delegate_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace net
