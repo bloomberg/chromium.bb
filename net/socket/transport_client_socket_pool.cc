@@ -83,10 +83,10 @@ class TransportConnectJobFactory
 TransportClientSocketPool::Request::Request(
     ClientSocketHandle* handle,
     CompletionOnceCallback callback,
-    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
+    const ProxyAuthCallback& proxy_auth_callback,
     RequestPriority priority,
     const SocketTag& socket_tag,
-    ClientSocketPool::RespectLimits respect_limits,
+    RespectLimits respect_limits,
     Flags flags,
     scoped_refptr<SocketParams> socket_params,
     const NetLogWithSource& net_log)
@@ -226,14 +226,14 @@ void TransportClientSocketPool::RemoveHigherLayeredPool(
 }
 
 int TransportClientSocketPool::RequestSocket(
-    const ClientSocketPool::GroupId& group_id,
+    const GroupId& group_id,
     scoped_refptr<SocketParams> params,
     RequestPriority priority,
     const SocketTag& socket_tag,
-    ClientSocketPool::RespectLimits respect_limits,
+    RespectLimits respect_limits,
     ClientSocketHandle* handle,
     CompletionOnceCallback callback,
-    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
+    const ProxyAuthCallback& proxy_auth_callback,
     const NetLogWithSource& net_log) {
   CHECK(callback);
   CHECK(handle);
@@ -277,7 +277,7 @@ int TransportClientSocketPool::RequestSocket(
 }
 
 void TransportClientSocketPool::RequestSockets(
-    const ClientSocketPool::GroupId& group_id,
+    const GroupId& group_id,
     scoped_refptr<SocketParams> params,
     int num_sockets,
     const NetLogWithSource& net_log) {
@@ -289,9 +289,9 @@ void TransportClientSocketPool::RequestSockets(
   }
 
   Request request(nullptr /* no handle */, CompletionOnceCallback(),
-                  ClientSocketPool::ProxyAuthCallback(), IDLE, SocketTag(),
-                  ClientSocketPool::RespectLimits::ENABLED, NO_IDLE_SOCKETS,
-                  std::move(params), net_log);
+                  ProxyAuthCallback(), IDLE, SocketTag(),
+                  RespectLimits::ENABLED, NO_IDLE_SOCKETS, std::move(params),
+                  net_log);
 
   // Cleanup any timed-out idle sockets.
   CleanupIdleSockets(false);
@@ -338,9 +338,8 @@ void TransportClientSocketPool::RequestSockets(
       NetLogEventType::SOCKET_POOL_CONNECTING_N_SOCKETS, rv);
 }
 
-int TransportClientSocketPool::RequestSocketInternal(
-    const ClientSocketPool::GroupId& group_id,
-    const Request& request) {
+int TransportClientSocketPool::RequestSocketInternal(const GroupId& group_id,
+                                                     const Request& request) {
   ClientSocketHandle* const handle = request.handle();
   const bool preconnecting = !handle;
 
@@ -363,7 +362,7 @@ int TransportClientSocketPool::RequestSocketInternal(
 
     // Can we make another active socket now?
     if (!group->HasAvailableSocketSlot(max_sockets_per_group_) &&
-        request.respect_limits() == ClientSocketPool::RespectLimits::ENABLED) {
+        request.respect_limits() == RespectLimits::ENABLED) {
       // TODO(willchan): Consider whether or not we need to close a socket in a
       // higher layered group. I don't think this makes sense since we would
       // just reuse that socket then if we needed one and wouldn't make it down
@@ -375,7 +374,7 @@ int TransportClientSocketPool::RequestSocketInternal(
   }
 
   if (ReachedMaxSocketsLimit() &&
-      request.respect_limits() == ClientSocketPool::RespectLimits::ENABLED) {
+      request.respect_limits() == RespectLimits::ENABLED) {
     // NOTE(mmenke):  Wonder if we really need different code for each case
     // here.  Only reason for them now seems to be preconnects.
     if (idle_socket_count_ > 0) {
@@ -525,10 +524,9 @@ void TransportClientSocketPool::LogBoundConnectJobToRequest(
                              connect_job_source.ToEventParametersCallback());
 }
 
-void TransportClientSocketPool::SetPriority(
-    const ClientSocketPool::GroupId& group_id,
-    ClientSocketHandle* handle,
-    RequestPriority priority) {
+void TransportClientSocketPool::SetPriority(const GroupId& group_id,
+                                            ClientSocketHandle* handle,
+                                            RequestPriority priority) {
   auto group_it = group_map_.find(group_id);
   if (group_it == group_map_.end()) {
     DCHECK(base::ContainsKey(pending_callback_map_, handle));
@@ -540,9 +538,8 @@ void TransportClientSocketPool::SetPriority(
   group_it->second->SetPriority(handle, priority);
 }
 
-void TransportClientSocketPool::CancelRequest(
-    const ClientSocketPool::GroupId& group_id,
-    ClientSocketHandle* handle) {
+void TransportClientSocketPool::CancelRequest(const GroupId& group_id,
+                                              ClientSocketHandle* handle) {
   auto callback_it = pending_callback_map_.find(handle);
   if (callback_it != pending_callback_map_.end()) {
     int result = callback_it->second.result;
@@ -589,7 +586,7 @@ void TransportClientSocketPool::CloseIdleSockets() {
 }
 
 void TransportClientSocketPool::CloseIdleSocketsInGroup(
-    const ClientSocketPool::GroupId& group_id) {
+    const GroupId& group_id) {
   if (idle_socket_count_ == 0)
     return;
   auto it = group_map_.find(group_id);
@@ -605,7 +602,7 @@ int TransportClientSocketPool::IdleSocketCount() const {
 }
 
 size_t TransportClientSocketPool::IdleSocketCountInGroup(
-    const ClientSocketPool::GroupId& group_id) const {
+    const GroupId& group_id) const {
   auto i = group_map_.find(group_id);
   CHECK(i != group_map_.end());
 
@@ -613,7 +610,7 @@ size_t TransportClientSocketPool::IdleSocketCountInGroup(
 }
 
 LoadState TransportClientSocketPool::GetLoadState(
-    const ClientSocketPool::GroupId& group_id,
+    const GroupId& group_id,
     const ClientSocketHandle* handle) const {
   if (base::ContainsKey(pending_callback_map_, handle))
     return LOAD_STATE_CONNECTING;
@@ -781,8 +778,7 @@ void TransportClientSocketPool::OnSSLConfigChanged() {
   FlushWithError(ERR_NETWORK_CHANGED);
 }
 
-bool TransportClientSocketPool::HasGroup(
-    const ClientSocketPool::GroupId& group_id) const {
+bool TransportClientSocketPool::HasGroup(const GroupId& group_id) const {
   return base::ContainsKey(group_map_, group_id);
 }
 
@@ -846,7 +842,7 @@ void TransportClientSocketPool::CleanupIdleSocketsInGroup(
 }
 
 TransportClientSocketPool::Group* TransportClientSocketPool::GetOrCreateGroup(
-    const ClientSocketPool::GroupId& group_id) {
+    const GroupId& group_id) {
   auto it = group_map_.find(group_id);
   if (it != group_map_.end())
     return it->second;
@@ -855,8 +851,7 @@ TransportClientSocketPool::Group* TransportClientSocketPool::GetOrCreateGroup(
   return group;
 }
 
-void TransportClientSocketPool::RemoveGroup(
-    const ClientSocketPool::GroupId& group_id) {
+void TransportClientSocketPool::RemoveGroup(const GroupId& group_id) {
   auto it = group_map_.find(group_id);
   CHECK(it != group_map_.end());
 
@@ -889,7 +884,7 @@ void TransportClientSocketPool::DecrementIdleCount() {
 }
 
 void TransportClientSocketPool::ReleaseSocket(
-    const ClientSocketPool::GroupId& group_id,
+    const GroupId& group_id,
     std::unique_ptr<StreamSocket> socket,
     int id) {
   auto i = group_map_.find(group_id);
@@ -920,7 +915,7 @@ void TransportClientSocketPool::CheckForStalledSocketGroups() {
   // Loop until there's nothing more to do.
   while (true) {
     // If we have idle sockets, see if we can give one to the top-stalled group.
-    ClientSocketPool::GroupId top_group_id;
+    GroupId top_group_id;
     Group* top_group = nullptr;
     if (!FindTopStalledGroup(&top_group, &top_group_id))
       return;
@@ -944,12 +939,11 @@ void TransportClientSocketPool::CheckForStalledSocketGroups() {
 // are not at the |max_sockets_per_group_| limit. Note: for requests with
 // the same priority, the winner is based on group hash ordering (and not
 // insertion order).
-bool TransportClientSocketPool::FindTopStalledGroup(
-    Group** group,
-    ClientSocketPool::GroupId* group_id) const {
+bool TransportClientSocketPool::FindTopStalledGroup(Group** group,
+                                                    GroupId* group_id) const {
   CHECK((group && group_id) || (!group && !group_id));
   Group* top_group = nullptr;
-  const ClientSocketPool::GroupId* top_group_id = nullptr;
+  const GroupId* top_group_id = nullptr;
   bool has_stalled_group = false;
   for (auto i = group_map_.begin(); i != group_map_.end(); ++i) {
     Group* curr_group = i->second;
@@ -999,9 +993,8 @@ void TransportClientSocketPool::RemoveConnectJob(ConnectJob* job,
   group->RemoveUnboundJob(job);
 }
 
-void TransportClientSocketPool::OnAvailableSocketSlot(
-    const ClientSocketPool::GroupId& group_id,
-    Group* group) {
+void TransportClientSocketPool::OnAvailableSocketSlot(const GroupId& group_id,
+                                                      Group* group) {
   DCHECK(base::ContainsKey(group_map_, group_id));
   if (group->IsEmpty()) {
     RemoveGroup(group_id);
@@ -1010,9 +1003,8 @@ void TransportClientSocketPool::OnAvailableSocketSlot(
   }
 }
 
-void TransportClientSocketPool::ProcessPendingRequest(
-    const ClientSocketPool::GroupId& group_id,
-    Group* group) {
+void TransportClientSocketPool::ProcessPendingRequest(const GroupId& group_id,
+                                                      Group* group) {
   const Request* next_request = group->GetNextUnboundRequest();
   DCHECK(next_request);
 
@@ -1322,7 +1314,7 @@ void TransportClientSocketPool::TryToCloseSocketsInLayeredPools() {
 }
 
 TransportClientSocketPool::Group::Group(
-    const ClientSocketPool::GroupId& group_id,
+    const GroupId& group_id,
     TransportClientSocketPool* client_socket_pool_base_helper)
     : group_id_(group_id),
       client_socket_pool_base_helper_(client_socket_pool_base_helper),
@@ -1355,7 +1347,7 @@ void TransportClientSocketPool::Group::OnNeedsProxyAuth(
 }
 
 void TransportClientSocketPool::Group::StartBackupJobTimer(
-    const ClientSocketPool::GroupId& group_id) {
+    const GroupId& group_id) {
   // Only allow one timer to run at a time.
   if (BackupJobTimerIsRunning())
     return;
@@ -1437,7 +1429,7 @@ std::unique_ptr<ConnectJob> TransportClientSocketPool::Group::RemoveUnboundJob(
 }
 
 void TransportClientSocketPool::Group::OnBackupJobTimerFired(
-    const ClientSocketPool::GroupId& group_id) {
+    const GroupId& group_id) {
   // If there are no more jobs pending, there is no work to do.
   // If we've done our cleanups correctly, this should not happen.
   if (jobs_.empty()) {
@@ -1613,7 +1605,7 @@ void TransportClientSocketPool::Group::InsertUnboundRequest(
   RequestPriority priority = request->priority();
 
   RequestQueue::Pointer new_position;
-  if (request->respect_limits() == ClientSocketPool::RespectLimits::DISABLED) {
+  if (request->respect_limits() == RespectLimits::DISABLED) {
     // Put requests with RespectLimits::DISABLED (which should have
     // priority == MAXIMUM_PRIORITY) ahead of other requests with
     // MAXIMUM_PRIORITY.
@@ -1738,8 +1730,7 @@ void TransportClientSocketPool::Group::SetPriority(ClientSocketHandle* handle,
 
       // Requests that ignore limits much be created and remain at the highest
       // priority, and should not be reprioritized.
-      DCHECK_EQ(request->respect_limits(),
-                ClientSocketPool::RespectLimits::ENABLED);
+      DCHECK_EQ(request->respect_limits(), RespectLimits::ENABLED);
 
       request->set_priority(priority);
       InsertUnboundRequest(std::move(request));
