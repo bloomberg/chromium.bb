@@ -3255,6 +3255,43 @@ TEST_F(TabStripModelTest, AddToExistingGroupDeletesGroup) {
   strip.CloseAllTabs();
 }
 
+TEST_F(TabStripModelTest, CloseTabDeletesGroup) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContents(), true);
+  strip.AddToNewGroup({0});
+  EXPECT_EQ(strip.ListTabGroups().size(), 1U);
+
+  strip.CloseWebContentsAt(0, TabStripModel::CLOSE_USER_GESTURE);
+
+  EXPECT_EQ(strip.ListTabGroups().size(), 0U);
+}
+
+TEST_F(TabStripModelTest, CloseTabNotifiesObserversOfGroupChange) {
+  TestTabStripModelDelegate delegate;
+  MockTabStripModelObserver observer;
+  TabStripModel strip(&delegate, profile());
+  strip.AddObserver(&observer);
+  strip.AppendWebContents(CreateWebContents(), true);
+  strip.AddToNewGroup({0});
+  const TabGroupData* old_group = strip.GetTabGroupForTab(0);
+  observer.ClearStates();
+
+  strip.CloseWebContentsAt(0, TabStripModel::CLOSE_USER_GESTURE);
+
+  EXPECT_GT(observer.GetStateCount(), 0);
+  int num_group_changed_notifications = 0;
+  for (int i = 0; i < observer.GetStateCount(); i++) {
+    if (observer.GetStateAt(i).action ==
+        MockTabStripModelObserver::GROUP_CHANGED) {
+      observer.StateEquals(
+          i, ExpectedGroupChangeState(strip, 0, old_group, nullptr));
+      num_group_changed_notifications++;
+    }
+  }
+  EXPECT_EQ(num_group_changed_notifications, 1);
+}
+
 // When inserting a WebContents, if a group is not specified, the new tab
 // should be left ungrouped.
 TEST_F(TabStripModelTest, InsertWebContentsAtDoesNotGroupByDefault) {
@@ -3266,12 +3303,12 @@ TEST_F(TabStripModelTest, InsertWebContentsAtDoesNotGroupByDefault) {
                                     strip.GetWebContentsAt(1)};
   strip.AddToNewGroup({0, 1});
 
-  strip.InsertWebContentsAt(1, CreateWebContents(), TabStripModel::ADD_NONE);
+  strip.InsertWebContentsAt(2, CreateWebContents(), TabStripModel::ADD_NONE);
 
-  // The newly added tab should not be in the group. The group should be split.
+  // The newly added tab should not be in the group.
   EXPECT_NE(strip.GetTabGroupForTab(0), nullptr);
-  EXPECT_EQ(strip.GetTabGroupForTab(1), nullptr);
-  EXPECT_NE(strip.GetTabGroupForTab(2), nullptr);
+  EXPECT_NE(strip.GetTabGroupForTab(1), nullptr);
+  EXPECT_EQ(strip.GetTabGroupForTab(2), nullptr);
 
   strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
