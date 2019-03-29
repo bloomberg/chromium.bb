@@ -81,17 +81,6 @@ class FetchManager::Loader final
   USING_GARBAGE_COLLECTED_MIXIN(Loader);
 
  public:
-  static Loader* Create(ExecutionContext* execution_context,
-                        FetchManager* fetch_manager,
-                        ScriptPromiseResolver* resolver,
-                        FetchRequestData* request,
-                        bool is_isolated_world,
-                        AbortSignal* signal) {
-    return MakeGarbageCollected<Loader>(execution_context, fetch_manager,
-                                        resolver, request, is_isolated_world,
-                                        signal);
-  }
-
   Loader(ExecutionContext*,
          FetchManager*,
          ScriptPromiseResolver*,
@@ -858,9 +847,9 @@ ScriptPromise FetchManager::Fetch(ScriptState* script_state,
 
   request->SetContext(mojom::RequestContextType::FETCH);
 
-  Loader* loader =
-      Loader::Create(GetExecutionContext(), this, resolver, request,
-                     script_state->World().IsIsolatedWorld(), signal);
+  auto* loader = MakeGarbageCollected<Loader>(
+      GetExecutionContext(), this, resolver, request,
+      script_state->World().IsIsolatedWorld(), signal);
   loaders_.insert(loader);
   signal->AddAlgorithm(WTF::Bind(&Loader::Abort, WrapWeakPersistent(loader)));
   // TODO(ricea): Reject the Response body with AbortError, not TypeError.

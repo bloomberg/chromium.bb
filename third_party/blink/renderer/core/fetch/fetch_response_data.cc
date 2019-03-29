@@ -299,7 +299,7 @@ FetchResponseData::FetchResponseData(Type type,
       response_source_(source),
       status_(status),
       status_message_(status_message),
-      header_list_(FetchHeaderList::Create()),
+      header_list_(MakeGarbageCollected<FetchHeaderList>()),
       response_time_(base::Time::Now()) {}
 
 void FetchResponseData::ReplaceBodyStreamBuffer(BodyStreamBuffer* buffer) {

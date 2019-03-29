@@ -193,7 +193,7 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromSimpleFormData) {
 
 TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromComplexFormData) {
   scoped_refptr<EncodedFormData> data = ComplexFormData();
-  MockBytesConsumer* underlying = MockBytesConsumer::Create();
+  auto* underlying = MakeGarbageCollected<MockBytesConsumer>();
   BytesConsumer* consumer =
       FormDataBytesConsumer::CreateForTesting(&GetDocument(), data, underlying);
   Checkpoint checkpoint;
@@ -376,7 +376,7 @@ TEST_F(FormDataBytesConsumerTest, BeginReadAffectsDraining) {
 }
 
 TEST_F(FormDataBytesConsumerTest, BeginReadAffectsDrainingWithComplexFormData) {
-  MockBytesConsumer* underlying = MockBytesConsumer::Create();
+  auto* underlying = MakeGarbageCollected<MockBytesConsumer>();
   BytesConsumer* consumer = FormDataBytesConsumer::CreateForTesting(
       &GetDocument(), ComplexFormData(), underlying);
 
@@ -415,7 +415,7 @@ TEST_F(FormDataBytesConsumerTest, BeginReadAffectsDrainingWithComplexFormData) {
 TEST_F(FormDataBytesConsumerTest, SetClientWithComplexFormData) {
   scoped_refptr<EncodedFormData> input_form_data = ComplexFormData();
 
-  MockBytesConsumer* underlying = MockBytesConsumer::Create();
+  auto* underlying = MakeGarbageCollected<MockBytesConsumer>();
   BytesConsumer* consumer = FormDataBytesConsumer::CreateForTesting(
       &GetDocument(), input_form_data, underlying);
   Checkpoint checkpoint;
@@ -437,7 +437,7 @@ TEST_F(FormDataBytesConsumerTest, SetClientWithComplexFormData) {
 TEST_F(FormDataBytesConsumerTest, CancelWithComplexFormData) {
   scoped_refptr<EncodedFormData> input_form_data = ComplexFormData();
 
-  MockBytesConsumer* underlying = MockBytesConsumer::Create();
+  auto* underlying = MakeGarbageCollected<MockBytesConsumer>();
   BytesConsumer* consumer = FormDataBytesConsumer::CreateForTesting(
       &GetDocument(), input_form_data, underlying);
   Checkpoint checkpoint;
