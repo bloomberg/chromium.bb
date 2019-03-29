@@ -36,8 +36,6 @@ constexpr VAImageFormat kImageFormatYUYV = {
     .bits_per_pixel = 16,
 };
 
-constexpr unsigned int kInvalidVaRtFormat = 0u;
-
 static void FillPictureParameters(
     const JpegFrameHeader& frame_header,
     VAPictureParameterBufferJPEGBaseline* pic_param) {
@@ -150,6 +148,13 @@ static void FillSliceParameters(
 // VAAPI only supports a subset of JPEG profiles. This function determines
 // whether a given parsed JPEG result is supported or not.
 static bool IsVaapiSupportedJpeg(const JpegParseResult& jpeg) {
+  // Make sure the JPEG's chroma subsampling format is supported.
+  if (!VaapiWrapper::IsJpegDecodingSupportedForInternalFormat(
+          VaSurfaceFormatForJpeg(jpeg.frame_header))) {
+    DLOG(ERROR) << "The JPEG's subsampling format is unsupported";
+    return false;
+  }
+
   // Validate the visible size.
   if (jpeg.frame_header.visible_width == 0u) {
     DLOG(ERROR) << "Visible width can't be zero";
@@ -186,31 +191,6 @@ static bool IsVaapiSupportedJpeg(const JpegParseResult& jpeg) {
     return false;
   }
 
-  if (jpeg.frame_header.num_components != 3) {
-    DLOG(ERROR) << "VAAPI doesn't support num_components("
-                << static_cast<int>(jpeg.frame_header.num_components)
-                << ") != 3";
-    return false;
-  }
-
-  if (jpeg.frame_header.components[0].horizontal_sampling_factor <
-          jpeg.frame_header.components[1].horizontal_sampling_factor ||
-      jpeg.frame_header.components[0].horizontal_sampling_factor <
-          jpeg.frame_header.components[2].horizontal_sampling_factor) {
-    DLOG(ERROR) << "VAAPI doesn't supports horizontal sampling factor of Y"
-                << " smaller than Cb and Cr";
-    return false;
-  }
-
-  if (jpeg.frame_header.components[0].vertical_sampling_factor <
-          jpeg.frame_header.components[1].vertical_sampling_factor ||
-      jpeg.frame_header.components[0].vertical_sampling_factor <
-          jpeg.frame_header.components[2].vertical_sampling_factor) {
-    DLOG(ERROR) << "VAAPI doesn't supports vertical sampling factor of Y"
-                << " smaller than Cb and Cr";
-    return false;
-  }
-
   return true;
 }
 
@@ -229,46 +209,30 @@ static bool VaSurfaceFormatToImageFormat(unsigned int va_rt_format,
   }
 }
 
-static unsigned int VaSurfaceFormatForJpeg(
-    const JpegFrameHeader& frame_header) {
-  // The range of sampling factor is [1, 4]. Pack them into integer to make the
-  // matching code simpler. For example, 0x211 means the sampling factor are 2,
-  // 1, 1 for 3 components.
-  unsigned int h = 0, v = 0;
-  for (int i = 0; i < frame_header.num_components; i++) {
-    DCHECK_LE(frame_header.components[i].horizontal_sampling_factor, 4);
-    DCHECK_LE(frame_header.components[i].vertical_sampling_factor, 4);
-    h = h << 4 | frame_header.components[i].horizontal_sampling_factor;
-    v = v << 4 | frame_header.components[i].vertical_sampling_factor;
-  }
+}  // namespace
 
-  switch (frame_header.num_components) {
-    case 1:  // Grey image
-      return VA_RT_FORMAT_YUV400;
+unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header) {
+  if (frame_header.num_components != 3)
+    return kInvalidVaRtFormat;
 
-    case 3:  // Y Cb Cr color image
-      // See https://en.wikipedia.org/wiki/Chroma_subsampling for the
-      // definition of these numbers.
-      if (h == 0x211 && v == 0x211)
-        return VA_RT_FORMAT_YUV420;
+  const uint8_t y_h = frame_header.components[0].horizontal_sampling_factor;
+  const uint8_t y_v = frame_header.components[0].vertical_sampling_factor;
+  const uint8_t u_h = frame_header.components[1].horizontal_sampling_factor;
+  const uint8_t u_v = frame_header.components[1].vertical_sampling_factor;
+  const uint8_t v_h = frame_header.components[2].horizontal_sampling_factor;
+  const uint8_t v_v = frame_header.components[2].vertical_sampling_factor;
 
-      if (h == 0x211 && v == 0x111)
-        return VA_RT_FORMAT_YUV422;
+  if (u_h != 1 || u_v != 1 || v_h != 1 || v_v != 1)
+    return kInvalidVaRtFormat;
 
-      if (h == 0x111 && v == 0x111)
-        return VA_RT_FORMAT_YUV444;
-
-      if (h == 0x411 && v == 0x111)
-        return VA_RT_FORMAT_YUV411;
-  }
-  VLOGF(1) << "Unsupported sampling factor: num_components="
-           << frame_header.num_components << ", h=" << std::hex << h
-           << ", v=" << v;
-
+  if (y_h == 2 && y_v == 2)
+    return VA_RT_FORMAT_YUV420;
+  else if (y_h == 2 && y_v == 1)
+    return VA_RT_FORMAT_YUV422;
+  else if (y_h == 1 && y_v == 1)
+    return VA_RT_FORMAT_YUV444;
   return kInvalidVaRtFormat;
 }
-
-}  // namespace
 
 VaapiJpegDecoder::VaapiJpegDecoder()
     : va_surface_id_(VA_INVALID_SURFACE), va_rt_format_(kInvalidVaRtFormat) {}
