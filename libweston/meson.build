@@ -92,6 +92,19 @@ dep_libweston = declare_dependency(
 	dependencies: deps_libweston
 )
 
+# XXX: We should be able to use dep_libweston.partial_dependency() instead
+# of this, but a Meson bug makes it not work. It will be fixed with
+# https://github.com/mesonbuild/meson/pull/5167
+# in hopefully Meson 0.51.
+dep_libweston_h = declare_dependency(
+	include_directories: include_directories('.'),
+	dependencies: [
+		dep_pixman.partial_dependency(compile_args: true),
+		dep_xkbcommon.partial_dependency(compile_args: true),
+		dep_wayland_server.partial_dependency(compile_args: true)
+	]
+)
+
 pkgconfig.generate(
 	lib_weston,
 	filebase: 'libweston-@0@'.format(libweston_major),
@@ -119,14 +132,7 @@ srcs_session_helper = [
 	'launcher-util.c',
 	'launcher-weston-launch.c',
 ]
-deps_session_helper = [
-	# for compositor.h needing pixman.h
-	dep_pixman.partial_dependency(compile_args: true),
-	# for compositor.h needing xkbcommon.h
-	dep_xkbcommon.partial_dependency(compile_args: true),
-	# for compositor.h needing wayland-server.h
-	dep_wayland_server.partial_dependency(compile_args: true)
-]
+deps_session_helper = [ dep_libweston_h ]
 
 if get_option('backend-drm')
 	deps_session_helper += dep_libdrm
