@@ -14,3 +14,17 @@ source_set("banners") {
     "//ios/chrome/browser/ui/util",
   ]
 }
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "infobar_banner_view_controller_unittest.mm",
+  ]
+  deps = [
+    ":banners",
+    "//ios/chrome/test:test_support",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
+}

@@ -55,6 +55,12 @@ const CGFloat kChangeInPositionForTransition = 100.0;
 @property(nonatomic, assign) BOOL touchInProgress;
 // YES if the view should be dismissed after any touch gesture has ended.
 @property(nonatomic, assign) BOOL shouldDismissAfterTouchesEnded;
+// UIButton with title |self.buttonText|, which triggers the Infobar action.
+@property(nonatomic, weak) UIButton* infobarButton;
+// UILabel displaying |self.titleText|.
+@property(nonatomic, strong) UILabel* titleLabel;
+// UILabel displaying |self.subTitleText|.
+@property(nonatomic, strong) UILabel* subTitleLabel;
 
 @end
 
@@ -96,27 +102,27 @@ const CGFloat kChangeInPositionForTransition = 100.0;
   iconImageView.contentMode = UIViewContentModeScaleAspectFit;
 
   // Labels setup.
-  UILabel* titleLabel = [[UILabel alloc] init];
-  titleLabel.text = self.titleText;
-  titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  titleLabel.adjustsFontForContentSizeCategory = YES;
-  titleLabel.textColor = UIColorFromRGB(kTitleLabelColor);
-  titleLabel.numberOfLines = 0;
-  titleLabel.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
+  self.titleLabel = [[UILabel alloc] init];
+  self.titleLabel.text = self.titleText;
+  self.titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  self.titleLabel.adjustsFontForContentSizeCategory = YES;
+  self.titleLabel.textColor = UIColorFromRGB(kTitleLabelColor);
+  self.titleLabel.numberOfLines = 0;
+  self.titleLabel.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
 
-  UILabel* subTitleLabel = [[UILabel alloc] init];
-  subTitleLabel.text = self.subTitleText;
-  subTitleLabel.font =
+  self.subTitleLabel = [[UILabel alloc] init];
+  self.subTitleLabel.text = self.subTitleText;
+  self.subTitleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
-  subTitleLabel.adjustsFontForContentSizeCategory = YES;
-  subTitleLabel.textColor = UIColorFromRGB(kSubTitleLabelColor);
-  subTitleLabel.numberOfLines = 0;
+  self.subTitleLabel.adjustsFontForContentSizeCategory = YES;
+  self.subTitleLabel.textColor = UIColorFromRGB(kSubTitleLabelColor);
+  self.subTitleLabel.numberOfLines = 0;
   // If |self.subTitleText| hasn't been set or is empty, hide the label to keep
   // the title label centered in the Y axis.
-  subTitleLabel.hidden = ![self.subTitleText length];
+  self.subTitleLabel.hidden = ![self.subTitleText length];
 
   UIStackView* labelsStackView = [[UIStackView alloc]
-      initWithArrangedSubviews:@[ titleLabel, subTitleLabel ]];
+      initWithArrangedSubviews:@[ self.titleLabel, self.subTitleLabel ]];
   labelsStackView.axis = UILayoutConstraintAxisVertical;
   labelsStackView.alignment = UIStackViewAlignmentLeading;
   labelsStackView.distribution = UIStackViewDistributionEqualCentering;
@@ -124,22 +130,22 @@ const CGFloat kChangeInPositionForTransition = 100.0;
                                      forAxis:UILayoutConstraintAxisVertical];
 
   // Button setup.
-  UIButton* infobarButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  [infobarButton setTitle:self.buttonText forState:UIControlStateNormal];
-  infobarButton.titleLabel.font =
+  self.infobarButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  [self.infobarButton setTitle:self.buttonText forState:UIControlStateNormal];
+  self.infobarButton.titleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-  [infobarButton addTarget:self.delegate
-                    action:@selector(bannerInfobarButtonWasPressed:)
-          forControlEvents:UIControlEventTouchUpInside];
+  [self.infobarButton addTarget:self.delegate
+                         action:@selector(bannerInfobarButtonWasPressed:)
+               forControlEvents:UIControlEventTouchUpInside];
 
   UIView* buttonSeparator = [[UIView alloc] init];
   buttonSeparator.translatesAutoresizingMaskIntoConstraints = NO;
   buttonSeparator.backgroundColor = UIColorFromRGB(kButtonSeparatorColor);
-  [infobarButton addSubview:buttonSeparator];
+  [self.infobarButton addSubview:buttonSeparator];
 
   // Container Stack setup.
   UIStackView* containerStack = [[UIStackView alloc] initWithArrangedSubviews:@[
-    iconImageView, labelsStackView, infobarButton
+    iconImageView, labelsStackView, self.infobarButton
   ]];
   containerStack.axis = UILayoutConstraintAxisHorizontal;
   containerStack.spacing = kContainerStackSpacing;
@@ -161,11 +167,11 @@ const CGFloat kChangeInPositionForTransition = 100.0;
     // Icon.
     [iconImageView.widthAnchor constraintEqualToConstant:kIconWidth],
     // Button.
-    [infobarButton.widthAnchor constraintEqualToConstant:kButtonWidth],
+    [self.infobarButton.widthAnchor constraintEqualToConstant:kButtonWidth],
     [buttonSeparator.widthAnchor
         constraintEqualToConstant:kButtonSeparatorWidth],
     [buttonSeparator.leadingAnchor
-        constraintEqualToAnchor:infobarButton.leadingAnchor],
+        constraintEqualToAnchor:self.infobarButton.leadingAnchor],
     [buttonSeparator.topAnchor constraintEqualToAnchor:self.view.topAnchor],
     [buttonSeparator.bottomAnchor
         constraintEqualToAnchor:self.view.bottomAnchor],
@@ -195,10 +201,6 @@ const CGFloat kChangeInPositionForTransition = 100.0;
 }
 
 #pragma mark - Private Methods
-
-- (void)buttonTapped:(id)sender {
-  [self dismissViewControllerAnimated:YES completion:nil];
-}
 
 // TODO(crbug.com/911864): PLACEHOLDER Gesture handling for the new InfobarUI.
 - (void)handlePanGesture:(UIPanGestureRecognizer*)gesture {
