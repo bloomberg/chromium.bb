@@ -5,6 +5,7 @@ package org.chromium.chrome.browser.download.home.rename;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.widget.ScrollView;
 
 import org.chromium.base.Callback;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -13,33 +14,36 @@ import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
- * The Coordinator for the Rename Extension Dialog. Manages UI objects like views and model, and
+ * The Coordinator for the Rename Dialog. Manages UI objects like views and model, and
  * handles communication with the {@link ModalDialogManager}.
  */
-public class RenameDialogCoordinator {
+final class RenameExtensionDialogCoordinator {
     private final ModalDialogManager mModalDialogManager;
-    private final PropertyModel mRenameDialogModel;
-    private final RenameDialogCustomView mRenameDialogCustomView;
+    private final ScrollView mRenameExtensionDialogCustomView;
+    private final PropertyModel mRenameExtensionDialogModel;
     private final Callback<Boolean> mOnClickEventCallback;
     private final Callback<Integer> mOnDismissEventCallback;
 
-    public RenameDialogCoordinator(Context context, ModalDialogManager modalDialogManager,
+    public RenameExtensionDialogCoordinator(Context context, ModalDialogManager modalDialogManager,
             Callback<Boolean> onClickCallback,
             Callback</*DialogDismissalCause*/ Integer> dismissCallback) {
         mModalDialogManager = modalDialogManager;
-        mRenameDialogCustomView = (RenameDialogCustomView) LayoutInflater.from(context).inflate(
-                org.chromium.chrome.download.R.layout.download_rename_custom_dialog, null);
-        mRenameDialogModel =
+        mRenameExtensionDialogCustomView = (ScrollView) LayoutInflater.from(context).inflate(
+                org.chromium.chrome.download.R.layout.download_rename_extension_custom_dialog,
+                null);
+        mRenameExtensionDialogModel =
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                        .with(ModalDialogProperties.CONTROLLER, new RenameDialogController())
+                        .with(ModalDialogProperties.CONTROLLER,
+                                new RenameExtensionDialogController())
                         .with(ModalDialogProperties.TITLE,
                                 context.getString(org.chromium.chrome.download.R.string.rename))
-                        .with(ModalDialogProperties.CUSTOM_VIEW, mRenameDialogCustomView)
+                        .with(ModalDialogProperties.CUSTOM_VIEW, mRenameExtensionDialogCustomView)
                         .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, context.getResources(),
-                                org.chromium.chrome.download.R.string.ok)
+                                org.chromium.chrome.download.R.string.confirm)
                         .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, context.getResources(),
                                 org.chromium.chrome.download.R.string.cancel)
                         .build();
+
         mOnClickEventCallback = onClickCallback;
         mOnDismissEventCallback = dismissCallback;
     }
@@ -48,45 +52,22 @@ public class RenameDialogCoordinator {
         dismissDialog(DialogDismissalCause.ACTIVITY_DESTROYED);
     }
 
-    public String getCurSuggestedName() {
-        return mRenameDialogCustomView.getTargetName();
-    }
-
-    /**
-     * Initialize rename dialog view and its sub-components, {@link ModalDialogManager}.
-     * @param name The content to initialize display on EditTextBox.
-     */
-    public void showDialog(String name) {
+    public void showDialog() {
         mModalDialogManager.showDialog(
-                mRenameDialogModel, ModalDialogManager.ModalDialogType.APP, true);
-        mRenameDialogCustomView.initializeView(name);
-    }
-
-    /**
-     * Update rename dialog view and its sub-components, {@link ModalDialogManager}.
-     * @param name The content to update the display on EditText box.
-     * @param error {@RenameResult} Error message to display on subtitle view.
-     */
-    public void showDialogWithErrorMessage(String name, int /*RenameResult*/ error) {
-        mRenameDialogCustomView.updateToErrorView(name, error);
-        if (!mModalDialogManager.isShowing()) {
-            mModalDialogManager.showDialog(
-                    mRenameDialogModel, ModalDialogManager.ModalDialogType.APP, true);
-        }
+                mRenameExtensionDialogModel, ModalDialogManager.ModalDialogType.APP, true);
     }
 
     public void dismissDialog(int dismissalCause) {
         if (mModalDialogManager != null) {
-            mModalDialogManager.dismissDialog(mRenameDialogModel, dismissalCause);
+            mModalDialogManager.dismissDialog(mRenameExtensionDialogModel, dismissalCause);
         }
     }
 
-    private class RenameDialogController implements ModalDialogProperties.Controller {
+    private class RenameExtensionDialogController implements ModalDialogProperties.Controller {
         @Override
         public void onDismiss(PropertyModel model, int dismissalCause) {
             mOnDismissEventCallback.onResult(dismissalCause);
         }
-
         @Override
         public void onClick(PropertyModel model, int buttonType) {
             switch (buttonType) {
@@ -97,7 +78,6 @@ public class RenameDialogCoordinator {
                     mOnClickEventCallback.onResult(false);
                     break;
                 default:
-                    break;
             }
         }
     }

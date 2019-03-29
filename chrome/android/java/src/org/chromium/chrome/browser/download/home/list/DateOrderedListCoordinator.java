@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.download.home.filter.FilterCoordinator;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
 import org.chromium.chrome.browser.download.home.metrics.FilterChangeLogger;
-import org.chromium.chrome.browser.download.home.rename.RenameDialogCoordinator;
+import org.chromium.chrome.browser.download.home.rename.RenameDialogManager;
 import org.chromium.chrome.browser.download.home.storage.StorageCoordinator;
 import org.chromium.chrome.browser.download.home.toolbar.ToolbarCoordinator;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -80,7 +80,7 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
     private final EmptyCoordinator mEmptyCoordinator;
     private final DateOrderedListMediator mMediator;
     private final DateOrderedListView mListView;
-    private final RenameDialogCoordinator mRenameDialogCoordinator;
+    private final RenameDialogManager mRenameDialogManager;
     private ViewGroup mMainView;
 
     /**
@@ -107,7 +107,7 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
         DecoratedListItemModel decoratedModel = new DecoratedListItemModel(model);
         mListView =
                 new DateOrderedListView(context, config, decoratedModel, dateOrderedListObserver);
-        mRenameDialogCoordinator = new RenameDialogCoordinator(context, modalDialogManager);
+        mRenameDialogManager = new RenameDialogManager(context, modalDialogManager);
 
         mMediator = new DateOrderedListMediator(provider, this::startShareIntent, deleteController,
                 this::startRename, selectionDelegate, config, dateOrderedListObserver, model);
@@ -150,7 +150,7 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
     /** Tears down this coordinator. */
     public void destroy() {
         mMediator.destroy();
-        mRenameDialogCoordinator.destroy();
+        mRenameDialogManager.destroy();
     }
 
     /** @return The {@link View} representing downloads home. */
@@ -191,6 +191,6 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
     }
 
     private void startRename(String name, DateOrderedListMediator.RenameCallback callback) {
-        mRenameDialogCoordinator.startRename(name, callback::tryToRename);
+        mRenameDialogManager.startRename(name, callback::tryToRename);
     }
 }

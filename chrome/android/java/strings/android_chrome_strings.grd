@@ -1486,6 +1486,12 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_RENAME_FAILURE_UNAVAILABLE" desc="Subtitle for rename dialog in the case that rename attempt failed because the item is unavailable.">
        Rename unavailable
       </message>
+      <message name="IDS_RENAME_EXTENSION_CONFIRMATION" desc="Subtitle for rename extension dialog in the case that user try to rename the file extension.">
+       Are you sure you want to change the file extension?
+      </message>
+      <message name="IDS_RENAME_EXTENSION_MESSAGE" desc="Message to warn users the danger of changing file extension.">
+        Changing the file extension may result in unexpected behavior and be harmful to your device.
+      </message>
 
       <!-- About Chrome preferences -->
       <message name="IDS_PREFS_ABOUT_CHROME" desc="Title for the About Chrome page. [CHAR-LIMIT=32]">
