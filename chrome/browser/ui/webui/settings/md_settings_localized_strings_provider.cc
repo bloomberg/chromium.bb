@@ -90,6 +90,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
+#include "device/fido/win/webauthn_api.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "base/metrics/field_trial_params.h"
@@ -2856,7 +2857,12 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean(
       "enableSecurityKeysSubpage",
-      base::FeatureList::IsEnabled(device::kWebAuthPINSupport));
+      base::FeatureList::IsEnabled(device::kWebAuthPINSupport)
+#if defined(OS_WIN)
+          && (!base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) ||
+              !device::WinWebAuthnApi::GetDefault()->IsAvailable())
+#endif
+  );
 }
 
 }  // namespace
