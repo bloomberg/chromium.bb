@@ -22,11 +22,6 @@ class ClientConfig(IntegrationTest):
       responses = t.GetHTTPResponses()
       self.assertEqual(2, len(responses))
       for response in responses:
-        chrome_proxy_header = response.request_headers['chrome-proxy']
-        header_values = [v.strip(' ') for v in chrome_proxy_header.split(',')]
-        self.assertTrue(any(v[:2] == 's=' for v in header_values))
-        self.assertFalse(any(v[:3] == 'ps=' for v in header_values))
-        self.assertFalse(any(v[:4] == 'sid=' for v in header_values))
         # Verify that the proxy server honored the session ID.
         self.assertHasChromeProxyViaHeader(response)
         self.assertEqual(200, response.status)
