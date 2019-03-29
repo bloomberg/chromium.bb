@@ -85,9 +85,4 @@ IdentityTestEnvironmentProfileAdaptor::GetIdentityTestEnvironmentFactories() {
 IdentityTestEnvironmentProfileAdaptor::IdentityTestEnvironmentProfileAdaptor(
     Profile* profile)
     : identity_test_env_(
-          profile->GetPrefs(),
-          AccountTrackerServiceFactory::GetForProfile(profile),
-          AccountFetcherServiceFactory::GetForProfile(profile),
-          static_cast<FakeProfileOAuth2TokenService*>(
-              ProfileOAuth2TokenServiceFactory::GetForProfile(profile)),
           IdentityManagerFactory::GetForProfile(profile)) {}
