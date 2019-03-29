@@ -428,10 +428,7 @@ android_library("chrome_java") {
   java_files += public_tab_management_java_sources
 
   if (enable_vr) {
-    deps += [
-      ":chrome_vr_java_resources",
-      "//device/vr:java",
-    ]
+    deps += [ ":chrome_vr_java_resources" ]
   }
   srcjar_deps += [ ":chrome_vr_android_java_enums_srcjar" ]
   if (notouch_build) {

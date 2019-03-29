@@ -120,6 +120,7 @@ android_library("java") {
 
   deps = [
     ":java_resources",
+    "//device/vr:java",
     "//third_party/gvr-android-keyboard:kb_java",
     "//third_party/gvr-android-sdk:gvr_common_java",
   ]
