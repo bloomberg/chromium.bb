@@ -10,7 +10,7 @@
 #include "base/process/process.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
-#include "ui/ozone/platform/wayland/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_connection.h"
 
 namespace ui {
 

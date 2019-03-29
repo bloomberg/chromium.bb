@@ -12,8 +12,8 @@
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/platform/wayland/wayland_connection.h"
-#include "ui/ozone/platform/wayland/wayland_util.h"
+#include "ui/ozone/platform/wayland/common/wayland_util.h"
+#include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/public/interfaces/wayland/wayland_connection.mojom.h"
 
 #if defined(WAYLAND_GBM)
