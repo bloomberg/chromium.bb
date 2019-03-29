@@ -103,7 +103,7 @@ public abstract class SingleTabActivity extends ChromeActivity {
                           .build();
         }
 
-        tab.initialize(null, getTabContentManager(), createTabDelegateFactory(), false, unfreeze);
+        tab.initialize(null, createTabDelegateFactory(), false, unfreeze);
         return tab;
     }
 

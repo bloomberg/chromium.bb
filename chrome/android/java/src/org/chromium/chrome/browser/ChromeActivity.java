@@ -74,6 +74,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.content.ContentOffsetProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManagerHandler;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
 import org.chromium.chrome.browser.contextual_suggestions.PageViewTimer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
@@ -1752,8 +1753,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * Sets the {@link TabContentManager} owned by this {@link ChromeActivity}.
      * @param tabContentManager A {@link TabContentManager} instance.
      */
-    protected void setTabContentManager(TabContentManager tabContentManager) {
+    private void setTabContentManager(TabContentManager tabContentManager) {
         mTabContentManager = tabContentManager;
+        TabContentManagerHandler.create(tabContentManager, getTabModelSelector());
     }
 
     /**

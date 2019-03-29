@@ -12,7 +12,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ServiceTabLauncher;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
@@ -38,7 +37,6 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
 
     private WindowAndroid mNativeWindow;
     private TabModel mTabModel;
-    private TabContentManager mTabContentManager;
     private TabModelOrderController mOrderController;
 
     public ChromeTabCreator(
@@ -137,8 +135,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                               .setWindow(mNativeWindow)
                               .setLaunchType(type)
                               .build();
-                tab.initialize(
-                        webContents, mTabContentManager, delegateFactory, !openInForeground, false);
+                tab.initialize(webContents, delegateFactory, !openInForeground, false);
                 TabParentIntent.from(tab).set(parentIntent);
                 webContents.resumeLoadingCreatedWebContents();
             } else if (!openInForeground && SysUtils.isLowEndDevice()) {
@@ -151,7 +148,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                               .setWindow(mNativeWindow)
                               .setLaunchType(type)
                               .build();
-                tab.initialize(null, mTabContentManager, delegateFactory, !openInForeground, false);
+                tab.initialize(null, delegateFactory, !openInForeground, false);
             } else {
                 tab = TabBuilder.createLiveTab(!openInForeground)
                               .setParentId(parentId)
@@ -160,7 +157,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                               .setLaunchType(type)
                               .build();
 
-                tab.initialize(null, mTabContentManager, delegateFactory, !openInForeground, false);
+                tab.initialize(null, delegateFactory, !openInForeground, false);
                 tab.loadUrl(loadUrlParams);
             }
             TabRedirectHandler.from(tab).updateIntent(intent);
@@ -197,7 +194,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                           .setWindow(mNativeWindow)
                           .setLaunchType(type)
                           .build();
-        tab.initialize(webContents, mTabContentManager, delegateFactory, !openInForeground, false);
+        tab.initialize(webContents, delegateFactory, !openInForeground, false);
         mTabModel.addTab(tab, position, type);
         return true;
     }
@@ -301,8 +298,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                           .build();
         boolean selectTab = mOrderController.willOpenInForeground(TabLaunchType.FROM_RESTORE,
                 state.isIncognito());
-        tab.initialize(
-                null, mTabContentManager, createDefaultTabDelegateFactory(), !selectTab, false);
+        tab.initialize(null, createDefaultTabDelegateFactory(), !selectTab, false);
         assert state.isIncognito() == mIncognito;
         mTabModel.addTab(tab, index, TabLaunchType.FROM_RESTORE);
         return tab;
@@ -349,13 +345,10 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
      * Sets the tab model and tab content manager to use.
      * @param model           The new {@link TabModel} to use.
      * @param orderController The controller for determining the order of tabs.
-     * @param manager         The new {@link TabContentManager} to use.
      */
-    public void setTabModel(
-            TabModel model, TabModelOrderController orderController, TabContentManager manager) {
+    public void setTabModel(TabModel model, TabModelOrderController orderController) {
         mTabModel = model;
         mOrderController = orderController;
-        mTabContentManager = manager;
     }
 
     /**

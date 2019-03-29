@@ -102,13 +102,6 @@ public class CustomTabActivityTabControllerTest {
     }
 
     @Test
-    public void attachesTabContentManager_IfCreatedTabEarly() {
-        env.warmUp();
-        env.reachNativeInit(mTabController);
-        verify(env.tabFromFactory).attachTabContentManager(env.tabContentManager);
-    }
-
-    @Test
     public void addsEarlyCreatedTab_ToTabModel() {
         env.warmUp();
         env.reachNativeInit(mTabController);
