@@ -36,6 +36,7 @@
 #include "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/ukm/ios/features.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
@@ -1036,9 +1037,12 @@ enum class EnterTabSwitcherSnapshotResult {
                     _localStatePrefObserverBridge->ObserveChangesForPreference(
                         metrics::prefs::kMetricsReportingEnabled,
                         &_localStatePrefChangeRegistrar);
-                    _localStatePrefObserverBridge->ObserveChangesForPreference(
-                        prefs::kMetricsReportingWifiOnly,
-                        &_localStatePrefChangeRegistrar);
+                    if (!base::FeatureList::IsEnabled(kUmaCellular)) {
+                      _localStatePrefObserverBridge
+                          ->ObserveChangesForPreference(
+                              prefs::kMetricsReportingWifiOnly,
+                              &_localStatePrefChangeRegistrar);
+                    }
 
                     // Calls the onPreferenceChanged function in case there was
                     // a change to the observed preferences before the observer

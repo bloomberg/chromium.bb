@@ -13,6 +13,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/ukm/ios/features.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -186,6 +187,9 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 
 - (BOOL)isUploadingEnabled {
   BOOL optIn = [self areMetricsEnabled];
+  if (base::FeatureList::IsEnabled(kUmaCellular)) {
+    return optIn;
+  }
   BOOL wifiOnly = GetApplicationContext()->GetLocalState()->GetBoolean(
       prefs::kMetricsReportingWifiOnly);
   BOOL allowUploading = optIn;

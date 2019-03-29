@@ -20,6 +20,7 @@ include_rules = [
   "+components/suggestions",
   "+components/sync/driver",
   "+components/task_scheduler_util",
+  "+components/ukm/ios",
   "+components/url_formatter",
   "+components/web_resource",
   "+ios/chrome/browser",

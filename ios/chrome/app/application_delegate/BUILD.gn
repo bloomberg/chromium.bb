@@ -110,6 +110,7 @@ source_set("application_delegate_internal") {
     "//components/metrics",
     "//components/payments/core",
     "//components/prefs",
+    "//components/ukm/ios:features",
     "//ios/chrome/app",
     "//ios/chrome/app:mode",
     "//ios/chrome/app/spotlight",
