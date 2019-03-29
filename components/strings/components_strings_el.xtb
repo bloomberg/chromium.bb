@@ -227,7 +227,7 @@
 <translation id="2114841414352855701">Αγνοήθηκε επειδή αντικαταστάθηκε από την πολιτική <ph name="POLICY_NAME" />.</translation>
 <translation id="213826338245044447">Σελιδοδείκτες κινητής συσκευής</translation>
 <translation id="214556005048008348">Ακύρωση πληρωμής</translation>
-<translation id="2147827593068025794">Συγχρονισμός παρασκηνίου</translation>
+<translation id="2147827593068025794">Συγχρ. παρασκηνίου</translation>
 <translation id="2148613324460538318">Προσθήκη κάρτας</translation>
 <translation id="2154054054215849342">Ο συγχρονισμός δεν είναι διαθέσιμος για τον τομέα σας</translation>
 <translation id="2154484045852737596">Επεξεργασία κάρτας</translation>
@@ -301,7 +301,7 @@
 <translation id="2498091847651709837">Σάρωση νέας κάρτας</translation>
 <translation id="2501278716633472235">Επιστροφή</translation>
 <translation id="2503184589641749290">Αποδεκτές χρεωστικές και προπληρωμένες κάρτες</translation>
-<translation id="2515629240566999685">Ελέγξτε το σήμα στην περιοχή σας</translation>
+<translation id="2515629240566999685">Ελέγξτε το σήμα στην περιοχή σας.</translation>
 <translation id="2523886232349826891">Αποθηκεύτηκε μόνο σε αυτήν τη συσκευή</translation>
 <translation id="2524461107774643265">Προσθήκη περισσότερων πληροφοριών</translation>
 <translation id="2536110899380797252">Προσθήκη διεύθυνσης</translation>
@@ -507,7 +507,7 @@
 <translation id="370665806235115550">Φόρτωση...</translation>
 <translation id="3709599264800900598">Κείμενο που αντιγράψατε</translation>
 <translation id="3712624925041724820">Οι άδειες έχουν εξαντληθεί</translation>
-<translation id="3714780639079136834">Ενεργοποιήστε τα δεδομένα κινητής τηλεφωνίας ή το Wi-Fi</translation>
+<translation id="3714780639079136834">Ενεργοποιήστε τα δεδομένα κινητής τηλεφωνίας ή το Wi-Fi.</translation>
 <translation id="3715597595485130451">Σύνδεση σε Wi-Fi</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Ελέγξτε το διακομιστή μεσολάβησης, το τείχος προστασίας και τη διαμόρφωση DNS<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">Οι εφαρμογές που μπορούν να προκαλέσουν αυτό το σφάλμα περιλαμβάνουν λογισμικό προστασίας από ιούς, τείχος προστασίας και λογισμικό φιλτραρίσματος ιστού ή λογισμικό διακομιστή μεσολάβησης.</translation>
@@ -562,7 +562,7 @@
 <translation id="4079302484614802869">Η διαμόρφωση του διακομιστή μεσολάβησης είναι ορισμένη να χρησιμοποιεί μια διεύθυνση URL σεναρίου .pac και όχι σταθερούς διακομιστές μεσολάβησης.</translation>
 <translation id="4098354747657067197">Ακολουθεί παραπλανητικός ιστότοπος</translation>
 <translation id="4103249731201008433">Ο σειριακός αριθμός της συσκευής δεν είναι έγκυρος</translation>
-<translation id="410351446219883937">Αυτόματη αναπαραγωγή</translation>
+<translation id="410351446219883937">Αυτ. αναπαραγωγή</translation>
 <translation id="4103763322291513355">Επισκεφτείτε την &lt;strong&gt;chrome://policy&lt;/strong&gt; για να δείτε τη λίστα των ανεπιθύμητων διευθύνσεων URL και άλλες πολιτικές που έχουν τεθεί σε εφαρμογή από το διαχειριστή του συστήματός σας.</translation>
 <translation id="4110652170750985508">Έλεγχος πληρωμής</translation>
 <translation id="4116663294526079822">Να επιτρέπεται πάντα σε αυτόν τον ιστότοπο</translation>
@@ -978,7 +978,7 @@
 <translation id="6434309073475700221">Απόρριψη</translation>
 <translation id="6446163441502663861">Kahu (Φάκελος)</translation>
 <translation id="6446608382365791566">Προσθήκη περισσότερων πληροφοριών</translation>
-<translation id="6447842834002726250">Cookies</translation>
+<translation id="6447842834002726250">Cookie</translation>
 <translation id="6451458296329894277">Επιβεβαίωση νέας υποβολής φόρμας</translation>
 <translation id="6465306955648956876">Διαχείριση κωδικών πρόσβασης…</translation>
 <translation id="647261751007945333">Πολιτικές συσκευών </translation>
@@ -1066,7 +1066,7 @@
 <translation id="6996312675313362352">Να μεταφράζονται πάντα τα <ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Αυτές οι χρεώσεις μπορεί να είναι εφάπαξ ή επαναλαμβανόμενες και ίσως να μην είναι εμφανείς.</translation>
-<translation id="7029809446516969842">Κωδικοί πρόσβασης</translation>
+<translation id="7029809446516969842">Κωδ. πρόσβασης</translation>
 <translation id="7050187094878475250">Επιχειρήσατε να μεταβείτε στο <ph name="DOMAIN" />, αλλά ο διακομιστής παρουσίασε ένα πιστοποιητικό με περίοδο εγκυρότητας η οποία είναι πολύ μεγάλη για να θεωρηθεί αξιόπιστη.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Αυτήν τη στιγμή, δεν είναι δυνατή η αποθήκευση αυτής της κάρτας}other{Αυτήν τη στιγμή, δεν είναι δυνατή η αποθήκευση αυτών των καρτών}}</translation>
 <translation id="7053983685419859001">Αποκλεισμός</translation>
@@ -1330,7 +1330,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Εάν κατανοείτε τους κινδύνους για την ασφάλειά σας, μπορείτε να <ph name="BEGIN_LINK" />επισκεφτείτε αυτόν τον ιστότοπο<ph name="END_LINK" /> πριν από την κατάργηση των επικίνδυνων προγραμμάτων.</translation>
 <translation id="8349305172487531364">Γραμμή σελιδοδεικτών</translation>
-<translation id="8363502534493474904">Απενεργοποιήστε τη λειτουργία πτήσης</translation>
+<translation id="8363502534493474904">Απενεργοποιήστε τη λειτουργία πτήσης.</translation>
 <translation id="8364627913115013041">Δεν έχει οριστεί.</translation>
 <translation id="8368476060205742148">Υπηρεσίες Google Play</translation>
 <translation id="8371889962595521444">Προσαρμοσμένα πιστοποιητικά ρίζας</translation>

@@ -1030,7 +1030,7 @@
 <translation id="6891596781022320156">Richtlinienebene wird nicht unterstützt.</translation>
 <translation id="6895330447102777224">Ihre Karte wurde bestätigt</translation>
 <translation id="6897140037006041989">User-Agent</translation>
-<translation id="6903319715792422884">Sie können uns dabei helfen, Safe Browsing weiter zu verbessern, <ph name="BEGIN_WHITEPAPER_LINK" />indem Sie einige Systeminformationen und Seiteninhalte an Google senden<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="6903319715792422884">Sie können uns dabei helfen, Safe Browsing weiter zu verbessern, indem Sie einige <ph name="BEGIN_WHITEPAPER_LINK" />Systeminformationen und Seiteninhalte<ph name="END_WHITEPAPER_LINK" /> an Google senden. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Nutzer:</translation>
 <translation id="6934672428414710184">Dieser Name stammt aus Ihrem Google-Konto</translation>
 <translation id="6939583532829045966">Ihr Gerät wird durch <ph name="ENROLLMENT_DOMAIN" /> verwaltet. Dies bedeutet, dass der Administrator Ihr Gerät per Remotezugriff konfigurieren kann.</translation>
@@ -1046,6 +1046,7 @@
 <translation id="6965978654500191972">Gerät</translation>
 <translation id="6970216967273061347">Bezirk</translation>
 <translation id="6973656660372572881">Sowohl feste Proxyserver als auch eine PAC-Skript-URL sind festgelegt.</translation>
+<translation id="6973932557599545801">Ich kann Ihnen leider nicht helfen. Bitte fahren Sie alleine fort.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Stummschalten (Standard)</translation>
 <translation id="6984479912851154518">Der private Modus wird beendet, um über eine externe Anwendung zu zahlen. Weiter?</translation>

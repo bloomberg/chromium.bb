@@ -179,7 +179,7 @@
 <translation id="1826516787628120939">Провера</translation>
 <translation id="1834321415901700177">Овај сајт садржи штетне програме</translation>
 <translation id="1839551713262164453">Валидација вредности смерница није успела уз грешке</translation>
-<translation id="1842969606798536927">Плаћање</translation>
+<translation id="1842969606798536927">Плати</translation>
 <translation id="1871208020102129563">Прокси је подешен да користи фиксне прокси сервере, а не URL адресу .pac скрипте.</translation>
 <translation id="1871284979644508959">Обавезно поље</translation>
 <translation id="1874765382782611674">Дебитне картице које се прихватају</translation>
@@ -225,7 +225,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Картица</translation>
 <translation id="2114841414352855701">Занемарују се јер су замењене смерницама <ph name="POLICY_NAME" />.</translation>
-<translation id="213826338245044447">Обележивачи на мобилном уређају</translation>
+<translation id="213826338245044447">Мобилни обележивачи</translation>
 <translation id="214556005048008348">Откажи плаћање</translation>
 <translation id="2147827593068025794">Синхронизација у позадини</translation>
 <translation id="2148613324460538318">Додај картицу</translation>
@@ -299,7 +299,7 @@
 <translation id="2495083838625180221">Рашчлањивач JSON датотека</translation>
 <translation id="2495093607237746763">Ако означите ову опцију, Chromium ће складиштити копију картице на овом уређају ради бржег попуњавања образаца.</translation>
 <translation id="2498091847651709837">Скенирајте нову картицу</translation>
-<translation id="2501278716633472235">Иди назад</translation>
+<translation id="2501278716633472235">Назад</translation>
 <translation id="2503184589641749290">Дебитне и припејд картице које се прихватају</translation>
 <translation id="2515629240566999685">да проверите сигнал у својој области</translation>
 <translation id="2523886232349826891">Сачувано је само на овом уређају</translation>
@@ -770,7 +770,7 @@
 <translation id="5215116848420601511">Начини плаћања и адресе из Google Pay-а</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="5222812217790122047">Имејл је обавезан</translation>
-<translation id="5230733896359313003">Адреса за слање</translation>
+<translation id="5230733896359313003">Адреса за испоруку</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
 <translation id="5250209940322997802">„Повежите се на мрежу“</translation>
@@ -1254,7 +1254,7 @@
 <translation id="7942349550061667556">Црвена</translation>
 <translation id="7947285636476623132">Проверите годину истека и пробајте поново</translation>
 <translation id="7951415247503192394">(32-битни)</translation>
-<translation id="7956713633345437162">Обележивачи на мобилном уређају</translation>
+<translation id="7956713633345437162">Мобилни обележивачи</translation>
 <translation id="7961015016161918242">Никад</translation>
 <translation id="7977894662897852582">Edp</translation>
 <translation id="7995512525968007366">Није наведено</translation>
@@ -1392,7 +1392,7 @@
 <translation id="8800988563907321413">Предлози у близини ће се приказивати овде</translation>
 <translation id="8820817407110198400">Обележивачи</translation>
 <translation id="883848425547221593">Остали обележивачи</translation>
-<translation id="884264119367021077">Адреса за слање</translation>
+<translation id="884264119367021077">Адреса за испоруку</translation>
 <translation id="884923133447025588">Није пронађен ниједан механизам опозива.</translation>
 <translation id="885730110891505394">Дељење са Google-ом</translation>
 <translation id="8858065207712248076">Chrome вам препоручује да ресетујете лозинку за <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> ако сте је користили на другим сајтовима.</translation>

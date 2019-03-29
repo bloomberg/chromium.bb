@@ -5,7 +5,7 @@
 <translation id="10623998915015855">टॉगल बटन</translation>
 <translation id="1088086359088493902">सेकंड</translation>
 <translation id="1171774979989969504">कृपया ई-मेल पता दर्ज करें.</translation>
-<translation id="1178581264944972037">पॉज़ करें</translation>
+<translation id="1178581264944972037">रोकें</translation>
 <translation id="1188858454923323853">पूरक</translation>
 <translation id="1206619573307042055">मार्की</translation>
 <translation id="1206693055195146388">स्लाइडर</translation>
@@ -150,6 +150,7 @@
 <translation id="6166809985690652833">उपसंहार</translation>
 <translation id="6209276755895393898">यह इमेज इस बारे में लगती है: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">शब्दावली</translation>
+<translation id="628938136236500310">'पिक्चर में पिक्चर' मोड में चल रहा है</translation>
 <translation id="6398862346408813489">माह चयन फलक दिखाएं</translation>
 <translation id="6404546809543547843">ऑडियो समय स्क्रबर</translation>
 <translation id="6443871981718447451">बंद कैप्‍शन मेन्यू दिखाएं</translation>
@@ -184,6 +185,7 @@
 <translation id="7364796246159120393">फ़ाइल चुनें</translation>
 <translation id="739024184232394898">अन्य...</translation>
 <translation id="7405738980073107433">एंडनोट</translation>
+<translation id="7410239719251593705">लगता है कि वयस्क सामग्री मौजूद है. कोई जानकारी मौजूद नहीं है.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">टैब</translation>
 <translation id="7514365320538308">डाउनलोड करें</translation>
@@ -197,7 +199,7 @@
 <translation id="7745230546936012372">ऐसी इमेज जो मौजूद नहीं हैं उनके बारे में जानकारी पाने के लिए, संदर्भ मेन्यू खोलें.</translation>
 <translation id="7750228210027921155">पिक्चर में पिक्चर</translation>
 <translation id="775297008183122718">अमान्य प्रविष्टि</translation>
-<translation id="7789962463072032349">पॉज़ करें</translation>
+<translation id="7789962463072032349">रोकें</translation>
 <translation id="7802800022689234070">प्रकटीकरण त्रिकोण</translation>
 <translation id="7888071071722539607">कृपया ईमेल पते में '<ph name="ATSIGN" />' शामिल करें. '<ph name="INVALIDADDRESS" />' में '<ph name="ATSIGN" />' नहीं है.</translation>
 <translation id="7891486169920085145">विभाजक</translation>

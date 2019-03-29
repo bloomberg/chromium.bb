@@ -848,7 +848,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="2548572254685798999">세이프 브라우징 정보 보고</translation>
 <translation id="2550593661567988768">단면 인쇄만</translation>
 <translation id="2552966063069741410">시간대</translation>
-<translation id="2562339630163277285">순간 검색결과를 제공하는 데 사용되는 검색 엔진의 URL을 지정합니다. URL에는 <ph name="SEARCH_TERM_MARKER" /> 문자열이 포함되어야 하며 이 문자열은 검색 시 사용자가 지금까지 입력한 내용으로 대체됩니다.
+<translation id="2562339630163277285">순간 검색결과를 제공하는 데 사용되는 검색엔진의 URL을 지정합니다. URL에는 <ph name="SEARCH_TERM_MARKER" /> 문자열이 포함되어야 하며 이 문자열은 검색 시 사용자가 지금까지 입력한 내용으로 대체됩니다.
 
           이 정책은 선택사항입니다. 설정하지 않으면 순간 검색결과가 제공되지 않습니다.
 
@@ -902,7 +902,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="2647069081229792812">북마크 수정 사용 또는 사용 중지</translation>
 <translation id="2649896281375932517">사용자가 결정합니다.</translation>
 <translation id="2650049181907741121">사용자가 덮개를 덮으면 수행할 작업</translation>
-<translation id="2655233147335439767">기본 검색을 수행할 때 사용되는 검색 엔진의 URL을 지정합니다. URL은 '<ph name="SEARCH_TERM_MARKER" />' 문자열을 포함해야 하며 이 문자열은 검색 시 사용자의 검색어로 대체됩니다.
+<translation id="2655233147335439767">기본 검색을 수행할 때 사용되는 검색엔진의 URL을 지정합니다. URL은 '<ph name="SEARCH_TERM_MARKER" />' 문자열을 포함해야 하며 이 문자열은 검색 시 사용자의 검색어로 대체됩니다.
 
           Google의 검색 URL은 <ph name="GOOGLE_SEARCH_URL" />(으)로 지정될 수 있습니다.
 
@@ -1335,7 +1335,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책이 설정되어 있지 않으면 비밀번호 보호 서비스가 Google 비밀번호만 보호하며, 사용자가 이 설정을 변경할 수 있습니다.</translation>
 <translation id="3502555714327823858">모든 양면 모드 허용</translation>
 <translation id="350443680860256679">ARC 설정</translation>
-<translation id="3504791027627803580">이미지 검색을 제공하는 데 사용되는 검색 엔진의 URL을 지정합니다. 검색 요청은 GET 메소드를 사용하여 전송됩니다. DefaultSearchProviderImageURLPostParams 정책이 설정되어 있으면 이미지 검색 요청에서 대신 POST 메소드를 사용합니다.
+<translation id="3504791027627803580">이미지 검색을 제공하는 데 사용되는 검색엔진의 URL을 지정합니다. 검색 요청은 GET 메소드를 사용하여 전송됩니다. DefaultSearchProviderImageURLPostParams 정책이 설정되어 있으면 이미지 검색 요청에서 대신 POST 메소드를 사용합니다.
 
           이 정책은 선택사항입니다. 설정되어 있지 않으면 이미지 검색이 사용되지 않습니다.
 
@@ -1505,7 +1505,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       지정하지 않으면 버전 시드 URL을 수정할 수 없습니다.</translation>
 <translation id="3863409707075047163">최소 SSL 버전 사용 설정됨</translation>
-<translation id="3864020628639910082">추천 검색어를 제공하는 데 사용되는 검색 엔진의 URL을 지정합니다. URL에 '<ph name="SEARCH_TERM_MARKER" />' 문자열이 포함되어야 하며 이 문자열은 검색 시 사용자가 지금까지 입력한 텍스트로 교체됩니다.
+<translation id="3864020628639910082">추천 검색어를 제공하는 데 사용되는 검색엔진의 URL을 지정합니다. URL에 '<ph name="SEARCH_TERM_MARKER" />' 문자열이 포함되어야 하며 이 문자열은 검색 시 사용자가 지금까지 입력한 텍스트로 교체됩니다.
 
           이 정책은 선택사항입니다. 설정하지 않은 경우 추천 URL이 사용되지 않습니다.
 
@@ -2658,7 +2658,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       기본적으로 확장 프로그램은 회사용으로 지정된 키를 사용할 수 없으며, 이는 확장 프로그램에 대해 allowCorporateKeyUsage를 false로 설정하는 것과 동일합니다.
 
-      확장 프로그램에 대해 allowCorporateKeyUsage를 true로 설정하는 경우에만 해당 확장 프로그램에서 회사용으로 표시된 플랫폼 키를 사용하여 임의의 데이터에 서명할 수 있습니다. 이 권한은 외부 해커가 침입하지 못하도록 확장 프로그램이 키에 대한 액세스를 안전하게 보호하는 것으로 신뢰되는 경우에만 부여되어야 합니다.</translation>
+      확장 프로그램에 대해 allowCorporateKeyUsage를 true로 설정하는 경우에만 해당 확장 프로그램에서 회사용으로 표시된 플랫폼 키를 사용하여 임의의 데이터에 서명할 수 있습니다. 이 권한은 외부 공격자가 침입하지 못하도록 확장 프로그램이 키에 대한 액세스를 안전하게 보호하는 것으로 신뢰되는 경우에만 부여되어야 합니다.</translation>
 <translation id="6208896993204286313"><ph name="PRODUCT_NAME" /> 정책 정보 보고</translation>
 <translation id="6210259502936598222">OS 및 <ph name="PRODUCT_NAME" /> 버전 정보 보고</translation>
 <translation id="6210610748361191729">정책이 false로 설정된 경우 사용자가 내보내기/가져오기 UI를 사용할 수 없지만, 가상 머신에서 직접 'lxc' 명령어를 사용하여 컨테이너 이미지를 내보내고 가져올 수 있습니다.</translation>
@@ -3206,7 +3206,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       이 정책이 설정되지 않으면 기본적으로 엔터프라이즈 관리 사용자의 경우 사용 중지되고 관리되지 않는 사용자의 경우 사용 설정됩니다.</translation>
 <translation id="7295019613773647480">관리 대상 사용자를 사용하도록 설정</translation>
-<translation id="7301543427086558500">검색 엔진에서 검색어를 추출하는 데 사용할 수 있는 대체 URL 목록을 지정합니다. URL은 검색어 추출에 사용되는 <ph name="SEARCH_TERM_MARKER" /> 문자열을 포함해야 합니다.
+<translation id="7301543427086558500">검색엔진에서 검색어를 추출하는 데 사용할 수 있는 대체 URL 목록을 지정합니다. URL은 검색어 추출에 사용되는 <ph name="SEARCH_TERM_MARKER" /> 문자열을 포함해야 합니다.
 
           이 정책은 선택 사항입니다. 설정하지 않는 경우 검색어 추출에 대체 URL이 사용되지 않습니다.
 

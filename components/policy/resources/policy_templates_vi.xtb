@@ -134,7 +134,7 @@
 <translation id="1194005076170619046">Nếu bạn bật chính sách này, một nút đăng xuất lớn, màu đỏ sẽ hiển thị trong khay hệ thống khi một phiên đang hoạt động và màn hình không khóa.
 
       Nếu bạn tắt hoặc không chỉ định chính sách này, sẽ không có nút đăng xuất lớn, màu đỏ nào hiển thị trong khay hệ thống.</translation>
-<translation id="1197437816436565375">Bạn không thể buộc các ứng dụng Android sử dụng proxy. Một tập hợp con tùy chọn cài đặt proxy được cung cấp cho các ứng dụng Android. Các ứng dụng Android có thể chọn sử dụng proxy một cách tự nguyện. Hãy xem chính sách <ph name="PROXY_MODE_POLICY_NAME" /> để biết thêm chi tiết.</translation>
+<translation id="1197437816436565375">Bạn không thể buộc các ứng dụng Android sử dụng proxy. Một tập hợp con các tùy chọn cài đặt proxy được cung cấp cho các ứng dụng Android mà các ứng dụng này có thể tự do chọn để sử dụng. Hãy xem chính sách <ph name="PROXY_MODE_POLICY_NAME" /> để biết thêm chi tiết.</translation>
 <translation id="1198465924256827162">Tần suất tải lên trạng thái thiết bị, bằng mili giây.
 
       Nếu chính sách này không được đặt thì tần suất mặc định là 3 giờ. Tần
@@ -240,17 +240,17 @@
 
       Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="1432194160771348078">
-      Chỉ định danh sách ứng dụng được cài đặt tự động trên màn hình đăng nhập
+      Chỉ định một danh sách ứng dụng được cài đặt tự động trên màn hình đăng nhập
       mà không có sự tương tác của người dùng và không thể gỡ cài đặt.
       Tất cả các quyền do ứng dụng yêu cầu được cấp
       trực tiếp mà không có sự tương tác của người dùng, kể cả mọi quyền
       bổ sung mà các phiên bản trong tương lai của ứng dụng đó yêu cầu.
 
-      Lưu ý rằng, vì lý do bảo mật và quyền riêng tư, các tiện ích sẽ không được phép cài đặt theo chính sách này. Hơn nữa, các thiết bị trên Kênh chính thức sẽ chỉ cài đặt những ứng dụng thuộc danh sách cho phép được gói vào <ph name="PRODUCT_NAME" />. Mọi mục không tuân thủ các điều kiện này sẽ bị bỏ qua.
+      Lưu ý rằng, vì lý do bảo mật và bảo vệ quyền riêng tư, các tiện ích sẽ không được phép cài đặt theo chính sách này. Hơn nữa, các thiết bị trên Kênh chính thức sẽ chỉ cài đặt những ứng dụng thuộc danh sách cho phép kết hợp trong <ph name="PRODUCT_NAME" />. Mọi mục không tuân thủ các điều kiện này sẽ bị bỏ qua.
 
-      Nếu một ứng dụng đã từng bị buộc cài đặt trước đây được xóa khỏi danh sách này thì ứng dụng đó sẽ tự động được <ph name="PRODUCT_NAME" /> gỡ cài đặt.
+      Nếu một ứng dụng đã từng bị buộc cài đặt trước đây bị xóa khỏi danh sách này thì ứng dụng đó sẽ tự động bị <ph name="PRODUCT_NAME" /> gỡ cài đặt.
 
-      Mỗi mục trong danh sách của chính sách này là một chuỗi chứa ID tiện ích và một URL "cập nhật" được phân tách bằng dấu chấm phẩy (<ph name="SEMICOLON" />). ID tiện ích là chuỗi gồm 32 chữ cái được tìm thấy, chẳng hạn như trên <ph name="CHROME_EXTENSIONS_LINK" /> khi ở chế độ nhà phát triển. URL "cập nhật" sẽ trỏ tới tài liệu XML của tệp kê khai cập nhật như mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />. Lưu ý rằng URL "cập nhật" được đặt trong chính sách này chỉ dùng cho lần cài đặt ban đầu; các lần cập nhật tiện ích tiếp theo sẽ sử dụng URL cập nhật được chỉ ra trong tệp kê khai của tiện ích.
+      Mỗi mục trong danh sách của chính sách này là một chuỗi chứa ID tiện ích và một URL "cập nhật" được phân tách bằng dấu chấm phẩy (<ph name="SEMICOLON" />). ID tiện ích là chuỗi gồm 32 chữ cái được tìm thấy, chẳng hạn như, trên <ph name="CHROME_EXTENSIONS_LINK" /> khi ở chế độ nhà phát triển. URL "cập nhật" sẽ trỏ tới tài liệu XML của tệp kê khai cập nhật như mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />. Lưu ý rằng URL "cập nhật" được đặt trong chính sách này chỉ dùng cho lần cài đặt ban đầu; các lần cập nhật tiếp theo của tiện ích sẽ sử dụng URL cập nhật được chỉ ra trong tệp kê khai của tiện ích.
 
       Ví dụ: <ph name="EXTENSION_POLICY_EXAMPLE" /> cài đặt ứng dụng <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> từ URL "cập nhật" tiêu chuẩn của Cửa hàng Chrome trực tuyến. Để biết thêm thông tin về cách lưu trữ tiện ích, hãy xem: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="1435659902881071157">Cấu hình mạng ở mức thiết bị</translation>
@@ -261,7 +261,7 @@
 <translation id="1456822151187621582">Windows (ứng dụng <ph name="PRODUCT_OS_NAME" />):</translation>
 <translation id="1458547592473993238">Chính sách này không còn dùng nữa. Vui lòng sử dụng <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> để kiểm soát tính sẵn có của plugin Flash và <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> để kiểm soát xem có phải dùng trình xem PDF tích hợp để mở tệp PDF hay không.
 
-      Chỉ định danh sách plugin bị tắt trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi tùy chọn cài đặt này.
+      Chỉ định một danh sách plugin bị tắt trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi tùy chọn cài đặt này.
 
       Ký tự đại diện '*' và '?' có thể dùng để khớp với chuỗi các ký tự bất kỳ. '*' khớp với số lượng ký tự bất kỳ trong khi '?' chỉ định một ký tự đơn tùy chọn, tức là khớp các ký tự 0 hoặc 1. Ký tự thoát là '\', do vậy, để khớp với ký tự '*', '?' hoặc '\' thực sự, bạn có thể đặt một ký tự '\' ở trước các ký tự đó.
 
@@ -489,7 +489,7 @@
       Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="1914840757300882918">Nếu bạn đặt chính sách này, máy chủ sẽ sử dụng một chứng chỉ ứng dụng có CN của nhà phát hành cụ thể đó để xác thực với RemoteAccessHostTokenValidationUrl. Đặt thành "*" để sử dụng bất kỳ chứng chỉ ứng dụng nào có sẵn.
 
-          Tính năng này hiện bị tắt bên máy chủ.</translation>
+          Tính năng này hiện bị tắt phía máy chủ.</translation>
 <translation id="1919802376548418720">Sử dụng chính sách KDC để ủy quyền thông tin xác thực.</translation>
 <translation id="1920046221095339924">Cho phép phiên được quản lý trên thiết bị</translation>
 <translation id="1929709556673267855">Cung cấp cấu hình máy in dành cho doanh nghiệp được kết nối với các thiết bị.
@@ -627,11 +627,11 @@
       Nếu bạn tắt cài đặt này hoặc không thiết lập cài đặt, thì mọi trang xác thực cổng cố định sẽ hiển thị trong tab trình duyệt mới (thông thường), sử dụng cài đặt proxy của người dùng hiện tại.</translation>
 <translation id="21394354835637379">Cho phép bạn chỉ định những URL nào được phép cài đặt tiện ích, ứng dụng và chủ đề.
 
-          Kể từ <ph name="PRODUCT_NAME" /> 21, người dùng sẽ khó cài đặt tiện ích, ứng dụng và tập lệnh người dùng từ bên ngoài Cửa hàng Chrome trực tuyến hơn. Trước đây, người dùng có thể nhấp vào đường dẫn liên kết tới tệp *.crx và <ph name="PRODUCT_NAME" /> sẽ đề xuất cài đặt tệp này sau một vài cảnh báo. Từ <ph name="PRODUCT_NAME" /> 21 trở đi, người dùng phải tải các tệp này xuống và kéo vào trang cài đặt <ph name="PRODUCT_NAME" />. Tùy chọn cài đặt này cho phép các URL cụ thể được thực hiện theo quy trình cài đặt cũ, dễ dàng hơn.
+          Kể từ <ph name="PRODUCT_NAME" /> 21, người dùng sẽ khó cài đặt tiện ích, ứng dụng và tập lệnh người dùng từ bên ngoài Cửa hàng Chrome trực tuyến hơn. Trước đây, người dùng có thể nhấp vào một đường dẫn liên kết tới tệp *.crx và <ph name="PRODUCT_NAME" /> sẽ đề xuất cài đặt tệp này sau một vài cảnh báo. Từ <ph name="PRODUCT_NAME" /> 21 trở đi, người dùng phải tải các tệp này xuống và kéo vào trang cài đặt <ph name="PRODUCT_NAME" />. Tùy chọn cài đặt này cho phép các URL cụ thể thực hiện theo quy trình cài đặt cũ, dễ dàng hơn.
 
-          Mỗi mục trong danh sách này là mẫu khớp với kiểu của tiện ích (xem https://developer.chrome.com/extensions/match_patterns). Người dùng sẽ có thể cài đặt các mục dễ dàng từ bất kỳ URL nào khớp với một mục trong danh sách này. Cả vị trí của tệp *.crx lẫn trang nơi quá trình tải xuống bắt đầu (nghĩa là liên kết giới thiệu) đều phải được phép theo các mẫu này.
+          Mỗi mục trong danh sách này là một mẫu khớp với kiểu của tiện ích (xem https://developer.chrome.com/extensions/match_patterns). Người dùng sẽ có thể dễ dàng cài đặt các mục từ bất kỳ URL nào khớp với một mục trong danh sách này. Cả vị trí của tệp *.crx lẫn trang nơi quá trình tải xuống bắt đầu (nghĩa là liên kết giới thiệu) đều phải được các mẫu này cho phép.
 
-          <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> được ưu tiên hơn so với chính sách này. Điều đó có nghĩa là tiện ích trong danh sách cấm sẽ không được cài đặt, ngay cả nếu hoạt động cài đặt này diễn ra từ một trang web thuộc danh sách này.</translation>
+          <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> được ưu tiên hơn so với chính sách này. Điều đó có nghĩa là một tiện ích trong danh sách cấm sẽ không được cài đặt, ngay cả khi hoạt động cài đặt này diễn ra từ một trang web thuộc danh sách này.</translation>
 <translation id="214901426630414675">Hạn chế chế độ in hai mặt</translation>
 <translation id="2149330464730004005">Bật chế độ in màu</translation>
 <translation id="2156132677421487971">Định cấu hình các chính sách cho <ph name="PRODUCT_NAME" />, một tính năng cho phép người dùng gửi nội dung của các tab, trang web hoặc màn hình từ trình duyệt đến màn hình và hệ thống âm thanh từ xa.</translation>
@@ -691,11 +691,11 @@
 <translation id="2240879329269430151">Cho phép bạn đặt liệu các trang web có được phép hiển thị cửa sổ bật lên hay không. Bạn có thể cho phép hoặc từ chối hiển thị cửa sổ bật lên đối với tất cả các trang web.
 
           Nếu không thiết lập chính sách này, 'BlockPopups' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
-<translation id="2255326053989409609">Việc bật tùy chọn cài đặt này sẽ ngăn các trang web truy cập vào đơn vị xử lý đồ họa (GPU). Cụ thể, trang web sẽ không thể truy cập vào API WebGL và plugin sẽ không thể sử dụng API Pepper 3D.
+<translation id="2255326053989409609">Việc bật tùy chọn cài đặt này sẽ ngăn các trang web truy cập vào đơn vị xử lý đồ họa (GPU). Cụ thể, các trang web sẽ không thể truy cập vào API WebGL và các plugin sẽ không thể sử dụng API Pepper 3D.
 
-      Việc tắt hoặc không đặt tùy chọn cài đặt này có thể cho phép trang web sử dụng API WebGL và plugin sử dụng API Pepper 3D. Các tùy chọn cài đặt mặc định của trình duyệt có thể vẫn yêu cầu phải thông qua đối số dòng lệnh để sử dụng các API này.
+      Việc tắt hoặc không đặt tùy chọn cài đặt này có thể cho phép các trang web sử dụng API WebGL và các plugin sử dụng API Pepper 3D. Các tùy chọn cài đặt mặc định của trình duyệt có thể vẫn yêu cầu phải thông qua đối số dòng lệnh để sử dụng các API này.
 
-      Nếu bạn đặt HardwareAccelerationModeEnabled thành false, Disable3DAPIs sẽ được bỏ qua và tương đương với Disable3DAPIs đang được đặt thành true.</translation>
+      Nếu bạn đặt HardwareAccelerationModeEnabled thành false, Disable3DAPIs sẽ bị bỏ qua và việc này tương đương với Disable3DAPIs được đặt thành true.</translation>
 <translation id="2258126710006312594">Cho phép người dùng truy cập từ xa chuyển tệp từ/đến máy chủ</translation>
 <translation id="2265214338421787313">Chính sách này cho phép quản trị viên chỉ định một trang có thể hiển thị cửa sổ bật lên khi đang hủy tải trang.
 
@@ -864,7 +864,7 @@
 <translation id="257788512393330403">Yêu cầu cứ 6 giờ nhập mật khẩu một lần</translation>
 <translation id="2587719089023392205">Đặt <ph name="PRODUCT_NAME" /> làm trình duyệt mặc định</translation>
 <translation id="2592091433672667839">Khoảng thời gian không hoạt động trước khi trình bảo vệ màn hình hiển thị trên màn hình đăng nhập ở chế độ bán lẻ</translation>
-<translation id="2592162121850992309">Nếu bạn không đặt chính sách này hoặc đặt thành true, tính năng tăng tốc phần cứng sẽ được bật trừ khi bạn đưa một tính năng xử lý đồ họa (GPU) nhất định vào danh sách cấm.
+<translation id="2592162121850992309">Nếu bạn không đặt chính sách này hoặc đặt thành true, tính năng tăng tốc phần cứng sẽ được bật trừ khi bạn đưa một tính năng GPU (Đơn vị xử lý đồ họa) nhất định vào danh sách cấm.
 
       Nếu bạn đặt chính sách này thành false, tính năng tăng tốc phần cứng sẽ bị tắt.</translation>
 <translation id="2596260130957832043">Kiểm soát xem NTLMv2 có được bật hay không.
@@ -1311,12 +1311,12 @@ Khi chính sách này được đặt thành false hoặc không được địn
         Nếu bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ tìm cách tự đăng ký và áp dụng chính sách đám mây được liên kết cho tất cả hồ sơ.
 
         Giá trị của chính sách này là một Mã thông báo đăng ký có thể được truy xuất từ Bảng điều khiển dành cho quản trị viên trên Google.</translation>
-<translation id="3489247539215560634">Nếu bạn bật tùy chọn cài đặt này, người dùng có thể yêu cầu <ph name="PRODUCT_NAME" /> ghi nhớ mật khẩu và tự động cung cấp cho họ trong lần tiếp theo họ đăng nhập vào một trang web.
+<translation id="3489247539215560634">Nếu bạn bật tùy chọn cài đặt này, thì người dùng có thể yêu cầu <ph name="PRODUCT_NAME" /> ghi nhớ mật khẩu và tự động cung cấp mật khẩu cho họ trong lần tiếp theo họ đăng nhập vào một trang web.
 
-          Nếu bạn tắt tùy chọn cài đặt này, người dùng sẽ không thể lưu mật khẩu mới nhưng
+          Nếu bạn tắt tùy chọn cài đặt này, thì người dùng sẽ không thể lưu mật khẩu mới nhưng
           vẫn có thể sử dụng những mật khẩu đã lưu trước đó.
 
-          Nếu bạn bật hoặc tắt chính sách này, người dùng sẽ không thể thay đổi hoặc ghi đè chính sách này trong <ph name="PRODUCT_NAME" />. Nếu bạn không đặt chính sách này, người dùng được phép lưu mật khẩu (nhưng họ có thể tắt).</translation>
+          Nếu bạn bật hoặc tắt chính sách này, thì người dùng sẽ không thể thay đổi hoặc ghi đè chính sách này trong <ph name="PRODUCT_NAME" />. Nếu bạn không đặt chính sách này, người dùng được phép lưu mật khẩu (nhưng họ có thể tắt tính năng lưu mật khẩu).</translation>
 <translation id="3496296378755072552">Trình quản lý mật khẩu</translation>
 <translation id="3500732098526756068">Cho phép bạn kiểm soát hoạt động kích hoạt cảnh báo bảo vệ mật khẩu. Tính năng bảo vệ mật khẩu sẽ cảnh báo người dùng khi họ sử dụng lại mật khẩu được bảo vệ trên các trang web có thể đáng ngờ.
 
@@ -1341,7 +1341,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Khi bạn đặt chính sách này thành false, thiết bị sẽ không tìm cách
       liên hệ với Máy chủ Quirks để tải các tệp cấu hình xuống.
 
-      Nếu bạn đặt thành true hoặc không định cấu hình chính sách này thì <ph name="PRODUCT_OS_NAME" /> sẽ tự động liên hệ với Máy chủ Quirks và tải các tệp cấu hình xuống (nếu có) rồi lưu trữ các tệp này trên thiết bị.  Các tệp này có thể dùng để cải thiện chất lượng hiển thị của màn hình gắn vào chẳng hạn.</translation>
+      Nếu bạn đặt thành true hoặc không định cấu hình chính sách này thì <ph name="PRODUCT_OS_NAME" /> sẽ tự động liên hệ với Máy chủ Quirks và tải các tệp cấu hình xuống (nếu có) rồi lưu trữ các tệp này trên thiết bị.  Các tệp này có thể dùng để, chẳng hạn như, cải thiện chất lượng hiển thị của màn hình gắn vào.</translation>
 <translation id="3524204464536655762">Không cho phép bất kỳ trang web nào yêu cầu quyền truy cập vào thiết bị USB qua API WebUSB</translation>
 <translation id="3526752951628474302">Chỉ in đen trắng</translation>
 <translation id="3528000905991875314">Bật các trang lỗi thay thế</translation>
@@ -1739,9 +1739,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Hãy sử dụng ký tự đại diện '*' để khớp ký tự không hoặc các ký tự ngẫu nhiên khác. Ký tự thoát là '\', vì vậy, để khớp ký tự '*' hoặc '\' thực, hãy đặt '\' trước các ký tự đó.
 
       Nếu bạn không đặt chính sách này, thì tất cả các tài khoản Google trên thiết bị sẽ hiển thị trong <ph name="PRODUCT_NAME" />.</translation>
-<translation id="4360826270668210664">Nếu bạn đặt chính sách này, máy chủ truy cập từ xa sẽ yêu cầu xác thực ứng dụng để lấy mã thông báo xác thực từ URL này nhằm mục đích kết nối. Phải sử dụng chính sách này cùng với RemoteAccessHostTokenValidationUrl.
+<translation id="4360826270668210664">Nếu bạn đặt chính sách này, máy chủ truy cập từ xa sẽ yêu cầu xác thực ứng dụng để lấy mã xác thực từ URL này để kết nối. Phải sử dụng chính sách này cùng với RemoteAccessHostTokenValidationUrl.
 
-          Tính năng này hiện bị tắt bên máy chủ.</translation>
+          Tính năng này hiện bị tắt phía máy chủ.</translation>
 <translation id="436581050240847513">Báo cáo giao diện mạng thiết bị</translation>
 <translation id="4372704773119750918">Không cho phép người dùng doanh nghiệp là một phần của đa cấu hình (chính hoặc phụ)</translation>
 <translation id="4377599627073874279">Cho phép tất cả các trang web hiển thị tất cả hình ảnh</translation>
@@ -2745,7 +2745,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Buộc sử dụng Chế độ hạn chế trung bình trên YouTube và ngăn người dùng thay đổi tùy chọn cài đặt này.
 
-      Nếu bạn bật tùy chọn cài đặt này, Chế độ hạn chế tối thiểu trên YouTube sẽ luôn buộc phải là chế độ Trung bình.
+      Nếu bạn bật tùy chọn cài đặt này, Chế độ hạn chế tối thiểu trên Youtube sẽ luôn bắt buộc phải là Trung bình.
 
       Nếu bạn tắt tùy chọn cài đặt này hoặc không đặt giá trị nào, <ph name="PRODUCT_NAME" /> sẽ không buộc sử dụng Chế độ hạn chế trên YouTube. Mặc dù vậy, các chính sách bên ngoài, chẳng hạn như chính sách của YouTube, vẫn có thể buộc áp dụng Chế độ hạn chế.</translation>
 <translation id="6495328383950074966">Định cấu hình danh sách miền mà tính năng Duyệt web an toàn sẽ tin cậy. Điều này có nghĩa là:
@@ -3074,9 +3074,9 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Nếu chính sách được đặt thành False thì chế độ nền sẽ bị tắt và người dùng không thể kiểm soát chế độ này trong trong cài đặt trình duyệt.
 
       Nếu chính sách này không được đặt thì chế độ nền sẽ bị tắt ban đầu và người dùng có thể kiểm soát chế độ này trong cài đặt trình duyệt.</translation>
-<translation id="7123160381479171745">Xác định danh sách những người dùng được phép đăng nhập vào thiết bị. Các mục nhập sẽ có dạng <ph name="USER_WHITELIST_ENTRY_FORMAT" />, chẳng hạn như <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Để cho phép người dùng bất kỳ trên miền, hãy sử dụng các mục nhập có dạng <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
+<translation id="7123160381479171745">Xác định danh sách những người dùng được phép đăng nhập vào thiết bị. Các mục nhập sẽ có dạng <ph name="USER_WHITELIST_ENTRY_FORMAT" />, chẳng hạn như <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Để cho phép người dùng bất kỳ trên một miền, hãy sử dụng các mục nhập có dạng <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
-      Nếu bạn không định cấu hình chính sách này, sẽ không có hạn chế cho việc người dùng nào được phép đăng nhập. Lưu ý rằng việc tạo người dùng mới sẽ vẫn yêu cầu phải định cấu hình chính sách <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> chính xác.</translation>
+      Nếu bạn không định cấu hình chính sách này, sẽ không có hạn chế đối với việc người dùng nào được phép đăng nhập. Lưu ý rằng việc tạo người dùng mới sẽ vẫn yêu cầu phải định cấu hình chính sách <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> một cách phù hợp.</translation>
 <translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> cung cấp bản cập nhật và cài đặt an toàn cho tiện ích. Tuy nhiên, bạn chỉ có thể bảo vệ nội dung của một số tiện ích lưu trữ bên ngoài Cửa hàng Chrome trực tuyến bằng các thuật toán ký hoặc băm không an toàn như SHA1. Nếu bạn tắt chính sách này, thì Chrome sẽ không cho phép thực hiện quá trình cài đặt và cập nhật mới đối với những tiện ích đó (cho đến khi nhà phát triển tiện ích tạo lại tiện ích có thuật toán mạnh hơn). Khi bạn bật chính sách này, thì Chrome sẽ cho phép thực hiện quá trình cài đặt và cập nhật đối với những tiện ích đó.
 
           Chính sách này sẽ bật theo mặc định khi không được đặt.
@@ -3275,9 +3275,9 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="7469554574977894907">Bật đề xuất tìm kiếm</translation>
 <translation id="7474249562477552702">Có cho phép chứng chỉ có chữ ký SHA-1 do mẩu neo tin cậy nội bộ phát hành hay không</translation>
 <translation id="7485481791539008776">Quy tắc chọn máy in mặc định</translation>
-<translation id="7485730741952775732">Nếu bạn đặt chính sách này, máy chủ truy cập từ xa sẽ dùng URL này để xác thực mã thông báo xác thực từ các ứng dụng truy cập từ xa để chấp nhận kết nối. Phải sử dụng chính sách này cùng với RemoteAccessHostTokenUrl.
+<translation id="7485730741952775732">Nếu bạn đặt chính sách này, máy chủ truy cập từ xa sẽ dùng URL này để xác thực mã xác thực từ các ứng dụng truy cập từ xa để chấp nhận kết nối. Phải sử dụng chính sách này cùng với RemoteAccessHostTokenUrl.
 
-          Tính năng này hiện bị tắt bên máy chủ.</translation>
+          Tính năng này hiện bị tắt phía máy chủ.</translation>
 <translation id="749556411189861380">Báo cáo phiên bản hệ điều hành và chương trình cơ sở của thiết bị đã đăng ký.
 
       Nếu cài đặt này không được đặt hoặc được đặt thành Đúng, các thiết bị đã đăng ký sẽ báo cáo định kỳ phiên bản hệ điều hành và chương trình cơ sở. Nếu cài đặt này được đặt thành Sai, thông tin phiên bản sẽ không được báo cáo.</translation>
@@ -4058,7 +4058,7 @@ Chính sách này chỉ có trên các phiên bản Windows liên kết với mi
 
       Nếu bạn không đặt chính sách này, người dùng có thể chọn hình đại diện cho họ trên màn hình đăng nhập.</translation>
 <translation id="9035964157729712237">Các ID tiện ích được miễn khỏi danh sách đen</translation>
-<translation id="9039822628127365650">Khi bạn đặt chính sách này, chính sách sẽ chỉ định thời lượng mà sau đó, một người dùng tự động được đăng xuất, chấm dứt phiên. Người dùng được thông báo về thời gian còn lại bằng đồng hồ đếm ngược hiển thị trong khay hệ thống.
+<translation id="9039822628127365650">Khi bạn đặt chính sách này, chính sách sẽ chỉ định thời lượng mà sau đó một người dùng tự động bị đăng xuất, chấm dứt phiên. Người dùng được thông báo về thời gian còn lại bằng đồng hồ đếm ngược hiển thị trong khay hệ thống.
 
       Khi bạn không đặt chính sách này, thời lượng phiên sẽ không bị giới hạn.
 
@@ -4078,11 +4078,11 @@ Chính sách này chỉ có trên các phiên bản Windows liên kết với mi
 
       LƯU Ý: Chính sách này không áp dụng trên Android. Để bật IsolateOrigins trên Android, hãy sử dụng tùy chọn cài đặt chính sách IsolateOriginsAndroid.
       </translation>
-<translation id="9072600218500597787">Định cấu hình tên miền máy chủ bắt buộc cho các máy chủ truy cập từ xa và ngăn người dùng thay đổi tên miền này.
+<translation id="9072600218500597787">Định cấu hình tên miền của máy chủ bắt buộc sẽ được áp dụng trên các máy chủ truy cập từ xa và ngăn người dùng thay đổi tên miền này.
 
-          Nếu bạn bật tùy chọn cài đặt này thì chỉ có thể chia sẻ máy chủ bằng các tài khoản đã đăng ký một trong những tên miền được chỉ định.
+          Nếu bạn bật tùy chọn cài đặt này thì các máy chủ chỉ có thể được chia sẻ bằng các tài khoản đã đăng ký trên một trong những tên miền được chỉ định.
 
-          Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này thì có thể chia sẻ máy chủ bằng bất kỳ tài khoản nào.
+          Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này thì các máy chủ có thể được chia sẻ bằng bất kỳ tài khoản nào.
 
           Tùy chọn cài đặt này sẽ ghi đè RemoteAccessHostDomain, nếu có.
 

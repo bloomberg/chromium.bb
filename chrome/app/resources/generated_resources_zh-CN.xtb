@@ -39,7 +39,7 @@
 <translation id="1047726139967079566">为此页添加书签...</translation>
 <translation id="1047956942837015229">正在删除<ph name="COUNT" />项内容…</translation>
 <translation id="1048286738600630630">显示</translation>
-<translation id="1049743911850919806">隐身</translation>
+<translation id="1049743911850919806">无痕</translation>
 <translation id="1049795001945932310">语言设置(&amp;L)</translation>
 <translation id="1049926623896334335">Word 文档</translation>
 <translation id="1054153489933238809">在新标签页中打开原始图片(&amp;I)</translation>
@@ -148,7 +148,7 @@
 <translation id="1195447618553298278">未知错误。</translation>
 <translation id="1197979282329025000">检索打印机“<ph name="PRINTER_NAME" />”的打印功能时发生错误。此打印机无法使用“<ph name="CLOUD_PRINT_NAME" />”进行注册。</translation>
 <translation id="119944043368869598">全部清除</translation>
-<translation id="1201402288615127009">下一页</translation>
+<translation id="1201402288615127009">下一步</translation>
 <translation id="1202596434010270079">自助服务终端应用已更新完毕。请拔下 U 盘。</translation>
 <translation id="120368089816228251">乐谱</translation>
 <translation id="1205489148908752564">读取和更改已列入白名单的用户</translation>
@@ -228,7 +228,7 @@
 <translation id="1316136264406804862">正在搜索...</translation>
 <translation id="1316495628809031177">同步已暂停</translation>
 <translation id="1322046419516468189">您可以查看和管理 <ph name="SAVED_PASSWORDS_STORE" />中保存的密码</translation>
-<translation id="1326317727527857210">要在您的其他设备上访问您的标签页，请登录 Chrome。</translation>
+<translation id="1326317727527857210">要访问您在其他设备上的标签页，请登录 Chrome。</translation>
 <translation id="1327074568633507428">Google 云打印中的打印机</translation>
 <translation id="1327977588028644528">网关</translation>
 <translation id="1329584516321524826">上次更新时间：刚才</translation>
@@ -411,7 +411,7 @@
 <translation id="1598233202702788831">您的管理员已停用更新。</translation>
 <translation id="1600857548979126453">访问页面调试程序后端</translation>
 <translation id="1601560923496285236">应用</translation>
-<translation id="1603914832182249871">（隐身）</translation>
+<translation id="1603914832182249871">（无痕）</translation>
 <translation id="1607139524282324606">清除此条目</translation>
 <translation id="1608626060424371292">移除此用户</translation>
 <translation id="1609170755653088773">将此密码同步到您的 iPhone</translation>
@@ -2645,7 +2645,7 @@
 <translation id="4980805016576257426">此扩展程序包含恶意软件。</translation>
 <translation id="4981449534399733132">要想清除您的所有已同步设备中的浏览数据以及您的 Google 帐号中的浏览数据，请<ph name="BEGIN_LINK" />登录<ph name="END_LINK" />。</translation>
 <translation id="4988205478593450158">确定要删除“<ph name="FILE_NAME" />”吗？</translation>
-<translation id="4988526792673242964">页码</translation>
+<translation id="4988526792673242964">网页</translation>
 <translation id="49896407730300355">逆时针旋转(&amp;O)</translation>
 <translation id="4989966318180235467">检查背景页(&amp;B)</translation>
 <translation id="4990343175649730969">下载 Chrome 清理工具</translation>
@@ -2684,7 +2684,7 @@
 <translation id="5039804452771397117">允许</translation>
 <translation id="5045550434625856497">密码不正确</translation>
 <translation id="504561833207953641">正在现有的浏览器会话中打开。</translation>
-<translation id="5047421709274785093">禁止网站使用动态传感器和光传感器</translation>
+<translation id="5047421709274785093">禁止网站使用动作传感器和光传感器</translation>
 <translation id="5050042263972837708">群组名称</translation>
 <translation id="5052499409147950210">修改网站</translation>
 <translation id="5053604404986157245">随机生成的 TPM 密码不可用。这是执行 Powerwash 之后的正常现象。</translation>
@@ -2993,7 +2993,7 @@
 <translation id="5511379779384092781">特小</translation>
 <translation id="5511823366942919280">确定要将此设备设为“Shark”吗？</translation>
 <translation id="5512653252560939721">用户证书必须受硬件支持。</translation>
-<translation id="5516183516694518900">使用您的 Google 帐号登录 Chrome 后，您可以在自己的所有设备上获取自己的书签、历史记录、密码和其他设置。</translation>
+<translation id="5516183516694518900">使用您的 Google 帐号登录 Chrome 后，即可获取您在任何登录过的设备上的书签、密码、历史记录及其他设置。</translation>
 <translation id="551752069230578406">正在将打印机添加到您的帐号 - 这可能需要一段时间…</translation>
 <translation id="5518219166343146486">当网站想查看复制到剪贴板的文字和图片时询问您</translation>
 <translation id="5518584115117143805">电子邮件加密证书</translation>
@@ -3095,7 +3095,7 @@
 <translation id="5639549361331209298">重新加载此网页，按下可查看更多选项</translation>
 <translation id="5642508497713047">CRL 签名人</translation>
 <translation id="5643620609347735571">清除并继续</translation>
-<translation id="5646376287012673985">位置</translation>
+<translation id="5646376287012673985">位置信息</translation>
 <translation id="5646558797914161501">商务人士</translation>
 <translation id="5648166631817621825">过去 7 天</translation>
 <translation id="5649053991847567735">自动下载项</translation>
@@ -3113,7 +3113,7 @@
 <translation id="5671658447180261823">移除该项推荐内容：<ph name="SUGGESTION_NAME" /></translation>
 <translation id="567643736130151854">您只需登录帐号并开启同步功能，即可将您的书签和密码等信息同步到所有设备上</translation>
 <translation id="5677503058916217575">网页语言：</translation>
-<translation id="5677928146339483299">已屏蔽</translation>
+<translation id="5677928146339483299">已禁止</translation>
 <translation id="5678550637669481956">已授予对 <ph name="VOLUME_NAME" />的读写权限。</translation>
 <translation id="5678784840044122290">此 Linux 应用将可以在您的终端上使用，且可能在启动器中显示图标。</translation>
 <translation id="5678955352098267522">读取您在 <ph name="WEBSITE_1" /> 上的数据</translation>
@@ -3122,7 +3122,7 @@
    <ph name="LINE_BREAKS" />
    请关闭档案或虚拟磁盘上的所有文件，然后重试。</translation>
 <translation id="5687326903064479980">时区</translation>
-<translation id="5689516760719285838">位置</translation>
+<translation id="5689516760719285838">位置信息</translation>
 <translation id="56907980372820799">关联数据</translation>
 <translation id="5691511426247308406">家用</translation>
 <translation id="5691596662111998220">糟糕，<ph name="FILE_NAME" />已经不存在了。</translation>
@@ -3840,7 +3840,7 @@
 <translation id="6748465660675848252">您可以继续，但系统将只恢复已同步的数据和设置。所有本地数据都将会丢失。</translation>
 <translation id="6748775883310276718">单个应用自助服务终端</translation>
 <translation id="6751256176799620176">已选择 1 个文件夹</translation>
-<translation id="6751344591405861699"><ph name="WINDOW_TITLE" />（隐身）</translation>
+<translation id="6751344591405861699"><ph name="WINDOW_TITLE" />（无痕）</translation>
 <translation id="6757101664402245801">网址已复制</translation>
 <translation id="6758056191028427665">让我们知道您的满意度。</translation>
 <translation id="6759193508432371551">恢复出厂设置</translation>
@@ -3848,7 +3848,7 @@
 <translation id="6769712124046837540">添加打印机…</translation>
 <translation id="6770664076092644100">通过 NFC 进行验证</translation>
 <translation id="6771503742377376720">是证书授权中心</translation>
-<translation id="6777817260680419853">已阻止重定向</translation>
+<translation id="6777817260680419853">已禁止重定向</translation>
 <translation id="677965093459947883">特小</translation>
 <translation id="6780439250949340171">管理其他设置</translation>
 <translation id="6781284683813954823">涂鸦链接</translation>
@@ -3942,7 +3942,7 @@
 <translation id="6916590542764765824">管理扩展程序</translation>
 <translation id="6920989436227028121">在常规标签页中打开</translation>
 <translation id="6921709132208495314">停止在此网页上消耗数据流量</translation>
-<translation id="6922128026973287222">使用 Google 流量节省程序可以节省流量并加速浏览。点击此处即可了解详情。</translation>
+<translation id="6922128026973287222">使用 Google 流量节省程序可以节省流量并加快加载速度。点击此处即可了解详情。</translation>
 <translation id="6923132443355966645">滚动/点击</translation>
 <translation id="6923633482430812883">装载共享时出错。请检查您要连接的文件服务器是否支持 SMBv2 或更高版本。</translation>
 <translation id="6930036377490597025">外部安全密钥或内置传感器</translation>
@@ -4030,7 +4030,7 @@
 <translation id="7051943809462976355">正在搜索鼠标…</translation>
 <translation id="7052237160939977163">发送性能跟踪数据</translation>
 <translation id="7053983685419859001">禁止</translation>
-<translation id="7055152154916055070">已阻止重定向：</translation>
+<translation id="7055152154916055070">已禁止重定向：</translation>
 <translation id="7056526158851679338">检查设备(&amp;I)</translation>
 <translation id="7059858479264779982">设为自动启动</translation>
 <translation id="7059893117020417984">要想私密地浏览，请点击三点状图标菜单以打开一个无痕式窗口</translation>
@@ -5052,7 +5052,7 @@
 <translation id="8575286410928791436">按住 <ph name="KEY_EQUIVALENT" /> 键即可退出</translation>
 <translation id="8578639784464423491">不能超过 99 个字母</translation>
 <translation id="8579285237314169903">正在同步 <ph name="NUMBER_OF_FILES" /> 个文件…</translation>
-<translation id="857943718398505171">已允许（推荐）</translation>
+<translation id="857943718398505171">允许（推荐）</translation>
 <translation id="8581809080475256101">点按该按钮可前进，点按上下文菜单可查看历史记录</translation>
 <translation id="8584280235376696778">在新标签页中打开视频(&amp;O)</translation>
 <translation id="8588866096426746242">显示个人资料统计信息</translation>

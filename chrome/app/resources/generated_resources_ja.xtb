@@ -301,7 +301,7 @@
 <translation id="1430915738399379752">印刷</translation>
 <translation id="1432581352905426595">検索エンジンの管理</translation>
 <translation id="1433811987160647649">アクセスする前に確認する</translation>
-<translation id="1434696352799406980">起動ページ、新しいタブページ、検索エンジン、固定タブをリセットします。また、すべての拡張機能を無効にし、Cookie などの一時データを消去します。ただし、ブックマーク、履歴、保存したパスワードはそのまま残ります。</translation>
+<translation id="1434696352799406980">起動ページ、新しいタブページ、検索エンジン、固定タブをリセットします。また、すべての拡張機能を無効にし、Cookie などの一時データを削除します。ただし、ブックマーク、履歴、保存したパスワードはそのまま残ります。</translation>
 <translation id="1434886155212424586">ホームページは新しいタブのページです</translation>
 <translation id="1436671784520050284">設定を続行</translation>
 <translation id="1436784010935106834">削除しました</translation>
@@ -471,7 +471,7 @@
 <translation id="16815041330799488">クリップボードにコピーされているテキストや画像へのアクセスをサイトに許可しない</translation>
 <translation id="1682548588986054654">新規シークレット ウインドウ</translation>
 <translation id="168715261339224929">お使いのどの端末でも同じブックマークを使用するには、同期を有効にします。</translation>
-<translation id="1688867105868176567">サイトデータを消去しますか？</translation>
+<translation id="1688867105868176567">サイトデータを削除しますか？</translation>
 <translation id="1688935057616748272">文字を入力してください</translation>
 <translation id="168991973552362966">近くのプリンタを追加</translation>
 <translation id="1689945336726856614">URL をコピー(&amp;U)</translation>
@@ -1395,6 +1395,7 @@
 <translation id="3045447014237878114">このサイトで複数のファイルが自動的にダウンロードされました</translation>
 <translation id="3046910703532196514">ウェブページ、完全</translation>
 <translation id="304747341537320566">読み上げエンジン</translation>
+<translation id="3047644958362961983">アシスタントで発生した問題を詳しく把握するために、情報の提供をお願いいたします。ご提供いただいた情報は最大 90 日間保存され、エンジニアリングとフィードバックの担当者のみが閲覧します。</translation>
 <translation id="3053013834507634016">証明書キーの用途</translation>
 <translation id="3057861065630527966">写真や動画をバックアップします</translation>
 <translation id="3058498974290601450">同期は設定でいつでもオンにできます。</translation>
@@ -2985,7 +2986,7 @@
 <translation id="5486261815000869482">パスワードの確認入力</translation>
 <translation id="5486275809415469523"><ph name="APP_NAME" /> が <ph name="TAB_NAME" /> の画面を共有しています。</translation>
 <translation id="5486561344817861625">ブラウザ再起動のシミュレート</translation>
-<translation id="5487521232677179737">データを消去</translation>
+<translation id="5487521232677179737">データを削除</translation>
 <translation id="5488093641312826914">「<ph name="COPIED_ITEM_NAME" />」がコピーされました</translation>
 <translation id="5488468185303821006">シークレット モードでの実行を許可する</translation>
 <translation id="5489435190927933437"><ph name="DOMAIN" /> 用に保存されているパスワード</translation>
@@ -3777,7 +3778,7 @@
     すべてのアカウントの確認と管理は、[設定] -&gt; [Google アカウント] で行っていただけます。</translation>
 <translation id="6639554308659482635">SQLite メモリ</translation>
 <translation id="6641138807883536517">ランダム生成のセキュア モジュール パスワードが使用できなくなっています。これは Powerwash の実行後に通常起こることです。</translation>
-<translation id="6643016212128521049">クリア</translation>
+<translation id="6643016212128521049">削除</translation>
 <translation id="6644512095122093795">パスワードを保存できるようにする</translation>
 <translation id="6644846457769259194">端末を更新しています（<ph name="PROGRESS_PERCENT" />）</translation>
 <translation id="6645437135153136856">選択した Google クラウド プリントのデバイスはサポートが終了しています。<ph name="BR" />パソコンのシステムの設定でプリンタを設定してみてください。</translation>
@@ -3800,6 +3801,7 @@
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" />（USB）</translation>
 <translation id="667517062706956822">Google でこのページを <ph name="SOURCE_LANGUAGE" /> から <ph name="TARGET_LANGUAGE" /> に翻訳しますか？</translation>
 <translation id="6675665718701918026">ポインティング デバイスが接続されました</translation>
+<translation id="6676212663108450937">音声を認識させる場合はヘッドフォンの使用をご検討ください</translation>
 <translation id="6678717876183468697">クエリ URL</translation>
 <translation id="6680442031740878064">空き容量: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">速度</translation>
@@ -4526,6 +4528,7 @@
 <translation id="7788383851298063850">問題の詳細をお知らせください</translation>
 <translation id="7788444488075094252">言語と入力</translation>
 <translation id="7788668840732459509">位置:</translation>
+<translation id="7789963078219276159">スタートページの背景が<ph name="CATEGORY" />に変更されました。</translation>
 <translation id="7791543448312431591">追加</translation>
 <translation id="7792012425874949788">ログイン時に問題が発生しました</translation>
 <translation id="7792388396321542707">共有を停止</translation>
@@ -4721,7 +4724,7 @@
       購入した映画、テレビ番組、音楽、書籍、その他のアプリ内購入のコンテンツも削除される可能性があります。
       <ph name="LINE_BREAKS2" />
       他の端末のアプリやコンテンツに影響はありません。</translation>
-<translation id="8026334261755873520">閲覧履歴データを消去する</translation>
+<translation id="8026334261755873520">閲覧履歴データを削除する</translation>
 <translation id="8028060951694135607">Microsoft キー回復</translation>
 <translation id="8028803902702117856"><ph name="FILE_NAME" /> をダウンロードしています。<ph name="SIZE" /> 完了</translation>
 <translation id="8028993641010258682">サイズ</translation>
@@ -5207,6 +5210,7 @@
 <translation id="8767621466733104912">すべてのユーザーに対して Chrome を自動的に更新</translation>
 <translation id="8770406935328356739">拡張機能のルート ディレクトリ</translation>
 <translation id="8770507190024617908">ユーザーを管理</translation>
+<translation id="8771300903067484968">スタートページの背景をデフォルトの背景にリセットしました。</translation>
 <translation id="8774934320277480003">上余白</translation>
 <translation id="8775144690796719618">無効なURL</translation>
 <translation id="8775404590947523323">編集内容は自動的に保存されます。<ph name="BREAKS" />オリジナルの画像のコピーを残す場合、[オリジナルを上書き] チェックボックスをオフにしてください。</translation>

@@ -177,11 +177,11 @@
       Ako se ovo pravilo ne postavi, upotrebljavat će se zadano ponašanje u kojemu se nijednoj HTTP/2 vezi ne dopušta spajanje s vezama koje upotrebljavaju certifikate klijenta.</translation>
 <translation id="1353966721814789986">Početne stranice</translation>
 <translation id="1354424209129232709">Maksimalno:</translation>
-<translation id="1354452738176731363">Kad se to pravilo postavi na False, audioizlaz neće biti dostupan na uređaju dok je korisnik prijavljen.
+<translation id="1354452738176731363">Kad se to pravilo postavi na false, audioizlaz neće biti dostupan na uređaju dok je korisnik prijavljen.
 
       To pravilo utječe na sve vrste audioizlaza, a ne samo na ugrađene zvučnike. Zvučne značajke pristupačnosti također su zabranjene tim pravilom. Ne omogućujte to pravilo ako je korisniku potreban čitač zaslona.
 
-      Ako se to pravilo postavi na True ili se ne konfigurira, korisnici mogu upotrebljavati sve podržane audioizlaze na svojem uređaju.</translation>
+      Ako se to pravilo postavi na true ili se ne konfigurira, korisnici mogu upotrebljavati sve podržane audioizlaze na svojem uređaju.</translation>
 <translation id="1359553908012294236">Ako se pravilo postavi na "True" ili se ne konfigurira, <ph name="PRODUCT_NAME" /> omogućit će prijave gostiju. Prijave gostiju predstavljaju profile preglednika <ph name="PRODUCT_NAME" /> u kojima se svi prozori otvaraju u anonimnom načinu.
 
       Ako se pravilo postavi na "False", <ph name="PRODUCT_NAME" /> neće dopustiti pokretanje profila gostiju.</translation>
@@ -678,7 +678,7 @@
 
       Onemogućavanje ili nepostavljanje te postavke potencijalno dopušta web-stranicama upotrebu API-ja WebGL, a dodacima upotrebu API-ja Pepper 3D. Zadane postavke preglednika mogu svejedno zahtijevati prosljeđivanje argumenata naredbenog retka za upotrebu tih API-ja.
 
-      Ako se pravilo HardwareAccelerationModeEnabled postavi na False, Disable3DAPIs se zanemaruje i to je ekvivalentno postavljanju pravila Disable3DAPIs na True.</translation>
+      Ako se pravilo HardwareAccelerationModeEnabled postavi na false, Disable3DAPIs se zanemaruje i to je ekvivalentno postavljanju pravila Disable3DAPIs na true.</translation>
 <translation id="2258126710006312594">Dopusti korisnicima daljinskog pristupa prijenos datoteka na host/s hosta</translation>
 <translation id="2265214338421787313">Ovo pravilo omogućuje administratoru da odredi da stranica može prikazivati skočne prozore tijekom zatvaranja.
 
@@ -842,9 +842,9 @@
 <translation id="257788512393330403">Zaporku treba unijeti svakih šest sati</translation>
 <translation id="2587719089023392205">Postavi <ph name="PRODUCT_NAME" /> kao zadani preglednik</translation>
 <translation id="2592091433672667839">Trajanje neaktivnosti prije nego što se čuvar zaslona prikaže na zaslonu prijave u prodajnom načinu</translation>
-<translation id="2592162121850992309">Ako se to pravilo postavi na True ili se ne postavi, hardversko će ubrzanje biti omogućeno ako se određena značajka GPU-a ne nalazi na popisu nedopuštenih.
+<translation id="2592162121850992309">Ako se to pravilo postavi na true ili se ne postavi, hardversko će ubrzanje biti omogućeno ako se određena značajka GPU-a ne nalazi na popisu nedopuštenih.
 
-      Ako se to pravilo postavi na False, hardversko ubrzanje neće biti omogućeno.</translation>
+      Ako se to pravilo postavi na false, hardversko ubrzanje neće biti omogućeno.</translation>
 <translation id="2596260130957832043">Kontrolira je li omogućen NTLMv2.
 
           Sve novije verzije poslužitelja Samba i Windows podržavaju NTLMv2. To treba biti onemogućeno samo za kompatibilnost sa starijim verzijama i smanjuje sigurnost autentifikacije.
@@ -895,7 +895,7 @@
 <translation id="268577405881275241">Omogući značajku proxyja za kompresiju podataka</translation>
 <translation id="2693108589792503178">Konfiguriranje URL-a za promjenu zaporke.</translation>
 <translation id="2706708761587205154">Dopusti ispis samo s PIN-om</translation>
-<translation id="2710534340210290498">Ako se to pravilo postavi na False, korisnici neće moći zaključati zaslon (bit će moguća samo odjava s korisničke sesije). Ako se to pravilo postavi na True ili se ne postavi, korisnici koji su se autentificirali zaporkom moći će zaključati zaslon.</translation>
+<translation id="2710534340210290498">Ako se to pravilo postavi na false, korisnici neće moći zaključati zaslon (bit će moguća samo odjava s korisničke sesije). Ako se to pravilo postavi na true ili se ne postavi, korisnici koji su se autentificirali zaporkom moći će zaključati zaslon.</translation>
 <translation id="2731627323327011390">Onemogući upotrebu <ph name="PRODUCT_OS_NAME" /> certifikata za ARC aplikacije</translation>
 <translation id="2742843273354638707">Skrivanje aplikacije Chrome web-trgovine i veze u podnožju na web-stranici nove kartice i pokretača aplikacija za <ph name="PRODUCT_OS_NAME" />.
 
@@ -1302,10 +1302,10 @@
 <translation id="3513655665999652754">Quirks Server pruža konfiguracijske datoteke za hardver, primjerice
       profile ICC zaslona za kalibriranje monitora.
 
-      Kad se to pravilo postavi na False, uređaj neće pokušavati
+      Kad se to pravilo postavi na false, uređaj neće pokušavati
       kontaktirati Quirks Server radi preuzimanja konfiguracijskih datoteka.
 
-      Ako se pravilo postavi na True ili se ne konfigurira, <ph name="PRODUCT_OS_NAME" /> automatski će kontaktirati Quirks Server i preuzeti konfiguracijske datoteke ako su dostupne i pohraniti ih na uređaj.  Pomoću tih se datoteka, na primjer, može poboljšati kvaliteta prikaza priključenih monitora.</translation>
+      Ako se pravilo postavi na true ili se ne konfigurira, <ph name="PRODUCT_OS_NAME" /> automatski će kontaktirati Quirks Server i preuzeti konfiguracijske datoteke ako su dostupne i pohraniti ih na uređaj.  Pomoću tih se datoteka, na primjer, može poboljšati kvaliteta prikaza priključenih monitora.</translation>
 <translation id="3524204464536655762">Ne dopuštaj nijednoj web-lokaciji da traži pristup USB uređajima putem API-ja WebUSB</translation>
 <translation id="3526752951628474302">Samo jednobojni ispis</translation>
 <translation id="3528000905991875314">Omogući alternativne stranice pogrešaka</translation>
@@ -1334,9 +1334,9 @@
       </translation>
 <translation id="3627678165642179114">Omogući ili onemogući web-uslugu provjere pravopisa</translation>
 <translation id="3628480121685794414">Omogući jednostrani ispis</translation>
-<translation id="3631099945620529777">Ako se postavi na False, onemogućuje se gumb "Završi proces" u Upravitelju zadataka.
+<translation id="3631099945620529777">Ako se postavi na false, onemogućuje se gumb "Završi proces" u Upravitelju zadataka.
 
-      Ako se postavi na True ili se ne konfigurira, korisnici mogu završavati postupke u Upravitelju zadataka.</translation>
+      Ako se postavi na true ili se ne konfigurira, korisnici mogu završavati postupke u Upravitelju zadataka.</translation>
 <translation id="3646859102161347133">Postavljanje vrste povećala</translation>
 <translation id="3653237928288822292">Ikona zadanog davatelja usluga pretraživanja</translation>
 <translation id="3660510274595679517">
@@ -1712,9 +1712,9 @@
 <translation id="4408428864159735559">Popis unaprijed konfiguriranih mrežnih dijeljenja datoteka.</translation>
 <translation id="4410236409016356088">Omogući usporavanje propusnosti mreže</translation>
 <translation id="441217499641439905">Onemogući Google disk putem mobilne veze u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="4415603335307944578">Ako se to pravilo postavi na True ili se ne konfigurira, preglednik će ponovo prikazati stranicu dobrodošlice prilikom prvog pokretanja nakon nadogradnje OS-a.
+<translation id="4415603335307944578">Ako se to pravilo postavi na true ili se ne konfigurira, preglednik će ponovo prikazati stranicu dobrodošlice prilikom prvog pokretanja nakon nadogradnje OS-a.
 
-      Ako se pravilo postavi na False, preglednik neće ponovo prikazati stranicu dobrodošlice prilikom prvog pokretanja nakon nadogradnje OS-a.</translation>
+      Ako se pravilo postavi na false, preglednik neće ponovo prikazati stranicu dobrodošlice prilikom prvog pokretanja nakon nadogradnje OS-a.</translation>
 <translation id="4418726081189202489">Ako se to pravilo postavi na netočno, <ph name="PRODUCT_NAME" /> neće povremeno slati upite Googleovu poslužitelju radi dohvaćanja točne vremenske oznake. Ti će se upiti omogućiti ako se pravilo postavi na točno ili se ne postavi.</translation>
 <translation id="4423597592074154136">Ručno određivanje proxy postavki</translation>
 <translation id="4429220551923452215">Omogućuje ili onemogućuje prečace aplikacija u traci oznaka.
@@ -2043,9 +2043,9 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
       To se pravilo određuje u milisekundama.</translation>
 <translation id="523505283826916779">Postavke pristupačnosti</translation>
-<translation id="5236882091572996759">Ako se to pravilo postavi na True ili se ne postavi, korisnik se neće smatrati neaktivnim tijekom reprodukcije audiozapisa. Time se sprječava odgoda neaktivnosti i izvršavanje radnji neaktivnosti. No nakon isteka konfiguriranog vremena čekanja zaslon će se zatamniti, isključiti i zaključati neovisno o aktivnosti audiozapisa.
+<translation id="5236882091572996759">Ako se to pravilo postavi na true ili se ne postavi, korisnik se neće smatrati neaktivnim tijekom reprodukcije audiozapisa. Time se sprječava odgoda neaktivnosti i izvršavanje radnji neaktivnosti. No nakon isteka konfiguriranog vremena čekanja zaslon će se zatamniti, isključiti i zaključati neovisno o aktivnosti audiozapisa.
 
-          Ako se pravilo postavi na False, korisnik se može smatrati neaktivnim bez obzira na aktivnost audiozapisa.</translation>
+          Ako se pravilo postavi na false, korisnik se može smatrati neaktivnim bez obzira na aktivnost audiozapisa.</translation>
 <translation id="5246700266104954355">To je pravilo obustavljeno. Za upravljanje dostupnošću dodatka Flash upotrijebite pravilo <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />, a pomoću pravila <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> odredite trebaju li se PDF datoteke otvarati u integriranom pregledniku za PDF.
 
       Određuje popis dodataka koji su omogućeni u pregledniku <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene tu postavku.
@@ -2237,9 +2237,9 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="5566210228171064229">Dopusti ispis s PIN-om i bez njega</translation>
 <translation id="556865034069957245">To pravilo upravlja dostupnošću prikaza preko cijelog u kojem su svi elementi korisničkog sučelja preglednika <ph name="PRODUCT_NAME" /> skriveni, a vidljiv je samo web-sadržaj.
 
-      Ako se to pravilo postavi na True ili se ne konfigurira, korisnici, aplikacije i proširenja s odgovarajućim dopuštenjima mogu pristupiti prikazu preko cijelog zaslona.
+      Ako se to pravilo postavi na true ili se ne konfigurira, korisnici, aplikacije i proširenja s odgovarajućim dopuštenjima mogu pristupiti prikazu preko cijelog zaslona.
 
-      Ako se pravilo postavi na False, nijedan korisnik, aplikacija ili proširenje ne mogu pristupiti prikazu preko cijelog zaslona.
+      Ako se pravilo postavi na false, nijedan korisnik, aplikacija ili proširenje ne mogu pristupiti prikazu preko cijelog zaslona.
 
       Kad je onemogućen prikaz preko cijelog zaslona, način kioska nije dostupan ni na jednoj platformi osim za <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="556941986578702361">Kontroliraj automatsko skrivanje police proizvoda <ph name="PRODUCT_OS_NAME" />.
@@ -3272,8 +3272,8 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
       Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="7643883929273267746">Ograniči račune koji su vidljivi u pregledniku <ph name="PRODUCT_NAME" /></translation>
-<translation id="7644825865811580663">Ako se to pravilo postavi na True, <ph name="PRODUCT_NAME" /> bezuvjetno će maksimizirati prvi prozor koji se prikazuje prilikom prvog pokretanja.
-      Ako se pravilo postavi na False ili se ne konfigurira, odluka o maksimiziranju prvog prozora temeljit će se na veličini zaslona.</translation>
+<translation id="7644825865811580663">Ako se to pravilo postavi na true, <ph name="PRODUCT_NAME" /> bezuvjetno će maksimizirati prvi prozor koji se prikazuje prilikom prvog pokretanja.
+      Ako se pravilo postavi na false ili se ne konfigurira, odluka o maksimiziranju prvog prozora temeljit će se na veličini zaslona.</translation>
 <translation id="7651739109954974365">Utvrđuje treba li roaming podataka biti omogućen za uređaj. Ako je to pravilo postavljeno na "istinito", roaming podataka bit će dopušten. Ako to pravilo nije konfigurirano ili je postavljeno na "lažno", roaming podataka neće biti dostupan.</translation>
 <translation id="7657261947024629645">Optimizirati za izvedbu.</translation>
 <translation id="7673194325208122247">Razdoblje (milisekunde)</translation>
@@ -3445,9 +3445,9 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="8050080920415773384">Nativni ispis</translation>
 <translation id="8053580360728293758">Nadjačava način boje zadanog ispisa. Pravilo se zanemaruje ako način nije dostupan.</translation>
 <translation id="8059164285174960932">URL na kojem bi klijenti za daljinski pristup trebali dobiti token za autentifikaciju</translation>
-<translation id="806280865577636339">Ako se to pravilo postavi na True, opcije pristupačnosti uvijek se prikazuju na izborniku trake sustava.
+<translation id="806280865577636339">Ako se to pravilo postavi na true, opcije pristupačnosti uvijek se prikazuju na izborniku trake sustava.
 
-          Ako se pravilo postavi na False, opcije pristupačnosti nikad se neće prikazivati na izborniku trake sustava.
+          Ako se pravilo postavi na false, opcije pristupačnosti nikad se neće prikazivati na izborniku trake sustava.
 
           Ako postavite to pravilo, korisnici ga neće moći promijeniti ni nadjačati.
 
@@ -3553,9 +3553,9 @@ Ta su pravila namijenjena isključivo konfiguriranju instanci preglednika <ph na
 Te se postavke ne moraju konfigurirati ručno! Jednostavne predloške za Windows, Mac i Linux možete preuzeti na web-lokaciji <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
 Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pružanje pravila putem registra i dalje podržava za instance Windowsa pridružene domeni <ph name="MS_AD_NAME" />.</translation>
-<translation id="8259592978873597235">Ako se pravilo postavi na True ili se ne postavi, korisnik se ne smatra neaktivnim tijekom reprodukcije videozapisa. Time se sprječava odgoda neaktivnosti te zatamnjivanja, isključivanja i zaključavanja zaslona, kao i izvršavanje odgovarajućih radnji.
+<translation id="8259592978873597235">Ako se pravilo postavi na true ili se ne postavi, korisnik se ne smatra neaktivnim tijekom reprodukcije videozapisa. Time se sprječava odgoda neaktivnosti te zatamnjivanja, isključivanja i zaključavanja zaslona, kao i izvršavanje odgovarajućih radnji.
 
-          Ako se pravilo postavi na False, korisnik se može smatrati neaktivnim bez obzira na aktivnost videozapisa.</translation>
+          Ako se pravilo postavi na false, korisnik se može smatrati neaktivnim bez obzira na aktivnost videozapisa.</translation>
 <translation id="8264653492961233132">Određuje popis aplikacija i proširenja koja se instaliraju u pozadini,
           bez interakcije s korisnikom, i koje korisnik ne može deinstalirati
           niti onemogućiti. Sva dopuštenja koja aplikacije/proširenja
@@ -4073,9 +4073,9 @@ za preglednike imaju isti raspored.
 <translation id="943865157632139008">Omogućuje vam da konfigurirate zadani HTML ispunjivač kada je instaliran <ph name="PRODUCT_FRAME_NAME" />.
       Zadana je postavka ta da se pregledniku hosta dopušta generiranje, ali to po izboru možete nadjačati i kao zadano postaviti da HTML stranice generira <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="944817693306670849">Postavi veličinu predmemorije diska</translation>
-<translation id="966854160628341653">Kontrolira dopušta li sustav <ph name="PRODUCT_OS_NAME" /> izradu novih korisničkih računa. Ako se pravilo postavi na False, korisnici koji još nemaju račun neće se moći prijaviti.
+<translation id="966854160628341653">Kontrolira dopušta li sustav <ph name="PRODUCT_OS_NAME" /> izradu novih korisničkih računa. Ako se pravilo postavi na false, korisnici koji još nemaju račun neće se moći prijaviti.
 
-      Ako se pravilo postavi na True ili se ne konfigurira, izrada novih korisničkih računa bit će dopuštena pod uvjetom da pravilo <ph name="DEVICE_USER_WHITELIST_POLICY_NAME" /> ne sprječava prijavu korisnika.</translation>
+      Ako se pravilo postavi na true ili se ne konfigurira, izrada novih korisničkih računa bit će dopuštena pod uvjetom da pravilo <ph name="DEVICE_USER_WHITELIST_POLICY_NAME" /> ne sprječava prijavu korisnika.</translation>
 <translation id="981346395360763138">Onemogućene su Googleove usluge lokacije</translation>
 <translation id="982497069985795632">Omogući provjeru pravopisa</translation>
 <translation id="991560005425213776">Pošalji korisničko ime i naziv datoteke nativnim pisačima</translation>

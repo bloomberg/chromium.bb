@@ -129,7 +129,7 @@
       &lt;p&gt;Ajusta la fecha y la hora desde la sección &lt;strong&gt;General&lt;/strong&gt; de la app de &lt;strong&gt;Configuración&lt;/strong&gt; .&lt;/p&gt;</translation>
 <translation id="1569487616857761740">Ingresa una fecha de vencimiento</translation>
 <translation id="1581080074034554886">CVC</translation>
-<translation id="1583429793053364125">Se produjo un error al mostrar la página web.</translation>
+<translation id="1583429793053364125">Se produjo un error cuando se mostraba la página web.</translation>
 <translation id="1592005682883173041">Acceso a datos locales</translation>
 <translation id="1594030484168838125">Seleccionar</translation>
 <translation id="161042844686301425">Cian</translation>
@@ -1057,6 +1057,7 @@
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Se especifican servidores proxy fijos y URL de secuencias de comandos .pac.</translation>
+<translation id="6973932557599545801">No puedo ayudarte. Continúa por tus propios medios.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Silenciar (predeterminado)</translation>
 <translation id="6984479912851154518">Saldrás del modo privado para pagar mediante una aplicación externa. ¿Deseas continuar?</translation>

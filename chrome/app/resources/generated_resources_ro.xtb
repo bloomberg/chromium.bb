@@ -1000,7 +1000,7 @@
 <translation id="2470702053775288986">Extensiile necompatibile au fost dezactivate</translation>
 <translation id="2473195200299095979">Traduceți această pagină</translation>
 <translation id="2475982808118771221">A apărut o eroare</translation>
-<translation id="2476578072172137802">Setări site</translation>
+<translation id="2476578072172137802">Setările site-ului</translation>
 <translation id="2478176599153288112">Permisiuni privind fișierele media pentru „<ph name="EXTENSION" />”</translation>
 <translation id="247949520305900375">Trimite conținutul audio</translation>
 <translation id="2480868415629598489">Modifică datele pe care le copiezi și le inserezi</translation>
@@ -1529,7 +1529,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3280243678470289153">Rămâi în Chrome</translation>
 <translation id="3280431534455935878">Se pregătește</translation>
 <translation id="3281892622610078515">Fișierele și programele ce urmează a fi mutate în carantină:</translation>
-<translation id="3282568296779691940">Conectați-vă la Chrome</translation>
+<translation id="3282568296779691940">Conectează-te la Chrome</translation>
 <translation id="3285322247471302225">Filă &amp;nouă</translation>
 <translation id="3288047731229977326">Extensiile care rulează în modul pentru dezvoltatori pot afecta computerul. Dacă nu sunteți dezvoltator, se recomandă să dezactivați aceste extensii, pentru siguranță.</translation>
 <translation id="3289856944988573801">Pentru a verifica dacă există actualizări, utilizați Ethernet sau Wi-Fi.</translation>
@@ -2230,7 +2230,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4312866146174492540">Blochează (în mod prestabilit)</translation>
 <translation id="4314815835985389558">Gestionează sincronizarea</translation>
 <translation id="4316850752623536204">Site-ul dezvoltatorului</translation>
-<translation id="4320177379694898372">Fără conexiune la internet</translation>
+<translation id="4320177379694898372">Nu există conexiune la internet</translation>
 <translation id="4320948194796820126">Adaugă un marcaj la e-mail</translation>
 <translation id="4321442524549817090">A&amp;rată adresa URL</translation>
 <translation id="4322394346347055525">Închide celelalte file</translation>
@@ -2665,7 +2665,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4992926179187649719">Activează „Ok Google”</translation>
 <translation id="4994474651455208930">Permiteți site-urilor să solicite să aibă rolul de programe asociate prestabilite pentru protocoale</translation>
 <translation id="4994754230098574403">Se configurează</translation>
-<translation id="4996978546172906250">Trimiteți prin</translation>
+<translation id="4996978546172906250">Trimite prin</translation>
 <translation id="4997086284911172121">Nu există conexiune la internet.</translation>
 <translation id="4998873842614926205">Confirmați modificările</translation>
 <translation id="5000922062037820727">Blocată (recomandat)</translation>
@@ -3620,7 +3620,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6398715114293939307">Elimină Magazinul Google Play</translation>
 <translation id="6398765197997659313">Ieși din ecranul complet</translation>
 <translation id="6399774419735315745">Spioană</translation>
-<translation id="6404511346730675251">Modificați marcajul</translation>
+<translation id="6404511346730675251">Modifică marcajul</translation>
 <translation id="6406303162637086258">Simulați repornirea browserului</translation>
 <translation id="6406506848690869874">Sincronizare</translation>
 <translation id="6406708970972405507">Setări – <ph name="SECTION_TITLE" /></translation>
@@ -3778,7 +3778,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
     Poți accesa Setări -&gt; Conturi Google ca să vezi și să gestionezi toate conturile.</translation>
 <translation id="6639554308659482635">Memorie SQLite</translation>
 <translation id="6641138807883536517">Parola generată aleatoriu pentru modulul securizat nu este disponibilă. Acest lucru este normal după utilizarea Powerwash.</translation>
-<translation id="6643016212128521049">Ștergeți</translation>
+<translation id="6643016212128521049">Șterge</translation>
 <translation id="6644512095122093795">Oferă salvarea parolelor</translation>
 <translation id="6644846457769259194">Se actualizează dispozitivul (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6645437135153136856">Dispozitivul Google Cloud Print selectat nu mai este acceptat. <ph name="BR" /> Încearcă să configurezi imprimanta din setările de sistem ale computerului.</translation>
@@ -4438,7 +4438,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7662283695561029522">Atinge pentru a configura</translation>
 <translation id="7663719505383602579">Receptor: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">Dispozitiv Bluetooth neacceptat: „<ph name="DEVICE_NAME" />”.</translation>
-<translation id="7665369617277396874">Adăugați un cont</translation>
+<translation id="7665369617277396874">Adaugă un cont</translation>
 <translation id="7671130400130574146">Folosește bara de titlu și chenarele definite în sistem</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, în <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Trimite-ți vocea la Google pentru a permite dictarea în orice câmp de text.</translation>
@@ -5356,7 +5356,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8991520179165052608">Site-ul poate folosi microfonul</translation>
 <translation id="899403249577094719">Adresă URL de bază pentru certificat Netscape</translation>
 <translation id="8995603266996330174">Gestionat de <ph name="DOMAIN" /></translation>
-<translation id="8996526648899750015">Adăugați un cont...</translation>
+<translation id="8996526648899750015">Adaugă un cont...</translation>
 <translation id="9003647077635673607">Permiteți pe toate site-urile</translation>
 <translation id="9003704114456258138">Frecvență</translation>
 <translation id="9004952710076978168">A fost primită o notificare pentru o imprimantă necunoscută.</translation>

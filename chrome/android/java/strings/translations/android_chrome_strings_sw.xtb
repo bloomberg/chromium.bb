@@ -288,7 +288,7 @@
 <translation id="3089395242580810162">Fungua katika kichupo fiche</translation>
 <translation id="311456632243022227">Viungo vingi vilivyofunguliwa katika Chrome</translation>
 <translation id="3115898365077584848">Onyesha Maelezo</translation>
-<translation id="3123473560110926937">Imezuiwa kwenye baadhi ya tovuti</translation>
+<translation id="3123473560110926937">Yamezuiwa kwenye baadhi ya tovuti</translation>
 <translation id="3137521801621304719">Ondoka kwenye hali fiche</translation>
 <translation id="3143515551205905069">Ghairi usawazishaji</translation>
 <translation id="3148434565183091099">Ingia katika Chrome ili upate alamisho zako kwenye vifaa vyako vyote.</translation>
@@ -437,7 +437,7 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili ulichague. Il
 <translation id="4262028915562328938">Hitilafu ya kusawazisha imetokea, gusa ili upate maelezo.</translation>
 <translation id="4269820728363426813">Nakili anwani ya kiungo</translation>
 <translation id="4275663329226226506">Vyombo vya Habari</translation>
-<translation id="4278390842282768270">Vilivyoruhusiwa</translation>
+<translation id="4278390842282768270">Imeruhusiwa</translation>
 <translation id="429312253194641664">Tovuti inacheza maudhui</translation>
 <translation id="4298388696830689168">Tovuti ambazo zimeunganishwa</translation>
 <translation id="4307992518367153382">Mambo Msingi</translation>
@@ -633,7 +633,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5659593005791499971">Barua pepe</translation>
 <translation id="5665379678064389456">Unda tukio katika <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Batilisha ombi la tovuti ili kuzuia kuvuta karibu</translation>
-<translation id="5677928146339483299">Waliozuiwa</translation>
+<translation id="5677928146339483299">Kumezuiwa</translation>
 <translation id="5684874026226664614">Lo!  Ukurasa huu haukuweza kutafsiriwa.</translation>
 <translation id="5686790454216892815">Jina la faili ni ndefu mno</translation>
 <translation id="5689516760719285838">Mahali</translation>
@@ -1104,7 +1104,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="9100610230175265781">Kaulisiri inahitajika</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Onyesha asili</translation>
-<translation id="9139068048179869749">Uliza kabla ya kuruhusu tovuti zitumie arifa (inapendekezwa)</translation>
+<translation id="9139068048179869749">Uliza kabla ya kuruhusu tovuti zitume arifa (inapendekezwa)</translation>
 <translation id="9139318394846604261">Ununuzi</translation>
 <translation id="9150694013019234766">Badili kati ya vichupo vilivyo katika kikundi chako cha vichupo karibu na sehemu ya chini ya skrini</translation>
 <translation id="9155898266292537608">Unaweza pia kutafuta kwa kugusa haraka kwenye neno</translation>

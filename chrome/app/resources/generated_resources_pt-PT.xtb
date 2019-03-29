@@ -1082,7 +1082,7 @@
     e os dados desses utilizadores não serão transmitidos a outros dispositivos com a Sincronização do Google Chrome. Atualmente, os utilizadores supervisionados aplicam-se apenas a esta instalação do Chrome, neste dispositivo.</translation>
 <translation id="2588636910004461974">Dispositivos de <ph name="VENDOR_NAME" /></translation>
 <translation id="258932246702879617">Selecione <ph name="BEGIN_BOLD" />Afixar na barra de tarefas<ph name="END_BOLD" /></translation>
-<translation id="2594999711683503743">Pesquisar no Google ou escrever o URL</translation>
+<translation id="2594999711683503743">Pesquise no Google ou escreva o URL</translation>
 <translation id="2603115962224169880">Limpar o computador</translation>
 <translation id="2603463522847370204">Abrir na janela de &amp;navegação anónima</translation>
 <translation id="2604255671529671813">Erro de ligação à rede</translation>
@@ -2206,7 +2206,7 @@ Pretende pará-lo?</translation>
 <translation id="4271396100647220620">Sem correspondências</translation>
 <translation id="4275830172053184480">Reiniciar o dispositivo</translation>
 <translation id="4278101229438943600">O seu Assistente está pronto</translation>
-<translation id="4278390842282768270">Permitidos:</translation>
+<translation id="4278390842282768270">Permitido</translation>
 <translation id="4281844954008187215">Termos de Utilização</translation>
 <translation id="4282196459431406533">O Smart Lock está ativado</translation>
 <translation id="4285418559658561636">Atualizar palavra-passe</translation>
@@ -2768,7 +2768,7 @@ Pretende pará-lo?</translation>
 <translation id="5166596762332123936">O <ph name="PLUGIN_NAME" /> foi bloqueado porque está desatualizado.</translation>
 <translation id="5170477580121653719">Espaço restante no Google Drive: <ph name="SPACE_AVAILABLE" />.</translation>
 <translation id="5170568018924773124">Mostrar numa pasta</translation>
-<translation id="5171045022955879922">Pesquisar ou escrever URL</translation>
+<translation id="5171045022955879922">Pesquise ou escreva URL</translation>
 <translation id="5171343362375269016">Memória trocada</translation>
 <translation id="5175379009094579629">O nome do dispositivo é inválido. Introduza um nome do dispositivo válido e tente novamente.</translation>
 <translation id="5177479852722101802">Continuar a bloquear o acesso à câmara e ao microfone</translation>
@@ -3045,7 +3045,7 @@ Pretende pará-lo?</translation>
 <translation id="5558129378926964177">Amp&amp;liar</translation>
 <translation id="55601339223879446">Ajustar os limites do seu ambiente de trabalho no ecrã</translation>
 <translation id="5562781907504170924">Este separador está ligado a um dispositivo Bluetooth.</translation>
-<translation id="5563234215388768762">Pesquisar no Google ou escrever um URL</translation>
+<translation id="5563234215388768762">Pesquise no Google ou escreva um URL</translation>
 <translation id="5567950944308676169">Ligue e ative a chave de segurança.</translation>
 <translation id="5567989639534621706">Caches de aplicações</translation>
 <translation id="5568069709869097550">Não é possível iniciar sessão</translation>
@@ -3263,7 +3263,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5865733239029070421">Envia automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="5866557323934807206">Limpar estas definições para futuras visitas</translation>
 <translation id="5866840822086176774">Muito forte</translation>
-<translation id="5867841422488265304">Pesquisar ou escrever o endereço Web</translation>
+<translation id="5867841422488265304">Pesquise ou escreva o endereço Web</translation>
 <translation id="5869029295770560994">OK, compreendi</translation>
 <translation id="5869522115854928033">Palavras-passe guardadas</translation>
 <translation id="5869948122057593679">Fechar todas as janelas</translation>

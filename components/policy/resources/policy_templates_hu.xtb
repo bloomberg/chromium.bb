@@ -173,7 +173,7 @@
 <translation id="1327466551276625742">Hálózati konfigurációs értesítés offline állapotban való megjelenítésének engedélyezése</translation>
 <translation id="1330145147221172764">Képernyő-billentyűzet engedélyezése</translation>
 <translation id="13356285923490863">A szabály neve</translation>
-<translation id="1347198119056266798">Ez a házirend megszűnt; használja helyette a következőket: <ph name="FORCE_GOOGLE_SAFE_SEARCH_POLICY_NAME" /> és <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" />. A böngésző figyelmen kívül hagyja ezt a házirendet, ha a következő házirendek valamelyike be van állítva: <ph name="FORCE_GOOGLE_SAFE_SEARCH_POLICY_NAME" /> vagy <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" />, illetve <ph name="FORCE_YOUTUBE_SAFETY_MODE_POLICY_NAME" /> (ez már megszűnt).
+<translation id="1347198119056266798">Ez a házirend elavult; használja helyette a következőket: <ph name="FORCE_GOOGLE_SAFE_SEARCH_POLICY_NAME" /> és <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" />. A böngésző figyelmen kívül hagyja ezt a házirendet, ha a következő házirendek valamelyike be van állítva: <ph name="FORCE_GOOGLE_SAFE_SEARCH_POLICY_NAME" /> vagy <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" />, illetve <ph name="FORCE_YOUTUBE_SAFETY_MODE_POLICY_NAME" /> (ez már megszűnt).
 
       Hatására a Google Internetes Kereső bekapcsolt Biztonságos Keresés mellett végez lekérdezéseket, és megakadályozza, hogy a felhasználók módosítsák ezt a beállítást. Ez a beállítás a YouTube közepesen korlátozott módjának használatát is előírja.
 
@@ -623,7 +623,7 @@
 
               A <ph name="PRODUCT_NAME" /> 21-es verziójától kezdve nehezebb a bővítmények, alkalmazások és felhasználói szkriptek telepítése a Chrome Internetes áruházon kívülről. A felhasználók korábban rákattinthattak bármely *.crx fájlra mutató linkre, a <ph name="PRODUCT_NAME" /> pedig néhány figyelmeztetés után felajánlotta a fájl telepítését. A <ph name="PRODUCT_NAME" /> 21-es verziójától kezdve az ilyen fájlokat le kell tölteni, és be kell húzni a <ph name="PRODUCT_NAME" /> beállításainak oldalára. Ez a beállítás lehetővé teszi, hogy bizonyos URL-ek a régi, könnyebb telepítési folyamatot használják.
 
-              A listában szereplő összes elem bővítmény jellegű egyezési minta (lásd: https://developer.chrome.com/extensions/match_patterns). A felhasználók a listában szereplő bármelyik elemmel egyező URL-ről a könnyű módszerrel telepíthetnek elemeket. A mintáknak a *.crx fájl helye mellett azt az oldalt is engedélyezniük kell, ahonnan a letöltés megkezdődik (azaz a hivatkozó oldalt). 
+              A listában szereplő összes elem bővítményjellegű egyezési minta (lásd: https://developer.chrome.com/extensions/match_patterns). A felhasználók a listában szereplő bármelyik elemmel egyező URL-ről a könnyű módszerrel telepíthetnek elemeket. A mintáknak a *.crx fájl helye mellett azt az oldalt is engedélyezniük kell, ahonnan a letöltés megkezdődik (azaz a hivatkozó oldalt). 
 
               Az <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> elsőbbséget élvez ezen házirenddel szemben, azaz a tiltólistán lévő bővítmények akkor sem lesznek telepítve, ha az ezen a listán szereplő egyik webhelyről származnak.</translation>
 <translation id="214901426630414675">Nyomtatás kétoldalas módjának korlátozása</translation>
@@ -2047,7 +2047,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5236882091572996759">Ha a házirend értéke igaz, vagy ha nincs beállítva, a rendszer nem tekinti tétlennek a felhasználót hanglejátszás közben. Ez meggátolja a tétlenségi időhatár elérését, illetve a vonatkozó művelet végrehajtását. A hangtevékenységtől függetlenül azonban a rendszer végrehajtja a képernyő-elsötétítési, -kikapcsolási és -lezárási műveleteket, ha letelik a beállított időtartam.
 
           Ha a házirend beállítása hamis, a hangtevékenység nem gátolja meg, hogy a rendszer tétlennek tekintse a felhasználót.</translation>
-<translation id="5246700266104954355">Ez a házirend már megszűnt. Kérjük, a <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> segítségével ellenőrizze a Flash beépülő modul rendelkezésre állását, az <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> segítségével pedig határozza meg azt, hogy a beépített PDF-olvasót kívánja-e használni a PDF-fájlok megnyitásához.
+<translation id="5246700266104954355">Ez a házirend elavult. Kérjük, a <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> segítségével ellenőrizze a Flash beépülő modul rendelkezésre állását, az <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> segítségével pedig határozza meg azt, hogy a beépített PDF-olvasót kívánja-e használni a PDF-fájlok megnyitásához.
 
       Megadja a <ph name="PRODUCT_NAME" /> számára engedélyezett beépülő modulok listáját, és megakadályozza, hogy a felhasználók megváltoztassák ezt a beállítást.
 
@@ -2188,7 +2188,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a szabályok ellentmondanak egymásnak, a <ph name="PRODUCT_NAME" /> a legpontosabban körülírt szabályt használja.</translation>
 <translation id="5475361623548884387">Nyomtatás engedélyezése</translation>
 <translation id="547601067149622666">Hirdetések tiltása a tolakodó hirdetéseket tartalmazó webhelyeken</translation>
-<translation id="5483777239978559943">Ez a házirend megszűnt. Kérjük, a <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> segítségével ellenőrizze a Flash beépülő modul rendelkezésre állását, az <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> segítségével pedig határozza meg azt, hogy a beépített PDF-olvasót kívánja-e használni a PDF-fájlok megnyitásához.
+<translation id="5483777239978559943">Ez a házirend elavult. Kérjük, a <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> segítségével ellenőrizze a Flash beépülő modul rendelkezésre állását, az <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> segítségével pedig határozza meg azt, hogy a beépített PDF-olvasót kívánja-e használni a PDF-fájlok megnyitásához.
 
       Megadja azon beépülő modulok listáját, amelyeket a felhasználó engedélyezhet vagy letilthat a <ph name="PRODUCT_NAME" /> böngészőben.
 
@@ -2652,7 +2652,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="645425387487868471">A kényszerített bejelentkezés engedélyezése a <ph name="PRODUCT_NAME" /> használatához</translation>
 <translation id="6464074037294098618">Automatikus kitöltés engedélyezése címekhez</translation>
 <translation id="6467613372414922590">Felhasználói szintű (rendszergazdai engedély nélkül telepített) natív üzenetváltási gazdagépek használatának engedélyezése</translation>
-<translation id="6468980648680553776">Ez a házirend megszűnt. Használja helyette a RemoteAccessHostClientDomainList házirendet.</translation>
+<translation id="6468980648680553776">Ez a házirend elavult. Használja helyette a RemoteAccessHostClientDomainList házirendet.</translation>
 <translation id="6473623140202114570">Azon domainek listájának beállítása, amelyeken nem aktivál figyelmeztetéseket a Biztonságos Böngészés.</translation>
 <translation id="6488627892044759800">Konfigurálja a <ph name="PRODUCT_NAME" /> alapértelmezett kezdőlapjának típusát, és megakadályozza, hogy a felhasználók módosíthassák az ezzel kapcsolatos beállításokat. A kezdőlap lehet az Ön által megadott URL vagy az Új lap oldal.
 
@@ -3535,7 +3535,7 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 <translation id="8158758865057576716">Lehetővé teszi barangolási példányok létrehozását a(z) <ph name="PRODUCT_NAME" /> profiladatai számára.</translation>
 <translation id="8172676363520748127">Ha engedélyezve van, nem lehet képernyőképeket készíteni billentyűparancsokkal vagy bővítmény API-kkal.
 
-      Ha le van tiltva vagy nincs megadva, akkor lehetséges képernyőképek készítése.</translation>
+      Ha le van tiltva vagy nincs megadva, akkor lehet képernyőképeket készíteni.</translation>
 <translation id="817455428376641507">Az URL-tiltólista kivételeiként hozzáférést biztosít az ebben a listában szereplő URL-ekhez.
 
       A lista bejegyzéseinek formátumával kapcsolatos leírást az URL-tiltólista házirendben olvashatja el.
@@ -3549,7 +3549,7 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       Ha nincs beállítva, nem lesz kivétel az „URLBlacklist” házirend alól.</translation>
 <translation id="8176035528522326671">A vállalati felhasználók csak elsődleges többprofilú felhasználók lehetnek (alapértelmezett működés vállalati kezelésű felhasználók esetén)</translation>
 <translation id="8214600119442850823">A jelszókezelőt konfigurálja</translation>
-<translation id="8217516105848565518">Ez a házirend megszűnt. Használja helyette a RemoteAccessHostDomainList házirendet.</translation>
+<translation id="8217516105848565518">Ez a házirend elavult. Használja helyette a RemoteAccessHostDomainList házirendet.</translation>
 <translation id="8244525275280476362">Maximális lehívási késleltetés házirend-érvénytelenítés után</translation>
 <translation id="8256688113167012935">A(z) <ph name="PRODUCT_OS_NAME" /> által az eszköz megfelelő helyi fiókjának a bejelentkezési képernyőn megjelenített fióknevét szabályozza.
 

@@ -174,11 +174,11 @@ Není-li tato zásada nastavena, výchozí frekvence je 3 hodiny. Minimální po
       Je-li tato zásada ponechána nenastavená, použije se výchozí chování, při němž slučování připojení HTTP/2, která používají certifikáty klienta, není povoleno.</translation>
 <translation id="1353966721814789986">Stránky otevírané při spuštění</translation>
 <translation id="1354424209129232709">Maximum:</translation>
-<translation id="1354452738176731363">Pokud je tato zásada nastavena na hodnotu false, nebude během přihlášení uživatele zvukový výstup v zařízení k dispozici.
+<translation id="1354452738176731363">Pokud je tato zásada nastavena na hodnotu false, nebude po dobu přihlášení uživatele zvukový výstup v zařízení k dispozici.
 
       Tato zásada ovlivňuje všechny typy zvukových výstupů, nejen zabudované reproduktory. Zásada zablokuje i zvukové funkce usnadnění přístupu. Pokud uživatel potřebuje čtečku obrazovky, tuto zásadu nepovolujte.
 
-      Pokud je zásada nastavená na hodnotu true nebo není nastavená mohou uživatelé v zařízení používat všechny podporované typy zvukových výstupů.</translation>
+      Pokud je zásada nastavená na hodnotu true nebo není nastavená, mohou uživatelé v zařízení používat všechny podporované typy zvukových výstupů.</translation>
 <translation id="1359553908012294236">Pokud je tato zásada nastavena na hodnotu True nebo nastavena není, prohlížeč <ph name="PRODUCT_NAME" /> povolí přihlášení hosta. Přihlášení hosta v prohlížeči <ph name="PRODUCT_NAME" /> jsou profily, ve kterých jsou všechna okna v anonymním režimu.
 
 Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> vytváření profilů hosta nepovolí.</translation>
@@ -244,7 +244,7 @@ Pokud tuto zásadu ponecháte nenastavenou, bude tato možnost aktivovaná, ale 
 
       Určuje seznam pluginů, které jsou v prohlížeči <ph name="PRODUCT_NAME" /> zakázány, a brání uživatelům toto nastavení změnit.
 
-      Zástupnými znaky „*“ a „?“ lze nahradit sekvenci libovolných znaků. Znak „*“ odpovídá libovolnému počtu znaků a znak „?“ určuje jeden volitelný znak (tj. odpovídá jednomu nebo žádnému znaku). Řídicí znak je „\“, pokud tedy chcete hledat skutečné znaky „*“ nebo „?“, musíte před ně vložit znak „\“.
+      Zástupnými znaky „*“ a „?“ lze nahradit sekvenci libovolných znaků. Znak „*“ odpovídá libovolnému počtu libovolných znaků a znak „?“ zastupuje jeden libovolný znak (tj. odpovídá jednomu nebo žádnému znaku). Řídicí znak je „\“, pokud tedy chcete hledat skutečné znaky „*“ nebo „?“, musíte před ně vložit znak „\“.
 
       Pokud toto nastavení aktivujete, pluginy uvedené v tomto seznamu v prohlížeči <ph name="PRODUCT_NAME" /> nebudou používány. Příslušné pluginy budou na stránce about:plugins označeny jako zakázané a uživatelé je nebudou moci aktivovat.
 
@@ -463,7 +463,7 @@ Pokud tuto zásadu ponecháte nenastavenou, bude předvídání akcí sítě akt
       Tato zásada je k dispozici jen v instancích systému Windows, které jsou připojené k doméně <ph name="MS_AD_NAME" />, nebo v instancích systému Windows 10 Pro nebo Enterprise, které jsou zaregistrované ke správě zařízení.</translation>
 <translation id="1914840757300882918">Pokud je tato zásada nastavená, hostitel adresu RemoteAccessHostTokenValidationUrl ověří pomocí certifikátu klienta s běžným názvem příslušného vydavatele. Chcete-li použít libovolný dostupný certifikát klienta, jako hodnotu zadejte hvězdičku (*).
 
-          Na straně serveru tato funkce v současné době není k dispozici.</translation>
+          Tato funkce je v současné době na straně serveru zakázaná.</translation>
 <translation id="1919802376548418720">K delegování Identifikačních údajů používat zásadu KDC.</translation>
 <translation id="1920046221095339924">Povolit v zařízení spravovanou relaci</translation>
 <translation id="1929709556673267855">Poskytuje konfigurace pro podnikové tiskárny svázané se zařízeními.
@@ -586,7 +586,7 @@ Pokud zásadu nenastavíte, bude se považovat za aktivované (viz popis výše)
 Tato zásada platí pro primární i pro všechny sekundární displeje.
 
 Pokud tato zásada není nastavena, použije se výchozí hodnota 0 a uživatel ji bude moci změnit. V tomto případě se nastavení uživatele při restartu nepřepíše.</translation>
-<translation id="2138449619211358657">Tato zásada umožňuje operačnímu systému <ph name="PRODUCT_OS_NAME" /> obejít jakýkoliv proxy server pro ověření captive portálu.
+<translation id="2138449619211358657">Tato zásada umožňuje operačnímu systému <ph name="PRODUCT_OS_NAME" /> obejít za účelem ověření na captive portálu jakýkoliv proxy server.
 
       Tato zásada bude použita pouze v případě, že je proxy server nakonfigurován (například pomocí zásady, uživatelským nastavením na stránce chrome://settings nebo pomocí rozšíření).
 
@@ -599,7 +599,7 @@ Pokud tato zásada není nastavena, použije se výchozí hodnota 0 a uživatel
 
           Každá položka v tomto seznamu představuje vzor odpovídající typu rozšíření (viz stránky https://developer.chrome.com/extensions/match_patterns). Uživatelé budou moci jednoduše instalovat položky z jakékoli adresy, která odpovídá položce v tomto seznamu. V těchto vzorech musí být povoleno umístění souboru *.crx i stránka, ze které bude zahájeno stahování (tj. zdroj odkazu).
 
-          Zásada <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> má před touto zásadou přednost. Rozšíření uvedené v seznamu zakázaných položek se nenainstaluje ani v případě, že pochází z webu uvedeného v tomto seznamu.</translation>
+          Zásada <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> má před touto zásadou přednost. To znamená, že rozšíření uvedené v seznamu zakázaných položek se nenainstaluje ani v případě, že pochází z webu uvedeného v tomto seznamu.</translation>
 <translation id="214901426630414675">Omezit oboustranný režim tisku</translation>
 <translation id="2149330464730004005">Povolit barevný tisk</translation>
 <translation id="2156132677421487971">Konfiguruje zásady pro <ph name="PRODUCT_NAME" />, což je funkce, která uživatelům umožňuje odesílat obsah karet, webů nebo plochy z počítače na vzdálené obrazovky a do vzdálených zvukových systémů.</translation>
@@ -656,9 +656,9 @@ Zásada platí také pro rozšíření komponent, jako je rozšíření Hangout 
 <translation id="2240879329269430151">Umožňuje nastavit, zda mohou webové stránky zobrazovat vyskakovací okna. Zobrazování vyskakovacích oken lze buď povolit pro všechny weby, nebo je pro všechny weby zakázat.
 
           Není-li zásada nastavena, bude použita zásada BlockPopups a uživatelé ji budou moci změnit.</translation>
-<translation id="2255326053989409609">Aktivací tohoto nastavení zabráníte webovým stránkám v přístupu ke grafickému procesoru (GPU). Webové stránky nebudou moci přistupovat k rozhraní WebGL API a pluginy nebudou moci využít rozhraní Pepper 3D API.
+<translation id="2255326053989409609">Aktivací tohoto nastavení zabráníte webovým stránkám v přístupu ke grafickému procesoru (GPU). Webové stránky nebudou mít přístup k rozhraní WebGL API a pluginy nebudou moci využít rozhraní Pepper 3D API.
 
-      Pokud toto nastavení deaktivujete, umožníte webovým stránkám využívat rozhraní WebGLAPI a pluginům umožníte využívat rozhraní Pepper 3D API. Výchozí nastavení prohlížeče však mohou k použití těchto rozhraní API i nadále vyžadovat předání argumentů příkazového řádku.
+      Pokud toto nastavení deaktivujete, umožníte webovým stránkám využívat rozhraní WebGL API a pluginům umožníte využívat rozhraní Pepper 3D API. Výchozí nastavení prohlížeče však mohou k použití těchto rozhraní API i nadále vyžadovat předání argumentů příkazového řádku.
 
       Pokud je zásada HardwareAccelerationModeEnabled nastavená na hodnotu false, zásada Disable3DAPIs se ignoruje a chová se, jak kdyby byla nastavená na hodnotu true.</translation>
 <translation id="2258126710006312594">Povolit uživatelům vzdáleného přístupu přenos souborů do/z hostitele</translation>
@@ -959,7 +959,7 @@ Pokud je zásada nastavena na hodnotu False nebo nastavena není, budou ikony vi
           Pokud tato zásada není nastavená nebo je nastavená na hodnotu false, zásada KDC se na podporovaných platformách ignoruje a respektuje se jen zásada AuthNegotiateDelegateWhitelist.
 
           V systémech Windows se zásada KDC vždy respektuje.</translation>
-<translation id="283695852388224413">Pokud je tato zásada nastavená, vynucuje se maximální nakonfigurovaná délka kódu PIN. Hodnotu 0 nebo menší znamená, že maximální délka není stanovena a uživatel může nastavit libovolně dlouhý PIN. Pokud je toto nastavení menší než <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME" />, ale větší než 0, maximální délka je stejná jako minimální délka.
+<translation id="283695852388224413">Pokud je tato zásada nastavená, vynucuje se maximální nakonfigurovaná délka kódu PIN. Hodnota 0 nebo menší znamená, že maximální délka není stanovena a uživatel může nastavit libovolně dlouhý PIN. Pokud je toto nastavení menší než <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME" />, ale větší než 0, maximální délka je stejná jako minimální délka.
 
           Pokud tato zásada není nastavená, maximální délka se nevynucuje.</translation>
 <translation id="2838830882081735096">Zakázat migraci dat a rozšíření ARC</translation>
@@ -1277,7 +1277,7 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 
           Pokud je toto nastavení vypnuto, uživatelé nová hesla ukládat nemohou, ale i nadále mohou používat hesla, která byla uložena v minulosti.
 
-          Pokud je tato zásada zapnutá nebo vypnutá, uživatelé ji v <ph name="PRODUCT_NAME" /> nemohou změnit ani přepsat. Pokud tato zásada není nastavená, ukládání hesel není povoleno (ale uživatel jej může vypnout).</translation>
+          Pokud je tato zásada zapnutá nebo vypnutá, uživatelé ji v <ph name="PRODUCT_NAME" /> nemohou změnit ani přepsat. Pokud tato zásada není nastavená, ukládání hesel je povoleno (ale uživatel jej může vypnout).</translation>
 <translation id="3496296378755072552">Správce hesel</translation>
 <translation id="3500732098526756068">Umožňuje ovládat spouštění upozornění ohledně ochrany hesla. Upozornění ohledně ochrany hesla se uživatelům zobrazí, pokud své chráněné heslo použijí na potenciálně podezřelých webech.
 
@@ -1331,7 +1331,7 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 <translation id="3628480121685794414">Povolit jednostranný tisk</translation>
 <translation id="3631099945620529777">Pokud je tato zásada nastavena na hodnotu false, je tlačítko Ukončit proces ve Správci úloh deaktivováno.
 
-      Pokud je tato zásada nastavena na hodnotu true nebo není nakonfigurována, uživatel ve Správci úloh může ukončovat procesy.</translation>
+      Pokud je tato zásada nastavena na hodnotu true nebo není nakonfigurována, uživatel může ve Správci úloh ukončovat procesy.</translation>
 <translation id="3646859102161347133">Nastavení typu lupy</translation>
 <translation id="3653237928288822292">Ikona výchozího poskytovatele vyhledávání</translation>
 <translation id="3660510274595679517">
@@ -1434,7 +1434,7 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
           Hodnota * v seznamu zakázaných znamená, že jsou všichni hostitelé zasílání nativních zpráv zakázáni a že budou načteni pouze hostitelé uvedení na seznamu povolených hostitelů.
 
           Ve výchozím nastavení jsou povoleni všichni hostitelé zasílání nativních zpráv. Pokud však byly všichni hostitelé zasílání nativních zpráv pomocí zásady přidáni na seznam zakázaných, je možné tuto zásadu pomocí seznamu povolených hostitelů přepsat.</translation>
-<translation id="3837424079837455272">Tato zásada určuje, zda je do systému <ph name="PRODUCT_OS_NAME" /> možné přidávat nové uživatele. Nebrání uživatelům v přihlášení k dalším účtům Google v systému Android. Chcete-li tomu zabránit, nakonfigurujte zásadu <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> specifickou pro Android (jako součást zásady <ph name="ARC_POLICY_POLICY_NAME" />).</translation>
+<translation id="3837424079837455272">Tato zásada určuje, zda je do systému <ph name="PRODUCT_OS_NAME" /> možné přidávat nové uživatele. Nebrání uživatelům v přihlášení k dalším účtům Google v systému Android. Chcete-li tomu zabránit, nakonfigurujte zásadu <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> specifickou pro Android jako součást zásady <ph name="ARC_POLICY_POLICY_NAME" />.</translation>
 <translation id="384743459174066962">Umožňuje nastavit seznam vzorů adres URL stránek, které nemají povoleno otevírat vyskakovací okna.
 
            Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultPopupsSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
@@ -1697,7 +1697,7 @@ Je-li tato zásada použita, bude mít uživatel k dispozici pouze tiskárny, j
       Pokud tato zásada nebude nastavena, budou v prohlížeči <ph name="PRODUCT_NAME" /> viditelné všechny účty Google v zařízení.</translation>
 <translation id="4360826270668210664">Pokud je tato zásada nastavená, bude připojení hostitele vzdáleného přístupu vyžadovat, aby ověřovaní klienti získali token ověření z této adresy URL. Je třeba používat spolu se zásadou RemoteAccessHostTokenValidationUrl.
 
-          Na straně serveru tato funkce v současné době není k dispozici.</translation>
+          Tato funkce je v současné době na straně serveru zakázaná.</translation>
 <translation id="436581050240847513">Odesílat informace o síťových rozhraních zařízení</translation>
 <translation id="4372704773119750918">Nepovolí podnikovým uživatelům být součástí multiprofilu (primárního či sekundárního)</translation>
 <translation id="4377599627073874279">Povolit všem webům zobrazování všech obrázků</translation>
@@ -2059,7 +2059,7 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
 
       Určuje seznam pluginů, které jsou v prohlížeči <ph name="PRODUCT_NAME" /> povoleny a brání uživatelům ve změně tohoto nastavení.
 
-      Zástupnými znaky „*“ a „?“ lze nahradit sekvenci libovolných znaků. Znak „*“ odpovídá libovolnému počtu znaků a znak „?“ určuje jeden volitelný znak (tj. odpovídá jednomu nebo žádnému znaku). Řídicí znak je „\“, pokud tedy chcete hledat skutečné znaky „*“ nebo „?“, musíte před ně vložit znak „\“.
+      Zástupnými znaky „*“ a „?“ lze nahradit sekvenci libovolných znaků. Znak „*“ odpovídá libovolnému počtu libovolných znaků a znak „?“ zastupuje jeden libovolný znak (tj. odpovídá jednomu nebo žádnému znaku). Řídicí znak je „\“, pokud tedy chcete hledat skutečné znaky „*“ nebo „?“, musíte před ně vložit znak „\“.
 
       Pokud jsou pluginy ze zadaného seznamu nainstalovány, vždy se v prohlížeči <ph name="PRODUCT_NAME" /> použijí. Příslušné pluginy jsou na stránce about:plugins označeny jako povolené a uživatelé je nemohou zakázat.
 
@@ -2167,9 +2167,9 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
 <translation id="5424147596523390018">Povolit všechny barevné režimy</translation>
 <translation id="5437733496511628148">Aktivací tohoto nastavení zabráníte tomu, aby prvky webové stránky, které nepocházejí z domény uvedené v adresním řádku prohlížeče, nastavovaly soubory cookie.
 
-      Deaktivací tohoto nastavení umožníte, aby prvky webové stránky, které nepocházejí z domény uvedené v adresním řádku prohlížeče, mohly nastavovat soubory cookie,a znemožníte uživatelům toto nastavení změnit.
+      Deaktivací tohoto nastavení umožníte, aby prvky webové stránky, které nepocházejí z domény uvedené v adresním řádku prohlížeče, mohly nastavovat soubory cookie, a znemožníte uživatelům toto nastavení změnit.
 
-      Pokud tuto zásadu ponecháte nenastavenou, bude soubory cookie třetích stran povoleny, ale uživatelé toto nastavení budou moci změnit.</translation>
+      Pokud tuto zásadu ponecháte nenastavenou, budou soubory cookie třetích stran povoleny, ale uživatelé toto nastavení budou moci změnit.</translation>
 <translation id="5442026853063570579">Tato zásada také ovládá přístup k možnostem Pro vývojáře v systému Android. Pokud tuto zásadu nastavíte na možnost DeveloperToolsDisallowed (hodnota 2), uživatelé k možnostem Pro vývojáře nebudou mít přístup. Pokud tuto zásadu nastavíte na jinou hodnotu nebo ji nenastavíte, uživatelé budou moci možnosti Pro vývojáře otevřít tak, že v aplikaci Nastavení Android sedmkrát klepnou na číslo sestavení.</translation>
 <translation id="544342220587994947">Umožňuje zadat seznam vzorů adres URL, pro které by měl prohlížeč <ph name="PRODUCT_NAME" /> automaticky vybrat klientský certifikát, pokud o něj web požádá.
 
@@ -2201,7 +2201,7 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
 
       Určuje seznam pluginů, které uživatel v prohlížeči <ph name="PRODUCT_NAME" /> může povolit nebo zakázat.
 
-      Zástupnými znaky „*“ a „?“ lze nahradit sekvenci libovolných znaků. Znak „*“ odpovídá libovolnému počtu znaků a znak „?“ určuje jeden volitelný znak (tj. odpovídá jednomu nebo žádnému znaku). Řídicí znak je „\“, pokud tedy chcete hledat skutečné znaky „*“ nebo „?“, musíte před ně vložit znak „\“.
+      Zástupnými znaky „*“ a „?“ lze nahradit sekvenci libovolných znaků. Znak „*“ odpovídá libovolnému počtu libovolných znaků a znak „?“ zastupuje jeden libovolný znak (tj. odpovídá jednomu nebo žádnému znaku). Řídicí znak je „\“, pokud tedy chcete hledat skutečné znaky „*“ nebo „?“, musíte před ně vložit znak „\“.
 
       Pokud toto nastavení aktivujete, pluginy uvedené v tomto seznamu bude možné v prohlížeči <ph name="PRODUCT_NAME" /> použít. Uživatelé je na stránce about:plugins budou moci aktivovat nebo deaktivovat i v případě, že odpovídají vzoru v seznamu DisabledPlugins. Uživatelé mohou také aktivovat a deaktivovat pluginy, které neodpovídají žádnému vzoru v seznamu DisabledPlugins, DisabledPluginsExceptions ani EnabledPlugins.
 
@@ -2566,7 +2566,7 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name=
 <translation id="6155936611791017817">Nastavení výchozího stavu velkého kurzoru na přihlašovací obrazovce</translation>
 <translation id="6157537876488211233">Seznam pravidel vynechání proxy serveru oddělených čárkami</translation>
 <translation id="6158324314836466367">Název podnikového úložiště aplikací (podpora ukončena)</translation>
-<translation id="6178075938488052838">Tato zásada určuje, kdo může zahájit relaci systému <ph name="PRODUCT_OS_NAME" />. Nebrání uživatelům v přihlášení k dalším účtům Google v systému Android. Chcete-li tomu zabránit, nakonfigurujte zásadu <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> specifickou pro Android (jako součást zásady <ph name="ARC_POLICY_POLICY_NAME" />).</translation>
+<translation id="6178075938488052838">Tato zásada určuje, kdo může zahájit relaci systému <ph name="PRODUCT_OS_NAME" />. Nebrání uživatelům v přihlášení k dalším účtům Google v systému Android. Chcete-li tomu zabránit, nakonfigurujte zásadu <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> specifickou pro Android jako součást zásady <ph name="ARC_POLICY_POLICY_NAME" />.</translation>
 <translation id="6181608880636987460">Umožňuje nastavit seznam vzorů adres URL webů, které nemají povoleno spouštět plugin <ph name="FLASH_PLUGIN_NAME" />.
 
           Pokud tuto zásadu nenastavíte, použije se pro všechny weby globální výchozí hodnota buď ze zásady DefaultPluginsSetting (pokud je nastavena), nebo z osobní konfigurace uživatele.</translation>
@@ -3042,7 +3042,7 @@ Pokud tato zásada není nastavená, budou se do zařízení moci přihlašovat 
 <translation id="7194407337890404814">Název výchozího poskytovatele vyhledávání</translation>
 <translation id="7199304109870655950">Umožňuje nastavit vzdálený přístup prostřednictvím hostitele Vzdálené plochy Chrome.
 
-      Hostitel Vzdálené plochy Chrome je nativní služba, která je spuštěna v cílovém počítači a uživateli umožňuje připojení prostřednictvím aplikace Vzdálené plocha Chrome.  Tato nativní služba je zabalena a spouštěna samostatně mimo prohlížeč <ph name="PRODUCT_NAME" />.
+      Hostitel Vzdálené plochy Chrome je nativní služba, která je spuštěna v cílovém počítači a uživateli umožňuje připojení prostřednictvím aplikace Vzdálená plocha Chrome.  Tato nativní služba je zabalena a spouštěna samostatně mimo prohlížeč <ph name="PRODUCT_NAME" />.
 
       Tyto zásady se použijí pouze v případě, že je nainstalován hostitel Vzdálené plochy Chrome.</translation>
 <translation id="7202925763179776247">Povolit omezení stahování</translation>
@@ -3197,7 +3197,7 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, optimaliz
 <translation id="7485481791539008776">Pravidla výběru výchozí tiskárny</translation>
 <translation id="7485730741952775732">Pokud je tato zásada nastavená, hostitel vzdáleného přístupu použije při připojování tuto adresu URL ke kontrole ověřovacích tokenů od klientů vzdáleného přístupu. Tuto zásadu je třeba používat v kombinaci se zásadou RemoteAccessHostTokenUrl.
 
-          Na straně serveru tato funkce v současné době není k dispozici.</translation>
+          Tato funkce je v současné době na straně serveru zakázaná.</translation>
 <translation id="749556411189861380">Hlásí verzi operačního systému a firmwaru v registrovaných zařízeních.
 
       Pokud tato zásada není nastavena nebo je nastavena na hodnotu True, budou registrovaná zařízení pravidelně hlásit verzi operačního systému a firmwaru. Pokud je nastavena na hodnotu False, informace o verzi se hlásit nebudou.</translation>
@@ -3995,7 +3995,7 @@ Možnost |IdleAction| lze nastavit na jednu z následujících čtyř možných 
           * |Shutdown|
           * |DoNothing|
 
-Když hodnota |IdleAction| není nastavena, bude provedena výchozí akce (pozastavení).
+Když hodnota |IdleAction| není nastavena, bude provedena výchozí akce (Suspend).
 
 K dispozici jsou také samostatná nastavení pro napájení ze sítě a z baterie.
           </translation>
@@ -4044,7 +4044,7 @@ Pokud je tato zásada nastavena na hodnotu true a uživatel vypne zařízení, s
 
           Pokud je tato zásada ponechána nenastavená, použije se hodnota „3“ a uživatel ji bude moci změnit.</translation>
 <translation id="9167719789236691545">Zakázat v aplikaci Soubory v systému <ph name="PRODUCT_OS_NAME" /> přístup k Disku</translation>
-<translation id="9185107612228451403">Slouží ke konfiguraci zásad souvisejících s rozšířeními. Uživatel nemá povoleno instalovat rozšíření uvedená na seznamu zakázaných, pokud nejsou uvedena na seznamu povolených. V prohlížeči <ph name="PRODUCT_NAME" /> můžete také vynutit automatickou instalaci rozšíření, a to tím, že rozšíření zadáte do seznamu <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />. Vynuceně instalovaná rozšíření se nainstalují bez ohledu na to, zda jsou uvedeny na seznamu zakázaných.</translation>
+<translation id="9185107612228451403">Slouží ke konfiguraci zásad souvisejících s rozšířeními. Uživatel nemá povoleno instalovat rozšíření uvedená na seznamu zakázaných, pokud nejsou uvedena na seznamu povolených. V prohlížeči <ph name="PRODUCT_NAME" /> můžete také vynutit automatickou instalaci rozšíření, a to tím, že rozšíření zadáte do seznamu <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />. Vynuceně instalovaná rozšíření se nainstalují bez ohledu na to, zda jsou uvedena na seznamu zakázaných.</translation>
 <translation id="9187743794267626640">Zakázat připojení externího úložiště</translation>
 <translation id="9197740283131855199">Procento, o které bude prodloužena prodleva ztmavení obrazovky, pokud uživatel po ztmavení provedete nějakou činnost</translation>
 <translation id="9200828125069750521">Parametry pro adresu URL obrázku používající metodu POST</translation>

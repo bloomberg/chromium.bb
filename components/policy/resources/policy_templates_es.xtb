@@ -132,7 +132,7 @@ Si esta política se establece en False, no se informará sobre el estado del co
 <translation id="1194005076170619046">Si se habilita esta opción, aparecerá un botón grande de color rojo para cerrar sesión en la bandeja del sistema mientras la sesión esté activa y la pantalla no esté bloqueada.
 
       Si la opción se inhabilita o no se especifica, no se mostrará ningún botón rojo en la bandeja del sistema.</translation>
-<translation id="1197437816436565375">No puedes forzar a las aplicaciones de Android para que utilicen un proxy. Se ha habilitado la disponibilidad de un subconjunto de opciones de proxy para las aplicaciones de Android y estas pueden aceptarlas voluntariamente. Consulta la política <ph name="PROXY_MODE_POLICY_NAME" /> para obtener más información.</translation>
+<translation id="1197437816436565375">No puedes forzar a las aplicaciones de Android a que utilicen un proxy. Se ha habilitado la disponibilidad de un subconjunto de opciones de proxy para las aplicaciones de Android, y estas pueden aceptarlas voluntariamente. Consulta la política <ph name="PROXY_MODE_POLICY_NAME" /> para obtener más información.</translation>
 <translation id="1198465924256827162">Frecuencia con la que se envían los informes del estado del dispositivo, expresada en milisegundos.
 
 Si no se establece ningún valor para esta política, la frecuencia predeterminada serán 3 horas. La frecuencia mínima permitida son 60 segundos.</translation>
@@ -236,8 +236,7 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 
       Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> y en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos.</translation>
 <translation id="1432194160771348078">
-      Permite especificar una lista de aplicaciones que se instalan de forma automática en la pantalla de inicio de sesión,
-      sin la intervención del usuario. Además, no se pueden desinstalar.
+      Permite especificar una lista de aplicaciones que se instalan de forma automática en la pantalla de inicio de sesión sin la intervención del usuario. Además, no se pueden desinstalar.
       Los permisos solicitados por las aplicaciones se aceptan de forma
       implícita, sin la interacción del usuario, incluidos los permisos que
       soliciten las próximas versiones de la aplicación.
@@ -259,7 +258,7 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 
       Permite especificar una lista de complementos que están inhabilitados en <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta opción.
 
-      Se pueden utilizar los caracteres comodín "*" y "?" para obtener coincidencias de secuencias de caracteres arbitrarios. "*" puede coincidir con un número arbitrario de caracteres y "?" especifica un único carácter opcional (es decir, puede coincidir con un carácter o con ninguno). Se puede escribir el carácter de escape ("\") delante de los caracteres "*", "?" o "\" para obtener coincidencias con los propios caracteres.
+      Los caracteres comodín "*" y "?" se pueden utilizar para buscar coincidencias con secuencias de caracteres arbitrarios. El comodín "*" coincide con cualquier número de caracteres, mientras que "?" especifica un único carácter opcional (es decir, coincide con un carácter o no coincide con ninguno). El carácter de escape es "\", por lo que para que coincida con los caracteres "*", "?" o "\" debes colocar el carácter "\" delante de ellos.
 
       Si habilitas esta opción, <ph name="PRODUCT_NAME" /> nunca utilizará la lista de complementos especificada. Los complementos se marcan como inhabilitados en "about:plugins" y los usuarios no los pueden habilitar.
 
@@ -2262,7 +2261,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Especifica una lista de complementos que el usuario puede habilitar o inhabilitar en <ph name="PRODUCT_NAME" />.
 
-      Se pueden utilizar los caracteres comodín "*" y "?" para obtener secuencias de caracteres arbitrarios. "*" puede coincidir con un número arbitrario de caracteres y "?" especifica un único carácter opcional (puede coincidir con un carácter o con ninguno). El carácter de escape es "\" y, por tanto, se puede escribir antes de "*", "?", o "\" para obtener coincidencias con los propios caracteres.
+      Los caracteres comodín "*" y "?" se pueden utilizar para buscar coincidencias con secuencias de caracteres arbitrarios. El comodín "*" coincide con cualquier número de caracteres, mientras que "?" especifica un único carácter opcional (es decir, coincide con un carácter o no coincide con ninguno). El carácter de escape es "\", por lo que para que coincida con los caracteres "*", "?" o "\" debes colocar el carácter "\" delante de ellos.
 
       Si habilitas esta opción, se puede utilizar la lista de complementos especificada en <ph name="PRODUCT_NAME" />. Los usuarios pueden habilitarlos o inhabilitarlos en "about:plugins" aunque el complemento coincida con un patrón de DisabledPlugins. Además, los usuarios pueden habilitar e inhabilitar los complementos que no coincidan con ningún patrón de DisabledPlugins, DisabledPluginsExceptions y EnabledPlugins.
 
@@ -2310,7 +2309,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si se asigna el valor "True" a esta política o no se configura, el usuario, las aplicaciones y las extensiones con permisos adecuados podrán utilizar el modo de pantalla completa.
 
-      Si se le asigna el valor "False", ni el usuario, ni las aplicaciones o las extensiones podrán utilizar el modo de pantalla completa.
+      Si se le asigna el valor "False", ni el usuario, ni las aplicaciones ni las extensiones podrán utilizar el modo de pantalla completa.
 
       En todas las plataformas, salvo en <ph name="PRODUCT_OS_NAME" />, el modo kiosco no está disponible cuando el modo de pantalla completa está inhabilitado.</translation>
 <translation id="556941986578702361">Permite controlar la opción para ocultar automáticamente los archivos de <ph name="PRODUCT_OS_NAME" />.
@@ -3258,7 +3257,7 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 
       Esta política solo es efectiva si la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está habilitada y el equipo está registrado en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="737655323154569539">Restringe el tamaño de impresión de la página. Si esta política no se configura o tiene ningún valor, no se aplica ninguna restricción.</translation>
-<translation id="7389872682701720082">Si se habilita esta opción, se ejecutarán siempre los complementos actualizados.
+<translation id="7389872682701720082">Si se habilita esta opción, se ejecutarán siempre los complementos que no estén desactualizados.
 
       Si se inhabilita esta opción o no se configura, se le pedirá permiso a los usuarios para ejecutar complementos que requieran autorización. Algunos complementos pueden comprometer la seguridad.</translation>
 <translation id="7417972229667085380">Porcentaje que permite ajustar el retraso de inactividad en el modo de presentación (política obsoleta)</translation>

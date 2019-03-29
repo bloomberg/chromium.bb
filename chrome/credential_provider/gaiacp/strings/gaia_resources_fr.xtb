@@ -5,7 +5,7 @@
 <translation id="1894475569413661128">Connectez-vous avec votre compte professionnel.</translation>
 <translation id="2469311484561825731">Échec de la connexion à votre compte professionnel. Assurez-vous que l'ordinateur est connecté à Internet, puis réessayez.</translation>
 <translation id="2595469428674600431">Impossible de valider votre mot de passe Windows. Veuillez réessayer.</translation>
-<translation id="3306357053520292004">Un utilisateur de cet ordinateur a déjà été ajouté en utilisant ce compte. Veuillez vous connecter avec un autre compte.</translation>
+<translation id="3306357053520292004">Un utilisateur de cet ordinateur a déjà été ajouté à l'aide de ce compte. Veuillez vous connecter avec un autre compte.</translation>
 <translation id="4057329986137569701">Une erreur interne s'est produite.</translation>
 <translation id="4300229033992784001">Le mot de passe de votre compte a été modifié. Veuillez saisir votre mot de passe Windows actuel afin de synchroniser votre compte Windows avec votre compte professionnel.</translation>
 <translation id="4706454071748629324">Échec de l'ajout d'un nouvel utilisateur. Ce ordinateur n'autorise que la création d'un utilisateur avec un compte professionnel.</translation>

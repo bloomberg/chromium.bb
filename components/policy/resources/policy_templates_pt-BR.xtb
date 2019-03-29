@@ -247,7 +247,7 @@ Cada item da lista da política é uma string que contém um código de extensã
 <translation id="1438739959477268107">Configuração padrão de geração de chaves</translation>
 <translation id="1454846751303307294">Permite que você defina uma lista de padrões de URL que especificam sites sem permissão para executar JavaScript. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultJavaScriptSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="1456822151187621582">Windows (clientes do <ph name="PRODUCT_OS_NAME" />):</translation>
-<translation id="1458547592473993238">O uso desta política foi suspenso. Use <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> para controlar a disponibilidade do plug-in Flash e <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> para controlar se o visualizador de PDF será usado para abrir arquivos PDF.
+<translation id="1458547592473993238">O uso desta política foi suspenso. Use <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> para controlar a disponibilidade do plug-in Flash e <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> para controlar se o visualizador de PDF integrado será usado para abrir arquivos PDF.
 
       Especifica uma lista de plug-ins desativados no <ph name="PRODUCT_NAME" /> e impede os usuários de alterar essa configuração.
 
@@ -255,7 +255,7 @@ Cada item da lista da política é uma string que contém um código de extensã
 
       Quando esta configuração for ativada, a lista especificada de plug-ins nunca será usada no <ph name="PRODUCT_NAME" />. Os plug-ins serão marcados como desativados em "about:plugins", e os usuários não poderão ativá-los.
 
-      Observe que a política pode ser modificada por EnabledPlugins e DisabledPluginsExceptions.
+      Observe que a política pode ser substituída por EnabledPlugins e DisabledPluginsExceptions.
 
       Quando esta política não for definida, o usuário poderá usar qualquer plug-in instalado no sistema, a não ser por plug-ins codificados incompatíveis, obsoletos ou perigosos.</translation>
 <translation id="1464848559468748897">Controla o comportamento do usuário em uma sessão de diversos perfis nos dispositivos com <ph name="PRODUCT_OS_NAME" />.
@@ -353,7 +353,7 @@ Cada item da lista da política é uma string que contém um código de extensã
 <translation id="1634989431648355062">Permitir o plug-in <ph name="FLASH_PLUGIN_NAME" /> nestes sites</translation>
 <translation id="1653229475925941921">Se esta política for definida, ela controlará o tipo de lupa ativada. Configurar a política como "Nenhuma" desativará a lupa.
 
-          Se você definir esta política, os usuários não poderão alterá-la ou modificá-la.
+          Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
 
           Se esta política não for definida, a lupa ficará desativada inicialmente, mas poderá ser ativada pelo usuário a qualquer momento.</translation>
 <translation id="1655229863189977773">Define o tamanho do cache de disco em bytes</translation>
@@ -475,7 +475,7 @@ Cada item da lista da política é uma string que contém um código de extensã
       Se essa configuração estiver ativada, a impressão digital da senha será capturada nesses URLs pelo serviço de proteção de senhas para detecção de reutilização.
       Se essa configuração estiver desativada ou não estiver definida, a impressão digital da senha será capturada pelo serviço de proteção de senhas apenas em https://accounts.google.com.br.
       Esta política está disponível apenas em instâncias do Windows associadas a um domínio <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
-<translation id="1914840757300882918">Se esta política for definida, o host usará um certificado do cliente com o dado CN do emissor para autenticar para RemoteAccessHostTokenValidationUrl. Configure como "*" para usar qualquer certificado do cliente disponível.
+<translation id="1914840757300882918">Se esta política for definida, o host usará um certificado do cliente com o dado CN do emissor para autenticar em RemoteAccessHostTokenValidationUrl. Configure como "*" para usar qualquer certificado do cliente disponível.
 
           No momento, esse recurso está desativado para servidores.</translation>
 <translation id="1919802376548418720">Usar a política KDC para delegar credenciais.</translation>
@@ -528,7 +528,7 @@ Cada item da lista da política é uma string que contém um código de extensã
 
       Se você desativar esta configuração, os usuários nunca verão a barra de favoritos.
 
-      Se ativar ou desativar esta configuração, os usuários não poderão alterá-la ou modificá-la no <ph name="PRODUCT_NAME" />.
+      Se ativar ou desativar esta configuração, os usuários não poderão alterá-la ou substituí-la no <ph name="PRODUCT_NAME" />.
 
 Se esta configuração for deixada sem definição, os usuários poderão optar por utilizar ou não essa função.</translation>
 <translation id="2006530844219044261">Gerenciamento de energia</translation>
@@ -610,12 +610,12 @@ Se esta configuração for deixada sem definição, os usuários poderão optar 
 
 Esta política só entrará em vigor se um proxy for configurado (por exemplo, por meio de política, pelo usuário em chrome://settings ou por extensões).
 
-Se você ativar esta configuração, todas as páginas de autenticação de portal cativo, ou seja, todas as páginas da Web iniciadas por uma página de login de portal cativo até que o <ph name="PRODUCT_NAME" /> detecte uma conexão de Internet bem-sucedida, serão exibidas em uma janela separada, ignorando todas as configurações e restrições de política para o usuário atual.
+Se você ativar esta configuração, todas as páginas de autenticação de portal cativo (ou seja, todas as páginas da Web iniciadas por uma página de login de portal cativo até que o <ph name="PRODUCT_NAME" /> detecte uma conexão de Internet bem-sucedida) serão exibidas em uma janela separada, ignorando todas as configurações e restrições de política para o usuário atual.
 
 Se você desativar esta configuração ou deixá-la sem definição, todas as páginas de autenticação de portal cativo serão exibidas em uma nova guia (normal) do navegador, usando as configurações de proxy atuais do usuário.</translation>
 <translation id="21394354835637379">Permite que você especifique quais URLs têm permissão para instalar extensões, apps e temas.
 
-          A partir do <ph name="PRODUCT_NAME" /> 21, é mais difícil instalar extensões, apps e scripts de usuário de fora da Chrome Web Store . Antes, os usuários podiam clicar em um link para um arquivo *.crx e o <ph name="PRODUCT_NAME" /> se oferecia para instalar o arquivo depois de alguns avisos. Depois do <ph name="PRODUCT_NAME" /> 21, esses arquivos precisam ser transferidos por download e arrastados para a página de configurações do <ph name="PRODUCT_NAME" />. Essa configuração permite que URLs específicos utilizem o fluxo de instalação antigo facilitado.
+          A partir do <ph name="PRODUCT_NAME" /> 21, é mais difícil instalar extensões, apps e scripts de usuário de fora da Chrome Web Store. Antes, os usuários podiam clicar em um link para um arquivo *.crx e o <ph name="PRODUCT_NAME" /> se oferecia para instalar o arquivo depois de alguns avisos. Depois do <ph name="PRODUCT_NAME" /> 21, esses arquivos precisam ser transferidos por download e arrastados para a página de configurações do <ph name="PRODUCT_NAME" />. Essa configuração permite que URLs específicos utilizem o fluxo de instalação antigo facilitado.
 
           Cada item nesta lista é um padrão de correspondência de estilo de extensão (consulte https://developer.chrome.com/extensions/match_patterns). Os usuários conseguirão instalar com facilidade os itens de qualquer URL correspondente a um item da lista. Tanto o local do arquivo *.crx quanto a página de onde o download é feito (ou seja, o referenciador) precisam ser permitidos por esses padrões.
 
@@ -1130,13 +1130,13 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="3165808775394012744">Essas políticas estão incluídas aqui para facilitar a remoção delas.</translation>
 <translation id="316778957754360075">Esta configuração foi descontinuada a partir da versão 29 do <ph name="PRODUCT_NAME" />. O modo recomendado de configurar as coleções de extensões/aplicativos hospedados pela organização é incluir na hospedagem do site os pacotes CRX em ExtensionInstallSources e colocar links de download direto para os pacotes em uma página da Web. É possível criar um iniciador da página da Web usando a política ExtensionInstallForcelist.</translation>
 <translation id="3171369832001535378">Modelo de nome do host da rede do dispositivo</translation>
-<translation id="3172512016079904926">Permite a instalação de hosts de Mensagens nativas no nível do usuário.
+<translation id="3172512016079904926">Permite a instalação de hosts de mensagens nativas no nível do usuário.
 
-          Se esta configuração for ativada, o <ph name="PRODUCT_NAME" /> permitirá o uso de hosts de Mensagens nativas instalados no nível do usuário.
+          Se esta configuração for ativada, o <ph name="PRODUCT_NAME" /> permitirá o uso de hosts de mensagens nativas instalados no nível do usuário.
 
-          Se esta configuração for desativada, o <ph name="PRODUCT_NAME" /> só usará hosts de Mensagens nativas instalados no nível do sistema.
+          Se esta configuração for desativada, o <ph name="PRODUCT_NAME" /> só usará hosts de mensagens nativas instalados no nível do sistema.
 
-          Se esta configuração não for definida, o <ph name="PRODUCT_NAME" /> permitirá o uso de hosts de Mensagens nativas no nível do usuário.</translation>
+          Se esta configuração não for definida, o <ph name="PRODUCT_NAME" /> permitirá o uso de hosts de mensagens nativas no nível do usuário.</translation>
 <translation id="3185009703220253572">desde a versão <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Os apps Android não podem acessar chaves corporativas. Esta política não tem nenhum efeito sobre eles.</translation>
 <translation id="3201273385265130876">Permite que você especifique o servidor proxy usado pelo <ph name="PRODUCT_NAME" /> e impede que os usuários alterem as configurações de proxy.
@@ -1278,7 +1278,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
           Se estas configurações forem desativadas, os usuários não poderão salvar novas senhas, mas ainda poderão usar as senhas salvas anteriormente.
 
-          Se esta política estiver ativada ou desativada, os usuários não poderão alterá-la ou modificá-la no <ph name="PRODUCT_NAME" />. Se ela não for definida, os usuários poderão salvar senhas ou desativar essa função.</translation>
+          Se esta política estiver ativada ou desativada, os usuários não poderão alterá-la ou substituí-la no <ph name="PRODUCT_NAME" />. Se ela não for definida, os usuários poderão salvar senhas ou desativar essa função.</translation>
 <translation id="3496296378755072552">Gerenciador de senhas</translation>
 <translation id="3500732098526756068">Permite que você controle o acionamento do aviso de proteção de senha. A proteção de senha alerta os usuários quando eles reutilizam a senha protegida em sites possivelmente suspeitos.
 
@@ -1594,7 +1594,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
       Se esta política for definida, o <ph name="PRODUCT_OS_NAME" /> fará o download e usará a imagem do plano de fundo.
 
-      Se você definir esta política, os usuários não poderão alterá-la ou modificá-la.
+      Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
 
       Se a política não for definida, os usuários poderão escolher uma imagem para ser exibida na área de trabalho e na tela de login.</translation>
 <translation id="412697421478384751">Permitir que os usuários definam PINs fracos para a tela de bloqueio</translation>
@@ -1608,7 +1608,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
           Se esta configuração for desativada ou não for definida, a política padrão para o tipo de conexão será aplicada. Para assistência remota, isso permite que clientes de qualquer domínio se conectem ao host. Para acesso remoto a qualquer momento, apenas o dono do host pode se conectar.
 
-          Esta configuração modificará a RemoteAccessHostClientDomain, se ela estiver presente.
+          Esta configuração substituirá RemoteAccessHostClientDomain, se ela estiver presente.
 
           Veja também RemoteAccessHostDomainList.</translation>
 <translation id="4183229833636799228">Configuração padrão de <ph name="FLASH_PLUGIN_NAME" /></translation>
@@ -1796,7 +1796,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="4613508646038788144">Se a política for definida como falsa, o software de terceiros terá permissão para injetar um código executável nos processos do Chrome. Se a política não for definida ou for definida como verdadeira, o software de terceiros será impedido de injetar o código executável nos processos do Chrome.</translation>
 <translation id="4617338332148204752">Ignorar a verificação de metatags em <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configurar a lista branca de instalação de extensão</translation>
-<translation id="463224920692183755">Especifica a ação a ser tomada quando o diretório do usuário tiver sido criado com criptografia ecryptfs e precisar ser transicionado para criptografia ext4.
+<translation id="463224920692183755">Especifica a ação a ser tomada quando o diretório principal do usuário tiver sido criado com criptografia ecryptfs e precisar ser transicionado para criptografia ext4.
 
       Se esta política for definida como "DisallowArc", os apps Android serão desativados para o usuário, e não será realizada a migração da criptografia ecryptfs para ext4. Os apps Android não serão impedidos de funcionar quando o diretório principal já estiver com criptografia ext4.
 
@@ -1804,7 +1804,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
       Se esta política for definida como "Wipe", os diretórios principais com criptografia ecryptfs serão excluídos durante o login, e novos diretórios com criptografia ext4 serão criados no lugar. Aviso: isso remove os dados locais do usuário.
 
-      Se esta política for definida como "AskUser", usuários com diretórios principais com criptografia ecryptfs receberão a oferta de migração.
+      Se esta política for definida como "AskUser", usuários com diretórios principais com criptografia ecryptfs receberão a sugestão de migração.
 
       A política não se aplica a usuários de quiosque. Se esta política não for definida, o dispositivo agirá como se "DisallowArc" tivesse sido escolhida.</translation>
 <translation id="4632343302005518762">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> trabalhe com os tipos de conteúdo listados</translation>
@@ -2031,13 +2031,13 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="5236882091572996759">Se esta política for definida como verdadeira ou não for definida, o usuário não será considerado inativo enquanto o áudio estiver sendo reproduzido. Isso impede que o tempo limite de inatividade seja atingido e que as ações correspondentes sejam realizadas. No entanto, o escurecimento, o desligamento e o bloqueio da tela serão realizados após os limites de tempo configurados, independentemente da atividade de áudio.
 
           Se esta política for definida como falsa, a atividade de áudio não impedirá que o usuário seja considerado inativo.</translation>
-<translation id="5246700266104954355">O uso desta política foi suspenso. Use <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> para controlar a disponibilidade do plug-in Flash e <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> para controlar se o visualizador de PDF será usado para abrir arquivos PDF.
+<translation id="5246700266104954355">O uso desta política foi suspenso. Use <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> para controlar a disponibilidade do plug-in Flash e <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> para controlar se o visualizador de PDF integrado será usado para abrir arquivos PDF.
 
       Especifica uma lista de plug-ins que estão ativados no <ph name="PRODUCT_NAME" /> e impede os usuários de alterar essa configuração.
 
       Os caracteres curinga "*" e "?" podem ser usados para corresponder a sequências de caracteres arbitrários. "*" corresponde a um número arbitrário de caracteres, enquanto "?" especifica um único caractere opcional, ou seja, corresponde a um ou nenhum caractere. O caractere de escape é "\". Então, para corresponder de fato aos caracteres "*", "?" ou "\", adicione um "\" antes deles.
 
-      A lista especificada de plug-ins sempre é usada no <ph name="PRODUCT_NAME" /> se eles forem instalados. Os plug-ins são marcados como ativados em "about:plugins", e os usuários não podem desativá-los.
+      A lista especificada de plug-ins sempre será usada no <ph name="PRODUCT_NAME" /> se eles forem instalados. Os plug-ins são marcados como ativados em "about:plugins", e os usuários não podem desativá-los.
 
       Esta política substitui DisabledPlugins e DisabledPluginsExceptions.
 
@@ -2273,7 +2273,7 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
           Quando esta política não for definida, a ação padrão de suspender o dispositivo será tomada.
 
           Se a ação for de suspender, o <ph name="PRODUCT_OS_NAME" /> poderá ser configurado separadamente para bloquear ou não a tela antes da suspensão.</translation>
-<translation id="5618398258385745432">A configuração associada foi usada antes de a reautenticação na visualização de senhas ter sido introduzida. Desde então, a configuração e, consequentemente, esta política não têm efeito no comportamento do Chrome. O comportamento atual do Chrome agora é o mesmo que seria se a política tivesse sido definida para desativar a visualização de senhas em texto não criptografado na página de configurações do gerenciador de senhas. Isso quer dizer que a página de configurações contém apenas um marcador, e só depois do clique em "Mostrar" (e da reautenticação, se aplicável) o Chrome mostra a senha. A descrição original da política é a mostrada a seguir.
+<translation id="5618398258385745432">A configuração associada foi usada antes de a reautenticação na visualização de senhas ter sido introduzida. Desde então, a configuração e, consequentemente, esta política não têm efeito no comportamento do Chrome. O comportamento atual do Chrome agora é o mesmo que seria se a política tivesse sido definida para desativar a visualização de senhas em texto não criptografado na página de configurações do gerenciador de senhas. Isso quer dizer que a página de configurações contém apenas um marcador, e o Chrome só mostrará a senha depois que o usuário clicar em "Mostrar" (e reautenticar, se aplicável). A descrição original da política é a mostrada a seguir.
 
           Controla se o usuário pode exibir senhas em texto não criptografado no gerenciador de senhas.
 
@@ -2628,7 +2628,7 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
 <translation id="6449476513004303784">Não permitir que os usuários gerenciem certificados</translation>
 <translation id="645425387487868471">Ativar login forçado no <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Ativa o Preenchimento automático de endereços</translation>
-<translation id="6467613372414922590">Permitir hosts de Mensagens nativas no nível do usuário (instalados sem permissão do administrador)</translation>
+<translation id="6467613372414922590">Permitir hosts de mensagens nativas no nível do usuário (instalados sem permissão do administrador)</translation>
 <translation id="6468980648680553776">O uso desta política foi suspenso. Use RemoteAccessHostClientDomainList.</translation>
 <translation id="6473623140202114570">Configure a lista de domínios em que a política Safe Browsing não acionará avisos.</translation>
 <translation id="6488627892044759800">Configura o tipo de página inicial padrão no <ph name="PRODUCT_NAME" /> e evita que os usuários alterem as preferências de página inicial. A página inicial pode ser definida como um URL especificado por você ou como a página nova guia.
@@ -2643,11 +2643,11 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
 
           Esta política está disponível apenas em instâncias do Windows associadas a um domínio <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
 <translation id="6491139795995924304">Permitir o Bluetooth no dispositivo</translation>
-<translation id="6491872498385040936">O uso desta política foi suspenso. Recomendamos que você use <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" />, que modifica esta política e permite um ajuste mais refinado.
+<translation id="6491872498385040936">O uso desta política foi suspenso. Recomendamos que você use <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" />, que substitui esta política e permite um ajuste mais refinado.
 
 Força o Modo restrito moderado do YouTube e impede que os usuários alterem esta configuração.
 
-Se esta configuração estiver ativada, o Modo restrito do YouTube sempre será aplicado como, pelo menos, Moderado.
+Se esta configuração estiver ativada, o Modo restrito do YouTube sempre será aplicado como, pelo menos, moderado.
 
 Se esta configuração estiver desativada ou se nenhum valor for definido, o Modo restrito do YouTube não será aplicado pelo <ph name="PRODUCT_NAME" />. No entanto, as políticas externas, como as políticas do YouTube, ainda podem aplicar o Modo restrito.</translation>
 <translation id="6495328383950074966">Configura a lista de domínios confiáveis para o "Navegação segura". Isso significa que:
@@ -3385,13 +3385,13 @@ Se esta política não for definida, o renderizador padrão será usado para tod
 <translation id="793473937901685727">Definir a disponibilidade do certificado para apps ARC</translation>
 <translation id="7937766917976512374">Permitir ou negar captura de vídeo</translation>
 <translation id="7941975817681987555">Não prever ações da rede em nenhuma conexão de rede</translation>
-<translation id="7952958573604504839">Esta política está obsoleta no M48 e removida no M54. Em vez disso, use a <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" />.
+<translation id="7952958573604504839">Esta política foi substituída por <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" /> no M48 e removida no M54.
 
       Ativa a previsão de rede no <ph name="PRODUCT_NAME" /> e impede os usuários de alterar essa configuração.
 
       Isso controla não apenas a pré-busca de DNS, como também a pré-conexão TCP e SSL e a pré-renderização das páginas da Web. O nome da política se refere à pré-busca do DNS por motivos históricos.
 
-      Se você ativar ou desativar esta política, os usuários não poderão alterar ou modificar essa configuração no <ph name="PRODUCT_NAME" />.
+      Se você ativar ou desativar esta política, os usuários não poderão alterar ou substituir essa configuração no <ph name="PRODUCT_NAME" />.
 
 Se a política não for definida, a configuração ficará ativada, mas o usuário poderá alterá-la.</translation>
 <translation id="7953256619080733119">Hosts de exceção manual do usuário gerenciado</translation>
@@ -3430,16 +3430,16 @@ Se a política não for definida, a configuração ficará ativada, mas o usuár
 <translation id="8050080920415773384">Impressão nativa</translation>
 <translation id="8053580360728293758">Modifica o modo de cor de impressão padrão. Se o modo não estiver disponível, esta política será ignorada.</translation>
 <translation id="8059164285174960932">URL no qual clientes de acesso remoto devem receber seu token de autenticação</translation>
-<translation id="806280865577636339">Se esta política for definida como verdadeira, as opções de Acessibilidade sempre aparecerão no menu da bandeja do sistema.
+<translation id="806280865577636339">Se esta política for definida como verdadeira, as opções de acessibilidade sempre aparecerão no menu da bandeja do sistema.
 
-          Se esta política for definida como falsa, as opções de Acessibilidade nunca aparecerão no menu da bandeja do sistema.
+          Se esta política for definida como falsa, as opções de acessibilidade nunca aparecerão no menu da bandeja do sistema.
 
-          Se você definir esta política, os usuários não poderão alterá-la ou modificá-la.
+          Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
 
-          Se esta política não for definida, as opções de Acessibilidade não aparecerão no menu da bandeja do sistema, mas o usuário poderá fazer com que elas apareçam usando a página Configurações.</translation>
+          Se esta política não for definida, as opções de acessibilidade não aparecerão no menu da bandeja do sistema, mas o usuário poderá fazer com que elas apareçam usando a página "Configurações".</translation>
 <translation id="806523868782250975">Configura uma lista de favoritos gerenciados.
 
-      Esta política consiste em uma lista de favoritos em que cada favorito é um dicionário contendo as chaves "<ph name="NAME" />" e "<ph name="URL_LABEL" />", que definem o nome e o alvo do favorito. Uma subpasta pode ser configurada ao definir um favorito sem uma chave "<ph name="URL_LABEL" />", mas com uma chave "<ph name="CHILDREN" />" adicional, que contém uma lista de favoritos conforme definido acima (alguns deles podem ser pastas). O <ph name="PRODUCT_NAME" /> altera URLs incompletos como se eles tivessem sido enviados pela omnibox. Por exemplo, "<ph name="GOOGLE_COM" />" se torna "<ph name="HTTPS_GOOGLE_COM" />".
+      Esta política consiste em uma lista de favoritos em que cada um deles é um dicionário contendo as chaves "<ph name="NAME" />" e "<ph name="URL_LABEL" />", que definem o nome e o alvo do favorito. Uma subpasta pode ser configurada ao definir um favorito sem uma chave "<ph name="URL_LABEL" />", mas com uma chave "<ph name="CHILDREN" />" adicional, que contém uma lista de favoritos conforme definido acima (alguns deles podem ser pastas). O <ph name="PRODUCT_NAME" /> altera URLs incompletos como se eles tivessem sido enviados pela omnibox. Por exemplo, "<ph name="GOOGLE_COM" />" se torna "<ph name="HTTPS_GOOGLE_COM" />".
 
 Esses favoritos são colocados em uma pasta que não pode ser modificada pelo usuário, mas que pode ser ocultada da barra de favoritos. Por padrão, o nome da pasta é "Favoritos gerenciados", mas ele pode ser personalizado ao adicionar à lista de favoritos um dicionário contendo a chave "<ph name="TOPLEVEL_NAME" />", com o nome desejado como valor.
 
@@ -3926,7 +3926,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 
       Se esta política for definida, o <ph name="PRODUCT_OS_NAME" /> fará o download e usará a imagem de avatar.
 
-      Se você definir esta política, os usuários não poderão alterá-la ou modificá-la.
+      Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
 
       Se a política não for definida, o usuário poderá escolher a imagem de avatar que o representará na tela de login.</translation>
 <translation id="9035964157729712237">IDs de extensão que serão isentos da lista de proibições</translation>
@@ -3934,7 +3934,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 
       Quando esta política não for definida, o tempo da sessão não será limitado.
 
-      Se você definir esta política, os usuários não poderão alterá-la ou modificá-la.
+      Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
 
       O valor da política precisa ser especificado em milissegundos. Os valores são ajustados a um intervalo entre 30 segundos e 24 horas.</translation>
 <translation id="9042911395677044526">Permite aplicar a configuração de rede por usuário de dispositivo <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma string formatada em JSON, conforme definido pelo formato Open Network Configuration descrito em <ph name="ONC_SPEC_URL" /></translation>
@@ -3950,13 +3950,13 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 
       OBSERVAÇÃO: esta política não se aplica ao Android. Para ativar IsolateOrigins no Android, use a configuração da política IsolateOriginsAndroid.
       </translation>
-<translation id="9072600218500597787">Configura os nomes de domínio hospedados necessários que serão impostos em hosts de acesso remoto e impede que os usuários façam alterações.
+<translation id="9072600218500597787">Configura os nomes de domínio de host necessários que serão impostos em hosts de acesso remoto e impede que os usuários façam alterações.
 
           Se esta configuração for ativada, os hosts poderão ser compartilhados apenas por meio de contas registradas em um dos nomes de domínio especificados.
 
           Se esta configuração for desativada ou não for definida, os hosts poderão ser compartilhados por qualquer conta.
 
-          Esta configuração modificará a política RemoteAccessHostDomain, se ela estiver presente.
+          Esta configuração substituirá a política RemoteAccessHostDomain, se ela estiver presente.
 
           Veja também RemoteAccessHostClientDomainList.</translation>
 <translation id="9077227880520270584">Timer do login automático da conta local do dispositivo</translation>

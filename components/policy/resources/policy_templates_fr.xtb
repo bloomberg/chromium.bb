@@ -265,7 +265,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Cette règle peut être ignorée par EnabledPlugins et DisabledPluginsExceptions.
 
-      Si cette règle n'est pas configurée, l'utilisateur peut utiliser n'importe quel plug-in installé sur le système, à l'exception des plug-ins codés en dur incompatibles, et des plug-ins périmés ou dangereux.</translation>
+      Si cette règle n'est pas configurée, l'utilisateur peut utiliser n'importe quel plug-in installé sur le système, à l'exception des plug-ins codés en dur incompatibles, et des plug-ins obsolètes ou dangereux.</translation>
 <translation id="1464848559468748897">Contrôle le comportement des utilisateurs dans une session multiprofil sur des appareils <ph name="PRODUCT_OS_NAME" />.
 
      Si cette règle est définie sur "MultiProfileUserBehaviorUnrestricted", l'utilisateur peut être utilisateur principal ou secondaire dans une session multiprofil.
@@ -1102,7 +1102,7 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
 
           Cette règle fournit une valeur de secours pour les règles <ph name="IDLE_ACTION_AC_POLICY_NAME" /> et <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" />, qui sont plus spécifiques. Si cette règle est définie, sa valeur est utilisée si la règle correspondante plus spécifique n'est pas définie.
 
-          Si cette règle est n'est pas définie, le comportement des règles plus spécifiques n'est pas modifié.</translation>
+          Si cette règle n'est pas définie, le comportement des règles plus spécifiques n'est pas modifié.</translation>
 <translation id="2987155890997901449">Activer ARC</translation>
 <translation id="2987227569419001736">Contrôler l'utilisation de l'API Web Bluetooth</translation>
 <translation id="3016255526521614822">Les applications de prise de note ajoutées à la liste blanche sont autorisées sur l'écran de verrouillage de <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1345,7 +1345,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="350797926066071931">Activer Google Traduction</translation>
 <translation id="3512226956150568738">Si le modèle de l'appareil client était déjà compatible avec ARC avant que la migration vers ext4 soit nécessaire pour exécuter ARC, et si la règle "ArcEnabled" est définie sur "true", cette option se comportera comme "AskUser" (valeur 3). Dans tous les autres cas (si le modèle de l'appareil n'était pas compatible avec ARC auparavant, ou si la règle "ArcEnabled" est définie sur "false"), cette valeur est équivalente à "DisallowArc" (valeur 0).</translation>
-<translation id="3513655665999652754">Quirks Server fournit les fichiers de configuration propres au matériel tels que les profils d'affichage ICC pour régler la calibration du moniteur.
+<translation id="3513655665999652754">Quirks Server fournit les fichiers de configuration propres au matériel tels que les profils d'affichage ICC pour régler le calibrage du moniteur.
 
       Si cette règle est définie sur "False", l'appareil n'essaiera pas de contacter Quirks Server pour télécharger les fichiers de configuration.
 
@@ -1378,9 +1378,9 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       </translation>
 <translation id="3627678165642179114">Activer ou désactiver le service Web de correction orthographique</translation>
 <translation id="3628480121685794414">Activer l'impression recto</translation>
-<translation id="3631099945620529777">Si cette règle est définie sur "false", le bouton "Arrêter le processus" est désactivé dans le gestionnaire des tâches.
+<translation id="3631099945620529777">Si cette règle est définie sur "false", le bouton "Arrêter le processus" est désactivé dans le gestionnaire de tâches.
 
-      Si cette règle est définie sur "true" ou si elle n'est pas configurée, l'utilisateur peut mettre fin à des processus dans le gestionnaire des tâches.</translation>
+      Si cette règle est définie sur "true" ou si elle n'est pas configurée, l'utilisateur peut mettre fin à des processus dans le gestionnaire de tâches.</translation>
 <translation id="3646859102161347133">Définir le type de loupe</translation>
 <translation id="3653237928288822292">Icône du moteur de recherche par défaut</translation>
 <translation id="3660510274595679517">
@@ -1625,7 +1625,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
                       La valeur de cette règle doit être indiquée en millisecondes.</translation>
 <translation id="4105989332710272578">Désactiver l'application des règles de transparence des certificats pour une liste d'URL</translation>
 <translation id="4121350739760194865">Empêcher les promotions pour des applications de s'afficher sur la page Nouvel onglet</translation>
-<translation id="4125606414556046117">Cette règle vous permet de configurer l'image de fond d'écran qui s'affiche sur le bureau et en arrière-plan sur l'écran de connexion de l'utilisateur. Pour la configurer, vous devez indiquer l'URL depuis laquelle<ph name="PRODUCT_OS_NAME" /> peut télécharger l'image de fond d'écran et un hachage chiffré utilisé pour vérifier l'intégrité du téléchargement. L'image doit être au format JPEG, et sa taille ne doit pas dépasser 16 Mo. L'URL doit être accessible sans authentification.
+<translation id="4125606414556046117">Cette règle vous permet de configurer l'image de fond d'écran qui s'affiche sur le bureau et en arrière-plan sur l'écran de connexion de l'utilisateur. Pour la configurer, vous devez indiquer l'URL depuis laquelle <ph name="PRODUCT_OS_NAME" /> peut télécharger l'image de fond d'écran et un hachage chiffré utilisé pour vérifier l'intégrité du téléchargement. L'image doit être au format JPEG, et sa taille ne doit pas dépasser 16 Mo. L'URL doit être accessible sans authentification.
 
       L'image de fond d'écran est téléchargée et mise en cache. Elle sera de nouveau téléchargée à chaque modification de l'URL ou du hachage.
 
@@ -1761,7 +1761,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="4408428864159735559">Liste de partages de fichiers sur le réseau préconfigurés.</translation>
 <translation id="4410236409016356088">Activer la limitation de la bande passante réseau</translation>
 <translation id="441217499641439905">Désactiver Google Drive en cas de connexion au réseau mobile dans l'application "Fichiers" de <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="4415603335307944578">Si cette règle est définie sur "True" ou n'est pas définie, le navigateur affiche la page de bienvenue à chaque premier lancement suivant une mise à jour de l'OS.
+<translation id="4415603335307944578">Si cette règle est définie sur "True" ou n'est pas configurée, le navigateur affiche la page de bienvenue à chaque premier lancement suivant une mise à jour de l'OS.
 
       Si cette règle est définie sur "False", le navigateur n'affiche pas la page de bienvenue à chaque premier lancement suivant une mise à jour de l'OS.</translation>
 <translation id="4418726081189202489">Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> cesse d'envoyer occasionnellement des requêtes à un serveur Google en vue d'obtenir un horodatage précis. En revanche, si elle est définie sur "True" ou si elle n'est pas définie, ces requêtes pourront être envoyées.</translation>
@@ -2264,7 +2264,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Si vous activez ce paramètre, la liste des plug-ins spécifiée peut être utilisée dans <ph name="PRODUCT_NAME" />. Les utilisateurs peuvent activer ou désactiver ces plug-ins dans "about:plugins', même s'ils correspondent à un format dans DisabledPlugins. Les utilisateurs peuvent aussi activer et désactiver des plug-ins qui ne correspondent à aucun format dans DisabledPlugins, DisabledPluginsExceptions et EnabledPlugins.
 
-      Cette règle permet à l'administrateur de définir des exceptions pour les plug-ins répertoriés dans la liste "DisabledPlugins" lorsque les entrées correspondantes contiennent des caractères génériques (par exemple, "*" qui permet de désactiver tous les plug-ins ou "*Java*" qui permet de désactiver tous les plug-ins Java). Si l'administrateur souhaite activer des versions spécifiques de ces plug-ins ("IcedTea Java 2.3", par exemple), cette règle le permet. Cette version peut être spécifiée dans cette règle.
+      Cette règle permet à l'administrateur de définir des exceptions pour les plug-ins répertoriés dans la liste noire "DisabledPlugins" lorsque les entrées correspondantes contiennent des caractères génériques (par exemple, "*" qui permet de désactiver tous les plug-ins ou "*Java*" qui permet de désactiver tous les plug-ins Java). Si l'administrateur souhaite activer des versions spécifiques de ces plug-ins ("IcedTea Java 2.3", par exemple), cette règle le permet. Cette version peut être spécifiée dans cette règle.
 
       Sachez que l'exclusion doit viser à la fois le nom du plug-in et son nom de groupe. Chaque groupe de plug-ins s'affiche dans une section séparée dans "about:plugins", et chaque section peut contenir un plug-in ou plus. Par exemple, le plug-in "Shockwave Flash" fait partie du groupe "Adobe Flash Player". Ces deux noms doivent donc être indiqués dans la liste d'exceptions pour que le plug-in soit exclu de la liste noire.
 
@@ -2304,7 +2304,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Si elle n'est pas spécifiée, l'URL utilisée pour récupérer la valeur de départ des variantes n'est pas modifiée.</translation>
 <translation id="5561811616825571914">Sélectionner automatiquement des certificats client pour ces sites sur l'écran de connexion</translation>
 <translation id="5566210228171064229">Autoriser l'impression avec et sans code</translation>
-<translation id="556865034069957245">Cette règle permet de contrôler la disponibilité du mode plein écran dans lequel l'interface utilisateur <ph name="PRODUCT_NAME" /> est masquée, et seul le contenu Web est visible.
+<translation id="556865034069957245">Cette règle permet de contrôler la disponibilité du mode plein écran dans lequel l'interface utilisateur de <ph name="PRODUCT_NAME" /> est masquée, et seul le contenu Web est visible.
 
       Si cette règle est définie sur "True", ou si elle n'est pas configurée, l'utilisateur, les applications et les extensions avec les autorisations adéquates peuvent utiliser le mode plein écran.
 
@@ -2603,7 +2603,7 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 <translation id="6111936128861357925">Autoriser le jeu Easter Egg du dinosaure</translation>
 <translation id="6114416803310251055">obsolète</translation>
 <translation id="6133088669883929098">Autoriser tous les sites à utiliser la génération de clé</translation>
-<translation id="6141402445226505817">Toujours utiliser une détection de fuseau horaire non affinée</translation>
+<translation id="6141402445226505817">Toujours utiliser une détection de fuseau horaire standard</translation>
 <translation id="6145799962557135888">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à exécuter JavaScript. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultJavaScriptSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
@@ -3531,7 +3531,7 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="798856998567564266">Si vous activez ce paramètre, il est possible d'ajouter, de supprimer ou de modifier des favoris. Ceci constitue l'option par défaut lorsque cette règle n'est pas définie.
 
-      Si vous désactivez ce paramètre, il est impossible d'ajouter, de supprimer ni de modifier des favoris. Les favoris existants restent disponibles.</translation>
+      Si vous désactivez ce paramètre, il est impossible d'ajouter, de supprimer ou de modifier des favoris. Les favoris existants restent disponibles.</translation>
 <translation id="7992136759457836904">Permet de définir si votre appareil Chrome OS peut exécuter ou non des machines virtuelles.
 
       Si cette règle est définie sur True, l'appareil est autorisé à exécuter des machines virtuelles.
@@ -3567,9 +3567,9 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
           Si vous ne définissez pas cette règle, les options d'accessibilité ne s'affichent pas dans le menu de la barre d'état système, mais l'utilisateur peut activer leur affichage via la page "Paramètres".</translation>
 <translation id="806523868782250975">Configure une liste de favoris gérés.
 
-      La règle se compose d'une liste de favoris, et chaque favori est un dictionnaire comprenant les clés "<ph name="NAME" />" et "<ph name="URL_LABEL" />" qui contiennent le nom du favori et son URL cible. Un sous-dossier peut également être configuré en définissant un favori sans clé "<ph name="URL_LABEL" />", mais avec une clé "<ph name="CHILDREN" />" supplémentaire qui contient elle-même une liste de favoris, comme défini ci-dessus (certains peuvent de nouveau être des dossiers). <ph name="PRODUCT_NAME" /> modifie les URL incomplètes comme si elles avaient été envoyées via l'omnibox. Par exemple, "<ph name="GOOGLE_COM" />" devient "<ph name="HTTPS_GOOGLE_COM" />".
+      Cette règle se compose d'une liste de favoris, et chaque favori est un dictionnaire comprenant les clés "<ph name="NAME" />" et "<ph name="URL_LABEL" />" qui contiennent le nom du favori et son URL cible. Vous pouvez également configurer un sous-dossier en définissant un favori sans clé "<ph name="URL_LABEL" />", mais avec une clé "<ph name="CHILDREN" />" supplémentaire qui contient elle-même une liste de favoris, comme défini ci-dessus (certains peuvent de nouveau être des dossiers). <ph name="PRODUCT_NAME" /> modifie les URL incomplètes comme si elles avaient été envoyées via l'omnibox. Par exemple, "<ph name="GOOGLE_COM" />" devient "<ph name="HTTPS_GOOGLE_COM" />".
 
-Ces favoris sont placés dans un dossier qui ne peut pas être modifié par l'utilisateur. Ce dernier peut toutefois choisir de le masquer dans la barre des favoris. Le nom du dossier par défaut est "Favoris gérés", mais il peut être personnalisé en ajoutant à la liste des favoris un dictionnaire contenant la clé "<ph name="TOPLEVEL_NAME" />" avec le nom de dossier souhaité pour valeur.
+Ces favoris sont placés dans un dossier qui ne peut pas être modifié par l'utilisateur. Ce dernier peut toutefois choisir de le masquer dans la barre des favoris. Le nom du dossier par défaut est "Favoris gérés", mais il peut être personnalisé en ajoutant à la liste des favoris un dictionnaire contenant la clé "<ph name="TOPLEVEL_NAME" />" avec le nom de dossier souhaité comme valeur.
 
       Les favoris gérés ne sont pas synchronisés avec le compte de l'utilisateur et ne peuvent pas être modifiés par des extensions.</translation>
 <translation id="8078366200175825572">Permet de définir une liste de formats d'URL spécifiant les sites non autorisés à utiliser des cookies.
@@ -3636,7 +3636,7 @@ Ces favoris sont placés dans un dossier qui ne peut pas être modifié par l'ut
 <translation id="8158758865057576716">Permet de créer des copies itinérantes pour les données de profil <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8172676363520748127">En cas d'activation de cette règle, il n'est pas possible d'utiliser des raccourcis clavier ou des API d'extension pour effectuer des captures d'écran.
 
-      En cas de désactivation ou de non-configuration de cette règle, les captures d'écran sont autorisées.</translation>
+      Si cette règle est désactivée ou si elle n'est pas configurée, les captures d'écran sont autorisées.</translation>
 <translation id="817455428376641507">Permet d'accéder aux URL répertoriées comme des exceptions à la liste noire des URL.
 
       Consultez la description des règles de liste noire d'URL pour connaître le format des entrées de cette liste.
@@ -3737,9 +3737,9 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
       Pour en savoir plus sur la priorité des règles, consultez la page https://support.google.com/chrome?p=set_chrome_policies_for_devices.
 
       Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
-<translation id="8380490658357556620">Permet l'utilisation de serveurs de relais lorsque les clients distants tentent d'établir une connexion avec ce poste.
+<translation id="8380490658357556620">Permet l'utilisation de serveurs relais lorsque les clients distants tentent d'établir une connexion avec ce poste.
 
-          Si ce paramètre est activé, les clients distants peuvent utiliser des serveurs de relais pour se connecter à ce poste lorsqu'aucune connexion directe n'est disponible (par exemple, en raison de restrictions du pare-feu).
+          Si ce paramètre est activé, les clients distants peuvent utiliser des serveurs relais pour se connecter à ce poste lorsque aucune connexion directe n'est disponible (par exemple, en raison de restrictions du pare-feu).
 
           Notez que si la règle <ph name="REMOTE_ACCESS_HOST_FIREWALL_TRAVERSAL_POLICY_NAME" /> est désactivée, cette règle est ignorée.
 

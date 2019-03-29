@@ -126,7 +126,7 @@
 <translation id="19288952978244135">Chrome'u yeniden açın.</translation>
 <translation id="1933845786846280168">Seçili Sekme</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda Chrome için izni açın.</translation>
-<translation id="1943432128510653496">Şifreleri kaydetme</translation>
+<translation id="1943432128510653496">Şifreleri kaydet</translation>
 <translation id="1946005195648379376">Google'ın, Arama ve diğer Google hizmetlerini kişiselleştirmek için tarama geçmişinizi nasıl kullanacağını kontrol edin.</translation>
 <translation id="1952172573699511566">Web siteleri, mümkün olduğunda metni tercih ettiğiniz dilde gösterir.</translation>
 <translation id="1960290143419248813">Chrome güncellemeleri Android'in bu sürümü için artık desteklenmiyor</translation>
@@ -151,7 +151,7 @@
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB diğer uygulamalar</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">Site duraklatıldı</translation>
-<translation id="2063713494490388661">Aramak İçin Hafifçe Dokunma</translation>
+<translation id="2063713494490388661">Dokun ve Ara</translation>
 <translation id="2079545284768500474">Geri al</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> sonuçtan <ph name="RESULT_NUMBER" /> numaralı sonuç</translation>
 <translation id="2086652334978798447">Google tarafından önerilen kişiselleştirilmiş içeriği almak için Chrome'da oturum açın.</translation>
@@ -376,7 +376,7 @@
 <translation id="3814315701645566481"><ph name="URL" /> ile ilgili verileri silmek ister misiniz?</translation>
 <translation id="3819178904835489326">İndirilen <ph name="NUMBER_OF_DOWNLOADS" /> dosya silindi</translation>
 <translation id="3819562311292413223">Sizin için seçilmiş makaleleri indirin</translation>
-<translation id="3822502789641063741">Site depo. silinsin mi?</translation>
+<translation id="3822502789641063741">Site depolama silinsin mi?</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="3859306556332390985">İleriye doğru git</translation>
 <translation id="3894427358181296146">Klasör ekleyin</translation>
@@ -437,7 +437,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4262028915562328938">Senkronizasyon hatası oluştu, ayrıntıları görmek için dokunun.</translation>
 <translation id="4269820728363426813">Bağlantı adresini kopyala</translation>
 <translation id="4275663329226226506">Medya</translation>
-<translation id="4278390842282768270">İzin verildi</translation>
+<translation id="4278390842282768270">İzin verilen</translation>
 <translation id="429312253194641664">Bir site medya oynatıyor</translation>
 <translation id="4298388696830689168">Bağlantılı siteler</translation>
 <translation id="4307992518367153382">Temel Bilgiler</translation>
@@ -778,7 +778,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="666981079809192359">Chrome Gizlilik Uyarısı</translation>
 <translation id="6697492270171225480">Bir sayfa bulunamadığında benzer sayfalar için önerileri göster</translation>
 <translation id="6697947395630195233">Konumunuzu bu siteyle paylaşabilmek için Chrome'un konum bilgilerinize erişmesi gerekiyor.</translation>
-<translation id="6698801883190606802">Senkronize edilen verileri yönetme</translation>
+<translation id="6698801883190606802">Senkronize edilen verileri yönet</translation>
 <translation id="6699370405921460408">Google sunucuları ziyaret ettiğiniz sayfaları optimize eder.</translation>
 <translation id="6709133671862442373">Haberler</translation>
 <translation id="6710213216561001401">Önceki</translation>
@@ -839,7 +839,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7077143737582773186">SD kart</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> öğe seçildi. Seçenekler, ekranın üst kısmına yakın bir yerde bulunur</translation>
 <translation id="7121362699166175603">Geçmişi ve adres çubuğundaki otomatik tamamlamaları temizler. Google Hesabınızın <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> adresinde başka biçimlerde tarama geçmişi olabilir.</translation>
-<translation id="7128222689758636196">Geçerli arama motoruna izin verin</translation>
+<translation id="7128222689758636196">Geçerli arama motoruna izin ver</translation>
 <translation id="7138678301420049075">Diğer</translation>
 <translation id="7139148793369023665">Bunun gibi daha fazlası sayfası kapatıldı</translation>
 <translation id="7141896414559753902">Sitelerin pop-up göstermesini ve yönlendirme yapmasını engelle (önerilir)</translation>
@@ -863,7 +863,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7333031090786104871">Önceki siteyi ekleme işlemi devam ediyor.</translation>
 <translation id="7352939065658542140">VİDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 seçili öğeyi paylaş}other{# seçili öğeyi paylaş}}</translation>
-<translation id="7359002509206457351">Ödeme yöntemlerine erişme</translation>
+<translation id="7359002509206457351">Ödeme yöntemlerine erişim</translation>
 <translation id="7375125077091615385">Tür:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -900,7 +900,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="756809126120519699">Chrome verileri temizlendi</translation>
 <translation id="757524316907819857">Sitelerin korumalı içeriği oynatmasını engellenir</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> dosya indirildi}other{<ph name="FILES_DOWNLOADED_MANY" /> dosya indirildi}}</translation>
-<translation id="7589445247086920869">Geçerli arama motoru için engelleyin</translation>
+<translation id="7589445247086920869">Geçerli arama motorunu engelle</translation>
 <translation id="7593557518625677601">Chrome Senkronizasyonu'nu başlatmak için Android ayarlarını açın ve Android sistem senkronizasyonunu yeniden etkinleştirin</translation>
 <translation id="7596558890252710462">İşletim sistemi</translation>
 <translation id="7605594153474022051">Senkronizasyon çalışmıyor</translation>
@@ -1014,7 +1014,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="8443209985646068659">Chrome güncellenemiyor</translation>
 <translation id="8445448999790540984">Şifreler dışa aktarılamıyor</translation>
 <translation id="8447861592752582886">Cihaz iznini iptal et</translation>
-<translation id="8461694314515752532">Senkronize edilen verileri kendi senkronizasyon parolanızla şifreleyin</translation>
+<translation id="8461694314515752532">Senkronize edilen verileri senkronizasyon parolanızı kullanarak şifrele</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Çevrimdışı kullanılabilir</translation>
 <translation id="8489271220582375723">Geçmiş sayfasını açar</translation>
@@ -1116,7 +1116,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="9219103736887031265">Resimler</translation>
 <translation id="926205370408745186">Chrome etkinliğinizi Dijital Denge'den kaldırma</translation>
 <translation id="932327136139879170">Ana Sayfa</translation>
-<translation id="932599481871055447">Verileri kaydedin ve daha hızlı göz atın</translation>
+<translation id="932599481871055447">Veri tasarrufuyla daha hızlı tarama deneyimi</translation>
 <translation id="938850635132480979">Hata: <ph name="ERROR_CODE" /></translation>
 <translation id="945522503751344254">Geri bildirim gönder</translation>
 <translation id="945632385593298557">Mikrofonunuza erişim</translation>

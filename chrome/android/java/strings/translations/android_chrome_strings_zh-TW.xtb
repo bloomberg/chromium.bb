@@ -103,7 +103,7 @@
 <translation id="1736419249208073774">探索</translation>
 <translation id="1743802530341753419">允許網站連線至裝置前，必須先詢問你 (建議)</translation>
 <translation id="1749561566933687563">同步處理您的書籤</translation>
-<translation id="17513872634828108">開啟分頁</translation>
+<translation id="17513872634828108">開啟的分頁</translation>
 <translation id="1779089405699405702">影像解碼器</translation>
 <translation id="1782483593938241562">結束日期：<ph name="DATE" /></translation>
 <translation id="1791662854739702043">安裝位置</translation>
@@ -182,7 +182,7 @@
 <translation id="230115972905494466">找不到相容的裝置</translation>
 <translation id="2315043854645842844">作業系統不允許您在用戶端選取憑證。</translation>
 <translation id="2321086116217818302">正在準備匯出密碼…</translation>
-<translation id="2321958826496381788">拖曳滑桿，將文字調整到您可以舒適閱讀的大小。當您輕觸兩下文字段落，文字至少應呈現這樣的大小。</translation>
+<translation id="2321958826496381788">拖曳滑桿，將文字調整到適當的字體大小。當你輕觸兩下文字段落時，瀏覽器至少應呈現這樣的字體大小。</translation>
 <translation id="2323763861024343754">網站儲存資料量</translation>
 <translation id="2328985652426384049">無法登入</translation>
 <translation id="2342981853652716282">無論使用任何裝置，只要登入 Chrome，即可取得你的書籤、密碼，並沿用其他設定。</translation>
@@ -276,7 +276,7 @@
 <translation id="2989523299700148168">最近造訪過</translation>
 <translation id="2996291259634659425">建立通關密語</translation>
 <translation id="2996809686854298943">必須要有網址</translation>
-<translation id="300526633675317032">這會將網站儲存的 <ph name="SIZE_IN_KB" /> 的資料全部清除。</translation>
+<translation id="300526633675317032">這會將網站儲存的資料全部清除 (共 <ph name="SIZE_IN_KB" />)。</translation>
 <translation id="3029613699374795922">已下載 <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">通關密語不符</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />取得說明<ph name="END_LINK" /></translation>
@@ -351,7 +351,7 @@
 <translation id="3599863153486145794">將歷史記錄從所有登入帳戶的裝置上清除。你的 Google 帳戶可能會儲存其他形式的瀏覽記錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
 <translation id="3600792891314830896">將播放音訊的網站設為靜音</translation>
 <translation id="3616113530831147358">音訊</translation>
-<translation id="3620176948598597475">重設會清除 Data Saver 的記錄，包含造訪過的網站清單。</translation>
+<translation id="3620176948598597475">重設之後，瀏覽器會清除 Data Saver 的記錄，包含造訪過的網站清單。</translation>
 <translation id="3630011985153972676">允許 Chrome 透過 Wi-Fi 連線為你下載文章 (可自行啟用這項設定)。</translation>
 <translation id="3632295766818638029">取消密碼遮罩</translation>
 <translation id="363596933471559332">自動使用已儲存的憑證登入網站。如果關閉這項功能，每次在您登入網站之前，網站一律會要求驗證。</translation>
@@ -537,7 +537,7 @@
 <translation id="4961700429721424617">您即將登出由 <ph name="MANAGED_DOMAIN" /> 所管理的帳戶。系統會將您的 Chrome 資料從這個裝置上刪除，但繼續保留在您的 Google 帳戶中。</translation>
 <translation id="497421865427891073">往前</translation>
 <translation id="4988210275050210843">正在下載檔案 (<ph name="MEGABYTES" /> MB)。</translation>
-<translation id="4988526792673242964">頁數</translation>
+<translation id="4988526792673242964">網頁</translation>
 <translation id="4994033804516042629">找不到任何聯絡人</translation>
 <translation id="4996978546172906250">分享方式：</translation>
 <translation id="5004416275253351869">Google 活動控制項</translation>
@@ -794,7 +794,7 @@
 <translation id="6803423358608456383">已在畫面下半部顯示「開啟的分頁」工作表</translation>
 <translation id="6811034713472274749">你可以瀏覽這個網頁了</translation>
 <translation id="6818926723028410516">選取項目</translation>
-<translation id="6820607729870073286">您沒有已儲存的網站設定。</translation>
+<translation id="6820607729870073286">你並未儲存任何網站設定。</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">翻譯</translation>
 <translation id="6846298663435243399">載入中…</translation>

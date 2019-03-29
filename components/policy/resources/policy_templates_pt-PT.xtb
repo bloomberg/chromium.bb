@@ -191,11 +191,11 @@
       Se esta política não for definida, será utilizado o comportamento predefinido de não permitir qualquer união de ligações HTTP/2 para ligações que utilizam certificados de cliente.</translation>
 <translation id="1353966721814789986">Páginas de arranque</translation>
 <translation id="1354424209129232709">Máximo:</translation>
-<translation id="1354452738176731363">Quando esta política está definida como falsa, a saída de áudio não está disponível no dispositivo enquanto o utilizador tiver sessão iniciada.
+<translation id="1354452738176731363">Quando esta política está definida como Falsa, a saída de áudio não está disponível no dispositivo enquanto o utilizador tiver sessão iniciada.
 
       Esta política afeta todos os tipos de saída de áudio e não apenas os altifalantes integrados. As funcionalidades de acessibilidade de áudio também são inibidas por esta política. Não ative esta política se o utilizador necessitar de um leitor de ecrã.
 
-      Se esta opção estiver definida como verdadeira ou não estiver configurada, os utilizadores podem utilizar todas as saídas de áudio suportadas no respetivo dispositivo.</translation>
+      Se esta opção estiver definida como Verdadeira ou não estiver configurada, os utilizadores podem utilizar todas as saídas de áudio suportadas no respetivo dispositivo.</translation>
 <translation id="1359553908012294236">Se esta política for definida como verdadeira ou não for configurada, o <ph name="PRODUCT_NAME" /> permite inícios de sessão de convidados. Os inícios de sessão de convidados são perfis do <ph name="PRODUCT_NAME" /> em que todas as janelas estão no modo de navegação anónima.
 
       Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não permite que os perfis de convidado sejam iniciados.</translation>
@@ -264,7 +264,7 @@
 
       É possível utilizar os carateres universais "*" e "?" para fazer corresponder sequências de carateres arbitrários. "*" corresponde a um número arbitrário de carateres, ao passo que "?" indica um caráter único opcional, ou seja, corresponde aos carateres zero ou um. O caráter de escape é "\", pelo que, para corresponder aos carateres reais "*", "?" ou "\", pode colocar um "\" à frente dos mesmos.
 
-      Se ativar esta definição, a lista especificada de plug-ins nunca é utilizada no <ph name="PRODUCT_NAME" />. Os plug-ins estão marcados como desativados em "about:plugins" e os utilizadores não os podem ativar.
+      Se ativar esta definição, a lista especificada de plug-ins nunca é utilizada no <ph name="PRODUCT_NAME" />. Os plug-ins são marcados como desativados em "about:plugins" e os utilizadores não os podem ativar.
 
       Tenha em atenção que esta política pode ser substituída por EnabledPlugins e DisabledPluginsExceptions.
 
@@ -692,7 +692,7 @@
 
       Se esta definição for desativada ou não for definida, poderá permitir que as páginas Web utilizem a API WebGL e os plug-ins utilizem a API Pepper 3D. Consoante as predefinições do navegador, poderá ainda ser necessária a transmissão de argumentos de linhas de comando para utilizar estas APIs.
 
-      Se a política HardwareAccelerationModeEnabled estiver definida como falsa, a política Disable3DAPIs é ignorada e é equivalente à definição da política Disable3DAPIs como verdadeira.</translation>
+      Se a política HardwareAccelerationModeEnabled estiver definida como Falsa, a política Disable3DAPIs é ignorada e é equivalente à definição da política Disable3DAPIs como Verdadeira.</translation>
 <translation id="2258126710006312594">Permitir que os utilizadores de acesso remoto transfiram ficheiros de/para o anfitrião</translation>
 <translation id="2265214338421787313">Esta política permite a um administrador especificar que uma página pode mostrar pop-ups durante o descarregamento.
 
@@ -855,9 +855,9 @@
 <translation id="257788512393330403">A introdução da palavra-passe é obrigatória a cada seis horas</translation>
 <translation id="2587719089023392205">Definir o <ph name="PRODUCT_NAME" /> como o Navegador predefinido</translation>
 <translation id="2592091433672667839">Período de inatividade antes de a proteção de ecrã ser apresentada no ecrã de início de sessão no modo de retalho</translation>
-<translation id="2592162121850992309">Se esta política estiver definida como verdadeira ou não estiver definida, a aceleração de hardware é ativada, a menos que alguma funcionalidade da GPU seja adicionada à lista negra.
+<translation id="2592162121850992309">Se esta política estiver definida como Verdadeira ou não estiver definida, a aceleração de hardware é ativada, a menos que alguma funcionalidade da GPU seja adicionada à lista negra.
 
-      Se esta política estiver definida como falsa, a aceleração de hardware é desativada.</translation>
+      Se esta política estiver definida como Falsa, a aceleração de hardware é desativada.</translation>
 <translation id="2596260130957832043">Controla se o NTLMv2 está ativado.
 
           Todas as versões recentes dos servidores Samba e Windows são compatíveis com o NTLMv2. Só deve ser desativado para retrocompatibilidade e reduz a segurança da autenticação.
@@ -908,7 +908,7 @@
 <translation id="268577405881275241">Ativar a funcionalidade proxy de compressão de dados</translation>
 <translation id="2693108589792503178">Configure o URL de alteração da palavra-passe.</translation>
 <translation id="2706708761587205154">Permitir impressão apenas com PIN</translation>
-<translation id="2710534340210290498">Se esta política estiver definida como falsa, os utilizadores não podem bloquear o ecrã (apenas será possível terminar a sessão de utilizador). Se esta política estiver definida como verdadeira ou não estiver definida, os utilizadores que efetuaram a autenticação com uma palavra-passe podem bloquear o ecrã.</translation>
+<translation id="2710534340210290498">Se esta política estiver definida como Falsa, os utilizadores não podem bloquear o ecrã (apenas será possível terminar a sessão de utilizador). Se esta política estiver definida como Verdadeira ou não estiver definida, os utilizadores que efetuaram a autenticação com uma palavra-passe podem bloquear o ecrã.</translation>
 <translation id="2731627323327011390">Desativar a utilização de certificados do <ph name="PRODUCT_OS_NAME" /> em aplicações ARC</translation>
 <translation id="2742843273354638707">Oculta a aplicação da Web Store do Chrome e o link do rodapé da página Novo separador e do iniciador de aplicações do <ph name="PRODUCT_OS_NAME" />.
 
@@ -1317,10 +1317,10 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3513655665999652754">O Quirks Server fornece ficheiros de configuração específicos do hardware, como
       perfis de visualização ICC para ajustar a calibração do monitor.
 
-      Quando esta política está definida como falsa, o dispositivo não tenta
+      Quando esta política está definida como Falsa, o dispositivo não tenta
       contactar o Quirks Server para transferir ficheiros de configuração.
 
-      Se esta política estiver definida como verdadeira ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> contacta automaticamente o Quirks Server, transfere os ficheiros de configuração, se estiverem disponíveis, e armazena-os no dispositivo. Estes ficheiros podem ser utilizados, por exemplo, para melhorar a qualidade de visualização dos monitores ligados.</translation>
+      Se esta política estiver definida como Verdadeira ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> contacta automaticamente o Quirks Server, transfere os ficheiros de configuração, se estiverem disponíveis, e armazena-os no dispositivo. Estes ficheiros podem ser utilizados, por exemplo, para melhorar a qualidade de visualização dos monitores ligados.</translation>
 <translation id="3524204464536655762">Não permitir que nenhum site solicite acesso a dispositivos USB através da API WebUSB</translation>
 <translation id="3526752951628474302">Apenas impressão monocromática</translation>
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
@@ -1727,9 +1727,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4408428864159735559">Lista de partilhas de ficheiros de rede pré-configuradas.</translation>
 <translation id="4410236409016356088">Permitir controlar a largura de banda da rede</translation>
 <translation id="441217499641439905">Desativar o Google Drive através de ligações de redes móveis na aplicação Ficheiros do <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="4415603335307944578">Se esta política estiver definida como verdadeira ou não estiver configurada, o navegador volta a apresentar a página de boas-vindas da primeira vez que for iniciado após uma atualização do SO.
+<translation id="4415603335307944578">Se esta política estiver definida como Verdadeira ou não estiver configurada, o navegador volta a apresentar a página de boas-vindas da primeira vez que for iniciado após uma atualização do SO.
 
-      Se esta política estiver definida como falsa, o navegador não volta a apresentar a página de boas-vindas da primeira vez que for iniciado após uma atualização do SO.</translation>
+      Se esta política estiver definida como Falsa, o navegador não volta a apresentar a página de boas-vindas da primeira vez que for iniciado após uma atualização do SO.</translation>
 <translation id="4418726081189202489">Definir esta política como falsa impede o <ph name="PRODUCT_NAME" /> de enviar ocasionalmente consultas para um servidor da Google para obter uma data/hora exata. Estas consultas serão ativadas caso esta política esteja definida como verdadeira ou não esteja definida.</translation>
 <translation id="4423597592074154136">Especificar manualmente as definições de proxy</translation>
 <translation id="4429220551923452215">Ativa ou desativa o atalho de aplicações na barra de marcadores.
@@ -1958,12 +1958,12 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5058573563327660283">Selecionar a estratégia utilizada para libertar espaço no disco durante a limpeza automática (descontinuado)</translation>
 <translation id="5067143124345820993">Lista branca de utilizadores com início de sessão</translation>
 <translation id="5068140065960598044">A política da nuvem do <ph name="PRODUCT_NAME" /> substitui a política do equipamento.</translation>
-<translation id="5075834892754086022">Se a política estiver definida, é aplicado o comprimento mínimo de PIN
-          configurado. (O comprimento mínimo absoluto de um PIN é 1. Os valores inferiores a 1
+<translation id="5075834892754086022">Se a política estiver definida, o comprimento mínimo de PIN configurado
+          é aplicado. (O comprimento mínimo absoluto de um PIN é 1. Os valores inferiores a 1
           são tratados como 1.)
 
-          Se a política não estiver definida, é aplicado um comprimento mínimo de PIN
-          de 6 dígitos. Este é o comprimento mínimo recomendado.</translation>
+          Se a política não estiver definida, um comprimento mínimo de PIN de 6 dígitos
+          é aplicado. Este é o comprimento mínimo recomendado.</translation>
 <translation id="5076274878326940940">Permite a utilização de um fornecedor de pesquisas predefinido.
 
           Se ativar esta definição, é realizada uma pesquisa predefinida quando o utilizador introduz texto na caixa geral sem ser um URL.
@@ -2244,11 +2244,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se não estiver especificada, não irá modificar o URL da semente Variações.</translation>
 <translation id="5561811616825571914">Selecionar automaticamente certificados de cliente para estes sites no ecrã de início de sessão</translation>
 <translation id="5566210228171064229">Permitir impressão com e sem PIN</translation>
-<translation id="556865034069957245">Esta política controla a disponibilidade do modo de ecrã inteiro, em que toda a interface de <ph name="PRODUCT_NAME" /> está oculta e apenas o conteúdo Web é visível.
+<translation id="556865034069957245">Esta política controla a disponibilidade do modo de ecrã inteiro, em que toda a interface do <ph name="PRODUCT_NAME" /> está oculta e apenas o conteúdo Web é visível.
 
-      Se esta política for definida como verdadeira ou não for configurada, as aplicações e extensões do utilizador com autorizações adequadas podem entrar no modo de ecrã inteiro.
+      Se esta política for definida como Verdadeira ou não for configurada, as aplicações e extensões do utilizador com autorizações adequadas podem entrar no modo de ecrã inteiro.
 
-      Se esta política for definida como falsa, nem o utilizador nem quaisquer aplicações ou extensões podem entrar no modo de ecrã inteiro.
+      Se esta política for definida como Falsa, nem o utilizador nem quaisquer aplicações ou extensões podem entrar no modo de ecrã inteiro.
 
       Em todas as plataformas, exceto no <ph name="PRODUCT_OS_NAME" />, o modo quiosque está indisponível quando o modo de ecrã inteiro está desativado.</translation>
 <translation id="556941986578702361">Controlar a ocultação automática da prateleira do <ph name="PRODUCT_OS_NAME" />.
@@ -3281,8 +3281,8 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Consulte https://developers.google.com/safe-browsing para obter mais informações sobre a Navegação segura.</translation>
 <translation id="7643883929273267746">Restrinja as contas que estão visíveis no <ph name="PRODUCT_NAME" />.</translation>
-<translation id="7644825865811580663">Se esta política for definida como verdadeira, o <ph name="PRODUCT_NAME" /> maximiza incondicionalmente a primeira janela mostrada na primeira execução.
-      Se esta política for definida como falsa ou não for configurada, a decisão de maximizar ou não a primeira janela apresentada depende do tamanho do ecrã.</translation>
+<translation id="7644825865811580663">Se esta política for definida como Verdadeira, o <ph name="PRODUCT_NAME" /> maximiza incondicionalmente a primeira janela mostrada na primeira execução.
+      Se esta política for definida como Falsa ou não for configurada, a decisão de maximizar ou não a primeira janela apresentada depende do tamanho do ecrã.</translation>
 <translation id="7651739109954974365">Determina se o roaming de dados deve estar ativado para o aparelho. Se a política estiver definida como verdadeira, o roaming de dados é permitido. Se ficar por configurar ou for definida como falsa, o roaming de dados não estará disponível.</translation>
 <translation id="7657261947024629645">Otimizar o desempenho.</translation>
 <translation id="7673194325208122247">Período de tempo (milissegundos)</translation>
@@ -3454,9 +3454,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8050080920415773384">Impressão nativa</translation>
 <translation id="8053580360728293758">Substitui o modo de impressão a cores padrão. Se o modo não estiver disponível, esta política é ignorada.</translation>
 <translation id="8059164285174960932">URL onde os clientes de acesso remoto devem obter o respetivo símbolo de autenticação</translation>
-<translation id="806280865577636339">Se esta política for definida como verdadeira, as opções de Acessibilidade aparecem sempre no menu do tabuleiro do sistema.
+<translation id="806280865577636339">Se esta política for definida como Verdadeira, as opções de Acessibilidade aparecem sempre no menu do tabuleiro do sistema.
 
-          Se esta política for definida como falsa, as opções de Acessibilidade nunca aparecem no menu do tabuleiro do sistema.
+          Se esta política for definida como Falsa, as opções de Acessibilidade nunca aparecem no menu do tabuleiro do sistema.
 
           Se definir esta política, os utilizadores não a podem alterar nem substituir.
 
@@ -3935,7 +3935,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Esta política apenas afeta os utilizadores que efetuaram a autenticação através de SAML.
 
       O valor da política deve ser especificado em segundos.</translation>
-<translation id="9027787254195333560">Esta política permite-lhe configurar a imagem do avatar que representa o utilizador no ecrã de início de sessão. A política é definida ao especificar o URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> pode transferir a imagem do avatar e um hash criptográfico utilizado para validar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho não pode exceder 512 KB. O URL tem de ser acessível sem qualquer autenticação.
+<translation id="9027787254195333560">Esta política permite-lhe configurar a imagem do avatar que representa o utilizador no ecrã de início de sessão. A política é definida ao especificar o URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> pode transferir a imagem do avatar e um hash criptográfico utilizado para validar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho não pode exceder 512 kB. O URL tem de ser acessível sem qualquer autenticação.
 
       A imagem do avatar é transferida e colocada em cache. Será transferida novamente sempre que o URL ou o hash forem alterados.
 
@@ -4093,9 +4093,9 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="943865157632139008">Permite-lhe configurar o processador de HTML predefinido quando é instalado o <ph name="PRODUCT_FRAME_NAME" />.
       A predefinição é permitir que o navegador anfitrião efetue o processamento, mas, se pretender, pode substituir esta predefinição e fazer com que o <ph name="PRODUCT_FRAME_NAME" /> processe as páginas HTML por predefinição.</translation>
 <translation id="944817693306670849">Definir o tamanho da cache do disco</translation>
-<translation id="966854160628341653">Controla se o <ph name="PRODUCT_OS_NAME" /> permite a criação de novas contas de utilizador. Se esta política estiver definida como falsa, os utilizadores que ainda não têm uma conta não poderão iniciar sessão.
+<translation id="966854160628341653">Controla se o <ph name="PRODUCT_OS_NAME" /> permite a criação de novas contas de utilizador. Se esta política estiver definida como Falsa, os utilizadores que ainda não têm uma conta não poderão iniciar sessão.
 
-      Se esta política estiver definida como verdadeira ou não estiver configurada, é permitida a criação de novas contas de utilizador desde que <ph name="DEVICE_USER_WHITELIST_POLICY_NAME" /> não impeça o utilizador de iniciar sessão.</translation>
+      Se esta política estiver definida como Verdadeira ou não estiver configurada, é permitida a criação de novas contas de utilizador desde que <ph name="DEVICE_USER_WHITELIST_POLICY_NAME" /> não impeça o utilizador de iniciar sessão.</translation>
 <translation id="981346395360763138">Os serviços de localização da Google estão desativados.</translation>
 <translation id="982497069985795632">Ativar a verificação ortográfica</translation>
 <translation id="991560005425213776">Enviar o nome de utilizador e o nome de ficheiro para as impressoras nativas</translation>

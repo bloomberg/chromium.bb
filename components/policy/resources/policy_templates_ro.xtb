@@ -610,7 +610,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă activezi această setare, orice pagină de autentificare prin portalul captiv (de exemplu, toate paginile începând cu pagina de conectare la portalul captiv până când <ph name="PRODUCT_NAME" /> detectează o conexiune stabilă la internet) va fi afișată într-o fereastră separată, ignorând toate setările și restricțiile politicii pentru utilizatorul actual.
 
       Dacă dezactivezi această setare sau nu o configurezi, orice pagină de autentificare prin portalul captiv va fi afișată într-o filă nouă (obișnuită) a browserului, folosind setările de proxy ale utilizatorului actual.</translation>
-<translation id="21394354835637379">Cu această politică poți să specifici care adrese URL au permisiunea de a instala extensii, aplicații și teme.
+<translation id="21394354835637379">Cu această politică poți să specifici adresele URL care au permisiunea de a instala extensii, aplicații și teme.
 
           Începând cu <ph name="PRODUCT_NAME" /> versiunea 21, devine mai dificilă instalarea extensiilor, aplicațiilor și scripturilor de utilizator care nu provin din Magazinul web Chrome. Anterior, utilizatorii puteau da clic pe un link care trimitea la un fișier *.crx, iar <ph name="PRODUCT_NAME" /> permitea instalarea fișierului după câteva avertismente. După <ph name="PRODUCT_NAME" /> versiunea 21, astfel de fișiere trebuie să fie descărcate și trase în pagina de setări <ph name="PRODUCT_NAME" />. Această setare permite anumitor adrese URL să beneficieze de fluxul de instalare anterior, mai facil.
 
@@ -872,7 +872,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="2633084400146331575">Activați feedbackul vocal</translation>
 <translation id="2646290749315461919">Vă permite să setați dacă site-urile web au permisiunea să urmărească locația fizică a utilizatorilor. Urmărirea locației fizice a utilizatorilor poate fi permisă în mod prestabilit, refuzată în mod prestabilit sau utilizatorul poate fi întrebat de fiecare dată când un site web solicită locația fizică. Dacă politica este lăsată nesetată, va fi utilizată politica „AskGeolocation”, dar utilizatorul va putea să o schimbe.</translation>
 <translation id="2647069081229792812">Activează sau dezactivează modificarea marcajelor</translation>
-<translation id="2649896281375932517">Permite utilizatorilor să decidă</translation>
+<translation id="2649896281375932517">Lasă utilizatorii să decidă</translation>
 <translation id="2650049181907741121">Măsura care se va lua atunci când utilizatorul închide capacul</translation>
 <translation id="2655233147335439767">Specifică adresa URL a motorului de căutare folosit la o căutare prestabilită. Adresa URL trebuie să conțină șirul „<ph name="SEARCH_TERM_MARKER" />”, care va fi înlocuit în momentul interogării cu termenii căutați de utilizator.
 

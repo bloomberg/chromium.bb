@@ -176,7 +176,7 @@
 <translation id="3551320343578183772">Close Tab</translation>
 <translation id="3588820906588687999">Open Image in New Tab</translation>
 <translation id="3603009562372709545">Copy Link URL</translation>
-<translation id="3607167657931203000">Autofill Data</translation>
+<translation id="3607167657931203000">Auto-fill Data</translation>
 <translation id="3609785682760573515">Syncing...</translation>
 <translation id="3638472932233958418">Pre-load Web Pages</translation>
 <translation id="3691593122358196899">Bookmarked to <ph name="FOLDER_TITLE" /></translation>
@@ -245,7 +245,7 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">1 unread Reading List article.</translation>
 <translation id="481968316161811770">Cookies, Site Data</translation>
-<translation id="4840495572919996524">Your bookmarks, history, passwords and more will no longer be synced to your Google account.</translation>
+<translation id="4840495572919996524">Your bookmarks, history, passwords and more will no longer be synced to your Google Account.</translation>
 <translation id="4854345657858711387">Set A Passcode</translation>
 <translation id="4860895144060829044">Call</translation>
 <translation id="4881695831933465202">Open</translation>
@@ -432,7 +432,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7772032839648071052">Confirm passphrase</translation>
 <translation id="7781829728241885113">Yesterday</translation>
 <translation id="778855399387580014">Start a search in a new Chrome tab.</translation>
-<translation id="780301667611848630">No, thank you</translation>
+<translation id="780301667611848630">No, thanks</translation>
 <translation id="7840771868269352570">The items that you selected will be removed.</translation>
 <translation id="7856733331829174190">Couldn't download</translation>
 <translation id="7859704718976024901">Browsing history</translation>
@@ -510,9 +510,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="9188680907066685419">Sign out of managed account</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Crash report sent.</translation>
-<translation id="935490618240037774">Your bookmarks, history, passwords and other settings will be synced to your Google account so that you can use them on all of your devices.</translation>
+<translation id="935490618240037774">Your bookmarks, history, passwords and other settings will be synced to yourGoogle Accountso that you can use them on all of your devices.</translation>
 <translation id="976982866697960176">Manage Synced Data…</translation>
-<translation id="988141524645182168">Other Devices</translation>
+<translation id="988141524645182168">Other devices</translation>
 <translation id="989988560359834682">Edit Address</translation>
 <translation id="994757059139821576">Article Suggestions</translation>
 </translationbundle>

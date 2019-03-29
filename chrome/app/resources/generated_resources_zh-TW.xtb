@@ -1962,6 +1962,7 @@
 <translation id="3892414795099177503">新增 OpenVPN/L2TP...</translation>
 <translation id="3893536212201235195">讀取及變更你的協助工具設定</translation>
 <translation id="3893630138897523026">ChromeVox (互動朗讀)</translation>
+<translation id="3894123633473837029">透過 Sherlog 納入最近的 Google 助理歷史記錄。這可能包括你的身分、位置和偵錯資訊。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">新增資料夾</translation>
 <translation id="389589731200570180">與訪客共用</translation>
 <translation id="3898521660513055167">憑證狀態</translation>
@@ -2650,7 +2651,7 @@
 <translation id="4980805016576257426">這個擴充功能含有惡意軟體。</translation>
 <translation id="4981449534399733132">如要從所有同步的裝置和 Google 帳戶中清除瀏覽資料，請先<ph name="BEGIN_LINK" />登入<ph name="END_LINK" />。</translation>
 <translation id="4988205478593450158">你確定要刪除「<ph name="FILE_NAME" />」嗎？</translation>
-<translation id="4988526792673242964">頁數</translation>
+<translation id="4988526792673242964">網頁</translation>
 <translation id="49896407730300355">逆時針旋轉(&amp;O)</translation>
 <translation id="4989966318180235467">檢查背景頁面(&amp;B)</translation>
 <translation id="4990343175649730969">下載 Chrome 清理工具</translation>

@@ -127,9 +127,9 @@
           Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultImagesSettings” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.
 
           Uwaga: chociaż ta zasada została wcześniej błędnie włączona w Androidzie, funkcja ta nie była nigdy w pełni obsługiwana w tym systemie.</translation>
-<translation id="1194005076170619046">Jeśli ta zasada jest włączona, w obszarze powiadomień wyświetla się duży, czerwony przycisk wylogowania, kiedy jest aktywna sesja, a ekran nie jest zablokowany.
+<translation id="1194005076170619046">Jeśli ta zasada jest włączona, w obszarze powiadomień wyświetla się duży czerwony przycisk wylogowania, kiedy jest aktywna sesja, a ekran nie jest zablokowany.
 
-      Jeśli ta zasada jest wyłączona lub nie jest skonfigurowana, w obszarze powiadomień nie wyświetla się duży, czerwony przycisk wylogowania.</translation>
+      Jeśli ta zasada jest wyłączona lub nie jest skonfigurowana, w obszarze powiadomień nie wyświetla się duży czerwony przycisk wylogowania.</translation>
 <translation id="1197437816436565375">Nie można wymusić używania serwera proxy przez aplikacje na Androida. Mają one dostęp do niektórych jego ustawień i mogą je uwzględniać dobrowolnie. Szczegółowe informacje znajdziesz w opisie zasady <ph name="PROXY_MODE_POLICY_NAME" />.</translation>
 <translation id="1198465924256827162">Częstotliwość wysyłania raportów o stanie urządzenia (w milisekundach).
 
@@ -245,7 +245,7 @@
 
 Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator rozszerzenia i URL „aktualizacji” oddzielony średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to 32-znakowy ciąg, który znajdziesz np. w sekcji <ph name="CHROME_EXTENSIONS_LINK" /> w trybie programisty. URL „aktualizacji” powinien wskazywać plik manifestu aktualizacji w postaci dokumentu XML, zgodnie z opisem podanym na <ph name="LINK_TO_EXTENSION_DOC1" />. Uwaga: URL „aktualizacji” określony przez tę zasadę jest używany tylko podczas pierwszej instalacji. Późniejsze aktualizacje rozszerzenia korzystają z adresu URL aktualizacji wskazanego w pliku manifestu.
 
-      Na przykład <ph name="EXTENSION_POLICY_EXAMPLE" /> instaluje aplikację <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> ze standardowego adresu URL „aktualizacji” w Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń znajdziesz na <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
+      Na przykład <ph name="EXTENSION_POLICY_EXAMPLE" /> instaluje aplikację <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> ze standardowego adresu URL „aktualizacji” w Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń znajdziesz na <ph name="LINK_TO_EXTENSION_DOC2" /></translation>
 <translation id="1435659902881071157">Konfiguracja sieci na poziomie urządzenia</translation>
 <translation id="1438739959477268107">Domyślne ustawienie generowania kluczy</translation>
 <translation id="1454846751303307294">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie może być wykonywany kod JavaScript. W przypadku nieskonfigurowania tej zasady dla wszystkich witryn będzie używana globalna wartość domyślna pobierana z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
@@ -256,7 +256,7 @@ Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator r
 
       Aby dopasować się do sekwencji dowolnych znaków, można użyć symboli wieloznacznych „*” i „?”. Symbol „*” odpowiada dowolnej liczbie znaków, a symbol „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\” – aby wpisać faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”.
 
-      Jeśli to ustawienie jest włączone, <ph name="PRODUCT_NAME" /> nigdy nie korzysta z podanej listy wtyczek. Wtyczki są oznaczone jako włączone na stronie „about:plugins”, a użytkownicy nie mogą ich wyłączać.
+      Jeśli to ustawienie jest włączone, <ph name="PRODUCT_NAME" /> nigdy nie korzysta z podanej listy wtyczek. Wtyczki są oznaczone jako wyłączone na stronie „about:plugins”, a użytkownicy nie mogą ich włączać.
 
       Tę zasadę mogą zastępować zasady EnabledPlugins i DisabledPluginsExceptions.
 
@@ -680,7 +680,7 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
 <translation id="2240879329269430151">Umożliwia określenie, czy w witrynach mogą być pokazywane wyskakujące okienka. Pokazywanie wyskakujących okienek może być dozwolone lub zabronione we wszystkich witrynach. W przypadku nieskonfigurowania tej zasady będzie używane ustawienie „BlockPopups”, a użytkownik będzie mógł je zmienić.</translation>
 <translation id="2255326053989409609">Włączenie tego ustawienia uniemożliwia stronom internetowym uzyskiwanie dostępu do procesora graficznego (GPU). W szczególności nie mają one dostępu do interfejsu API WebGL, a wtyczki nie mogą korzystać z interfejsu API Pepper 3D.
 
-      Wyłączenie ustawienia pozwala stronom internetowym korzystać z interfejsu API WebGL, a wtyczkom – z interfejsu API Pepper 3D. Do używania tych interfejsów API może być jednak konieczne podawanie argumentów w wierszu polecenia, jeśli wymagają tego domyślne ustawienia przeglądarki.
+      Wyłączenie tego ustawienia pozwala stronom internetowym korzystać z interfejsu API WebGL, a wtyczkom – z interfejsu API Pepper 3D. Do używania tych interfejsów API może być jednak konieczne podawanie argumentów w wierszu polecenia, jeśli wymagają tego domyślne ustawienia przeglądarki.
 
       Jeśli zasada HardwareAccelerationModeEnabled ma wartość Fałsz, zasada Disable3DAPIs jest ignorowana, co odpowiada wybraniu dla niej wartości Prawda.</translation>
 <translation id="2258126710006312594">Umożliwia użytkownikom korzystającym z dostępu zdalnego przenoszenie plików do/z hosta</translation>
@@ -969,7 +969,7 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
           Jeśli ta zasada jest nieskonfigurowana lub ma wartość Fałsz, zasada KDC jest ignorowana na obsługiwanych platformach i respektowana jest tylko zasada „AuthNegotiateDelegateWhitelist”.
 
           W systemie Windows zasada KDC jest zawsze respektowana.</translation>
-<translation id="283695852388224413">Jeśli ta zasada jest skonfigurowana, wymuszana jest maksymalna podana długość kodu PIN. Wartość 0 lub mniejsza oznacza brak maksymalnej długości. W takim przypadku użytkownik może ustawić kod PIN o dowolnej długości. Jeśli wartość ustawienia jest większa od zera, ale mniejsza niż <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME" />, maksymalna długość jest taka sama jak minimalna.
+<translation id="283695852388224413">Jeśli ta zasada jest skonfigurowana, wymuszana jest maksymalna długość kodu PIN. Wartość 0 lub mniejsza oznacza brak maksymalnej długości. W takim przypadku użytkownik może ustawić kod PIN o dowolnej długości. Jeśli wartość ustawienia jest większa od zera, ale mniejsza niż <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME" />, maksymalna długość jest taka sama jak minimalna.
 
           Jeśli ta zasada nie jest skonfigurowana, maksymalna długość nie jest wymuszana.</translation>
 <translation id="2838830882081735096">Nie zezwalaj na migrację danych ani na działanie ARC</translation>
@@ -1949,7 +1949,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="5058573563327660283">Wybierz strategię zwalniania miejsca na dysku podczas automatycznego czyszczenia (wycofana)</translation>
 <translation id="5067143124345820993">Biała lista loginów użytkowników</translation>
 <translation id="5068140065960598044">Zasady dotyczące chmury obowiązujące w <ph name="PRODUCT_NAME" /> zastępują zasady dotyczące komputera.</translation>
-<translation id="5075834892754086022">Jeśli wybrano ustawienie dla tej zasady, wymuszana jest skonfigurowana minimalna długość kodu PIN. Bezwzględne minimum długości kodu PIN wynosi 1. Mniejsze wartości są uznawane za 1.
+<translation id="5075834892754086022">Jeśli ta zasada jest skonfigurowana, wymuszana jest minimalna długość kodu PIN. Bezwzględne minimum długości kodu PIN wynosi 1. Mniejsze wartości są uznawane za 1.
 
           Jeśli ta zasada nie jest skonfigurowana, wymuszana jest minimalna długość kodu PIN wynosząca 6 cyfr. Jest to zalecane minimum.</translation>
 <translation id="5076274878326940940">Umożliwia korzystanie z usług domyślnego dostawcy wyszukiwania.
@@ -2186,7 +2186,7 @@ Jeśli ta zasada pozostanie nieskonfigurowana, użytkownik może wyłączyć ka�
 
 Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznacznych „*” i „?”. Symbol „*” odpowiada dowolnej liczbie znaków, a symbol „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\” – aby wpisać faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”.
 
-      Jeśli włączysz tę zasadę, możliwe będzie w <ph name="PRODUCT_NAME" /> użycie określonej listy wtyczek. Użytkownicy będą mogli je włączać i wyłączać na stronie „about:plugins” nawet wtedy, gdy dana wtyczka będzie też pasowała do wzorca określonego w ustawieniach zasady DisabledPlugins. Użytkownicy będą też mogli włączać i wyłączać wtyczki, które nie pasują do żadnego wzorca skonfigurowanego w zasadach DisabledPlugins, DisabledPluginsExceptions i EnabledPlugins.
+      Jeśli włączysz tę zasadę, w <ph name="PRODUCT_NAME" /> możliwe będzie użycie określonej listy wtyczek. Użytkownicy będą mogli je włączać i wyłączać na stronie „about:plugins” nawet wtedy, gdy dana wtyczka będzie też pasowała do wzorca określonego w ustawieniach zasady DisabledPlugins. Użytkownicy będą też mogli włączać i wyłączać wtyczki, które nie pasują do żadnego wzorca skonfigurowanego w zasadach DisabledPlugins, DisabledPluginsExceptions i EnabledPlugins.
 
       Celem tej zasady jest umożliwienie utworzenia ścisłej czarnej listy wtyczek w przypadku, gdy lista „DisabledPlugins” zawiera wpisy z symbolami wieloznacznymi. Mogą to być wpisy wyłączające wszystkie wtyczki „*” czy też wyłączające wszystkie wtyczki Java („*Java*”) z wyjątkiem niektórych wersji, np. „IcedTea Java 2.3”. Takie konkretne wersje można wskazać właśnie w tej zasadzie.
 
@@ -3148,7 +3148,7 @@ Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne o
 <translation id="737655323154569539">Ogranicza rozmiar drukowanych stron. Zasada nieskonfigurowana i pusty zbiór są traktowane jako brak ograniczeń.</translation>
 <translation id="7389872682701720082">Po włączeniu tego ustawienia wtyczki, które nie są nieaktualne, są zawsze uruchamiane.
 
-      Gdy jest ono wyłączone lub nieskonfigurowane, użytkownikom wyświetlają się prośby o pozwolenie na uruchomienie wtyczek wymagających autoryzacji. Wtyczki te mogą naruszać bezpieczeństwo danych.</translation>
+      Gdy jest ono wyłączone lub nieskonfigurowane, użytkownikom wyświetlają się prośby o pozwolenie na uruchomienie wtyczek wymagających autoryzacji. Te wtyczki mogą naruszać bezpieczeństwo danych.</translation>
 <translation id="7417972229667085380">Wartość procentowa skalowania opóźnienia bezczynności w trybie prezentacji (wycofana)</translation>
 <translation id="7421483919690710988">Ustaw rozmiar dyskowej pamięci podręcznej multimediów w bajtach</translation>
 <translation id="7424751532654212117">Lista wyjątków od listy wyłączonych wtyczek</translation>
@@ -3264,7 +3264,7 @@ Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne o
       Więcej informacji o Bezpiecznym przeglądaniu znajdziesz na https://developers.google.com/safe-browsing</translation>
 <translation id="7643883929273267746">Ogranicz konta widoczne w <ph name="PRODUCT_NAME" /></translation>
 <translation id="7644825865811580663">Jeśli ta zasada ma wartość Prawda, <ph name="PRODUCT_NAME" /> bezwarunkowo zmaksymalizuje pierwsze okno wyświetlone przy pierwszym uruchomieniu.
-      Jeśli ma wartość Fałsz lub jest nieskonfigurowana, algorytm heurystyczny ustali na podstawie rozmiaru ekranu, czy zmaksymalizować pierwsze wyświetlone okno.</translation>
+      Jeśli ma wartość Fałsz lub jest nieskonfigurowana, zmaksymalizowanie pierwszego wyświetlonego okna będzie uzależnione od rozmiaru ekranu.</translation>
 <translation id="7651739109954974365">Określa, czy na urządzeniu powinno być włączone przesyłanie danych w roamingu. W przypadku włączenia tej zasady przesyłanie danych w roamingu będzie dozwolone. Jeśli zasada będzie wyłączona lub nieskonfigurowana, przesyłanie danych w roamingu będzie niedostępne.</translation>
 <translation id="7657261947024629645">Optymalizacja pod kątem wydajności.</translation>
 <translation id="7673194325208122247">Czas (w milisekundach)</translation>
@@ -3544,7 +3544,7 @@ Zasady te są przeznaczone do konfigurowania <ph name="PRODUCT_NAME" /> tylko na
 Nie musisz konfigurować tych ustawień ręcznie. Możesz pobrać łatwe w użyciu szablony dla systemów Windows, Mac OS i Linux ze strony <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
 Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad grupy (GPO), mimo że obsługa zasady przez rejestr jest nadal możliwa w systemach Windows połączonych z domeną <ph name="MS_AD_NAME" />.</translation>
-<translation id="8259592978873597235">Jeśli ta zasada ma wartość Prawda lub nie jest skonfigurowana, nieaktywność użytkownika podczas odtwarzania filmów nie jest brana pod uwagę. Uniemożliwia to osiągnięcie opóźnienia bezczynności, przyciemnienia, wyłączenia i zablokowania ekranu oraz wykonanie działań związanych z tym stanem.
+<translation id="8259592978873597235">Jeśli ta zasada ma wartość Prawda lub nie jest skonfigurowana, brak aktywności użytkownika podczas odtwarzania filmów nie jest brany pod uwagę. Nie pozwala to na przejście w stan bezczynności, przyciemnienia, wyłączenia i zablokowania ekranu oraz wykonanie działań związanych z tym stanem.
 
           Jeśli ta zasada ma wartość Fałsz, aktywność związana z oglądanie filmów nie wyklucza określenia użytkownika jako bezczynnego.</translation>
 <translation id="8264653492961233132">Określa listę aplikacji i rozszerzeń, które zostaną zainstalowane dyskretnie, bez interakcji

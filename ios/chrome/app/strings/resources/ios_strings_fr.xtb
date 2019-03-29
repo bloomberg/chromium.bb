@@ -370,7 +370,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="6730682669179532099">Impossible d'exporter les mots de passe</translation>
 <translation id="6780034285637185932">Code postal</translation>
 <translation id="6785453220513215166">Envoi du rapport d'erreur en cours…</translation>
-<translation id="679325081238418596">Accédez à vos favoris, votre historique, vos mots de passe et d'autres paramètres sur tous vos appareils.</translation>
+<translation id="679325081238418596">Accédez à vos favoris, votre historique, vos mots de passe et d'autres paramètres sur tous vos appareils</translation>
 <translation id="6797885426782475225">Recherche vocale</translation>
 <translation id="6807889908376551050">Tout afficher…</translation>
 <translation id="681368974849482173">Élément créé</translation>
@@ -489,7 +489,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8840513115188359703">Vous ne serez pas déconnecté de votre compte Google.</translation>
 <translation id="8870413625673593573">Récemment fermés</translation>
 <translation id="8881801611828450202">Chercher cette image sur <ph name="SEARCH_ENGINE" /></translation>
-<translation id="8904976895050290827">Synchronisation Google Chrome</translation>
+<translation id="8904976895050290827">Synchronisation Chrome</translation>
 <translation id="895541991026785598">Signaler un problème</translation>
 <translation id="8971089644512329999">OK</translation>
 <translation id="8976382372951310360">Aide</translation>
@@ -514,5 +514,5 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="976982866697960176">Gérer les données synchronisées…</translation>
 <translation id="988141524645182168">Autres appareils</translation>
 <translation id="989988560359834682">Modifier l'adresse</translation>
-<translation id="994757059139821576">Articles suggérés</translation>
+<translation id="994757059139821576">Suggestions d'articles</translation>
 </translationbundle>

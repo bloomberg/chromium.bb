@@ -334,7 +334,7 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="6308436439357671616">Hiermee kun je foto's maken en uploaden.</translation>
 <translation id="6324528485781869530">Synchronisatieaccount wisselen</translation>
 <translation id="6324669097367352121">Inloginstellingen</translation>
-<translation id="6337234675334993532">Codering</translation>
+<translation id="6337234675334993532">Versleuteling</translation>
 <translation id="633809752005859102">Er is iets goed misgegaan. We gaan op zoek naar een oplossing.</translation>
 <translation id="6342069812937806050">Zojuist</translation>
 <translation id="6344783595350022745">Tekst wissen</translation>
@@ -343,7 +343,7 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="6363526231572697780">Geen gebruikersnaam</translation>
 <translation id="6374469231428023295">Opnieuw proberen</translation>
 <translation id="6380866119319257197">Als je je wachtwoordzin vergeet of deze instelling wilt wijzigen, <ph name="BEGIN_LINK" />stel je de synchronisatie opnieuw in<ph name="END_LINK" /></translation>
-<translation id="6389470377220713856">Naam op kaart</translation>
+<translation id="6389470377220713856">Naam op pas</translation>
 <translation id="6406506848690869874">Synchronisatie</translation>
 <translation id="6417838470969808600">Je hebt bladwijzers, geschiedenis, wachtwoorden en andere instellingen van <ph name="USER_EMAIL1" />.</translation>
 <translation id="641799622251403418">Ingelogd als <ph name="EMAIL" />.
@@ -370,7 +370,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="6730682669179532099">Wachtwoorden kunnen niet worden geëxporteerd</translation>
 <translation id="6780034285637185932">Postcode</translation>
 <translation id="6785453220513215166">Crashrapport verzenden...</translation>
-<translation id="679325081238418596">Je bladwijzers, geschiedenis, wachtwoorden en andere instellingen ophalen op al je apparaten</translation>
+<translation id="679325081238418596">Je bladwijzers, geschiedenis, wachtwoorden en andere instellingen beschikbaar maken op al je apparaten</translation>
 <translation id="6797885426782475225">Gesproken zoekopdracht</translation>
 <translation id="6807889908376551050">Alles weergeven...</translation>
 <translation id="681368974849482173">Item gemaakt</translation>

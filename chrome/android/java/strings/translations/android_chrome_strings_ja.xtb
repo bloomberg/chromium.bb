@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="1006017844123154345">オンライン版を開く</translation>
-<translation id="1023450834687746199"><ph name="APP_NAME" /> のデータを消去しました。</translation>
+<translation id="1023450834687746199"><ph name="APP_NAME" /> のデータを削除しました。</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> を追加しています...</translation>
 <translation id="1041308826830691739">ウェブサイトから</translation>
 <translation id="1049743911850919806">シークレット モード</translation>
@@ -44,7 +44,7 @@
 <translation id="1272079795634619415">中止</translation>
 <translation id="1283039547216852943">タップして展開</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
-<translation id="1291207594882862231">履歴、Cookie、サイトデータ、キャッシュを消去…</translation>
+<translation id="1291207594882862231">履歴、Cookie、サイトデータ、キャッシュを削除…</translation>
 <translation id="129553762522093515">最近閉じたタブ</translation>
 <translation id="1326317727527857210">他の端末と同じタブを使用するには、Chrome にログインします。</translation>
 <translation id="1331212799747679585">Chrome を更新できません。その他のオプション</translation>
@@ -214,16 +214,17 @@
 <translation id="2532336938189706096">ウェブ表示</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" />件の項目を削除しました</translation>
 <translation id="2536728043171574184">このページのオフライン コピーを表示しています</translation>
-<translation id="2546283357679194313">Cookie とサイト データ</translation>
+<translation id="2546283357679194313">Cookie とサイトデータ</translation>
 <translation id="2567385386134582609">画像</translation>
 <translation id="2570922361219980984">位置情報へのアクセスが端末でもオフになっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でオンにしてください。</translation>
 <translation id="257931822824936280">展開されています - クリックすると折りたたまれます。</translation>
-<translation id="2581165646603367611">Chrome で重要度が低いと判断されるサイトの Cookie やキャッシュなどのデータを消去します。</translation>
+<translation id="2581165646603367611">Chrome で重要度が低いと判断されるサイトの Cookie やキャッシュなどのデータを削除します。</translation>
 <translation id="2586657967955657006">クリップボード</translation>
 <translation id="2587052924345400782">新しいバージョンをご利用いただけます</translation>
 <translation id="2593272815202181319">等幅</translation>
 <translation id="2610239185026711824">パスワードを自動生成</translation>
 <translation id="2612676031748830579">カード番号</translation>
+<translation id="2613747923081026172">グループを作成</translation>
 <translation id="2621115761605608342">特定のサイトに対して JavaScript を許可します。</translation>
 <translation id="2625189173221582860">パスワードがコピーされました</translation>
 <translation id="2631006050119455616">削減量</translation>
@@ -372,10 +373,10 @@
 <translation id="3789841737615482174">インストール</translation>
 <translation id="3810838688059735925">動画</translation>
 <translation id="3810973564298564668">管理</translation>
-<translation id="3814315701645566481"><ph name="URL" /> のデータを消去してもよろしいですか？</translation>
+<translation id="3814315701645566481"><ph name="URL" /> のデータを削除してもよろしいですか？</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> 件のダウンロードを削除しました</translation>
 <translation id="3819562311292413223">おすすめの記事をダウンロード</translation>
-<translation id="3822502789641063741">サイトのストレージを消去しますか？</translation>
+<translation id="3822502789641063741">サイトのストレージ データを削除しますか？</translation>
 <translation id="385051799172605136">戻る</translation>
 <translation id="3859306556332390985">前方にシーク再生</translation>
 <translation id="3894427358181296146">フォルダの追加</translation>
@@ -600,7 +601,7 @@
 <translation id="5456381639095306749">ページをダウンロード</translation>
 <translation id="5466407412363861127">この機能では<ph name="BEGIN_LINK" />同期<ph name="END_LINK" />が使用されます。</translation>
 <translation id="548278423535722844">マップアプリで開く</translation>
-<translation id="5487521232677179737">データを消去</translation>
+<translation id="5487521232677179737">データを削除</translation>
 <translation id="5494752089476963479">煩わしい広告や誤解を招く広告が表示されるサイトで広告をブロックします</translation>
 <translation id="5497272504048921382">開いているタブ</translation>
 <translation id="550684401320795253">Chrome を更新しています...</translation>
@@ -727,7 +728,7 @@
 <translation id="6364438453358674297">履歴から候補を削除しますか？</translation>
 <translation id="6369229450655021117">ここからウェブを検索したり、友だちと共有したり、開いたページを表示したりできます</translation>
 <translation id="6378173571450987352">詳細: データ使用量の順</translation>
-<translation id="6383961787135158834">サイトのストレージ消去...</translation>
+<translation id="6383961787135158834">サイトのストレージ削除...</translation>
 <translation id="6388207532828177975">消去してリセット</translation>
 <translation id="6393156038355142111">安全なパスワードを自動生成</translation>
 <translation id="6393863479814692971">このサイトを利用するには、Chrome でカメラとマイクの使用を許可する必要があります。</translation>
@@ -753,7 +754,7 @@
 <translation id="6534565668554028783">Google からの応答に時間がかかりすぎています</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB をダウンロード済み</translation>
 <translation id="654446541061731451">ビームするにはタブを選択してください</translation>
-<translation id="6545017243486555795">すべてのデータを消去</translation>
+<translation id="6545017243486555795">すべてのデータを削除</translation>
 <translation id="6560414384669816528">Sogou で検索します</translation>
 <translation id="6566259936974865419">Chrome で <ph name="GIGABYTES" /> GB の容量を節約しました</translation>
 <translation id="6573096386450695060">常に許可</translation>
@@ -765,7 +766,7 @@
 <translation id="6610147964972079463">プライベート タブを閉じる</translation>
 <translation id="6612358246767739896">保護されたコンテンツ</translation>
 <translation id="6627583120233659107">フォルダを編集</translation>
-<translation id="6643016212128521049">クリア</translation>
+<translation id="6643016212128521049">削除</translation>
 <translation id="6643649862576733715">データ節約量で並べ替え</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 他 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 件}other{<ph name="CONTACT_PREVIEW" />\u2026 他 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 件}}</translation>
 <translation id="6649642165559792194">画像をプレビュー <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
@@ -883,6 +884,7 @@
 <translation id="7473891865547856676">スキップ</translation>
 <translation id="7475192538862203634">このメッセージが繰り返し表示される場合は、こちらの<ph name="BEGIN_LINK" />ヒント<ph name="END_LINK" />をお試しください。</translation>
 <translation id="7475688122056506577">SD カードが見つかりません。一部のファイルが欠落している可能性があります。</translation>
+<translation id="7479104141328977413">タブの管理</translation>
 <translation id="7481312909269577407">進む</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />（<ph name="TIME_SINCE_UPDATE" />に更新）</translation>
 <translation id="7494879913343971937">パスワードを表示</translation>
@@ -956,7 +958,7 @@
 <translation id="8007176423574883786">このデバイスに対して無効</translation>
 <translation id="8015452622527143194">ページ上のすべての要素をデフォルトのサイズに戻す</translation>
 <translation id="802154636333426148">ダウンロード エラー</translation>
-<translation id="8026334261755873520">閲覧履歴データを消去する</translation>
+<translation id="8026334261755873520">閲覧履歴データを削除する</translation>
 <translation id="8035133914807600019">新しいフォルダ...</translation>
 <translation id="8037686209485537503">もっと見る</translation>
 <translation id="8037750541064988519">残り <ph name="DAYS" /> 日</translation>
@@ -1043,7 +1045,7 @@
 <translation id="8617240290563765734">ダウンロード コンテンツに指定されている URL を開きますか？</translation>
 <translation id="8636825310635137004">他の端末と同じタブを使用するには、同期を有効にします。</translation>
 <translation id="8641930654639604085">成人向けのサイトを可能な限りブロックする</translation>
-<translation id="8655129584991699539">Chrome の設定でデータを消去できます</translation>
+<translation id="8655129584991699539">Chrome の設定でデータを削除できます</translation>
 <translation id="8662811608048051533">ほとんどのサイトからログアウトします。</translation>
 <translation id="8664979001105139458">同じ名前のファイルが存在します</translation>
 <translation id="8676374126336081632">入力内容を消去</translation>

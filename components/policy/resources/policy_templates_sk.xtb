@@ -264,7 +264,7 @@ servera, pretože objekty GPO sa znova sťahujú pri každom načítaní pravidi
           Ak je pravidlo EnableMediaRouter nastavené na hodnotu false, nebude mať hodnota tohto pravidla žiadny účinok.</translation>
 <translation id="1509692106376861764">Toto pravidlo sa prestalo používať v prehliadači <ph name="PRODUCT_NAME" /> verzie 29.</translation>
 <translation id="1514888685242892912">Povoliť <ph name="PRODUCT_NAME" /></translation>
-<translation id="1522425503138261032">Povoliť stránkam sledovať fyzickú polohu používateľov</translation>
+<translation id="1522425503138261032">Povoliť webom sledovať fyzickú polohu používateľa</translation>
 <translation id="1523774894176285446">Spúšťanie alternatívneho prehliadača na nakonfigurovaných weboch</translation>
 <translation id="152657506688053119">Zoznam alternatívnych webových adries pre predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="1530812829012954197">Vždy vykresliť nasledujúce vzory webových adries v hostiteľskom prehliadači</translation>
@@ -2423,7 +2423,7 @@ Ak značku recommended nastavíte na hodnotu true, používatelia môžu zmeniť
 
           Ak zvolíte, že chcete používať skript .pac proxy servera, budú mať aplikácie pre Android k dispozícii webovú adresu skriptu.</translation>
 <translation id="6430366557948788869">Rozšírenie na nahlasovanie údajov o Chrome</translation>
-<translation id="6440051664870270040">Povoliť webom súbežne prechádzať a otvárať kontextové okná</translation>
+<translation id="6440051664870270040">Povoliť webom súbežne navigovať a otvárať vyskakovacie okná</translation>
 <translation id="6447948611083700881">Zálohovanie a obnovenie je zakázané</translation>
 <translation id="6449476513004303784">Zakázať používateľom spravovať certifikáty</translation>
 <translation id="645425387487868471">Povoliť vynútenie prihlásenia v prehliadači <ph name="PRODUCT_NAME" /></translation>
@@ -2557,7 +2557,7 @@ Ak značku recommended nastavíte na hodnotu true, používatelia môžu zmeniť
       Ak ho zakážete (nastavíte na hodnotu false), <ph name="PRODUCT_NAME" /> nebude zobrazovať obsah na celú kartu používateľom s cieľom poskytovať informácie o produktoch.
 
       Toto nastavenie ovláda prezentovanie uvítacích stránok, ktoré pomáhajú používateľom prihlásiť sa do prehliadača <ph name="PRODUCT_NAME" /> a vybrať ho ako svoj predvolený prehliadač alebo ich pomáhajú inak informovať o funkciách produktov.</translation>
-<translation id="6766216162565713893">Povoliť webom žiadať používateľa o prístup k zariadeniam Bluetooth v blízkosti</translation>
+<translation id="6766216162565713893">Povoliť webom žiadať používateľa o prístup k blízkym zariadeniam Bluetooth</translation>
 <translation id="6770454900105963262">Nahlásiť informácie o aktívnych reláciách verejného terminálu</translation>
 <translation id="6786747875388722282">Rozšírenia</translation>
 <translation id="6786967369487349613">Nastaviť adresár roamingového profilu</translation>
@@ -2735,7 +2735,7 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
 
       Google môže tieto denníky na základe identifikátora relácie priradiť k iným denníkom zhromaždeným príslušnou službou Google. Ide o zamýšľané správanie, ktoré má uľahčiť ladenie.
       </translation>
-<translation id="706669471845501145">Povoliť webovým stránkam zobrazovať upozornenia na pracovnej ploche</translation>
+<translation id="706669471845501145">Povoliť webom zobrazovať upozornenia na pracovnej ploche</translation>
 <translation id="7072208053150563108">Frekvencia zmeny hesla zariadenia</translation>
 <translation id="7079519252486108041">Blokovať kontextové okná na týchto webových stránkach</translation>
 <translation id="7085803328069945025">Umožňuje nastaviť zoznam vzorov webových adries určujúcich weby, ktoré môžu používateľa požiadať o udelenie prístupu k zariadeniu USB.

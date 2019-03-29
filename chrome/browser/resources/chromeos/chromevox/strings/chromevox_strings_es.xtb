@@ -90,7 +90,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="1571643229714746283">Ya puedes usar ChromeVox</translation>
 <translation id="158493514907962286">Diciembre</translation>
 <translation id="1594072653727561613">mnu</translation>
-<translation id="1610130962244179598">Cambiar a Braille de seis puntos</translation>
+<translation id="1610130962244179598">Cambiar a braille de seis puntos</translation>
 <translation id="161042844686301425">Cian</translation>
 <translation id="1611168825862729585">Encabezado de columna:</translation>
 <translation id="1611649489706141841">adelante</translation>
@@ -889,7 +889,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="7322388933135261569">Febrero</translation>
 <translation id="7332592614823088566">Fila <ph name="ROWINDEX" /> de <ph name="ROWTOTAL" />, columna <ph name="COLINDEX" /> de <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">tiene un componente emergente</translation>
-<translation id="7356165926712028380">Cambiar a Braille de ocho puntos</translation>
+<translation id="7356165926712028380">Cambiar a braille de ocho puntos</translation>
 <translation id="7362871137496673139">No hay ningún título de nivel 2 anterior.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{et}other{# símbolos et}}</translation>
 <translation id="737396357417333429">clk</translation>
