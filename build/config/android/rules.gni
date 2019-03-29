@@ -4052,6 +4052,9 @@ if (enable_java_templates) {
   #      such that they are extracted upon install. Libraries prefixed with
   #      "crazy." are never compressed.
   #
+  #    system_image_locale_whitelist: List of locales that should be included
+  #      on system APKs generated from this bundle.
+  #
   # Example:
   #   android_app_bundle("chrome_public_bundle") {
   #      base_module_target = "//chrome/android:chrome_public_apk"
@@ -4423,6 +4426,11 @@ if (enable_java_templates) {
         "--key-name",
         _keystore_name,
       ]
+      if (defined(invoker.system_image_locale_whitelist)) {
+        args += [
+          "--system-image-locales=${invoker.system_image_locale_whitelist}",
+        ]
+      }
       if (defined(invoker.command_line_flags_file)) {
         args += [
           "--command-line-flags-file",
