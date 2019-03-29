@@ -3507,8 +3507,7 @@ TEST_F(NetworkContextTest, PreconnectFour) {
   ASSERT_EQ(num_sockets, 4);
 }
 
-// Flaky; see http://crbug.com/874419
-TEST_F(NetworkContextTest, DISABLED_PreconnectMax) {
+TEST_F(NetworkContextTest, PreconnectMax) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
@@ -3523,6 +3522,13 @@ TEST_F(NetworkContextTest, DISABLED_PreconnectMax) {
 
   network_context->PreconnectSockets(76, test_server.base_url(),
                                      net::LOAD_NORMAL, true);
+
+  // Wait until |max_num_sockets| have been connected.
+  connection_listener.WaitForAcceptedConnections(max_num_sockets);
+
+  // This is not guaranteed to wait long enough if more than |max_num_sockets|
+  // connections are actually made, but experimentally, it fails consistently if
+  // that's the case.
   base::RunLoop().RunUntilIdle();
 
   int num_sockets =
