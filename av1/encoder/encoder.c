@@ -2548,21 +2548,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   }
 }
 
-static void init_level_info(AV1LevelInfo *level_info) {
-  memset(level_info, 0, MAX_NUM_OPERATING_POINTS * sizeof(*level_info));
-  for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
-    AV1LevelSpec *const level_spec = &level_info[i].level_spec;
-    level_spec->level = SEQ_LEVEL_MAX;
-    AV1LevelStats *const level_stats = &level_info[i].level_stats;
-    level_stats->min_cropped_tile_width = INT_MAX;
-    level_stats->min_cropped_tile_height = INT_MAX;
-    level_stats->min_frame_width = INT_MAX;
-    level_stats->min_frame_height = INT_MAX;
-    level_stats->tile_width_is_valid = 1;
-    level_stats->min_cr = 1e8;
-  }
-}
-
 AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
                                 BufferPool *const pool) {
   unsigned int i;
@@ -2624,7 +2609,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 
   cpi->refresh_alt_ref_frame = 0;
 
-  init_level_info(cpi->level_info);
+  av1_init_level_info(cpi->level_info);
 
   cpi->b_calculate_psnr = CONFIG_INTERNAL_STATS;
 #if CONFIG_INTERNAL_STATS
@@ -5477,8 +5462,14 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
       generate_psnr_packet(cpi);
     }
   }
-  if (cpi->keep_level_stats && oxcf->pass != 1)
+
+  if (cpi->keep_level_stats && oxcf->pass != 1) {
+    // Initialize level info. at the beginning of each sequence.
+    if (cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) {
+      av1_init_level_info(cpi->level_info);
+    }
     av1_update_level_info(cpi, *size, *time_stamp, *time_end);
+  }
 
 #if CONFIG_INTERNAL_STATS
   if (oxcf->pass != 1) {

@@ -262,6 +262,21 @@ static const char *level_fail_messages[TARGET_LEVEL_FAIL_IDS] = {
   "The product of max tile size and header rate is too high.",
 };
 
+void av1_init_level_info(AV1LevelInfo *level_info) {
+  memset(level_info, 0, MAX_NUM_OPERATING_POINTS * sizeof(*level_info));
+  for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
+    AV1LevelSpec *const level_spec = &level_info[i].level_spec;
+    level_spec->level = SEQ_LEVEL_MAX;
+    AV1LevelStats *const level_stats = &level_info[i].level_stats;
+    level_stats->min_cropped_tile_width = INT_MAX;
+    level_stats->min_cropped_tile_height = INT_MAX;
+    level_stats->min_frame_width = INT_MAX;
+    level_stats->min_frame_height = INT_MAX;
+    level_stats->tile_width_is_valid = 1;
+    level_stats->min_cr = 1e8;
+  }
+}
+
 static double get_min_cr(const AV1LevelSpec *const level_spec, int tier,
                          int is_still_picture, int64_t decoded_sample_rate) {
   if (is_still_picture) return 0.8;
