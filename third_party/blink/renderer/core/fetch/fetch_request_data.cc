@@ -158,7 +158,7 @@ FetchRequestData::~FetchRequestData() {}
 
 FetchRequestData::FetchRequestData()
     : method_(http_names::kGET),
-      header_list_(FetchHeaderList::Create()),
+      header_list_(MakeGarbageCollected<FetchHeaderList>()),
       context_(mojom::RequestContextType::UNSPECIFIED),
       same_origin_data_url_flag_(false),
       referrer_string_(Referrer::ClientReferrerString()),

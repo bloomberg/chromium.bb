@@ -61,12 +61,12 @@ constexpr size_t kQuickBrownFoxFormDataLength =
 TEST(FetchDataLoaderTest, LoadAsBlob) {
   Checkpoint checkpoint;
   BytesConsumer::Client* client = nullptr;
-  MockBytesConsumer* consumer = MockBytesConsumer::Create();
+  auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader =
       FetchDataLoader::CreateLoaderAsBlobHandle("text/test");
-  MockFetchDataLoaderClient* fetch_data_loader_client =
-      MockFetchDataLoaderClient::Create();
+  auto* fetch_data_loader_client =
+      MakeGarbageCollected<MockFetchDataLoaderClient>();
   scoped_refptr<BlobDataHandle> blob_data_handle;
 
   InSequence s;
@@ -110,12 +110,12 @@ TEST(FetchDataLoaderTest, LoadAsBlob) {
 TEST(FetchDataLoaderTest, LoadAsBlobFailed) {
   Checkpoint checkpoint;
   BytesConsumer::Client* client = nullptr;
-  MockBytesConsumer* consumer = MockBytesConsumer::Create();
+  auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader =
       FetchDataLoader::CreateLoaderAsBlobHandle("text/test");
-  MockFetchDataLoaderClient* fetch_data_loader_client =
-      MockFetchDataLoaderClient::Create();
+  auto* fetch_data_loader_client =
+      MakeGarbageCollected<MockFetchDataLoaderClient>();
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
@@ -153,12 +153,12 @@ TEST(FetchDataLoaderTest, LoadAsBlobFailed) {
 TEST(FetchDataLoaderTest, LoadAsBlobCancel) {
   Checkpoint checkpoint;
   BytesConsumer::Client* client = nullptr;
-  MockBytesConsumer* consumer = MockBytesConsumer::Create();
+  auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader =
       FetchDataLoader::CreateLoaderAsBlobHandle("text/test");
-  MockFetchDataLoaderClient* fetch_data_loader_client =
-      MockFetchDataLoaderClient::Create();
+  auto* fetch_data_loader_client =
+      MakeGarbageCollected<MockFetchDataLoaderClient>();
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
@@ -191,12 +191,12 @@ TEST(FetchDataLoaderTest,
       std::move(blob_data), kQuickBrownFoxLengthWithTerminatingNull);
 
   Checkpoint checkpoint;
-  MockBytesConsumer* consumer = MockBytesConsumer::Create();
+  auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader =
       FetchDataLoader::CreateLoaderAsBlobHandle("text/test");
-  MockFetchDataLoaderClient* fetch_data_loader_client =
-      MockFetchDataLoaderClient::Create();
+  auto* fetch_data_loader_client =
+      MakeGarbageCollected<MockFetchDataLoaderClient>();
   scoped_refptr<BlobDataHandle> blob_data_handle;
 
   InSequence s;
@@ -233,12 +233,12 @@ TEST(FetchDataLoaderTest,
       std::move(blob_data), kQuickBrownFoxLengthWithTerminatingNull);
 
   Checkpoint checkpoint;
-  MockBytesConsumer* consumer = MockBytesConsumer::Create();
+  auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader =
       FetchDataLoader::CreateLoaderAsBlobHandle("text/test");
-  MockFetchDataLoaderClient* fetch_data_loader_client =
-      MockFetchDataLoaderClient::Create();
+  auto* fetch_data_loader_client =
+      MakeGarbageCollected<MockFetchDataLoaderClient>();
   scoped_refptr<BlobDataHandle> blob_data_handle;
 
   InSequence s;
@@ -268,12 +268,12 @@ TEST(FetchDataLoaderTest,
 TEST(FetchDataLoaderTest, LoadAsArrayBuffer) {
   Checkpoint checkpoint;
   BytesConsumer::Client* client = nullptr;
-  MockBytesConsumer* consumer = MockBytesConsumer::Create();
+  auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader =
       FetchDataLoader::CreateLoaderAsArrayBuffer();
-  MockFetchDataLoaderClient* fetch_data_loader_client =
-      MockFetchDataLoaderClient::Create();
+  auto* fetch_data_loader_client =
+      MakeGarbageCollected<MockFetchDataLoaderClient>();
   DOMArrayBuffer* array_buffer = nullptr;
 
   InSequence s;
@@ -314,12 +314,12 @@ TEST(FetchDataLoaderTest, LoadAsArrayBuffer) {
 TEST(FetchDataLoaderTest, LoadAsArrayBufferFailed) {
   Checkpoint checkpoint;
   BytesConsumer::Client* client = nullptr;
-  MockBytesConsumer* consumer = MockBytesConsumer::Create();
+  auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader =
       FetchDataLoader::CreateLoaderAsArrayBuffer();
-  MockFetchDataLoaderClient* fetch_data_loader_client =
-      MockFetchDataLoaderClient::Create();
+  auto* fetch_data_loader_client =
+      MakeGarbageCollected<MockFetchDataLoaderClient>();
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
@@ -353,12 +353,12 @@ TEST(FetchDataLoaderTest, LoadAsArrayBufferFailed) {
 TEST(FetchDataLoaderTest, LoadAsArrayBufferCancel) {
   Checkpoint checkpoint;
   BytesConsumer::Client* client = nullptr;
-  MockBytesConsumer* consumer = MockBytesConsumer::Create();
+  auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader =
       FetchDataLoader::CreateLoaderAsArrayBuffer();
-  MockFetchDataLoaderClient* fetch_data_loader_client =
-      MockFetchDataLoaderClient::Create();
+  auto* fetch_data_loader_client =
+      MakeGarbageCollected<MockFetchDataLoaderClient>();
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
@@ -380,12 +380,12 @@ TEST(FetchDataLoaderTest, LoadAsArrayBufferCancel) {
 TEST(FetchDataLoaderTest, LoadAsFormData) {
   Checkpoint checkpoint;
   BytesConsumer::Client* client = nullptr;
-  MockBytesConsumer* consumer = MockBytesConsumer::Create();
+  auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader =
       FetchDataLoader::CreateLoaderAsFormData("boundary");
-  MockFetchDataLoaderClient* fetch_data_loader_client =
-      MockFetchDataLoaderClient::Create();
+  auto* fetch_data_loader_client =
+      MakeGarbageCollected<MockFetchDataLoaderClient>();
   FormData* form_data = nullptr;
 
   InSequence s;
@@ -449,12 +449,12 @@ TEST(FetchDataLoaderTest, LoadAsFormData) {
 TEST(FetchDataLoaderTest, LoadAsFormDataPartialInput) {
   Checkpoint checkpoint;
   BytesConsumer::Client* client = nullptr;
-  MockBytesConsumer* consumer = MockBytesConsumer::Create();
+  auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader =
       FetchDataLoader::CreateLoaderAsFormData("boundary");
-  MockFetchDataLoaderClient* fetch_data_loader_client =
-      MockFetchDataLoaderClient::Create();
+  auto* fetch_data_loader_client =
+      MakeGarbageCollected<MockFetchDataLoaderClient>();
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
@@ -488,12 +488,12 @@ TEST(FetchDataLoaderTest, LoadAsFormDataPartialInput) {
 TEST(FetchDataLoaderTest, LoadAsFormDataFailed) {
   Checkpoint checkpoint;
   BytesConsumer::Client* client = nullptr;
-  MockBytesConsumer* consumer = MockBytesConsumer::Create();
+  auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader =
       FetchDataLoader::CreateLoaderAsFormData("boundary");
-  MockFetchDataLoaderClient* fetch_data_loader_client =
-      MockFetchDataLoaderClient::Create();
+  auto* fetch_data_loader_client =
+      MakeGarbageCollected<MockFetchDataLoaderClient>();
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
@@ -527,12 +527,12 @@ TEST(FetchDataLoaderTest, LoadAsFormDataFailed) {
 TEST(FetchDataLoaderTest, LoadAsFormDataCancel) {
   Checkpoint checkpoint;
   BytesConsumer::Client* client = nullptr;
-  MockBytesConsumer* consumer = MockBytesConsumer::Create();
+  auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader =
       FetchDataLoader::CreateLoaderAsFormData("boundary");
-  MockFetchDataLoaderClient* fetch_data_loader_client =
-      MockFetchDataLoaderClient::Create();
+  auto* fetch_data_loader_client =
+      MakeGarbageCollected<MockFetchDataLoaderClient>();
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
@@ -554,11 +554,11 @@ TEST(FetchDataLoaderTest, LoadAsFormDataCancel) {
 TEST(FetchDataLoaderTest, LoadAsString) {
   Checkpoint checkpoint;
   BytesConsumer::Client* client = nullptr;
-  MockBytesConsumer* consumer = MockBytesConsumer::Create();
+  auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString();
-  MockFetchDataLoaderClient* fetch_data_loader_client =
-      MockFetchDataLoaderClient::Create();
+  auto* fetch_data_loader_client =
+      MakeGarbageCollected<MockFetchDataLoaderClient>();
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
@@ -593,11 +593,11 @@ TEST(FetchDataLoaderTest, LoadAsString) {
 TEST(FetchDataLoaderTest, LoadAsStringWithNullBytes) {
   Checkpoint checkpoint;
   BytesConsumer::Client* client = nullptr;
-  MockBytesConsumer* consumer = MockBytesConsumer::Create();
+  auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString();
-  MockFetchDataLoaderClient* fetch_data_loader_client =
-      MockFetchDataLoaderClient::Create();
+  auto* fetch_data_loader_client =
+      MakeGarbageCollected<MockFetchDataLoaderClient>();
 
   constexpr char kPattern[] = "Quick\0brown\0fox";
   constexpr size_t kLength = sizeof(kPattern);
@@ -633,11 +633,11 @@ TEST(FetchDataLoaderTest, LoadAsStringWithNullBytes) {
 TEST(FetchDataLoaderTest, LoadAsStringError) {
   Checkpoint checkpoint;
   BytesConsumer::Client* client = nullptr;
-  MockBytesConsumer* consumer = MockBytesConsumer::Create();
+  auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString();
-  MockFetchDataLoaderClient* fetch_data_loader_client =
-      MockFetchDataLoaderClient::Create();
+  auto* fetch_data_loader_client =
+      MakeGarbageCollected<MockFetchDataLoaderClient>();
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
@@ -671,11 +671,11 @@ TEST(FetchDataLoaderTest, LoadAsStringError) {
 TEST(FetchDataLoaderTest, LoadAsStringCancel) {
   Checkpoint checkpoint;
   BytesConsumer::Client* client = nullptr;
-  MockBytesConsumer* consumer = MockBytesConsumer::Create();
+  auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString();
-  MockFetchDataLoaderClient* fetch_data_loader_client =
-      MockFetchDataLoaderClient::Create();
+  auto* fetch_data_loader_client =
+      MakeGarbageCollected<MockFetchDataLoaderClient>();
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
