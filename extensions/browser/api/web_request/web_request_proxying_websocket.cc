@@ -44,12 +44,10 @@ WebRequestProxyingWebSocket::WebRequestProxyingWebSocket(
   binding_as_websocket_.Bind(std::move(proxied_request));
   binding_as_auth_handler_.Bind(std::move(auth_request));
 
-  binding_as_websocket_.set_connection_error_handler(
-      base::BindRepeating(&WebRequestProxyingWebSocket::OnError,
-                          base::Unretained(this), net::ERR_FAILED));
-  binding_as_auth_handler_.set_connection_error_handler(
-      base::BindRepeating(&WebRequestProxyingWebSocket::OnError,
-                          base::Unretained(this), net::ERR_FAILED));
+  binding_as_websocket_.set_connection_error_handler(base::BindOnce(
+      &WebRequestProxyingWebSocket::OnMojoError, base::Unretained(this)));
+  binding_as_auth_handler_.set_connection_error_handler(base::BindOnce(
+      &WebRequestProxyingWebSocket::OnMojoError, base::Unretained(this)));
 
   if (header_client_request)
     binding_as_header_client_.Bind(std::move(header_client_request));
@@ -122,7 +120,7 @@ void WebRequestProxyingWebSocket::AddChannelRequest(
   DCHECK(!should_collapse_initiator);
 
   if (result == net::ERR_BLOCKED_BY_CLIENT) {
-    OnError(result);
+    HandleErrorDuringHandshake(result);
     return;
   }
 
@@ -164,7 +162,8 @@ void WebRequestProxyingWebSocket::OnFailChannel(const std::string& reason) {
     rv = net::ERR_ABORTED;
   }
 
-  OnError(rv);
+  DoErrorOccurredIfNeeded(rv);
+  // Wait for the render process to delete us to avoid race conditions.
 }
 
 void WebRequestProxyingWebSocket::OnStartOpeningHandshake(
@@ -175,6 +174,11 @@ void WebRequestProxyingWebSocket::OnStartOpeningHandshake(
 
 void WebRequestProxyingWebSocket::OnFinishOpeningHandshake(
     network::mojom::WebSocketHandshakeResponsePtr response) {
+  if (is_handshake_done_) {
+    LOG(WARNING) << "Network service called OnFinishOpeningHandshake too late";
+    return;
+  }
+
   DCHECK(forwarding_client_);
 
   // response_.headers will be set in OnBeforeSendHeaders if
@@ -213,7 +217,7 @@ void WebRequestProxyingWebSocket::ContinueToHeadersReceived() {
       response_.headers.get(), &override_headers_, &redirect_url_);
 
   if (result == net::ERR_BLOCKED_BY_CLIENT) {
-    OnError(result);
+    HandleErrorDuringHandshake(result);
     return;
   }
 
@@ -229,8 +233,13 @@ void WebRequestProxyingWebSocket::OnAddChannelResponse(
     const std::string& selected_protocol,
     const std::string& extensions) {
   DCHECK(forwarding_client_);
-  DCHECK(!is_done_);
-  is_done_ = true;
+  if (is_handshake_done_) {
+    DLOG(WARNING)
+        << "Multiple OnAddChannelResponse messages from network service";
+    return;
+  }
+  is_handshake_done_ = true;
+
   ExtensionWebRequestEventRouter::GetInstance()->OnCompleted(
       browser_context_, info_map_, &info_.value(), net::ERR_WS_UPGRADE);
 
@@ -257,7 +266,7 @@ void WebRequestProxyingWebSocket::OnDropChannel(bool was_clean,
   forwarding_client_->OnDropChannel(was_clean, code, reason);
 
   forwarding_client_ = nullptr;
-  OnError(net::ERR_FAILED);
+  // Wait for the render process to delete us to do cleanup.
 }
 
 void WebRequestProxyingWebSocket::OnClosingHandshake() {
@@ -270,8 +279,13 @@ void WebRequestProxyingWebSocket::OnAuthRequired(
     const scoped_refptr<net::HttpResponseHeaders>& headers,
     const net::IPEndPoint& remote_endpoint,
     OnAuthRequiredCallback callback) {
+  if (is_handshake_done_) {
+    LOG(WARNING) << "Unexpected call to OnAuthRequired from network service";
+    return;
+  }
+
   if (!auth_info || !callback) {
-    OnError(net::ERR_FAILED);
+    HandleErrorDuringHandshake(net::ERR_FAILED);
     return;
   }
 
@@ -287,7 +301,7 @@ void WebRequestProxyingWebSocket::OnAuthRequired(
       response_.headers.get(), &override_headers_, &redirect_url_);
 
   if (result == net::ERR_BLOCKED_BY_CLIENT) {
-    OnError(result);
+    HandleErrorDuringHandshake(result);
     return;
   }
 
@@ -357,7 +371,7 @@ void WebRequestProxyingWebSocket::OnBeforeRequestComplete(int error_code) {
   DCHECK(binding_as_header_client_ || !binding_as_client_.is_bound());
   DCHECK(request_.url.SchemeIsWSOrWSS());
   if (error_code != net::OK) {
-    OnError(error_code);
+    HandleErrorDuringHandshake(error_code);
     return;
   }
 
@@ -371,7 +385,7 @@ void WebRequestProxyingWebSocket::OnBeforeRequestComplete(int error_code) {
           &request_.headers);
 
   if (result == net::ERR_BLOCKED_BY_CLIENT) {
-    OnError(result);
+    HandleErrorDuringHandshake(result);
     return;
   }
 
@@ -385,7 +399,7 @@ void WebRequestProxyingWebSocket::OnBeforeRequestComplete(int error_code) {
 void WebRequestProxyingWebSocket::OnBeforeSendHeadersComplete(int error_code) {
   DCHECK(binding_as_header_client_ || !binding_as_client_.is_bound());
   if (error_code != net::OK) {
-    OnError(error_code);
+    HandleErrorDuringHandshake(error_code);
     return;
   }
 
@@ -412,9 +426,8 @@ void WebRequestProxyingWebSocket::ContinueToStartRequest(int error_code) {
   }
 
   binding_as_client_.Bind(mojo::MakeRequest(&proxy));
-  binding_as_client_.set_connection_error_handler(
-      base::BindOnce(&WebRequestProxyingWebSocket::OnError,
-                     base::Unretained(this), net::ERR_FAILED));
+  binding_as_client_.set_connection_error_handler(base::BindOnce(
+      &WebRequestProxyingWebSocket::OnMojoError, base::Unretained(this)));
   proxied_socket_->AddChannelRequest(
       request_.url, websocket_protocols_, request_.site_for_cookies,
       std::move(additional_headers), std::move(proxy));
@@ -422,7 +435,7 @@ void WebRequestProxyingWebSocket::ContinueToStartRequest(int error_code) {
 
 void WebRequestProxyingWebSocket::OnHeadersReceivedComplete(int error_code) {
   if (error_code != net::OK) {
-    OnError(error_code);
+    HandleErrorDuringHandshake(error_code);
     return;
   }
 
@@ -467,7 +480,7 @@ void WebRequestProxyingWebSocket::OnHeadersReceivedCompleteForAuth(
     scoped_refptr<net::AuthChallengeInfo> auth_info,
     int rv) {
   if (rv != net::OK) {
-    OnError(rv);
+    HandleErrorDuringHandshake(rv);
     return;
   }
   ResumeIncomingMethodCallProcessing();
@@ -500,13 +513,26 @@ void WebRequestProxyingWebSocket::ResumeIncomingMethodCallProcessing() {
     binding_as_header_client_.ResumeIncomingMethodCallProcessing();
 }
 
-void WebRequestProxyingWebSocket::OnError(int error_code) {
-  if (!is_done_ && info_.has_value()) {
-    is_done_ = true;
+void WebRequestProxyingWebSocket::DoErrorOccurredIfNeeded(int error_code) {
+  if (!is_handshake_done_ && info_.has_value()) {
+    is_handshake_done_ = true;
     ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
         browser_context_, info_map_, &info_.value(), true /* started */,
         error_code);
   }
+}
+
+void WebRequestProxyingWebSocket::OnMojoError() {
+  HandleGenericError(net::ERR_FAILED);
+}
+
+void WebRequestProxyingWebSocket::HandleErrorDuringHandshake(int error_code) {
+  DCHECK(!is_handshake_done_);
+  HandleGenericError(error_code);
+}
+
+void WebRequestProxyingWebSocket::HandleGenericError(int error_code) {
+  DoErrorOccurredIfNeeded(error_code);
   if (forwarding_client_)
     forwarding_client_->OnFailChannel(net::ErrorToString(error_code));
 
