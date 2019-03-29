@@ -79,7 +79,7 @@ DeviceFactoryProviderImpl::DeviceFactoryProviderImpl(
   // Unretained |this| is safe because |factory_bindings_| is owned by
   // |this|.
   factory_bindings_.set_connection_error_handler(base::BindRepeating(
-      &DeviceFactoryProviderImpl::OnFactoryClientDisconnected,
+      &DeviceFactoryProviderImpl::OnFactoryOrSourceProviderClientDisconnected,
       base::Unretained(this)));
 }
 
@@ -116,8 +116,7 @@ void DeviceFactoryProviderImpl::ConnectToDeviceFactory(
 void DeviceFactoryProviderImpl::ConnectToVideoSourceProvider(
     mojom::VideoSourceProviderRequest request) {
   LazyInitializeVideoSourceProvider();
-  video_source_provider_bindings_.AddBinding(video_source_provider_.get(),
-                                             std::move(request));
+  video_source_provider_->AddClient(std::move(request));
 }
 
 void DeviceFactoryProviderImpl::ShutdownServiceAsap() {
@@ -131,8 +130,15 @@ void DeviceFactoryProviderImpl::LazyInitializeGpuDependenciesContext() {
 }
 
 void DeviceFactoryProviderImpl::LazyInitializeDeviceFactory() {
-  if (device_factory_)
+  DCHECK(service_ref_);
+
+  // Factory may already exist but if no client was connected it will not have a
+  // ServiceRef.
+  if (device_factory_) {
+    if (factory_bindings_.empty())
+      device_factory_->SetServiceRef(service_ref_->Clone());
     return;
+  }
 
   LazyInitializeGpuDependenciesContext();
 
@@ -160,21 +166,35 @@ void DeviceFactoryProviderImpl::LazyInitializeDeviceFactory() {
 void DeviceFactoryProviderImpl::LazyInitializeVideoSourceProvider() {
   if (video_source_provider_)
     return;
-
   LazyInitializeDeviceFactory();
-
-  video_source_provider_ =
-      std::make_unique<VideoSourceProviderImpl>(device_factory_.get());
+  video_source_provider_ = std::make_unique<VideoSourceProviderImpl>(
+      device_factory_.get(),
+      // Unretained(this) is safe, because |this| owns |video_source_provider_|.
+      base::BindRepeating(
+          &DeviceFactoryProviderImpl::OnLastSourceProviderClientDisconnected,
+          base::Unretained(this)));
 }
 
-void DeviceFactoryProviderImpl::OnFactoryClientDisconnected() {
-  // If last client has disconnected, release service ref so that service
-  // shutdown timeout starts if no other references are still alive.
-  // We keep the |device_factory_| instance alive in order to avoid
-  // losing state that would be expensive to reinitialize, e.g. having
-  // already enumerated the available devices.
-  if (factory_bindings_.empty())
+void DeviceFactoryProviderImpl::OnLastSourceProviderClientDisconnected() {
+  video_source_provider_.reset();
+  OnFactoryOrSourceProviderClientDisconnected();
+}
+
+void DeviceFactoryProviderImpl::OnFactoryOrSourceProviderClientDisconnected() {
+  // If |video_source_provider_| still exists, it means there is still a client
+  // connected to it, in which case we also still need |device_factory_| to
+  // stay operational.
+  if (video_source_provider_)
+    return;
+
+  // If neither |device_factory_| nor |video_source_provider_| have clients
+  // connected, release service ref so that service shutdown timeout can start
+  // if no other references are still alive. We keep the |device_factory_|
+  // instance alive in order to avoid losing state that would be expensive to
+  // reinitialize, e.g. having already enumerated the available devices.
+  if (factory_bindings_.empty()) {
     device_factory_->SetServiceRef(nullptr);
+  }
 }
 
 #if defined(OS_CHROMEOS)

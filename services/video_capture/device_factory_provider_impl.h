@@ -16,7 +16,6 @@
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
 #include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
-#include "services/video_capture/public/mojom/video_source_provider.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
@@ -25,6 +24,7 @@
 namespace video_capture {
 
 class VirtualDeviceEnabledDeviceFactory;
+class VideoSourceProviderImpl;
 
 class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
  public:
@@ -55,12 +55,12 @@ class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
   void LazyInitializeGpuDependenciesContext();
   void LazyInitializeDeviceFactory();
   void LazyInitializeVideoSourceProvider();
-  void OnFactoryClientDisconnected();
+  void OnLastSourceProviderClientDisconnected();
+  void OnFactoryOrSourceProviderClientDisconnected();
 
   mojo::BindingSet<mojom::DeviceFactory> factory_bindings_;
   std::unique_ptr<VirtualDeviceEnabledDeviceFactory> device_factory_;
-  mojo::BindingSet<mojom::VideoSourceProvider> video_source_provider_bindings_;
-  std::unique_ptr<mojom::VideoSourceProvider> video_source_provider_;
+  std::unique_ptr<VideoSourceProviderImpl> video_source_provider_;
   std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   std::unique_ptr<GpuDependenciesContext> gpu_dependencies_context_;
 

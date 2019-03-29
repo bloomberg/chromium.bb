@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/video_capture/device_factory.h"
 #include "services/video_capture/public/mojom/video_source_provider.mojom.h"
 
@@ -16,11 +17,12 @@ class VideoSourceImpl;
 
 class VideoSourceProviderImpl : public mojom::VideoSourceProvider {
  public:
-  explicit VideoSourceProviderImpl(DeviceFactory* device_factory);
+  VideoSourceProviderImpl(
+      DeviceFactory* device_factory,
+      base::RepeatingClosure on_last_client_disconnected_cb);
   ~VideoSourceProviderImpl() override;
 
-  void SetServiceRef(
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+  void AddClient(mojom::VideoSourceProviderRequest request);
 
   // mojom::VideoSourceProvider implementation.
   void GetSourceInfos(GetSourceInfosCallback callback) override;
@@ -37,11 +39,18 @@ class VideoSourceProviderImpl : public mojom::VideoSourceProvider {
   void RegisterVirtualDevicesChangedObserver(
       mojom::DevicesChangedObserverPtr observer,
       bool raise_event_if_virtual_devices_already_present) override;
+  void Close(CloseCallback callback) override;
 
  private:
+  void OnClientDisconnected();
+  void OnClientDisconnectedOrClosed();
   void OnVideoSourceLastClientDisconnected(const std::string& device_id);
 
   DeviceFactory* const device_factory_;
+  base::RepeatingClosure on_last_client_disconnected_cb_;
+  int client_count_ = 0;
+  int closed_but_not_yet_disconnected_client_count_ = 0;
+  mojo::BindingSet<mojom::VideoSourceProvider> bindings_;
   std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   std::map<std::string, std::unique_ptr<VideoSourceImpl>> sources_;
   DISALLOW_COPY_AND_ASSIGN(VideoSourceProviderImpl);
