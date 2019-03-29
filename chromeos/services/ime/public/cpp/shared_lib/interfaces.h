@@ -59,6 +59,71 @@
 namespace chromeos {
 namespace ime {
 
+// Callback upon async completion of DownloadToFile(), passing the originally
+// issued |request_id| (as returned by DownloadToFile()) and an |error_code| (as
+// defined at
+// https://cs.chromium.org/chromium/src/net/base/net_error_list.h?rcl=f9c935b73381772d508eebba1e216c437139d475).
+typedef void (*DownloadCallback)(int request_id, int status_code);
+
+// Based on RequestPriority defined at
+// https://cs.chromium.org/chromium/src/net/base/request_priority.h?rcl=f9c935b73381772d508eebba1e216c437139d475
+enum DownloadPriority {
+  THROTTLED = 0,
+  MINIMUM_PRIORITY = THROTTLED,
+  IDLE = 1,
+  LOWEST = 2,
+  DEFAULT_PRIORITY = LOWEST,
+  LOW = 3,
+  MEDIUM = 4,
+  HIGHEST = 5,
+  MAXIMUM_PRIORITY = HIGHEST,
+};
+
+// Extendable extra options for a download.
+struct DownloadOptions {
+  // Duration (in milliseconds) to wait before giving up on the download and
+  // considering it an error. Negative value means it can take indefinitely.
+  long timeout_ms;
+
+  // Priority level for the download.
+  DownloadPriority priority;
+
+  // Max number of times to retry a download (exclusive of the initial attempt).
+  unsigned int max_retries;
+
+  // Always add more stuff at the end only. Just like protobuf, refrain from
+  // deleting or re-ordering for maximal API stability and backward
+  // compatibility. Simply mark fields as "deprecated" if need be.
+};
+
+// Provides CrOS network download service to the shared library.
+class Downloader {
+ protected:
+  virtual ~Downloader() = default;
+
+ public:
+  // Download data from the given |url| and store into a file located at the
+  // given |file_path|, using the specified download |options|. The method
+  // returns a |request_id| (unique among those issued by the same Downloader),
+  // while actual download operation takes place asynchronously. Upon async
+  // completion of the download (either success or failure), the given
+  // |callback| function will be invoked, passing a matching |request_id| and
+  // the status via an |error_code|. All arguments are const and completely
+  // owned by the caller at all times; they should remain alive till the sync
+  // return of this method.
+  virtual int DownloadToFile(const char* url,
+                             const DownloadOptions& options,
+                             const char* file_path,
+                             DownloadCallback callback) = 0;
+
+  // Cancel the download whose |request_id| is given (|request_id| is issued
+  // in the return value of each DownloadToFile() call). The callback of a
+  // cancelled download will never be invoked. If the |request_id| is invalid
+  // or belongs to an already completed download (either success or failure),
+  // this method will just no-op.
+  virtual void Cancel(int request_id) = 0;
+};
+
 // This defines the `Platform` interface, which is used throughout the shared
 // library to manage platform-specific data/operations.
 //
@@ -86,7 +151,12 @@ class Platform {
   // is only accessible to the user itself.
   virtual const char* GetImeUserHomeDir() = 0;
 
-  // TODO(https://crbug.com/837156): Provide Downloader/Logger for main entry.
+  // Get the Downloader that provides CrOS network download service. Ownership
+  // of the returned Downloader instance is never transferred, i.e. it remains
+  // owned by the IME service / Platform at all times.
+  virtual Downloader* GetDownloader() = 0;
+  
+  // TODO(https://crbug.com/837156): Provide Logger for main entry.
 };
 
 // The wrapper of Mojo InterfacePtr on an IME client.
