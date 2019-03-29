@@ -42,7 +42,8 @@ def main():
                               package_name=${PACKAGE_NAME},
                               command_line_flags_file=${FLAGS_FILE},
                               proguard_mapping_path=resolve(${MAPPING_PATH}),
-                              target_cpu=${TARGET_CPU})
+                              target_cpu=${TARGET_CPU},
+                              system_image_locales=${SYSTEM_IMAGE_LOCALES})
 
 if __name__ == '__main__':
   sys.exit(main())
@@ -64,6 +65,7 @@ def main(args):
   parser.add_argument('--command-line-flags-file')
   parser.add_argument('--proguard-mapping-path')
   parser.add_argument('--target-cpu')
+  parser.add_argument('--system-image-locales')
   args = parser.parse_args(args)
 
   def relativize(path):
@@ -77,18 +79,32 @@ def main(args):
 
   with open(args.script_output_path, 'w') as script:
     script_dict = {
-        'WRAPPED_SCRIPT_DIR': repr(wrapped_script_dir),
-        'OUTPUT_DIR': repr(relativize('.')),
-        'BUNDLE_PATH': repr(relativize(args.bundle_path)),
-        'BUNDLE_APKS_PATH': repr(relativize(args.bundle_apks_path)),
-        'PACKAGE_NAME': repr(args.package_name),
-        'AAPT2_PATH': repr(relativize(args.aapt2_path)),
-        'KEYSTORE_PATH': repr(relativize(args.keystore_path)),
-        'KEYSTORE_PASSWORD': repr(args.keystore_password),
-        'KEY_NAME': repr(args.key_name),
-        'MAPPING_PATH': repr(relativize(args.proguard_mapping_path)),
-        'FLAGS_FILE': repr(args.command_line_flags_file),
-        'TARGET_CPU': repr(args.target_cpu),
+        'WRAPPED_SCRIPT_DIR':
+        repr(wrapped_script_dir),
+        'OUTPUT_DIR':
+        repr(relativize('.')),
+        'BUNDLE_PATH':
+        repr(relativize(args.bundle_path)),
+        'BUNDLE_APKS_PATH':
+        repr(relativize(args.bundle_apks_path)),
+        'PACKAGE_NAME':
+        repr(args.package_name),
+        'AAPT2_PATH':
+        repr(relativize(args.aapt2_path)),
+        'KEYSTORE_PATH':
+        repr(relativize(args.keystore_path)),
+        'KEYSTORE_PASSWORD':
+        repr(args.keystore_password),
+        'KEY_NAME':
+        repr(args.key_name),
+        'MAPPING_PATH':
+        repr(relativize(args.proguard_mapping_path)),
+        'FLAGS_FILE':
+        repr(args.command_line_flags_file),
+        'TARGET_CPU':
+        repr(args.target_cpu),
+        'SYSTEM_IMAGE_LOCALES':
+        repr(build_utils.ParseGnList(args.system_image_locales)),
     }
     script.write(SCRIPT_TEMPLATE.substitute(script_dict))
   os.chmod(args.script_output_path, 0750)

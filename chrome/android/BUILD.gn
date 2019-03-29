@@ -2142,6 +2142,8 @@ template("monochrome_public_bundle_tmpl") {
     bundle_name = _bundle_name
     base_module_target = ":$_base_module_target_name"
     command_line_flags_file = "chrome-command-line"
+    system_image_locale_whitelist = locales - android_chrome_omitted_locales
+
     if (!is_java_debug) {
       proguard_enabled = true
       proguard_android_sdk_dep = webview_framework_dep

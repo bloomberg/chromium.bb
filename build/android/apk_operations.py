@@ -90,10 +90,11 @@ def _InstallApk(devices, apk, install_dict):
 #   keystore_path: Path to keystore file.
 #   keystore_password: Password for the keystore file.
 #   keystore_alias: Signing key name alias within the keystore file.
+#   system_image_locales: List of Chromium locales to include in system .apks.
 BundleGenerationInfo = collections.namedtuple(
     'BundleGenerationInfo',
     'bundle_path,bundle_apks_path,aapt2_path,keystore_path,keystore_password,'
-    'keystore_alias')
+    'keystore_alias,system_image_locales')
 
 
 def _GenerateBundleApks(info,
@@ -117,6 +118,7 @@ def _GenerateBundleApks(info,
       info.keystore_path,
       info.keystore_password,
       info.keystore_alias,
+      system_image_locales=info.system_image_locales,
       mode=mode,
       minimal=minimal,
       minimal_sdk_version=minimal_sdk_version)
@@ -1564,10 +1566,10 @@ def Run(output_directory, apk_path, incremental_json, command_line_flags_file,
   _RunInternal(parser, output_directory=output_directory)
 
 
-def RunForBundle(output_directory, bundle_path, bundle_apks_path,
-                 aapt2_path, keystore_path, keystore_password,
-                 keystore_alias, package_name, command_line_flags_file,
-                 proguard_mapping_path, target_cpu):
+def RunForBundle(output_directory, bundle_path, bundle_apks_path, aapt2_path,
+                 keystore_path, keystore_password, keystore_alias, package_name,
+                 command_line_flags_file, proguard_mapping_path, target_cpu,
+                 system_image_locales):
   """Entry point for generated app bundle wrapper scripts.
 
   Args:
@@ -1584,6 +1586,8 @@ def RunForBundle(output_directory, bundle_path, bundle_apks_path,
     proguard_mapping_path: Input path to the Proguard mapping file, used to
       deobfuscate Java stack traces.
     target_cpu: Chromium target CPU name, used by the 'gdb' command.
+    system_image_locales: List of Chromium locales that should be included in
+      system image APKs.
   """
   constants.SetOutputDirectory(output_directory)
   devil_chromium.Initialize(output_directory=output_directory)
@@ -1593,7 +1597,8 @@ def RunForBundle(output_directory, bundle_path, bundle_apks_path,
       aapt2_path=aapt2_path,
       keystore_path=keystore_path,
       keystore_password=keystore_password,
-      keystore_alias=keystore_alias)
+      keystore_alias=keystore_alias,
+      system_image_locales=system_image_locales)
 
   parser = argparse.ArgumentParser()
   parser.set_defaults(
