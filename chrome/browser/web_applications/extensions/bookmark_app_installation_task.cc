@@ -4,40 +4,25 @@
 
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
 
-#include <memory>
-#include <utility>
-
 #include "base/bind.h"
 #include "base/callback.h"
-#include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_data_retriever.h"
-#include "chrome/common/web_application_info.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
 
-namespace {
-
-std::unique_ptr<BookmarkAppHelper> BookmarkAppHelperCreateWrapper(
-    Profile* profile,
-    const WebApplicationInfo& web_app_info,
-    content::WebContents* web_contents,
-    WebappInstallSource install_source) {
-  return std::make_unique<BookmarkAppHelper>(profile, web_app_info,
-                                             web_contents, install_source);
-}
-
-}  // namespace
-
-BookmarkAppInstallationTask::Result::Result(web_app::InstallResultCode code,
-                                            base::Optional<std::string> app_id)
+BookmarkAppInstallationTask::Result::Result(
+    web_app::InstallResultCode code,
+    base::Optional<web_app::AppId> app_id)
     : code(code), app_id(std::move(app_id)) {
   DCHECK_EQ(code == web_app::InstallResultCode::kSuccess, app_id.has_value());
 }
@@ -59,121 +44,41 @@ BookmarkAppInstallationTask::BookmarkAppInstallationTask(
     web_app::InstallOptions install_options)
     : profile_(profile),
       extension_ids_map_(profile_->GetPrefs()),
-      install_options_(std::move(install_options)),
-      helper_factory_(base::BindRepeating(&BookmarkAppHelperCreateWrapper)),
-      data_retriever_(std::make_unique<web_app::WebAppDataRetriever>()) {}
+      install_options_(std::move(install_options)) {}
 
 BookmarkAppInstallationTask::~BookmarkAppInstallationTask() = default;
 
 void BookmarkAppInstallationTask::Install(content::WebContents* web_contents,
-                                          ResultCallback callback) {
+                                          ResultCallback result_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  data_retriever_->GetWebApplicationInfo(
-      web_contents,
-      base::BindOnce(&BookmarkAppInstallationTask::OnGetWebApplicationInfo,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     web_contents));
+
+  DCHECK_EQ(web_contents->GetBrowserContext(), profile_);
+
+  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile_);
+  DCHECK(provider);
+
+  provider->install_manager().InstallWebAppWithOptions(
+      web_contents, install_options_,
+      base::BindOnce(&BookmarkAppInstallationTask::OnWebAppInstalled,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(result_callback)));
 }
 
-void BookmarkAppInstallationTask::SetBookmarkAppHelperFactoryForTesting(
-    BookmarkAppHelperFactory helper_factory) {
-  helper_factory_ = helper_factory;
-}
-
-void BookmarkAppInstallationTask::SetDataRetrieverForTesting(
-    std::unique_ptr<web_app::WebAppDataRetriever> data_retriever) {
-  data_retriever_ = std::move(data_retriever);
-}
-
-void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
+void BookmarkAppInstallationTask::OnWebAppInstalled(
     ResultCallback result_callback,
-    content::WebContents* web_contents,
-    std::unique_ptr<WebApplicationInfo> web_app_info) {
-  if (!web_app_info) {
-    std::move(result_callback)
-        .Run(Result(web_app::InstallResultCode::kGetWebApplicationInfoFailed,
-                    std::string()));
-    return;
-  }
+    const web_app::AppId& app_id,
+    web_app::InstallResultCode code) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
+  const Extension* extension = registry->enabled_extensions().GetByID(app_id);
 
-  auto install_source = WebappInstallSource::COUNT;
-  switch (install_options_.install_source) {
-    case web_app::InstallSource::kInternal:
-      install_source = WebappInstallSource::INTERNAL_DEFAULT;
-      break;
-    case web_app::InstallSource::kExternalDefault:
-      install_source = WebappInstallSource::EXTERNAL_DEFAULT;
-      break;
-    case web_app::InstallSource::kExternalPolicy:
-      install_source = WebappInstallSource::EXTERNAL_POLICY;
-      break;
-    case web_app::InstallSource::kSystemInstalled:
-      install_source = WebappInstallSource::SYSTEM_DEFAULT;
-      break;
-    case web_app::InstallSource::kArc:
-      NOTREACHED();
-      break;
-  }
-  helper_ = helper_factory_.Run(profile_, *web_app_info, web_contents,
-                                install_source);
-
-  switch (install_options_.launch_container) {
-    case web_app::LaunchContainer::kDefault:
-      break;
-    case web_app::LaunchContainer::kTab:
-      helper_->set_forced_launch_type(LAUNCH_TYPE_REGULAR);
-      break;
-    case web_app::LaunchContainer::kWindow:
-      helper_->set_forced_launch_type(LAUNCH_TYPE_WINDOW);
-      break;
-  }
-
-  switch (install_options_.install_source) {
-    // TODO(nigeltao/ortuno): should these two cases lead to different
-    // Manifest::Location values: INTERNAL vs EXTERNAL_PREF_DOWNLOAD?
-    case web_app::InstallSource::kInternal:
-    case web_app::InstallSource::kExternalDefault:
-      helper_->set_is_default_app();
-      break;
-    case web_app::InstallSource::kExternalPolicy:
-      helper_->set_is_policy_installed_app();
-      break;
-    case web_app::InstallSource::kSystemInstalled:
-      helper_->set_is_system_app();
-      break;
-    case web_app::InstallSource::kArc:
-      NOTREACHED();
-      break;
-  }
-
-  if (!install_options_.create_shortcuts)
-    helper_->set_skip_shortcut_creation();
-
-  if (install_options_.bypass_service_worker_check)
-    helper_->set_bypass_service_worker_check();
-
-  if (install_options_.require_manifest)
-    helper_->set_require_manifest();
-
-  helper_->Create(base::Bind(&BookmarkAppInstallationTask::OnInstalled,
-                             weak_ptr_factory_.GetWeakPtr(),
-                             base::Passed(&result_callback)));
-}
-
-void BookmarkAppInstallationTask::OnInstalled(
-    ResultCallback result_callback,
-    const Extension* extension,
-    const WebApplicationInfo& web_app_info) {
-  if (extension) {
+  if (code == web_app::InstallResultCode::kSuccess && extension) {
     extension_ids_map_.Insert(install_options_.url, extension->id(),
                               install_options_.install_source);
     std::move(result_callback)
         .Run(Result(web_app::InstallResultCode::kSuccess, extension->id()));
-    return;
+  } else {
+    std::move(result_callback).Run(Result(code, base::nullopt));
   }
-  std::move(result_callback)
-      .Run(Result(web_app::InstallResultCode::kFailedUnknownReason,
-                  base::nullopt));
 }
 
 }  // namespace extensions

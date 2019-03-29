@@ -13,9 +13,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/install_manager_observer.h"
+#include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/web_contents.h"
@@ -28,25 +31,37 @@ namespace {
 
 // A single installation task. It is possible to have many concurrent
 // installations per one |web_contents|.
-// This class is a simple holder of BookmarkAppHelper and limits its lifetime to
-// match WebContents.
+// This class is a holder of WebAppDataRetriever or BookmarkAppHelper and limits
+// their lifetime to match WebContents, InstallManager and Profile lifetimes.
 class InstallTask : public content::WebContentsObserver,
                     public web_app::InstallManagerObserver {
  public:
   InstallTask(BookmarkAppInstallManager* install_manager,
-              std::unique_ptr<BookmarkAppHelper> bookmark_app_helper,
               web_app::InstallManager::OnceInstallCallback callback)
       : WebContentsObserver(),
-        bookmark_app_helper_(std::move(bookmark_app_helper)),
         callback_(std::move(callback)) {
     manager_observer_.Add(install_manager);
   }
 
   ~InstallTask() override { DCHECK(!callback_); }
 
-  void AttachLifetimeTo(content::WebContents* web_contents) {
+  void SetWebContents(content::WebContents* web_contents) {
     Observe(web_contents);
   }
+
+  void SetBookmarkAppHelper(
+      std::unique_ptr<BookmarkAppHelper> bookmark_app_helper) {
+    DCHECK(!data_retriever_);
+    bookmark_app_helper_ = std::move(bookmark_app_helper);
+  }
+
+  void SetDataRetriever(
+      std::unique_ptr<web_app::WebAppDataRetriever> data_retriever) {
+    DCHECK(!bookmark_app_helper_);
+    data_retriever_ = std::move(data_retriever);
+  }
+
+  void ResetDataRetriever() { data_retriever_.reset(); }
 
   // WebContentsObserver:
   void WebContentsDestroyed() override {
@@ -57,9 +72,9 @@ class InstallTask : public content::WebContentsObserver,
     // BookmarkAppHelper should not outsurvive |web_contents|.
     // This |reset| invalidates all weak references to BookmarkAppHelper and
     // cancels BookmarkAppHelper-related tasks posted to message loops.
-    // This |reset| also destroys |this| InstallTask since it is owned by the
-    // callback bind state.
-    bookmark_app_helper_.reset();
+    // This |ResetAndDeleteThisTask| call also destroys |this| InstallTask since
+    // it is owned by a callback bind state.
+    return ResetAndDeleteThisTask();
   }
 
   // InstallManagerObserver:
@@ -69,9 +84,9 @@ class InstallTask : public content::WebContentsObserver,
     CallInstallCallback(web_app::AppId(),
                         web_app::InstallResultCode::kInstallManagerDestroyed);
     // BookmarkAppHelper should not outsurvive profile and its keyed services.
-    // This |reset| also destroys |this| InstallTask since it is owned by the
-    // callback bind state.
-    bookmark_app_helper_.reset();
+    // This |ResetAndDeleteThisTask| call also destroys |this| InstallTask since
+    // it is owned by a callback bind state.
+    return ResetAndDeleteThisTask();
   }
 
   void CallInstallCallback(const web_app::AppId& app_id,
@@ -84,7 +99,20 @@ class InstallTask : public content::WebContentsObserver,
   }
 
  private:
+  void ResetAndDeleteThisTask() {
+    // One of these |reset|s deletes |this| InstallTask since it is owned by a
+    // callback bind state. We can not touch data members after it.
+    if (data_retriever_)
+      data_retriever_.reset();
+    else
+      bookmark_app_helper_.reset();
+  }
+
+  // The object invariant: InstallTask is owned either by data_retriever_ or
+  // bookmark_app_helper_. Just one of these ptrs is valid at any moment.
+  std::unique_ptr<web_app::WebAppDataRetriever> data_retriever_;
   std::unique_ptr<BookmarkAppHelper> bookmark_app_helper_;
+
   web_app::InstallManager::OnceInstallCallback callback_;
   ScopedObserver<web_app::InstallManager, InstallTask> manager_observer_{this};
 
@@ -112,10 +140,122 @@ void OnBookmarkAppInstalled(std::unique_ptr<InstallTask> install_task,
       FROM_HERE, base::BindOnce(DestroyInstallTask, std::move(install_task)));
 }
 
+WebappInstallSource ConvertOptionsToMetricsInstallSource(
+    const web_app::InstallOptions& options) {
+  WebappInstallSource metrics_install_source = WebappInstallSource::COUNT;
+  switch (options.install_source) {
+    case web_app::InstallSource::kInternal:
+      metrics_install_source = WebappInstallSource::INTERNAL_DEFAULT;
+      break;
+    case web_app::InstallSource::kExternalDefault:
+      metrics_install_source = WebappInstallSource::EXTERNAL_DEFAULT;
+      break;
+    case web_app::InstallSource::kExternalPolicy:
+      metrics_install_source = WebappInstallSource::EXTERNAL_POLICY;
+      break;
+    case web_app::InstallSource::kSystemInstalled:
+      metrics_install_source = WebappInstallSource::SYSTEM_DEFAULT;
+      break;
+    case web_app::InstallSource::kArc:
+      NOTREACHED();
+      break;
+  }
+
+  return metrics_install_source;
+}
+
+void SetBookmarkAppHelperOptions(const web_app::InstallOptions& options,
+                                 BookmarkAppHelper* helper) {
+  switch (options.launch_container) {
+    case web_app::LaunchContainer::kDefault:
+      break;
+    case web_app::LaunchContainer::kTab:
+      helper->set_forced_launch_type(LAUNCH_TYPE_REGULAR);
+      break;
+    case web_app::LaunchContainer::kWindow:
+      helper->set_forced_launch_type(LAUNCH_TYPE_WINDOW);
+      break;
+  }
+
+  switch (options.install_source) {
+    // TODO(nigeltao/ortuno): should these two cases lead to different
+    // Manifest::Location values: INTERNAL vs EXTERNAL_PREF_DOWNLOAD?
+    case web_app::InstallSource::kInternal:
+    case web_app::InstallSource::kExternalDefault:
+      helper->set_is_default_app();
+      break;
+    case web_app::InstallSource::kExternalPolicy:
+      helper->set_is_policy_installed_app();
+      break;
+    case web_app::InstallSource::kSystemInstalled:
+      helper->set_is_system_app();
+      break;
+    case web_app::InstallSource::kArc:
+      NOTREACHED();
+      break;
+  }
+
+  if (!options.create_shortcuts)
+    helper->set_skip_shortcut_creation();
+
+  if (options.bypass_service_worker_check)
+    helper->set_bypass_service_worker_check();
+
+  if (options.require_manifest)
+    helper->set_require_manifest();
+}
+
+void OnGetWebApplicationInfo(const BookmarkAppInstallManager* install_manager,
+                             std::unique_ptr<InstallTask> install_task,
+                             const web_app::InstallOptions& install_options,
+                             std::unique_ptr<WebApplicationInfo> web_app_info) {
+  if (!web_app_info) {
+    install_task->CallInstallCallback(
+        web_app::AppId(),
+        web_app::InstallResultCode::kGetWebApplicationInfoFailed);
+
+    // OnGetWebApplicationInfo is called synchronously by WebAppDataRetriever
+    // as a tail call. We can delete InstallTask with data_retriever_ safely.
+    install_task.reset();
+    return;
+  }
+
+  WebappInstallSource metrics_install_source =
+      ConvertOptionsToMetricsInstallSource(install_options);
+
+  Profile* profile = Profile::FromBrowserContext(
+      install_task->web_contents()->GetBrowserContext());
+  DCHECK(profile);
+
+  auto bookmark_app_helper = install_manager->bookmark_app_helper_factory().Run(
+      profile, *web_app_info, install_task->web_contents(),
+      metrics_install_source);
+
+  BookmarkAppHelper* helper_ptr = bookmark_app_helper.get();
+  SetBookmarkAppHelperOptions(install_options, bookmark_app_helper.get());
+
+  install_task->ResetDataRetriever();
+  install_task->SetBookmarkAppHelper(std::move(bookmark_app_helper));
+
+  helper_ptr->Create(base::BindRepeating(
+      OnBookmarkAppInstalled, base::Passed(std::move(install_task))));
+}
+
 }  // namespace
 
 BookmarkAppInstallManager::BookmarkAppInstallManager(Profile* profile)
-    : profile_(profile) {}
+    : profile_(profile) {
+  bookmark_app_helper_factory_ = base::BindRepeating(
+      [](Profile* profile, const WebApplicationInfo& web_app_info,
+         content::WebContents* web_contents,
+         WebappInstallSource install_source) {
+        return std::make_unique<BookmarkAppHelper>(
+            profile, web_app_info, web_contents, install_source);
+      });
+
+  data_retriever_factory_ = base::BindRepeating(
+      []() { return std::make_unique<web_app::WebAppDataRetriever>(); });
+}
 
 BookmarkAppInstallManager::~BookmarkAppInstallManager() = default;
 
@@ -165,9 +305,9 @@ void BookmarkAppInstallManager::InstallWebAppFromBanner(
 
   BookmarkAppHelper* helper = bookmark_app_helper.get();
 
-  auto install_task = std::make_unique<InstallTask>(
-      this, std::move(bookmark_app_helper), std::move(callback));
-  install_task->AttachLifetimeTo(web_contents);
+  auto install_task = std::make_unique<InstallTask>(this, std::move(callback));
+  install_task->SetBookmarkAppHelper(std::move(bookmark_app_helper));
+  install_task->SetWebContents(web_contents);
 
   // InstallTask is owned by the bind state and will be disposed in
   // DestroyInstallTask.
@@ -192,13 +332,44 @@ void BookmarkAppInstallManager::InstallWebAppFromInfo(
 
   BookmarkAppHelper* helper = bookmark_app_helper.get();
 
-  auto install_task = std::make_unique<InstallTask>(
-      this, std::move(bookmark_app_helper), std::move(callback));
+  auto install_task = std::make_unique<InstallTask>(this, std::move(callback));
+  install_task->SetBookmarkAppHelper(std::move(bookmark_app_helper));
 
   // InstallTask is owned by the bind state and will be disposed in
   // DestroyInstallTask.
   helper->Create(base::BindRepeating(OnBookmarkAppInstalled,
                                      base::Passed(std::move(install_task))));
+}
+
+void BookmarkAppInstallManager::InstallWebAppWithOptions(
+    content::WebContents* web_contents,
+    const web_app::InstallOptions& install_options,
+    OnceInstallCallback callback) {
+  auto data_retriever = data_retriever_factory_.Run();
+
+  web_app::WebAppDataRetriever* data_retriever_ptr = data_retriever.get();
+
+  auto install_task = std::make_unique<InstallTask>(this, std::move(callback));
+  install_task->SetDataRetriever(std::move(data_retriever));
+  install_task->SetWebContents(web_contents);
+
+  // Unretained |this| is used here because |install_task| is
+  // InstallManagerObserver which guarantees that it'll never run the callback
+  // if |this| is destroyed.
+  data_retriever_ptr->GetWebApplicationInfo(
+      web_contents,
+      base::BindOnce(OnGetWebApplicationInfo, base::Unretained(this),
+                     std::move(install_task), install_options));
+}
+
+void BookmarkAppInstallManager::SetBookmarkAppHelperFactoryForTesting(
+    BookmarkAppHelperFactory bookmark_app_helper_factory) {
+  bookmark_app_helper_factory_ = std::move(bookmark_app_helper_factory);
+}
+
+void BookmarkAppInstallManager::SetDataRetrieverFactoryForTesting(
+    DataRetrieverFactory data_retriever_factory) {
+  data_retriever_factory_ = std::move(data_retriever_factory);
 }
 
 }  // namespace extensions
