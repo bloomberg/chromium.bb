@@ -20,11 +20,11 @@ namespace {
 // Wrapper for the scroll buttons.
 class ScrollBarButton : public BaseScrollBarButton {
  public:
-  enum Type {
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT,
+  enum class Type {
+    kUp,
+    kDown,
+    kLeft,
+    kRight,
   };
 
   ScrollBarButton(ButtonListener* listener, Type type);
@@ -103,13 +103,13 @@ ui::NativeTheme::ExtraParams ScrollBarButton::GetNativeThemeParams() const {
 
 ui::NativeTheme::Part ScrollBarButton::GetNativeThemePart() const {
   switch (type_) {
-    case UP:
+    case Type::kUp:
       return ui::NativeTheme::kScrollbarUpArrow;
-    case DOWN:
+    case Type::kDown:
       return ui::NativeTheme::kScrollbarDownArrow;
-    case LEFT:
+    case Type::kLeft:
       return ui::NativeTheme::kScrollbarLeftArrow;
-    case RIGHT:
+    case Type::kRight:
       return ui::NativeTheme::kScrollbarRightArrow;
   }
 
@@ -200,15 +200,16 @@ ui::NativeTheme::State ScrollBarThumb::GetNativeThemeState() const {
 const char ScrollBarViews::kViewClassName[] = "ScrollBarViews";
 
 ScrollBarViews::ScrollBarViews(bool horizontal) : ScrollBar(horizontal) {
+  using Type = ScrollBarButton::Type;
   SetThumb(new ScrollBarThumb(this));
   if (horizontal) {
-    prev_button_ = new ScrollBarButton(this, ScrollBarButton::LEFT);
-    next_button_ = new ScrollBarButton(this, ScrollBarButton::RIGHT);
+    prev_button_ = new ScrollBarButton(this, Type::kLeft);
+    next_button_ = new ScrollBarButton(this, Type::kRight);
 
     part_ = ui::NativeTheme::kScrollbarHorizontalTrack;
   } else {
-    prev_button_ = new ScrollBarButton(this, ScrollBarButton::UP);
-    next_button_ = new ScrollBarButton(this, ScrollBarButton::DOWN);
+    prev_button_ = new ScrollBarButton(this, Type::kUp);
+    next_button_ = new ScrollBarButton(this, Type::kDown);
 
     part_ = ui::NativeTheme::kScrollbarVerticalTrack;
   }
