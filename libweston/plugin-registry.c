@@ -30,7 +30,7 @@
 #include <stdlib.h>
 
 #include <libweston/libweston.h>
-#include "plugin-registry.h"
+#include <libweston/plugin-registry.h>
 
 struct weston_plugin_api {
 	struct wl_list link;     /**< in weston_compositor::plugin_api_list */

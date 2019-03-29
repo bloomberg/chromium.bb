@@ -32,7 +32,7 @@ extern "C" {
 
 #include <unistd.h>
 
-#include "plugin-registry.h"
+#include <libweston/plugin-registry.h>
 
 struct weston_compositor;
 struct weston_xwayland;

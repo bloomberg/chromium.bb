@@ -29,7 +29,7 @@
 #define WESTON_COMPOSITOR_DRM_H
 
 #include <libweston/libweston.h>
-#include "plugin-registry.h"
+#include <libweston/plugin-registry.h>
 
 #ifdef  __cplusplus
 extern "C" {

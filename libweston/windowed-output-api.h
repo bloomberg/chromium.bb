@@ -30,7 +30,7 @@
 extern "C" {
 #endif
 
-#include "plugin-registry.h"
+#include <libweston/plugin-registry.h>
 
 struct weston_compositor;
 struct weston_output;

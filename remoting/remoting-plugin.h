@@ -29,7 +29,7 @@
 #define REMOTING_PLUGIN_H
 
 #include <libweston/libweston.h>
-#include "plugin-registry.h"
+#include <libweston/plugin-registry.h>
 
 #define WESTON_REMOTING_API_NAME	"weston_remoting_api_v1"
 

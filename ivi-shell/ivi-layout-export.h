@@ -60,7 +60,7 @@ extern "C" {
 
 #include "stdbool.h"
 #include <libweston/libweston.h>
-#include "plugin-registry.h"
+#include <libweston/plugin-registry.h>
 
 #define IVI_SUCCEEDED (0)
 #define IVI_FAILED (-1)

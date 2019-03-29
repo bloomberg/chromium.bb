@@ -69,7 +69,7 @@
 #include "shared/timespec-util.h"
 #include "git-version.h"
 #include "version.h"
-#include "plugin-registry.h"
+#include <libweston/plugin-registry.h>
 #include "pixel-formats.h"
 
 #define DEFAULT_REPAINT_WINDOW 7 /* milliseconds */

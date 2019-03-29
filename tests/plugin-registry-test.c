@@ -29,7 +29,7 @@
 
 #include <libweston/libweston.h>
 #include "compositor/weston.h"
-#include "plugin-registry.h"
+#include <libweston/plugin-registry.h>
 
 static void
 dummy_func(void)

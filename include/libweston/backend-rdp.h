@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 #include <libweston/libweston.h>
-#include "plugin-registry.h"
+#include <libweston/plugin-registry.h>
 
 #define WESTON_RDP_OUTPUT_API_NAME "weston_rdp_output_api_v1"
 
