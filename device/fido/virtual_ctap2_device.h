@@ -26,12 +26,17 @@
 
 namespace device {
 
+class VirtualU2fDevice;
+
 class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     : public VirtualFidoDevice {
  public:
   struct COMPONENT_EXPORT(DEVICE_FIDO) Config {
     Config();
 
+    // u2f_support, if true, makes this device a dual-protocol (i.e. CTAP2 and
+    // U2F) device.
+    bool u2f_support = false;
     bool pin_support = false;
     bool internal_uv_support = false;
     bool resident_key_support = false;
@@ -76,6 +81,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
       uint32_t current_signature_count,
       base::Optional<AttestedCredentialData> attested_credential_data,
       base::Optional<cbor::Value> extensions);
+
+  std::unique_ptr<VirtualU2fDevice> u2f_device_;
 
   const Config config_;
   base::WeakPtrFactory<FidoDevice> weak_factory_;

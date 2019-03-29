@@ -25,6 +25,7 @@
 #include "device/fido/opaque_attestation_statement.h"
 #include "device/fido/pin.h"
 #include "device/fido/pin_internal.h"
+#include "device/fido/virtual_u2f_device.h"
 #include "third_party/boringssl/src/include/openssl/aes.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
 #include "third_party/boringssl/src/include/openssl/ec.h"
@@ -412,8 +413,13 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
     : VirtualFidoDevice(std::move(state)),
       config_(config),
       weak_factory_(this) {
+  std::vector<ProtocolVersion> versions = {ProtocolVersion::kCtap};
+  if (config.u2f_support) {
+    versions.emplace_back(ProtocolVersion::kU2f);
+    u2f_device_.reset(new VirtualU2fDevice(NewReferenceToState()));
+  }
   device_info_ =
-      AuthenticatorGetInfoResponse({ProtocolVersion::kCtap}, kDeviceAaguid);
+      AuthenticatorGetInfoResponse(std::move(versions), kDeviceAaguid);
 
   AuthenticatorSupportedOptions options;
   bool options_updated = false;
@@ -464,6 +470,13 @@ void VirtualCtap2Device::DeviceTransact(std::vector<uint8_t> command,
   }
 
   auto cmd_type = command[0];
+  // The CTAP2 commands start at one, so a "command" of zero indicates that this
+  // is a U2F message.
+  if (cmd_type == 0 && config_.u2f_support) {
+    u2f_device_->DeviceTransact(std::move(command), std::move(cb));
+    return;
+  }
+
   const auto request_bytes = base::make_span(command).subspan(1);
   CtapDeviceResponseCode response_code = CtapDeviceResponseCode::kCtap2ErrOther;
   std::vector<uint8_t> response_data;
