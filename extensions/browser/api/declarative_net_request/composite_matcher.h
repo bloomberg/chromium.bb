@@ -24,6 +24,10 @@ class CompositeMatcher {
   explicit CompositeMatcher(MatcherList matchers);
   ~CompositeMatcher();
 
+  // Adds the |new_matcher| to the list of matchers. If a matcher with the
+  // corresponding ID is already present, updates the matcher.
+  void AddOrUpdateRuleset(std::unique_ptr<RulesetMatcher> new_matcher);
+
   // Returns whether the network request as specified by |params| should be
   // blocked.
   bool ShouldBlockRequest(const RequestParams& params) const;
@@ -34,6 +38,9 @@ class CompositeMatcher {
                              GURL* redirect_url) const;
 
  private:
+  // Sorts |matchers_| in descending order of priority.
+  void SortMatchersByPriority();
+
   // Sorted by priority in descending order.
   MatcherList matchers_;
 

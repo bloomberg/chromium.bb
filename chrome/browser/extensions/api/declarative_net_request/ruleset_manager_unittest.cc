@@ -79,7 +79,7 @@ class RulesetManagerTest : public DNRTestBase {
     std::vector<std::unique_ptr<RulesetMatcher>> matchers(1);
     EXPECT_EQ(RulesetMatcher::kLoadSuccess,
               RulesetMatcher::CreateVerifiedMatcher(
-                  RulesetSource::Create(*last_loaded_extension_),
+                  RulesetSource::CreateStatic(*last_loaded_extension_),
                   expected_checksum, &matchers[0]));
     *matcher = std::make_unique<CompositeMatcher>(std::move(matchers));
   }

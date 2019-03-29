@@ -273,7 +273,7 @@ bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
   // TODO(crbug.com/761107): Change this so that we don't need to parse JSON
   // in the browser process.
   auto ruleset_source =
-      declarative_net_request::RulesetSource::Create(*extension());
+      declarative_net_request::RulesetSource::CreateStatic(*extension());
   declarative_net_request::IndexAndPersistJSONRulesetResult result =
       ruleset_source.IndexAndPersistJSONRulesetUnsafe();
   if (!result.success) {

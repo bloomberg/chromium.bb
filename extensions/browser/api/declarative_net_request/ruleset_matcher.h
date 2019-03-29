@@ -60,6 +60,11 @@ class RulesetMatcher {
     kLoadErrorChecksumMismatch = 3,
 
     // Ruleset loading failed due to version header mismatch.
+    // TODO(karandeepb): This should be split into two cases:
+    //    - When the indexed ruleset doesn't have the version header in the
+    //      correct format.
+    //    - When the indexed ruleset's version is not the same as that used by
+    //      Chrome.
     kLoadErrorVersionMismatch = 4,
 
     kLoadResultMax

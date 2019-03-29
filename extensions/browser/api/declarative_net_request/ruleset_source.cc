@@ -13,12 +13,14 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
+#include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/flat_ruleset_indexer.h"
 #include "extensions/browser/api/declarative_net_request/indexed_rule.h"
@@ -35,6 +37,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/service_manager/public/cpp/identity.h"
+#include "tools/json_schema_compiler/util.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -44,13 +47,16 @@ namespace {
 namespace dnr_api = extensions::api::declarative_net_request;
 using ReadJSONRulesStatus = ReadJSONRulesResult::ReadJSONRulesStatus;
 
-// TODO(crbug.com/930961): Change once multiple rulesets within an extension are
-// supported.
-const size_t kDefaultRulesetID = 0;
-const size_t kDefaultRulesetPriority = 0;
+// Dynamic rulesets get more priority over static rulesets.
+const size_t kStaticRulesetPriority = 1;
+const size_t kDynamicRulesetPriority = 2;
 
 constexpr const char kFileDoesNotExistError[] = "File does not exist.";
 constexpr const char kFileReadError[] = "File read error.";
+
+constexpr const char kDynamicRulesetDirectory[] = "DNR Extension Rules";
+constexpr const char kDynamicRulesJSONFilename[] = "rules.json";
+constexpr const char kDynamicIndexedRulesFilename[] = "rules.fbs";
 
 // Helper to retrieve the filename for the given |file_path|.
 std::string GetFilename(const base::FilePath& file_path) {
@@ -228,11 +234,47 @@ ReadJSONRulesResult& ReadJSONRulesResult::operator=(ReadJSONRulesResult&&) =
     default;
 
 // static
-RulesetSource RulesetSource::Create(const Extension& extension) {
+const size_t RulesetSource::kStaticRulesetID = 1;
+const size_t RulesetSource::kDynamicRulesetID = 2;
+
+// static
+RulesetSource RulesetSource::CreateStatic(const Extension& extension) {
   return RulesetSource(
       declarative_net_request::DNRManifestData::GetRulesetPath(extension),
-      file_util::GetIndexedRulesetPath(extension.path()), kDefaultRulesetID,
-      kDefaultRulesetPriority, dnr_api::MAX_NUMBER_OF_RULES);
+      file_util::GetIndexedRulesetPath(extension.path()), kStaticRulesetID,
+      kStaticRulesetPriority, dnr_api::MAX_NUMBER_OF_RULES);
+}
+
+// static
+RulesetSource RulesetSource::CreateDynamic(
+    const content::BrowserContext* context,
+    const Extension& extension) {
+  base::FilePath dynamic_ruleset_directory =
+      context->GetPath()
+          .AppendASCII(kDynamicRulesetDirectory)
+          .AppendASCII(extension.id());
+  return RulesetSource(
+      dynamic_ruleset_directory.AppendASCII(kDynamicRulesJSONFilename),
+      dynamic_ruleset_directory.AppendASCII(kDynamicIndexedRulesFilename),
+      kDynamicRulesetID, kDynamicRulesetPriority,
+      dnr_api::MAX_NUMBER_OF_DYNAMIC_RULES);
+}
+
+// static
+std::unique_ptr<RulesetSource> RulesetSource::CreateTemporarySource(
+    size_t id,
+    size_t priority,
+    size_t rule_count_limit) {
+  base::FilePath temporary_file_indexed;
+  base::FilePath temporary_file_json;
+  if (!base::CreateTemporaryFile(&temporary_file_indexed) ||
+      !base::CreateTemporaryFile(&temporary_file_json)) {
+    return nullptr;
+  }
+
+  return std::make_unique<RulesetSource>(std::move(temporary_file_json),
+                                         std::move(temporary_file_indexed), id,
+                                         priority, rule_count_limit);
 }
 
 RulesetSource::RulesetSource(base::FilePath json_path,
@@ -379,6 +421,29 @@ ReadJSONRulesResult RulesetSource::ReadJSONRulesUnsafe() const {
   }
 
   return ParseRulesFromJSON(*value_with_error.value, rule_count_limit_);
+}
+
+bool RulesetSource::WriteRulesToJSON(
+    const std::vector<dnr_api::Rule>& rules) const {
+  DCHECK_LE(rules.size(), rule_count_limit_);
+
+  std::unique_ptr<base::Value> rules_value =
+      json_schema_compiler::util::CreateValueFromArray(rules);
+  DCHECK(rules_value);
+  DCHECK(rules_value->is_list());
+
+  if (!base::CreateDirectory(json_path_.DirName()))
+    return false;
+
+  std::string json_contents;
+  JSONStringValueSerializer serializer(&json_contents);
+  serializer.set_pretty_print(false);
+  if (!serializer.Serialize(*rules_value))
+    return false;
+
+  int data_size = static_cast<int>(json_contents.size());
+  return base::WriteFile(json_path_, json_contents.data(), data_size) ==
+         data_size;
 }
 
 }  // namespace declarative_net_request

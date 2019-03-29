@@ -66,6 +66,10 @@ class RulesetManager {
   // corresponding AddRuleset.
   void RemoveRuleset(const ExtensionId& extension_id);
 
+  // Returns the CompositeMatcher corresponding to the |extension_id| or null
+  // if no matcher is present for the extension.
+  CompositeMatcher* GetMatcherForExtension(const ExtensionId& extension_id);
+
   void UpdateAllowedPages(const ExtensionId& extension_id,
                           URLPatternSet allowed_pages);
 

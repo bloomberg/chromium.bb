@@ -187,5 +187,8 @@ namespace declarativeNetRequest {
     // resources file. Any excess rules will be ignored and an install warning
     // will be raised.
     [value=30000] static long MAX_NUMBER_OF_RULES();
+
+    // The maximum number of dynamic rules that an extension can add.
+    [value=5000] static long MAX_NUMBER_OF_DYNAMIC_RULES();
   };
 };
