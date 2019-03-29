@@ -79,8 +79,6 @@ extern const char kDisableEncryptionMigration[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableEolNotification[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kDisableFileManagerTouchMode[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableFineGrainedTimeZoneDetection[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableGaiaServices[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -122,8 +120,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableEncryptionMigration[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableExtensionAssetsSharing[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kEnableFileManagerTouchMode[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableFirstRunUITransitions[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
