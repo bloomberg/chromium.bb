@@ -17,6 +17,7 @@ const base::Feature kCalculateNativeWinOcclusion{
 #endif  // OW_WIN
 
 // Enables all upcoming UI features.
+// Deprecated - DO NOT USE (See http://crbug.com/947314).
 const base::Feature kExperimentalUi{"ExperimentalUi",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
