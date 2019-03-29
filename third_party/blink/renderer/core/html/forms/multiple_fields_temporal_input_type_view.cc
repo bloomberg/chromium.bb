@@ -318,13 +318,6 @@ MultipleFieldsTemporalInputTypeView::MultipleFieldsTemporalInputTypeView(
       picker_indicator_is_visible_(false),
       picker_indicator_is_always_visible_(false) {}
 
-MultipleFieldsTemporalInputTypeView*
-MultipleFieldsTemporalInputTypeView::Create(HTMLInputElement& element,
-                                            BaseTemporalInputType& input_type) {
-  return MakeGarbageCollected<MultipleFieldsTemporalInputTypeView>(element,
-                                                                   input_type);
-}
-
 MultipleFieldsTemporalInputTypeView::~MultipleFieldsTemporalInputTypeView() =
     default;
 

@@ -214,7 +214,7 @@ V0CustomElementRegistrationContext* DocumentInit::RegistrationContext(
     return nullptr;
 
   if (create_new_registration_context_)
-    return V0CustomElementRegistrationContext::Create();
+    return MakeGarbageCollected<V0CustomElementRegistrationContext>();
 
   return registration_context_.Get();
 }
