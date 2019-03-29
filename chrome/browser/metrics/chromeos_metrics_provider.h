@@ -91,6 +91,9 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // Writes info about paired Bluetooth devices on this system.
   void WriteBluetoothProto(metrics::SystemProfileProto* system_profile_proto);
 
+  // Called from the ProvideCurrentSessionData(...) to record UserType.
+  void UpdateUserTypeUMA();
+
   // For collecting systemwide performance data via the UMA channel.
   std::unique_ptr<metrics::ProfileProvider> profile_provider_;
 

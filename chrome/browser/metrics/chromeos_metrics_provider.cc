@@ -11,6 +11,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -27,7 +28,9 @@
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_type.h"
 #include "components/variations/service/variations_field_trial_creator.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -257,6 +260,7 @@ void ChromeOSMetricsProvider::ProvideCurrentSessionData(
     }
   }
   arc::UpdateEnabledStateByUserTypeUMA();
+  UpdateUserTypeUMA();
 }
 
 void ChromeOSMetricsProvider::WriteBluetoothProto(
@@ -347,4 +351,17 @@ void ChromeOSMetricsProvider::SetFullHardwareClass(
   }
   full_hardware_class_ = full_hardware_class;
   callback.Run();
+}
+
+void ChromeOSMetricsProvider::UpdateUserTypeUMA() {
+  if (user_manager::UserManager::IsInitialized()) {
+    const user_manager::User* primary_user =
+        user_manager::UserManager::Get()->GetPrimaryUser();
+    if (primary_user) {
+      user_manager::UserType user_type = primary_user->GetType();
+      return base::UmaHistogramEnumeration(
+          "UMA.PrimaryUserType", user_type,
+          user_manager::UserType::NUM_USER_TYPES);
+    }
+  }
 }
