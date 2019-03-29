@@ -490,11 +490,6 @@ void DelegatedFrameHost::OnCompositingShuttingDown(ui::Compositor* compositor) {
 
 void DelegatedFrameHost::OnLostSharedContext() {}
 
-void DelegatedFrameHost::OnLostVizProcess() {
-  if (HasSavedFrame())
-    frame_evictor_->OnSurfaceDiscarded();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, private:
 

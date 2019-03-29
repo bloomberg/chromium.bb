@@ -83,7 +83,6 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // ui::ContextFactoryObserver implementation.
   void OnLostSharedContext() override;
-  void OnLostVizProcess() override;
 
   void ResetFallbackToFirstNavigationSurface();
 
