@@ -11,12 +11,19 @@ namespace content {
 class WebContents;
 }
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace send_tab_to_self {
 
 // Add a new entry to SendTabToSelfModel when user click "Share to my devices"
 // option
 // TODO(crbug.com/945386): Flip parameter order.
 void CreateNewEntry(content::WebContents* tab, Profile* profile);
+
+// Get the icon for send tab to self menu item.
+gfx::ImageSkia* GetImageSkia();
 
 }  // namespace send_tab_to_self
 
