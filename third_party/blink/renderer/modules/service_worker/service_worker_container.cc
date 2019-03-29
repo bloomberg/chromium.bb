@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -146,31 +147,6 @@ class ServiceWorkerContainer::DomContentLoadedListener final
 
     container->EnableClientMessageQueue();
   }
-};
-
-class ServiceWorkerContainer::GetRegistrationForReadyCallback
-    : public WebServiceWorkerProvider::
-          WebServiceWorkerGetRegistrationForReadyCallbacks {
- public:
-  explicit GetRegistrationForReadyCallback(ReadyProperty* ready)
-      : ready_(ready) {}
-  ~GetRegistrationForReadyCallback() override = default;
-
-  void OnSuccess(WebServiceWorkerRegistrationObjectInfo info) override {
-    DCHECK_EQ(ready_->GetState(), ReadyProperty::kPending);
-
-    if (ready_->GetExecutionContext() &&
-        !ready_->GetExecutionContext()->IsContextDestroyed()) {
-      ready_->Resolve(
-          ServiceWorkerContainer::From(
-              To<Document>(ready_->GetExecutionContext()))
-              ->GetOrCreateServiceWorkerRegistration(std::move(info)));
-    }
-  }
-
- private:
-  Persistent<ReadyProperty> ready_;
-  DISALLOW_COPY_AND_ASSIGN(GetRegistrationForReadyCallback);
 };
 
 const char ServiceWorkerContainer::kSupplementName[] = "ServiceWorkerContainer";
@@ -483,7 +459,8 @@ ScriptPromise ServiceWorkerContainer::ready(ScriptState* caller_state) {
     ready_ = CreateReadyProperty();
     if (provider_) {
       provider_->GetRegistrationForReady(
-          std::make_unique<GetRegistrationForReadyCallback>(ready_.Get()));
+          WTF::Bind(&ServiceWorkerContainer::OnGetRegistrationForReady,
+                    WrapWeakPersistent(this)));
     }
   }
 
@@ -653,6 +630,19 @@ void ServiceWorkerContainer::DispatchMessageEvent(
   // Schedule the event to be dispatched on the correct task source:
   // https://w3c.github.io/ServiceWorker/#dfn-client-message-queue
   EnqueueEvent(*event, TaskType::kServiceWorkerClientMessage);
+}
+
+void ServiceWorkerContainer::OnGetRegistrationForReady(
+    WebServiceWorkerRegistrationObjectInfo info) {
+  DCHECK_EQ(ready_->GetState(), ReadyProperty::kPending);
+
+  if (ready_->GetExecutionContext() &&
+      !ready_->GetExecutionContext()->IsContextDestroyed()) {
+    ready_->Resolve(
+        ServiceWorkerContainer::From(
+            To<Document>(ready_->GetExecutionContext()))
+            ->GetOrCreateServiceWorkerRegistration(std::move(info)));
+  }
 }
 
 }  // namespace blink
