@@ -760,7 +760,7 @@ class BuilderStage(object):
           prefix=self._prefix,
           board=board,
           time=elapsed_time,
-          build_stage_id=self._build_stage_id)
+          build_stage_id=None)
       self._FinishBuildStageInCIDBAndMonarch(result, cidb_result, elapsed_time)
 
       try:

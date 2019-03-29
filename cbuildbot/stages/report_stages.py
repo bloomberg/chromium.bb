@@ -25,7 +25,6 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import clactions
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_collections
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import git
@@ -341,28 +340,15 @@ class SlaveFailureSummaryStage(generic_stages.BuilderStage):
 
     child_failures = self.buildstore.GetBuildsFailures(
         self.GetScheduledSlaveBuildbucketIds())
-    failures_by_build = cros_collections.GroupNamedtuplesByKey(
-        child_failures, 'build_id')
-    for _, build_failures in sorted(failures_by_build.items()):
-      failures_by_stage = cros_collections.GroupNamedtuplesByKey(
-          build_failures, 'build_stage_id')
-      # Surface a link to each slave stage that failed, in stage_id sorted
-      # order.
-      for stage_id in sorted(failures_by_stage):
-        failure = failures_by_stage[stage_id][0]
-        # Ignore failures that did not cause their enclosing stage to fail.
-        # Ignore slave builds that are still inflight, because some stage logs
-        # might not have been printed to buildbot yet.
-        # TODO(akeshet) revisit this approach, if we seem to be suppressing
-        # useful information as a result of it.
-        if (failure.stage_status != constants.BUILDER_STATUS_FAILED or
-            failure.build_status == constants.BUILDER_STATUS_INFLIGHT):
-          continue
-        slave_stage_url = tree_status.ConstructLegolandBuildURL(
-            failure.buildbucket_id)
-        logging.PrintBuildbotLink('%s %s' % (failure.build_config,
-                                             failure.stage_name),
-                                  slave_stage_url)
+    for failure in child_failures:
+      if (failure.stage_status != constants.BUILDER_STATUS_FAILED or
+          failure.build_status == constants.BUILDER_STATUS_INFLIGHT):
+        continue
+      slave_stage_url = tree_status.ConstructLegolandBuildURL(
+          failure.buildbucket_id)
+      logging.PrintBuildbotLink('%s %s' % (failure.build_config,
+                                           failure.stage_name),
+                                slave_stage_url)
 
 
 class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
