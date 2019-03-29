@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_ukm_aggregator.h"
 
 #include "base/format_macros.h"
-#include "services/metrics/public/cpp/ukm_entry_builder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -44,8 +44,7 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
       event_frequency_(TimeDelta::FromSeconds(30)),
       last_flushed_time_(CurrentTimeTicks()) {
   // Record average and worst case for the primary metric.
-  primary_metric_.worst_case_metric_name = "MainFrame.WorstCase";
-  primary_metric_.average_metric_name = "MainFrame.Average";
+  primary_metric_.reset();
 
   // Define the UMA for the primary metric.
   primary_metric_.uma_counter.reset(
@@ -85,10 +84,6 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
     // average and worst case. They have an associated UMA too that we
     // own and allocate here.
     auto& absolute_record = absolute_metric_records_.emplace_back();
-    absolute_record.worst_case_metric_name = metric_name;
-    absolute_record.worst_case_metric_name.append(".WorstCase");
-    absolute_record.average_metric_name = metric_name;
-    absolute_record.average_metric_name.append(".Average");
     absolute_record.reset();
     String uma_name = uma_preamble;
     uma_name.append(metric_name);
@@ -100,10 +95,6 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
     // average and worst case. UMA counters are also associated with the
     // ratios and we allocate and own them here.
     auto& percentage_record = main_frame_percentage_records_.emplace_back();
-    percentage_record.worst_case_metric_name = metric_name;
-    percentage_record.worst_case_metric_name.append(".WorstCaseRatio");
-    percentage_record.average_metric_name = metric_name;
-    percentage_record.average_metric_name.append(".AverageRatio");
     percentage_record.reset();
     for (auto bucket_substring : threshold_substrings) {
       String uma_percentage_name = uma_percentage_preamble;
@@ -217,29 +208,152 @@ void LocalFrameUkmAggregator::Flush(TimeTicks current_time) {
     return;
   DCHECK(primary_metric_.sample_count);
 
-  ukm::UkmEntryBuilder builder(source_id_, event_name_.Utf8().data());
-  builder.SetMetric(primary_metric_.worst_case_metric_name.Utf8().data(),
-                    primary_metric_.worst_case_duration.InMicroseconds());
-  builder.SetMetric(primary_metric_.average_metric_name.Utf8().data(),
-                    primary_metric_.total_duration.InMicroseconds() /
-                        static_cast<int64_t>(primary_metric_.sample_count));
-  for (auto& record : absolute_metric_records_) {
-    if (record.sample_count == 0)
-      continue;
-    builder.SetMetric(record.worst_case_metric_name.Utf8().data(),
-                      record.worst_case_duration.InMicroseconds());
-    builder.SetMetric(record.average_metric_name.Utf8().data(),
-                      record.total_duration.InMicroseconds() /
-                          static_cast<int64_t>(record.sample_count));
+  ukm::builders::Blink_UpdateTime builder(source_id_);
+  if (primary_metric_.sample_count > 0) {
+    builder
+        .SetMainFrame_WorstCase(
+            primary_metric_.worst_case_duration.InMicroseconds())
+        .SetMainFrame_Average(
+            primary_metric_.total_duration.InMicroseconds() /
+            static_cast<int64_t>(primary_metric_.sample_count));
   }
-  for (auto& record : main_frame_percentage_records_) {
-    if (record.sample_count == 0)
+  for (unsigned i = 0; i < (unsigned)kCount; ++i) {
+    MetricId id = static_cast<MetricId>(i);
+    auto& absolute_record = absolute_metric_records_[(unsigned)id];
+    auto& percentage_record = main_frame_percentage_records_[(unsigned)id];
+    if (!absolute_record.sample_count || !percentage_record.sample_count)
       continue;
-    builder.SetMetric(record.worst_case_metric_name.Utf8().data(),
-                      record.worst_case_percentage);
-    builder.SetMetric(record.average_metric_name.Utf8().data(),
-                      record.total_percentage / record.sample_count);
-    record.reset();
+    switch (id) {
+      case kCompositing:
+        builder
+            .SetCompositing_WorstCase(
+                absolute_record.worst_case_duration.InMicroseconds())
+            .SetCompositing_Average(
+                absolute_record.total_duration.InMicroseconds() /
+                static_cast<int64_t>(absolute_record.sample_count))
+            .SetCompositing_WorstCaseRatio(
+                percentage_record.worst_case_percentage)
+            .SetCompositing_AverageRatio(percentage_record.total_percentage /
+                                         percentage_record.sample_count);
+        ;
+        break;
+      case kCompositingCommit:
+        builder
+            .SetCompositingCommit_WorstCase(
+                absolute_record.worst_case_duration.InMicroseconds())
+            .SetCompositingCommit_Average(
+                absolute_record.total_duration.InMicroseconds() /
+                static_cast<int64_t>(absolute_record.sample_count))
+            .SetCompositingCommit_WorstCaseRatio(
+                percentage_record.worst_case_percentage)
+            .SetCompositingCommit_AverageRatio(
+                percentage_record.total_percentage /
+                percentage_record.sample_count);
+        break;
+      case kIntersectionObservation:
+        builder
+            .SetIntersectionObservation_WorstCase(
+                absolute_record.worst_case_duration.InMicroseconds())
+            .SetIntersectionObservation_Average(
+                absolute_record.total_duration.InMicroseconds() /
+                static_cast<int64_t>(absolute_record.sample_count))
+            .SetIntersectionObservation_WorstCaseRatio(
+                percentage_record.worst_case_percentage)
+            .SetIntersectionObservation_AverageRatio(
+                percentage_record.total_percentage /
+                percentage_record.sample_count);
+        break;
+      case kPaint:
+        builder
+            .SetPaint_WorstCase(
+                absolute_record.worst_case_duration.InMicroseconds())
+            .SetPaint_Average(
+                absolute_record.total_duration.InMicroseconds() /
+                static_cast<int64_t>(absolute_record.sample_count))
+            .SetPaint_WorstCaseRatio(percentage_record.worst_case_percentage)
+            .SetPaint_AverageRatio(percentage_record.total_percentage /
+                                   percentage_record.sample_count);
+        break;
+      case kPrePaint:
+        builder
+            .SetPrePaint_WorstCase(
+                absolute_record.worst_case_duration.InMicroseconds())
+            .SetPrePaint_Average(
+                absolute_record.total_duration.InMicroseconds() /
+                static_cast<int64_t>(absolute_record.sample_count))
+            .SetPrePaint_WorstCaseRatio(percentage_record.worst_case_percentage)
+            .SetPrePaint_AverageRatio(percentage_record.total_percentage /
+                                      percentage_record.sample_count);
+        break;
+      case kStyleAndLayout:
+        builder
+            .SetStyleAndLayout_WorstCase(
+                absolute_record.worst_case_duration.InMicroseconds())
+            .SetStyleAndLayout_Average(
+                absolute_record.total_duration.InMicroseconds() /
+                static_cast<int64_t>(absolute_record.sample_count))
+            .SetStyleAndLayout_WorstCaseRatio(
+                percentage_record.worst_case_percentage)
+            .SetStyleAndLayout_AverageRatio(percentage_record.total_percentage /
+                                            percentage_record.sample_count);
+        break;
+      case kForcedStyleAndLayout:
+        builder
+            .SetForcedStyleAndLayout_WorstCase(
+                absolute_record.worst_case_duration.InMicroseconds())
+            .SetForcedStyleAndLayout_Average(
+                absolute_record.total_duration.InMicroseconds() /
+                static_cast<int64_t>(absolute_record.sample_count))
+            .SetForcedStyleAndLayout_WorstCaseRatio(
+                percentage_record.worst_case_percentage)
+            .SetForcedStyleAndLayout_AverageRatio(
+                percentage_record.total_percentage /
+                percentage_record.sample_count);
+        break;
+      case kScrollingCoordinator:
+        builder
+            .SetScrollingCoordinator_WorstCase(
+                absolute_record.worst_case_duration.InMicroseconds())
+            .SetScrollingCoordinator_Average(
+                absolute_record.total_duration.InMicroseconds() /
+                static_cast<int64_t>(absolute_record.sample_count))
+            .SetScrollingCoordinator_WorstCaseRatio(
+                percentage_record.worst_case_percentage)
+            .SetScrollingCoordinator_AverageRatio(
+                percentage_record.total_percentage /
+                percentage_record.sample_count);
+        break;
+      case kHandleInputEvents:
+        builder
+            .SetHandleInputEvents_WorstCase(
+                absolute_record.worst_case_duration.InMicroseconds())
+            .SetHandleInputEvents_Average(
+                absolute_record.total_duration.InMicroseconds() /
+                static_cast<int64_t>(absolute_record.sample_count))
+            .SetHandleInputEvents_WorstCaseRatio(
+                percentage_record.worst_case_percentage)
+            .SetHandleInputEvents_AverageRatio(
+                percentage_record.total_percentage /
+                percentage_record.sample_count);
+        break;
+      case kAnimate:
+        builder
+            .SetAnimate_WorstCase(
+                absolute_record.worst_case_duration.InMicroseconds())
+            .SetAnimate_Average(
+                absolute_record.total_duration.InMicroseconds() /
+                static_cast<int64_t>(absolute_record.sample_count))
+            .SetAnimate_WorstCaseRatio(percentage_record.worst_case_percentage)
+            .SetAnimate_AverageRatio(percentage_record.total_percentage /
+                                     percentage_record.sample_count);
+        break;
+      case kCount:
+      case kMainFrame:
+        NOTREACHED();
+        break;
+    }
+    absolute_record.reset();
+    percentage_record.reset();
   }
   builder.Record(recorder_);
   has_data_ = false;

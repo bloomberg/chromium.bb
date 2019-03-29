@@ -125,7 +125,7 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // Changing these values requires changing the names of metrics specified
   // below. For every metric name added here, add an entry in the
   // metric_strings_ array below.
-  enum {
+  enum MetricId {
     kCompositing,
     kCompositingCommit,
     kIntersectionObservation,
@@ -136,7 +136,8 @@ class CORE_EXPORT LocalFrameUkmAggregator
     kScrollingCoordinator,
     kHandleInputEvents,
     kAnimate,
-    kCount
+    kCount,
+    kMainFrame
   };
 
  private:
@@ -215,8 +216,6 @@ class CORE_EXPORT LocalFrameUkmAggregator
 
  private:
   struct AbsoluteMetricRecord {
-    String worst_case_metric_name;
-    String average_metric_name;
     std::unique_ptr<CustomCountHistogram> uma_counter;
     TimeDelta total_duration;
     TimeDelta worst_case_duration;
@@ -230,8 +229,6 @@ class CORE_EXPORT LocalFrameUkmAggregator
   };
 
   struct MainFramePercentageRecord {
-    String worst_case_metric_name;
-    String average_metric_name;
     Vector<std::unique_ptr<CustomCountHistogram>> uma_counters_per_bucket;
     TimeDelta interval_duration;
     unsigned total_percentage;
