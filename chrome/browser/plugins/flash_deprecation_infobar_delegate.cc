@@ -13,7 +13,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/infobars/core/infobar.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 #include "url/url_constants.h"
 
 // static
@@ -60,4 +62,13 @@ base::string16 FlashDeprecationInfoBarDelegate::GetMessageText() const {
 
 int FlashDeprecationInfoBarDelegate::GetButtons() const {
   return BUTTON_NONE;
+}
+
+base::string16 FlashDeprecationInfoBarDelegate::GetLinkText() const {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+}
+
+GURL FlashDeprecationInfoBarDelegate::GetLinkURL() const {
+  return GURL(
+      "https://www.blog.google/products/chrome/saying-goodbye-flash-chrome/");
 }
