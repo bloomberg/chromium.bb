@@ -278,6 +278,7 @@ bool SharedImageStub::MakeContextCurrent() {
   auto* context = context_state_->real_context();
   if (context->IsCurrent(nullptr) ||
       context_state_->real_context()->MakeCurrent(context_state_->surface())) {
+    CHECK(gl::GLContext::GetCurrent());
     return true;
   } else {
     context_state_->MarkContextLost();
