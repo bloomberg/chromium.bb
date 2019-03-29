@@ -162,10 +162,6 @@ const ProxyServer& URLFetcherImpl::ProxyServerUsed() const {
   return core_->ProxyServerUsed();
 }
 
-bool URLFetcherImpl::WasFetchedViaProxy() const {
-  return core_->WasFetchedViaProxy();
-}
-
 bool URLFetcherImpl::WasCached() const {
   return core_->WasCached();
 }
