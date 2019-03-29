@@ -47,45 +47,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-using OnBrowsingDataRemovedBlock = void (^)(BrowsingDataRemoveMask mask);
-
-// BrowsingDataRemoverObserverWrapper observes a BrowsingDataRemover and
-// invokes a block when browsing data removal completes.
-class BrowsingDataRemoverObserverWrapper : public BrowsingDataRemoverObserver {
- public:
-  explicit BrowsingDataRemoverObserverWrapper(
-      OnBrowsingDataRemovedBlock on_browsing_data_removed_block);
-  ~BrowsingDataRemoverObserverWrapper() override;
-
-  // BrowsingDataRemoverObserver implementation.
-  void OnBrowsingDataRemoved(BrowsingDataRemover* remover,
-                             BrowsingDataRemoveMask mask) override;
-
- private:
-  OnBrowsingDataRemovedBlock on_browsing_data_removed_block_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverObserverWrapper);
-};
-
-BrowsingDataRemoverObserverWrapper::BrowsingDataRemoverObserverWrapper(
-    OnBrowsingDataRemovedBlock on_browsing_data_removed_block)
-    : on_browsing_data_removed_block_(on_browsing_data_removed_block) {
-  DCHECK(on_browsing_data_removed_block_);
-}
-
-BrowsingDataRemoverObserverWrapper::~BrowsingDataRemoverObserverWrapper() =
-    default;
-
-void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
-    BrowsingDataRemover* remover,
-    BrowsingDataRemoveMask mask) {
-  on_browsing_data_removed_block_(mask);
-}
-
-}  // namespace
-
 @interface ClearBrowsingDataCollectionViewController () {
   ios::ChromeBrowserState* _browserState;  // weak
 
@@ -142,12 +103,7 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
         kClearBrowsingDataCollectionViewAccessibilityIdentifier;
 
     if (IsNewClearBrowsingDataUIEnabled()) {
-      __weak ClearBrowsingDataCollectionViewController* weakSelf = self;
-      observer_ = std::make_unique<BrowsingDataRemoverObserverWrapper>(
-          ^(BrowsingDataRemoveMask mask) {
-            [weakSelf restartCounters:mask];
-          });
-
+      observer_ = std::make_unique<BrowsingDataRemoverObserverBridge>(self);
       scoped_observer_ = std::make_unique<
           ScopedObserver<BrowsingDataRemover, BrowsingDataRemoverObserver>>(
           observer_.get());
@@ -402,6 +358,13 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
             [model itemAtIndexPath:indexPath]);
     [autofillItem restartCounter];
   }
+}
+
+#pragma mark BrowsingDataRemoverObserving
+
+- (void)browsingDataRemover:(BrowsingDataRemover*)remover
+    didRemoveBrowsingDataWithMask:(BrowsingDataRemoveMask)mask {
+  [self restartCounters:mask];
 }
 
 #pragma mark MDCCollectionViewStylingDelegate
