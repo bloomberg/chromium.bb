@@ -8,17 +8,30 @@
 #import <UIKit/UIKit.h>
 
 @protocol AutocompleteSuggestion;
+@class OmniboxPopupRowCell;
 
 namespace {
 NSString* OmniboxPopupRowCellReuseIdentifier = @"OmniboxPopupRowCell";
 }  // namespace
 
+// Protocol for informing delegate that the trailing button for this cell
+// was tapped
+@protocol OmniboxPopupRowCellDelegate
+
+// The trailing button was tapped.
+- (void)trailingButtonTappedForCell:(OmniboxPopupRowCell*)cell;
+
+@end
+
 // Table view cell to display an autocomplete suggestion in the omnibox popup.
 // It handles all the layout logic internally.
 @interface OmniboxPopupRowCell : UITableViewCell
 
+// Layout this cell with the given data before displaying.
 - (void)setupWithAutocompleteSuggestion:(id<AutocompleteSuggestion>)suggestion
                               incognito:(BOOL)incognito;
+
+@property(nonatomic, weak) id<OmniboxPopupRowCellDelegate> delegate;
 
 @end
 

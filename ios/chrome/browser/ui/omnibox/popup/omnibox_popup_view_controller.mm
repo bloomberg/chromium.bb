@@ -12,6 +12,9 @@
 #error "This file requires ARC support."
 #endif
 
+@interface OmniboxPopupViewController () <OmniboxPopupRowCellDelegate>
+@end
+
 @implementation OmniboxPopupViewController
 
 - (void)viewDidLoad {
@@ -61,8 +64,17 @@
                            forIndexPath:indexPath];
   [cell setupWithAutocompleteSuggestion:self.currentResult[indexPath.row]
                               incognito:self.incognito];
+  cell.delegate = self;
 
   return cell;
+}
+
+#pragma mark - OmniboxPopupRowCellDelegate
+
+- (void)trailingButtonTappedForCell:(OmniboxPopupRowCell*)cell {
+  NSIndexPath* indexPath = [self.tableView indexPathForCell:cell];
+  [self.delegate autocompleteResultConsumer:self
+                 didTapTrailingButtonForRow:indexPath.row];
 }
 
 @end
