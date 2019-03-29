@@ -186,11 +186,12 @@ class VaapiVideoEncodeAccelerator::VP8Accelerator
   scoped_refptr<VP8Picture> GetPicture(
       AcceleratedVideoEncoder::EncodeJob* job) override;
 
-  bool SubmitFrameParameters(
-      AcceleratedVideoEncoder::EncodeJob* job,
-      const VP8Encoder::EncodeParams& encode_params,
-      scoped_refptr<VP8Picture> pic,
-      const Vp8ReferenceFrameVector& ref_frames) override;
+  bool SubmitFrameParameters(AcceleratedVideoEncoder::EncodeJob* job,
+                             const VP8Encoder::EncodeParams& encode_params,
+                             scoped_refptr<VP8Picture> pic,
+                             const Vp8ReferenceFrameVector& ref_frames,
+                             const std::array<bool, kNumVp8ReferenceBuffers>&
+                                 ref_frames_used) override;
 
  private:
   VaapiVideoEncodeAccelerator* const vea_;
@@ -1051,7 +1052,8 @@ bool VaapiVideoEncodeAccelerator::VP8Accelerator::SubmitFrameParameters(
     AcceleratedVideoEncoder::EncodeJob* job,
     const VP8Encoder::EncodeParams& encode_params,
     scoped_refptr<VP8Picture> pic,
-    const Vp8ReferenceFrameVector& ref_frames) {
+    const Vp8ReferenceFrameVector& ref_frames,
+    const std::array<bool, kNumVp8ReferenceBuffers>& ref_frames_used) {
   VAEncSequenceParameterBufferVP8 seq_param = {};
 
   const auto& frame_header = pic->frame_hdr;
@@ -1082,9 +1084,16 @@ bool VaapiVideoEncodeAccelerator::VP8Accelerator::SubmitFrameParameters(
                 : VA_INVALID_ID;
   pic_param.coded_buf = job->AsVaapiEncodeJob()->coded_buffer_id();
   DCHECK_NE(pic_param.coded_buf, VA_INVALID_ID);
+  pic_param.ref_flags.bits.no_ref_last =
+      !ref_frames_used[Vp8RefType::VP8_FRAME_LAST];
+  pic_param.ref_flags.bits.no_ref_gf =
+      !ref_frames_used[Vp8RefType::VP8_FRAME_GOLDEN];
+  pic_param.ref_flags.bits.no_ref_arf =
+      !ref_frames_used[Vp8RefType::VP8_FRAME_ALTREF];
 
-  if (frame_header->IsKeyframe())
+  if (frame_header->IsKeyframe()) {
     pic_param.ref_flags.bits.force_kf = true;
+  }
 
   pic_param.pic_flags.bits.frame_type = frame_header->frame_type;
   pic_param.pic_flags.bits.version = frame_header->version;

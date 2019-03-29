@@ -57,12 +57,14 @@ class VP8Encoder : public AcceleratedVideoEncoder {
 
     // Initializes |job| to use the provided |encode_params| as its parameters,
     // and |pic| as the target, as well as |ref_frames| as reference frames for
-    // it. Returns true on success.
+    // it. |ref_frames_used| specifies which frames in |ref_frames| will be
+    // actually used as reference frames on encoding. Returns true on success.
     virtual bool SubmitFrameParameters(
         EncodeJob* job,
         const VP8Encoder::EncodeParams& encode_params,
         scoped_refptr<VP8Picture> pic,
-        const Vp8ReferenceFrameVector& ref_frames) = 0;
+        const Vp8ReferenceFrameVector& ref_frames,
+        const std::array<bool, kNumVp8ReferenceBuffers>& ref_frames_used) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Accelerator);
