@@ -7,12 +7,25 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 
 class Profile;
+enum class WebappInstallSource;
+struct WebApplicationInfo;
+
+namespace content {
+class WebContents;
+}
+
+namespace web_app {
+class WebAppDataRetriever;
+}
 
 namespace extensions {
+
+class BookmarkAppHelper;
 
 // TODO(loyso): Erase this subclass together with BookmarkAppHelper.
 // crbug.com/915043.
@@ -37,9 +50,33 @@ class BookmarkAppInstallManager final : public web_app::InstallManager {
       bool no_network_install,
       WebappInstallSource install_source,
       OnceInstallCallback callback) override;
+  void InstallWebAppWithOptions(content::WebContents* web_contents,
+                                const web_app::InstallOptions& install_options,
+                                OnceInstallCallback callback) override;
+
+  using BookmarkAppHelperFactory =
+      base::RepeatingCallback<std::unique_ptr<BookmarkAppHelper>(
+          Profile*,
+          const WebApplicationInfo&,
+          content::WebContents*,
+          WebappInstallSource)>;
+
+  const BookmarkAppHelperFactory& bookmark_app_helper_factory() const {
+    return bookmark_app_helper_factory_;
+  }
+  void SetBookmarkAppHelperFactoryForTesting(
+      BookmarkAppHelperFactory bookmark_app_helper_factory);
+
+  using DataRetrieverFactory =
+      base::RepeatingCallback<std::unique_ptr<web_app::WebAppDataRetriever>()>;
+  void SetDataRetrieverFactoryForTesting(
+      DataRetrieverFactory data_retriever_factory);
 
  private:
   Profile* profile_;
+
+  BookmarkAppHelperFactory bookmark_app_helper_factory_;
+  DataRetrieverFactory data_retriever_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallManager);
 };

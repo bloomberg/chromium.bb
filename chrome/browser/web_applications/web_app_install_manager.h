@@ -53,6 +53,9 @@ class WebAppInstallManager final : public InstallManager,
       bool no_network_install,
       WebappInstallSource install_source,
       OnceInstallCallback callback) override;
+  void InstallWebAppWithOptions(content::WebContents* web_contents,
+                                const InstallOptions& install_options,
+                                OnceInstallCallback callback) override;
 
   // WebContentsObserver:
   void WebContentsDestroyed() override;

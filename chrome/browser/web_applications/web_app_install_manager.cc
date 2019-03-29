@@ -83,6 +83,14 @@ void WebAppInstallManager::InstallWebAppFromInfo(
   NOTIMPLEMENTED();
 }
 
+void WebAppInstallManager::InstallWebAppWithOptions(
+    content::WebContents* web_contents,
+    const InstallOptions& install_options,
+    OnceInstallCallback callback) {
+  // TODO(loyso): Implement it.
+  NOTIMPLEMENTED();
+}
+
 void WebAppInstallManager::WebContentsDestroyed() {
   ReturnError(InstallResultCode::kWebContentsDestroyed);
 }
