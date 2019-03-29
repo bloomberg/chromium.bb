@@ -174,7 +174,9 @@ int main(int argc, char** argv) {
       !WriteHeaderEpilogue(header_fd, args.header_filename) ||
       !WriteSourcePrologue(cc_fd, args.header_filename) ||
       !WriteEncoders(cc_fd, cpp_result.second) ||
-      !WriteDecoders(cc_fd, cpp_result.second) || !WriteSourceEpilogue(cc_fd)) {
+      !WriteDecoders(cc_fd, cpp_result.second) ||
+      !WriteStructEqualityOperators(cc_fd, cpp_result.second) ||
+      !WriteSourceEpilogue(cc_fd)) {
     return 1;
   }
 

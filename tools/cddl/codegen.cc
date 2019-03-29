@@ -79,10 +79,74 @@ std::string CppTypeToString(const CppType& cpp_type) {
   }
 }
 
+// Writes the equality operator for a specific Discriminated Union.
+bool WriteDiscriminatedUnionEqualityOperator(
+    int fd,
+    const CppType& type,
+    const std::string& name_prefix = "") {
+  const std::string name = name_prefix + ToCamelCase(type.name);
+  dprintf(fd, "\nbool %s::operator==(const %s& other) const {\n", name.c_str(),
+          name.c_str());
+  dprintf(fd, "  return this->which == other.which");
+  for (auto* union_member : type.discriminated_union.members) {
+    dprintf(fd, " &&\n         ");
+    switch (union_member->which) {
+      case CppType::Which::kUint64:
+        dprintf(fd,
+                "(this->which != Which::kUint64 || this->uint == other.uint)");
+        break;
+      case CppType::Which::kString:
+        dprintf(fd,
+                "(this->which != Which::kString || this->str == other.str)");
+        break;
+      case CppType::Which::kBytes:
+        dprintf(fd,
+                "(this->which != Which::kBytes || this->bytes == other.bytes)");
+        break;
+      default:
+        return false;
+    }
+  }
+  dprintf(fd, ";\n}\n");
+  return true;
+}
+
+// Writes the equality operator for a specific C++ struct.
+bool WriteStructEqualityOperator(int fd,
+                                 const CppType& type,
+                                 const std::string& name_prefix = "") {
+  const std::string name = name_prefix + ToCamelCase(type.name);
+  dprintf(fd, "\nbool %s::operator==(const %s& other) const {\n", name.c_str(),
+          name.c_str());
+  for (size_t i = 0; i < type.struct_type.members.size(); i++) {
+    if (i == 0) {
+      dprintf(fd, "  return ");
+    } else {
+      dprintf(fd, " &&\n         ");
+    }
+    auto name = ToUnderscoreId(type.struct_type.members[i].name);
+    dprintf(fd, "this->%s == other.%s", name.c_str(), name.c_str());
+  }
+  dprintf(fd, ";\n}\n");
+
+  std::string new_prefix = name_prefix + ToCamelCase(type.name) + "::";
+  for (const auto& x : type.struct_type.members) {
+    // NOTE: Don't need to call recursively on struct members, since all structs
+    // are handled in the calling method.
+    if (x.type->which == CppType::Which::kDiscriminatedUnion) {
+      if (!WriteDiscriminatedUnionEqualityOperator(fd, *x.type, new_prefix)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 // Write the C++ struct member definitions of every type in |members| to the
 // file descriptor |fd|.
 bool WriteStructMembers(
     int fd,
+    const std::string& name,
     const std::vector<CppType::Struct::CppMember>& members) {
   for (const auto& x : members) {
     std::string type_string;
@@ -90,7 +154,8 @@ bool WriteStructMembers(
       case CppType::Which::kStruct: {
         if (x.type->struct_type.key_type ==
             CppType::Struct::KeyType::kPlainGroup) {
-          if (!WriteStructMembers(fd, x.type->struct_type.members))
+          if (!WriteStructMembers(fd, x.type->name,
+                                  x.type->struct_type.members))
             return false;
           continue;
         } else {
@@ -107,6 +172,9 @@ bool WriteStructMembers(
         type_string = ToCamelCase(x.name);
         dprintf(fd, "  struct %s {\n", type_string.c_str());
         dprintf(fd, "    %s();\n    ~%s();\n\n", type_string.c_str(),
+                type_string.c_str());
+
+        dprintf(fd, "  bool operator==(const %s& other) const;\n\n",
                 type_string.c_str());
         dprintf(fd, "  enum class Which {\n");
         for (auto* union_member : x.type->discriminated_union.members) {
@@ -173,16 +241,18 @@ void WriteEnumMembers(int fd, const CppType& type) {
 // Writes a C++ type definition for |type| to the file descriptor |fd|.  This
 // only generates a definition for enums and structs.
 bool WriteTypeDefinition(int fd, const CppType& type) {
+  std::string name = ToCamelCase(type.name);
   switch (type.which) {
     case CppType::Which::kEnum: {
-      dprintf(fd, "\nenum class %s : uint64_t {\n",
-              ToCamelCase(type.name).c_str());
+      dprintf(fd, "\nenum class %s : uint64_t {\n", name.c_str());
       WriteEnumMembers(fd, type);
       dprintf(fd, "};\n");
     } break;
     case CppType::Which::kStruct: {
-      dprintf(fd, "\nstruct %s {\n", ToCamelCase(type.name).c_str());
-      if (!WriteStructMembers(fd, type.struct_type.members))
+      dprintf(fd, "\nstruct %s {\n", name.c_str());
+      dprintf(fd, "  bool operator==(const %s& other) const;\n\n",
+              name.c_str());
+      if (!WriteStructMembers(fd, type.name, type.struct_type.members))
         return false;
       dprintf(fd, "};\n");
     } break;
@@ -1197,6 +1267,22 @@ bool WriteArrayDecoder(int fd,
   dprintf(fd,
           "  CBOR_RETURN_ON_ERROR(cbor_value_leave_container(&it%d, &it%d));\n",
           decoder_depth - 1, decoder_depth);
+  return true;
+}
+
+// Writes the equality operators for all structs.
+bool WriteStructEqualityOperators(int fd, const CppSymbolTable& table) {
+  for (const auto& pair : table.cpp_type_map) {
+    CppType* real_type = pair.second;
+    if (real_type->which != CppType::Which::kStruct ||
+        real_type->struct_type.key_type ==
+            CppType::Struct::KeyType::kPlainGroup) {
+      continue;
+    }
+    if (!WriteStructEqualityOperator(fd, *real_type)) {
+      return false;
+    }
+  }
   return true;
 }
 
