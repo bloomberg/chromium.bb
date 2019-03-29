@@ -1018,10 +1018,16 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
       item->SetDelegate(this);
     }
   }
-  base::FilePath display_name =
-      in_progress_manager_->GetDownloadDisplayName(target_path);
-  if (!display_name.empty())
-    item->SetDisplayName(display_name);
+#if defined(OS_ANDROID)
+  if (target_path.IsContentUri()) {
+    base::FilePath display_name =
+        in_progress_manager_->GetDownloadDisplayName(target_path);
+    if (!display_name.empty())
+      item->SetDisplayName(display_name);
+    else
+      return nullptr;
+  }
+#endif
   download::DownloadItemImpl* download = item.get();
   DownloadItemUtils::AttachInfo(download, GetBrowserContext(), nullptr);
   OnDownloadCreated(std::move(item));

@@ -446,8 +446,7 @@ void InProgressDownloadManager::OnDBInitialized(
     bool success,
     std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
 #if defined(OS_ANDROID)
-  if (entries && !entries->empty() &&
-      DownloadCollectionBridge::NeedToRetrieveDisplayNames()) {
+  if (DownloadCollectionBridge::NeedToRetrieveDisplayNames()) {
     DownloadCollectionBridge::GetDisplayNamesCallback callback =
         base::BindOnce(&InProgressDownloadManager::OnDownloadNamesRetrieved,
                        weak_factory_.GetWeakPtr(), std::move(entries));
@@ -488,9 +487,16 @@ void InProgressDownloadManager::OnDownloadNamesRetrieved(
       }
 #if defined(OS_ANDROID)
       const base::FilePath& path = item->GetTargetFilePath();
-      base::FilePath display_name = GetDownloadDisplayName(path);
-      if (!display_name.empty())
-        item->SetDisplayName(display_name);
+      if (path.IsContentUri()) {
+        base::FilePath display_name = GetDownloadDisplayName(path);
+        // If a download doesn't have a display name, remove it.
+        if (display_name.empty()) {
+          RemoveInProgressDownload(item->GetGuid());
+          continue;
+        } else {
+          item->SetDisplayName(display_name);
+        }
+      }
 #endif
       item->AddObserver(download_db_cache_.get());
       in_progress_downloads_.emplace_back(std::move(item));
@@ -499,8 +505,6 @@ void InProgressDownloadManager::OnDownloadNamesRetrieved(
   }
   if (num_duplicates > 0)
     RecordDuplicateInProgressDownloadIdCount(num_duplicates);
-  if (base::FeatureList::IsEnabled(features::kDownloadDBForNewDownloads))
-    OnAllInprogressDownloadsLoaded();
   OnInitialized();
 }
 
