@@ -64,7 +64,7 @@ class ManualFillingBridge {
                         assert mNativeView
                                 != 0
                             : "Controller has been destroyed but the bridge wasn't cleaned up!";
-                        KeyboardAccessoryMetricsRecorder.recordActionSelected(
+                        ManualFillingMetricsRecorder.recordActionSelected(
                                 AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
                         nativeOnGenerationRequested(mNativeView);
                     })};
@@ -119,8 +119,7 @@ class ManualFillingBridge {
         if (selectable) {
             callback = (field) -> {
                 assert mNativeView != 0 : "Controller was destroyed but the bridge wasn't!";
-                KeyboardAccessoryMetricsRecorder.recordSuggestionSelected(
-                        AccessoryTabType.PASSWORDS,
+                ManualFillingMetricsRecorder.recordSuggestionSelected(AccessoryTabType.PASSWORDS,
                         field.isObfuscated() ? AccessorySuggestionType.PASSWORD
                                              : AccessorySuggestionType.USERNAME);
                 nativeOnFillingTriggered(mNativeView, field.isObfuscated(), field.getDisplayText());

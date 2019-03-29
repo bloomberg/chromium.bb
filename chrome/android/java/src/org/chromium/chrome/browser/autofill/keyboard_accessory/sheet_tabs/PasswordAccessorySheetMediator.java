@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_tabs;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryTabType;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryMetricsRecorder;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingMetricsRecorder;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData.FooterCommand;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
@@ -38,8 +38,8 @@ class PasswordAccessorySheetMediator implements Provider.Observer<AccessorySheet
     }
 
     void onTabShown() {
-        KeyboardAccessoryMetricsRecorder.recordActionImpression(AccessoryAction.MANAGE_PASSWORDS);
-        KeyboardAccessoryMetricsRecorder.recordSheetSuggestions(AccessoryTabType.PASSWORDS, mModel);
+        ManualFillingMetricsRecorder.recordActionImpression(AccessoryAction.MANAGE_PASSWORDS);
+        AccessorySheetTabMetricsRecorder.recordSheetSuggestions(AccessoryTabType.PASSWORDS, mModel);
     }
 
     private AccessorySheetDataPiece[] splitIntoDataPieces(AccessorySheetData accessorySheetData) {

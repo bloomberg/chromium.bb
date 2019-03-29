@@ -20,7 +20,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryMetricsRecorder;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.ui.ViewProvider;
 import org.chromium.ui.modelutil.LazyConstructionPropertyMcp;
@@ -55,7 +54,7 @@ public class AccessorySheetCoordinator {
         LazyConstructionPropertyMcp.create(
                 model, VISIBLE, viewProvider, AccessorySheetViewBinder::bind);
 
-        KeyboardAccessoryMetricsRecorder.registerAccessorySheetModelMetricsObserver(model);
+        AccessorySheetMetricsRecorder.registerAccessorySheetModelMetricsObserver(model);
         mMediator = new AccessorySheetMediator(model);
     }
 

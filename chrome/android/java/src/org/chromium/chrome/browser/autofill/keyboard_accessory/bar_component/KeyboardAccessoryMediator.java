@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component;
 
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTrigger.MANUAL_CLOSE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
@@ -19,7 +18,8 @@ import android.support.annotation.Px;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryMetricsRecorder;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTrigger;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingMetricsRecorder;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator.TabSwitchingDelegate;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator.VisibilityDelegate;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryProperties.AutofillBarItem;
@@ -148,7 +148,7 @@ public class KeyboardAccessoryMediator
         return new KeyboardAccessoryData.Action(
                 null, // Unused. The AutofillSuggestion has more meaningful labels.
                 AccessoryAction.AUTOFILL_SUGGESTION, result -> {
-                    KeyboardAccessoryMetricsRecorder.recordActionSelected(
+                    ManualFillingMetricsRecorder.recordActionSelected(
                             AccessoryAction.AUTOFILL_SUGGESTION);
                     delegate.suggestionSelected(pos);
                 });
@@ -256,8 +256,8 @@ public class KeyboardAccessoryMediator
 
     private void closeSheet() {
         assert mTabSwitcher.getActiveTab() != null;
-        KeyboardAccessoryMetricsRecorder.recordSheetTrigger(
-                mTabSwitcher.getActiveTab().getRecordingType(), MANUAL_CLOSE);
+        ManualFillingMetricsRecorder.recordSheetTrigger(
+                mTabSwitcher.getActiveTab().getRecordingType(), AccessorySheetTrigger.MANUAL_CLOSE);
         mModel.set(KEYBOARD_TOGGLE_VISIBLE, false);
         mVisibilityDelegate.onOpenKeyboard(); // This will close the active tab gently.
     }
