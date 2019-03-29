@@ -691,9 +691,11 @@ uint32_t LibvpxVp8Encoder::FrameDropThreshold(size_t spatial_idx) const {
   // setting, as eg. ScreenshareLayers does not work as intended with frame
   // dropping on and DefaultTemporalLayers will have performance issues with
   // frame dropping off.
-  if (temporal_layers_.size() <= spatial_idx) {
-    enable_frame_dropping =
-        temporal_layers_[spatial_idx]->SupportsEncoderFrameDropping();
+  if (!field_trial::IsDisabled(
+          "WebRTC-LibVpxVp8-InternalFrameDroppingSetByTemporalLayers") &&
+      spatial_idx < temporal_layers_.size()) {
+    return temporal_layers_[spatial_idx]->SupportsEncoderFrameDropping() ? 30
+                                                                         : 0;
   }
   return enable_frame_dropping ? 30 : 0;
 }
