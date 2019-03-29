@@ -96,7 +96,8 @@ class BASE_EXPORT TaskQueueImpl {
       RepeatingCallback<void(const Task&, const TaskQueue::TaskTiming&)>;
 
   // May be called from any thread.
-  scoped_refptr<SingleThreadTaskRunner> CreateTaskRunner(int task_type) const;
+  scoped_refptr<SingleThreadTaskRunner> CreateTaskRunner(
+      TaskType task_type) const;
 
   // TaskQueue implementation.
   const char* GetName() const;
@@ -262,7 +263,7 @@ class BASE_EXPORT TaskQueueImpl {
    public:
     explicit TaskRunner(scoped_refptr<GuardedTaskPoster> task_poster,
                         scoped_refptr<AssociatedThreadId> associated_thread,
-                        int task_type);
+                        TaskType task_type);
 
     bool PostDelayedTask(const Location& location,
                          OnceClosure callback,
@@ -279,7 +280,7 @@ class BASE_EXPORT TaskQueueImpl {
 
     const scoped_refptr<GuardedTaskPoster> task_poster_;
     const scoped_refptr<AssociatedThreadId> associated_thread_;
-    const int task_type_;
+    const TaskType task_type_;
   };
 
   // A queue for holding delayed tasks before their delay has expired.

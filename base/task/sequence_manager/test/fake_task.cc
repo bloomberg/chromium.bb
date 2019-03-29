@@ -9,7 +9,7 @@ namespace sequence_manager {
 
 FakeTask::FakeTask() : FakeTask(0 /* task_type */) {}
 
-FakeTask::FakeTask(int task_type)
+FakeTask::FakeTask(TaskType task_type)
     : Task(internal::PostedTask(OnceClosure(),
                                 FROM_HERE,
                                 TimeDelta(),

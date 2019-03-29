@@ -60,7 +60,7 @@ bool TaskQueueImpl::GuardedTaskPoster::PostTask(PostedTask task) {
 TaskQueueImpl::TaskRunner::TaskRunner(
     scoped_refptr<GuardedTaskPoster> task_poster,
     scoped_refptr<AssociatedThreadId> associated_thread,
-    int task_type)
+    TaskType task_type)
     : task_poster_(std::move(task_poster)),
       associated_thread_(std::move(associated_thread)),
       task_type_(task_type) {}
@@ -143,7 +143,7 @@ TaskQueueImpl::MainThreadOnly::MainThreadOnly(TaskQueueImpl* task_queue,
 TaskQueueImpl::MainThreadOnly::~MainThreadOnly() = default;
 
 scoped_refptr<SingleThreadTaskRunner> TaskQueueImpl::CreateTaskRunner(
-    int task_type) const {
+    TaskType task_type) const {
   return MakeRefCounted<TaskRunner>(task_poster_, associated_thread_,
                                     task_type);
 }

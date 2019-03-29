@@ -174,7 +174,7 @@ void TaskQueue::ShutdownTaskQueue() {
 }
 
 scoped_refptr<SingleThreadTaskRunner> TaskQueue::CreateTaskRunner(
-    int task_type) {
+    TaskType task_type) {
   // We only need to lock if we're not on the main thread.
   base::internal::AutoSchedulerLockMaybe lock(IsOnMainThread() ? &impl_lock_
                                                                : nullptr);

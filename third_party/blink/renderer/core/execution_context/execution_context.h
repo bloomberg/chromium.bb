@@ -85,7 +85,7 @@ class SecurityContext;
 class SecurityOrigin;
 class ScriptState;
 
-enum class TaskType : unsigned;
+enum class TaskType : unsigned char;
 
 enum ReasonForCallingCanExecuteScripts {
   kAboutToExecuteScript,
