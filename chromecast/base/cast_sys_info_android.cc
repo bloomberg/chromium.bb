@@ -105,21 +105,21 @@ std::string CastSysInfoAndroid::GetFactoryCountry() {
   return GetAndroidProperty("ro.boot.wificountrycode", "");
 }
 
-std::string CastSysInfoAndroid::GetFactoryLocale(std::string* second_locale) {
+std::vector<std::string> CastSysInfoAndroid::GetFactoryLocaleList() {
   // This duplicates the read-only property portion of
   // frameworks/base/core/jni/AndroidRuntime.cpp in the Android tree, which is
   // effectively the "factory locale", i.e. the locale chosen by Android
   // assuming the other persist.sys.* properties are not set.
   const std::string locale = GetAndroidProperty("ro.product.locale", "");
   if (!locale.empty()) {
-    return locale;
+    return {locale};
   }
 
   const std::string language =
       GetAndroidProperty("ro.product.locale.language", "en");
   const std::string region =
       GetAndroidProperty("ro.product.locale.region", "US");
-  return language + "-" + region;
+  return {language + "-" + region};
 }
 
 std::string CastSysInfoAndroid::GetWifiInterface() {
