@@ -1743,6 +1743,7 @@ test("browser_tests") {
         "../browser/chromeos/accessibility/sticky_keys_browsertest.cc",
         "../browser/chromeos/accessibility/switch_access_browsertest.cc",
         "../browser/chromeos/accessibility/touch_exploration_controller_browsertest.cc",
+        "../browser/chromeos/account_manager/account_manager_policy_controller_browsertest.cc",
         "../browser/chromeos/app_mode/arc/arc_kiosk_app_manager_browsertest.cc",
         "../browser/chromeos/app_mode/kiosk_app_manager_browsertest.cc",
         "../browser/chromeos/app_mode/kiosk_app_update_service_browsertest.cc",
