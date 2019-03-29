@@ -46,7 +46,7 @@ WebUIIOSControllerFactoryRegistry::GetInstance() {
 
 NSInteger WebUIIOSControllerFactoryRegistry::GetErrorCodeForWebUIURL(
     const GURL& url) const {
-  NSInteger error_code = NSURLErrorUnknown;
+  NSInteger error_code = NSURLErrorUnsupportedURL;
   for (WebUIIOSControllerFactory* factory : GetGlobalFactories()) {
     error_code = factory->GetErrorCodeForWebUIURL(url);
     if (error_code == 0)
