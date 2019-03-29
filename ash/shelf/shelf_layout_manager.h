@@ -184,6 +184,9 @@ class ASH_EXPORT ShelfLayoutManager
   ShelfVisibilityState visibility_state() const {
     return state_.visibility_state;
   }
+
+  bool is_status_area_visible() const { return state_.is_status_area_visible; }
+
   bool updating_bounds() const { return updating_bounds_; }
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
 
@@ -219,8 +222,9 @@ class ASH_EXPORT ShelfLayoutManager
     TargetBounds();
     ~TargetBounds();
 
-    float opacity;
+    float shelf_opacity;
     float status_opacity;
+
     gfx::Rect shelf_bounds;            // Bounds of the shelf within the screen
     gfx::Rect shelf_bounds_in_shelf;   // Bounds of the shelf minus status area
     gfx::Rect status_bounds_in_shelf;  // Bounds of status area within shelf
@@ -238,6 +242,12 @@ class ASH_EXPORT ShelfLayoutManager
     // Returns whether the session is in an active state.
     bool IsActiveSessionState() const;
 
+    // Returns whether shelf is in auto hide mode and is currently hidden.
+    bool IsShelfAutoHidden() const;
+
+    // Returns whether shelf is currently visible.
+    bool IsShelfVisible() const;
+
     // Returns true if the two states are considered equal. As
     // |auto_hide_state| only matters if |visibility_state| is
     // |SHELF_AUTO_HIDE|, Equals() ignores the |auto_hide_state| as
@@ -245,8 +255,15 @@ class ASH_EXPORT ShelfLayoutManager
     bool Equals(const State& other) const;
 
     ShelfVisibilityState visibility_state;
+
     ShelfAutoHideState auto_hide_state;
     wm::WorkspaceWindowState window_state;
+
+    // Whether status area is visible. It is independent from shelf visibility,
+    // but the variant with shelf visible and status area hidden is not
+    // implemented.
+    bool is_status_area_visible = true;
+
     // True when the system is in the cancelable, pre-lock screen animation.
     bool pre_lock_screen_animation_active;
     session_manager::SessionState session_state;
@@ -289,9 +306,9 @@ class ASH_EXPORT ShelfLayoutManager
   // |user_work_area_bounds_|.
   void CalculateTargetBoundsAndUpdateWorkArea(TargetBounds* target_bounds);
 
-  // Updates the target bounds if a gesture-drag is in progress. This is only
-  // used by |CalculateTargetBounds()|.
-  void UpdateTargetBoundsForGesture(TargetBounds* target_bounds) const;
+  // Updates the target bounds of the shelf if a gesture-drag is in progress.
+  // This is only used by |CalculateTargetBounds()|.
+  void UpdateShelfTargetBoundsForGesture(TargetBounds* target_bounds) const;
 
   // Updates the auto hide state immediately.
   void UpdateAutoHideStateNow();
@@ -323,6 +340,10 @@ class ASH_EXPORT ShelfLayoutManager
   ShelfAutoHideState CalculateAutoHideState(
       ShelfVisibilityState visibility_state) const;
 
+  // Returns whether status area is visible. Status area visibility is
+  // independent from shelf visibility when home screen is shown.
+  bool CalculateStatusAreaVisibility(const State& state) const;
+
   // Returns true if |window| is a descendant of the shelf.
   bool IsShelfWindow(aura::Window* window);
 
@@ -344,6 +365,9 @@ class ASH_EXPORT ShelfLayoutManager
   // Returns true if there is a fullscreen or maximized window open that causes
   // the shelf to be autohidden.
   bool IsShelfAutoHideForFullscreenMaximized() const;
+
+  // Returns whether home screen is currently visible.
+  bool IsHomeScreenShown() const;
 
   // Returns true if the home gesture handler should handle the event.
   bool ShouldHomeGestureHandleEvent(float scroll_y) const;

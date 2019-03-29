@@ -16,6 +16,7 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
+#include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -166,6 +167,17 @@ bool ShelfLayoutManager::State::IsActiveSessionState() const {
   return session_state == session_manager::SessionState::ACTIVE;
 }
 
+bool ShelfLayoutManager::State::IsShelfAutoHidden() const {
+  return visibility_state == SHELF_AUTO_HIDE &&
+         auto_hide_state == SHELF_AUTO_HIDE_HIDDEN;
+}
+
+bool ShelfLayoutManager::State::IsShelfVisible() const {
+  return visibility_state == SHELF_VISIBLE ||
+         (visibility_state == SHELF_AUTO_HIDE &&
+          auto_hide_state == SHELF_AUTO_HIDE_SHOWN);
+}
+
 bool ShelfLayoutManager::State::Equals(const State& other) const {
   return other.visibility_state == visibility_state &&
          (visibility_state != SHELF_AUTO_HIDE ||
@@ -237,9 +249,7 @@ bool ShelfLayoutManager::IsVisible() const {
   // status_area_widget() may be nullptr during the shutdown.
   return shelf_widget_->status_area_widget() &&
          shelf_widget_->status_area_widget()->IsVisible() &&
-         (state_.visibility_state == SHELF_VISIBLE ||
-          (state_.visibility_state == SHELF_AUTO_HIDE &&
-           state_.auto_hide_state == SHELF_AUTO_HIDE_SHOWN));
+         state_.IsShelfVisible();
 }
 
 gfx::Rect ShelfLayoutManager::GetIdealBounds() const {
@@ -397,6 +407,10 @@ bool ShelfLayoutManager::ProcessGestureEvent(
     return false;
 
   if (IsShelfHiddenForFullscreen())
+    return false;
+
+  // Gestures are disabled when status area is visible without shelf.
+  if (state_.is_status_area_visible && state_.visibility_state == SHELF_HIDDEN)
     return false;
 
   if (event_in_screen.type() == ui::ET_GESTURE_SCROLL_BEGIN)
@@ -677,7 +691,7 @@ void ShelfLayoutManager::OnLocaleChanged() {
 // ShelfLayoutManager, private:
 
 ShelfLayoutManager::TargetBounds::TargetBounds()
-    : opacity(0.0f), status_opacity(0.0f) {}
+    : shelf_opacity(0.0f), status_opacity(0.0f) {}
 
 ShelfLayoutManager::TargetBounds::~TargetBounds() = default;
 
@@ -685,6 +699,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   State state;
   state.visibility_state = visibility_state;
   state.auto_hide_state = CalculateAutoHideState(visibility_state);
+  state.is_status_area_visible = CalculateStatusAreaVisibility(state);
 
   RootWindowController* controller =
       RootWindowController::ForWindow(shelf_widget_->GetNativeWindow());
@@ -728,8 +743,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
     // Delay the animation when the shelf was hidden, and has just been made
     // visible (e.g. using a gesture-drag).
     if (state.visibility_state == SHELF_VISIBLE &&
-        old_state.visibility_state == SHELF_AUTO_HIDE &&
-        old_state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN) {
+        old_state.IsShelfAutoHidden()) {
       delay_background_change = true;
     }
   }
@@ -761,6 +775,14 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
 }
 
 ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
+  // Shelf visibility on home screen is controlled by home screen delegate.
+  if (IsHomeScreenShown() && !Shell::Get()
+                                  ->home_screen_controller()
+                                  ->delegate()
+                                  ->ShouldShowShelfOnHomeScreen()) {
+    return SHELF_HIDDEN;
+  }
+
   switch (shelf_->auto_hide_behavior()) {
     case SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
       return SHELF_AUTO_HIDE;
@@ -820,7 +842,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     if (observer)
       status_animation_setter.AddObserver(observer);
 
-    GetLayer(shelf_widget_)->SetOpacity(target_bounds.opacity);
+    GetLayer(shelf_widget_)->SetOpacity(target_bounds.shelf_opacity);
     gfx::Rect shelf_bounds = target_bounds.shelf_bounds;
     ::wm::ConvertRectToScreen(shelf_widget_->GetNativeWindow()->parent(),
                               &shelf_bounds);
@@ -836,10 +858,19 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     // animate. Override the animation settings to immediately set the
     // visibility property. Opacity will still animate.
 
-    // TODO(harrym): Once status area widget is a child view of shelf
-    // this can be simplified.
     gfx::Rect status_bounds = target_bounds.status_bounds_in_shelf;
-    status_bounds.Offset(target_bounds.shelf_bounds.OffsetFromOrigin());
+    // When status area is shown without shelf it has the same position as if
+    // shelf was visible and fully shown. Therefore position is calculated
+    // relatively to the ideal bounds and not the real bounds that lie outside
+    // of the screen in that case.
+    bool is_showing_status_area_without_shelf =
+        state_.is_status_area_visible &&
+        state_.visibility_state == SHELF_HIDDEN;
+    gfx::Vector2d status_area_offset =
+        is_showing_status_area_without_shelf
+            ? GetIdealBounds().OffsetFromOrigin()
+            : target_bounds.shelf_bounds.OffsetFromOrigin();
+    status_bounds.Offset(status_area_offset);
     ::wm::ConvertRectToScreen(status_widget->GetNativeWindow()->parent(),
                               &status_bounds);
     status_widget->SetBounds(status_bounds);
@@ -922,8 +953,7 @@ gfx::Rect ShelfLayoutManager::CalculateTargetBounds(
   // By default, show the whole shelf on the screen.
   int shelf_in_screen_portion = shelf_size;
 
-  if (state.visibility_state == SHELF_AUTO_HIDE &&
-      state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN) {
+  if (state.IsShelfAutoHidden()) {
     shelf_in_screen_portion = kHiddenShelfInScreenPortion;
   } else if (state.visibility_state == SHELF_HIDDEN || IsKeyboardShown()) {
     shelf_in_screen_portion = 0;
@@ -992,16 +1022,21 @@ gfx::Rect ShelfLayoutManager::CalculateTargetBounds(
   target_bounds->work_area_insets += gfx::Insets(
       accessibility_panel_height + docked_magnifier_height, 0, 0, 0);
 
-  target_bounds->opacity = ComputeTargetOpacity(state);
-  target_bounds->status_opacity =
-      (state.visibility_state == SHELF_AUTO_HIDE &&
-       state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN &&
-       gesture_drag_status_ != GESTURE_DRAG_IN_PROGRESS)
-          ? 0.0f
-          : target_bounds->opacity;
+  bool is_showing_status_area_without_shelf =
+      state_.is_status_area_visible && state_.visibility_state == SHELF_HIDDEN;
+  target_bounds->shelf_opacity = ComputeTargetOpacity(state);
+  if (is_showing_status_area_without_shelf) {
+    target_bounds->status_opacity = 1.0f;
+  } else if (state.IsShelfAutoHidden() &&
+             gesture_drag_status_ != GESTURE_DRAG_IN_PROGRESS) {
+    target_bounds->status_opacity = 0.0f;
+  } else {
+    target_bounds->status_opacity = target_bounds->shelf_opacity;
+  }
 
-  if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS)
-    UpdateTargetBoundsForGesture(target_bounds);
+  if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS) {
+    UpdateShelfTargetBoundsForGesture(target_bounds);
+  }
 
   // This needs to happen after calling UpdateTargetBoundsForGesture(), because
   // that can change the size of the shelf.
@@ -1026,7 +1061,7 @@ void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea(
   user_work_area_bounds_ = CalculateTargetBounds(state_, target_bounds);
 }
 
-void ShelfLayoutManager::UpdateTargetBoundsForGesture(
+void ShelfLayoutManager::UpdateShelfTargetBoundsForGesture(
     TargetBounds* target_bounds) const {
   CHECK_EQ(GESTURE_DRAG_IN_PROGRESS, gesture_drag_status_);
   const bool horizontal = shelf_->IsHorizontalAlignment();
@@ -1246,6 +1281,21 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   return SHELF_AUTO_HIDE_HIDDEN;
 }
 
+bool ShelfLayoutManager::CalculateStatusAreaVisibility(
+    const ShelfLayoutManager::State& state) const {
+  // Shelf visibility on home screen is controlled by home screen delegate,
+  // otherwise it matches shelf visibility.
+  if (!IsHomeScreenShown())
+    return state.IsShelfVisible();
+
+  HomeScreenDelegate* delegate =
+      Shell::Get()->home_screen_controller()->delegate();
+  // Shelf visible and status hidden is currently unsupported.
+  DCHECK(delegate->ShouldShowStatusAreaOnHomeScreen() ||
+         !delegate->ShouldShowShelfOnHomeScreen());
+  return delegate->ShouldShowStatusAreaOnHomeScreen();
+}
+
 bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {
   if (!window)
     return false;
@@ -1309,6 +1359,14 @@ bool ShelfLayoutManager::IsShelfAutoHideForFullscreenMaximized() const {
   wm::WindowState* active_window = wm::GetActiveWindowState();
   return active_window &&
          active_window->autohide_shelf_when_maximized_or_fullscreen();
+}
+
+bool ShelfLayoutManager::IsHomeScreenShown() const {
+  if (!IsHomeScreenAvailable())
+    return false;
+
+  return !Shell::Get()->overview_controller()->IsSelecting() &&
+         !HasVisibleWindow();
 }
 
 bool ShelfLayoutManager::ShouldHomeGestureHandleEvent(float scroll_y) const {

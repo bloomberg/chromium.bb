@@ -30,6 +30,8 @@ class ASH_EXPORT KioskNextHomeController : public HomeScreenDelegate,
       UpdateAnimationSettingsCallback callback) override;
   void UpdateAfterHomeLauncherShown() override;
   base::Optional<base::TimeDelta> GetOptionalAnimationDuration() override;
+  bool ShouldShowShelfOnHomeScreen() const override;
+  bool ShouldShowStatusAreaOnHomeScreen() const override;
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,

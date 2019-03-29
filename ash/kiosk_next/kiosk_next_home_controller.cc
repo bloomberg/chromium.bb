@@ -82,6 +82,14 @@ KioskNextHomeController::GetOptionalAnimationDuration() {
   return base::nullopt;
 }
 
+bool KioskNextHomeController::ShouldShowShelfOnHomeScreen() const {
+  return false;
+}
+
+bool KioskNextHomeController::ShouldShowStatusAreaOnHomeScreen() const {
+  return true;
+}
+
 void KioskNextHomeController::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {

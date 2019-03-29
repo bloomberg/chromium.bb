@@ -16,6 +16,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
+#include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -44,10 +45,13 @@
 #include "ash/wm/wm_event.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
@@ -307,6 +311,28 @@ class WallpaperShownWaiter : public WallpaperControllerObserver {
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperShownWaiter);
+};
+
+// Mocks HomeScreenDelegate.
+class MockHomeScreenDelegate : public HomeScreenDelegate {
+ public:
+  MockHomeScreenDelegate() = default;
+  ~MockHomeScreenDelegate() override = default;
+
+  // HomeScreenDelegate:
+  MOCK_METHOD0(ShowHomeScreenView, void());
+  MOCK_METHOD0(GetHomeScreenWindow, aura::Window*());
+  MOCK_METHOD3(UpdateYPositionAndOpacityForHomeLauncher,
+               void(int y_position_in_screen,
+                    float opacity,
+                    UpdateAnimationSettingsCallback callback));
+  MOCK_METHOD0(UpdateAfterHomeLauncherShown, void());
+  MOCK_METHOD0(GetOptionalAnimationDuration, base::Optional<base::TimeDelta>());
+  MOCK_CONST_METHOD0(ShouldShowShelfOnHomeScreen, bool());
+  MOCK_CONST_METHOD0(ShouldShowStatusAreaOnHomeScreen, bool());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockHomeScreenDelegate);
 };
 
 }  // namespace
@@ -2784,6 +2810,55 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfHiddenForSinglePipWindow) {
   // Expect the shelf to be hidden.
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+}
+
+TEST_F(ShelfLayoutManagerTest, StatusAreaAndShelfVisibilityOnHomeScreen) {
+  // Home screen is only available in tablet mode.
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  MockHomeScreenDelegate home_screen_delegate;
+  Shell::Get()->home_screen_controller()->SetDelegate(&home_screen_delegate);
+
+  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+  EXPECT_EQ(SHELF_VISIBLE, layout_manager->visibility_state());
+  EXPECT_TRUE(layout_manager->is_status_area_visible());
+  EXPECT_TRUE(GetShelfWidget()->status_area_widget()->IsVisible());
+
+  // Shelf not visible, status area not visible.
+  EXPECT_CALL(home_screen_delegate, ShouldShowShelfOnHomeScreen())
+      .WillRepeatedly(testing::Return(false));
+  EXPECT_CALL(home_screen_delegate, ShouldShowStatusAreaOnHomeScreen())
+      .WillRepeatedly(testing::Return(false));
+
+  layout_manager->UpdateVisibilityState();
+
+  EXPECT_EQ(SHELF_HIDDEN, layout_manager->visibility_state());
+  EXPECT_FALSE(layout_manager->is_status_area_visible());
+  EXPECT_FALSE(GetShelfWidget()->status_area_widget()->IsVisible());
+
+  // Shelf visible, status area visible.
+  EXPECT_CALL(home_screen_delegate, ShouldShowShelfOnHomeScreen())
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(home_screen_delegate, ShouldShowStatusAreaOnHomeScreen())
+      .WillRepeatedly(testing::Return(true));
+
+  layout_manager->UpdateVisibilityState();
+
+  EXPECT_EQ(SHELF_VISIBLE, layout_manager->visibility_state());
+  EXPECT_TRUE(layout_manager->is_status_area_visible());
+  EXPECT_TRUE(GetShelfWidget()->status_area_widget()->IsVisible());
+
+  // Shelf not visible, status area visible.
+  EXPECT_CALL(home_screen_delegate, ShouldShowShelfOnHomeScreen())
+      .WillRepeatedly(testing::Return(false));
+  EXPECT_CALL(home_screen_delegate, ShouldShowStatusAreaOnHomeScreen())
+      .WillRepeatedly(testing::Return(true));
+
+  layout_manager->UpdateVisibilityState();
+
+  EXPECT_EQ(SHELF_HIDDEN, layout_manager->visibility_state());
+  EXPECT_TRUE(layout_manager->is_status_area_visible());
+  EXPECT_TRUE(GetShelfWidget()->status_area_widget()->IsVisible());
 }
 
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {
