@@ -337,9 +337,10 @@ bool FrameSinkManagerImpl::OnSurfaceDamaged(const SurfaceId& surface_id,
   return false;
 }
 
-void FrameSinkManagerImpl::OnSurfaceDiscarded(const SurfaceId& surface_id) {}
-
 void FrameSinkManagerImpl::OnSurfaceDestroyed(const SurfaceId& surface_id) {}
+
+void FrameSinkManagerImpl::OnSurfaceMarkedForDestruction(
+    const SurfaceId& surface_id) {}
 
 void FrameSinkManagerImpl::OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                                    const BeginFrameArgs& args) {

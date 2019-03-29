@@ -121,8 +121,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
                           base::Optional<base::TimeDelta> duration) override;
   bool OnSurfaceDamaged(const SurfaceId& surface_id,
                         const BeginFrameAck& ack) override;
-  void OnSurfaceDiscarded(const SurfaceId& surface_id) override;
   void OnSurfaceDestroyed(const SurfaceId& surface_id) override;
+  void OnSurfaceMarkedForDestruction(const SurfaceId& surface_id) override;
   void OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                const BeginFrameArgs& args) override;
 

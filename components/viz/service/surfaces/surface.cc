@@ -47,8 +47,8 @@ Surface::~Surface() {
   ClearCopyRequests();
 
   if (surface_client_)
-    surface_client_->OnSurfaceDiscarded(this);
-  surface_manager_->SurfaceDiscarded(this);
+    surface_client_->OnSurfaceDestroyed(this);
+  surface_manager_->SurfaceDestroyed(this);
 
   UnrefFrameResourcesAndRunCallbacks(std::move(pending_frame_data_));
   UnrefFrameResourcesAndRunCallbacks(std::move(active_frame_data_));

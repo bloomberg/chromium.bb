@@ -106,7 +106,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   bool SurfaceHasUnackedFrame(const SurfaceId& surface_id) const override;
   bool SurfaceDamaged(const SurfaceId& surface_id,
                       const BeginFrameAck& ack) override;
-  void SurfaceDiscarded(const SurfaceId& surface_id) override;
+  void SurfaceDestroyed(const SurfaceId& surface_id) override;
   void DidFinishFrame(const BeginFrameAck& ack) override;
 
   // OutputSurfaceClient implementation.

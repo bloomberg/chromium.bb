@@ -630,8 +630,8 @@ bool Display::SurfaceDamaged(const SurfaceId& surface_id,
   return display_damaged;
 }
 
-void Display::SurfaceDiscarded(const SurfaceId& surface_id) {
-  TRACE_EVENT0("viz", "Display::SurfaceDiscarded");
+void Display::SurfaceDestroyed(const SurfaceId& surface_id) {
+  TRACE_EVENT0("viz", "Display::SurfaceDestroyed");
   if (aggregator_)
     aggregator_->ReleaseResources(surface_id);
 }
