@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view_tester.h"
@@ -26,7 +25,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
-#include "ui/base/ui_base_features.h"
 
 namespace autofill {
 
@@ -149,11 +147,6 @@ class CardUnmaskPromptViewBrowserTest : public DialogBrowserTest {
 
   ~CardUnmaskPromptViewBrowserTest() override {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    DialogBrowserTest::SetUpCommandLine(command_line);
-    scoped_feature_list_.InitAndEnableFeature(features::kExperimentalUi);
-  }
-
   // DialogBrowserTest:
   void SetUpOnMainThread() override {
     runner_ = new content::MessageLoopRunner;
@@ -196,8 +189,6 @@ class CardUnmaskPromptViewBrowserTest : public DialogBrowserTest {
   content::WebContents* contents_;
   std::unique_ptr<TestCardUnmaskPromptController> controller_;
   std::unique_ptr<TestCardUnmaskDelegate> delegate_;
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptViewBrowserTest);
 };
