@@ -241,6 +241,14 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
   DCHECK(item);
   switch (item.type) {
+    case ItemTypeTimeRange: {
+      UIViewController* controller =
+          [[TimeRangeSelectorTableViewController alloc]
+              initWithPrefs:self.browserState->GetPrefs()
+                   delegate:self.dataManager];
+      [self.navigationController pushViewController:controller animated:YES];
+      break;
+    }
     case ItemTypeDataTypeBrowsingHistory:
     case ItemTypeDataTypeCookiesSiteData:
     case ItemTypeDataTypeCache:
@@ -259,7 +267,6 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
     case ItemTypeFooterGoogleAccountAndMyActivity:
     case ItemTypeFooterSavedSiteData:
     case ItemTypeFooterClearSyncAndSavedSiteData:
-    case ItemTypeTimeRange:
     default:
       break;
   }
