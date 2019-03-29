@@ -1607,8 +1607,14 @@ KURL AXNodeObject::Url() const {
   if (IsWebArea() && GetDocument())
     return GetDocument()->Url();
 
-  if (IsImage() && IsHTMLImageElement(GetNode()))
-    return ToHTMLImageElement(*GetNode()).Src();
+  if (IsImage() && IsHTMLImageElement(GetNode())) {
+    // Using ImageSourceURL handles both src and srcset.
+    String source_url = ToHTMLImageElement(*GetNode()).ImageSourceURL();
+    String stripped_image_source_url =
+        StripLeadingAndTrailingHTMLSpaces(source_url);
+    if (!stripped_image_source_url.IsEmpty())
+      return GetDocument()->CompleteURL(stripped_image_source_url);
+  }
 
   if (IsInputImage())
     return ToHTMLInputElement(GetNode())->Src();

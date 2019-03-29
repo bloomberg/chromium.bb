@@ -333,3 +333,16 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, AnnotationError) {
     snapshot = content::GetAccessibilityTreeSnapshot(web_contents);
   }
 }
+
+IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImageWithSrcSet) {
+  FakeAnnotator::SetReturnOcrResults(true);
+  FakeAnnotator::SetReturnLabelResults(true);
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/image_srcset.html"));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WaitForAccessibilityTreeToContainNodeWithName(
+      web_contents,
+      "Appears to say: red.png Annotation. Appears to be: red.png Label");
+}

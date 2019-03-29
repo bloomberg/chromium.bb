@@ -710,6 +710,7 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
       .SetProperty("relevant", &WebAXObjectProxy::Relevant)
       .SetProperty("roleDescription", &WebAXObjectProxy::RoleDescription)
       .SetProperty("sort", &WebAXObjectProxy::Sort)
+      .SetProperty("url", &WebAXObjectProxy::Url)
       .SetProperty("hierarchicalLevel", &WebAXObjectProxy::HierarchicalLevel)
       .SetProperty("posInSet", &WebAXObjectProxy::PosInSet)
       .SetProperty("setSize", &WebAXObjectProxy::SetSize)
@@ -1337,6 +1338,11 @@ std::string WebAXObjectProxy::Sort() {
     default:
       return std::string();
   }
+}
+
+std::string WebAXObjectProxy::Url() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  return accessibility_object_.Url().GetString().Utf8();
 }
 
 int WebAXObjectProxy::HierarchicalLevel() {
