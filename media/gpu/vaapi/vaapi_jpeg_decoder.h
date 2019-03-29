@@ -21,6 +21,7 @@ typedef unsigned int VASurfaceID;
 
 namespace media {
 
+struct JpegFrameHeader;
 class ScopedVAImage;
 class VaapiWrapper;
 
@@ -40,6 +41,13 @@ enum class VaapiJpegDecodeStatus {
   kCannotGetImage,
   kInvalidState,
 };
+
+constexpr unsigned int kInvalidVaRtFormat = 0u;
+
+// Returns the internal format required for a JPEG image given its parsed
+// |frame_header|. If the image's subsampling format is not one of 4:2:0, 4:2:2,
+// or 4:4:4, returns kInvalidVaRtFormat.
+unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header);
 
 class VaapiJpegDecoder final {
  public:

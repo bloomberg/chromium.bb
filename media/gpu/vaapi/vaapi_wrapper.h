@@ -64,6 +64,12 @@ class MEDIA_GPU_EXPORT VaapiWrapper
     kCodecModeMax,
   };
 
+  using InternalFormats = struct {
+    bool yuv420 : 1;
+    bool yuv422 : 1;
+    bool yuv444 : 1;
+  };
+
   // Return an instance of VaapiWrapper initialized for |va_profile| and
   // |mode|. |report_error_to_uma_cb| will be called independently from
   // reporting errors to clients via method return values.
@@ -89,6 +95,14 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
   // Return true when JPEG decode is supported.
   static bool IsJpegDecodeSupported();
+
+  // Returns the supported internal formats for JPEG decoding. If JPEG decoding
+  // is not supported, returns InternalFormats{}.
+  static InternalFormats GetJpegDecodeSupportedInternalFormats();
+
+  // Returns true if |rt_format| is supported for JPEG decoding. If it's not or
+  // JPEG decoding is not supported, returns false.
+  static bool IsJpegDecodingSupportedForInternalFormat(unsigned int rt_format);
 
   // Gets the minimum surface size allowed for JPEG decoding. Returns true if
   // the size can be obtained, false otherwise. If a dimension is not reported

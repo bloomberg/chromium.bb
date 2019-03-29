@@ -25,6 +25,7 @@
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -151,6 +152,8 @@ static const struct {
     {VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
 };
 
+constexpr const char* kMesaGalliumDriverPrefix = "Mesa Gallium driver";
+
 static const struct {
   std::string va_driver;
   std::string cpu_family;
@@ -159,7 +162,7 @@ static const struct {
 } kBlackListMap[]{
     // TODO(hiroh): Remove once Chrome supports unpacked header.
     // https://crbug.com/828482.
-    {"Mesa Gallium driver",
+    {kMesaGalliumDriverPrefix,
      "AMD STONEY",
      VaapiWrapper::CodecMode::kEncode,
      {VAProfileH264Baseline, VAProfileH264Main, VAProfileH264High,
@@ -439,6 +442,7 @@ class VASupportedProfiles {
     VAProfile va_profile;
     gfx::Size min_resolution;
     gfx::Size max_resolution;
+    VaapiWrapper::InternalFormats supported_internal_formats;
   };
   static const VASupportedProfiles& Get();
 
@@ -727,7 +731,69 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
     LOG(ERROR) << "Empty codec maximum resolution";
     return false;
   }
-  return true;
+
+  // Create a new configuration to find the supported RT formats. We don't pass
+  // required attributes here because we want the driver to tell us all the
+  // supported RT formats.
+  va_res = vaCreateConfig(va_display_, va_profile, entrypoint, nullptr, 0,
+                          &va_config_id);
+  VA_SUCCESS_OR_RETURN(va_res, "vaCreateConfig failed", false);
+  base::ScopedClosureRunner vaconfig_no_attribs_destroyer(base::BindOnce(
+      [](VADisplay display, VAConfigID id) {
+        if (id != VA_INVALID_ID) {
+          VAStatus va_res = vaDestroyConfig(display, id);
+          if (va_res != VA_STATUS_SUCCESS)
+            LOG(ERROR) << "vaDestroyConfig failed. VA error: "
+                       << vaErrorStr(va_res);
+        }
+      },
+      va_display_, va_config_id));
+  profile_info->supported_internal_formats = {};
+  size_t max_num_config_attributes;
+  if (!base::CheckedNumeric<int>(vaMaxNumConfigAttributes(va_display_))
+           .AssignIfValid(&max_num_config_attributes)) {
+    LOG(ERROR) << "Can't get the maximum number of config attributes";
+    return false;
+  }
+  std::vector<VAConfigAttrib> config_attributes(max_num_config_attributes);
+  int num_config_attributes;
+  va_res = vaQueryConfigAttributes(va_display_, va_config_id, &va_profile,
+                                   &entrypoint, config_attributes.data(),
+                                   &num_config_attributes);
+  VA_SUCCESS_OR_RETURN(va_res, "vaQueryConfigAttributes failed", false);
+  for (int i = 0; i < num_config_attributes; i++) {
+    const VAConfigAttrib& attrib = config_attributes[i];
+    if (attrib.type != VAConfigAttribRTFormat)
+      continue;
+    if (attrib.value & VA_RT_FORMAT_YUV420)
+      profile_info->supported_internal_formats.yuv420 = true;
+    if (attrib.value & VA_RT_FORMAT_YUV422)
+      profile_info->supported_internal_formats.yuv422 = true;
+    if (attrib.value & VA_RT_FORMAT_YUV444)
+      profile_info->supported_internal_formats.yuv444 = true;
+    break;
+  }
+
+  // Now work around some driver misreporting for JPEG decoding.
+  if (va_profile == VAProfileJPEGBaseline && entrypoint == VAEntrypointVLD) {
+    if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
+                         kMesaGalliumDriverPrefix,
+                         base::CompareCase::SENSITIVE)) {
+      // TODO(andrescj): the VAAPI state tracker in mesa does not report
+      // VA_RT_FORMAT_YUV422 as being supported for JPEG decoding. However, it
+      // is happy to allocate YUYV surfaces
+      // (https://gitlab.freedesktop.org/mesa/mesa/commit/5608f442). Remove this
+      // workaround once b/128337341 is resolved.
+      profile_info->supported_internal_formats.yuv422 = true;
+    }
+  }
+  const bool is_any_profile_supported =
+      profile_info->supported_internal_formats.yuv420 ||
+      profile_info->supported_internal_formats.yuv422 ||
+      profile_info->supported_internal_formats.yuv444;
+  DLOG_IF(ERROR, !is_any_profile_supported)
+      << "No cool internal formats supported";
+  return is_any_profile_supported;
 }
 
 // Maps VideoCodecProfile enum values to VaProfile values. This function
@@ -939,6 +1005,32 @@ VaapiWrapper::GetSupportedDecodeProfiles() {
 bool VaapiWrapper::IsJpegDecodeSupported() {
   return VASupportedProfiles::Get().IsProfileSupported(kDecode,
                                                        VAProfileJPEGBaseline);
+}
+
+// static
+VaapiWrapper::InternalFormats
+VaapiWrapper::GetJpegDecodeSupportedInternalFormats() {
+  VASupportedProfiles::ProfileInfo profile_info;
+  if (!VASupportedProfiles::Get().IsProfileSupported(
+          kDecode, VAProfileJPEGBaseline, &profile_info)) {
+    return InternalFormats{};
+  }
+  return profile_info.supported_internal_formats;
+}
+
+// static
+bool VaapiWrapper::IsJpegDecodingSupportedForInternalFormat(
+    unsigned int rt_format) {
+  static const base::NoDestructor<VaapiWrapper::InternalFormats>
+      supported_internal_formats(
+          VaapiWrapper::GetJpegDecodeSupportedInternalFormats());
+  if (rt_format == VA_RT_FORMAT_YUV420)
+    return supported_internal_formats->yuv420;
+  else if (rt_format == VA_RT_FORMAT_YUV422)
+    return supported_internal_formats->yuv422;
+  else if (rt_format == VA_RT_FORMAT_YUV444)
+    return supported_internal_formats->yuv444;
+  return false;
 }
 
 // static

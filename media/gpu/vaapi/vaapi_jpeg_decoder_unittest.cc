@@ -44,14 +44,17 @@ namespace {
 
 constexpr const char* kYuv422Filename = "pixel-1280x720.jpg";
 constexpr const char* kYuv420Filename = "pixel-1280x720-yuv420.jpg";
+constexpr const char* kYuv444Filename = "pixel-1280x720-yuv444.jpg";
 
 struct TestParam {
+  const char* test_name;
   const char* filename;
 };
 
 const TestParam kTestCases[] = {
-    {kYuv422Filename},
-    {kYuv420Filename},
+    {"YUV422", kYuv422Filename},
+    {"YUV420", kYuv420Filename},
+    {"YUV444", kYuv444Filename},
 };
 
 // Any number above 99.5% should do, experimentally we like a wee higher.
@@ -365,9 +368,24 @@ TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {
 
   const auto encoded_image = base::make_span<const uint8_t>(
       reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size());
+
+  // Skip the image if the VAAPI driver doesn't claim to support its chroma
+  // subsampling format. However, we expect at least 4:2:0 and 4:2:2 support.
+  const VaapiWrapper::InternalFormats supported_internal_formats =
+      VaapiWrapper::GetJpegDecodeSupportedInternalFormats();
+  ASSERT_TRUE(supported_internal_formats.yuv420);
+  ASSERT_TRUE(supported_internal_formats.yuv422);
+  JpegParseResult parse_result;
+  ASSERT_TRUE(ParseJpegPicture(encoded_image.data(), encoded_image.size(),
+                               &parse_result));
+  const unsigned int rt_format =
+      VaSurfaceFormatForJpeg(parse_result.frame_header);
+  ASSERT_NE(kInvalidVaRtFormat, rt_format);
+  if (!VaapiWrapper::IsJpegDecodingSupportedForInternalFormat(rt_format))
+    GTEST_SKIP();
+
   std::unique_ptr<ScopedVAImage> scoped_image = Decode(encoded_image);
   ASSERT_TRUE(scoped_image);
-
   ASSERT_TRUE(CompareImages(encoded_image, scoped_image.get()));
 }
 
@@ -524,7 +542,7 @@ TEST_F(VaapiJpegDecoderTest, DecodeFails) {
       base::make_span<const uint8_t>(
           reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size()),
       &status));
-  EXPECT_EQ(VaapiJpegDecodeStatus::kUnsupportedJpeg, status);
+  EXPECT_EQ(VaapiJpegDecodeStatus::kUnsupportedSubsampling, status);
 }
 
 // This test exercises the usual ScopedVAImage lifetime.
@@ -600,6 +618,14 @@ TEST_F(VaapiJpegDecoderTest, BadScopedVABufferMapping) {
   EXPECT_FALSE(scoped_buffer->IsValid());
 }
 
-INSTANTIATE_TEST_SUITE_P(, VaapiJpegDecoderTest, testing::ValuesIn(kTestCases));
+std::string TestParamToString(
+    const testing::TestParamInfo<TestParam>& param_info) {
+  return param_info.param.test_name;
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         VaapiJpegDecoderTest,
+                         testing::ValuesIn(kTestCases),
+                         TestParamToString);
 
 }  // namespace media
