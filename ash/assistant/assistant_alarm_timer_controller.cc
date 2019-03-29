@@ -146,6 +146,34 @@ void AssistantAlarmTimerController::OnTimerSoundingFinished() {
   model_.RemoveAllAlarmsTimers();
 }
 
+void AssistantAlarmTimerController::OnAlarmTimerStateChanged(
+    mojom::AssistantAlarmTimerEventPtr event) {
+  if (!event) {
+    // Nothing is ringing. Remove all alarms and timers.
+    model_.RemoveAllAlarmsTimers();
+    return;
+  }
+
+  switch (event->type) {
+    case mojom::AssistantAlarmTimerEventType::kTimer:
+      if (event->data->get_timer_data()->state ==
+          mojom::AssistantTimerState::kFired) {
+        // Remove all timers/alarms since there will be only one timer/alarm
+        // firing.
+        // TODO(llin): Handle multiple timers firing when the API is supported.
+        model_.RemoveAllAlarmsTimers();
+
+        AlarmTimer timer;
+        timer.id = event->data->get_timer_data()->timer_id;
+        timer.type = AlarmTimerType::kTimer;
+        timer.end_time = base::TimeTicks::Now();
+        model_.AddAlarmTimer(timer);
+      }
+      break;
+      // TODO(llin): Handle alarm event.
+  }
+}
+
 void AssistantAlarmTimerController::OnAlarmTimerAdded(
     const AlarmTimer& alarm_timer,
     const base::TimeDelta& time_remaining) {

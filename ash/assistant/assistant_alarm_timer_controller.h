@@ -38,6 +38,8 @@ class AssistantAlarmTimerController
   // mojom::AssistantAlarmTimerController:
   void OnTimerSoundingStarted() override;
   void OnTimerSoundingFinished() override;
+  void OnAlarmTimerStateChanged(
+      mojom::AssistantAlarmTimerEventPtr event) override;
 
   // AssistantAlarmTimerModelObserver:
   void OnAlarmTimerAdded(const AlarmTimer& alarm_timer,
