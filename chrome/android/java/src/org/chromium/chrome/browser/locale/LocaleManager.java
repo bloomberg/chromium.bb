@@ -506,4 +506,10 @@ public class LocaleManager {
     public boolean isSpecialUser() {
         return false;
     }
+
+    /**
+     * Record metrics related to user type.
+     */
+    @CalledByNative
+    public void recordUserTypeMetrics() {}
 }
