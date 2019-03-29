@@ -17,8 +17,8 @@ class ExecutionContext;
 class Report;
 class ReportingObserver;
 
-// ReportingContext is used as a container for all active ReportingObservers for
-// an ExecutionContext.
+// ReportingContext processes all reports for an ExecutionContext, and serves as
+// a container for all active ReportingObservers on that ExecutionContext.
 class CORE_EXPORT ReportingContext final
     : public GarbageCollectedFinalized<ReportingContext>,
       public Supplement<ExecutionContext> {
@@ -36,19 +36,22 @@ class CORE_EXPORT ReportingContext final
     return ReportingContext::From(const_cast<ExecutionContext*>(context));
   }
 
-  // Queues a report in all registered observers.
-  void QueueReport(Report*);
+  // Queues a report for the Reporting API and in all registered observers.
+  void QueueReport(Report*, const Vector<String>& endpoints = {"default"});
 
   void RegisterObserver(ReportingObserver*);
   void UnregisterObserver(ReportingObserver*);
-
-  const mojom::blink::ReportingServiceProxyPtr& GetReportingService() const;
 
   void Trace(blink::Visitor*) override;
 
  private:
   // Counts the use of a report type via UseCounter.
   void CountReport(Report*);
+
+  const mojom::blink::ReportingServiceProxyPtr& GetReportingService() const;
+
+  // Send |report| via the Reporting API to |endpoint|.
+  void SendToReportingAPI(Report* report, const String& endpoint) const;
 
   HeapListHashSet<Member<ReportingObserver>> observers_;
   HeapHashMap<String, HeapListHashSet<Member<Report>>> report_buffer_;

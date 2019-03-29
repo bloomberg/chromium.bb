@@ -158,42 +158,13 @@ void ExecutionContextCSPDelegate::PostViolationReport(
   auto* body = MakeGarbageCollected<CSPViolationReportBody>(violation_data);
   Report* observed_report =
       MakeGarbageCollected<Report>("csp-violation", Url().GetString(), body);
-  auto* reporting_context = ReportingContext::From(document);
-  reporting_context->QueueReport(observed_report);
+  ReportingContext::From(document)->QueueReport(
+      observed_report, use_reporting_api ? report_endpoints : Vector<String>());
 
-  bool is_null;
-  int line_number = body->lineNumber(is_null);
-  line_number = is_null ? 0 : line_number;
-  int column_number = body->columnNumber(is_null);
-  column_number = is_null ? 0 : column_number;
+  if (use_reporting_api)
+    return;
 
   for (const auto& report_endpoint : report_endpoints) {
-    if (use_reporting_api) {
-      // https://w3c.github.io/webappsec-csp/#report-violation
-      // Step 3.5. If violation’s policy’s directive set contains a directive
-      // named "report-to" (directive): [spec text]
-      //
-      // https://w3c.github.io/reporting/#queue-report
-      // Step 2. If url was not provided by the caller, let url be settings’s
-      // creation URL. [spec text]
-      reporting_context->GetReportingService()->QueueCspViolationReport(
-          Url(),
-          report_endpoint,
-          body->documentURL() ? body->documentURL() : "",
-          body->referrer() ? body->referrer() : "",
-          body->effectiveDirective() ? body->effectiveDirective() : "",
-          body->effectiveDirective() ? body->effectiveDirective() : "",
-          body->originalPolicy() ? body->originalPolicy() : "",
-          body->disposition() ? body->disposition() : "",
-          body->blockedURL() ? body->blockedURL() : "",
-          line_number,
-          column_number,
-          body->sourceFile() ? body->sourceFile() : "",
-          body->statusCode(),
-          body->sample() ? body->sample() : "");
-      continue;
-    }
-
     // Use the frame's document to complete the endpoint URL, overriding its URL
     // with the blocked document's URL.
     // https://w3c.github.io/webappsec-csp/#report-violation

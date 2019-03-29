@@ -39,19 +39,9 @@ void Intervention::GenerateReport(const LocalFrame* frame,
   Report* report = MakeGarbageCollected<Report>(
       "intervention", document->Url().GetString(), body);
 
-  // Send the intervention report to any ReportingObservers.
-  auto* reporting_context = ReportingContext::From(document);
-  reporting_context->QueueReport(report);
-
-  bool is_null;
-  int line_number = body->lineNumber(is_null);
-  line_number = is_null ? 0 : line_number;
-  int column_number = body->columnNumber(is_null);
-  column_number = is_null ? 0 : column_number;
-
-  // Send the intervention report to the Reporting API.
-  reporting_context->GetReportingService()->QueueInterventionReport(
-      document->Url(), message, body->sourceFile(), line_number, column_number);
+  // Send the intervention report to the Reporting API and any
+  // ReportingObservers.
+  ReportingContext::From(document)->QueueReport(report);
 }
 
 }  // namespace blink
