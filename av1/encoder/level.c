@@ -221,6 +221,8 @@ typedef enum {
   LUMA_PIC_SIZE_TOO_LARGE,
   LUMA_PIC_H_SIZE_TOO_LARGE,
   LUMA_PIC_V_SIZE_TOO_LARGE,
+  LUMA_PIC_H_SIZE_TOO_SMALL,
+  LUMA_PIC_V_SIZE_TOO_SMALL,
   TOO_MANY_TILE_COLUMNS,
   TOO_MANY_TILES,
   TILE_RATE_TOO_HIGH,
@@ -242,6 +244,8 @@ static const char *level_fail_messages[TARGET_LEVEL_FAIL_IDS] = {
   "The picture size is too large.",
   "The picture width is too large.",
   "The picture height is too large.",
+  "The picture width is too small.",
+  "The picture height is too small.",
   "Too many tile columns are used.",
   "Too many tiles are used.",
   "The tile rate is too high.",
@@ -336,6 +340,16 @@ static TARGET_LEVEL_FAIL_ID check_level_constraints(
 
     if (level_stats->min_cropped_tile_height < 8) {
       fail_id = CROPPED_TILE_HEIGHT_TOO_SMALL;
+      break;
+    }
+
+    if (level_stats->min_frame_width < 16) {
+      fail_id = LUMA_PIC_H_SIZE_TOO_SMALL;
+      break;
+    }
+
+    if (level_stats->min_frame_height < 16) {
+      fail_id = LUMA_PIC_V_SIZE_TOO_SMALL;
       break;
     }
 
@@ -495,6 +509,7 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
                            int64_t ts_end) {
   AV1_COMMON *const cm = &cpi->common;
   const int upscaled_width = cm->superres_upscaled_width;
+  const int width = cm->width;
   const int height = cm->height;
   const int tile_cols = cm->tile_cols;
   const int tile_rows = cm->tile_rows;
@@ -559,6 +574,9 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
     level_stats->min_cropped_tile_height =
         AOMMIN(level_stats->min_cropped_tile_height, min_cropped_tile_height);
     level_stats->tile_width_is_valid &= tile_width_is_valid;
+    level_stats->min_frame_width = AOMMIN(level_stats->min_frame_width, width);
+    level_stats->min_frame_height =
+        AOMMIN(level_stats->min_frame_height, height);
     level_stats->total_compressed_size += frame_compressed_size;
     if (show_frame) level_stats->total_time_encoded = total_time_encoded;
     level_stats->min_cr = AOMMIN(level_stats->min_cr, compression_ratio);

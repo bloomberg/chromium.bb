@@ -2556,6 +2556,8 @@ static void init_level_info(AV1LevelInfo *level_info) {
     AV1LevelStats *const level_stats = &level_info[i].level_stats;
     level_stats->min_cropped_tile_width = INT_MAX;
     level_stats->min_cropped_tile_height = INT_MAX;
+    level_stats->min_frame_width = INT_MAX;
+    level_stats->min_frame_height = INT_MAX;
     level_stats->tile_width_is_valid = 1;
     level_stats->min_cr = 1e8;
   }

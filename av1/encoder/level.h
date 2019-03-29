@@ -60,6 +60,8 @@ typedef struct {
   int min_cropped_tile_width;
   int min_cropped_tile_height;
   int tile_width_is_valid;
+  int min_frame_width;
+  int min_frame_height;
   double total_time_encoded;
   double min_cr;
 } AV1LevelStats;
