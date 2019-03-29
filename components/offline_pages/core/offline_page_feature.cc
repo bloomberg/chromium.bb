@@ -38,9 +38,6 @@ const base::Feature kOfflinePagesRenovationsFeature{
 const base::Feature kOfflinePagesResourceBasedSnapshotFeature{
     "OfflinePagesResourceBasedSnapshot", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kBackgroundLoaderForDownloadsFeature{
-    "BackgroundLoadingForDownloads", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kPrefetchingOfflinePagesFeature{
     "OfflinePagesPrefetching", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -83,10 +80,6 @@ bool IsOfflinePagesCTEnabled() {
 
 bool IsOfflinePagesLivePageSharingEnabled() {
   return base::FeatureList::IsEnabled(kOfflinePagesLivePageSharingFeature);
-}
-
-bool IsBackgroundLoaderForDownloadsEnabled() {
-  return base::FeatureList::IsEnabled(kBackgroundLoaderForDownloadsFeature);
 }
 
 bool IsPrefetchingOfflinePagesEnabled() {

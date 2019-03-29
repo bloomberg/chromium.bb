@@ -175,28 +175,25 @@ void SavePageIfNotNavigatedAway(const GURL& url,
   client_id.id = base::GenerateGUID();
   int64_t request_id = OfflinePageModel::kInvalidOfflineId;
 
-  if (offline_pages::IsBackgroundLoaderForDownloadsEnabled()) {
-    // Post disabled request before passing the download task to the tab helper.
-    // This will keep the request persisted in case Chrome is evicted from RAM
-    // or closed by the user.
-    // Note: the 'disabled' status is not persisted (stored in memory) so it
-    // automatically resets if Chrome is re-started.
-    offline_pages::RequestCoordinator* request_coordinator =
-        offline_pages::RequestCoordinatorFactory::GetForBrowserContext(
-            web_contents->GetBrowserContext());
-    if (request_coordinator) {
-      offline_pages::RequestCoordinator::SavePageLaterParams params;
-      params.url = current_url;
-      params.client_id = client_id;
-      params.availability =
-          RequestCoordinator::RequestAvailability::DISABLED_FOR_OFFLINER;
-      params.original_url = original_url;
-      params.request_origin = origin;
-      request_id =
-          request_coordinator->SavePageLater(params, base::DoNothing());
-    } else {
-      DVLOG(1) << "SavePageIfNotNavigatedAway has no valid coordinator.";
-    }
+  // Post disabled request before passing the download task to the tab helper.
+  // This will keep the request persisted in case Chrome is evicted from RAM
+  // or closed by the user.
+  // Note: the 'disabled' status is not persisted (stored in memory) so it
+  // automatically resets if Chrome is re-started.
+  offline_pages::RequestCoordinator* request_coordinator =
+      offline_pages::RequestCoordinatorFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext());
+  if (request_coordinator) {
+    offline_pages::RequestCoordinator::SavePageLaterParams params;
+    params.url = current_url;
+    params.client_id = client_id;
+    params.availability =
+        RequestCoordinator::RequestAvailability::DISABLED_FOR_OFFLINER;
+    params.original_url = original_url;
+    params.request_origin = origin;
+    request_id = request_coordinator->SavePageLater(params, base::DoNothing());
+  } else {
+    DVLOG(1) << "SavePageIfNotNavigatedAway has no valid coordinator.";
   }
 
   // Pass request_id to the current tab's helper to attempt download right from
