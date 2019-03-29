@@ -56,6 +56,7 @@ typedef struct {
 typedef struct {
   uint64_t total_compressed_size;
   int max_tile_size;
+  int max_superres_tile_width;
   int min_cropped_tile_width;
   int min_cropped_tile_height;
   int tile_width_is_valid;

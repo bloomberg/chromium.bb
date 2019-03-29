@@ -225,6 +225,7 @@ typedef enum {
   TOO_MANY_TILES,
   TILE_RATE_TOO_HIGH,
   TILE_TOO_LARGE,
+  SUPERRES_TILE_WIDTH_TOO_LARGE,
   CROPPED_TILE_WIDTH_TOO_SMALL,
   CROPPED_TILE_HEIGHT_TOO_SMALL,
   TILE_WIDTH_INVALID,
@@ -245,6 +246,7 @@ static const char *level_fail_messages[TARGET_LEVEL_FAIL_IDS] = {
   "Too many tiles are used.",
   "The tile rate is too high.",
   "The tile size is too large.",
+  "The superres tile width is too large.",
   "The cropped tile width is less than 8.",
   "The cropped tile height is less than 8.",
   "The tile width is invalid.",
@@ -322,6 +324,11 @@ static TARGET_LEVEL_FAIL_ID check_level_constraints(
       break;
     }
 
+    if (level_stats->max_superres_tile_width > MAX_TILE_WIDTH) {
+      fail_id = SUPERRES_TILE_WIDTH_TOO_LARGE;
+      break;
+    }
+
     if (level_stats->min_cropped_tile_width < 8) {
       fail_id = CROPPED_TILE_WIDTH_TOO_SMALL;
       break;
@@ -356,14 +363,17 @@ static INLINE int is_in_operating_point(int operating_point,
 }
 
 static void get_tile_stats(const AV1_COMP *const cpi, int *max_tile_size,
+                           int *max_superres_tile_width,
                            int *min_cropped_tile_width,
                            int *min_cropped_tile_height,
                            int *tile_width_valid) {
   const AV1_COMMON *const cm = &cpi->common;
   const int tile_cols = cm->tile_cols;
   const int tile_rows = cm->tile_rows;
+  const int superres_scale_denominator = cm->superres_scale_denominator;
 
   *max_tile_size = 0;
+  *max_superres_tile_width = 0;
   *min_cropped_tile_width = INT_MAX;
   *min_cropped_tile_height = INT_MAX;
   *tile_width_valid = 1;
@@ -378,6 +388,11 @@ static void get_tile_stats(const AV1_COMP *const cpi, int *max_tile_size,
           (tile_info->mi_row_end - tile_info->mi_row_start) * MI_SIZE;
       const int tile_size = tile_width * tile_height;
       *max_tile_size = AOMMAX(*max_tile_size, tile_size);
+
+      const int supperres_tile_width =
+          tile_width * superres_scale_denominator / SCALE_NUMERATOR;
+      *max_superres_tile_width =
+          AOMMAX(*max_superres_tile_width, supperres_tile_width);
 
       const int cropped_tile_width =
           cm->width - tile_info->mi_col_start * MI_SIZE;
@@ -500,9 +515,11 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
   int max_tile_size;
   int min_cropped_tile_width;
   int min_cropped_tile_height;
+  int max_superres_tile_width;
   int tile_width_is_valid;
-  get_tile_stats(cpi, &max_tile_size, &min_cropped_tile_width,
-                 &min_cropped_tile_height, &tile_width_is_valid);
+  get_tile_stats(cpi, &max_tile_size, &max_superres_tile_width,
+                 &min_cropped_tile_width, &min_cropped_tile_height,
+                 &tile_width_is_valid);
 
   const SequenceHeader *const seq_params = &cm->seq_params;
   const BITSTREAM_PROFILE profile = seq_params->profile;
@@ -535,6 +552,8 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
 
     level_stats->max_tile_size =
         AOMMAX(level_stats->max_tile_size, max_tile_size);
+    level_stats->max_superres_tile_width =
+        AOMMAX(level_stats->max_superres_tile_width, max_superres_tile_width);
     level_stats->min_cropped_tile_width =
         AOMMIN(level_stats->min_cropped_tile_width, min_cropped_tile_width);
     level_stats->min_cropped_tile_height =
