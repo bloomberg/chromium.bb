@@ -44,6 +44,7 @@ source_set("lib") {
   visibility = [
     ":scheduler",
     ":unit_tests",
+    "//chrome/browser/notifications/scheduler/test:test_lib",
   ]
 
   sources = [
@@ -99,6 +100,7 @@ source_set("unit_tests") {
     ":lib",
     ":public",
     "//chrome/browser/notifications/proto",
+    "//chrome/browser/notifications/scheduler/test:test_lib",
     "//components/leveldb_proto:test_support",
     "//testing/gmock",
     "//testing/gtest",
