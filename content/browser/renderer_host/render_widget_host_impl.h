@@ -31,6 +31,7 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
+#include "components/metrics/stability_metrics_helper.h"
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
@@ -729,7 +730,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // 1) |hang_monitor_timeout_| (slow to ack input events) or
   // 2) NavigationHandle::OnCommitTimeout (slow to commit).
   void RendererIsUnresponsive(
-      base::RepeatingClosure restart_hang_monitor_timeout);
+      base::RepeatingClosure restart_hang_monitor_timeout,
+      metrics::RendererHangCause hang_cause);
 
   // Called if we know the renderer is responsive. When we currently think the
   // renderer is unresponsive, this will clear that state and call

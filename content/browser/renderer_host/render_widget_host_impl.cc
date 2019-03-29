@@ -2218,17 +2218,19 @@ void RenderWidgetHostImpl::Destroy(bool also_delete) {
 }
 
 void RenderWidgetHostImpl::OnInputEventAckTimeout() {
-  RendererIsUnresponsive(base::BindRepeating(
-      &RenderWidgetHostImpl::RestartInputEventAckTimeoutIfNecessary,
-      weak_factory_.GetWeakPtr()));
+  RendererIsUnresponsive(
+      base::BindRepeating(
+          &RenderWidgetHostImpl::RestartInputEventAckTimeoutIfNecessary,
+          weak_factory_.GetWeakPtr()),
+      metrics::RendererHangCause::kInputAckTimeout);
 }
 
 void RenderWidgetHostImpl::RendererIsUnresponsive(
-    base::RepeatingClosure restart_hang_monitor_timeout) {
+    base::RepeatingClosure restart_hang_monitor_timeout,
+    metrics::RendererHangCause hang_cause) {
   NotificationService::current()->Notify(
-      NOTIFICATION_RENDER_WIDGET_HOST_HANG,
-      Source<RenderWidgetHost>(this),
-      NotificationService::NoDetails());
+      NOTIFICATION_RENDER_WIDGET_HOST_HANG, Source<RenderWidgetHost>(this),
+      Details<metrics::RendererHangCause>(&hang_cause));
   is_unresponsive_ = true;
 
   if (delegate_) {
