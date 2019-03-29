@@ -383,8 +383,8 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       "handwritinggesture",
       base::FeatureList::IsEnabled(features::kHandwritingGesture)));
   features->AppendString(GenerateFeatureFlag(
-      "fstinputlogic", base::GetFieldTrialParamByFeatureAsBool(
-                           chromeos::features::kImeInputLogic, "fst", false)));
+      "fstinputlogic",
+      base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicFst)));
 
   results->Set("features", std::move(features));
 

@@ -36,7 +36,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kMyFilesVolume;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEnableSupervisionTransitionScreens;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFsNosymfollow;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kImeInputLogic;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kImeInputLogicFst;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kImeServiceConnectable;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
