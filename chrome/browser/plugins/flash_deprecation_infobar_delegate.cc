@@ -4,16 +4,45 @@
 
 #include "chrome/browser/plugins/flash_deprecation_infobar_delegate.h"
 
+#include "base/feature_list.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/plugins/plugin_utils.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/infobars/core/infobar.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/url_constants.h"
 
 // static
 void FlashDeprecationInfoBarDelegate::Create(InfoBarService* infobar_service) {
   infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       std::make_unique<FlashDeprecationInfoBarDelegate>()));
+}
+
+// static
+bool FlashDeprecationInfoBarDelegate::ShouldDisplayFlashDeprecation(
+    Profile* profile) {
+  DCHECK(profile);
+
+  if (!base::FeatureList::IsEnabled(features::kFlashDeprecationWarning))
+    return false;
+
+  bool is_managed = false;
+  auto* settings_map = HostContentSettingsMapFactory::GetForProfile(profile);
+  ContentSetting flash_setting =
+      PluginUtils::UnsafeGetRawDefaultFlashContentSetting(settings_map,
+                                                          &is_managed);
+
+  // If the user can't do anything about their browser's Flash behavior,
+  // there's no point to showing a Flash deprecation warning infobar.
+  if (is_managed)
+    return false;
+
+  // Display the infobar if the Flash setting is anything other than BLOCK.
+  return flash_setting != CONTENT_SETTING_BLOCK;
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -22,17 +51,11 @@ FlashDeprecationInfoBarDelegate::GetIdentifier() const {
 }
 
 const gfx::VectorIcon& FlashDeprecationInfoBarDelegate::GetVectorIcon() const {
-  // TODO(tommycli): Replace this placeholder vector icon.
-  return kExtensionCrashedIcon;
+  return kExtensionIcon;
 }
 
 base::string16 FlashDeprecationInfoBarDelegate::GetMessageText() const {
-  // TODO(tommycli): Replace empty string with real IDS once we use reference
-  // this infobar from production code. Currently, this IDS is stripped by
-  // enable_resource_whitelist_generation = true, and this crashes the
-  // Windows infobar browsertest (which tries to fetch the stripped IDS).
-  // return l10n_util::GetStringUTF16(IDS_PLUGIN_FLASH_DEPRECATION_PROMPT);
-  return base::string16();
+  return l10n_util::GetStringUTF16(IDS_PLUGIN_FLASH_DEPRECATION_PROMPT);
 }
 
 int FlashDeprecationInfoBarDelegate::GetButtons() const {
