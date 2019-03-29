@@ -320,10 +320,6 @@ class FormKeyGenerator final
     : public GarbageCollectedFinalized<FormKeyGenerator> {
 
  public:
-  static FormKeyGenerator* Create() {
-    return MakeGarbageCollected<FormKeyGenerator>();
-  }
-
   FormKeyGenerator() = default;
 
   void Trace(Visitor* visitor) { visitor->Trace(form_to_key_map_); }
@@ -444,7 +440,7 @@ Vector<String> DocumentState::ToStateVector() {
     }
     form_controls_dirty_ = false;
   }
-  FormKeyGenerator* key_generator = FormKeyGenerator::Create();
+  auto* key_generator = MakeGarbageCollected<FormKeyGenerator>();
   std::unique_ptr<SavedFormStateMap> state_map =
       base::WrapUnique(new SavedFormStateMap);
   for (auto& control : form_controls_) {
@@ -503,7 +499,7 @@ FormControlState FormController::TakeStateForFormElement(
   if (saved_form_state_map_.IsEmpty())
     return FormControlState();
   if (!form_key_generator_)
-    form_key_generator_ = FormKeyGenerator::Create();
+    form_key_generator_ = MakeGarbageCollected<FormKeyGenerator>();
   SavedFormStateMap::iterator it =
       saved_form_state_map_.find(form_key_generator_->FormKey(control));
   if (it == saved_form_state_map_.end())

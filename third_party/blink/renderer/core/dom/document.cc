@@ -1192,9 +1192,10 @@ ScriptValue Document::registerElement(ScriptState* script_state,
 }
 
 V0CustomElementMicrotaskRunQueue* Document::CustomElementMicrotaskRunQueue() {
-  if (!custom_element_microtask_run_queue_)
+  if (!custom_element_microtask_run_queue_) {
     custom_element_microtask_run_queue_ =
-        V0CustomElementMicrotaskRunQueue::Create();
+        MakeGarbageCollected<V0CustomElementMicrotaskRunQueue>();
+  }
   return custom_element_microtask_run_queue_.Get();
 }
 
@@ -2953,7 +2954,7 @@ AXObjectCache* Document::ExistingAXObjectCache() const {
 
 CanvasFontCache* Document::GetCanvasFontCache() {
   if (!canvas_font_cache_)
-    canvas_font_cache_ = CanvasFontCache::Create(*this);
+    canvas_font_cache_ = MakeGarbageCollected<CanvasFontCache>(*this);
 
   return canvas_font_cache_.Get();
 }

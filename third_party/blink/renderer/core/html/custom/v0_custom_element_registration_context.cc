@@ -45,7 +45,7 @@
 namespace blink {
 
 V0CustomElementRegistrationContext::V0CustomElementRegistrationContext()
-    : candidates_(V0CustomElementUpgradeCandidateMap::Create()) {}
+    : candidates_(MakeGarbageCollected<V0CustomElementUpgradeCandidateMap>()) {}
 
 void V0CustomElementRegistrationContext::RegisterElement(
     Document* document,

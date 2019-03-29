@@ -46,7 +46,7 @@ V0CustomElementMicrotaskImportStep::~V0CustomElementMicrotaskImportStep() =
     default;
 
 void V0CustomElementMicrotaskImportStep::Invalidate() {
-  queue_ = V0CustomElementSyncMicrotaskQueue::Create();
+  queue_ = MakeGarbageCollected<V0CustomElementSyncMicrotaskQueue>();
   import_.Clear();
 }
 

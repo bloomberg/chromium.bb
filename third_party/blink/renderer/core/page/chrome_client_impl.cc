@@ -566,10 +566,11 @@ ColorChooser* ChromeClientImpl::OpenColorChooser(
     return nullptr;
 
   if (RuntimeEnabledFeatures::PagePopupEnabled()) {
-    controller =
-        ColorChooserPopupUIController::Create(frame, this, chooser_client);
+    controller = MakeGarbageCollected<ColorChooserPopupUIController>(
+        frame, this, chooser_client);
   } else {
-    controller = ColorChooserUIController::Create(frame, chooser_client);
+    controller =
+        MakeGarbageCollected<ColorChooserUIController>(frame, chooser_client);
   }
   controller->OpenUI();
   return controller;

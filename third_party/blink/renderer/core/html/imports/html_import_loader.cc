@@ -46,7 +46,8 @@ namespace blink {
 HTMLImportLoader::HTMLImportLoader(HTMLImportsController* controller)
     : controller_(controller),
       state_(kStateLoading),
-      microtask_queue_(V0CustomElementSyncMicrotaskQueue::Create()) {}
+      microtask_queue_(
+          MakeGarbageCollected<V0CustomElementSyncMicrotaskQueue>()) {}
 
 HTMLImportLoader::~HTMLImportLoader() = default;
 

@@ -60,7 +60,7 @@ static V0CustomElementCallbackQueue& EnsureCallbackQueue(Element* element) {
   ElementCallbackQueueMap::ValueType* it =
       CallbackQueues().insert(element, nullptr).stored_value;
   if (!it->value)
-    it->value = V0CustomElementCallbackQueue::Create(element);
+    it->value = MakeGarbageCollected<V0CustomElementCallbackQueue>(element);
   return *it->value.Get();
 }
 
@@ -138,8 +138,7 @@ V0CustomElementMicrotaskImportStep* V0CustomElementScheduler::ScheduleImport(
 
   // Ownership of the new step is transferred to the parent
   // processing step, or the base queue.
-  V0CustomElementMicrotaskImportStep* step =
-      V0CustomElementMicrotaskImportStep::Create(import);
+  auto* step = MakeGarbageCollected<V0CustomElementMicrotaskImportStep>(import);
   V0CustomElementMicrotaskImportStep* raw_step = step;
   EnqueueMicrotaskStep(*(import->Parent()->GetDocument()), step,
                        import->IsSync());
