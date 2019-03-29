@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/manifest/manifest_parser.h"
+#include "third_party/blink/renderer/modules/manifest/manifest_parser.h"
 
 #include <stddef.h>
 #include <utility>
@@ -14,15 +14,22 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/renderer/manifest/manifest_uma_util.h"
 #include "net/base/mime_util.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/web/web_css_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/modules/manifest/manifest_uma_util.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
+#include "url/gurl.h"
+
+namespace blink {
 
 namespace {
 
@@ -32,8 +39,8 @@ bool IsValidMimeType(const std::string& mime_type) {
   return net::ParseMimeTypeWithoutParameter(mime_type, nullptr, nullptr);
 }
 
-bool VerifyFiles(const std::vector<blink::Manifest::FileFilter>& files) {
-  for (const blink::Manifest::FileFilter& file : files) {
+bool VerifyFiles(const std::vector<Manifest::FileFilter>& files) {
+  for (const Manifest::FileFilter& file : files) {
     for (const base::string16& utf_accept : file.accept) {
       std::string accept_type =
           base::ToLowerASCII(base::UTF16ToASCII(utf_accept));
@@ -46,19 +53,15 @@ bool VerifyFiles(const std::vector<blink::Manifest::FileFilter>& files) {
 
 }  // anonymous namespace
 
-namespace content {
-
 ManifestParser::ManifestParser(const base::StringPiece& data,
-                               const GURL& manifest_url,
-                               const GURL& document_url)
+                               const KURL& manifest_url,
+                               const KURL& document_url)
     : data_(data),
       manifest_url_(manifest_url),
       document_url_(document_url),
-      failed_(false) {
-}
+      failed_(false) {}
 
-ManifestParser::~ManifestParser() {
-}
+ManifestParser::~ManifestParser() {}
 
 void ManifestParser::Parse() {
   std::string error_msg;
@@ -105,14 +108,13 @@ void ManifestParser::Parse() {
   ManifestUmaUtil::ParseSucceeded(manifest_);
 }
 
-const blink::Manifest& ManifestParser::manifest() const {
+const Manifest& ManifestParser::manifest() const {
   return manifest_;
 }
 
-void ManifestParser::TakeErrors(
-    std::vector<blink::mojom::ManifestErrorPtr>* errors) {
-  errors->clear();
-  errors->swap(errors_);
+void ManifestParser::TakeErrors(WebVector<ManifestError>* errors) {
+  errors->Clear();
+  errors->Assign(errors_);
 }
 
 bool ManifestParser::failed() const {
@@ -127,8 +129,7 @@ bool ManifestParser::ParseBoolean(const base::DictionaryValue& dictionary,
 
   bool value;
   if (!dictionary.GetBoolean(key, &value)) {
-    AddErrorInfo("property '" + key + "' ignored, type " +
-                 "boolean expected.");
+    AddErrorInfo("property '" + key + "' ignored, type " + "boolean expected.");
     return default_value;
   }
 
@@ -144,8 +145,7 @@ base::NullableString16 ManifestParser::ParseString(
 
   base::string16 value;
   if (!dictionary.GetString(key, &value)) {
-    AddErrorInfo("property '" + key + "' ignored, type " +
-                 "string expected.");
+    AddErrorInfo("property '" + key + "' ignored, type " + "string expected.");
     return base::NullableString16();
   }
 
@@ -161,16 +161,17 @@ base::Optional<SkColor> ManifestParser::ParseColor(
   if (parsed_color.is_null())
     return base::nullopt;
 
-  SkColor color;
-  if (!blink::WebCSSParser::ParseColor(
-          &color, blink::WebString::FromUTF16(parsed_color.string()))) {
+  Color color;
+  WebString color_string = WebString::FromUTF16(parsed_color);
+
+  if (!CSSParser::ParseColor(color, WTF::String(color_string), true)) {
     AddErrorInfo("property '" + key + "' ignored, '" +
                  base::UTF16ToUTF8(parsed_color.string()) + "' is not a " +
                  "valid color.");
     return base::nullopt;
   }
 
-  return color;
+  return color.Rgb();
 }
 
 GURL ManifestParser::ParseURL(const base::DictionaryValue& dictionary,
@@ -204,12 +205,12 @@ GURL ManifestParser::ParseURL(const base::DictionaryValue& dictionary,
 }
 
 base::NullableString16 ManifestParser::ParseName(
-    const base::DictionaryValue& dictionary)  {
+    const base::DictionaryValue& dictionary) {
   return ParseString(dictionary, "name", Trim);
 }
 
 base::NullableString16 ManifestParser::ParseShortName(
-    const base::DictionaryValue& dictionary)  {
+    const base::DictionaryValue& dictionary) {
   return ParseString(dictionary, "short_name", Trim);
 }
 
@@ -240,31 +241,31 @@ GURL ManifestParser::ParseScope(const base::DictionaryValue& dictionary,
   return scope;
 }
 
-blink::WebDisplayMode ManifestParser::ParseDisplay(
+WebDisplayMode ManifestParser::ParseDisplay(
     const base::DictionaryValue& dictionary) {
   base::NullableString16 display = ParseString(dictionary, "display", Trim);
   if (display.is_null())
-    return blink::kWebDisplayModeUndefined;
+    return kWebDisplayModeUndefined;
 
-  blink::WebDisplayMode display_enum =
-      blink::WebDisplayModeFromString(base::UTF16ToUTF8(display.string()));
-  if (display_enum == blink::kWebDisplayModeUndefined)
+  WebDisplayMode display_enum =
+      WebDisplayModeFromString(base::UTF16ToUTF8(display.string()));
+  if (display_enum == kWebDisplayModeUndefined)
     AddErrorInfo("unknown 'display' value ignored.");
   return display_enum;
 }
 
-blink::WebScreenOrientationLockType ManifestParser::ParseOrientation(
+WebScreenOrientationLockType ManifestParser::ParseOrientation(
     const base::DictionaryValue& dictionary) {
   base::NullableString16 orientation =
       ParseString(dictionary, "orientation", Trim);
 
   if (orientation.is_null())
-    return blink::kWebScreenOrientationLockDefault;
+    return kWebScreenOrientationLockDefault;
 
-  blink::WebScreenOrientationLockType orientation_enum =
-      blink::WebScreenOrientationLockTypeFromString(
+  WebScreenOrientationLockType orientation_enum =
+      WebScreenOrientationLockTypeFromString(
           base::UTF16ToUTF8(orientation.string()));
-  if (orientation_enum == blink::kWebScreenOrientationLockDefault)
+  if (orientation_enum == kWebScreenOrientationLockDefault)
     AddErrorInfo("unknown 'orientation' value ignored.");
   return orientation_enum;
 }
@@ -290,35 +291,34 @@ std::vector<gfx::Size> ManifestParser::ParseIconSizes(
   if (sizes_str.is_null())
     return sizes;
 
-  blink::WebVector<blink::WebSize> web_sizes =
-      blink::WebIconSizesParser::ParseIconSizes(
-          blink::WebString::FromUTF16(sizes_str.string()));
+  WebVector<WebSize> web_sizes = WebIconSizesParser::ParseIconSizes(
+      WebString::FromUTF16(sizes_str.string()));
   sizes.resize(web_sizes.size());
   for (size_t i = 0; i < web_sizes.size(); ++i)
-    sizes[i] = web_sizes[i];
+    sizes[i] = gfx::Size(web_sizes[i]);
   if (sizes.empty()) {
     AddErrorInfo("found icon with no valid size.");
   }
   return sizes;
 }
 
-base::Optional<std::vector<blink::Manifest::ImageResource::Purpose>>
+base::Optional<std::vector<Manifest::ImageResource::Purpose>>
 ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
   base::NullableString16 purpose_str = ParseString(icon, "purpose", NoTrim);
-  std::vector<blink::Manifest::ImageResource::Purpose> purposes;
+  std::vector<Manifest::ImageResource::Purpose> purposes;
 
   if (purpose_str.is_null()) {
-    purposes.push_back(blink::Manifest::ImageResource::Purpose::ANY);
+    purposes.push_back(Manifest::ImageResource::Purpose::ANY);
     return purposes;
   }
 
-  std::vector<base::string16> keywords = base::SplitString(
-      purpose_str.string(), base::ASCIIToUTF16(" "),
-      base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  std::vector<base::string16> keywords =
+      base::SplitString(purpose_str.string(), base::ASCIIToUTF16(" "),
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   // "any" is the default if there are no other keywords.
   if (keywords.empty()) {
-    purposes.push_back(blink::Manifest::ImageResource::Purpose::ANY);
+    purposes.push_back(Manifest::ImageResource::Purpose::ANY);
     return purposes;
   }
 
@@ -326,11 +326,11 @@ ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
 
   for (const base::string16& keyword : keywords) {
     if (base::LowerCaseEqualsASCII(keyword, "any")) {
-      purposes.push_back(blink::Manifest::ImageResource::Purpose::ANY);
+      purposes.push_back(Manifest::ImageResource::Purpose::ANY);
     } else if (base::LowerCaseEqualsASCII(keyword, "badge")) {
-      purposes.push_back(blink::Manifest::ImageResource::Purpose::BADGE);
+      purposes.push_back(Manifest::ImageResource::Purpose::BADGE);
     } else if (base::LowerCaseEqualsASCII(keyword, "maskable")) {
-      purposes.push_back(blink::Manifest::ImageResource::Purpose::MASKABLE);
+      purposes.push_back(Manifest::ImageResource::Purpose::MASKABLE);
     } else {
       unrecognised_purpose = true;
     }
@@ -342,7 +342,9 @@ ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
   if (purposes.empty()) {
     AddErrorInfo("found icon with no valid purpose; ignoring it.");
     return base::nullopt;
-  } else if (unrecognised_purpose) {
+  }
+
+  if (unrecognised_purpose) {
     AddErrorInfo(
         "found icon with one or more invalid purposes; those purposes are "
         "ignored.");
@@ -351,9 +353,9 @@ ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
   return purposes;
 }
 
-std::vector<blink::Manifest::ImageResource> ManifestParser::ParseIcons(
+std::vector<Manifest::ImageResource> ManifestParser::ParseIcons(
     const base::DictionaryValue& dictionary) {
-  std::vector<blink::Manifest::ImageResource> icons;
+  std::vector<Manifest::ImageResource> icons;
   if (!dictionary.HasKey("icons"))
     return icons;
 
@@ -368,7 +370,7 @@ std::vector<blink::Manifest::ImageResource> ManifestParser::ParseIcons(
     if (!icons_list->GetDictionary(i, &icon_dictionary))
       continue;
 
-    blink::Manifest::ImageResource icon;
+    Manifest::ImageResource icon;
     icon.src = ParseIconSrc(*icon_dictionary);
     // An icon MUST have a valid src. If it does not, it MUST be ignored.
     if (!icon.src.is_valid())
@@ -436,10 +438,10 @@ std::vector<base::string16> ManifestParser::ParseFileFilterAccept(
   return accept_types;
 }
 
-std::vector<blink::Manifest::FileFilter> ManifestParser::ParseTargetFiles(
+std::vector<Manifest::FileFilter> ManifestParser::ParseTargetFiles(
     const base::StringPiece& key,
     const base::DictionaryValue& from) {
-  std::vector<blink::Manifest::FileFilter> files;
+  std::vector<Manifest::FileFilter> files;
   if (!from.HasKey(key))
     return files;
 
@@ -475,8 +477,8 @@ std::vector<blink::Manifest::FileFilter> ManifestParser::ParseTargetFiles(
 
 void ManifestParser::ParseFileFilter(
     const base::DictionaryValue& file_dictionary,
-    std::vector<blink::Manifest::FileFilter>* files) {
-  blink::Manifest::FileFilter file;
+    std::vector<Manifest::FileFilter>* files) {
+  Manifest::FileFilter file;
   file.name = ParseFileFilterName(file_dictionary);
   if (file.name.empty()) {
     // https://wicg.github.io/web-share-target/level-2/#share_target-member
@@ -493,15 +495,15 @@ void ManifestParser::ParseFileFilter(
   files->push_back(file);
 }
 
-base::Optional<blink::Manifest::ShareTarget::Method>
+base::Optional<Manifest::ShareTarget::Method>
 ManifestParser::ParseShareTargetMethod(
     const base::DictionaryValue& share_target_dict) {
   if (!share_target_dict.HasKey("method")) {
     AddErrorInfo(
         "Method should be set to either GET or POST. It currently defaults to "
         "GET.");
-    return base::Optional<blink::Manifest::ShareTarget::Method>(
-        blink::Manifest::ShareTarget::Method::kGet);
+    return base::Optional<Manifest::ShareTarget::Method>(
+        Manifest::ShareTarget::Method::kGet);
   }
 
   base::string16 value;
@@ -510,14 +512,14 @@ ManifestParser::ParseShareTargetMethod(
 
   std::string method = base::ToUpperASCII(base::UTF16ToASCII(value));
   if (method == "GET")
-    return blink::Manifest::ShareTarget::Method::kGet;
+    return Manifest::ShareTarget::Method::kGet;
   if (method == "POST")
-    return blink::Manifest::ShareTarget::Method::kPost;
+    return Manifest::ShareTarget::Method::kPost;
 
   return base::nullopt;
 }
 
-base::Optional<blink::Manifest::ShareTarget::Enctype>
+base::Optional<Manifest::ShareTarget::Enctype>
 ManifestParser::ParseShareTargetEnctype(
     const base::DictionaryValue& share_target_dict) {
   if (!share_target_dict.HasKey("enctype")) {
@@ -525,8 +527,8 @@ ManifestParser::ParseShareTargetEnctype(
         "Enctype should be set to either application/x-www-form-urlencoded or "
         "multipart/form-data. It currently defaults to "
         "application/x-www-form-urlencoded");
-    return base::Optional<blink::Manifest::ShareTarget::Enctype>(
-        blink::Manifest::ShareTarget::Enctype::kApplication);
+    return base::Optional<Manifest::ShareTarget::Enctype>(
+        Manifest::ShareTarget::Enctype::kApplication);
   }
 
   base::string16 value;
@@ -535,19 +537,22 @@ ManifestParser::ParseShareTargetEnctype(
   }
 
   std::string enctype = base::ToLowerASCII(base::UTF16ToASCII(value));
-  if (enctype == "application/x-www-form-urlencoded")
-    return base::Optional<blink::Manifest::ShareTarget::Enctype>(
-        blink::Manifest::ShareTarget::Enctype::kApplication);
-  if (enctype == "multipart/form-data")
-    return base::Optional<blink::Manifest::ShareTarget::Enctype>(
-        blink::Manifest::ShareTarget::Enctype::kMultipart);
+  if (enctype == "application/x-www-form-urlencoded") {
+    return base::Optional<Manifest::ShareTarget::Enctype>(
+        Manifest::ShareTarget::Enctype::kApplication);
+  }
+
+  if (enctype == "multipart/form-data") {
+    return base::Optional<Manifest::ShareTarget::Enctype>(
+        Manifest::ShareTarget::Enctype::kMultipart);
+  }
 
   return base::nullopt;
 }
 
-blink::Manifest::ShareTargetParams ManifestParser::ParseShareTargetParams(
+Manifest::ShareTargetParams ManifestParser::ParseShareTargetParams(
     const base::DictionaryValue& share_target_params) {
-  blink::Manifest::ShareTargetParams params;
+  Manifest::ShareTargetParams params;
   // NOTE: These are key names for query parameters, which are filled with share
   // data. As such, |params.url| is just a string.
   params.text = ParseString(share_target_params, "text", Trim);
@@ -557,12 +562,12 @@ blink::Manifest::ShareTargetParams ManifestParser::ParseShareTargetParams(
   return params;
 }
 
-base::Optional<blink::Manifest::ShareTarget> ManifestParser::ParseShareTarget(
+base::Optional<Manifest::ShareTarget> ManifestParser::ParseShareTarget(
     const base::DictionaryValue& dictionary) {
   if (!dictionary.HasKey("share_target"))
     return base::nullopt;
 
-  blink::Manifest::ShareTarget share_target;
+  Manifest::ShareTarget share_target;
   const base::DictionaryValue* share_target_dict = nullptr;
   dictionary.GetDictionary("share_target", &share_target_dict);
   share_target.action = ParseURL(*share_target_dict, "action", manifest_url_,
@@ -574,9 +579,9 @@ base::Optional<blink::Manifest::ShareTarget> ManifestParser::ParseShareTarget(
     return base::nullopt;
   }
 
-  base::Optional<blink::Manifest::ShareTarget::Method> method =
+  base::Optional<Manifest::ShareTarget::Method> method =
       ParseShareTargetMethod(*share_target_dict);
-  base::Optional<blink::Manifest::ShareTarget::Enctype> enctype =
+  base::Optional<Manifest::ShareTarget::Enctype> enctype =
       ParseShareTargetEnctype(*share_target_dict);
 
   const base::DictionaryValue* share_target_params_dict = nullptr;
@@ -603,23 +608,22 @@ base::Optional<blink::Manifest::ShareTarget> ManifestParser::ParseShareTarget(
     return base::nullopt;
   }
 
-  if (method == base::Optional<blink::Manifest::ShareTarget::Method>(
-                    blink::Manifest::ShareTarget::Method::kGet)) {
-    share_target.method = blink::Manifest::ShareTarget::Method::kGet;
+  if (method == base::Optional<Manifest::ShareTarget::Method>(
+                    Manifest::ShareTarget::Method::kGet)) {
+    share_target.method = Manifest::ShareTarget::Method::kGet;
   } else {
-    share_target.method = blink::Manifest::ShareTarget::Method::kPost;
+    share_target.method = Manifest::ShareTarget::Method::kPost;
   }
 
-  if (enctype == base::Optional<blink::Manifest::ShareTarget::Enctype>(
-                     blink::Manifest::ShareTarget::Enctype::kMultipart)) {
-    share_target.enctype = blink::Manifest::ShareTarget::Enctype::kMultipart;
+  if (enctype == base::Optional<Manifest::ShareTarget::Enctype>(
+                     Manifest::ShareTarget::Enctype::kMultipart)) {
+    share_target.enctype = Manifest::ShareTarget::Enctype::kMultipart;
   } else {
-    share_target.enctype = blink::Manifest::ShareTarget::Enctype::kApplication;
+    share_target.enctype = Manifest::ShareTarget::Enctype::kApplication;
   }
 
-  if (share_target.method == blink::Manifest::ShareTarget::Method::kGet) {
-    if (share_target.enctype ==
-        blink::Manifest::ShareTarget::Enctype::kMultipart) {
+  if (share_target.method == Manifest::ShareTarget::Method::kGet) {
+    if (share_target.enctype == Manifest::ShareTarget::Enctype::kMultipart) {
       AddErrorInfo(
           "invalid enctype for GET method. Only "
           "application/x-www-form-urlencoded is allowed.");
@@ -628,9 +632,8 @@ base::Optional<blink::Manifest::ShareTarget> ManifestParser::ParseShareTarget(
   }
 
   if (share_target.params.files.size() > 0) {
-    if (share_target.method != blink::Manifest::ShareTarget::Method::kPost ||
-        share_target.enctype !=
-            blink::Manifest::ShareTarget::Enctype::kMultipart) {
+    if (share_target.method != Manifest::ShareTarget::Method::kPost ||
+        share_target.enctype != Manifest::ShareTarget::Enctype::kMultipart) {
       AddErrorInfo("files are only supported with multipart/form-data POST.");
       return base::nullopt;
     }
@@ -641,23 +644,23 @@ base::Optional<blink::Manifest::ShareTarget> ManifestParser::ParseShareTarget(
     return base::nullopt;
   }
 
-  return base::Optional<blink::Manifest::ShareTarget>(std::move(share_target));
+  return base::Optional<Manifest::ShareTarget>(std::move(share_target));
 }
 
-base::Optional<blink::Manifest::FileHandler> ManifestParser::ParseFileHandler(
+base::Optional<Manifest::FileHandler> ManifestParser::ParseFileHandler(
     const base::DictionaryValue& dictionary) {
   constexpr char file_handler_key[] = "file_handler";
   if (!dictionary.HasKey(file_handler_key))
     return base::nullopt;
 
-  blink::Manifest::FileHandler file_handler =
+  Manifest::FileHandler file_handler =
       ParseTargetFiles(file_handler_key, dictionary);
   if (file_handler.size() == 0) {
     AddErrorInfo("no file handlers were specified.");
     return base::nullopt;
   }
 
-  return base::Optional<blink::Manifest::FileHandler>(std::move(file_handler));
+  return base::Optional<Manifest::FileHandler>(std::move(file_handler));
 }
 
 base::NullableString16 ManifestParser::ParseRelatedApplicationPlatform(
@@ -676,17 +679,18 @@ base::NullableString16 ManifestParser::ParseRelatedApplicationId(
   return ParseString(application, "id", Trim);
 }
 
-std::vector<blink::Manifest::RelatedApplication>
+std::vector<Manifest::RelatedApplication>
 ManifestParser::ParseRelatedApplications(
     const base::DictionaryValue& dictionary) {
-  std::vector<blink::Manifest::RelatedApplication> applications;
+  std::vector<Manifest::RelatedApplication> applications;
   if (!dictionary.HasKey("related_applications"))
     return applications;
 
   const base::ListValue* applications_list = nullptr;
   if (!dictionary.GetList("related_applications", &applications_list)) {
-    AddErrorInfo("property 'related_applications' ignored,"
-                 " type array expected.");
+    AddErrorInfo(
+        "property 'related_applications' ignored,"
+        " type array expected.");
     return applications;
   }
 
@@ -695,13 +699,14 @@ ManifestParser::ParseRelatedApplications(
     if (!applications_list->GetDictionary(i, &application_dictionary))
       continue;
 
-    blink::Manifest::RelatedApplication application;
+    Manifest::RelatedApplication application;
     application.platform =
         ParseRelatedApplicationPlatform(*application_dictionary);
     // "If platform is undefined, move onto the next item if any are left."
     if (application.platform.is_null()) {
-      AddErrorInfo("'platform' is a required field, related application"
-                   " ignored.");
+      AddErrorInfo(
+          "'platform' is a required field, related application"
+          " ignored.");
       continue;
     }
 
@@ -710,8 +715,9 @@ ManifestParser::ParseRelatedApplications(
     // "If both id and url are undefined, move onto the next item if any are
     // left."
     if (application.url.is_empty() && application.id.is_null()) {
-      AddErrorInfo("one of 'url' or 'id' is required, related application"
-                   " ignored.");
+      AddErrorInfo(
+          "one of 'url' or 'id' is required, related application"
+          " ignored.");
       continue;
     }
 
@@ -743,7 +749,7 @@ GURL ManifestParser::ParseSplashScreenURL(
 }
 
 base::NullableString16 ManifestParser::ParseGCMSenderID(
-    const base::DictionaryValue& dictionary)  {
+    const base::DictionaryValue& dictionary) {
   return ParseString(dictionary, "gcm_sender_id", Trim);
 }
 
@@ -751,8 +757,8 @@ void ManifestParser::AddErrorInfo(const std::string& error_msg,
                                   bool critical,
                                   int error_line,
                                   int error_column) {
-  errors_.push_back(
-      {base::in_place, error_msg, critical, error_line, error_column});
+  ManifestError error = {error_msg, critical, error_line, error_column};
+  errors_.push_back(error);
 }
 
-} // namespace content
+}  // namespace blink

@@ -11,13 +11,14 @@
 #include "base/strings/nullable_string16.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/fetchers/manifest_fetcher.h"
-#include "content/renderer/manifest/manifest_parser.h"
 #include "content/renderer/manifest/manifest_uma_util.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_manifest_parser.h"
 
 namespace content {
 
@@ -150,36 +151,40 @@ void ManifestManager::OnManifestFetchComplete(
   ManifestUmaUtil::FetchSucceeded();
   GURL response_url = response.CurrentRequestUrl();
   base::StringPiece data_piece(data);
-  ManifestParser parser(data_piece, response_url, document_url);
-  parser.Parse();
+
+  blink::WebVector<blink::ManifestError> errors;
+  bool result = blink::WebManifestParser::ParseManifest(
+      data_piece, response_url, document_url, &manifest_, &errors);
 
   manifest_debug_info_ = blink::mojom::ManifestDebugInfo::New();
   manifest_debug_info_->raw_manifest = data;
-  parser.TakeErrors(&manifest_debug_info_->errors);
 
-  for (const auto& error : manifest_debug_info_->errors) {
+  for (const auto& error : errors) {
     blink::WebConsoleMessage message;
-    message.level = error->critical
+    message.level = error.critical
                         ? blink::mojom::ConsoleMessageLevel::kError
                         : blink::mojom::ConsoleMessageLevel::kWarning;
     message.text =
-        blink::WebString::FromUTF8(GetMessagePrefix() + error->message);
+        blink::WebString::FromUTF8(GetMessagePrefix() + error.message);
     message.url =
         render_frame()->GetWebFrame()->GetDocument().ManifestURL().GetString();
-    message.line_number = error->line;
-    message.column_number = error->column;
+    message.line_number = error.line;
+    message.column_number = error.column;
     render_frame()->GetWebFrame()->AddMessageToConsole(message);
+
+    manifest_debug_info_->errors.push_back({base::in_place, error.message,
+                                            error.critical, error.line,
+                                            error.column});
   }
 
   // Having errors while parsing the manifest doesn't mean the manifest parsing
   // failed. Some properties might have been ignored but some others kept.
-  if (parser.failed()) {
+  if (!result) {
     ResolveCallbacks(ResolveStateFailure);
     return;
   }
 
   manifest_url_ = response.CurrentRequestUrl();
-  manifest_ = parser.manifest();
   ResolveCallbacks(ResolveStateSuccess);
 }
 
