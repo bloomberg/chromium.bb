@@ -16,6 +16,7 @@ import gpu_project_config
 from telemetry.testing import browser_test_runner
 from telemetry.internal.platform import system_info
 
+from gpu_tests import context_lost_integration_test
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
 from gpu_tests import webgl_conformance_integration_test
@@ -200,6 +201,22 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
         set(['win', 'win10', 'd3d9', 'release',
              'nvidia', 'nvidia-0x1cb3', 'no-passthrough']).issubset(tag_set))
     return tag_set
+
+  def testGenerateContextLostExampleTagsForAsan(self):
+    args = MockArgs(is_asan=True)
+    tag_set = self._TestTagGenerationForMockPlatform(
+        context_lost_integration_test.ContextLostIntegrationTest,
+        args)
+    self.assertIn('asan', tag_set)
+    self.assertNotIn('no-asan', tag_set)
+
+  def testGenerateContextLostExampleTagsForNoAsan(self):
+    args = MockArgs()
+    tag_set = self._TestTagGenerationForMockPlatform(
+        context_lost_integration_test.ContextLostIntegrationTest,
+        args)
+    self.assertIn('no-asan', tag_set)
+    self.assertNotIn('asan', tag_set)
 
   def testGenerateWebglConformanceExampleTagsForWebglVersion1andAsan(self):
     args = MockArgs(is_asan=True, webgl_version='1.0.0')
