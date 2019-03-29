@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -124,6 +125,22 @@ ui::SelectFileDialog::Type GetDialogType(
   NOTREACHED();
 }
 
+base::FilePath GetInitialFilePath(const mojom::SelectFilesRequestPtr& request) {
+  const mojom::DocumentPathPtr& document_path = request->initial_document_path;
+  if (!document_path)
+    return base::FilePath();
+
+  if (document_path->path.empty()) {
+    LOG(ERROR) << "path should at least contain root Document ID.";
+    return base::FilePath();
+  }
+
+  const std::string& root_document_id = document_path->path[0];
+  // TODO(niwa): Convert non-root document IDs to the relative path and append.
+  return arc::GetDocumentsProviderMountPath(document_path->authority,
+                                            root_document_id);
+}
+
 void BuildFileTypeInfo(const mojom::SelectFilesRequestPtr& request,
                        ui::SelectFileDialog::FileTypeInfo* file_type_info) {
   file_type_info->allowed_paths = ui::SelectFileDialog::FileTypeInfo::ANY_PATH;
@@ -168,11 +185,12 @@ void ArcSelectFilesHandler::SelectFiles(
   ui::SelectFileDialog::Type dialog_type = GetDialogType(request);
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   BuildFileTypeInfo(request, &file_type_info);
+  base::FilePath default_path = GetInitialFilePath(request);
 
   select_file_dialog_->SelectFile(
       dialog_type,
       /*title=*/base::string16(),
-      /*default_path=*/base::FilePath(), &file_type_info,
+      /*default_path=*/default_path, &file_type_info,
       /*file_type_index=*/0,
       /*default_extension=*/base::FilePath::StringType(),
       /*owning_window=*/nullptr,

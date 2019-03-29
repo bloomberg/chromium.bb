@@ -159,6 +159,21 @@ struct SelectFilesRequest {
   // Directory path to be initially opened when the file selector is launched.
   // Corresponds to DocumentsContract.EXTRA_INITIAL_URI.
   string initial_content_uri;
+
+  // DocumentPath representation for initial URI.
+  // Filled only when DocumentsContract.EXTRA_INITIAL_URI points to a document
+  // served by a DocumentsProvider.
+  DocumentPath? initial_document_path;
+};
+
+// Represents a path to a document served by a DocumentsProvider.
+struct DocumentPath {
+  // Authority of the document provider.
+  string authority;
+
+  // List of document ID from the root document to the child document.
+  // This should at least contain root document ID.
+  array<string> path;
 };
 
 // Result for SelectFilesRequest.
