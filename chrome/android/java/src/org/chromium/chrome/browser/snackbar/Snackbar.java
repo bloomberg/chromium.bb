@@ -5,11 +5,15 @@
 package org.chromium.chrome.browser.snackbar;
 
 import android.graphics.drawable.Drawable;
+import android.support.annotation.IntDef;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * A snackbar shows a message at the bottom of the screen and optionally contains an action button.
@@ -90,6 +94,15 @@ public class Snackbar {
     private Drawable mProfileImage;
     private int mType;
     private int mIdentifier = UMA_UNKNOWN;
+    @Theme
+    private int mTheme = Theme.BASIC;
+
+    @IntDef({Theme.BASIC, Theme.GOOGLE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Theme {
+        int BASIC = 0;
+        int GOOGLE = 1;
+    }
 
     // Prevent instantiation.
     private Snackbar() {}
@@ -172,6 +185,8 @@ public class Snackbar {
     /**
      * Sets the background color for the snackbar. If 0, the snackbar will use default color.
      */
+    // TODO(fgorski): Clean up background color and text appearance -- transition all the consumers
+    // to the Theme based styling.
     public Snackbar setBackgroundColor(int color) {
         mBackgroundColor = color;
         return this;
@@ -183,6 +198,15 @@ public class Snackbar {
      */
     public Snackbar setTextAppearance(int resId) {
         mTextApperanceResId = resId;
+        return this;
+    }
+
+    /**
+     * Sets the theme for the snackbar. If not set, or BASIC, the snackbar will use provided text
+     * appearance and background color. Otherwise it will apply selected theme.
+     */
+    public Snackbar setTheme(@Theme int theme) {
+        mTheme = theme;
         return this;
     }
 
@@ -234,6 +258,15 @@ public class Snackbar {
      */
     int getTextAppearance() {
         return mTextApperanceResId;
+    }
+
+    /**
+     * If method returns BASIC, them background color and text appearance is used, otherwise a
+     * requested theme will be applied to style the Snackbar.
+     */
+    @Theme
+    int getTheme() {
+        return mTheme;
     }
 
     /**
