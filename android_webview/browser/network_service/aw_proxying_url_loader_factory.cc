@@ -161,7 +161,9 @@ class InterceptResponseDelegate
   }
 
   void OnInputStreamOpenFailed(bool* restarted) override {
-    request_->InputStreamFailed(false /* restart_needed */);
+    if (request_) {
+      request_->InputStreamFailed(false /* restart_needed */);
+    }
     *restarted = false;
   }
 
@@ -211,7 +213,9 @@ class ProtocolResponseDelegate
   }
 
   void OnInputStreamOpenFailed(bool* restarted) override {
-    request_->InputStreamFailed(true /* restart_needed */);
+    if (request_) {
+      request_->InputStreamFailed(true /* restart_needed */);
+    }
     *restarted = true;
   }
 
