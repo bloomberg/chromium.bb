@@ -1024,6 +1024,125 @@ TEST_F(HostResolverManagerTest, StartWithinCallback) {
   EXPECT_THAT(new_response->result_error(), IsOk());
 }
 
+TEST_F(HostResolverManagerTest, StartWithinEvictionCallback) {
+  CreateSerialResolver();
+  resolver_->SetMaxQueuedJobsForTesting(2);
+
+  std::unique_ptr<ResolveHostResponseHelper> new_response;
+  auto custom_callback = base::BindLambdaForTesting(
+      [&](CompletionOnceCallback completion_callback, int error) {
+        new_response = std::make_unique<ResolveHostResponseHelper>(
+            resolver_->CreateRequest(HostPortPair("new", 70),
+                                     NetLogWithSource(), base::nullopt));
+        std::move(completion_callback).Run(error);
+      });
+
+  ResolveHostResponseHelper initial_response(resolver_->CreateRequest(
+      HostPortPair("initial", 80), NetLogWithSource(), base::nullopt));
+  ResolveHostResponseHelper evictee1_response(
+      resolver_->CreateRequest(HostPortPair("evictee1", 80), NetLogWithSource(),
+                               base::nullopt),
+      std::move(custom_callback));
+  ResolveHostResponseHelper evictee2_response(resolver_->CreateRequest(
+      HostPortPair("evictee2", 80), NetLogWithSource(), base::nullopt));
+
+  // Now one running request ("initial") and two queued requests ("evictee1" and
+  // "evictee2"). Any further requests will cause evictions.
+  ResolveHostResponseHelper evictor_response(resolver_->CreateRequest(
+      HostPortPair("evictor", 80), NetLogWithSource(), base::nullopt));
+  EXPECT_THAT(evictee1_response.result_error(),
+              IsError(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE));
+
+  // "new" should evict "evictee2"
+  EXPECT_THAT(evictee2_response.result_error(),
+              IsError(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE));
+
+  proc_->SignalMultiple(3u);
+
+  EXPECT_THAT(initial_response.result_error(), IsOk());
+  EXPECT_THAT(evictor_response.result_error(), IsOk());
+  EXPECT_THAT(new_response->result_error(), IsOk());
+}
+
+// Test where we start a new request within an eviction callback that itself
+// evicts the first evictor.
+TEST_F(HostResolverManagerTest, StartWithinEvictionCallback_DoubleEviction) {
+  CreateSerialResolver();
+  resolver_->SetMaxQueuedJobsForTesting(1);
+
+  std::unique_ptr<ResolveHostResponseHelper> new_response;
+  auto custom_callback = base::BindLambdaForTesting(
+      [&](CompletionOnceCallback completion_callback, int error) {
+        new_response = std::make_unique<ResolveHostResponseHelper>(
+            resolver_->CreateRequest(HostPortPair("new", 70),
+                                     NetLogWithSource(), base::nullopt));
+        std::move(completion_callback).Run(error);
+      });
+
+  ResolveHostResponseHelper initial_response(resolver_->CreateRequest(
+      HostPortPair("initial", 80), NetLogWithSource(), base::nullopt));
+  ResolveHostResponseHelper evictee_response(
+      resolver_->CreateRequest(HostPortPair("evictee", 80), NetLogWithSource(),
+                               base::nullopt),
+      std::move(custom_callback));
+
+  // Now one running request ("initial") and one queued requests ("evictee").
+  // Any further requests will cause evictions.
+  ResolveHostResponseHelper evictor_response(resolver_->CreateRequest(
+      HostPortPair("evictor", 80), NetLogWithSource(), base::nullopt));
+  EXPECT_THAT(evictee_response.result_error(),
+              IsError(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE));
+
+  // "new" should evict "evictor"
+  EXPECT_THAT(evictor_response.result_error(),
+              IsError(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE));
+
+  proc_->SignalMultiple(2u);
+
+  EXPECT_THAT(initial_response.result_error(), IsOk());
+  EXPECT_THAT(new_response->result_error(), IsOk());
+}
+
+TEST_F(HostResolverManagerTest, StartWithinEvictionCallback_SameRequest) {
+  CreateSerialResolver();
+  resolver_->SetMaxQueuedJobsForTesting(2);
+
+  std::unique_ptr<ResolveHostResponseHelper> new_response;
+  auto custom_callback = base::BindLambdaForTesting(
+      [&](CompletionOnceCallback completion_callback, int error) {
+        new_response = std::make_unique<ResolveHostResponseHelper>(
+            resolver_->CreateRequest(HostPortPair("evictor", 70),
+                                     NetLogWithSource(), base::nullopt));
+        std::move(completion_callback).Run(error);
+      });
+
+  ResolveHostResponseHelper initial_response(resolver_->CreateRequest(
+      HostPortPair("initial", 80), NetLogWithSource(), base::nullopt));
+  ResolveHostResponseHelper evictee_response(
+      resolver_->CreateRequest(HostPortPair("evictee", 80), NetLogWithSource(),
+                               base::nullopt),
+      std::move(custom_callback));
+  ResolveHostResponseHelper additional_response(resolver_->CreateRequest(
+      HostPortPair("additional", 80), NetLogWithSource(), base::nullopt));
+
+  // Now one running request ("initial") and two queued requests ("evictee" and
+  // "additional"). Any further requests will cause evictions.
+  ResolveHostResponseHelper evictor_response(resolver_->CreateRequest(
+      HostPortPair("evictor", 80), NetLogWithSource(), base::nullopt));
+  EXPECT_THAT(evictee_response.result_error(),
+              IsError(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE));
+
+  // Second "evictor" should be joined with the first and not evict "additional"
+
+  // Only 3 proc requests because both "evictor" requests are combined.
+  proc_->SignalMultiple(3u);
+
+  EXPECT_THAT(initial_response.result_error(), IsOk());
+  EXPECT_THAT(additional_response.result_error(), IsOk());
+  EXPECT_THAT(evictor_response.result_error(), IsOk());
+  EXPECT_THAT(new_response->result_error(), IsOk());
+}
+
 TEST_F(HostResolverManagerTest, BypassCache) {
   proc_->SignalMultiple(2u);
 
