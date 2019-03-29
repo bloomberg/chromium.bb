@@ -1255,6 +1255,12 @@
         <structure name="IDR_SETTINGS_CROSTINI_SUBPAGE_JS"
                    file="crostini_page/crostini_subpage.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_CROSTINI_EXPORT_IMPORT_HTML"
+                   file="crostini_page/crostini_export_import.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_CROSTINI_EXPORT_IMPORT_JS"
+                   file="crostini_page/crostini_export_import.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_CROSTINI_SHARED_PATHS_HTML"
                    file="crostini_page/crostini_shared_paths.html"
                    type="chrome_html" />
