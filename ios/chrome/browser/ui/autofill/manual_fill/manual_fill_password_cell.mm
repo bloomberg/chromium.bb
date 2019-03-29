@@ -273,11 +273,12 @@ static const CGFloat NoMultiplier = 1.0;
   self.siteNameLabel.adjustsFontForContentSizeCategory = YES;
   [self.contentView addSubview:self.siteNameLabel];
 
-  UIStackView* stackView = [[UIStackView alloc] init];
+  UIStackView* stackView = [[UIStackView alloc]
+      initWithArrangedSubviews:@[ self.faviconView, self.siteNameLabel ]];
   stackView.translatesAutoresizingMaskIntoConstraints = NO;
-  stackView.spacing = kButtonHorizontalMargin;
-  [stackView addArrangedSubview:self.faviconView];
-  [stackView addArrangedSubview:self.siteNameLabel];
+  stackView.spacing = UIStackViewSpacingUseSystem;
+  stackView.alignment = UIStackViewAlignmentCenter;
+
   [self.contentView addSubview:stackView];
 
   AppendHorizontalConstraintsForViews(staticConstraints, @[ stackView ],
