@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -22,15 +23,23 @@ struct OneShotEvent::TaskInfo {
   TaskInfo() {}
   TaskInfo(const base::Location& from_here,
            const scoped_refptr<SingleThreadTaskRunner>& runner,
-           const base::Closure& task,
+           base::OnceClosure task,
            const base::TimeDelta& delay)
-      : from_here(from_here), runner(runner), task(task), delay(delay) {
+      : from_here(from_here),
+        runner(runner),
+        task(std::move(task)),
+        delay(delay) {
     CHECK(runner.get());  // Detect mistakes with a decent stack frame.
   }
+  TaskInfo(TaskInfo&&) = default;
+
   base::Location from_here;
   scoped_refptr<SingleThreadTaskRunner> runner;
-  base::Closure task;
+  base::OnceClosure task;
   base::TimeDelta delay;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TaskInfo);
 };
 
 OneShotEvent::OneShotEvent() : signaled_(false) {
@@ -44,22 +53,23 @@ OneShotEvent::OneShotEvent(bool signaled) : signaled_(signaled) {
 OneShotEvent::~OneShotEvent() {}
 
 void OneShotEvent::Post(const base::Location& from_here,
-                        const base::Closure& task) const {
-  PostImpl(from_here, task, base::ThreadTaskRunnerHandle::Get(),
+                        base::OnceClosure task) const {
+  PostImpl(from_here, std::move(task), base::ThreadTaskRunnerHandle::Get(),
            base::TimeDelta());
 }
 
 void OneShotEvent::Post(
     const base::Location& from_here,
-    const base::Closure& task,
+    base::OnceClosure task,
     const scoped_refptr<SingleThreadTaskRunner>& runner) const {
-  PostImpl(from_here, task, runner, base::TimeDelta());
+  PostImpl(from_here, std::move(task), runner, base::TimeDelta());
 }
 
 void OneShotEvent::PostDelayed(const base::Location& from_here,
-                               const base::Closure& task,
+                               base::OnceClosure task,
                                const base::TimeDelta& delay) const {
-  PostImpl(from_here, task, base::ThreadTaskRunnerHandle::Get(), delay);
+  PostImpl(from_here, std::move(task), base::ThreadTaskRunnerHandle::Get(),
+           delay);
 }
 
 void OneShotEvent::Signal() {
@@ -78,28 +88,29 @@ void OneShotEvent::Signal() {
 
   // We could randomize tasks in debug mode in order to check that
   // the order doesn't matter...
-  for (const TaskInfo& task : moved_tasks) {
+  for (TaskInfo& task : moved_tasks) {
     if (task.delay.is_zero())
-      task.runner->PostTask(task.from_here, task.task);
+      task.runner->PostTask(task.from_here, std::move(task.task));
     else
-      task.runner->PostDelayedTask(task.from_here, task.task, task.delay);
+      task.runner->PostDelayedTask(task.from_here, std::move(task.task),
+                                   task.delay);
   }
   DCHECK(tasks_.empty()) << "No new tasks should be added during task running!";
 }
 
 void OneShotEvent::PostImpl(const base::Location& from_here,
-                            const base::Closure& task,
+                            base::OnceClosure task,
                             const scoped_refptr<SingleThreadTaskRunner>& runner,
                             const base::TimeDelta& delay) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (is_signaled()) {
     if (delay.is_zero())
-      runner->PostTask(from_here, task);
+      runner->PostTask(from_here, std::move(task));
     else
-      runner->PostDelayedTask(from_here, task, delay);
+      runner->PostDelayedTask(from_here, std::move(task), delay);
   } else {
-    tasks_.push_back(TaskInfo(from_here, runner, task, delay));
+    tasks_.emplace_back(from_here, runner, std::move(task), delay);
   }
 }
 

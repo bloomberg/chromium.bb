@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
@@ -23,8 +22,7 @@ BookmarkAppRegistrar::BookmarkAppRegistrar(Profile* profile)
 BookmarkAppRegistrar::~BookmarkAppRegistrar() = default;
 
 void BookmarkAppRegistrar::Init(base::OnceClosure callback) {
-  ExtensionSystem::Get(profile_)->ready().Post(
-      FROM_HERE, base::AdaptCallbackForRepeating(std::move(callback)));
+  ExtensionSystem::Get(profile_)->ready().Post(FROM_HERE, std::move(callback));
 }
 
 bool BookmarkAppRegistrar::IsInstalled(const web_app::AppId& app_id) const {
