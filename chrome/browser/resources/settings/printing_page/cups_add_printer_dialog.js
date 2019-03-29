@@ -415,7 +415,8 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.addWebUIListener('on-add-cups-printer', this.onAddPrinter_.bind(this));
+    this.addWebUIListener(
+        'on-add-or-edit-cups-printer', this.onAddPrinter_.bind(this));
     this.addWebUIListener(
         'on-manually-add-discovered-printer',
         this.onManuallyAddDiscoveredPrinter_.bind(this));
