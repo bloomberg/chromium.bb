@@ -32,8 +32,10 @@ AudioThreadImpl::AudioThreadImpl()
 #endif
   worker_task_runner_ = thread_.task_runner();
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // Since we run on the main thread on Mac, we don't need a hang monitor.
+  // https://crbug.com/946968: The hang monitor possibly causes crashes on
+  // Android
   hang_monitor_ = AudioThreadHangMonitor::Create(
       false, base::DefaultTickClock::GetInstance(), task_runner_);
 #endif
@@ -56,11 +58,7 @@ void AudioThreadImpl::Stop() {
 
 bool AudioThreadImpl::IsHung() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-#if defined(OS_MACOSX)
-  return false;
-#else
-  return hang_monitor_->IsAudioThreadHung();
-#endif
+  return hang_monitor_ ? hang_monitor_->IsAudioThreadHung() : false;
 }
 
 base::SingleThreadTaskRunner* AudioThreadImpl::GetTaskRunner() {
