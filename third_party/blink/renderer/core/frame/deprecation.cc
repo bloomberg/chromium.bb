@@ -763,20 +763,9 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
   Report* report = MakeGarbageCollected<Report>(
       "deprecation", document->Url().GetString(), body);
 
-  // Send the deprecation report to any ReportingObservers.
-  auto* reporting_context = ReportingContext::From(document);
-  reporting_context->QueueReport(report);
-
-  bool is_null;
-  int line_number = body->lineNumber(is_null);
-  line_number = is_null ? 0 : line_number;
-  int column_number = body->columnNumber(is_null);
-  column_number = is_null ? 0 : column_number;
-
-  // Send the deprecation report to the Reporting API.
-  reporting_context->GetReportingService()->QueueDeprecationReport(
-      document->Url(), info.id, WTF::Time::FromDoubleT(removal_date),
-      info.message, body->sourceFile(), line_number, column_number);
+  // Send the deprecation report to the Reporting API and any
+  // ReportingObservers.
+  ReportingContext::From(document)->QueueReport(report);
 }
 
 // static
