@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
@@ -310,19 +309,12 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   [[EarlGrey selectElementWithMatcher:OmniboxText(secondURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  // Verify that the forward button is not enabled.
-  if (!IsUIRefreshPhase1Enabled() && IsCompactWidth()) {
-    // The forward button is not visible.
-    [[EarlGrey selectElementWithMatcher:ForwardButton()]
-        assertWithMatcher:grey_nil()];
-  } else {
-    // The forward button is visible and disabled.
-    id<GREYMatcher> disabledForwardButton = grey_allOf(
-        ForwardButton(),
-        grey_accessibilityTrait(UIAccessibilityTraitNotEnabled), nil);
-    [[EarlGrey selectElementWithMatcher:disabledForwardButton]
-        assertWithMatcher:grey_notNil()];
-  }
+  // Verify that the forward button is visible but not enabled.
+  id<GREYMatcher> disabledForwardButton =
+      grey_allOf(ForwardButton(),
+                 grey_accessibilityTrait(UIAccessibilityTraitNotEnabled), nil);
+  [[EarlGrey selectElementWithMatcher:disabledForwardButton]
+      assertWithMatcher:grey_notNil()];
 }
 
 // Test back-and-forward navigation from and to NTP.

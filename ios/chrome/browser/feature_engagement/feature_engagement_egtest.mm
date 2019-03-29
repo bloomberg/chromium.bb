@@ -19,7 +19,6 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -231,24 +230,14 @@ void EnableLongPressTipTriggering(base::test::ScopedFeatureList& feature_list) {
       assertWithMatcher:grey_notNil()];
 
   // Close tools menu by tapping reload.
-  if (IsUIRefreshPhase1Enabled()) {
-    [[[EarlGrey
-        selectElementWithMatcher:grey_allOf(
-                                     chrome_test_util::ReloadButton(),
-                                     grey_ancestor(grey_accessibilityID(
-                                         kPopupMenuToolsMenuTableViewId)),
-                                     nil)]
-           usingSearchAction:grey_scrollInDirection(kGREYDirectionUp, 150)
-        onElementWithMatcher:grey_accessibilityID(
-                                 kPopupMenuToolsMenuTableViewId)]
-        performAction:grey_tap()];
-  } else {
-    [[[EarlGrey selectElementWithMatcher:chrome_test_util::ReloadButton()]
-           usingSearchAction:grey_scrollInDirection(kGREYDirectionUp, 150)
-        onElementWithMatcher:grey_accessibilityID(
-                                 kPopupMenuToolsMenuTableViewId)]
-        performAction:grey_tap()];
-  }
+  [[[EarlGrey
+      selectElementWithMatcher:grey_allOf(chrome_test_util::ReloadButton(),
+                                          grey_ancestor(grey_accessibilityID(
+                                              kPopupMenuToolsMenuTableViewId)),
+                                          nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionUp, 150)
+      onElementWithMatcher:grey_accessibilityID(kPopupMenuToolsMenuTableViewId)]
+      performAction:grey_tap()];
 
   // Reopen tools menu to verify that the badge does not appear again.
   [ChromeEarlGreyUI openToolsMenu];
@@ -371,9 +360,6 @@ void EnableLongPressTipTriggering(base::test::ScopedFeatureList& feature_list) {
 // toolbar mode.
 // TODO(crbug.com/934248) The test is flaky.
 - (void)DISABLED_testBottomToolbarAppear {
-  if (!IsUIRefreshPhase1Enabled())
-    return;
-
   if (!IsSplitToolbarMode())
     return;
 
@@ -404,9 +390,6 @@ void EnableLongPressTipTriggering(base::test::ScopedFeatureList& feature_list) {
 // Verifies that the bottom toolbar tip is not displayed when the phone is not
 // in split toolbar mode.
 - (void)testBottomToolbarDontAppearOnNonSplitToolbar {
-  if (!IsUIRefreshPhase1Enabled())
-    return;
-
   if (IsSplitToolbarMode())
     return;
 
@@ -438,9 +421,6 @@ void EnableLongPressTipTriggering(base::test::ScopedFeatureList& feature_list) {
 // tip is presented.
 // TODO(crbug.com/934248) The test is flaky.
 - (void)DISABLED_testLongPressTipAppearAfterBottomToolbar {
-  if (!IsUIRefreshPhase1Enabled())
-    return;
-
   if (!IsSplitToolbarMode())
     return;
 
