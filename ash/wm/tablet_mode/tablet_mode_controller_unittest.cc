@@ -151,6 +151,11 @@ class TabletModeControllerTest : public AshTestBase {
 
   base::UserActionTester* user_action_tester() { return &user_action_tester_; }
 
+  void SuspendImminent() { test_api_->SuspendImminent(); }
+  void SuspendDone(const base::TimeDelta& sleep_duration) {
+    test_api_->SuspendDone(sleep_duration);
+  }
+
   // Creates a test window snapped on the left in desktop mode.
   std::unique_ptr<aura::Window> CreateDesktopWindowSnappedLeft() {
     std::unique_ptr<aura::Window> window = CreateTestWindow();
@@ -1492,6 +1497,36 @@ TEST_F(TabletModeControllerTest, TestKioskNextModeUI) {
       {ui::InputDevice(2, ui::InputDeviceType::INPUT_DEVICE_USB, "keyboard")});
   EXPECT_TRUE(IsTabletModeStarted());
   ws::InputDeviceClientTestApi().SetKeyboardDevices({});
+}
+
+// Test that tablet mode controller does not respond to the input device changes
+// during its suspend.
+TEST_F(TabletModeControllerTest, DoNotObserverInputDeviceChangeDuringSuspend) {
+  // Set the current list of devices to empty so that they don't interfere
+  // with the test.
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+
+  // Start in tablet mode.
+  OpenLidToAngle(300.0f);
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  // Attaching external mouse will end tablet mode.
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  EXPECT_FALSE(IsTabletModeStarted());
+
+  // Now suspend the device. Input device changes are no longer be observed.
+  SuspendImminent();
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  EXPECT_FALSE(IsTabletModeStarted());
+
+  // Resume the device. Input device changes are being observed again.
+  SuspendDone(base::TimeDelta::Max());
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  EXPECT_FALSE(IsTabletModeStarted());
 }
 
 }  // namespace ash

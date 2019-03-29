@@ -83,4 +83,13 @@ void TabletModeControllerTestApi::SetTabletMode(bool on) {
       tick_clock()->NowTicks());
 }
 
+void TabletModeControllerTestApi::SuspendImminent() {
+  tablet_mode_controller_->SuspendImminent(
+      power_manager::SuspendImminent::Reason::SuspendImminent_Reason_IDLE);
+}
+
+void TabletModeControllerTestApi::SuspendDone(base::TimeDelta sleep_duration) {
+  tablet_mode_controller_->SuspendDone(sleep_duration);
+}
+
 }  // namespace ash

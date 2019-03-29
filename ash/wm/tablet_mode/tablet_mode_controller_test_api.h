@@ -45,6 +45,10 @@ class TabletModeControllerTestApi {
   void CloseLid();
   void SetTabletMode(bool on);
 
+  // Called to simulate the device suspend and resume.
+  void SuspendImminent();
+  void SuspendDone(base::TimeDelta sleep_duration);
+
   // Sets the event blocker on the tablet mode controller.
   void set_event_blocker(
       std::unique_ptr<InternalInputDevicesEventBlocker> blocker) {

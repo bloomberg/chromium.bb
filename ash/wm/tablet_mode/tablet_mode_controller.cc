@@ -427,11 +427,33 @@ void TabletModeController::SuspendImminent(
   // The system is about to suspend, so record TabletMode usage interval metrics
   // based on whether TabletMode mode is currently active.
   RecordTabletModeUsageInterval(CurrentTabletModeIntervalType());
+
+  // Stop listening to any incoming input device changes during suspend as the
+  // input devices may be removed during suspend and cause the device enter/exit
+  // tablet mode unexpectedly.
+  if (IsEnabled()) {
+    ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+    bluetooth_devices_observer_.reset();
+  }
 }
 
 void TabletModeController::SuspendDone(const base::TimeDelta& sleep_duration) {
   // We do not want TabletMode usage metrics to include time spent in suspend.
   tablet_mode_usage_interval_start_time_ = base::Time::Now();
+
+  // Start listening to the input device changes again.
+  if (IsEnabled()) {
+    bluetooth_devices_observer_ =
+        std::make_unique<BluetoothDevicesObserver>(base::BindRepeating(
+            &TabletModeController::OnBluetoothAdapterOrDeviceChanged,
+            base::Unretained(this)));
+    ui::InputDeviceManager::GetInstance()->AddObserver(this);
+    // Call HandlePointingDeviceAddedOrRemoved() to iterate all available input
+    // devices just in case we have missed all the notifications from
+    // InputDeviceManager and  BluetoothDevicesObserver when SuspendDone() is
+    // called.
+    HandlePointingDeviceAddedOrRemoved();
+  }
 }
 
 void TabletModeController::OnInputDeviceConfigurationChanged(
