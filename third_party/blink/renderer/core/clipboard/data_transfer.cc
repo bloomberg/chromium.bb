@@ -320,7 +320,7 @@ Vector<String> DataTransfer::types() {
 }
 
 FileList* DataTransfer::files() const {
-  FileList* files = FileList::Create();
+  auto* files = MakeGarbageCollected<FileList>();
   if (!CanReadData())
     return files;
 
