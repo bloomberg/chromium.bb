@@ -16,7 +16,7 @@
 
 namespace base {
 
-enum class Nestable {
+enum class Nestable : uint8_t {
   kNonNestable,
   kNestable,
 };
@@ -57,10 +57,11 @@ struct BASE_EXPORT PendingTask {
   // Chain of symbols of the parent tasks which led to this one being posted.
   static constexpr size_t kTaskBacktraceLength = 4;
   std::array<const void*, kTaskBacktraceLength> task_backtrace = {};
-  bool task_backtrace_overflow = false;
 
   // Secondary sort key for run time.
   int sequence_num = 0;
+
+  bool task_backtrace_overflow = false;
 
   // OK to dispatch from a nested loop.
   Nestable nestable;

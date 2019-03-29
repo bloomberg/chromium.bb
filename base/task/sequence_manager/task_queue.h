@@ -316,7 +316,7 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   // NOTE: Task runners don't hold a reference to a TaskQueue, hence,
   // it's required to retain that reference to prevent automatic graceful
   // shutdown. Unique ownership of task queues will fix this issue soon.
-  scoped_refptr<SingleThreadTaskRunner> CreateTaskRunner(int task_type);
+  scoped_refptr<SingleThreadTaskRunner> CreateTaskRunner(TaskType task_type);
 
   // Default task runner which doesn't annotate tasks with a task type.
   scoped_refptr<SingleThreadTaskRunner> task_runner() const {
