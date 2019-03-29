@@ -54,6 +54,8 @@ if (enable_vulkan) {
 
     data_deps = []
     if (is_fuchsia) {
+      sources += [ "fuchsia/vulkan_fuchsia_ext.h" ]
+
       data_deps += [ "//third_party/fuchsia-sdk:vulkan_base" ]
 
       # VulkanInstance enables validation layer in Debug builds and when DCHECKs
