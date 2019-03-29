@@ -3000,7 +3000,6 @@ test("unit_tests") {
     "../renderer/page_load_metrics/page_timing_metrics_sender_unittest.cc",
     "../renderer/plugins/plugin_uma_unittest.cc",
     "../renderer/prerender/prerender_dispatcher_unittest.cc",
-    "../renderer/web_apps_unittest.cc",
     "../test/base/chrome_render_view_test.cc",
     "../test/base/chrome_render_view_test.h",
     "../test/base/menu_model_test.cc",
