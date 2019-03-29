@@ -365,6 +365,7 @@ if get_option('backend-x11')
 	endif
 
 	deps_x11 = [
+		dep_libweston,
 		dep_x11_xcb,
 		dep_lib_cairo_shared,
 		dep_pixman,
