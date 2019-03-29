@@ -57,8 +57,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // without converting them to effective URLs first.  This is useful for
   // avoiding OOPIFs when otherwise same-site URLs may look cross-site via
   // their effective URLs.
-  static bool IsSameWebSite(content::BrowserContext* browser_context,
-                            const IsolationContext& isolation_context,
+  static bool IsSameWebSite(const IsolationContext& isolation_context,
                             const GURL& src_url,
                             const GURL& dest_url,
                             bool should_compare_effective_urls);
@@ -225,7 +224,6 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // this is true for all sites. In other site isolation modes, only a subset
   // of sites will require dedicated processes.
   static bool DoesSiteRequireDedicatedProcess(
-      BrowserContext* browser_context,
       const IsolationContext& isolation_context,
       const GURL& url);
 
@@ -239,8 +237,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // extensions.  Most of these special cases should eventually be removed, and
   // this function should become equivalent to
   // DoesSiteRequireDedicatedProcess().
-  static bool ShouldLockToOrigin(BrowserContext* browser_context,
-                                 const IsolationContext& isolation_context,
+  static bool ShouldLockToOrigin(const IsolationContext& isolation_context,
                                  GURL site_url);
 
   // Converts |site_url| into an origin that can be used as

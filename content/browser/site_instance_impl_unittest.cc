@@ -54,8 +54,7 @@ GURL GetWebUIURL(std::string host) {
 bool IsSameWebSite(BrowserContext* context,
                    const GURL& url1,
                    const GURL& url2) {
-  return SiteInstanceImpl::IsSameWebSite(context, IsolationContext(context),
-                                         url1, url2,
+  return SiteInstanceImpl::IsSameWebSite(IsolationContext(context), url1, url2,
                                          true /* should_use_effective_urls */);
 }
 
@@ -967,13 +966,13 @@ TEST_F(SiteInstanceTest, IsolatedOrigins) {
 
   // Isolated origins always require a dedicated process.
   EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-      context(), isolation_context, isolated_foo_url));
+      isolation_context, isolated_foo_url));
   EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-      context(), isolation_context, isolated_bar_url));
+      isolation_context, isolated_bar_url));
   EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-      context(), isolation_context, isolated_blob_foo_url));
+      isolation_context, isolated_blob_foo_url));
   EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-      context(), isolation_context, isolated_filesystem_foo_url));
+      isolation_context, isolated_filesystem_foo_url));
 
   // Cleanup.
   policy->RemoveIsolatedOriginForTesting(url::Origin::Create(isolated_foo_url));
@@ -1080,7 +1079,7 @@ TEST_F(SiteInstanceTest, SubdomainOnIsolatedSite) {
                                                           foo_isolated_url));
 
   EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-      context(), isolation_context, foo_isolated_url));
+      isolation_context, foo_isolated_url));
 
   EXPECT_TRUE(IsSameWebSite(context(), isolated_url, foo_isolated_url));
   EXPECT_TRUE(IsSameWebSite(context(), foo_isolated_url, isolated_url));
@@ -1122,14 +1121,14 @@ TEST_F(SiteInstanceTest, SubdomainOnIsolatedOrigin) {
 
   if (!AreAllSitesIsolatedForTesting()) {
     EXPECT_FALSE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-        context(), isolation_context, foo_url));
+        isolation_context, foo_url));
   }
   EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-      context(), isolation_context, isolated_foo_url));
+      isolation_context, isolated_foo_url));
   EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-      context(), isolation_context, bar_isolated_foo_url));
+      isolation_context, bar_isolated_foo_url));
   EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-      context(), isolation_context, baz_isolated_foo_url));
+      isolation_context, baz_isolated_foo_url));
 
   EXPECT_FALSE(IsSameWebSite(context(), foo_url, isolated_foo_url));
   EXPECT_FALSE(IsSameWebSite(context(), isolated_foo_url, foo_url));
@@ -1172,13 +1171,13 @@ TEST_F(SiteInstanceTest, MultipleIsolatedOriginsWithCommonSite) {
                                  isolation_context, qux_baz_bar_foo_url));
 
   EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-      context(), isolation_context, foo_url));
+      isolation_context, foo_url));
   EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-      context(), isolation_context, bar_foo_url));
+      isolation_context, bar_foo_url));
   EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-      context(), isolation_context, baz_bar_foo_url));
+      isolation_context, baz_bar_foo_url));
   EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-      context(), isolation_context, qux_baz_bar_foo_url));
+      isolation_context, qux_baz_bar_foo_url));
 
   EXPECT_TRUE(IsSameWebSite(context(), foo_url, bar_foo_url));
   EXPECT_FALSE(IsSameWebSite(context(), foo_url, baz_bar_foo_url));

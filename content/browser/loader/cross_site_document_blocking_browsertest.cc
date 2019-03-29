@@ -1439,7 +1439,6 @@ class CrossSiteDocumentBlockingServiceWorkerTest : public ContentBrowserTest {
     // (the second server should have a different hostname because of the call
     // to SetSSLConfig with CERT_COMMON_NAME_IS_DOMAIN argument).
     ASSERT_FALSE(SiteInstanceImpl::IsSameWebSite(
-        shell()->web_contents()->GetBrowserContext(),
         IsolationContext(shell()->web_contents()->GetBrowserContext()),
         GetURLOnServiceWorkerServer("/"), GetURLOnCrossOriginServer("/"),
         true /* should_use_effective_urls */));

@@ -330,8 +330,7 @@ bool SiteInstanceImpl::RequiresDedicatedProcess() {
   if (!has_site_)
     return false;
 
-  return DoesSiteRequireDedicatedProcess(GetBrowserContext(),
-                                         GetIsolationContext(), site_);
+  return DoesSiteRequireDedicatedProcess(GetIsolationContext(), site_);
 }
 
 void SiteInstanceImpl::IncrementActiveFrameCount() {
@@ -387,16 +386,18 @@ bool SiteInstance::ShouldAssignSiteForURL(const GURL& url) {
 
 bool SiteInstanceImpl::IsSameSiteWithURL(const GURL& url) {
   return SiteInstanceImpl::IsSameWebSite(
-      browsing_instance_->GetBrowserContext(), GetIsolationContext(), site_,
-      url, true /* should_compare_effective_urls */);
+      GetIsolationContext(), site_, url,
+      true /* should_compare_effective_urls */);
 }
 
 // static
-bool SiteInstanceImpl::IsSameWebSite(BrowserContext* browser_context,
-                                     const IsolationContext& isolation_context,
+bool SiteInstanceImpl::IsSameWebSite(const IsolationContext& isolation_context,
                                      const GURL& real_src_url,
                                      const GURL& real_dest_url,
                                      bool should_compare_effective_urls) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserContext* browser_context =
+      isolation_context.browser_or_resource_context().ToBrowserContext();
   DCHECK(browser_context);
 
   GURL src_url =
@@ -632,9 +633,11 @@ bool SiteInstanceImpl::HasEffectiveURL(BrowserContext* browser_context,
 
 // static
 bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-    BrowserContext* browser_context,
     const IsolationContext& isolation_context,
     const GURL& url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserContext* browser_context =
+      isolation_context.browser_or_resource_context().ToBrowserContext();
   DCHECK(browser_context);
 
   // If --site-per-process is enabled, site isolation is enabled everywhere.
@@ -673,9 +676,11 @@ bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
 
 // static
 bool SiteInstanceImpl::ShouldLockToOrigin(
-    BrowserContext* browser_context,
     const IsolationContext& isolation_context,
     GURL site_url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserContext* browser_context =
+      isolation_context.browser_or_resource_context().ToBrowserContext();
   DCHECK(browser_context);
 
   // Don't lock to origin in --single-process mode, since this mode puts
@@ -683,8 +688,7 @@ bool SiteInstanceImpl::ShouldLockToOrigin(
   if (RenderProcessHost::run_renderer_in_process())
     return false;
 
-  if (!DoesSiteRequireDedicatedProcess(browser_context, isolation_context,
-                                       site_url))
+  if (!DoesSiteRequireDedicatedProcess(isolation_context, site_url))
     return false;
 
   // Guest processes cannot be locked to their site because guests always have
@@ -753,7 +757,7 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   auto lock_state = policy->CheckOriginLock(process_->GetID(), lock_url());
-  if (ShouldLockToOrigin(GetBrowserContext(), GetIsolationContext(), site_)) {
+  if (ShouldLockToOrigin(GetIsolationContext(), site_)) {
     // Sanity check that this won't try to assign an origin lock to a <webview>
     // process, which can't be locked.
     CHECK(!process_->IsForGuestsOnly());
