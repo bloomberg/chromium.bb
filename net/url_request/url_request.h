@@ -500,11 +500,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Indicate if this response was fetched from disk cache.
   bool was_cached() const { return response_info_.was_cached; }
 
-  // Returns true if the URLRequest was delivered through a proxy.
-  bool was_fetched_via_proxy() const {
-    return response_info_.was_fetched_via_proxy;
-  }
-
   // Returns true if the URLRequest was delivered over SPDY.
   bool was_fetched_via_spdy() const {
     return response_info_.was_fetched_via_spdy;

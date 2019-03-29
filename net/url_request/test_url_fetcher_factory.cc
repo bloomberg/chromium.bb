@@ -52,7 +52,6 @@ TestURLFetcher::TestURLFetcher(int id, const GURL& url, URLFetcherDelegate* d)
       fake_response_code_(-1),
       fake_response_destination_(STRING),
       write_response_file_(false),
-      fake_was_fetched_via_proxy_(false),
       fake_was_cached_(false),
       fake_response_bytes_(0),
       fake_max_retries_(0) {
@@ -216,10 +215,6 @@ const ProxyServer& TestURLFetcher::ProxyServerUsed() const {
   return fake_proxy_server_;
 }
 
-bool TestURLFetcher::WasFetchedViaProxy() const {
-  return fake_was_fetched_via_proxy_;
-}
-
 bool TestURLFetcher::WasCached() const {
   return fake_was_cached_;
 }
@@ -292,10 +287,6 @@ void TestURLFetcher::GetExtraRequestHeaders(
 
 void TestURLFetcher::set_status(const URLRequestStatus& status) {
   fake_status_ = status;
-}
-
-void TestURLFetcher::set_was_fetched_via_proxy(bool flag) {
-  fake_was_fetched_via_proxy_ = flag;
 }
 
 void TestURLFetcher::set_was_cached(bool flag) {
