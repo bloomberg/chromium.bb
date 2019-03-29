@@ -18,6 +18,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/wallpaper_types.h"
 #include "base/bind.h"
@@ -633,12 +634,17 @@ void AppListView::InitContents(int initial_apps_page) {
       use_background_blur ? ui::LAYER_SOLID_COLOR : ui::LAYER_TEXTURED);
   SetBackgroundShieldColor();
   if (use_background_blur) {
-    app_list_background_shield_mask_ = views::Painter::CreatePaintedLayer(
-        views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
-                                                    kAppListBackgroundRadius));
-    app_list_background_shield_mask_->layer()->SetFillsBoundsOpaquely(false);
-    app_list_background_shield_->layer()->SetMaskLayer(
-        app_list_background_shield_mask_->layer());
+    if (ash::features::ShouldUseShaderRoundedCorner()) {
+      app_list_background_shield_->layer()->SetRoundedCornerRadius(
+          {kAppListBackgroundRadius, kAppListBackgroundRadius, 0, 0});
+    } else {
+      app_list_background_shield_mask_ = views::Painter::CreatePaintedLayer(
+          views::Painter::CreateSolidRoundRectPainter(
+              SK_ColorBLACK, kAppListBackgroundRadius));
+      app_list_background_shield_mask_->layer()->SetFillsBoundsOpaquely(false);
+      app_list_background_shield_->layer()->SetMaskLayer(
+          app_list_background_shield_mask_->layer());
+    }
     app_list_background_shield_->layer()->SetBackgroundBlur(
         AppListConfig::instance().blur_radius());
     app_list_background_shield_->layer()->SetBackdropFilterQuality(
