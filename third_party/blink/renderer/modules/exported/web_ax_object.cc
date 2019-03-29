@@ -42,6 +42,7 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
@@ -1057,10 +1058,10 @@ bool WebAXObject::HasComputedStyle() const {
     document->UpdateStyleAndLayoutTree();
 
   Node* node = private_->GetNode();
-  if (!node)
+  if (!node || node->IsDocumentNode())
     return false;
 
-  return node->EnsureComputedStyle();
+  return node->GetComputedStyle();
 }
 
 WebString WebAXObject::ComputedStyleDisplay() const {
@@ -1072,10 +1073,10 @@ WebString WebAXObject::ComputedStyleDisplay() const {
     document->UpdateStyleAndLayoutTree();
 
   Node* node = private_->GetNode();
-  if (!node)
+  if (!node || node->IsDocumentNode())
     return WebString();
 
-  const ComputedStyle* computed_style = node->EnsureComputedStyle();
+  const ComputedStyle* computed_style = node->GetComputedStyle();
   if (!computed_style)
     return WebString();
 
