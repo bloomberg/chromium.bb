@@ -104,7 +104,7 @@
     <!-- Account Signin Colors -->
     <!-- As in dimens.xml, signin uses values from the First Run Experience -->
     <color name="signin_head_background">@color/modern_primary_color</color>
-    <color name="signin_body_background">@color/modern_grey_50</color>
+    <color name="signin_body_background">@color/modern_primary_color</color>
     <color name="signin_header_animation_background">@color/modern_grey_50</color>
 
     <!-- NTP and Home sheet colors. Also used on the bookmarks and recent tabs pages. -->

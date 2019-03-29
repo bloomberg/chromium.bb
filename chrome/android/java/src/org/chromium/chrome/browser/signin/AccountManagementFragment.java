@@ -377,7 +377,7 @@ public class AccountManagementFragment extends PreferenceFragment
     private ChromeBasePreference createAddAccountPreference() {
         ChromeBasePreference addAccountPreference = new ChromeBasePreference(getActivity());
         addAccountPreference.setLayoutResource(R.layout.account_management_account_row);
-        addAccountPreference.setIcon(R.drawable.add_circle_blue);
+        addAccountPreference.setIcon(R.drawable.ic_add_circle_40dp);
         addAccountPreference.setTitle(R.string.account_management_add_account_title);
         addAccountPreference.setOnPreferenceClickListener(preference -> {
             if (!isVisible() || !isResumed()) return false;
