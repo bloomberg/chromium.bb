@@ -19,6 +19,7 @@
 #include "media/base/media_switches.h"
 #include "media/capabilities/video_decode_stats_db.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
+#include "media/mojo/services/test_helpers.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -27,7 +28,6 @@
 #include "url/origin.h"
 
 using UkmEntry = ukm::builders::Media_VideoDecodePerfRecord;
-using testing::Eq;
 using testing::IsNull;
 using testing::_;
 
@@ -162,34 +162,6 @@ class VideoDecodePerfHistoryTest : public testing::Test {
   MOCK_METHOD0(MockOnClearedHistory, void());
 
   MOCK_METHOD1(MockGetVideoDecodeStatsDBCB, void(VideoDecodeStatsDB* db));
-
-  mojom::PredictionFeatures MakeFeatures(VideoCodecProfile profile,
-                                         gfx::Size video_size,
-                                         int frames_per_sec) {
-    mojom::PredictionFeatures features;
-    features.profile = profile;
-    features.video_size = video_size;
-    features.frames_per_sec = frames_per_sec;
-    return features;
-  }
-
-  mojom::PredictionFeaturesPtr MakeFeaturesPtr(VideoCodecProfile profile,
-                                               gfx::Size video_size,
-                                               int frames_per_sec) {
-    mojom::PredictionFeaturesPtr features = mojom::PredictionFeatures::New();
-    *features = MakeFeatures(profile, video_size, frames_per_sec);
-    return features;
-  }
-
-  mojom::PredictionTargets MakeTargets(uint32_t frames_decoded,
-                                       uint32_t frames_dropped,
-                                       uint32_t frames_power_efficient) {
-    mojom::PredictionTargets targets;
-    targets.frames_decoded = frames_decoded;
-    targets.frames_dropped = frames_dropped;
-    targets.frames_power_efficient = frames_power_efficient;
-    return targets;
-  }
 
   void SavePerfRecord(const url::Origin& origin,
                       bool is_top_frame,
