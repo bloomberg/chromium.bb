@@ -195,6 +195,14 @@ bool GlassBrowserFrameView::CanDrawStrokes() const {
   return BrowserNonClientFrameView::CanDrawStrokes();
 }
 
+SkColor GlassBrowserFrameView::GetCaptionColor(ActiveState active_state) const {
+  const SkAlpha title_alpha = ShouldPaintAsActive(active_state)
+                                  ? SK_AlphaOPAQUE
+                                  : kInactiveTitlebarFeatureAlpha;
+  return SkColorSetA(GetReadableFeatureColor(GetFrameColor(active_state)),
+                     title_alpha);
+}
+
 void GlassBrowserFrameView::UpdateThrobber(bool running) {
   if (ShowCustomIcon())
     window_icon_->Update();
@@ -218,14 +226,6 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
   min_size.Enlarge(0, GetTopInset(false));
 
   return min_size;
-}
-
-SkColor GlassBrowserFrameView::GetCaptionColor(ActiveState active_state) const {
-  const SkAlpha title_alpha = ShouldPaintAsActive(active_state)
-                                  ? SK_AlphaOPAQUE
-                                  : kInactiveTitlebarFeatureAlpha;
-  return SkColorSetA(GetReadableFeatureColor(GetFrameColor(active_state)),
-                     title_alpha);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -137,6 +137,11 @@ bool BrowserNonClientFrameView::CanDrawStrokes() const {
   return !browser_view_->browser()->hosted_app_controller();
 }
 
+SkColor BrowserNonClientFrameView::GetCaptionColor(
+    ActiveState active_state) const {
+  return color_utils::GetColorWithMaxContrast(GetFrameColor(active_state));
+}
+
 SkColor BrowserNonClientFrameView::GetFrameColor(
     ActiveState active_state) const {
   ThemeProperties::OverwritableByUserThemeProperty color_id;
@@ -155,6 +160,14 @@ SkColor BrowserNonClientFrameView::GetFrameColor(
 
   return ThemeProperties::GetDefaultColor(color_id,
                                           browser_view_->IsIncognito());
+}
+
+void BrowserNonClientFrameView::UpdateFrameColor() {
+  // Only hosted app windows support dynamic frame colors set by HTML meta tags.
+  if (!hosted_app_button_container_)
+    return;
+  hosted_app_button_container_->UpdateCaptionColors();
+  SchedulePaint();
 }
 
 SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
@@ -222,11 +235,6 @@ int BrowserNonClientFrameView::NonClientHitTest(const gfx::Point& point) {
 void BrowserNonClientFrameView::ResetWindowControls() {
   if (hosted_app_button_container_)
     hosted_app_button_container_->UpdateStatusIconsVisibility();
-}
-
-SkColor BrowserNonClientFrameView::GetCaptionColor(
-    ActiveState active_state) const {
-  return color_utils::GetColorWithMaxContrast(GetFrameColor(active_state));
 }
 
 bool BrowserNonClientFrameView::ShouldPaintAsActive(
