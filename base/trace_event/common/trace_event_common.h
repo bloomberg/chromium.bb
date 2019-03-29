@@ -985,17 +985,6 @@
       TRACE_EVENT_PHASE_LEAVE_CONTEXT, category_group, name, context, \
       TRACE_EVENT_FLAG_NONE)
 
-// Macro to specify that two trace IDs are identical. For example,
-// TRACE_LINK_IDS(
-//     "category", "name",
-//     TRACE_ID_WITH_SCOPE("net::URLRequest", 0x1000),
-//     TRACE_ID_WITH_SCOPE("blink::ResourceFetcher::FetchRequest", 0x2000))
-// tells the trace consumer that events with ID ("net::URLRequest", 0x1000) from
-// the current process have the same ID as events with ID
-// ("blink::ResourceFetcher::FetchRequest", 0x2000).
-#define TRACE_LINK_IDS(category_group, name, id, linked_id) \
-  INTERNAL_TRACE_EVENT_ADD_LINK_IDS(category_group, name, id, linked_id);
-
 // Macro to efficiently determine if a given category group is enabled.
 #define TRACE_EVENT_CATEGORY_GROUP_ENABLED(category_group, ret)             \
   do {                                                                      \
