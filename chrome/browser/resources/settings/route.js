@@ -17,6 +17,7 @@
  *   ANDROID_APPS_DETAILS: (undefined|!settings.Route),
  *   CROSTINI: (undefined|!settings.Route),
  *   CROSTINI_DETAILS: (undefined|!settings.Route),
+ *   CROSTINI_EXPORT_IMPORT: (undefined|!settings.Route),
  *   CROSTINI_SHARED_PATHS: (undefined|!settings.Route),
  *   CROSTINI_SHARED_USB_DEVICES: (undefined|!settings.Route),
  *   APPEARANCE: (undefined|!settings.Route),
@@ -278,6 +279,8 @@ cr.define('settings', function() {
         loadTimeData.getBoolean('showCrostini')) {
       r.CROSTINI = r.BASIC.createSection('/crostini', 'crostini');
       r.CROSTINI_DETAILS = r.CROSTINI.createChild('/crostini/details');
+      r.CROSTINI_EXPORT_IMPORT =
+          r.CROSTINI.createChild('/crostini/exportImport');
       r.CROSTINI_SHARED_PATHS = r.CROSTINI.createChild('/crostini/sharedPaths');
       r.CROSTINI_SHARED_USB_DEVICES =
           r.CROSTINI.createChild('/crostini/sharedUsbDevices');

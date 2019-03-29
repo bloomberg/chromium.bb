@@ -105,8 +105,8 @@ suite('CrostiniPageTests', function() {
 
     test('Sanity', function() {
       assertTrue(!!subpage.$$('#crostini-shared-paths'));
-      assertTrue(!!subpage.$$('#export'));
-      assertTrue(!!subpage.$$('#import'));
+      assertTrue(!subpage.$$('#crostini-shared-usb-devices'));
+      assertTrue(!!subpage.$$('#crostini-export-import'));
       assertTrue(!!subpage.$$('#remove'));
     });
 
@@ -120,17 +120,27 @@ suite('CrostiniPageTests', function() {
     });
 
     test('Export', function() {
-      assertTrue(!!subpage.$$('#export paper-button'));
-      subpage.$$('#export paper-button').click();
-      assertEquals(
-          1, crostiniBrowserProxy.getCallCount('exportCrostiniContainer'));
+      assertTrue(!!subpage.$$('#crostini-export-import .subpage-arrow'));
+      subpage.$$('#crostini-export-import .subpage-arrow').click();
+      return flushAsync().then(() => {
+        subpage = crostiniPage.$$('settings-crostini-export-import');
+        assertTrue(!!subpage.$$('#export paper-button'));
+        subpage.$$('#export paper-button').click();
+        assertEquals(
+            1, crostiniBrowserProxy.getCallCount('exportCrostiniContainer'));
+      });
     });
 
     test('Import', function() {
-      assertTrue(!!subpage.$$('#import paper-button'));
-      subpage.$$('#import paper-button').click();
-      assertEquals(
-          1, crostiniBrowserProxy.getCallCount('importCrostiniContainer'));
+      assertTrue(!!subpage.$$('#crostini-export-import .subpage-arrow'));
+      subpage.$$('#crostini-export-import .subpage-arrow').click();
+      return flushAsync().then(() => {
+        subpage = crostiniPage.$$('settings-crostini-export-import');
+        assertTrue(!!subpage.$$('#import paper-button'));
+        subpage.$$('#import paper-button').click();
+        assertEquals(
+            1, crostiniBrowserProxy.getCallCount('importCrostiniContainer'));
+      });
     });
 
     test('Remove', function() {
