@@ -85,10 +85,10 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     // result in an error.
     Request(ClientSocketHandle* handle,
             CompletionOnceCallback callback,
-            const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
+            const ProxyAuthCallback& proxy_auth_callback,
             RequestPriority priority,
             const SocketTag& socket_tag,
-            ClientSocketPool::RespectLimits respect_limits,
+            RespectLimits respect_limits,
             Flags flags,
             scoped_refptr<SocketParams> socket_params,
             const NetLogWithSource& net_log);
@@ -97,14 +97,12 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
 
     ClientSocketHandle* handle() const { return handle_; }
     CompletionOnceCallback release_callback() { return std::move(callback_); }
-    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback() const {
+    const ProxyAuthCallback& proxy_auth_callback() const {
       return proxy_auth_callback_;
     }
     RequestPriority priority() const { return priority_; }
     void set_priority(RequestPriority priority) { priority_ = priority; }
-    ClientSocketPool::RespectLimits respect_limits() const {
-      return respect_limits_;
-    }
+    RespectLimits respect_limits() const { return respect_limits_; }
     Flags flags() const { return flags_; }
     SocketParams* socket_params() const { return socket_params_.get(); }
     const NetLogWithSource& net_log() const { return net_log_; }
@@ -131,9 +129,9 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
 
     ClientSocketHandle* const handle_;
     CompletionOnceCallback callback_;
-    const ClientSocketPool::ProxyAuthCallback proxy_auth_callback_;
+    const ProxyAuthCallback proxy_auth_callback_;
     RequestPriority priority_;
-    const ClientSocketPool::RespectLimits respect_limits_;
+    const RespectLimits respect_limits_;
     const Flags flags_;
     const scoped_refptr<SocketParams> socket_params_;
     const NetLogWithSource net_log_;
@@ -193,36 +191,33 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool) override;
 
   // ClientSocketPool implementation:
-  int RequestSocket(
-      const ClientSocketPool::GroupId& group_id,
-      scoped_refptr<SocketParams> params,
-      RequestPriority priority,
-      const SocketTag& socket_tag,
-      ClientSocketPool::RespectLimits respect_limits,
-      ClientSocketHandle* handle,
-      CompletionOnceCallback callback,
-      const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
-      const NetLogWithSource& net_log) override;
-  void RequestSockets(const ClientSocketPool::GroupId& group_id,
+  int RequestSocket(const GroupId& group_id,
+                    scoped_refptr<SocketParams> params,
+                    RequestPriority priority,
+                    const SocketTag& socket_tag,
+                    RespectLimits respect_limits,
+                    ClientSocketHandle* handle,
+                    CompletionOnceCallback callback,
+                    const ProxyAuthCallback& proxy_auth_callback,
+                    const NetLogWithSource& net_log) override;
+  void RequestSockets(const GroupId& group_id,
                       scoped_refptr<SocketParams> params,
                       int num_sockets,
                       const NetLogWithSource& net_log) override;
-  void SetPriority(const ClientSocketPool::GroupId& group_id,
+  void SetPriority(const GroupId& group_id,
                    ClientSocketHandle* handle,
                    RequestPriority priority) override;
-  void CancelRequest(const ClientSocketPool::GroupId& group_id,
+  void CancelRequest(const GroupId& group_id,
                      ClientSocketHandle* handle) override;
-  void ReleaseSocket(const ClientSocketPool::GroupId& group_id,
+  void ReleaseSocket(const GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
                      int id) override;
   void FlushWithError(int error) override;
   void CloseIdleSockets() override;
-  void CloseIdleSocketsInGroup(
-      const ClientSocketPool::GroupId& group_id) override;
+  void CloseIdleSocketsInGroup(const GroupId& group_id) override;
   int IdleSocketCount() const override;
-  size_t IdleSocketCountInGroup(
-      const ClientSocketPool::GroupId& group_id) const override;
-  LoadState GetLoadState(const ClientSocketPool::GroupId& group_id,
+  size_t IdleSocketCountInGroup(const GroupId& group_id) const override;
+  LoadState GetLoadState(const GroupId& group_id,
                          const ClientSocketHandle* handle) const override;
   std::unique_ptr<base::DictionaryValue> GetInfoAsValue(
       const std::string& name,
@@ -232,7 +227,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
       const std::string& parent_dump_absolute_name) const override;
 
   bool RequestInGroupWithHandleHasJobForTesting(
-      const ClientSocketPool::GroupId& group_id,
+      const GroupId& group_id,
       const ClientSocketHandle* handle) const {
     return group_map_.find(group_id)->second->RequestWithHandleHasJobForTesting(
         handle);
@@ -256,7 +251,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     return NumActiveSocketsInGroup(group_id);
   }
 
-  bool HasGroupForTesting(const ClientSocketPool::GroupId& group_id) const {
+  bool HasGroupForTesting(const GroupId& group_id) const {
     return HasGroup(group_id);
   }
 
@@ -315,7 +310,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
    public:
     using JobList = std::list<std::unique_ptr<ConnectJob>>;
 
-    Group(const ClientSocketPool::GroupId& group_id,
+    Group(const GroupId& group_id,
           TransportClientSocketPool* client_socket_pool_base_helper);
     ~Group() override;
 
@@ -361,7 +356,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
 
     // Set a timer to create a backup job if it takes too long to
     // create one and if a timer isn't already running.
-    void StartBackupJobTimer(const ClientSocketPool::GroupId& group_id);
+    void StartBackupJobTimer(const GroupId& group_id);
 
     bool BackupJobTimerIsRunning() const;
 
@@ -442,7 +437,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     bool RequestWithHandleHasJobForTesting(
         const ClientSocketHandle* handle) const;
 
-    const ClientSocketPool::GroupId& group_id() { return group_id_; }
+    const GroupId& group_id() { return group_id_; }
     size_t unassigned_job_count() const { return unassigned_jobs_.size(); }
     const JobList& jobs() const { return jobs_; }
     const std::list<IdleSocket>& idle_sockets() const { return idle_sockets_; }
@@ -517,7 +512,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     void TransferJobBetweenRequests(Request* source, Request* dest);
 
     // Called when the backup socket timer fires.
-    void OnBackupJobTimerFired(const ClientSocketPool::GroupId& group_id);
+    void OnBackupJobTimerFired(const GroupId& group_id);
 
     // Checks that:
     //  - |unassigned_jobs_| is empty iff there are at least as many requests
@@ -531,7 +526,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     //  - There are no duplicate entries in |unassigned_jobs_|.
     void SanityCheck() const;
 
-    const ClientSocketPool::GroupId group_id_;
+    const GroupId group_id_;
     TransportClientSocketPool* const client_socket_pool_base_helper_;
 
     // Total number of ConnectJobs that have never been assigned to a Request.
@@ -559,7 +554,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     std::vector<BoundRequest> bound_requests_;
   };
 
-  using GroupMap = std::map<ClientSocketPool::GroupId, Group*>;
+  using GroupMap = std::map<GroupId, Group*>;
 
   struct CallbackResultPair {
     CallbackResultPair();
@@ -590,31 +585,27 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   base::TimeDelta ConnectRetryInterval() const {
     // TODO(mbelshe): Make this tuned dynamically based on measured RTT.
     //                For now, just use the max retry interval.
-    return base::TimeDelta::FromMilliseconds(
-        ClientSocketPool::kMaxConnectRetryIntervalMs);
+    return base::TimeDelta::FromMilliseconds(kMaxConnectRetryIntervalMs);
   }
 
   // TODO(mmenke): de-inline these.
-  size_t NumNeverAssignedConnectJobsInGroup(
-      const ClientSocketPool::GroupId& group_id) const {
+  size_t NumNeverAssignedConnectJobsInGroup(const GroupId& group_id) const {
     return group_map_.find(group_id)->second->never_assigned_job_count();
   }
 
-  size_t NumUnassignedConnectJobsInGroup(
-      const ClientSocketPool::GroupId& group_id) const {
+  size_t NumUnassignedConnectJobsInGroup(const GroupId& group_id) const {
     return group_map_.find(group_id)->second->unassigned_job_count();
   }
 
-  size_t NumConnectJobsInGroup(
-      const ClientSocketPool::GroupId& group_id) const {
+  size_t NumConnectJobsInGroup(const GroupId& group_id) const {
     return group_map_.find(group_id)->second->ConnectJobCount();
   }
 
-  int NumActiveSocketsInGroup(const ClientSocketPool::GroupId& group_id) const {
+  int NumActiveSocketsInGroup(const GroupId& group_id) const {
     return group_map_.find(group_id)->second->active_socket_count();
   }
 
-  bool HasGroup(const ClientSocketPool::GroupId& group_id) const;
+  bool HasGroup(const GroupId& group_id) const;
 
   // Closes all idle sockets if |force| is true.  Else, only closes idle
   // sockets that timed out or can't be reused.  Made public for testing.
@@ -637,8 +628,8 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
                                  Group* group,
                                  const base::TimeTicks& now);
 
-  Group* GetOrCreateGroup(const ClientSocketPool::GroupId& group_id);
-  void RemoveGroup(const ClientSocketPool::GroupId& group_id);
+  Group* GetOrCreateGroup(const GroupId& group_id);
+  void RemoveGroup(const GroupId& group_id);
   void RemoveGroup(GroupMap::iterator it);
 
   // Called when the number of idle sockets changes.
@@ -649,19 +640,16 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   // at least one pending request. Returns true if any groups are stalled, and
   // if so (and if both |group| and |group_id| are not NULL), fills |group|
   // and |group_id| with data of the stalled group having highest priority.
-  bool FindTopStalledGroup(Group** group,
-                           ClientSocketPool::GroupId* group_id) const;
+  bool FindTopStalledGroup(Group** group, GroupId* group_id) const;
 
   // Removes |job| from |group|, which must already own |job|.
   void RemoveConnectJob(ConnectJob* job, Group* group);
 
   // Tries to see if we can handle any more requests for |group|.
-  void OnAvailableSocketSlot(const ClientSocketPool::GroupId& group_id,
-                             Group* group);
+  void OnAvailableSocketSlot(const GroupId& group_id, Group* group);
 
   // Process a pending socket request for a group.
-  void ProcessPendingRequest(const ClientSocketPool::GroupId& group_id,
-                             Group* group);
+  void ProcessPendingRequest(const GroupId& group_id, Group* group);
 
   // Assigns |socket| to |handle| and updates |group|'s counters appropriately.
   void HandOutSocket(std::unique_ptr<StreamSocket> socket,
@@ -689,8 +677,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   // This is the internal implementation of RequestSocket().  It differs in that
   // it does not handle logging into NetLog of the queueing status of
   // |request|.
-  int RequestSocketInternal(const ClientSocketPool::GroupId& group_id,
-                            const Request& request);
+  int RequestSocketInternal(const GroupId& group_id, const Request& request);
 
   // Assigns an idle socket for the group to the request.
   // Returns |true| if an idle socket is available, false otherwise.
