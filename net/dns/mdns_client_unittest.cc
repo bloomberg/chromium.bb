@@ -32,6 +32,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::Assign;
+using ::testing::AtMost;
 using ::testing::Exactly;
 using ::testing::IgnoreResult;
 using ::testing::Invoke;
@@ -1120,6 +1122,45 @@ TEST_F(MDnsTest, StartListeningFailure) {
 
   EXPECT_THAT(test_client_->StartListening(&socket_factory),
               test::IsError(ERR_FAILED));
+}
+
+// Test that the cache is cleared when it gets filled to unreasonable sizes.
+TEST_F(MDnsTest, ClearOverfilledCache) {
+  test_client_->core()->cache_for_testing()->set_entry_limit_for_testing(1);
+
+  StrictMock<MockListenerDelegate> delegate_privet;
+  StrictMock<MockListenerDelegate> delegate_printer;
+
+  PtrRecordCopyContainer record_privet;
+  PtrRecordCopyContainer record_printer;
+
+  std::unique_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
+      dns_protocol::kTypePTR, "_privet._tcp.local", &delegate_privet);
+  std::unique_ptr<MDnsListener> listener_printer = test_client_->CreateListener(
+      dns_protocol::kTypePTR, "_printer._tcp.local", &delegate_printer);
+
+  ASSERT_TRUE(listener_privet->Start());
+  ASSERT_TRUE(listener_printer->Start());
+
+  bool privet_added = false;
+  EXPECT_CALL(delegate_privet, OnRecordUpdate(MDnsListener::RECORD_ADDED, _))
+      .Times(AtMost(1))
+      .WillOnce(Assign(&privet_added, true));
+  EXPECT_CALL(delegate_privet, OnRecordUpdate(MDnsListener::RECORD_REMOVED, _))
+      .WillRepeatedly(Assign(&privet_added, false));
+
+  bool printer_added = false;
+  EXPECT_CALL(delegate_printer, OnRecordUpdate(MDnsListener::RECORD_ADDED, _))
+      .Times(AtMost(1))
+      .WillOnce(Assign(&printer_added, true));
+  EXPECT_CALL(delegate_printer, OnRecordUpdate(MDnsListener::RECORD_REMOVED, _))
+      .WillRepeatedly(Assign(&printer_added, false));
+
+  // Fill past capacity and expect everything to eventually be removed.
+  SimulatePacketReceive(kSamplePacket1, sizeof(kSamplePacket1));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(privet_added);
+  EXPECT_FALSE(printer_added);
 }
 
 // Note: These tests assume that the ipv4 socket will always be created first.

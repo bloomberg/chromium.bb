@@ -375,6 +375,10 @@ void MDnsClientImpl::Core::CleanupObserverList(const ListenerKey& key) {
 }
 
 void MDnsClientImpl::Core::ScheduleCleanup(base::Time cleanup) {
+  // If cache is overfilled. Force an immediate cleanup.
+  if (cache_.IsCacheOverfilled())
+    cleanup = clock_->Now();
+
   // Cleanup is already scheduled, no need to do anything.
   if (cleanup == scheduled_cleanup_) {
     return;
