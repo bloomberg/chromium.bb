@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.download.home.storage;
 
 import android.content.Context;
-import android.os.Environment;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.task.AsyncTask;
@@ -89,8 +88,7 @@ public class StorageSummaryProvider implements OfflineItemFilterObserver {
         new AsyncTask<DirectoryOption>() {
             @Override
             protected DirectoryOption doInBackground() {
-                File defaultDownloadDir = Environment.getExternalStoragePublicDirectory(
-                        Environment.DIRECTORY_DOWNLOADS);
+                File defaultDownloadDir = DownloadUtils.getPrimaryDownloadDirectory();
                 DirectoryOption directoryOption = new DirectoryOption("",
                         defaultDownloadDir.getAbsolutePath(), defaultDownloadDir.getUsableSpace(),
                         defaultDownloadDir.getTotalSpace(),

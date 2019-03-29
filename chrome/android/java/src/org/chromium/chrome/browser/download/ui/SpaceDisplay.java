@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.download.ui;
 
 import android.content.Context;
-import android.os.Environment;
 import android.os.StatFs;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -63,19 +62,7 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
 
         @Override
         protected Long doInBackground() {
-            File downloadDirectory = Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_DOWNLOADS);
-
-            // Create the downloads directory, if necessary.
-            if (!downloadDirectory.exists()) {
-                try {
-                    // mkdirs() can fail, so we still need to check if the directory exists
-                    // later.
-                    downloadDirectory.mkdirs();
-                } catch (SecurityException e) {
-                    Log.e(TAG, "SecurityException when creating download directory.", e);
-                }
-            }
+            File downloadDirectory = DownloadUtils.getPrimaryDownloadDirectory();
 
             // Determine how much space is available on the storage device where downloads
             // reside.  If the downloads directory doesn't exist, it is likely that the user
