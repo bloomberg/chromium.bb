@@ -337,8 +337,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   // Show virtual keyboard immediately with animation.
   void ShowKeyboardInternal(aura::Window* target_container);
-  void PopulateKeyboardContent(aura::Window* target_container,
-                               bool show_keyboard);
+  void PopulateKeyboardContent(aura::Window* target_container);
 
   // Returns true if keyboard is scheduled to hide.
   bool WillHideKeyboard() const;
