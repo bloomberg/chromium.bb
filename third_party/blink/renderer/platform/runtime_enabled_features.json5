@@ -1413,6 +1413,12 @@
       status: "stable",
     },
     {
+      name: "UnoptimizedImagePolicies",
+      status: "experimental",
+      origin_trial_feature_name: "UnoptimizedImagePolicies",
+      implied_by: ["ExperimentalProductivityFeatures"]
+    },
+    {
       name: "UpdateHoverFromLayoutChangeAtBeginFrame",
       settable_from_internals: true,
     },
