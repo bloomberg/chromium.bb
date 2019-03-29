@@ -76,7 +76,7 @@ class MODULES_EXPORT RTCDataChannel final
   uint16_t maxRetransmits() const;
   String protocol() const;
   bool negotiated() const;
-  uint16_t id() const;
+  uint16_t id(bool& is_null) const;
   String readyState() const;
   unsigned bufferedAmount() const;
 

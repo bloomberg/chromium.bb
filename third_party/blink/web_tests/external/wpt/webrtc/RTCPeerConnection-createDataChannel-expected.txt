@@ -54,7 +54,7 @@ FAIL createDataChannel with negotiated true and id null should throw TypeError a
       negotiated: true,
       id: null
     })" did not throw
-FAIL Channels created (after setRemoteDescription) should have id assigned assert_equals: Expect initial id to be null expected (object) null but got (number) 65535
+PASS Channels created (after setRemoteDescription) should have id assigned
 FAIL Reusing a data channel id that is in use should throw OperationError assert_throws: function "() =>
     pc.createDataChannel('channel-3', {
       negotiated: true,
