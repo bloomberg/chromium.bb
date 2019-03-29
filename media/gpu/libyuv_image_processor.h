@@ -73,6 +73,9 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessor : public ImageProcessor {
   static bool IsFormatSupported(VideoPixelFormat input_format,
                                 VideoPixelFormat output_format);
 
+  // Execute Libyuv function for the conversion from |input| to |output|.
+  int DoConversion(const VideoFrame* const input, VideoFrame* const output);
+
   const gfx::Rect input_visible_rect_;
   const gfx::Rect output_visible_rect_;
 
