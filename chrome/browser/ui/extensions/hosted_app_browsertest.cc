@@ -2730,7 +2730,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppOnlyTest, ThemeColor) {
     EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
               app->id());
     EXPECT_EQ(SkColorSetA(*web_app_info.theme_color, SK_AlphaOPAQUE),
-              app_browser->hosted_app_controller()->GetThemeColor().value());
+              app_browser->hosted_app_controller()->GetThemeColor());
   }
   {
     WebApplicationInfo web_app_info;
@@ -2742,8 +2742,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppOnlyTest, ThemeColor) {
 
     EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
               app->id());
-    EXPECT_FALSE(
-        app_browser->hosted_app_controller()->GetThemeColor().has_value());
+    EXPECT_EQ(base::nullopt,
+              app_browser->hosted_app_controller()->GetThemeColor());
   }
 }
 

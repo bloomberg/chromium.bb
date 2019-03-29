@@ -6162,19 +6162,19 @@ Vector<IconURL> Document::IconURLs(int icon_types_mask) {
   return icon_urls;
 }
 
-Color Document::ThemeColor() const {
+base::Optional<Color> Document::ThemeColor() const {
   auto* root_element = documentElement();
   if (!root_element)
-    return Color();
+    return base::nullopt;
   for (HTMLMetaElement& meta_element :
        Traversal<HTMLMetaElement>::DescendantsOf(*root_element)) {
-    Color color = Color::kTransparent;
+    Color color;
     if (DeprecatedEqualIgnoringCase(meta_element.GetName(), "theme-color") &&
         CSSParser::ParseColor(
             color, meta_element.Content().GetString().StripWhiteSpace(), true))
       return color;
   }
-  return Color();
+  return base::nullopt;
 }
 
 static HTMLLinkElement* GetLinkElement(const Document* doc,

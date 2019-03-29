@@ -116,7 +116,7 @@ class HostedAppBrowserController : public TabStripModelObserver,
       const TabStripSelectionChange& selection) override;
 
   // content::WebContentsObserver:
-  void DidChangeThemeColor(SkColor theme_color) override;
+  void DidChangeThemeColor(base::Optional<SkColor> theme_color) override;
 
  private:
   // Called by OnTabstripModelChanged().

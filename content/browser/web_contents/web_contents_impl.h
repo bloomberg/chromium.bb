@@ -309,7 +309,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   RenderWidgetHostView* GetTopLevelRenderWidgetHostView() override;
   void ClosePage() override;
   RenderWidgetHostView* GetFullscreenRenderWidgetHostView() override;
-  SkColor GetThemeColor() override;
+  base::Optional<SkColor> GetThemeColor() override;
   WebUI* GetWebUI() override;
   WebUI* GetCommittedWebUI() override;
   void SetUserAgentOverride(const std::string& override,
@@ -1209,7 +1209,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                       const base::string16& user_input);
 
   // IPC message handlers.
-  void OnThemeColorChanged(RenderFrameHostImpl* source, SkColor theme_color);
+  void OnThemeColorChanged(RenderFrameHostImpl* source,
+                           base::Optional<SkColor> theme_color);
   void OnDidLoadResourceFromMemoryCache(
       RenderFrameHostImpl* source,
       const GURL& url,
@@ -1572,10 +1573,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // The theme color for the underlying document as specified
   // by theme-color meta tag.
-  SkColor theme_color_;
+  base::Optional<SkColor> theme_color_;
 
   // The last published theme color.
-  SkColor last_sent_theme_color_;
+  base::Optional<SkColor> last_sent_theme_color_;
 
   // Whether the first visually non-empty paint has occurred.
   bool did_first_visually_non_empty_paint_;

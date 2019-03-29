@@ -276,9 +276,7 @@ class WebContentsImplTest : public RenderViewHostImplTestHarness {
 class TestWebContentsObserver : public WebContentsObserver {
  public:
   explicit TestWebContentsObserver(WebContents* contents)
-      : WebContentsObserver(contents),
-        last_theme_color_(SK_ColorTRANSPARENT) {
-  }
+      : WebContentsObserver(contents) {}
   ~TestWebContentsObserver() override {}
 
   void DidFinishLoad(RenderFrameHost* render_frame_host,
@@ -297,19 +295,19 @@ class TestWebContentsObserver : public WebContentsObserver {
     EXPECT_TRUE(web_contents()->CompletedFirstVisuallyNonEmptyPaint());
   }
 
-  void DidChangeThemeColor(SkColor theme_color) override {
+  void DidChangeThemeColor(base::Optional<SkColor> theme_color) override {
     last_theme_color_ = theme_color;
   }
 
   const GURL& last_url() const { return last_url_; }
-  SkColor last_theme_color() const { return last_theme_color_; }
+  base::Optional<SkColor> last_theme_color() const { return last_theme_color_; }
   bool observed_did_first_visually_non_empty_paint() const {
     return observed_did_first_visually_non_empty_paint_;
   }
 
  private:
   GURL last_url_;
-  SkColor last_theme_color_;
+  base::Optional<SkColor> last_theme_color_;
   bool observed_did_first_visually_non_empty_paint_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsObserver);
@@ -3199,10 +3197,8 @@ TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
   TestRenderFrameHost* rfh = main_test_rfh();
   rfh->InitializeRenderFrameIfNeeded();
 
-  SkColor transparent = SK_ColorTRANSPARENT;
-
-  EXPECT_EQ(transparent, contents()->GetThemeColor());
-  EXPECT_EQ(transparent, observer.last_theme_color());
+  EXPECT_EQ(base::nullopt, contents()->GetThemeColor());
+  EXPECT_EQ(base::nullopt, observer.last_theme_color());
 
   // Theme color changes should not propagate past the WebContentsImpl before
   // the first visually non-empty paint has occurred.
@@ -3210,7 +3206,7 @@ TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
       FrameHostMsg_DidChangeThemeColor(rfh->GetRoutingID(), SK_ColorRED));
 
   EXPECT_EQ(SK_ColorRED, contents()->GetThemeColor());
-  EXPECT_EQ(transparent, observer.last_theme_color());
+  EXPECT_EQ(base::nullopt, observer.last_theme_color());
 
   // Simulate that the first visually non-empty paint has occurred. This will
   // propagate the current theme color to the delegates.

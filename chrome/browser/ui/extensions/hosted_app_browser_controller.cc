@@ -278,8 +278,8 @@ base::Optional<SkColor> HostedAppBrowserController::GetThemeColor() const {
   content::WebContents* web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
   if (web_contents) {
-    SkColor color = web_contents->GetThemeColor();
-    if (color != SK_ColorTRANSPARENT)
+    base::Optional<SkColor> color = web_contents->GetThemeColor();
+    if (color)
       result = color;
   }
 
@@ -366,7 +366,8 @@ void HostedAppBrowserController::OnTabStripModelChanged(
   }
 }
 
-void HostedAppBrowserController::DidChangeThemeColor(SkColor theme_color) {
+void HostedAppBrowserController::DidChangeThemeColor(
+    base::Optional<SkColor> theme_color) {
   browser_->window()->UpdateFrameColor();
 }
 

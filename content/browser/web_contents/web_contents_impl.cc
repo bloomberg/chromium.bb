@@ -562,8 +562,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       is_resume_pending_(false),
       interstitial_page_(nullptr),
       has_accessed_initial_document_(false),
-      theme_color_(SK_ColorTRANSPARENT),
-      last_sent_theme_color_(SK_ColorTRANSPARENT),
       did_first_visually_non_empty_paint_(false),
       capturer_count_(0),
       is_being_destroyed_(false),
@@ -1090,7 +1088,7 @@ void WebContentsImpl::OnScreenOrientationChange() {
   screen_orientation_provider_->OnOrientationChange();
 }
 
-SkColor WebContentsImpl::GetThemeColor() {
+base::Optional<SkColor> WebContentsImpl::GetThemeColor() {
   return theme_color_;
 }
 
@@ -4416,7 +4414,7 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
     did_first_visually_non_empty_paint_ = false;
 
     // Reset theme color on navigation to new page.
-    theme_color_ = SK_ColorTRANSPARENT;
+    theme_color_.reset();
   }
 
   if (delegate_)
@@ -4459,7 +4457,7 @@ bool WebContentsImpl::CanOverscrollContent() const {
 }
 
 void WebContentsImpl::OnThemeColorChanged(RenderFrameHostImpl* source,
-                                          SkColor theme_color) {
+                                          base::Optional<SkColor> theme_color) {
   if (source != GetMainFrame()) {
     // Only the main frame may control the theme.
     return;
