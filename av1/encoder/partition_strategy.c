@@ -222,8 +222,9 @@ static void simple_motion_search_prune_part_features(
          cpi->ref_frame_flags & av1_ref_frame_flag_list[ALTREF_FRAME]);
 
   // Setting up motion search
-  const int ref_list[] = { LAST_FRAME, ALTREF_FRAME };
-  const int num_refs = 2;
+  const int ref_list[] = { cpi->rc.is_src_frame_alt_ref ? ALTREF_FRAME
+                                                        : LAST_FRAME };
+  const int num_refs = 1;
   const int use_subpixel = 1;
 
   unsigned int int_features[FEATURE_SIZE_SMS_PRUNE_PART - 1];
