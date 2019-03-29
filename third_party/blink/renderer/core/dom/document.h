@@ -1936,10 +1936,10 @@ class CORE_EXPORT Document : public ContainerNode,
   int64_t ukm_source_id_;
 
 #if DCHECK_IS_ON()
-  unsigned slot_assignment_recalc_forbidden_recursion_depth_;
+  unsigned slot_assignment_recalc_forbidden_recursion_depth_ = 0;
 #endif
   unsigned slot_assignment_recalc_depth_ = 0;
-  unsigned flat_tree_traversal_forbidden_recursion_depth_;
+  unsigned flat_tree_traversal_forbidden_recursion_depth_ = 0;
 
   bool needs_to_record_ukm_outlive_time_;
 

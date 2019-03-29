@@ -698,9 +698,6 @@ Document::Document(const DocumentInit& initializer,
       logged_field_edit_(false),
       secure_context_state_(SecureContextState::kUnknown),
       ukm_source_id_(ukm::UkmRecorder::GetNewSourceID()),
-#if DCHECK_IS_ON()
-      slot_assignment_recalc_forbidden_recursion_depth_(0),
-#endif
       needs_to_record_ukm_outlive_time_(false),
       viewport_data_(MakeGarbageCollected<ViewportData>(*this)),
       agent_cluster_id_(base::UnguessableToken::Create()),
