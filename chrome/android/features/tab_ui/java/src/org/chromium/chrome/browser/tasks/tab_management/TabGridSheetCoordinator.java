@@ -44,7 +44,7 @@ public class TabGridSheetCoordinator implements Destroyable {
         mToolbarPropertyModel = new PropertyModel(TabGridSheetProperties.ALL_KEYS);
 
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
-                tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, null,
+                tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false, null,
                 bottomSheetController.getBottomSheet(), false, COMPONENT_NAME);
 
         mMediator = new TabGridSheetMediator(mContext, bottomSheetController,
