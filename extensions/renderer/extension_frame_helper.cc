@@ -19,7 +19,7 @@
 #include "extensions/renderer/api/automation/automation_api_helper.h"
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/dispatcher.h"
-#include "extensions/renderer/extension_bindings_system.h"
+#include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/renderer_messaging_service.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"

@@ -16,6 +16,8 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature_provider.h"
+#include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/renderer/api_activity_logger.h"
 #include "extensions/renderer/bindings/api_binding_bridge.h"
 #include "extensions/renderer/bindings/api_binding_hooks.h"
@@ -31,6 +33,7 @@
 #include "extensions/renderer/i18n_hooks_delegate.h"
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/module_system.h"
+#include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/runtime_hooks_delegate.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/storage_area.h"
@@ -336,6 +339,96 @@ std::string GetContextOwner(v8::Local<v8::Context> context) {
   CHECK(id_is_valid || script_context->url().is_valid());
   return id_is_valid ? extension_id : script_context->url().spec();
 }
+
+// Returns true if any portion of the runtime API is available to the given
+// |context|. This is different than just checking features because runtime's
+// availability depends on the installed extensions and the active URL (in the
+// case of extensions communicating with external websites).
+bool IsRuntimeAvailableToContext(ScriptContext* context) {
+  // TODO(devlin): This doesn't seem thread-safe with ServiceWorkers?
+  for (const auto& extension :
+       *RendererExtensionRegistry::Get()->GetMainThreadExtensionSet()) {
+    ExternallyConnectableInfo* info = static_cast<ExternallyConnectableInfo*>(
+        extension->GetManifestData(manifest_keys::kExternallyConnectable));
+    if (info && info->matches.MatchesURL(context->url()))
+      return true;
+  }
+  return false;
+}
+
+// Logs the amount of time taken to update the bindings for a given context
+// (i.e., UpdateBindingsForContext()).
+void LogUpdateBindingsForContextTime(Feature::Context context_type,
+                                     base::TimeDelta elapsed) {
+  constexpr int kHistogramBucketCount = 50;
+  static const int kTenSecondsInMicroseconds = 10000000;
+  switch (context_type) {
+    case Feature::UNSPECIFIED_CONTEXT:
+      break;
+    case Feature::WEB_PAGE_CONTEXT:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Extensions.Bindings.UpdateBindingsForContextTime.WebPageContext",
+          elapsed.InMicroseconds(), 1, kTenSecondsInMicroseconds,
+          kHistogramBucketCount);
+      break;
+    case Feature::BLESSED_WEB_PAGE_CONTEXT:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Extensions.Bindings.UpdateBindingsForContextTime."
+          "BlessedWebPageContext",
+          elapsed.InMicroseconds(), 1, kTenSecondsInMicroseconds,
+          kHistogramBucketCount);
+      break;
+    case Feature::SERVICE_WORKER_CONTEXT:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Extensions.Bindings.UpdateBindingsForContextTime."
+          "ServiceWorkerContext",
+          elapsed.InMicroseconds(), 1, kTenSecondsInMicroseconds,
+          kHistogramBucketCount);
+      break;
+    case Feature::BLESSED_EXTENSION_CONTEXT:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Extensions.Bindings.UpdateBindingsForContextTime."
+          "BlessedExtensionContext",
+          elapsed.InMicroseconds(), 1, kTenSecondsInMicroseconds,
+          kHistogramBucketCount);
+      break;
+    case Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Extensions.Bindings.UpdateBindingsForContextTime."
+          "LockScreenExtensionContext",
+          elapsed.InMicroseconds(), 1, kTenSecondsInMicroseconds,
+          kHistogramBucketCount);
+      break;
+    case Feature::UNBLESSED_EXTENSION_CONTEXT:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Extensions.Bindings.UpdateBindingsForContextTime."
+          "UnblessedExtensionContext",
+          elapsed.InMicroseconds(), 1, kTenSecondsInMicroseconds,
+          kHistogramBucketCount);
+      break;
+    case Feature::CONTENT_SCRIPT_CONTEXT:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Extensions.Bindings.UpdateBindingsForContextTime."
+          "ContentScriptContext",
+          elapsed.InMicroseconds(), 1, kTenSecondsInMicroseconds,
+          kHistogramBucketCount);
+      break;
+    case Feature::WEBUI_CONTEXT:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Extensions.Bindings.UpdateBindingsForContextTime.WebUIContext",
+          elapsed.InMicroseconds(), 1, kTenSecondsInMicroseconds,
+          kHistogramBucketCount);
+  }
+}
+
+// The APIs that could potentially be available to webpage-like contexts.
+// This is the list of possible features; most web pages will not have access
+// to these APIs.
+// Note: `runtime` is not included here, since it's handled specially above.
+const char* const kWebAvailableFeatures[] = {
+    "app",
+    "dashboardPrivate",
+};
 
 }  // namespace
 
