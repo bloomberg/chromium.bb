@@ -21,7 +21,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_video_configuration.h"
-#include "third_party/blink/public/platform/scoped_web_callbacks.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/webrtc/api/audio_codecs/audio_encoder_factory.h"
 #include "third_party/webrtc/api/audio_codecs/audio_format.h"
@@ -150,19 +149,11 @@ void TransmissionEncodingInfoHandler::EncodingInfo(
   DCHECK(configuration.video_configuration ||
          configuration.audio_configuration);
 
-  // Make sure |callbacks->OnError()| is called when it is being destructed
-  // without OnSuccess().
-  auto scoped_callbacks = blink::MakeScopedWebCallbacks(
-      std::move(callbacks),
-      base::BindOnce(
-          [](std::unique_ptr<blink::WebMediaCapabilitiesEncodingInfoCallbacks>
-                 cb) { cb->OnError(); }));
-
   auto info = std::make_unique<blink::WebMediaCapabilitiesInfo>();
   if (!configuration.video_configuration &&
       !configuration.audio_configuration) {
     DVLOG(2) << "Neither video nor audio configuration specified.";
-    scoped_callbacks.PassCallbacks()->OnSuccess(std::move(info));
+    callbacks->OnSuccess(std::move(info));
     return;
   }
 
@@ -200,7 +191,7 @@ void TransmissionEncodingInfoHandler::EncodingInfo(
     DVLOG(2) << "Audio MIME type:" << mime_type
              << " capabilities:" << ToString(*info);
   }
-  scoped_callbacks.PassCallbacks()->OnSuccess(std::move(info));
+  callbacks->OnSuccess(std::move(info));
 }
 
 }  // namespace content
