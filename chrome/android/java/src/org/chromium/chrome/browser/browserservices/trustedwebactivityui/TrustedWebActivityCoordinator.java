@@ -8,12 +8,16 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controll
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityOpenTimeRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityToolbarController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.SplashScreenController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.TrustedWebActivityDisclosureView;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.TrustedWebActivityToolbarView;
 import org.chromium.chrome.browser.customtabs.CloseButtonNavigator;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 
 import javax.inject.Inject;
+
+import dagger.Lazy;
 
 /**
  * Coordinator for the Trusted Web Activity component.
@@ -29,10 +33,17 @@ public class TrustedWebActivityCoordinator {
             TrustedWebActivityDisclosureView disclosureView,
             TrustedWebActivityOpenTimeRecorder openTimeRecorder,
             TrustedWebActivityVerifier verifier,
-            CloseButtonNavigator closeButtonNavigator) {
+            CloseButtonNavigator closeButtonNavigator,
+            Lazy<SplashScreenController> splashScreenController,
+            CustomTabIntentDataProvider intentDataProvider) {
         // We don't need to do anything with most of the classes above, we just need to resolve them
         // so they start working.
 
         closeButtonNavigator.setLandingPageCriteria(verifier::isPageOnVerifiedOrigin);
+
+        if (SplashScreenController.intentIsForTwaWithSplashScreen(
+                intentDataProvider.getIntent())) {
+            splashScreenController.get();
+        }
     }
 }
