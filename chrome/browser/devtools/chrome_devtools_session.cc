@@ -54,9 +54,9 @@ void ChromeDevToolsSession::sendProtocolResponse(
 }
 
 static bool EnableInternalDevToolsBinaryProtocol() {
-  static bool enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableInternalDevToolsBinaryProtocol);
-  return enabled;
+  static bool disabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableInternalDevToolsBinaryProtocol);
+  return !disabled;
 }
 
 void ChromeDevToolsSession::HandleCommand(
