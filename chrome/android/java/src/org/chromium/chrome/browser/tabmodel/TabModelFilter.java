@@ -166,6 +166,7 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
     @Override
     public void tabClosureUndone(Tab tab) {
         addTab(tab);
+        reorder();
         for (TabModelObserver observer : mFilteredObservers) {
             observer.tabClosureUndone(tab);
         }
