@@ -182,25 +182,28 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
 
   DCHECK(!!resolved_data == !!resolved_value);
 
-  // If so enabled by options, and the resolved_data isn't absolutized already
-  // (which is the case when resolved_data was inherited from the parent style),
-  // perform absolutization now.
-  if (options.absolutize) {
-    if (resolved_value && !resolved_data->IsAbsolutized()) {
-      resolved_value = &StyleBuilderConverter::ConvertRegisteredPropertyValue(
-          state_, *resolved_value);
-      resolved_data =
-          StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
-              *resolved_value, resolved_data->IsAnimationTainted());
-      DCHECK(resolved_data->IsAbsolutized());
-    }
-    if (resolved_data != variable_data)
-      SetVariable(name, registration, resolved_data);
+  // Registered custom properties substitute as token sequences equivalent to
+  // their computed values. CSSVariableData instances which represent such token
+  // sequences are called "absolutized".
+  if (resolved_value && !resolved_data->IsAbsolutized()) {
+    resolved_value = &StyleBuilderConverter::ConvertRegisteredPropertyValue(
+        state_, *resolved_value);
+    resolved_data =
+        StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
+            *resolved_value, resolved_data->IsAnimationTainted());
+    DCHECK(resolved_data->IsAbsolutized());
   }
 
-  // Even if options.absolutize=false, we store the resolved_value if we
-  // parsed it. This is required to calculate the animations update before
-  // the absolutization pass.
+  // If options.absolutize=false, we want to keep the original (non-absolute)
+  // token sequence to retain any var()-references. This makes it possible to
+  // resolve the var()-reference again, using a different (e.g. animated) value.
+  if (options.absolutize && resolved_data != variable_data)
+    SetVariable(name, registration, resolved_data);
+
+  // The options.absolutize flag does not apply to the computed value, only
+  // to the tokens used for substitution. Hence, store the computed value on
+  // ComputedStyle, regardless of the flag. This is needed to correctly
+  // calculate animations.
   if (value != resolved_value)
     SetRegisteredVariable(name, *registration, resolved_value);
 

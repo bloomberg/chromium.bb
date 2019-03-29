@@ -114,6 +114,12 @@ void SetAnimationUpdateIfNeeded(StyleResolverState& state, Element& element) {
         state.AnimationUpdate());
 }
 
+bool HasAnimationsOrTransitions(const StyleResolverState& state,
+                                const Element* animating_element) {
+  return state.Style()->Animations() || state.Style()->Transitions() ||
+         (animating_element && animating_element->HasAnimations());
+}
+
 }  // namespace
 
 using namespace html_names;
@@ -808,8 +814,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
     if (state.HasDirAutoAttribute())
       state.Style()->SetSelfOrAncestorHasDirAutoAttribute(true);
 
-    ApplyMatchedPropertiesAndCustomPropertyAnimations(
-        state, collector.MatchedResult(), element);
+    ApplyMatchedProperties(state, collector.MatchedResult(), element);
     ApplyCallbackSelectors(state);
 
     // Cache our original display.
@@ -921,8 +926,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
     if (!collector.MatchedResult().HasMatchedProperties())
       return false;
 
-    ApplyMatchedPropertiesAndCustomPropertyAnimations(
-        state, collector.MatchedResult(), pseudo_element);
+    ApplyMatchedProperties(state, collector.MatchedResult(), pseudo_element);
     ApplyCallbackSelectors(state);
 
     // Cache our original display.
@@ -1635,33 +1639,6 @@ void StyleResolver::ClearResizedForViewportUnits() {
   was_viewport_resized_ = false;
 }
 
-void StyleResolver::ApplyMatchedPropertiesAndCustomPropertyAnimations(
-    StyleResolverState& state,
-    const MatchResult& match_result,
-    const Element* animating_element) {
-  CacheSuccess cache_success = ApplyMatchedCache(state, match_result);
-  NeedsApplyPass needs_apply_pass;
-  if (!cache_success.IsFullCacheHit()) {
-    ApplyCustomProperties(state, match_result, kExcludeAnimations,
-                          cache_success, needs_apply_pass);
-    ApplyMatchedAnimationProperties(state, match_result, cache_success,
-                                    needs_apply_pass);
-  }
-  if (state.Style()->Animations() || state.Style()->Transitions() ||
-      (animating_element && animating_element->HasAnimations())) {
-    CalculateAnimationUpdate(state, animating_element);
-    if (state.IsAnimatingCustomProperties()) {
-      cache_success.SetFailed();
-      ApplyCustomProperties(state, match_result, kIncludeAnimations,
-                            cache_success, needs_apply_pass);
-    }
-  }
-  if (!cache_success.IsFullCacheHit()) {
-    ApplyMatchedStandardProperties(state, match_result, cache_success,
-                                   needs_apply_pass);
-  }
-}
-
 StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
     StyleResolverState& state,
     const MatchResult& match_result) {
@@ -1721,7 +1698,6 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
 
 void StyleResolver::ApplyCustomProperties(StyleResolverState& state,
                                           const MatchResult& match_result,
-                                          ApplyAnimations apply_animations,
                                           const CacheSuccess& cache_success,
                                           NeedsApplyPass& needs_apply_pass) {
   DCHECK(!cache_success.IsFullCacheHit());
@@ -1741,13 +1717,6 @@ void StyleResolver::ApplyCustomProperties(StyleResolverState& state,
   ApplyMatchedProperties<kResolveVariables, kCheckNeedsApplyPass>(
       state, match_result.UserRules(), true, apply_inherited_only,
       needs_apply_pass);
-
-  CSSVariableResolver(state).ComputeRegisteredVariables();
-
-  if (apply_animations == kIncludeAnimations &&
-      state.IsAnimatingCustomProperties()) {
-    CSSVariableAnimator(state).ApplyAll();
-  }
 }
 
 void StyleResolver::ApplyMatchedAnimationProperties(
@@ -1794,17 +1763,12 @@ void StyleResolver::CalculateAnimationUpdate(StyleResolverState& state,
   }
 }
 
-void StyleResolver::ApplyMatchedStandardProperties(
+void StyleResolver::ApplyMatchedHighPriorityProperties(
     StyleResolverState& state,
     const MatchResult& match_result,
     const CacheSuccess& cache_success,
+    bool& apply_inherited_only,
     NeedsApplyPass& needs_apply_pass) {
-  INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
-                                matched_property_apply, 1);
-
-  DCHECK(!cache_success.IsFullCacheHit());
-  bool apply_inherited_only = cache_success.ShouldApplyInheritedOnly();
-
   // Now we have all of the matched rules in the appropriate order. Walk the
   // rules and apply high-priority properties first, i.e., those properties that
   // other properties depend on.  The order is (1) high-priority not important,
@@ -1855,6 +1819,52 @@ void StyleResolver::ApplyMatchedStandardProperties(
       cache_success.cached_matched_properties->computed_style
               ->GetFontDescription() != state.Style()->GetFontDescription())
     apply_inherited_only = false;
+}
+
+void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
+                                           const MatchResult& match_result,
+                                           const Element* animating_element) {
+  INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
+                                matched_property_apply, 1);
+
+  CacheSuccess cache_success = ApplyMatchedCache(state, match_result);
+  bool apply_inherited_only = cache_success.ShouldApplyInheritedOnly();
+  NeedsApplyPass needs_apply_pass;
+
+  if (!cache_success.IsFullCacheHit()) {
+    ApplyCustomProperties(state, match_result, cache_success, needs_apply_pass);
+    ApplyMatchedAnimationProperties(state, match_result, cache_success,
+                                    needs_apply_pass);
+    ApplyMatchedHighPriorityProperties(state, match_result, cache_success,
+                                       apply_inherited_only, needs_apply_pass);
+  }
+
+  if (HasAnimationsOrTransitions(state, animating_element)) {
+    // Calculate pre-animated computed values for all registered properties.
+    // This is needed to calculate the animation update.
+    CSSVariableResolver(state).ComputeRegisteredVariables();
+
+    // Animation update calculation must happen after application of high
+    // priority properties, otherwise we can't resolve em' units, making it
+    // impossible to know if we should transition in some cases.
+    CalculateAnimationUpdate(state, animating_element);
+
+    if (state.IsAnimatingCustomProperties()) {
+      cache_success.SetFailed();
+
+      CSSVariableAnimator(state).ApplyAll();
+
+      // Apply high priority properties again to re-resolve var() references
+      // to (now-)animated custom properties.
+      // TODO(andruud): Avoid this with https://crbug.com/947004
+      ApplyMatchedHighPriorityProperties(state, match_result, cache_success,
+                                         apply_inherited_only,
+                                         needs_apply_pass);
+    }
+  }
+
+  if (cache_success.IsFullCacheHit())
+    return;
 
   CSSVariableResolver(state).ResolveVariableDefinitions();
 

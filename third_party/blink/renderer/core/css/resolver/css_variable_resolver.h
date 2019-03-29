@@ -101,11 +101,11 @@ class CORE_EXPORT CSSVariableResolver {
     // properties themselves (e.g. color). When a high-priority property refers
     // to a custom property with an (inner) var()-reference, that custom
     // property is resolved "on the fly" with absolutize=false. This means that
-    // 1) a non- absolute value is returned, and 2) the resolved token stream
-    // for that custom property is not stored on the ComputedStyle. Storing the
-    // token stream on the ComputedStyle can only be done with absolutize=true,
-    // otherwise can permanently end up with the wrong token stream if one
-    // unregistered property reference a registered property, for instance.
+    // the equivalent token stream for the computed value of that custom
+    // property is not stored on ComputedStyle. Storing the token stream on
+    // ComputedStyle can only be done with absolutize=true, otherwise we can
+    // permanently end up with the wrong token stream if an unregistered
+    // property references a registered property, for instance.
     bool absolutize = false;
   };
 
