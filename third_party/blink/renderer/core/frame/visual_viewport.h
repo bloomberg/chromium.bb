@@ -95,10 +95,6 @@ class CORE_EXPORT VisualViewport final
   USING_GARBAGE_COLLECTED_MIXIN(VisualViewport);
 
  public:
-  static VisualViewport* Create(Page& host) {
-    return MakeGarbageCollected<VisualViewport>(host);
-  }
-
   explicit VisualViewport(Page&);
   ~VisualViewport() override;
 

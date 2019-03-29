@@ -100,9 +100,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   static Document* CreateDocument(const String& mime_type,
                                   const DocumentInit&,
                                   bool force_xhtml);
-  static LocalDOMWindow* Create(LocalFrame& frame) {
-    return MakeGarbageCollected<LocalDOMWindow>(frame);
-  }
 
   static LocalDOMWindow* From(const ScriptState*);
 

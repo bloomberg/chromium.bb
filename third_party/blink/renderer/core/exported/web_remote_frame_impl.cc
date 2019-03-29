@@ -154,7 +154,7 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
       scope, client, interface_registry,
       std::move(document_interface_broker_handle), opener);
   InsertAfter(child, previous_sibling);
-  RemoteFrameOwner* owner = RemoteFrameOwner::Create(
+  auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
       static_cast<SandboxFlags>(sandbox_flags), container_policy,
       frame_owner_properties, frame_owner_element_type);
   child->InitializeCoreFrame(*GetFrame()->GetPage(), owner, name);
@@ -181,7 +181,7 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
   WebRemoteFrameImpl* child = WebRemoteFrameImpl::Create(scope, client);
   child->SetOpener(opener);
   AppendChild(child);
-  RemoteFrameOwner* owner = RemoteFrameOwner::Create(
+  auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
       static_cast<SandboxFlags>(sandbox_flags), container_policy,
       WebFrameOwnerProperties(), frame_owner_element_type);
   child->InitializeCoreFrame(*GetFrame()->GetPage(), owner, name);
@@ -474,7 +474,7 @@ WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope,
                                        WebRemoteFrameClient* client)
     : WebRemoteFrame(scope),
       client_(client),
-      frame_client_(RemoteFrameClientImpl::Create(this)),
+      frame_client_(MakeGarbageCollected<RemoteFrameClientImpl>(this)),
       self_keep_alive_(this) {
   DCHECK(client);
 }

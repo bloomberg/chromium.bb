@@ -1427,7 +1427,7 @@ void DocumentLoader::InstallNewDocument(
   // LocalDOMWindow to the Document that results from the network load. See also
   // Document::IsSecureTransitionTo.
   if (global_object_reuse_policy != GlobalObjectReusePolicy::kUseExisting)
-    frame_->SetDOMWindow(LocalDOMWindow::Create(*frame_));
+    frame_->SetDOMWindow(MakeGarbageCollected<LocalDOMWindow>(*frame_));
 
   if (reason == InstallNewDocumentReason::kNavigation)
     WillCommitNavigation();

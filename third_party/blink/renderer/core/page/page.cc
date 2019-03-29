@@ -165,13 +165,14 @@ Page::Page(PageClients& page_clients)
       drag_controller_(DragController::Create(this)),
       focus_controller_(FocusController::Create(this)),
       context_menu_controller_(ContextMenuController::Create(this)),
-      page_scale_constraints_set_(PageScaleConstraintsSet::Create(this)),
+      page_scale_constraints_set_(
+          MakeGarbageCollected<PageScaleConstraintsSet>(this)),
       pointer_lock_controller_(PointerLockController::Create(this)),
       browser_controls_(MakeGarbageCollected<BrowserControls>(*this)),
       console_message_storage_(MakeGarbageCollected<ConsoleMessageStorage>()),
       global_root_scroller_controller_(
           TopDocumentRootScrollerController::Create(*this)),
-      visual_viewport_(VisualViewport::Create(*this)),
+      visual_viewport_(MakeGarbageCollected<VisualViewport>(*this)),
       overscroll_controller_(
           OverscrollController::Create(GetVisualViewport(), GetChromeClient())),
       link_highlights_(MakeGarbageCollected<LinkHighlights>(*this)),

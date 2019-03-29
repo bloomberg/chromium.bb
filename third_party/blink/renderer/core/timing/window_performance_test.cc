@@ -146,7 +146,7 @@ TEST_F(WindowPerformanceTest, NavigateAway) {
   DocumentInit init = DocumentInit::Create().WithDocumentLoader(
       GetFrame()->Loader().GetDocumentLoader());
   GetDocument()->Shutdown();
-  GetFrame()->SetDOMWindow(LocalDOMWindow::Create(*GetFrame()));
+  GetFrame()->SetDOMWindow(MakeGarbageCollected<LocalDOMWindow>(*GetFrame()));
   GetFrame()->DomWindow()->InstallNewDocument(AtomicString(), init, false);
 
   // m_performance is still alive, and should not crash when notified.

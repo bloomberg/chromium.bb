@@ -72,7 +72,7 @@ bool DOMWindow::IsWindowOrWorkerGlobalScope() const {
 
 Location* DOMWindow::location() const {
   if (!location_)
-    location_ = Location::Create(const_cast<DOMWindow*>(this));
+    location_ = MakeGarbageCollected<Location>(const_cast<DOMWindow*>(this));
   return location_.Get();
 }
 

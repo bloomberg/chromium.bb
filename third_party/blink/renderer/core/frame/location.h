@@ -53,10 +53,6 @@ class CORE_EXPORT Location final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Location* Create(DOMWindow* dom_window) {
-    return MakeGarbageCollected<Location>(dom_window);
-  }
-
   explicit Location(DOMWindow*);
 
   DOMWindow* DomWindow() const { return dom_window_.Get(); }

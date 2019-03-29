@@ -32,12 +32,6 @@ class CORE_EXPORT RootFrameViewport final
   USING_GARBAGE_COLLECTED_MIXIN(RootFrameViewport);
 
  public:
-  static RootFrameViewport* Create(ScrollableArea& visual_viewport,
-                                   ScrollableArea& layout_viewport) {
-    return MakeGarbageCollected<RootFrameViewport>(visual_viewport,
-                                                   layout_viewport);
-  }
-
   RootFrameViewport(ScrollableArea& visual_viewport,
                     ScrollableArea& layout_viewport);
 

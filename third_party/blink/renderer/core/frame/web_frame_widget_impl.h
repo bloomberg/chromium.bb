@@ -69,8 +69,6 @@ class WebFrameWidgetImpl;
 class WebFrameWidgetImpl final : public WebFrameWidgetBase,
                                  public PageWidgetEventHandler {
  public:
-  static WebFrameWidgetImpl* Create(WebWidgetClient&);
-
   explicit WebFrameWidgetImpl(WebWidgetClient&);
   ~WebFrameWidgetImpl() override;
 
