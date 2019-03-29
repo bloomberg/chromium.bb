@@ -461,11 +461,14 @@ void AutocompleteResult::SortAndDedupMatches(
     // For each duplicate match, append its duplicates to that of the best
     // match, then append it, before we erase it.
     for (auto i = std::next(best_match); i != duplicate_matches.end(); ++i) {
-      (*best_match)->duplicate_matches.insert(
-          (*best_match)->duplicate_matches.end(),
-          (*i)->duplicate_matches.begin(),
-          (*i)->duplicate_matches.end());
-      (*best_match)->duplicate_matches.push_back(**i);
+      auto& match = **i;
+      for (auto& dup_match : match.duplicate_matches)
+        (*best_match)->duplicate_matches.push_back(std::move(dup_match));
+      // Erase the duplicates before copying it. We don't need them any more.
+      match.duplicate_matches.erase(match.duplicate_matches.begin(),
+                                    match.duplicate_matches.end());
+      // Copy, don't move, because we need these below.
+      (*best_match)->duplicate_matches.push_back(match);
     }
   }
 
@@ -701,7 +704,7 @@ void AutocompleteResult::MergeMatchesByProvider(
       AutocompleteMatch match = *i;
       match.relevance = std::min(max_relevance, match.relevance);
       match.from_previous = true;
-      matches_.push_back(match);
+      matches_.push_back(std::move(match));
       delta--;
     }
   }

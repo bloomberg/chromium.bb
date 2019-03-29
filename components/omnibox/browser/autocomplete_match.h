@@ -143,9 +143,9 @@ struct AutocompleteMatch {
                     bool deletable,
                     Type type);
   AutocompleteMatch(const AutocompleteMatch& match);
+  AutocompleteMatch(AutocompleteMatch&& match) noexcept;
   ~AutocompleteMatch();
 
-  // Converts |type| to a string representation.  Used in logging and debugging.
   AutocompleteMatch& operator=(const AutocompleteMatch& match);
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
