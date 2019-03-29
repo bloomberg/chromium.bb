@@ -4,8 +4,8 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -32,8 +32,7 @@
         android:gravity="center_vertical"
         android:minHeight="56dp"
         android:paddingBottom="2dp"
-        android:textColor="@color/default_text_color"
-        android:textSize="@dimen/text_size_medium" />
+        android:textAppearance="@style/TextAppearance.BlackBodyDefault" />
 
     <ImageView
         android:id="@+id/account_selection_mark"
@@ -42,5 +41,6 @@
         android:layout_marginStart="16dp"
         tools:ignore="ContentDescription"
         android:src="@drawable/ic_check_googblue_24dp"
-        android:visibility="gone" />
+        android:visibility="gone"
+        app:tint="@color/default_icon_color_blue" />
 </LinearLayout>
