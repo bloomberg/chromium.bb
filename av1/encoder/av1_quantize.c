@@ -288,7 +288,7 @@ void av1_quantize_b_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
               eob_ptr, sc->scan, sc->iscan);
           break;
         case 2:
-          aom_quantize_b_64x64_adaptive_c(
+          aom_quantize_b_64x64_adaptive(
               coeff_ptr, n_coeffs, p->zbin_QTX, p->round_QTX, p->quant_QTX,
               p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr, p->dequant_QTX,
               eob_ptr, sc->scan, sc->iscan);

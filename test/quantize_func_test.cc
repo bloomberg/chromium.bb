@@ -296,6 +296,8 @@ TEST_P(QuantizeTest, DISABLED_Speed) {
   aom_usec_timer timer, simd_timer;
   int rows = tx_size_high[tx_size_];
   int cols = tx_size_wide[tx_size_];
+  rows = AOMMIN(32, rows);
+  cols = AOMMIN(32, cols);
   for (int cnt = 0; cnt <= rows; cnt++) {
     FillCoeffRandomRows(cnt * cols);
 
@@ -425,7 +427,13 @@ const QuantizeParam kQParamArraySSE2[] = {
   make_tuple(&aom_quantize_b_32x32_adaptive_c,
              &aom_quantize_b_32x32_adaptive_sse2, TX_16X32, TYPE_B, AOM_BITS_8),
   make_tuple(&aom_quantize_b_32x32_adaptive_c,
-             &aom_quantize_b_32x32_adaptive_sse2, TX_32X32, TYPE_B, AOM_BITS_8)
+             &aom_quantize_b_32x32_adaptive_sse2, TX_32X32, TYPE_B, AOM_BITS_8),
+  make_tuple(&aom_quantize_b_64x64_adaptive_c,
+             &aom_quantize_b_64x64_adaptive_sse2, TX_32X64, TYPE_B, AOM_BITS_8),
+  make_tuple(&aom_quantize_b_64x64_adaptive_c,
+             &aom_quantize_b_64x64_adaptive_sse2, TX_64X32, TYPE_B, AOM_BITS_8),
+  make_tuple(&aom_quantize_b_64x64_adaptive_c,
+             &aom_quantize_b_64x64_adaptive_sse2, TX_64X64, TYPE_B, AOM_BITS_8)
 };
 
 INSTANTIATE_TEST_CASE_P(SSE2, QuantizeTest,
