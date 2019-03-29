@@ -245,14 +245,15 @@ def generateBuildNumber(contentVersion):
 
     latestBranchNumber -= 1
 
-  # Check to see if there are any new commits since the last build
-  previousTag = 'devkit/stable/{0}/bb{1}{2:02d}'.format(
-          contentVersion, latestBranchNumber, latestBuildNumber)
+  if latestBuildNumber > 0:
+    # Check to see if there are any new commits since the last build
+    previousTag = 'devkit/stable/{0}/bb{1}{2:02d}'.format(
+            contentVersion, latestBranchNumber, latestBuildNumber)
 
-  commonAncestor = bbutil.getStrippedShellOutput(
-          "git merge-base {0} HEAD".format(previousTag))
-  if bbutil.getHEADSha() == commonAncestor:
-    raise Exception("No new changes since " + previousTag)
+    commonAncestor = bbutil.getStrippedShellOutput(
+            "git merge-base {0} HEAD".format(previousTag))
+    if bbutil.getHEADSha() == commonAncestor:
+      raise Exception("No new changes since " + previousTag)
 
   # If the last release branch was older than the current one, reset the
   # build counter
