@@ -158,7 +158,7 @@ void WebGLRenderingContext::RegisterContextExtensions() {
   RegisterExtension<EXTBlendMinMax>(ext_blend_min_max_);
   RegisterExtension<EXTColorBufferHalfFloat>(ext_color_buffer_half_float_);
   RegisterExtension<EXTDisjointTimerQuery>(ext_disjoint_timer_query_);
-  RegisterExtension<EXTFloatBlend>(ext_float_blend_, kDraftExtension);
+  RegisterExtension<EXTFloatBlend>(ext_float_blend_);
   RegisterExtension<EXTFragDepth>(ext_frag_depth_);
   RegisterExtension<EXTShaderTextureLOD>(ext_shader_texture_lod_);
   RegisterExtension<EXTTextureFilterAnisotropic>(

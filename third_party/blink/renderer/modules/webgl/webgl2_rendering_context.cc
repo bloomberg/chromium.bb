@@ -125,7 +125,7 @@ void WebGL2RenderingContext::RegisterContextExtensions() {
   RegisterExtension<EXTColorBufferFloat>(ext_color_buffer_float_);
   RegisterExtension<EXTDisjointTimerQueryWebGL2>(
       ext_disjoint_timer_query_web_gl2_);
-  RegisterExtension<EXTFloatBlend>(ext_float_blend_, kDraftExtension);
+  RegisterExtension<EXTFloatBlend>(ext_float_blend_);
   RegisterExtension<EXTTextureFilterAnisotropic>(
       ext_texture_filter_anisotropic_);
   RegisterExtension<KHRParallelShaderCompile>(khr_parallel_shader_compile_,
