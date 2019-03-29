@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/synchronization/lock.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -35,6 +36,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/host_port_pair.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -499,31 +501,85 @@ class DataReductionProxyFallbackBrowsertest
   }
 
   void SetResponseHook(ResponseHook response_hook) {
+    base::AutoLock auto_lock(lock_);
     response_hook_ = response_hook;
   }
 
-  void SetHeader(const std::string& header) { header_ = header; }
+  void SetHeader(const std::string& header) {
+    base::AutoLock auto_lock(lock_);
+    header_ = header;
+  }
 
   void SetStatusCode(net::HttpStatusCode status_code) {
+    base::AutoLock auto_lock(lock_);
     status_code_ = status_code;
+  }
+
+  // If the request is for the URL from |host_port_pair|, then response
+  // status code would be set to |status_code|.
+  void SetStatusCodeForURLsFromHostPortPair(
+      const net::HostPortPair& host_port_pair,
+      net::HttpStatusCode status_code) {
+    base::AutoLock auto_lock(lock_);
+    special_host_port_pair_ = host_port_pair;
+    special_status_code_ = status_code;
+  }
+
+  void SetLocationHeader(const std::string& header) {
+    base::AutoLock auto_lock(lock_);
+    location_header_ = header;
   }
 
  private:
   std::unique_ptr<net::test_server::HttpResponse> AddChromeProxyHeader(
       const net::test_server::HttpRequest& request) {
+    base::AutoLock auto_lock(lock_);
     auto response = std::make_unique<net::test_server::BasicHttpResponse>();
     if (!header_.empty())
       response->AddCustomHeader(chrome_proxy_header(), header_);
+    if (!location_header_.empty())
+      response->AddCustomHeader("Location", location_header_);
     if (response_hook_)
       response_hook_.Run(response.get());
-    response->set_code(status_code_);
+
+    // Compute the requested URL from the "Host" header. It's not possible
+    // to use the request URL directly since that contains the hostname of the
+    // proxy server.
+    bool use_special_status_code = false;
+    if (request.headers.find("Host") != request.headers.end()) {
+      const GURL kOriginUrl(
+          base::StrCat({"http://", request.headers.find("Host")->second +
+                                       request.GetURL().path()}));
+
+      if (!special_host_port_pair_.IsEmpty() &&
+          net::HostPortPair::FromURL(kOriginUrl) == special_host_port_pair_) {
+        use_special_status_code = true;
+      }
+    }
+
+    if (use_special_status_code) {
+      response->set_code(special_status_code_);
+    } else {
+      response->set_code(status_code_);
+    }
     response->set_content(kPrimaryResponse);
     response->set_content_type("text/plain");
     return response;
   }
 
-  net::HttpStatusCode status_code_ = net::HTTP_OK;
+  // |lock_| guards access to all the local variables except the embedded test
+  // servers directly.
+  base::Lock lock_;
   std::string header_;
+  std::string location_header_;
+
+  // If the request is for the URL from |special_host_port_pair_|, then response
+  // status code is set to |special_status_code_|. Otherwise, it is set to
+  // |status_code_|.
+  net::HostPortPair special_host_port_pair_;
+  net::HttpStatusCode special_status_code_ = net::HTTP_OK;
+  net::HttpStatusCode status_code_ = net::HTTP_OK;
+
   ResponseHook response_hook_;
   net::EmbeddedTestServer primary_server_;
   net::EmbeddedTestServer secondary_server_;
@@ -718,6 +774,27 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
   EXPECT_THAT(GetBody(), kDummyBody);
   histogram_tester.ExpectUniqueSample("DataReductionProxy.BlockTypePrimary",
                                       BYPASS_EVENT_TYPE_MALFORMED_407, 1);
+}
+
+// Tests that if using data reduction proxy results in redirect loop, then
+// the proxy is bypassed, and the request is fetched directly.
+IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest, RedirectCycle) {
+  base::HistogramTester histogram_tester;
+  net::EmbeddedTestServer test_server;
+  test_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kDummyBody));
+  ASSERT_TRUE(test_server.Start());
+
+  const GURL kUrl(GetURLWithMockHost(test_server, "/echo"));
+  SetStatusCodeForURLsFromHostPortPair(net::HostPortPair::FromURL(kUrl),
+                                       net::HTTP_TEMPORARY_REDIRECT);
+  SetLocationHeader(kUrl.spec());
+  ui_test_utils::NavigateToURL(browser(), kUrl);
+  EXPECT_THAT(GetBody(), kDummyBody);
+
+  // Request should still not use proxy.
+  ui_test_utils::NavigateToURL(browser(), kUrl);
+  EXPECT_THAT(GetBody(), kDummyBody);
 }
 
 class DataReductionProxyResourceTypeBrowsertest

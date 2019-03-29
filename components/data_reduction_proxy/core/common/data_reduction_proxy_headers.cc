@@ -382,7 +382,11 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
 
   bool has_via_header = HasDataReductionProxyViaHeader(headers, nullptr);
 
-  if (has_via_header && HasURLRedirectCycle(url_chain)) {
+  // The following logic to detect redirect cycles works only when network
+  // servicification is disabled.
+  if (!base::FeatureList::IsEnabled(
+          features::kDataReductionProxyEnabledWithNetworkService) &&
+      has_via_header && HasURLRedirectCycle(url_chain)) {
     data_reduction_proxy_info->bypass_all = true;
     data_reduction_proxy_info->mark_proxies_as_bad = false;
     data_reduction_proxy_info->bypass_duration = base::TimeDelta();
