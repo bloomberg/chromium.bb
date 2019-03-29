@@ -1,9 +1,11 @@
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+
 <!-- Common styles for signin-related tab modal dialogs. -->
 <dom-module id="signin-dialog-shared">
   <template>
     <style>
       a {
-        color: var(--google-blue-700);
+        color: var(--cr-link-color);
         text-decoration: none;
       }
 
@@ -13,14 +15,13 @@
       }
 
       .container {
-        background-color: white;
-        color: #333;
+        color: var(--cr-primary-text-color);
         width: 448px;
       }
 
       .top-title-bar {
         align-items: center;
-        border-bottom: 1px solid var(--paper-grey-300);
+        border-bottom: var(--cr-separator-line);
         display: flex;
         font-size: 16px;
         height: 52px;
@@ -39,7 +40,6 @@
         justify-content: flex-start;
       }
 </if>
-
     </style>
   </template>
 </dom-module>
