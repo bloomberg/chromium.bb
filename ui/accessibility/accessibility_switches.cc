@@ -31,6 +31,10 @@ const char kEnableExperimentalAccessibilitySwitchAccess[] =
 const char kEnableExperimentalAccessibilityChromeVoxLanguageSwitching[] =
     "enable-experimental-accessibility-chromevox-language-switching";
 
+// Enables automatic rich text indication in ChromeVox that hasn't launched yet.
+const char kEnableExperimentalAccessibilityChromeVoxRichTextIndication[] =
+    "enable-experimental-accessibility-chromevox-rich-text-indication";
+
 bool AreExperimentalAccessibilityFeaturesEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalAccessibilityFeatures);

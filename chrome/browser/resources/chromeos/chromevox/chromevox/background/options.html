@@ -90,6 +90,54 @@
     </label>
   </div>
 
+  <div id="richTextIndicationOptions">
+    <h2 class="i18n" msgid="options_rich_text_header">Rich Text Attributes</h2>
+    <div class="option">
+      <input id="customizeRichTextIndication" type="checkbox" class="checkbox pref" name="customizeRichTextIndication">
+      <label for="customizeRichTextIndication" class="i18n" msgid="options_rich_text_checkbox_label">
+        Customize Rich text indication
+      </label>
+    </div>
+    <div id="additionalRichTextIndicationOptions">
+      <div class="option">
+        <span class="i18n description" msgid="options_misspell_description" id="misspellDescription">
+          Indicate misspell:
+        </span>
+        <select id="indicateMisspell" aria-labelledby="misspellDescription" name="indicateMisspell">
+          <option class="i18n" msgid="rich_text_do_nothing">Do nothing</option>
+          <option class="i18n" msgid="rich_text_announce">Announce</option>
+        </select>
+      </div>
+      <div class="option">
+        <span class="i18n description" msgid="options_bold_description" id="boldDescription">
+          Indicate bold:
+        </span>
+        <select id="indicateBold" aria-labelledby="boldDescription" name="indicateBold">
+          <option class="i18n" msgid="rich_text_do_nothing">Do nothing</option>
+          <option class="i18n" msgid="rich_text_announce">Announce</option>
+        </select>
+      </div>
+      <div class="option">
+        <span class="i18n description" msgid="options_italic_description" id="italicDescription">
+          Indicate italic:
+        </span>
+        <select id="indicateItalic" aria-labelledby="italicDescription" name="indicateItalic">
+          <option class="i18n" msgid="rich_text_do_nothing">Do nothing</option>
+          <option class="i18n" msgid="rich_text_announce">Announce</option>
+        </select>
+      </div>
+      <div class="option">
+        <span class="i18n description" msgid="options_underline_description" id="underlineDescription">
+          Indicate underline:
+        </span>
+        <select id="indicateUnderline" aria-labelledby="underlineDescription" name="indicateUnderline">
+          <option class="i18n" msgid="rich_text_do_nothing">Do nothing</option>
+          <option class="i18n" msgid="rich_text_announce">Announce</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
   <h2 class="chromeos i18n" msgid="options_braille">Braille</h2>
   <!-- Braille Settings -->
   <div class="chromeos option">
