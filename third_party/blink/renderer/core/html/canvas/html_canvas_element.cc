@@ -321,8 +321,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
     DidDraw();
   }
 
-  if (context_->CreationAttributes().desynchronized &&
-      origin_trials::LowLatencyCanvasEnabled(&GetDocument())) {
+  if (context_->CreationAttributes().desynchronized) {
     CreateLayer();
     SetNeedsUnbufferedInputEvents(true);
     frame_dispatcher_ = std::make_unique<CanvasResourceDispatcher>(

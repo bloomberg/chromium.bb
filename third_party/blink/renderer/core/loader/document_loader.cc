@@ -1495,17 +1495,9 @@ void DocumentLoader::InstallNewDocument(
     }
 
 #if defined(OS_CHROMEOS)
-    // Enable Low Latency Canvas for the PDF Annotations feature of the built in
-    // PDF Viewer extension on Chrome OS.
-    const url::Origin origin = document->GetSecurityOrigin()->ToUrlOrigin();
-    if (origin.scheme() == "chrome-extension" &&
-        origin.DomainIs("mhjfbmdgcfjbbpaeojofohoefgiehjai") &&
-        origin.port() == 0) {
-      OriginTrialContext::FromOrCreate(document)->AddFeature(
-          OriginTrialFeature::kLowLatencyCanvas);
-    }
     // Enable Auto Picture-in-Picture feature for the built-in Chrome OS Video
     // Player app.
+    const url::Origin origin = document->GetSecurityOrigin()->ToUrlOrigin();
     if (origin.scheme() == "chrome-extension" &&
         origin.DomainIs("jcgeabjmjgoblfofpppfkcoakmfobdko") &&
         origin.port() == 0) {

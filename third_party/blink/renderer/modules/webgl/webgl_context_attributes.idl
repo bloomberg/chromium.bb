@@ -42,6 +42,5 @@ dictionary WebGLContextAttributes {
     WebGLPowerPreference powerPreference = "default";
     boolean failIfMajorPerformanceCaveat = false;
     [OriginTrialEnabled=WebXR] boolean xrCompatible = false;
-    // TODO(crbug.com/788439): remove OriginTrialEnabled.
-    [OriginTrialEnabled=LowLatencyCanvas] boolean desynchronized = false;
+    boolean desynchronized = false;
 };

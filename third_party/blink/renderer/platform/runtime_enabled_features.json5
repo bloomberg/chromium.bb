@@ -776,11 +776,6 @@
       name: "LongTaskV2",
     },
     {
-      name: "LowLatencyCanvas",
-      origin_trial_feature_name: "LowLatencyCanvas",
-      status: "experimental",
-    },
-    {
       name:"ManualSlotting",
       status:"experimental",
     },
