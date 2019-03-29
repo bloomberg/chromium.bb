@@ -33,6 +33,7 @@ class FakeFindInPageManagerDelegate : public FindInPageManagerDelegate {
     WebState* web_state = nullptr;
     int match_count = -1;
     NSString* query;
+    int index = -1;
   };
 
   // Returns the current State.

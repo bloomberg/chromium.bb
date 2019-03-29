@@ -16,15 +16,16 @@ class FindInPageManagerDelegate;
 
 // Indicates what action the FindinPageManager should take.
 enum class FindInPageOptions {
-  // Search for a string. Highlight and scroll to the first result if
-  // string is found. TODO(crbug.com/925149): Does not support strings with
-  // non-ascii.
+  // Searches for a string. Highlights all matches. Selects and scrolls to the
+  // first result if string is found. Selecting refers to highlighting in a
+  // unique manner different from the other matches. TODO(crbug.com/925149):
+  // Does not support strings with non-ascii.
   FindInPageSearch = 1,
-  // Highlight and scroll to the next result if there is one. Otherwise, nothing
+  // Selects and scrolls to the next result if there is one. Otherwise, nothing
   // will change. Loop back to the first result if currently on last result. If
   // passed before a Find() with FindInPageSearch call, nothing will change.
   FindInPageNext,
-  // Highlight and scroll to the previous result if there is one. Otherwise,
+  // Selects and scrolls to the previous result if there is one. Otherwise,
   // nothing will change. Loop to last result if currently on first result. If
   // passed before a Find() with FindInPageSearch call, nothing will change.
   FindInPagePrevious,
