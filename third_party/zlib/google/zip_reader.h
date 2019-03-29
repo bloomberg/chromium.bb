@@ -255,6 +255,9 @@ class FileWriterDelegate : public WriterDelegate {
   // Sets the last-modified time of the data.
   void SetTimeModified(const base::Time& time) override;
 
+  // Return the actual size of the file.
+  int64_t file_length() { return file_length_; }
+
  private:
   // The file the delegate modifies.
   base::File* file_;

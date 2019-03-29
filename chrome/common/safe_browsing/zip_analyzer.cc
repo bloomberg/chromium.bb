@@ -101,7 +101,8 @@ void AnalyzeZipFile(base::File zip_file,
     reader.ExtractCurrentEntry(&writer, std::numeric_limits<uint64_t>::max());
     UpdateArchiveAnalyzerResultsWithFile(
         reader.current_entry_info()->file_path(), &temp_file,
-        reader.current_entry_info()->is_encrypted(), results);
+        writer.file_length(), reader.current_entry_info()->is_encrypted(),
+        results);
 
     if (FileTypePolicies::GetFileExtension(
             reader.current_entry_info()->file_path()) ==
