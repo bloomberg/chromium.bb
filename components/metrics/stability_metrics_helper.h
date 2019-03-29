@@ -15,6 +15,16 @@ class PrefService;
 
 namespace metrics {
 
+// The cause of the renderer hang.
+// This is for a temporary UMA value to aid in determining the cause of
+// renderer hangs described in crbug.com/938647.
+enum class RendererHangCause {
+  kCommitTimeout = 0,
+  kInputAckTimeout = 1,
+  // Special enumerator value used by histogram macros.
+  kMaxValue = kInputAckTimeout
+};
+
 class SystemProfileProto;
 
 // StabilityMetricsHelper is a class that providers functionality common to
@@ -53,7 +63,7 @@ class StabilityMetricsHelper {
   void LogRendererLaunched(bool was_extension_process);
 
   // Records a renderer process hang.
-  void LogRendererHang();
+  void LogRendererHang(RendererHangCause hang_cause);
 
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
