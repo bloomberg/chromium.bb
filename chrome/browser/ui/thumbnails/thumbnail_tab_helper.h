@@ -18,31 +18,21 @@ class ThumbnailTabHelper
     : public thumbnails::ThumbnailPageObserver,
       public content::WebContentsUserData<ThumbnailTabHelper> {
  public:
-  enum class ThumbnailState {
-    kNoThumbnail,     // no thumbnail is available
-    kLoadInProgress,  // thumbnail available but is of a page that is loading
-    kFinishedLoading  // thumbnail should represent the finished page
-  };
-
   ~ThumbnailTabHelper() override;
 
-  ThumbnailState thumbnail_state() const { return thumbnail_state_; }
   ThumbnailImage thumbnail() const { return thumbnail_; }
 
  protected:
   // ThumbnailWebContentsObserver:
   void TopLevelNavigationStarted(const GURL& url) override;
   void TopLevelNavigationEnded(const GURL& url) override;
-  void PageLoadStarted(thumbnails::FrameContext frame_context) override;
-  void PageLoadFinished(thumbnails::FrameContext frame_context) override;
-  void PageUpdated(thumbnails::FrameContext frame_context) override;
+  void PageLoadStarted() override;
+  void PageLoadFinished() override;
   void VisibilityChanged(bool visible) override;
 
   content::WebContents* web_contents() const { return adapter_.web_contents(); }
 
  private:
-  enum class CaptureSchedule { kImmediate, kDelayed };
-
   // Loading is treated as a state machine for each new URL, and the state for
   // each new URL the current tab loads can only advance as events are received
   // (so it is not possible to go from kLoadStarted to kNavigationStarted).
@@ -54,50 +44,29 @@ class ThumbnailTabHelper
     kLoadFinished = 4
   };
 
-  struct CaptureInfo {
-    GURL url;
-    ThumbnailState target_state;
-  };
-
   explicit ThumbnailTabHelper(content::WebContents* contents);
   friend class content::WebContentsUserData<ThumbnailTabHelper>;
 
-  void ScheduleThumbnailCapture(CaptureSchedule schedule);
-  void StartThumbnailCapture(CaptureSchedule schedule);
-  void ProcessCapturedThumbnail(const CaptureInfo& capture_info,
-                                base::TimeTicks start_time,
+  void StartThumbnailCapture();
+  void ProcessCapturedThumbnail(base::TimeTicks start_time,
                                 const SkBitmap& bitmap);
-  void StoreThumbnail(const CaptureInfo& capture_info,
-                      base::TimeTicks start_time,
-                      ThumbnailImage thumbnail);
+  void StoreThumbnail(base::TimeTicks start_time, ThumbnailImage thumbnail);
   void NotifyTabPreviewChanged();
 
-  // For tabs in the process of loading, schedules another capture if none is
-  // currently queued.
-  void MaybeScheduleAnotherCapture(const CaptureInfo& capture_info,
-                                   base::TimeTicks finish_time);
-
-  // Returns whether a capture can happen at the current time.
-  bool CanCaptureThumbnail(CaptureSchedule schedule) const;
-
-  ThumbnailState GetThumbnailState() const;
   void TransitionLoadingState(LoadingState state, const GURL& url);
   void ClearThumbnail();
 
   ThumbnailImage thumbnail_;
-  ThumbnailState thumbnail_state_ = ThumbnailState::kNoThumbnail;
-  GURL thumbnail_url_;
 
   // Caches whether or not the web contents view is visible. See notes in
   // VisibilityChanged() for more information.
   bool view_is_visible_;  // set in constructor
+
+  // When the page last became visible.
+  base::TimeTicks last_visible_start_time_;
+
   LoadingState loading_state_ = LoadingState::kNone;
   GURL current_url_;
-
-  // The time that the most recently-scheduled capture is/was scheduled for.
-  // Can be in the past. Used to prevent captures from bunching up or being
-  // scheduled in the wrong order.
-  base::TimeTicks last_scheduled_capture_time_;
 
   thumbnails::ThumbnailPageEventAdapter adapter_;
   ScopedObserver<thumbnails::ThumbnailPageEventAdapter,

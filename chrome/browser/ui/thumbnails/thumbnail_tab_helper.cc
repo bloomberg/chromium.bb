@@ -8,12 +8,9 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
-#include "base/task/task_traits.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_utils.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -60,116 +57,59 @@ void ThumbnailTabHelper::TopLevelNavigationEnded(const GURL& url) {
   TransitionLoadingState(LoadingState::kNavigationFinished, url);
 }
 
-void ThumbnailTabHelper::PageLoadStarted(
-    thumbnails::FrameContext frame_context) {
-  if (frame_context == thumbnails::FrameContext::kMainFrame) {
-    TransitionLoadingState(LoadingState::kLoadStarted,
-                           web_contents()->GetVisibleURL());
-  }
-  ScheduleThumbnailCapture(CaptureSchedule::kDelayed);
+void ThumbnailTabHelper::PageLoadStarted() {
+  TransitionLoadingState(LoadingState::kLoadStarted,
+                         web_contents()->GetVisibleURL());
 }
 
-void ThumbnailTabHelper::PageLoadFinished(
-    thumbnails::FrameContext frame_context) {
-  if (frame_context == thumbnails::FrameContext::kMainFrame) {
-    TransitionLoadingState(LoadingState::kLoadFinished,
-                           web_contents()->GetVisibleURL());
-  }
-  ScheduleThumbnailCapture(CaptureSchedule::kDelayed);
-}
-
-void ThumbnailTabHelper::PageUpdated(thumbnails::FrameContext frame_context) {
-  ScheduleThumbnailCapture(CaptureSchedule::kDelayed);
+void ThumbnailTabHelper::PageLoadFinished() {
+  TransitionLoadingState(LoadingState::kLoadFinished,
+                         web_contents()->GetVisibleURL());
 }
 
 void ThumbnailTabHelper::VisibilityChanged(bool visible) {
-  // When the visibility of the current tab changes (most importantly, when the
-  // user is switching away from the current tab) we want to capture a snapshot
-  // of the tab to capture e.g. its scroll position, so that the preview will
-  // look like the tab did when the user last switched to/from it.
+  // When the user switches away from a tab, we want to take a snapshot to
+  // capture e.g. its scroll position, so that the preview will look like the
+  // tab did when the user last visited it.
   const bool was_visible = view_is_visible_;
   view_is_visible_ = visible;
-  if (was_visible != visible) {
-    // Because it can take a moment for tabs to re-render, use a delay when
-    // returning to a tab, but capture immediately when switching away.
-    const CaptureSchedule schedule =
-        visible ? CaptureSchedule::kDelayed : CaptureSchedule::kImmediate;
-    ScheduleThumbnailCapture(schedule);
+  if (!was_visible && visible) {
+    last_visible_start_time_ = base::TimeTicks::Now();
+  } else if (was_visible && !visible) {
+    StartThumbnailCapture();
   }
 }
 
-void ThumbnailTabHelper::ScheduleThumbnailCapture(CaptureSchedule schedule) {
+void ThumbnailTabHelper::StartThumbnailCapture() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!CanCaptureThumbnail(schedule))
+  // Pages that are unloading do not need to be captured.
+  if (adapter_.is_unloading())
     return;
 
-  // We will do the capture either now or at some point in the future.
-  constexpr base::TimeDelta kDelayTime = base::TimeDelta::FromMilliseconds(500);
-  base::TimeDelta delay;
-  if (schedule == CaptureSchedule::kDelayed)
-    delay += kDelayTime;
-
-  // The time until the next scheduled capture, or the time since the most
-  // recent (durations in the past are negative).
-  const base::TimeDelta until_scheduled =
-      last_scheduled_capture_time_ - base::TimeTicks::Now();
-
-  // If we would schedule a non-immediate capture too close to an existing
-  // capture, push it out or discard it altogether.
-  constexpr base::TimeDelta kMinTimeBetweenCaptures =
-      base::TimeDelta::FromMilliseconds(2000);
-  if (schedule != CaptureSchedule::kImmediate &&
-      delay - until_scheduled < kMinTimeBetweenCaptures) {
-    if (until_scheduled > delay)
-      return;
-    delay = until_scheduled + kMinTimeBetweenCaptures;
-  }
-
-  last_scheduled_capture_time_ = base::TimeTicks::Now() + delay;
-
-  if (delay.is_zero()) {
-    StartThumbnailCapture(schedule);
+  // Don't capture if in the process of navigating or haven't started yet.
+  if (loading_state_ == LoadingState::kNone ||
+      loading_state_ == LoadingState::kNavigationStarted) {
     return;
   }
 
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE,
-      {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&ThumbnailTabHelper::StartThumbnailCapture,
-                     weak_factory_.GetWeakPtr(), schedule),
-      delay);
-}
-
-void ThumbnailTabHelper::StartThumbnailCapture(CaptureSchedule schedule) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (!CanCaptureThumbnail(schedule))
+  // Don't capture if there is no current page.
+  if (web_contents()->GetVisibleURL().is_empty())
     return;
 
-  CaptureInfo capture_info{web_contents()->GetVisibleURL(),
-                           GetThumbnailState()};
-
-  // Don't try to capture thumbnails if we're in the navigation phase.
-  if (capture_info.target_state == ThumbnailState::kNoThumbnail)
-    return;
-
-  // If there's no currently-visible URL, don't capture.
-  if (capture_info.url.is_empty())
-    return;
-
+  // Don't capture pages that have been visible for a short time (e.g. during a
+  // tab scrub).
   base::TimeTicks start_time = base::TimeTicks::Now();
+  constexpr base::TimeDelta kMinVisibleTime = base::TimeDelta::FromSeconds(2);
+  if (start_time - last_visible_start_time_ < kMinVisibleTime)
+    return;
 
   content::RenderWidgetHostView* const source_view =
       web_contents()->GetRenderViewHost()->GetWidget()->GetView();
 
-  // If there's no view or the view isn't available right now, put off
-  // capturing.
-  if (!source_view || !source_view->IsSurfaceAvailableForCopy()) {
-    ScheduleThumbnailCapture(CaptureSchedule::kDelayed);
+  // If there's no view or the view isn't available right now, don't bother.
+  if (!source_view || !source_view->IsSurfaceAvailableForCopy())
     return;
-  }
 
   // Note: this is the size in pixels on-screen, not the size in DIPs.
   gfx::Size source_size = source_view->GetViewBounds().size();
@@ -185,100 +125,43 @@ void ThumbnailTabHelper::StartThumbnailCapture(CaptureSchedule schedule) {
   const gfx::Size desired_size = TabStyle::GetPreviewImageSize();
   thumbnails::CanvasCopyInfo copy_info =
       thumbnails::GetCanvasCopyInfo(source_size, scale_factor, desired_size);
-
   source_view->CopyFromSurface(
       copy_info.copy_rect, copy_info.target_size,
       base::BindOnce(&ThumbnailTabHelper::ProcessCapturedThumbnail,
-                     weak_factory_.GetWeakPtr(), capture_info, start_time));
+                     weak_factory_.GetWeakPtr(), start_time));
 }
 
 void ThumbnailTabHelper::ProcessCapturedThumbnail(
-    const CaptureInfo& capture_info,
     base::TimeTicks start_time,
     const SkBitmap& bitmap) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  DCHECK(!capture_info.url.is_empty());
-  DCHECK(capture_info.target_state != ThumbnailState::kNoThumbnail);
 
   const base::TimeTicks finish_time = base::TimeTicks::Now();
   const base::TimeDelta copy_from_surface_time = finish_time - start_time;
   UMA_HISTOGRAM_TIMES("Thumbnails.CopyFromSurfaceTime", copy_from_surface_time);
 
-  if (bitmap.drawsNothing()) {
-    // TODO(dfried): Log capture failed.
-    MaybeScheduleAnotherCapture(capture_info, finish_time);
+  if (bitmap.drawsNothing())
     return;
-  }
 
   // TODO(dfried): Log capture succeeded.
   ThumbnailImage::FromSkBitmapAsync(
-      bitmap,
-      base::BindOnce(&ThumbnailTabHelper::StoreThumbnail,
-                     weak_factory_.GetWeakPtr(), capture_info, finish_time));
+      bitmap, base::BindOnce(&ThumbnailTabHelper::StoreThumbnail,
+                             weak_factory_.GetWeakPtr(), finish_time));
 }
 
-void ThumbnailTabHelper::StoreThumbnail(const CaptureInfo& capture_info,
-                                        base::TimeTicks start_time,
+void ThumbnailTabHelper::StoreThumbnail(base::TimeTicks start_time,
                                         ThumbnailImage thumbnail) {
   DCHECK(thumbnail.HasData());
   const base::TimeTicks finish_time = base::TimeTicks::Now();
   const base::TimeDelta process_time = finish_time - start_time;
   UMA_HISTOGRAM_TIMES("Thumbnails.ProcessBitmapTime", process_time);
-  thumbnail_state_ = capture_info.target_state;
-  thumbnail_url_ = capture_info.url;
   thumbnail_ = thumbnail;
 
   NotifyTabPreviewChanged();
-  MaybeScheduleAnotherCapture(capture_info, finish_time);
 }
 
 void ThumbnailTabHelper::NotifyTabPreviewChanged() {
   web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
-}
-
-void ThumbnailTabHelper::MaybeScheduleAnotherCapture(
-    const CaptureInfo& capture_info,
-    base::TimeTicks finish_time) {
-  // If the page is still loading, schedule another capture a short time later.
-  if (capture_info.target_state != ThumbnailState::kFinishedLoading &&
-      finish_time > last_scheduled_capture_time_) {
-    ScheduleThumbnailCapture(CaptureSchedule::kDelayed);
-  }
-}
-
-bool ThumbnailTabHelper::CanCaptureThumbnail(CaptureSchedule schedule) const {
-  if (adapter_.is_unloading())
-    return false;
-
-  // Destroying a WebContents may trigger it to be hidden, prompting a snapshot
-  // which would be unwise to attempt <http://crbug.com/130097>. If the
-  // WebContents is in the middle of destruction, do not risk it.
-  if (!web_contents() || web_contents()->IsBeingDestroyed())
-    return false;
-
-  // Windows which are not being shown often have no or invalid data, so don't
-  // try to capture them. The exception is snapshots that happen on visibility
-  // transitions, which have the |kImmediate| schedule.
-  switch (schedule) {
-    case CaptureSchedule::kImmediate:
-      return true;
-    default:
-      return view_is_visible_;
-  }
-}
-
-ThumbnailTabHelper::ThumbnailState ThumbnailTabHelper::GetThumbnailState()
-    const {
-  switch (loading_state_) {
-    case LoadingState::kNavigationFinished:
-    case LoadingState::kLoadStarted:
-      return ThumbnailState::kLoadInProgress;
-    case LoadingState::kLoadFinished:
-      return ThumbnailState::kFinishedLoading;
-    default:
-      return ThumbnailState::kNoThumbnail;
-  }
 }
 
 void ThumbnailTabHelper::TransitionLoadingState(LoadingState state,
@@ -318,7 +201,6 @@ void ThumbnailTabHelper::TransitionLoadingState(LoadingState state,
 void ThumbnailTabHelper::ClearThumbnail() {
   if (!thumbnail_.HasData())
     return;
-  thumbnail_state_ = ThumbnailState::kNoThumbnail;
   thumbnail_ = ThumbnailImage();
   NotifyTabPreviewChanged();
 }

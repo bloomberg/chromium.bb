@@ -14,10 +14,8 @@ namespace thumbnails {
 
 namespace {
 
-FrameContext ContextFromRenderFrameHost(
-    content::RenderFrameHost* render_frame_host) {
-  return render_frame_host->GetParent() ? FrameContext::kChildFrame
-                                        : FrameContext::kMainFrame;
+bool IsMainFrame(content::RenderFrameHost* render_frame_host) {
+  return !render_frame_host->GetParent();
 }
 
 }  // namespace
@@ -76,15 +74,16 @@ void ThumbnailPageEventAdapter::DidFinishNavigation(
 
 void ThumbnailPageEventAdapter::DocumentAvailableInMainFrame() {
   for (auto& observer : observers_)
-    observer.PageLoadStarted(FrameContext::kMainFrame);
+    observer.PageLoadStarted();
 }
 
 void ThumbnailPageEventAdapter::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
-  const FrameContext context = ContextFromRenderFrameHost(render_frame_host);
-  for (auto& observer : observers_)
-    observer.PageLoadFinished(context);
+  if (IsMainFrame(render_frame_host)) {
+    for (auto& observer : observers_)
+      observer.PageLoadFinished();
+  }
 }
 
 void ThumbnailPageEventAdapter::DidFailLoad(
@@ -92,29 +91,17 @@ void ThumbnailPageEventAdapter::DidFailLoad(
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {
-  const FrameContext context = ContextFromRenderFrameHost(render_frame_host);
-  for (auto& observer : observers_)
-    observer.PageLoadFinished(context);
-}
-
-void ThumbnailPageEventAdapter::MainFrameWasResized(bool width_changed) {
-  for (auto& observer : observers_)
-    observer.PageUpdated(FrameContext::kMainFrame);
-}
-
-void ThumbnailPageEventAdapter::FrameSizeChanged(
-    content::RenderFrameHost* render_frame_host,
-    const gfx::Size& frame_size) {
-  const FrameContext context = ContextFromRenderFrameHost(render_frame_host);
-  for (auto& observer : observers_)
-    observer.PageUpdated(context);
+  if (IsMainFrame(render_frame_host)) {
+    for (auto& observer : observers_)
+      observer.PageLoadFinished();
+  }
 }
 
 void ThumbnailPageEventAdapter::NavigationStopped() {
   const GURL& url = web_contents()->GetVisibleURL();
   for (auto& observer : observers_) {
     observer.TopLevelNavigationEnded(url);
-    observer.PageLoadFinished(FrameContext::kMainFrame);
+    observer.PageLoadFinished();
   }
 }
 

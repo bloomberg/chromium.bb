@@ -10,10 +10,6 @@
 
 namespace thumbnails {
 
-// Describes whether a page load or update event happens in the main or a
-// child frame.
-enum class FrameContext { kMainFrame, kChildFrame };
-
 // Observer of navigation and loading events relevant to thumbnail processing.
 //
 // Note that while most page loads receive the following signals in order:
@@ -37,13 +33,10 @@ class ThumbnailPageObserver : public base::CheckedObserver {
   virtual void VisibilityChanged(bool visible) = 0;
 
   // Called when a page begins to load.
-  virtual void PageLoadStarted(FrameContext frame_context) = 0;
+  virtual void PageLoadStarted() = 0;
 
   // Called when a page finishes loading.
-  virtual void PageLoadFinished(FrameContext frame_context) = 0;
-
-  // Called when the page is resized or otherwise updated.
-  virtual void PageUpdated(FrameContext frame_context) = 0;
+  virtual void PageLoadFinished() = 0;
 };
 
 }  // namespace thumbnails

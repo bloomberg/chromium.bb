@@ -48,9 +48,6 @@ class ThumbnailPageEventAdapter : public content::WebContentsObserver {
                    int error_code,
                    const base::string16& error_description) override;
   void NavigationStopped() override;
-  void MainFrameWasResized(bool width_changed) override;
-  void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
-                        const gfx::Size& frame_size) override;
   void BeforeUnloadFired(bool proceed,
                          const base::TimeTicks& proceed_time) override;
   void BeforeUnloadDialogCancelled() override;
