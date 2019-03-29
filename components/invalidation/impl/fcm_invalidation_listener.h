@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/invalidation/impl/channels_states.h"
 #include "components/invalidation/impl/fcm_sync_network_channel.h"
-#include "components/invalidation/impl/invalidation_client.h"
 #include "components/invalidation/impl/invalidation_listener.h"
 #include "components/invalidation/impl/logger.h"
 #include "components/invalidation/impl/per_user_topic_registration_manager.h"
@@ -27,8 +26,6 @@ namespace syncer {
 
 class TopicInvalidationMap;
 
-// A simple wrapper around PerUserTopicInvalidationClient that
-// handles all the startup/shutdown details and hookups.
 // By implementing the AckHandler interface it tracks the messages
 // which were passed to InvalidationHandlers.
 class FCMInvalidationListener : public InvalidationListener,
@@ -36,12 +33,6 @@ class FCMInvalidationListener : public InvalidationListener,
                                 FCMSyncNetworkChannel::Observer,
                                 PerUserTopicRegistrationManager::Observer {
  public:
-  typedef base::OnceCallback<std::unique_ptr<InvalidationClient>(
-      NetworkChannel* network_channel,
-      Logger* logger,
-      InvalidationListener*)>
-      CreateInvalidationClientCallback;
-
   class Delegate {
    public:
     virtual ~Delegate();
@@ -57,7 +48,6 @@ class FCMInvalidationListener : public InvalidationListener,
   ~FCMInvalidationListener() override;
 
   void Start(
-      CreateInvalidationClientCallback create_invalidation_client_callback,
       Delegate* delegate,
       std::unique_ptr<PerUserTopicRegistrationManager>
           per_user_topic_registration_manager);
@@ -67,14 +57,11 @@ class FCMInvalidationListener : public InvalidationListener,
   void UpdateRegisteredTopics(const TopicSet& topics);
 
   // InvalidationListener implementation.
-  void Ready(InvalidationClient* client) override;
-  void Invalidate(InvalidationClient* client,
-                  const std::string& payload,
+  void Invalidate(const std::string& payload,
                   const std::string& private_topic,
                   const std::string& public_topic,
-                  int64_t version) override;
-  void InformTokenRecieved(InvalidationClient* client,
-                           const std::string& token) override;
+                  const std::string& version) override;
+  void InformTokenReceived(const std::string& token) override;
 
   // AckHandler implementation.
   void Acknowledge(const invalidation::ObjectId& id,
@@ -133,7 +120,6 @@ class FCMInvalidationListener : public InvalidationListener,
   UnackedInvalidationsMap unacked_invalidations_map_;
   Delegate* delegate_;
   Logger logger_;
-  std::unique_ptr<InvalidationClient> invalidation_client_;
 
   // Stored to pass to |per_user_topic_registration_manager_| on start.
   TopicSet registered_topics_;
@@ -147,7 +133,7 @@ class FCMInvalidationListener : public InvalidationListener,
       per_user_topic_registration_manager_;
   std::string token_;
   // Prevents call to DoRegistrationUpdate in cases when
-  // UpdateRegisteredTopics wasn't called. For example, InformTokenRecieved
+  // UpdateRegisteredTopics wasn't called. For example, InformTokenReceived
   // can trigger DoRegistrationUpdate before any invalidation handler has
   // requested registration for topics.
   bool ids_update_requested_ = false;

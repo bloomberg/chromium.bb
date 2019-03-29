@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/invalidation/impl/network_channel.h"
-#include "components/invalidation/impl/per_user_topic_invalidation_client.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
@@ -34,7 +34,6 @@ FCMInvalidationListener::~FCMInvalidationListener() {
 }
 
 void FCMInvalidationListener::Start(
-    CreateInvalidationClientCallback create_invalidation_client_callback,
     Delegate* delegate,
     std::unique_ptr<PerUserTopicRegistrationManager>
         per_user_topic_registration_manager) {
@@ -45,9 +44,14 @@ void FCMInvalidationListener::Start(
       std::move(per_user_topic_registration_manager);
   per_user_topic_registration_manager_->Init();
   per_user_topic_registration_manager_->AddObserver(this);
-  invalidation_client_ = std::move(create_invalidation_client_callback)
-                             .Run(network_channel_.get(), &logger_, this);
-  invalidation_client_->Start();
+  network_channel_->SetMessageReceiver(base::BindRepeating(
+      &FCMInvalidationListener::Invalidate, weak_factory_.GetWeakPtr()));
+  network_channel_->SetTokenReceiver(
+      base::BindRepeating(&FCMInvalidationListener::InformTokenReceived,
+                          weak_factory_.GetWeakPtr()));
+  subscription_channel_state_ = SubscriptionChannelState::ENABLED;
+  EmitStateChange();
+  DoRegistrationUpdate();
 }
 
 void FCMInvalidationListener::UpdateRegisteredTopics(const TopicSet& topics) {
@@ -56,26 +60,25 @@ void FCMInvalidationListener::UpdateRegisteredTopics(const TopicSet& topics) {
   DoRegistrationUpdate();
 }
 
-void FCMInvalidationListener::Ready(InvalidationClient* client) {
-  DCHECK_EQ(client, invalidation_client_.get());
-  subscription_channel_state_ = SubscriptionChannelState::ENABLED;
-  EmitStateChange();
-  DoRegistrationUpdate();
-}
-
-void FCMInvalidationListener::Invalidate(InvalidationClient* client,
-                                         const std::string& payload,
-                                         const std::string& private_topic_name,
-                                         const std::string& public_topic_name,
-                                         int64_t version) {
-  DCHECK_EQ(client, invalidation_client_.get());
-
+void FCMInvalidationListener::Invalidate(const std::string& payload,
+                                         const std::string& private_topic,
+                                         const std::string& public_topic,
+                                         const std::string& version) {
+  // TODO(melandory): use |private_topic| in addition to
+  // |registered_topics_| to verify that topic is registered.
+  int64_t v;
+  if (!base::StringToInt64(version, &v)) {
+    // Version must always be in the message and
+    // in addition version must be number.
+    // TODO(melandory): Report error and consider not to process with the
+    // invalidation.
+  }
   TopicInvalidationMap invalidations;
   Invalidation inv =
-      Invalidation::Init(ConvertTopicToId(public_topic_name), version, payload);
+      Invalidation::Init(ConvertTopicToId(public_topic), v, payload);
   inv.SetAckHandler(AsWeakPtr(), base::ThreadTaskRunnerHandle::Get());
   DVLOG(1) << "Received invalidation with version " << inv.version() << " for "
-           << public_topic_name;
+           << public_topic;
 
   invalidations.Insert(inv);
   DispatchInvalidations(invalidations);
@@ -110,9 +113,7 @@ void FCMInvalidationListener::EmitSavedInvalidations(
   delegate_->OnInvalidate(to_emit);
 }
 
-void FCMInvalidationListener::InformTokenRecieved(InvalidationClient* client,
-                                                  const std::string& token) {
-  DCHECK_EQ(client, invalidation_client_.get());
+void FCMInvalidationListener::InformTokenReceived(const std::string& token) {
   token_ = token;
   DoRegistrationUpdate();
 }
@@ -185,13 +186,6 @@ base::WeakPtr<FCMInvalidationListener> FCMInvalidationListener::AsWeakPtr() {
 }
 
 void FCMInvalidationListener::Stop() {
-  if (!invalidation_client_) {
-    return;
-  }
-
-  invalidation_client_->Stop();
-
-  invalidation_client_.reset();
   delegate_ = nullptr;
 
   if (per_user_topic_registration_manager_) {

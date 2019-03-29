@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/invalidation/impl/fake_invalidation_state_tracker.h"
@@ -36,23 +37,6 @@ const char kPayload2[] = "payload2";
 
 const int64_t kVersion1 = 1LL;
 const int64_t kVersion2 = 2LL;
-
-// Fake invalidation::InvalidationClient implementation that keeps
-// track of registered topics and acked handles.
-class FakeInvalidationClient : public InvalidationClient {
- public:
-  FakeInvalidationClient() : started_(false) {}
-  ~FakeInvalidationClient() override {}
-
-  // invalidation::InvalidationClient implementation.
-
-  void Start() override { started_ = true; }
-
-  void Stop() override { started_ = false; }
-
- private:
-  bool started_;
-};
 
 // Fake delegate that keeps track of invalidation counts, payloads,
 // and state.
@@ -167,17 +151,6 @@ class FakeDelegate : public FCMInvalidationListener::Delegate {
   DropMap dropped_invalidations_map_;
 };
 
-std::unique_ptr<InvalidationClient> CreateFakeInvalidationClient(
-    FakeInvalidationClient** fake_invalidation_client,
-    NetworkChannel* network_channel,
-    Logger* logger,
-    InvalidationListener* listener) {
-  std::unique_ptr<FakeInvalidationClient> fake_client =
-      std::make_unique<FakeInvalidationClient>();
-  *fake_invalidation_client = fake_client.get();
-  return fake_client;
-}
-
 class MockRegistrationManager : public PerUserTopicRegistrationManager {
  public:
   MockRegistrationManager()
@@ -201,45 +174,27 @@ class FCMInvalidationListenerTest : public testing::Test {
         kExtensionsTopic_("EXTENSION"),
         kAppsTopic_("APP"),
         fcm_sync_network_channel_(new FCMSyncNetworkChannel()),
-        fake_invalidation_client_(nullptr),
         listener_(base::WrapUnique(fcm_sync_network_channel_)),
         fake_delegate_(&listener_) {}
 
   void SetUp() override {
-    StartClient();
+    StartListener();
 
     registred_topics_.insert(kBookmarksTopic_);
     registred_topics_.insert(kPreferencesTopic_);
     listener_.UpdateRegisteredTopics(registred_topics_);
   }
 
-  void TearDown() override { StopClient(); }
+  void TearDown() override {}
 
-  // Restart client without re-registering topics.
-  void RestartClient() {
-    StopClient();
-    StartClient();
-  }
-
-  void StartClient() {
-    fake_invalidation_client_ = nullptr;
+  void StartListener() {
     std::unique_ptr<MockRegistrationManager> mock_registration_manager =
         std::make_unique<MockRegistrationManager>();
     registration_manager_ = mock_registration_manager.get();
-    listener_.Start(base::BindOnce(&CreateFakeInvalidationClient,
-                                   &fake_invalidation_client_),
-                    &fake_delegate_, std::move(mock_registration_manager));
-    DCHECK(fake_invalidation_client_);
+    listener_.Start(&fake_delegate_, std::move(mock_registration_manager));
   }
 
   void StopClient() {
-    // listener_.StopForTest() stops the invalidation scheduler, which
-    // deletes any pending tasks without running them.  Some tasks
-    // "run and delete" another task, so they must be run in order to
-    // avoid leaking the inner task.  listener_.StopForTest() does not
-    // schedule any tasks, so it's both necessary and sufficient to
-    // drain the task queue before calling it.
-    fake_invalidation_client_ = nullptr;
     listener_.StopForTest();
   }
 
@@ -288,22 +243,21 @@ class FCMInvalidationListenerTest : public testing::Test {
   }
 
   void RegisterAndFireInvalidate(const Topic& topic,
-                                 int64_t version,
+                                 const std::string version,
                                  const std::string& payload) {
     FireInvalidate(topic, version, payload);
   }
 
   void FireInvalidate(const Topic& topic,
-                      int64_t version,
+                      const std::string version,
                       const std::string& payload) {
-    listener_.Invalidate(fake_invalidation_client_, payload, topic, topic,
-                         version);
+    listener_.Invalidate(payload, topic, topic, version);
   }
 
   void EnableNotifications() {
     fcm_sync_network_channel_->NotifyChannelStateChange(
         FcmChannelState::ENABLED);
-    listener_.InformTokenRecieved(fake_invalidation_client_, "token");
+    listener_.InformTokenReceived("token");
   }
 
   void DisableNotifications(FcmChannelState state) {
@@ -327,7 +281,6 @@ class FCMInvalidationListenerTest : public testing::Test {
   FakeInvalidationStateTracker fake_tracker_;
 
   // Tests need to access these directly.
-  FakeInvalidationClient* fake_invalidation_client_;
   FCMInvalidationListener listener_;
 
  private:
@@ -341,7 +294,7 @@ class FCMInvalidationListenerTest : public testing::Test {
 TEST_F(FCMInvalidationListenerTest, InvalidateNoPayload) {
   const Topic& topic = kBookmarksTopic_;
 
-  RegisterAndFireInvalidate(topic, kVersion1, std::string());
+  RegisterAndFireInvalidate(topic, base::IntToString(kVersion1), std::string());
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -355,7 +308,7 @@ TEST_F(FCMInvalidationListenerTest, InvalidateNoPayload) {
 TEST_F(FCMInvalidationListenerTest, InvalidateEmptyPayload) {
   const Topic& topic = kBookmarksTopic_;
 
-  RegisterAndFireInvalidate(topic, kVersion1, std::string());
+  RegisterAndFireInvalidate(topic, base::IntToString(kVersion1), std::string());
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -368,7 +321,7 @@ TEST_F(FCMInvalidationListenerTest, InvalidateEmptyPayload) {
 TEST_F(FCMInvalidationListenerTest, InvalidateWithPayload) {
   const Topic& topic = kPreferencesTopic_;
 
-  RegisterAndFireInvalidate(topic, kVersion1, kPayload1);
+  RegisterAndFireInvalidate(topic, base::IntToString(kVersion1), kPayload1);
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -382,7 +335,7 @@ TEST_F(FCMInvalidationListenerTest, ManyInvalidations_NoDrop) {
   const Topic& topic = kPreferencesTopic_;
   int64_t initial_version = kVersion1;
   for (int64_t i = initial_version; i < initial_version + kRepeatCount; ++i) {
-    RegisterAndFireInvalidate(topic, i, kPayload1);
+    RegisterAndFireInvalidate(topic, base::IntToString(i), kPayload1);
   }
   ASSERT_EQ(static_cast<size_t>(kRepeatCount), GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -401,12 +354,11 @@ TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Simple) {
 
   EXPECT_EQ(0U, GetInvalidationCount(topic));
 
-  FireInvalidate(topic, kVersion1, kPayload1);
+  FireInvalidate(topic, base::IntToString(kVersion1), kPayload1);
 
   ASSERT_EQ(0U, GetInvalidationCount(topic));
 
   EnableNotifications();
-  listener_.Ready(fake_invalidation_client_);
   listener_.UpdateRegisteredTopics(topics);
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
@@ -429,11 +381,10 @@ TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Drop) {
 
   int64_t initial_version = kVersion1;
   for (int64_t i = initial_version; i < initial_version + kRepeatCount; ++i) {
-    FireInvalidate(topic, i, kPayload1);
+    FireInvalidate(topic, base::IntToString(i), kPayload1);
   }
 
   EnableNotifications();
-  listener_.Ready(fake_invalidation_client_);
   listener_.UpdateRegisteredTopics(topics);
 
   ASSERT_EQ(UnackedInvalidationSet::kMaxBufferedInvalidations,
@@ -445,14 +396,14 @@ TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Drop) {
 TEST_F(FCMInvalidationListenerTest, InvalidateVersion) {
   const Topic& topic = kPreferencesTopic_;
 
-  RegisterAndFireInvalidate(topic, kVersion2, kPayload2);
+  RegisterAndFireInvalidate(topic, base::IntToString(kVersion2), kPayload2);
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
   EXPECT_EQ(kVersion2, GetVersion(topic));
   EXPECT_EQ(kPayload2, GetPayload(topic));
 
-  FireInvalidate(topic, kVersion1, kPayload1);
+  FireInvalidate(topic, base::IntToString(kVersion1), kPayload1);
 
   ASSERT_EQ(2U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -463,68 +414,19 @@ TEST_F(FCMInvalidationListenerTest, InvalidateVersion) {
 
 // Test a simple scenario for multiple IDs.
 TEST_F(FCMInvalidationListenerTest, InvalidateMultipleIds) {
-  RegisterAndFireInvalidate(kBookmarksTopic_, 3, std::string());
+  RegisterAndFireInvalidate(kBookmarksTopic_, "3", std::string());
   ASSERT_EQ(1U, GetInvalidationCount(kBookmarksTopic_));
   ASSERT_FALSE(IsUnknownVersion(kBookmarksTopic_));
   EXPECT_EQ(3, GetVersion(kBookmarksTopic_));
   EXPECT_EQ("", GetPayload(kBookmarksTopic_));
 
   // kExtensionId is not registered, so the invalidation should not get through.
-  FireInvalidate(kExtensionsTopic_, 2, std::string());
+  FireInvalidate(kExtensionsTopic_, "2", std::string());
   ASSERT_EQ(0U, GetInvalidationCount(kExtensionsTopic_));
 }
 
-// Without readying the client, disable notifications, then enable
-// them.  The listener should still think notifications are disabled.
-TEST_F(FCMInvalidationListenerTest, EnableNotificationsNotReady) {
-  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
-
-  DisableNotifications(FcmChannelState::NOT_STARTED);
-
-  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
-
-  EnableNotifications();
-
-  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
-}
-
-// Enable notifications then Ready the invalidation client.  The
-// delegate should then be ready.
-TEST_F(FCMInvalidationListenerTest, EnableNotificationsThenReady) {
-  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
-
-  EnableNotifications();
-
-  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
-
-  listener_.Ready(fake_invalidation_client_);
-
-  EXPECT_EQ(INVALIDATIONS_ENABLED, GetInvalidatorState());
-}
-
-// Ready the invalidation client then enable notifications.  The
-// delegate should then be ready.
-TEST_F(FCMInvalidationListenerTest, ReadyThenEnableNotifications) {
-  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
-
-  listener_.Ready(fake_invalidation_client_);
-
-  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
-
-  EnableNotifications();
-
-  EXPECT_EQ(INVALIDATIONS_ENABLED, GetInvalidatorState());
-}
-
-// Enable notifications and ready the client.  Then disable
-// notifications with no_token error.  The delegate should
-// go into an error and then back out.
-TEST_F(FCMInvalidationListenerTest, FcmChannelNoTokenError) {
-  EnableNotifications();
-  listener_.Ready(fake_invalidation_client_);
-
-  EXPECT_EQ(INVALIDATIONS_ENABLED, GetInvalidatorState());
-
+// Disable notifications, then enable them.
+TEST_F(FCMInvalidationListenerTest, ReEnableNotifications) {
   DisableNotifications(FcmChannelState::NO_INSTANCE_ID_TOKEN);
 
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
