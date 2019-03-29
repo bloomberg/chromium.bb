@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/ios/ios_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -736,6 +737,10 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 // Tests that the infobar hides/shows as the browser enters/exits the fullscreen
 // mode as well as it can be dimissed.
 - (void)testInfobarShowHideDismiss {
+  // TODO (crbug.com/946894) Re-enable once fixed on iOS12.2
+  if (base::ios::IsRunningOnOrLater(12, 2, 0)) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 12,2.");
+  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
