@@ -42,11 +42,9 @@ void AnalyzeRarFile(base::File rar_file,
     while (reader.ExtractNextEntry()) {
       const third_party_unrar::RarReader::EntryInfo& entry =
           reader.current_entry();
-      // TODO(drubery): Replace temp_file.GetLength() with the actual, correct
-      // length for the file. See https://crbug.com/944633 for details.
       UpdateArchiveAnalyzerResultsWithFile(entry.file_path, &temp_file,
-                                           temp_file.GetLength(),
-                                           entry.is_encrypted, results);
+                                           entry.file_size, entry.is_encrypted,
+                                           results);
       if (entry.is_directory)
         results->directory_count++;
       else
