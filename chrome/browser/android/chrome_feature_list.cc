@@ -113,6 +113,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTTargetTranslateLanguage,
     &kChromeDuetFeature,
     &kChromeDuetAdaptive,
+    &kDontAutoHideBrowserControls,
     &kChromeSmartSelection,
     &kCommandLineOnNonRooted,
     &kContentSuggestionsScrollToLoad,
@@ -306,6 +307,9 @@ const base::Feature kChromeDuetFeature{"ChromeDuet",
 
 const base::Feature kChromeDuetAdaptive{"ChromeDuetAdaptive",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kDontAutoHideBrowserControls{
+    "DontAutoHideBrowserControls", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeSmartSelection{"ChromeSmartSelection",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
