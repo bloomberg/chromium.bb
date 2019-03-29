@@ -480,8 +480,12 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   // Update the item.
   savePasswordsItem_.on = [passwordManagerEnabled_ value];
 
-  // Update the cell.
-  [self reconfigureCellsForItems:@[ savePasswordsItem_ ]];
+  // Update the cell if it's not removed by presenting search controller.
+  if ([self.tableViewModel
+          hasItemForItemType:ItemTypeSavePasswordsSwitch
+           sectionIdentifier:SectionIdentifierSavePasswordsSwitch]) {
+    [self reconfigureCellsForItems:@[ savePasswordsItem_ ]];
+  }
 }
 
 #pragma mark - Actions
