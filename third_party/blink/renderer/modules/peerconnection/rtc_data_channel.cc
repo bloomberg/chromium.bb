@@ -284,8 +284,13 @@ bool RTCDataChannel::negotiated() const {
   return channel()->negotiated();
 }
 
-uint16_t RTCDataChannel::id() const {
+uint16_t RTCDataChannel::id(bool& is_null) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (channel()->id() == -1) {
+    is_null = true;
+    return 0;
+  }
+  is_null = false;
   return channel()->id();
 }
 
