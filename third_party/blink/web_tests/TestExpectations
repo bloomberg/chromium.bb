@@ -2055,8 +2055,6 @@ crbug.com/627706 external/wpt/html/semantics/embedded-content/the-img-element/in
 
 crbug.com/860211 [ Mac ] external/wpt/editing/run/delete.html [ Failure ]
 
-crbug.com/813098 external/wpt/editing/run/removeformat.html [ Timeout Pass ]
-
 crbug.com/821455 editing/pasteboard/drag-files-to-editable-element.html [ Failure ]
 
 crbug.com/688613 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
@@ -6146,6 +6144,8 @@ crbug.com/947126 [ Mac10.13 ] virtual/video-surface-layer/media/video-played-ran
 crbug.com/942411 [ Win7 Linux ] http/tests/devtools/network/network-search.js [ Pass Timeout ]
 crbug.com/942411 [ Win7 Linux ] virtual/binary-for-devtools/http/tests/devtools/network/network-search.js [ Pass Timeout ]
 crbug.com/947383 inspector-protocol/css/reattach-after-editing-styles.js [ Pass Timeout ]
+# Sheriff 2019-03-29
+crbug.com/947477 external/wpt/editing/run/removeformat.html [ Pass Crash Timeout ]
 
 ### external/wpt/fetch/sec-metadata/
 crbug.com/947023 external/wpt/fetch/sec-metadata/font.tentative.https.sub.html [ Pass Failure ]
