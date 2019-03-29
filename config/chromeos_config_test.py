@@ -833,6 +833,13 @@ def GeneralTemplates(site_config, ge_build_config):
   )
   # END WSHWOS
 
+  # BEGIN Dustbuster
+  site_config.templates.dustbuster.apply(
+      site_config.templates.no_vmtest_builder,
+      site_config.templates.no_hwtest_builder,
+  )
+  # END Dustbuster
+
   # BEGIN Release
   release_hw_tests = (hw_test_list.CtsGtsQualTests() +
                       hw_test_list.SharedPoolCanary())

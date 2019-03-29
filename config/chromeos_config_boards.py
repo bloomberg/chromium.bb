@@ -173,6 +173,7 @@ x86_internal_release_boards = frozenset([
     'ultima',
     'winky',
     'wizpig',
+    'wristpin',
     'wolf',
     'zako',
 ])
@@ -200,6 +201,10 @@ accelerator_boards = frozenset([
 beaglebone_boards = frozenset([
     'beaglebone',
     'beaglebone_servo',
+])
+
+dustbuster_boards = frozenset([
+    'wristpin',
 ])
 
 lakitu_boards = frozenset([
@@ -257,10 +262,11 @@ toolchains_from_source = frozenset([
 ])
 
 noimagetest_boards = (lakitu_boards | loonix_boards | termina_boards
-                      | scribe_boards | wshwos_boards)
+                      | scribe_boards | wshwos_boards | dustbuster_boards)
 
 nohwqual_boards = (lakitu_boards | lassen_boards | loonix_boards
-                   | termina_boards | beaglebone_boards | wshwos_boards)
+                   | termina_boards | beaglebone_boards | wshwos_boards
+                   | dustbuster_boards)
 
 norootfs_verification_boards = frozenset([
 ])

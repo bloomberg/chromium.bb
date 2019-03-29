@@ -350,6 +350,12 @@ def GeneralTemplates(site_config):
       site_config.templates.loonix
   )
 
+  site_config.AddTemplate(
+      'dustbuster',
+      # TODO(ehislen): Starting with loonix but will diverge later.
+      site_config.templates.loonix
+  )
+
   # An anchor of Laktiu' test customizations.
   # TODO: renable SIMPLE_AU_TEST_TYPE once b/67510964 is fixed.
   site_config.AddTemplate(
@@ -898,6 +904,8 @@ def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
       board_config.apply(site_config.templates.loonix)
     if board in chromeos_boards.wshwos_boards:
       board_config.apply(site_config.templates.wshwos)
+    if board in chromeos_boards.dustbuster_boards:
+      board_config.apply(site_config.templates.dustbuster)
     if board in chromeos_boards.moblab_boards:
       board_config.apply(site_config.templates.moblab)
     if board in chromeos_boards.accelerator_boards:

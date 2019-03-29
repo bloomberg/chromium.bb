@@ -4199,6 +4199,16 @@
   wooten-pre-cq
   wooten-release-tryjob
   wooten-unittest-stress
+  wristpin-compile-only-pre-cq
+  wristpin-full-tryjob
+  wristpin-llvm-next-toolchain-tryjob
+  wristpin-llvm-toolchain-tryjob
+  wristpin-no-vmtest-pre-cq
+  wristpin-paladin-tryjob
+  wristpin-postsubmit-tryjob
+  wristpin-pre-cq
+  wristpin-release-tryjob
+  wristpin-unittest-stress
   x32-generic-chromium-pfq-tryjob
   x32-generic-compile-only-pre-cq
   x32-generic-full-tryjob
