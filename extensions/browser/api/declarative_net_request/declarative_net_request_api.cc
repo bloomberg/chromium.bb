@@ -311,8 +311,7 @@ DeclarativeNetRequestGetDynamicRulesFunction::Run() {
 
 void DeclarativeNetRequestGetDynamicRulesFunction::OnDynamicRulesFetched(
     declarative_net_request::ReadJSONRulesResult read_json_result) {
-  using Status =
-      declarative_net_request::ReadJSONRulesResult::ReadJSONRulesStatus;
+  using Status = declarative_net_request::ReadJSONRulesResult::Status;
 
   DCHECK_EQ(read_json_result.rules.empty(),
             read_json_result.status != Status::kSuccess);

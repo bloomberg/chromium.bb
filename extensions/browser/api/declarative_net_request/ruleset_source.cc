@@ -45,7 +45,7 @@ namespace declarative_net_request {
 namespace {
 
 namespace dnr_api = extensions::api::declarative_net_request;
-using ReadJSONRulesStatus = ReadJSONRulesResult::ReadJSONRulesStatus;
+using Status = ReadJSONRulesResult::Status;
 
 // Dynamic rulesets get more priority over static rulesets.
 const size_t kStaticRulesetPriority = 1;
@@ -78,8 +78,8 @@ ReadJSONRulesResult ParseRulesFromJSON(const base::Value& rules,
   ReadJSONRulesResult result;
 
   if (!rules.is_list()) {
-    return ReadJSONRulesResult::CreateErrorResult(
-        ReadJSONRulesStatus::kJSONIsNotList, kErrorListNotPassed);
+    return ReadJSONRulesResult::CreateErrorResult(Status::kJSONIsNotList,
+                                                  kErrorListNotPassed);
   }
 
   // Limit the maximum number of rule unparsed warnings to 5.
@@ -151,7 +151,7 @@ void OnSafeJSONParserSuccess(
   base::ElapsedTimer timer;
   ReadJSONRulesResult result =
       ParseRulesFromJSON(*root, source.rule_count_limit());
-  if (result.status != ReadJSONRulesStatus::kSuccess) {
+  if (result.status != Status::kSuccess) {
     std::move(callback).Run(IndexAndPersistJSONRulesetResult::CreateErrorResult(
         GetErrorWithFilename(source.json_path(), result.error)));
     return;
@@ -218,9 +218,8 @@ IndexAndPersistJSONRulesetResult& IndexAndPersistJSONRulesetResult::operator=(
 IndexAndPersistJSONRulesetResult::IndexAndPersistJSONRulesetResult() = default;
 
 // static
-ReadJSONRulesResult ReadJSONRulesResult::CreateErrorResult(
-    ReadJSONRulesStatus status,
-    std::string error) {
+ReadJSONRulesResult ReadJSONRulesResult::CreateErrorResult(Status status,
+                                                           std::string error) {
   ReadJSONRulesResult result;
   result.status = status;
   result.error = std::move(error);
@@ -303,7 +302,7 @@ RulesetSource::IndexAndPersistJSONRulesetUnsafe() const {
 
   base::ElapsedTimer timer;
   ReadJSONRulesResult result = ReadJSONRulesUnsafe();
-  if (result.status != ReadJSONRulesStatus::kSuccess) {
+  if (result.status != Status::kSuccess) {
     return IndexAndPersistJSONRulesetResult::CreateErrorResult(
         GetErrorWithFilename(json_path_, result.error));
   }
@@ -401,14 +400,14 @@ ReadJSONRulesResult RulesetSource::ReadJSONRulesUnsafe() const {
   ReadJSONRulesResult result;
 
   if (!base::PathExists(json_path_)) {
-    return ReadJSONRulesResult::CreateErrorResult(
-        ReadJSONRulesStatus::kFileDoesNotExist, kFileDoesNotExistError);
+    return ReadJSONRulesResult::CreateErrorResult(Status::kFileDoesNotExist,
+                                                  kFileDoesNotExistError);
   }
 
   std::string json_contents;
   if (!base::ReadFileToString(json_path_, &json_contents)) {
-    return ReadJSONRulesResult::CreateErrorResult(
-        ReadJSONRulesStatus::kFileReadError, kFileReadError);
+    return ReadJSONRulesResult::CreateErrorResult(Status::kFileReadError,
+                                                  kFileReadError);
   }
 
   base::JSONReader::ValueWithError value_with_error =
@@ -416,8 +415,7 @@ ReadJSONRulesResult RulesetSource::ReadJSONRulesUnsafe() const {
           json_contents, base::JSON_PARSE_RFC /* options */);
   if (!value_with_error.value) {
     return ReadJSONRulesResult::CreateErrorResult(
-        ReadJSONRulesStatus::kJSONParseError,
-        std::move(value_with_error.error_message));
+        Status::kJSONParseError, std::move(value_with_error.error_message));
   }
 
   return ParseRulesFromJSON(*value_with_error.value, rule_count_limit_);

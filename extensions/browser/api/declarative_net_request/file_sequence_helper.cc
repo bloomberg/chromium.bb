@@ -160,7 +160,7 @@ bool GetNewDynamicRules(const RulesetSource& source,
   // Read the current set of rules. Note: this is trusted JSON and hence it is
   // ok to parse in the browser itself.
   ReadJSONRulesResult result = source.ReadJSONRulesUnsafe();
-  DCHECK(result.status == ReadJSONRulesResult::ReadJSONRulesStatus::kSuccess ||
+  DCHECK(result.status == ReadJSONRulesResult::Status::kSuccess ||
          result.rules.empty());
 
   // Possible cases:
@@ -170,8 +170,7 @@ bool GetNewDynamicRules(const RulesetSource& source,
   // - kFileReadError: Throw an internal error.
   // - kJSONParseError, kJSONIsNotList: These denote JSON ruleset corruption.
   //   Assume the current set of rules is empty.
-  if (result.status ==
-      ReadJSONRulesResult::ReadJSONRulesStatus::kFileReadError) {
+  if (result.status == ReadJSONRulesResult::Status::kFileReadError) {
     *error = kInternalErrorUpdatingDynamicRules;
     return false;
   }
