@@ -4,6 +4,8 @@
 
 #include "cc/paint/paint_image_builder.h"
 
+#include "build/build_config.h"
+
 namespace cc {
 
 // static
@@ -74,6 +76,14 @@ PaintImage PaintImageBuilder::TakePaintImage() {
         << "Animated images must provide a generator";
     for (const auto& frame : paint_image_.GetFrameMetadata())
       DCHECK_GT(frame.duration, base::TimeDelta());
+  }
+#endif
+
+#if defined(MEMORY_SANITIZER) && !defined(OS_NACL)
+  if (paint_image_.sk_image_ && !paint_image_.sk_image_->isTextureBacked()) {
+    SkBitmap bm;
+    if (paint_image_.sk_image_->asLegacyBitmap(&bm))
+      MSAN_CHECK_MEM_IS_INITIALIZED(bm.getPixels(), bm.computeByteSize());
   }
 #endif
 
