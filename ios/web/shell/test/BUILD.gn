@@ -27,22 +27,20 @@ ios_eg_test("ios_web_shell_egtests") {
     ":earl_grey_test_support",
     "//base",
     "//base/test:test_support",
+    "//ios/testing:http_server_bundle_data",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/web",
     "//ios/web:earl_grey_test_support",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
-    "//ios/web/public/test/http_server",
     "//ios/web/shell",
     "//ios/web/shell:shell_interfaces",
-    "//net",
+    "//net:test_support",
     "//services/service_manager/public/cpp",
     "//services/test/echo/public/mojom",
     "//services/test/user_id/public/mojom",
     "//url",
   ]
-
-  bundle_deps = [ ":bundle" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
@@ -61,7 +59,6 @@ source_set("earl_grey_test_support") {
     "//ios/web",
     "//ios/web:earl_grey_test_support",
     "//ios/web/public/test",
-    "//ios/web/public/test/http_server",
     "//ios/web/shell",
     "//testing/gtest:gtest",
     "//url",
@@ -93,17 +90,6 @@ source_set("earl_grey_test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-bundle_data("bundle") {
-  visibility = [ ":*" ]
-  sources = [
-    "http_server_files/tall_page.html",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_root_relative_dir}}/" +
-        "{{source_file_part}}",
-  ]
-}
-
 ################################
 # EG2 targets.
 
@@ -127,7 +113,6 @@ source_set("eg_test_support+eg2") {
   deps = [
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
-    "//ios/web/public/test/http_server",
   ]
 }
 
@@ -169,6 +154,4 @@ ios_eg2_test("ios_web_shell_eg2tests") {
     # Test support libraries.
     ":eg_tests+eg2",
   ]
-
-  bundle_deps = [ ":bundle" ]
 }
