@@ -77,4 +77,8 @@
                  didTapTrailingButtonForRow:indexPath.row];
 }
 
+- (void)updateTableViewWithAnimation:(BOOL)animation {
+  [self.tableView reloadData];
+}
+
 @end
