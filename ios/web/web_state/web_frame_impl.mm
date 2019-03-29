@@ -257,7 +257,7 @@ bool WebFrameImpl::OnJavaScriptReply(web::WebState* web_state,
 
   auto request = pending_requests_.find(message_id);
   if (request == pending_requests_.end()) {
-    NOTREACHED();
+    // Request may have already been processed due to timeout.
     return false;
   }
 
