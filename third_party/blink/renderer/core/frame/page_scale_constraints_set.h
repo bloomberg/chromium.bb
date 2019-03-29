@@ -51,11 +51,7 @@ class Page;
 class CORE_EXPORT PageScaleConstraintsSet
     : public GarbageCollected<PageScaleConstraintsSet> {
  public:
-  static PageScaleConstraintsSet* Create(Page* page) {
-    return MakeGarbageCollected<PageScaleConstraintsSet>(page);
-  }
-
-  PageScaleConstraintsSet(Page* page);
+  explicit PageScaleConstraintsSet(Page* page);
 
   void Trace(blink::Visitor*);
 

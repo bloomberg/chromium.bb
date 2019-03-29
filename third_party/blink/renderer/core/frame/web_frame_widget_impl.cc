@@ -138,15 +138,9 @@ WebFrameWidget* WebFrameWidget::CreateForChildLocalRoot(
 
   // Note: this isn't a leak, as the object has a self-reference that the
   // caller needs to release by calling Close().
-  WebFrameWidgetBase* widget = WebFrameWidgetImpl::Create(*client);
+  auto* widget = MakeGarbageCollected<WebFrameWidgetImpl>(*client);
   widget->BindLocalRoot(*local_root);
   return widget;
-}
-
-WebFrameWidgetImpl* WebFrameWidgetImpl::Create(WebWidgetClient& client) {
-  // Pass the WebFrameWidgetImpl's self-reference from SelfKeepAlive to the
-  // caller.
-  return MakeGarbageCollected<WebFrameWidgetImpl>(client);
 }
 
 WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient& client)

@@ -13,10 +13,6 @@ namespace blink {
 
 class RemoteDOMWindow final : public DOMWindow {
  public:
-  static RemoteDOMWindow* Create(RemoteFrame& frame) {
-    return MakeGarbageCollected<RemoteDOMWindow>(frame);
-  }
-
   explicit RemoteDOMWindow(RemoteFrame&);
 
   RemoteFrame* GetFrame() const {

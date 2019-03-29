@@ -29,12 +29,6 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
   USING_GARBAGE_COLLECTED_MIXIN(ScrollableAreaStub);
 
  public:
-  static ScrollableAreaStub* Create(const IntSize& viewport_size,
-                                    const IntSize& contents_size) {
-    return MakeGarbageCollected<ScrollableAreaStub>(viewport_size,
-                                                    contents_size);
-  }
-
   ScrollableAreaStub(const IntSize& viewport_size, const IntSize& contents_size)
       : user_input_scrollable_x_(true),
         user_input_scrollable_y_(true),
@@ -142,12 +136,6 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
 
 class RootLayoutViewportStub : public ScrollableAreaStub {
  public:
-  static RootLayoutViewportStub* Create(const IntSize& viewport_size,
-                                        const IntSize& contents_size) {
-    return MakeGarbageCollected<RootLayoutViewportStub>(viewport_size,
-                                                        contents_size);
-  }
-
   RootLayoutViewportStub(const IntSize& viewport_size,
                          const IntSize& contents_size)
       : ScrollableAreaStub(viewport_size, contents_size) {}
@@ -169,12 +157,6 @@ class RootLayoutViewportStub : public ScrollableAreaStub {
 
 class VisualViewportStub : public ScrollableAreaStub {
  public:
-  static VisualViewportStub* Create(const IntSize& viewport_size,
-                                    const IntSize& contents_size) {
-    return MakeGarbageCollected<VisualViewportStub>(viewport_size,
-                                                    contents_size);
-  }
-
   VisualViewportStub(const IntSize& viewport_size, const IntSize& contents_size)
       : ScrollableAreaStub(viewport_size, contents_size), scale_(1) {}
 
@@ -216,13 +198,13 @@ class RootFrameViewportTest : public testing::Test {
 // correctly, that is, the visual viewport can scroll, but not the layout.
 TEST_F(RootFrameViewportTest, UserInputScrollable) {
   IntSize viewport_size(100, 150);
-  RootLayoutViewportStub* layout_viewport =
-      RootLayoutViewportStub::Create(viewport_size, IntSize(200, 300));
-  VisualViewportStub* visual_viewport =
-      VisualViewportStub::Create(viewport_size, viewport_size);
+  auto* layout_viewport = MakeGarbageCollected<RootLayoutViewportStub>(
+      viewport_size, IntSize(200, 300));
+  auto* visual_viewport =
+      MakeGarbageCollected<VisualViewportStub>(viewport_size, viewport_size);
 
-  ScrollableArea* root_frame_viewport =
-      RootFrameViewport::Create(*visual_viewport, *layout_viewport);
+  auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
+      *visual_viewport, *layout_viewport);
 
   visual_viewport->SetScale(2);
 
@@ -279,13 +261,13 @@ TEST_F(RootFrameViewportTest, UserInputScrollable) {
 // using the // RootFrameViewport interface.
 TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll) {
   IntSize viewport_size(100, 150);
-  RootLayoutViewportStub* layout_viewport =
-      RootLayoutViewportStub::Create(viewport_size, IntSize(200, 300));
-  VisualViewportStub* visual_viewport =
-      VisualViewportStub::Create(viewport_size, viewport_size);
+  auto* layout_viewport = MakeGarbageCollected<RootLayoutViewportStub>(
+      viewport_size, IntSize(200, 300));
+  auto* visual_viewport =
+      MakeGarbageCollected<VisualViewportStub>(viewport_size, viewport_size);
 
-  ScrollableArea* root_frame_viewport =
-      RootFrameViewport::Create(*visual_viewport, *layout_viewport);
+  auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
+      *visual_viewport, *layout_viewport);
 
   visual_viewport->SetScale(2);
 
@@ -320,13 +302,13 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll) {
 // and visual viewport such that the given rect is centered in the viewport.
 TEST_F(RootFrameViewportTest, ScrollIntoView) {
   IntSize viewport_size(100, 150);
-  RootLayoutViewportStub* layout_viewport =
-      RootLayoutViewportStub::Create(viewport_size, IntSize(200, 300));
-  VisualViewportStub* visual_viewport =
-      VisualViewportStub::Create(viewport_size, viewport_size);
+  auto* layout_viewport = MakeGarbageCollected<RootLayoutViewportStub>(
+      viewport_size, IntSize(200, 300));
+  auto* visual_viewport =
+      MakeGarbageCollected<VisualViewportStub>(viewport_size, viewport_size);
 
-  ScrollableArea* root_frame_viewport =
-      RootFrameViewport::Create(*visual_viewport, *layout_viewport);
+  auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
+      *visual_viewport, *layout_viewport);
 
   // Test that the visual viewport is scrolled if the viewport has been
   // resized (as is the case when the ChromeOS keyboard comes up) but not
@@ -414,13 +396,13 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
 // Tests that the setScrollOffset method works correctly with both viewports.
 TEST_F(RootFrameViewportTest, SetScrollOffset) {
   IntSize viewport_size(500, 500);
-  RootLayoutViewportStub* layout_viewport =
-      RootLayoutViewportStub::Create(viewport_size, IntSize(1000, 2000));
-  VisualViewportStub* visual_viewport =
-      VisualViewportStub::Create(viewport_size, viewport_size);
+  auto* layout_viewport = MakeGarbageCollected<RootLayoutViewportStub>(
+      viewport_size, IntSize(1000, 2000));
+  auto* visual_viewport =
+      MakeGarbageCollected<VisualViewportStub>(viewport_size, viewport_size);
 
-  ScrollableArea* root_frame_viewport =
-      RootFrameViewport::Create(*visual_viewport, *layout_viewport);
+  auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
+      *visual_viewport, *layout_viewport);
 
   visual_viewport->SetScale(2);
 
@@ -454,13 +436,13 @@ TEST_F(RootFrameViewportTest, SetScrollOffset) {
 // calculated, taking into account both viewports and page scale.
 TEST_F(RootFrameViewportTest, VisibleContentRect) {
   IntSize viewport_size(500, 401);
-  RootLayoutViewportStub* layout_viewport =
-      RootLayoutViewportStub::Create(viewport_size, IntSize(1000, 2000));
-  VisualViewportStub* visual_viewport =
-      VisualViewportStub::Create(viewport_size, viewport_size);
+  auto* layout_viewport = MakeGarbageCollected<RootLayoutViewportStub>(
+      viewport_size, IntSize(1000, 2000));
+  auto* visual_viewport =
+      MakeGarbageCollected<VisualViewportStub>(viewport_size, viewport_size);
 
-  ScrollableArea* root_frame_viewport =
-      RootFrameViewport::Create(*visual_viewport, *layout_viewport);
+  auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
+      *visual_viewport, *layout_viewport);
 
   root_frame_viewport->SetScrollOffset(ScrollOffset(100, 75),
                                        kProgrammaticScroll);
@@ -482,13 +464,13 @@ TEST_F(RootFrameViewportTest, VisibleContentRect) {
 // trying to scroll the layout viewport.
 TEST_F(RootFrameViewportTest, ViewportScrollOrder) {
   IntSize viewport_size(100, 100);
-  RootLayoutViewportStub* layout_viewport =
-      RootLayoutViewportStub::Create(viewport_size, IntSize(200, 300));
-  VisualViewportStub* visual_viewport =
-      VisualViewportStub::Create(viewport_size, viewport_size);
+  auto* layout_viewport = MakeGarbageCollected<RootLayoutViewportStub>(
+      viewport_size, IntSize(200, 300));
+  auto* visual_viewport =
+      MakeGarbageCollected<VisualViewportStub>(viewport_size, viewport_size);
 
-  ScrollableArea* root_frame_viewport =
-      RootFrameViewport::Create(*visual_viewport, *layout_viewport);
+  auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
+      *visual_viewport, *layout_viewport);
 
   visual_viewport->SetScale(2);
 
@@ -506,16 +488,16 @@ TEST_F(RootFrameViewportTest, ViewportScrollOrder) {
 // instead of the original.
 TEST_F(RootFrameViewportTest, SetAlternateLayoutViewport) {
   IntSize viewport_size(100, 100);
-  RootLayoutViewportStub* layout_viewport =
-      RootLayoutViewportStub::Create(viewport_size, IntSize(200, 300));
-  VisualViewportStub* visual_viewport =
-      VisualViewportStub::Create(viewport_size, viewport_size);
+  auto* layout_viewport = MakeGarbageCollected<RootLayoutViewportStub>(
+      viewport_size, IntSize(200, 300));
+  auto* visual_viewport =
+      MakeGarbageCollected<VisualViewportStub>(viewport_size, viewport_size);
 
-  RootLayoutViewportStub* alternate_scroller =
-      RootLayoutViewportStub::Create(viewport_size, IntSize(600, 500));
+  auto* alternate_scroller = MakeGarbageCollected<RootLayoutViewportStub>(
+      viewport_size, IntSize(600, 500));
 
-  RootFrameViewport* root_frame_viewport =
-      RootFrameViewport::Create(*visual_viewport, *layout_viewport);
+  auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
+      *visual_viewport, *layout_viewport);
 
   visual_viewport->SetScale(2);
 

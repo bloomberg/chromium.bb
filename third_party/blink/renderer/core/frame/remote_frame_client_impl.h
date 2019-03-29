@@ -16,8 +16,6 @@ class WebRemoteFrameImpl;
 
 class RemoteFrameClientImpl final : public RemoteFrameClient {
  public:
-  static RemoteFrameClientImpl* Create(WebRemoteFrameImpl*);
-
   explicit RemoteFrameClientImpl(WebRemoteFrameImpl*);
 
   void Trace(blink::Visitor*) override;

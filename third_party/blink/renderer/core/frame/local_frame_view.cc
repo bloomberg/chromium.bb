@@ -1927,8 +1927,8 @@ void LocalFrameView::DidAttachDocument() {
     ScrollableArea* layout_viewport = LayoutViewport();
     DCHECK(layout_viewport);
 
-    RootFrameViewport* root_frame_viewport =
-        RootFrameViewport::Create(visual_viewport, *layout_viewport);
+    auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
+        visual_viewport, *layout_viewport);
     viewport_scrollable_area_ = root_frame_viewport;
 
     page->GlobalRootScrollerController().InitializeViewportScrollCallback(

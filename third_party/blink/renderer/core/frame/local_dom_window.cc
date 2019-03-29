@@ -462,7 +462,7 @@ int LocalDOMWindow::orientation() const {
 
 Screen* LocalDOMWindow::screen() const {
   if (!screen_)
-    screen_ = Screen::Create(GetFrame());
+    screen_ = MakeGarbageCollected<Screen>(GetFrame());
   return screen_.Get();
 }
 
@@ -534,7 +534,7 @@ ApplicationCache* LocalDOMWindow::applicationCache() const {
 
 Navigator* LocalDOMWindow::navigator() const {
   if (!navigator_)
-    navigator_ = Navigator::Create(GetFrame());
+    navigator_ = MakeGarbageCollected<Navigator>(GetFrame());
   return navigator_.Get();
 }
 
