@@ -181,7 +181,7 @@ bool ServiceImageTransferCacheEntry::Deserialize(
   PaintOp::DeserializeOptions options(nullptr, nullptr, nullptr,
                                       &scratch_buffer);
   PaintOpReader reader(data.data(), data.size(), options);
-  SkColorType color_type;
+  SkColorType color_type = kUnknown_SkColorType;
   reader.Read(&color_type);
 
   if (color_type == kUnknown_SkColorType || color_type > kLastEnum_SkColorType)
