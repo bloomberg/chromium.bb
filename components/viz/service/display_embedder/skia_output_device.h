@@ -35,7 +35,7 @@ class SkiaOutputDevice {
   virtual ~SkiaOutputDevice();
 
   // SkSurface that can be drawn to.
-  sk_sp<SkSurface> DrawSurface() { return draw_surface_; }
+  SkSurface* draw_surface() const { return draw_surface_.get(); }
 
   // Changes the size of draw surface and invalidates it's contents.
   virtual void Reshape(const gfx::Size& size,

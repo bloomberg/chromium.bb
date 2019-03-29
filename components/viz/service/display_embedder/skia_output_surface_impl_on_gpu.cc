@@ -363,10 +363,9 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
   size_ = size;
   color_space_ = color_space;
   output_device_->Reshape(size_, device_scale_factor, color_space, has_alpha);
-  sk_surface_ = output_device_->DrawSurface();
 
   if (characterization) {
-    sk_surface_->characterize(characterization);
+    output_sk_surface()->characterize(characterization);
     DCHECK(characterization->isValid());
   }
 }
@@ -378,7 +377,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     uint64_t sync_fence_release) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
-  DCHECK(sk_surface_);
+  DCHECK(output_sk_surface());
 
   if (!MakeCurrent(true /* need_fbo0 */))
     return;
@@ -390,7 +389,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     if (gr_shader_cache_) {
       cache_use.emplace(gr_shader_cache_, gpu::kInProcessCommandBufferClientId);
     }
-    sk_surface_->draw(ddl.get());
+    output_sk_surface()->draw(ddl.get());
     gr_context()->flush();
   }
 
@@ -415,14 +414,15 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     sk_sp<SkColorFilter> colorFilter = SkiaHelper::MakeOverdrawColorFilter();
     paint.setColorFilter(colorFilter);
     // TODO(xing.xu): move below to the thread where skia record happens.
-    sk_surface_->getCanvas()->drawImage(overdraw_image.get(), 0, 0, &paint);
+    output_sk_surface()->getCanvas()->drawImage(overdraw_image.get(), 0, 0,
+                                                &paint);
     gr_context()->flush();
   }
 }
 
 void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(sk_surface_);
+  DCHECK(output_sk_surface());
   if (!MakeCurrent(surface_handle_ /* need_fbo0 */))
     return;
 
@@ -439,7 +439,6 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
   } else {
     response = output_device_->SwapBuffers(buffer_presented_callback_);
   }
-  sk_surface_ = output_device_->DrawSurface();
 
   for (auto& latency : frame.latency_info) {
     latency.AddLatencyNumberWithTimestamp(
@@ -509,7 +508,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   DCHECK(from_fbo0 ||
          offscreen_surfaces_.find(id) != offscreen_surfaces_.end());
   auto* surface =
-      from_fbo0 ? sk_surface_.get() : offscreen_surfaces_[id].surface();
+      from_fbo0 ? output_sk_surface() : offscreen_surfaces_[id].surface();
 
   if (!is_using_vulkan()) {
     // Lazy initialize GLRendererCopier.
@@ -672,7 +671,7 @@ sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
   }
   if (*shared_image_out) {
     auto promise_texture =
-        (*shared_image_out)->BeginReadAccess(sk_surface_.get());
+        (*shared_image_out)->BeginReadAccess(output_sk_surface());
     DLOG_IF(ERROR, !promise_texture)
         << "Failed to begin read access for SharedImageRepresentationSkia";
     return promise_texture;
