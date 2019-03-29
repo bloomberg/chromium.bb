@@ -137,20 +137,9 @@ void LibYUVImageProcessor::ProcessTask(scoped_refptr<VideoFrame> input_frame,
   DCHECK(process_thread_.task_runner()->BelongsToCurrentThread());
   DVLOGF(4);
 
-  int result = libyuv::I420ToNV12(input_frame->data(VideoFrame::kYPlane),
-                                  input_frame->stride(VideoFrame::kYPlane),
-                                  input_frame->data(VideoFrame::kUPlane),
-                                  input_frame->stride(VideoFrame::kUPlane),
-                                  input_frame->data(VideoFrame::kVPlane),
-                                  input_frame->stride(VideoFrame::kVPlane),
-                                  output_frame->data(VideoFrame::kYPlane),
-                                  output_frame->stride(VideoFrame::kYPlane),
-                                  output_frame->data(VideoFrame::kUVPlane),
-                                  output_frame->stride(VideoFrame::kUVPlane),
-                                  output_frame->visible_rect().width(),
-                                  output_frame->visible_rect().height());
-  if (result != 0) {
-    VLOGF(1) << "libyuv::I420ToNV12 returns non-zero code: " << result;
+  int res = DoConversion(input_frame.get(), output_frame.get());
+  if (res != 0) {
+    VLOGF(1) << "libyuv::I420ToNV12 returns non-zero code: " << res;
     NotifyError();
     return;
   }
@@ -172,18 +161,56 @@ void LibYUVImageProcessor::NotifyError() {
 // static
 bool LibYUVImageProcessor::IsFormatSupported(VideoPixelFormat input_format,
                                              VideoPixelFormat output_format) {
-  if (input_format == PIXEL_FORMAT_I420) {
-    if (output_format == PIXEL_FORMAT_NV12) {
+  constexpr struct {
+    VideoPixelFormat input;
+    VideoPixelFormat output;
+  } kSupportFormatConversionArray[] = {
+      {PIXEL_FORMAT_I420, PIXEL_FORMAT_NV12},
+  };
+
+  for (auto* conv = std::cbegin(kSupportFormatConversionArray);
+       conv != std::cend(kSupportFormatConversionArray); conv++) {
+    if (conv->input == input_format && conv->output == output_format)
       return true;
-    } else {
-      VLOGF(2) << "Unsupported output format: " << output_format
-               << " for converting input format: " << input_format;
-      return false;
-    }
-  } else {
-    VLOGF(2) << "Unsupported input format: " << input_format;
-    return false;
   }
+
+  VLOGF(2) << "Unsupported conversion: input=" << input_format
+           << ", output=" << output_format;
+  return false;
+}
+
+int LibYUVImageProcessor::DoConversion(const VideoFrame* const input,
+                                       VideoFrame* const output) {
+  DCHECK(process_thread_.task_runner()->BelongsToCurrentThread());
+
+#define Y_U_V_DATA(fr)                                                \
+  fr->data(VideoFrame::kYPlane), fr->stride(VideoFrame::kYPlane),     \
+      fr->data(VideoFrame::kUPlane), fr->stride(VideoFrame::kUPlane), \
+      fr->data(VideoFrame::kVPlane), fr->stride(VideoFrame::kVPlane)
+
+#define Y_UV_DATA(fr)                                             \
+  fr->data(VideoFrame::kYPlane), fr->stride(VideoFrame::kYPlane), \
+      fr->data(VideoFrame::kUVPlane), fr->stride(VideoFrame::kUVPlane)
+
+#define LIBYUV_FUNC(func, i, o)                      \
+  libyuv::func(i, o, output->visible_rect().width(), \
+               output->visible_rect().height())
+
+  if (output->format() == PIXEL_FORMAT_NV12) {
+    switch (input->format()) {
+      case PIXEL_FORMAT_I420:
+        return LIBYUV_FUNC(I420ToNV12, Y_U_V_DATA(input), Y_UV_DATA(output));
+      default:
+        VLOGF(1) << "Unexpected input format: " << input->format();
+        return -1;
+    }
+  }
+#undef Y_U_V_DATA
+#undef Y_UV_DATA
+#undef LIBYUV_FUNC
+
+  VLOGF(1) << "Unexpected output format: " << output->format();
+  return -1;
 }
 
 }  // namespace media
