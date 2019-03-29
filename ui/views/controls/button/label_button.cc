@@ -386,6 +386,7 @@ void LabelButton::StateChanged(ButtonState old_state) {
   label_->SetEnabled(state() != STATE_DISABLED);
   if (image_->GetPreferredSize() != previous_image_size)
     Layout();
+  Button::StateChanged(old_state);
 }
 
 void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {

@@ -5,23 +5,21 @@
 #ifndef UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_CONTROLLER_H_
 #define UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "ui/events/event.h"
-#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/button_controller.h"
 
-namespace ui {
-struct AXNodeData;
-}
 namespace views {
+class ButtonControllerDelegate;
 class MenuButton;
 class MenuButtonListener;
 
-// An EventHandler that contains the event behavior of a MenuButton.
-// TODO (cyan): This will eventually be available to any Button derivative class
-// that wants MenuButton behavior.
-class VIEWS_EXPORT MenuButtonController : public ui::EventHandler {
+// A controller that contains the logic for showing a menu when the left mouse
+// is pushed.
+class VIEWS_EXPORT MenuButtonController : public ButtonController {
  public:
   // A scoped lock for keeping the MenuButton in STATE_PRESSED e.g., while a
   // menu is running. These are cumulative.
@@ -42,24 +40,29 @@ class VIEWS_EXPORT MenuButtonController : public ui::EventHandler {
     DISALLOW_COPY_AND_ASSIGN(PressedLock);
   };
 
-  // TODO (cyan): MenuButtonController should take in a Button.
-  MenuButtonController(MenuButton* menu_button_parent,
-                       MenuButtonListener* menu_button_listener);
+  // TODO(cyan): MenuButtonController should take in a Button.
+  MenuButtonController(MenuButton* menu_button,
+                       MenuButtonListener* listener,
+                       std::unique_ptr<ButtonControllerDelegate> delegate);
   ~MenuButtonController() override;
 
-  // TODO (cyan): Methods in this block should override EventHandler methods.
-  // These are currently called by the corresponding method from view::Views.
-  bool OnMousePressed(const ui::MouseEvent& event);
-  void OnMouseReleased(const ui::MouseEvent& event);
-  void OnMouseEntered(const ui::MouseEvent& event);
-  void OnMouseExited(const ui::MouseEvent& event);
-  void OnMouseMoved(const ui::MouseEvent& event);
-  bool OnKeyPressed(const ui::KeyEvent& event);
-  bool OnKeyReleased(const ui::KeyEvent& event);
-  void GetAccessibleNodeData(ui::AXNodeData* node_data);
+  // view::ButtonController
+  MenuButtonController* AsMenuButtonController() override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseMoved(const ui::MouseEvent& event) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  bool OnKeyReleased(const ui::KeyEvent& event) override;
+  void UpdateAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnStateChanged(Button::ButtonState old_state) override;
+  bool IsTriggerableEvent(const ui::Event& event) override;
 
-  // ui::EventHandler:
-  void OnGestureEvent(ui::GestureEvent* event) override;
+  // Methods that parallel ui::EventHandler:
+  // Returns false if the gesture event has already been handled, and should not
+  // be processed further.
+  bool OnGestureEvent(ui::GestureEvent* event);
 
   // Calls TakeLock with is_sibling_menu_show as false and a nullptr to the
   // event.
@@ -69,12 +72,6 @@ class VIEWS_EXPORT MenuButtonController : public ui::EventHandler {
   // button in a PRESSED state when a menu is showing.
   std::unique_ptr<PressedLock> TakeLock(bool is_sibling_menu_show,
                                         const ui::LocatedEvent* event);
-
-  bool IsTriggerableEvent(const ui::Event& event);
-
-  bool ShouldEnterPushedState(const ui::Event& event);
-  void StateChanged(Button::ButtonState old_state);
-  void NotifyClick(const ui::Event& event);
 
   // Activate the button (called when the button is pressed). |event| is the
   // event triggering the activation, if any.
@@ -86,7 +83,9 @@ class VIEWS_EXPORT MenuButtonController : public ui::EventHandler {
   // menu, this is distinct from IsTriggerableEvent().
   bool IsTriggerableEventType(const ui::Event& event);
 
-  void OnMouseEvent(ui::MouseEvent* event) override;
+  // Returns true if the amount of time since the last menu_closed_time_ is
+  // large enough to be considered an intentionally different event.
+  bool IsIntentionalMenuTrigger() const;
 
  private:
   // Increment/decrement the number of "pressed" locks this button has, and
@@ -102,8 +101,6 @@ class VIEWS_EXPORT MenuButtonController : public ui::EventHandler {
   // Compute the maximum X coordinate for the current screen. MenuButtons
   // use this to make sure a menu is never shown off screen.
   int GetMaximumScreenXCoordinate();
-
-  MenuButton* const menu_button_parent_;
 
   // Our listener. Not owned.
   MenuButtonListener* const listener_;
