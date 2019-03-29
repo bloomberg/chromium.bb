@@ -1549,6 +1549,10 @@ RenderFrameHostImpl::AccessibilityGetNativeViewAccessibleForWindow() {
   return nullptr;
 }
 
+bool RenderFrameHostImpl::AccessibilityIsMainFrame() {
+  return frame_tree_node()->IsMainFrame();
+}
+
 void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
   DCHECK_EQ(site_instance_.get(), site_instance);
 

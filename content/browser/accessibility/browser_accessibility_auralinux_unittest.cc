@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/test_browser_accessibility_delegate.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
@@ -20,6 +21,10 @@ class BrowserAccessibilityAuraLinuxTest : public testing::Test {
  public:
   BrowserAccessibilityAuraLinuxTest();
   ~BrowserAccessibilityAuraLinuxTest() override;
+
+ protected:
+  std::unique_ptr<TestBrowserAccessibilityDelegate>
+      test_browser_accessibility_delegate_;
 
  private:
   void SetUp() override;
@@ -33,7 +38,10 @@ BrowserAccessibilityAuraLinuxTest::BrowserAccessibilityAuraLinuxTest() {}
 
 BrowserAccessibilityAuraLinuxTest::~BrowserAccessibilityAuraLinuxTest() {}
 
-void BrowserAccessibilityAuraLinuxTest::SetUp() {}
+void BrowserAccessibilityAuraLinuxTest::SetUp() {
+  test_browser_accessibility_delegate_ =
+      std::make_unique<TestBrowserAccessibilityDelegate>();
+}
 
 TEST_F(BrowserAccessibilityAuraLinuxTest, TestSimpleAtkText) {
   ui::AXNodeData root_data;
@@ -42,8 +50,10 @@ TEST_F(BrowserAccessibilityAuraLinuxTest, TestSimpleAtkText) {
   root_data.SetName("\xE2\x98\xBA Multiple Words");
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
-      BrowserAccessibilityManager::Create(MakeAXTreeUpdate(root_data), nullptr,
-                                          new BrowserAccessibilityFactory()));
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root_data),
+          test_browser_accessibility_delegate_.get(),
+          new BrowserAccessibilityFactory()));
 
   ui::AXPlatformNodeAuraLinux* root_obj =
       ToBrowserAccessibilityAuraLinux(manager->GetRoot())->GetNode();
@@ -94,9 +104,10 @@ TEST_F(BrowserAccessibilityAuraLinuxTest, TestCompositeAtkText) {
   root.child_ids.push_back(text2.id);
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
-      BrowserAccessibilityManager::Create(MakeAXTreeUpdate(root, text1, text2),
-                                          nullptr,
-                                          new BrowserAccessibilityFactory()));
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, text1, text2),
+          test_browser_accessibility_delegate_.get(),
+          new BrowserAccessibilityFactory()));
 
   ui::AXPlatformNodeAuraLinux* root_obj =
       ToBrowserAccessibilityAuraLinux(manager->GetRoot())->GetNode();
@@ -199,7 +210,8 @@ TEST_F(BrowserAccessibilityAuraLinuxTest, TestComplexHypertext) {
       BrowserAccessibilityManager::Create(
           MakeAXTreeUpdate(root, text1, combo_box, text2, check_box, button,
                            button_text, link, link_text),
-          nullptr, new BrowserAccessibilityFactory()));
+          test_browser_accessibility_delegate_.get(),
+          new BrowserAccessibilityFactory()));
 
   ui::AXPlatformNodeAuraLinux* root_obj =
       ToBrowserAccessibilityAuraLinux(manager->GetRoot())->GetNode();

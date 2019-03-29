@@ -7,6 +7,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/test_browser_accessibility_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -34,7 +35,13 @@ class BrowserAccessibilityTest : public testing::Test {
   BrowserAccessibilityTest();
   ~BrowserAccessibilityTest() override;
 
+ protected:
+  std::unique_ptr<TestBrowserAccessibilityDelegate>
+      test_browser_accessibility_delegate_;
+
  private:
+  void SetUp() override;
+
   base::test::ScopedTaskEnvironment task_environment_;
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityTest);
 };
@@ -42,6 +49,11 @@ class BrowserAccessibilityTest : public testing::Test {
 BrowserAccessibilityTest::BrowserAccessibilityTest() {}
 
 BrowserAccessibilityTest::~BrowserAccessibilityTest() {}
+
+void BrowserAccessibilityTest::SetUp() {
+  test_browser_accessibility_delegate_ =
+      std::make_unique<TestBrowserAccessibilityDelegate>();
+}
 
 TEST_F(BrowserAccessibilityTest, TestCanFireEvents) {
   ui::AXNodeData text1;
@@ -60,9 +72,10 @@ TEST_F(BrowserAccessibilityTest, TestCanFireEvents) {
   root.child_ids.push_back(para1.id);
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
-      BrowserAccessibilityManager::Create(MakeAXTreeUpdate(root, para1, text1),
-                                          nullptr,
-                                          new BrowserAccessibilityFactory()));
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, para1, text1),
+          test_browser_accessibility_delegate_.get(),
+          new BrowserAccessibilityFactory()));
 
   BrowserAccessibility* root_obj = manager->GetRoot();
   EXPECT_FALSE(root_obj->PlatformIsLeaf());
@@ -121,7 +134,8 @@ TEST_F(BrowserAccessibilityTest, TestGetDescendants) {
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, para1, text1, text2, text3), nullptr,
+          MakeAXTreeUpdate(root, para1, text1, text2, text3),
+          test_browser_accessibility_delegate_.get(),
           new BrowserAccessibilityFactory()));
 
   BrowserAccessibility* root_obj = manager->GetRoot();

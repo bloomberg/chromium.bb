@@ -1271,7 +1271,7 @@ BrowserAccessibilityManager::GetDelegateFromRootManager() {
 }
 
 bool BrowserAccessibilityManager::IsRootTree() {
-  return GetRootManager() == this;
+  return delegate()->AccessibilityIsMainFrame();
 }
 
 ui::AXTreeUpdate BrowserAccessibilityManager::SnapshotAXTreeForTesting() {
