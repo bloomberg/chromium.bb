@@ -95,6 +95,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button_controller.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/metrics.h"
@@ -364,6 +365,9 @@ class BookmarkFolderButton : public BookmarkMenuButtonBase {
     } else {
       show_animation_->Show();
     }
+
+    set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
+                                ui::EF_MIDDLE_MOUSE_BUTTON);
   }
 
   base::string16 GetTooltipText(const gfx::Point& p) const override {
@@ -380,15 +384,6 @@ class BookmarkFolderButton : public BookmarkMenuButtonBase {
       AnimateInkDrop(views::InkDropState::ACTION_PENDING, &event);
     }
     return MenuButton::OnMousePressed(event);
-  }
-
-  bool IsTriggerableEventType(const ui::Event& e) override {
-    // Bookmark folders handle normal menu button events (i.e., left click) as
-    // well as clicks to open bookmarks in new tabs that would otherwise be
-    // ignored.
-    return BookmarkMenuButtonBase::IsTriggerableEventType(e) ||
-           (e.IsMouseEvent() && ui::DispositionFromEventFlags(e.flags()) !=
-                                    WindowOpenDisposition::CURRENT_TAB);
   }
 
  private:
