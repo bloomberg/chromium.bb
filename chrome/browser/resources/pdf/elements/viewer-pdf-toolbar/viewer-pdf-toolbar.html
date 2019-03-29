@@ -1,4 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -12,7 +14,7 @@
 
 <dom-module id="viewer-pdf-toolbar">
   <template>
-    <style>
+    <style include="cr-hidden-style">
       :host ::selection {
         background: rgba(255, 255, 255, 0.3);
       }
@@ -239,7 +241,7 @@
       </div>
     </div>
 
-    <div id="annotations-bar" class="invisible">
+    <div id="annotations-bar" hidden>
       <viewer-toolbar-dropdown id="pen"
           selected$="[[equal_('pen', annotationTool.tool)]]"
           open-after-select
