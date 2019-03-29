@@ -1564,7 +1564,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
   // Called by HostResolverManager when this job is evicted due to queue
   // overflow. Completes all requests and destroys the job.
-  void OnEvicted() {
+  void OnEvicted(bool complete_asynchronously) {
     DCHECK(!is_running());
     DCHECK(is_queued());
     handle_.Reset();
@@ -1572,7 +1572,22 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     net_log_.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_JOB_EVICTED);
 
     // This signals to CompleteRequests that this job never ran.
-    CompleteRequestsWithError(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE);
+    if (complete_asynchronously) {
+      // Job must be saved in |resolver_| to be completed asynchronously.
+      // Otherwise the job will be destroyed with requests silently cancelled
+      // before completion runs.
+      DCHECK_EQ(1u, resolver_->jobs_.count(key_));
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&Job::CompleteRequestsWithError,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    ERR_HOST_RESOLVER_QUEUE_TOO_LARGE));
+    } else {
+      // Should not complete synchronously with eviction if requests are
+      // attached to the job because those requests will invoke callbacks that
+      // could result in reentrancy.
+      DCHECK_EQ(0u, num_active_requests());
+      CompleteRequestsWithError(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE);
+    }
   }
 
   // Attempts to serve the job from HOSTS. Returns true if succeeded and
@@ -2530,18 +2545,26 @@ int HostResolverManager::CreateAndStartJob(const Key& key,
         proc_task_runner_, request->source_net_log(), tick_clock_);
     job = new_job.get();
     new_job->Schedule(false);
+    DCHECK(new_job->is_running() || new_job->is_queued());
 
     // Check for queue overflow.
     if (dispatcher_->num_queued_jobs() > max_queued_jobs_) {
       Job* evicted = static_cast<Job*>(dispatcher_->EvictOldestLowest());
       DCHECK(evicted);
-      evicted->OnEvicted();
       if (evicted == new_job.get()) {
+        evicted->OnEvicted(false /* complete_asynchronously */);
         LogFinishRequest(request->source_net_log(),
                          ERR_HOST_RESOLVER_QUEUE_TOO_LARGE);
         return ERR_HOST_RESOLVER_QUEUE_TOO_LARGE;
+      } else {
+        // |evicted| could have waiting requests that will receive completion
+        // callbacks, so cleanup asynchronously to avoid reentrancy.
+        evicted->OnEvicted(true /* complete_asynchronously */);
       }
     }
+
+    DCHECK(new_job->is_running() || new_job->is_queued());
+    DCHECK(!jobs_[key]);
     jobs_[key] = std::move(new_job);
   } else {
     job = jobit->second.get();
