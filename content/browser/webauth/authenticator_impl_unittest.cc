@@ -3048,22 +3048,12 @@ TEST_F(InternalUVAuthenticatorImplTest, MakeCredentialCryptotoken) {
             blink::mojom::UserVerificationRequirement::PREFERRED),
         callback_receiver.callback());
 
-    if (!fingerprints_enrolled) {
-      callback_receiver.WaitForCallback();
-      EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
-      // The credential should have been created over U2F.
-      for (const auto& registration :
-           virtual_device_.mutable_state()->registrations) {
-        EXPECT_TRUE(registration.second.is_u2f);
-      }
-    } else {
-      // TODO(agl): this is a bug; an internal-UV authenticator should be able
-      // to create U2F credentials over the U2F interface.
-      base::RunLoop().RunUntilIdle();
-      task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
-      callback_receiver.WaitForCallback();
-      EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
-                callback_receiver.status());
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+    // The credential should have been created over U2F.
+    for (const auto& registration :
+         virtual_device_.mutable_state()->registrations) {
+      EXPECT_TRUE(registration.second.is_u2f);
     }
   }
 }
