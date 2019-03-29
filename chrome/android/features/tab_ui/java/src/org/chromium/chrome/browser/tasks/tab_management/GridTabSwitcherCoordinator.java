@@ -42,6 +42,9 @@ public class GridTabSwitcherCoordinator
             CompositorViewHolder compositorViewHolder, ChromeFullscreenManager fullscreenManager) {
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
+        mMediator = new GridTabSwitcherMediator(
+                this, containerViewModel, tabModelSelector, fullscreenManager);
+
         mMultiThumbnailCardProvider =
                 new MultiThumbnailCardProvider(context, tabContentManager, tabModelSelector);
 
@@ -56,14 +59,12 @@ public class GridTabSwitcherCoordinator
         };
 
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
-                tabModelSelector, mMultiThumbnailCardProvider, titleProvider, compositorViewHolder,
-                true, COMPONENT_NAME);
+                tabModelSelector, mMultiThumbnailCardProvider, titleProvider,
+                mMediator::getCreateGroupButtonOnClickListener, compositorViewHolder, true,
+                COMPONENT_NAME);
 
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabGridCoordinator.getContainerView(), TabGridContainerViewBinder::bind);
-
-        mMediator = new GridTabSwitcherMediator(
-                this, containerViewModel, tabModelSelector, fullscreenManager);
 
         mLifecycleDispatcher = lifecycleDispatcher;
         mLifecycleDispatcher.register(this);

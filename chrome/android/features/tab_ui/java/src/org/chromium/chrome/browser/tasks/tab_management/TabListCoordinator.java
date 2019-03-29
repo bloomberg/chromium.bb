@@ -56,6 +56,8 @@ public class TabListCoordinator implements Destroyable {
      *                              the tabs concerned.
      * @param thumbnailProvider Provider to provide screenshot related details.
      * @param titleProvider Provider for a given tab's title.
+     * @param createGroupButtonProvider {@link TabListMediator.CreateGroupButtonProvider}
+     *         to provide "Create group" button.
      * @param parentView {@link ViewGroup} The root view of the UI.
      * @param attachToParent Whether the UI should attach to root view.
      * @param componentName A unique string uses to identify different components for UMA recording.
@@ -64,8 +66,9 @@ public class TabListCoordinator implements Destroyable {
      */
     TabListCoordinator(@TabListMode int mode, Context context, TabModelSelector tabModelSelector,
             TabListMediator.ThumbnailProvider thumbnailProvider,
-            TabListMediator.TitleProvider titleProvider, @NonNull ViewGroup parentView,
-            boolean attachToParent, String componentName) {
+            TabListMediator.TitleProvider titleProvider,
+            @Nullable TabListMediator.CreateGroupButtonProvider createGroupButtonProvider,
+            @NonNull ViewGroup parentView, boolean attachToParent, String componentName) {
         TabListModel tabListModel = new TabListModel();
         mMode = mode;
 
@@ -111,7 +114,7 @@ public class TabListCoordinator implements Destroyable {
                 new TabListFaviconProvider(context, Profile.getLastUsedProfile());
 
         mMediator = new TabListMediator(tabListModel, tabModelSelector, thumbnailProvider,
-                titleProvider, tabListFaviconProvider, componentName);
+                titleProvider, tabListFaviconProvider, createGroupButtonProvider, componentName);
     }
 
     /**
