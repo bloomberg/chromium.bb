@@ -19,6 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -475,6 +476,11 @@ std::string SerializeClientDownloadRequest(const ClientDownloadRequest& cdr) {
       dict_archived_binary->SetInteger("length", archived_binary.length());
     if (archived_binary.is_encrypted())
       dict_archived_binary->SetBoolean("is_encrypted", true);
+    if (archived_binary.digests().has_sha256()) {
+      const std::string& sha256 = archived_binary.digests().sha256();
+      dict_archived_binary->SetString(
+          "digests.sha256", base::HexEncode(sha256.c_str(), sha256.size()));
+    }
     archived_binaries->Append(std::move(dict_archived_binary));
   }
   dict.SetList("archived_binary", std::move(archived_binaries));
