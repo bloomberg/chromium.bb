@@ -206,6 +206,8 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
              frameInBaseView:(CGRect)frameInBaseView {
   DCHECK(baseView);
   DCHECK(!CGRectIsEmpty(frameInBaseView));
+  // Note: When not using device scale, the output image size may slightly
+  // differ from the input size due to rounding.
   const CGFloat kScale =
       std::max<CGFloat>(1.0, [self.snapshotCache snapshotScaleForDevice]);
   UIGraphicsBeginImageContextWithOptions(frameInBaseView.size, YES, kScale);
@@ -251,7 +253,9 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   DCHECK(!CGRectIsEmpty(frameInWindow));
   if (!baseImage)
     return nil;
-  DCHECK(CGSizeEqualToSize(baseImage.size, frameInWindow.size));
+  // Note: If the baseImage scale differs from device scale, the baseImage size
+  // may slightly differ from frameInWindow size due to rounding. Do not attempt
+  // to compare the baseImage size and frameInWindow size.
   if (overlays.count == 0)
     return baseImage;
   const CGFloat kScale =
