@@ -94,7 +94,8 @@ public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBa
         mSnackbarParentView = snackbarParentView;
 
         ApplicationStatus.registerStateListenerForActivity(this, mActivity);
-        if (ApplicationStatus.getStateForActivity(mActivity) == ActivityState.STARTED) {
+        if (ApplicationStatus.getStateForActivity(mActivity) == ActivityState.STARTED
+                || ApplicationStatus.getStateForActivity(mActivity) == ActivityState.RESUMED) {
             onStart();
         }
     }
