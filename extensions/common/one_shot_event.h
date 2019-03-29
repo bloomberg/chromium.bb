@@ -73,19 +73,19 @@ class OneShotEvent {
   //
   // Const because Post() doesn't modify the logical state of this
   // object (which is just the is_signaled() bit).
-  void Post(const base::Location& from_here, const base::Closure& task) const;
+  void Post(const base::Location& from_here, base::OnceClosure task) const;
   void Post(const base::Location& from_here,
-            const base::Closure& task,
+            base::OnceClosure task,
             const scoped_refptr<base::SingleThreadTaskRunner>& runner) const;
   void PostDelayed(const base::Location& from_here,
-                   const base::Closure& task,
+                   base::OnceClosure task,
                    const base::TimeDelta& delay) const;
 
  private:
   struct TaskInfo;
 
   void PostImpl(const base::Location& from_here,
-                const base::Closure& task,
+                base::OnceClosure task,
                 const scoped_refptr<base::SingleThreadTaskRunner>& runner,
                 const base::TimeDelta& delay) const;
 

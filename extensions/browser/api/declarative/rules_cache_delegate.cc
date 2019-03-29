@@ -89,8 +89,8 @@ void RulesCacheDelegate::Init(RulesRegistry* registry) {
       store->RegisterKey(storage_key_);
 
     system.ready().Post(
-        FROM_HERE, base::BindRepeating(
-                       &RulesCacheDelegate::ReadRulesForInstalledExtensions,
+        FROM_HERE,
+        base::BindOnce(&RulesCacheDelegate::ReadRulesForInstalledExtensions,
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
