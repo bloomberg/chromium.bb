@@ -312,7 +312,8 @@ base::string16 AppMenuModel::GetLabelForCommandId(int command_id) const {
 bool AppMenuModel::GetIconForCommandId(int command_id, gfx::Image* icon) const {
   if (command_id == IDC_UPGRADE_DIALOG) {
     DCHECK(browser_defaults::kShowUpgradeMenuItem);
-    *icon = UpgradeDetector::GetInstance()->GetIcon();
+    DCHECK(app_menu_icon_controller_);
+    *icon = gfx::Image(app_menu_icon_controller_->GetIconImage(false));
     return true;
   }
   return false;
