@@ -170,12 +170,12 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics);
 
-  // Called when the primary display is changed to an existing display. This
-  // results in swapping the display ids the two WindowTreeHosts are
-  // associated with. Clients that have windows contained by the root windows
-  // needs to be updated with the new display ids.
-  void OnWindowTreeHostsSwappedDisplays(aura::Window* new_primary_root,
-                                        aura::Window* old_primary_root);
+  // Called after WindowTreeHosts have changed display ids. |root_windows| is
+  // the set of root windows of the changed WindowTreeHosts. Clients that have
+  // windows contained by the root windows needs to be updated with the new
+  // display ids.
+  void OnWindowTreeHostsDisplayIdChanged(
+      const std::set<aura::Window*>& root_windows);
 
   // Returns an id useful for debugging. See ProxyWindow::GetIdForDebugging()
   // for details.
