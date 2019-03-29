@@ -1663,8 +1663,11 @@ std::string TestRunner::DumpLayout(blink::WebLocalFrame* frame) {
 }
 
 bool TestRunner::DumpPixelsAsync(
-    blink::WebLocalFrame* frame,
+    content::RenderView* render_view,
     base::OnceCallback<void(const SkBitmap&)> callback) {
+  auto* view_proxy = static_cast<WebViewTestProxy*>(render_view);
+  CHECK(view_proxy->GetWebView()->MainFrame());
+
   if (web_test_runtime_flags_.dump_drag_image()) {
     if (drag_image_.isNull()) {
       // This means the test called dumpDragImage but did not initiate a drag.
@@ -1683,22 +1686,27 @@ bool TestRunner::DumpPixelsAsync(
   // If we need to do a display compositor pixel dump, then delegate that to the
   // browser by returning true. Note that printing case can be handled here.
   if (!web_test_runtime_flags_.is_printing()) {
-    frame->View()->MainFrameWidget()->RequestPresentationCallbackForTesting(
-        base::BindOnce(
-            [](base::OnceCallback<void(const SkBitmap&)> callback) {
-              SkBitmap bitmap;
-              bitmap.allocN32Pixels(1, 1);
-              bitmap.eraseColor(0);
-              std::move(callback).Run(bitmap);
-            },
-            std::move(callback)));
+    auto* widget_proxy =
+        static_cast<WebWidgetTestProxy*>(view_proxy->GetWidget());
+    widget_proxy->RequestCompositeAndPresentation(base::BindOnce(
+        [](base::OnceCallback<void(const SkBitmap&)> callback,
+           const gfx::PresentationFeedback& feedback) {
+          // Generate a 1x1 black bitmap.
+          SkBitmap bitmap;
+          bitmap.allocN32Pixels(1, 1);
+          bitmap.eraseColor(0);
+          std::move(callback).Run(bitmap);
+        },
+        std::move(callback)));
     return true;
   }
 
-  auto* target_frame = frame;
+  blink::WebLocalFrame* frame =
+      view_proxy->GetWebView()->MainFrame()->ToWebLocalFrame();
+  blink::WebLocalFrame* target_frame = frame;
   std::string frame_name = web_test_runtime_flags_.printing_frame();
   if (!frame_name.empty()) {
-    auto* frame_to_print =
+    blink::WebFrame* frame_to_print =
         frame->FindFrameByName(blink::WebString::FromUTF8(frame_name));
     if (frame_to_print && frame_to_print->IsWebLocalFrame())
       target_frame = frame_to_print->ToWebLocalFrame();

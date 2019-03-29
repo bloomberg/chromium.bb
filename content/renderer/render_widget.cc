@@ -977,10 +977,11 @@ void RenderWidget::OnForceRedraw(int snapshot_id) {
 void RenderWidget::RequestPresentation(PresentationTimeCallback callback) {
   layer_tree_view_->layer_tree_host()->RequestPresentationTimeForNextFrame(
       std::move(callback));
-  layer_tree_view_->SetNeedsForcedRedraw();
-
-  // Need this since single thread mode doesn't have a scheduler so the above
-  // call won't cause us to generate a new frame.
+  layer_tree_view_->layer_tree_host()->SetNeedsCommitWithForcedRedraw();
+  // In web tests SetNeedsCommitWithForcedRedraw() does not actually cause a
+  // commit, because the compositor is scheduled by blink to avoid test
+  // flakiness. So for this case we must request a main frame the way blink
+  // would.
   ScheduleAnimation();
 }
 
@@ -2820,8 +2821,8 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
       *result = int_value;
       return true;
     } else {
-      LOG(WARNING) << "Failed to parse switch " << switch_string << ": "
-                   << string_value;
+      DLOG(WARNING) << "Failed to parse switch " << switch_string << ": "
+                    << string_value;
       return false;
     }
   };
@@ -3302,6 +3303,17 @@ void RenderWidget::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
   base::TimeDelta duration = base::TimeDelta::FromSecondsD(duration_sec);
   layer_tree_view_->layer_tree_host()->StartPageScaleAnimation(
       target_offset, use_anchor, new_page_scale, duration);
+}
+
+void RenderWidget::RequestDecode(const cc::PaintImage& image,
+                                 base::OnceCallback<void(bool)> callback) {
+  layer_tree_view_->layer_tree_host()->QueueImageDecode(image,
+                                                        std::move(callback));
+  // QueueImageDecode will request a commit and main frame to occur, however:
+  // In web tests SetNeedsCommit() does not actually cause a commit, because the
+  // compositor is scheduled by blink to avoid test flakiness. So for this case
+  // we must request a main frame the way blink would.
+  ScheduleAnimation();
 }
 
 void RenderWidget::RequestUnbufferedInputEvents() {
