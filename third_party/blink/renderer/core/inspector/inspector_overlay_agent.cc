@@ -211,6 +211,7 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       layer_ = cc::PictureLayer::Create(this);
       layer_->SetIsDrawable(true);
+      layer_->SetHitTestable(true);
     }
   }
   ~InspectorPageOverlayDelegate() override {
