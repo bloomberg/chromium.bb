@@ -267,6 +267,7 @@ class TestImporter(object):
             self.git_cl.run(['set-close'])
         except ScriptError as e:
             if e.output and 'Conflict: change is merged' in e.output:
+                _log.error('CL is already merged; treating as success.')
                 return True
             else:
                 raise e

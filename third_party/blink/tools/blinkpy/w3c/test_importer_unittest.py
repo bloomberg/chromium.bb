@@ -218,6 +218,7 @@ class TestImporterTest(LoggingTestCase):
             'INFO: All jobs finished.\n',
             'INFO: CQ appears to have passed; trying to commit.\n',
             'ERROR: Cannot submit CL; aborting.\n',
+            'ERROR: CL is already merged; treating as success.\n',
         ])
         self.assertEqual(importer.git_cl.calls, [
             ['git', 'cl', 'try'],
