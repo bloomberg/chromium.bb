@@ -28,7 +28,7 @@ class HidConnectionLinux : public HidConnection {
 
  private:
   friend class base::RefCountedThreadSafe<HidConnectionLinux>;
-  class BlockingTaskHelper;
+  class BlockingTaskRunnerHelper;
 
   ~HidConnectionLinux() override;
 
@@ -44,7 +44,7 @@ class HidConnectionLinux : public HidConnection {
   // |helper_| lives on the sequence to which |blocking_task_runner_| posts
   // tasks so all calls must be posted there including this object's
   // destruction.
-  std::unique_ptr<BlockingTaskHelper> helper_;
+  std::unique_ptr<BlockingTaskRunnerHelper> helper_;
 
   const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 

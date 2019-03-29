@@ -25,13 +25,14 @@ class MEDIA_EXPORT DeviceMonitorLinux {
   // DeviceMonitorMac to reduce startup impact time.
 
  private:
-  class BlockingTaskHelper;
+  class BlockingTaskRunnerHelper;
 
   // Task for running udev code that can potentially block.
   const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  // Holds the BlockingTaskHelper which runs tasks on |blocking_task_runner_|.
-  std::unique_ptr<BlockingTaskHelper, base::OnTaskRunnerDeleter>
+  // Holds the BlockingTaskRunnerHelper which runs tasks on
+  // |blocking_task_runner_|.
+  std::unique_ptr<BlockingTaskRunnerHelper, base::OnTaskRunnerDeleter>
       blocking_task_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceMonitorLinux);
