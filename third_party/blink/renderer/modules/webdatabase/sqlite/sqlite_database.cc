@@ -72,6 +72,11 @@ bool SQLiteDatabase::Open(const String& filename) {
     return false;
   }
 
+  if (!db_) {
+    open_error_message_ = "sqlite_open returned null";
+    return false;
+  }
+
   open_error_ = sqlite3_extended_result_codes(db_, 1);
   if (open_error_ != SQLITE_OK) {
     open_error_message_ = sqlite3_errmsg(db_);
@@ -95,10 +100,7 @@ bool SQLiteDatabase::Open(const String& filename) {
     return false;
   }
 
-  if (IsOpen())
-    opening_thread_ = CurrentThread();
-  else
-    open_error_message_ = "sqlite_open returned null";
+  opening_thread_ = CurrentThread();
 
   if (!SQLiteStatement(*this, "PRAGMA temp_store = MEMORY;").ExecuteCommand())
     DLOG(ERROR) << "SQLite database could not set temp_store to memory";
@@ -108,7 +110,7 @@ bool SQLiteDatabase::Open(const String& filename) {
   if (!SQLiteStatement(*this, "PRAGMA foreign_keys = OFF;").ExecuteCommand())
     DLOG(ERROR) << "SQLite database could not turn off foreign_keys";
 
-  return IsOpen();
+  return true;
 }
 
 void SQLiteDatabase::Close() {
@@ -208,7 +210,7 @@ bool SQLiteDatabase::ExecuteCommand(const String& sql) {
 }
 
 bool SQLiteDatabase::TableExists(const String& tablename) {
-  if (!IsOpen())
+  if (!db_)
     return false;
 
   String statement =
@@ -349,7 +351,7 @@ int SQLiteDatabase::AuthorizerFunction(void* user_data,
   return kSQLAuthDeny;
 }
 
-void SQLiteDatabase::SetAuthorizer(DatabaseAuthorizer* auth) {
+void SQLiteDatabase::SetAuthorizer(DatabaseAuthorizer* authorizer) {
   if (!db_) {
     NOTREACHED() << "Attempt to set an authorizer on a non-open SQL database";
     return;
@@ -357,17 +359,18 @@ void SQLiteDatabase::SetAuthorizer(DatabaseAuthorizer* auth) {
 
   MutexLocker locker(authorizer_lock_);
 
-  authorizer_ = auth;
+  authorizer_ = authorizer;
 
   EnableAuthorizer(true);
 }
 
 void SQLiteDatabase::EnableAuthorizer(bool enable) {
-  if (authorizer_ && enable)
-    sqlite3_set_authorizer(db_, SQLiteDatabase::AuthorizerFunction,
-                           authorizer_.Get());
-  else
+  if (authorizer_ && enable) {
+    sqlite3_set_authorizer(db_, &SQLiteDatabase::AuthorizerFunction,
+                           authorizer_);
+  } else {
     sqlite3_set_authorizer(db_, nullptr, nullptr);
+  }
 }
 
 bool SQLiteDatabase::IsAutoCommitOn() const {

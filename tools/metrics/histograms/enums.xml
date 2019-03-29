@@ -21728,7 +21728,7 @@ Called by update_net_error_codes.py.-->
   <int value="1977" label="CrossOriginPropertyAccess"/>
   <int value="1978" label="CrossOriginPropertyAccessFromOpener"/>
   <int value="1979" label="CredentialManagerCreate"/>
-  <int value="1980" label="WebDatabaseCreateDropFTS3Table"/>
+  <int value="1980" label="OBSOLETE_WebDatabaseCreateDropFTS3Table"/>
   <int value="1981" label="FieldEditInSecureContext"/>
   <int value="1982" label="FieldEditInNonSecureContext"/>
   <int value="1983"

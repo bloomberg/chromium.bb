@@ -29,7 +29,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
@@ -58,7 +58,6 @@ class SQLiteDatabase {
   ~SQLiteDatabase();
 
   bool Open(const String& filename);
-  bool IsOpen() const { return db_; }
   void Close();
 
   void UpdateLastChangesCount();
@@ -102,6 +101,9 @@ class SQLiteDatabase {
 
   bool IsAutoCommitOn() const;
 
+  bool TurnOnIncrementalAutoVacuum();
+
+ private:
   // The SQLite AUTO_VACUUM pragma can be either NONE, FULL, or INCREMENTAL.
   // NONE - SQLite does not do any vacuuming
   // FULL - SQLite moves all empty pages to the end of the DB file and truncates
@@ -114,13 +116,9 @@ class SQLiteDatabase {
   enum AutoVacuumPragma {
     kAutoVacuumNone = 0,
     kAutoVacuumFull = 1,
-    kAutoVacuumIncremental = 2
+    kAutoVacuumIncremental = 2,
   };
-  bool TurnOnIncrementalAutoVacuum();
 
-  void Trace(blink::Visitor* visitor) {}
-
- private:
   static int AuthorizerFunction(void*,
                                 int,
                                 const char*,
@@ -138,7 +136,11 @@ class SQLiteDatabase {
   bool transaction_in_progress_;
 
   Mutex authorizer_lock_;
-  CrossThreadPersistent<DatabaseAuthorizer> authorizer_;
+
+  // The raw pointer usage is safe because the DatabaseAuthorizer is guaranteed
+  // to outlive this instance. The DatabaseAuthorizer is owned by the same
+  // Database that owns this instance.
+  DatabaseAuthorizer* authorizer_;
 
   base::PlatformThreadId opening_thread_;
 
