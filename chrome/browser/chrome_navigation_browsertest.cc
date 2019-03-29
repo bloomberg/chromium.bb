@@ -14,6 +14,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -27,6 +28,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/url_formatter/url_formatter.h"
+#include "components/variations/active_field_trials.h"
+#include "components/variations/hashing.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -70,11 +73,12 @@ class ChromeNavigationBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kDisableRendererBackgrounding);
 
     embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
-    ASSERT_TRUE(embedded_test_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
   }
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
+    embedded_test_server()->StartAcceptingConnections();
   }
 
   void PreRunTestOnMainThread() override {
@@ -1394,11 +1398,50 @@ IN_PROC_BROWSER_TEST_F(HistoryManipulationInterventionBrowserTest,
 // password isolation can be observed.
 class SiteIsolationForPasswordSitesBrowserTest
     : public ChromeNavigationBrowserTest {
+ public:
+  bool HasSyntheticTrial(const std::string& trial_name) {
+    std::vector<std::string> synthetic_trials;
+    variations::GetSyntheticTrialGroupIdsAsString(&synthetic_trials);
+    std::string trial_hash =
+        base::StringPrintf("%x", variations::HashName(trial_name));
+    auto it =
+        std::find_if(synthetic_trials.begin(), synthetic_trials.end(),
+                     [trial_hash](const auto& trial) {
+                       return base::StartsWith(trial, trial_hash,
+                                               base::CompareCase::SENSITIVE);
+                     });
+    return it != synthetic_trials.end();
+  }
+
+  bool IsInSyntheticTrialGroup(const std::string& trial_name,
+                               const std::string& trial_group) {
+    std::vector<std::string> synthetic_trials;
+    variations::GetSyntheticTrialGroupIdsAsString(&synthetic_trials);
+    std::string expected_entry =
+        base::StringPrintf("%x-%x", variations::HashName(trial_name),
+                           variations::HashName(trial_group));
+    return std::find(synthetic_trials.begin(), synthetic_trials.end(),
+                     expected_entry) != synthetic_trials.end();
+  }
+
+  const std::string kSyntheticTrialName = "SiteIsolationActive";
+  const std::string kSyntheticTrialGroup = "Enabled";
+
  protected:
   void SetUp() override {
     feature_list_.InitWithFeatures({features::kSiteIsolationForPasswordSites},
                                    {features::kSitePerProcess});
     ChromeNavigationBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ChromeNavigationBrowserTest::SetUpCommandLine(command_line);
+
+    // This simulates a whitelist of isolated sites.
+    std::string origin_list =
+        embedded_test_server()->GetURL("isolated1.com", "/").spec() + "," +
+        embedded_test_server()->GetURL("isolated2.com", "/").spec();
+    command_line->AppendSwitchASCII(switches::kIsolateOrigins, origin_list);
   }
 
  private:
@@ -1454,4 +1497,54 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
   content::RenderFrameHost* new_child =
       ChildFrameAt(new_contents->GetMainFrame(), 0);
   EXPECT_TRUE(new_child->IsCrossProcessSubframe());
+}
+
+// This test checks that the synthetic field trial is activated properly after
+// a navigation to an isolated origin commits in a main frame.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
+                       SyntheticTrialFromMainFrame) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  NavigationMetricsRecorder* recorder =
+      content::WebContentsUserData<NavigationMetricsRecorder>::FromWebContents(
+          web_contents);
+  recorder->EnableSiteIsolationSyntheticTrialForTesting();
+
+  EXPECT_FALSE(HasSyntheticTrial(kSyntheticTrialName));
+
+  // Browse to a page with some iframes without involving any isolated origins.
+  GURL unisolated_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c(a))"));
+  ui_test_utils::NavigateToURL(browser(), unisolated_url);
+  EXPECT_FALSE(HasSyntheticTrial(kSyntheticTrialName));
+
+  // Now browse to an isolated origin.
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated1.com", "/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), isolated_url);
+  EXPECT_TRUE(
+      IsInSyntheticTrialGroup(kSyntheticTrialName, kSyntheticTrialGroup));
+}
+
+// This test checks that the synthetic field trial is activated properly after
+// a navigation to an isolated origin commits in a subframe.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
+                       SyntheticTrialFromSubframe) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  NavigationMetricsRecorder* recorder =
+      content::WebContentsUserData<NavigationMetricsRecorder>::FromWebContents(
+          web_contents);
+  recorder->EnableSiteIsolationSyntheticTrialForTesting();
+
+  EXPECT_FALSE(HasSyntheticTrial(kSyntheticTrialName));
+
+  // Browse to a page with an isolated origin on one of the iframes.
+  GURL isolated_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c,isolated2,d)"));
+  ui_test_utils::NavigateToURL(browser(), isolated_url);
+  EXPECT_TRUE(
+      IsInSyntheticTrialGroup(kSyntheticTrialName, kSyntheticTrialGroup));
 }
