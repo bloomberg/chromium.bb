@@ -311,6 +311,10 @@ struct PredictionFeatures {
     VideoCodecProfile profile;
     gfx.mojom.Size video_size;
     int32 frames_per_sec = 0;
+    // Name of the key system used for EME playbacks.
+    string key_system;
+    // Indicates when CDM will use HW secure decoding for EME playbacks.
+    bool use_hw_secure_codecs = false;
 };
 
 // Target values for MediaCapabilities predictions.
