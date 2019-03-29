@@ -235,6 +235,7 @@ typedef enum {
   DISPLAY_RATE_TOO_HIGH,
   DECODE_RATE_TOO_HIGH,
   CR_TOO_SMALL,
+  TILE_SIZE_HEADER_RATE_TOO_HIGH,
 
   TARGET_LEVEL_FAIL_IDS,
   TARGET_LEVEL_OK,
@@ -258,6 +259,7 @@ static const char *level_fail_messages[TARGET_LEVEL_FAIL_IDS] = {
   "The display luma sample rate is too high.",
   "The decoded luma sample rate is too high.",
   "The compression ratio is too small.",
+  "The product of max tile size and header rate is too high.",
 };
 
 static double get_min_cr(const AV1LevelSpec *const level_spec, int tier,
@@ -268,6 +270,30 @@ static double get_min_cr(const AV1LevelSpec *const level_spec, int tier,
       (double)decoded_sample_rate / level_spec->max_display_rate;
   return AOMMAX(min_cr_basis * speed_adj, 0.8);
 }
+
+static void get_temporal_parallel_params(int scalability_mode_idc,
+                                         int *temporal_parallel_num,
+                                         int *temporal_parallel_denom) {
+  if (scalability_mode_idc < 0) {
+    *temporal_parallel_num = 1;
+    *temporal_parallel_denom = 1;
+    return;
+  }
+
+  // TODO(huisu@): handle scalability cases.
+  if (scalability_mode_idc == SCALABILITY_SS) {
+    (void)scalability_mode_idc;
+  } else {
+    (void)scalability_mode_idc;
+  }
+}
+
+#define MAX_TILE_SIZE (4096 * 2304)
+#define MIN_CROPPED_TILE_WIDTH 8
+#define MIN_CROPPED_TILE_HEIGHT 8
+#define MIN_FRAME_WIDTH 16
+#define MIN_FRAME_HEIGHT 16
+#define MAX_TILE_SIZE_HEADER_RATE_PRODUCT 588251136
 
 static TARGET_LEVEL_FAIL_ID check_level_constraints(
     const AV1LevelSpec *const target_level_spec,
@@ -323,7 +349,7 @@ static TARGET_LEVEL_FAIL_ID check_level_constraints(
       break;
     }
 
-    if (level_stats->max_tile_size > 4096 * 2304) {
+    if (level_stats->max_tile_size > MAX_TILE_SIZE) {
       fail_id = TILE_TOO_LARGE;
       break;
     }
@@ -333,22 +359,22 @@ static TARGET_LEVEL_FAIL_ID check_level_constraints(
       break;
     }
 
-    if (level_stats->min_cropped_tile_width < 8) {
+    if (level_stats->min_cropped_tile_width < MIN_CROPPED_TILE_WIDTH) {
       fail_id = CROPPED_TILE_WIDTH_TOO_SMALL;
       break;
     }
 
-    if (level_stats->min_cropped_tile_height < 8) {
+    if (level_stats->min_cropped_tile_height < MIN_CROPPED_TILE_HEIGHT) {
       fail_id = CROPPED_TILE_HEIGHT_TOO_SMALL;
       break;
     }
 
-    if (level_stats->min_frame_width < 16) {
+    if (level_stats->min_frame_width < MIN_FRAME_WIDTH) {
       fail_id = LUMA_PIC_H_SIZE_TOO_SMALL;
       break;
     }
 
-    if (level_stats->min_frame_height < 16) {
+    if (level_stats->min_frame_height < MIN_FRAME_HEIGHT) {
       fail_id = LUMA_PIC_V_SIZE_TOO_SMALL;
       break;
     }
@@ -361,6 +387,20 @@ static TARGET_LEVEL_FAIL_ID check_level_constraints(
     if (level_stats->min_cr < min_cr) {
       fail_id = CR_TOO_SMALL;
       break;
+    }
+
+    if (target_level_spec->level > SEQ_LEVEL_5_1) {
+      int temporal_parallel_num;
+      int temporal_parallel_denom;
+      const int scalability_mode_idc = -1;
+      get_temporal_parallel_params(scalability_mode_idc, &temporal_parallel_num,
+                                   &temporal_parallel_denom);
+      const int val = level_stats->max_tile_size * level_spec->max_header_rate *
+                      temporal_parallel_denom / temporal_parallel_num;
+      if (val > MAX_TILE_SIZE_HEADER_RATE_PRODUCT) {
+        fail_id = TILE_SIZE_HEADER_RATE_TOO_HIGH;
+        break;
+      }
     }
   } while (0);
 
