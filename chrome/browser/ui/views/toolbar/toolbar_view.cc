@@ -716,6 +716,14 @@ void ToolbarView::UpdateTypeAndSeverity(
   app_menu_button_->SetTypeAndSeverity(type_and_severity);
 }
 
+const ui::ThemeProvider* ToolbarView::GetViewThemeProvider() const {
+  return GetThemeProvider();
+}
+
+ui::NativeTheme* ToolbarView::GetViewNativeTheme() {
+  return GetNativeTheme();
+}
+
 // ToolbarButtonProvider:
 BrowserActionsContainer* ToolbarView::GetBrowserActionsContainer() {
   return browser_actions_;

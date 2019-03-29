@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser_otr_state.h"
@@ -17,8 +16,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/idle/idle.h"
-#include "ui/gfx/color_palette.h"
-#include "ui/gfx/paint_vector_icon.h"
 
 // How long to wait between checks for whether the user has been idle.
 static const int kIdleRepeatingTimerWait = 10;  // Minutes (seconds if testing).
@@ -39,29 +36,6 @@ bool UseTestingIntervals() {
 // static
 void UpgradeDetector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kAttemptedToEnableAutoupdate, false);
-}
-
-gfx::Image UpgradeDetector::GetIcon() {
-  SkColor color = gfx::kPlaceholderColor;
-  switch (upgrade_notification_stage_) {
-    case UPGRADE_ANNOYANCE_NONE:
-      return gfx::Image();
-    case UPGRADE_ANNOYANCE_VERY_LOW:
-    case UPGRADE_ANNOYANCE_LOW:
-      color = gfx::kGoogleGreen700;
-      break;
-    case UPGRADE_ANNOYANCE_ELEVATED:
-      color = gfx::kGoogleYellow700;
-      break;
-    case UPGRADE_ANNOYANCE_HIGH:
-    case UPGRADE_ANNOYANCE_CRITICAL:
-      color = gfx::kGoogleRed700;
-      break;
-  }
-  DCHECK_NE(gfx::kPlaceholderColor, color)
-      << static_cast<int>(upgrade_notification_stage_);
-
-  return gfx::Image(gfx::CreateVectorIcon(kBrowserToolsUpdateIcon, color));
 }
 
 UpgradeDetector::UpgradeDetector(const base::Clock* clock,

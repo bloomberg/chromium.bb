@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
@@ -70,10 +71,9 @@ class BrowserAppMenuButton : public AppMenuButton,
  private:
   void UpdateBorder();
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-  // Picks the best promo color given the current background color.
-  SkColor GetPromoHighlightColor() const;
-#endif
+  // If the button is being used as an anchor for a promo, returns the best
+  // promo color given the current background color.
+  base::Optional<SkColor> GetPromoHighlightColor() const;
 
   // AppMenuButton:
   const char* GetClassName() const override;
