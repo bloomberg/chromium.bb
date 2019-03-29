@@ -7967,6 +7967,30 @@ Please help our engineers fix this problem. Tell us what happened right before y
         This page may need to be reloaded before the new settings take effect.
       </message>
 
+      <if expr="is_macosx">
+        <message name="IDS_CAMERA_MIC_TURNED_OFF_IN_MACOS" desc="Title for the media status bubble that is used when a site requests camera and microphone, but camera and microphone are blocked on an OS level in macOS.">
+          Camera and microphone are turned off in Mac System Preferences
+        </message>
+        <message name="IDS_CAMERA_TURNED_OFF_IN_MACOS" desc="Title for the media status bubble that is used when a site requests camera access, but camera is blocked on an OS level in macOS.">
+          Camera is turned off in Mac System Preferences
+        </message>
+        <message name="IDS_MIC_TURNED_OFF_IN_MACOS" desc="Title for the media status bubble that is used when a site requests microphone access, but microphone is blocked on an OS level in macOS.">
+          Microphone is turned off in Mac System Preferences
+        </message>
+        <message name="IDS_OPEN_PREFERENCES_LINK" desc="Title for the button that takes the user to the Security and Privacy settings in macOS, in order for the user to be able to modify the ability to access camera and microphone for Chrome.">
+          Open Preferences
+        </message>
+        <message name="IDS_CAMERA" desc="Description text for the camera.">
+          Camera
+        </message>
+        <message name="IDS_MIC" desc="Decription text for the microphone.">
+          Microphone
+        </message>
+        <message name="IDS_TURNED_OFF" desc="Description text for the state of camera or microphone">
+          Turned off
+        </message>
+      </if>
+
       <!-- Protected media identifier permission infobar -->
       <if expr="is_android or chromeos">
         <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_FRAGMENT" desc="Permission fragment shown in the permissions bubble when a web page requests access to the computer's protected media identifier.">
