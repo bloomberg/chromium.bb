@@ -84,6 +84,8 @@ class RemoteTest(object):
         CROS_RUN_TEST_PATH,
         '--board', args.board,
         '--cache-dir', args.cros_cache,
+        '--remote-cmd',
+        '--cwd', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
     ]
     if args.use_vm:
       self._test_cmd += [
@@ -241,19 +243,30 @@ class TastTest(RemoteTest):
         '--deploy',
         '--mount',
         '--build-dir', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
-        '--cmd',
-        '--',
-        'local_test_runner',
-        '-waituntilready',
     ]
+
+    # Build the shell script that will be used on the device to invoke the test.
+    device_test_script_contents = self.BASIC_SHELL_SCRIPT[:]
+
+    local_test_runner_cmd = ['local_test_runner', '-waituntilready']
     if self._use_vm:
       # If we're running tests in VMs, tell the test runner to skip tests that
       # aren't compatible.
-      self._test_cmd.append('-extrauseflags=tast_vm')
+      local_test_runner_cmd.append('-extrauseflags=tast_vm')
     if self._conditional:
-      self._test_cmd.append(pipes.quote(self._conditional))
+      local_test_runner_cmd.append(pipes.quote(self._conditional))
     else:
-      self._test_cmd.extend(self._tests)
+      local_test_runner_cmd.extend(self._tests)
+    device_test_script_contents.append(' '.join(local_test_runner_cmd))
+
+    self._on_device_script = self.write_test_script_to_disk(
+        device_test_script_contents)
+
+    self._test_cmd += [
+        '--files', os.path.relpath(self._on_device_script),
+        '--',
+        './' + os.path.relpath(self._on_device_script, self._path_to_outdir)
+    ]
 
 
 class GTestTest(RemoteTest):
@@ -360,16 +373,12 @@ class GTestTest(RemoteTest):
       # of handling it here.
       runtime_files.append('.vpython')
 
-    # Since we're pushing files, we need to set the cwd.
-    self._test_cmd.extend(
-        ['--cwd', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH)])
     for f in runtime_files:
       self._test_cmd.extend(['--files', f])
 
     self._test_cmd += [
         # Some tests fail as root, so run as the less privileged user 'chronos'.
         '--as-chronos',
-        '--cmd',
         '--',
         './' + os.path.relpath(self._on_device_script, self._path_to_outdir)
     ]
@@ -432,13 +441,23 @@ class BrowserSanityTest(RemoteTest):
     if not self._use_vm or not os.environ.get('LLVM_PROFILE_FILE'):
       self._test_cmd.append('--nostrip')
 
-    # run_cros_test's default behavior when no cmd is specified is the sanity
-    # test that's baked into the device image. This test smoke-checks the system
-    # browser, so deploy our locally-built chrome to the device before testing.
+    device_test_script_contents = self.BASIC_SHELL_SCRIPT[:]
+
+    # vm_sanity.py is the sanity test, which is baked into the device image.
+    device_test_script_contents.append('/usr/local/autotest/bin/vm_sanity.py')
+
+    self._on_device_script = self.write_test_script_to_disk(
+        device_test_script_contents)
+
     self._test_cmd += [
+        '--files', os.path.relpath(self._on_device_script),
+        # The sanity test smoke-checks the system browser, so deploy our
+        # locally-built chrome to the device before testing.
         '--deploy',
         '--mount',
         '--build-dir', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
+        '--',
+        './' + os.path.relpath(self._on_device_script, self._path_to_outdir)
     ]
 
 
