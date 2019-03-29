@@ -242,6 +242,17 @@ ThreadControllerWithMessagePumpImpl::DoSomeWork() {
   // avoid converting back-and-forth between TimeTicks and TimeDelta.
   main_thread_only().next_delayed_do_work =
       continuation_lazy_now.Now() + delay_till_next_task;
+
+  // Don't request a run time past |main_thread_only().quit_runloop_after|.
+  if (main_thread_only().next_delayed_do_work >
+      main_thread_only().quit_runloop_after) {
+    main_thread_only().next_delayed_do_work =
+        main_thread_only().quit_runloop_after;
+    // If we've passed |quit_runloop_after| there's no more work to do.
+    if (continuation_lazy_now.Now() >= main_thread_only().quit_runloop_after)
+      return {TimeTicks::Max()};
+  }
+
   return {CapAtOneDay(main_thread_only().next_delayed_do_work,
                       &continuation_lazy_now),
           continuation_lazy_now.Now()};
@@ -287,14 +298,22 @@ bool ThreadControllerWithMessagePumpImpl::DoDelayedWork(
     *next_run_time = TimeTicks();
     next_task = WorkDeduplicator::NextTask::kIsImmediate;
   } else if (delay_till_next_task != TimeDelta::Max()) {
+    // Cancels any previously scheduled delayed wake-ups.
+    *next_run_time =
+        CapAtOneDay(delay_till_next_task + continuation_lazy_now.Now(),
+                    &continuation_lazy_now);
+
+    // Don't request a run time past |main_thread_only().quit_runloop_after|.
+    if (*next_run_time > main_thread_only().quit_runloop_after) {
+      *next_run_time = main_thread_only().quit_runloop_after;
+      // If we've passed |quit_runloop_after| there's no more work to do.
+      if (continuation_lazy_now.Now() >= main_thread_only().quit_runloop_after)
+        *next_run_time = TimeTicks();
+    }
+
     // The MessagePump will call ScheduleDelayedWork on our behalf, so we need
     // to update |main_thread_only().next_delayed_do_work|.
-    main_thread_only().next_delayed_do_work =
-        continuation_lazy_now.Now() + delay_till_next_task;
-
-    // Cancels any previously scheduled delayed wake-ups.
-    *next_run_time = CapAtOneDay(main_thread_only().next_delayed_do_work,
-                                 &continuation_lazy_now);
+    main_thread_only().next_delayed_do_work = *next_run_time;
   } else {
     // There's no more work to do.
     *next_run_time = TimeTicks();
@@ -312,8 +331,12 @@ bool ThreadControllerWithMessagePumpImpl::DoDelayedWork(
 TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
     LazyNow* continuation_lazy_now,
     bool* ran_task) {
-  if (!main_thread_only().task_execution_allowed)
-    return TimeDelta::Max();
+  if (!main_thread_only().task_execution_allowed) {
+    if (main_thread_only().quit_runloop_after == TimeTicks::Max())
+      return TimeDelta::Max();
+    return main_thread_only().quit_runloop_after - continuation_lazy_now->Now();
+  }
+
   // Keep this in-sync with
   // third_party/catapult/tracing/tracing/extras/chrome/event_finder_utils.html
   // TODO(alexclarke): Rename this event to whatever we end up calling this
@@ -384,6 +407,13 @@ bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
     return false;
   }
 
+  // Check if any runloop timeout has expired.
+  if (main_thread_only().quit_runloop_after != TimeTicks::Max() &&
+      main_thread_only().quit_runloop_after <= time_source_->NowTicks()) {
+    Quit();
+    return false;
+  }
+
   // RunLoop::Delegate knows whether we called Run() or RunUntilIdle().
   if (ShouldQuitWhenIdle())
     Quit();
@@ -391,8 +421,17 @@ bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
   return false;
 }
 
-void ThreadControllerWithMessagePumpImpl::Run(bool application_tasks_allowed) {
+void ThreadControllerWithMessagePumpImpl::Run(bool application_tasks_allowed,
+                                              TimeDelta timeout) {
   DCHECK(RunsTasksInCurrentSequence());
+  // RunLoops can be nested so we need to restore the previous value of
+  // |quit_runloop_after| upon exit. NB we could use saturated arithmetic here
+  // but don't because we have some tests which assert the number of calls to
+  // Now.
+  AutoReset<TimeTicks> quit_runloop_after(
+      &main_thread_only().quit_runloop_after,
+      (timeout == TimeDelta::Max()) ? TimeTicks::Max()
+                                    : time_source_->NowTicks() + timeout);
   // Quit may have been called outside of a Run(), so |quit_pending| might be
   // true here. We can't use InTopLevelDoWork() in Quit() as this call may be
   // outside top-level DoWork but still in Run().
@@ -428,6 +467,7 @@ void ThreadControllerWithMessagePumpImpl::Quit() {
   DCHECK(RunsTasksInCurrentSequence());
   // Interrupt a batch of work.
   main_thread_only().quit_pending = true;
+
   // If we're in a nested RunLoop, continuation will be posted if necessary.
   pump_->Quit();
 }
