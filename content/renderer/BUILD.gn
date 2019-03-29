@@ -532,8 +532,6 @@ target(link_target_type, "renderer") {
     "v8_value_converter_impl.h",
     "web_database_observer_impl.cc",
     "web_database_observer_impl.h",
-    "web_test_dependencies.cc",
-    "web_test_dependencies.h",
     "web_ui_extension.cc",
     "web_ui_extension.h",
     "web_ui_extension_data.cc",

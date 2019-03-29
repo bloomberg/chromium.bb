@@ -56,9 +56,4 @@ const char kRunWebTests[] = "run-web-tests";
 // http://dev.chromium.org/blink/runtime-enabled-features.
 const char kStableReleaseMode[] = "stable-release-mode";
 
-// Enable pixel dumps via "real" surface readbacks, instead of synchronously
-// compositing and reading back pixels.
-const char kEnableDisplayCompositorPixelDump[] =
-    "enable-display-compositor-pixel-dump";
-
 }  // namespace switches

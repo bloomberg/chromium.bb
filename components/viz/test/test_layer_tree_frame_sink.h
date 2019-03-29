@@ -23,7 +23,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace cc {
-class CopyOutputRequest;
 class OutputSurface;
 }  // namespace cc
 
@@ -86,9 +85,6 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
                             const gfx::ColorSpace& output_color_space);
 
   Display* display() const { return display_.get(); }
-
-  // Will be included with the next SubmitCompositorFrame.
-  void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> request);
 
   // LayerTreeFrameSink implementation.
   bool BindToClient(cc::LayerTreeFrameSinkClient* client) override;
@@ -161,7 +157,6 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   TestLayerTreeFrameSinkClient* test_client_ = nullptr;
   gfx::Size enlarge_pass_texture_amount_;
 
-  std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests_;
   // The set of SharedBitmapIds that have been reported as allocated to this
   // interface. On closing this interface, the display compositor should drop
   // ownership of the bitmaps with these ids to avoid leaking them.

@@ -201,10 +201,6 @@ void WebTestContentBrowserClient::AppendExtraCommandLineSwitches(
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kEnableLeakDetection));
   }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDisplayCompositorPixelDump)) {
-    command_line->AppendSwitch(switches::kEnableDisplayCompositorPixelDump);
-  }
 }
 
 BrowserMainParts* WebTestContentBrowserClient::CreateBrowserMainParts(

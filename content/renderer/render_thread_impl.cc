@@ -1880,6 +1880,12 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       *base::CommandLine::ForCurrentProcess();
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
   params.compositor_task_runner = compositor_task_runner_;
+  if (web_test_mode() && !compositor_task_runner_) {
+    // The frame sink provider expects a compositor task runner, but we might
+    // not have that if we're running web tests in single threaded mode.
+    // Set it to be our thread's task runner instead.
+    params.compositor_task_runner = main_thread_compositor_task_runner_;
+  }
   params.enable_surface_synchronization =
       features::IsSurfaceSynchronizationEnabled();
   params.local_surface_id_provider =
@@ -1998,21 +2004,6 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
           attributes,
           ws::command_buffer_metrics::ContextType::RENDER_COMPOSITOR));
 
-  if (web_test_deps_) {
-    if (!web_test_deps_->UseDisplayCompositorPixelDump()) {
-      std::move(callback).Run(web_test_deps_->CreateLayerTreeFrameSink(
-          widget_routing_id, std::move(gpu_channel_host),
-          std::move(context_provider), std::move(worker_context_provider),
-          GetGpuMemoryBufferManager(), this));
-      return;
-    } else if (!params.compositor_task_runner) {
-      // The frame sink provider expects a compositor task runner, but we might
-      // not have that if we're running web tests in single threaded mode.
-      // Set it to be our thread's task runner instead.
-      params.compositor_task_runner = GetCompositorMainThreadTaskRunner();
-    }
-  }
-
 #if defined(OS_ANDROID)
   if (GetContentClient()->UsingSynchronousCompositing()) {
     RenderWidget* widget = RenderWidget::FromRoutingID(widget_routing_id);
@@ -2049,15 +2040,6 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 blink::AssociatedInterfaceRegistry*
 RenderThreadImpl::GetAssociatedInterfaceRegistry() {
   return &associated_interfaces_;
-}
-
-std::unique_ptr<cc::SwapPromise>
-RenderThreadImpl::RequestCopyOfOutputForWebTest(
-    int32_t widget_routing_id,
-    std::unique_ptr<viz::CopyOutputRequest> request) {
-  DCHECK(web_test_deps_ && !web_test_deps_->UseDisplayCompositorPixelDump());
-  return web_test_deps_->RequestCopyOfOutput(widget_routing_id,
-                                             std::move(request));
 }
 
 std::unique_ptr<blink::WebMediaStreamCenter>

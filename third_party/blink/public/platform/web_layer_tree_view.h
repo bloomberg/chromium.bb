@@ -41,8 +41,6 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
-class SkBitmap;
-
 namespace cc {
 class PaintImage;
 }
@@ -96,9 +94,6 @@ class WebLayerTreeView {
   virtual void SetOverscrollBehavior(const cc::OverscrollBehavior&) {}
 
   // Flow control and scheduling ---------------------------------------
-
-  virtual void CompositeAndReadbackAsync(
-      base::OnceCallback<void(const SkBitmap&)> callback) {}
 
   // Prevents any updates to the input for the layer tree, and the layer tree
   // itself, and the layer tree from becoming visible.

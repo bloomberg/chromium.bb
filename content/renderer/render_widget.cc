@@ -1345,12 +1345,6 @@ void RenderWidget::WillBeginCompositorFrame() {
     observer.WillBeginCompositorFrame();
 }
 
-std::unique_ptr<cc::SwapPromise> RenderWidget::RequestCopyOfOutputForWebTest(
-    std::unique_ptr<viz::CopyOutputRequest> request) {
-  return RenderThreadImpl::current()->RequestCopyOfOutputForWebTest(
-      routing_id_, std::move(request));
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetInputHandlerDelegate
 

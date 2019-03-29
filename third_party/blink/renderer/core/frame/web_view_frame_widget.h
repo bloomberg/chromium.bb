@@ -58,8 +58,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void UpdateLifecycle(LifecycleUpdate requested_update,
                        LifecycleUpdateReason reason) override;
   void PaintContent(cc::PaintCanvas*, const WebRect& view_port) override;
-  void CompositeAndReadbackAsync(
-      base::OnceCallback<void(const SkBitmap&)>) override;
   void ThemeChanged() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;

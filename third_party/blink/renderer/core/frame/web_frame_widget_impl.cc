@@ -356,11 +356,6 @@ void WebFrameWidgetImpl::PaintContent(cc::PaintCanvas* canvas,
   NOTREACHED();
 }
 
-void WebFrameWidgetImpl::CompositeAndReadbackAsync(
-    base::OnceCallback<void(const SkBitmap&)> callback) {
-  layer_tree_view_->CompositeAndReadbackAsync(std::move(callback));
-}
-
 void WebFrameWidgetImpl::ThemeChanged() {
   LocalFrameView* view = LocalRootImpl()->GetFrameView();
 

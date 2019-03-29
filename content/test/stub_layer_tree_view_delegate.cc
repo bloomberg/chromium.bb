@@ -17,10 +17,4 @@ void StubLayerTreeViewDelegate::RequestNewLayerTreeFrameSink(
   std::move(callback).Run(nullptr);
 }
 
-std::unique_ptr<cc::SwapPromise>
-StubLayerTreeViewDelegate::RequestCopyOfOutputForWebTest(
-    std::unique_ptr<viz::CopyOutputRequest> request) {
-  return nullptr;
-}
-
 }  // namespace content

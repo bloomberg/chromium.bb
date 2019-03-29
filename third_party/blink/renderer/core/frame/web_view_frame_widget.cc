@@ -88,11 +88,6 @@ void WebViewFrameWidget::PaintContent(cc::PaintCanvas* canvas,
   web_view_->PaintContent(canvas, view_port);
 }
 
-void WebViewFrameWidget::CompositeAndReadbackAsync(
-    base::OnceCallback<void(const SkBitmap&)> callback) {
-  web_view_->CompositeAndReadbackAsync(std::move(callback));
-}
-
 void WebViewFrameWidget::ThemeChanged() {
   web_view_->ThemeChanged();
 }

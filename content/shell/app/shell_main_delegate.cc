@@ -213,7 +213,6 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line.AppendSwitch(cc::switches::kEnableGpuBenchmarking);
     command_line.AppendSwitch(switches::kEnableLogging);
     command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);
-    command_line.AppendSwitch(switches::kEnableDisplayCompositorPixelDump);
     // only default to a software GL if the flag isn't already specified.
     if (!command_line.HasSwitch(switches::kUseGpuInTests) &&
         !command_line.HasSwitch(switches::kUseGL)) {
@@ -243,16 +242,15 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
       command_line.AppendSwitch(cc::switches::kDisableThreadedAnimation);
     }
 
-    // If we're doing a display compositor pixel dump we ensure that
-    // we complete all stages of compositing before draw. We also can't have
-    // checker imaging, since it's imcompatible with single threaded compositor
-    // and display compositor pixel dumps.
-    if (command_line.HasSwitch(switches::kEnableDisplayCompositorPixelDump)) {
-      // TODO(crbug.com/894613) Add kRunAllCompositorStagesBeforeDraw back here
-      // once you figure out why it causes so much web test flakiness.
-      // command_line.AppendSwitch(switches::kRunAllCompositorStagesBeforeDraw);
-      command_line.AppendSwitch(cc::switches::kDisableCheckerImaging);
-    }
+    // With display compositor pixel dumps, we ensure that we complete all
+    // stages of compositing before draw. We also can't have checker imaging,
+    // since it's imcompatible with single threaded compositor and display
+    // compositor pixel dumps.
+    //
+    // TODO(crbug.com/894613) Add kRunAllCompositorStagesBeforeDraw back here
+    // once you figure out why it causes so much web test flakiness.
+    // command_line.AppendSwitch(switches::kRunAllCompositorStagesBeforeDraw);
+    command_line.AppendSwitch(cc::switches::kDisableCheckerImaging);
 
     command_line.AppendSwitch(switches::kMuteAudio);
 

@@ -1682,9 +1682,7 @@ bool TestRunner::DumpPixelsAsync(
 
   // If we need to do a display compositor pixel dump, then delegate that to the
   // browser by returning true. Note that printing case can be handled here.
-  if (!web_test_runtime_flags_.is_printing() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDisplayCompositorPixelDump)) {
+  if (!web_test_runtime_flags_.is_printing()) {
     frame->View()->MainFrameWidget()->RequestPresentationCallbackForTesting(
         base::BindOnce(
             [](base::OnceCallback<void(const SkBitmap&)> callback) {
@@ -1697,29 +1695,15 @@ bool TestRunner::DumpPixelsAsync(
     return true;
   }
 
-  // See if we need to draw the selection bounds rect on top of the snapshot.
-  if (web_test_runtime_flags_.dump_selection_rect()) {
-    callback =
-        CreateSelectionBoundsRectDrawingCallback(frame, std::move(callback));
+  auto* target_frame = frame;
+  std::string frame_name = web_test_runtime_flags_.printing_frame();
+  if (!frame_name.empty()) {
+    auto* frame_to_print =
+        frame->FindFrameByName(blink::WebString::FromUTF8(frame_name));
+    if (frame_to_print && frame_to_print->IsWebLocalFrame())
+      target_frame = frame_to_print->ToWebLocalFrame();
   }
-
-  // Request appropriate kind of pixel dump.
-  if (web_test_runtime_flags_.is_printing()) {
-    auto* target_frame = frame;
-    std::string frame_name = web_test_runtime_flags_.printing_frame();
-    if (!frame_name.empty()) {
-      auto* frame_to_print =
-          frame->FindFrameByName(blink::WebString::FromUTF8(frame_name));
-      if (frame_to_print && frame_to_print->IsWebLocalFrame())
-        target_frame = frame_to_print->ToWebLocalFrame();
-    }
-    test_runner::PrintFrameAsync(target_frame, std::move(callback));
-  } else {
-    // TODO(lukasza): Ask the |delegate_| to capture the pixels in the browser
-    // process, so that OOPIF pixels are also captured.
-    test_runner::DumpPixelsAsync(frame, delegate_->GetDeviceScaleFactor(),
-                                 std::move(callback));
-  }
+  test_runner::PrintFrameAsync(target_frame, std::move(callback));
   return false;
 }
 

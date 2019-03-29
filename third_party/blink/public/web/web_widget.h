@@ -49,8 +49,6 @@
 #include "third_party/blink/public/web/web_range.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 
-class SkBitmap;
-
 namespace cc {
 struct ApplyViewportChangesArgs;
 class AnimationHost;
@@ -155,10 +153,6 @@ class WebWidget {
   // the main LayoutView's property tree state, thus ignoring any transient
   // transormations (e.g. pinch-zoom, dev tools emulation, etc.).
   virtual void PaintContent(cc::PaintCanvas*, const WebRect& view_port) {}
-
-  // This should only be called when isAcceleratedCompositingActive() is true.
-  virtual void CompositeAndReadbackAsync(
-      base::OnceCallback<void(const SkBitmap&)> callback) {}
 
   // Runs |callback| after a new frame has been submitted to the display
   // compositor, and the display-compositor has displayed it on screen. Forces a

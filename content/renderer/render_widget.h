@@ -347,8 +347,6 @@ class CONTENT_EXPORT RenderWidget
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
   void UpdateVisualState() override;
   void WillBeginCompositorFrame() override;
-  std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForWebTest(
-      std::unique_ptr<viz::CopyOutputRequest> request) override;
 
   // RenderWidgetInputHandlerDelegate
   void FocusChangeComplete() override;

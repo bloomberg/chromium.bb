@@ -650,9 +650,6 @@ static_library("web_test_support") {
 
   deps = [
     ":test_support",
-    "//cc",
-    "//components/viz/service",
-    "//components/viz/test:test_support",
     "//content/browser:for_content_tests",
     "//content/child:for_content_tests",
     "//content/public/common",
@@ -663,13 +660,12 @@ static_library("web_test_support") {
     "//content/shell/test_runner:test_runner",
     "//device/bluetooth",
     "//device/gamepad/public/cpp:shared_with_blink",
-    "//gpu/ipc/service",
     "//services/device/public/cpp/generic_sensor",
-    "//services/ws/public/cpp/gpu",
     "//skia",
     "//ui/accessibility:ax_enums_mojo",
     "//ui/events/blink",
     "//ui/gfx:test_support",
+    "//ui/gfx/geometry",
     "//v8",
   ]
 
