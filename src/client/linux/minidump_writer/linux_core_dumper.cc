@@ -242,14 +242,21 @@ bool LinuxCoreDumper::EnumerateThreads() {
             break;
         }
 
-        // Set crash_exception_info for common signals.
+        // Set crash_exception_info for common signals.  Since exception info is
+        // unsigned, but some of these fields might be signed, we always cast.
         switch (info->si_signo) {
           case MD_EXCEPTION_CODE_LIN_SIGKILL:
-            set_crash_exception_info({info->si_pid, info->si_uid});
+            set_crash_exception_info({
+              static_cast<uint64_t>(info->si_pid),
+              static_cast<uint64_t>(info->si_uid),
+            });
             break;
           case MD_EXCEPTION_CODE_LIN_SIGSYS:
 #ifdef si_syscall
-            set_crash_exception_info({info->si_syscall, info->si_arch});
+            set_crash_exception_info({
+              static_cast<uint64_t>(info->si_syscall),
+              static_cast<uint64_t>(info->si_arch),
+            });
 #endif
             break;
         }
