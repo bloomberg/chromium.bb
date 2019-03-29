@@ -28,6 +28,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.SplashScreenController;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
@@ -290,8 +291,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         newIntent.setData(uri);
         newIntent.setClassName(context, CustomTabActivity.class.getName());
 
-        if (clearTopIntentsForCustomTabsEnabled(intent)
-                && BrowserSessionContentUtils.canHandleIntentInCurrentTask(intent, context)) {
+        if (clearTopIntentsForCustomTabsEnabled(intent)) {
             // Ensure the new intent is routed into the instance of CustomTabActivity in this task.
             // If the existing CustomTabActivity can't handle the intent, it will re-launch
             // the intent without these flags.
@@ -299,7 +299,13 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             // - "Don't keep activities",
             // - Multiple clients hosting CCTs,
             // - Multiwindow mode.
-            newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            Class<? extends Activity> handlerClass =
+                    BrowserSessionContentUtils.getActiveHandlerClassInCurrentTask(intent, context);
+            if (handlerClass != null) {
+                newIntent.setClassName(context, handlerClass.getName());
+                newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP |
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            }
         }
 
         // Use a custom tab with a unique theme for payment handlers.
@@ -409,6 +415,10 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         // Allow disk writes during startActivity() to avoid strict mode violations on some
         // Samsung devices, see https://crbug.com/796548.
         try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+            if (SplashScreenController.handleIntent(mActivity, launchIntent)) {
+                return;
+            }
+
             mActivity.startActivity(launchIntent, null);
         }
     }

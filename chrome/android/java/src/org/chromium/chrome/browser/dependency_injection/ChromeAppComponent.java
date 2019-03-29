@@ -8,6 +8,7 @@ import org.chromium.chrome.browser.AppHooksModule;
 import org.chromium.chrome.browser.browserservices.ClearDataDialogResultRecorder;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
 import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitor;
+import org.chromium.chrome.browser.customtabs.CustomTabsClientFileProcessor;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
@@ -40,4 +41,6 @@ public interface ChromeAppComponent {
     EnabledStateMonitor resolveContextualSuggestionsEnabledStateMonitor();
 
     ExternalAuthUtils resolveExternalAuthUtils();
+
+    CustomTabsClientFileProcessor resolveCustomTabsFileProcessor();
 }

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.browserservices;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -67,4 +68,9 @@ public interface BrowserSessionContentHandler {
      * @return the task id the content handler is running in.
      */
     int getTaskId();
+
+    /**
+     * @return the class of the Activity the content handler is running in.
+     */
+    Class<? extends Activity> getActivityClass();
 }

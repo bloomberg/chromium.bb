@@ -847,6 +847,21 @@
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|density"
         android:exported="false"
         android:hardwareAccelerated="false"
+        android:name="org.chromium.chrome.browser.customtabs.TranslucentCustomTabActivity"
+        android:resizeableActivity="true"
+        android:supportsPictureInPicture="true"
+        android:theme="@style/Theme.Chromium.Activity.FakeTranslucent"
+        android:windowSoftInputMode="adjustResize">
+      <intent-filter>
+        <action android:name="org.chromium.chrome.browser.dummy.action"/>
+        <category android:name="com.google.intent.category.CARDBOARD"/>
+        <category android:name="com.google.intent.category.DAYDREAM"/>
+      </intent-filter>
+    </activity>
+    <activity
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|density"
+        android:exported="false"
+        android:hardwareAccelerated="false"
         android:name="org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity"
         android:theme="@style/Theme.Chromium.TabbedMode"
         android:windowSoftInputMode="adjustResize"/>
@@ -1940,6 +1955,9 @@
         tools:ignore="ExportedService">
       <intent-filter>
         <action android:name="android.support.customtabs.action.CustomTabsService"/>
+        <category
+            android:name="android.support.customtabs.category.TrustedWebActivitySplashScreensV1"/>
+        <category android:name="androidx.browser.trusted.category.TrustedWebActivities"/>
       </intent-filter>
     </service>
     <service

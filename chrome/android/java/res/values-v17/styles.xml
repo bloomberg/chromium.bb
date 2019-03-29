@@ -110,6 +110,13 @@
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowIsTranslucent">true</item>
     </style>
+    <!-- A style for Activities that need translucency for technical reasons, but otherwise should
+         look as usual (according to Theme.Chromium.Activity).-->
+    <style name="Theme.Chromium.Activity.FakeTranslucent" parent="Theme.Chromium.Activity">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
 
     <!-- Extend base theme rather than Theme.Chromium.WithWindowAnimation to avoid values-v27
          navigation bar colors from being applied -->

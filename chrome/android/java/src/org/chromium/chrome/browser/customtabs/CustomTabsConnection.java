@@ -332,6 +332,11 @@ public class CustomTabsConnection {
                 if (mDisconnectCallback != null) {
                     mDisconnectCallback.onResult(session);
                 }
+
+                // TODO(pshmakov): invert this dependency by moving event dispatching to a separate
+                // class.
+                ChromeApplication.getComponent().resolveCustomTabsFileProcessor()
+                        .onSessionDisconnected(session);
             }
         };
         PostMessageServiceConnection serviceConnection = new PostMessageServiceConnection(session);
@@ -1510,5 +1515,11 @@ public class CustomTabsConnection {
     /* package */ static void createSpareWebContents() {
         if (SysUtils.isLowEndDevice()) return;
         WarmupManager.getInstance().createSpareWebContents(WarmupManager.FOR_CCT);
+    }
+
+    public boolean receiveFile(CustomTabsSessionToken sessionToken, Uri uri, int purpose,
+            Bundle extras) {
+        return ChromeApplication.getComponent().resolveCustomTabsFileProcessor()
+                .processFile(sessionToken, uri, purpose, extras);
     }
 }

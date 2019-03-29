@@ -37,13 +37,30 @@ import org.chromium.content_public.browser.LoadUrlParams;
 public class BrowserSessionContentUtils {
     private static final String TAG = "BrowserSession_Utils";
 
-    private static final SparseArray<CustomTabsSessionToken> sTaskIdToSession = new SparseArray<>();
+    private static final SparseArray<ContentHandlerData> sTaskIdToHandlerData = new SparseArray<>();
 
     @Nullable
     private static BrowserSessionContentHandler sActiveContentHandler;
 
     @Nullable
     private static Callback<CustomTabsSessionToken> sSessionDisconnectCallback;
+
+    /**
+     * The data associated with the content handler necessary to pass new intents to it.
+     */
+    private static class ContentHandlerData {
+        public final CustomTabsSessionToken session;
+
+        // Content handlers can reside in Activities of different types, so we need to store the
+        // Activity class to be able to route new intents into it.
+        public final Class<? extends Activity> activityClass;
+
+        private ContentHandlerData(CustomTabsSessionToken session,
+                Class<? extends Activity> activityClass) {
+            this.session = session;
+            this.activityClass = activityClass;
+        }
+    }
 
     /**
      * Sets the currently active {@link BrowserSessionContentHandler} in focus.
@@ -54,7 +71,8 @@ public class BrowserSessionContentUtils {
         sActiveContentHandler = contentHandler;
         CustomTabsSessionToken session = sActiveContentHandler.getSession();
         if (session != null) {
-            sTaskIdToSession.append(sActiveContentHandler.getTaskId(), session);
+            sTaskIdToHandlerData.append(sActiveContentHandler.getTaskId(),
+                    new ContentHandlerData(session, sActiveContentHandler.getActivityClass()));
         }
         ensureSessionCleanUpOnDisconnects();
     }
@@ -67,22 +85,26 @@ public class BrowserSessionContentUtils {
             sActiveContentHandler = null;
         } // else this contentHandler has already been replaced.
 
-        // Intentionally not removing from sTaskIdToSession to handle cases when the task is
+        // Intentionally not removing from sTaskIdToHandlerData to handle cases when the task is
         // brought to foreground by a new intent - the CCT might not be able to call
         // setActiveContentHandler in time.
     }
 
     /**
-     * @return whether there is an active content handler with a matching session running in the
-     * same task as the given intent is being launched from.
+     * Returns the class of Activity with a matching session running in the same task as the given
+     * intent is being launched from, or null if no such Activity present.
      */
-    public static boolean canHandleIntentInCurrentTask(Intent intent, Context context) {
-        if (!(context instanceof Activity)) return false;
+    @Nullable
+    public static Class<? extends Activity> getActiveHandlerClassInCurrentTask(Intent intent,
+            Context context) {
+        if (!(context instanceof Activity)) return null;
         int taskId = ((Activity) context).getTaskId();
-        CustomTabsSessionToken sessionInCurrentTask = sTaskIdToSession.get(taskId);
-        return sessionInCurrentTask != null
-            && sessionInCurrentTask.equals(
-                    CustomTabsSessionToken.getSessionTokenFromIntent(intent));
+        ContentHandlerData handlerDataInCurrentTask = sTaskIdToHandlerData.get(taskId);
+        if (handlerDataInCurrentTask == null || !handlerDataInCurrentTask.session.equals(
+                    CustomTabsSessionToken.getSessionTokenFromIntent(intent))) {
+            return null;
+        }
+        return handlerDataInCurrentTask.activityClass;
     }
 
     /**
@@ -211,9 +233,9 @@ public class BrowserSessionContentUtils {
             if (session == null) {
                 return;
             }
-            for (int i = 0; i < sTaskIdToSession.size(); i++) {
-                if (session.equals(sTaskIdToSession.valueAt(i))) {
-                    sTaskIdToSession.removeAt(i);
+            for (int i = 0; i < sTaskIdToHandlerData.size(); i++) {
+                if (session.equals(sTaskIdToHandlerData.valueAt(i).session)) {
+                    sTaskIdToHandlerData.removeAt(i);
                 }
             }
         };

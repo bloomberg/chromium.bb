@@ -434,6 +434,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             public int getTaskId() {
                 return CustomTabActivity.this.getTaskId();
             }
+
+            @Override
+            public Class<? extends Activity> getActivityClass() {
+                return CustomTabActivity.this.getClass();
+            }
         };
 
         mConnection.showSignInToastIfNecessary(mSession, getIntent());
