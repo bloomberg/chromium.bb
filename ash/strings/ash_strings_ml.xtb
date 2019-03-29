@@ -230,6 +230,7 @@
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു.</translation>
 <translation id="453661520163887813">പൂർത്തിയാകാൻ ശേഷിക്കുന്ന സമയം <ph name="TIME" /></translation>
 <translation id="4544944664594876241">സ്‌ക്രീൻ ലോക്കുചെയ്യുന്നതിനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
+<translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">വായിച്ചുകേൾക്കാൻ തിരഞ്ഞെടുക്കുക ബട്ടൺ</translation>
 <translation id="4585337515783392668">അജ്ഞാത റിസീവറിൽ കാസ്‌റ്റ് ചെയ്യുന്നത് നിർത്തുക</translation>
 <translation id="4628757576491864469">ഉപകരണങ്ങൾ</translation>
@@ -237,6 +238,7 @@
 <translation id="4696813013609194136">രക്ഷാകർതൃ കോഡ് ഉപയോഗിച്ച് ഉപകരണം അൺലോക്ക് ചെയ്യുക</translation>
 <translation id="4731797938093519117">രക്ഷാകർതൃ ആക്‌സസ്</translation>
 <translation id="4734965478015604180">സമാന്തരം</translation>
+<translation id="476166673298332917">ഉപകരണ അഡ്‌മിൻ നിങ്ങളുടെ ബ്രൗസിംഗ് ആക്‌റ്റിവിറ്റി നിരീക്ഷിച്ചേക്കാം.</translation>
 <translation id="4774338217796918551">നാളെ <ph name="COME_BACK_TIME" />-ന് തിരികെ വരിക.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> എന്നതിനായുള്ള പാസ്‌വേഡ്</translation>
 <translation id="4778095205580009397">ഡെമോ സെഷനിൽ Google അസി‌സ്‌റ്റന്റ് ലഭ്യമല്ല.</translation>

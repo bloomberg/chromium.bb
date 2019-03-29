@@ -230,6 +230,7 @@
 <translation id="4527045527269911712">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> do úplného nabití</translation>
 <translation id="4544944664594876241">Zkratka k odemknutí obrazovky se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
+<translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Tlačítko pro poslech vybraného textu</translation>
 <translation id="4585337515783392668">Ukončit odesílání do neznámého přijímače</translation>
 <translation id="4628757576491864469">Zařízení</translation>
@@ -237,6 +238,7 @@
 <translation id="4696813013609194136">Odemkněte zařízení rodičovským kódem</translation>
 <translation id="4731797938093519117">Rodičovský přístup</translation>
 <translation id="4734965478015604180">Na šířku</translation>
+<translation id="476166673298332917">Správce tohoto zařízení může monitorovat vaše aktivity v prohlížeči.</translation>
 <translation id="4774338217796918551">Vrať se v <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Heslo pro účet <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Asistent Google není v ukázkové relaci k dispozici.</translation>

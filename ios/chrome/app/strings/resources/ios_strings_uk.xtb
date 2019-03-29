@@ -168,7 +168,7 @@
 <translation id="3474649192738347024">Форми заповнено.</translation>
 <translation id="3478058380795961209">Місяць закінчення терміну дії</translation>
 <translation id="3482959374254649722">Синхронізація вкладок…</translation>
-<translation id="3493531032208478708"><ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /> про пропонований вміст</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /> про рекомендований контент</translation>
 <translation id="3494788280727468875">Підтвердити очищення даних веб-перегляду</translation>
 <translation id="3519193562722059437">Щоб переглядати веб-сторінки, відкрийте вкладку.</translation>
 <translation id="3527085408025491307">Папка</translation>
@@ -198,13 +198,12 @@
 <translation id="3989635538409502728">Вийти</translation>
 <translation id="3995521777587992544">Індикатор перебігу завантаження сторінки. Завантажено <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Назва</translation>
-<translation id="4004204301268239848">Паролі збережено в обліковому записі Google, щоб ви могли користуватися ними на будь-якому пристрої.</translation>
+<translation id="4004204301268239848">Паролі зберігаються в обліковому записі Google, щоб ви могли користуватися ними на будь-якому пристрої.</translation>
 <translation id="4038354071007134711">Немає додатків на пристрої, щоб відкрити цей файл.</translation>
 <translation id="4042870976416480368">Знайти на сторінці</translation>
 <translation id="4049507953662678203">Переконайтеся, що з’єднання з мережею встановлено, і повторіть спробу.</translation>
 <translation id="4082688844002261427">Указуйте, як використовувати історію веб-перегляду для персоналізації Пошуку, оголошень тощо</translation>
 <translation id="408404951701638773">Тепер до рядка пошуку ще легше отримувати доступ</translation>
-<translation id="4084682180776658562">Закладка</translation>
 <translation id="411254640334432676">Не завантажено.</translation>
 <translation id="4112644173421521737">Пошук</translation>
 <translation id="4121993058175073134">Щоб надсил. дані про чистий експорт, налашт. обл. запис у програмі Налаштування.</translation>
@@ -367,7 +366,6 @@
 <translation id="6657585470893396449">Пароль</translation>
 <translation id="667999046851023355">Документ</translation>
 <translation id="6691331417640343772">Керувати синхронізованими даними в Особистому кабінеті Google</translation>
-<translation id="6709334795756764830">Редагувати закладку</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Не вдалось експортувати паролі</translation>
 <translation id="6780034285637185932">Поштовий індекс</translation>
@@ -401,7 +399,7 @@
 <translation id="7189598951263744875">Поділитися...</translation>
 <translation id="7192050974311852563">Почати ведення журналів</translation>
 <translation id="7203585745079012652">Озвучувати відповіді</translation>
-<translation id="722055596168483966">Персоналізувати служби Google</translation>
+<translation id="722055596168483966">Персоналізація сервісів Google</translation>
 <translation id="7272437679830969316">Не вдалося підтвердити особу. Пароль не скопійовано.</translation>
 <translation id="7280856130494094142">Щоб почати синхронізацію, введіть парольну фразу</translation>
 <translation id="7285236536143823449">ТАК, УВІМКНУТИ</translation>
@@ -484,7 +482,7 @@
 <translation id="8721297211384281569">Меню інструментів</translation>
 <translation id="8725066075913043281">Повторити спробу</translation>
 <translation id="8730621377337864115">Готово</translation>
-<translation id="8741995161408053644">У вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> можуть бути інші форми історії веб-перегляду.</translation>
+<translation id="8741995161408053644">Історія веб-перегляду може також зберігатися у вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8756969031206844760">Оновити пароль?</translation>
 <translation id="8775144690796719618">Недійсна URL-адреса</translation>
 <translation id="8820817407110198400">Закладки</translation>
@@ -495,10 +493,10 @@
 <translation id="895541991026785598">Повідомити про проблему</translation>
 <translation id="8971089644512329999">OK</translation>
 <translation id="8976382372951310360">Довідка</translation>
-<translation id="8981454092730389528">Елементи керування активністю в продуктах Google</translation>
+<translation id="8981454092730389528">Відстеження дій у Google</translation>
 <translation id="8985320356172329008">Ви ввійшли в обліковий запис Google як</translation>
 <translation id="902659348151742535">Google може використовувати вашу історію веб-перегляду, щоб персоналізувати Пошук, рекламу та інші служби Google.</translation>
-<translation id="9034759925968272072">Ви не вийдете з облікового запису Google. У вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> можуть бути інші форми історії веб-перегляду.</translation>
+<translation id="9034759925968272072">Ви не вийдете з облікового запису Google. Історія веб-перегляду може також зберігатися у вашому обліковому записі Google на сторінці  <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Трафік</translation>
 <translation id="9055772144595778347">Не вдається ввійти</translation>
 <translation id="9065203028668620118">Редагувати</translation>

@@ -42,7 +42,7 @@
 <translation id="152234381334907219">Không bao giờ lưu</translation>
 <translation id="1540800554400757039">Địa chỉ 1</translation>
 <translation id="1545749641540134597">Quét mã QR</translation>
-<translation id="1552525382687785070">Quản trị viên đã tắt tính năng đồng bộ hóa</translation>
+<translation id="1552525382687785070">Quản trị viên của bạn đã tắt tính năng đồng bộ hóa</translation>
 <translation id="1558704936695638228">Nhấn và giữ để có thêm các tùy chọn về tab</translation>
 <translation id="1580783302095112590">Thư đã được gửi.</translation>
 <translation id="1582732959743469162">Thao tác này sẽ ngừng tất cả hoạt động tải xuống đang diễn ra.</translation>
@@ -204,7 +204,6 @@
 <translation id="4049507953662678203">Hãy đảm bảo rằng bạn có kết nối mạng và thử lại.</translation>
 <translation id="4082688844002261427">Kiểm soát cách Google sử dụng lịch sử duyệt web của bạn để cá nhân hóa dịch vụ Tìm kiếm, quảng cáo và các dịch vụ khác</translation>
 <translation id="408404951701638773">Thanh tìm kiếm giờ đây dễ truy cập hơn</translation>
-<translation id="4084682180776658562">Dấu trang</translation>
 <translation id="411254640334432676">Tải xuống không thành công.</translation>
 <translation id="4112644173421521737">Tìm kiếm</translation>
 <translation id="4121993058175073134">Để gửi dữ liệu đã xuất, hãy định cấu hình tài khoản email trong ứng dụng Cài đặt.</translation>
@@ -367,7 +366,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6657585470893396449">Mật khẩu</translation>
 <translation id="667999046851023355">Tài liệu</translation>
 <translation id="6691331417640343772">Quản lý dữ liệu đã đồng bộ hóa trên Trang tổng quan của Google</translation>
-<translation id="6709334795756764830">Chỉnh sửa dấu trang</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Không thể xuất mật khẩu</translation>
 <translation id="6780034285637185932">Mã zip</translation>

@@ -204,7 +204,6 @@
 <translation id="4049507953662678203">আপনি একটি নেটওয়ার্ক সংযোগে আছেন কিনা তা নিশ্চিত করুন এবং আবার চেষ্টা করুন।</translation>
 <translation id="4082688844002261427">সার্চ, বিজ্ঞাপন এবং আরও অনেক কিছু নিজের মতো করে সাজিয়ে নেওয়ার জন্য আপনার ব্রাউজিং এর ইতিহাস কীভাবে ব্যবহার হবে তা নিয়ন্ত্রণ করুন</translation>
 <translation id="408404951701638773">সার্চ বারে কাজ করা এখন সহজ</translation>
-<translation id="4084682180776658562">বুকমার্ক</translation>
 <translation id="411254640334432676">ডাউনলোড ব্যর্থ হয়েছে।</translation>
 <translation id="4112644173421521737">সার্চ করুন</translation>
 <translation id="4121993058175073134">নেট-রপ্তানি ডেটা পাঠানোর জন্য, অনুগ্রহ করে সিস্টেম অ্যাপে আপনার ইমেল অ্যাকাউন্ট কনফিগার করুন৷</translation>
@@ -366,9 +365,9 @@
 <translation id="6643016212128521049">সাফ করুন</translation>
 <translation id="6656103420185847513">ফোল্ডার সম্পাদনা করুন</translation>
 <translation id="6657585470893396449">পাসওয়ার্ড</translation>
+<translation id="6668619169535738264">বুকমার্ক এডিট করুন</translation>
 <translation id="667999046851023355">দস্তাবেজ</translation>
 <translation id="6691331417640343772">Google ড্যাশবোর্ডে সিঙ্ক হওয়া ডেটা পরিচালনা করুন</translation>
-<translation id="6709334795756764830">বুকমার্ক এডিট করুন</translation>
 <translation id="6713747756340119864">Google অ্যাপ্লিকেশানগুলি</translation>
 <translation id="6730682669179532099">পাসওয়ার্ড এক্সপোর্ট করা যাচ্ছে না</translation>
 <translation id="6780034285637185932">পিন কোড</translation>
@@ -409,6 +408,7 @@
 <translation id="7291368939935408496">পাসওয়ার্ড তৈরি করা হচ্ছে...</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> শতাংশ ডাউনলোড হয়েছে</translation>
 <translation id="7346909386216857016">ঠিক আছে, বুঝেছি</translation>
+<translation id="7348502496356775519">বুকমার্ক</translation>
 <translation id="7383797227493018512">পড়ার সূচি খুলুন</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7425346204213733349">আপনার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংসে করা পরিবর্তন আর আপনার Google অ্যাকাউন্টের সাথে সিঙ্ক করা হবে না। অবশ্য, আপনার বিদ্যমান ডেটা আপনার Google অ্যাকাউন্টে সঞ্চিত থাকবে।</translation>

@@ -24,7 +24,6 @@
 <translation id="1103523840287552314">ሁልጊዜ <ph name="LANGUAGE" />ን መተርጎም</translation>
 <translation id="1107591249535594099">ምልክት ከተደረገበት፣ Chrome ለተሻለ ፈጣን የቅጽ አሞላል የካርድዎን ቅጂ በዚህ መሣሪያ ላይ ያከማቻል።</translation>
 <translation id="1110994991967754504">ለ<ph name="PERMISSION_NAME" /> ፈቃድ አቀናብር</translation>
-<translation id="1111153019813902504">የቅርብ ጊዜ ዕልባቶች</translation>
 <translation id="1113869188872983271">&amp;እንደገና ደርድርን ቀልብስ</translation>
 <translation id="1125573121925420732">ማስጠንቀቂያዎች ድርጣቢያዎች የእነርሱን ደህንነት በሚያዘምኑበት ጊዜ የተለመዱ ሊሆኑ ይችላሉ። ይህ በቅርቡ መሻሻል አለበት።</translation>
 <translation id="1126551341858583091">የአካባቢያዊ ማከማቻው መጠን <ph name="CRASH_SIZE" /> ነው።</translation>
@@ -50,7 +49,6 @@
 <translation id="1228893227497259893">የተሳሳተ የምንነት ለዪ</translation>
 <translation id="1232569758102978740">ርዕስ አልባ</translation>
 <translation id="1240347957665416060">የእርስዎ የመሣሪያ ስም</translation>
-<translation id="124116460088058876">ተጨማሪ ቋንቋዎች</translation>
 <translation id="1250759482327835220">በሚቀጥለው ጊዜ በበለጠ ፍጥነት ለመክፈል ካርድዎን እና የማስከፈያ አድራሻዎን በGoogle መለያዎ ላይ ያስቀምጡ።</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />፣ <ph name="TYPE_2" /> (ሰምሯል)</translation>
 <translation id="1256368399071562588">&lt;p&gt;አንድ ድር ጣቢያ ለመጎብኘት ሞክረው አልከፈት ካለ መጀመሪያ ስህተቱን በእነዚህ መላ መፈለጊያ ደረጃዎች ለመፍታት ይሞክሩ፦&lt;/p&gt;
@@ -1325,7 +1323,6 @@
 <translation id="8371889962595521444">ብጁ የስር ቅንብሮች</translation>
 <translation id="8380941800586852976">አደገኛ</translation>
 <translation id="8381674639488873545">እነዚህ ክፍያዎች የአንድ ጊዜ ወይም ተደጋጋሚ፣ እና የማያስታውቁ ሊሆኑ ይችላሉ። <ph name="BEGIN_LINK" />የሆነው ሆኖ አሳይ<ph name="END_LINK" /></translation>
-<translation id="8382348898565613901">በቅርቡ የጎበኟቸው ዕልባቶች እዚህ ይመጣሉ</translation>
 <translation id="8398259832188219207">የብልሽት ሪፖርት <ph name="UPLOAD_TIME" /> ላይ ተሰቅሏል</translation>
 <translation id="8412145213513410671">ብልሽቶች (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">ተመሳሳዩ የይለፍ ሐረጉን ሁለት ጊዜ ማስገባት አለብዎት።</translation>

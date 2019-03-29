@@ -59,7 +59,7 @@
 <translation id="1389974829397082527">Nenhum marcador aqui</translation>
 <translation id="1397811292916898096">Pesquisar com o <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Incorporado em <ph name="WEBSITE_URL" /></translation>
-<translation id="1406000523432664303">"Não Monitorizar"</translation>
+<translation id="1406000523432664303">"Não monitorizar"</translation>
 <translation id="1407135791313364759">Abrir tudo</translation>
 <translation id="1409426117486808224">Vista simplificada dos separadores abertos</translation>
 <translation id="1409879593029778104">A transferência de <ph name="FILE_NAME" /> foi impedida porque o ficheiro já existe.</translation>
@@ -244,7 +244,6 @@
 <translation id="2777555524387840389">Faltam <ph name="SECONDS" /> segundos</translation>
 <translation id="2779651927720337254">falhou</translation>
 <translation id="2781151931089541271">Falta 1 segundo</translation>
-<translation id="2784212955220061919">No Modo Lite, o Chrome carrega páginas mais rapidamente e utiliza até menos 60 por cento de dados. A tecnologia na nuvem da Google otimiza as páginas visitadas.</translation>
 <translation id="2803478378562657435">A mostrar palavras-passe guardadas e opções de palavra-passe</translation>
 <translation id="2810645512293415242">Página simplificada para poupar dados e carregar mais rapidamente.</translation>
 <translation id="281504910091592009">Veja e faça a gestão das palavras-passe guardadas na sua <ph name="BEGIN_LINK" />Conta Google<ph name="END_LINK" />.</translation>
@@ -329,7 +328,7 @@
 <translation id="3443221991560634068">Atualizar a página atual</translation>
 <translation id="3445014427084483498">Agora mesmo</translation>
 <translation id="3452612588551937789">Inicie sessão com a sua Conta Google para aceder aos marcadores, ao histórico, às palavras-passe e a outras definições em todos os dispositivos.</translation>
-<translation id="3492207499832628349">Novo sep. anónimo</translation>
+<translation id="3492207499832628349">Novo separador anónimo</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /> acerca do conteúdo sugerido</translation>
 <translation id="3513704683820682405">Realidade aumentada</translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
@@ -337,7 +336,7 @@
 <translation id="3527085408025491307">Pasta</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB disponível(eis)</translation>
 <translation id="3549657413697417275">Pesquisar no histórico</translation>
-<translation id="3552151358455404883">Gerir a Sincronização do Chrome e a personalização nas <ph name="BEGIN_LINK1" />Definições<ph name="END_LINK1" /></translation>
+<translation id="3552151358455404883">Faça a gestão da Sincronização do Chrome e da personalização nas <ph name="BEGIN_LINK1" />Definições<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Adicionar aos contactos</translation>
 <translation id="3566923219790363270">O Chrome ainda se está a preparar para a RV. Reinicie o Chrome mais tarde.</translation>
 <translation id="3568688522516854065">Para obter os separadores dos seus outros dispositivos, inicie sessão e ative a sincronização.</translation>
@@ -431,7 +430,7 @@ Para ajustar o termo de pesquisa, mantenha-o premido para selecionar. Para refin
 <translation id="4262028915562328938">Ocorreu um erro de sincronização. Toque para obter mais detalhes.</translation>
 <translation id="4269820728363426813">Copiar endereço do link</translation>
 <translation id="4275663329226226506">Multimédia</translation>
-<translation id="4278390842282768270">Permitidos:</translation>
+<translation id="4278390842282768270">Permitido</translation>
 <translation id="429312253194641664">Um site está a reproduzir multimédia.</translation>
 <translation id="4298388696830689168">Sites associados</translation>
 <translation id="4307992518367153382">Noções básicas</translation>
@@ -722,7 +721,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6364438453358674297">Pretende remover a sugestão do histórico?</translation>
 <translation id="6369229450655021117">A partir daqui, pode pesquisar na Web, partilhar com amigos e ver as páginas abertas.</translation>
 <translation id="6378173571450987352">Detalhes: ordenado por quantidade de dados utilizados</translation>
-<translation id="6383961787135158834">Limpar armazen. do site…</translation>
+<translation id="6383961787135158834">Limpar armazenamento do site...</translation>
 <translation id="6388207532828177975">Limpar e repor</translation>
 <translation id="6393156038355142111">Sugerir palavra-passe forte</translation>
 <translation id="6393863479814692971">O Chrome necessita de autorização de acesso à câmara e ao microfone para este site.</translation>
@@ -894,7 +893,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="756809126120519699">Dados do Chrome limpos</translation>
 <translation id="757524316907819857">Impedir que os sites reproduzam conteúdos protegidos</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> ficheiro transferido}other{<ph name="FILES_DOWNLOADED_MANY" /> ficheiros transferidos}}</translation>
-<translation id="7589445247086920869">Bloquear no motor de pesquisa atual</translation>
+<translation id="7589445247086920869">Bloquear o motor de pesquisa atual</translation>
 <translation id="7593557518625677601">Abrir definiç. Android e reativar sinc. sistema Android p/ iniciar sinc. Chrome</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="7605594153474022051">A sincronização não está a funcionar</translation>

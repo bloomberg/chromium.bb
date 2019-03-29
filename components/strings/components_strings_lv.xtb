@@ -24,7 +24,6 @@
 <translation id="1103523840287552314">Vienmēr tulkot <ph name="LANGUAGE" /> valodas saturu</translation>
 <translation id="1107591249535594099">Ja šī izvēles rūtiņa ir atzīmēta, pārlūks Chrome saglabās jūsu kartes kopiju šajā ierīcē, lai nodrošinātu ātrāku veidlapu aizpildi.</translation>
 <translation id="1110994991967754504">Atlasiet atļauju: <ph name="PERMISSION_NAME" /></translation>
-<translation id="1111153019813902504">Nesenas grāmatzīmes</translation>
 <translation id="1113869188872983271">&amp;Atsaukt pārkārtošanu</translation>
 <translation id="1125573121925420732">Tīmekļa vietņu drošības atjauninājumu laikā bieži var tikt rādīti brīdinājumi. Drīzumā tas tiks labots.</translation>
 <translation id="1126551341858583091">Lielums vietējā krātuvē ir <ph name="CRASH_SIZE" />.</translation>
@@ -50,7 +49,6 @@
 <translation id="1228893227497259893">Nepareizs vienības identifikators</translation>
 <translation id="1232569758102978740">Bez nosaukuma</translation>
 <translation id="1240347957665416060">Jūsu ierīces nosaukums</translation>
-<translation id="124116460088058876">Citas valodas…</translation>
 <translation id="1250759482327835220">Lai nākamreiz veiktu maksājumu ātrāk, saglabājiet kartes datus, vārdu un norēķinu adresi savā Google kontā.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (veikta sinhronizācija)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Ja, mēģinot apmeklēt vietni, tā netiek atvērta, vispirms izmēģiniet tālāk norādītās problēmu novēršanas darbības.&lt;/p&gt;
@@ -1324,7 +1322,6 @@ Papildu informācija:
 <translation id="8371889962595521444">Pielāgoti saknes sertifikāti</translation>
 <translation id="8380941800586852976">Bīstama</translation>
 <translation id="8381674639488873545">Maksa var tikt pieprasīta vienreiz vai atkārtoti; iespējams, pieprasījums nebūs skaidri pamanāms. <ph name="BEGIN_LINK" />Tik un tā rādīt<ph name="END_LINK" /></translation>
-<translation id="8382348898565613901">Nesen izmantotās grāmatzīmes tiek parādītas šeit</translation>
 <translation id="8398259832188219207">Avāriju pārskats augšupielādēts: <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Avārijas (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Viena un tā pati ieejas frāze jāievada divreiz.</translation>

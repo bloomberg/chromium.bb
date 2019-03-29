@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="1002439864875515590">If this policy is set to a blank string or not configured, <ph name="PRODUCT_OS_NAME" /> will not show an auto-complete option during user sign-in flow.
+      If this policy is set to a string representing a domain name, <ph name="PRODUCT_OS_NAME" /> will show an auto-complete option during user sign-in allowing the user to type in only their user name without the domain name extension.  The user will be able to overwrite this domain name extension.
+      If the value of the policy is not a valid domain, the policy will not be applied.</translation>
 <translation id="101438888985615157">Rotate screen by 180 degrees</translation>
 <translation id="1016912092715201525">Configures the default browser checks in <ph name="PRODUCT_NAME" /> and prevents users from changing them.
 
@@ -947,6 +950,16 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this setting is disabled, web pages cannot use JavaScript and the user cannot change that setting.
 
       If this setting is enabled or not set, web pages can use JavaScript but the user can change that setting.</translation>
+<translation id="2747157663401642394">Configures extension management settings for <ph name="PRODUCT_NAME" />.
+
+          This policy controls multiple settings, including settings controlled by any existing extension-related policies. This policy will override any legacy policies if both are set.
+
+          This policy maps an extension ID or an update URL to its configuration. With an extension ID, configuration will be applied to the specified extension only. A default configuration can be set for the special ID <ph name="DEFAULT_SCOPE" />, which will apply to all extensions that don't have a custom configuration set in this policy. With an update URL, configuration will be applied to all extensions with the exact update URL stated in manifest of this extension, as described at <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          For Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.
+
+          For a full description of possible settings and structure of this policy, please visit https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="2753637905605932878">Restrict the range of local UDP ports used by WebRTC</translation>
 <translation id="2755385841634849932">This policy controls the availability of Android backup and restore.
 
@@ -1228,7 +1241,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3288595667065905535">Release channel</translation>
 <translation id="3292147213643666827">Enables <ph name="PRODUCT_NAME" /> to act as a proxy between <ph name="CLOUD_PRINT_NAME" /> and legacy printers connected to the machine.
 
-      If this setting is enabled or not configured, users can enable the cloud print proxy by authentication with their Google account.
+      If this setting is enabled or not configured, users can enable the cloud print proxy by authentication with their Google Account.
 
       If this setting is disabled, users cannot enable the proxy, and the machine will not be allowed to share it's printers with <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3307746730474515290">Controls which app/extension types are allowed to be installed and limits runtime access.
@@ -1762,11 +1775,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If false or unset, then the content provider returns no information.</translation>
 <translation id="435461861920493948">Contains a list of patterns which are used to control the visiblity of accounts in <ph name="PRODUCT_NAME" />.
 
-      Each Google account on the device will be compared to patterns stored in this policy to determine the account visibility in <ph name="PRODUCT_NAME" />. The account will be visible if its name matches any pattern on the list. Otherwise, the account will be hidden.
+      EachGoogle Accounton the device will be compared to patterns stored in this policy to determine the account visibility in <ph name="PRODUCT_NAME" />. The account will be visible if its name matches any pattern on the list. Otherwise, the account will be hidden.
 
       Use the wildcard character '*' to match zero or more arbitrary characters. The escape character is '\', so to match actual '*' or '\' characters, put a '\' in front of them.
 
-      If this policy is not set, all Google accounts on the device will be visible in <ph name="PRODUCT_NAME" />.</translation>
+      If this policy is not set, allGoogle Accounts on the device will be visible in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4360826270668210664">If this policy is set, the remote access host will require authenticating clients to obtain an authentication token from this URL in order to connect. Must be used in conjunction with RemoteAccessHostTokenValidationUrl.
 
           This feature is currently disabled server-side.</translation>
@@ -1860,7 +1873,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4557134566541205630">Default search provider new tab page URL</translation>
 <translation id="4567137030726189378">Allow usage of the Developer Tools</translation>
 <translation id="4578265298946081589">Do not reboot on user sign-out.</translation>
-<translation id="4578912515887794133">If this setting is enabled, then the remote access host compares the name of the local user (that the host is associated with) and the name of the Google account registered as the host owner (i.e. 'johndoe' if the host is owned by 'johndoe@example.com' Google account).  The remote access host will not start if the name of the host owner is different from the name of the local user that the host is associated with.  RemoteAccessHostMatchUsername policy should be used together with RemoteAccessHostDomain to also enforce that the Google account of the host owner is associated with a specific domain (i.e. 'example.com').
+<translation id="4578912515887794133">If this setting is enabled, then the remote access host compares the name of the local user (that the host is associated with) and the name of the Google Account registered as the host owner (i.e. 'johndoe' if the host is owned by 'johndoe@example.com'Google Account).  The remote access host will not start if the name of the host owner is different from the name of the local user that the host is associated with.  RemoteAccessHostMatchUsername policy should be used together with RemoteAccessHostDomain to also enforce that the Google Account of the host owner is associated with a specific domain (i.e. 'example.com').
 
           If this setting is disabled or not set, then the remote access host can be associated with any local user.</translation>
 <translation id="4600786265870346112">Enable large cursor</translation>
@@ -2079,6 +2092,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       When this policy is set, each item is treated as a rule, similar to the <ph name="URL_LIST_POLICY_NAME" /> policy. However, the logic is reversed: rules that match will not open an alternative browser.
 
       Unlike <ph name="URL_LIST_POLICY_NAME" />, rules apply to both directions. That is, when the Internet Explorer add-in is present and enabled, it also controls whether <ph name="IE_PRODUCT_NAME" /> should open these URLs in <ph name="PRODUCT_NAME" />.</translation>
+<translation id="5124368997194894978">Enable boot on AC (alternating current)</translation>
 <translation id="5130288486815037971">Whether RC4 cipher suites in TLS are enabled</translation>
 <translation id="5141670636904227950">Set the default screen magnifier type enabled on the login screen</translation>
 <translation id="5142301680741828703">Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2455,7 +2469,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is not set or it is set to false then <ph name="PRODUCT_NAME" /> will use the existing online revocation checking settings.</translation>
 <translation id="5728154254076636808">Enable the creation of roaming copies for <ph name="PRODUCT_NAME" /> profile data</translation>
-<translation id="5732972008943405952">Import autofill form data from default browser on first run</translation>
+<translation id="5732972008943405952">Import auto-fill form data from default browser on first run</translation>
 <translation id="5741810844420698449">When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME" /> takes when the user closes the device's lid.
 
           When this policy is unset, the default action is taken, which is suspend.
@@ -2726,9 +2740,9 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this setting is not set or set to True, enrolled devices will report time periods when a user is active on the device. If this setting is set to False, device activity times will not be recorded or reported.</translation>
 <translation id="6212868225782276239">All printers are shown except those in the blacklist.</translation>
-<translation id="6219965209794245435">This policy forces the autofill form data to be imported from the previous default browser if enabled. If enabled, this policy also affects the import dialogue.
+<translation id="6219965209794245435">This policy forces the auto-fill form data to be imported from the previous default browser if enabled. If enabled, this policy also affects the import dialogue.
 
-      If disabled, the autofill form data is not imported.
+      If disabled, the auto-fill form data is not imported.
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="6224304369267200483">URLs/domains automatically permitted direct Security Key attestation</translation>
@@ -2883,6 +2897,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If this policy is left not set, '3' will be used, and the user will be able to change it.</translation>
 <translation id="663685822663765995">Restrict printing colour mode</translation>
 <translation id="6641981670621198190">Disable support for 3D graphics APIs</translation>
+<translation id="6646056064606561298">Enable the boot on AC power management policy.
+
+          Boot on AC provides an opportunity for system to automatically boot up from OFF/Hibernate state when line power is inserted.
+
+          If this policy is set to true then boot on AC will always be enabled if supported on the device.
+
+          If this policy is set to false, boot on AC will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, boot on AC is disabled and cannot be enabled by the user.</translation>
 <translation id="6647965994887675196">If set to true, supervised users can be created and used.
 
           If set to false or not configured, supervised-user creation and login will be disabled. All existing supervised users will be hidden.
@@ -3213,11 +3238,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           Leaving this policy not set will also allow the user to choose their own homepage if HomepageIsNewTabPage is not set.
 
           This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
-<translation id="7229975860249300121">Contains a regular expression which is used to determine which Google accounts can be set as browser primary accounts in <ph name="PRODUCT_NAME" /> (i.e. the account that is chosen during the Sync opt-in flow).
+<translation id="7229975860249300121">Contains a regular expression which is used to determine whichGoogle Accounts can be set as browser primary accounts in <ph name="PRODUCT_NAME" /> (i.e. the account that is chosen during the Sync opt-in flow).
 
       An appropriate error is displayed if a user tries to set a browser primary account with a username that does not match this pattern.
 
-      If this policy is left not set or blank, then the user can set any Google account as a browser primary account in <ph name="PRODUCT_NAME" />.</translation>
+      If this policy is left not set or blank, then the user can set anyGoogle Accountas a browser primary account in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="723103540848640830">Set the minimum length of the lock screen PIN</translation>
 <translation id="7232816984286843471">If the policy is set to false, unaffiliated users will not be allowed to use Crostini.
 
@@ -3310,9 +3335,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="7339315111520512972">Force networking code to run in the browser process</translation>
 <translation id="7340034977315324840">Report device activity times</translation>
 <translation id="7343497214039883642">Enterprise printer configuration file for devices</translation>
-<translation id="7349338075015720646">Specifies a list of websites that are installed silently, without user interaction, and which cannot be uninstalled or disabled by the user.
-
-      Each list item of the policy is an object with two members: 'url' and 'launch_container'. 'url' should be the URL of the web app to install and 'launch_container' should be either 'window' or 'tab' to indicate how the web app will be opened once installed. If 'launch_container' is omitted, the app will launch in a window if Chrome considers it a progressive web app, and in a tab otherwise.</translation>
 <translation id="735902178936442460">This policy controls whether to report information that can be used to identify machines, such as machine name and network addresses.
 
       When this policy is left unset or set to True, information that can be used to identify machines is gathered.

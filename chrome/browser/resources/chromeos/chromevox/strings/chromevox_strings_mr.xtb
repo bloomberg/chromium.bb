@@ -548,7 +548,7 @@
 <translation id="489907760999452556">अंतर्गत दुवा</translation>
 <translation id="4915087353619183190">जाणून घ्या मोड सुरू होत आहे. त्याच्या कार्याबद्दल जाणून घेण्यासाठी qwerty की दाबा, रिफ्रेश करण्यायोग्य ब्रेल की किंवा टच जेश्चर दाबा. बाहेर पडण्यासाठी कंट्रोल की सह डब्ल्यू किंवा एस्केप दाबा.</translation>
 <translation id="492295894462528572">प्रस्तावना</translation>
-<translation id="4943781537993885772">प्रदर्शन शैली</translation>
+<translation id="4943781537993885772">डिस्प्ले शैली</translation>
 <translation id="495170559598752135">क्रिया</translation>
 <translation id="4953585991029886728">मजकूर संपादित करा</translation>
 <translation id="4954534434583049121">मागील ब्लॉक कोट</translation>
@@ -714,7 +714,7 @@
 <translation id="6006050241733874051">फॉर्म</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{बॅकस्लॅश}one{# बॅकस्लॅश}other{# बॅकस्लॅश}}</translation>
 <translation id="6017514345406065928">हिरवा</translation>
-<translation id="6021969570711251331">कोरे पान</translation>
+<translation id="6021969570711251331">एकावर एक</translation>
 <translation id="6034000775414344507">फिकट राखाडी</translation>
 <translation id="6037602951055904232">फॉरवर्ड करणे पॅन करा</translation>
 <translation id="6042826534790431634">सक्रिय करण्यासाठी Search+Space दाबा.</translation>
@@ -765,7 +765,7 @@
 <translation id="6438968337250688271"><ph name="NAME" />, मेनू</translation>
 <translation id="6444046323172968959">सूचना संवाद</translation>
 <translation id="6452403590345320472">अनुक्रमणिका</translation>
-<translation id="6454456397828627257">एका बाजूला एक</translation>
+<translation id="6454456397828627257">शेजारी शेजारी</translation>
 <translation id="6459511626086141404">सपाट मुख्य नकाशा</translation>
 <translation id="6468049171101508116">पुढील बटण</translation>
 <translation id="646954774886932461">अनुक्रमणिका</translation>

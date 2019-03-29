@@ -3227,9 +3227,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7339315111520512972">Pakota verkostokoodin suorittaminen selainprosessissa</translation>
 <translation id="7340034977315324840">Ilmoita laitteen käyttöajat</translation>
 <translation id="7343497214039883642">Yritystulostimen määritystiedosto laitteille</translation>
-<translation id="7349338075015720646">Määrittää listan verkkosivustoja, jotka asennetaan hiljaisesti, ilman käyttäjän toimia, ja joita käyttäjä ei voi poistaa käytöstä eikä poistaa kokonaan.
-
-      Listan jokainen kohta on objekti, joka koostuu kahdesta osasta: "url" ja "launch_container". "url" on asennettavan verkkosovelluksen URL-osoite ja "launch_container" joko "window" tai "tab", mikä kertoo verkkosovelluksen avaamistavan sen asentamisen jälkeen. Jos "launch_container" puuttuu, sovellus käynnistyy ikkunassa, jos Chrome toteaa sen progressiiviseksi web-sovellukseksi, ja muussa tapauksessa välilehdellä.</translation>
 <translation id="735902178936442460">Tämä käytäntö määrittää, ilmoitetaanko laitteiden tunnistetietoja, kuten laitteen nimi ja verkko-osoitteet.
 
       Jos käytäntöä ei ole määritetty tai sen arvo on tosi, laitteiden tunnistetietoja kerätään.

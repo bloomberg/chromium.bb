@@ -35,6 +35,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Seleccion&amp;ar tudo</translation>
 <translation id="1938451708255335766">Para ajustar a densidade de apresentação da janela, reinicie a aplicação.</translation>
+<translation id="208586643495776849">Tente novamente</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}other{# d}}</translation>
 <translation id="2148716181193084225">Hoje</translation>
 <translation id="2168039046890040389">Página para cima</translation>
@@ -55,7 +56,7 @@
 <translation id="2573731672208488250">{HOURS,plural, =1{em 1 h}other{em # h}}</translation>
 <translation id="2583543531130364912">Calibrar o ecrã tátil</translation>
 <translation id="2666092431469916601">Parte superior</translation>
-<translation id="2701330563083355633">Partilhado de <ph name="DEVICE_NAME" /></translation>
+<translation id="2701330563083355633">Partilhado a partir do <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Copiar para a área de transferência</translation>
 <translation id="2803313416453193357">Abrir pasta</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Há 1 ano}other{Há # anos}}</translation>

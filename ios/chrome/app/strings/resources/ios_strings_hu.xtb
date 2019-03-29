@@ -146,7 +146,7 @@
 <translation id="3112556859945124369">Megjelölés…</translation>
 <translation id="3157684681743766797">Az összes megjelölése…</translation>
 <translation id="3175081911749765310">Webszolgáltató</translation>
-<translation id="3207960819495026254">Könyvjelzőzött</translation>
+<translation id="3207960819495026254">Könyvjelző rögzítve</translation>
 <translation id="3224641773458703735">A jelszavak exportálásához előbb be kell állítania az eszközön a biztonsági kódot.</translation>
 <translation id="3240426699337459095">Link másolva</translation>
 <translation id="3244271242291266297">HH</translation>
@@ -204,7 +204,6 @@
 <translation id="4049507953662678203">Győződjön meg róla, hogy rendelkezik hálózati kapcsolattal, majd próbálja újra.</translation>
 <translation id="4082688844002261427">Annak beállítása, hogy a rendszer hogyan szabja személyre a Keresést, a hirdetéseket és egyebeket a böngészési előzmények alapján</translation>
 <translation id="408404951701638773">Mostantól egyszerűbb a keresés a keresősávban</translation>
-<translation id="4084682180776658562">Könyvjelző</translation>
 <translation id="411254640334432676">A letöltés sikertelen.</translation>
 <translation id="4112644173421521737">Keresés</translation>
 <translation id="4121993058175073134">Net-export adatok küldéséhez, kérjük, konfigurálja e-mail fiókját a Beállítások alkalmazásban.</translation>
@@ -215,7 +214,7 @@
 <translation id="424315890655130736">Összetett jelszó megadása</translation>
 <translation id="4272631900155121838">QR-kód beolvasásához engedélyezze a kamerát a beállítások között</translation>
 <translation id="4281844954008187215">Általános Szerződési Feltételek</translation>
-<translation id="430793432425771671">Minden szinkronizálása</translation>
+<translation id="430793432425771671">Az összes szinkronizálása</translation>
 <translation id="4342284590510997375">Új</translation>
 <translation id="4359125752503270327">Az oldal egy másik alkalmazásban nyílik meg.</translation>
 <translation id="4370827530403103842">A szinkronizálás nem működik. Koppintson a javításához.</translation>
@@ -254,7 +253,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="4904877109095351937">Megjelölés olvasottként</translation>
 <translation id="4930268273022498155">Meglévő adatok törlése. Ezeket úgy hívhatja le, hogy visszavált a következő fiókra: <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Sajnos hiba történt az elem megosztásakor.</translation>
-<translation id="4979397965658815378">Jelentkezzen be Google-fiókjába, hogy könyvjelzőit, előzményeit, jelszavait és más beállításait az összes eszközén elérhesse.</translation>
+<translation id="4979397965658815378">Jelentkezzen be Google-fiókjába, így könyvjelzőit, előzményeit, jelszavait és más beállításait az összes eszközén elérheti.</translation>
 <translation id="5005498671520578047">Jelszó másolása</translation>
 <translation id="5010803260590204777">Nyisson meg egy inkognitólapot a privát böngészéshez.</translation>
 <translation id="5011684439661633295">Üdvözlet, <ph name="FULL_ACCOUNT_NAME" />!</translation>
@@ -367,12 +366,11 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="6657585470893396449">Jelszó</translation>
 <translation id="667999046851023355">Dokumentum</translation>
 <translation id="6691331417640343772">Szinkronizált adatok kezelése a Google Irányítópulton</translation>
-<translation id="6709334795756764830">Könyvjelző szerkesztése</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Nem sikerült a jelszavak exportálása</translation>
 <translation id="6780034285637185932">Irányítószám</translation>
 <translation id="6785453220513215166">Hibajelentés küldése…</translation>
-<translation id="679325081238418596">Bármely eszközéről hozzáférhet könyvjelzőihez, előzményeihez, jelszavaihoz és egyéb beállításaihoz</translation>
+<translation id="679325081238418596">Bármely eszközéről hozzáférhet könyvjelzőihez, előzményeihez, jelszavaihoz és egyéb beállításaihoz.</translation>
 <translation id="6797885426782475225">Hangalapú keresés</translation>
 <translation id="6807889908376551050">Összes megjelenítése...</translation>
 <translation id="681368974849482173">Elem létrehozva</translation>

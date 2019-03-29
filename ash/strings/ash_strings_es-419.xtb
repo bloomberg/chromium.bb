@@ -131,6 +131,7 @@
 <translation id="2961963223658824723">Se produjo un error. Vuelve a intentarlo en unos segundos.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2970920913501714344">Instalar apps, extensiones y temas</translation>
+<translation id="2977598380246111477">Siguiente número</translation>
 <translation id="2995447421581609334">Mostrar dispositivos de transmisión</translation>
 <translation id="2996462380875591307">Se habilitó la lupa con vista acoplada. Presiona Ctrl+Buscar+D de nuevo para desactivarla.</translation>
 <translation id="3000461861112256445">Audio mono</translation>
@@ -230,6 +231,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4527045527269911712">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> para completar carga</translation>
 <translation id="4544944664594876241">Se modificó el acceso directo para bloquear la pantalla. Utiliza <ph name="NEW_SHORTCUT" /> en vez de <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Botón de Seleccionar para pronunciar</translation>
 <translation id="4585337515783392668">Dejar de transmitir en un receptor desconocido</translation>
 <translation id="4628757576491864469">Dispositivos</translation>
@@ -237,6 +239,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4696813013609194136">Desbloquea el dispositivo con el código parental</translation>
 <translation id="4731797938093519117">Acceso parental</translation>
 <translation id="4734965478015604180">Horizontal</translation>
+<translation id="476166673298332917">El administrador tiene acceso a toda la actividad, incluidas las contraseñas y comunicaciones.</translation>
 <translation id="4774338217796918551">Regresa mañana a las <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Contraseña para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">El Asistente de Google no está disponible en la sesión de demostración.</translation>

@@ -364,22 +364,22 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Advarsel: Det er ikke anbefalt å delegere kontroll over <ph name="PRODUCT_OS_NAME" />-versjonen til en kioskapp, siden dette kan hindre enheten i å motta programvareoppdateringer og kritiske sikkerhetsløsninger. Hvis kontroll over <ph name="PRODUCT_OS_NAME" />-versjonen delegeres, kan brukerne bli utsatt for risiko.</translation>
 <translation id="1675002386741412210">Støttes på:</translation>
 <translation id="1689963000958717134">Tillater skyving av nettverkskonfigurasjon for alle brukere av en <ph name="PRODUCT_OS_NAME" />-enhet. Nettverkskonfigurasjonen er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL" /></translation>
-<translation id="1704516734140344991">Konfigurerer tilgjengeligheten og atferden til oppdateringsfunksjonaliteten til <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren.
+<translation id="1704516734140344991">Konfigurerer tilgjengeligheten og funksjonaliteten for oppdatering av <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren.
 
       Enkeltinnstillinger kan angis i JSON-egenskaper:
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Hvis den er satt til <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, kan brukere utløse Powerwash-prosessen for å installere en oppdatering for <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Hvis den er satt til <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, kan brukere utløse Powerwash-prosessen for å installere en oppdatering av <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren.
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Hvis den er satt til <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, kan brukere sette i gang oppdateringsflyten for <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren som opprettholder den enhetsgjeldende tilstanden (inkludert bedriftsregistrering), men taper brukerdata. Denne oppdateringsflyten er tilgjengelig fra versjon 68.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Hvis den er satt til <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, kan brukere sette i gang oppdateringsprosessen for <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren som opprettholder den enhetsgjeldende tilstanden (inkludert bedriftsregistrering), men fører til at brukerdata går tapt. Denne oppdateringsprosessen er tilgjengelig fra versjon 68.
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Styrer hvordan automatiske oppdateringer av <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren tvinges igjennom for sårbar <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvare. All flyt opprettholder den lokale enhetstilstanden.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Styrer hvordan automatiske oppdateringer av <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren tvinges igjennom for sårbar <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvare. Alle prosesser opprettholder den lokale enhetstilstanden.
         Hvis den er satt til 1 eller ikke er angitt, tvinges ikke oppdateringer av TPM-fastvaren igjennom.
         Hvis den er satt til 2, oppdateres <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren ved neste omstart etter at brukeren har bekreftet oppdateringen.
         Hvis den er satt til 3, oppdateres <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren ved neste omstart.
         Hvis den er satt til 4, oppdateres <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren etter registreringen og før brukeren logger på.
         Dette alternativet er tilgjengelig fra versjon 74.
 
-      Hvis regelen ikke er satt, er oppdateringsfunksjonalitet for <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren ikke tilgjengelig.</translation>
+      Hvis regelen ikke er angitt, er oppdateringsfunksjonalitet for <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren ikke tilgjengelig.</translation>
 <translation id="1708496595873025510">Angi begrensning for henting av startverdien for variasjonene</translation>
 <translation id="1717817358640580294">Hvis denne regelen ikke er angitt og Opprydning for Chrome oppdager uønsket programvare, kan den rapportere metadata om skanningen til Google, i samsvar med regelen som er angitt av SafeBrowsingExtendedReportingEnabled. Opprydning for Chrome spør deretter brukerne om de vil fjerne den uønskede programvaren. Brukerne kan velge å dele resultatet fra opprydninger med Google, for å hjelpe oss med å bli enda bedre på å oppdage uønsket programvare. Disse resultatene inneholder informasjon om filmetadata, automatisk installerte utvidelser og registernøkler – som beskrevet i det tekniske dokumentet om personvern i Chrome.
 
@@ -1237,15 +1237,15 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="3381968327636295719">Bruk vertsnettleser som standard</translation>
 <translation id="3384115339826100753">Aktivér regelen for strømstyring av strømtoppskift.
 
-          Toppskift er en regel for strømsparing som minimerer bruken av vekselstrøm på de tidene enheten brukes mest. Du kan angi en start- og sluttid for modusen for strømtoppskift for hver ukedag. I disse tidsrommene kjøres systemet på batteriet, selv når vekselstrøm er tilkoblet, så lenge batteriet er over den spesifiserte terskelen. Etter den spesifiserte sluttiden kjøres systemet på vekselstrøm hvis dette er tilkoblet, men batteriet lades ikke. Etter det spesifiserte starttidspunktet for lading bruker systemet vekselstrøm og lader batteriet som vanlig.
+          Toppskift er en regel for strømsparing som minimerer bruken av strøm fra nettet på de tidene på døgnet når strømforbruket er høyest. Du kan angi en start- og sluttid for modusen for strømtoppskift for hver ukedag. I disse tidsrommene kjøres systemet på batteriet selv om det er koblet til strømnettet, så lenge batteriet er over den spesifiserte terskelen. Etter den spesifiserte sluttiden drives systemet av strøm fra nettet hvis det er tilkoblet, men batteriet lades ikke. Etter det spesifiserte starttidspunktet for lading bruker systemet strømnettet og lader batteriet som vanlig.
 
-          Hvis denne regelen er satt til sann, og DevicePowerPeakShiftBatteryThreshold og DevicePowerPeakShiftDayConfig er angitt, er strømtoppskift alltid på hvis dette støttes av enheten.
+          Hvis denne regelen er satt til sann og DevicePowerPeakShiftBatteryThreshold og DevicePowerPeakShiftDayConfig er angitt, er strømtoppskift alltid på hvis dette støttes av enheten.
 
           Hvis denne regelen er satt til usann, er strømtoppskift alltid av.
 
-          Hvis du angir denne regelen, kan ikke brukere endre eller overstyre den.
+          Hvis du angir denne regelen, kan ikke brukerne endre eller overstyre den.
 
-          Hvis denne regelen ikke angis, er strømtoppskift av og kan ikke slås på av brukeren.</translation>
+          Hvis denne regelen ikke angis, er strømtoppskift av og kan ikke slås på av brukerne.</translation>
 <translation id="3388153794103186066">Lar deg angi en liste over nettadresser som spesifiserer nettsteder som automatisk får tilgang til USB-enheter fra gjeldende leverandører og produkt-ID-er. Hvert element på listen må inneholde både enhetene og nettadressene for at regelen skal gjelde. Hvert element i enheter kan inneholde felt for leverandør-ID og produkt-ID. Eventuelle ID-er som ikke føres opp på listen, behandles som jokertegn, med ett unntak: Du kan ikke angi en produkt-ID uten å angi en leverandør-ID. Hvis ikke er regelen ugyldig og den blir ignorert.
 
         USB-tillatelsesmodellen bruker nettadressen forespørselen kommer fra («forespørsel-nettadressen»), og nettadressen med den innebygde iframe-koden («nettadressen med innebygging») for å gi nettadressen forespørselen kommer fra, tilgang til USB-enheten. Forespørsel-nettadressen kan være forskjellig fra nettadressen med innebygging når nettstedet forespørselen kommer fra, ligger i en iframe. Derfor kan feltet «urls» (nettadresser) inneholde opptil to nettadressestrenger atskilt med komma for å spesifisere henholdsvis forespørsel-nettadressen og nettadressen med innebygging. Hvis kun én nettadresse er spesifisert, gis tilgang til de samsvarende USB-enhetene når forespørsel-nettadressen samsvarer med denne nettadressen, uavhengig av innebyggingsstatus. Nettadressene i «urls» (nettadresser) må være gyldige, ellers blir regelen ignorert.
@@ -3264,9 +3264,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7339315111520512972">Tving nettverkskode til å kjøre i nettleserprosessen</translation>
 <translation id="7340034977315324840">Rapportering av aktivitetstider for enhet</translation>
 <translation id="7343497214039883642">Konfigurasjonsfil for enheter på bedriftsskriver</translation>
-<translation id="7349338075015720646">Spesifiserer en liste over nettsteder som er installert gjennom bakgrunnsinstallasjon (uten brukerinteraksjon), og som brukere ikke kan avinstallere eller slå av.
-
-      Hvert element på regellisten er et objekt med to medlemmer: «url» og «launch_container». «url» bør være nettadressen for nettprogrammet som skal installeres, og «launch_container» bør være enten «window» (vindu) eller «tab» (fane) for å avgjøre hvordan nettprogrammet skal åpnes når det er installert. Hvis «launch_container» ikke er oppført, åpnes programmet i et vindu hvis Chrome anser det som et progressivt nettprogram. Hvis ikke åpnes det i en fane.</translation>
 <translation id="735902178936442460">Denne regelen kontrollerer om det skal rapporteres om informasjon som kan brukes til å identifisere maskiner, for eksempel maskinnavn og nettverksadresser.
 
       Hvis denne regelen ikke er konfigurert eller er angitt som «true» (sant), innhentes informasjon som kan brukes til å identifisere maskiner.
@@ -3809,8 +3806,8 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8549772397068118889">Varsle ved besøk på nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="8566842294717252664">Skjul nettbutikken fra nye faner og appvelgeren</translation>
 <translation id="8569734380847633643">
-          Hvis regelen er satt til usann, slår <ph name="PRODUCT_OS_NAME" /> av Wi-Fi, og brukere kan ikke slå det på igjen.
-          Hvis regelen er satt til sann eller ikke er angitt, kan brukere slå Wi-Fi av og på som de vil.</translation>
+          Hvis regelen er satt til usann, slår <ph name="PRODUCT_OS_NAME" /> av Wi-Fi, og brukerne kan ikke slå det på igjen.
+          Hvis regelen er satt til sann eller ikke er angitt, kan brukerne slå Wi-Fi av og på som de vil.</translation>
 <translation id="857369585509260201">Denne regelen er avviklet. Vurder å bruke BrowserSignin i stedet.
 
       Hvis denne regelen er angitt som «True» (sann), må brukeren logge på <ph name="PRODUCT_NAME" /> med profilen sin før nettleseren brukes. Standardverdien for BrowserGuestModeEnabled er «False» (usann). Merk at eksisterende, usignerte profiler låses og gjøres utilgjengelige når denne regelen aktiveres. For mer informasjon, se brukerstøtteartikkelen.

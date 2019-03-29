@@ -231,6 +231,7 @@
 <translation id="4527045527269911712">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> alla ricarica completa</translation>
 <translation id="4544944664594876241">La scorciatoia per bloccare lo schermo è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Pulsante Seleziona per ascoltare</translation>
 <translation id="4585337515783392668">Interrompi la trasmissione su ricevitore sconosciuto</translation>
 <translation id="4628757576491864469">Dispositivi</translation>
@@ -238,6 +239,7 @@
 <translation id="4696813013609194136">Sblocca con codice genitore</translation>
 <translation id="4731797938093519117">Accesso genitore</translation>
 <translation id="4734965478015604180">Orizzontale</translation>
+<translation id="476166673298332917">L'amministratore del dispositivo può controllare l'attività di navigazione.</translation>
 <translation id="4774338217796918551">Puoi riprendere domani alle ore <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Password per <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">L'Assistente Google non è disponibile in una sessione demo.</translation>

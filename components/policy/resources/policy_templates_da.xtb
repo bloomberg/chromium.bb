@@ -238,7 +238,7 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
       Angiver en liste over apps, der installeres i baggrunden på loginskærmen uden brugerinteraktion, og som ikke kan afinstalleres.
       Alle tilladelser, som disse apps anmoder om, gives implicit uden interaktion med brugeren, herunder eventuelle ekstra tilladelser, der anmodes om af fremtidige version af appen.
 
-      Bemærk, at det ikke er tilladt at installere udvidelser ved hjælp af denne politik af hensyn til sikkerhed og privatliv. Enheder på den stabile kanal installerer desuden kun apps, der tilhører den hvidliste, der medfølger <ph name="PRODUCT_NAME" />. Alle elementer, der ikke overholder disse betingelser, ignoreres.
+      Bemærk, at det ikke er tilladt at installere udvidelser ved hjælp af denne politik af hensyn til sikkerhed og privatliv. Enheder på den stabile kanal installerer desuden kun apps fra hvidlisten, der følger med <ph name="PRODUCT_NAME" />. Elementer, der ikke overholder disse betingelser, ignoreres.
 
       Hvis en app, der tidligere er fjerninstalleret, fjernes fra denne liste, afinstalleres den automatisk af <ph name="PRODUCT_NAME" />.
 
@@ -253,7 +253,7 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 
       Angiver en liste over plugins, der er deaktiveret i <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre denne indstilling.
 
-      Jokertegnene "*" og "?" kan bruges til at angive sekvenser af vilkårlige tegn. "*" svarer til et vilkårligt antal tegn, mens "?" angiver et enkelt valgfrit tegn, dvs. nul eller ét tegn. Afslutningstegnet er "\", så hvis du vil angive de reelle tegn "*", "?" eller "\", kan du indsætte "\" foran dem.
+      Jokertegnene "*" og "?" kan bruges til at angive sekvenser af vilkårlige tegn. "*" svarer til et vilkårligt antal tegn, mens "?" angiver et enkelt valgfrit tegn, dvs. nul eller ét tegn. Escape-tegnet er "\", så hvis du vil angive de reelle tegn "*", "?" eller "\", kan du indsætte "\" foran dem.
 
       Hvis du aktiverer denne indstilling, anvendes den angivne liste over plugins aldrig i <ph name="PRODUCT_NAME" />. Disse plugins markeres som deaktiverede i "about:plugins", og brugerne kan ikke aktivere dem.
 
@@ -615,7 +615,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis du deaktiverer denne indstilling eller undlader at konfigurere den, vises alle godkendelsessider i loginportalen i en (almindelig) ny browserfane ved hjælp af den aktuelle brugers proxyindstillinger.</translation>
 <translation id="21394354835637379">Gør det muligt at angive, hvilke webadresser der har tilladelse til at installere udvidelser, apps og temaer.
 
-          Fra og med <ph name="PRODUCT_NAME" /> 21 er det blevet mere vanskeligt at installere udvidelser, apps og brugerscripts uden for Chrome Webshop. Tidligere kunne brugerne klikke på et link til en *.crx-fil, og <ph name="PRODUCT_NAME" /> ville tilbyde at installere filen efter nogle få advarsler. Efter <ph name="PRODUCT_NAME" /> 21 skal sådanne filer downloades og trækkes hen til siden Indstillinger i <ph name="PRODUCT_NAME" />. Denne indstilling giver visse webadresser mulighed for at bruge den gamle og nemmere installationsproces.
+          Fra og med <ph name="PRODUCT_NAME" /> 21 er det blevet mere vanskeligt at installere udvidelser, apps og brugerscripts, der ikke kommer fra Chrome Webshop. Tidligere kunne brugerne klikke på et link til en *.crx-fil, og <ph name="PRODUCT_NAME" /> ville tilbyde at installere filen efter nogle få advarsler. Efter <ph name="PRODUCT_NAME" /> 21 skal sådanne filer downloades og trækkes hen til siden Indstillinger i <ph name="PRODUCT_NAME" />. Denne indstilling giver visse webadresser mulighed for at bruge den gamle og nemmere installationsproces.
 
           Hvert element på denne liste er et matchmønster, der ligner en udvidelse (se https://developer.chrome.com/extensions/match_patterns). Brugerne vil nemt kunne installere elementer fra enhver webadresse, der matcher et element på denne liste. Både placeringen af *.crx-filen og siden, hvor downloaden startes fra (dvs. henvisningswebadressen), skal tillades af disse mønstre.
 
@@ -877,7 +877,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Googles søgewebadresse kan angives som: <ph name="GOOGLE_SEARCH_URL" />.
 
           Denne indstilling skal aktiveres, når politikken "DefaultSearchProviderEnabled" er aktiveret, og den vil kun blive respekteret, hvis dette er tilfældet.</translation>
-<translation id="2659019163577049044">Hvis denne indstilling aktiveres, kan brugerne konfigurere deres enheder til at synkronisere sms-beskeder mellem deres telefoner og Chromebooks. Bemærk! Hvis denne politik tillades, skal brugerne udtrykkeligt tilmelde sig denne funktion ved at gennemføre en konfiguration. Når konfigurationen er gennemført, kan brugerne sende og modtage sms-beskeder på deres Chromebooks.
+<translation id="2659019163577049044">Hvis denne indstilling aktiveres, kan brugerne konfigurere deres enheder til at synkronisere sms-beskeder mellem deres telefoner og Chromebooks. Bemærk! Hvis denne politik tillades, skal brugerne udtrykkeligt tilmelde sig denne funktion ved at gennemføre en konfiguration. Når konfigurationen er fuldført, kan brugerne sende og modtage sms-beskeder på deres Chromebooks.
 
       Hvis denne indstilling deaktiveres, kan brugerne ikke konfigurere synkronisering af sms-beskeder.
 
@@ -1362,7 +1362,7 @@ Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved ops
 <translation id="3709266154059827597">Konfigurer sortliste for installation af udvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3715569262675717862">Godkendelse på baggrund af klientcertifikater</translation>
-<translation id="3734995764843493369">Adgangskoden skal angives en gang om dagen (efter 24 timer)</translation>
+<translation id="3734995764843493369">Adgangskoden skal angives en gang om dagen (24 timer)</translation>
 <translation id="3736879847913515635">Aktivér tilføjelse af personer i brugeradministration</translation>
 <translation id="3738723882663496016">Denne politik angiver <ph name="PLUGIN_VM_NAME" />-licensnøglen til denne enhed.</translation>
 <translation id="3748900290998155147">Angiver, om aktiveringslåse er tilladt. Udvidelser kan anmode om aktiveringslåse via Power Management Extension API og ARC-apps.
@@ -1806,7 +1806,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4557134566541205630">Webadresse for siden Ny fane i standardsøgemaskinen</translation>
 <translation id="4567137030726189378">Tillad brug af Udviklerværktøjer</translation>
 <translation id="4578265298946081589">Genstart ikke, når brugeren logger ud.</translation>
-<translation id="4578912515887794133">Hvis denne indstilling er aktiveret, sammenligner hosten for fjernadgang navnet på den lokale bruger (som hosten er tilknyttet) med navnet på den Google-konto, der er registreret som ejer af hosten (dvs. "jenshansen", hvis hosten ejes af Google-kontoen "jenshansen@eksempel.dk").  Hosten for fjernadgang starter ikke, hvis navnet på ejeren af hosten er et andet end navnet på den lokale bruger, som hosten er tilknyttet.  Politikken RemoteAccessHostMatchUsername skal bruges sammen med RemoteAccessHostDomain for også at håndhæve, at hostejerens Google-konto tilknyttes et specifikt domæne (dvs. "eksempel.dk").
+<translation id="4578912515887794133">Hvis denne indstilling er aktiveret, sammenligner hosten for fjernadgang navnet på den lokale bruger (som hosten er tilknyttet) med navnet på den Google-konto, der er registreret som ejer af hosten (dvs. "jenshansen", hvis hosten ejes af Google-kontoen "jenshansen@eksempel.dk").  Hosten for fjernadgang starter ikke, hvis navnet på ejeren af hosten er et andet end navnet på den lokale bruger, som hosten er tilknyttet.  Politikken RemoteAccessHostMatchUsername skal bruges sammen med RemoteAccessHostDomain for også at håndhæve, at hostejerens Google-konto er tilknyttet et specifikt domæne (dvs. "eksempel.dk").
 
           Hvis denne indstilling er deaktiveret eller ikke er konfigureret, kan hosten for fjernadgang tilknyttes en hvilken som helst lokal bruger.</translation>
 <translation id="4600786265870346112">Aktivér Stor markør</translation>
@@ -2092,7 +2092,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Angiver en liste over plugins, der er aktiveret i <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre denne indstilling.
 
-      Jokertegnene "*" og "?" kan bruges til at angive sekvenser af vilkårlige tegn. "*" svarer til et vilkårligt antal tegn, mens "?" angiver et enkelt valgfrit tegn, dvs. nul eller ét tegn. Afslutningstegnet er "\", så hvis du vil angive de reelle tegn "*", "?" eller "\", kan du indsætte "\" foran dem.
+      Jokertegnene "*" og "?" kan bruges til at angive sekvenser af vilkårlige tegn. "*" svarer til et vilkårligt antal tegn, mens "?" angiver et enkelt valgfrit tegn, dvs. nul eller ét tegn. Escape-tegnet er "\", så hvis du vil angive de reelle tegn "*", "?" eller "\", kan du indsætte "\" foran dem.
 
       Den angivne liste over plugins anvendes altid i <ph name="PRODUCT_NAME" />, hvis de er installeret. Disse plugins markeres som aktiverede i "about:plugins", og brugerne kan ikke deaktivere dem.
 
@@ -2196,9 +2196,9 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5423001109873148185">Denne politik tvinger import af søgemaskiner fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis standardsøgemaskinen er deaktiveret, bliver den ikke importeret. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="5423197884968724595">Navn på Android WebView-begrænsning:</translation>
 <translation id="5424147596523390018">Tillad alle farvetilstande</translation>
-<translation id="5437733496511628148">Hvis du aktiverer denne indstilling, kan cookies ikke angives af websideelementer, der ikke kommer fra det domæne, der er angivet i browserens adresselinje.
+<translation id="5437733496511628148">Hvis du aktiverer denne indstilling, forhindrer du websideelementer, der ikke kommer fra domænet i browserens adresselinje, i at angive cookies.
 
-      Hvis du deaktiverer denne indstilling, tillades det, at cookies angives af websideelementer, der ikke kommer fra det domæne, der er angivet i browserens adresselinje, og det forhindrer brugerne i at ændre denne indstilling.
+      Hvis du deaktiverer denne indstilling, tillader du, at websideelementer, der ikke kommer fra domænet i browserens adresselinje, angiver cookies. Det forhindrer også brugerne i at ændre indstillingen.
 
       Hvis denne politik ikke konfigureres, er tredjepartscookies aktiveret, men dette kan ændres af brugeren.</translation>
 <translation id="5442026853063570579">Denne politik styrer også adgangen til Indstillinger for udviklere i Android. Hvis du indstiller denne politik til "DeveloperToolsDisallowed" (værdi 2), kan brugerne ikke få adgang til Indstillinger for udviklere. Hvis du indstiller denne politik til en anden værdi eller ikke angiver den, kan brugerne få adgang til Indstillinger for udviklere ved at trykke syv gange på build-nummeret i Android-appen Indstillinger.</translation>
@@ -2232,13 +2232,13 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Angiver en liste over plugins, som brugeren kan aktivere eller deaktivere i <ph name="PRODUCT_NAME" />.
 
-      Jokertegnene "*" og "?" kan bruges til at angive sekvenser af vilkårlige tegn. "*" svarer til et vilkårligt antal tegn, mens "?" angiver et enkelt valgfrit tegn, dvs. nul eller ét tegn. Afslutningstegnet er "\", så hvis du vil angive de reelle tegn "*", "?" eller "\", kan du indsætte "\" foran dem.
+      Jokertegnene "*" og "?" kan bruges til at angive sekvenser af vilkårlige tegn. "*" svarer til et vilkårligt antal tegn, mens "?" angiver et enkelt valgfrit tegn, dvs. nul eller ét tegn. Escape-tegnet er "\", så hvis du vil angive de reelle tegn "*", "?" eller "\", kan du indsætte "\" foran dem.
 
       Hvis du aktiverer denne indstilling, kan den angivne liste over plugins bruges i <ph name="PRODUCT_NAME" />. Brugerne kan aktivere eller deaktivere dem i "about:plugins", selv om pluginnet også matcher et mønster i DisabledPlugins. Brugerne kan også aktivere og deaktivere plugins, der ikke passer til mønstre i DisabledPlugins, DisabledPluginsExceptions og EnabledPlugins.
 
       Denne politik har til formål at muliggøre strenge sortlister med plugins, hvor listen "DisabledPlugins" indeholder poster med jokertegn såsom deaktiver alle plugins "*" eller deaktiver alle Java-plugins "*Java*", men administratoren ønsker at aktivere nogle særlige versioner såsom "IcedTea Java 2.3". Disse særlige versioner kan angives i denne politik.
 
-      Bemærk, at både pluginnets navn og gruppenavn skal være fritaget. De enkelte plugingrupper er angivet i en særskilt sektion i about:plugins, og hver enkel sektion kan indeholde ét eller flere plugins. Pluginnet "Shockwave Flash" tilhører f.eks. gruppen "Adobe Flash Player", og begge navne skal matche en angivelse på listen over fritagelser, hvis det pågældende plugin skal fritages fra sortlisten.
+      Bemærk, at både pluginnets navn og gruppenavn skal være fritaget. De enkelte plugingrupper er angivet i en særskilt sektion i about:plugins, og hver enkelt sektion kan indeholde ét eller flere plugins. Pluginnet "Shockwave Flash" tilhører f.eks. gruppen "Adobe Flash Player", og begge navne skal matche en angivelse på listen over fritagelser, hvis det pågældende plugin skal fritages fra sortlisten.
 
       Hvis denne politik ikke er konfigureret, låses de plugins, der matcher mønstrene i "DisabledPlugins", i deaktiveret tilstand, og brugerne kan ikke aktivere dem.</translation>
 <translation id="5499375345075963939">Denne politik er kun aktiv i detailtilstand.
@@ -3004,7 +3004,7 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
       Google kan ved hjælp af et sessions-id knytte disse logfiler til andre logfiler, der er indsamlet af selve Google-tjenesten. Dette kan gøre fejlretningen nemmere.
       </translation>
 <translation id="706669471845501145">Tillad, at websites viser skrivebordsunderretninger</translation>
-<translation id="7070525176564511548">Adgangskoden skal angives en gang om ugen (efter 168 timer)</translation>
+<translation id="7070525176564511548">Adgangskoden skal angives en gang om ugen (168 timer)</translation>
 <translation id="7072208053150563108">Hvor ofte computeradgangskoden skiftes</translation>
 <translation id="7079519252486108041">Bloker pop op-vinduer på disse websites</translation>
 <translation id="7085803328069945025">Giver dig mulighed for at angive en liste med webadressemønstre, der angiver websites, som gerne må anmode brugeren om adgang til en USB-enhed.
@@ -3155,7 +3155,7 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 
           Hvis denne indstilling deaktiveres, vil denne funktion ikke være tilgængelig.</translation>
 <translation id="7275334191706090484">Administrerede bogmærker</translation>
-<translation id="7291084543582732020">Hvis du aktiverer denne indstilling, har brugerne mulighed for at bruge Smart Lock, hvis kravene for funktionen er mødt.
+<translation id="7291084543582732020">Hvis du aktiverer denne indstilling, har brugerne mulighed for at bruge Smart Lock, hvis kravene for funktionen er opfyldt.
 
       Hvis du deaktiverer denne indstilling, kan brugerne ikke anvende Smart Lock.
 
@@ -3207,9 +3207,6 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 <translation id="7339315111520512972">Tving netværkskoden til at køre i browserprocessen</translation>
 <translation id="7340034977315324840">Rapportér tidspunkter for aktiviteter på enheden</translation>
 <translation id="7343497214039883642">Fil til konfiguration af virksomhedsprintere for enheder</translation>
-<translation id="7349338075015720646">Angiver en liste over websites, som installeres uovervåget uden brugerinteraktion, og som ikke kan afinstalleres af brugeren.
-
-      Hvert listepunkt i politikken er et objekt med to medlemmer: "url" og "launch_container". "url" bør være webadressen til den webapp, der skal installeres, og "launch_container" bør enten være "window" eller "tab" for at indikere, hvordan webappen åbnes, når den er installeret. Hvis "launch_container" udelades, åbnes appen i et vindue, hvis Chrome betragter den som en progressiv webapp, og ellers åbnes den på en fane.</translation>
 <translation id="735902178936442460">Denne politik styrer, om der skal rapporteres oplysninger, der kan bruges til at identificere maskiner, f.eks. maskinnavn og netværksadresser.
 
      Hvis denne politik ikke er angivet eller er angivet som Sand, indhentes der oplysninger, der kan bruges til at identificere maskinerne.
@@ -3496,7 +3493,7 @@ Hvis du aktiverer denne indstilling eller ikke konfigurerer en værdi, forbliver
 
       Politikken består af en liste over bogmærker, hvor hvert bogmærke er en ordbog med nøglerne "<ph name="NAME" />" og "<ph name="URL_LABEL" />", som indeholder bogmærkets navn og mål. En undermappe kan konfigureres ved at definere et bogmærke uden en "<ph name="URL_LABEL" />"-nøgle, men med en ekstra "<ph name="CHILDREN" />"-nøgle, der selv indeholder en liste over bogmærker som defineret ovenfor (nogle af disse kan også være mapper). <ph name="PRODUCT_NAME" /> ændrer ufuldstændige webadresser på samme måde, som hvis de blev indsendt via omnifeltet. "<ph name="GOOGLE_COM" />" bliver f.eks. til "<ph name="HTTPS_GOOGLE_COM" />".
 
-      Disse bogmærker placeres i en mappe, som ikke kan ændres af brugeren, men som brugeren kan vælge ikke at vise på bogmærkelinjen. Mappens navn er som standard "Administrerede bogmærker", men dette kan tilpasses ved at føje en ordbog med nøglen "<ph name="TOPLEVEL_NAME" />" med det ønskede mappenavn som værdi til listen over bogmærker.
+      Disse bogmærker placeres i en mappe, som ikke kan ændres af brugeren, men som brugeren kan vælge ikke at vise på bogmærkelinjen. Mappens navn er som standard "Administrerede bogmærker", men dette kan tilpasses ved at tilføje listen over bogmærker en ordbog med nøglen "<ph name="TOPLEVEL_NAME" />" og det ønskede mappenavn som værdi.
 
       Administrerede bogmærker synkroniseres ikke med brugerens konto og kan ikke ændres af udvidelser.</translation>
 <translation id="8078366200175825572">Gør det muligt at oprette en liste over webadressemønstre for at angive websites, som ikke må angive cookies.

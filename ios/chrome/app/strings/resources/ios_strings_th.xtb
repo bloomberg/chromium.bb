@@ -204,7 +204,6 @@
 <translation id="4049507953662678203">ตรวจสอบว่าคุณมีการเชื่อมต่อเครือข่าย และลองอีกครั้ง</translation>
 <translation id="4082688844002261427">ควบคุมการใช้ประวัติการท่องเว็บเพื่อปรับเปลี่ยน Search, โฆษณา และบริการอื่นๆ ในแบบของคุณ</translation>
 <translation id="408404951701638773">เข้าถึงแถบค้นหาได้ง่ายขึ้นแล้ว</translation>
-<translation id="4084682180776658562">บุ๊กมาร์ก</translation>
 <translation id="411254640334432676">การดาวน์โหลดล้มเหลว</translation>
 <translation id="4112644173421521737">ค้นหา</translation>
 <translation id="4121993058175073134">หากต้องการส่งข้อมูล net-export โปรดกำหนดค่าบัญชีอีเมลของคุณในแอปการตั้งค่า</translation>
@@ -367,7 +366,6 @@
 <translation id="6657585470893396449">รหัสผ่าน</translation>
 <translation id="667999046851023355">เอกสาร</translation>
 <translation id="6691331417640343772">จัดการข้อมูลที่ซิงค์ใน Google แดชบอร์ด</translation>
-<translation id="6709334795756764830">แก้ไขบุ๊กมาร์ก</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">ส่งออกรหัสผ่านไม่ได้</translation>
 <translation id="6780034285637185932">รหัสไปรษณีย์</translation>
@@ -491,7 +489,7 @@
 <translation id="8840513115188359703">คุณจะไม่ออกจากระบบบัญชี Google</translation>
 <translation id="8870413625673593573">เพิ่งปิด</translation>
 <translation id="8881801611828450202">ค้นหาภาพนี้ใน <ph name="SEARCH_ENGINE" /></translation>
-<translation id="8904976895050290827">การทำข้อมูลให้ตรงกันของ Chrome</translation>
+<translation id="8904976895050290827">การซิงค์ข้อมูลของ Chrome</translation>
 <translation id="895541991026785598">รายงานปัญหา</translation>
 <translation id="8971089644512329999">รับทราบ</translation>
 <translation id="8976382372951310360">ความช่วยเหลือ</translation>

@@ -131,7 +131,7 @@
 <translation id="2961963223658824723">Ein Fehler ist aufgetreten. Bitte versuchen Sie es in ein paar Sekunden noch einmal.</translation>
 <translation id="2963773877003373896">Mod3</translation>
 <translation id="2970920913501714344">Apps, Erweiterungen und Designs installieren</translation>
-<translation id="2977598380246111477">Nächste Zahl</translation>
+<translation id="2977598380246111477">Nächste Nummer</translation>
 <translation id="2995447421581609334">Übertragungsgeräte anzeigen.</translation>
 <translation id="2996462380875591307">Angedockte Lupe aktiviert. Drücken Sie Strg + Suchtaste + D, um sie zu deaktivieren.</translation>
 <translation id="3000461861112256445">Mono-Audio</translation>
@@ -230,6 +230,7 @@
 <translation id="4527045527269911712">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung.</translation>
 <translation id="453661520163887813">Vollständig geladen in <ph name="TIME" /> h</translation>
 <translation id="4544944664594876241">Die Tastenkombination zum Sperren des Bildschirms hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Vorlese-Schaltfläche</translation>
 <translation id="4585337515783392668">Streaming an unbekannten Empfänger beenden</translation>
 <translation id="4628757576491864469">Geräte</translation>
@@ -237,6 +238,7 @@
 <translation id="4696813013609194136">Gerät mit Elterncode entsperren</translation>
 <translation id="4731797938093519117">Elternfreigabe</translation>
 <translation id="4734965478015604180">Horizontal</translation>
+<translation id="476166673298332917">Der Geräteadministrator überwacht unter Umständen Ihre Browseraktivitäten.</translation>
 <translation id="4774338217796918551">Du darfst das Gerät um <ph name="COME_BACK_TIME" /> wieder verwenden.</translation>
 <translation id="4776917500594043016">Passwort für <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">In Demositzungen ist Google Assistant nicht verfügbar.</translation>

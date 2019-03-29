@@ -24,7 +24,6 @@
 <translation id="1103523840287552314">Luôn dịch <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Nếu được chọn, Chrome sẽ lưu trữ bản sao thẻ của bạn trên thiết bị này để điền biểu mẫu nhanh hơn.</translation>
 <translation id="1110994991967754504">Chọn quyền cho <ph name="PERMISSION_NAME" /></translation>
-<translation id="1111153019813902504">Dấu trang gần đây</translation>
 <translation id="1113869188872983271">&amp;Hoàn tác sắp xếp lại</translation>
 <translation id="1125573121925420732">Cảnh báo hiển thị khi trang web cập nhật bảo mật là điều bình thường. Việc này sẽ sớm được cải tiến.</translation>
 <translation id="1126551341858583091">Kích thước trên bộ nhớ cục bộ là <ph name="CRASH_SIZE" />.</translation>
@@ -50,7 +49,6 @@
 <translation id="1228893227497259893">Số nhận dạng tổ chức không đúng</translation>
 <translation id="1232569758102978740">Không tên</translation>
 <translation id="1240347957665416060">Tên thiết bị của bạn</translation>
-<translation id="124116460088058876">Ngôn ngữ khác</translation>
 <translation id="1250759482327835220">Để thanh toán nhanh hơn vào lần tới, hãy lưu địa chỉ thanh toán, tên và thẻ vào Tài khoản Google của bạn.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (được đồng bộ hóa)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Nếu bạn cố truy cập vào một trang web nhưng vẫn không mở được, trước tiên, hãy tìm cách khắc phục lỗi này bằng các bước khắc phục sự cố dưới đây:&lt;/p&gt;
@@ -1335,7 +1333,6 @@ Thông tin chi tiết bổ sung:
 <translation id="8371889962595521444">Chứng chỉ gốc tùy chỉnh</translation>
 <translation id="8380941800586852976">Nguy hiểm</translation>
 <translation id="8381674639488873545">Những khoản phí này có thể là khoản thu một lần hoặc định kỳ và có thể không rõ ràng. <ph name="BEGIN_LINK" />Vẫn hiển thị<ph name="END_LINK" /></translation>
-<translation id="8382348898565613901">Dấu trang bạn truy cập gần đây sẽ xuất hiện ở đây</translation>
 <translation id="8398259832188219207">Báo cáo sự cố được tải lên vào <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Sự cố (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Bạn phải nhập cùng một cụm mật khẩu hai lần.</translation>

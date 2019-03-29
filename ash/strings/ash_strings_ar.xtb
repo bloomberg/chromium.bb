@@ -230,6 +230,7 @@
 <translation id="4527045527269911712">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> حتى اكتمال الشحن</translation>
 <translation id="4544944664594876241">لقد تغير اختصار قفل الشاشة. يُرجى استخدام <ph name="NEW_SHORTCUT" /> بدلاً من <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4561267230861221837">شبكة الجيل الثالث</translation>
 <translation id="4570957409596482333">زر "الاختيار والاستماع"</translation>
 <translation id="4585337515783392668">إيقاف الإرسال إلى مستلم غير معروف</translation>
 <translation id="4628757576491864469">الأجهزة</translation>
@@ -237,6 +238,7 @@
 <translation id="4696813013609194136">فتح قفل الجهاز باستخدام رمز الوالدين</translation>
 <translation id="4731797938093519117">وصول أحد الوالدين</translation>
 <translation id="4734965478015604180">أفقي</translation>
+<translation id="476166673298332917">قد يراقب مشرف الجهاز نشاط التصفُح.</translation>
 <translation id="4774338217796918551">يمكنك العودة غدًا في <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">كلمة مرور <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">‏لا يتوفَّر "مساعد Google" في جلسة تجريبية.</translation>

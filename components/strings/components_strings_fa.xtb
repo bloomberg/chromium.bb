@@ -24,7 +24,6 @@
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> همیشه ترجمه شود</translation>
 <translation id="1107591249535594099">‏اگر علامت زده شود، Chrome یک کپی از این کارت را در دستگاه نگهداری می‌کند تا برای پرکردن فرم‌ها از آن استفاده شود.</translation>
 <translation id="1110994991967754504">مجوز <ph name="PERMISSION_NAME" /> را انتخاب کنید</translation>
-<translation id="1111153019813902504">نشانک‌های اخیر</translation>
 <translation id="1113869188872983271">&amp;واگرد ترتیب‌بندی مجدد</translation>
 <translation id="1125573121925420732">در مدتی که وب‌سایت‌ها امنیتشان را به‌روزرسانی می‌کنند، ممکن است به‌طور معمول اخطارهایی دریافت کنید. این مورد به‌زودی اصلاح می‌شود.</translation>
 <translation id="1126551341858583091">اندازه در فضای ذخیره‌سازی محلی <ph name="CRASH_SIZE" /> است.</translation>
@@ -50,7 +49,6 @@
 <translation id="1228893227497259893">‏شناسه entity نادرست</translation>
 <translation id="1232569758102978740">بدون عنوان</translation>
 <translation id="1240347957665416060">نام دستگاهتان</translation>
-<translation id="124116460088058876">زبان‌های بیشتر</translation>
 <translation id="1250759482327835220">‏برای اینکه دفعه بعد پرداخت سریع‌تری داشته باشید، اطلاعات کارت، نام و نشانی صورت‌حسابتان را در حساب Google خود ذخیره کنید.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />، <ph name="TYPE_2" /> (همگام‌سازی‌شده)</translation>
 <translation id="1256368399071562588">‏&lt;p&gt;اگر می‌خواهید از وب‌سایتی بازدید کنید و باز نمی‌شود، ابتدا سعی کنید با این مراحل عیب‌یابی خطا را برطرف کنید:&lt;/p&gt;
@@ -241,7 +239,7 @@
 <translation id="2202020181578195191">سال انقضای معتبری وارد کنید</translation>
 <translation id="2212735316055980242">خط‌مشی یافت نشد</translation>
 <translation id="2213606439339815911">در حال واکشی موارد...</translation>
-<translation id="2218879909401188352">درحال‌حاضر مهاجم‌ها در <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> می‌توانند برنامه‌های خطرناکی نصب کنند که به دستگاهتان آسیب می‌زنند، هزینه‌های پنهانی به صورت‌حساب دستگاه همراهتان اضافه می‌کنند یا اطلاعات شخصی‌تان را سرقت می‌کنند. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2218879909401188352">درحال‌حاضر مهاجم‌ها در <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> می‌توانند برنامه‌های خطرناکی نصب کنند که به دستگاهتان آسیب بزند، هزینه‌های پنهانی به صورت‌حساب دستگاه همراهتان اضافه کند یا اطلاعات شخصی‌تان را سرقت کند. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">اتصال اینترنت وجود ندارد</translation>
 <translation id="2230458221926704099">با استفاده از <ph name="BEGIN_LINK" />برنامه عیب‌یابی<ph name="END_LINK" />، مشکل اتصالتان را برطرف کنید</translation>
 <translation id="2239100178324503013">اکنون ارسال شود</translation>
@@ -307,7 +305,7 @@
 <translation id="2539524384386349900">تشخیص</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> پاسخی نامعتبر ارسال کرد.</translation>
 <translation id="2556876185419854533">&amp;واگرد ویرایش</translation>
-<translation id="2586657967955657006">کلیپ‌بورد</translation>
+<translation id="2586657967955657006">بریده‌دان</translation>
 <translation id="2587730715158995865">از <ph name="ARTICLE_PUBLISHER" />. این داستان و <ph name="OTHER_ARTICLE_COUNT" /> داستان دیگر را بخوانید.</translation>
 <translation id="2587841377698384444">‏شناسه Directory API:</translation>
 <translation id="2597378329261239068">این سند توسط گذرواژه محافظت می‌شود.  لطفاً یک گذرواژه وارد کنید.</translation>
@@ -1057,6 +1055,7 @@
 <translation id="6965978654500191972">دستگاه</translation>
 <translation id="6970216967273061347">منطقه</translation>
 <translation id="6973656660372572881">‏هم سرورهای پروکسی ثابت و هم آدرس اسکریپت pac. مشخص شده‌اند.</translation>
+<translation id="6973932557599545801">متأسفم، نمی‌توانم کمک کنم، لطفاً خودتان ادامه دهید.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">بی‌صدا (پیش‌فرض)</translation>
 <translation id="6984479912851154518">درحال خروج از حالت ناشناس، برای پرداخت ازطریق برنامه‌ای خارجی. ادامه می‌دهید؟</translation>
@@ -1064,7 +1063,7 @@
 <translation id="6993898126790112050">6x9 (Envelope)</translation>
 <translation id="6996312675313362352"><ph name="ORIGINAL_LANGUAGE" /> همیشه ترجمه شود</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7016992613359344582">ممکن است این هزینه‌ها یک‌باره یا تکرارشونده باشند یا واضح نباشند.</translation>
+<translation id="7016992613359344582">ممکن است این هزینه‌ها یک‌باره یا تکرارشونده باشند و واضح نباشند.</translation>
 <translation id="7029809446516969842">گذرواژه‌ها</translation>
 <translation id="7050187094878475250">تلاش کردید به دامنه <ph name="DOMAIN" /> بروید اما گواهینامه‌ای که سرور ارائه کرد، دارای یک تاریخ اعتبار بسیار طولانی است و مورداعتماد نیست.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{درحال‌حاضر این کارت ذخیره نمی‌شود}one{درحال‌حاضر این کارت‌ها ذخیره نمی‌شوند}other{درحال‌حاضر این کارت‌ها ذخیره نمی‌شوند}}</translation>
@@ -1210,7 +1209,7 @@
 <translation id="7697066736081121494">Prc8 (Envelope)</translation>
 <translation id="769721561045429135">درحال‌حاضر، کارت‌هایی دارید که فقط در این دستگاه قابل استفاده‌اند. برای ادامه مرور کارت‌ها، کلیک کنید.</translation>
 <translation id="7699293099605015246">مقاله‌ها درحال‌حاضر دردسترس نیستند</translation>
-<translation id="7701040980221191251">هیچ کدام</translation>
+<translation id="7701040980221191251">هیچ‌کدام</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />ادامه به <ph name="SITE" /> (غیرایمن)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">گواهی</translation>
 <translation id="7716147886133743102">توسط سرپرست مسدود شده است</translation>
@@ -1333,8 +1332,7 @@
 <translation id="8368476060205742148">‏خدمات Google Play</translation>
 <translation id="8371889962595521444">گواهی‌نامه ریشه سفارشی</translation>
 <translation id="8380941800586852976">خطرناک</translation>
-<translation id="8381674639488873545">ممکن است این هزینه‌ها یک‌باره یا تکرارشونده باشند و شاید شفاف نباشند. <ph name="BEGIN_LINK" />درهرصورت نمایش داده شود<ph name="END_LINK" /></translation>
-<translation id="8382348898565613901">نشانک‌هایی که به‌تازگی از آن‌ها دیدن کرده‌اید، در اینجا نشان داده می‌شوند</translation>
+<translation id="8381674639488873545">ممکن است این هزینه‌ها یک‌باره یا تکرارشونده باشند و واضح نباشند. <ph name="BEGIN_LINK" />درهرصورت نمایش داده شود<ph name="END_LINK" /></translation>
 <translation id="8398259832188219207">گزارش خرابی در <ph name="UPLOAD_TIME" /> بارگذاری شد</translation>
 <translation id="8412145213513410671">خرابی ها (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">شما باید همان عبارت عبور را دوبار وارد کنید.</translation>

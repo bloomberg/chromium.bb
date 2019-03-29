@@ -35,6 +35,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Select&amp;ează tot</translation>
 <translation id="1938451708255335766">Pentru a regla densitatea afișajului ferestrei, repornește aplicația.</translation>
+<translation id="208586643495776849">Încearcă din nou</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 zi}few{# zile}other{# zile}}</translation>
 <translation id="2148716181193084225">Astăzi</translation>
 <translation id="2168039046890040389">O pagină mai sus</translation>
@@ -52,14 +53,14 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Calibrarea este finalizată</translation>
 <translation id="252373100621549798">Afișaj necunoscut</translation>
-<translation id="2573731672208488250">{HOURS,plural, =1{în h}few{în # h}other{în # h}}</translation>
+<translation id="2573731672208488250">{HOURS,plural, =1{în 1 h}few{în # h}other{în # h}}</translation>
 <translation id="2583543531130364912">Calibrează ecranul tactil</translation>
 <translation id="2666092431469916601">Sus</translation>
 <translation id="2701330563083355633">Trimis de <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Copiați în clipboard</translation>
 <translation id="2803313416453193357">Deschideți dosarul</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Acum 1 an}few{Acum # ani}other{Acum # de ani}}</translation>
-<translation id="2907671656515444832">{DAYS,plural, =1{în o zi}few{în # zile}other{în # de zile}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{în o zi}few{în # zile}other{în # zile}}</translation>
 <translation id="2931838996092594335">dă clic</translation>
 <translation id="3036649622769666520">Deschide fișierele</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -118,7 +119,7 @@
 <translation id="5613020302032141669">Săgeată stânga</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{Un min.}few{# min.}other{# min.}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{O zi și  }few{# zile și  }other{# de zile și  }}</translation>
-<translation id="5866104238061687188">{YEARS,plural, =1{în an}few{în # ani}other{în # de ani}}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{în 1 an}few{în # ani}other{în # ani}}</translation>
 <translation id="5895138241574237353">Reîncepe</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{O secundă rămasă}few{# secunde rămase}other{# de secunde rămase}}</translation>
 <translation id="5941711191222866238">Minimizează</translation>
@@ -174,7 +175,7 @@
 <translation id="7907591526440419938">Deschide fișierul</translation>
 <translation id="7969046989155602842">Tasta Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Mai mult de o notificare necitită}few{Mai mult de # notificări necitite}other{Mai mult de # de notificări necitite}}</translation>
-<translation id="8086866675552927481">{MINUTES,plural, =1{în min}few{în # min}other{în # de min}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{în 1 m}few{în # m}other{în # m}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Acum o oră}few{Acum # ore}other{Acum # de ore}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{O sec. rămasă}few{# sec. rămase}other{# sec. rămase}}</translation>

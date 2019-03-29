@@ -230,6 +230,7 @@
 <translation id="4527045527269911712">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限。</translation>
 <translation id="453661520163887813"><ph name="TIME" /> 後充飽</translation>
 <translation id="4544944664594876241">螢幕鎖定快速鍵已變更，請改用 <ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
+<translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">隨選朗讀按鈕</translation>
 <translation id="4585337515783392668">停止透過不明接收器投放</translation>
 <translation id="4628757576491864469">裝置</translation>
@@ -237,6 +238,7 @@
 <translation id="4696813013609194136">使用家長存取碼將裝置解鎖</translation>
 <translation id="4731797938093519117">家長存取</translation>
 <translation id="4734965478015604180">橫向</translation>
+<translation id="476166673298332917">裝置管理員可能會監控你的瀏覽活動。</translation>
 <translation id="4774338217796918551"><ph name="COME_BACK_TIME" /> 裝置就會解除鎖定。</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密碼</translation>
 <translation id="4778095205580009397">Google 助理不適用於示範工作階段。</translation>

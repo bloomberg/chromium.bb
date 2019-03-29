@@ -207,6 +207,7 @@ Aby uniemożliwić użytkownikowi <ph name="NEW_PROFILE_NAME" /> korzystanie z 
 <ph name="BEGIN_LINK_2" />Więcej informacji<ph name="END_LINK_2" />
 
 Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EMAIL" />.</translation>
+<translation id="7349591376906416160">Administrator systemu skonfigurował Chromium tak, by strona <ph name="TARGET_URL_HOSTNAME" /> otwierała się w przeglądarce <ph name="ALTERNATIVE_BROWSER_NAME" />.</translation>
 <translation id="7448255348454382571">Ponowne uruchomienie Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium Dev</translation>
 <translation id="7451052299415159299">Chromium potrzebuje uprawnień dostępu do aparatu na tej stronie</translation>

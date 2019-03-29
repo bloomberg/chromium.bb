@@ -690,7 +690,7 @@
       Če je ta pravilnik onemogočen, uporabnik ne bo nikoli pozvan, pri čemer bo zajem
       videa na voljo samo URL-jem, konfiguriranim na seznamu VideoCaptureAllowedUrls.
 
-      Ta pravilnik vpliva na vse vrste videovhodov in ne samo na vgrajeno kamero.</translation>
+      Ta pravilnik vpliva na vse vrste videovhodov, in ne samo na vgrajeno kamero.</translation>
 <translation id="2201555246697292490">Konfiguracija seznama dovoljenih za izvorno pošiljanje sporočil</translation>
 <translation id="2204753382813641270">Nadzor samodejnega skrivanja police</translation>
 <translation id="2208976000652006649">Parametri za iskalni URL, ki uporablja POST</translation>
@@ -938,7 +938,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="268577405881275241">Omogoči funkcijo stiskanja podatkov v strežniku proxy</translation>
 <translation id="2693108589792503178">Konfigurirajte URL za spremembo gesla.</translation>
 <translation id="2706708761587205154">Omogočanje tiskanja samo s kodo PIN</translation>
-<translation id="2710534340210290498">Če je ta pravilnik onemogočen, uporabniki ne bodo mogli zakleniti zaslona (mogoča bo samo odjava iz uporabniške seje). Če je ta nastavitev omogočena ali nastavljena, bodo lahko zaslon zaklenili uporabniki, ki so preverili pristnost z geslom.</translation>
+<translation id="2710534340210290498">Če je ta pravilnik onemogočen, uporabniki ne bodo mogli zakleniti zaslona (mogoča bo samo odjava iz uporabniške seje). Če je ta nastavitev omogočena ali ni nastavljena, bodo lahko zaslon zaklenili uporabniki, ki so preverili pristnost z geslom.</translation>
 <translation id="2731627323327011390">Onemogočanje uporabe potrdil sistema <ph name="PRODUCT_OS_NAME" /> aplikacijam ARC</translation>
 <translation id="2742843273354638707">Skrivanje aplikacije Spletna trgovina Chrome in povezave v nogi na novem zavihku s povezavami in v zaganjalniku aplikacij v sistemu <ph name="PRODUCT_OS_NAME" />.
 
@@ -1868,7 +1868,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4557134566541205630">URL novega zavihka s povezavami privzetega iskalnika</translation>
 <translation id="4567137030726189378">Omogočena uporaba orodij za izvajalce</translation>
 <translation id="4578265298946081589">Brez vnovičnega zagona ob odjavi uporabnika.</translation>
-<translation id="4578912515887794133">Če je ta nastavitev omogočena, gostitelj za oddaljeni dostop primerja ime lokalnega uporabnika (s katerim je povezan gostitelj) in ime računa za Google, ki je registriran kot lastnik gostitelja (tj. »janeznovak«, če je lastnik gostitelja račun za Google »janeznovak@example.com«).  Gostitelj za oddaljeni dostop se ne bo zagnal, če se ime lastnika gostitelja razlikuje od imena lokalnega uporabnika, s katerim je povezan gostitelj.  Pravilnik RemoteAccessHostMatchUsername se mora uporabljati skupaj s pravilnikom RemoteAccessHostDomain, da se prav tako uveljavi, da je Google Račun lastnika gostitelja povezan s točno določeno domeno (tj. »example.com«).
+<translation id="4578912515887794133">Če je ta nastavitev omogočena, gostitelj za oddaljeni dostop primerja ime lokalnega uporabnika (s katerim je povezan gostitelj) in ime računa za Google, ki je registriran kot lastnik gostitelja (tj. »janeznovak«, če je lastnik gostitelja račun za Google »janeznovak@example.com«).  Gostitelj za oddaljeni dostop se ne bo zagnal, če se ime lastnika gostitelja razlikuje od imena lokalnega uporabnika, s katerim je povezan gostitelj.  Pravilnik RemoteAccessHostMatchUsername se mora uporabljati skupaj s pravilnikom RemoteAccessHostDomain, da se prav tako uveljavi, da je račun za Google lastnika gostitelja povezan s točno določeno domeno (tj. »example.com«).
 
           Če je ta nastavitev onemogočena ali ni nastavljena, je mogoče gostitelja za oddaljeni dostop povezati s poljubnim lokalnim uporabnikom.</translation>
 <translation id="4600786265870346112">Omogoči velik kazalec</translation>
@@ -2038,14 +2038,14 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Če izberete vrednost »auto_detect« kot »ProxyMode«, bodo vsa druga polja prezrta.
 
-          Če izberete vrednost »fixed_serve« kot »ProxyMode, se uporabita polji »ProxyServer« in »ProxyBypassList«.
+          Če izberete vrednost »fixed_server« kot »ProxyMode, se uporabita polji »ProxyServer« in »ProxyBypassList«.
 
           Če izberete vrednost »pac_script« kot »ProxyMode, se uporabita polji »ProxyPacUrl« in »ProxyBypassList«.</translation>
 <translation id="5056708224511062314">Izklop lupe</translation>
 <translation id="5058573563327660283">Izbere strategijo za sproščanje prostora na disku med samodejnim čiščenjem (zastarelo)</translation>
 <translation id="5067143124345820993">Seznam odobrenih uporabnikov za prijavo</translation>
 <translation id="5075834892754086022">Če je ta pravilnik nastavljen, se uveljavi najmanjša dovoljena dolžina kode
-          PIN. (Absolutna najmanjša dovoljena kode PIN je 1; manjše vrednosti kot 1
+          PIN. (Absolutna najmanjša dovoljena dolžina kode PIN je 1; manjše vrednosti kot 1
           se obravnavajo kot 1.)
 
           Če pravilnik ni nastavljen, se uveljavi najmanjša dovoljena dolžina kode PIN, ki je
@@ -2104,7 +2104,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5163002264923337812">Omogoči stari spletni potek prijave</translation>
 <translation id="5168529971295111207">Ta pravilnik je zastarel, namesto njega uporabite ProxyMode.
 
-          Omogoča izbiro strežnika proxy, ki naj ga uporablja <ph name="PRODUCT_NAME" /> in uporabnikom prepreči spreminjanje nastavitev strežnika proxy.
+          Omogoča izbiro strežnika proxy, ki naj ga uporablja <ph name="PRODUCT_NAME" />, in uporabnikom prepreči spreminjanje nastavitev strežnika proxy.
 
           Ta pravilnik ima vpliv samo, če je onemogočen pravilnik <ph name="PROXY_SETTINGS_POLICY_NAME" />.
 
@@ -2327,7 +2327,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Nadomestna znaka * in ? je mogoče uporabiti za nadomeščanje zaporedij poljubnih znakov. Znak * nadomešča poljubno število znakov, znak ? pa izbirni posamezen znak, tj. nadomešča nič znakov ali en znak. Ubežni znak je \; če torej želite nadomestiti dejanske znake *, ? ali \, lahko postavite prednje znak \.
 
-      Če to nastavitev omogočite, je mogoče v brskalniku <ph name="PRODUCT_NAME" /> uporabiti določen seznam vtičnikov. Uporabniki jih lahko omogočijo ali onemogočijo na strani »about:plugins«, tudi če se vtičnik ujema z vzorcem v pravilniku »DisabledPlugins«. Uporabniki lahko omogočijo ali onemogočijo tudi vtičnike, ki se ne ujemajo z nobenim vzorcem na seznamih »DisabledPlugins«, »DisabledPluginsExceptions« in »EnabledPlugins.
+      Če to nastavitev omogočite, je mogoče v brskalniku <ph name="PRODUCT_NAME" /> uporabiti določen seznam vtičnikov. Uporabniki jih lahko omogočijo ali onemogočijo na strani »about:plugins«, tudi če se vtičnik ujema z vzorcem v pravilniku »DisabledPlugins«. Uporabniki lahko omogočijo ali onemogočijo tudi vtičnike, ki se ne ujemajo z nobenim vzorcem na seznamih »DisabledPlugins«, »DisabledPluginsExceptions« in »EnabledPlugins«.
 
       Namen tega pravilnika je omogočiti strog seznam blokiranih vtičnikov, pri čemer so na seznamu »DisabledPlugins« vnosi z nadomestnimi znaki, na primer »onemogoči vse vtičnike» (*) ali »onemogoči vse vtičnike Java» (*Java*), vendar želi skrbnik omogočiti določeno različico, na primer »IcedTea Java 2.3«. Te različice je mogoče navesti v tem pravilniku.
 
@@ -3202,9 +3202,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Dovoljene vrste povezav za posodobitve</translation>
 <translation id="7194407337890404814">Privzeto ime iskalnika</translation>
-<translation id="7199304109870655950">Konfigurirajte možnosti dostopa v gostitelju za Oddaljeno namizje za Chrome.
+<translation id="7199304109870655950">Konfigurirajte možnosti oddaljenega dostopa v gostitelju za Oddaljeno namizje za Chrome.
 
-      Oddaljeno namizje za Chrome je izvorna storitev, ki se izvaja v ciljnem računalniku, s katero se lahko uporabnik poveže z uporabo aplikacije Oddaljeno namizje za Chrome. Izvorna storitev je zapakirana in se izvaja ločeno od brskalnika <ph name="PRODUCT_NAME" />.
+      Gostitelj za oddaljeno namizje za Chrome je izvorna storitev, ki se izvaja v ciljnem računalniku, s katero se lahko uporabnik poveže z uporabo aplikacije Oddaljeno namizje za Chrome. Izvorna storitev je zapakirana in se izvaja ločeno od brskalnika <ph name="PRODUCT_NAME" />.
 
       Ti pravilniki so prezrti, če ni nameščen
       gostitelj za Oddaljeno namizje za Chrome.</translation>
@@ -3327,9 +3327,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7339315111520512972">Vsili izvajanje omrežne kode v procesu brskalnika</translation>
 <translation id="7340034977315324840">Pošiljanje podatkov o času dejavnosti v napravi</translation>
 <translation id="7343497214039883642">Datoteka s konfiguracijami tiskalnikov v podjetjih za naprave</translation>
-<translation id="7349338075015720646">Določa seznam spletnih aplikacij, ki se namestijo brez obveščanja in brez poseganja uporabnika ter ki jih uporabnik ne more ne odstraniti ne onemogočiti.
-
-      Vsak element na seznamu pravilnika je predmet z dvema členoma: »url« in »launch_container«. »url« mora biti URL spletne aplikacije za namestitev, »launch_container« pa »window« (okno) ali »tab« (zavihek), s čimer je nakazano, kako se bo spletna aplikacija odprla po namestitvi. Če »launch_container« izpustite, se bo aplikacija zagnala v oknu, če jo bo Chrome obravnaval kot moderno spletno aplikacijo, v nasprotnem primeru pa na zavihku.</translation>
 <translation id="735902178936442460">Ta pravilnik nadzira, ali se sporočajo podatki, s katerimi je mogoče prepoznati naprave, na primer ime naprave in omrežni naslovi.
 
       Če ta pravilnik ni nastavljen ali je omogočen, se zbirajo podatki, s katerimi je mogoče prepoznati naprave.
@@ -3626,7 +3623,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če ta pravilnik ni nastavljen, možnosti funkcij za ljudi s posebnimi potrebami niso prikazane v meniju sistemske vrstice, vendar lahko uporabniki nastavijo, da so možnosti funkcij za ljudi s posebnimi potrebami prikazane prek strani z nastavitvami.</translation>
 <translation id="806523868782250975">Konfigurira seznam upravljanih zaznamkov.
 
-      Pravilnik sestavlja seznam zaznamkov, pri čemer je vsak zaznamek slovar s ključema »<ph name="NAME" />« in »<ph name="URL_LABEL" />«, v katerih sta shranjena ime in cilj zaznamka. Mogoče je konfigurirati podmapo, tako da definirate zaznamek brez ključa »<ph name="URL_LABEL" />«, vendar z dodatnim ključem »<ph name="CHILDREN" />«, ki vsebuje seznam zaznamkov, kot so opredeljeni zgoraj (nekateri so prav tako lahko mape). Brskalnik <ph name="PRODUCT_NAME" /> dopolni nepopolne URL-je, kot bi bili poslani prek iskalne vrstice. »<ph name="GOOGLE_COM" />« na primer postane »<ph name="HTTPS_GOOGLE_COM" />«.
+      Pravilnik sestavlja seznam zaznamkov, pri čemer je vsak zaznamek slovar s ključema »<ph name="NAME" />« in »<ph name="URL_LABEL" />«, v katerih sta shranjena ime in cilj zaznamka. Mogoče je konfigurirati podmapo tako, da definirate zaznamek brez ključa »<ph name="URL_LABEL" />«, vendar z dodatnim ključem »<ph name="CHILDREN" />«, ki vsebuje seznam zaznamkov, kot so opredeljeni zgoraj (nekateri so prav tako lahko mape). Brskalnik <ph name="PRODUCT_NAME" /> dopolni nepopolne URL-je, kot bi bili poslani prek iskalne vrstice. »<ph name="GOOGLE_COM" />« na primer postane »<ph name="HTTPS_GOOGLE_COM" />«.
 
       Ti zaznamki so dani v mapo, ki je uporabnik ne more spreminjati, lahko pa izbere, da je na vrstici z zaznamki skrita. Privzeto ime mape je »Managed bookmarks«, vendar ga je mogoče prilagoditi tako, da se na seznam zaznamkov doda slovar s ključem »<ph name="TOPLEVEL_NAME" />« z želenim imenom mape kot vrednostjo.
 
@@ -3946,7 +3943,7 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 
           Če ta pravilnik ni konfiguriran ali nastavljen, je funkcija preklopa na akumulatorsko napajanje ob konicah vedno onemogočena.
 
-          Opomba: dovoljene vrednosti za polje <ph name="MINUTE_FIELD_NAME" /> v poljih <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> in <ph name="CHARGE_START_TIME_FIELD_NAME" /> so 0 15, 30, 45.</translation>
+          Opomba: dovoljene vrednosti za polje <ph name="MINUTE_FIELD_NAME" /> v poljih <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> in <ph name="CHARGE_START_TIME_FIELD_NAME" /> so 0, 15, 30, 45.</translation>
 <translation id="8704831857353097849">Seznam onemogočenih vtičnikov</translation>
 <translation id="8711086062295757690">Določa ključno besedo, ki kot bližnjica v naslovni vrstici sproži iskanje za tega ponudnika.
 
@@ -4004,7 +4001,7 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="8833109046074170275">Preverjanje pristnosti prek običajne prijave GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> predpomni aplikacije in razširitve za namestitev za več uporabnikov posamezne naprave, tako jih ni treba prenašati znova za posameznega uporabnika.
       Če ta pravilnik ni nastavljen ali je vrednost nižja od 1 MB, bo sistem <ph name="PRODUCT_OS_NAME" /> uporabil privzeto velikost predpomnilnika.</translation>
-<translation id="8851325571441692315">Omogoča izbiro strežnika proxy, ki naj ga uporablja <ph name="PRODUCT_NAME" /> in uporabnikom prepreči spreminjanje nastavitev strežnika proxy.
+<translation id="8851325571441692315">Omogoča izbiro strežnika proxy, ki naj ga uporablja <ph name="PRODUCT_NAME" />, in uporabnikom prepreči spreminjanje nastavitev strežnika proxy.
 
           Ta pravilnik ima vpliv samo, če pravilnik <ph name="PROXY_SETTINGS_POLICY_NAME" /> ni določen.
 
@@ -4170,7 +4167,7 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       </translation>
 <translation id="9072600218500597787">Konfigurira zahtevana imena domen gostiteljev, ki bodo veljala za gostitelje oddaljenega dostopa, in prepreči uporabnikom njihovo spreminjanje.
 
-          Če je ta nastavitev omogočena, se lahko gostitelji delijo samo z računi, registrirani v enem od določenih imen domene.
+          Če je ta nastavitev omogočena, se lahko gostitelji delijo samo z računi, registriranimi v enem od določenih imen domene.
 
           Če je ta nastavitev onemogočena ali ni nastavljena, se lahko gostitelji delijo s poljubnim računom.
 
@@ -4256,7 +4253,7 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 
           Če ta pravilnik ni nastavljen, je uporabljeno »3« in uporabnik lahko to spremeni.</translation>
 <translation id="9167719789236691545">Onemogoči Google Drive v aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="9185107612228451403">Konfigurira pravilnike, povezane z razširitvami. Uporabnik ne sme namestiti razširitev s seznama blokiranih, razen če so na seznamu dovoljenih. Lahko tudi vsilite brskalniku <ph name="PRODUCT_NAME" />, da samodejno namesti razširitve, tako da jih navedete v pravilniku <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />. Razširitve, za katere vsilite namestitev, so nameščene ne glede na to, ali so navedene na seznamu blokiranih.</translation>
+<translation id="9185107612228451403">Konfigurira pravilnike, povezane z razširitvami. Uporabnik ne sme namestiti razširitev s seznama blokiranih, razen če so na seznamu dovoljenih. Lahko tudi vsilite brskalniku <ph name="PRODUCT_NAME" />, da samodejno namesti razširitve tako, da jih navedete v pravilniku <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />. Razširitve, za katere vsilite namestitev, so nameščene ne glede na to, ali so navedene na seznamu blokiranih.</translation>
 <translation id="9187743794267626640">Onemogoči vpenjanje zunanjega pomnilnika</translation>
 <translation id="9197740283131855199">Odstotek prilagoditve zakasnitve zatemnitve zaslona, če je uporabnik dejaven po zatemnitvi</translation>
 <translation id="9200828125069750521">Parametri za slikovni URL, ki uporablja POST</translation>

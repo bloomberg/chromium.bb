@@ -190,7 +190,7 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="6990124437352146030">Chromium a besoin de votre autorisation pour accéder à votre micro pour ce site</translation>
 <translation id="705851970750939768">Mettre à jour Chromium</translation>
 <translation id="7066436765290594559">Impossible de synchroniser vos données dans Chromium OS. Veuillez mettre à jour votre phrase secrète de synchronisation.</translation>
-<translation id="7067091210845072982">Si une image n'est pas accompagnée d'une description utile, Chromium essaiera de vous en proposer une. Pour créer des descriptions, les images sont envoyées à Google.</translation>
+<translation id="7067091210845072982">Si une image n'est pas accompagnée d'une description utile, Chromium essaiera de vous en proposer une. Pour nous permettre de créer des descriptions, les images sont envoyées à Google.</translation>
 <translation id="7162152143154757523">Chromium peut vous proposer une correction orthographique plus intelligente en envoyant ce que vous saisissez dans le navigateur aux serveurs Google, ce qui vous permet d'utiliser la même technologie de correction orthographique que la recherche Google.</translation>
 <translation id="7196312274710523067">Impossible de lancer Chromium. Réessayez.</translation>
 <translation id="7205698830395646142">Masquer dans le menu Chromium</translation>
@@ -236,7 +236,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="8030318113982266900">Passage de votre appareil à la version <ph name="CHANNEL_NAME" />…</translation>
 <translation id="81770708095080097">Chromium a bloqué ce fichier, car ce dernier est dangereux.</translation>
 <translation id="8222496066431494154">Installez Chromium sur votre téléphone. Vous recevrez un SMS au numéro que vous avez indiqué pour la récupération de compte (<ph name="PHONE_NUMBER" />).</translation>
-<translation id="8248265253516264921">Si une image n'est pas accompagnée d'une description utile, Chromium essaiera de vous en proposer une. Pour créer des descriptions, les images sont envoyées à Google. Vous pouvez désactiver à tout moment cette option dans les paramètres.</translation>
+<translation id="8248265253516264921">Si une image n'est pas accompagnée d'une description utile, Chromium essaiera de vous en proposer une. Pour nous permettre de créer des descriptions, les images sont envoyées à Google. Vous pouvez désactiver à tout moment cette option dans les paramètres.</translation>
 <translation id="8269379391216269538">Aidez-nous à améliorer Chromium</translation>
 <translation id="8290862415967981663">Chromium a bloqué ce fichier, car ce dernier peut être dangereux.</translation>
 <translation id="8330519371938183845">Se connecter pour synchroniser et personnaliser Chromium sur vos appareils</translation>

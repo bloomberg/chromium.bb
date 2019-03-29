@@ -244,7 +244,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> সেকেন্ড বাকি আছে</translation>
 <translation id="2779651927720337254">করা যায়নি</translation>
 <translation id="2781151931089541271">১ সেকেন্ড বাকি আছে</translation>
-<translation id="2784212955220061919">লাইট মোডে, Chrome আরও দ্রুত পৃষ্ঠা লোড করে এবং ৬০ শতাংশ পর্যন্ত কম ডেটা ব্যবহার করে। Google ক্লাউড টেকনোলজি আপনার ঘুরে দেখা পৃষ্ঠাকে অপ্টিমাইজ করে।</translation>
 <translation id="2803478378562657435">সেভ করা পাসওয়ার্ড এবং পাসওয়ার্ড বিকল্পগুলি দেখানো হচ্ছে</translation>
 <translation id="2810645512293415242">পৃষ্ঠায় সহজে ডেটা সংরক্ষণ করে এবং দ্রুত লোড করুন।</translation>
 <translation id="281504910091592009">আপনার <ph name="BEGIN_LINK" />Google অ্যাকাউন্ট<ph name="END_LINK" />-এ সেভ করা পাসওয়ার্ড দেখুন এবং পরিচালনা করুন</translation>
@@ -263,6 +262,7 @@
 <translation id="290376772003165898">পৃষ্ঠাটি <ph name="LANGUAGE" /> ভাষায় নয়?</translation>
 <translation id="2910701580606108292">কোনও সাইটে সুরক্ষিত কন্টেন্ট চালু হওয়ার আগে আমায় জিজ্ঞেস করা হোক</translation>
 <translation id="2913331724188855103">সাইটগুলিকে কুকি ডেটা পড়ার এবং সংরক্ষণ করার অনুমতি দিন (প্রস্তাবিত)</translation>
+<translation id="2923908459366352541">নাম সঠিক নয়</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> স্টোরেজ</translation>
 <translation id="2956410042958133412">এই অ্যাকাউন্টটি <ph name="PARENT_NAME_1" /> এবং <ph name="PARENT_NAME_2" /> দ্বারা পরিচালিত হয়৷</translation>
 <translation id="2960796085439532066">কপিরাইট <ph name="YEAR" /> Google Inc৷ সর্বস্বত্ব সংরক্ষিত৷</translation>
@@ -364,6 +364,7 @@
 <translation id="3745176700485982507">আপনার প্রিয় ওয়েবসাইটগুলির লিঙ্ক এই পৃষ্ঠায় পাওয়া যাবে</translation>
 <translation id="3771001275138982843">আপডেট ডাউনলোড করা যায়নি</translation>
 <translation id="3773755127849930740">যুক্ত করার মঞ্জুরি দিতে <ph name="BEGIN_LINK" />ব্লুটুথ চালু করুন<ph name="END_LINK" /></translation>
+<translation id="3775705724665058594">আপনার ডিভাইসে পাঠান</translation>
 <translation id="3778956594442850293">হোম স্ক্রিনে যোগ করা হয়েছে</translation>
 <translation id="3781011235031427080">স্ক্রিনের নিচের অর্ধাংশে 'এর মত আরও' খোলা আছে</translation>
 <translation id="3789841737615482174">ইনস্টল করুন</translation>
@@ -531,6 +532,7 @@
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> আপনার স্ক্রিন শেয়ার করছে</translation>
 <translation id="4961107849584082341">এই পৃষ্ঠাটি যেকোনও ভাষায় অনুবাদ করুন</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" /> দ্বারা পরিচালিত একটি অ্যাকাউন্ট থেকে আপনি সাইন আউট করছেন। এটা এই ডিভাইস থেকে আপনার Chrome ডেটা মুছে ফেলবে, কিন্তু আপনার Google অ্যাকাউন্টে ডেটা থেকে যাবে।</translation>
+<translation id="4970824347203572753">আপনার লোকেশনে উপলভ্য নেই</translation>
 <translation id="497421865427891073">অগ্রবর্তী করুন</translation>
 <translation id="4988210275050210843">ফাইল ডাউনলোড হচ্ছে (<ph name="MEGABYTES" />)।</translation>
 <translation id="4988526792673242964">পৃষ্ঠাসমূহ</translation>
@@ -600,6 +602,7 @@
 <translation id="5487521232677179737">ডেটা সাফ করুন</translation>
 <translation id="5494752089476963479">সাইটে থাকা ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন ব্লক করুন</translation>
 <translation id="5497272504048921382">খুলে রাখা ট্যাব</translation>
+<translation id="5500777121964041360">আপনার লোকেশনে উপলভ্য নাও থাকতে পারে</translation>
 <translation id="550684401320795253">Chrome আপডেট হচ্ছে...</translation>
 <translation id="5512137114520586844">এই অ্যাকাউন্টটি <ph name="PARENT_NAME" />-এর দ্বারা পরিচালিত হয়৷</translation>
 <translation id="5514904542973294328">এই ডিভাইসের প্রশাসক অক্ষম করেছে</translation>
@@ -851,6 +854,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />টি বেছে নেওয়া হয়েছে</translation>
 <translation id="7253272406652746122">আপনার ডিভাইসের সেটিংস অ্যাপ্লিকেশানের অ্যাকাউন্টস পৃষ্ঠা থেকে একটি Google অ্যাকাউন্ট যোগ করুন।</translation>
 <translation id="7274013316676448362">অবরুদ্ধ সাইট</translation>
+<translation id="7290209999329137901">আবার নামকরণের বিকল্পটি উপলভ্য নেই</translation>
 <translation id="7291387454912369099">অ্যাসিস্ট্যান্টের মাধ্যমে চেকআউট</translation>
 <translation id="729975465115245577">পাসওয়ার্ড ফাইল সেভ করার জন্য আপনার ডিভাইসে কোনও অ্যাপ নেই।</translation>
 <translation id="7302081693174882195">বিবরণ: সেভ করা ডেটার পরিমাণ অনুযায়ী সাজানো হয়েছে</translation>
@@ -984,6 +988,7 @@
 <translation id="8200772114523450471">পুনঃসূচনা</translation>
 <translation id="8209050860603202033">ছবি খুলুন</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB ডাউনলোড করা হয়েছে</translation>
+<translation id="8224471946457685718">ওয়াই-ফাই ব্যবহার করে আপনার জন্য নিবন্ধ ডাউনলোড করুন</translation>
 <translation id="8232956427053453090">ডেটা রাখুন</translation>
 <translation id="8249310407154411074">শীর্ষে সরান</translation>
 <translation id="8250920743982581267">দস্তাবেজগুলি</translation>

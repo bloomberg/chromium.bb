@@ -468,7 +468,7 @@
 <translation id="6581162200855843583">Google ドライブ リンク</translation>
 <translation id="6607272825297743757">ファイル情報</translation>
 <translation id="6629841649550503054">すべて <ph name="BEGIN_LINK" />Google ドライブ<ph name="END_LINK" />にバックアップ済みです</translation>
-<translation id="6643016212128521049">クリア</translation>
+<translation id="6643016212128521049">削除</translation>
 <translation id="6650726141019353908">ピンクの蝶</translation>
 <translation id="6710213216561001401">前へ</translation>
 <translation id="6718273304615422081">圧縮しています...</translation>
@@ -575,6 +575,7 @@
 <translation id="7864662577698025113">新しいサービスを追加</translation>
 <translation id="7873831373602885875"><ph name="FOLDER_NAME" /> に保存できません。編集内容はすべてダウンロード フォルダ内の <ph name="DOWNLOADS_FOLDER" /> に保存されます。</translation>
 <translation id="7881969471599061635">字幕を無効にする</translation>
+<translation id="78946041517601018">共有ドライブ</translation>
 <translation id="7896906914454843592">US（拡張）キーボード</translation>
 <translation id="7898607018410277265">グジャラート語キーボード（新表音）</translation>
 <translation id="7917972308273378936">リトアニア語のキーボード</translation>

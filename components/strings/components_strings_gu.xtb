@@ -24,7 +24,6 @@
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> નો હંમેશાં અનુવાદ કરો</translation>
 <translation id="1107591249535594099">જો ચેક કરેલું હોય, તો ઝડપથી ફોર્મ ભરવા માટે Chrome આ ઉપકરણ પર તમારા કાર્ડની એક કૉપિ સંગ્રહશે.</translation>
 <translation id="1110994991967754504"><ph name="PERMISSION_NAME" /> માટે પરવાનગી પસંદ કરો</translation>
-<translation id="1111153019813902504">હાલનાં બુકમાર્ક્સ</translation>
 <translation id="1113869188872983271">&amp;પુનઃક્રમાંકિત કરવું પૂર્વવત્ કરો</translation>
 <translation id="1125573121925420732">વેબસાઇટ તેમની સુરક્ષા અપડેટ કરી રહ્યાં હોય ત્યારે ચેતવણીઓ દેખાવી સામાન્ય બાબત છે. ટૂંક સમયમાં જ આમાં સુધારો કરવામાં આવશે.</translation>
 <translation id="1126551341858583091">સ્થાનિક સ્ટોરેજ પરનું કદ <ph name="CRASH_SIZE" /> છે.</translation>
@@ -50,7 +49,6 @@
 <translation id="1228893227497259893">ખોટો અસ્તિત્વ ઓળખકર્તા</translation>
 <translation id="1232569758102978740">શીર્ષક વિનાનું</translation>
 <translation id="1240347957665416060">તમારા ડિવાઇસનું નામ</translation>
-<translation id="124116460088058876">વધુ ભાષાઓ</translation>
 <translation id="1250759482327835220">આગલી વખતે વધુ ઝડપથી ચુકવણી કરવા માટે, તમારા કાર્ડ, નામ અને બિલિંગ સરનામાને તમારા Google એકાઉન્ટમાં સાચવો.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (સમન્વયિત)</translation>
 <translation id="1256368399071562588">&lt;p&gt;જો તમે કોઈ વેબસાઇટની મુલાકાત લેવાનો પ્રયાસ કરો અને તે ન ખૂલે, તો પહેલા સમસ્યા નિવારણના આ પગલાં લઈને સમસ્યા ઉકેલવાનો પ્રયાસ કરો:&lt;/p&gt;
@@ -1056,6 +1054,7 @@
 <translation id="6965978654500191972">ઉપકરણ</translation>
 <translation id="6970216967273061347">જિલ્લો</translation>
 <translation id="6973656660372572881">ફિક્સ્ડ પ્રૉક્સી સર્વર અને .pac script URL બન્નેનો ઉલ્લેખ કરેલો છે.</translation>
+<translation id="6973932557599545801">માફ કરશો, હું હવે વધુ સહાય કરી શકીશ નહીં, કૃપા કરીને તમારી રીતે આગળ વધો.</translation>
 <translation id="6979158407327259162">Google ડ્રાઇવ</translation>
 <translation id="6979440798594660689">મ્યૂટ કરો (ડિફૉલ્ટ)</translation>
 <translation id="6984479912851154518">બાહ્ય ઍપ્લિકેશન મારફતે ચુકવણી કરવા માટે ખાનગી મોડ છોડી રહ્યાં છીએ. ચાલુ રાખવું છે?</translation>
@@ -1333,7 +1332,6 @@
 <translation id="8371889962595521444">કસ્ટમ રૂટ પ્રમાણપત્રો</translation>
 <translation id="8380941800586852976">જોખમી</translation>
 <translation id="8381674639488873545">આ શુલ્ક એક વખત લાગે અથવા પુનરાવર્તિત હોઈ શકે અને તેનો સ્પષ્ટ ખ્યાલ ન આવે તેમ પણ બને. <ph name="BEGIN_LINK" />તો પણ બતાવો<ph name="END_LINK" /></translation>
-<translation id="8382348898565613901">તમારા તાજેતરમાં મુલાકાત લીધેલ બુકમાર્ક્સ અહીં દેખાય છે</translation>
 <translation id="8398259832188219207"><ph name="UPLOAD_TIME" /> એ ક્રૅશ રિપોર્ટ અપલોડ કર્યો હતો</translation>
 <translation id="8412145213513410671">ક્રેશેસ (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">તમારે તે જ પાસફ્રેઝ બે વાર દાખલ કરવો આવશ્યક છે.</translation>

@@ -306,15 +306,15 @@
 
       Les opcions de configuració individuals es poden especificar a les propietats de JSON:
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: si s'estableix en <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, els usuaris podran activar el flux de Powerwash per instal·lar una actualització del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: si s'estableix en "<ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />", els usuaris podran activar el flux de Powerwash per instal·lar una actualització del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: si s'estableix en <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, els usuaris podran invocar el flux d'actualització del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" />, que conserva l'estat en tot el dispositiu (inclosa la inscripció d'empresa), però perd les dades de l'usuari. Aquest flux d'actualització està disponible a partir de la versió 68.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: si s'estableix en "<ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />", els usuaris podran invocar el flux d'actualització del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" />, que conserva l'estat en tot el dispositiu (inclosa la inscripció d'empresa), però perd les dades de l'usuari. Aquest flux d'actualització està disponible a partir de la versió 68.
 
       <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: controla de quina manera les actualitzacions automàtiques del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> s'apliquen al microprogramari vulnerable de <ph name="TPM_FIRMWARE_UPDATE_TPM" />. Tots els fluxos conserven l'estat del dispositiu local.
-        Si s'estableix en 1 o es deixa sense establir, les actualitzacions del microprogramari de TPM no s'aplicaran.
-        Si s'estableix en 2, el microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> s'actualitzarà la propera vegada que l'usuari reiniciï el dispositiu després d'haver acceptat l'actualització.
-        Si s'estableix en 3, el microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> s'actualitzarà la propera vegada que l'usuari reiniciï el dispositiu.
-        Si s'estableix en 4, el microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> s'actualitzarà després de la inscripció, abans que l'usuari iniciï la sessió.
+        Si s'estableix en "1" o es deixa sense establir, les actualitzacions del microprogramari de TPM no s'aplicaran.
+        Si s'estableix en "2", el microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> s'actualitzarà la propera vegada que l'usuari reiniciï el dispositiu després d'haver acceptat l'actualització.
+        Si s'estableix en "3", el microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> s'actualitzarà la propera vegada que l'usuari reiniciï el dispositiu.
+        Si s'estableix en "4", el microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> s'actualitzarà després de la inscripció, abans que l'usuari iniciï la sessió.
         Aquesta opció està disponible a partir de la versió 74.
 
       Si la política no s'estableix, la funcionalitat d'actualització del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> no estarà disponible.</translation>
@@ -1087,7 +1087,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3381968327636295719">Fes servir el navegador amfitrió de manera predeterminada</translation>
 <translation id="3384115339826100753">Activa la política de gestió del canvi d'alimentació en els pics d'ús.
 
-          El canvi d'alimentació en els pics d'ús és una política d'estalvi d'energia durant les hores del dia en què el dispositiu s'utilitza més. Per a cada dia laborable es pot establir una hora d'inici i una de finalització entre les quals funcionarà el mode de canvi d'alimentació en els pics d'ús. Durant aquestes hores, encara que el sistema estigui endollat, s'utilitzarà la bateria mentre aquesta estigui per sobre del llindar especificat. Quan hagi transcorregut el temps indicat per l'hora de finalització especificada, el sistema passarà a funcionar amb corrent altern sempre que estigui endollat, però la bateria no es carregarà. Quan sigui l'hora d'inici de càrrega especificada, el sistema tornarà a funcionarà normalment, utilitzant el corrent altern i carregant la bateria.
+          El canvi d'alimentació en els pics d'ús és una política d'estalvi d'energia que minimitza l'ús de corrent altern durant les hores del dia en què el dispositiu s'utilitza més. Per a cada dia laborable es pot establir una hora d'inici i una de finalització entre les quals funcionarà el mode de canvi d'alimentació en els pics d'ús. Durant aquestes hores, encara que el sistema estigui endollat, s'utilitzarà la bateria mentre aquesta estigui per sobre del llindar especificat. Quan hagi transcorregut el temps especificat, el sistema passarà a funcionar amb corrent altern sempre que estigui endollat, però la bateria no es carregarà. Quan sigui l'hora d'inici de càrrega especificada, el sistema tornarà a funcionar normalment, utilitzant el corrent altern i carregant la bateria.
 
           Si aquesta política s'estableix en "true", i les polítiques DevicePowerPeakShiftBatteryThreshold i DevicePowerPeakShiftDayConfig s'han establert, el canvi d'alimentació en pics d'ús estarà sempre activat si el dispositiu ho admet.
 
@@ -2780,9 +2780,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7339315111520512972">Obliga a executar el codi de xarxa cal procés del navegador</translation>
 <translation id="7340034977315324840">Informa del temps d'activitat dels dispositius</translation>
 <translation id="7343497214039883642">Fitxer de configuració de la impressora d'empresa per a dispositius</translation>
-<translation id="7349338075015720646">Especifica una llista de llocs web que s'instal·len en segon pla, sense la interacció de l'usuari, i que l'usuari no pot desinstal·lar ni desactivar.
-
-      Cada element de la llista de la política és un objecte amb dos membres: "url" i "launch_container". "url" ha de ser l'URL de l'aplicació web que cal instal·lar i "launch_container" ha de ser "window" (finestra) o "tab" (pestanya) per indicar com s'obrirà l'aplicació web un cop instal·lada. Si "launch_container" s'omet, l'aplicació s'obrirà en una finestra si Chrome la considera una aplicació web progressiva i s'obrirà en una pestanya en cas contrari.</translation>
 <translation id="735902178936442460">Aquesta política controla si cal proporcionar informació que es pugui utilitzar per identificar ordinadors, com ara el nom de l'ordinador i les adreces de la xarxa.
 
       Si aquesta política es deixa sense establir o s'estableix en "true", es recull informació que es pot utilitzar per identificar els ordinadors.
@@ -3313,7 +3310,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 
           Si aquesta política no es configura o es deixa sense establir, el canvi d'alimentació en els pics d'ús estarà sempre desactivat.
 
-          Nota: els valors permesos per al camp <ph name="MINUTE_FIELD_NAME" /> a <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> i <ph name="CHARGE_START_TIME_FIELD_NAME" /> són 0, 15, 30 i 45.</translation>
+          Nota: els valors permesos per al camp <ph name="MINUTE_FIELD_NAME" /> a <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> i <ph name="CHARGE_START_TIME_FIELD_NAME" /> són "0", "15", "30" i "45".</translation>
 <translation id="8704831857353097849">Llista de connectors desactivats</translation>
 <translation id="8711086062295757690">Especifica la paraula clau, que és la drecera utilitzada a la barra d'adreces per activar la cerca d'aquest proveïdor. Aquesta política és opcional. Si no es defineix, no hi haurà cap paraula clau que activi el proveïdor de cerca. Aquesta política només es té en compte si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="8731693562790917685">Configuració del contingut us permet especificar la manera com es tracta el contingut d'un tipus determinat (per exemple, Galetes, Imatges o JavaScript).</translation>

@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">बाएं से दाएं</translation>
 <translation id="1383876407941801731">खोज</translation>
 <translation id="1398853756734560583">बड़ा करें</translation>
+<translation id="1409544243779336081">ऐप्लिकेशन का सुझाव</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> से सूचनाएं पाना बंद करें</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 मिनट और }one{# मिनट और }other{# मिनट और }}</translation>
 <translation id="1643823602425662293">नोटिफ़िकेशन</translation>
@@ -33,6 +34,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;सभी को चुनें</translation>
 <translation id="1938451708255335766">विंडो डिसप्ले की सघनता में बदलाव करने के लिए, ऐप्लिकेशन को रीस्टार्ट करें.</translation>
+<translation id="208586643495776849">कृपया दोबारा कोशिश करें</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1d}one{#d}other{#d}}</translation>
 <translation id="2148716181193084225">आज</translation>
 <translation id="2168039046890040389">पेज ऊपर</translation>
@@ -69,6 +71,7 @@
 <translation id="3479552764303398839">अभी नहीं</translation>
 <translation id="348799646910989694">शेल्फ़ के अपने आप छिपने की सुविधा चालू है</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 दिन शेष}one{# दिन शेष}other{# दिन शेष}}</translation>
+<translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> फ़ाइल</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” को खोजें</translation>
 <translation id="364720409959344976">अपलोड करने के लिए फ़ोल्‍डर चुनें</translation>

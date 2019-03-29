@@ -131,7 +131,7 @@
 <translation id="2961963223658824723">Er is iets misgegaan. Probeer het over een paar seconden opnieuw.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2970920913501714344">Apps, extensies en thema's installeren</translation>
-<translation id="2977598380246111477">Volgende cijfer</translation>
+<translation id="2977598380246111477">Volgend cijfer</translation>
 <translation id="2995447421581609334">Cast-apparaten weergeven.</translation>
 <translation id="2996462380875591307">'Gedockt vergrootglas' is ingeschakeld. Druk nogmaals op Ctrl+Zoeken+D om dit uit te schakelen.</translation>
 <translation id="3000461861112256445">Monogeluid</translation>
@@ -230,6 +230,7 @@
 <translation id="4527045527269911712">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> tot volledig opgeladen</translation>
 <translation id="4544944664594876241">De sneltoets om het scherm te vergrendelen is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Knop 'Selecteer om uitgesproken te worden'</translation>
 <translation id="4585337515783392668">Casten naar een onbekende ontvanger stopzetten</translation>
 <translation id="4628757576491864469">Apparaten</translation>
@@ -237,6 +238,7 @@
 <translation id="4696813013609194136">Apparaat ontgrendelen met oudercode</translation>
 <translation id="4731797938093519117">Toegang door ouders</translation>
 <translation id="4734965478015604180">Horizontaal</translation>
+<translation id="476166673298332917">De apparaatbeheerder kan je browseactiviteit controleren.</translation>
 <translation id="4774338217796918551">Kom morgen terug om <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Wachtwoord voor <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">De Google Assistent is niet beschikbaar in een demosessie.</translation>
