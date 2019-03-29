@@ -173,7 +173,8 @@ api::automation::EventType ToAutomationEvent(
       return api::automation::EVENT_TYPE_ARIAATTRIBUTECHANGED;
     case ui::AXEventGenerator::Event::ROW_COUNT_CHANGED:
       return api::automation::EVENT_TYPE_ROWCOUNTCHANGED;
-    case ui::AXEventGenerator::Event::SCROLL_POSITION_CHANGED:
+    case ui::AXEventGenerator::Event::SCROLL_HORIZONTAL_POSITION_CHANGED:
+    case ui::AXEventGenerator::Event::SCROLL_VERTICAL_POSITION_CHANGED:
       return api::automation::EVENT_TYPE_SCROLLPOSITIONCHANGED;
     case ui::AXEventGenerator::Event::SELECTED_CHILDREN_CHANGED:
       return api::automation::EVENT_TYPE_SELECTEDCHILDRENCHANGED;

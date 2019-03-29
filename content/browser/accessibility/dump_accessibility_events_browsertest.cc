@@ -509,6 +509,17 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsScrollHorizontalScrollPercentChange) {
+  RunEventTest(
+      FILE_PATH_LITERAL("scroll-horizontal-scroll-percent-change.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsScrollVerticalScrollPercentChange) {
+  RunEventTest(FILE_PATH_LITERAL("scroll-vertical-scroll-percent-change.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsTabindexAddedOnPlainDiv) {
   RunEventTest(FILE_PATH_LITERAL("tabindex-added-on-plain-div.html"));
 }

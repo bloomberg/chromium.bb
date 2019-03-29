@@ -131,8 +131,11 @@ std::string DumpEvents(AXEventGenerator* generator) {
       case AXEventGenerator::Event::ROW_COUNT_CHANGED:
         event_name = "ROW_COUNT_CHANGED";
         break;
-      case AXEventGenerator::Event::SCROLL_POSITION_CHANGED:
-        event_name = "SCROLL_POSITION_CHANGED";
+      case AXEventGenerator::Event::SCROLL_HORIZONTAL_POSITION_CHANGED:
+        event_name = "SCROLL_HORIZONTAL_POSITION_CHANGED";
+        break;
+      case AXEventGenerator::Event::SCROLL_VERTICAL_POSITION_CHANGED:
+        event_name = "SCROLL_VERTICAL_POSITION_CHANGED";
         break;
       case AXEventGenerator::Event::SELECTED_CHANGED:
         event_name = "SELECTED_CHANGED";
@@ -697,7 +700,22 @@ TEST(AXEventGeneratorTest, ReorderChildren) {
   EXPECT_EQ("CHILDREN_CHANGED on 1", DumpEvents(&event_generator));
 }
 
-TEST(AXEventGeneratorTest, ScrollPositionChanged) {
+TEST(AXEventGeneratorTest, ScrollHorizontalPositionChanged) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(1);
+  initial_state.nodes[0].id = 1;
+  AXTree tree(initial_state);
+
+  AXEventGenerator event_generator(&tree);
+  AXTreeUpdate update = initial_state;
+  update.nodes[0].AddIntAttribute(ax::mojom::IntAttribute::kScrollX, 10);
+  EXPECT_TRUE(tree.Unserialize(update));
+  EXPECT_EQ("SCROLL_HORIZONTAL_POSITION_CHANGED on 1",
+            DumpEvents(&event_generator));
+}
+
+TEST(AXEventGeneratorTest, ScrollVerticalPositionChanged) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(1);
@@ -708,7 +726,8 @@ TEST(AXEventGeneratorTest, ScrollPositionChanged) {
   AXTreeUpdate update = initial_state;
   update.nodes[0].AddIntAttribute(ax::mojom::IntAttribute::kScrollY, 10);
   ASSERT_TRUE(tree.Unserialize(update));
-  EXPECT_EQ("SCROLL_POSITION_CHANGED on 1", DumpEvents(&event_generator));
+  EXPECT_EQ("SCROLL_VERTICAL_POSITION_CHANGED on 1",
+            DumpEvents(&event_generator));
 }
 
 TEST(AXEventGeneratorTest, OtherAttributeChanged) {

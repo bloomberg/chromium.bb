@@ -264,8 +264,15 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::ROLE_CHANGED:
       FireUiaPropertyChangedEvent(UIA_AriaRolePropertyId, node);
       break;
-    case ui::AXEventGenerator::Event::SCROLL_POSITION_CHANGED:
+    case ui::AXEventGenerator::Event::SCROLL_HORIZONTAL_POSITION_CHANGED:
       FireWinAccessibilityEvent(EVENT_SYSTEM_SCROLLINGEND, node);
+      FireUiaPropertyChangedEvent(UIA_ScrollHorizontalScrollPercentPropertyId,
+                                  node);
+      break;
+    case ui::AXEventGenerator::Event::SCROLL_VERTICAL_POSITION_CHANGED:
+      FireWinAccessibilityEvent(EVENT_SYSTEM_SCROLLINGEND, node);
+      FireUiaPropertyChangedEvent(UIA_ScrollVerticalScrollPercentPropertyId,
+                                  node);
       break;
     case ui::AXEventGenerator::Event::SELECTED_CHANGED:
       HandleSelectedStateChanged(node);

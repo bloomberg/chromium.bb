@@ -1739,15 +1739,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_HorizontallyScrollable(BOOL* result) {
 IFACEMETHODIMP AXPlatformNodeWin::get_HorizontalScrollPercent(double* result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_GET_HORIZONTALSCROLLPERCENT);
   UIA_VALIDATE_CALL_1_ARG(result);
-  if (!IsHorizontallyScrollable()) {
-    *result = UIA_ScrollPatternNoScroll;
-    return S_OK;
-  }
-
-  float x_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin);
-  float x_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
-  float x = GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
-  *result = 100.0 * (x - x_min) / (x_max - x_min);
+  *result = GetHorizontalScrollPercent();
   return S_OK;
 }
 
@@ -1780,15 +1772,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_VerticallyScrollable(BOOL* result) {
 IFACEMETHODIMP AXPlatformNodeWin::get_VerticalScrollPercent(double* result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_GET_VERTICALSCROLLPERCENT);
   UIA_VALIDATE_CALL_1_ARG(result);
-  if (!IsVerticallyScrollable()) {
-    *result = UIA_ScrollPatternNoScroll;
-    return S_OK;
-  }
-
-  float y_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
-  float y_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
-  float y = GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
-  *result = 100.0 * (y - y_min) / (y_max - y_min);
+  *result = GetVerticalScrollPercent();
   return S_OK;
 }
 
@@ -3961,6 +3945,18 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
         result->intVal = GetDelegate()->GetPosInSet();
       }
       break;
+
+    case UIA_ScrollHorizontalScrollPercentPropertyId: {
+      V_VT(result) = VT_R8;
+      V_R8(result) = GetHorizontalScrollPercent();
+      break;
+    }
+
+    case UIA_ScrollVerticalScrollPercentPropertyId: {
+      V_VT(result) = VT_R8;
+      V_R8(result) = GetVerticalScrollPercent();
+      break;
+    }
 
     case UIA_SizeOfSetPropertyId:
       if (data.GetIntAttribute(ax::mojom::IntAttribute::kSetSize,
@@ -6692,6 +6688,26 @@ void AXPlatformNodeWin::ComputeHypertextRemovedAndInserted(size_t* start,
   *start = common_prefix;
   *old_len = old_text.size() - common_prefix - common_suffix;
   *new_len = new_text.size() - common_prefix - common_suffix;
+}
+
+double AXPlatformNodeWin::GetHorizontalScrollPercent() {
+  if (!IsHorizontallyScrollable())
+    return UIA_ScrollPatternNoScroll;
+
+  float x_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin);
+  float x_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
+  float x = GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
+  return 100.0 * (x - x_min) / (x_max - x_min);
+}
+
+double AXPlatformNodeWin::GetVerticalScrollPercent() {
+  if (!IsVerticallyScrollable())
+    return UIA_ScrollPatternNoScroll;
+
+  float y_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
+  float y_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
+  float y = GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
+  return 100.0 * (y - y_min) / (y_max - y_min);
 }
 
 }  // namespace ui
