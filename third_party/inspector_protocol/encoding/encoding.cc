@@ -5,6 +5,7 @@
 #include "encoding.h"
 
 #include <cassert>
+#include <cmath>
 #include <cstring>
 #include <limits>
 #include <stack>
@@ -1107,6 +1108,12 @@ class JSONEncoder : public StreamingParserHandler {
     if (!status_->ok())
       return;
     state_.top().StartElement(out_);
+    // JSON cannot represent NaN or Infinity. So, for compatibility,
+    // we behave like the JSON object in web browsers: emit 'null'.
+    if (!std::isfinite(value)) {
+      out_->append("null");
+      return;
+    }
     std::unique_ptr<char[]> str_value = platform_->DToStr(value);
 
     // DToStr may fail to emit a 0 before the decimal dot. E.g. this is
