@@ -5,8 +5,11 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
@@ -254,6 +257,47 @@ class TabListMediator {
     }
 
     /**
+     * @return The callback that hosts the logic for swipe and drag related actions.
+     */
+    ItemTouchHelper.SimpleCallback getItemTouchHelperCallback(final float swipeToDismissThreshold) {
+        return new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.START | ItemTouchHelper.END) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
+                    RecyclerView.ViewHolder viewHolder1) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int i) {
+                assert viewHolder instanceof TabGridViewHolder;
+
+                mTabClosedListener.run(((TabGridViewHolder) viewHolder).getTabId());
+                RecordUserAction.record("MobileStackViewSwipeCloseTab." + mComponentName);
+            }
+
+            @Override
+            public void onChildDraw(Canvas c, RecyclerView recyclerView,
+                    RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState,
+                    boolean isCurrentlyActive) {
+                super.onChildDraw(
+                        c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+                if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                    float alpha = 1f - Math.max(0, 0.8f * Math.abs(dX) / swipeToDismissThreshold);
+                    int index = mModel.indexFromId(((TabGridViewHolder) viewHolder).getTabId());
+                    if (index == -1) return;
+
+                    mModel.get(index).set(TabProperties.ALPHA, alpha);
+                }
+            }
+
+            @Override
+            public float getSwipeThreshold(RecyclerView.ViewHolder viewHolder) {
+                return swipeToDismissThreshold / viewHolder.itemView.getWidth();
+            }
+        };
+    }
+
+    /**
      * Destroy any members that needs clean up.
      */
     public void destroy() {
@@ -286,6 +330,7 @@ class TabListMediator {
                         .with(TabProperties.TAB_SELECTED_LISTENER, mTabSelectedListener)
                         .with(TabProperties.TAB_CLOSED_LISTENER, mTabClosedListener)
                         .with(TabProperties.CREATE_GROUP_LISTENER, createGroupButtonOnClickListener)
+                        .with(TabProperties.ALPHA, 1f)
                         .build();
 
         if (index >= mModel.size()) {

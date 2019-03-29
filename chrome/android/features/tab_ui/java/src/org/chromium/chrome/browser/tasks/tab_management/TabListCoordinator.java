@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -115,6 +116,12 @@ public class TabListCoordinator implements Destroyable {
 
         mMediator = new TabListMediator(tabListModel, tabModelSelector, thumbnailProvider,
                 titleProvider, tabListFaviconProvider, createGroupButtonProvider, componentName);
+
+        if (mMode == TabListMode.GRID) {
+            ItemTouchHelper touchHelper = new ItemTouchHelper(mMediator.getItemTouchHelperCallback(
+                    context.getResources().getDimension(R.dimen.swipe_to_dismiss_threshold)));
+            touchHelper.attachToRecyclerView(mRecyclerView);
+        }
     }
 
     /**
