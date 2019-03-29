@@ -425,11 +425,9 @@ class BuilderStage(object):
     build_id = build_identifier.cidb_id
     job_keyvals = {
         constants.JOB_KEYVAL_DATASTORE_PARENT_KEY: (
-            'Build', build_id, 'BuildStage', self._build_stage_id),
+            'Build', build_id),
         constants.JOB_KEYVAL_CIDB_BUILD_ID:
-            build_id,
-        constants.JOB_KEYVAL_CIDB_BUILD_STAGE_ID:
-            self._build_stage_id,
+            build_id
     }
     return job_keyvals
 
