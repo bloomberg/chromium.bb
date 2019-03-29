@@ -153,7 +153,8 @@ std::string VideoDecoderConfig::AsHumanReadableString() const {
     << natural_size().height() << "]"
     << ", has extra data: " << (extra_data().empty() ? "false" : "true")
     << ", encryption scheme: " << encryption_scheme()
-    << ", rotation: " << VideoRotationToString(video_rotation());
+    << ", rotation: " << VideoRotationToString(video_rotation())
+    << ", color space: " << color_space_info().ToGfxColorSpace().ToString();
   return s.str();
 }
 
