@@ -230,6 +230,9 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
 TabHoverCardBubbleView::~TabHoverCardBubbleView() = default;
 
 void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
+  if (preview_image_)
+    preview_image_->SetVisible(!tab->IsActive());
+
   UpdateCardContent(tab->data());
 
   views::BubbleDialogDelegateView::SetAnchorView(tab);
@@ -312,8 +315,8 @@ void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {
       net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
   domain_label_->SetText(domain);
 
-  // If the preview image feature is not enabled, this will be null.
-  if (preview_image_) {
+  // If the preview image feature is not enabled, |preview_image_| will be null.
+  if (preview_image_ && preview_image_->visible()) {
     // If there is no valid thumbnail data, blank out the preview, else wait for
     // the image data to be decoded and update momentarily.
     if (!data.thumbnail.AsImageSkiaAsync(
