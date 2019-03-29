@@ -439,6 +439,23 @@ TEST_F(SendTabToSelfBridgeTest, AddInvalidEntries) {
                                         base::Time()));
 }
 
+TEST_F(SendTabToSelfBridgeTest, AddDuplicateEntries) {
+  InitializeBridge();
+
+  EXPECT_CALL(*mock_observer(), EntriesAddedRemotely(_)).Times(0);
+
+  base::Time navigation_time = AdvanceAndGetTime();
+  // The de-duplication code does not use the title as a comparator.
+  // So they are intentionally different here.
+  bridge()->AddEntry(GURL("http://a.com"), "a", navigation_time);
+  bridge()->AddEntry(GURL("http://a.com"), "b", navigation_time);
+  EXPECT_EQ(1ul, bridge()->GetAllGuids().size());
+
+  bridge()->AddEntry(GURL("http://a.com"), "a", AdvanceAndGetTime());
+  bridge()->AddEntry(GURL("http://b.com"), "b", AdvanceAndGetTime());
+  EXPECT_EQ(3ul, bridge()->GetAllGuids().size());
+}
+
 }  // namespace
 
 }  // namespace send_tab_to_self

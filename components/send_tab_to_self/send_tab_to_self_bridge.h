@@ -148,6 +148,8 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   std::unique_ptr<syncer::LocalDeviceInfoProvider::Subscription>
       device_subscription_;
 
+  // A pointer to the most recently used entry used for deduplication.
+  const SendTabToSelfEntry* mru_entry_;
   base::WeakPtrFactory<SendTabToSelfBridge> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfBridge);
