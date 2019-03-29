@@ -361,7 +361,9 @@ class WebContents : public PageNavigator,
   virtual RenderWidgetHostView* GetFullscreenRenderWidgetHostView() = 0;
 
   // Returns the theme color for the underlying content as set by the
-  // theme-color meta tag.
+  // theme-color meta tag, returns SK_ColorTRANSPARENT if none.
+  // TODO(crbug.com/872121): Make this return a base::Optional instead of
+  // relying on a sentinel value.
   virtual SkColor GetThemeColor() = 0;
 
   // Returns the committed WebUI if one exists, otherwise the pending one.

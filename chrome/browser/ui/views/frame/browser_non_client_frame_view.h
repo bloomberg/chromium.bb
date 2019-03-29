@@ -93,9 +93,17 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns whether tab strokes can be drawn.
   virtual bool CanDrawStrokes() const;
 
+  // Returns the color to use for text, caption buttons, and other title bar
+  // elements.
+  virtual SkColor GetCaptionColor(ActiveState active_state = kUseCurrent) const;
+
   // Returns the color of the browser frame, which is also the color of the
   // tabstrip background.
   SkColor GetFrameColor(ActiveState active_state = kUseCurrent) const;
+
+  // Called by BrowserView to signal the frame color has changed and needs
+  // to be repainted.
+  void UpdateFrameColor();
 
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.
@@ -130,10 +138,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   }
 
  protected:
-  // Returns the color to use for text, caption buttons, and other title bar
-  // elements.
-  virtual SkColor GetCaptionColor(ActiveState active_state = kUseCurrent) const;
-
   // Converts an ActiveState to a bool representing whether the frame should be
   // treated as active.
   bool ShouldPaintAsActive(ActiveState active_state) const;
