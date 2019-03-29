@@ -230,9 +230,6 @@ Output.ROLE_INFO_ = {
     msgId: 'role_img',
   },
   inputTime: {msgId: 'input_type_time', inherits: 'abstractContainer'},
-  layoutTable: {inherits: 'table'},
-  layoutTableCell: {msgId: '', inherits: 'cell'},
-  layoutTableRow: {msgId: 'role_row', inherits: 'row'},
   link: {msgId: 'role_link', earconId: 'LINK'},
   list: {msgId: 'role_list'},
   listBox: {msgId: 'role_listbox', earconId: 'LISTBOX'},
@@ -1440,7 +1437,7 @@ Output.prototype = {
           } else if (info) {
             if (this.formatOptions_.braille)
               msg = Msgs.getMsg(info.msgId + '_brl');
-            else
+            else if (info.msgId)
               msg = Msgs.getMsg(info.msgId);
           } else {
             // We can safely ignore this role. ChromeVox output tests cover
