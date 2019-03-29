@@ -639,6 +639,11 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       dst->AddFloatAttribute(ax::mojom::FloatAttribute::kFontSize,
                              src.FontSize());
 
+    if (src.FontWeight()) {
+      dst->AddFloatAttribute(ax::mojom::FloatAttribute::kFontWeight,
+                             src.FontWeight());
+    }
+
     if (src.HasPopup() != ax::mojom::HasPopup::kFalse)
       dst->SetHasPopup(src.HasPopup());
     else if (src.Role() == ax::mojom::Role::kPopUpButton)

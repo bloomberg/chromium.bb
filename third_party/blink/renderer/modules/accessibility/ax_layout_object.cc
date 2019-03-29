@@ -1085,6 +1085,17 @@ float AXLayoutObject::FontSize() const {
   return style->ComputedFontSize();
 }
 
+float AXLayoutObject::FontWeight() const {
+  if (!GetLayoutObject())
+    return AXNodeObject::FontWeight();
+
+  const ComputedStyle* style = GetLayoutObject()->Style();
+  if (!style)
+    return AXNodeObject::FontWeight();
+
+  return style->GetFontWeight();
+}
+
 String AXLayoutObject::ImageDataUrl(const IntSize& max_size) const {
   Node* node = GetNode();
   if (!node)

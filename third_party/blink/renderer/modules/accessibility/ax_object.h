@@ -673,6 +673,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual AtomicString FontFamily() const { return g_null_atom; }
   // Font size is in pixels.
   virtual float FontSize() const { return 0.0f; }
+  virtual float FontWeight() const { return 0.0f; }
   // Value should be 1-based. 0 means not supported.
   virtual int HeadingLevel() const { return 0; }
   // Value should be 1-based. 0 means not supported.

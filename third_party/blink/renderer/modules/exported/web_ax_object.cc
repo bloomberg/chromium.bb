@@ -578,6 +578,13 @@ float WebAXObject::FontSize() const {
   return private_->FontSize();
 }
 
+float WebAXObject::FontWeight() const {
+  if (IsDetached())
+    return 0.0f;
+
+  return private_->FontWeight();
+}
+
 bool WebAXObject::CanvasHasFallbackContent() const {
   if (IsDetached())
     return false;
