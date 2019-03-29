@@ -128,6 +128,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                       const gfx::RectF& tex_coords);
   void FlushBatchedQuads();
 
+  // Utility to draw a single quad as a filled color
+  void DrawColoredQuad(const DrawQuadParams& params, SkColor color);
   // Utility to make a single ImageSetEntry and draw it with the complex paint.
   // Assumes the paint applies the param's opacity.
   void DrawSingleImage(const DrawQuadParams& params,
@@ -145,7 +147,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                                   sk_sp<SkImage> content_image,
                                   SkPaint* paint);
 
-  void DrawSolidColorQuad(const SolidColorDrawQuad* quad, SkPaint* paint);
+  void DrawSolidColorQuad(const SolidColorDrawQuad* quad,
+                          const DrawQuadParams& state);
+
   void DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                            const DrawQuadParams& params);
   void DrawTextureQuad(const TextureDrawQuad* quad,

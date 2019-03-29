@@ -768,6 +768,9 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
   // TODO(michaelludwig): By the end of the Skia API update, this switch will
   // hold all quad draw types and resemble the old DoDrawSingleQuad.
   switch (quad->material) {
+    case DrawQuad::SOLID_COLOR:
+      DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad), params);
+      break;
     case DrawQuad::STREAM_VIDEO_CONTENT:
       DrawStreamVideoQuad(StreamVideoDrawQuad::MaterialCast(quad), params);
       break;
@@ -956,6 +959,24 @@ void SkiaRenderer::FlushBatchedQuads() {
   batched_cdt_matrices_.clear();
 }
 
+void SkiaRenderer::DrawColoredQuad(const DrawQuadParams& params,
+                                   SkColor color) {
+  DCHECK(batched_quads_.empty());
+  TRACE_EVENT0("viz", "SkiaRenderer::DrawColoredQuad");
+
+  SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
+  PrepareCanvas(params.has_scissor_rect ? &scissor_rect_ : nullptr,
+                &params.content_device_transform);
+
+  color = SkColorSetA(color, params.opacity * SkColorGetA(color));
+  const SkPoint* draw_region =
+      params.draw_region.has_value() ? params.draw_region->points : nullptr;
+  current_canvas_->experimental_DrawEdgeAAQuad(
+      gfx::RectFToSkRect(params.visible_rect), draw_region,
+      static_cast<SkCanvas::QuadAAFlags>(params.aa_flags), color,
+      params.blend_mode);
+}
+
 void SkiaRenderer::DrawSingleImage(const DrawQuadParams& params,
                                    const SkImage* image,
                                    const gfx::RectF& src,
@@ -975,6 +996,11 @@ void SkiaRenderer::DrawSingleImage(const DrawQuadParams& params,
       params.draw_region.has_value() ? params.draw_region->points : nullptr;
   current_canvas_->experimental_DrawEdgeAAImageSet(&entry, 1, draw_region,
                                                    nullptr, paint);
+}
+
+void SkiaRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
+                                      const DrawQuadParams& params) {
+  DrawColoredQuad(params, quad->color);
 }
 
 void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
@@ -1198,7 +1224,7 @@ void SkiaRenderer::DoSingleDrawQuad(const DrawQuad* quad,
       DrawRenderPassQuad(RenderPassDrawQuad::MaterialCast(quad), &paint);
       break;
     case DrawQuad::SOLID_COLOR:
-      DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad), &paint);
+      NOTREACHED();
       break;
     case DrawQuad::TEXTURE_CONTENT:
       NOTREACHED();
@@ -1319,22 +1345,6 @@ void SkiaRenderer::DrawPictureQuad(const PictureDrawQuad* quad,
   raster_canvas->clipRect(gfx::RectToSkRect(quad->content_rect));
   raster_canvas->scale(quad->contents_scale, quad->contents_scale);
   quad->display_item_list->Raster(raster_canvas);
-}
-
-void SkiaRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
-                                      SkPaint* paint) {
-  DCHECK(paint);
-  paint->setColor(quad->color);
-  // The flag |force_anti_aliasing_off| is also expected to disable alpha
-  // blending, so set full opacity.
-  if (quad->force_anti_aliasing_off) {
-    paint->setAlpha(255);
-    paint->setAntiAlias(false);
-  } else {
-    paint->setAlpha(quad->shared_quad_state->opacity *
-                    SkColorGetA(quad->color));
-  }
-  current_canvas_->drawRect(gfx::RectToSkRect(quad->visible_rect), *paint);
 }
 
 sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
