@@ -404,6 +404,17 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   return !savedForms_.empty() || !blacklistedForms_.empty();
 }
 
+#pragma mark - SettingsControllerProtocol
+
+- (void)settingsWillBeDismissed {
+  // Dismiss the search bar if presented, otherwise the VC will be retained by
+  // UIKit thus cause a memory leak.
+  // TODO(crbug.com/947417): Remove this once the memory leak issue is fixed.
+  if (self.navigationItem.searchController.active == YES) {
+    self.navigationItem.searchController.active = NO;
+  }
+}
+
 #pragma mark - Items
 
 - (TableViewLinkHeaderFooterItem*)manageAccountLinkItem {
