@@ -177,6 +177,13 @@ void PrefModelAssociator::RegisterMergeDataFinishedCallback(
     callback.Run();
 }
 
+void PrefModelAssociator::WaitUntilReadyToSync(base::OnceClosure done) {
+  // Prefs are loaded very early during profile initialization.
+  DCHECK_NE(pref_service_->GetAllPrefStoresInitializationStatus(),
+            PrefService::INITIALIZATION_STATUS_WAITING);
+  std::move(done).Run();
+}
+
 syncer::SyncMergeResult PrefModelAssociator::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
