@@ -84,7 +84,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   bool DoIdleWork() override;
 
   // RunLoop::Delegate implementation.
-  void Run(bool application_tasks_allowed) override;
+  void Run(bool application_tasks_allowed, TimeDelta timeout) override;
   void Quit() override;
   void EnsureWorkScheduled() override;
 
@@ -121,6 +121,9 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
 
     // When the next scheduled delayed work should run, if any.
     TimeTicks next_delayed_do_work = TimeTicks::Max();
+
+    // The time after which the runloop should quit.
+    TimeTicks quit_runloop_after = TimeTicks::Max();
 
     bool task_execution_allowed = true;
   };
