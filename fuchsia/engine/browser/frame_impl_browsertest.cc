@@ -41,9 +41,11 @@ using OnNavigationStateChangedCallback =
 
 const char kPage1Path[] = "/title1.html";
 const char kPage2Path[] = "/title2.html";
+const char kPage3Path[] = "/websql.html";
 const char kDynamicTitlePath[] = "/dynamic_title.html";
 const char kPage1Title[] = "title 1";
 const char kPage2Title[] = "title 2";
+const char kPage3Title[] = "websql not available";
 const char kDataUrl[] =
     "data:text/html;base64,PGI+SGVsbG8sIHdvcmxkLi4uPC9iPg==";
 const char kTestServerRoot[] = FILE_PATH_LITERAL("fuchsia/engine/test/data");
@@ -199,6 +201,20 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ContextDeletedBeforeFrameWithView) {
   context().Unbind();
   run_loop.Run();
   EXPECT_FALSE(frame);
+}
+
+// TODO(https://crbug.com/695592): Remove this test when WebSQL is removed from
+// Chrome.
+IN_PROC_BROWSER_TEST_F(FrameImplTest, EnsureWebSqlDisabled) {
+  chromium::web::FramePtr frame = CreateFrame();
+  EXPECT_TRUE(frame);
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL title3(embedded_test_server()->GetURL(kPage3Path));
+  controller->LoadUrl(title3.spec(), chromium::web::LoadUrlParams());
+  navigation_observer_.RunUntilNavigationEquals(title3, kPage3Title);
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, GoBackAndForward) {

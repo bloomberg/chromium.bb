@@ -8,6 +8,7 @@
 
 #include "components/version_info/version_info.h"
 #include "content/public/common/user_agent.h"
+#include "content/public/common/web_preferences.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
 #include "fuchsia/engine/browser/web_engine_devtools_manager_delegate.h"
@@ -40,4 +41,11 @@ std::string WebEngineContentBrowserClient::GetProduct() const {
 std::string WebEngineContentBrowserClient::GetUserAgent() const {
   return content::BuildUserAgentFromProduct(
       version_info::GetProductNameAndVersionForUserAgent());
+}
+
+void WebEngineContentBrowserClient::OverrideWebkitPrefs(
+    content::RenderViewHost* rvh,
+    content::WebPreferences* web_prefs) {
+  // Disable WebSQL support since it's being removed from the web platform.
+  web_prefs->databases_enabled = false;
 }

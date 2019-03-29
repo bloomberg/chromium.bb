@@ -25,6 +25,8 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
   std::string GetProduct() const override;
   std::string GetUserAgent() const override;
+  void OverrideWebkitPrefs(content::RenderViewHost* rvh,
+                           content::WebPreferences* web_prefs) override;
 
  private:
   zx::channel context_channel_;
