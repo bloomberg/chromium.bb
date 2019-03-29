@@ -1032,7 +1032,7 @@ bool DocumentLoader::PrepareForLoad() {
 
   if (!params_->body_loader) {
     // TODO(dgozman): we should try to get rid of this case.
-    LoadFailed(ResourceError::Failure(url_));
+    LoadFailed(ResourceError::CancelledError(url_));
     return false;
   }
 
