@@ -9,6 +9,7 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "chrome/browser/notifications/scheduler/internal_types.h"
 #include "chrome/browser/notifications/scheduler/notification_scheduler_types.h"
 
 namespace notifications {
@@ -40,6 +41,9 @@ struct Impression {
   // If the user feedback is used in computing the current notification deliver
   // rate.
   bool integrated = false;
+
+  // The task start time when this impression is generated.
+  SchedulerTaskTime task_start_time = SchedulerTaskTime::kUnknown;
 };
 
 // Contains details about supression and recovery after suppression expired.
