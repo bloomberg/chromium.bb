@@ -268,7 +268,12 @@ class KioskSessionInitializedWaiter : public KioskAppManagerObserver {
   }
   ~KioskSessionInitializedWaiter() override = default;
 
-  void Wait() { run_loop_.Run(); }
+  void Wait() {
+    if (KioskAppManager::Get()->app_session())
+      return;
+
+    run_loop_.Run();
+  }
 
   // KioskAppManagerObserver:
   void OnKioskSessionInitialized() override { run_loop_.Quit(); }
@@ -930,9 +935,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDown) {
   RunAppLaunchNetworkDownTest();
 }
 
-// Times out in MSAN and DBG: https://crbug.com/811379
-IN_PROC_BROWSER_TEST_F(KioskTest,
-                       DISABLED_LaunchAppWithNetworkConfigAccelerator) {
+IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppWithNetworkConfigAccelerator) {
   ScopedCanConfigureNetwork can_configure_network(true, false);
 
   // Block app loading until the welcome screen is shown.
@@ -958,12 +961,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest,
   AppLaunchController::SetBlockAppLaunchForTesting(false);
 
   // Click on [Continue] button.
-  ASSERT_TRUE(content::ExecuteScript(
-      GetLoginUI()->GetWebContents(),
-      "(function() {"
-      "var e = new Event('click');"
-      "$('error-message-md-continue-button').dispatchEvent(e);"
-      "})();"));
+  test::OobeJS().TapOn("error-message-md-continue-button");
 
   WaitForAppLaunchSuccess();
 }
