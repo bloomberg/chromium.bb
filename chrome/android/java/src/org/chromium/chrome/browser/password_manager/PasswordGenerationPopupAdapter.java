@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill;
+package org.chromium.chrome.browser.password_manager;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -24,7 +24,7 @@ import java.util.List;
  * list: (1) the password suggestion and (2) an explanation of the password generation feature. If
  * the passwordDisplayed parameter is false, then the adapter shows only the explanation item.
  */
-public class PasswordGenerationAdapter extends BaseAdapter {
+public class PasswordGenerationPopupAdapter extends BaseAdapter {
     private final Context mContext;
     private final List<Integer> mViewTypes;
     private final String mPassword;
@@ -57,22 +57,23 @@ public class PasswordGenerationAdapter extends BaseAdapter {
      * @param anchorWidthInDp The width of the anchor to which the popup is attached. Used to size
      * the explanation view.
      */
-    public PasswordGenerationAdapter(Context context, boolean passwordDisplayed, String password,
-            String suggestionTitle, String explanationText, float anchorWidthInDp) {
+    public PasswordGenerationPopupAdapter(Context context, boolean passwordDisplayed,
+            String password, String suggestionTitle, String explanationText,
+            float anchorWidthInDp) {
         super();
         mContext = context;
         mViewTypes = passwordDisplayed ? Arrays.asList(SUGGESTION, EXPLANATION)
-                : Arrays.asList(EXPLANATION);
+                                       : Arrays.asList(EXPLANATION);
         mPassword = password;
         mSuggestionTitle = suggestionTitle;
         mExplanationText = explanationText;
 
         int horizontalMarginInPx = Math.round(mContext.getResources().getDimension(
                 R.dimen.password_generation_horizontal_margin));
-        int anchorWidthInPx = Math.round(anchorWidthInDp
-                * mContext.getResources().getDisplayMetrics().density);
-        View suggestion = getViewForType(SUGGESTION).findViewById(
-                R.id.password_generation_suggestion);
+        int anchorWidthInPx =
+                Math.round(anchorWidthInDp * mContext.getResources().getDisplayMetrics().density);
+        View suggestion =
+                getViewForType(SUGGESTION).findViewById(R.id.password_generation_suggestion);
         suggestion.setMinimumWidth(anchorWidthInPx - 2 * horizontalMarginInPx);
         suggestion.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
                 MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
@@ -97,8 +98,8 @@ public class PasswordGenerationAdapter extends BaseAdapter {
      * @return The view for this viewType.
      */
     private View getViewForType(int type) {
-        LayoutInflater inflater = (LayoutInflater) mContext
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater =
+                (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = null;
         switch (type) {
             case SUGGESTION:
@@ -111,11 +112,11 @@ public class PasswordGenerationAdapter extends BaseAdapter {
 
             case EXPLANATION:
                 view = inflater.inflate(R.layout.password_generation_popup_explanation, null);
-                TextView explanation = (TextView) view
-                        .findViewById(R.id.password_generation_explanation);
+                TextView explanation =
+                        (TextView) view.findViewById(R.id.password_generation_explanation);
                 explanation.setText(mExplanationText);
-                explanation.setLayoutParams(new LayoutParams(mSuggestionMeasuredWidth,
-                        LayoutParams.WRAP_CONTENT));
+                explanation.setLayoutParams(
+                        new LayoutParams(mSuggestionMeasuredWidth, LayoutParams.WRAP_CONTENT));
                 break;
 
             default:
