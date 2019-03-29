@@ -13,6 +13,8 @@
 namespace features {
 
 // Keep sorted!
+
+// Deprecated - DO NOT USE (See http://crbug.com/947314).
 COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kExperimentalUi;
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
