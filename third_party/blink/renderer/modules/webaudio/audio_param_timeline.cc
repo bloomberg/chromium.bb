@@ -801,18 +801,16 @@ void AudioParamTimeline::CancelAndHoldAtTime(double cancel_time,
   }
 }
 
-float AudioParamTimeline::ValueForContextTime(
+std::tuple<bool, float> AudioParamTimeline::ValueForContextTime(
     AudioDestinationHandler& audio_destination,
     float default_value,
-    bool& has_value,
     float min_value,
     float max_value) {
   {
     MutexTryLocker try_locker(events_lock_);
     if (!try_locker.Locked() || !events_.size() ||
         audio_destination.CurrentTime() < events_[0]->Time()) {
-      has_value = false;
-      return default_value;
+      return std::make_tuple(false, default_value);
     }
   }
 
@@ -826,8 +824,7 @@ float AudioParamTimeline::ValueForContextTime(
       ValuesForFrameRange(start_frame, start_frame + 1, default_value, &value,
                           1, sample_rate, control_rate, min_value, max_value);
 
-  has_value = true;
-  return value;
+  return std::make_tuple(true, value);
 }
 
 float AudioParamTimeline::ValuesForFrameRange(size_t start_frame,
