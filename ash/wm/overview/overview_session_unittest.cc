@@ -2482,6 +2482,10 @@ TEST_P(OverviewSessionRoundedCornerTest, RoundedEdgeMaskVisibilityDragging) {
 }
 
 TEST_P(OverviewSessionRoundedCornerTest, NoRoundedEdgeMaskFor11Windows) {
+  // This is only for old rounded corner implementation.
+  if (features::ShouldUseShaderRoundedCorner())
+    return;
+
   std::vector<std::unique_ptr<aura::Window>> windows;
   for (int i = 0; i < 11; i++)
     windows.push_back(CreateTestWindow());
