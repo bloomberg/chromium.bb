@@ -35,6 +35,8 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
+#include "ui/base/accelerators/accelerator.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserContext;
@@ -94,6 +96,19 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                              IDS_DOWNLOAD_LINK_REMOVE_ARIA_LABEL);
   source->AddLocalizedString("controlRetry", IDS_DOWNLOAD_LINK_RETRY);
   source->AddLocalizedString("controlledByUrl", IDS_DOWNLOAD_BY_EXTENSION_URL);
+  source->AddLocalizedString("toastClearedAll", IDS_DOWNLOAD_TOAST_CLEARED_ALL);
+  source->AddLocalizedString("toastRemovedFromList",
+                             IDS_DOWNLOAD_TOAST_REMOVED_FROM_LIST);
+  source->AddLocalizedString("undo", IDS_DOWNLOAD_UNDO);
+
+  // Build an Accelerator to describe undo shortcut
+  // NOTE: the undo shortcut is also defined in downloads/downloads.html
+  // TODO(crbug/893033): de-duplicate shortcut by moving all shortcut
+  // definitions from JS to C++.
+  ui::Accelerator undoAccelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
+  source->AddString("undoDescription", l10n_util::GetStringFUTF16(
+                                           IDS_DOWNLOAD_UNDO_DESCRIPTION,
+                                           undoAccelerator.GetShortcutText()));
 
   PrefService* prefs = profile->GetPrefs();
   source->AddBoolean("allowDeletingHistory",
