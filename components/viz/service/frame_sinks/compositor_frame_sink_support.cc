@@ -452,10 +452,11 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
              last_created_local_surface_id.parent_sequence_number() ||
          child_initiated_synchronization_event);
 
-    if (!surface_info.is_valid() || !monotonically_increasing_id) {
-      TRACE_EVENT_INSTANT0("viz", "Surface Invariants Violation",
+    DCHECK(surface_info.is_valid());
+    if (!monotonically_increasing_id) {
+      TRACE_EVENT_INSTANT0("viz", "LocalSurfaceId decreased",
                            TRACE_EVENT_SCOPE_THREAD);
-      return SubmitResult::SURFACE_INVARIANTS_VIOLATION;
+      return SubmitResult::SURFACE_ID_DECREASED;
     }
 
     // If the last Surface doesn't have a dependent frame, and this frame
@@ -476,9 +477,9 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
     }
     current_surface = CreateSurface(surface_info, block_activation_on_parent);
     if (!current_surface) {
-      TRACE_EVENT_INSTANT0("viz", "Surface Invariants Violation",
+      TRACE_EVENT_INSTANT0("viz", "Surface belongs to another client",
                            TRACE_EVENT_SCOPE_THREAD);
-      return SubmitResult::SURFACE_INVARIANTS_VIOLATION;
+      return SubmitResult::SURFACE_OWNED_BY_ANOTHER_CLIENT;
     }
     last_created_surface_id_ = SurfaceId(frame_sink_id_, local_surface_id);
 
@@ -503,7 +504,7 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
                      weak_factory_.GetWeakPtr(), frame.metadata.frame_token));
   if (!result) {
     TRACE_EVENT_INSTANT0("viz", "QueueFrame failed", TRACE_EVENT_SCOPE_THREAD);
-    return SubmitResult::SURFACE_INVARIANTS_VIOLATION;
+    return SubmitResult::SIZE_MISMATCH;
   }
 
   if (begin_frame_source_)
@@ -726,8 +727,12 @@ const char* CompositorFrameSinkSupport::GetSubmitResultAsString(
       return "Accepted";
     case SubmitResult::COPY_OUTPUT_REQUESTS_NOT_ALLOWED:
       return "CopyOutputRequests not allowed";
-    case SubmitResult::SURFACE_INVARIANTS_VIOLATION:
-      return "Surface invariants violation";
+    case SubmitResult::SIZE_MISMATCH:
+      return "CompositorFrame size doesn't match surface size";
+    case SubmitResult::SURFACE_ID_DECREASED:
+      return "LocalSurfaceId sequence numbers decreased";
+    case SubmitResult::SURFACE_OWNED_BY_ANOTHER_CLIENT:
+      return "Surface belongs to another client";
   }
   NOTREACHED();
   return nullptr;
