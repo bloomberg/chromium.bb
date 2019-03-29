@@ -107,11 +107,6 @@
       depends_on: ["ExperimentalProductivityFeatures"],
     },
     {
-      name: "LegacyImageFormats",
-      feature_policy_name: "legacy-image-formats",
-      depends_on: ["ExperimentalProductivityFeatures"],
-    },
-    {
       name: "Magnetometer",
       feature_policy_name: "magnetometer",
       depends_on: ["Sensor"],

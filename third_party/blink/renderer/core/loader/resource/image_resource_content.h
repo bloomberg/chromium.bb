@@ -175,10 +175,9 @@ class CORE_EXPORT ImageResourceContent final
     return is_refetchable_data_from_disk_cache_;
   }
 
-  // Optimized image policies: These methods are used to determine whether the
+  // Optimized image policies: This method is used to determine whether the
   // image resource violates any of the image policies in effect on the current
   // page.
-  bool IsAcceptableContentType();
   bool IsAcceptableCompressionRatio(const SecurityContext& context);
 
   void LoadDeferredImage(ResourceFetcher* fetcher);
