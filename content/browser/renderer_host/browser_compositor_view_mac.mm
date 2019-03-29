@@ -289,8 +289,6 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
   }
   DCHECK_EQ(state_, new_state);
   delegated_frame_host_->AttachToCompositor(GetCompositor());
-  if (!dfh_local_surface_id_allocator_.HasValidLocalSurfaceIdAllocation())
-    dfh_local_surface_id_allocator_.GenerateId();
   has_saved_frame_before_state_transition_ =
       delegated_frame_host_->HasSavedFrame();
   delegated_frame_host_->WasShown(
@@ -422,6 +420,9 @@ BrowserCompositorMac::GetScopedRendererSurfaceIdAllocator(
 
 const viz::LocalSurfaceIdAllocation&
 BrowserCompositorMac::GetRendererLocalSurfaceIdAllocation() {
+  if (!dfh_local_surface_id_allocator_.HasValidLocalSurfaceIdAllocation())
+    dfh_local_surface_id_allocator_.GenerateId();
+
   return dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
 }
 

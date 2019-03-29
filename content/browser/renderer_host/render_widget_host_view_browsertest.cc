@@ -232,6 +232,7 @@ IN_PROC_BROWSER_TEST_F(NoCompositingRenderWidgetHostViewBrowserTest,
 
 // TODO(jonross): Update Mac to also invalidate its viz::LocalSurfaceIds when
 // performing navigations while hidden. https://crbug.com/935364
+#if !defined(OS_MACOSX)
 // When a navigation occurs while the RenderWidgetHostViewBase is hidden, it
 // should invalidate it's viz::LocalSurfaceId. When subsequently being shown,
 // a new surface should be generated with a new viz::LocalSurfaceId
@@ -293,6 +294,7 @@ IN_PROC_BROWSER_TEST_F(NoCompositingRenderWidgetHostViewBrowserTest,
   EXPECT_NE(initial_local_surface_id, new_local_surface_id);
 #endif
 }
+#endif  // !defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTestBase,
                        CompositorWorksWhenReusingRenderer) {
