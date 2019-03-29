@@ -57,10 +57,8 @@ bool PresentationTimeRecorder::RequestNext() {
   if (!compositor_)
     return false;
 
-  if (state_ == REQUESTED) {
-    LOG(ERROR) << "Skipped";
+  if (state_ == REQUESTED)
     return false;
-  }
 
   const base::TimeTicks now = base::TimeTicks::Now();
 
