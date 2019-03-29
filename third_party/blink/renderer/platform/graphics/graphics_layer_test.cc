@@ -138,11 +138,9 @@ TEST_P(GraphicsLayerTest, PaintRecursively) {
   // With BlinkGenPropertyTrees, these are not cleared until after paint.
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     EXPECT_FALSE(transform1->Changed(
-        PaintPropertyChangeType::kChangedOnlyCompositedAnimationValues,
-        transform_root));
+        PaintPropertyChangeType::kChangedOnlyCompositedValues, transform_root));
     EXPECT_FALSE(transform2->Changed(
-        PaintPropertyChangeType::kChangedOnlyCompositedAnimationValues,
-        transform_root));
+        PaintPropertyChangeType::kChangedOnlyCompositedValues, transform_root));
   }
 }
 

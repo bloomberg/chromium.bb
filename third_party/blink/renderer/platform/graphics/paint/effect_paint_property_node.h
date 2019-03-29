@@ -94,16 +94,21 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
           !animation_state.is_running_backdrop_filter_animation_on_compositor) {
         return PaintPropertyChangeType::kChangedOnlyValues;
       }
-      if (opacity_change_is_simple &&
-          !animation_state.is_running_opacity_animation_on_compositor) {
-        return PaintPropertyChangeType::kChangedOnlySimpleValues;
-      }
-      if (direct_compositing_reasons != other.direct_compositing_reasons ||
-          compositor_element_id != other.compositor_element_id) {
+      bool non_reraster_values_changed =
+          direct_compositing_reasons != other.direct_compositing_reasons ||
+          compositor_element_id != other.compositor_element_id;
+      bool simple_values_changed =
+          opacity_change_is_simple &&
+          !animation_state.is_running_opacity_animation_on_compositor;
+      if (non_reraster_values_changed && simple_values_changed)
+        return PaintPropertyChangeType::kChangedOnlyValues;
+      if (non_reraster_values_changed)
         return PaintPropertyChangeType::kChangedOnlyNonRerasterValues;
-      }
+      if (simple_values_changed)
+        return PaintPropertyChangeType::kChangedOnlySimpleValues;
+
       if (opacity_changed || filter_changed || backdrop_filter_changed) {
-        return PaintPropertyChangeType::kChangedOnlyCompositedAnimationValues;
+        return PaintPropertyChangeType::kChangedOnlyCompositedValues;
       }
       return PaintPropertyChangeType::kUnchanged;
     }

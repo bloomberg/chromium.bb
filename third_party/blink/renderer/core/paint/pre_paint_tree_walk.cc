@@ -348,13 +348,13 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
 
     if (property_changed != PaintPropertyChangeType::kUnchanged) {
       if (property_changed >
-          PaintPropertyChangeType::kChangedOnlyCompositedAnimationValues) {
+          PaintPropertyChangeType::kChangedOnlyCompositedValues) {
         object.GetFrameView()->SetPaintArtifactCompositorNeedsUpdate();
       }
 
       if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
         if (property_changed >
-            PaintPropertyChangeType::kChangedOnlyCompositedAnimationValues) {
+            PaintPropertyChangeType::kChangedOnlyCompositedValues) {
           const auto* paint_invalidation_layer =
               paint_invalidator_context.paint_invalidation_container->Layer();
           if (!paint_invalidation_layer->NeedsRepaint()) {

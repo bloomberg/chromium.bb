@@ -676,6 +676,8 @@ class CORE_EXPORT LocalFrameView final
     return paint_artifact_compositor_.get();
   }
 
+  PaintArtifactCompositor* GetPaintArtifactCompositor() const;
+
   const cc::Layer* RootCcLayer() const;
 
   enum ForceThrottlingInvalidationBehavior {

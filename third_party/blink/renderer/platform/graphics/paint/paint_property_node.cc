@@ -94,8 +94,8 @@ const char* PaintPropertyChangeTypeToString(PaintPropertyChangeType change) {
   switch (change) {
     case PaintPropertyChangeType::kUnchanged:
       return "unchanged";
-    case PaintPropertyChangeType::kChangedOnlyCompositedAnimationValues:
-      return "animation";
+    case PaintPropertyChangeType::kChangedOnlyCompositedValues:
+      return "composited-values";
     case PaintPropertyChangeType::kChangedOnlyNonRerasterValues:
       return "non-reraster";
     case PaintPropertyChangeType::kChangedOnlySimpleValues:

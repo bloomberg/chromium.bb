@@ -118,6 +118,9 @@ class PropertyTreeManager {
   // unclosed synthesized clips.
   void Finalize();
 
+  bool DirectlyUpdateCompositedOpacityValue(cc::PropertyTrees*,
+                                            const EffectPaintPropertyNode&);
+
  private:
   void SetupRootTransformNode();
   void SetupRootClipNode();
@@ -200,6 +203,7 @@ class PropertyTreeManager {
       transform_node_map_;
   HashMap<scoped_refptr<const ClipPaintPropertyNode>, int> clip_node_map_;
   HashMap<scoped_refptr<const ScrollPaintPropertyNode>, int> scroll_node_map_;
+  HashMap<scoped_refptr<const EffectPaintPropertyNode>, int> effect_node_map_;
 
   struct EffectState {
     // The cc effect node that has the corresponding drawing state to the
