@@ -7,6 +7,11 @@
 
 #import "ios/showcase/common/navigation_coordinator.h"
 
+extern NSString* const kInfobarBannerTitleLabel;
+extern NSString* const kInfobarBannerSubtitleLabel;
+extern NSString* const kInfobarBannerButtonLabel;
+extern NSString* const kInfobarBannerPresentedModalLabel;
+
 @interface SCInfobarBannerCoordinator : NSObject <NavigationCoordinator>
 @end
 

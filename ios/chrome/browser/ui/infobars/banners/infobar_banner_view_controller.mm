@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 
+#import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 
@@ -86,6 +87,7 @@ const CGFloat kChangeInPositionForTransition = 100.0;
   [self.view.layer setShadowOffset:CGSizeMake(0.0, kBannerViewYShadowOffset)];
   [self.view.layer setShadowRadius:kBannerViewShadowRadius];
   [self.view.layer setShadowOpacity:kBannerViewShadowOpactiy];
+  self.view.accessibilityIdentifier = kInfobarBannerViewIdentifier;
 
   // Bottom Grip setup.
   UIView* bottomGrip = [[UIView alloc] init];
@@ -137,6 +139,8 @@ const CGFloat kChangeInPositionForTransition = 100.0;
   [self.infobarButton addTarget:self.delegate
                          action:@selector(bannerInfobarButtonWasPressed:)
                forControlEvents:UIControlEventTouchUpInside];
+  self.infobarButton.accessibilityIdentifier =
+      kInfobarBannerAcceptButtonIdentifier;
 
   UIView* buttonSeparator = [[UIView alloc] init];
   buttonSeparator.translatesAutoresizingMaskIntoConstraints = NO;
