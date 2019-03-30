@@ -210,7 +210,7 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   // Blink and //content.
   if (IsSecMetadataEnabled() && IsOriginSecure(url)) {
     std::string site_value = "cross-site";
-    std::string user_value = has_user_gesture ? "?T" : "?F";
+    std::string user_value = has_user_gesture ? "?T" : std::string();
 
     // Navigations that aren't triggerable from the web (e.g. typing in the
     // address bar, or clicking a bookmark) are labeled as 'none'. Webby
@@ -255,7 +255,8 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
     headers->SetHeaderIfMissing("Sec-Fetch-Dest", destination.c_str());
     headers->SetHeaderIfMissing("Sec-Fetch-Mode", mode.c_str());
     headers->SetHeaderIfMissing("Sec-Fetch-Site", site_value.c_str());
-    headers->SetHeaderIfMissing("Sec-Fetch-User", user_value.c_str());
+    if (!user_value.empty())
+      headers->SetHeaderIfMissing("Sec-Fetch-User", user_value.c_str());
   }
 
   // Ask whether we should request a policy.

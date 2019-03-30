@@ -232,7 +232,7 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
                                                  site_value.c_str());
     resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Mode",
                                                  "same-origin");
-    resource_request->headers.SetHeaderIfMissing("Sec-Fetch-User", "?F");
+    // We don't set `Sec-Fetch-User` for subresource requests.
   }
 }
 
