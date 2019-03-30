@@ -1867,6 +1867,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-web-authentication-pin-support",
+    "owners": [ "webauthn-team@google.com" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "enable-webassembly",
     "owners": [ "titzer", "wasm-team@google.com" ],
     "expiry_milestone": 72

@@ -32277,6 +32277,7 @@ from previous Chrome versions.
   <int value="-1604051051" label="SpecialLocale:disabled"/>
   <int value="-1603404046" label="V8VmFuture:disabled"/>
   <int value="-1599538279" label="enable-md-policy-page"/>
+  <int value="-1596859081" label="WebAuthenticationPINSupport:enabled"/>
   <int value="-1596559650" label="max-tiles-for-interest-area"/>
   <int value="-1594298767" label="FullscreenToolbarReveal:enabled"/>
   <int value="-1586642651" label="MaterialDesignExtensions:disabled"/>
@@ -33717,6 +33718,7 @@ from previous Chrome versions.
   <int value="723619383" label="TopSitesFromSiteEngagement:enabled"/>
   <int value="724052572" label="EnableFilesystemInIncognito"/>
   <int value="724208771" label="TabsInCBD:enabled"/>
+  <int value="724427456" label="WebAuthenticationPINSupport:disabled"/>
   <int value="725270017" label="ScrollAnchorSerialization:disabled"/>
   <int value="726764779" label="WebXRGamepadSupport:enabled"/>
   <int value="727270087" label="PromosOnLocalNtp:enabled"/>

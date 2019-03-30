@@ -52,11 +52,14 @@ MockFidoDevice::MakeU2fWithGetInfoExpectation() {
 // static
 std::unique_ptr<MockFidoDevice> MockFidoDevice::MakeCtapWithGetInfoExpectation(
     base::Optional<base::span<const uint8_t>> get_info_response) {
-  auto device = std::make_unique<MockFidoDevice>();
-  device->StubGetId();
   if (!get_info_response) {
     get_info_response = test_data::kTestAuthenticatorGetInfoResponse;
   }
+
+  auto get_info = ReadCTAPGetInfoResponse(*get_info_response);
+  CHECK(get_info);
+  auto device = MockFidoDevice::MakeCtap(std::move(*get_info));
+  device->StubGetId();
   device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorGetInfo, std::move(get_info_response));
   return device;
