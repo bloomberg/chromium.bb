@@ -3682,10 +3682,10 @@ TEST_F(ViewTest, AddExistingChild) {
   EXPECT_EQ(0, v1.GetIndexOf(&v2));
   EXPECT_EQ(1, v1.GetIndexOf(&v3));
 
-  // Check that calling |AddChildView()| does not change the order.
+  // Check that calling AddChildView() moves to the end.
   v1.AddChildView(&v2);
-  EXPECT_EQ(0, v1.GetIndexOf(&v2));
-  EXPECT_EQ(1, v1.GetIndexOf(&v3));
+  EXPECT_EQ(1, v1.GetIndexOf(&v2));
+  EXPECT_EQ(0, v1.GetIndexOf(&v3));
   v1.AddChildView(&v3);
   EXPECT_EQ(0, v1.GetIndexOf(&v2));
   EXPECT_EQ(1, v1.GetIndexOf(&v3));
