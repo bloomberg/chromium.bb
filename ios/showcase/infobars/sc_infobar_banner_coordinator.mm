@@ -15,6 +15,11 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kInfobarBannerTitleLabel = @"Test Infobar";
+NSString* const kInfobarBannerSubtitleLabel = @"This a test Infobar.";
+NSString* const kInfobarBannerButtonLabel = @"Accept";
+NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
+
 @interface ContainerViewController : UIViewController
 @property(nonatomic, strong) InfobarBannerViewController* bannerViewController;
 @property(nonatomic, strong)
@@ -54,9 +59,9 @@
 
   self.bannerViewController =
       [[InfobarBannerViewController alloc] initWithDelegate:self];
-  self.bannerViewController.titleText = @"Test Infobar";
-  self.bannerViewController.subTitleText = @"This a test Infobar.";
-  self.bannerViewController.buttonText = @"Accept";
+  self.bannerViewController.titleText = kInfobarBannerTitleLabel;
+  self.bannerViewController.subTitleText = kInfobarBannerSubtitleLabel;
+  self.bannerViewController.buttonText = kInfobarBannerButtonLabel;
   self.containerViewController.bannerViewController = self.bannerViewController;
 
   [self.baseViewController pushViewController:self.containerViewController
@@ -74,7 +79,7 @@
       initWithTransitionMode:InfobarModalTransitionBanner];
   self.modalViewController =
       [[InfobarModalViewController alloc] initWithModalDelegate:self];
-  self.modalViewController.title = @"Modal Infobar";
+  self.modalViewController.title = kInfobarBannerPresentedModalLabel;
 
   UINavigationController* navController = [[UINavigationController alloc]
       initWithRootViewController:self.modalViewController];
@@ -101,7 +106,7 @@
 
 - (void)dismissInfobarModal:(UIButton*)sender
                  completion:(ProceduralBlock)completion {
-  [self.baseViewController dismissViewControllerAnimated:NO completion:nil];
+  [self.baseViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

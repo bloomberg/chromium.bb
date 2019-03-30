@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
@@ -47,6 +48,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                            target:self
                            action:@selector(dismissInfobarModal:)];
+  cancelButton.accessibilityIdentifier = kInfobarModalCancelButton;
   UIImage* settingsImage = [[UIImage imageNamed:@"infobar_settings_icon"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   UIBarButtonItem* settingsButton =

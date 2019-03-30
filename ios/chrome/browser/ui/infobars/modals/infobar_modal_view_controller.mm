@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_view_controller.h"
 
+#import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -39,6 +40,7 @@
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                            target:self
                            action:@selector(dismissInfobarModal:)];
+  cancelButton.accessibilityIdentifier = kInfobarModalCancelButton;
   UIImage* settingsImage = [[UIImage imageNamed:@"infobar_settings_icon"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   UIBarButtonItem* settingsButton =
