@@ -595,10 +595,6 @@ cr.define('wallpapers', function() {
      */
     updateActiveThumb_: function() {
       var selectedGridItem = this.getListItem(this.activeItem_);
-      if (this.checkmark_.parentNode &&
-          this.checkmark_.parentNode == selectedGridItem) {
-        return;
-      }
 
       // Clears previous checkmark.
       var previousSelectedGridItem = this.checkmark_.parentNode;
@@ -611,6 +607,9 @@ cr.define('wallpapers', function() {
         selectedGridItem.selected = true;
         selectedGridItem.appendChild(this.checkmark_);
       }
+
+      WallpaperUtil.saveToLocalStorage(
+          Constants.AccessLastUsedImageInfoKey, this.activeItem_);
     },
 
     /**

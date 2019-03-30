@@ -67,6 +67,11 @@
   LastUsedLanguageKey: 'last-used-language-key',
 
   /**
+   * Key to access the last used wallpaper image info in chrome.storage.local.
+   */
+  AccessLastUsedImageInfoKey: 'last-used-image-info-key',
+
+  /**
    * Wallpaper sources enum.
    */
   WallpaperSourceEnum: {

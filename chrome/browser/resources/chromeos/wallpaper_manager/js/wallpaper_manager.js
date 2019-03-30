@@ -591,6 +591,8 @@ WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
   });
 
   if (currentWallpaperInfo) {
+    // Update active item to current online wallpaper.
+    this.wallpaperGrid_.activeItem = currentWallpaperInfo;
     decorateCurrentWallpaperInfoBarImpl(currentWallpaperInfo);
   } else {
     // Migration: it's possible that the wallpaper was selected from the online
@@ -1301,15 +1303,57 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
           source: Constants.WallpaperSourceEnum.Custom,
           availableOffline: true,
           collectionName: str('customCategoryLabel'),
+          fileName: imagePath.split(/[/\\]/).pop(),
           // Use file name as aria-label.
-          ariaLabel: imagePath.split(/[/\\]/).pop(),
-          previewable: true
+          ariaLabel: function() {
+            return this.fileName;
+          },
+          previewable: true,
         };
         wallpapersDataModel.push(wallpaperInfo);
       }
       // Show a "no images" message if there's no image.
       this.updateNoImagesVisibility_(wallpapersDataModel.length == 0);
       this.wallpaperGrid_.dataModel = wallpapersDataModel;
+
+      var findAndUpdateActiveItem = currentWallpaperImageInfo => {
+        // If the current wallpaper is not OEM or Custom,
+        // the activeItem is already set to the correct imageInfo.
+        if (currentWallpaperImageInfo &&
+            currentWallpaperImageInfo.source !=
+                Constants.WallpaperSourceEnum.Custom &&
+            currentWallpaperImageInfo.source !=
+                Constants.WallpaperSourceEnum.OEM) {
+          return;
+        }
+        var desiredFileName = currentWallpaperImageInfo.fileName;
+        // Since a new OEM and custom wallpaperDataModel is created each
+        // time, wallpaperGrid_.activeItem references a different variable,
+        // despite having the same value.
+        for (var i = 0; i < wallpapersDataModel.length; ++i) {
+          var item = wallpapersDataModel.item(i);
+          // TODO(crbug/947543): Using the filename will not cover the case
+          // when the image changes but not the fileName.
+          if (item.fileName == desiredFileName)
+            this.wallpaperGrid_.activeItem = item;
+        }
+      };
+
+      if (this.wallpaperGrid_.activeItem) {
+        findAndUpdateActiveItem(this.wallpaperGrid_.activeItem);
+      } else {
+        // Wallpaper app has just launched, determine if wallpaper image
+        // is OEM or Custom.
+        Constants.WallpaperLocalStorage.get(
+            Constants.AccessLastUsedImageInfoKey, lastUsedImageInfo => {
+              lastUsedImageInfo =
+                  lastUsedImageInfo[Constants.AccessLastUsedImageInfoKey];
+              findAndUpdateActiveItem(lastUsedImageInfo);
+            });
+      }
+
+
+
     });
   } else {
     this.document_.body.removeAttribute('custom');
