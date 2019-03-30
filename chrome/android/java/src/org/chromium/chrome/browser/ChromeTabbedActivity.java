@@ -274,8 +274,6 @@ public class ChromeTabbedActivity
 
     private TabModalLifetimeHandler mTabModalHandler;
 
-    private NavigationBarColorController mNavigationBarColorController;
-
     private boolean mUIWithNativeInitialized;
 
     private Boolean mMergeTabsOnResume;
@@ -887,9 +885,7 @@ public class ChromeTabbedActivity
         return (ChromeTabCreator) super.getCurrentTabCreator();
     }
 
-    /**
-     * @return OverviewModeBehavior to use for OverviewMode related changes.
-     */
+    @Override
     public OverviewModeBehavior getOverviewModeBehavior() {
         return mOverviewModeController;
     }
@@ -1014,11 +1010,6 @@ public class ChromeTabbedActivity
                         ChromeSwitches.ENABLE_INCOGNITO_SNAPSHOTS_IN_ANDROID_RECENTS)) {
                 IncognitoTabSnapshotController.createIncognitoTabSnapshotController(
                         getWindow(), mLayoutManager, mTabModelSelectorImpl);
-            }
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-                mNavigationBarColorController = new NavigationBarColorController(
-                        getWindow(), getTabModelSelector(), mOverviewModeController);
             }
 
             mUIWithNativeInitialized = true;
@@ -2199,8 +2190,6 @@ public class ChromeTabbedActivity
             mUndoBarPopupController.destroy();
             mUndoBarPopupController = null;
         }
-
-        if (mNavigationBarColorController != null) mNavigationBarColorController.destroy();
 
         IncognitoTabHostRegistry.getInstance().unregister(mIncognitoTabHost);
         super.onDestroyInternal();

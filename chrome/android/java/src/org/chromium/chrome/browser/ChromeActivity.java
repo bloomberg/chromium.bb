@@ -71,6 +71,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChange
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.content.ContentOffsetProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -145,6 +146,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.translate.TranslateBridge;
+import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -328,6 +330,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private final Runnable mUpdateStateChangedListener = this::onUpdateStateChanged;
 
     /**
+     * The main coordinator for UI components in this activity.
+     */
+    private RootUiCoordinator mRootUiCoordinator;
+
+    /**
      * @param factory The {@link AppMenuHandlerFactory} for creating {@link #mAppMenuHandler}
      */
     @VisibleForTesting
@@ -347,6 +354,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         mComponent = createComponent();
 
         super.preInflationStartup();
+
+        // TODO(https://crbug.com/931496): Remove dependency on ChromeActivity in favor of passing
+        // in direct dependencies on needed classes. While migrating code from Chrome*Activity
+        // to the RootUiCoordinator, passing the activity is an easy way to get access to a
+        // number of objects that will ultimately be owned by the RootUiCoordinator. This is not
+        // a pattern that is recommended.
+        mRootUiCoordinator = new RootUiCoordinator(getLifecycleDispatcher(), this);
 
         VrModuleProvider.getDelegate().doPreInflationStartup(this, getSavedInstanceState());
 
@@ -1477,6 +1491,14 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     !ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON));
             getComponent().resolveContextualSuggestionsCoordinator();
         }
+    }
+
+    /**
+     * @return OverviewModeBehavior if this activity supports an overview mode and the
+     *         OverviewModeBehavior has been initialized, null otherwise.
+     */
+    public @Nullable OverviewModeBehavior getOverviewModeBehavior() {
+        return null;
     }
 
     /**
