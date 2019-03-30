@@ -21,8 +21,8 @@ namespace extensions {
 class MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver
     : public content::RenderFrameObserver {
  public:
-  RenderFrameLifetimeObserver(content::RenderFrame* render_frame,
-                              MimeHandlerViewFrameContainer* container);
+  RenderFrameLifetimeObserver(MimeHandlerViewFrameContainer* container,
+                              content::RenderFrame* render_frame);
   ~RenderFrameLifetimeObserver() override;
 
   // content:RenderFrameObserver override.
@@ -33,8 +33,8 @@ class MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver
 };
 
 MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver::
-    RenderFrameLifetimeObserver(content::RenderFrame* render_frame,
-                                MimeHandlerViewFrameContainer* container)
+    RenderFrameLifetimeObserver(MimeHandlerViewFrameContainer* container,
+                                content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame), container_(container) {}
 
 MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver::
@@ -101,7 +101,7 @@ MimeHandlerViewFrameContainer::MimeHandlerViewFrameContainer(
       plugin_element_(plugin_element),
       element_instance_id_(content::RenderThread::Get()->GenerateRoutingID()),
       render_frame_lifetime_observer_(
-          new RenderFrameLifetimeObserver(GetEmbedderRenderFrame(), this)) {
+          new RenderFrameLifetimeObserver(this, GetEmbedderRenderFrame())) {
   is_embedded_ = true;
   SendResourceRequest();
 }
@@ -117,7 +117,9 @@ MimeHandlerViewFrameContainer::MimeHandlerViewFrameContainer(
           content::WebPluginInfo(),
           mime_type,
           resource_url),
-      element_instance_id_(content::RenderThread::Get()->GenerateRoutingID()) {
+      element_instance_id_(content::RenderThread::Get()->GenerateRoutingID()),
+      render_frame_lifetime_observer_(
+          new RenderFrameLifetimeObserver(this, GetEmbedderRenderFrame())) {
   is_embedded_ = false;
   view_id_ = view_id;
   plugin_frame_routing_id_ =
