@@ -40,9 +40,9 @@ class ContentShellPlatform : public Platform {
 };
 }  // namespace
 bool EnableInternalDevToolsBinaryProtocol() {
-  static bool disabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableInternalDevToolsBinaryProtocol);
-  return !disabled;
+  static bool enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableInternalDevToolsBinaryProtocol);
+  return enabled;
 }
 
 // TODO(johannes): Move this into the cbor library. Don't want to
