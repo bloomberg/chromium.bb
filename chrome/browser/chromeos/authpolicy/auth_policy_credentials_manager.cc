@@ -116,11 +116,6 @@ void AuthPolicyCredentialsManager::OnShuttingDown() {
   StopObserveNetwork();
 }
 
-KerberosFilesHandler*
-AuthPolicyCredentialsManager::GetKerberosFilesHandlerForTesting() {
-  return &kerberos_files_handler_;
-}
-
 void AuthPolicyCredentialsManager::GetUserStatus() {
   DCHECK(!is_get_status_in_progress_);
   is_get_status_in_progress_ = true;
