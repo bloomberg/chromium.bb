@@ -152,12 +152,12 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
   void CheckDisplayedNotification(
       const message_center::Notification& notification) {
     // Check whether the notification and view contents match.
-    NotificationItemView* item_view =
-        test_api_->GetDisplayedNotificationItemView();
-    ASSERT_TRUE(item_view);
-    EXPECT_EQ(item_view->notification_id(), notification.id());
-    EXPECT_EQ(item_view->title(), notification.title());
-    EXPECT_EQ(item_view->message(), notification.message());
+    const auto* item =
+        notification_menu_view_->GetDisplayedNotificationItemView();
+    ASSERT_TRUE(item);
+    EXPECT_EQ(item->notification_id(), notification.id());
+    EXPECT_EQ(item->title(), notification.title());
+    EXPECT_EQ(item->message(), notification.message());
   }
 
   void BeginScroll() {
@@ -177,10 +177,10 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
     ui::test::EventGenerator generator(
         GetRootWindow(notification_menu_view_->GetWidget()));
 
-    ui::GestureEvent event(
-        0,
-        test_api()->GetDisplayedNotificationItemView()->GetBoundsInScreen().y(),
-        0, ui::EventTimeForNow(), details);
+    const auto* item =
+        notification_menu_view_->GetDisplayedNotificationItemView();
+    ui::GestureEvent event(0, item->GetBoundsInScreen().y(), 0,
+                           ui::EventTimeForNow(), details);
     generator.Dispatch(&event);
   }
 
@@ -369,10 +369,9 @@ TEST_F(NotificationMenuViewTest, ClickNotification) {
                   base::ASCIIToUTF16("message"));
   EXPECT_EQ(0, mock_notification_menu_controller()->activation_count_);
 
-  const gfx::Point cursor_location = test_api()
-                                         ->GetDisplayedNotificationItemView()
-                                         ->GetBoundsInScreen()
-                                         .origin();
+  const auto* item =
+      notification_menu_view()->GetDisplayedNotificationItemView();
+  const gfx::Point cursor_location = item->GetBoundsInScreen().origin();
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, cursor_location, cursor_location,
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                        ui::EF_NONE);
@@ -392,10 +391,9 @@ TEST_F(NotificationMenuViewTest, OutOfBoundsClick) {
                   base::ASCIIToUTF16("message"));
   EXPECT_EQ(0, mock_notification_menu_controller()->activation_count_);
 
-  const gfx::Point cursor_location = test_api()
-                                         ->GetDisplayedNotificationItemView()
-                                         ->GetBoundsInScreen()
-                                         .origin();
+  const auto* item =
+      notification_menu_view()->GetDisplayedNotificationItemView();
+  const gfx::Point cursor_location = item->GetBoundsInScreen().origin();
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, cursor_location, cursor_location,
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                        ui::EF_NONE);
