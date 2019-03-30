@@ -74,7 +74,7 @@ const base::Feature kAppNotificationStatusMessaging{
 const base::Feature kAppServiceAsh{"AppServiceAsh",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAppServiceServer{"AppServiceServer",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 // Enables the built-in DNS resolver.
