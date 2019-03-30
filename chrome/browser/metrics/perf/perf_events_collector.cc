@@ -10,6 +10,7 @@
 #include "base/strings/string_split.h"
 #include "chrome/browser/metrics/perf/cpu_identity.h"
 #include "chrome/browser/metrics/perf/perf_output.h"
+#include "chrome/browser/metrics/perf/process_type_collector.h"
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "components/variations/variations_associated_data.h"
@@ -350,6 +351,18 @@ void PerfCollector::ParseOutputProtoIfValid(
     AddToUmaHistogram(CollectionAttemptStatus::INCOGNITO_LAUNCHED);
     return;
   }
+
+  std::map<uint32_t, Process> process_types =
+      ProcessTypeCollector::ChromeProcessTypes();
+  std::map<uint32_t, Thread> thread_types =
+      ProcessTypeCollector::ChromeThreadTypes();
+  if (!process_types.empty() && !thread_types.empty()) {
+    sampled_profile->mutable_process_types()->insert(process_types.begin(),
+                                                     process_types.end());
+    sampled_profile->mutable_thread_types()->insert(thread_types.begin(),
+                                                    thread_types.end());
+  }
+
   SaveSerializedPerfProto(std::move(sampled_profile), type, perf_stdout);
 }
 

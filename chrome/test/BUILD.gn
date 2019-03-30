@@ -3697,6 +3697,7 @@ test("unit_tests") {
       "../browser/media/webrtc/desktop_media_list_ash_unittest.cc",
       "../browser/metrics/perf/metric_collector_unittest.cc",
       "../browser/metrics/perf/perf_events_collector_unittest.cc",
+      "../browser/metrics/perf/process_type_collector_unittest.cc",
       "../browser/metrics/perf/profile_provider_chromeos_unittest.cc",
       "../browser/notifications/chrome_ash_message_center_client_unittest.cc",
       "../browser/renderer_context_menu/mock_render_view_context_menu.cc",
