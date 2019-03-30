@@ -265,9 +265,7 @@ class PreviewsLitePageServerBrowserTest
 
     if (GetParam()) {
       url_loader_feature_list_.InitWithFeatures(
-          {network::features::kNetworkService,
-           previews::features::kHTTPSServerPreviewsUsingURLLoader},
-          {});
+          {previews::features::kHTTPSServerPreviewsUsingURLLoader}, {});
     }
   }
 
@@ -888,10 +886,11 @@ IN_PROC_BROWSER_TEST_P(
     ui_test_utils::NavigateToURL(
         browser(), PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
                        HttpsLitePageURL(kSuccess)));
-    if (!GetParam()) {
-      VerifyPreviewNotLoaded();
-    } else {
+    if (GetParam() &&
+        base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       VerifyPreviewLoaded();
+    } else {
+      VerifyPreviewNotLoaded();
     }
   }
 
