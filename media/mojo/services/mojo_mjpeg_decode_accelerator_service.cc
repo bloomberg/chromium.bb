@@ -67,7 +67,7 @@ void MojoMjpegDecodeAcceleratorService::Create(
 
 MojoMjpegDecodeAcceleratorService::MojoMjpegDecodeAcceleratorService()
     : accelerator_factory_functions_(
-          GpuJpegDecodeAcceleratorFactory::GetAcceleratorFactories()) {}
+          GpuMjpegDecodeAcceleratorFactory::GetAcceleratorFactories()) {}
 
 MojoMjpegDecodeAcceleratorService::~MojoMjpegDecodeAcceleratorService() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

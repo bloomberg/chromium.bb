@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/gpu_jpeg_decode_accelerator_factory.h"
+#include "media/gpu/gpu_mjpeg_decode_accelerator_factory.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -60,7 +60,7 @@ std::unique_ptr<MjpegDecodeAccelerator> CreateFakeMjpegDecodeAccelerator(
 }  // namespace
 
 // static
-bool GpuJpegDecodeAcceleratorFactory::IsAcceleratedJpegDecodeSupported() {
+bool GpuMjpegDecodeAcceleratorFactory::IsAcceleratedJpegDecodeSupported() {
   auto accelerator_factory_functions = GetAcceleratorFactories();
   for (const auto& factory_function : accelerator_factory_functions) {
     std::unique_ptr<MjpegDecodeAccelerator> accelerator =
@@ -72,8 +72,8 @@ bool GpuJpegDecodeAcceleratorFactory::IsAcceleratedJpegDecodeSupported() {
 }
 
 // static
-std::vector<GpuJpegDecodeAcceleratorFactory::CreateAcceleratorCB>
-GpuJpegDecodeAcceleratorFactory::GetAcceleratorFactories() {
+std::vector<GpuMjpegDecodeAcceleratorFactory::CreateAcceleratorCB>
+GpuMjpegDecodeAcceleratorFactory::GetAcceleratorFactories() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeMjpegDecodeAccelerator)) {
     return {base::Bind(&CreateFakeMjpegDecodeAccelerator)};
