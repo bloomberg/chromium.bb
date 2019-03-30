@@ -3385,6 +3385,8 @@ jumbo_split_static_library("browser") {
       "metrics/perf/perf_events_collector.h",
       "metrics/perf/perf_output.cc",
       "metrics/perf/perf_output.h",
+      "metrics/perf/process_type_collector.cc",
+      "metrics/perf/process_type_collector.h",
       "metrics/perf/profile_provider_chromeos.cc",
       "metrics/perf/profile_provider_chromeos.h",
       "metrics/perf/random_selector.cc",

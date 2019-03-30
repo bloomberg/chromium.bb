@@ -6935,6 +6935,33 @@ histogram as enum -->
   <int value="5" label="Timeout"/>
 </enum>
 
+<enum name="ChromeOSProcessTypeCollectionStatus">
+  <int value="0" label="PS command errored during process types collection">
+    Process types couldn't be collected as PS command errored.
+  </int>
+  <int value="1" label="PS command errored during thread types collection">
+    Thread types couldn't be collected as PS command errored.
+  </int>
+  <int value="2" label="Empty process type output">
+    Process type parsing returned empty output.
+  </int>
+  <int value="3" label="Empty thread type output">
+    Thread type parsing returned empty output.
+  </int>
+  <int value="4" label="Truncated process type output">
+    Process types were partially collected.
+  </int>
+  <int value="5" label="Truncated thread type output">
+    Thread types were partially collected.
+  </int>
+  <int value="6" label="Complete process type output">
+    Process types were completely collected.
+  </int>
+  <int value="7" label="Complete thread type output">
+    Thread types were completely collected.
+  </int>
+</enum>
+
 <enum name="ChromeOSProfileCollectionStatus">
   <int value="0" label="Success">Profile was collected successfully.</int>
   <int value="1" label="Collection timer triggered but buffer is full">
