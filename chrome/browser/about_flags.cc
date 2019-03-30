@@ -108,6 +108,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "device/base/features.h"
+#include "device/fido/features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "gpu/config/gpu_finch_features.h"
@@ -3086,6 +3087,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableWebAuthenticationCableSupportName,
      flag_descriptions::kEnableWebAuthenticationCableSupportDescription,
      kOsDesktop, FEATURE_VALUE_TYPE(features::kWebAuthCable)},
+#endif  // !defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
+    {"enable-web-authentication-pin-support",
+     flag_descriptions::kEnableWebAuthenticationPINSupportName,
+     flag_descriptions::kEnableWebAuthenticationPINSupportDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(device::kWebAuthPINSupport)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)

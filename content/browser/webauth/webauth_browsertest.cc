@@ -88,6 +88,10 @@ constexpr char kRelyingPartyUserIconUrlSecurityErrorMessage[] =
 constexpr char kRelyingPartyRpIconUrlSecurityErrorMessage[] =
     "webauth: SecurityError: 'rp.icon' should be a secure URL";
 
+constexpr char kInvalidStateError[] =
+    "webauth: InvalidStateError: The user attempted to use an authenticator "
+    "that recognized none of the provided credentials.";
+
 // Templates to be used with base::ReplaceStringPlaceholders. Can be
 // modified to include up to 9 replacements. The default values for
 // any additional replacements added should also be added to the
@@ -815,7 +819,10 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 }
 
 // Tests that when navigator.credentials.get() is called with user verification
-// required, we get a NotSupportedError.
+// required, we get an InvalidStateError because the virtual device isn't
+// configured with UV and GetAssertionRequestHandler will return
+// |kUserConsentButCredentialNotRecognized| when such an authenticator is
+// touched in that case.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        GetPublicKeyCredentialUserVerification) {
   for (const auto protocol : kAllProtocols) {
@@ -828,7 +835,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
     ASSERT_TRUE(content::ExecuteScriptAndExtractString(
         shell()->web_contents()->GetMainFrame(),
         BuildGetCallWithParameters(parameters), &result));
-    ASSERT_EQ(kTimeoutErrorMessage, result);
+    ASSERT_EQ(kInvalidStateError, result);
   }
 }
 

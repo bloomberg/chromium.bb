@@ -589,6 +589,9 @@ extern const char kEnableWasmDescription[];
 extern const char kEnableWebAuthenticationCableSupportName[];
 extern const char kEnableWebAuthenticationCableSupportDescription[];
 
+extern const char kEnableWebAuthenticationPINSupportName[];
+extern const char kEnableWebAuthenticationPINSupportDescription[];
+
 extern const char kEnableWebUsbName[];
 extern const char kEnableWebUsbDescription[];
 

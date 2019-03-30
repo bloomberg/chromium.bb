@@ -19,8 +19,8 @@ const base::Feature kWebAuthUseNativeWinApi{"WebAuthenticationUseNativeWinApi",
 extern const base::Feature kWebAuthProxyCryptotoken{
     "WebAuthenticationProxyCryptotoken", base::FEATURE_ENABLED_BY_DEFAULT};
 
-extern const base::Feature kWebAuthPINSupport{
-    "WebAuthenticationPINSupport", base::FEATURE_DISABLED_BY_DEFAULT};
+extern const base::Feature kWebAuthPINSupport{"WebAuthenticationPINSupport",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 extern const base::Feature kWebAuthResidentKeys{
     "WebAuthenticationResidentKeys", base::FEATURE_DISABLED_BY_DEFAULT};

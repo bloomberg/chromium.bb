@@ -23,8 +23,10 @@
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/get_assertion_request_handler.h"
 #include "device/fido/hid/fake_hid_impl_for_testing.h"
+#include "device/fido/make_credential_task.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
+#include "device/fido/u2f_command_constructor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -236,11 +238,15 @@ TEST_F(FidoGetAssertionHandlerTest, TestIncompatibleUserVerificationSetting) {
 
   auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation(
       test_data::kTestGetInfoResponseWithoutUvSupport);
+  device->ExpectRequestAndRespondWith(
+      MakeCredentialTask::GetTouchRequest(device.get()).EncodeAsCBOR(),
+      test_data::kTestMakeCredentialResponse);
 
   discovery()->AddDevice(std::move(device));
 
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_FALSE(get_assertion_callback().was_called());
+  EXPECT_EQ(FidoReturnCode::kUserConsentButCredentialNotRecognized,
+            get_assertion_callback().status());
 }
 
 TEST_F(FidoGetAssertionHandlerTest,
@@ -256,10 +262,14 @@ TEST_F(FidoGetAssertionHandlerTest,
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
   auto device = MockFidoDevice::MakeU2fWithGetInfoExpectation();
+  device->ExpectRequestAndRespondWith(
+      ConstructBogusU2fRegistrationCommand(),
+      test_data::kApduEncodedNoErrorRegisterResponse);
   discovery()->AddDevice(std::move(device));
 
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_FALSE(get_assertion_callback().was_called());
+  EXPECT_EQ(FidoReturnCode::kUserConsentButCredentialNotRecognized,
+            get_assertion_callback().status());
 }
 
 TEST_F(FidoGetAssertionHandlerTest, IncorrectRpIdHash) {

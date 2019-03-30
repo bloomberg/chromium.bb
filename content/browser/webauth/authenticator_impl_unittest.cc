@@ -520,29 +520,6 @@ TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
 }
 
-// Test that service returns NOT_ALLOWED_ERROR if user verification is REQUIRED
-// for get().
-TEST_F(AuthenticatorImplTest, GetAssertionUserVerification) {
-  SimulateNavigation(GURL(kTestOrigin1));
-  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
-  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
-      base::Time::Now(), base::TimeTicks::Now());
-  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-
-  PublicKeyCredentialRequestOptionsPtr options =
-      GetTestPublicKeyCredentialRequestOptions();
-  options->user_verification =
-      blink::mojom::UserVerificationRequirement::REQUIRED;
-  TestGetAssertionCallback callback_receiver;
-  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
-
-  // Trigger timer.
-  base::RunLoop().RunUntilIdle();
-  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
-  callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
-}
-
 // Test that MakeCredential request times out with NOT_ALLOWED_ERROR if user
 // verification is required for U2F devices.
 TEST_F(AuthenticatorImplTest, MakeCredentialUserVerification) {
@@ -3102,21 +3079,22 @@ TEST_F(InternalUVAuthenticatorImplTest, GetAssertion) {
       SCOPED_TRACE(UVToString(uv));
 
       auto options = get_credential_options(uv);
-      // UV cannot be satisfied without fingerprints.
-      const bool should_timeout =
+      // Without a fingerprint enrolled we assume that a UV=required request
+      // cannot be satisfied by an authenticator that cannot do UV. It is
+      // possible for a credential to be created without UV and then later
+      // asserted with UV=required, but that would be bizarre behaviour from
+      // an RP and we currently don't worry about it.
+      const bool should_be_unrecognized =
           !fingerprints_enrolled &&
           uv == blink::mojom::UserVerificationRequirement::REQUIRED;
-      if (should_timeout) {
-        options->adjusted_timeout = base::TimeDelta::FromMilliseconds(100);
-      }
 
       TestGetAssertionCallback callback_receiver;
       authenticator->GetAssertion(std::move(options),
                                   callback_receiver.callback());
       callback_receiver.WaitForCallback();
 
-      if (should_timeout) {
-        EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+      if (should_be_unrecognized) {
+        EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
                   callback_receiver.status());
       } else {
         EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
