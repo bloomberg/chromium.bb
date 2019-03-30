@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/gfx/geometry/rect.h"
@@ -76,6 +77,11 @@ class VIZ_COMMON_EXPORT SharedQuadState {
   // merge quads for a surface into their target render pass. It is a
   // performance optimization by avoiding render passes as much as possible.
   bool is_fast_rounded_corner = false;
+  // This is for underlay optimization and used only in the SurfaceAggregator
+  // and the OverlayProcessor. This damage rect contains union of damage from
+  // occluding surfaces and is only for quads that are the only quad in
+  // their surface. SetAll() doesn't update this data.
+  base::Optional<gfx::Rect> occluding_damage_rect;
 };
 
 }  // namespace viz

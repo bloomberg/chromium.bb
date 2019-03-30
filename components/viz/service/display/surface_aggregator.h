@@ -36,7 +36,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   SurfaceAggregator(SurfaceManager* manager,
                     DisplayResourceProvider* provider,
-                    bool aggregate_only_damaged);
+                    bool aggregate_only_damaged,
+                    bool needs_surface_occluding_damage_rect);
   ~SurfaceAggregator();
 
   CompositorFrame Aggregate(const SurfaceId& surface_id,
@@ -151,7 +152,9 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const ClipData& clip_rect,
       RenderPass* dest_render_pass,
       bool has_surface_damage,
-      const RoundedCornerInfo& rounded_corner_info);
+      const RoundedCornerInfo& rounded_corner_info,
+      const gfx::Rect& occluding_damage_rect,
+      bool occluding_damage_rect_valid);
 
   SharedQuadState* CopyAndScaleSharedQuadState(
       const SharedQuadState* source_sqs,
@@ -162,7 +165,9 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const ClipData& clip_rect,
       RenderPass* dest_render_pass,
       bool has_surface_damage,
-      const RoundedCornerInfo& rounded_corner_info);
+      const RoundedCornerInfo& rounded_corner_info,
+      const gfx::Rect& occluding_damage_rect,
+      bool occluding_damage_rect_valid);
 
   void CopyQuadsToPass(
       const QuadList& source_quad_list,
@@ -174,7 +179,10 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       RenderPass* dest_pass,
       const SurfaceId& surface_id,
       bool has_surface_damage,
-      const RoundedCornerInfo& rounded_corner_info);
+      const RoundedCornerInfo& rounded_corner_info,
+      const gfx::Rect& occluding_damage_rect,
+      bool occluding_damage_rect_valid);
+
   gfx::Rect PrewalkTree(Surface* surface,
                         bool in_moved_pixel_surface,
                         int parent_pass,
@@ -202,6 +210,18 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   gfx::Rect DamageRectForSurface(const Surface* surface,
                                  const RenderPass& source,
                                  const gfx::Rect& full_rect) const;
+  gfx::Rect CalculateOccludingSurfaceDamageRect(
+      const DrawQuad* quad,
+      const gfx::Transform& parent_quad_to_root_target_transform);
+  void UnionSurfaceDamageRectsOnTop(const gfx::Rect& surface_rect,
+                                    const gfx::Transform& target_transform,
+                                    const RenderPass* pass);
+  bool ProcessSurfaceOccludingDamage(const Surface* surface,
+                                     const RenderPassList& render_pass_list,
+                                     const gfx::Transform& target_transform,
+                                     const RenderPass* dest_pass,
+                                     gfx::Rect* occluding_damage_rect);
+  bool RenderPassNeedsFullDamage(const RenderPass* pass) const;
 
   static void UnrefResources(base::WeakPtr<SurfaceClient> surface_client,
                              const std::vector<ReturnedResource>& resources);
@@ -274,6 +294,13 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   // The root damage rect of the currently-aggregating frame.
   gfx::Rect root_damage_rect_;
+
+  // Occluding damage rect will be calculated for qualified candidates
+  const bool needs_surface_occluding_damage_rect_;
+
+  // This is the union of the damage rects of all surface on top
+  // of the current surface.
+  gfx::Rect damage_rects_union_of_surfaces_on_top_;
 
   // True if the frame that's currently being aggregated has copy requests.
   // This is valid during Aggregate after PrewalkTree is called.

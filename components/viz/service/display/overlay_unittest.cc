@@ -2485,6 +2485,8 @@ TEST_F(DCLayerOverlayTest, Occluded) {
   feature_list.InitAndEnableFeature(features::kDirectCompositionUnderlays);
   {
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
+    SharedQuadState* first_shared_state = pass->shared_quad_state_list.back();
+    first_shared_state->occluding_damage_rect = gfx::Rect(1, 1, 10, 10);
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
                        gfx::Rect(0, 3, 100, 100), SK_ColorWHITE);
@@ -2492,6 +2494,9 @@ TEST_F(DCLayerOverlayTest, Occluded) {
         resource_provider_.get(), child_resource_provider_.get(),
         child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
 
+    SharedQuadState* second_shared_state =
+        pass->CreateAndAppendSharedQuadState();
+    second_shared_state->occluding_damage_rect = gfx::Rect(1, 1, 10, 10);
     auto* second_video_quad = CreateFullscreenCandidateYUVVideoQuad(
         resource_provider_.get(), child_resource_provider_.get(),
         child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
@@ -2522,6 +2527,8 @@ TEST_F(DCLayerOverlayTest, Occluded) {
   }
   {
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
+    SharedQuadState* first_shared_state = pass->shared_quad_state_list.back();
+    first_shared_state->occluding_damage_rect = gfx::Rect(1, 1, 10, 10);
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
                        gfx::Rect(3, 3, 100, 100), SK_ColorWHITE);
@@ -2529,6 +2536,9 @@ TEST_F(DCLayerOverlayTest, Occluded) {
         resource_provider_.get(), child_resource_provider_.get(),
         child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
 
+    SharedQuadState* second_shared_state =
+        pass->CreateAndAppendSharedQuadState();
+    second_shared_state->occluding_damage_rect = gfx::Rect(1, 1, 10, 10);
     auto* second_video_quad = CreateFullscreenCandidateYUVVideoQuad(
         resource_provider_.get(), child_resource_provider_.get(),
         child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
@@ -2570,6 +2580,8 @@ TEST_F(DCLayerOverlayTest, DamageRectWithoutVideoDamage) {
   feature_list.InitAndEnableFeature(features::kDirectCompositionUnderlays);
   {
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
+    SharedQuadState* shared_quad_state = pass->shared_quad_state_list.back();
+    shared_quad_state->occluding_damage_rect = gfx::Rect(210, 210, 20, 20);
     // Occluding quad fully contained in video rect.
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
@@ -2606,6 +2618,8 @@ TEST_F(DCLayerOverlayTest, DamageRectWithoutVideoDamage) {
   }
   {
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
+    SharedQuadState* shared_quad_state = pass->shared_quad_state_list.back();
+    shared_quad_state->occluding_damage_rect = gfx::Rect(210, 210, 20, 20);
     // Occluding quad fully contained in video rect.
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
@@ -3005,9 +3019,9 @@ TEST_F(DCLayerOverlayTest, UnderlayDamageRectWithQuadOnTopUnchanged) {
 
     // The quad on top does not give damage on the third frame
     if (i == 2)
-      shared_state_on_top->has_surface_damage = false;
+      shared_state->occluding_damage_rect = gfx::Rect();
     else
-      shared_state_on_top->has_surface_damage = true;
+      shared_state->occluding_damage_rect = kOverlayBottomRightRect;
 
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
