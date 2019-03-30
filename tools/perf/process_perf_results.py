@@ -497,7 +497,8 @@ def _handle_perf_results(
   try:
     async_result = pool.map_async(
         _upload_individual_benchmark, invocations)
-    results = async_result.get(timeout=2000)
+    # TODO(crbug.com/947035): What timeout is reasonable?
+    results = async_result.get(timeout=4000)
   except mp.TimeoutError:
     logging.error('Failed uploading benchmarks to perf dashboard in parallel')
     results = []
