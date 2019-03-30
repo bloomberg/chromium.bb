@@ -132,20 +132,22 @@ void NotificationMenuView::OnNotificationRemoved(
   const auto i = NotificationIterForId(notification_id);
   if (i == notification_item_views_.end())
     return;
+  const bool removed_displayed_notification =
+      i->get() == GetDisplayedNotificationItemView();
 
-  // Erase the notification from |notification_item_views_| and
-  // |overflow_view_|.
   notification_item_views_.erase(i);
-  if (overflow_view_)
-    overflow_view_->RemoveIcon(notification_id);
   header_view_->UpdateCounter(notification_item_views_.size());
 
-  // Display the next notification.
-  auto* item = GetDisplayedNotificationItemView();
-  if (item) {
-    AddChildView(item);
-    if (overflow_view_)
-      overflow_view_->RemoveIcon(item->notification_id());
+  if (removed_displayed_notification) {
+    // Display the next notification.
+    auto* item = GetDisplayedNotificationItemView();
+    if (item) {
+      AddChildView(item);
+      if (overflow_view_)
+        overflow_view_->RemoveIcon(item->notification_id());
+    }
+  } else if (overflow_view_) {
+    overflow_view_->RemoveIcon(notification_id);
   }
 
   if (overflow_view_ && overflow_view_->is_empty()) {
