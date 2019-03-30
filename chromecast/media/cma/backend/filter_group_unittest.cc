@@ -47,9 +47,11 @@ class MockPostProcessingPipeline : public PostProcessingPipeline {
   }
 
   ~MockPostProcessingPipeline() override {}
-  MOCK_METHOD4(
-      ProcessFrames,
-      int(float* data, int num_frames, float current_volume, bool is_silence));
+  MOCK_METHOD4(ProcessFrames,
+               double(float* data,
+                      int num_frames,
+                      float current_volume,
+                      bool is_silence));
   MOCK_METHOD2(SetPostProcessorConfig,
                void(const std::string& name, const std::string& config));
   MOCK_METHOD1(SetContentType, void(AudioContentType));
@@ -59,21 +61,26 @@ class MockPostProcessingPipeline : public PostProcessingPipeline {
   float* output_buffer_;
 
  private:
-  bool SetSampleRate(int sample_rate) override { return true; }
+  bool SetOutputSampleRate(int sample_rate) override {
+    sample_rate_ = sample_rate;
+    return true;
+  }
+  int GetInputSampleRate() { return sample_rate_; }
   bool IsRinging() override { return false; }
   float* GetOutputBuffer() override { return output_buffer_; }
   int NumOutputChannels() override { return num_output_channels_; }
   int delay() { return 0; }
   std::string name() const { return "mock"; }
-  int StorePtr(float* data,
-               int num_frames,
-               float current_volume,
-               bool is_silence) {
+  double StorePtr(float* data,
+                  int num_frames,
+                  float current_volume,
+                  bool is_silence) {
     output_buffer_ = data;
     return 0;
   }
 
   const int num_output_channels_;
+  int sample_rate_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPostProcessingPipeline);
 };
@@ -90,9 +97,11 @@ class InvertChannelPostProcessor : public MockPostProcessingPipeline {
 
   ~InvertChannelPostProcessor() override {}
 
-  MOCK_METHOD4(
-      ProcessFrames,
-      int(float* data, int num_frames, float current_volume, bool is_silence));
+  MOCK_METHOD4(ProcessFrames,
+               double(float* data,
+                      int num_frames,
+                      float current_volume,
+                      bool is_silence));
   MOCK_METHOD2(SetPostProcessorConfig,
                void(const std::string& name, const std::string& config));
 
@@ -112,13 +121,19 @@ class InvertChannelPostProcessor : public MockPostProcessingPipeline {
     return 0;
   }
 
-  bool SetSampleRate(int sample_rate) override { return true; }
+  bool SetOutputSampleRate(int sample_rate) override {
+    sample_rate_ = sample_rate;
+    return true;
+  }
+  int GetInputSampleRate() override { return sample_rate_; }
+
   bool IsRinging() override { return false; }
   int delay() { return 0; }
   std::string name() const { return "invert"; }
 
   int channels_;
   int channel_to_invert_;
+  int sample_rate_;
 
   DISALLOW_COPY_AND_ASSIGN(InvertChannelPostProcessor);
 };

@@ -21,8 +21,6 @@ namespace media {
 
 namespace {
 
-const int kNoSampleRate = -1;
-
 // Used for AudioPostProcessor(1)
 const char kJsonKeyProcessor[] = "processor";
 
@@ -52,7 +50,7 @@ PostProcessingPipelineImpl::PostProcessingPipelineImpl(
     const std::string& name,
     const base::Value* filter_description_list,
     int channels)
-    : name_(name), sample_rate_(kNoSampleRate), num_output_channels_(channels) {
+    : name_(name), num_output_channels_(channels) {
   if (!filter_description_list) {
     return;  // Warning logged.
   }
@@ -110,25 +108,25 @@ PostProcessingPipelineImpl::PostProcessingPipelineImpl(
         PostProcessorInfo{factory_.CreatePostProcessor(
                               library_path, processor_config_string, channels),
                           processor_name});
-    channels = processors_.back().ptr->NumOutputChannels();
+    channels = processors_.back().ptr->GetStatus().output_channels;
   }
   num_output_channels_ = channels;
 }
 
 PostProcessingPipelineImpl::~PostProcessingPipelineImpl() = default;
 
-int PostProcessingPipelineImpl::ProcessFrames(float* data,
-                                              int num_frames,
-                                              float current_multiplier,
-                                              bool is_silence) {
-  DCHECK_NE(sample_rate_, kNoSampleRate);
+double PostProcessingPipelineImpl::ProcessFrames(float* data,
+                                                 int num_frames,
+                                                 float current_multiplier,
+                                                 bool is_silence) {
+  DCHECK_GT(input_sample_rate_, 0);
   DCHECK(data);
 
   output_buffer_ = data;
 
   if (is_silence) {
     if (!IsRinging()) {
-      return total_delay_frames_;  // Output will be silence.
+      return delay_s_;  // Output will be silence.
     }
     silence_frames_processed_ += num_frames;
   } else {
@@ -137,13 +135,16 @@ int PostProcessingPipelineImpl::ProcessFrames(float* data,
 
   UpdateCastVolume(current_multiplier);
 
-  total_delay_frames_ = 0;
+  delay_s_ = 0;
   for (auto& processor : processors_) {
-    total_delay_frames_ += processor.ptr->ProcessFrames(
-        output_buffer_, num_frames, cast_volume_, current_dbfs_);
-    output_buffer_ = processor.ptr->GetOutputBuffer();
+    processor.ptr->ProcessFrames(output_buffer_, num_frames, cast_volume_,
+                                 current_dbfs_);
+    const auto& status = processor.ptr->GetStatus();
+    delay_s_ += static_cast<double>(status.rendering_delay_frames) /
+                status.input_sample_rate;
+    output_buffer_ = status.output_buffer;
   }
-  return total_delay_frames_;
+  return delay_s_;
 }
 
 int PostProcessingPipelineImpl::NumOutputChannels() {
@@ -156,15 +157,26 @@ float* PostProcessingPipelineImpl::GetOutputBuffer() {
   return output_buffer_;
 }
 
-bool PostProcessingPipelineImpl::SetSampleRate(int sample_rate) {
-  sample_rate_ = sample_rate;
-  bool result = true;
-  for (auto& processor : processors_) {
-    result &= processor.ptr->SetSampleRate(sample_rate_);
+bool PostProcessingPipelineImpl::SetOutputSampleRate(int sample_rate) {
+  output_sample_rate_ = sample_rate;
+  input_sample_rate_ = sample_rate;
+
+  // Each Processor's output rate must be the following processor's input rate.
+  for (int i = processors_.size() - 1; i >= 0; --i) {
+    AudioPostProcessor2::Config config;
+    config.output_sample_rate = input_sample_rate_;
+    if (!processors_[i].ptr->SetConfig(config)) {
+      return false;
+    }
+    input_sample_rate_ = processors_[i].ptr->GetStatus().input_sample_rate;
   }
   ringing_time_in_frames_ = GetRingingTimeInFrames();
   silence_frames_processed_ = 0;
-  return result;
+  return true;
+}
+
+int PostProcessingPipelineImpl::GetInputSampleRate() {
+  return input_sample_rate_;
 }
 
 bool PostProcessingPipelineImpl::IsRinging() {
@@ -175,7 +187,7 @@ bool PostProcessingPipelineImpl::IsRinging() {
 int PostProcessingPipelineImpl::GetRingingTimeInFrames() {
   int memory_frames = 0;
   for (auto& processor : processors_) {
-    int ringing_time = processor.ptr->GetRingingTimeInFrames();
+    int ringing_time = processor.ptr->GetStatus().ringing_time_frames;
     if (ringing_time < 0) {
       return -1;
     }

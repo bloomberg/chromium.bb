@@ -30,6 +30,8 @@ const int kBlockSizeFrames = 256;
 
 namespace post_processor_test {
 
+using Status = AudioPostProcessor2::Status;
+
 AlignedBuffer<float> LinearChirp(int frames,
                                  const std::vector<double>& start_frequencies,
                                  const std::vector<double>& end_frequencies) {
@@ -63,38 +65,51 @@ AlignedBuffer<float> GetStereoChirp(int frames,
 }
 
 void TestDelay(AudioPostProcessor2* pp,
-               int sample_rate,
+               int output_sample_rate,
                int num_input_channels) {
-  EXPECT_TRUE(pp->SetSampleRate(sample_rate));
+  ASSERT_TRUE(pp->SetConfig({output_sample_rate}));
 
-  const int num_output_channels = pp->NumOutputChannels();
-  const int test_size_frames = kBufSizeFrames * 100;
+  const Status& status = pp->GetStatus();
+  ASSERT_GT(status.input_sample_rate, 0);
+  ASSERT_GT(status.output_channels, 0);
+  ASSERT_GE(status.rendering_delay_frames, 0);
+  ASSERT_GE(status.ringing_time_frames, 0);
+
+  const int input_size_frames = kBufSizeFrames * 100;
+  const int resample_factor = output_sample_rate / status.input_sample_rate;
+  const int output_size_frames = input_size_frames * resample_factor;
+
   AlignedBuffer<float> data_in = LinearChirp(
-      test_size_frames, std::vector<double>(num_input_channels, 0.0),
+      input_size_frames, std::vector<double>(num_input_channels, 0.0),
       std::vector<double>(num_input_channels, 1.0));
 
-  AlignedBuffer<float> data_copy = data_in;
-  AlignedBuffer<float> data_out(data_in.size());
-  int expected_delay;
-  for (int i = 0; i < test_size_frames; i += kBufSizeFrames) {
-    expected_delay = pp->ProcessFrames(&data_in[i * num_input_channels],
-                                       kBufSizeFrames, 1.0, 0.0);
-    std::memcpy(&data_out[i * num_output_channels], pp->GetOutputBuffer(),
-                kBufSizeFrames * num_output_channels * sizeof(data_out[0]));
+  AlignedBuffer<float> data_expected = LinearChirp(
+      output_size_frames, std::vector<double>(num_input_channels, 0.0),
+      std::vector<double>(num_input_channels, 1.0 / resample_factor));
+
+  AlignedBuffer<float> data_out(data_in.size() * resample_factor);
+  const int output_buf_size = kBufSizeFrames * resample_factor *
+                              status.output_channels * sizeof(data_out[0]);
+  for (int i = 0; i < input_size_frames; i += kBufSizeFrames) {
+    pp->ProcessFrames(&data_in[i * num_input_channels], kBufSizeFrames, 1.0,
+                      0.0);
+    std::memcpy(&data_out[i * status.output_channels * resample_factor],
+                status.output_buffer, output_buf_size);
   }
 
   double max_sum = 0;
   int max_idx = -1;  // index (offset), corresponding to maximum x-correlation.
   // Find the offset of maximum x-correlation of in/out.
   // Search range should be larger than post-processor's expected delay.
-  int search_range = expected_delay + kBufSizeFrames;
+  int search_range =
+      status.rendering_delay_frames * resample_factor + kBufSizeFrames;
   for (int offset = 0; offset < search_range; ++offset) {
     double sum = 0.0;
-    int upper_search_limit_frames = test_size_frames - search_range;
+    int upper_search_limit_frames = output_size_frames - search_range;
     for (int f = 0; f < upper_search_limit_frames; ++f) {
-      for (int ch = 0; ch < num_output_channels; ++ch) {
-        sum += data_copy[f * num_input_channels] *
-               data_out[(f + offset) * num_output_channels + ch];
+      for (int ch = 0; ch < status.output_channels; ++ch) {
+        sum += data_expected[f * num_input_channels] *
+               data_out[(f + offset) * status.output_channels + ch];
       }
     }
 
@@ -104,18 +119,22 @@ void TestDelay(AudioPostProcessor2* pp,
       max_idx = offset;
     }
   }
-  EXPECT_EQ(max_idx, expected_delay);
+  EXPECT_EQ(max_idx / resample_factor, status.rendering_delay_frames);
 }
 
 void TestRingingTime(AudioPostProcessor2* pp,
                      int sample_rate,
                      int num_input_channels) {
-  EXPECT_TRUE(pp->SetSampleRate(sample_rate));
+  ASSERT_TRUE(pp->SetConfig({sample_rate}));
 
-  const int num_output_channels = pp->NumOutputChannels();
+  const Status& status = pp->GetStatus();
+  ASSERT_GT(status.input_sample_rate, 0);
+  ASSERT_GT(status.output_channels, 0);
+  ASSERT_GE(status.rendering_delay_frames, 0);
+  ASSERT_GE(status.ringing_time_frames, 0);
+
   const int kNumFrames = GetMaximumFrames(sample_rate);
   const int kSinFreq = 2000;
-  int ringing_time_frames = pp->GetRingingTimeInFrames();
 
   // Send a second of data to excite the filter.
   for (int i = 0; i < sample_rate; i += kNumFrames) {
@@ -128,44 +147,51 @@ void TestRingingTime(AudioPostProcessor2* pp,
   pp->ProcessFrames(data.data(), kNumFrames, 1.0, 0.0);
 
   // Compute the amplitude of the last buffer
+  ASSERT_NE(status.output_buffer, nullptr);
   float original_amplitude =
-      SineAmplitude(pp->GetOutputBuffer(), num_input_channels * kNumFrames);
+      SineAmplitude(status.output_buffer, status.output_channels * kNumFrames);
 
   EXPECT_GE(original_amplitude, 0)
       << "Output of nonzero data is 0; cannot test ringing";
 
   // Feed |ringing_time_frames| of silence.
-  if (ringing_time_frames > 0) {
-    int frames_remaining = ringing_time_frames;
-    int frames_to_process = std::min(ringing_time_frames, kNumFrames);
-    while (frames_remaining > 0) {
-      frames_to_process = std::min(frames_to_process, frames_remaining);
-      data.assign(frames_to_process * num_input_channels, 0);
-      pp->ProcessFrames(data.data(), frames_to_process, 1.0, 0.0);
-      frames_remaining -= frames_to_process;
-    }
+  int frames_remaining = status.ringing_time_frames;
+  int frames_to_process = std::min(frames_remaining, kNumFrames);
+  while (frames_remaining > 0) {
+    frames_to_process = std::min(frames_to_process, frames_remaining);
+    data.assign(frames_to_process * num_input_channels, 0);
+    pp->ProcessFrames(data.data(), frames_to_process, 1.0, 0.0);
+    frames_remaining -= frames_to_process;
   }
 
   // Send a little more data and ensure the amplitude is < 1% the original.
-  const int probe_frames = 100;
+  const int probe_frames = 512;
   data.assign(probe_frames * num_input_channels, 0);
   pp->ProcessFrames(data.data(), probe_frames, 1.0, 0.0);
 
-  EXPECT_LE(
-      SineAmplitude(pp->GetOutputBuffer(), probe_frames * num_output_channels) /
-          original_amplitude,
-      0.01)
-      << "Output level after " << ringing_time_frames << " is more than 1%.";
+  // Only look at the amplitude of the first few frames.
+  EXPECT_LE(SineAmplitude(status.output_buffer, 10 * status.output_channels) /
+                original_amplitude,
+            0.01)
+      << "Output level after " << status.ringing_time_frames
+      << " is more than 1%.";
 }
 
 void TestPassthrough(AudioPostProcessor2* pp,
                      int sample_rate,
                      int num_input_channels) {
-  EXPECT_TRUE(pp->SetSampleRate(sample_rate));
-  const int num_output_channels = pp->NumOutputChannels();
-  ASSERT_EQ(num_output_channels, num_input_channels)
+  EXPECT_TRUE(pp->SetConfig({sample_rate}));
+
+  const Status& status = pp->GetStatus();
+  ASSERT_GT(status.input_sample_rate, 0);
+  ASSERT_GT(status.output_channels, 0);
+  ASSERT_GE(status.rendering_delay_frames, 0);
+
+  ASSERT_EQ(status.output_channels, num_input_channels)
       << "\"Passthrough\" is not well defined for "
       << "num_input_channels != num_output_channels";
+
+  ASSERT_EQ(status.input_sample_rate, sample_rate);
 
   const int kNumFrames = GetMaximumFrames(sample_rate);
   const int kSinFreq = 2000;
@@ -174,35 +200,34 @@ void TestPassthrough(AudioPostProcessor2* pp,
       GetSineData(kNumFrames, kSinFreq, sample_rate, num_input_channels);
   AlignedBuffer<float> expected(data);
 
-  int delay_frames = pp->ProcessFrames(data.data(), kNumFrames, 1.0, 0.0);
+  pp->ProcessFrames(data.data(), kNumFrames, 1.0, 0.0);
   int delayed_frames = 0;
 
-  // PostProcessors that run in dedicated threads may need to delay
-  // until they get data processed asyncronously.
-  while (delay_frames >= delayed_frames + kNumFrames) {
+  while (status.rendering_delay_frames >= delayed_frames + kNumFrames) {
     delayed_frames += kNumFrames;
     for (int i = 0; i < kNumFrames * num_input_channels; ++i) {
       EXPECT_EQ(0.0f, data[i]) << i;
     }
     data = expected;
-    delay_frames = pp->ProcessFrames(data.data(), kNumFrames, 1.0, 0.0);
+    pp->ProcessFrames(data.data(), kNumFrames, 1.0, 0.0);
 
-    ASSERT_GE(delay_frames, delayed_frames);
+    ASSERT_GE(status.rendering_delay_frames, delayed_frames);
   }
 
-  int delay_samples = (delay_frames - delayed_frames) * num_output_channels;
-  ASSERT_LE(delay_samples, num_output_channels * kNumFrames);
+  int delay_samples =
+      (status.rendering_delay_frames - delayed_frames) * status.output_channels;
+  ASSERT_LE(delay_samples, status.output_channels * kNumFrames);
 
-  const float* output_data = pp->GetOutputBuffer();
-
-  CheckArraysEqual(expected.data(), output_data + delay_samples,
+  CheckArraysEqual(expected.data(), status.output_buffer + delay_samples,
                    data.size() - delay_samples);
 }
 
 void AudioProcessorBenchmark(AudioPostProcessor2* pp,
                              int sample_rate,
                              int num_input_channels) {
-  int test_size_frames = kTestDurationSec * sample_rate;
+  ASSERT_TRUE(pp->SetConfig({sample_rate}));
+
+  int test_size_frames = kTestDurationSec * pp->GetStatus().input_sample_rate;
   // Make test_size multiple of kBlockSizeFrames and calculate effective
   // duration.
   test_size_frames -= test_size_frames % kBlockSizeFrames;

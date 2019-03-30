@@ -23,12 +23,6 @@ FilterGroup::FilterGroup(int num_channels,
                          std::unique_ptr<PostProcessingPipeline> pipeline)
     : num_channels_(num_channels),
       name_(name),
-      playout_channel_selection_(kChannelAll),
-      output_samples_per_second_(0),
-      frames_zeroed_(0),
-      last_volume_(0.0),
-      delay_frames_(0),
-      content_type_(AudioContentType::kMedia),
       post_processing_pipeline_(std::move(pipeline)) {}
 
 FilterGroup::~FilterGroup() = default;
@@ -40,7 +34,8 @@ void FilterGroup::AddMixedInput(FilterGroup* input) {
 
 void FilterGroup::Initialize(int output_samples_per_second) {
   output_samples_per_second_ = output_samples_per_second;
-  CHECK(post_processing_pipeline_->SetSampleRate(output_samples_per_second));
+  CHECK(post_processing_pipeline_->SetOutputSampleRate(
+      output_samples_per_second_));
   post_processing_pipeline_->SetContentType(content_type_);
   active_inputs_.clear();
 }
@@ -159,7 +154,7 @@ float FilterGroup::MixAndFilter(
     }
   }
 
-  delay_frames_ = post_processing_pipeline_->ProcessFrames(
+  delay_seconds_ = post_processing_pipeline_->ProcessFrames(
       interleaved_.get(), num_frames, last_volume_, is_silence);
   return last_volume_;
 }
@@ -172,8 +167,7 @@ int64_t FilterGroup::GetRenderingDelayMicroseconds() {
   if (output_samples_per_second_ == 0) {
     return 0;
   }
-  return delay_frames_ * base::Time::kMicrosecondsPerSecond /
-         output_samples_per_second_;
+  return delay_seconds_ * base::Time::kMicrosecondsPerSecond;
 }
 
 MediaPipelineBackend::AudioDecoder::RenderingDelay
