@@ -231,12 +231,13 @@ void EnableLongPressTipTriggering(base::test::ScopedFeatureList& feature_list) {
 
   // Close tools menu by tapping reload.
   [[[EarlGrey
-      selectElementWithMatcher:grey_allOf(chrome_test_util::ReloadButton(),
-                                          grey_ancestor(grey_accessibilityID(
-                                              kPopupMenuToolsMenuTableViewId)),
-                                          nil)]
+      selectElementWithMatcher:grey_allOf(
+                                   chrome_test_util::ReloadButton(),
+                                   grey_ancestor(
+                                       chrome_test_util::ToolsMenuView()),
+                                   nil)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionUp, 150)
-      onElementWithMatcher:grey_accessibilityID(kPopupMenuToolsMenuTableViewId)]
+      onElementWithMatcher:chrome_test_util::ToolsMenuView()]
       performAction:grey_tap()];
 
   // Reopen tools menu to verify that the badge does not appear again.
