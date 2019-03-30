@@ -329,13 +329,15 @@ void KeyboardEventManager::DefaultKeyboardEventHandler(
       // events that aren't necessarily arrow keys.
       DefaultArrowEventHandler(event, possible_focused_node);
     }
-  }
-  if (event->type() == event_type_names::kKeypress) {
+  } else if (event->type() == event_type_names::kKeypress) {
     frame_->GetEditor().HandleKeyboardEvent(event);
     if (event->DefaultHandled())
       return;
     if (event->charCode() == ' ')
       DefaultSpaceEventHandler(event, possible_focused_node);
+  } else if (event->type() == event_type_names::kKeyup) {
+    if (event->key() == "Enter")
+      DefaultEnterEventHandler(event);
   }
 }
 

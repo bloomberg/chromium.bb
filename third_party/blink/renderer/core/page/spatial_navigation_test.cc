@@ -5,12 +5,17 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 
 namespace blink {
 
@@ -651,6 +656,56 @@ TEST_F(SpatialNavigationTest, HasRemoteFrame) {
   webview->MainFrameImpl()->FirstChild()->Swap(
       frame_test_helpers::CreateRemote());
   EXPECT_TRUE(HasRemoteFrame(iframe));
+}
+
+class SpatialNavigationWithFocuslessModeTest
+    : public SpatialNavigationTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  SpatialNavigationWithFocuslessModeTest() : use_focusless_mode_(GetParam()) {}
+
+  void SetUp() override {
+    SpatialNavigationTest::SetUp();
+    GetDocument().GetSettings()->SetSpatialNavigationEnabled(true);
+  }
+
+ private:
+  ScopedFocuslessSpatialNavigationForTest use_focusless_mode_;
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         SpatialNavigationWithFocuslessModeTest,
+                         ::testing::Bool());
+
+TEST_P(SpatialNavigationWithFocuslessModeTest, PressEnterKeyActiveElement) {
+  SetBodyInnerHTML("<button id='b'>hello</button>");
+
+  Element* b = GetDocument().getElementById("b");
+
+  // Move interest to button.
+  WebKeyboardEvent arrow_down{WebInputEvent::kRawKeyDown,
+                              WebInputEvent::kNoModifiers,
+                              WebInputEvent::GetStaticTimeStampForTests()};
+  arrow_down.dom_key = ui::DomKey::ARROW_DOWN;
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(arrow_down);
+
+  arrow_down.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(arrow_down);
+
+  EXPECT_FALSE(b->IsActive());
+
+  // Enter key down add :active state to element.
+  WebKeyboardEvent enter{WebInputEvent::kRawKeyDown,
+                         WebInputEvent::kNoModifiers,
+                         WebInputEvent::GetStaticTimeStampForTests()};
+  enter.dom_key = ui::DomKey::ENTER;
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(enter);
+  EXPECT_TRUE(b->IsActive());
+
+  // Enter key up remove :active state to element.
+  enter.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(enter);
+  EXPECT_FALSE(b->IsActive());
 }
 
 }  // namespace blink
