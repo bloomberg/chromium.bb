@@ -8,7 +8,7 @@ import { GPUTest } from "../gpu_test.js";
 export const group = new TestGroup();
 
 for (const params of poptions("value", [0x00000001, 0x01020304])) {
-  group.testpf("basic", params, GPUTest, async (t) => {
+  group.testp("basic", params, GPUTest, async (t) => {
     const value = t.params.value;
 
     const buf = t.device.createBuffer({ size: 12, usage: 2 | 4 });

@@ -7,7 +7,7 @@ import { GPUTest } from "../gpu_test.js";
 
 export const group = new TestGroup();
 
-group.testf("empty", GPUTest, async (t) => {
+group.test("empty", GPUTest, async (t) => {
   const encoder = t.device.createCommandEncoder({})
   const cmd = encoder.finish();
   t.device.getQueue().submit([cmd]);

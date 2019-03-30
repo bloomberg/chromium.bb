@@ -13,12 +13,12 @@ import {
   TestGroup,
   FixtureCreate,
 } from "../framework/index.js";
-import { UnitTest, makeUnitTestCreate } from "./unit_test.js";
+import { DefaultFixture, makeDefaultFixtureCreate } from "../framework/default_fixture.js";
 
 export const group = new TestGroup();
 
-class ParamsTest extends UnitTest {
-  public static create: FixtureCreate<ParamsTest> = makeUnitTestCreate(ParamsTest);
+class ParamsTest extends DefaultFixture {
+  public static create: FixtureCreate<ParamsTest> = makeDefaultFixtureCreate(ParamsTest);
 
   public test(act: ParamSpecIterable, exp: IParamsSpec[]) {
     this.expect(objectEquals(Array.from(act), exp));

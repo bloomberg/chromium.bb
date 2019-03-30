@@ -1,14 +1,17 @@
 import { getGPU } from "../framework/gpu/implementation.js";
 import {
   GPUBuffer,
-  GPUDevice,
   GPUQueue,
+  GPUShaderModule,
 } from "../framework/gpu/interface.js";
 import { CaseRecorder, Fixture, FixtureCreate, IParamsAny } from "../framework/index.js";
 import Shaderc from "../../third_party/shaderc/shaderc.js"
 
 interface GPUTestOpts {
+  // TODO: update framework/gpu/ to match sketch again
+  //device: GPUDevice;
   device: any;
+  // TODO: typeify Shaderc
   shaderc: any;
 }
 
@@ -25,10 +28,9 @@ export function makeGPUTestCreate<FC extends typeof GPUTest, F extends GPUTest>(
 export class GPUTest extends Fixture {
   public static create = makeGPUTestCreate(GPUTest);
 
-  //public device: GPUDevice;
-  public device: any; // TODO: update framework/gpu/ to match sketch again
+  public device: any; // TODO: type
   public queue: GPUQueue;
-  public shaderc: any;
+  public shaderc: any; // TODO: type
 
   public constructor(log: CaseRecorder, params: IParamsAny, opts: GPUTestOpts) {
     super(log, params);
@@ -37,7 +39,7 @@ export class GPUTest extends Fixture {
     this.shaderc = opts.shaderc;
   }
 
-  public compile(type: ("f" | "v" | "c"), source: string): ArrayBuffer {
+  private compile(type: ("f" | "v" | "c"), source: string): ArrayBuffer {
     const compiler = new this.shaderc.Compiler();
     const opts = new this.shaderc.CompileOptions();
     const result = compiler.CompileGlslToSpv(source,
@@ -49,7 +51,11 @@ export class GPUTest extends Fixture {
     if (error) {
       console.warn(error);
     }
-    return result.GetBinary().slice().buffer;
+    return result.GetBinary().slice(0).buffer;
+  }
+
+  public makeShaderModule(type: ("f" | "v" | "c"), source: string): GPUShaderModule {
+    return this.device.createShaderModule({ code: this.compile(type, source) });
   }
 
   public expect(success: boolean, message: string): void {
@@ -58,10 +64,10 @@ export class GPUTest extends Fixture {
     }
   }
 
-  public async expectContents(src: GPUBuffer, expected: Uint8Array): Promise<void> {
-    const size = expected.length;
+  public async expectContents(src: GPUBuffer, expected: ArrayBufferView): Promise<void> {
+    const size = expected.buffer.byteLength;
     const dst = this.device.createBuffer({
-      size: expected.length,
+      size: expected.buffer.byteLength,
       usage: 1 | 8,
     });
 
@@ -70,11 +76,11 @@ export class GPUTest extends Fixture {
 
     this.queue.submit([c.finish()]);
 
-    const ab = await dst.mapReadAsync();
-    const actual = new Uint8Array(ab);
+    const exp = new Uint8Array(expected.buffer);
+    const actual = new Uint8Array(await dst.mapReadAsync());
     for (let i = 0; i < size; ++i) {
-      if (actual[i] !== expected[i]) {
-        this.rec.fail(`at [${i}], expected ${expected[i]}, got ${actual[i]}`);
+      if (actual[i] !== exp[i]) {
+        this.rec.fail(`at [${i}], expected ${exp[i]}, got ${actual[i]}`);
         // TODO: limit number of fail logs for one expectContents?
       }
     }

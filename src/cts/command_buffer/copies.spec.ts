@@ -9,11 +9,11 @@ import { GPUTest, makeGPUTestCreate } from "../gpu_test.js";
 export const group = new TestGroup();
 
 class CopyTest extends GPUTest {
-  public create: FixtureCreate = makeGPUTestCreate(CopyTest);
+  public static create: FixtureCreate<CopyTest> = makeGPUTestCreate(CopyTest);
 }
 
 group.test("b2b", CopyTest, async (t) => {
-  const data = new Uint32Array([0x01020304]).buffer;
+  const data = new Uint32Array([0x01020304]);
   const src = t.device.createBuffer({ size: 4, usage: 4 | 8 });
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
   src.setSubData(0, data);
@@ -26,7 +26,7 @@ group.test("b2b", CopyTest, async (t) => {
 });
 
 group.test("b2t2b", CopyTest, async (t) => {
-  const data = new Uint32Array([0x01020304]).buffer;
+  const data = new Uint32Array([0x01020304]);
   const src = t.device.createBuffer({ size: 4, usage: 4 | 8 });
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
   src.setSubData(0, data);
@@ -41,18 +41,18 @@ group.test("b2t2b", CopyTest, async (t) => {
   encoder.copyBufferToTexture(
     { buffer: src, rowPitch: 256, imageHeight: 1 },
     { texture: mid, mipLevel: 0, origin: { x: 0, y: 0, z: 0} },
-    { width: 1, height: 1, depth: 1});
+    { width: 1, height: 1, depth: 1 });
   encoder.copyTextureToBuffer(
     { texture: mid, mipLevel: 0, origin: { x: 0, y: 0, z: 0} },
     { buffer: dst, rowPitch: 256, imageHeight: 1 },
-    { width: 1, height: 1, depth: 1});
+    { width: 1, height: 1, depth: 1 });
   t.device.getQueue().submit([encoder.finish()]);
 
   await t.expectContents(dst, new Uint8Array(data));
 });
 
 group.test("b2t2t2b", CopyTest, async (t) => {
-  const data = new Uint32Array([0x01020304]).buffer;
+  const data = new Uint32Array([0x01020304]);
   const src = t.device.createBuffer({ size: 4, usage: 4 | 8 });
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
   src.setSubData(0, data);
@@ -69,15 +69,15 @@ group.test("b2t2t2b", CopyTest, async (t) => {
   encoder.copyBufferToTexture(
     { buffer: src, rowPitch: 256, imageHeight: 1 },
     { texture: mid1, mipLevel: 0, origin: { x: 0, y: 0, z: 0} },
-    { width: 1, height: 1, depth: 1});
+    { width: 1, height: 1, depth: 1 });
   encoder.copyTextureToTexture(
     { texture: mid1, mipLevel: 0, origin: { x: 0, y: 0, z: 0} },
     { texture: mid2, mipLevel: 0, origin: { x: 0, y: 0, z: 0} },
-    { width: 1, height: 1, depth: 1});
+    { width: 1, height: 1, depth: 1 });
   encoder.copyTextureToBuffer(
     { texture: mid2, mipLevel: 0, origin: { x: 0, y: 0, z: 0} },
     { buffer: dst, rowPitch: 256, imageHeight: 1 },
-    { width: 1, height: 1, depth: 1});
+    { width: 1, height: 1, depth: 1 });
   t.device.getQueue().submit([encoder.finish()]);
 
   await t.expectContents(dst, new Uint8Array(data));

@@ -86,10 +86,6 @@
 
 import { Logger } from "./out/framework/index.js";
 
-const shadercLoaded = new Promise(res => {
-  Module.onRuntimeInitialized = res;
-});
-
 const resultsVis = document.getElementById("resultsVis");
 function mkTest(path, description) {
   const test = $("<div>")
@@ -152,7 +148,6 @@ function mkCase(testcases, {name, params, run}) {
     .appendTo(testcase);
 
   const runCase = async () => {
-    await shadercLoaded;
     const res = await run();
 
     casetime.text(res.timems.toFixed(4) + " ms");

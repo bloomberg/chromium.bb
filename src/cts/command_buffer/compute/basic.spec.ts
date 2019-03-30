@@ -7,24 +7,11 @@ import { GPUTest } from "../../gpu_test.js";
 
 export const group = new TestGroup();
 
-group.testf("memcpy", GPUTest, async (t) => {
-  const data = new Uint32Array([0x01020304]).buffer;
+group.test("memcpy", GPUTest, async (t) => {
+  const data = new Uint32Array([0x01020304]);
   const src = t.device.createBuffer({ size: 4, usage: 8 | 128 });
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 128 });
   src.setSubData(0, data);
-
-  const code = t.compile("c", `#version 450
-    layout(std140, set = 0, binding = 0) buffer Src {
-      int value;
-    } src;
-    layout(std140, set = 0, binding = 1) buffer Dst {
-      int value;
-    } dst;
-
-    void main() {
-      dst.value = src.value;
-    }
-  `);
 
   const bgl = t.device.createBindGroupLayout({
     bindings: [
@@ -40,7 +27,19 @@ group.testf("memcpy", GPUTest, async (t) => {
     ],
   });
 
-  const module = t.device.createShaderModule({ code });
+
+  const module = t.makeShaderModule("c", `#version 450
+    layout(std140, set = 0, binding = 0) buffer Src {
+      int value;
+    } src;
+    layout(std140, set = 0, binding = 1) buffer Dst {
+      int value;
+    } dst;
+
+    void main() {
+      dst.value = src.value;
+    }
+  `);
   const pl = t.device.createPipelineLayout({ bindGroupLayouts: [bgl] });
   const pipeline = t.device.createComputePipeline({
     layout: pl,
