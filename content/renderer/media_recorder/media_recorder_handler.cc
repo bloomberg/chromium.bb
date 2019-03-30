@@ -26,7 +26,6 @@
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
-#include "third_party/blink/public/platform/scoped_web_callbacks.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler_client.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -110,11 +109,6 @@ AudioTrackRecorder::CodecId AudioStringToCodecId(
     return AudioTrackRecorder::CodecId::PCM;
 
   return AudioTrackRecorder::CodecId::LAST;
-}
-
-void OnEncodingInfoError(
-    std::unique_ptr<WebMediaCapabilitiesEncodingInfoCallbacks> callbacks) {
-  callbacks->OnError();
 }
 
 }  // anonymous namespace
@@ -360,9 +354,6 @@ void MediaRecorderHandler::EncodingInfo(
   DCHECK(configuration.video_configuration ||
          configuration.audio_configuration);
 
-  auto scoped_callbacks = blink::MakeScopedWebCallbacks(
-      std::move(callbacks), base::BindOnce(&OnEncodingInfoError));
-
   std::unique_ptr<blink::WebMediaCapabilitiesInfo> info(
       new blink::WebMediaCapabilitiesInfo());
 
@@ -407,7 +398,7 @@ void MediaRecorderHandler::EncodingInfo(
            << " is" << (info->supported ? " supported" : " NOT supported")
            << " and" << (info->smooth ? " smooth" : " NOT smooth");
 
-  scoped_callbacks.PassCallbacks()->OnSuccess(std::move(info));
+  callbacks->OnSuccess(std::move(info));
 }
 
 blink::WebString MediaRecorderHandler::ActualMimeType() {
