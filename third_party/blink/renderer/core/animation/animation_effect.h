@@ -188,7 +188,6 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   } calculated_;
   mutable bool needs_update_;
   mutable double last_update_time_;
-  String name_;
 
   const CalculatedTiming& EnsureCalculated() const;
 };
