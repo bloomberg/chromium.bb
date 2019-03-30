@@ -35,6 +35,8 @@ class SendTabToSelfModelMock : public TestSendTabToSelfModel {
                const SendTabToSelfEntry*(const GURL&,
                                          const std::string&,
                                          base::Time));
+
+  bool IsReady() override { return true; }
 };
 
 class TestSendTabToSelfSyncService : public SendTabToSelfSyncService {

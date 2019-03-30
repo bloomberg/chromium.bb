@@ -28,4 +28,8 @@ void TestSendTabToSelfModel::DeleteEntry(const std::string& guid) {}
 
 void TestSendTabToSelfModel::DismissEntry(const std::string& guid) {}
 
+bool TestSendTabToSelfModel::IsReady() {
+  return false;
+}
+
 }  // namespace send_tab_to_self

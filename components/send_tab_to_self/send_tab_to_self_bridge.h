@@ -76,6 +76,7 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
                                      base::Time navigation_time) override;
   void DeleteEntry(const std::string& guid) override;
   void DismissEntry(const std::string& guid) override;
+  bool IsReady() override;
 
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,

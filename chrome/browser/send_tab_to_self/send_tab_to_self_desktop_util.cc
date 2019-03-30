@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/send_tab_to_self/desktop_notification_handler.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
@@ -28,10 +29,19 @@ void CreateNewEntry(content::WebContents* tab, Profile* profile) {
   std::string title = base::UTF16ToUTF8(navigation_entry->GetTitle());
   base::Time navigation_time = navigation_entry->GetTimestamp();
 
-  const SendTabToSelfEntry* entry =
+  SendTabToSelfModel* model =
       SendTabToSelfSyncServiceFactory::GetForProfile(profile)
-          ->GetSendTabToSelfModel()
-          ->AddEntry(url, title, navigation_time);
+          ->GetSendTabToSelfModel();
+
+  UMA_HISTOGRAM_BOOLEAN("SendTabToSelf.Sync.ModelLoadedInTime",
+                        model->IsReady());
+  if (!model->IsReady()) {
+    DesktopNotificationHandler(profile).DisplayFailureMessage(url);
+    return;
+  }
+
+  const SendTabToSelfEntry* entry =
+      model->AddEntry(url, title, navigation_time);
 
   if (entry) {
     DesktopNotificationHandler(profile).DisplaySendingConfirmation(*entry);

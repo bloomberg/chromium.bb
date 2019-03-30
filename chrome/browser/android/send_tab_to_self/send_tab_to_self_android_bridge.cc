@@ -7,9 +7,12 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_client_service.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_client_service_factory.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "components/send_tab_to_self/send_tab_to_self_entry.h"
@@ -46,11 +49,17 @@ ScopedJavaLocalRef<jobject> CreateJavaSendTabToSelfEntry(
       ConvertUTF8ToJavaString(env, entry->GetDeviceName()));
 }
 
+void LogModelLoadedInTime(bool status) {
+  UMA_HISTOGRAM_BOOLEAN("SendTabToSelf.Sync.ModelLoadedInTime", status);
+}
+
 SendTabToSelfModel* GetModel(const JavaParamRef<jobject>& j_profile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
-  return SendTabToSelfSyncServiceFactory::GetInstance()
-      ->GetForProfile(profile)
-      ->GetSendTabToSelfModel();
+  SendTabToSelfModel* model = SendTabToSelfSyncServiceFactory::GetInstance()
+                                  ->GetForProfile(profile)
+                                  ->GetSendTabToSelfModel();
+  LogModelLoadedInTime(model->IsReady());
+  return model;
 }
 
 }  // namespace
@@ -60,24 +69,26 @@ static void JNI_SendTabToSelfAndroidBridge_GetAllGuids(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jobject>& j_guid_list_obj) {
-  // TODO(tgupta): Check that the model is loaded
-  // if (!send_tab_to_self_model_->loaded()())
-  //   return;
-
   SendTabToSelfModel* model = GetModel(j_profile);
-  std::vector<std::string> all_ids = model->GetAllGuids();
-  for (std::vector<std::string>::iterator it = all_ids.begin();
-       it != all_ids.end(); ++it) {
-    ScopedJavaLocalRef<jstring> j_guid = ConvertUTF8ToJavaString(env, *it);
-    Java_SendTabToSelfAndroidBridge_addToGuidList(env, j_guid_list_obj, j_guid);
+  if (model->IsReady()) {
+    std::vector<std::string> all_ids = model->GetAllGuids();
+    for (std::vector<std::string>::iterator it = all_ids.begin();
+         it != all_ids.end(); ++it) {
+      ScopedJavaLocalRef<jstring> j_guid = ConvertUTF8ToJavaString(env, *it);
+      Java_SendTabToSelfAndroidBridge_addToGuidList(env, j_guid_list_obj,
+                                                    j_guid);
+    }
   }
 }
 
 // Deletes all entries in the model.
-void JNI_SendTabToSelfAndroidBridge_DeleteAllEntries(
+static void JNI_SendTabToSelfAndroidBridge_DeleteAllEntries(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile) {
-  GetModel(j_profile)->DeleteAllEntries();
+  SendTabToSelfModel* model = GetModel(j_profile);
+  if (model->IsReady()) {
+    model->DeleteAllEntries();
+  }
 }
 
 // Adds a new entry with the specified parameters. Returns the persisted
@@ -92,8 +103,13 @@ static ScopedJavaLocalRef<jobject> JNI_SendTabToSelfAndroidBridge_AddEntry(
   const std::string title = ConvertJavaStringToUTF8(env, j_title);
   base::Time navigation_time = base::Time::FromJavaTime(j_navigation_time);
 
+  SendTabToSelfModel* model = GetModel(j_profile);
+  if (!model->IsReady()) {
+    return nullptr;
+  }
+
   const SendTabToSelfEntry* persisted_entry =
-      GetModel(j_profile)->AddEntry(GURL(url), title, navigation_time);
+      model->AddEntry(GURL(url), title, navigation_time);
 
   if (persisted_entry == nullptr) {
     return nullptr;
@@ -109,9 +125,13 @@ JNI_SendTabToSelfAndroidBridge_GetEntryByGUID(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jstring>& j_guid) {
+  SendTabToSelfModel* model = GetModel(j_profile);
+  if (!model->IsReady()) {
+    return nullptr;
+  }
+
   const std::string guid = ConvertJavaStringToUTF8(env, j_guid);
-  const SendTabToSelfEntry* found_entry =
-      GetModel(j_profile)->GetEntryByGUID(guid);
+  const SendTabToSelfEntry* found_entry = model->GetEntryByGUID(guid);
 
   if (found_entry == nullptr) {
     return nullptr;
@@ -125,8 +145,11 @@ static void JNI_SendTabToSelfAndroidBridge_DeleteEntry(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jstring>& j_guid) {
-  const std::string guid = ConvertJavaStringToUTF8(env, j_guid);
-  GetModel(j_profile)->DeleteEntry(guid);
+  SendTabToSelfModel* model = GetModel(j_profile);
+  if (model->IsReady()) {
+    const std::string guid = ConvertJavaStringToUTF8(env, j_guid);
+    model->DeleteEntry(guid);
+  }
 }
 
 // Marks the entry with the associated GUID as dismissed.
@@ -134,8 +157,11 @@ static void JNI_SendTabToSelfAndroidBridge_DismissEntry(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jstring>& j_guid) {
-  const std::string guid = ConvertJavaStringToUTF8(env, j_guid);
-  GetModel(j_profile)->DismissEntry(guid);
+  SendTabToSelfModel* model = GetModel(j_profile);
+  if (model->IsReady()) {
+    const std::string guid = ConvertJavaStringToUTF8(env, j_guid);
+    model->DismissEntry(guid);
+  }
 }
 
 // Returns whether the feature is available for the specified |profile| and
