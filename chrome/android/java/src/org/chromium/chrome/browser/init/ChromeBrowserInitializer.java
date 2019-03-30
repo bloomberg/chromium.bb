@@ -46,6 +46,7 @@ import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.content_public.browser.SpeechRecognition;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.policy.CombinedPolicyProvider;
 import org.chromium.ui.resources.ResourceExtractor;
@@ -258,6 +259,7 @@ public class ChromeBrowserInitializer {
         // Check to see if we need to extract any new resources from the APK. This could
         // be on first run when we need to extract all the .pak files we need, or after
         // the user has switched locale, in which case we want new locale resources.
+        ResourceExtractor.get().setResultTraits(UiThreadTaskTraits.BOOTSTRAP);
         ResourceExtractor.get().startExtractingResources(LocaleUtils.toLanguage(
                 ChromeLocalizationUtils.getUiLocaleStringForCompressedPak()));
 

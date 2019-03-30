@@ -426,6 +426,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
             }
         };
 
+        ResourceExtractor.get().setResultTraits(UiThreadTaskTraits.BOOTSTRAP);
         if (completionCallback == null) {
             // If no continuation callback is specified, then force the resource extraction
             // to complete.
@@ -450,6 +451,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     @Override
     public void initChromiumBrowserProcessForTests() {
         ResourceExtractor resourceExtractor = ResourceExtractor.get();
+        resourceExtractor.setResultTraits(UiThreadTaskTraits.BOOTSTRAP);
         resourceExtractor.startExtractingResources("en");
         resourceExtractor.waitForCompletion();
         nativeSetCommandLineFlags(false);
