@@ -457,7 +457,10 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* LayerById(int id) const;
   LayerImpl* ScrollableLayerByElementId(ElementId element_id) const;
 
-  bool IsElementInLayerList(ElementId element_id) const;
+  bool IsElementInPropertyTree(ElementId element_id) const;
+  void AddToElementPropertyTreeList(ElementId element_id);
+  void RemoveFromElementPropertyTreeList(ElementId element_id);
+
   void AddToElementLayerList(ElementId element_id, LayerImpl* layer);
   void RemoveFromElementLayerList(ElementId element_id);
 

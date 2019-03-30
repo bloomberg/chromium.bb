@@ -5594,10 +5594,12 @@ bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
 bool LayerTreeHostImpl::IsElementInList(ElementId element_id,
                                         ElementListType list_type) const {
   if (list_type == ElementListType::ACTIVE)
-    return active_tree() && active_tree()->IsElementInLayerList(element_id);
+    return active_tree() && active_tree()->IsElementInPropertyTree(element_id);
 
-  return (pending_tree() && pending_tree()->IsElementInLayerList(element_id)) ||
-         (recycle_tree() && recycle_tree()->IsElementInLayerList(element_id));
+  return (pending_tree() &&
+          pending_tree()->IsElementInPropertyTree(element_id)) ||
+         (recycle_tree() &&
+          recycle_tree()->IsElementInPropertyTree(element_id));
 }
 
 void LayerTreeHostImpl::SetMutatorsNeedCommit() {}

@@ -95,14 +95,14 @@ void PushElementsInPropertyTreesTo(LayerTreeType* host,
        id_iter != tree_impl->elements_in_property_trees().end();) {
     const auto& id = *(id_iter++);
     if (!host->elements_in_property_trees().count(id))
-      tree_impl->RemoveFromElementLayerList(id);
+      tree_impl->RemoveFromElementPropertyTreeList(id);
   }
 
   for (const auto& id : host->elements_in_property_trees()) {
-    if (!tree_impl->IsElementInLayerList(id)) {
+    if (!tree_impl->IsElementInPropertyTree(id)) {
       // TODO(flackr): We should expose adding element ids without a
       // layer pointer.
-      tree_impl->AddToElementLayerList(id, nullptr);
+      tree_impl->AddToElementPropertyTreeList(id);
     }
   }
 }

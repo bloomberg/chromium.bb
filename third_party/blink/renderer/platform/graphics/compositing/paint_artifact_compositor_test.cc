@@ -1042,7 +1042,12 @@ TEST_P(PaintArtifactCompositorTest, OneScrollNode) {
   CreateScrollableChunk(artifact, *scroll_translation, c0(), e0());
   artifact.Chunk(*scroll_translation, c0(), e0())
       .RectDrawing(FloatRect(-110, 12, 170, 19), Color::kWhite);
-  Update(artifact.Build());
+
+  // Scroll node ElementIds are referenced by scroll animations.
+  CompositorElementIdSet composited_element_ids;
+  Update(artifact.Build(), composited_element_ids);
+  EXPECT_EQ(1u, composited_element_ids.size());
+  EXPECT_TRUE(composited_element_ids.count(scroll_element_id));
 
   const cc::ScrollTree& scroll_tree = GetPropertyTrees().scroll_tree;
   // Node #0 reserved for null; #1 for root render surface.
