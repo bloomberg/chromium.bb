@@ -451,13 +451,13 @@ TrackEventJSONExporter::HandleLegacyEvent(const TrackEvent::LegacyEvent& event,
   auto builder = AddTraceEvent(name.c_str(), categories.c_str(), event.phase(),
                                timestamp_us, pid, tid);
 
-  if (event.bind_id() > 0) {
+  if (event.has_bind_id()) {
     builder.AddBindId(event.bind_id());
   }
-  if (event.duration_us() > 0) {
+  if (event.has_duration_us()) {
     builder.AddDuration(event.duration_us());
   }
-  if (event.thread_duration_us() > 0) {
+  if (event.has_thread_duration_us()) {
     builder.AddThreadDuration(event.thread_duration_us());
   }
 
@@ -513,10 +513,8 @@ TrackEventJSONExporter::HandleLegacyEvent(const TrackEvent::LegacyEvent& event,
     case TrackEvent::LegacyEvent::SCOPE_UNSPECIFIED:
       break;
   }
-  // If we have no flags there is nothing to do.
-  if (flags > 0) {
-    builder.AddFlags(flags, id, event.id_scope());
-  }
+  // Even if |flags==0|, we need to call AddFlags to output instant event scope.
+  builder.AddFlags(flags, id, event.id_scope());
   return builder;
 }
 }  // namespace tracing
