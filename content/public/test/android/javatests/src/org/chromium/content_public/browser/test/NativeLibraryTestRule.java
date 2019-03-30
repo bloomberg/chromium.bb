@@ -15,6 +15,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.resources.ResourceExtractor;
 
 /**
@@ -56,6 +57,7 @@ public class NativeLibraryTestRule implements TestRule {
             try {
                 // Extract compressed resource paks.
                 ResourceExtractor resourceExtractor = ResourceExtractor.get();
+                resourceExtractor.setResultTraits(UiThreadTaskTraits.BOOTSTRAP);
                 resourceExtractor.startExtractingResources("en");
                 resourceExtractor.waitForCompletion();
 
