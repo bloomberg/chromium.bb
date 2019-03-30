@@ -26,7 +26,7 @@
 #include "media/base/test_data_util.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/buildflags.h"
-#include "media/gpu/gpu_jpeg_decode_accelerator_factory.h"
+#include "media/gpu/gpu_mjpeg_decode_accelerator_factory.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
 #include "media/video/mjpeg_decode_accelerator.h"
 #include "mojo/core/embedder/embedder.h"
@@ -321,7 +321,7 @@ void JpegClient::CreateJpegDecoder() {
   decoder_ = nullptr;
 
   auto jda_factories =
-      GpuJpegDecodeAcceleratorFactory::GetAcceleratorFactories();
+      GpuMjpegDecodeAcceleratorFactory::GetAcceleratorFactories();
   if (jda_factories.empty()) {
     LOG(ERROR) << "JpegDecodeAccelerator not supported on this platform.";
     SetState(CS_ERROR);

@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "media/gpu/gpu_jpeg_decode_accelerator_factory.h"
+#include "media/gpu/gpu_mjpeg_decode_accelerator_factory.h"
 #include "media/mojo/interfaces/mjpeg_decode_accelerator.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/video/mjpeg_decode_accelerator.h"
@@ -38,7 +38,7 @@ class MEDIA_MOJO_EXPORT MojoMjpegDecodeAcceleratorService
   using DecodeCallbackMap = std::unordered_map<int32_t, DecodeCallback>;
 
   // This constructor internally calls
-  // GpuJpegDecodeAcceleratorFactory::GetAcceleratorFactories() to
+  // GpuMjpegDecodeAcceleratorFactory::GetAcceleratorFactories() to
   // fill |accelerator_factory_functions_|.
   MojoMjpegDecodeAcceleratorService();
 
@@ -62,7 +62,7 @@ class MEDIA_MOJO_EXPORT MojoMjpegDecodeAcceleratorService
   void NotifyDecodeStatus(int32_t bitstream_buffer_id,
                           ::media::MjpegDecodeAccelerator::Error error);
 
-  const std::vector<GpuJpegDecodeAcceleratorFactory::CreateAcceleratorCB>
+  const std::vector<GpuMjpegDecodeAcceleratorFactory::CreateAcceleratorCB>
       accelerator_factory_functions_;
 
   // A map from bitstream_buffer_id to DecodeCallback.

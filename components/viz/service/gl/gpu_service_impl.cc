@@ -212,7 +212,7 @@ void GpuServiceImpl::UpdateGPUInfo() {
           media::GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
               gpu_preferences_));
   gpu_info_.jpeg_decode_accelerator_supported = media::
-      GpuJpegDecodeAcceleratorFactory::IsAcceleratedJpegDecodeSupported();
+      GpuMjpegDecodeAcceleratorFactory::IsAcceleratedJpegDecodeSupported();
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
   gpu_info_.initialization_time = base::Time::Now() - start_time_;
