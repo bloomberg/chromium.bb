@@ -11,6 +11,7 @@
 #include "ash/app_list/app_list_export.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_query_history.h"
+#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
@@ -45,6 +46,7 @@ class APP_LIST_EXPORT DialogPlate
     : public views::View,
       public views::TextfieldController,
       public ash::AssistantInteractionModelObserver,
+      public ash::AssistantUiModelObserver,
       public views::ButtonListener {
  public:
   explicit DialogPlate(ash::AssistantViewDelegate* delegate);
@@ -66,6 +68,13 @@ class APP_LIST_EXPORT DialogPlate
   void OnInputModalityChanged(ash::InputModality input_modality) override;
   void OnCommittedQueryChanged(
       const ash::AssistantQuery& committed_query) override;
+
+  // ash::AssistantUiModelObserver:
+  void OnUiVisibilityChanged(
+      ash::AssistantVisibility new_visibility,
+      ash::AssistantVisibility old_visibility,
+      base::Optional<ash::AssistantEntryPoint> entry_point,
+      base::Optional<ash::AssistantExitPoint> exit_point) override;
 
   // Returns the first focusable view or nullptr to defer to views::FocusSearch.
   views::View* FindFirstFocusableView();

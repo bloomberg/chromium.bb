@@ -70,9 +70,11 @@ DialogPlate::DialogPlate(ash::AssistantViewDelegate* delegate)
 
   // The AssistantViewDelegate should outlive DialogPlate.
   delegate_->AddInteractionModelObserver(this);
+  delegate_->AddUiModelObserver(this);
 }
 
 DialogPlate::~DialogPlate() {
+  delegate_->RemoveUiModelObserver(this);
   delegate_->RemoveInteractionModelObserver(this);
 }
 
@@ -216,6 +218,17 @@ void DialogPlate::OnCommittedQueryChanged(
     const ash::AssistantQuery& committed_query) {
   DCHECK(query_history_iterator_);
   query_history_iterator_->ResetToLast();
+}
+
+void DialogPlate::OnUiVisibilityChanged(
+    ash::AssistantVisibility new_visibility,
+    ash::AssistantVisibility old_visibility,
+    base::Optional<ash::AssistantEntryPoint> entry_point,
+    base::Optional<ash::AssistantExitPoint> exit_point) {
+  // When the Assistant UI is no longer visible we need to clear the dialog
+  // plate so that text does not persist across Assistant launches.
+  if (old_visibility == ash::AssistantVisibility::kVisible)
+    textfield_->SetText(base::string16());
 }
 
 void DialogPlate::RequestFocus() {
