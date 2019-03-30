@@ -13,8 +13,10 @@ interface IRunCase {
   run: () => Promise<IResult>;
 }
 
-interface IFixtureClass<F extends Fixture> {
-  create(log: CaseRecorder, params: IParamsAny): F | Promise<F>;
+export type FixtureCreate<F extends Fixture> = (log: CaseRecorder, params: IParamsAny) => Promise<F>;
+
+interface IFixture<F extends Fixture> {
+  create: FixtureCreate<F>,
 }
 
 export abstract class Fixture {
@@ -31,59 +33,21 @@ export abstract class Fixture {
   }
 }
 
-export class DefaultFixture extends Fixture {
-  public static create(log: CaseRecorder, params: IParamsAny): DefaultFixture {
-    return new DefaultFixture(log, params);
-  }
-
-  public warn(msg?: string) {
-    this.rec.warn(msg);
-  }
-
-  public fail(msg?: string) {
-    this.rec.fail(msg);
-  }
-
-  public ok(msg?: string) {
-    if (msg) {
-      this.log("OK: " + msg);
-    } else {
-      this.log("OK");
-    }
-  }
-
-  public expect(cond: boolean, msg?: string) {
-    if (cond) {
-      this.ok(msg);
-    } else {
-      this.rec.fail(msg);
-    }
-  }
-}
-
 export class TestGroup {
   private tests: ICase[] = [];
 
   public constructor() {
   }
 
-  public testpf<F extends Fixture>(name: string,
-                                   params: IParamsSpec,
-                                   fixture: IFixtureClass<F>,
-                                   fn: TestFn<F>): void {
+  public testp<F extends Fixture>(name: string,
+                                  params: IParamsSpec,
+                                  fixture: IFixture<F>,
+                                  fn: TestFn<F>): void {
     return this.testImpl(name, params, fixture, fn);
   }
 
-  public testf<F extends Fixture>(name: string, fixture: IFixtureClass<F>, fn: TestFn<F>): void {
+  public test<F extends Fixture>(name: string, fixture: IFixture<F>, fn: TestFn<F>): void {
     return this.testImpl(name, undefined, fixture, fn);
-  }
-
-  public testp(name: string, params: IParamsSpec, fn: TestFn<DefaultFixture>): void {
-    return this.testImpl(name, params, DefaultFixture, fn);
-  }
-
-  public test(name: string, fn: TestFn<DefaultFixture>): void {
-    return this.testImpl(name, undefined, DefaultFixture, fn);
   }
 
   public * iterate(log: GroupRecorder): Iterable<IRunCase> {
@@ -105,7 +69,7 @@ export class TestGroup {
 
   private testImpl<F extends Fixture>(name: string,
                                       params: (IParamsSpec | undefined),
-                                      fixture: IFixtureClass<F>,
+                                      fixture: IFixture<F>,
                                       fn: TestFn<F>): void {
     const n = params ? (name + "/" + JSON.stringify(params)) : name;
     const p = params ? params : {};

@@ -4,38 +4,46 @@ import {
   GPUDevice,
   GPUQueue,
 } from "../framework/gpu/interface.js";
-import { CaseRecorder, Fixture, IParamsAny } from "../framework/index.js";
+import { CaseRecorder, Fixture, FixtureCreate, IParamsAny } from "../framework/index.js";
+import Shaderc from "../../third_party/shaderc/shaderc.js"
 
-export class GPUTest extends Fixture {
+interface GPUTestOpts {
+  device: any;
+  shaderc: any;
+}
 
-  // TODO: Need to get rid of this so test fixtures can be created more easily.
-  public static async create(log: CaseRecorder, params: IParamsAny) {
+export function makeGPUTestCreate<FC extends typeof GPUTest, F extends GPUTest>(fixture: FC): FixtureCreate<F> {
+  return async (log: CaseRecorder, params: IParamsAny) => {
     const gpu = await getGPU();
     const adapter = await gpu.requestAdapter();
     const device = await adapter.requestDevice({});
-    return new GPUTest(log, params, device);
-  }
-  //public device: GPUDevice;
-  public device: any; // TODO: update framework/gpu to match sketch again
-  public queue: GPUQueue;
+    const shaderc = await Shaderc;
+    return new fixture(log, params, {device, shaderc}) as F;
+  };
+}
 
-  protected constructor(log: CaseRecorder, params: IParamsAny, device: GPUDevice) {
+export class GPUTest extends Fixture {
+  public static create = makeGPUTestCreate(GPUTest);
+
+  //public device: GPUDevice;
+  public device: any; // TODO: update framework/gpu/ to match sketch again
+  public queue: GPUQueue;
+  public shaderc: any;
+
+  public constructor(log: CaseRecorder, params: IParamsAny, opts: GPUTestOpts) {
     super(log, params);
-    this.device = device;
+    this.device = opts.device;
     this.queue = this.device.getQueue();
+    this.shaderc = opts.shaderc;
   }
 
   public compile(type: ("f" | "v" | "c"), source: string): ArrayBuffer {
-    // TODO: integrate this less hackily (and make it work without index.html)
-    // @ts-ignore TS2339
-    const Shaderc: any = window.Module;
-
-    const compiler = new Shaderc.Compiler();
-    const opts = new Shaderc.CompileOptions();
+    const compiler = new this.shaderc.Compiler();
+    const opts = new this.shaderc.CompileOptions();
     const result = compiler.CompileGlslToSpv(source,
-        type === "f" ? Shaderc.shader_kind.fragment :
-        type === "v" ? Shaderc.shader_kind.vertex :
-        type === "c" ? Shaderc.shader_kind.compute : null,
+        type === "f" ? this.shaderc.shader_kind.fragment :
+        type === "v" ? this.shaderc.shader_kind.vertex :
+        type === "c" ? this.shaderc.shader_kind.compute : null,
         "a.glsl", "main", opts);
     const error = result.GetErrorMessage();
     if (error) {

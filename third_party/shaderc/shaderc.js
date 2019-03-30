@@ -1,20 +1,12 @@
-// The Module object: Our interface to the outside world. We import
-// and export values on it, and do the work to get that through
-// closure compiler if necessary. There are various ways Module can be used:
-// 1. Not defined. We create it here
-// 2. A function parameter, function(Module) { ..generated code.. }
-// 3. pre-run appended it, var Module = {}; ..generated code..
-// 4. External script tag defines var Module.
-// We need to do an eval in order to handle the closure compiler
-// case, where this code here is minified but Module was defined
-// elsewhere (e.g. case 4 above). We also need to check if Module
-// already exists (e.g. case 3 above).
-// Note that if you want to run closure, and also to use Module
-// after the generated code, you will need to define   var Module = {};
-// before the code. Then that object will be used in the code, and you
-// can continue to use Module afterwards as well.
-var Module;
-if (!Module) Module = (typeof Module !== 'undefined' ? Module : null) || {};
+let Shaderc;
+{
+const Module = {};
+
+Shaderc = new Promise(res => {
+  Module.onRuntimeInitialized = () => {
+    res(Module);
+  };
+});
 
 // Sometimes an existing Module object exists with properties
 // meant to overwrite the default module functionality. Here
@@ -1595,7 +1587,7 @@ function integrateWasmJS(Module) {
   Module['wasmJSMethod'] = method;
 
   var wasmTextFile = Module['wasmTextFile'] || 'shaderc.wast';
-  var wasmBinaryFile = Module['wasmBinaryFile'] || 'third_party/shaderc/shaderc.wasm';
+  var wasmBinaryFile = Module['wasmBinaryFile'] || 'shaderc.wasm';
   var asmjsCodeFile = Module['asmjsCodeFile'] || 'shaderc.temp.asm.js';
 
   if (typeof Module['locateFile'] === 'function') {
@@ -7983,4 +7975,5 @@ run();
 // {{MODULE_ADDITIONS}}
 
 
-
+}
+export default Shaderc;

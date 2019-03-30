@@ -5,10 +5,11 @@ Also serves as a larger test of async test functions, and of the logging system.
 `;
 
 import { Logger, TestGroup } from "../framework/index.js";
+import { UnitTest } from "./unit_test.js";
 
 export const group = new TestGroup();
 
-group.test("construct", (t) => {
+group.test("construct", UnitTest, (t) => {
   const mylog = new Logger();
   const [testres, testrec] = mylog.record("foo/bar");
   const [res1] = testrec.record("baz");
@@ -31,7 +32,7 @@ group.test("construct", (t) => {
   t.expect(res2.timems < 0);
 });
 
-group.test("empty", (t) => {
+group.test("empty", UnitTest, (t) => {
   const mylog = new Logger();
   const [, testrec] = mylog.record("");
   const [res, rec] = testrec.record("baz");
@@ -43,7 +44,7 @@ group.test("empty", (t) => {
   t.expect(res.timems >= 0);
 });
 
-group.test("pass", (t) => {
+group.test("pass", UnitTest, (t) => {
   const mylog = new Logger();
   const [, testrec] = mylog.record("");
   const [res, rec] = testrec.record("baz");
@@ -56,7 +57,7 @@ group.test("pass", (t) => {
   t.expect(res.timems >= 0);
 });
 
-group.test("warn", (t) => {
+group.test("warn", UnitTest, (t) => {
   const mylog = new Logger();
   const [, testrec] = mylog.record("");
   const [res, rec] = testrec.record("baz");
@@ -69,7 +70,7 @@ group.test("warn", (t) => {
   t.expect(res.timems >= 0);
 });
 
-group.test("fail", (t) => {
+group.test("fail", UnitTest, (t) => {
   const mylog = new Logger();
   const [, testrec] = mylog.record("");
   const [res, rec] = testrec.record("baz");

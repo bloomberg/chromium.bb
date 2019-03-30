@@ -3,12 +3,16 @@ copy{Buffer,Texture}To{Buffer,Texture} tests.
 `;
 
 import * as w from "../../framework/gpu/interface.js";
-import { TestGroup } from "../../framework/index.js";
-import { GPUTest } from "../gpu_test.js";
+import { TestGroup, FixtureCreate } from "../../framework/index.js";
+import { GPUTest, makeGPUTestCreate } from "../gpu_test.js";
 
 export const group = new TestGroup();
 
-group.testf("b2b", GPUTest, async (t) => {
+class CopyTest extends GPUTest {
+  public create: FixtureCreate = makeGPUTestCreate(CopyTest);
+}
+
+group.test("b2b", CopyTest, async (t) => {
   const data = new Uint32Array([0x01020304]).buffer;
   const src = t.device.createBuffer({ size: 4, usage: 4 | 8 });
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
@@ -21,7 +25,7 @@ group.testf("b2b", GPUTest, async (t) => {
   await t.expectContents(dst, new Uint8Array(data));
 });
 
-group.testf("b2t2b", GPUTest, async (t) => {
+group.test("b2t2b", CopyTest, async (t) => {
   const data = new Uint32Array([0x01020304]).buffer;
   const src = t.device.createBuffer({ size: 4, usage: 4 | 8 });
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
@@ -47,7 +51,7 @@ group.testf("b2t2b", GPUTest, async (t) => {
   await t.expectContents(dst, new Uint8Array(data));
 });
 
-group.testf("b2t2t2b", GPUTest, async (t) => {
+group.test("b2t2t2b", CopyTest, async (t) => {
   const data = new Uint32Array([0x01020304]).buffer;
   const src = t.device.createBuffer({ size: 4, usage: 4 | 8 });
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
