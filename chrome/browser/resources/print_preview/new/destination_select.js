@@ -18,10 +18,9 @@ Polymer({
     /** @type {!print_preview.Destination} */
     destination: Object,
 
-    /** @type {!print_preview.DestinationState} */
-    destinationState: Number,
-
     disabled: Boolean,
+
+    noDestinations: Boolean,
 
     /** @type {!Array<!print_preview.Destination>} */
     recentDestinationList: Array,
@@ -84,8 +83,7 @@ Polymer({
 
     let iconSetAndIcon = null;
     // <if expr="chromeos">
-    if (this.destinationState ===
-        print_preview.DestinationState.NO_DESTINATIONS) {
+    if (this.noDestinations) {
       iconSetAndIcon = ['cr', 'error'];
     }
     // </if>
@@ -104,12 +102,4 @@ Polymer({
   onProcessSelectChange: function(value) {
     this.fire('selected-option-change', value);
   },
-
-  // <if expr="chromeos">
-  /** @private */
-  showNoDestinations_: function() {
-    return this.destinationState ===
-        print_preview.DestinationState.NO_DESTINATIONS;
-  },
-  // </if>
 });

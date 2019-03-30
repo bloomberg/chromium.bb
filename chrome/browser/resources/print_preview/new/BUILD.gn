@@ -103,6 +103,7 @@ js_library("destination_settings") {
     ":destination_dialog",
     ":destination_select",
     ":settings_behavior",
+    ":state",
     "..:cloud_print_interface",
     "../data:destination",
     "../data:destination_store",

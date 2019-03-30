@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('print_preview');
+
+/** @enum {number} */
+print_preview.DestinationState = {
+  INIT: 0,
+  SELECTED: 1,
+  SET: 2,
+  UPDATED: 3,
+  ERROR: 4,
+};
+
 (function() {
 'use strict';
 
@@ -33,7 +44,7 @@ Polymer({
       value: null,
     },
 
-    /** @type {!print_preview.DestinationState} */
+    /** @private {!print_preview.DestinationState} */
     destinationState: {
       type: Number,
       notify: true,
@@ -42,6 +53,15 @@ Polymer({
     },
 
     disabled: Boolean,
+
+    /** @type {!print_preview_new.Error} */
+    error: {
+      type: Number,
+      notify: true,
+    },
+
+    /** @type {!print_preview_new.State} */
+    state: Number,
 
     /** @private {string} */
     activeUser_: {
@@ -67,13 +87,19 @@ Polymer({
       value: null,
     },
 
+    /** @private {boolean} */
+    noDestinations_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private {!Array<!print_preview.Destination>} */
     recentDestinationList_: Array,
 
     /** @private */
     shouldHideSpinner_: {
       type: Boolean,
-      computed: 'computeShouldHideSpinner_(destinationState)',
+      computed: 'computeShouldHideSpinner_(destinationState, destination)',
     },
 
     /** @private {string} */
@@ -180,6 +206,7 @@ Polymer({
 
     if (this.destinationState === print_preview.DestinationState.SELECTED &&
         this.destination.origin === print_preview.DestinationOrigin.COOKIES) {
+      // Adjust states if the destination is now ready to be printed to.
       this.destinationState = this.destination.capabilities ?
           print_preview.DestinationState.UPDATED :
           print_preview.DestinationState.SET;
@@ -189,8 +216,20 @@ Polymer({
 
   /** @private */
   onDestinationSelect_: function() {
-    this.destinationState = print_preview.DestinationState.SELECTED;
-    this.destination = this.destinationStore_.selectedDestination;
+    if (this.state === print_preview_new.State.FATAL_ERROR) {
+      // Don't let anything reset if there is a fatal error.
+      return;
+    }
+    const destination = this.destinationStore_.selectedDestination;
+    if (this.cloudPrintState_ === print_preview.CloudPrintState.SIGNED_IN ||
+        destination.origin !== print_preview.DestinationOrigin.COOKIES) {
+      this.destinationState = print_preview.DestinationState.SET;
+    } else {
+      this.destinationState = print_preview.DestinationState.SELECTED;
+    }
+    // Notify observers that the destination is set only after updating the
+    // destinationState.
+    this.destination = destination;
     this.updateRecentDestinations_();
     if (this.cloudPrintState_ === print_preview.CloudPrintState.ENABLED) {
       // Only try to load the docs destination for now. If this request
@@ -199,10 +238,6 @@ Polymer({
       // NOT_SIGNED_IN, so we will not do this more than once.
       this.destinationStore_.startLoadCookieDestination(
           print_preview.Destination.GooglePromotedId.DOCS);
-    }
-    if (this.cloudPrintState_ === print_preview.CloudPrintState.SIGNED_IN ||
-        this.destination.origin !== print_preview.DestinationOrigin.COOKIES) {
-      this.destinationState = print_preview.DestinationState.SET;
     }
   },
 
@@ -220,22 +255,25 @@ Polymer({
    * @private
    */
   onDestinationError_: function(e) {
+    let errorType = print_preview_new.Error.NONE;
     switch (e.detail) {
       case print_preview.DestinationErrorType.INVALID:
-        this.destinationState = print_preview.DestinationState.INVALID;
+        errorType = print_preview_new.Error.INVALID_PRINTER;
         break;
       case print_preview.DestinationErrorType.UNSUPPORTED:
-        this.destinationState = print_preview.DestinationState.UNSUPPORTED;
+        errorType = print_preview_new.Error.UNSUPPORTED_PRINTER;
         break;
       // <if expr="chromeos">
       case print_preview.DestinationErrorType.NO_DESTINATIONS:
-        this.noDestinationsFound_ = true;
-        this.destinationState = print_preview.DestinationState.NO_DESTINATIONS;
+        errorType = print_preview_new.Error.NO_DESTINATIONS;
+        this.noDestinations_ = true;
         break;
       // </if>
       default:
         break;
     }
+    this.error = errorType;
+    this.destinationState = print_preview.DestinationState.ERROR;
   },
 
   /**
@@ -329,24 +367,20 @@ Polymer({
    * @private
    */
   shouldDisableDropdown_: function() {
-    // <if expr="chromeos">
-    if (this.destinationState ===
-        print_preview.DestinationState.NO_DESTINATIONS) {
-      return true;
-    }
-    // </if>
-
-    return this.destinationState === print_preview.DestinationState.INIT ||
-        this.destinationState === print_preview.DestinationState.SELECTED ||
-        (this.disabled &&
-         (this.destinationState === print_preview.DestinationState.SET ||
-          this.destinationState === print_preview.DestinationState.UPDATED));
+    return this.state === print_preview_new.State.FATAL_ERROR ||
+        (this.destinationState === print_preview.DestinationState.UPDATED &&
+         this.disabled && this.state !== print_preview_new.State.NOT_READY);
   },
 
   /** @private */
   computeShouldHideSpinner_: function() {
-    return this.destinationState !== print_preview.DestinationState.INIT &&
-        this.destinationState !== print_preview.DestinationState.SELECTED;
+    return this.destinationState === print_preview.DestinationState.ERROR ||
+        this.destinationState === print_preview.DestinationState.UPDATED ||
+        (this.destinationState === print_preview.DestinationState.SET &&
+         !!this.destination &&
+         (!!this.destination.capabilities ||
+          this.destination.id ===
+              print_preview.Destination.GooglePromotedId.SAVE_AS_PDF));
   },
 
   /**
@@ -401,8 +435,8 @@ Polymer({
   /** @private */
   updateDestinationSelect_: function() {
     // <if expr="chromeos">
-    if (this.destinationState ===
-        print_preview.DestinationState.NO_DESTINATIONS) {
+    if (this.destinationState === print_preview.DestinationState.ERROR &&
+        !this.destination) {
       return;
     }
     // </if>
