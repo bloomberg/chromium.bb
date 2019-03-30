@@ -65,13 +65,41 @@ class JSChecker {
       bool visibility,
       std::initializer_list<base::StringPiece> element_ids);
 
+  // Waiter that waits until specified element is (not) displayed with non-zero
+  // size.
+  std::unique_ptr<TestConditionWaiter> CreateDisplayedWaiter(
+      bool displayed,
+      std::initializer_list<base::StringPiece> element_ids);
+
+  // Waiter that waits until an element is enabled or disabled.
+  std::unique_ptr<TestConditionWaiter> CreateEnabledWaiter(
+      bool enabled,
+      std::initializer_list<base::StringPiece> element_ids);
+
   // Expects that indicated UI element is not hidden.
+  // NOTE: This only checks hidden property - it might not work for elements
+  // hidden by "display: none" style.
   void ExpectVisiblePath(std::initializer_list<base::StringPiece> element_ids);
   void ExpectVisible(const std::string& element_id);
 
   // Expects that indicated UI element is hidden.
+  // NOTE: This only checks hidden property - it might not work for elements
+  // hidden by "display: none" style.
   void ExpectHiddenPath(std::initializer_list<base::StringPiece> element_ids);
   void ExpectHidden(const std::string& element_id);
+
+  // Expects that the element is displayed on screen - i.e. that it has non-null
+  // size. Unlike ExpectHidden and ExpectVisible methods, this will correctly
+  // elements with "display: none" style, but might not work for polymer module
+  // roots.
+  void ExpectPathDisplayed(bool displayed,
+                           std::initializer_list<base::StringPiece> element_id);
+
+  // Expects that the indicated UI element is disabled.
+  void ExpectDisabledPath(std::initializer_list<base::StringPiece> element_ids);
+
+  // Expects that the indicated UI element is not disabled.
+  void ExpectEnabledPath(std::initializer_list<base::StringPiece> element_ids);
 
   // Expects that indicated UI element has particular class.
   void ExpectHasClass(const std::string& css_class,
