@@ -33208,6 +33208,7 @@ from previous Chrome versions.
   <int value="-120091289" label="CrostiniAppSearch:enabled"/>
   <int value="-119055644" label="GenericSensor:enabled"/>
   <int value="-115834377" label="EnableUnifiedMultiDeviceSetup:disabled"/>
+  <int value="-114768488" label="ImmersiveFullscreen:enabled"/>
   <int value="-112459802" label="WebXrRenderPath:enabled"/>
   <int value="-110756896"
       label="NTPArticleSuggestionsExpandableHeader:enabled"/>
@@ -33705,6 +33706,7 @@ from previous Chrome versions.
   <int value="705407202" label="AutofillSaveCardImprovedUserConsent:disabled"/>
   <int value="705713283" label="EasyUnlockPromotions:disabled"/>
   <int value="709850261" label="disable-touch-editing"/>
+  <int value="710700286" label="ImmersiveFullscreen:disabled"/>
   <int value="711424932" label="enable-cloud-print-xps"/>
   <int value="715617684" label="OriginTrials:disabled"/>
   <int value="716073306" label="AssistantVoiceMatch:disabled"/>

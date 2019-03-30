@@ -2889,6 +2889,10 @@ const char kContentFullscreenDescription[] =
     "Fullscreen content window detaches from main browser window and goes to "
     "a new space without moving or changing the original browser window.";
 
+const char kImmersiveFullscreenName[] = "Immersive Fullscreen Toolbar";
+const char kImmersiveFullscreenDescription[] =
+    "Automatically hide and show the toolbar in fullscreen.";
+
 const char kHostedAppsInWindowsName[] =
     "Allow hosted apps to be opened in windows";
 const char kHostedAppsInWindowsDescription[] =
