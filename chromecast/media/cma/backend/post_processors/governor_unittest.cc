@@ -57,11 +57,11 @@ class GovernorTest : public ::testing::TestWithParam<float> {
   ~GovernorTest() = default;
   void SetUp() override {
     governor_->SetSlewTimeMsForTest(0);
-    governor_->SetSampleRate(kSampleRate);
+    governor_->SetConfig({kSampleRate});
   }
 
   void ProcessFrames(float volume) {
-    EXPECT_EQ(governor_->ProcessFrames(data_.data(), kNumFrames, volume, 0), 0);
+    governor_->ProcessFrames(data_.data(), kNumFrames, volume, 0);
   }
 
   void CompareBuffers() {

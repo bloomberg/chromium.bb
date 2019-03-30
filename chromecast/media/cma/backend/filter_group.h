@@ -112,13 +112,13 @@ class FilterGroup {
   std::vector<FilterGroup*> mixed_inputs_;
   base::flat_set<MixerInput*> active_inputs_;
 
-  int playout_channel_selection_;
-  int output_samples_per_second_;
-  int frames_zeroed_;
-  float last_volume_;
-  int64_t delay_frames_;
+  int playout_channel_selection_ = kChannelAll;
+  int output_samples_per_second_ = 0;
+  int frames_zeroed_ = 0;
+  float last_volume_ = 0.0;
+  double delay_seconds_ = 0;
   MediaPipelineBackend::AudioDecoder::RenderingDelay rendering_delay_to_output_;
-  AudioContentType content_type_;
+  AudioContentType content_type_ = AudioContentType::kMedia;
 
   // Buffers that hold audio data while it is mixed.
   // These are kept as members of this class to minimize copies and

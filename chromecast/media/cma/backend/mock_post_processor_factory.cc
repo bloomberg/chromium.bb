@@ -45,7 +45,7 @@ MockPostProcessor::MockPostProcessor(MockPostProcessorFactory* factory,
       const base::Value* delay_val = processor_config_dict->FindKeyOfType(
           "delay", base::Value::Type::INTEGER);
       CHECK(delay_val);
-      rendering_delay_ += delay_val->GetInt();
+      rendering_delay_frames_ += delay_val->GetInt();
       const base::Value* ringing_val = processor_config_dict->FindKeyOfType(
           "ringing", base::Value::Type::BOOLEAN);
       if (ringing_val) {
