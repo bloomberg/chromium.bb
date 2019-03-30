@@ -11,11 +11,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen_view.h"
 
 namespace chromeos {
-
-class RecommendAppsFetcher;
 
 // This is Recommend Apps screen that is displayed as a part of user first
 // sign-in flow.

@@ -136,28 +136,6 @@ std::unique_ptr<TestConditionWaiter> JSChecker::CreateVisibilityWaiter(
   return CreateWaiter(js_condition);
 }
 
-std::unique_ptr<TestConditionWaiter> JSChecker::CreateDisplayedWaiter(
-    bool displayed,
-    std::initializer_list<base::StringPiece> element_ids) {
-  const std::string element_path = GetOobeElementPath(element_ids);
-  std::string js_condition = element_path + ".offsetWidth > 0 && " +
-                             element_path + ".offsetHeight > 0";
-  if (!displayed) {
-    js_condition = "!(" + js_condition + ")";
-  }
-  return CreateWaiter(js_condition);
-}
-
-std::unique_ptr<TestConditionWaiter> JSChecker::CreateEnabledWaiter(
-    bool enabled,
-    std::initializer_list<base::StringPiece> element_ids) {
-  std::string js_condition = GetOobeElementPath(element_ids) + ".disabled";
-  if (enabled) {
-    js_condition = "!(" + js_condition + ")";
-  }
-  return CreateWaiter(js_condition);
-}
-
 void JSChecker::GetBoolImpl(const std::string& expression, bool* result) {
   CHECK(web_contents_);
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -200,28 +178,6 @@ void JSChecker::ExpectHiddenPath(
 
 void JSChecker::ExpectHidden(const std::string& element_id) {
   ExpectHiddenPath({element_id});
-}
-
-void JSChecker::ExpectPathDisplayed(
-    bool displayed,
-    std::initializer_list<base::StringPiece> element_ids) {
-  const std::string element_path = GetOobeElementPath(element_ids);
-  std::string js_condition = element_path + ".offsetWidth > 0 && " +
-                             element_path + ".offsetHeight > 0";
-  if (!displayed) {
-    js_condition = "!(" + js_condition + ")";
-  }
-  ExpectTrue(js_condition);
-}
-
-void JSChecker::ExpectDisabledPath(
-    std::initializer_list<base::StringPiece> element_ids) {
-  ExpectTrue(GetOobeElementPath(element_ids) + ".disabled");
-}
-
-void JSChecker::ExpectEnabledPath(
-    std::initializer_list<base::StringPiece> element_ids) {
-  ExpectFalse(GetOobeElementPath(element_ids) + ".disabled");
 }
 
 void JSChecker::ExpectHasClass(
