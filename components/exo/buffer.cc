@@ -68,7 +68,7 @@ class Buffer::Texture : public ui::ContextFactoryObserver {
 
   // Allow texture to be reused after |sync_token| has passed and runs
   // |callback|.
-  void Release(const base::Closure& callback,
+  void Release(base::OnceClosure callback,
                const gpu::SyncToken& sync_token,
                bool is_lost);
 
@@ -80,22 +80,21 @@ class Buffer::Texture : public ui::ContextFactoryObserver {
 
   // Releases the contents referenced by |mailbox_| after |sync_token| has
   // passed and runs |callback| when completed.
-  void ReleaseSharedImage(const base::Closure& callback,
+  void ReleaseSharedImage(base::OnceClosure callback,
                           const gpu::SyncToken& sync_token,
                           bool is_lost);
 
   // Copy the contents of texture to |destination| and runs |callback| when
   // completed. Returns a sync token that can be used when accessing texture
   // from a different context.
-  gpu::SyncToken CopyTexImage(Texture* destination,
-                              const base::Closure& callback);
+  gpu::SyncToken CopyTexImage(Texture* destination, base::OnceClosure callback);
 
   // Returns the mailbox for this texture.
   gpu::Mailbox mailbox() const { return mailbox_; }
 
  private:
   void DestroyResources();
-  void ReleaseWhenQueryResultIsAvailable(const base::Closure& callback);
+  void ReleaseWhenQueryResultIsAvailable(base::OnceClosure callback);
   void Released();
   void ScheduleWaitForRelease(base::TimeDelta delay);
   void WaitForRelease();
@@ -108,7 +107,7 @@ class Buffer::Texture : public ui::ContextFactoryObserver {
   const unsigned query_type_;
   unsigned query_id_ = 0;
   gpu::Mailbox mailbox_;
-  base::Closure release_callback_;
+  base::OnceClosure release_callback_;
   const base::TimeDelta wait_for_release_delay_;
   base::TimeTicks wait_for_release_time_;
   bool wait_for_release_pending_ = false;
@@ -194,7 +193,7 @@ bool Buffer::Texture::IsLost() {
   return true;
 }
 
-void Buffer::Texture::Release(const base::Closure& callback,
+void Buffer::Texture::Release(base::OnceClosure callback,
                               const gpu::SyncToken& sync_token,
                               bool is_lost) {
   if (context_provider_) {
@@ -206,7 +205,7 @@ void Buffer::Texture::Release(const base::Closure& callback,
 
   // Run callback as texture can be reused immediately after waiting for sync
   // token.
-  callback.Run();
+  std::move(callback).Run();
 }
 
 gpu::SyncToken Buffer::Texture::UpdateSharedImage() {
@@ -226,7 +225,7 @@ gpu::SyncToken Buffer::Texture::UpdateSharedImage() {
   return sync_token;
 }
 
-void Buffer::Texture::ReleaseSharedImage(const base::Closure& callback,
+void Buffer::Texture::ReleaseSharedImage(base::OnceClosure callback,
                                          const gpu::SyncToken& sync_token,
                                          bool is_lost) {
   if (context_provider_) {
@@ -240,15 +239,15 @@ void Buffer::Texture::ReleaseSharedImage(const base::Closure& callback,
     // token has data and buffer has been used. If buffer was never used then
     // run the callback immediately.
     if (sync_token.HasData()) {
-      ReleaseWhenQueryResultIsAvailable(callback);
+      ReleaseWhenQueryResultIsAvailable(std::move(callback));
       return;
     }
   }
-  callback.Run();
+  std::move(callback).Run();
 }
 
 gpu::SyncToken Buffer::Texture::CopyTexImage(Texture* destination,
-                                             const base::Closure& callback) {
+                                             base::OnceClosure callback) {
   gpu::SyncToken sync_token;
   if (context_provider_) {
     DCHECK(!mailbox_.IsZero());
@@ -261,7 +260,7 @@ gpu::SyncToken Buffer::Texture::CopyTexImage(Texture* destination,
                        size_.height());
     ri->EndQueryEXT(query_type_);
     // Run callback when query result is available.
-    ReleaseWhenQueryResultIsAvailable(callback);
+    ReleaseWhenQueryResultIsAvailable(std::move(callback));
     // Create and return a sync token that can be used to ensure that the
     // CopyTextureCHROMIUM call is processed before issuing any commands
     // that will read from the target texture on a different context.
@@ -283,10 +282,10 @@ void Buffer::Texture::DestroyResources() {
 }
 
 void Buffer::Texture::ReleaseWhenQueryResultIsAvailable(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK(context_provider_);
   DCHECK(release_callback_.is_null());
-  release_callback_ = callback;
+  release_callback_ = std::move(callback);
   wait_for_release_time_ = base::TimeTicks::Now() + wait_for_release_delay_;
   ScheduleWaitForRelease(wait_for_release_delay_);
   TRACE_EVENT_ASYNC_STEP_INTO0("exo", kBufferInUse, gpu_memory_buffer_,
@@ -298,7 +297,7 @@ void Buffer::Texture::ReleaseWhenQueryResultIsAvailable(
 
 void Buffer::Texture::Released() {
   if (!release_callback_.is_null())
-    base::ResetAndReturn(&release_callback_).Run();
+    std::move(release_callback_).Run();
 }
 
 void Buffer::Texture::ScheduleWaitForRelease(base::TimeDelta delay) {
@@ -326,7 +325,7 @@ void Buffer::Texture::WaitForRelease() {
     return;
   }
 
-  base::Closure callback = base::ResetAndReturn(&release_callback_);
+  base::OnceClosure callback = std::move(release_callback_);
 
   if (context_provider_) {
     TRACE_EVENT0("exo", "Buffer::Texture::WaitForQueryResult");
@@ -339,7 +338,7 @@ void Buffer::Texture::WaitForRelease() {
     ri->GetQueryObjectuivEXT(query_id_, GL_QUERY_RESULT_EXT, &result);
   }
 
-  callback.Run();
+  std::move(callback).Run();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -417,7 +416,7 @@ bool Buffer::ProduceTransferableResource(
 
   // Cancel pending contents release callback.
   release_contents_callback_.Reset(
-      base::Bind(&Buffer::ReleaseContents, base::Unretained(this)));
+      base::BindOnce(&Buffer::ReleaseContents, base::Unretained(this)));
 
   // Zero-copy means using the contents texture directly.
   if (use_zero_copy_) {
@@ -434,9 +433,9 @@ bool Buffer::ProduceTransferableResource(
         resource->id,
         base::BindOnce(&Buffer::Texture::ReleaseSharedImage,
                        base::Unretained(contents_texture),
-                       base::Bind(&Buffer::ReleaseContentsTexture, AsWeakPtr(),
-                                  base::Passed(&contents_texture_),
-                                  release_contents_callback_.callback())));
+                       base::BindOnce(&Buffer::ReleaseContentsTexture,
+                                      AsWeakPtr(), std::move(contents_texture_),
+                                      release_contents_callback_.callback())));
     return true;
   }
 
@@ -451,9 +450,9 @@ bool Buffer::ProduceTransferableResource(
   // texture mailbox from the result in |texture|. The contents texture will
   // be released when copy has completed.
   gpu::SyncToken sync_token = contents_texture->CopyTexImage(
-      texture, base::Bind(&Buffer::ReleaseContentsTexture, AsWeakPtr(),
-                          base::Passed(&contents_texture_),
-                          release_contents_callback_.callback()));
+      texture, base::BindOnce(&Buffer::ReleaseContentsTexture, AsWeakPtr(),
+                              std::move(contents_texture_),
+                              release_contents_callback_.callback()));
   resource->mailbox_holder =
       gpu::MailboxHolder(texture->mailbox(), sync_token, GL_TEXTURE_2D);
   resource->is_overlay_candidate = false;
@@ -463,8 +462,8 @@ bool Buffer::ProduceTransferableResource(
   resource_manager->SetResourceReleaseCallback(
       resource->id,
       base::BindOnce(&Buffer::Texture::Release, base::Unretained(texture),
-                     base::Bind(&Buffer::ReleaseTexture, AsWeakPtr(),
-                                base::Passed(&texture_))));
+                     base::BindOnce(&Buffer::ReleaseTexture, AsWeakPtr(),
+                                    std::move(texture_))));
   return true;
 }
 
@@ -512,9 +511,9 @@ void Buffer::ReleaseTexture(std::unique_ptr<Texture> texture) {
 }
 
 void Buffer::ReleaseContentsTexture(std::unique_ptr<Texture> texture,
-                                    const base::Closure& callback) {
+                                    base::OnceClosure callback) {
   contents_texture_ = std::move(texture);
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void Buffer::ReleaseContents() {
