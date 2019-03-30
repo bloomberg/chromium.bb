@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
 
-#include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher.h"
-
 namespace chromeos {
 
 RecommendAppsScreen::RecommendAppsScreen(
@@ -30,8 +28,7 @@ RecommendAppsScreen::~RecommendAppsScreen() {
 void RecommendAppsScreen::Show() {
   view_->Show();
 
-  recommend_apps_fetcher_ = RecommendAppsFetcher::Create(view_);
-  recommend_apps_fetcher_->Start();
+  recommend_apps_fetcher_ = std::make_unique<RecommendAppsFetcher>(view_);
 }
 
 void RecommendAppsScreen::Hide() {
