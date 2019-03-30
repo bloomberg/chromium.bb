@@ -90,6 +90,8 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
     }
   };
 
+  bool SweepLegacyDescendants(HashSet<const LayoutObject*>* placed_objects);
+
   ContainingBlockInfo GetContainingBlockInfo(
       const NGOutOfFlowPositionedDescendant&) const;
 

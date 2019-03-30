@@ -332,13 +332,17 @@ void LayoutInline::StyleDidChange(StyleDifference diff,
     }
   }
 
+  bool old_style_is_containing_block =
+      old_style && (old_style->CanContainAbsolutePositionObjects() ||
+                    old_style->HasFilter());
+  bool new_style_is_containing_block =
+      old_style &&
+      (new_style.CanContainAbsolutePositionObjects() || new_style.HasFilter());
   // If we are changing to/from static, we need to reposition
   // out-of-flow positioned descendants.
-  if (old_style && old_style->GetPosition() != new_style.GetPosition() &&
-      (new_style.GetPosition() == EPosition::kStatic ||
-       old_style->GetPosition() == EPosition::kStatic)) {
+  if (old_style_is_containing_block != new_style_is_containing_block) {
     LayoutBlock* abs_containing_block = nullptr;
-    if (old_style->GetPosition() == EPosition::kStatic) {
+    if (!old_style_is_containing_block) {
       abs_containing_block = ContainingBlockForAbsolutePosition();
     } else {
       // When position was not static, containingBlockForAbsolutePosition
