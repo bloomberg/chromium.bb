@@ -7,9 +7,11 @@
 #include <dlfcn.h>
 
 #include "base/android/build_info.h"
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gfx/color_space.h"
 
 extern "C" {
@@ -99,6 +101,8 @@ using pASurfaceTransactionStats_getPreviousReleaseFenceFd =
 
 namespace gl {
 namespace {
+
+base::AtomicSequenceNumber g_next_transaction_id;
 
 // Helper function to log errors from dlsym. Calling LOG(ERROR) inside a macro
 // crashes clang code coverage. https://crbug.com/843356
@@ -257,6 +261,7 @@ SurfaceControl::TransactionStats ToTransactionStats(
 }
 
 struct TransactionAckCtx {
+  int id = 0;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   SurfaceControl::Transaction::OnCompleteCb callback;
 };
@@ -276,6 +281,7 @@ void OnTransactionCompletedOnAnyThread(void* context,
     std::move(ack_ctx->callback).Run(std::move(transaction_stats));
   }
 
+  TRACE_EVENT_ASYNC_END0("gpu", "SurfaceControlTransaction", ack_ctx->id);
   delete ack_ctx;
 }
 }  // namespace
@@ -331,13 +337,34 @@ SurfaceControl::TransactionStats::TransactionStats(TransactionStats&& other) =
 SurfaceControl::TransactionStats& SurfaceControl::TransactionStats::operator=(
     TransactionStats&& other) = default;
 
-SurfaceControl::Transaction::Transaction() {
+SurfaceControl::Transaction::Transaction()
+    : id_(g_next_transaction_id.GetNext()) {
   transaction_ = SurfaceControlMethods::Get().ASurfaceTransaction_createFn();
   DCHECK(transaction_);
 }
 
 SurfaceControl::Transaction::~Transaction() {
-  SurfaceControlMethods::Get().ASurfaceTransaction_deleteFn(transaction_);
+  if (transaction_)
+    SurfaceControlMethods::Get().ASurfaceTransaction_deleteFn(transaction_);
+}
+
+SurfaceControl::Transaction::Transaction(Transaction&& other)
+    : id_(other.id_), transaction_(other.transaction_) {
+  other.transaction_ = nullptr;
+  other.id_ = 0;
+}
+
+SurfaceControl::Transaction& SurfaceControl::Transaction::operator=(
+    Transaction&& other) {
+  if (transaction_)
+    SurfaceControlMethods::Get().ASurfaceTransaction_deleteFn(transaction_);
+
+  transaction_ = other.transaction_;
+  id_ = other.id_;
+
+  other.transaction_ = nullptr;
+  other.id_ = 0;
+  return *this;
 }
 
 void SurfaceControl::Transaction::SetVisibility(const Surface& surface,
@@ -396,12 +423,14 @@ void SurfaceControl::Transaction::SetOnCompleteCb(
   TransactionAckCtx* ack_ctx = new TransactionAckCtx;
   ack_ctx->callback = std::move(cb);
   ack_ctx->task_runner = std::move(task_runner);
+  ack_ctx->id = id_;
 
   SurfaceControlMethods::Get().ASurfaceTransaction_setOnCompleteFn(
       transaction_, ack_ctx, &OnTransactionCompletedOnAnyThread);
 }
 
 void SurfaceControl::Transaction::Apply() {
+  TRACE_EVENT_ASYNC_BEGIN0("gpu", "SurfaceControlTransaction", id_);
   SurfaceControlMethods::Get().ASurfaceTransaction_applyFn(transaction_);
 }
 

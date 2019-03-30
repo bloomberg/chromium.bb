@@ -161,13 +161,20 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
       std::move(present_callback), std::move(resources_to_release));
   pending_transaction_->SetOnCompleteCb(std::move(callback), gpu_task_runner_);
 
-  pending_transaction_acks_++;
-  pending_transaction_->Apply();
-  pending_transaction_.reset();
-
-  DCHECK_GE(surface_list_.size(), pending_surfaces_count_);
+  // Cache only those surfaces which were used in this transaction. The surfaces
+  // removed here are persisted in |resources_to_release| so we can release
+  // them after receiving read fences from the framework.
   surface_list_.resize(pending_surfaces_count_);
   pending_surfaces_count_ = 0u;
+
+  if (transaction_ack_pending_) {
+    pending_transaction_queue_.push(std::move(pending_transaction_).value());
+  } else {
+    transaction_ack_pending_ = true;
+    pending_transaction_->Apply();
+  }
+
+  pending_transaction_.reset();
 }
 
 gfx::Size GLSurfaceEGLSurfaceControl::GetSize() {
@@ -311,9 +318,9 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
     ResourceRefs released_resources,
     SurfaceControl::TransactionStats transaction_stats) {
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
-  DCHECK_GT(pending_transaction_acks_, 0u);
+  DCHECK(transaction_ack_pending_);
 
-  pending_transaction_acks_--;
+  transaction_ack_pending_ = false;
 
   // The presentation feedback callback must run after swap completion.
   std::move(completion_callback).Run(gfx::SwapResult::SWAP_ACK, nullptr);
@@ -351,6 +358,12 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
   // which were updated in that transaction, the surfaces with no buffer updates
   // won't be present in the ack.
   released_resources.clear();
+
+  if (!pending_transaction_queue_.empty()) {
+    transaction_ack_pending_ = true;
+    pending_transaction_queue_.front().Apply();
+    pending_transaction_queue_.pop();
+  }
 }
 
 GLSurfaceEGLSurfaceControl::SurfaceState::SurfaceState(
