@@ -146,7 +146,7 @@ MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::Create(
   // Use the first audio track in the media stream.
   MediaStreamTrack* audio_track = audio_tracks[0];
   std::unique_ptr<AudioSourceProvider> provider =
-      audio_track->CreateWebAudioSource();
+      audio_track->CreateWebAudioSource(context.sampleRate());
 
   MediaStreamAudioSourceNode* node =
       MakeGarbageCollected<MediaStreamAudioSourceNode>(

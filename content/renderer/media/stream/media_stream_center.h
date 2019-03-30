@@ -40,7 +40,8 @@ class CONTENT_EXPORT MediaStreamCenter : public blink::WebMediaStreamCenter {
       const blink::WebMediaStreamTrack& track) override;
 
   blink::WebAudioSourceProvider* CreateWebAudioSourceFromMediaStreamTrack(
-      const blink::WebMediaStreamTrack& track) override;
+      const blink::WebMediaStreamTrack& track,
+      int context_sample_rate) override;
 
   void DidStopMediaStreamSource(
       const blink::WebMediaStreamSource& web_source) override;

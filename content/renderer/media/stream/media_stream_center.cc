@@ -180,7 +180,8 @@ void MediaStreamCenter::DidDisableMediaStreamTrack(
 
 blink::WebAudioSourceProvider*
 MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
-    const blink::WebMediaStreamTrack& track) {
+    const blink::WebMediaStreamTrack& track,
+    int context_sample_rate) {
   DVLOG(1) << "MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack";
   blink::WebPlatformMediaStreamTrack* media_stream_track =
       track.GetPlatformTrack();
@@ -195,7 +196,7 @@ MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
   // TODO(tommi): Rename WebRtcLocalAudioSourceProvider to
   // WebAudioMediaStreamSink since it's not specific to any particular source.
   // https://crbug.com/577874
-  return new WebRtcLocalAudioSourceProvider(track);
+  return new WebRtcLocalAudioSourceProvider(track, context_sample_rate);
 }
 
 void MediaStreamCenter::DidStopMediaStreamSource(
