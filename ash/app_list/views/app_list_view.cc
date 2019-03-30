@@ -460,36 +460,15 @@ void AppListView::Dismiss() {
   GetWidget()->Deactivate();
 }
 
-bool AppListView::HandleCloseOpenFolder() {
+bool AppListView::CloseOpenedPage() {
   if (!app_list_main_view_)
     return false;
 
-  if (GetAppsContainerView()->IsInFolderView()) {
-    GetAppsContainerView()->app_list_folder_view()->CloseFolderPage();
-    return true;
+  if (app_list_main_view_->contents_view()->IsShowingSearchResults() ||
+      GetAppsContainerView()->IsInFolderView()) {
+    return app_list_main_view_->contents_view()->Back();
   }
   return false;
-}
-
-bool AppListView::HandleCloseOpenSearchBox() {
-  if (!app_list_main_view_)
-    return false;
-
-  if (app_list_main_view_->contents_view()->IsShowingSearchResults()) {
-    Back();
-    return true;
-  }
-  return false;
-}
-
-void AppListView::CloseOpenedPage() {
-  if (!app_list_main_view_)
-    return;
-
-  if (HandleCloseOpenFolder())
-    return;
-
-  HandleCloseOpenSearchBox();
 }
 
 void AppListView::Back() {

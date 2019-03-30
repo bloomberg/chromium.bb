@@ -230,32 +230,21 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
   }
 
   aura::Window* window = view_->GetWidget()->GetNativeView()->parent();
+  if (!window->Contains(target) && !presenter_->CloseOpenedPage() &&
+      !app_list::switches::ShouldNotDismissOnBlur() && !IsTabletMode()) {
+    const aura::Window* status_window =
+        shelf->shelf_widget()->status_area_widget()->GetNativeWindow();
+    const aura::Window* shelf_window = shelf->shelf_widget()->GetNativeWindow();
+    // Don't dismiss the auto-hide shelf if event happened in status area. Then
+    // the event can still be propagated to the status area tray to open the
+    // corresponding tray bubble.
+    base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
+    if (status_window && status_window->Contains(target))
+      auto_hide_lock.emplace(shelf);
 
-  if (!window->Contains(target)) {
-    // If app list has an opened folder, close it and keep app list open.
-    if (presenter_->HandleCloseOpenFolder())
-      return;
-    // If app list has an opened search box close it only in tablet mode.
-    if (IsTabletMode() && presenter_->HandleCloseOpenSearchBox())
-      return;
-
-    if (!app_list::switches::ShouldNotDismissOnBlur() && !IsTabletMode()) {
-      const aura::Window* status_window =
-          shelf->shelf_widget()->status_area_widget()->GetNativeWindow();
-      const aura::Window* shelf_window =
-          shelf->shelf_widget()->GetNativeWindow();
-      // Don't dismiss the auto-hide shelf if event happened in status area.
-      // Then the event can still be propagated to the status area tray to open
-      // the corresponding tray bubble.
-      base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
-      if (status_window && status_window->Contains(target))
-        auto_hide_lock.emplace(shelf);
-
-      // Keep app list opened if event happened in the shelf area.
-      if (!shelf_window || !shelf_window->Contains(target))
-        presenter_->Dismiss(event->time_stamp());
-      return;
-    }
+    // Keep app list opened if event happened in the shelf area.
+    if (!shelf_window || !shelf_window->Contains(target))
+      presenter_->Dismiss(event->time_stamp());
   }
 
   if (IsTabletMode() && presenter_->IsShowingEmbeddedAssistantUI()) {
