@@ -59,6 +59,7 @@ include_rules = [
   "+chromeos/audio",
   "+chromeos/components/multidevice/logging/logging.h",
   "+chromeos/constants",
+  "+chromeos/dbus/biod/biod_client.h",
   "+chromeos/dbus/dbus_thread_manager.h",
   "+chromeos/dbus/fake_power_manager_client.h",
   "+chromeos/dbus/hammerd",
