@@ -187,7 +187,6 @@
       'Libfuzzer Upload Windows ASan': 'libfuzzer_windows_asan_release_bot',
       'MSAN Release (chained origins)': 'msan_release_bot',
       'MSAN Release (no origins)': 'msan_no_origins_release_bot',
-      'Mac ASAN Debug': 'asan_disable_nacl_v8_heap_debug_bot',
       'Mac ASAN Release Media': 'asan_disable_nacl_fuzzer_v8_heap_chrome_with_codecs_release_bot',
       'Mac ASAN Release': 'asan_disable_nacl_fuzzer_v8_heap_release_bot',
       'TSAN Debug': 'tsan_disable_nacl_debug_bot',
@@ -436,7 +435,6 @@
       'ChromiumOS ASAN Release': 'chromeos_asan_lsan_fuzzer_v8_heap_release_bot',
       'MSAN Release (chained origins)': 'msan_release_bot',
       'MSAN Release (no origins)': 'msan_no_origins_release_bot',
-      'Mac ASAN Debug': 'asan_disable_nacl_v8_heap_debug_bot',
       'Mac ASAN Release Media': 'asan_disable_nacl_fuzzer_v8_heap_chrome_with_codecs_release_bot',
       'Mac ASAN Release': 'asan_disable_nacl_fuzzer_v8_heap_release_bot',
       'TSAN Debug': 'tsan_disable_nacl_debug_bot',
@@ -1102,10 +1100,6 @@
 
     'asan_disable_nacl_fuzzer_v8_heap_chrome_with_codecs_release_bot': [
       'asan', 'disable_nacl', 'fuzzer', 'v8_heap', 'chrome_with_codecs', 'release_bot',
-    ],
-
-    'asan_disable_nacl_v8_heap_debug_bot': [
-      'asan', 'disable_nacl', 'v8_heap', 'debug_bot',
     ],
 
     'asan_disable_nacl_fuzzer_v8_heap_release_bot': [
