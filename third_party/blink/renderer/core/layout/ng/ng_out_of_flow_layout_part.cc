@@ -150,24 +150,43 @@ void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
   LayoutDescendantCandidates(&descendant_candidates, only_layout,
                              &placed_objects);
 
-  // Gather candidates that weren't present in the OOF candidates list.
-  // This occurs when a candidate is separated from container by a legacy node.
-  // E.g.
-  // <div style="position: relative;">
-  //   <div style="display: flex;">
-  //     <div style="position: absolute;"></div>
-  //   </div>
-  // </div>
+  if (only_layout)
+    return;
+
+  while (SweepLegacyDescendants(&placed_objects)) {
+    container_builder_->GetAndClearOutOfFlowDescendantCandidates(
+        &descendant_candidates, current_container);
+
+    // We must have at least one new candidate, otherwise we shouldn't have
+    // entered this branch.
+    DCHECK_GT(descendant_candidates.size(), 0u);
+
+    LayoutDescendantCandidates(&descendant_candidates, only_layout,
+                               &placed_objects);
+  }
+}
+
+// Gather candidates that weren't present in the OOF candidates list.
+// This occurs when a candidate is separated from container by a legacy node.
+// E.g.
+// <div style="position: relative;">
+//   <div style="display: flex;">
+//     <div style="position: absolute;"></div>
+//   </div>
+// </div>
+// Returns false if no new candidates were found.
+bool NGOutOfFlowLayoutPart::SweepLegacyDescendants(
+    HashSet<const LayoutObject*>* placed_objects) {
   const LayoutBlock* container_block =
       ToLayoutBlockOrNull(container_builder_->GetLayoutObject());
-  if (!container_block || only_layout)
-    return;
+  if (!container_block)
+    return false;
   TrackedLayoutBoxListHashSet* legacy_objects =
       container_block->PositionedObjects();
-  if (!legacy_objects || legacy_objects->size() == placed_objects.size())
-    return;
+  if (!legacy_objects || legacy_objects->size() == placed_objects->size())
+    return false;
   for (LayoutObject* legacy_object : *legacy_objects) {
-    if (placed_objects.Contains(legacy_object))
+    if (placed_objects->Contains(legacy_object))
       continue;
 
     // Flex OOF children may have center alignment or similar, and in order
@@ -203,16 +222,7 @@ void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
         NGBlockNode(layout_box), static_position,
         css_container->IsBox() ? nullptr : css_container);
   }
-
-  container_builder_->GetAndClearOutOfFlowDescendantCandidates(
-      &descendant_candidates, current_container);
-
-  // We must have at least one new candidate, otherwise we shouldn't have
-  // entered this branch.
-  DCHECK_GT(descendant_candidates.size(), 0u);
-
-  LayoutDescendantCandidates(&descendant_candidates, only_layout,
-                             &placed_objects);
+  return true;
 }
 
 NGOutOfFlowLayoutPart::ContainingBlockInfo

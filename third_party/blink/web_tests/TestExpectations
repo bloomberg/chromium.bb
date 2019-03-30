@@ -3235,7 +3235,6 @@ crbug.com/626703 external/wpt/css/css-text/writing-system/writing-system-segment
 crbug.com/626703 external/wpt/css/css-text/writing-system/writing-system-line-break-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/writing-system/writing-system-line-break-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/writing-system/writing-system-text-transform-001.html [ Failure ]
-crbug.com/903383 external/wpt/css/filter-effects/filter-cb-abspos-inline-003.html [ Failure ]
 crbug.com/903383 external/wpt/css/filter-effects/css-filters-animation-combined-001.html [ Failure ]
 crbug.com/903383 external/wpt/css/filter-effects/css-filters-animation-blur.html [ Failure ]
 crbug.com/903383 external/wpt/css/filter-effects/filters-test-brightness-003.html [ Failure ]
