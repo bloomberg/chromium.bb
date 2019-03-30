@@ -411,7 +411,7 @@ void MimeHandlerViewContainerBase::SetShowBeforeUnloadDialog(
   std::move(callback).Run();
 }
 
-v8::Local<v8::Object> MimeHandlerViewContainerBase::GetScriptableObject(
+v8::Local<v8::Object> MimeHandlerViewContainerBase::GetScriptableObjectInternal(
     v8::Isolate* isolate) {
   if (scriptable_object_.IsEmpty()) {
     v8::Local<v8::Object> object =
