@@ -2269,6 +2269,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-content-fullscreen", flag_descriptions::kContentFullscreenName,
      flag_descriptions::kContentFullscreenDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kContentFullscreen)},
+    {"enable-immersive-fullscreen-toolbar",
+     flag_descriptions::kImmersiveFullscreenName,
+     flag_descriptions::kImmersiveFullscreenDescription, kOsMac,
+     FEATURE_VALUE_TYPE(features::kImmersiveFullscreen)},
 #endif  // OS_MACOSX
     {"rewrite-leveldb-on-deletion",
      flag_descriptions::kRewriteLevelDBOnDeletionName,

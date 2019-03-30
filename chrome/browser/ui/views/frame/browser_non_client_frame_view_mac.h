@@ -10,7 +10,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
-#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_member.h"
 
 namespace views {
 class Label;
@@ -72,7 +72,7 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   int TopUIFullscreenYOffset() const;
 
   // Used to keep track of the update of kShowFullscreenToolbar preference.
-  PrefChangeRegistrar pref_registrar_;
+  BooleanPrefMember show_fullscreen_toolbar_;
 
   views::Label* window_title_ = nullptr;
 

@@ -48,6 +48,7 @@ class ImmersiveModeController {
   // TODO(sky): remove this, temporary while supporting both ash and mash.
   enum class Type {
     ASH,
+    MAC,
     STUB,
   };
 

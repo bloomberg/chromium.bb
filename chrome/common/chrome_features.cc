@@ -179,6 +179,8 @@ const base::Feature kClickToOpenPDFPlaceholder{
 #if defined(OS_MACOSX)
 const base::Feature kContentFullscreen{"ContentFullscreen",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kImmersiveFullscreen{"ImmersiveFullscreen",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Enables a site-wide permission in the UI which controls access to the

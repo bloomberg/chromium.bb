@@ -480,7 +480,10 @@ void ExtractUnderlines(NSAttributedString* string,
   // Traverse the superview hierarchy as the hitTest will return the frontmost
   // view, such as an NSTextView, while nonWebContentView may be specified by
   // its parent view.
+  BOOL hitSelf = NO;
   while (view) {
+    if (view == self)
+      hitSelf = YES;
     if ([view respondsToSelector:nonWebContentViewSelector] &&
         [view performSelector:nonWebContentViewSelector]) {
       // The cursor is over a nonWebContentView - ignore this mouse event.
@@ -500,7 +503,10 @@ void ExtractUnderlines(NSAttributedString* string,
     }
     view = [view superview];
   }
-  return NO;
+  // Ignore events which don't hit test to this subtree (and hit, for example,
+  // an overlapping view instead). As discussed above, the mouse may go outside
+  // the bounds of the view and keep sending events during a drag.
+  return !hitSelf && !hasOpenMouseDown_;
 }
 
 - (void)mouseEvent:(NSEvent*)theEvent {
@@ -553,6 +559,7 @@ void ExtractUnderlines(NSAttributedString* string,
       clientHelper_->ForwardMouseEvent(exitEvent);
     }
     mouseEventWasIgnored_ = YES;
+    [self updateCursor:nil];
     return;
   }
 
