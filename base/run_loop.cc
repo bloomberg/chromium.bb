@@ -126,10 +126,6 @@ RunLoop::~RunLoop() {
 }
 
 void RunLoop::Run() {
-  RunWithTimeout(TimeDelta::Max());
-}
-
-void RunLoop::RunWithTimeout(TimeDelta timeout) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!BeforeRun())
@@ -158,7 +154,7 @@ void RunLoop::RunWithTimeout(TimeDelta timeout) {
   const bool application_tasks_allowed =
       delegate_->active_run_loops_.size() == 1U ||
       type_ == Type::kNestableTasksAllowed;
-  delegate_->Run(application_tasks_allowed, timeout);
+  delegate_->Run(application_tasks_allowed);
 
   // Rebind this RunLoop to the current thread after Run().
   DETACH_FROM_SEQUENCE(sequence_checker_);
