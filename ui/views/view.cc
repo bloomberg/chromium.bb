@@ -156,19 +156,24 @@ Widget* View::GetWidget() {
 
 void View::ReorderChildView(View* view, int index) {
   DCHECK_EQ(view->parent_, this);
+  const auto i = std::find(children_.begin(), children_.end(), view);
+  DCHECK(i != children_.end());
+
+  // If |view| is already at the desired position, there's nothing to do.
   const bool move_to_end = (index < 0) || (size_t{index} >= children_.size());
-  if (move_to_end)
-    index = child_count() - 1;
-  if (children_[index] == view)
+  const auto pos = move_to_end ? std::prev(children_.end())
+                               : std::next(children_.begin(), index);
+  if (i == pos)
     return;
 
-  const Views::iterator i(std::find(children_.begin(), children_.end(), view));
-  DCHECK(i != children_.end());
+    // Rotate |view| to be at the desired position.
 #if DCHECK_IS_ON()
   DCHECK(!iterating_);
 #endif
-  children_.erase(i);
-  const auto pos = children_.insert(std::next(children_.begin(), index), view);
+  if (pos < i)
+    std::rotate(pos, i, std::next(i));
+  else
+    std::rotate(i, std::next(i), std::next(pos));
 
   // Update focus siblings.  Unhook |view| from the focus cycle first so
   // SetFocusSiblings() won't traverse through it.
