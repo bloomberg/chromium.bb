@@ -6551,4 +6551,49 @@ TEST_P(PaintPropertyTreeBuilderTest, VideoClipRect) {
             video_element_properties->OverflowClip()->ClipRect());
 }
 
+// For NoPaintPropertyForXXXText cases. The styles trigger almost all paint
+// properties on the container. The contained text should not create paint
+// properties in any case.
+#define ALL_PROPERTY_STYLES                                                  \
+  "backface-visibility: hidden; transform: rotateY(1deg); perspective: 1px;" \
+  "opacity: 0.5; filter: blur(5px); clip-path: circle(100%); "               \
+  "clip: rect(0px, 2px, 2px, 0px); overflow: scroll; border-radius: 2px; "   \
+  "width: 10px; height: 10px; top: 0; left: 0; position: sticky; columns: 2"
+
+TEST_P(PaintPropertyTreeBuilderTest, NoPaintPropertyForBlockText) {
+  SetBodyInnerHTML("<div id='container' style='" ALL_PROPERTY_STYLES
+                   "'>T</div>");
+  EXPECT_TRUE(PaintPropertiesForElement("container"));
+  auto* text = GetDocument()
+                   .getElementById("container")
+                   ->firstChild()
+                   ->GetLayoutObject();
+  ASSERT_TRUE(text->IsText());
+  EXPECT_FALSE(text->FirstFragment().PaintProperties());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, NoPaintPropertyForInlineText) {
+  SetBodyInnerHTML("<span id='container' style='" ALL_PROPERTY_STYLES
+                   "'>T</span>");
+  EXPECT_TRUE(PaintPropertiesForElement("container"));
+  auto* text = GetDocument()
+                   .getElementById("container")
+                   ->firstChild()
+                   ->GetLayoutObject();
+  ASSERT_TRUE(text->IsText());
+  EXPECT_FALSE(text->FirstFragment().PaintProperties());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, NoPaintPropertyForSVGText) {
+  SetBodyInnerHTML("<svg><text id='container' style='" ALL_PROPERTY_STYLES
+                   "'>T</text>");
+  EXPECT_TRUE(PaintPropertiesForElement("container"));
+  auto* text = GetDocument()
+                   .getElementById("container")
+                   ->firstChild()
+                   ->GetLayoutObject();
+  ASSERT_TRUE(text->IsText());
+  EXPECT_FALSE(text->FirstFragment().PaintProperties());
+}
+
 }  // namespace blink

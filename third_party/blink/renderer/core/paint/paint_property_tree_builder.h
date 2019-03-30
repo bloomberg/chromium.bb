@@ -224,6 +224,7 @@ class PaintPropertyTreeBuilder {
       const LayoutPoint& pagination_offset = LayoutPoint(),
       LayoutUnit logical_top_in_flow_thread = LayoutUnit());
   ALWAYS_INLINE void InitSingleFragmentFromParent(bool needs_paint_properties);
+  ALWAYS_INLINE bool ObjectTypeMightNeedMultipleFragmentData() const;
   ALWAYS_INLINE bool ObjectTypeMightNeedPaintProperties() const;
   ALWAYS_INLINE void UpdateCompositedLayerPaginationOffset();
   ALWAYS_INLINE PaintPropertyTreeBuilderFragmentContext
