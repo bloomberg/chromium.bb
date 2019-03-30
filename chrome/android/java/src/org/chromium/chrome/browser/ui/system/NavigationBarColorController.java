@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.ui.system;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -16,6 +16,7 @@ import android.view.Window;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
@@ -32,7 +33,7 @@ import org.chromium.ui.UiUtils;
  * Controls the bottom system navigation bar color for the provided {@link Window}.
  */
 @TargetApi(Build.VERSION_CODES.O_MR1)
-public class NavigationBarColorController implements VrModeObserver {
+class NavigationBarColorController implements VrModeObserver {
     private final Window mWindow;
     private final ViewGroup mRootView;
     private final Resources mResources;
@@ -54,7 +55,7 @@ public class NavigationBarColorController implements VrModeObserver {
      * @param overviewModeBehavior The {@link OverviewModeObserver} used to determine whether
      *                             overview mode is showing.
      */
-    public NavigationBarColorController(Window window, TabModelSelector tabModelSelector,
+    NavigationBarColorController(Window window, TabModelSelector tabModelSelector,
             OverviewModeBehavior overviewModeBehavior) {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1;
 
@@ -151,10 +152,9 @@ public class NavigationBarColorController implements VrModeObserver {
 
         mUseLightNavigation = useLightNavigation;
 
-        mWindow.setNavigationBarColor(useLightNavigation
-                        ? ApiCompatibilityUtils.getColor(
-                                  mResources, R.color.bottom_system_nav_color)
-                        : Color.BLACK);
+        mWindow.setNavigationBarColor(useLightNavigation ? ApiCompatibilityUtils.getColor(
+                                              mResources, R.color.bottom_system_nav_color)
+                                                         : Color.BLACK);
 
         setNavigationBarColor(useLightNavigation);
 
@@ -166,7 +166,7 @@ public class NavigationBarColorController implements VrModeObserver {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             mWindow.setNavigationBarDividerColor(useLightNavigation
                             ? ApiCompatibilityUtils.getColor(
-                                      mResources, R.color.bottom_system_nav_divider_color)
+                                    mResources, R.color.bottom_system_nav_divider_color)
                             : Color.BLACK);
         }
     }
