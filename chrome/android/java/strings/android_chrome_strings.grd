@@ -452,6 +452,10 @@ CHAR-LIMIT guidelines:
         You can change this later in Settings
       </message>
 
+      <message name="IDS_SEARCH_ENGINE_CHOICE_PROMPT" desc="Prompt asking users whether they want to change the search engine">
+        You can choose your search engine
+      </message>
+
       <!-- Autofill and Payments preferences -->
       <message name="IDS_AUTOFILL_KEYBOARD_ACCESSORY_CONTENT_DESCRIPTION" desc="The text announced by the screen reader when the autofill suggestions are shown.">
         Passwords available
