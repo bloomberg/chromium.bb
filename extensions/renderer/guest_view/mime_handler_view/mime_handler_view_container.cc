@@ -88,7 +88,7 @@ void MimeHandlerViewContainer::DidResizeElement(const gfx::Size& new_size) {
 
 v8::Local<v8::Object> MimeHandlerViewContainer::V8ScriptableObject(
     v8::Isolate* isolate) {
-  return GetScriptableObject(isolate);
+  return GetScriptableObjectInternal(isolate);
 }
 
 void MimeHandlerViewContainer::OnCreateMimeHandlerViewGuestACK(

@@ -364,7 +364,7 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
 // The following tests will eventually converted into a parametric version which
 // will run on both BrowserPlugin-based and cross-process-frame-based
 // MimeHandlerView (https://crbug.com/659750).
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, PostMessage) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, PostMessage) {
   RunTest("test_postmessage.html");
 }
 

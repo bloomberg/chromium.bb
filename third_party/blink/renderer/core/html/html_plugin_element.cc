@@ -396,10 +396,7 @@ v8::Local<v8::Object> HTMLPlugInElement::PluginWrapper() {
   // return the cached allocated Bindings::Instance. Not supporting this
   // edge-case is OK.
   v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
-  if (handled_externally_ && plugin_wrapper_.IsEmpty()) {
-    plugin_wrapper_.Reset(isolate,
-                          frame->Client()->GetScriptableObject(*this, isolate));
-  } else if (plugin_wrapper_.IsEmpty()) {
+  if (plugin_wrapper_.IsEmpty()) {
     WebPluginContainerImpl* plugin;
 
     if (persisted_plugin_)
@@ -407,8 +404,22 @@ v8::Local<v8::Object> HTMLPlugInElement::PluginWrapper() {
     else
       plugin = PluginEmbeddedContentView();
 
-    if (plugin)
+    if (plugin) {
       plugin_wrapper_.Reset(isolate, plugin->ScriptableObject(isolate));
+    } else if (handled_externally_) {
+      // It is important to check for |handled_externally_| after calling
+      // PluginEmbeddedContentView(). Note that calling
+      // PluginEmbeddedContentView() leads to synchronously updating style and
+      // running post layout tasks, which ends up updating the plugin. It is
+      // after updating the plugin that we know whether or not the plugin is
+      // handled externally by a MimeHandlerView. To check for
+      // |handled_externally_| sooner is wrong since it is possible for JS to
+      // call int PluginWrapper() before the plugin has gone through the update
+      // phase (and wrongly assume it is not handled by MimeHandlerView). (see
+      // https://crbug.com/946709).
+      plugin_wrapper_.Reset(
+          isolate, frame->Client()->GetScriptableObject(*this, isolate));
+    }
   }
   return plugin_wrapper_.Get(isolate);
 }
