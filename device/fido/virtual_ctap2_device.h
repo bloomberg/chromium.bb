@@ -48,6 +48,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // credentials are recognised. This behaviour is exhibited by some CTAP2
     // authenticators in the wild.
     bool return_immediate_invalid_credential_error = false;
+    // return_attested_cred_data_in_get_assertion_response causes
+    // attestedCredentialData to be included in the authenticator data of an
+    // GetAssertion response.
+    bool return_attested_cred_data_in_get_assertion_response = false;
   };
 
   VirtualCtap2Device();
@@ -75,6 +79,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
   CtapDeviceResponseCode OnAuthenticatorGetInfo(
       std::vector<uint8_t>* response) const;
 
+  AttestedCredentialData ConstructAttestedCredentialData(
+      std::vector<uint8_t> u2f_data,
+      std::unique_ptr<PublicKey> public_key);
   AuthenticatorData ConstructAuthenticatorData(
       base::span<const uint8_t, kRpIdHashLength> rp_id_hash,
       bool user_verified,

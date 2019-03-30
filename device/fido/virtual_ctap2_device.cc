@@ -587,18 +587,6 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   // Our key handles are simple hashes of the public key.
   auto hash = fido_parsing_utils::CreateSHA256Hash(public_key);
   std::vector<uint8_t> key_handle(hash.begin(), hash.end());
-  std::array<uint8_t, 2> sha256_length = {0, crypto::kSHA256Length};
-
-  std::array<uint8_t, 16> kZeroAaguid = {0, 0, 0, 0, 0, 0, 0, 0,
-                                         0, 0, 0, 0, 0, 0, 0, 0};
-  base::span<const uint8_t, 16> aaguid(kDeviceAaguid);
-  if (mutable_state()->self_attestation &&
-      !mutable_state()->non_zero_aaguid_with_self_attestation) {
-    aaguid = kZeroAaguid;
-  }
-
-  AttestedCredentialData attested_credential_data(
-      aaguid, sha256_length, key_handle, ConstructECPublicKey(public_key));
 
   base::Optional<cbor::Value> extensions;
   if (request.hmac_secret()) {
@@ -609,7 +597,9 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   }
 
   auto authenticator_data = ConstructAuthenticatorData(
-      rp_id_hash, user_verified, 01ul, std::move(attested_credential_data),
+      rp_id_hash, user_verified, 01ul,
+      ConstructAttestedCredentialData(key_handle,
+                                      ConstructECPublicKey(public_key)),
       std::move(extensions));
   auto sign_buffer =
       ConstructSignatureBuffer(authenticator_data, client_data_hash);
@@ -756,15 +746,27 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
   bool done_first = false;
   for (const auto& registration : found_registrations) {
     registration.second->counter++;
+
+    auto* private_key = registration.second->private_key.get();
+    std::string public_key;
+    bool status = private_key->ExportRawPublicKey(&public_key);
+    DCHECK(status);
+
+    base::Optional<AttestedCredentialData> opt_attested_cred_data =
+        config_.return_attested_cred_data_in_get_assertion_response
+            ? base::make_optional(ConstructAttestedCredentialData(
+                  fido_parsing_utils::Materialize(registration.first),
+                  ConstructECPublicKey(public_key)))
+            : base::nullopt;
+
     auto authenticator_data = ConstructAuthenticatorData(
-        rp_id_hash, user_verified, registration.second->counter, base::nullopt,
-        base::nullopt);
+        rp_id_hash, user_verified, registration.second->counter,
+        std::move(opt_attested_cred_data), base::nullopt);
     auto signature_buffer =
         ConstructSignatureBuffer(authenticator_data, client_data_hash);
 
     std::vector<uint8_t> signature;
-    auto* private_key = registration.second->private_key.get();
-    bool status = Sign(private_key, std::move(signature_buffer), &signature);
+    status = Sign(private_key, std::move(signature_buffer), &signature);
     DCHECK(status);
 
     AuthenticatorGetAssertionResponse assertion(
@@ -989,6 +991,21 @@ CtapDeviceResponseCode VirtualCtap2Device::OnAuthenticatorGetInfo(
     std::vector<uint8_t>* response) const {
   *response = EncodeToCBOR(*device_info_);
   return CtapDeviceResponseCode::kSuccess;
+}
+
+AttestedCredentialData VirtualCtap2Device::ConstructAttestedCredentialData(
+    std::vector<uint8_t> key_handle,
+    std::unique_ptr<PublicKey> public_key) {
+  constexpr std::array<uint8_t, 2> sha256_length = {0, crypto::kSHA256Length};
+  constexpr std::array<uint8_t, 16> kZeroAaguid = {0, 0, 0, 0, 0, 0, 0, 0,
+                                                   0, 0, 0, 0, 0, 0, 0, 0};
+  base::span<const uint8_t, 16> aaguid(kDeviceAaguid);
+  if (mutable_state()->self_attestation &&
+      !mutable_state()->non_zero_aaguid_with_self_attestation) {
+    aaguid = kZeroAaguid;
+  }
+  return AttestedCredentialData(aaguid, sha256_length, std::move(key_handle),
+                                std::move(public_key));
 }
 
 AuthenticatorData VirtualCtap2Device::ConstructAuthenticatorData(

@@ -55,7 +55,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   // Return true if the given RP ID hash from a response is valid for this
   // request.
   bool CheckResponseRpIdHash(
-      const std::array<uint8_t, kRpIdHashLength>& response_rp_id_hash);
+      const std::array<uint8_t, kRpIdHashLength>& response_rp_id_hash) const;
 
   const std::string& rp_id() const { return rp_id_; }
   const std::string& client_data_json() const { return client_data_json_; }

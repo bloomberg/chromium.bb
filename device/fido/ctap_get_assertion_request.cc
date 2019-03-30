@@ -130,7 +130,7 @@ CtapGetAssertionRequest& CtapGetAssertionRequest::SetAppId(std::string app_id) {
 }
 
 bool CtapGetAssertionRequest::CheckResponseRpIdHash(
-    const std::array<uint8_t, kRpIdHashLength>& response_rp_id_hash) {
+    const std::array<uint8_t, kRpIdHashLength>& response_rp_id_hash) const {
   return response_rp_id_hash == fido_parsing_utils::CreateSHA256Hash(rp_id_) ||
          (app_id_ &&
           response_rp_id_hash == *alternative_application_parameter());
