@@ -27,13 +27,6 @@ int NotificationMenuViewTestAPI::GetItemViewCount() const {
   return notification_menu_view_->notification_item_views_.size();
 }
 
-NotificationItemView*
-NotificationMenuViewTestAPI::GetDisplayedNotificationItemView() const {
-  return notification_menu_view_->notification_item_views_.empty()
-             ? nullptr
-             : notification_menu_view_->notification_item_views_.front().get();
-}
-
 NotificationOverflowView* NotificationMenuViewTestAPI::GetOverflowView() const {
   return notification_menu_view_->overflow_view_.get();
 }
