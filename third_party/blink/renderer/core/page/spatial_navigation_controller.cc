@@ -168,10 +168,20 @@ bool SpatialNavigationController::HandleEnterKeyboardEvent(
     KeyboardEvent* event) {
   DCHECK(page_->GetSettings().GetSpatialNavigationEnabled());
 
-  if (interest_element_) {
-    interest_element_->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
-                                         kWebFocusTypeSpatialNavigation,
-                                         nullptr));
+  Element* interest_element = GetInterestedElement();
+
+  if (!interest_element)
+    return false;
+
+  if (event->type() == event_type_names::kKeydown) {
+    if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
+      interest_element->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
+                                          kWebFocusTypeSpatialNavigation,
+                                          nullptr));
+    }
+    interest_element->SetActive(true);
+  } else if (event->type() == event_type_names::kKeyup) {
+    interest_element->SetActive(false);
   }
 
   return true;

@@ -2668,7 +2668,8 @@ void Node::DefaultEventHandler(Event& event) {
     return;
   const AtomicString& event_type = event.type();
   if (event_type == event_type_names::kKeydown ||
-      event_type == event_type_names::kKeypress) {
+      event_type == event_type_names::kKeypress ||
+      event_type == event_type_names::kKeyup) {
     if (event.IsKeyboardEvent()) {
       if (LocalFrame* frame = GetDocument().GetFrame()) {
         frame->GetEventHandler().DefaultKeyboardEventHandler(
