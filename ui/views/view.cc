@@ -156,10 +156,9 @@ Widget* View::GetWidget() {
 
 void View::ReorderChildView(View* view, int index) {
   DCHECK_EQ(view->parent_, this);
-  if (index < 0)
+  const bool move_to_end = (index < 0) || (size_t{index} >= children_.size());
+  if (move_to_end)
     index = child_count() - 1;
-  else if (index >= child_count())
-    return;
   if (children_[index] == view)
     return;
 
