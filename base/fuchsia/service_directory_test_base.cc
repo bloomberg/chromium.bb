@@ -24,8 +24,9 @@ ServiceDirectoryTestBase::ServiceDirectoryTestBase() {
 
   // Create the ServiceDirectoryClient, connected to the "public" sub-directory.
   fidl::InterfaceHandle<::fuchsia::io::Directory> public_directory;
-  CHECK_EQ(fdio_open_at(directory.channel().get(), "public", 0,
-                        public_directory.NewRequest().TakeChannel().release()),
+  CHECK_EQ(fdio_service_connect_at(
+               directory.channel().get(), "/public/.",
+               public_directory.NewRequest().TakeChannel().release()),
            ZX_OK);
   public_service_directory_client_ =
       std::make_unique<ServiceDirectoryClient>(std::move(public_directory));
