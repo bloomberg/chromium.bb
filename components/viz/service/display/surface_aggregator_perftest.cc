@@ -53,7 +53,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       child_tokens[i] = base::UnguessableToken::Create();
     }
     aggregator_ = std::make_unique<SurfaceAggregator>(
-        manager_.surface_manager(), resource_provider_.get(), optimize_damage);
+        manager_.surface_manager(), resource_provider_.get(), optimize_damage,
+        true);
     for (int i = 0; i < num_surfaces; i++) {
       LocalSurfaceId local_surface_id(i + 1, child_tokens[i]);
 
@@ -166,6 +167,22 @@ class SurfaceAggregatorPerfTest : public testing::Test {
 
 TEST_F(SurfaceAggregatorPerfTest, ManySurfacesOpaque) {
   RunTest(20, 100, 1.f, false, true, "many_surfaces_opaque");
+}
+
+TEST_F(SurfaceAggregatorPerfTest, ManySurfacesOpaque_100) {
+  RunTest(100, 1, 1.f, true, false, "(100 Surfaces, 1 quad each)");
+}
+
+TEST_F(SurfaceAggregatorPerfTest, ManySurfacesOpaque_300) {
+  RunTest(300, 1, 1.f, true, false, "(300 Surfaces, 1 quad each)");
+}
+
+TEST_F(SurfaceAggregatorPerfTest, ManySurfacesManyQuadsOpaque_100) {
+  RunTest(100, 100, 1.f, true, false, "(100 Surfaces, 100 quads each)");
+}
+
+TEST_F(SurfaceAggregatorPerfTest, ManySurfacesManyQuadsOpaque_300) {
+  RunTest(300, 100, 1.f, true, false, "(300 Surfaces, 100 quads each)");
 }
 
 TEST_F(SurfaceAggregatorPerfTest, ManySurfacesTransparent) {

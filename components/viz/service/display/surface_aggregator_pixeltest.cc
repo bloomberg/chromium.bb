@@ -113,7 +113,7 @@ TYPED_TEST(SurfaceAggregatorPixelTest, DrawSimpleFrame) {
       std::move(root_frame));
 
   SurfaceAggregator aggregator(this->manager_.surface_manager(),
-                               this->resource_provider_.get(), true);
+                               this->resource_provider_.get(), true, false);
   CompositorFrame aggregated_frame =
       aggregator.Aggregate(root_surface_id, this->GetNextDisplayTime());
 
@@ -195,7 +195,7 @@ TYPED_TEST(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
   }
 
   SurfaceAggregator aggregator(this->manager_.surface_manager(),
-                               this->resource_provider_.get(), true);
+                               this->resource_provider_.get(), true, false);
   CompositorFrame aggregated_frame =
       aggregator.Aggregate(root_surface_id, this->GetNextDisplayTime());
 
@@ -337,7 +337,7 @@ TYPED_TEST(SurfaceAggregatorPixelTest,
   }
 
   SurfaceAggregator aggregator(this->manager_.surface_manager(),
-                               this->resource_provider_.get(), true);
+                               this->resource_provider_.get(), true, false);
   CompositorFrame aggregated_frame =
       aggregator.Aggregate(root_surface_id, this->GetNextDisplayTime());
 

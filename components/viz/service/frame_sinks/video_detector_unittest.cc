@@ -79,6 +79,7 @@ class VideoDetectorTest : public testing::Test {
       : frame_sink_manager_(&shared_bitmap_manager_),
         surface_aggregator_(frame_sink_manager_.surface_manager(),
                             nullptr,
+                            false,
                             false) {}
 
   ~VideoDetectorTest() override {}

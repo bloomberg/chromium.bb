@@ -26,6 +26,7 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -119,7 +120,10 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
             kArbitraryRootFrameSinkId,
             kRootIsRoot,
             kNeedsSyncPoints)),
-        aggregator_(manager_.surface_manager(), nullptr, use_damage_rect) {
+        aggregator_(manager_.surface_manager(),
+                    nullptr,
+                    use_damage_rect,
+                    true) {
     manager_.surface_manager()->AddObserver(&observer_);
   }
 
@@ -135,6 +139,13 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
       Quad quad;
       quad.material = DrawQuad::SOLID_COLOR;
       quad.color = color;
+      quad.rect = rect;
+      return quad;
+    }
+
+    static Quad YUVVideoQuad(const gfx::Rect& rect) {
+      Quad quad;
+      quad.material = DrawQuad::YUV_VIDEO_CONTENT;
       quad.rect = rect;
       return quad;
     }
@@ -236,6 +247,9 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
         break;
       case DrawQuad::RENDER_PASS:
         AddRenderPassQuad(pass, desc.render_pass_id);
+        break;
+      case DrawQuad::YUV_VIDEO_CONTENT:
+        AddYUVVideoQuad(pass, desc.rect);
         break;
       default:
         NOTREACHED();
@@ -346,6 +360,18 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
     quad->SetNew(shared_state, output_rect, output_rect, render_pass_id, 0,
                  gfx::RectF(), gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
                  gfx::RectF(), false, 1.0f);
+  }
+
+  static void AddYUVVideoQuad(RenderPass* pass, const gfx::Rect& output_rect) {
+    auto* shared_state = pass->CreateAndAppendSharedQuadState();
+    shared_state->SetAll(gfx::Transform(), output_rect, output_rect,
+                         gfx::RRectF(), output_rect, false, false, 1,
+                         SkBlendMode::kSrcOver, 0);
+    auto* quad = pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
+    quad->SetNew(shared_state, output_rect, output_rect, false,
+                 gfx::RectF(output_rect), gfx::RectF(), output_rect.size(),
+                 gfx::Size(), 0, 0, 0, 0, gfx::ColorSpace::CreateREC709(), 0,
+                 1.0, 8);
   }
 
  protected:
@@ -858,16 +884,14 @@ class TestVizClient {
 };
 
 TEST_F(SurfaceAggregatorValidSurfaceTest, UndrawnSurfaces) {
-  TestVizClient child(
-      this, &manager_, kArbitraryFrameSinkId1,
-      gfx::Rect(10, 10));
+  TestVizClient child(this, &manager_, kArbitraryFrameSinkId1,
+                      gfx::Rect(10, 10));
   child.SubmitCompositorFrame(SK_ColorBLUE);
 
   // Parent first submits a CompositorFrame that renfereces |child|, but does
   // not provide a DrawQuad that embeds it.
-  TestVizClient parent(
-      this, &manager_, kArbitraryFrameSinkId2,
-      gfx::Rect(15, 15));
+  TestVizClient parent(this, &manager_, kArbitraryFrameSinkId2,
+                       gfx::Rect(15, 15));
   parent.SetEmbeddedClient(&child, false);
   parent.SubmitCompositorFrame(SK_ColorGREEN);
 
@@ -913,17 +937,15 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, UndrawnSurfaces) {
 }
 
 TEST_F(SurfaceAggregatorValidSurfaceTest, UndrawnSurfacesWithCopyRequests) {
-  TestVizClient child(
-      this, &manager_, kArbitraryFrameSinkId1,
-      gfx::Rect(10, 10));
+  TestVizClient child(this, &manager_, kArbitraryFrameSinkId1,
+                      gfx::Rect(10, 10));
   child.SubmitCompositorFrame(SK_ColorBLUE);
   child.RequestCopyOfOutput();
 
   // Parent first submits a CompositorFrame that renfereces |child|, but does
   // not provide a DrawQuad that embeds it.
-  TestVizClient parent(
-      this, &manager_, kArbitraryFrameSinkId2,
-      gfx::Rect(15, 15));
+  TestVizClient parent(this, &manager_, kArbitraryFrameSinkId2,
+                       gfx::Rect(15, 15));
   parent.SetEmbeddedClient(&child, false);
   parent.SubmitCompositorFrame(SK_ColorGREEN);
 
@@ -958,24 +980,21 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, UndrawnSurfacesWithCopyRequests) {
 
 TEST_F(SurfaceAggregatorValidSurfaceTest,
        SurfacesWithMultipleEmbeddersBothVisibleAndInvisible) {
-  TestVizClient child(
-      this, &manager_, kArbitraryFrameSinkId1,
-      gfx::Rect(10, 10));
+  TestVizClient child(this, &manager_, kArbitraryFrameSinkId1,
+                      gfx::Rect(10, 10));
   child.SubmitCompositorFrame(SK_ColorBLUE);
 
   // First parent submits a CompositorFrame that renfereces |child|, but does
   // not provide a DrawQuad that embeds it.
-  TestVizClient first_parent(
-      this, &manager_, kArbitraryFrameSinkId2,
-      gfx::Rect(15, 15));
+  TestVizClient first_parent(this, &manager_, kArbitraryFrameSinkId2,
+                             gfx::Rect(15, 15));
   first_parent.SetEmbeddedClient(&child, false);
   first_parent.SubmitCompositorFrame(SK_ColorGREEN);
 
   // Second parent submits a CompositorFrame referencing |child|, and also
   // includes a draw-quad for it.
-  TestVizClient second_parent(
-      this, &manager_, kArbitraryMiddleFrameSinkId,
-      gfx::Rect(25, 25));
+  TestVizClient second_parent(this, &manager_, kArbitraryMiddleFrameSinkId,
+                              gfx::Rect(25, 25));
   second_parent.SetEmbeddedClient(&child, true);
   second_parent.SubmitCompositorFrame(SK_ColorYELLOW);
 
@@ -3875,7 +3894,7 @@ class SurfaceAggregatorWithResourcesTest : public testing::Test,
         DisplayResourceProvider::kSoftware, nullptr, &shared_bitmap_manager_);
 
     aggregator_ = std::make_unique<SurfaceAggregator>(
-        manager_.surface_manager(), resource_provider_.get(), false);
+        manager_.surface_manager(), resource_provider_.get(), false, false);
     aggregator_->set_output_is_secure(true);
   }
 
@@ -4839,6 +4858,169 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, DamageRectWithClippedChildSurface) {
     gfx::Rect expected_damage_rect(30, 30, 40, 20);
     EXPECT_EQ(aggregated_frame.render_pass_list[0]->damage_rect,
               expected_damage_rect);
+  }
+}
+
+// Tests the overlay occluding damage rect
+TEST_F(SurfaceAggregatorValidSurfaceTest, OverlayOccludingDamageRect) {
+  // Video quad
+  std::vector<Quad> child_surface_quads = {
+      Quad::YUVVideoQuad(gfx::Rect(0, 0, 100, 100))};
+
+  std::vector<Pass> child_surface_passes = {
+      Pass(child_surface_quads, /*size*/ gfx::Size(100, 100),
+           /*damage_rect*/ gfx::Rect(0, 0, 100, 100))};
+
+  CompositorFrame child_surface_frame = MakeEmptyCompositorFrame();
+  AddPasses(&child_surface_frame.render_pass_list, child_surface_passes,
+            &child_surface_frame.metadata.referenced_surfaces);
+
+  ParentLocalSurfaceIdAllocator allocator;
+  allocator.GenerateId();
+  LocalSurfaceId child_local_surface_id =
+      allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_surface_id(child_sink_->frame_sink_id(),
+                             child_local_surface_id);
+  child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                     std::move(child_surface_frame));
+
+  // Original video quad (0, 0, 100, 100) x this video_transform matrix ==
+  // (10, 0, 80, 80)
+  gfx::Transform video_transform(0.8f, 0, 0, 0.8f, 10.0f, 0);
+
+  // root surface quads
+  std::vector<Quad> root_surface_quads = {
+      Quad::SolidColorQuad(SK_ColorRED, gfx::Rect(60, 0, 40, 40)),
+      Quad::SurfaceQuad(SurfaceRange(base::nullopt, child_surface_id),
+                        SK_ColorWHITE,
+                        /*primary_surface_rect*/ gfx::Rect(0, 0, 100, 100),
+                        /*opacity*/ 1.f, video_transform,
+                        /*stretch_content_to_fill_bounds=*/false,
+                        /*ignores_input_event=*/false)};
+
+  std::vector<Pass> root_passes = {
+      Pass(root_surface_quads,
+           /*size*/ gfx::Size(200, 200),
+           /*damage_rect*/ gfx::Rect(60, 0, 40, 40))};
+
+  CompositorFrame root_frame = MakeEmptyCompositorFrame();
+  AddPasses(&root_frame.render_pass_list, root_passes,
+            &root_frame.metadata.referenced_surfaces);
+
+  SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                            root_local_surface_id_);
+  root_sink_->SubmitCompositorFrame(root_local_surface_id_,
+                                    std::move(root_frame));
+
+  CompositorFrame aggregated_frame =
+      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+
+  // Frame # 0 - Full occluding damage rect
+  // The damage rect of the very first frame is always the full rect
+  auto* output_root_pass = aggregated_frame.render_pass_list.back().get();
+  EXPECT_EQ(gfx::Rect(0, 0, 200, 200), output_root_pass->damage_rect);
+
+  const SharedQuadState* video_sqs =
+      output_root_pass->quad_list.back()->shared_quad_state;
+  // Occluding damage of the first frame = the whole surface rect on top
+  // intersects the video quad.
+  // (0, 0, 200, 200) intersect with video quad (10, 0, 80, 80) == (10, 0, 80,
+  // 80).
+  EXPECT_EQ(gfx::Rect(10, 0, 80, 80), video_sqs->occluding_damage_rect.value());
+
+  // Frame #1 - Has occluding damage
+  {
+    CompositorFrame child_surface_frame = MakeEmptyCompositorFrame();
+    AddPasses(&child_surface_frame.render_pass_list, child_surface_passes,
+              &child_surface_frame.metadata.referenced_surfaces);
+    child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                       std::move(child_surface_frame));
+
+    CompositorFrame root_frame = MakeEmptyCompositorFrame();
+    AddPasses(&root_frame.render_pass_list, root_passes,
+              &root_frame.metadata.referenced_surfaces);
+
+    root_sink_->SubmitCompositorFrame(root_local_surface_id_,
+                                      std::move(root_frame));
+
+    CompositorFrame aggregated_frame = aggregator_.Aggregate(
+        root_surface_id, GetNextDisplayTimeAndIncrement());
+
+    auto* output_root_pass = aggregated_frame.render_pass_list.back().get();
+    // The video quad (10, 0, 80, 80) unions the solid quad on top (60, 0, 40,
+    // 40)
+    EXPECT_EQ(gfx::Rect(10, 0, 90, 80), output_root_pass->damage_rect);
+
+    const SharedQuadState* video_sqs =
+        output_root_pass->quad_list.back()->shared_quad_state;
+    // The solid quad on top (60, 0, 40, 40) intersects the video quad (10, 0,
+    // 80, 80)
+    EXPECT_EQ(gfx::Rect(60, 0, 30, 40),
+              video_sqs->occluding_damage_rect.value());
+  }
+  // Frame #2 - No occluding damage, the quad on top doesn't change
+  {
+    CompositorFrame child_surface_frame = MakeEmptyCompositorFrame();
+    AddPasses(&child_surface_frame.render_pass_list, child_surface_passes,
+              &child_surface_frame.metadata.referenced_surfaces);
+    child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                       std::move(child_surface_frame));
+
+    // No change in root frame
+    CompositorFrame aggregated_frame = aggregator_.Aggregate(
+        root_surface_id, GetNextDisplayTimeAndIncrement());
+
+    auto* output_root_pass = aggregated_frame.render_pass_list.back().get();
+    // Only the video quad (10, 0, 80, 80) is damaged
+    EXPECT_EQ(gfx::Rect(10, 0, 80, 80), output_root_pass->damage_rect);
+
+    const SharedQuadState* video_sqs =
+        output_root_pass->quad_list.back()->shared_quad_state;
+    // No occluding damage
+    EXPECT_EQ(gfx::Rect(), video_sqs->occluding_damage_rect.value());
+  }
+  // Frame #3 - The only quad on top is removed
+  {
+    CompositorFrame child_surface_frame = MakeEmptyCompositorFrame();
+    AddPasses(&child_surface_frame.render_pass_list, child_surface_passes,
+              &child_surface_frame.metadata.referenced_surfaces);
+    child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                       std::move(child_surface_frame));
+
+    // root surface quads, the solid quad (60, 0, 40, 40) is removed
+    std::vector<Quad> root_surface_quads = {Quad::SurfaceQuad(
+        SurfaceRange(base::nullopt, child_surface_id), SK_ColorWHITE,
+        /*primary_surface_rect*/ gfx::Rect(0, 0, 100, 100),
+        /*opacity*/ 1.f, video_transform,
+        /*stretch_content_to_fill_bounds=*/false,
+        /*ignores_input_event=*/false)};
+
+    std::vector<Pass> root_passes = {
+        Pass(root_surface_quads,
+             /*size*/ gfx::Size(200, 200),
+             /*damage_rect*/ gfx::Rect(60, 0, 40, 40))};
+
+    CompositorFrame root_frame = MakeEmptyCompositorFrame();
+    AddPasses(&root_frame.render_pass_list, root_passes,
+              &root_frame.metadata.referenced_surfaces);
+
+    root_sink_->SubmitCompositorFrame(root_local_surface_id_,
+                                      std::move(root_frame));
+
+    CompositorFrame aggregated_frame = aggregator_.Aggregate(
+        root_surface_id, GetNextDisplayTimeAndIncrement());
+
+    auto* output_root_pass = aggregated_frame.render_pass_list.back().get();
+    // The video quad (10, 0, 80, 80) unions the expose damage from removing
+    // the solid quad on top (60, 0, 40, 40)
+    EXPECT_EQ(gfx::Rect(10, 0, 90, 80), output_root_pass->damage_rect);
+
+    const SharedQuadState* video_sqs =
+        output_root_pass->quad_list.back()->shared_quad_state;
+    // The expose damage (60, 0, 40, 40) intersects the video quad (10, 0,
+    // 80, 80)
+    EXPECT_EQ(gfx::Rect(60, 0, 30, 40),
+              video_sqs->occluding_damage_rect.value());
   }
 }
 

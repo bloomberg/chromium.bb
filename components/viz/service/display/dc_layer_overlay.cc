@@ -330,8 +330,8 @@ QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
         gfx::ToEnclosingRect(ClippedQuadRectangle(solid_quad));
     // Propagate punch through rect as damage up the stack of render passes.
     // TODO(sunnyps): We should avoid this extra damage if we knew that the
-    // video (in child render surface) was the only thing damaging this render
-    // surface.
+    // video (in child render surface) was the only thing damaging this
+    // render surface.
     damage_rect->Union(clipped_quad_rect);
 
     // Add transformed info to list in case this renderpass is included in
@@ -438,8 +438,7 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     } else {
       ProcessForUnderlay(display_rect, render_pass,
                          quad_rectangle_in_target_space, occlusion_bounding_box,
-                         it, is_root, has_occluding_surface_damage, damage_rect,
-                         &this_frame_underlay_rect,
+                         it, is_root, damage_rect, &this_frame_underlay_rect,
                          &this_frame_underlay_occlusion, &dc_layer);
     }
 
@@ -510,7 +509,6 @@ void DCLayerOverlayProcessor::ProcessForUnderlay(
     const gfx::RectF& occlusion_bounding_box,
     const QuadList::Iterator& it,
     bool is_root,
-    bool has_occluding_surface_damage,
     gfx::Rect* damage_rect,
     gfx::Rect* this_frame_underlay_rect,
     gfx::Rect* this_frame_underlay_occlusion,
@@ -564,12 +562,12 @@ void DCLayerOverlayProcessor::ProcessForUnderlay(
 
   if (is_root && current_frame_processed_overlay_count_ == 0 &&
       is_axis_aligned && is_opaque && !underlay_rect_changed &&
-      !display_rect_changed) {
+      !display_rect_changed &&
+      shared_quad_state->occluding_damage_rect.has_value()) {
     // If this underlay rect is the same as for last frame, subtract its area
     // from the damage of the main surface, as the cleared area was already
     // cleared last frame. Add back the damage from the occluded area for this
-    // and last frame, as that may have changed.
-    gfx::Rect occluding_damage_rect = *damage_rect;
+    // frame.
     damage_rect->Subtract(quad_rectangle);
 
     // If none of the quads on top give any damage, we can skip compositing
@@ -578,19 +576,9 @@ void DCLayerOverlayProcessor::ProcessForUnderlay(
     // compositor will be empty. If the incoming damage rect is bigger than the
     // video quad, we don't have an oppertunity for power optimization even if
     // no damage on top. The output damage rect will not be empty in this case.
-    if (has_occluding_surface_damage) {
-      gfx::Rect occlusion = gfx::ToEnclosingRect(occlusion_bounding_box);
-      occlusion.Union(previous_frame_underlay_occlusion_);
-
-      occluding_damage_rect.Intersect(quad_rectangle);
-      occluding_damage_rect.Intersect(occlusion);
-
-      damage_rect->Union(occluding_damage_rect);
-    }
+    damage_rect->Union(shared_quad_state->occluding_damage_rect.value());
   } else {
     // Entire replacement quad must be redrawn.
-    // TODO(sunnyps): We should avoid this extra damage if we knew that the
-    // video was the only thing damaging this render surface.
     damage_rect->Union(quad_rectangle);
   }
 

@@ -108,7 +108,6 @@ class DCLayerOverlayProcessor {
                           const gfx::RectF& occlusion_bounding_box,
                           const QuadList::Iterator& it,
                           bool is_root,
-                          bool has_occluding_surface_damage,
                           gfx::Rect* damage_rect,
                           gfx::Rect* this_frame_underlay_rect,
                           gfx::Rect* this_frame_underlay_occlusion,

@@ -78,11 +78,13 @@ std::string SurfaceAggregator::ClipData::ToString() const {
 
 SurfaceAggregator::SurfaceAggregator(SurfaceManager* manager,
                                      DisplayResourceProvider* provider,
-                                     bool aggregate_only_damaged)
+                                     bool aggregate_only_damaged,
+                                     bool needs_surface_occluding_damage_rect)
     : manager_(manager),
       provider_(provider),
       next_render_pass_id_(1),
       aggregate_only_damaged_(aggregate_only_damaged),
+      needs_surface_occluding_damage_rect_(needs_surface_occluding_damage_rect),
       weak_factory_(this) {
   DCHECK(manager_);
 }
@@ -183,6 +185,102 @@ gfx::Rect SurfaceAggregator::DamageRectForSurface(
   }
 
   return full_rect;
+}
+
+gfx::Rect SurfaceAggregator::CalculateOccludingSurfaceDamageRect(
+    const DrawQuad* quad,
+    const gfx::Transform& parent_quad_to_root_target_transform) {
+  if (damage_rects_union_of_surfaces_on_top_.IsEmpty())
+    return gfx::Rect();
+
+  // Transform the quad to the parent root target space
+  // Note: this quad is on the child root render pass.
+  gfx::Transform transform(parent_quad_to_root_target_transform,
+                           quad->shared_quad_state->quad_to_target_transform);
+  gfx::Rect surface_in_root_target_space =
+      cc::MathUtil::MapEnclosingClippedRect(transform, quad->visible_rect);
+
+  // damage_rects_union_of_surfaces_on_top_ is already in the parent root target
+  // space.
+  gfx::Rect occluding_damage_rect = damage_rects_union_of_surfaces_on_top_;
+  occluding_damage_rect.Intersect(surface_in_root_target_space);
+
+  return occluding_damage_rect;
+}
+
+// In CopyPasses(), surfaces are processed from top to bottom. Therefore, all
+// surfaces on top has been added to damage_rects_union_of_surfaces_on_top_
+// before this.
+void SurfaceAggregator::UnionSurfaceDamageRectsOnTop(
+    const gfx::Rect& surface_rect,
+    const gfx::Transform& quad_to_root_target_transform,
+    const RenderPass* render_pass) {
+  DCHECK(!surface_rect.IsEmpty());
+
+  gfx::Rect damage_rect_in_root_target_space =
+      cc::MathUtil::MapEnclosingClippedRect(quad_to_root_target_transform,
+                                            surface_rect);
+  damage_rects_union_of_surfaces_on_top_.Union(
+      damage_rect_in_root_target_space);
+}
+
+// This is for underlay video power optimization.
+// The purpose of this function is to calculate the occluding damage rect if
+// there are elements on top of underlay. This damage rect is later saved in
+// shared_quad_state->occluding_damage_rect and used by the overlay
+// processor for damage rect optimization. This function is called once
+// for each surface. It adds the damage rects of all surfaces to
+// damage_rects_union_of_surfaces_on_top_. The occluding damage rect
+// is then calculated based on this rect.
+bool SurfaceAggregator::ProcessSurfaceOccludingDamage(
+    const Surface* surface,
+    const RenderPassList& render_pass_list,
+    const gfx::Transform& parent_target_transform,
+    const RenderPass* dest_pass,
+    gfx::Rect* occluding_damage_rect) {
+  if (!needs_surface_occluding_damage_rect_)
+    return false;
+
+  bool occluding_damage_rect_valid = false;
+  RenderPass* last_render_pass = render_pass_list.back().get();
+  gfx::Transform quad_to_root_target_transform = gfx::Transform(
+      dest_pass->transform_to_root_target, parent_target_transform);
+
+  // This occluding damage detection only works when there is only one quad
+  // in the current surface.
+  if (render_pass_list.size() == 1 && last_render_pass->quad_list.size() == 1) {
+    auto* quad = last_render_pass->quad_list.back();
+    *occluding_damage_rect = CalculateOccludingSurfaceDamageRect(
+        quad, quad_to_root_target_transform);
+    occluding_damage_rect_valid = true;
+  }
+
+  gfx::Rect surface_damage_rect;
+  if (RenderPassNeedsFullDamage(dest_pass)) {
+    surface_damage_rect = last_render_pass->output_rect;
+  } else {
+    surface_damage_rect = DamageRectForSurface(surface, *last_render_pass,
+                                               last_render_pass->output_rect);
+  }
+
+  // Add the current surface to the damage rect union if there is any damage.
+  // This should be done AFTER checking the occluding damage because the surface
+  // on top should not include its own surface.
+  if (!surface_damage_rect.IsEmpty()) {
+    UnionSurfaceDamageRectsOnTop(
+        surface_damage_rect, quad_to_root_target_transform, last_render_pass);
+  }
+  return occluding_damage_rect_valid;
+}
+
+bool SurfaceAggregator::RenderPassNeedsFullDamage(
+    const RenderPass* pass) const {
+  if (copy_request_passes_.count(pass->id) || pass->cache_render_pass ||
+      moved_pixel_passes_.count(pass->id)) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 // static
@@ -330,6 +428,11 @@ void SurfaceAggregator::EmitSurfaceContent(
       copy_requests.empty() && combined_transform.Preserves2dAxisAlignment() &&
       CanMergeRoundedCorner(rounded_corner_info, *render_pass_list.back());
 
+  gfx::Rect occluding_damage_rect;
+  bool occluding_damage_rect_valid = ProcessSurfaceOccludingDamage(
+      surface, render_pass_list, combined_transform, dest_pass,
+      &occluding_damage_rect);
+
   const RenderPassList& referenced_passes = render_pass_list;
   // TODO(fsamuel): Move this to a separate helper function.
   size_t passes_to_copy =
@@ -367,16 +470,15 @@ void SurfaceAggregator::EmitSurfaceContent(
                     surface->GetActiveFrame().device_scale_factor(),
                     child_to_parent_map, gfx::Transform(), ClipData(),
                     copy_pass.get(), surface_id, has_surface_damage,
-                    RoundedCornerInfo());
+                    RoundedCornerInfo(), occluding_damage_rect,
+                    occluding_damage_rect_valid);
 
     // If the render pass has copy requests, or should be cached, or has
     // moving-pixel filters, or in a moving-pixel surface, we should damage the
     // whole output rect so that we always drawn the full content. Otherwise, we
     // might have incompleted copy request, or cached patially drawn render
     // pass.
-    if (!copy_request_passes_.count(remapped_pass_id) &&
-        !copy_pass->cache_render_pass &&
-        !moved_pixel_passes_.count(remapped_pass_id)) {
+    if (!RenderPassNeedsFullDamage(copy_pass.get())) {
       gfx::Transform inverse_transform(gfx::Transform::kSkipInitialization);
       if (copy_pass->transform_to_root_target.GetInverse(&inverse_transform)) {
         gfx::Rect damage_rect_in_render_pass_space =
@@ -422,7 +524,8 @@ void SurfaceAggregator::EmitSurfaceContent(
                     surface->GetActiveFrame().device_scale_factor(),
                     child_to_parent_map, surface_transform, quads_clip,
                     dest_pass, surface_id, has_surface_damage,
-                    rounded_corner_info);
+                    rounded_corner_info, occluding_damage_rect,
+                    occluding_damage_rect_valid);
   } else {
     auto* shared_quad_state = CopyAndScaleSharedQuadState(
         source_sqs, scaled_quad_to_target_transform, target_transform,
@@ -432,7 +535,8 @@ void SurfaceAggregator::EmitSurfaceContent(
         gfx::ScaleToEnclosingRect(source_sqs->visible_quad_layer_rect,
                                   layer_to_content_scale_x,
                                   layer_to_content_scale_y),
-        clip_rect, dest_pass, has_surface_damage, rounded_corner_info);
+        clip_rect, dest_pass, has_surface_damage, rounded_corner_info,
+        occluding_damage_rect, occluding_damage_rect_valid);
 
     gfx::Rect scaled_rect(gfx::ScaleToEnclosingRect(
         source_rect, layer_to_content_scale_x, layer_to_content_scale_y));
@@ -466,11 +570,22 @@ void SurfaceAggregator::EmitDefaultBackgroundColorQuad(
   SkColor background_color = surface_quad->default_background_color;
   auto* shared_quad_state = CopySharedQuadState(
       surface_quad->shared_quad_state, target_transform, clip_rect, dest_pass,
-      /*has_surface_damage*/ true, rounded_corner_info);
+      /*has_surface_damage*/ true, rounded_corner_info,
+      /*occluding_damage_rect*/ gfx::Rect(),
+      /*occluding_damage_rect_valid*/ false);
+
   auto* solid_color_quad =
       dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   solid_color_quad->SetNew(shared_quad_state, surface_quad->rect,
                            surface_quad->visible_rect, background_color, false);
+
+  if (needs_surface_occluding_damage_rect_) {
+    gfx::Transform transform(
+        target_transform,
+        surface_quad->shared_quad_state->quad_to_target_transform);
+    transform.ConcatTransform(dest_pass->transform_to_root_target);
+    UnionSurfaceDamageRectsOnTop(surface_quad->rect, transform, dest_pass);
+  }
 }
 
 void SurfaceAggregator::EmitGutterQuadsIfNecessary(
@@ -499,7 +614,9 @@ void SurfaceAggregator::EmitGutterQuadsIfNecessary(
         primary_shared_quad_state,
         primary_shared_quad_state->quad_to_target_transform, target_transform,
         right_gutter_rect, right_gutter_rect, clip_rect, dest_pass,
-        /*has_surface_damage*/ true, rounded_corner_info);
+        /*has_surface_damage*/ true, rounded_corner_info,
+        /*occluding_damage_rect*/ gfx::Rect(),
+        /*occluding_damage_rect_valid*/ false);
 
     auto* right_gutter =
         dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -516,7 +633,9 @@ void SurfaceAggregator::EmitGutterQuadsIfNecessary(
         primary_shared_quad_state,
         primary_shared_quad_state->quad_to_target_transform, target_transform,
         bottom_gutter_rect, bottom_gutter_rect, clip_rect, dest_pass,
-        /*has_surface_damage*/ true, rounded_corner_info);
+        /*has_surface_damage*/ true, rounded_corner_info,
+        /*occluding_damage_rect*/ gfx::Rect(),
+        /*occluding_damage_rect_valid*/ false);
 
     auto* bottom_gutter =
         dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -572,11 +691,14 @@ SharedQuadState* SurfaceAggregator::CopySharedQuadState(
     const ClipData& clip_rect,
     RenderPass* dest_render_pass,
     bool has_surface_damage,
-    const RoundedCornerInfo& rounded_corner_info) {
+    const RoundedCornerInfo& rounded_corner_info,
+    const gfx::Rect& occluding_damage_rect,
+    bool occluding_damage_rect_valid) {
   return CopyAndScaleSharedQuadState(
       source_sqs, source_sqs->quad_to_target_transform, target_transform,
       source_sqs->quad_layer_rect, source_sqs->visible_quad_layer_rect,
-      clip_rect, dest_render_pass, has_surface_damage, rounded_corner_info);
+      clip_rect, dest_render_pass, has_surface_damage, rounded_corner_info,
+      occluding_damage_rect, occluding_damage_rect_valid);
 }
 
 SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
@@ -588,7 +710,9 @@ SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
     const ClipData& clip_rect,
     RenderPass* dest_render_pass,
     bool has_surface_damage,
-    const RoundedCornerInfo& rounded_corner_info) {
+    const RoundedCornerInfo& rounded_corner_info,
+    const gfx::Rect& occluding_damage_rect,
+    bool occluding_damage_rect_valid) {
   auto* shared_quad_state = dest_render_pass->CreateAndAppendSharedQuadState();
   ClipData new_clip_rect = CalculateClipRect(
       clip_rect, ClipData(source_sqs->is_clipped, source_sqs->clip_rect),
@@ -612,6 +736,9 @@ SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
   shared_quad_state->has_surface_damage = has_surface_damage;
   shared_quad_state->is_fast_rounded_corner =
       rounded_corner_info.is_fast_rounded_corner;
+  if (occluding_damage_rect_valid) {
+    shared_quad_state->occluding_damage_rect = occluding_damage_rect;
+  }
 
   return shared_quad_state;
 }
@@ -626,7 +753,9 @@ void SurfaceAggregator::CopyQuadsToPass(
     RenderPass* dest_pass,
     const SurfaceId& surface_id,
     bool has_surface_damage,
-    const RoundedCornerInfo& parent_rounded_corner_info) {
+    const RoundedCornerInfo& parent_rounded_corner_info,
+    const gfx::Rect& occluding_damage_rect,
+    bool occluding_damage_rect_valid) {
   const SharedQuadState* last_copied_source_shared_quad_state = nullptr;
   // If the current frame has copy requests or cached render passes, then
   // aggregate the entire thing, as otherwise parts of the copy requests may be
@@ -688,7 +817,9 @@ void SurfaceAggregator::CopyQuadsToPass(
         }
         const SharedQuadState* dest_shared_quad_state = CopySharedQuadState(
             quad->shared_quad_state, target_transform, clip_rect, dest_pass,
-            has_surface_damage, new_rounded_corner_info);
+            has_surface_damage, new_rounded_corner_info, occluding_damage_rect,
+            occluding_damage_rect_valid);
+
         last_copied_source_shared_quad_state = quad->shared_quad_state;
         if (ignore_undamaged) {
           damage_rect_in_quad_space_valid = CalculateQuadSpaceDamageRect(
@@ -771,6 +902,12 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
   const auto& child_to_parent_map =
       provider_ ? provider_->GetChildToParentMap(ChildIdForSurface(surface))
                 : empty_map;
+
+  gfx::Rect occluding_damage_rect;
+  bool occluding_damage_rect_valid = ProcessSurfaceOccludingDamage(
+      surface, source_pass_list, gfx::Transform(),
+      source_pass_list.back().get(), &occluding_damage_rect);
+
   for (size_t i = 0; i < source_pass_list.size(); ++i) {
     const auto& source = *source_pass_list[i];
 
@@ -795,16 +932,15 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
                     frame.device_scale_factor(), child_to_parent_map,
                     gfx::Transform(), ClipData(), copy_pass.get(),
                     surface->surface_id(), has_surface_damage,
-                    RoundedCornerInfo());
+                    RoundedCornerInfo(), occluding_damage_rect,
+                    occluding_damage_rect_valid);
 
     // If the render pass has copy requests, or should be cached, or has
     // moving-pixel filters, or in a moving-pixel surface, we should damage the
     // whole output rect so that we always drawn the full content. Otherwise, we
     // might have incompleted copy request, or cached patially drawn render
     // pass.
-    if (!copy_request_passes_.count(remapped_pass_id) &&
-        !copy_pass->cache_render_pass &&
-        !moved_pixel_passes_.count(remapped_pass_id)) {
+    if (!RenderPassNeedsFullDamage(copy_pass.get())) {
       gfx::Transform inverse_transform(gfx::Transform::kSkipInitialization);
       if (copy_pass->transform_to_root_target.GetInverse(&inverse_transform)) {
         gfx::Rect damage_rect_in_render_pass_space =
@@ -1221,6 +1357,7 @@ CompositorFrame SurfaceAggregator::Aggregate(
   valid_surfaces_.clear();
   has_cached_render_passes_ = false;
   damage_ranges_.clear();
+  damage_rects_union_of_surfaces_on_top_ = gfx::Rect();
   DCHECK(referenced_surfaces_.empty());
   PrewalkResult prewalk_result;
   root_damage_rect_ =
