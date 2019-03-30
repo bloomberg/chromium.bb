@@ -1286,6 +1286,8 @@ source_set("chromeos") {
     "login/screens/network_screen_view.h",
     "login/screens/recommend_apps/recommend_apps_fetcher.cc",
     "login/screens/recommend_apps/recommend_apps_fetcher.h",
+    "login/screens/recommend_apps/recommend_apps_fetcher_impl.cc",
+    "login/screens/recommend_apps/recommend_apps_fetcher_impl.h",
     "login/screens/recommend_apps_screen.cc",
     "login/screens/recommend_apps_screen.h",
     "login/screens/recommend_apps_screen_view.h",
