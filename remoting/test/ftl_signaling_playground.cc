@@ -36,6 +36,7 @@ constexpr char kSwitchNameHelp[] = "help";
 constexpr char kSwitchNameAuthCode[] = "code";
 constexpr char kSwitchNameUsername[] = "username";
 constexpr char kSwitchNameStoragePath[] = "storage-path";
+constexpr char kSwitchNameNoAutoSignin[] = "no-auto-signin";
 
 // Reads a newline-terminated string from stdin.
 std::string ReadString() {
@@ -71,26 +72,16 @@ void WaitForEnterKey(base::OnceClosure on_done) {
                                    std::move(on_done));
 }
 
-void PrintGrpcStatusError(const grpc::Status& status) {
-  DCHECK(!status.ok());
-  fprintf(stderr, "RPC failed. Code=%d, Message=%s\n", status.error_code(),
-          status.error_message().c_str());
-  switch (status.error_code()) {
-    case grpc::StatusCode::UNAVAILABLE:
-      fprintf(stderr,
-              "Set the GRPC_DEFAULT_SSL_ROOTS_FILE_PATH environment variable "
-              "to third_party/grpc/src/etc/roots.pem if gRPC cannot locate the "
-              "root certificates.\n");
-      break;
-    case grpc::StatusCode::UNAUTHENTICATED:
-      fprintf(
-          stderr,
-          "Request is unauthenticated. Make sure you have run SignInGaia.\n");
-      break;
-    default:
-      break;
-  }
+bool NeedsManualSignin() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kSwitchNameNoAutoSignin);
 }
+
+struct CommandOption {
+ public:
+  std::string name;
+  base::RepeatingClosure callback;
+};
 
 }  // namespace
 
@@ -106,8 +97,8 @@ bool FtlSignalingPlayground::ShouldPrintHelp() {
 
 void FtlSignalingPlayground::PrintHelp() {
   printf(
-      "Usage: %s [--code=<auth-code>] [--storage-path=<storage-path>] "
-      "[--username=<example@gmail.com>]\n",
+      "Usage: %s [--no-auto-signin] [--code=<auth-code>] "
+      "[--storage-path=<storage-path>] [--username=<example@gmail.com>]\n",
       base::CommandLine::ForCurrentProcess()
           ->GetProgram()
           .MaybeAsASCII()
@@ -129,60 +120,75 @@ void FtlSignalingPlayground::StartAndAuthenticate() {
   storage_ = test::TestTokenStorage::OnDisk(username, storage_path);
 
   std::string access_token = storage_->FetchAccessToken();
+  base::RunLoop run_loop;
   if (access_token.empty()) {
-    AuthenticateAndResetServices();
+    AuthenticateAndResetServices(run_loop.QuitClosure());
   } else {
     VLOG(0) << "Reusing access token: " << access_token;
     token_getter_ = std::make_unique<FakeOAuthTokenGetter>(
         OAuthTokenGetter::Status::SUCCESS, "fake_email@gmail.com",
         access_token);
-    ResetServices();
+    ResetServices(run_loop.QuitClosure());
   }
+  run_loop.Run();
 
   StartLoop();
 }
 
 void FtlSignalingPlayground::StartLoop() {
   while (true) {
-    printf(
-        "\nOptions:\n"
-        "  1. SignInGaia\n"
-        "  2. GetIceServer\n"
-        "  3. PullMessages\n"
-        "  4. ReceiveMessages\n"
-        "  5. SendMessage\n"
-        "  6. Quit\n\n"
-        "Your choice [number]: ");
+    base::RunLoop run_loop;
+    std::vector<CommandOption> options{
+        {"GetIceServer",
+         base::BindRepeating(&FtlSignalingPlayground::GetIceServer,
+                             weak_factory_.GetWeakPtr(),
+                             run_loop.QuitClosure())},
+        {"PullMessages",
+         base::BindRepeating(&FtlSignalingPlayground::PullMessages,
+                             weak_factory_.GetWeakPtr(),
+                             run_loop.QuitClosure())},
+        {"ReceiveMessages",
+         base::BindRepeating(&FtlSignalingPlayground::StartReceivingMessages,
+                             weak_factory_.GetWeakPtr(),
+                             run_loop.QuitWhenIdleClosure())},
+        {"SendMessage",
+         base::BindRepeating(&FtlSignalingPlayground::SendMessage,
+                             weak_factory_.GetWeakPtr(),
+                             run_loop.QuitClosure())},
+        {"Quit", base::NullCallback()}};
+
+    if (NeedsManualSignin()) {
+      options.insert(options.begin(),
+                     {"SignInGaia",
+                      base::BindRepeating(&FtlSignalingPlayground::SignInGaia,
+                                          weak_factory_.GetWeakPtr(),
+                                          run_loop.QuitClosure())});
+    }
+
+    printf("\nOptions:\n");
+    int print_option_number = 1;
+    for (const auto& option : options) {
+      printf("  %d. %s\n", print_option_number, option.name.c_str());
+      print_option_number++;
+    }
+    printf("\nYour choice [number]: ");
     int choice = 0;
     base::StringToInt(ReadString(), &choice);
-    base::RunLoop run_loop;
-    switch (choice) {
-      case 1:
-        SignInGaia(run_loop.QuitClosure());
-        break;
-      case 2:
-        GetIceServer(run_loop.QuitClosure());
-        break;
-      case 3:
-        PullMessages(run_loop.QuitClosure());
-        break;
-      case 4:
-        StartReceivingMessages(run_loop.QuitWhenIdleClosure());
-        break;
-      case 5:
-        SendMessage(run_loop.QuitClosure());
-        break;
-      case 6:
-        return;
-      default:
-        fprintf(stderr, "Unknown option\n");
-        continue;
+    if (choice < 1 || static_cast<size_t>(choice) > options.size()) {
+      fprintf(stderr, "Unknown option\n");
+      continue;
     }
+    auto& callback = options[choice - 1].callback;
+    if (callback.is_null()) {
+      // Quit
+      return;
+    }
+    callback.Run();
     run_loop.Run();
   }
 }
 
-void FtlSignalingPlayground::ResetServices() {
+void FtlSignalingPlayground::ResetServices(base::OnceClosure on_done) {
   executor_ = std::make_unique<GrpcAuthenticatedExecutor>(token_getter_.get());
   peer_to_peer_stub_ = PeerToPeer::NewStub(FtlGrpcContext::CreateChannel());
 
@@ -196,9 +202,16 @@ void FtlSignalingPlayground::ResetServices() {
   message_subscription_ = messaging_client_->RegisterMessageCallback(
       base::BindRepeating(&FtlSignalingPlayground::OnMessageReceived,
                           weak_factory_.GetWeakPtr()));
+
+  if (NeedsManualSignin()) {
+    std::move(on_done).Run();
+  } else {
+    SignInGaia(std::move(on_done));
+  }
 }
 
-void FtlSignalingPlayground::AuthenticateAndResetServices() {
+void FtlSignalingPlayground::AuthenticateAndResetServices(
+    base::OnceClosure on_done) {
   static const std::string read_auth_code_prompt = base::StringPrintf(
       "Please authenticate at:\n\n"
       "  %s\n\n"
@@ -217,19 +230,12 @@ void FtlSignalingPlayground::AuthenticateAndResetServices() {
       base::DoNothing::Repeatedly<const std::string&, const std::string&>());
 
   // Get the access token so that we can reuse it for next time.
-  base::OnceClosure on_access_token_done = base::DoNothing::Once();
-  base::RunLoop run_loop;
-  if (!base::RunLoop::IsRunningOnCurrentThread()) {
-    on_access_token_done = run_loop.QuitClosure();
-  }
+  base::OnceClosure on_access_token_done =
+      base::BindOnce(&FtlSignalingPlayground::ResetServices,
+                     weak_factory_.GetWeakPtr(), std::move(on_done));
   token_getter_->CallWithToken(base::BindOnce(
       &FtlSignalingPlayground::OnAccessToken, weak_factory_.GetWeakPtr(),
       std::move(on_access_token_done)));
-  if (!base::RunLoop::IsRunningOnCurrentThread()) {
-    run_loop.Run();
-  }
-
-  ResetServices();
 }
 
 void FtlSignalingPlayground::OnAccessToken(base::OnceClosure on_done,
@@ -260,25 +266,25 @@ void FtlSignalingPlayground::OnGetIceServerResponse(
     base::OnceClosure on_done,
     const grpc::Status& status,
     const ftl::GetICEServerResponse& response) {
-  if (status.ok()) {
-    printf("Ice transport policy: %s\n",
-           response.ice_config().ice_transport_policy().c_str());
-    for (const ftl::ICEServerList& server :
-         response.ice_config().ice_servers()) {
-      printf(
-          "ICE server:\n"
-          "  hostname=%s\n"
-          "  username=%s\n"
-          "  credential=%s\n"
-          "  max_rate_kbps=%" PRId64 "\n",
-          server.hostname().c_str(), server.username().c_str(),
-          server.credential().c_str(), server.max_rate_kbps());
-      for (const std::string& url : server.urls()) {
-        printf("  url=%s\n", url.c_str());
-      }
+  if (!status.ok()) {
+    HandleGrpcStatusError(std::move(on_done), status);
+    return;
+  }
+
+  printf("Ice transport policy: %s\n",
+         response.ice_config().ice_transport_policy().c_str());
+  for (const ftl::ICEServerList& server : response.ice_config().ice_servers()) {
+    printf(
+        "ICE server:\n"
+        "  hostname=%s\n"
+        "  username=%s\n"
+        "  credential=%s\n"
+        "  max_rate_kbps=%" PRId64 "\n",
+        server.hostname().c_str(), server.username().c_str(),
+        server.credential().c_str(), server.max_rate_kbps());
+    for (const std::string& url : server.urls()) {
+      printf("  url=%s\n", url.c_str());
     }
-  } else {
-    PrintGrpcStatusError(status);
   }
   std::move(on_done).Run();
 }
@@ -293,21 +299,16 @@ void FtlSignalingPlayground::SignInGaia(base::OnceClosure on_done) {
 
 void FtlSignalingPlayground::OnSignInGaiaResponse(base::OnceClosure on_done,
                                                   const grpc::Status& status) {
-  if (status.ok()) {
-    std::string registration_id_base64;
-    base::Base64Encode(registration_manager_->GetRegistrationId(),
-                       &registration_id_base64);
-    printf("Service signed in. registration_id(base64)=%s\n",
-           registration_id_base64.c_str());
-  } else {
-    if (status.error_code() == grpc::StatusCode::UNAUTHENTICATED) {
-      VLOG(0) << "Grpc request failed to authenticate. "
-              << "Trying to reauthenticate...";
-      AuthenticateAndResetServices();
-    } else {
-      PrintGrpcStatusError(status);
-    }
+  if (!status.ok()) {
+    HandleGrpcStatusError(std::move(on_done), status);
+    return;
   }
+
+  std::string registration_id_base64;
+  base::Base64Encode(registration_manager_->GetRegistrationId(),
+                     &registration_id_base64);
+  printf("Service signed in. registration_id(base64)=%s\n",
+         registration_id_base64.c_str());
   std::move(on_done).Run();
 }
 
@@ -324,7 +325,8 @@ void FtlSignalingPlayground::OnPullMessagesResponse(
     base::OnceClosure on_done,
     const grpc::Status& status) {
   if (!status.ok()) {
-    PrintGrpcStatusError(status);
+    HandleGrpcStatusError(std::move(on_done), status);
+    return;
   }
   std::move(on_done).Run();
 }
@@ -380,11 +382,13 @@ void FtlSignalingPlayground::OnSendMessageResponse(
     base::OnceCallback<void(bool)> on_continue,
     const grpc::Status& status) {
   if (!status.ok()) {
-    PrintGrpcStatusError(status);
-  } else {
-    printf("Message successfully sent.\n");
+    HandleGrpcStatusError(base::BindOnce(std::move(on_continue), false),
+                          status);
+    return;
   }
-  std::move(on_continue).Run(status.ok());
+
+  printf("Message successfully sent.\n");
+  std::move(on_continue).Run(true);
 }
 
 void FtlSignalingPlayground::StartReceivingMessages(base::OnceClosure on_done) {
@@ -416,15 +420,41 @@ void FtlSignalingPlayground::OnStartReceivingMessagesDone(
     std::move(on_done).Run();
     return;
   }
+
   if (!status.ok()) {
-    PrintGrpcStatusError(status);
-    std::move(on_done).Run();
+    HandleGrpcStatusError(std::move(on_done), status);
     return;
   }
   printf("Started receiving messages. Press enter to stop streaming...\n");
   WaitForEnterKey(base::BindOnce(&FtlSignalingPlayground::StopReceivingMessages,
                                  weak_factory_.GetWeakPtr(),
                                  std::move(on_done)));
+}
+
+void FtlSignalingPlayground::HandleGrpcStatusError(base::OnceClosure on_done,
+                                                   const grpc::Status& status) {
+  DCHECK(!status.ok());
+  if (status.error_code() == grpc::StatusCode::UNAUTHENTICATED) {
+    if (NeedsManualSignin()) {
+      printf(
+          "Request is unauthenticated. You should run SignInGaia first if "
+          "you haven't done so, otherwise your OAuth token might be expired. \n"
+          "Request for new OAuth token? [y/N]: ");
+      std::string result = ReadString();
+      if (result != "y" && result != "Y") {
+        std::move(on_done).Run();
+        return;
+      }
+    }
+    VLOG(0) << "Grpc request failed to authenticate. "
+            << "Trying to reauthenticate...";
+    AuthenticateAndResetServices(std::move(on_done));
+    return;
+  }
+
+  fprintf(stderr, "RPC failed. Code=%d, Message=%s\n", status.error_code(),
+          status.error_message().c_str());
+  std::move(on_done).Run();
 }
 
 }  // namespace remoting

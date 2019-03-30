@@ -40,8 +40,8 @@ class FtlSignalingPlayground {
       google::internal::communications::instantmessaging::v1::Registration;
 
   void StartLoop();
-  void ResetServices();
-  void AuthenticateAndResetServices();
+  void ResetServices(base::OnceClosure on_done);
+  void AuthenticateAndResetServices(base::OnceClosure on_done);
   void OnAccessToken(base::OnceClosure on_done,
                      OAuthTokenGetter::Status status,
                      const std::string& user_email,
@@ -72,6 +72,9 @@ class FtlSignalingPlayground {
                          const std::string& message);
   void OnStartReceivingMessagesDone(base::OnceClosure on_done,
                                     const grpc::Status& status);
+
+  void HandleGrpcStatusError(base::OnceClosure on_done,
+                             const grpc::Status& status);
 
   std::unique_ptr<test::TestTokenStorage> storage_;
   std::unique_ptr<TestOAuthTokenGetterFactory> token_getter_factory_;
