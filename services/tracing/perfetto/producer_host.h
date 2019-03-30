@@ -83,7 +83,6 @@ class ProducerHost : public tracing::mojom::ProducerHost,
   void UnregisterTraceWriter(uint32_t writer_id) override;
 
  protected:
-  void OnConnectionError();
 
   base::RepeatingCallback<void(const perfetto::CommitDataRequest&)>
       on_commit_callback_for_testing_;

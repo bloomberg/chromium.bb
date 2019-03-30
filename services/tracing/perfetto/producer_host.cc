@@ -15,7 +15,12 @@
 namespace tracing {
 
 ProducerHost::ProducerHost() = default;
-ProducerHost::~ProducerHost() = default;
+
+ProducerHost::~ProducerHost() {
+  // Manually reset to prevent any callbacks from the ProducerEndpoint
+  // when we're in a half-destructed state.
+  producer_endpoint_.reset();
+}
 
 void ProducerHost::Initialize(mojom::ProducerClientPtr producer_client,
                               perfetto::TracingService* service,
@@ -31,15 +36,6 @@ void ProducerHost::Initialize(mojom::ProducerClientPtr producer_client,
       this, 0 /* uid */, name,
       4 * 1024 * 1024 /* shared_memory_size_hint_bytes */);
   DCHECK(producer_endpoint_);
-
-  producer_client_.set_connection_error_handler(
-      base::BindOnce(&ProducerHost::OnConnectionError, base::Unretained(this)));
-}
-
-void ProducerHost::OnConnectionError() {
-  // Manually reset to prevent any callbacks from the ProducerEndpoint
-  // when we're in a half-destructed state.
-  producer_endpoint_.reset();
 }
 
 void ProducerHost::OnConnect() {
