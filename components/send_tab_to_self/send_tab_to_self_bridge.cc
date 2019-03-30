@@ -352,6 +352,10 @@ void SendTabToSelfBridge::OnURLsDeleted(
   DeleteAllEntries();
 }
 
+bool SendTabToSelfBridge::IsReady() {
+  return change_processor()->IsTrackingMetadata();
+}
+
 // static
 std::unique_ptr<syncer::ModelTypeStore>
 SendTabToSelfBridge::DestroyAndStealStoreForTest(

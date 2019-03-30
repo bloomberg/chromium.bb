@@ -21,6 +21,9 @@ class SendTabToSelfModelObserver {
 
   // Invoked when the model has finished loading. Until this method is called it
   // is unsafe to use the model.
+  // This call has overlaps with SendTabToSelfModel::IsReady but by having this
+  // be a pure virtual function we can ensure that subclasses of this class will
+  // have a way to ensure that the model is active before interacting with it.
   virtual void SendTabToSelfModelLoaded() = 0;
 
   // Invoked when elements of the model are added or removed. This is the

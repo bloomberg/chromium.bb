@@ -30,6 +30,7 @@ class TestSendTabToSelfModel : public SendTabToSelfModel {
                                      base::Time navigation_time) override;
   void DeleteEntry(const std::string& guid) override;
   void DismissEntry(const std::string& guid) override;
+  bool IsReady() override;
 };
 
 }  // namespace send_tab_to_self

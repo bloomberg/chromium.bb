@@ -76,12 +76,12 @@ class SendTabToSelfBridgeTest : public testing::Test {
   SendTabToSelfBridgeTest()
       : store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()) {
     provider_.Initialize("cache_guid", "machine");
-    ON_CALL(mock_processor_, IsTrackingMetadata()).WillByDefault(Return(true));
   }
 
   // Initialized the bridge based on the current local device and store. Can
   // only be called once per run, as it passes |store_|.
   void InitializeBridge() {
+    ON_CALL(mock_processor_, IsTrackingMetadata()).WillByDefault(Return(true));
     bridge_ = std::make_unique<SendTabToSelfBridge>(
         mock_processor_.CreateForwardingProcessor(), &provider_, &clock_,
         syncer::ModelTypeStoreTestUtil::MoveStoreToFactory(std::move(store_)),
@@ -101,6 +101,10 @@ class SendTabToSelfBridgeTest : public testing::Test {
       base::TimeDelta delta = base::TimeDelta::FromMilliseconds(10)) {
     clock_.Advance(delta);
     return clock_.Now();
+  }
+
+  void DisableBridge() {
+    ON_CALL(mock_processor_, IsTrackingMetadata()).WillByDefault(Return(false));
   }
 
   syncer::EntityDataPtr MakeEntityData(const SendTabToSelfEntry& entry) {
