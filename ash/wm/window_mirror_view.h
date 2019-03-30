@@ -12,6 +12,7 @@
 #include "base/scoped_observer.h"
 #include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/views/view.h"
 
@@ -32,6 +33,7 @@ namespace wm {
 
 // A view that mirrors the client area of a single (source) window.
 class ASH_EXPORT WindowMirrorView : public views::View,
+                                    public aura::WindowObserver,
                                     public aura::EnvObserver {
  public:
   WindowMirrorView(aura::Window* source, bool trilinear_filtering_on_init);
@@ -42,6 +44,9 @@ class ASH_EXPORT WindowMirrorView : public views::View,
 
   // Recreates |layer_owner_|.
   void RecreateMirrorLayers();
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;

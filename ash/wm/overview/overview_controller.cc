@@ -21,6 +21,7 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
+#include "ash/wm/overview/start_animation_observer.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -258,6 +259,7 @@ class OverviewController::OverviewBlurController
 OverviewController::OverviewController()
     : occlusion_pause_duration_for_end_ms_(kOcclusionPauseDurationForEndMs),
       overview_blur_controller_(std::make_unique<OverviewBlurController>()),
+      delayed_animation_task_delay_(kTransition),
       weak_ptr_factory_(this) {
   Shell::Get()->activation_client()->AddObserver(this);
 }
@@ -268,10 +270,10 @@ OverviewController::~OverviewController() {
 
   // Destroy widgets that may be still animating if shell shuts down soon after
   // exiting overview mode.
-  for (std::unique_ptr<DelayedAnimationObserver>& animation_observer :
-       delayed_animations_) {
+  for (auto& animation_observer : delayed_animations_)
     animation_observer->Shutdown();
-  }
+  for (auto& animation_observer : start_animations_)
+    animation_observer->Shutdown();
 
   if (overview_session_) {
     overview_session_->Shutdown();
@@ -375,8 +377,20 @@ bool OverviewController::ToggleOverview(
     overview_session_->Init(windows, hide_windows);
     if (IsBlurAllowed())
       overview_blur_controller_->Blur(/*animate_only=*/false);
+
+    // For app dragging, there are no start animations so add a delay to delay
+    // animations observing when the start animation ends, such as the shelf,
+    // shadow and rounded corners.
+    if (new_type == OverviewSession::EnterExitOverviewType::kWindowDragged &&
+        !delayed_animation_task_delay_.is_zero()) {
+      auto force_delay_observer =
+          std::make_unique<ForceDelayObserver>(delayed_animation_task_delay_);
+      AddStartAnimationObserver(std::move(force_delay_observer));
+    }
+
     if (start_animations_.empty())
       OnStartingAnimationComplete(/*canceled=*/false);
+
     OnSelectionStarted();
   }
   return true;

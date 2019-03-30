@@ -41,12 +41,16 @@ WindowMirrorView::WindowMirrorView(aura::Window* source,
                                    bool trilinear_filtering_on_init)
     : source_(source),
       trilinear_filtering_on_init_(trilinear_filtering_on_init) {
+  source_->AddObserver(this);
   DCHECK(source);
 }
 
 WindowMirrorView::~WindowMirrorView() {
   // Make sure |source_| has outlived |this|. See crbug.com/681207
-  DCHECK(source_->layer());
+  if (source_) {
+    DCHECK(source_->layer());
+    source_->RemoveObserver(this);
+  }
 }
 
 void WindowMirrorView::RecreateMirrorLayers() {
@@ -56,13 +60,21 @@ void WindowMirrorView::RecreateMirrorLayers() {
   InitLayerOwner();
 }
 
+void WindowMirrorView::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(source_, window);
+  if (source_ == window) {
+    source_->RemoveObserver(this);
+    source_ = nullptr;
+  }
+}
+
 gfx::Size WindowMirrorView::CalculatePreferredSize() const {
   return GetClientAreaBounds().size();
 }
 
 void WindowMirrorView::Layout() {
   // If |layer_owner_| hasn't been initialized (|this| isn't on screen), no-op.
-  if (!layer_owner_)
+  if (!layer_owner_ || !source_)
     return;
 
   // Position at 0, 0.
@@ -174,7 +186,9 @@ void WindowMirrorView::ForceVisibilityAndOcclusion() {
 }
 
 void WindowMirrorView::OnWindowOcclusionTrackingResumed() {
-  ForceVisibilityAndOcclusion();
+  // Skip if the source_ has already been removed.
+  if (source_)
+    ForceVisibilityAndOcclusion();
   env_observer_.RemoveAll();
 }
 

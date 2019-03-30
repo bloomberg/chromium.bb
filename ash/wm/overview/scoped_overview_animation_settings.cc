@@ -5,6 +5,7 @@
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 
 #include "ash/metrics/histogram_macros.h"
+#include "ash/wm/overview/overview_constants.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
@@ -17,9 +18,6 @@
 namespace ash {
 
 namespace {
-
-// The time duration for transformation animations.
-constexpr base::TimeDelta kTransition = base::TimeDelta::FromMilliseconds(300);
 
 // The time duration for fading out when closing an item.
 constexpr base::TimeDelta kCloseFadeOut =

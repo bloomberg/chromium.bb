@@ -12,6 +12,24 @@
 
 namespace ash {
 
+class ForceDelayObserver : public DelayedAnimationObserver {
+ public:
+  explicit ForceDelayObserver(base::TimeDelta delay);
+  ~ForceDelayObserver() override;
+
+  // DelayedAnimationobserver:
+  void SetOwner(OverviewDelegate* owner) override;
+  void Shutdown() override;
+
+ private:
+  void Finish();
+
+  OverviewDelegate* owner_ = nullptr;
+  base::WeakPtrFactory<ForceDelayObserver> weak_ptr_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(ForceDelayObserver);
+};
+
 // An observer which watches a overview start animation and signals its owner
 // when the animation it is watching finishes.
 class ASH_EXPORT StartAnimationObserver : public ui::ImplicitAnimationObserver,

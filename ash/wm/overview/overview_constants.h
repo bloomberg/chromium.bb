@@ -9,6 +9,9 @@
 
 namespace ash {
 
+// The time duration for transformation animations.
+constexpr base::TimeDelta kTransition = base::TimeDelta::FromMilliseconds(300);
+
 // In the conceptual overview table, the window margin is the space reserved
 // around the window within the cell. This margin does not overlap so the
 // closest distance between adjacent windows will be twice this amount.
