@@ -216,12 +216,11 @@ const char kDisableNotifications[]          = "disable-notifications";
 // the use of persistent gpu memory buffers.
 const char kDisablePartialRaster[] = "disable-partial-raster";
 
-// By default, in devtools_session.cc, we use CBOR for protocol messages
-// except for sending JSON to clients that request it.
-// This switch undoes this default. We plan to remove it after after transition
-// to binary is sufficiently complete (2019-04-15).
-const char kDisableInternalDevToolsBinaryProtocol[] =
-    "disable-internal-devtools-binary-protocol";
+// Internally (in devtools_session.cc) switches the protocol to binary format
+// (CBOR). This setting is temporary; we plan to remove it after transition to
+// binary is sufficiently complete (2019-04-01).
+const char kEnableInternalDevToolsBinaryProtocol[] =
+    "enable-internal-devtools-binary-protocol";
 
 // Enable partial raster in the renderer.
 const char kEnablePartialRaster[] = "enable-partial-raster";

@@ -144,13 +144,10 @@ fast/harness/results.html [ WontFix ]
 
 # Linux layout tests do not have a Myanmar fallback font.
 [ Linux ] inspector-protocol/layout-fonts/fallback-myanmar.js [ WontFix ]
-[ Linux ] virtual/nobinary-for-inspector-protocol/inspector-protocol/layout-fonts/fallback-myanmar.js [ WontFix ]
 
 # Segoe UI matching is only relevant on Windows
 [ Mac ] inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ WontFix ]
-[ Mac ] virtual/nobinary-for-inspector-protocol/inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ WontFix ]
 [ Linux ] inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ WontFix ]
-[ Linux ] virtual/nobinary-for-inspector-protocol/inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ WontFix ]
 
 # Tests in media/stable are only supposed to be run as virtual test (see virtual/stable/media).
 media/stable [ WontFix ]
@@ -2209,7 +2206,7 @@ crbug.com/669083 virtual/outofblink-cors/http/tests/security/frameNavigation/xss
 # 3) site isolation is enabled without also enabling
 #    IsolatedCodeCache (tests disabled by the test expectation below).
 Bug(none) http/tests/devtools/isolated-code-cache/cross-origin-test.js [ WontFix ]
-Bug(none) virtual/nobinary-for-devtools/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ WontFix ]
+Bug(none) virtual/binary-for-devtools/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ WontFix ]
 # ==== Tests incompatible with the default WPT Origin Isolation end here ==^^
 
 # Tests using testRunner.useUnfortunateSynchronousResizeMode occasionally fail on Win7,
