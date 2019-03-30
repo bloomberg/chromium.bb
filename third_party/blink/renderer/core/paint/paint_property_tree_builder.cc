@@ -571,7 +571,7 @@ static bool NeedsTransformForNonRootSVG(const LayoutObject& object) {
   // Checking for an identity matrix will cause the property tree structure
   // to change during animations if the animation passes through the
   // identity matrix.
-  return object.IsSVGChild() &&
+  return object.IsSVGChild() && !object.IsText() &&
          !object.LocalToSVGParentTransform().IsIdentity();
 }
 
@@ -618,6 +618,9 @@ static FloatPoint3D TransformOrigin(const LayoutBox& box) {
 
 static bool NeedsTransform(const LayoutObject& object,
                            CompositingReasons direct_compositing_reasons) {
+  if (object.IsText())
+    return false;
+
   if ((RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
        RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) &&
       object.StyleRef().BackfaceVisibility() == EBackfaceVisibility::kHidden)
@@ -732,11 +735,17 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
   }
 }
 
-static bool NeedsClipPathClip(const LayoutObject& object) {
-  if (!object.StyleRef().ClipPath())
-    return false;
+static bool MayNeedClipPathClip(const LayoutObject& object) {
+  return !object.IsText() && object.StyleRef().ClipPath();
+}
 
-  return object.FirstFragment().ClipPathPath();
+static bool NeedsClipPathClip(const LayoutObject& object) {
+  // We should have already updated the clip path cache when this is called.
+  if (object.FirstFragment().ClipPathPath()) {
+    DCHECK(MayNeedClipPathClip(object));
+    return true;
+  }
+  return false;
 }
 
 static CompositingReasons CompositingReasonsForEffectProperty() {
@@ -758,6 +767,9 @@ static CompositingReasons CompositingReasonsForEffectProperty() {
 
 static bool NeedsEffect(const LayoutObject& object,
                         CompositingReasons direct_compositing_reasons) {
+  if (object.IsText())
+    return false;
+
   const ComputedStyle& style = object.StyleRef();
 
   // For now some objects (e.g. LayoutTableCol) with stacking context style
@@ -1212,7 +1224,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateFragmentClip() {
 }
 
 static bool NeedsCssClip(const LayoutObject& object) {
-  return object.HasClip();
+  if (object.HasClip()) {
+    DCHECK(!object.IsText());
+    return true;
+  }
+  return false;
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateCssClip() {
@@ -2233,7 +2249,7 @@ void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
     box.GetMutableForPainting().SetNeedsPaintPropertyUpdate();
   }
 
-  if (box.HasClipPath())
+  if (MayNeedClipPathClip(box))
     box.GetMutableForPainting().InvalidateClipPathCache();
 
   // The filter generated for reflection depends on box size.
@@ -2279,16 +2295,18 @@ void FragmentPaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateClipPathCache() {
-  if (fragment_data_.IsClipPathCacheValid())
+  if (!MayNeedClipPathClip(object_)) {
+    fragment_data_.ClearClipPathCache();
     return;
+  }
 
-  if (!object_.StyleRef().ClipPath())
+  if (fragment_data_.IsClipPathCacheValid())
     return;
 
   base::Optional<FloatRect> bounding_box =
       ClipPathClipper::LocalClipPathBoundingBox(object_);
   if (!bounding_box) {
-    fragment_data_.SetClipPathCache(base::nullopt, nullptr);
+    fragment_data_.ClearClipPathCache();
     return;
   }
   bounding_box->MoveBy(FloatPoint(fragment_data_.PaintOffset()));
@@ -3035,26 +3053,33 @@ void PaintPropertyTreeBuilder::CreateFragmentDataForRepeatingInPagedMedia(
 
 bool PaintPropertyTreeBuilder::UpdateFragments() {
   bool had_paint_properties = object_.FirstFragment().PaintProperties();
-  // Note: It is important to short-circuit on object_.StyleRef().ClipPath()
-  // because NeedsClipPathClip() and NeedsEffect() requires the clip path
-  // cache to be resolved, but the clip path cache invalidation must delayed
-  // until the paint offset and border box has been computed.
   bool needs_paint_properties =
-      object_.StyleRef().ClipPath() ||
-      NeedsPaintOffsetTranslation(object_,
-                                  context_.direct_compositing_reasons) ||
-      NeedsStickyTranslation(object_) ||
-      NeedsTransform(object_, context_.direct_compositing_reasons) ||
-      NeedsClipPathClip(object_) ||
-      NeedsEffect(object_, context_.direct_compositing_reasons) ||
-      NeedsTransformForNonRootSVG(object_) ||
-      NeedsFilter(object_, context_.direct_compositing_reasons) ||
-      NeedsCssClip(object_) || NeedsInnerBorderRadiusClip(object_) ||
-      NeedsOverflowClip(object_) || NeedsPerspective(object_) ||
-      NeedsReplacedContentTransform(object_) ||
-      NeedsLinkHighlightEffect(object_) ||
-      NeedsScrollOrScrollTranslation(object_,
-                                     context_.direct_compositing_reasons);
+#if !DCHECK_IS_ON()
+      // If DCHECK is not on, use fast path for text.
+      !object_.IsText() &&
+#endif
+      (NeedsPaintOffsetTranslation(object_,
+                                   context_.direct_compositing_reasons) ||
+       NeedsStickyTranslation(object_) ||
+       NeedsTransform(object_, context_.direct_compositing_reasons) ||
+       // Note: It is important to use MayNeedClipPathClip() instead of
+       // NeedsClipPathClip() which requires the clip path cache to be resolved,
+       // but the clip path cache invalidation must delayed until the paint
+       // offset and border box has been computed.
+       MayNeedClipPathClip(object_) ||
+       NeedsEffect(object_, context_.direct_compositing_reasons) ||
+       NeedsTransformForNonRootSVG(object_) ||
+       NeedsFilter(object_, context_.direct_compositing_reasons) ||
+       NeedsCssClip(object_) || NeedsInnerBorderRadiusClip(object_) ||
+       NeedsOverflowClip(object_) || NeedsPerspective(object_) ||
+       NeedsReplacedContentTransform(object_) ||
+       NeedsLinkHighlightEffect(object_) ||
+       NeedsScrollOrScrollTranslation(object_,
+                                      context_.direct_compositing_reasons));
+
+  // If the object is a text, none of the above function should return true.
+  DCHECK(!needs_paint_properties || !object_.IsText());
+
   // Need of fragmentation clip will be determined in CreateFragmentContexts().
 
   if (object_.IsFixedPositionObjectInPagedMedia()) {
@@ -3105,8 +3130,11 @@ bool PaintPropertyTreeBuilder::UpdateFragments() {
 }
 
 bool PaintPropertyTreeBuilder::ObjectTypeMightNeedPaintProperties() const {
-  return object_.IsBoxModelObject() || object_.IsSVG() ||
-         context_.painting_layer->EnclosingPaginationLayer() ||
+  return !object_.IsText() && (object_.IsBoxModelObject() || object_.IsSVG());
+}
+
+bool PaintPropertyTreeBuilder::ObjectTypeMightNeedMultipleFragmentData() const {
+  return context_.painting_layer->EnclosingPaginationLayer() ||
          context_.repeating_table_section ||
          context_.is_repeating_fixed_position;
 }
@@ -3136,7 +3164,8 @@ PaintPropertyChangeType PaintPropertyTreeBuilder::UpdateForSelf() {
 
   PaintPropertyChangeType property_changed =
       PaintPropertyChangeType::kUnchanged;
-  if (ObjectTypeMightNeedPaintProperties()) {
+  if (ObjectTypeMightNeedPaintProperties() ||
+      ObjectTypeMightNeedMultipleFragmentData()) {
     if (UpdateFragments())
       property_changed = PaintPropertyChangeType::kNodeAddedOrRemoved;
   } else {

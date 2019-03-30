@@ -124,8 +124,15 @@ class CORE_EXPORT FragmentData {
     DCHECK(IsClipPathCacheValid());
     return rare_data_ ? rare_data_->clip_path_path.get() : nullptr;
   }
-  void SetClipPathCache(const base::Optional<IntRect>& bounding_box,
+  void SetClipPathCache(const IntRect& bounding_box,
                         scoped_refptr<const RefCountedPath>);
+  void ClearClipPathCache() {
+    if (rare_data_) {
+      rare_data_->is_clip_path_cache_valid = true;
+      rare_data_->clip_path_bounding_box = base::nullopt;
+      rare_data_->clip_path_path = nullptr;
+    }
+  }
 
   // Holds references to the paint property nodes created by this object.
   const ObjectPaintProperties* PaintProperties() const {
