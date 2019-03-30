@@ -29,6 +29,7 @@ def DiffFileContents(expected_path, actual_path):
       tofile=os.path.join('after', expected_path),
       n=0)
 
+  # Space added before "patch" so that giant command is not put in bash history.
   return """\
 Files Compared:
   * {}
@@ -36,9 +37,8 @@ Files Compared:
 
 To update the file, run:
 ########### START ###########
-cat <<'END_DIFF' |
+ patch -p1 <<'END_DIFF'
 {}
 END_DIFF
-    patch -p1
 ############ END ############
 """.format(expected_path, actual_path, ''.join(diff).rstrip())
