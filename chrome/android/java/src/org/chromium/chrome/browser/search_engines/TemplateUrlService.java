@@ -332,6 +332,11 @@ public class TemplateUrlService {
         return nativeUpdateLastVisitedForTesting(mNativeTemplateUrlServiceAndroid, keyword);
     }
 
+    @VisibleForTesting
+    static void setInstanceForTesting(TemplateUrlService service) {
+        sService = service;
+    }
+
     private native long nativeInit();
     private native void nativeLoad(long nativeTemplateUrlServiceAndroid);
     private native boolean nativeIsLoaded(long nativeTemplateUrlServiceAndroid);

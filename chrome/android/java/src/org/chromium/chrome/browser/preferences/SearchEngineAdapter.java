@@ -129,6 +129,7 @@ public class SearchEngineAdapter extends BaseAdapter
             TemplateUrlService.getInstance().unregisterLoadListener(this);
             mHasLoadObserver = false;
         }
+
         TemplateUrlService.getInstance().removeObserver(this);
     }
 

@@ -1657,6 +1657,13 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="Failed: Cannot sign in as previous user"/>
 </enum>
 
+<enum name="AndroidSearchEngineChoiceEvents">
+  <summary>Events related to Search Engine Choice feature.</summary>
+  <int value="0" label="Snackbar shown"/>
+  <int value="1" label="Prompt followed"/>
+  <int value="2" label="Search engine changed"/>
+</enum>
+
 <enum name="AndroidSeccompSandboxStatus">
   <int value="0" label="Not Supported"/>
   <int value="1" label="Detection Failed"/>
@@ -50874,6 +50881,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="28" label="UMA_TWA_PRIVACY_DISCLOSURE"/>
   <int value="29" label="UMA_AUTOFILL_ASSISTANT_STOP_UNDO"/>
   <int value="30" label="UMA_TAB_CLOSE_MULTIPLE_UNDO"/>
+  <int value="31" label="UMA_SEARCH_ENGINE_CHOICE_NOTIFICATION"/>
 </enum>
 
 <enum name="SnippetOpenMethod">

@@ -156,6 +156,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/preferences/password/SingleThreadBarrierClosureTest.java",
   "junit/src/org/chromium/chrome/browser/preferences/password/TimedCallbackDelayerTest.java",
   "junit/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferencesManagerTest.java",
+  "junit/src/org/chromium/chrome/browser/search_engines/SearchEngineChoiceNotificationTest.java",
   "junit/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfAndroidBridgeTest.java",
   "junit/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfShareActivityTest.java",
   "junit/src/org/chromium/chrome/browser/signin/SigninManagerTest.java",
