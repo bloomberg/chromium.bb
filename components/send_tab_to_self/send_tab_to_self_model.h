@@ -38,9 +38,11 @@ class SendTabToSelfModel {
   // trimmed copy of |title|. Allows clients to modify the state of the model
   // as driven by user behaviors.
   // Returns the entry if it was successfully added.
-  virtual const SendTabToSelfEntry* AddEntry(const GURL& url,
-                                             const std::string& title,
-                                             base::Time navigation_time) = 0;
+  virtual const SendTabToSelfEntry* AddEntry(
+      const GURL& url,
+      const std::string& title,
+      base::Time navigation_time,
+      const std::string& target_device_cache_guid) = 0;
 
   // Remove entry with |guid| from entries. Allows clients to modify the state
   // of the model as driven by user behaviors.

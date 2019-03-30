@@ -145,10 +145,14 @@ class SendTabToSelfBridgeTest : public testing::Test {
   // For Model Tests.
   void AddSampleEntries() {
     // Adds timer to avoid having two entries with the same shared timestamp.
-    bridge_->AddEntry(GURL("http://a.com"), "a", AdvanceAndGetTime());
-    bridge_->AddEntry(GURL("http://b.com"), "b", AdvanceAndGetTime());
-    bridge_->AddEntry(GURL("http://c.com"), "c", AdvanceAndGetTime());
-    bridge_->AddEntry(GURL("http://d.com"), "d", AdvanceAndGetTime());
+    bridge_->AddEntry(GURL("http://a.com"), "a", AdvanceAndGetTime(),
+                      "target_device");
+    bridge_->AddEntry(GURL("http://b.com"), "b", AdvanceAndGetTime(),
+                      "target_device");
+    bridge_->AddEntry(GURL("http://c.com"), "c", AdvanceAndGetTime(),
+                      "target_device");
+    bridge_->AddEntry(GURL("http://d.com"), "d", AdvanceAndGetTime(),
+                      "target_device");
   }
 
   syncer::MockModelTypeChangeProcessor* processor() { return &mock_processor_; }
@@ -189,7 +193,8 @@ TEST_F(SendTabToSelfBridgeTest, SyncAddOneEntry) {
   syncer::EntityChangeList remote_input;
 
   SendTabToSelfEntry entry("guid1", GURL("http://www.example.com/"), "title",
-                           AdvanceAndGetTime(), AdvanceAndGetTime(), "device");
+                           AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
+                           "target_device");
 
   remote_input.push_back(
       syncer::EntityChange::CreateAdd("guid1", MakeEntityData(entry)));
@@ -221,7 +226,8 @@ TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesAddTwoSpecifics) {
 TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesOneAdd) {
   InitializeBridge();
   SendTabToSelfEntry entry("guid1", GURL("http://www.example.com/"), "title",
-                           AdvanceAndGetTime(), AdvanceAndGetTime(), "device");
+                           AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
+                           "target_device");
 
   syncer::EntityChangeList add_changes;
 
@@ -239,7 +245,8 @@ TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesOneAdd) {
 TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesOneDeletion) {
   InitializeBridge();
   SendTabToSelfEntry entry("guid1", GURL("http://www.example.com/"), "title",
-                           AdvanceAndGetTime(), AdvanceAndGetTime(), "device");
+                           AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
+                           "target_device");
 
   syncer::EntityChangeList add_changes;
 
@@ -429,18 +436,19 @@ TEST_F(SendTabToSelfBridgeTest, AddInvalidEntries) {
 
   // Add Entry should succeed in this case.
   EXPECT_NE(nullptr, bridge()->AddEntry(GURL("http://www.example.com/"), "d",
-                                        AdvanceAndGetTime()));
+                                        AdvanceAndGetTime(), "target_device"));
 
   // Add Entry should fail on invalid URLs.
-  EXPECT_EQ(nullptr, bridge()->AddEntry(GURL(), "d", AdvanceAndGetTime()));
-  EXPECT_EQ(nullptr,
-            bridge()->AddEntry(GURL("http://?k=v"), "d", AdvanceAndGetTime()));
+  EXPECT_EQ(nullptr, bridge()->AddEntry(GURL(), "d", AdvanceAndGetTime(),
+                                        "target_device"));
+  EXPECT_EQ(nullptr, bridge()->AddEntry(GURL("http://?k=v"), "d",
+                                        AdvanceAndGetTime(), "target_device"));
   EXPECT_EQ(nullptr, bridge()->AddEntry(GURL("http//google.com"), "d",
-                                        AdvanceAndGetTime()));
+                                        AdvanceAndGetTime(), "target_device"));
 
   // Add Entry should fail on an invalid navigation_time.
   EXPECT_EQ(nullptr, bridge()->AddEntry(GURL("http://www.example.com/"), "d",
-                                        base::Time()));
+                                        base::Time(), "target_device"));
 }
 
 TEST_F(SendTabToSelfBridgeTest, AddDuplicateEntries) {
@@ -451,12 +459,16 @@ TEST_F(SendTabToSelfBridgeTest, AddDuplicateEntries) {
   base::Time navigation_time = AdvanceAndGetTime();
   // The de-duplication code does not use the title as a comparator.
   // So they are intentionally different here.
-  bridge()->AddEntry(GURL("http://a.com"), "a", navigation_time);
-  bridge()->AddEntry(GURL("http://a.com"), "b", navigation_time);
+  bridge()->AddEntry(GURL("http://a.com"), "a", navigation_time,
+                     "target_device");
+  bridge()->AddEntry(GURL("http://a.com"), "b", navigation_time,
+                     "target_device");
   EXPECT_EQ(1ul, bridge()->GetAllGuids().size());
 
-  bridge()->AddEntry(GURL("http://a.com"), "a", AdvanceAndGetTime());
-  bridge()->AddEntry(GURL("http://b.com"), "b", AdvanceAndGetTime());
+  bridge()->AddEntry(GURL("http://a.com"), "a", AdvanceAndGetTime(),
+                     "target_device");
+  bridge()->AddEntry(GURL("http://b.com"), "b", AdvanceAndGetTime(),
+                     "target_device");
   EXPECT_EQ(3ul, bridge()->GetAllGuids().size());
 }
 

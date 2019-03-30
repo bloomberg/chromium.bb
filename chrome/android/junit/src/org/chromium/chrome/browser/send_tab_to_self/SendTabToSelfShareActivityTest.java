@@ -63,6 +63,8 @@ public class SendTabToSelfShareActivityTest {
     private static final String URL = "http://www.tanyastacos.com";
     private static final String TITLE = "Come try Tanya's famous tacos";
     private static final long TIMESTAMP = 123456;
+    // TODO(crbug/946808) Add actual target device ID.
+    private static final String TARGET_DEVICE_SYNC_CACHE_GUID = "";
 
     @Before
     public void setUp() throws Exception {
@@ -106,6 +108,8 @@ public class SendTabToSelfShareActivityTest {
 
         SendTabToSelfShareActivity shareActivity = new SendTabToSelfShareActivity();
         shareActivity.handleShareAction(mChromeActivity);
-        verify(mNativeMock).addEntry(eq(mProfile), eq(URL), eq(TITLE), eq(TIMESTAMP));
+        verify(mNativeMock)
+                .addEntry(eq(mProfile), eq(URL), eq(TITLE), eq(TIMESTAMP),
+                        eq(TARGET_DEVICE_SYNC_CACHE_GUID));
     }
 }

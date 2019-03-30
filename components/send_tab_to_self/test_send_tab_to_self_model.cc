@@ -20,7 +20,8 @@ const SendTabToSelfEntry* TestSendTabToSelfModel::GetEntryByGUID(
 const SendTabToSelfEntry* TestSendTabToSelfModel::AddEntry(
     const GURL& url,
     const std::string& title,
-    base::Time navigation_time) {
+    base::Time navigation_time,
+    const std::string& device_id) {
   return nullptr;
 }
 

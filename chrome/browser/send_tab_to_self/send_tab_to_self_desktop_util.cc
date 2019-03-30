@@ -29,6 +29,8 @@ void CreateNewEntry(content::WebContents* tab, Profile* profile) {
   std::string title = base::UTF16ToUTF8(navigation_entry->GetTitle());
   base::Time navigation_time = navigation_entry->GetTimestamp();
 
+  // TODO(crbug/946804) Add target device.
+  std::string target_device;
   SendTabToSelfModel* model =
       SendTabToSelfSyncServiceFactory::GetForProfile(profile)
           ->GetSendTabToSelfModel();
@@ -41,7 +43,7 @@ void CreateNewEntry(content::WebContents* tab, Profile* profile) {
   }
 
   const SendTabToSelfEntry* entry =
-      model->AddEntry(url, title, navigation_time);
+      model->AddEntry(url, title, navigation_time, target_device);
 
   if (entry) {
     DesktopNotificationHandler(profile).DisplaySendingConfirmation(*entry);

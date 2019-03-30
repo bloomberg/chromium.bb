@@ -35,6 +35,8 @@ const char kDesktopNotificationId[] = "notification_id";
 const char kDesktopNotificationGuid[] = "guid";
 const char kDesktopNotificationTitle[] = "title";
 const char kDesktopNotificationDeviceInfo[] = "device_info";
+const char kDesktopNotificationTargetDeviceSyncCacheGuid[] =
+    "target_device_sync_cache_guid";
 const char kDesktopNotificationDeviceInfoWithPrefix[] =
     "Shared from device_info";
 
@@ -138,7 +140,8 @@ TEST_F(DesktopNotificationHandlerTest, DisplayNewEntry) {
 
   SendTabToSelfEntry entry(kDesktopNotificationGuid, url,
                            kDesktopNotificationTitle, base::Time::Now(),
-                           base::Time::Now(), kDesktopNotificationDeviceInfo);
+                           base::Time::Now(), kDesktopNotificationDeviceInfo,
+                           kDesktopNotificationTargetDeviceSyncCacheGuid);
 
   DesktopNotificationHandler handler(profile());
   EXPECT_CALL(*display_service_mock_,

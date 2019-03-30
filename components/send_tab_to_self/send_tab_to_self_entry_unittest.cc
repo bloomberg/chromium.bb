@@ -20,6 +20,7 @@ bool IsEqualForTesting(const SendTabToSelfEntry& a,
   return a.GetGUID() == b.GetGUID() && a.GetURL() == b.GetURL() &&
          a.GetTitle() == b.GetTitle() &&
          a.GetDeviceName() == b.GetDeviceName() &&
+         a.GetTargetDeviceSyncCacheGuid() == b.GetTargetDeviceSyncCacheGuid() &&
          a.GetSharedTime() == b.GetSharedTime() &&
          a.GetOriginalNavigationTime() == b.GetOriginalNavigationTime();
 }
@@ -31,6 +32,8 @@ bool IsEqualForTesting(const SendTabToSelfEntry& entry,
       entry.GetURL() == specifics.url() &&
       entry.GetTitle() == specifics.title() &&
       entry.GetDeviceName() == specifics.device_name() &&
+      entry.GetTargetDeviceSyncCacheGuid() ==
+          specifics.target_device_sync_cache_guid() &&
       specifics.shared_time_usec() ==
           entry.GetSharedTime().ToDeltaSinceWindowsEpoch().InMicroseconds() &&
       specifics.navigation_time_usec() == entry.GetOriginalNavigationTime()
@@ -41,15 +44,15 @@ bool IsEqualForTesting(const SendTabToSelfEntry& entry,
 TEST(SendTabToSelfEntry, CompareEntries) {
   const SendTabToSelfEntry e1("1", GURL("http://example.com"), "bar",
                               base::Time::FromTimeT(10),
-                              base::Time::FromTimeT(10), "device");
+                              base::Time::FromTimeT(10), "device1", "device2");
   const SendTabToSelfEntry e2("1", GURL("http://example.com"), "bar",
                               base::Time::FromTimeT(10),
-                              base::Time::FromTimeT(10), "device");
+                              base::Time::FromTimeT(10), "device1", "device2");
 
   EXPECT_TRUE(IsEqualForTesting(e1, e2));
   const SendTabToSelfEntry e3("2", GURL("http://example.org"), "bar",
                               base::Time::FromTimeT(10),
-                              base::Time::FromTimeT(10), "device");
+                              base::Time::FromTimeT(10), "device1", "device2");
 
   EXPECT_FALSE(IsEqualForTesting(e1, e3));
 }
@@ -57,7 +60,7 @@ TEST(SendTabToSelfEntry, CompareEntries) {
 TEST(SendTabToSelfEntry, SharedTime) {
   SendTabToSelfEntry e("1", GURL("http://example.com"), "bar",
                        base::Time::FromTimeT(10), base::Time::FromTimeT(10),
-                       "device");
+                       "device", "device2");
   EXPECT_EQ("bar", e.GetTitle());
   // Getters return Base::Time values.
   EXPECT_EQ(e.GetSharedTime(), base::Time::FromTimeT(10));
@@ -68,7 +71,7 @@ TEST(SendTabToSelfEntry, SharedTime) {
 TEST(SendTabToSelfEntry, AsProto) {
   SendTabToSelfEntry entry("1", GURL("http://example.com"), "bar",
                            base::Time::FromTimeT(10), base::Time::FromTimeT(10),
-                           "device");
+                           "device", "device2");
   SendTabToSelfLocal pb_entry(entry.AsLocalProto());
   EXPECT_TRUE(IsEqualForTesting(entry, pb_entry.specifics()));
 }
@@ -82,6 +85,7 @@ TEST(SendTabToSelfEntry, FromProto) {
   pb_entry->set_url("http://example.com/");
   pb_entry->set_title("title");
   pb_entry->set_device_name("device");
+  pb_entry->set_target_device_sync_cache_guid("device");
   pb_entry->set_shared_time_usec(1);
   pb_entry->set_navigation_time_usec(1);
 
@@ -95,7 +99,7 @@ TEST(SendTabToSelfEntry, FromProto) {
 TEST(SendTabToSelfEntry, IsExpired) {
   SendTabToSelfEntry entry("1", GURL("http://example.com"), "bar",
                            base::Time::FromTimeT(10), base::Time::FromTimeT(10),
-                           "device");
+                           "device1", "device1");
 
   EXPECT_TRUE(entry.IsExpired(base::Time::FromTimeT(11) +
                               base::TimeDelta::FromDays(10)));

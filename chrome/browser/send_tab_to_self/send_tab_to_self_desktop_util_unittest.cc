@@ -31,10 +31,11 @@ class SendTabToSelfModelMock : public TestSendTabToSelfModel {
   SendTabToSelfModelMock() = default;
   ~SendTabToSelfModelMock() override = default;
 
-  MOCK_METHOD3(AddEntry,
+  MOCK_METHOD4(AddEntry,
                const SendTabToSelfEntry*(const GURL&,
                                          const std::string&,
-                                         base::Time));
+                                         base::Time,
+                                         const std::string&));
 
   bool IsReady() override { return true; }
 };
@@ -95,12 +96,15 @@ TEST_F(SendTabToSelfDesktopUtilTest, CreateNewEntry) {
   GURL url = entry->GetURL();
   std::string title = base::UTF16ToUTF8(entry->GetTitle());
   base::Time navigation_time = entry->GetTimestamp();
+  std::string target_device_sync_cache_guid;
 
   SendTabToSelfModelMock* model_mock = static_cast<SendTabToSelfModelMock*>(
       SendTabToSelfSyncServiceFactory::GetForProfile(profile())
           ->GetSendTabToSelfModel());
 
-  EXPECT_CALL(*model_mock, AddEntry(url, title, navigation_time))
+  // TODO(crbug/946804) Add target Device to createNewEntry call.
+  EXPECT_CALL(*model_mock, AddEntry(url, title, navigation_time,
+                                    target_device_sync_cache_guid))
       .WillOnce(testing::Return(nullptr));
 
   CreateNewEntry(tab, profile());

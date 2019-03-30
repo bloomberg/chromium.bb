@@ -71,9 +71,11 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   void DeleteAllEntries() override;
   const SendTabToSelfEntry* GetEntryByGUID(
       const std::string& guid) const override;
-  const SendTabToSelfEntry* AddEntry(const GURL& url,
-                                     const std::string& title,
-                                     base::Time navigation_time) override;
+  const SendTabToSelfEntry* AddEntry(
+      const GURL& url,
+      const std::string& title,
+      base::Time navigation_time,
+      const std::string& target_device_cache_guid) override;
   void DeleteEntry(const std::string& guid) override;
   void DismissEntry(const std::string& guid) override;
   bool IsReady() override;
