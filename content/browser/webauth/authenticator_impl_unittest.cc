@@ -1317,6 +1317,32 @@ TEST_F(AuthenticatorImplTest, Ctap2AssertionWithUnknownCredential) {
   }
 }
 
+TEST_F(AuthenticatorImplTest, GetAssertionResponseWithAttestedCredentialData) {
+  TestServiceManagerContext service_manager_context;
+
+  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+  device::VirtualCtap2Device::Config config;
+  config.return_attested_cred_data_in_get_assertion_response = true;
+  scoped_virtual_device.SetCtap2Config(config);
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  ASSERT_TRUE(scoped_virtual_device.mutable_state()->InjectRegistration(
+      options->allow_credentials[0]->id, kTestRelyingPartyId));
+
+  SimulateNavigation(GURL(kTestOrigin1));
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
+  TestGetAssertionCallback callback_receiver;
+
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+
+  base::RunLoop().RunUntilIdle();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+}
+
 enum class IndividualAttestation {
   REQUESTED,
   NOT_REQUESTED,

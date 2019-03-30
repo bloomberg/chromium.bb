@@ -26,20 +26,22 @@ namespace device {
 
 namespace {
 
-// PublicKeyUserEntity field in GetAssertion response is optional with the
-// following constraints:
-// - If assertion has been made without user verification, user identifiable
-//   information must not be included.
-// - For resident key credentials, user id of the user entity is mandatory.
-// - When multiple accounts exist for specified RP ID, user entity is
-//   mandatory.
-// TODO(hongjunchoi) : Add link to section of the CTAP spec once it is
-// published.
-bool CheckRequirementsOnResponseUserEntity(
-    const CtapGetAssertionRequest& request,
-    const AuthenticatorGetAssertionResponse& response) {
-  // If assertion has been made without user verification, user identifiable
-  // information must not be included.
+bool ResponseValid(const FidoAuthenticator& authenticator,
+                   const CtapGetAssertionRequest& request,
+                   const AuthenticatorGetAssertionResponse& response) {
+  if (!request.CheckResponseRpIdHash(response.GetRpIdHash())) {
+    return false;
+  }
+
+  // PublicKeyUserEntity field in GetAssertion response is optional with the
+  // following constraints:
+  // - If assertion has been made without user verification, user identifiable
+  //   information must not be included.
+  // - For resident key credentials, user id of the user entity is mandatory.
+  // - When multiple accounts exist for specified RP ID, user entity is
+  //   mandatory.
+  // TODO(hongjunchoi) : Add link to section of the CTAP spec once it is
+  // published.
   const auto& user_entity = response.user_entity();
   const bool has_user_identifying_info =
       user_entity && (user_entity->user_display_name() ||
@@ -49,48 +51,55 @@ bool CheckRequirementsOnResponseUserEntity(
     return false;
   }
 
-  // For resident key credentials, user id of the user entity is mandatory.
   if ((!request.allow_list() || request.allow_list()->empty()) &&
       !user_entity) {
     return false;
   }
 
-  // When multiple accounts exist for specified RP ID, user entity is mandatory.
   if (response.num_credentials().value_or(0u) > 1 && !user_entity) {
     return false;
   }
 
-  return true;
-}
-
-// Checks whether credential ID returned from the authenticator and transport
-// type used matches the transport type and credential ID defined in
-// PublicKeyCredentialDescriptor of the allowed list. If the device has resident
-// key support, returned credential ID may be resident credential. Thus,
-// returned credential ID need not be in allowed list.
-// TODO(hongjunchoi) : Add link to section of the CTAP spec once it is
-// published.
-bool CheckResponseCredentialIdMatchesRequestAllowList(
-    const FidoAuthenticator& authenticator,
-    const CtapGetAssertionRequest request,
-    const AuthenticatorGetAssertionResponse& response) {
+  // Check whether credential ID returned from the authenticator and transport
+  // type used matches the transport type and credential ID defined in
+  // PublicKeyCredentialDescriptor of the allowed list. If the device has
+  // resident key support, returned credential ID may be resident credential.
+  // Thus, returned credential ID need not be in allowed list.
+  // TODO(hongjunchoi) : Add link to section of the CTAP spec once it is
+  // published.
   const auto& allow_list = request.allow_list();
   if (!allow_list || allow_list->empty()) {
-    // Allow list can't be empty for authenticators w/o resident key support.
-    return !authenticator.Options() ||
-           authenticator.Options()->supports_resident_key;
+    if (authenticator.Options() &&
+        !authenticator.Options()->supports_resident_key) {
+      // Allow list can't be empty for authenticators w/o resident key support.
+      return false;
+    }
+  } else {
+    // Non-empty allow list. Credential ID on the response may be omitted if
+    // allow list has size 1. Otherwise, it needs to match an entry from the
+    // allow list
+    const auto opt_transport_used = authenticator.AuthenticatorTransport();
+    if ((!response.credential() && allow_list->size() != 1) ||
+        (response.credential() &&
+         !std::any_of(allow_list->cbegin(), allow_list->cend(),
+                      [&response, opt_transport_used](const auto& credential) {
+                        return credential.id() ==
+                                   response.raw_credential_id() &&
+                               (!opt_transport_used ||
+                                base::ContainsKey(credential.transports(),
+                                                  *opt_transport_used));
+                      }))) {
+      return false;
+    }
   }
-  // Credential ID may be omitted if allow list has size 1. Otherwise, it needs
-  // to match.
-  const auto opt_transport_used = authenticator.AuthenticatorTransport();
-  return (allow_list->size() == 1 && !response.credential()) ||
-         std::any_of(allow_list->cbegin(), allow_list->cend(),
-                     [&response, opt_transport_used](const auto& credential) {
-                       return credential.id() == response.raw_credential_id() &&
-                              (!opt_transport_used ||
-                               base::ContainsKey(credential.transports(),
-                                                 *opt_transport_used));
-                     });
+
+  // The authenticatorData on an GetAssertionResponse must not have
+  // attestedCredentialData set.
+  if (response.auth_data().attested_data().has_value()) {
+    return false;
+  }
+
+  return true;
 }
 
 // When the response from the authenticator does not contain a credential and
@@ -318,10 +327,7 @@ void GetAssertionRequestHandler::HandleResponse(
     return;
   }
 
-  if (!response || !request_.CheckResponseRpIdHash(response->GetRpIdHash()) ||
-      !CheckResponseCredentialIdMatchesRequestAllowList(*authenticator,
-                                                        request_, *response) ||
-      !CheckRequirementsOnResponseUserEntity(request_, *response)) {
+  if (!response || !ResponseValid(*authenticator, request_, *response)) {
     FIDO_LOG(ERROR) << "Failing assertion request due to bad response from "
                     << authenticator->GetDisplayName();
     OnAuthenticatorResponse(
@@ -371,10 +377,9 @@ void GetAssertionRequestHandler::HandleNextResponse(
     return;
   }
 
-  if (!request_.CheckResponseRpIdHash(response->GetRpIdHash()) ||
-      !CheckResponseCredentialIdMatchesRequestAllowList(*authenticator,
-                                                        request_, *response) ||
-      !CheckRequirementsOnResponseUserEntity(request_, *response)) {
+  if (!ResponseValid(*authenticator, request_, *response)) {
+    FIDO_LOG(ERROR) << "Failing assertion request due to bad response from "
+                    << authenticator->GetDisplayName();
     OnAuthenticatorResponse(
         authenticator, CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
     return;
