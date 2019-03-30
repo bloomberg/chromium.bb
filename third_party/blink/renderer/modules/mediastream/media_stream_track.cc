@@ -696,9 +696,10 @@ bool MediaStreamTrack::HasPendingActivity() const {
   return !Ended() && HasEventListeners(event_type_names::kEnded);
 }
 
-std::unique_ptr<AudioSourceProvider> MediaStreamTrack::CreateWebAudioSource() {
+std::unique_ptr<AudioSourceProvider> MediaStreamTrack::CreateWebAudioSource(
+    int context_sample_rate) {
   return MediaStreamCenter::Instance().CreateWebAudioSourceFromMediaStreamTrack(
-      Component());
+      Component(), context_sample_rate);
 }
 
 void MediaStreamTrack::RegisterMediaStream(MediaStream* media_stream) {

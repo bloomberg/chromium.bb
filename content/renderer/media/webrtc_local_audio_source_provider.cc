@@ -28,10 +28,9 @@ namespace content {
 const size_t WebRtcLocalAudioSourceProvider::kWebAudioRenderBufferSize = 128;
 
 WebRtcLocalAudioSourceProvider::WebRtcLocalAudioSourceProvider(
-    const blink::WebMediaStreamTrack& track)
-    : is_enabled_(false),
-      track_(track),
-      track_stopped_(false) {
+    const blink::WebMediaStreamTrack& track,
+    int context_sample_rate)
+    : is_enabled_(false), track_(track), track_stopped_(false) {
   // Get the native audio output hardware sample-rate for the sink.
   // We need to check if there is a valid frame since the unittests
   // do not have one and they will inject their own |sink_params_| for testing.
@@ -39,13 +38,8 @@ WebRtcLocalAudioSourceProvider::WebRtcLocalAudioSourceProvider(
       blink::WebLocalFrame::FrameForCurrentContext();
   RenderFrame* const render_frame = RenderFrame::FromWebFrame(web_frame);
   if (render_frame) {
-    int sample_rate =
-        AudioDeviceFactory::GetOutputDeviceInfo(render_frame->GetRoutingID(),
-                                                media::AudioSinkParameters())
-            .output_params()
-            .sample_rate();
     sink_params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                       media::CHANNEL_LAYOUT_STEREO, sample_rate,
+                       media::CHANNEL_LAYOUT_STEREO, context_sample_rate,
                        kWebAudioRenderBufferSize);
   }
   // Connect the source provider to the track as a sink.
