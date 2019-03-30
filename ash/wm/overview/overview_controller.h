@@ -103,6 +103,9 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   void set_occlusion_pause_duration_for_end_ms_for_test(int duration) {
     occlusion_pause_duration_for_end_ms_ = duration;
   }
+  void set_delayed_animation_task_delay_for_test(base::TimeDelta delta) {
+    delayed_animation_task_delay_ = delta;
+  }
 
   // Returns wallpaper blur status for testing.
   bool HasBlurForTest() const;
@@ -152,6 +155,11 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   std::unique_ptr<OverviewBlurController> overview_blur_controller_;
 
   base::CancelableOnceClosure reset_pauser_task_;
+
+  // App dragging enters overview right away. This task is used to delay the
+  // |OnStartingAnimationComplete| call so that some animations do not make the
+  // initial setup less performant.
+  base::TimeDelta delayed_animation_task_delay_;
 
   base::ObserverList<OverviewObserver> observers_;
 

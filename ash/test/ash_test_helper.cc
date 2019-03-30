@@ -23,6 +23,7 @@
 #include "ash/system/screen_layout_observer.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "ash/test_shell_delegate.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/ws/window_service_owner.h"
 #include "base/bind.h"
 #include "base/guid.h"
@@ -236,6 +237,10 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   test_keyboard_controller_observer_ =
       std::make_unique<TestKeyboardControllerObserver>(
           shell->ash_keyboard_controller());
+
+  // Remove the app dragging animations delay for testing purposes.
+  shell->overview_controller()->set_delayed_animation_task_delay_for_test(
+      base::TimeDelta());
 }
 
 void AshTestHelper::TearDown() {

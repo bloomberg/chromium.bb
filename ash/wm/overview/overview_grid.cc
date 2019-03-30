@@ -972,7 +972,7 @@ void OverviewGrid::OnWindowBoundsChanged(aura::Window* window,
   // |drop_target_widget_| will get its bounds set as opposed to its transform
   // set in |OverviewItem::SetItemBounds| so do not position windows again when
   // that particular window has its bounds changed.
-  if (drop_target_widget_ && window == drop_target_widget_->GetNativeWindow())
+  if (IsDropTargetWindow(window))
     return;
 
   auto iter = GetOverviewItemIterContainingWindow(window);
