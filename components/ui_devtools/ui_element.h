@@ -65,8 +65,8 @@ class UI_DEVTOOLS_EXPORT UIElement {
   // OnUIElementRemoved(), which destroys the DOM node for |child|.
   void RemoveChild(UIElement* child, bool notify_delegate = true);
 
-  // Move |child| to position new_index in |children_|.
-  void ReorderChild(UIElement* child, int new_index);
+  // Moves |child| to position |index| in |children_|.
+  void ReorderChild(UIElement* child, int index);
 
   template <class T>
   int FindUIElementIdForBackendElement(T* element) const;
