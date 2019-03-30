@@ -98,27 +98,31 @@ cr.define('header_test', function() {
       assertEquals('Total: 1 sheet of paper', summary.textContent);
       assertFalse(printButton.disabled);
 
-      header.set('state', print_preview_new.State.NOT_READY);
+      header.state = print_preview_new.State.NOT_READY;
       assertEquals('', summary.textContent);
       assertTrue(printButton.disabled);
 
-      header.set('state', print_preview_new.State.PRINTING);
+      header.state = print_preview_new.State.PRINTING;
       assertEquals(loadTimeData.getString('printing'), summary.textContent);
       assertTrue(printButton.disabled);
       setPdfDestination();
       assertEquals(loadTimeData.getString('saving'), summary.textContent);
 
-      header.set('state', print_preview_new.State.INVALID_TICKET);
+      header.error = print_preview_new.Error.INVALID_TICKET;
+      header.state = print_preview_new.State.ERROR;
       assertEquals('', summary.textContent);
       assertTrue(printButton.disabled);
 
-      header.set('state', print_preview_new.State.INVALID_PRINTER);
+      header.state = print_preview_new.State.READY;
+      header.error = print_preview_new.Error.INVALID_PRINTER;
+      header.state = print_preview_new.State.ERROR;
       assertEquals('', summary.textContent);
       assertTrue(printButton.disabled);
 
       const testError = 'Error printing to cloud print';
-      header.set('state', print_preview_new.State.FATAL_ERROR);
-      header.errorMessage = testError;
+      header.cloudPrintErrorMessage = testError;
+      header.error = print_preview_new.Error.CLOUD_PRINT_ERROR;
+      header.state = print_preview_new.State.FATAL_ERROR;
       assertEquals(testError, summary.textContent);
       assertTrue(printButton.disabled);
     });

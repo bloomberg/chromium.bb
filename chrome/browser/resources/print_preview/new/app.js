@@ -17,6 +17,9 @@ Polymer({
       observer: 'onStateChanged_',
     },
 
+    /** @private {string} */
+    cloudPrintErrorMessage_: String,
+
     /** @private {!cloudprint.CloudPrintInterface} */
     cloudPrintInterface_: Object,
 
@@ -35,14 +38,20 @@ Polymer({
     /** @private {print_preview.DocumentSettings} */
     documentSettings_: Object,
 
-    /** @private {string} */
-    errorMessage_: String,
+    /** @private {!print_preview_new.Error} */
+    error_: Number,
 
     /** @private {print_preview.Margins} */
     margins_: Object,
 
     /** @private {!print_preview.Size} */
     pageSize_: Object,
+
+    /** @private {!print_preview_new.PreviewAreaState} */
+    previewState_: {
+      type: String,
+      observer: 'onPreviewStateChange_',
+    },
 
     /** @private {!print_preview.PrintableArea} */
     printableArea_: Object,
@@ -51,12 +60,6 @@ Polymer({
     measurementSystem_: {
       type: Object,
       value: null,
-    },
-
-    /** @private {!print_preview_new.PreviewAreaState} */
-    previewState_: {
-      type: String,
-      observer: 'onPreviewAreaStateChanged_',
     },
   },
 
@@ -291,8 +294,8 @@ Polymer({
   onDestinationStateChange_: function() {
     switch (this.destinationState_) {
       case print_preview.DestinationState.SELECTED:
-        // If the plugin does not exist do not attempt to load the preview.
-        if (this.state !== print_preview_new.State.FATAL_ERROR) {
+      case print_preview.DestinationState.SET:
+        if (this.state !== print_preview_new.State.NOT_READY) {
           this.$.state.transitTo(print_preview_new.State.NOT_READY);
         }
         break;
@@ -306,22 +309,16 @@ Polymer({
         // </if>
 
         this.startPreviewWhenReady_ = true;
-        if (this.state == print_preview_new.State.NOT_READY ||
-            this.state == print_preview_new.State.INVALID_PRINTER) {
-          this.$.state.transitTo(print_preview_new.State.READY);
-          if (this.isInKioskAutoPrintMode_ || this.printRequested_) {
-            this.onPrintRequested_();
-            // Reset in case printing fails.
-            this.printRequested_ = false;
-          }
-        }
+        this.$.state.transitTo(print_preview_new.State.READY);
         break;
-      case print_preview.DestinationState.INVALID:
-      case print_preview.DestinationState.UNSUPPORTED:
-      // <if expr="chromeos">
-      case print_preview.DestinationState.NO_DESTINATIONS:
+      case print_preview.DestinationState.ERROR:
+        let newState = print_preview_new.State.ERROR;
+        // <if expr="chromeos">
+        if (this.error_ === print_preview_new.Error.NO_DESTINATIONS) {
+          newState = print_preview_new.State.FATAL_ERROR;
+        }
         // </if>
-        this.$.state.transitTo(print_preview_new.State.INVALID_PRINTER);
+        this.$.state.transitTo(newState);
         break;
       default:
         break;
@@ -352,6 +349,11 @@ Polymer({
       if (this.startPreviewWhenReady_) {
         this.$.previewArea.startPreview();
         this.startPreviewWhenReady_ = false;
+      }
+      if (this.isInKioskAutoPrintMode_ || this.printRequested_) {
+        this.onPrintRequested_();
+        // Reset in case printing fails.
+        this.printRequested_ = false;
       }
     } else if (this.state == print_preview_new.State.CLOSING) {
       this.remove();
@@ -407,9 +409,12 @@ Polymer({
    * @private
    */
   onSettingValidChanged_: function(e) {
-    this.$.state.transitTo(
-        e.detail ? print_preview_new.State.READY :
-                   print_preview_new.State.INVALID_TICKET);
+    if (e.detail) {
+      this.$.state.transitTo(print_preview_new.State.READY);
+    } else {
+      this.error_ = print_preview_new.Error.INVALID_TICKET;
+      this.$.state.transitTo(print_preview_new.State.ERROR);
+    }
   },
 
   /** @private */
@@ -463,26 +468,26 @@ Polymer({
    */
   onPrintFailed_: function(httpError) {
     console.error('Printing failed with error code ' + httpError);
+    this.error_ = print_preview_new.Error.PRINT_FAILED;
     this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
-    this.errorMessage_ = loadTimeData.getString('couldNotPrint');
   },
 
   /** @private */
-  onPreviewAreaStateChanged_: function() {
+  onPreviewStateChange_: function() {
     switch (this.previewState_) {
-      case print_preview_new.PreviewAreaState.PREVIEW_FAILED:
-      case print_preview_new.PreviewAreaState.NO_PLUGIN:
-        this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
-        break;
-      case print_preview_new.PreviewAreaState.INVALID_SETTINGS:
-        if (this.state != print_preview_new.State.INVALID_PRINTER) {
-          this.$.state.transitTo(print_preview_new.State.INVALID_PRINTER);
-        }
-        break;
       case print_preview_new.PreviewAreaState.DISPLAY_PREVIEW:
       case print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADED:
-        if (this.state == print_preview_new.State.HIDDEN) {
+        if (this.state === print_preview_new.State.HIDDEN) {
           this.$.state.transitTo(print_preview_new.State.PRINTING);
+        }
+        break;
+      case print_preview_new.PreviewAreaState.ERROR:
+        if (this.state !== print_preview_new.State.ERROR &&
+            this.state !== print_preview_new.State.FATAL_ERROR) {
+          this.$.state.transitTo(
+              this.error_ === print_preview_new.Error.INVALID_PRINTER ?
+                  print_preview_new.State.ERROR :
+                  print_preview_new.State.FATAL_ERROR);
         }
         break;
       default:
@@ -503,8 +508,9 @@ Polymer({
         (event.detail.status == 403 && !appKioskMode)) {
       return;  // No internet connectivity or not signed in.
     }
+    this.cloudPrintErrorMessage_ = event.detail.message;
+    this.error_ = print_preview_new.Error.CLOUD_PRINT_ERROR;
     this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
-    this.errorMessage_ = event.detail.message;
     if (event.detail.status == 200) {
       console.error(
           'Google Cloud Print Error: ' +

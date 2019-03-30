@@ -56,15 +56,16 @@
       }
     </style>
     <print-preview-header id="header" destination="[[destination]]"
-        error-message="[[errorMessage]]" state="[[state]]"
+        cloud-print-error-message="[[cloudPrintErrorMessage]]"
+        error="[[error]]" state="[[state]]"
         settings="[[settings]]" managed="[[controlsManaged]]">
     </print-preview-header>
     <div id="container">
       <print-preview-destination-settings id="destinationSettings"
           cloud-print-interface="[[cloudPrintInterface]]"
-          destination="{{destination}}" settings="[[settings]]"
-          destination-state="{{destinationState}}"
-          app-kiosk-mode="[[isInAppKioskMode_]]"
+          destination="{{destination}}" destination-state="{{destinationState}}"
+          error="{{error}}" settings="[[settings]]"
+          state="[[state]]" app-kiosk-mode="[[isInAppKioskMode_]]"
           disabled="[[controlsDisabled_]]"
           available class="settings-section">
       </print-preview-destination-settings>

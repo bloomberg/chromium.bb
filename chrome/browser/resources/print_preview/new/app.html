@@ -49,7 +49,8 @@
         background-color: var(--google-grey-400);
       }
     </style>
-    <print-preview-state id="state" state="{{state}}"></print-preview-state>
+    <print-preview-state id="state" state="{{state}}" error="{{error_}}">
+    </print-preview-state>
     <print-preview-model id="model" settings="{{settings}}"
         controls-managed="{{controlsManaged_}}" destination="[[destination_]]"
         document-settings="[[documentSettings_]]"
@@ -64,10 +65,10 @@
     </print-preview-document-info>
     <print-preview-sidebar id="sidebar"
         cloud-print-interface="[[cloudPrintInterface_]]"
-        controls-managed="[[controlsManaged_]]" destination="{{destination_}}"
+        cloud-print-error-message="[[cloudPrintErrorMessage_]]"
         destination-state="{{destinationState_}}"
-        error-message="[[errorMessage_]]"
-        page-count="[[documentSettings_.pageCount]]"
+        controls-managed="[[controlsManaged_]]" destination="{{destination_}}"
+        error="{{error_}}" page-count="[[documentSettings_.pageCount]]"
         settings="[[settings]]" state="[[state]]"
 <if expr="is_macosx">
         on-open-pdf-in-preview="onOpenPdfInPreview_"
@@ -80,8 +81,7 @@
     </print-preview-sidebar>
     <div id="preview-area-container">
       <print-preview-preview-area id="previewArea" settings="[[settings]]"
-          destination="[[destination_]]"
-          destination-state="[[destinationState_]]"
+          destination="[[destination_]]" error="{{error_}}"
           document-modifiable="[[documentSettings_.isModifiable]]"
           margins="[[margins_]]" page-size="[[pageSize_]]" state="[[state]]"
           measurement-system="[[measurementSystem_]]"

@@ -53,8 +53,7 @@
       </option>
 <if expr="chromeos">
       <option value="noDestinations"
-          hidden$="[[!showNoDestinations_(destinationState)]]"
-          selected$="[[showNoDestinations_(destinationState)]]">
+              hidden$="[[!noDestinations]]" selected$="[[noDestinations]]">
         $i18n{noDestinationsMessage}
       </option>
 </if>

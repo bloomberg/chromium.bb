@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/event_tracker.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
@@ -17,6 +18,7 @@
 <link rel="import" href="throbber_css.html">
 <link rel="import" href="settings_behavior.html">
 <link rel="import" href="settings_section.html">
+<link rel="import" href="state.html">
 <link rel="import" href="strings.html">
 
 <dom-module id="print-preview-destination-settings">
@@ -63,8 +65,9 @@
             app-kiosk-mode="[[appKioskMode]]"
             cloud-print-state="[[cloudPrintState_]]"
             destination="[[destination]]"
-            destination-state="[[destinationState]]"
-            disabled="[[shouldDisableDropdown_(destinationState, disabled)]]"
+            disabled="[[shouldDisableDropdown_(
+                            destinationState, state, disabled)]]"
+            no-destinations="[[noDestinations_]]"
             recent-destination-list="[[recentDestinationList_]]"
             on-selected-option-change="onSelectedDestinationOptionChange_">
         </print-preview-destination-select>

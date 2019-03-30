@@ -62,6 +62,7 @@ cr.define('destination_settings_test', function() {
       destinationSettings =
           document.createElement('print-preview-destination-settings');
       destinationSettings.settings = model.settings;
+      destinationSettings.state = print_preview_new.State.NOT_READY;
       destinationSettings.disabled = true;
       test_util.fakeDataBind(model, destinationSettings, 'settings');
       document.body.appendChild(destinationSettings);
@@ -88,21 +89,25 @@ cr.define('destination_settings_test', function() {
                   .SELECTED_DESTINATION_CAPABILITIES_READY,
               destinationSettings.destinationStore_)
           .then(() => {
-            // Dropdown is visible but disabled since controls are disabled.
-            assertTrue(dropdown.disabled);
-            assertFalse(dropdown.hidden);
-            destinationSettings.disabled = false;
-
+            // The capabilities ready event results in |destinationState|
+            // changing to SELECTED, which enables and shows the dropdown even
+            // though |state| has not yet transitioned to READY. This is to
+            // prevent brief losses of focus when the destination changes.
             assertFalse(dropdown.disabled);
+            assertFalse(dropdown.hidden);
+            destinationSettings.state = print_preview_new.State.READY;
+            destinationSettings.disabled = false;
 
             // Simulate setting a setting to an invalid value. Dropdown is
             // disabled due to validation error on another control.
+            destinationSettings.state = print_preview_new.State.ERROR;
             destinationSettings.disabled = true;
             assertTrue(dropdown.disabled);
 
             // Simulate the user fixing the validation error, and then selecting
             // an invalid printer. Dropdown is enabled, so that the user can fix
             // the error.
+            destinationSettings.state = print_preview_new.State.READY;
             destinationSettings.disabled = false;
             destinationSettings.destinationStore_.dispatchEvent(new CustomEvent(
                 print_preview.DestinationStore.EventType.ERROR,
@@ -110,8 +115,12 @@ cr.define('destination_settings_test', function() {
             Polymer.dom.flush();
 
             assertEquals(
-                print_preview.DestinationState.INVALID,
+                print_preview.DestinationState.ERROR,
                 destinationSettings.destinationState);
+            assertEquals(
+                print_preview_new.Error.INVALID_PRINTER,
+                destinationSettings.error);
+            destinationSettings.state = print_preview_new.State.ERROR;
             destinationSettings.disabled = true;
             assertFalse(dropdown.disabled);
 
@@ -126,8 +135,12 @@ cr.define('destination_settings_test', function() {
               Polymer.dom.flush();
 
               assertEquals(
-                  print_preview.DestinationState.NO_DESTINATIONS,
+                  print_preview.DestinationState.ERROR,
                   destinationSettings.destinationState);
+              assertEquals(
+                  print_preview_new.Error.NO_DESTINATIONS,
+                  destinationSettings.error);
+              destinationSettings.state = print_preview_new.State.FATAL_ERROR;
               destinationSettings.disabled = true;
               assertTrue(dropdown.disabled);
             }
@@ -152,6 +165,7 @@ cr.define('destination_settings_test', function() {
       destinationSettings.initDestinationStore(
           '' /* printerName */,
           '' /* serializedDefaultDestinationSelectionRulesStr */);
+      destinationSettings.state = print_preview_new.State.READY;
       destinationSettings.disabled = false;
     }
 

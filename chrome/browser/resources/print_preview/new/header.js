@@ -18,13 +18,13 @@ Polymer({
   behaviors: [SettingsBehavior],
 
   properties: {
+    cloudPrintErrorMessage: String,
+
     /** @type {!print_preview.Destination} */
     destination: Object,
 
-    errorMessage: {
-      type: String,
-      observer: 'onErrorMessageSet_',
-    },
+    /** @type {!print_preview_new.Error} */
+    error: Number,
 
     /** @type {!print_preview_new.State} */
     state: Number,
@@ -152,6 +152,11 @@ Polymer({
           this.$$('paper-button.action-button').focus();
         }
         break;
+      case (print_preview_new.State.FATAL_ERROR):
+        this.summary_ = this.getErrorMessage_();
+        this.summaryLabel_ = this.getErrorMessage_();
+        this.printButtonEnabled_ = false;
+        break;
       default:
         this.summary_ = null;
         this.summaryLabel_ = null;
@@ -161,11 +166,19 @@ Polymer({
     this.lastState_ = this.state;
   },
 
-  /** @private */
-  onErrorMessageSet_: function(message) {
-    this.printButtonEnabled_ = false;
-    this.summary_ = this.errorMessage;
-    this.summaryLabel_ = this.errorMessage;
+  /**
+   * @return {string} The error message to display.
+   * @private
+   */
+  getErrorMessage_: function() {
+    switch (this.error) {
+      case print_preview_new.Error.PRINT_FAILED:
+        return loadTimeData.getString('couldNotPrint');
+      case print_preview_new.Error.CLOUD_PRINT_ERROR:
+        return this.cloudPrintErrorMessage;
+      default:
+        return '';
+    }
   },
 
   /**

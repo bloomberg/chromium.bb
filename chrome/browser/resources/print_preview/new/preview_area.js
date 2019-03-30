@@ -19,12 +19,7 @@ print_preview_new.PreviewAreaState = {
   DISPLAY_PREVIEW: 'display-preview',
   OPEN_IN_PREVIEW_LOADING: 'open-in-preview-loading',
   OPEN_IN_PREVIEW_LOADED: 'open-in-preview-loaded',
-  INVALID_SETTINGS: 'invalid-settings',
-  PREVIEW_FAILED: 'preview-failed',
-  UNSUPPORTED_CLOUD_PRINTER: 'unsupported-cloud-printer',
-  // <if expr="chromeos">
-  NO_DESTINATIONS_FOUND: 'no-destinations-found',
-  // </if>
+  ERROR: 'error',
 };
 
 Polymer({
@@ -36,13 +31,13 @@ Polymer({
     /** @type {print_preview.Destination} */
     destination: Object,
 
-    /** @type {print_preview.DestinationState} */
-    destinationState: {
-      type: Number,
-      observer: 'onDestinationStateChange_',
-    },
-
     documentModifiable: Boolean,
+
+    /** @type {!print_preview_new.Error} */
+    error: {
+      type: Number,
+      notify: true,
+    },
 
     /** @type {print_preview.Margins} */
     margins: Object,
@@ -53,8 +48,18 @@ Polymer({
     /** @type {!print_preview.Size} */
     pageSize: Object,
 
+    /** @type {!print_preview_new.PreviewAreaState} */
+    previewState: {
+      type: String,
+      notify: true,
+      value: print_preview_new.PreviewAreaState.LOADING,
+    },
+
     /** @type {!print_preview_new.State} */
-    state: Number,
+    state: {
+      type: Number,
+      observer: 'onStateChange_',
+    },
 
     /** @private {boolean} Whether the plugin is loaded */
     pluginLoaded_: {
@@ -66,13 +71,6 @@ Polymer({
     documentReady_: {
       type: Boolean,
       value: false,
-    },
-
-    /** @type {!print_preview_new.PreviewAreaState} */
-    previewState: {
-      type: String,
-      notify: true,
-      value: print_preview_new.PreviewAreaState.LOADING,
     },
 
     /** @private {boolean} */
@@ -116,28 +114,8 @@ Polymer({
     this.pluginProxy_ = print_preview_new.PluginProxy.getInstance();
     if (!this.pluginProxy_.checkPluginCompatibility(assert(
             this.$$('.preview-area-compatibility-object-out-of-process')))) {
-      this.previewState = print_preview_new.PreviewAreaState.NO_PLUGIN;
-    }
-  },
-
-  /** @private */
-  onDestinationStateChange_: function() {
-    switch (this.destinationState) {
-      case print_preview.DestinationState.INVALID:
-        this.previewState = print_preview_new.PreviewAreaState.INVALID_SETTINGS;
-        break;
-      case print_preview.DestinationState.UNSUPPORTED:
-        this.previewState =
-            print_preview_new.PreviewAreaState.UNSUPPORTED_CLOUD_PRINTER;
-        break;
-      // <if expr="chromeos">
-      case print_preview.DestinationState.NO_DESTINATIONS:
-        this.previewState =
-            print_preview_new.PreviewAreaState.NO_DESTINATIONS_FOUND;
-        break;
-      // </if>
-      default:
-        break;
+      this.error = print_preview_new.Error.NO_PLUGIN;
+      this.previewState = print_preview_new.PreviewAreaState.ERROR;
     }
   },
 
@@ -194,7 +172,8 @@ Polymer({
 
   /** @private */
   pluginOrDocumentStatusChanged_: function() {
-    if (!this.pluginLoaded_ || !this.documentReady_) {
+    if (!this.pluginLoaded_ || !this.documentReady_ ||
+        this.previewState === print_preview_new.PreviewAreaState.ERROR) {
       return;
     }
 
@@ -251,8 +230,7 @@ Polymer({
    * @private
    */
   shouldShowLearnMoreLink_: function() {
-    return this.previewState ==
-        print_preview_new.PreviewAreaState.UNSUPPORTED_CLOUD_PRINTER;
+    return this.error === print_preview_new.Error.UNSUPPORTED_PRINTER;
   },
 
   /**
@@ -261,8 +239,6 @@ Polymer({
    */
   currentMessage_: function() {
     switch (this.previewState) {
-      case print_preview_new.PreviewAreaState.NO_PLUGIN:
-        return this.i18n('noPlugin');
       case print_preview_new.PreviewAreaState.LOADING:
         return this.i18n('loading');
       case print_preview_new.PreviewAreaState.DISPLAY_PREVIEW:
@@ -272,22 +248,10 @@ Polymer({
       case print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADED:
         return this.i18n('openingPDFInPreview');
       // </if>
-      case print_preview_new.PreviewAreaState.INVALID_SETTINGS:
-        return this.i18nAdvanced('invalidPrinterSettings', {
-          substitutions: [],
-          tags: ['BR'],
-        });
-      case print_preview_new.PreviewAreaState.PREVIEW_FAILED:
-        return this.i18n('previewFailed');
-      case print_preview_new.PreviewAreaState.UNSUPPORTED_CLOUD_PRINTER:
-        return this.i18nAdvanced('unsupportedCloudPrinter', {
-          substitutions: [],
-          tags: ['BR'],
-        });
-      // <if expr="chromeos">
-      case print_preview_new.PreviewAreaState.NO_DESTINATIONS_FOUND:
-        return this.i18n('noDestinationsMessage');
-      // </if>
+      case print_preview_new.PreviewAreaState.ERROR:
+        // The preview area is responsible for displaying all errors except
+        // print failed and cloud print error.
+        return this.getErrorMessage_();
       default:
         return '';
     }
@@ -296,10 +260,7 @@ Polymer({
   /** @private */
   startPreview: function() {
     if (!this.hasTicketChanged_() &&
-        this.previewState !==
-            print_preview_new.PreviewAreaState.INVALID_SETTINGS &&
-        this.previewState !==
-            print_preview_new.PreviewAreaState.UNSUPPORTED_CLOUD_PRINTER) {
+        this.previewState !== print_preview_new.PreviewAreaState.ERROR) {
       return;
     }
     this.previewState = print_preview_new.PreviewAreaState.LOADING;
@@ -313,11 +274,11 @@ Polymer({
         },
         type => {
           if (/** @type{string} */ (type) == 'SETTINGS_INVALID') {
-            this.previewState =
-                print_preview_new.PreviewAreaState.INVALID_SETTINGS;
+            this.error = print_preview_new.Error.INVALID_PRINTER;
+            this.previewState = print_preview_new.PreviewAreaState.ERROR;
           } else if (/** @type{string} */ (type) != 'CANCELLED') {
-            this.previewState =
-                print_preview_new.PreviewAreaState.PREVIEW_FAILED;
+            this.error = print_preview_new.Error.PREVIEW_FAILED;
+            this.previewState = print_preview_new.PreviewAreaState.ERROR;
           }
         });
   },
@@ -368,7 +329,8 @@ Polymer({
     if (success) {
       this.pluginLoaded_ = true;
     } else {
-      this.previewState = print_preview_new.PreviewAreaState.PREVIEW_FAILED;
+      this.error = print_preview_new.Error.PREVIEW_FAILED;
+      this.previewState = print_preview_new.PreviewAreaState.ERROR;
     }
   },
 
@@ -731,5 +693,40 @@ Polymer({
 
     this.fire('preview-start', this.inFlightRequestId_);
     return this.nativeLayer_.getPreview(JSON.stringify(ticket));
+  },
+
+  /** @private */
+  onStateChange_: function() {
+    if ((this.state === print_preview_new.State.ERROR ||
+         this.state === print_preview_new.State.FATAL_ERROR) &&
+        this.getErrorMessage_() !== '') {
+      this.previewState = print_preview_new.PreviewAreaState.ERROR;
+    }
+  },
+
+  /** @return {string} The error message to display in the preview area. */
+  getErrorMessage_: function() {
+    switch (this.error) {
+      case print_preview_new.Error.INVALID_PRINTER:
+        return this.i18nAdvanced('invalidPrinterSettings', {
+          substitutions: [],
+          tags: ['BR'],
+        });
+      case print_preview_new.Error.UNSUPPORTED_PRINTER:
+        return this.i18nAdvanced('unsupportedCloudPrinter', {
+          substitutions: [],
+          tags: ['BR'],
+        });
+      // <if expr="chromeos">
+      case print_preview_new.Error.NO_DESTINATIONS:
+        return this.i18n('noDestinationsMessage');
+      // </if>
+      case print_preview_new.Error.NO_PLUGIN:
+        return this.i18n('noPlugin');
+      case print_preview_new.Error.PREVIEW_FAILED:
+        return this.i18n('previewFailed');
+      default:
+        return '';
+    }
   },
 });

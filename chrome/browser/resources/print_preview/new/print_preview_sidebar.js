@@ -20,6 +20,8 @@ Polymer({
   ],
 
   properties: {
+    cloudPrintErrorMessage: String,
+
     /** @type {cloudprint.CloudPrintInterface} */
     cloudPrintInterface: Object,
 
@@ -31,13 +33,17 @@ Polymer({
       notify: true,
     },
 
-    /** @type {!print_preview.DestinationState} */
+    /** @private {!print_preview.DestinationState} */
     destinationState: {
       type: Number,
       notify: true,
     },
 
-    errorMessage: String,
+    /** @type {!print_preview_new.Error} */
+    error: {
+      type: Number,
+      notify: true,
+    },
 
     pageCount: Number,
 
