@@ -27,6 +27,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
@@ -34,6 +35,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SearchUtils;
 import org.chromium.chrome.browser.preferences.TextMessagePreference;
+import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.text.SpanApplier;
 
 import java.util.Locale;
@@ -448,6 +450,12 @@ public class SavePasswordsPreferences
     }
 
     private void displayManageAccountLink() {
+        // See http://crbug/946332
+        if (LocaleManager.getInstance().isSpecialUser()
+                && !ChromeSigninController.get().isSignedIn()) {
+            // Don't add the Manage Account link if this is a special user and not signed in.
+            return;
+        }
         if (mSearchQuery != null && !mNoPasswords) {
             return; // Don't add the Manage Account link if there is a search going on.
         }
