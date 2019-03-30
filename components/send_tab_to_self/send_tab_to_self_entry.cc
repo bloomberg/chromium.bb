@@ -30,16 +30,19 @@ base::Time ProtoTimeToTime(int64_t proto_t) {
 
 }  // namespace
 
-SendTabToSelfEntry::SendTabToSelfEntry(const std::string& guid,
-                                       const GURL& url,
-                                       const std::string& title,
-                                       base::Time shared_time,
-                                       base::Time original_navigation_time,
-                                       const std::string& device_name)
+SendTabToSelfEntry::SendTabToSelfEntry(
+    const std::string& guid,
+    const GURL& url,
+    const std::string& title,
+    base::Time shared_time,
+    base::Time original_navigation_time,
+    const std::string& device_name,
+    const std::string& target_device_sync_cache_guid)
     : guid_(guid),
       url_(url),
       title_(title),
       device_name_(device_name),
+      target_device_sync_cache_guid_(target_device_sync_cache_guid),
       shared_time_(shared_time),
       original_navigation_time_(original_navigation_time),
       notification_dismissed_(false) {
@@ -73,6 +76,10 @@ const std::string& SendTabToSelfEntry::GetDeviceName() const {
   return device_name_;
 }
 
+const std::string& SendTabToSelfEntry::GetTargetDeviceSyncCacheGuid() const {
+  return target_device_sync_cache_guid_;
+}
+
 void SendTabToSelfEntry::SetNotificationDismissed(bool notification_dismissed) {
   notification_dismissed_ = notification_dismissed;
 }
@@ -92,7 +99,7 @@ SendTabToSelfLocal SendTabToSelfEntry::AsLocalProto() const {
   pb_entry->set_navigation_time_usec(
       TimeToProtoTime(GetOriginalNavigationTime()));
   pb_entry->set_device_name(GetDeviceName());
-
+  pb_entry->set_target_device_sync_cache_guid(GetTargetDeviceSyncCacheGuid());
   local_entry.set_notification_dismissed(GetNotificationDismissed());
 
   return local_entry;
@@ -117,9 +124,9 @@ std::unique_ptr<SendTabToSelfEntry> SendTabToSelfEntry::FromProto(
     navigation_time = ProtoTimeToTime(pb_entry.navigation_time_usec());
   }
 
-  return std::make_unique<SendTabToSelfEntry>(guid, url, pb_entry.title(),
-                                              shared_time, navigation_time,
-                                              pb_entry.device_name());
+  return std::make_unique<SendTabToSelfEntry>(
+      guid, url, pb_entry.title(), shared_time, navigation_time,
+      pb_entry.device_name(), pb_entry.target_device_sync_cache_guid());
 }
 
 std::unique_ptr<SendTabToSelfEntry> SendTabToSelfEntry::FromLocalProto(

@@ -748,6 +748,7 @@ VISIT_PROTO_FIELDS(const sync_pb::SendTabToSelfSpecifics& proto) {
   VISIT(shared_time_usec);
   VISIT(navigation_time_usec);
   VISIT(device_name);
+  VISIT(target_device_sync_cache_guid);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SessionHeader& proto) {

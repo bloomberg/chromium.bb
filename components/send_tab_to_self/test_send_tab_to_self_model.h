@@ -27,7 +27,8 @@ class TestSendTabToSelfModel : public SendTabToSelfModel {
       const std::string& guid) const override;
   const SendTabToSelfEntry* AddEntry(const GURL& url,
                                      const std::string& title,
-                                     base::Time navigation_time) override;
+                                     base::Time navigation_time,
+                                     const std::string& device_id) override;
   void DeleteEntry(const std::string& guid) override;
   void DismissEntry(const std::string& guid) override;
   bool IsReady() override;

@@ -36,7 +36,8 @@ class SendTabToSelfEntry {
                      const std::string& title,
                      base::Time shared_time,
                      base::Time original_navigation_time,
-                     const std::string& device_name);
+                     const std::string& device_name,
+                     const std::string& target_device_sync_cache_guid);
   ~SendTabToSelfEntry();
 
   // The unique random id for the entry.
@@ -49,9 +50,10 @@ class SendTabToSelfEntry {
   base::Time GetSharedTime() const;
   // The time that the tab was navigated to.
   base::Time GetOriginalNavigationTime() const;
-
   // The name of the device that originated the sent tab.
   const std::string& GetDeviceName() const;
+  // The cache guid of of the device that this tab is shared with.
+  const std::string& GetTargetDeviceSyncCacheGuid() const;
 
   // The state of this entry's notification: if it has been |dismissed|.
   void SetNotificationDismissed(bool notification_dismissed);
@@ -81,6 +83,7 @@ class SendTabToSelfEntry {
   GURL url_;
   std::string title_;
   std::string device_name_;
+  std::string target_device_sync_cache_guid_;
   base::Time shared_time_;
   base::Time original_navigation_time_;
   bool notification_dismissed_;

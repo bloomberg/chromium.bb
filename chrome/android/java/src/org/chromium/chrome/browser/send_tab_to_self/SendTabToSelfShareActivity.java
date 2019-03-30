@@ -24,8 +24,10 @@ public class SendTabToSelfShareActivity extends ShareActivity {
                 tab.getWebContents().getNavigationController().getNavigationHistory();
         NavigationEntry entry = history.getEntryAtIndex(history.getCurrentEntryIndex());
 
-        SendTabToSelfAndroidBridge.addEntry(
-                tab.getProfile(), entry.getUrl(), entry.getTitle(), entry.getTimestamp());
+        // TODO(crbug/946808) Add actual target device cache GUID.
+        String targetDeviceSyncCacheGuid = "";
+        SendTabToSelfAndroidBridge.addEntry(tab.getProfile(), entry.getUrl(), entry.getTitle(),
+                entry.getTimestamp(), targetDeviceSyncCacheGuid);
 
         Toast.makeText(triggeringActivity, R.string.send_tab_to_self_toast, Toast.LENGTH_SHORT)
                 .show();
