@@ -4,6 +4,7 @@
 
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/trees/effect_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_script_source.h"
@@ -739,6 +740,48 @@ TEST_P(WebLayerListSimTest, SafeOpaqueBackgroundColorGetsSet) {
   // #bottomright is cyan, which is SK_ColorCYAN
   EXPECT_TRUE((squashed_bg_color == SK_ColorGREEN) ||
               (squashed_bg_color == SK_ColorCYAN));
+}
+
+TEST_P(WebLayerListSimTest, NonDrawableLayersIgnoredForRenderSurfaces) {
+  // TODO(crbug.com/765003): CAP may make different layerization decisions. When
+  // CAP gets closer to launch, this test should be updated to pass.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        #outer {
+          width: 100px;
+          height: 100px;
+          opacity: 0.5;
+          background: blue;
+        }
+        #inner {
+          width: 10px;
+          height: 10px;
+          will-change: transform;
+        }
+      </style>
+      <div id='outer'>
+        <div id='inner'></div>
+      </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  ASSERT_GE(ContentLayerCount(), 2u);
+  auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  EXPECT_FALSE(inner_element_layer->DrawsContent());
+  auto* outer_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  EXPECT_TRUE(outer_element_layer->DrawsContent());
+
+  // The inner element layer is only needed for hit testing and does not draw
+  // content, so it should not cause a render surface.
+  auto effect_tree_index = outer_element_layer->effect_tree_index();
+  auto* effect_node = GetPropertyTrees()->effect_tree.Node(effect_tree_index);
+  EXPECT_EQ(effect_node->opacity, 0.5f);
+  EXPECT_FALSE(effect_node->has_render_surface);
 }
 
 }  // namespace blink
