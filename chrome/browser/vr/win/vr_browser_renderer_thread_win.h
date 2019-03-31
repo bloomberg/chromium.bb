@@ -9,6 +9,7 @@
 
 #include "base/threading/thread.h"
 #include "chrome/browser/vr/browser_renderer.h"
+#include "chrome/browser/vr/model/capturing_state_model.h"
 #include "chrome/browser/vr/model/web_vr_model.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/vr_export.h"
@@ -37,6 +38,10 @@ class VR_EXPORT VRBrowserRendererThreadWin {
   // The below function(s) affect(s) whether UI is drawn or not.
   void SetVisibleExternalPromptNotification(
       ExternalPromptNotificationType prompt);
+  void SetIndicatorsVisible(bool visible);
+  void SetCapturingState(const CapturingStateModel& active_capturing,
+                         const CapturingStateModel& background_capturing,
+                         const CapturingStateModel& potential_capturing);
 
   static VRBrowserRendererThreadWin* GetInstanceForTesting();
   BrowserRenderer* GetBrowserRendererForTesting();
@@ -48,6 +53,7 @@ class VR_EXPORT VRBrowserRendererThreadWin {
     // State changing methods.
     bool SetPrompt(ExternalPromptNotificationType prompt);
     bool SetSpinnerVisible(bool visible);
+    bool SetIndicatorsVisible(bool visible);
 
     // State querying methods.
     bool ShouldDrawUI();
@@ -58,9 +64,10 @@ class VR_EXPORT VRBrowserRendererThreadWin {
         ExternalPromptNotificationType::kPromptNone;
 
     bool spinner_visible_ = false;
+    bool indicators_visible_ = false;
   };
 
-  void OnPose(device::mojom::XRFrameDataPtr data);
+  void OnPose(int request_id, device::mojom::XRFrameDataPtr data);
   void SubmitResult(bool success);
   void SubmitFrame(device::mojom::XRFrameDataPtr data);
   void StartOverlay();
@@ -71,6 +78,7 @@ class VR_EXPORT VRBrowserRendererThreadWin {
   void OnWebXrTimedOut();
   void StartWebXrTimeout();
   void StopWebXrTimeout();
+  int GetNextRequestId();
 
   // We need to do some initialization of GraphicsDelegateWin before
   // browser_renderer_, so we first store it in a unique_ptr, then transition
@@ -94,6 +102,7 @@ class VR_EXPORT VRBrowserRendererThreadWin {
   DrawState draw_state_;
   bool started_ = false;
   bool webxr_presenting_ = false;
+  int current_request_id_ = 0;
 
   device::mojom::ImmersiveOverlayPtr overlay_;
   device::mojom::VRDisplayInfoPtr display_info_;

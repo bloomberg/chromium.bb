@@ -64,10 +64,6 @@ void XRCompositorCommon::ClearPendingFrame() {
     // frame, we allow the renderer to receive poses.
     std::move(delayed_get_frame_data_callback_).Run();
   }
-
-  if (delayed_overlay_get_frame_data_callback_ && overlay_visible_) {
-    std::move(delayed_overlay_get_frame_data_callback_).Run();
-  }
 }
 
 void XRCompositorCommon::SubmitFrameMissing(int16_t frame_index,
@@ -250,7 +246,6 @@ void XRCompositorCommon::ExitPresent() {
 
   // Kill outstanding overlays:
   overlay_visible_ = false;
-  delayed_overlay_get_frame_data_callback_.Reset();
   overlay_binding_.Close();
 
   texture_helper_.SetSourceAndOverlayVisible(false, false);
@@ -401,16 +396,6 @@ void XRCompositorCommon::RequestNextOverlayPose(
   // We will only request poses while the overlay is visible.
   DCHECK(overlay_visible_);
   TRACE_EVENT_INSTANT0("xr", "RequestOverlayPose", TRACE_EVENT_SCOPE_THREAD);
-
-  // If we've already given out a pose for the current frame delay giving out a
-  // pose until the next frame we are visible.
-  if (pending_frame_ && pending_frame_->overlay_has_pose_) {
-    DCHECK(!delayed_overlay_get_frame_data_callback_);
-    delayed_overlay_get_frame_data_callback_ =
-        base::BindOnce(&XRCompositorCommon::RequestNextOverlayPose,
-                       base::Unretained(this), std::move(callback));
-    return;
-  }
 
   // Ensure we have a pending frame.
   StartPendingFrame();
