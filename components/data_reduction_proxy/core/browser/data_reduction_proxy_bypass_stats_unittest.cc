@@ -473,6 +473,22 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest,
       histogram_tester, "DataReductionProxy.BypassedBytes.ProxyOverridden");
 }
 
+TEST_F(DataReductionProxyBypassStatsEndToEndTest, NoChromeProxy502AreBypassed) {
+  InitializeContext();
+  base::HistogramTester histogram_tester;
+  CreateAndExecuteRequest(GURL("http://foo.com"), net::LOAD_NORMAL, net::OK,
+                          "HTTP/1.1 502 Bad Gateway\r\n"
+                          "Via: 1.1 Chrome-Compression-Proxy\r\n"
+                          "Chrome-Proxy: block-once\r\n\r\n",
+                          kErrorBody.c_str(), "HTTP/1.1 200 OK\r\n\r\n",
+                          kBody.c_str());
+
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.BypassedBytes.Current", kBody.size(), 1);
+  ExpectOtherBypassedBytesHistogramsEmpty(
+      histogram_tester, "DataReductionProxy.BypassedBytes.Current");
+}
+
 TEST_F(DataReductionProxyBypassStatsEndToEndTest, BypassedBytesCurrent) {
   InitializeContext();
   struct TestCase {
@@ -609,9 +625,6 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest,
     },
     { "DataReductionProxy.BypassedBytes.Status500HttpInternalServerError",
       "HTTP/1.1 500 Internal Server Error\r\n\r\n",
-    },
-    { "DataReductionProxy.BypassedBytes.Status502HttpBadGateway",
-      "HTTP/1.1 502 Bad Gateway\r\n\r\n",
     },
     { "DataReductionProxy.BypassedBytes.Status503HttpServiceUnavailable",
       "HTTP/1.1 503 Service Unavailable\r\n\r\n",
