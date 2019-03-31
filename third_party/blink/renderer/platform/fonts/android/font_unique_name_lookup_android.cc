@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/fonts/android/font_unique_name_lookup_android.h"
 #include "mojo/public/mojom/base/shared_memory.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/font_unique_name_lookup/font_unique_name_lookup.mojom-blink.h"
+#include "third_party/blink/public/mojom/font_unique_name_lookup/font_unique_name_lookup.mojom-blink.h"
 
 namespace blink {
 
