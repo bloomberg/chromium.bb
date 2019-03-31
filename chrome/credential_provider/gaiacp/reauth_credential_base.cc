@@ -69,6 +69,9 @@ HRESULT CReauthCredentialBase::GetStringValueImpl(DWORD field_id,
     base::string16 label(
         GetStringResource(IDS_EXISTING_AUTH_FID_PROVIDER_LABEL_BASE));
     return ::SHStrDupW(label.c_str(), value);
+  } else if (field_id == FID_DESCRIPTION) {
+    base::string16 label(GetStringResource(IDS_REAUTH_FID_DESCRIPTION_BASE));
+    return ::SHStrDupW(label.c_str(), value);
   }
 
   return CGaiaCredentialBase::GetStringValueImpl(field_id, value);
