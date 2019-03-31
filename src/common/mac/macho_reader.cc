@@ -342,7 +342,6 @@ bool Reader::WalkLoadCommands(Reader::LoadCommandHandler *handler) const {
         segment.bits_64 = (type == LC_SEGMENT_64);
         size_t word_size = segment.bits_64 ? 8 : 4;
         cursor.CString(&segment.name, 16);
-        size_t file_offset, file_size;
         cursor
             .Read(word_size, false, &segment.vmaddr)
             .Read(word_size, false, &segment.vmsize)
