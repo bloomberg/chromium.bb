@@ -150,7 +150,6 @@ class XRCompositorCommon : public base::Thread,
   bool webxr_visible_ = true;   // The browser may hide a presenting session.
   bool overlay_visible_ = false;
   base::OnceCallback<void()> delayed_get_frame_data_callback_;
-  base::OnceCallback<void()> delayed_overlay_get_frame_data_callback_;
 
   gfx::RectF left_webxr_bounds_;
   gfx::RectF right_webxr_bounds_;
