@@ -8,7 +8,7 @@
 #include "third_party/blink/public/platform/platform.h"
 
 #if defined(OS_ANDROID)
-#include "third_party/blink/public/platform/modules/font_unique_name_lookup/font_unique_name_lookup.mojom-blink.h"
+#include "third_party/blink/public/mojom/font_unique_name_lookup/font_unique_name_lookup.mojom-blink.h"
 #include "third_party/blink/renderer/platform/fonts/android/font_unique_name_lookup_android.h"
 #elif defined(OS_LINUX)
 #include "third_party/blink/renderer/platform/fonts/linux/font_unique_name_lookup_linux.h"

@@ -34,7 +34,6 @@ _TEST_APK_LIBS = [
   (0x0155d000, 0x015ab98c, 0x0004e98c, 'libbase_i18n.cr.so'),
   (0x015ac000, 0x015dff4c, 0x00033f4c, 'libbindings.cr.so'),
   (0x015e0000, 0x015f5a54, 0x00015a54, 'libbindings_base.cr.so'),
-  (0x015f6000, 0x0160d770, 0x00017770, 'libblink_android_mojo_bindings_shared.cr.so'),
   (0x0160e000, 0x01731960, 0x00123960, 'libblink_common.cr.so'),
   (0x01732000, 0x0174ce54, 0x0001ae54, 'libblink_controller.cr.so'),
   (0x0174d000, 0x0318c528, 0x01a3f528, 'libblink_core.cr.so'),

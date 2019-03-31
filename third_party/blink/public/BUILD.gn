@@ -670,7 +670,6 @@ mojom("mojo_bindings") {
     "platform/modules/bluetooth/web_bluetooth.mojom",
   ]
   public_deps = [
-    ":android_mojo_bindings",
     "//components/services/font/public/interfaces",
     "//device/bluetooth/public/mojom",
     "//mojo/public/mojom/base",
@@ -698,32 +697,6 @@ mojom("mojo_bindings") {
 
   # Similarly, the blink variant must be linked with the platform component
   # since it uses types from it in its typemaps.
-  export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
-  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
-  export_header_blink = "third_party/blink/public/platform/web_common.h"
-}
-
-mojom("android_mojo_bindings") {
-  visibility = [ ":mojo_bindings" ]
-  visibility_blink = [ ":mojo_bindings_blink" ]
-  sources = [
-    "platform/modules/font_unique_name_lookup/font_unique_name_lookup.mojom",
-    "platform/modules/installation/installation.mojom",
-    "platform/modules/mediasession/media_session.mojom",
-  ]
-  public_deps = [
-    "//mojo/public/mojom/base",
-    "//services/media_session/public/mojom",
-    "//ui/gfx/geometry/mojo",
-    "//url/mojom:url_mojom_gurl",
-  ]
-
-  component_output_prefix = "blink_android_mojo_bindings"
-
-  # See comment above.
-  export_class_attribute = "CONTENT_EXPORT"
-  export_define = "CONTENT_IMPLEMENTATION=1"
-  export_header = "content/common/content_export.h"
   export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/public/platform/web_common.h"

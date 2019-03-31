@@ -26,7 +26,7 @@
 #include "media/base/media_content_type.h"
 #include "services/media_session/public/cpp/media_image_manager.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
-#include "third_party/blink/public/platform/modules/mediasession/media_session.mojom.h"
+#include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/media/session/media_session_android.h"

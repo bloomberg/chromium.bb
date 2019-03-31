@@ -19,7 +19,7 @@
 #include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
-#include "third_party/blink/public/platform/modules/mediasession/media_session.mojom.h"
+#include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
 
 using ::testing::_;
 using ::testing::AnyNumber;
