@@ -6,6 +6,7 @@
 #define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "build/build_config.h"
 #include "components/download/public/common/download_export.h"
 
 namespace download {
@@ -26,6 +27,11 @@ COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kParallelDownloading;
 // DB, rather than history DB.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
     kDownloadDBForNewDownloads;
+
+#if defined(OS_ANDROID)
+// Whether download expiration date will be refreshed on resumption.
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kRefreshExpirationDate;
+#endif
 
 }  // namespace features
 }  // namespace download

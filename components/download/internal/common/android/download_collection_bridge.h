@@ -72,7 +72,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadCollectionBridge {
   // Gets the display name for all downloads.
   // Called on non UI thread.
   static void GetDisplayNamesForDownloads(GetDisplayNamesCallback cb);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadCollectionBridge);
 };

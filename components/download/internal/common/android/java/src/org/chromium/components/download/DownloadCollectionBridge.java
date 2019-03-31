@@ -279,4 +279,13 @@ public class DownloadCollectionBridge {
     public static boolean supportsDownloadCollection() {
         return getDownloadCollectionBridge().isDownloadCollectionSupported();
     }
+
+    /**
+     * @return number of days for an intermediate download to expire.
+     */
+    public static int getExpirationDurationInDays() {
+        return nativeGetExpirationDurationInDays();
+    }
+
+    private static native int nativeGetExpirationDurationInDays();
 }

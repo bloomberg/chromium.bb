@@ -33,5 +33,10 @@ const base::Feature kParallelDownloading {
 const base::Feature kDownloadDBForNewDownloads{
     "DownloadDBForNewDownloads", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_ANDROID)
+const base::Feature kRefreshExpirationDate{"RefreshExpirationDate",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
 }  // namespace features
 }  // namespace download
