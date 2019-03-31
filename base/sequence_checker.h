@@ -55,7 +55,7 @@
   DCHECK((name).CalledOnValidSequence())
 #define DETACH_FROM_SEQUENCE(name) (name).DetachFromSequence()
 #else  // DCHECK_IS_ON()
-#if __OBJC__ && defined(OS_IOS) && !__has_feature(objc_cxx_static_assert)
+#if __OBJC__ && defined(OS_IOS)
 // TODO(thakis): Remove this branch once Xcode's clang has clang r356148.
 #define SEQUENCE_CHECKER(name)
 #else

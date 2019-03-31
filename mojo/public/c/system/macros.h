@@ -15,7 +15,11 @@
 // Assert things at compile time. (|msg| should be a valid identifier name.)
 // Use like:
 //   MOJO_STATIC_ASSERT(sizeof(struct Foo) == 12, "Foo has invalid size");
+#if defined(__cplusplus)
 #define MOJO_STATIC_ASSERT(expr, msg) static_assert(expr, msg)
+#else
+#define MOJO_STATIC_ASSERT(expr, msg) _Static_assert(expr, msg)
+#endif
 
 // Defines a pointer-sized struct field of the given type. This ensures that the
 // field has an 8-byte footprint on both 32-bit and 64-bit systems, using an
