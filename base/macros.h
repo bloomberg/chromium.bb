@@ -5,6 +5,17 @@
 #ifndef BASE_MACROS_H_
 #define BASE_MACROS_H_
 
+// Use this when declaring/defining noexcept move constructors, to work around a
+// bug on older versions of g++.
+//
+// TODO(issues/40): Delete this macro once the g++ version is upgraded on the
+// bots.
+#if defined(__GNUC__) && __GNUC__ < 6
+#define MAYBE_NOEXCEPT
+#else
+#define MAYBE_NOEXCEPT noexcept
+#endif
+
 #define DISALLOW_COPY(ClassName) ClassName(const ClassName&) = delete
 #define DISALLOW_ASSIGN(ClassName) \
   ClassName& operator=(const ClassName&) = delete

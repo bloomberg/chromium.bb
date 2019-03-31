@@ -1,0 +1,40 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("cast") {
+  sources = [
+    "clock_drift_smoother.cc",
+    "clock_drift_smoother.h",
+    "constants.h",
+    "encoded_frame.cc",
+    "encoded_frame.h",
+    "expanded_value_base.h",
+    "frame_id.cc",
+    "frame_id.h",
+    "rtp_time.cc",
+    "rtp_time.h",
+  ]
+
+  public_deps = [
+    "../../third_party/abseil",
+  ]
+
+  deps = [
+    "../../platform",
+  ]
+}
+
+source_set("cast_unittests") {
+  testonly = true
+
+  sources = [
+    "expanded_value_base_unittest.cc",
+    "rtp_time_unittest.cc",
+  ]
+
+  deps = [
+    ":cast",
+    "../../third_party/googletest:gtest",
+  ]
+}
