@@ -1048,6 +1048,8 @@ void PaintArtifactCompositor::UpdateRenderSurfaceForEffects(
   Vector<bool> pending_render_surfaces;
   pending_render_surfaces.resize(effect_tree.size());
   for (const auto& layer : layers) {
+    if (!layer->DrawsContent())
+      continue;
     bool descendant_may_have_backdrop_filter = false;
     auto* effect = effect_tree.Node(layer->effect_tree_index());
     bool may_have_backdrop_filter =
