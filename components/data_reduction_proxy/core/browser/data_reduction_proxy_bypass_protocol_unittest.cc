@@ -643,382 +643,227 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
     int expected_duration;
     DataReductionProxyBypassType expected_bypass_type;
   } tests[] = {
-    // Valid data reduction proxy response with no bypass message.
-    { "GET",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
-      false,
-      0u,
-      true,
-      -1,
-      BYPASS_EVENT_TYPE_MAX,
-    },
-    // Response error does not result in bypass.
-    { "GET",
-      "Not an HTTP response",
-      false,
-      true,
-      0u,
-      true,
-      -1,
-      BYPASS_EVENT_TYPE_MAX,
-    },
-    // Valid data reduction proxy response with chained via header,
-    // no bypass message.
-    { "GET",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy, 1.0 some-other-proxy\r\n\r\n",
-      false,
-      false,
-      0u,
-      true,
-      -1,
-      BYPASS_EVENT_TYPE_MAX
-    },
-    // Valid data reduction proxy response with a bypass message.
-    { "GET",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: bypass=0\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      1u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_MEDIUM
-    },
-    // Valid data reduction proxy response with a bypass message.
-    { "GET",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: bypass=1\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      1u,
-      true,
-      1,
-      BYPASS_EVENT_TYPE_SHORT
-    },
-    // Same as above with the OPTIONS method, which is idempotent.
-    { "OPTIONS",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: bypass=0\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      1u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_MEDIUM
-    },
-    // Same as above with the HEAD method, which is idempotent.
-    { "HEAD",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: bypass=0\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      1u,
-      false,
-      0,
-      BYPASS_EVENT_TYPE_MEDIUM
-    },
-    // Same as above with the PUT method, which is idempotent.
-    { "PUT",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: bypass=0\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      1u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_MEDIUM
-    },
-    // Same as above with the DELETE method, which is idempotent.
-    { "DELETE",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: bypass=0\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      1u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_MEDIUM
-    },
-    // Same as above with the TRACE method, which is idempotent.
-    { "TRACE",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: bypass=0\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      1u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_MEDIUM
-    },
-    // 500 responses should be bypassed.
-    { "GET",
-      "HTTP/1.1 500 Internal Server Error\r\n"
-      "Server: proxy\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      1u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_STATUS_500_HTTP_INTERNAL_SERVER_ERROR
-    },
-    // 502 responses should be bypassed.
-    { "GET",
-      "HTTP/1.1 502 Internal Server Error\r\n"
-      "Server: proxy\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      1u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY
-    },
-    // 503 responses should be bypassed.
-    { "GET",
-      "HTTP/1.1 503 Internal Server Error\r\n"
-      "Server: proxy\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      1u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_STATUS_503_HTTP_SERVICE_UNAVAILABLE
-    },
-    // Invalid data reduction proxy 4xx response. Missing Via header.
-    { "GET",
-      "HTTP/1.1 404 Not Found\r\n"
-      "Server: proxy\r\n\r\n",
-      true,
-      false,
-      0u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_4XX
-    },
-    // Invalid data reduction proxy response. Missing Via header.
-    { "GET",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n\r\n",
-      true,
-      false,
-      1u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER
-    },
-    // Invalid data reduction proxy response. Wrong Via header.
-    { "GET",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Via: 1.0 some-other-proxy\r\n\r\n",
-      true,
-      false,
-      1u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER
-    },
-    // Valid data reduction proxy response. 304 missing Via header.
-    { "GET",
-      "HTTP/1.1 304 Not Modified\r\n"
-      "Server: proxy\r\n\r\n",
-      false,
-      false,
-      0u,
-      false,
-      0,
-      BYPASS_EVENT_TYPE_MAX
-    },
-    // Valid data reduction proxy response with a bypass message. It will
-    // not be retried because the request is non-idempotent.
-    { "POST",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: bypass=0\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
-      false,
-      1u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_MEDIUM
-    },
-    // Valid data reduction proxy response with block message. Both proxies
-    // should be on the retry list when it completes.
-    { "GET",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: block=1\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      2u,
-      true,
-      1,
-      BYPASS_EVENT_TYPE_SHORT
-    },
-    // Valid data reduction proxy response with a block-once message. It will be
-    // retried, and there will be no proxies on the retry list since block-once
-    // only affects the current request.
-    { "GET",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: block-once\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      0u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_CURRENT
-    },
-    // Same as above with the OPTIONS method, which is idempotent.
-    { "OPTIONS",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: block-once\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      0u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_CURRENT
-    },
-    // Same as above with the HEAD method, which is idempotent.
-    { "HEAD",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: block-once\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      0u,
-      false,
-      0,
-      BYPASS_EVENT_TYPE_CURRENT
-    },
-    // Same as above with the PUT method, which is idempotent.
-    { "PUT",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: block-once\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      0u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_CURRENT
-    },
-    // Same as above with the DELETE method, which is idempotent.
-    { "DELETE",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: block-once\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      0u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_CURRENT
-    },
-    // Same as above with the TRACE method, which is idempotent.
-    { "TRACE",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: block-once\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      0u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_CURRENT
-    },
-    // Valid Data Reduction Proxy response with a block-once message. It will
-    // be retried because block-once indicates that request did not reach the
-    // origin and client should retry. Only current request is retried direct,
-    // so there should be no proxies on the retry list.
-    { "POST",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: block-once\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      0u,
-      true,
-      0,
-      BYPASS_EVENT_TYPE_CURRENT
-    },
-    // Valid Data Reduction Proxy response with a bypass message. It will
-    // not be retried because the request is non-idempotent. Both proxies
-    // should be on the retry list for 1 second.
-    { "POST",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: block=1\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
-      false,
-      2u,
-      true,
-      1,
-      BYPASS_EVENT_TYPE_SHORT
-    },
-    // Valid data reduction proxy response with block and block-once messages.
-    // The block message will override the block-once message, so both proxies
-    // should be on the retry list when it completes.
-    { "GET",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: block=1, block-once\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      2u,
-      true,
-      1,
-      BYPASS_EVENT_TYPE_SHORT
-    },
-    // Valid data reduction proxy response with bypass and block-once messages.
-    // The bypass message will override the block-once message, so one proxy
-    // should be on the retry list when it completes.
-    { "GET",
-      "HTTP/1.1 200 OK\r\n"
-      "Server: proxy\r\n"
-      "Chrome-Proxy: bypass=1, block-once\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      true,
-      false,
-      1u,
-      true,
-      1,
-      BYPASS_EVENT_TYPE_SHORT
-    },
+      // Valid data reduction proxy response with no bypass message.
+      {
+          "GET",
+          "HTTP/1.1 200 OK\r\n"
+          "Server: proxy\r\n"
+          "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+          false,
+          false,
+          0u,
+          true,
+          -1,
+          BYPASS_EVENT_TYPE_MAX,
+      },
+      // Response error does not result in bypass.
+      {
+          "GET",
+          "Not an HTTP response",
+          false,
+          true,
+          0u,
+          true,
+          -1,
+          BYPASS_EVENT_TYPE_MAX,
+      },
+      // Valid data reduction proxy response with chained via header,
+      // no bypass message.
+      {"GET",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy, 1.0 some-other-proxy\r\n\r\n",
+       false, false, 0u, true, -1, BYPASS_EVENT_TYPE_MAX},
+      // Valid data reduction proxy response with a bypass message.
+      {"GET",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: bypass=0\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 1u, true, 0, BYPASS_EVENT_TYPE_MEDIUM},
+      // Valid data reduction proxy response with a bypass message.
+      {"GET",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: bypass=1\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 1u, true, 1, BYPASS_EVENT_TYPE_SHORT},
+      // Same as above with the OPTIONS method, which is idempotent.
+      {"OPTIONS",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: bypass=0\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 1u, true, 0, BYPASS_EVENT_TYPE_MEDIUM},
+      // Same as above with the HEAD method, which is idempotent.
+      {"HEAD",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: bypass=0\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 1u, false, 0, BYPASS_EVENT_TYPE_MEDIUM},
+      // Same as above with the PUT method, which is idempotent.
+      {"PUT",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: bypass=0\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 1u, true, 0, BYPASS_EVENT_TYPE_MEDIUM},
+      // Same as above with the DELETE method, which is idempotent.
+      {"DELETE",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: bypass=0\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 1u, true, 0, BYPASS_EVENT_TYPE_MEDIUM},
+      // Same as above with the TRACE method, which is idempotent.
+      {"TRACE",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: bypass=0\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 1u, true, 0, BYPASS_EVENT_TYPE_MEDIUM},
+      // 500 responses should be bypassed.
+      {"GET",
+       "HTTP/1.1 500 Internal Server Error\r\n"
+       "Server: proxy\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 1u, true, 0,
+       BYPASS_EVENT_TYPE_STATUS_500_HTTP_INTERNAL_SERVER_ERROR},
+      // 502 responses should be bypassed.
+      {"GET",
+       "HTTP/1.1 502 Internal Server Error\r\n"
+       "Server: proxy\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 0u, true, 0, BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY},
+      // 503 responses should be bypassed.
+      {"GET",
+       "HTTP/1.1 503 Internal Server Error\r\n"
+       "Server: proxy\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 1u, true, 0,
+       BYPASS_EVENT_TYPE_STATUS_503_HTTP_SERVICE_UNAVAILABLE},
+      // Invalid data reduction proxy 4xx response. Missing Via header.
+      {"GET",
+       "HTTP/1.1 404 Not Found\r\n"
+       "Server: proxy\r\n\r\n",
+       true, false, 0u, true, 0, BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_4XX},
+      // Invalid data reduction proxy response. Missing Via header.
+      {"GET",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n\r\n",
+       true, false, 1u, true, 0, BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER},
+      // Invalid data reduction proxy response. Wrong Via header.
+      {"GET",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Via: 1.0 some-other-proxy\r\n\r\n",
+       true, false, 1u, true, 0, BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER},
+      // Valid data reduction proxy response. 304 missing Via header.
+      {"GET",
+       "HTTP/1.1 304 Not Modified\r\n"
+       "Server: proxy\r\n\r\n",
+       false, false, 0u, false, 0, BYPASS_EVENT_TYPE_MAX},
+      // Valid data reduction proxy response with a bypass message. It will
+      // not be retried because the request is non-idempotent.
+      {"POST",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: bypass=0\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       false, false, 1u, true, 0, BYPASS_EVENT_TYPE_MEDIUM},
+      // Valid data reduction proxy response with block message. Both proxies
+      // should be on the retry list when it completes.
+      {"GET",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: block=1\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 2u, true, 1, BYPASS_EVENT_TYPE_SHORT},
+      // Valid data reduction proxy response with a block-once message. It will
+      // be
+      // retried, and there will be no proxies on the retry list since
+      // block-once
+      // only affects the current request.
+      {"GET",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: block-once\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 0u, true, 0, BYPASS_EVENT_TYPE_CURRENT},
+      // Same as above with the OPTIONS method, which is idempotent.
+      {"OPTIONS",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: block-once\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 0u, true, 0, BYPASS_EVENT_TYPE_CURRENT},
+      // Same as above with the HEAD method, which is idempotent.
+      {"HEAD",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: block-once\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 0u, false, 0, BYPASS_EVENT_TYPE_CURRENT},
+      // Same as above with the PUT method, which is idempotent.
+      {"PUT",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: block-once\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 0u, true, 0, BYPASS_EVENT_TYPE_CURRENT},
+      // Same as above with the DELETE method, which is idempotent.
+      {"DELETE",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: block-once\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 0u, true, 0, BYPASS_EVENT_TYPE_CURRENT},
+      // Same as above with the TRACE method, which is idempotent.
+      {"TRACE",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: block-once\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 0u, true, 0, BYPASS_EVENT_TYPE_CURRENT},
+      // Valid Data Reduction Proxy response with a block-once message. It will
+      // be retried because block-once indicates that request did not reach the
+      // origin and client should retry. Only current request is retried direct,
+      // so there should be no proxies on the retry list.
+      {"POST",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: block-once\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 0u, true, 0, BYPASS_EVENT_TYPE_CURRENT},
+      // Valid Data Reduction Proxy response with a bypass message. It will
+      // not be retried because the request is non-idempotent. Both proxies
+      // should be on the retry list for 1 second.
+      {"POST",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: block=1\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       false, false, 2u, true, 1, BYPASS_EVENT_TYPE_SHORT},
+      // Valid data reduction proxy response with block and block-once messages.
+      // The block message will override the block-once message, so both proxies
+      // should be on the retry list when it completes.
+      {"GET",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: block=1, block-once\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 2u, true, 1, BYPASS_EVENT_TYPE_SHORT},
+      // Valid data reduction proxy response with bypass and block-once
+      // messages.
+      // The bypass message will override the block-once message, so one proxy
+      // should be on the retry list when it completes.
+      {"GET",
+       "HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: bypass=1, block-once\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, false, 1u, true, 1, BYPASS_EVENT_TYPE_SHORT},
   };
   test_context_->config()->test_params()->UseNonSecureProxiesForHttp();
   std::string primary = test_context_->config()
@@ -1172,14 +1017,14 @@ TEST_F(DataReductionProxyBypassProtocolEndToEndTest,
       {"HTTP/1.1 502 Bad Gateway\r\n"
        "Server: proxy\r\n"
        "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-       true, true, BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY},
+       true, false, BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY},
       {"HTTP/1.1 200 OK\r\n"
        "Server: proxy\r\n"
        "Chrome-Proxy: block=0\r\n\r\n",
        false, false, BYPASS_EVENT_TYPE_MAX},
       {"HTTP/1.1 502 Bad Gateway\r\n"
        "Server: proxy\r\n\r\n",
-       false, false, BYPASS_EVENT_TYPE_MAX},
+       true, false, BYPASS_EVENT_TYPE_MAX},
   };
 
   for (const auto& test : test_cases) {
