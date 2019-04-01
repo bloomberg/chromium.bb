@@ -112,19 +112,6 @@ void PendingBookmarkAppManager::SetUrlLoaderForTesting(
   url_loader_ = std::move(url_loader);
 }
 
-base::Optional<bool> PendingBookmarkAppManager::IsExtensionPresentAndInstalled(
-    const std::string& extension_id) {
-  if (registrar_->IsInstalled(extension_id)) {
-    return base::Optional<bool>(true);
-  }
-
-  if (registrar_->WasExternalAppUninstalledByUser(extension_id)) {
-    return base::Optional<bool>(false);
-  }
-
-  return base::nullopt;
-}
-
 void PendingBookmarkAppManager::MaybeStartNextInstallation() {
   if (current_task_and_callback_)
     return;
@@ -145,23 +132,31 @@ void PendingBookmarkAppManager::MaybeStartNextInstallation() {
     base::Optional<std::string> extension_id =
         extension_ids_map_.LookupExtensionId(install_options.url);
 
-    if (extension_id) {
-      base::Optional<bool> opt =
-          IsExtensionPresentAndInstalled(extension_id.value());
-      if (opt.has_value()) {
-        bool installed = opt.value();
-        if (installed || !install_options.override_previous_user_uninstall) {
-          // TODO(crbug.com/878262): Handle the case where the app is already
-          // installed but from a different source.
-          std::move(front->callback)
-              .Run(install_options.url,
-                   installed
-                       ? web_app::InstallResultCode::kAlreadyInstalled
-                       : web_app::InstallResultCode::kPreviouslyUninstalled);
-          continue;
-        }
+    if (extension_id.has_value()) {
+      // App is already installed.
+      if (registrar_->IsInstalled(extension_id.value())) {
+        std::move(front->callback)
+            .Run(install_options.url,
+                 web_app::InstallResultCode::kAlreadyInstalled);
+        continue;
       }
+
+      // The app is not installed, but it might have been previously uninstalled
+      // by the user. If that's the case, don't install it again unless
+      // |override_previous_user_uninstall| is true.
+      if (registrar_->WasExternalAppUninstalledByUser(extension_id.value()) &&
+          !install_options.override_previous_user_uninstall) {
+        std::move(front->callback)
+            .Run(install_options.url,
+                 web_app::InstallResultCode::kPreviouslyUninstalled);
+        continue;
+      }
+
+      // If neither of the above conditions applies, the app probably got
+      // uninstalled but it wasn't been removed from the map. Still, we should
+      // fall through an install the app.
     }
+
     StartInstallationTask(std::move(front));
     return;
   }
