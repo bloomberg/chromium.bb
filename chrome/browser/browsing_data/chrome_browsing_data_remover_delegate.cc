@@ -30,6 +30,7 @@
 #include "chrome/browser/browsing_data/navigation_entry_remover.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/crash_upload_list/crash_upload_list.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
@@ -597,9 +598,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     }
 #endif
 
-#if !defined(OS_CHROMEOS)
-    crash_reporter::ClearReportsBetween(delete_begin_, delete_end_);
-#endif
+    CreateCrashUploadList()->Clear(delete_begin_, delete_end_);
   }
 
   //////////////////////////////////////////////////////////////////////////////
