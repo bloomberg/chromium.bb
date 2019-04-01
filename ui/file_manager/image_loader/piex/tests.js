@@ -11,14 +11,19 @@ program.usage('server [options]')
   .option('-d, --debug', 'enable debug mode');
 
 program.on('--help', function help() {
-  const text = require('chalk');
   console.log('');
-  console.log(text.blue('  % ' + example));
+  console.log('  % ' + example);
   console.log('');
 });
 
+program.explain = () => {
+  return undefined != process.argv.find((element) => {
+    return element == '--help' || element == '-h';
+  });
+};
+
 program.parse(process.argv);
-if (process.argv.length < 3) {
+if (!program.args.length || program.explain()) {
   program.help();
   process.exit(1);
 }
