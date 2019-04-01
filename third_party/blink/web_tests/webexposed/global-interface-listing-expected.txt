@@ -5291,6 +5291,7 @@ interface Performance : EventTarget
     setter onresourcetimingbufferfull
 interface PerformanceElementTiming : PerformanceEntry
     attribute @@toStringTag
+    getter id
     getter identifier
     getter intersectionRect
     getter naturalHeight

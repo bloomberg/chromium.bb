@@ -401,12 +401,13 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
                                          TimeTicks start_time,
                                          TimeTicks response_end,
                                          const AtomicString& identifier,
-                                         const IntSize& intrinsic_size) {
+                                         const IntSize& intrinsic_size,
+                                         const AtomicString& id) {
   DCHECK(origin_trials::ElementTimingEnabled(GetExecutionContext()));
   PerformanceElementTiming* entry = PerformanceElementTiming::Create(
       name, rect, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(response_end), identifier,
-      intrinsic_size.Width(), intrinsic_size.Height());
+      intrinsic_size.Width(), intrinsic_size.Height(), id);
   if (HasObserverFor(PerformanceEntry::kElement)) {
     UseCounter::Count(GetFrame()->GetDocument(),
                       WebFeature::kElementTimingExplicitlyRequested);

@@ -26,7 +26,8 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
                                           DOMHighResTimeStamp response_end,
                                           const AtomicString& identifier,
                                           int naturalWidth,
-                                          int naturalHeight);
+                                          int naturalHeight,
+                                          const AtomicString& id);
 
   PerformanceElementTiming(const AtomicString& name,
                            const FloatRect& intersection_rect,
@@ -34,7 +35,8 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
                            DOMHighResTimeStamp response_end,
                            const AtomicString& identifier,
                            int naturalWidth,
-                           int naturalHeight);
+                           int naturalHeight,
+                           const AtomicString& id);
   ~PerformanceElementTiming() override;
 
   AtomicString entryType() const override;
@@ -50,6 +52,8 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
 
   unsigned naturalHeight() const { return naturalHeight_; }
 
+  AtomicString id() const { return id_; }
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -60,6 +64,7 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
   AtomicString identifier_;
   unsigned naturalWidth_;
   unsigned naturalHeight_;
+  AtomicString id_;
 };
 
 }  // namespace blink
