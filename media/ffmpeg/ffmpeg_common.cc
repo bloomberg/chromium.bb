@@ -624,6 +624,39 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
   config->Initialize(codec, profile, format, color_space, video_rotation,
                      coded_size, visible_rect, natural_size, extra_data,
                      GetEncryptionScheme(stream));
+
+  if (stream->nb_side_data) {
+    for (int i = 0; i < stream->nb_side_data; ++i) {
+      AVPacketSideData side_data = stream->side_data[i];
+      if (side_data.type != AV_PKT_DATA_MASTERING_DISPLAY_METADATA)
+        continue;
+
+      HDRMetadata hdr_metadata{};
+      AVMasteringDisplayMetadata* metadata =
+          reinterpret_cast<AVMasteringDisplayMetadata*>(side_data.data);
+      if (metadata->has_primaries) {
+        hdr_metadata.mastering_metadata.primary_r =
+            gfx::PointF(av_q2d(metadata->display_primaries[0][0]),
+                        av_q2d(metadata->display_primaries[0][1]));
+        hdr_metadata.mastering_metadata.primary_g =
+            gfx::PointF(av_q2d(metadata->display_primaries[1][0]),
+                        av_q2d(metadata->display_primaries[1][1]));
+        hdr_metadata.mastering_metadata.primary_b =
+            gfx::PointF(av_q2d(metadata->display_primaries[2][0]),
+                        av_q2d(metadata->display_primaries[2][1]));
+        hdr_metadata.mastering_metadata.white_point = gfx::PointF(
+            av_q2d(metadata->white_point[0]), av_q2d(metadata->white_point[1]));
+      }
+      if (metadata->has_luminance) {
+        hdr_metadata.mastering_metadata.luminance_max =
+            av_q2d(metadata->max_luminance);
+        hdr_metadata.mastering_metadata.luminance_min =
+            av_q2d(metadata->min_luminance);
+      }
+      config->set_hdr_metadata(hdr_metadata);
+    }
+  }
+
   return true;
 }
 
