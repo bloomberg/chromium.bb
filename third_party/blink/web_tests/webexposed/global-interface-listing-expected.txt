@@ -5293,6 +5293,8 @@ interface PerformanceElementTiming : PerformanceEntry
     attribute @@toStringTag
     getter identifier
     getter intersectionRect
+    getter naturalHeight
+    getter naturalWidth
     getter responseEnd
     method constructor
     method toJSON

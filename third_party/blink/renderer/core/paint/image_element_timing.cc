@@ -78,7 +78,8 @@ void ImageElementTiming::NotifyImagePainted(
       // Create an entry with a |startTime| of 0.
       performance->AddElementTiming(
           AtomicString(cached_image->Url().GetString()), intersection_rect,
-          TimeTicks(), cached_image->LoadResponseEnd(), attr);
+          TimeTicks(), cached_image->LoadResponseEnd(), attr,
+          cached_image->IntrinsicSize(kDoNotRespectImageOrientation));
     }
     return;
   }
@@ -88,9 +89,10 @@ void ImageElementTiming::NotifyImagePainted(
   if (!layerTreeView)
     return;
 
-  element_timings_.emplace_back(AtomicString(cached_image->Url().GetString()),
-                                intersection_rect,
-                                cached_image->LoadResponseEnd(), attr);
+  element_timings_.emplace_back(
+      AtomicString(cached_image->Url().GetString()), intersection_rect,
+      cached_image->LoadResponseEnd(), attr,
+      cached_image->IntrinsicSize(kDoNotRespectImageOrientation));
   // Only queue a swap promise when |element_timings_| was empty. All of the
   // records in |element_timings_| will be processed when the promise succeeds
   // or fails, and at that time the vector is cleared.
@@ -142,7 +144,8 @@ void ImageElementTiming::ReportImagePaintSwapTime(WebLayerTreeView::SwapResult,
     for (const auto& element_timing : element_timings_) {
       performance->AddElementTiming(element_timing.name, element_timing.rect,
                                     timestamp, element_timing.response_end,
-                                    element_timing.identifier);
+                                    element_timing.identifier,
+                                    element_timing.intrinsic_size);
     }
   }
   element_timings_.clear();

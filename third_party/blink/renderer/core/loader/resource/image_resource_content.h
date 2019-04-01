@@ -74,7 +74,7 @@ class CORE_EXPORT ImageResourceContent final
   // object size resolved using a default object size of 300x150.
   // TODO(fs): Make SVGImages return proper intrinsic width/height.
   IntSize IntrinsicSize(
-      RespectImageOrientationEnum should_respect_image_orientation);
+      RespectImageOrientationEnum should_respect_image_orientation) const;
 
   void UpdateImageAnimationPolicy();
 

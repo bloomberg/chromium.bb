@@ -15,9 +15,14 @@ PerformanceElementTiming* PerformanceElementTiming::Create(
     const FloatRect& intersection_rect,
     DOMHighResTimeStamp start_time,
     DOMHighResTimeStamp response_end,
-    const AtomicString& identifier) {
+    const AtomicString& identifier,
+    int naturalWidth,
+    int naturalHeight) {
+  DCHECK_GT(naturalWidth, 0);
+  DCHECK_GT(naturalHeight, 0);
   return MakeGarbageCollected<PerformanceElementTiming>(
-      name, intersection_rect, start_time, response_end, identifier);
+      name, intersection_rect, start_time, response_end, identifier,
+      naturalWidth, naturalHeight);
 }
 
 PerformanceElementTiming::PerformanceElementTiming(
@@ -25,11 +30,15 @@ PerformanceElementTiming::PerformanceElementTiming(
     const FloatRect& intersection_rect,
     DOMHighResTimeStamp start_time,
     DOMHighResTimeStamp response_end,
-    const AtomicString& identifier)
+    const AtomicString& identifier,
+    int naturalWidth,
+    int naturalHeight)
     : PerformanceEntry(name, start_time, start_time),
       intersection_rect_(DOMRectReadOnly::FromFloatRect(intersection_rect)),
       response_end_(response_end),
-      identifier_(identifier) {}
+      identifier_(identifier),
+      naturalWidth_(naturalWidth),
+      naturalHeight_(naturalHeight) {}
 
 PerformanceElementTiming::~PerformanceElementTiming() = default;
 
