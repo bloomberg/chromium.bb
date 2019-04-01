@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.util.SparseArray;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -24,6 +25,24 @@ import java.util.Set;
  * Manager for managing the display of a queue of {@link PropertyModel}s.
  */
 public class ModalDialogManager {
+    /**
+     * An observer of the ModalDialogManager intended to broadcast notifications about any dialog
+     * being shown. Observers will know if something is overlaying the screen.
+     */
+    public interface ModalDialogManagerObserver {
+        /**
+         * A notification that the manager started showing a modal dialog.
+         * @param model The model that describes the dialog that was shown.
+         */
+        void onDialogShown(PropertyModel model);
+
+        /**
+         * A notification that the manager hid a modal dialog.
+         * @param model The model that describes the dialog that was hidden.
+         */
+        void onDialogHidden(PropertyModel model);
+    }
+
     /**
      * Present a {@link PropertyModel} in a container.
      */
@@ -135,6 +154,9 @@ public class ModalDialogManager {
      */
     private boolean mDismissingCurrentDialog;
 
+    /** Observers of this manager. */
+    private final ObserverList<ModalDialogManagerObserver> mObserverList = new ObserverList<>();
+
     /**
      * Constructor for initializing default {@link Presenter}.
      * @param defaultPresenter The default presenter to be used when no presenter specified.
@@ -149,6 +171,23 @@ public class ModalDialogManager {
     /** Clears any dependencies on the showing or pending dialogs. */
     public void destroy() {
         dismissAllDialogs(DialogDismissalCause.ACTIVITY_DESTROYED);
+        mObserverList.clear();
+    }
+
+    /**
+     * Add an observer to this manager.
+     * @param observer The observer to add.
+     */
+    public void addObserver(ModalDialogManagerObserver observer) {
+        mObserverList.addObserver(observer);
+    }
+
+    /**
+     * Remove an observer of this manager.
+     * @param observer The observer to remove.
+     */
+    public void removeObserver(ModalDialogManagerObserver observer) {
+        mObserverList.removeObserver(observer);
     }
 
     /**
@@ -207,6 +246,7 @@ public class ModalDialogManager {
         mCurrentPresenter = mPresenters.get(dialogType, mDefaultPresenter);
         mCurrentPresenter.setDialogModel(
                 model, (dismissalCause) -> dismissDialog(model, dismissalCause));
+        for (ModalDialogManagerObserver o : mObserverList) o.onDialogShown(model);
     }
 
     /**
@@ -240,6 +280,7 @@ public class ModalDialogManager {
         if (mDismissingCurrentDialog) return;
         mDismissingCurrentDialog = true;
         model.get(ModalDialogProperties.CONTROLLER).onDismiss(model, dismissalCause);
+        for (ModalDialogManagerObserver o : mObserverList) o.onDialogHidden(model);
         mCurrentPresenter.setDialogModel(null, null);
         mCurrentPresenter = null;
         mDismissingCurrentDialog = false;
