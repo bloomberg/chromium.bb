@@ -31,6 +31,7 @@
 #include "build/build_config.h"
 
 #include "media/base/media_switches.h"
+#include "media/base/video_types.h"
 
 // Auto-generated for dlopen libva libraries
 #include "media/gpu/vaapi/va_stubs.h"
@@ -153,6 +154,7 @@ static const struct {
 };
 
 constexpr const char* kMesaGalliumDriverPrefix = "Mesa Gallium driver";
+constexpr const char* kIntelI965DriverPrefix = "Intel i965 driver";
 
 static const struct {
   std::string va_driver;
@@ -838,6 +840,8 @@ class VASupportedImageFormats {
 
   bool IsImageFormatSupported(const VAImageFormat& va_format) const;
 
+  const std::vector<VAImageFormat>& GetSupportedImageFormats() const;
+
  private:
   friend class base::NoDestructor<VASupportedImageFormats>;
 
@@ -870,6 +874,20 @@ bool VASupportedImageFormats::IsImageFormatSupported(
                            return format.fourcc == va_image_format.fourcc;
                          });
   return it != supported_formats_.end();
+}
+
+const std::vector<VAImageFormat>&
+VASupportedImageFormats::GetSupportedImageFormats() const {
+#if DCHECK_IS_ON()
+  std::string formats_str;
+  for (size_t i = 0; i < supported_formats_.size(); i++) {
+    if (i > 0)
+      formats_str += ", ";
+    formats_str += FourccToString(supported_formats_[i].fourcc);
+  }
+  DVLOG(1) << "Supported image formats: " << formats_str;
+#endif
+  return supported_formats_;
 }
 
 VASupportedImageFormats::VASupportedImageFormats()
@@ -917,10 +935,32 @@ bool VASupportedImageFormats::InitSupportedImageFormats_Locked() {
 
   // Resize the list to the actual number of formats returned by the driver.
   supported_formats_.resize(static_cast<size_t>(num_image_formats));
+
+  // Now work around some driver misreporting.
+  if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
+                       kMesaGalliumDriverPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    // TODO(andrescj): considering that the VAAPI state tracker in mesa can
+    // convert from NV12 to IYUV when doing vaGetImage(), it's reasonable to
+    // assume that IYUV/I420 is supported. However, it's not currently being
+    // reported. See https://gitlab.freedesktop.org/mesa/mesa/commit/b0a44f10.
+    // Remove this workaround once b/128340287 is resolved.
+    if (std::find_if(supported_formats_.cbegin(), supported_formats_.cend(),
+                     [](const VAImageFormat format) {
+                       return format.fourcc == VA_FOURCC_I420;
+                     }) == supported_formats_.cend()) {
+      supported_formats_.push_back(VAImageFormat{.fourcc = VA_FOURCC_I420});
+    }
+  }
   return true;
 }
 
 }  // namespace
+
+// static
+const std::string& VaapiWrapper::GetVendorStringForTesting() {
+  return VADisplayState::Get()->va_vendor_string();
+}
 
 // static
 scoped_refptr<VaapiWrapper> VaapiWrapper::Create(
@@ -1056,6 +1096,64 @@ bool VaapiWrapper::GetJpegDecodeMaxResolution(gfx::Size* max_size) {
 }
 
 // static
+bool VaapiWrapper::GetJpegDecodeSuitableImageFourCC(unsigned int rt_format,
+                                                    uint32_t preferred_fourcc,
+                                                    uint32_t* suitable_fourcc) {
+  if (!IsJpegDecodingSupportedForInternalFormat(rt_format))
+    return false;
+
+  // Work around some driver-specific conversion issues.
+  if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
+                       kMesaGalliumDriverPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    // The VAAPI mesa state tracker only supports conversion from NV12 to YV12
+    // and IYUV (synonym of I420).
+    if (rt_format == VA_RT_FORMAT_YUV420) {
+      preferred_fourcc =
+          preferred_fourcc == VA_FOURCC_YV12 ? VA_FOURCC_YV12 : VA_FOURCC_I420;
+    } else if (rt_format == VA_RT_FORMAT_YUV422) {
+      preferred_fourcc = VA_FOURCC('Y', 'U', 'Y', 'V');
+    } else {
+      // Out of the three internal formats we care about (4:2:0, 4:2:2, and
+      // 4:4:4), this driver should only support the first two. Since we check
+      // for supported internal formats at the beginning of this function, we
+      // shouldn't get here.
+      NOTREACHED();
+      return false;
+    }
+  } else if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
+                              kIntelI965DriverPrefix,
+                              base::CompareCase::SENSITIVE)) {
+    // Workaround deduced from observations in samus and nocturne: we found that
+    //
+    // - For a 4:2:2 image, the internal format is 422H.
+    // - For a 4:2:0 image, the internal format is IMC3.
+    // - For a 4:4:4 image, the internal format is 444P.
+    //
+    // For these internal formats and an image format of either 422H or P010, an
+    // intermediate NV12 surface is allocated. Then, a conversion is made from
+    // {422H, IMC3, 444P} -> NV12 -> {422H, P010}. Unfortunately, the
+    // NV12 -> {422H, P010} conversion is unimplemented in
+    // i965_image_pl2_processing(). So, when |preferred_fourcc| is either 422H
+    // or P010, we can just fallback to I420.
+    //
+    if (preferred_fourcc == VA_FOURCC_422H ||
+        preferred_fourcc == VA_FOURCC_P010) {
+      preferred_fourcc = VA_FOURCC_I420;
+    }
+  }
+
+  if (!VASupportedImageFormats::Get().IsImageFormatSupported(
+          VAImageFormat{.fourcc = preferred_fourcc})) {
+    preferred_fourcc = VA_FOURCC_I420;
+  }
+
+  // After workarounds, assume the conversion is supported.
+  *suitable_fourcc = preferred_fourcc;
+  return true;
+}
+
+// static
 bool VaapiWrapper::IsJpegEncodeSupported() {
   return VASupportedProfiles::Get().IsProfileSupported(kEncode,
                                                        VAProfileJPEGBaseline);
@@ -1064,6 +1162,12 @@ bool VaapiWrapper::IsJpegEncodeSupported() {
 // static
 bool VaapiWrapper::IsImageFormatSupported(const VAImageFormat& format) {
   return VASupportedImageFormats::Get().IsImageFormatSupported(format);
+}
+
+// static
+const std::vector<VAImageFormat>&
+VaapiWrapper::GetSupportedImageFormatsForTesting() {
+  return VASupportedImageFormats::Get().GetSupportedImageFormats();
 }
 
 bool VaapiWrapper::CreateContextAndSurfaces(

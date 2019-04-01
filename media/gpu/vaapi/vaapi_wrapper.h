@@ -14,6 +14,7 @@
 #include <stdint.h>
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include <va/va.h>
@@ -70,6 +71,9 @@ class MEDIA_GPU_EXPORT VaapiWrapper
     bool yuv444 : 1;
   };
 
+  // Returns the VAAPI vendor string (obtained using vaQueryVendorString()).
+  static const std::string& GetVendorStringForTesting();
+
   // Return an instance of VaapiWrapper initialized for |va_profile| and
   // |mode|. |report_error_to_uma_cb| will be called independently from
   // reporting errors to clients via method return values.
@@ -115,11 +119,27 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // not be empty (as long as this method returns true).
   static bool GetJpegDecodeMaxResolution(gfx::Size* max_size);
 
+  // Obtains a suitable FOURCC that can be used in vaCreateImage() +
+  // vaGetImage(). |rt_format| corresponds to the JPEG's subsampling format.
+  // |preferred_fourcc| is the FOURCC of the format preferred by the caller. If
+  // it is determined that the VAAPI driver can do the conversion from the
+  // internal format (|rt_format|), *|suitable_fourcc| is set to
+  // |preferred_fourcc|. Otherwise, it is set to a supported format. Returns
+  // true if a suitable FOURCC could be determined, false otherwise (e.g., if
+  // the |rt_format| is unsupported by the driver). If |preferred_fourcc| is not
+  // a supported image format, *|suitable_fourcc| is set to VA_FOURCC_I420.
+  static bool GetJpegDecodeSuitableImageFourCC(unsigned int rt_format,
+                                               uint32_t preferred_fourcc,
+                                               uint32_t* suitable_fourcc);
+
   // Return true when JPEG encode is supported.
   static bool IsJpegEncodeSupported();
 
   // Return true when the specified image format is supported.
   static bool IsImageFormatSupported(const VAImageFormat& format);
+
+  // Returns the list of VAImageFormats supported by the driver.
+  static const std::vector<VAImageFormat>& GetSupportedImageFormatsForTesting();
 
   // Creates |num_surfaces| backing surfaces in driver for VASurfaces of
   // |va_format|, each of size |size| and initializes |va_context_id_| with
