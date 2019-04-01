@@ -117,7 +117,7 @@ TEST_F(BackButtonTest, BackKeySequenceGenerated) {
 
   generator->ReleaseLeftButton();
   EXPECT_EQ(1, target_back_press.accelerator_count());
-  EXPECT_EQ(0, target_back_release.accelerator_count());
+  EXPECT_EQ(1, target_back_release.accelerator_count());
 }
 
 }  // namespace ash
