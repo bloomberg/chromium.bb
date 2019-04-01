@@ -1011,6 +1011,8 @@
 
           Leaving this policy not set will allow the user to choose their home page on their own if HomepageIsNewTabPage is not set too.
 
+          The URL must have a standard scheme, e.g. "http://example.com" or "https://example.com".
+
           This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management.''',
       'label': '''Home page URL''',
     },
