@@ -46721,6 +46721,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Extension renderer"/>
 </enum>
 
+<enum name="RendererUnresponsiveCause">
+  <int value="0" label="Navigation commit timeout"/>
+  <int value="1" label="Input event ack timeout"/>
+</enum>
+
 <enum name="RendererUnresponsiveType">
   <obsolete>
     Deprecated 3/2017.
