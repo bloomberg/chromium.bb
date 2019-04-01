@@ -358,10 +358,10 @@ void FeedLoggingMetrics::OnTokenCompleted(bool was_synthetic,
         token_count, kMaxTokenCount);
   } else {
     UMA_HISTOGRAM_EXACT_LINEAR(
-        "ContentSuggestions.Feed.TokenCompleted.ContentCount2.Nonsynthetic",
+        "ContentSuggestions.Feed.TokenCompleted.ContentCount2.NotSynthetic",
         content_count, kMaxContentCount);
     UMA_HISTOGRAM_EXACT_LINEAR(
-        "ContentSuggestions.Feed.TokenCompleted.TokenCount.Nonsynthetic",
+        "ContentSuggestions.Feed.TokenCompleted.TokenCount.NotSynthetic",
         token_count, kMaxTokenCount);
   }
 }
@@ -374,7 +374,7 @@ void FeedLoggingMetrics::OnTokenFailedToComplete(bool was_synthetic,
         failure_count, kMaxFailureCount);
   } else {
     UMA_HISTOGRAM_EXACT_LINEAR(
-        "ContentSuggestions.Feed.TokenFailedToCompleted.Nonsynthetic",
+        "ContentSuggestions.Feed.TokenFailedToCompleted.NotSynthetic",
         failure_count, kMaxFailureCount);
   }
 }
