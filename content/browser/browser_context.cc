@@ -564,13 +564,13 @@ void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
     }
   }
 
-  // Clean up any security state associated with this BrowserContext.  This
+  // Clean up any isolated origins associated with this BrowserContext.  This
   // should be safe now that all RenderProcessHosts are destroyed, since future
   // navigations or security decisions shouldn't ever need to consult these
-  // renderer processes.
+  // isolated origins.
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  policy->OnBrowserContextBeingDestroyed(*browser_context);
+  policy->RemoveIsolatedOriginsForBrowserContext(*browser_context);
 }
 
 void BrowserContext::EnsureResourceContextInitialized(BrowserContext* context) {

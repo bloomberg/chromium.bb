@@ -285,14 +285,14 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // Returns true if sending system exclusive messages is allowed.
   bool CanSendMidiSysExMessage(int child_id);
 
-  // Remove all references to the |browser_context| and all isolated origins
-  // associated with |browser_context|.  This is called when |browser_context|
-  // is being destroyed and assumes that no processes are running or will run
-  // for that profile; this makes the isolated origin removal safe.  Note that
-  // |browser_context| cannot be null; i.e., isolated origins that apply
-  // globally to all profiles cannot currently be removed, since that is not
-  // safe to do at runtime.
-  void OnBrowserContextBeingDestroyed(const BrowserContext& browser_context);
+  // Remove all isolated origins associated with |browser_context|.  This is
+  // typically used when |browser_context| is being destroyed and assumes that
+  // no processes are running or will run for that profile; this makes the
+  // isolated origin removal safe.  Note that |browser_context| cannot be null;
+  // i.e., isolated origins that apply globally to all profiles cannot
+  // currently be removed, since that is not safe to do at runtime.
+  void RemoveIsolatedOriginsForBrowserContext(
+      const BrowserContext& browser_context);
 
   // Check whether |origin| requires origin-wide process isolation within
   // |isolation_context|.
@@ -349,7 +349,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   class SecurityState;
 
   typedef std::set<std::string> SchemeSet;
-  typedef std::map<int, scoped_refptr<SecurityState>> SecurityStateMap;
+  typedef std::map<int, std::unique_ptr<SecurityState>> SecurityStateMap;
   typedef std::map<storage::FileSystemType, int> FileSystemPermissionPolicyMap;
 
   // This class holds an isolated origin along with information such as which
