@@ -7,6 +7,24 @@ import os
 import sys
 import unittest
 
+# Directory client/tests/
+TESTS_DIR = os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding())))
+
+# Directory client/
+CLIENT_DIR = os.path.dirname(TESTS_DIR)
+sys.path.insert(0, CLIENT_DIR)
+
+# Fix import path.
+sys.path.insert(0, os.path.join(CLIENT_DIR, 'third_party', 'pyasn1'))
+sys.path.insert(0, os.path.join(CLIENT_DIR, 'third_party', 'rsa'))
+sys.path.insert(0, os.path.join(CLIENT_DIR, 'third_party'))
+
+# third_party/
+from depot_tools import fix_encoding
+
+from utils import fs
+
 
 _UMASK = None
 
@@ -48,20 +66,23 @@ def make_tree(out, contents):
   for relpath, content in sorted(contents.iteritems()):
     filepath = os.path.join(out, relpath.replace('/', os.path.sep))
     dirpath = os.path.dirname(filepath)
-    if not os.path.isdir(dirpath):
-      os.makedirs(dirpath, 0700)
+    if not fs.isdir(dirpath):
+      fs.makedirs(dirpath, 0700)
     if isinstance(content, SymLink):
-      os.symlink(content, filepath)
+      fs.symlink(content, filepath)
     else:
       mode = 0700 if relpath.endswith('.py') else 0600
       flags = os.O_WRONLY | os.O_CREAT
       if sys.platform == 'win32':
+        # pylint: disable=no-member
         flags |= os.O_BINARY
       with os.fdopen(os.open(filepath, flags, mode), 'wb') as f:
         f.write(content)
 
 
 def main():
+  """Improvement over unittest.main()."""
+  fix_encoding.fix_encoding()
   logging.basicConfig(
       level=logging.DEBUG if '-v' in sys.argv else logging.ERROR,
       format='%(levelname)5s %(filename)15s(%(lineno)3d): %(message)s')
@@ -69,4 +90,5 @@ def main():
     unittest.TestCase.maxDiff = None
   # Use an unusual umask.
   os.umask(0070)
+  fs.chdir(TESTS_DIR)
   unittest.main()

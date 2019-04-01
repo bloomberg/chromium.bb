@@ -4,21 +4,17 @@
 # that can be found in the LICENSE file.
 
 import BaseHTTPServer
-import logging
-import os
 import re
 import SocketServer
-import sys
 import threading
 import time
-import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
-sys.path.insert(0, ROOT_DIR)
-sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
+# Mutates sys.path.
+import test_env
 
+# third_party/
 from depot_tools import auto_stub
+
 from utils import authenticators
 from utils import net
 
@@ -27,7 +23,7 @@ class SleepingServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
   """Multithreaded server that serves requests that block at various stages."""
 
   # Lingering keep-alive HTTP connections keep (not very smart) HTTPServer
-  # threads alive as well. Convert them to deamon threads so that they don't
+  # threads alive as well. Convert them to daemon threads so that they don't
   # block process exit.
   daemon_threads = True
 
@@ -174,6 +170,4 @@ class UrlOpenTimeoutTest(auto_stub.TestCase):
 
 
 if __name__ == '__main__':
-  VERBOSE = '-v' in sys.argv
-  logging.basicConfig(level=logging.DEBUG if VERBOSE else logging.ERROR)
-  unittest.main()
+  test_env.main()

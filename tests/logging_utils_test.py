@@ -11,10 +11,9 @@ import tempfile
 import unittest
 import re
 
-THIS_FILE = os.path.abspath(__file__.decode(sys.getfilesystemencoding()))
-sys.path.insert(0, os.path.dirname(os.path.dirname(THIS_FILE)))
+# Mutates sys.path.
+import test_env
 
-from third_party.depot_tools import fix_encoding
 from utils import file_path
 from utils import logging_utils
 
@@ -22,16 +21,6 @@ from utils import logging_utils
 # PID YYYY-MM-DD HH:MM:SS.MMM
 _LOG_HEADER = r'^%d \d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d\d\d' % os.getpid()
 _LOG_HEADER_PID = r'^\d+ \d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d\d\d'
-
-
-_PHASE = 'LOGGING_UTILS_TESTS_PHASE'
-
-
-def call(phase, cwd):
-  """Calls itself back."""
-  env = os.environ.copy()
-  env[_PHASE] = phase
-  return subprocess.call([sys.executable, '-u', THIS_FILE], env=env, cwd=cwd)
 
 
 class Test(unittest.TestCase):
@@ -72,7 +61,10 @@ class Test(unittest.TestCase):
     # nothing blows up.
     # Everything is done in a child process because the called functions mutate
     # the global state.
-    self.assertEqual(0, call('test_rotating_phase_1', cwd=self.tmp))
+    r = subprocess.call(
+        [sys.executable, '-u', 'phase1.py', self.tmp],
+        cwd=os.path.join(test_env.TESTS_DIR, 'logging_utils'))
+    self.assertEqual(0, r)
     self.assertEqual({'shared.1.log'}, set(os.listdir(self.tmp)))
     with open(os.path.join(self.tmp, 'shared.1.log'), 'rb') as f:
       lines = f.read().splitlines()
@@ -88,32 +80,5 @@ class Test(unittest.TestCase):
     self.assertEqual(len(expected), len(lines))
 
 
-def test_rotating_phase_1():
-  logging_utils.prepare_logging('shared.log')
-  logging.info('Parent1')
-  r = call('test_rotating_phase_2', None)
-  logging.info('Parent2')
-  return r
-
-
-def test_rotating_phase_2():
-  # Simulate rotating the log.
-  logging_utils.prepare_logging('shared.log')
-  logging.info('Child1')
-  os.rename('shared.log', 'shared.1.log')
-  logging.info('Child2')
-  return 0
-
-
-def main():
-  phase = os.environ.get(_PHASE)
-  if phase:
-    return getattr(sys.modules[__name__], phase)()
-  verbose = '-v' in sys.argv
-  logging.basicConfig(level=logging.DEBUG if verbose else logging.ERROR)
-  unittest.main()
-
-
 if __name__ == '__main__':
-  fix_encoding.fix_encoding()
-  sys.exit(main())
+  test_env.main()

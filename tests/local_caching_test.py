@@ -5,29 +5,22 @@
 
 import hashlib
 import json
-import logging
 import os
 import random
 import string
-import sys
 import tempfile
 import time
-import unittest
 
-TEST_DIR = os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding())))
-ROOT_DIR = os.path.dirname(TEST_DIR)
-sys.path.insert(0, ROOT_DIR)
-sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
+# Mutates sys.path.
+import test_env
 
+# third_party/
 from depot_tools import auto_stub
-from depot_tools import fix_encoding
 
+import local_caching
 from utils import file_path
 from utils import fs
 from utils import lru
-
-import local_caching
 
 
 def write_file(path, contents):
@@ -112,8 +105,8 @@ class TestCase(auto_stub.TestCase):
       cache.uninstall(dest_dir, name)
       self.assertFalse(fs.exists(dest_dir))
       return name
-    else:
-      self.fail('Unexpected cache type %r' % cache)
+    self.fail('Unexpected cache type %r' % cache)
+    return None
 
 
 def _get_policies(
@@ -128,6 +121,8 @@ def _get_policies(
 
 class CacheTestMixin(object):
   """Adds testing for the Cache interface."""
+  # pylint: disable=no-member
+
   def get_cache(self, policies):
     raise NotImplementedError()
 
@@ -858,7 +853,7 @@ class FnTest(TestCase):
     self._prepare_isolated_cache(isolated_cache)
     self.assertEqual(now, self._now)
 
-    # Request triming.
+    # Request trimming.
     self._free_disk = 950
     trimmed = local_caching.trim_caches(
         [isolated_cache, named_cache],
@@ -916,9 +911,4 @@ class FnTest(TestCase):
 
 
 if __name__ == '__main__':
-  fix_encoding.fix_encoding()
-  if '-v' in sys.argv:
-    unittest.TestCase.maxDiff = None
-  logging.basicConfig(
-      level=(logging.DEBUG if '-v' in sys.argv else logging.CRITICAL))
-  unittest.main()
+  test_env.main()

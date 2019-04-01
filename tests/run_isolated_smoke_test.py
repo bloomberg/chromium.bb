@@ -11,17 +11,13 @@ import sys
 import time
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
-sys.path.insert(0, ROOT_DIR)
-
-import isolated_format
-import run_isolated
-from depot_tools import fix_encoding
-from utils import file_path
+# Mutates sys.path.
+import test_env
 
 import isolateserver_fake
-import test_utils
+
+import run_isolated
+from utils import file_path
 
 
 CONTENTS = {
@@ -68,7 +64,7 @@ CONTENTS = {
           print >> sys.stderr, 'Unexpected content: %s' % actual
           sys.exit(1)
       print('Success')""",
-  'tar_archive': open(os.path.join(ROOT_DIR, 'tests', 'archive.tar')).read(),
+  'tar_archive': open(os.path.join(test_env.TESTS_DIR, 'archive.tar')).read(),
   'archive_files.py': """if True:
       import os, sys
       ROOT_DIR = os.path.dirname(os.path.abspath(
@@ -122,7 +118,7 @@ CONTENTS['download.isolated'] = json.dumps(
 
 CONTENTS['file_with_size.isolated'] = json.dumps(
     {
-      'command': [ 'python', '-V' ],
+      'command': ['python', '-V'],
       'files': {'file1.txt': file_meta('file1.txt')},
       'read_only': 1,
     })
@@ -231,7 +227,7 @@ class RunIsolatedTest(unittest.TestCase):
   def setUp(self):
     super(RunIsolatedTest, self).setUp()
     self.tempdir = run_isolated.make_temp_dir(
-        u'run_isolated_smoke_test', ROOT_DIR)
+        u'run_isolated_smoke_test', test_env.CLIENT_DIR)
     logging.debug(self.tempdir)
     # The run_isolated local cache.
     self._isolated_cache_dir = os.path.join(self.tempdir, 'i')
@@ -246,7 +242,7 @@ class RunIsolatedTest(unittest.TestCase):
       super(RunIsolatedTest, self).tearDown()
 
   def _run(self, args):
-    cmd = [sys.executable, os.path.join(ROOT_DIR, 'run_isolated.py')]
+    cmd = [sys.executable, os.path.join(test_env.CLIENT_DIR, 'run_isolated.py')]
     cmd.extend(args)
     pipe = subprocess.PIPE
     logging.debug(' '.join(cmd))
@@ -363,7 +359,7 @@ class RunIsolatedTest(unittest.TestCase):
       self._store('file3.txt'),
       # Maps file1.txt.
       self._store('manifest1.isolated'),
-      # References manifest1.isolated. Maps file2.txt but it is overriden.
+      # References manifest1.isolated. Maps file2.txt but it is overridden.
       self._store('manifest2.isolated'),
       self._store('repeated_files.py'),
       self._store('repeated_files.isolated'),
@@ -396,7 +392,7 @@ class RunIsolatedTest(unittest.TestCase):
     file1_hash = self._store('file1.txt')
 
     # Run the test once to generate the cache.
-    # The weird file mode is because of test_utils.py that sets umask(0070).
+    # The weird file mode is because of test_env.py that sets umask(0070).
     _out, _err, returncode = self._run(self._cmd_args(isolated_hash))
     self.assertEqual(0, returncode)
     expected = {
@@ -483,7 +479,4 @@ class RunIsolatedTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  fix_encoding.fix_encoding()
-  logging.basicConfig(
-      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
-  test_utils.main()
+  test_env.main()

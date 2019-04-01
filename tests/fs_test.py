@@ -4,19 +4,13 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-import logging
 import os
 import tempfile
 import unittest
-import sys
 
-FILE_PATH = os.path.abspath(__file__.decode(sys.getfilesystemencoding()))
-ROOT_DIR = os.path.dirname(os.path.dirname(FILE_PATH))
-sys.path.insert(0, ROOT_DIR)
-sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
+# Mutates sys.path.
+import test_env
 
-
-from depot_tools import fix_encoding
 from utils import file_path
 from utils import fs
 
@@ -175,9 +169,4 @@ class FSTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  fix_encoding.fix_encoding()
-  logging.basicConfig(
-      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
-  if '-v' in sys.argv:
-    unittest.TestCase.maxDiff = None
-  unittest.main()
+  test_env.main()

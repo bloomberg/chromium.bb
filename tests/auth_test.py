@@ -7,21 +7,14 @@ import collections
 import contextlib
 import datetime
 import json
-import logging
-import os
-import sys
 import time
-import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
-sys.path.insert(0, ROOT_DIR)
-sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
+# Mutates sys.path.
+import test_env
 
+# third_party/
 import httplib2
-
 from depot_tools import auto_stub
-from depot_tools import fix_encoding
 
 from utils import oauth
 
@@ -123,7 +116,4 @@ class LuciContextAuthTest(auto_stub.TestCase):
 
 
 if __name__ == '__main__':
-  fix_encoding.fix_encoding()
-  logging.basicConfig(
-      level=logging.DEBUG if '-v' in sys.argv else logging.CRITICAL)
-  unittest.main()
+  test_env.main()

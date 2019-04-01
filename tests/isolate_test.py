@@ -14,13 +14,12 @@ import subprocess
 import sys
 import tempfile
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
-sys.path.insert(0, ROOT_DIR)
-sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
+# Mutates sys.path.
+import test_env
 
+# third_party/
 from depot_tools import auto_stub
-from depot_tools import fix_encoding
+
 import auth
 import isolate
 import isolate_format
@@ -29,7 +28,6 @@ import isolateserver
 from utils import file_path
 from utils import logging_utils
 from utils import tools
-import test_utils
 
 ALGO = hashlib.sha1
 
@@ -338,7 +336,7 @@ class IsolateLoad(IsolateBase):
         self.assertTrue(values.pop('m'))
 
   def make_tree(self, contents):
-    test_utils.make_tree(self.isolate_dir, contents)
+    test_env.make_tree(self.isolate_dir, contents)
 
   def size(self, *args):
     return os.stat(os.path.join(self.isolate_dir, *args)).st_size
@@ -375,7 +373,7 @@ class IsolateLoad(IsolateBase):
     # A CompleteState object contains two parts:
     # - Result instance stored in complete_state.isolated, corresponding to the
     #   .isolated file, is what is read by run_test_from_archive.py.
-    # - SavedState instance stored in compelte_state.saved_state,
+    # - SavedState instance stored in complete_state.saved_state,
     #   corresponding to the .state file, which is simply to aid the developer
     #   when re-running the same command multiple times and contain
     #   discardable information.
@@ -452,7 +450,7 @@ class IsolateLoad(IsolateBase):
     actual_isolated = complete_state.saved_state.to_isolated()
     actual_saved_state = complete_state.saved_state.flatten()
 
-    expected_isolated =  {
+    expected_isolated = {
       'algo': 'sha-1',
       'command': ['python', 'touch_root.py'],
       'files': {
@@ -516,7 +514,7 @@ class IsolateLoad(IsolateBase):
     actual_isolated = complete_state.saved_state.to_isolated()
     actual_saved_state = complete_state.saved_state.flatten()
 
-    expected_isolated =  {
+    expected_isolated = {
       'algo': 'sha-1',
       'command': ['python', 'touch_root.py'],
       'files': {
@@ -580,7 +578,7 @@ class IsolateLoad(IsolateBase):
     try:
       isolate.load_complete_state(options, self.cwd, None, False)
       self.fail()
-    except isolate.ExecutionError, e:
+    except isolate.ExecutionError as e:
       self.assertEqual(
           'PRODUCT_DIR=%s is not a directory' %
             os.path.join(native_cwd, 'tests', 'isolate'),
@@ -595,7 +593,7 @@ class IsolateLoad(IsolateBase):
     actual_isolated = complete_state.saved_state.to_isolated()
     actual_saved_state = complete_state.saved_state.flatten()
 
-    expected_isolated =  {
+    expected_isolated = {
       'algo': 'sha-1',
       'command': ['python', 'touch_root.py'],
       'files': {
@@ -1267,7 +1265,7 @@ class IsolateCommand(IsolateBase):
     out = isolate.CompleteState(None, isolate.SavedState('sha-1', self.cwd))
     out.saved_state.isolate_file = u'blah.isolate'
     out.saved_state.relative_cwd = u''
-    out.saved_state.root_dir = ROOT_DIR
+    out.saved_state.root_dir = test_env.CLIENT_DIR
     return out
 
   def test_CMDarchive(self):
@@ -1474,7 +1472,7 @@ class IsolateCommand(IsolateBase):
         '"relative_cwd":".","root_dir":%s,"version":"%s"}'
     ) % (
       sys.platform,
-      '.exe' if sys.platform=='win32' else '',
+      '.exe' if sys.platform == 'win32' else '',
       json.dumps(self.cwd),
       isolate.SavedState.EXPECTED_VERSION)
     self.assertEqual(expected_isolated_state, actual_isolated_state)
@@ -1614,12 +1612,7 @@ class IsolateCommand(IsolateBase):
     self.assertEqual(0, isolate.CMDrun(optparse.OptionParser(), cmd))
 
 
-def clear_env_vars():
-  for e in ('ISOLATE_DEBUG', 'ISOLATE_SERVER'):
-    os.environ.pop(e, None)
-
-
 if __name__ == '__main__':
-  fix_encoding.fix_encoding()
-  clear_env_vars()
-  test_utils.main()
+  for env_var_to_remove in ('ISOLATE_DEBUG', 'ISOLATE_SERVER'):
+    os.environ.pop(env_var_to_remove, None)
+  test_env.main()

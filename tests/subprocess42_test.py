@@ -4,14 +4,13 @@
 # that can be found in the LICENSE file.
 
 import itertools
-import logging
 import os
 import sys
 import tempfile
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, ROOT_DIR)
+# Mutates sys.path.
+import test_env
 
 from utils import subprocess42
 
@@ -466,38 +465,44 @@ class Subprocess42Test(unittest.TestCase):
       self.assertEqual(0, proc.returncode)
 
   def test_recv_any_timeout_0(self):
+    self._test_recv_any_timeout(False, False)
+    self._test_recv_any_timeout(False, True)
+    self._test_recv_any_timeout(True, False)
+    self._test_recv_any_timeout(True, True)
+
+  def _test_recv_any_timeout(self, flush, unbuffered):
     # rec_any() is expected to timeout and return None with no data pending at
     # least once, due to the sleep of 'duration' and the use of timeout=0.
-    for flush, unbuffered in itertools.product([True, False], [True, False]):
-      for duration in (0.05, 0.1, 0.5, 2):
+    for duration in (0.05, 0.1, 0.5, 2):
+      got_none = False
+      actual = ''
+      try:
+        proc = get_output_sleep_proc(flush, unbuffered, duration)
         try:
-          actual = ''
-          proc = get_output_sleep_proc(flush, unbuffered, duration)
-          try:
-            got_none = False
-            while True:
-              p, data = proc.recv_any(timeout=0)
-              if not p:
-                if proc.poll() is None:
-                  got_none = True
-                  continue
-                break
+          while True:
+            p, data = proc.recv_any(timeout=0)
+            if p:
               self.assertEqual('stdout', p)
               self.assertTrue(data, (p, data))
               actual += data
-
-            self.assertEqual('A\nB\n', actual)
-            self.assertEqual(0, proc.returncode)
-            self.assertEqual(True, got_none)
+              continue
+            if proc.poll() is None:
+              got_none = True
+              continue
             break
-          finally:
-            proc.kill()
-            proc.wait()
-        except AssertionError:
-          if duration != 2:
-            print('Sleeping rocks. Trying slower.')
-            continue
-          raise
+
+          self.assertEqual('A\nB\n', actual)
+          self.assertEqual(0, proc.returncode)
+          self.assertEqual(True, got_none)
+          break
+        finally:
+          proc.kill()
+          proc.wait()
+      except AssertionError:
+        if duration != 2:
+          print('Sleeping rocks. Trying slower.')
+          continue
+        raise
 
   def test_yield_any_no_timeout(self):
     for duration in (0.05, 0.1, 0.5, 2):
@@ -558,18 +563,16 @@ class Subprocess42Test(unittest.TestCase):
     # rec_any() is expected to timeout and return None with no data pending at
     # least once, due to the sleep of 'duration' and the use of timeout=0.
     for duration in (0.05, 0.1, 0.5, 2):
+      got_none = False
+      expected = ['A\n', 'B\n']
+      called = []
+      def timeout():
+        # pylint: disable=cell-var-from-loop
+        called.append(0)
+        return 0
       try:
         proc = get_output_sleep_proc(True, True, duration)
         try:
-          expected = [
-            'A\n',
-            'B\n',
-          ]
-          got_none = False
-          called = []
-          def timeout():
-            called.append(0)
-            return 0
           for p, data in proc.yield_any(timeout=timeout):
             if not p:
               got_none = True
@@ -702,7 +705,7 @@ class Subprocess42Test(unittest.TestCase):
       ('stdout', 'incomplete last stdout'),
       ('stderr', 'incomplete last stderr'),
     ]
-    self.assertEquals(list(subprocess42.split(data)), [
+    self.assertEqual(list(subprocess42.split(data)), [
       ('stdout', 'o1'),
       ('stdout', 'o2'),
       ('stdout', 'o3'),
@@ -720,9 +723,6 @@ class Subprocess42Test(unittest.TestCase):
       ('stdout', 'incomplete last stdout'),
     ])
 
+
 if __name__ == '__main__':
-  if '-v' in sys.argv:
-    unittest.TestCase.maxDiff = None
-  logging.basicConfig(
-      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
-  unittest.main()
+  test_env.main()

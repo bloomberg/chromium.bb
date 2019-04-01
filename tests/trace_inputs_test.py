@@ -5,27 +5,16 @@
 # that can be found in the LICENSE file.
 
 import StringIO
-import logging
 import os
 import sys
 import unittest
 
-BASE_DIR = os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding())))
-ROOT_DIR = os.path.dirname(BASE_DIR)
-sys.path.insert(0, ROOT_DIR)
-
 FILE_PATH = os.path.abspath(__file__.decode(sys.getfilesystemencoding()))
 
+# Mutates sys.path.
+import test_env
+
 import trace_inputs
-
-# Access to a protected member _FOO of a client class
-# pylint: disable=W0212
-
-
-def join_norm(*args):
-  """Joins and normalizes path in a single step."""
-  return unicode(os.path.normpath(os.path.join(*args)))
 
 
 class TraceInputs(unittest.TestCase):
@@ -140,7 +129,7 @@ if sys.platform != 'win32':
       self.assertEqual(expected_done, actual_done)
 
     def _test_lines(self, lines, initial_cwd, files, command=None):
-      filepath = join_norm(initial_cwd, '../out/unittests')
+      filepath = os.path.join(os.path.dirname(initial_cwd), 'out', 'unittests')
       command = command or ['../out/unittests']
       expected = {
         'root': {
@@ -258,25 +247,25 @@ if sys.platform != 'win32':
                       'size': size,
                     },
                   ],
-                  'initial_cwd': BASE_DIR,
+                  'initial_cwd': test_env.TESTS_DIR,
                   'pid': self._GRAND_CHILD_PID,
                 },
               ],
               'command': None,
               'executable': None,
               'files': [],
-              'initial_cwd': BASE_DIR,
+              'initial_cwd': test_env.TESTS_DIR,
               'pid': self._CHILD_PID,
             },
           ],
           'command': None,
           'executable': None,
           'files': [],
-          'initial_cwd': BASE_DIR,
+          'initial_cwd': test_env.TESTS_DIR,
           'pid': self._ROOT_PID,
         },
       }
-      self.assertContext(lines, BASE_DIR, expected, False)
+      self.assertContext(lines, test_env.TESTS_DIR, expected, False)
 
     def test_clone_chdir(self):
       # Grand-child with relative directory.
@@ -333,24 +322,26 @@ if sys.platform != 'win32':
               # This is important, since no execve call was done, it didn't
               # touch the executable file.
               'files': [],
-              'initial_cwd': unicode(ROOT_DIR),
+              'initial_cwd': test_env.CLIENT_DIR,
               'pid': self._CHILD_PID,
             },
           ],
           'command': ['../out/unittests'],
-          'executable': join_norm(ROOT_DIR, '../out/unittests'),
+          'executable': os.path.join(
+              os.path.dirname(test_env.CLIENT_DIR), 'out', 'unittests'),
           'files': [
             {
               'mode': trace_inputs.Results.File.READ,
-              'path': join_norm(ROOT_DIR, '../out/unittests'),
+              'path': os.path.join(
+                  os.path.dirname(test_env.CLIENT_DIR), 'out', 'unittests'),
               'size': -1,
             },
           ],
-          'initial_cwd': unicode(ROOT_DIR),
+          'initial_cwd': test_env.CLIENT_DIR,
           'pid': self._ROOT_PID,
         },
       }
-      self.assertContext(lines, ROOT_DIR, expected, False)
+      self.assertContext(lines, test_env.CLIENT_DIR, expected, False)
 
     def test_faccess(self):
       lines = [
@@ -369,11 +360,11 @@ if sys.platform != 'win32':
               'size': -1,
             },
           ],
-          'initial_cwd': unicode(ROOT_DIR),
+          'initial_cwd': test_env.CLIENT_DIR,
           'pid': self._ROOT_PID,
         },
       }
-      self.assertContext(lines, ROOT_DIR, expected, False)
+      self.assertContext(lines, test_env.CLIENT_DIR, expected, False)
 
     def test_futex_died(self):
       # That's a pretty bad fork, copy-pasted from a real log.
@@ -387,11 +378,11 @@ if sys.platform != 'win32':
           'command': None,
           'executable': None,
           'files': [],
-          'initial_cwd': unicode(ROOT_DIR),
+          'initial_cwd': test_env.CLIENT_DIR,
           'pid': self._ROOT_PID,
         },
       }
-      self.assertContext(lines, ROOT_DIR, expected, True)
+      self.assertContext(lines, test_env.CLIENT_DIR, expected, True)
 
     def test_futex_missing_in_action(self):
       # That's how futex() calls roll.
@@ -417,18 +408,18 @@ if sys.platform != 'win32':
               'command': None,
               'executable': None,
               'files': [],
-              'initial_cwd': unicode(ROOT_DIR),
+              'initial_cwd': test_env.CLIENT_DIR,
               'pid': 3862,
             },
           ],
           'command': None,
           'executable': None,
           'files': [],
-          'initial_cwd': unicode(ROOT_DIR),
+          'initial_cwd': test_env.CLIENT_DIR,
           'pid': self._ROOT_PID,
         },
       }
-      self.assertContext(lines, ROOT_DIR, expected, True)
+      self.assertContext(lines, test_env.CLIENT_DIR, expected, True)
 
     def test_futex_missing_in_partial_action(self):
       # That's how futex() calls roll even more.
@@ -455,11 +446,11 @@ if sys.platform != 'win32':
           'command': None,
           'executable': None,
           'files': [],
-          'initial_cwd': unicode(ROOT_DIR),
+          'initial_cwd': test_env.CLIENT_DIR,
           'pid': self._ROOT_PID,
         },
       }
-      self.assertContext(lines, ROOT_DIR, expected, True)
+      self.assertContext(lines, test_env.CLIENT_DIR, expected, True)
 
     def test_futex_missing_in_partial_action_with_no_process(self):
       # That's how futex() calls roll even more (again).
@@ -474,11 +465,11 @@ if sys.platform != 'win32':
            'command': None,
            'executable': None,
            'files': [],
-           'initial_cwd': unicode(ROOT_DIR),
+           'initial_cwd': test_env.CLIENT_DIR,
            'pid': self._ROOT_PID,
          },
        }
-      self.assertContext(lines, ROOT_DIR, expected, False)
+      self.assertContext(lines, test_env.CLIENT_DIR, expected, False)
 
     def test_getcwd(self):
       lines = [
@@ -568,7 +559,7 @@ if sys.platform != 'win32':
     def test_openat_died(self):
       lines = [
           # It's fine as long as there is nothing after.
-        ( self._ROOT_PID,
+        (self._ROOT_PID,
           'openat(AT_FDCWD, "/tmp/random_dir/Plugins", '
           'O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC'),
       ]
@@ -578,11 +569,11 @@ if sys.platform != 'win32':
            'command': None,
            'executable': None,
            'files': [],
-           'initial_cwd': unicode(ROOT_DIR),
+           'initial_cwd': test_env.CLIENT_DIR,
            'pid': self._ROOT_PID,
          },
        }
-      self.assertContext(lines, ROOT_DIR, expected, True)
+      self.assertContext(lines, test_env.CLIENT_DIR, expected, True)
 
     def test_readlink(self):
       lines = [
@@ -669,23 +660,19 @@ if sys.platform != 'win32':
                'command': None,
                'executable': None,
                'files': [],
-                'initial_cwd': unicode(ROOT_DIR),
+                'initial_cwd': test_env.CLIENT_DIR,
                'pid': self._CHILD_PID,
               }
             ],
            'command': None,
            'executable': None,
            'files': [],
-           'initial_cwd': unicode(ROOT_DIR),
+           'initial_cwd': test_env.CLIENT_DIR,
            'pid': self._ROOT_PID,
          },
        }
-      self.assertContext(lines, ROOT_DIR, expected, False)
+      self.assertContext(lines, test_env.CLIENT_DIR, expected, False)
 
 
 if __name__ == '__main__':
-  logging.basicConfig(
-      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
-  if '-v' in sys.argv:
-    unittest.TestCase.maxDiff = None
-  unittest.main()
+  test_env.main()

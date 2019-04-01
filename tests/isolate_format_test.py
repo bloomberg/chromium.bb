@@ -4,25 +4,19 @@
 # that can be found in the LICENSE file.
 
 import cStringIO
-import logging
 import os
 import sys
 import tempfile
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
-sys.path.insert(0, ROOT_DIR)
-sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
+# Mutates sys.path.
+import test_env
+
+# third_party/
+from depot_tools import auto_stub
 
 import isolate_format
-from depot_tools import auto_stub
-from depot_tools import fix_encoding
 from utils import file_path
-
-
-# Access to a protected member XXX of a client class
-# pylint: disable=W0212
 
 
 FAKE_DIR = (
@@ -169,8 +163,6 @@ class IsolateFormatTest(auto_stub.TestCase):
             FAKE_DIR, value, None).flatten())
 
   def test_merge_two_empty(self):
-    # Flat stay flat. Pylint is confused about union() return type.
-    # pylint: disable=E1103
     actual = isolate_format.Configs(None, ()).union(
         isolate_format.load_isolate_as_config(FAKE_DIR, {}, None)).union(
             isolate_format.load_isolate_as_config(FAKE_DIR, {}, None))
@@ -219,8 +211,6 @@ class IsolateFormatTest(auto_stub.TestCase):
         'isolate_dir': FAKE_DIR,
       },
     }
-    # Pylint is confused about union() return type.
-    # pylint: disable=E1103
     configs = isolate_format.Configs(None, ()).union(
         isolate_format.load_isolate_as_config(FAKE_DIR, linux, None)).union(
             isolate_format.load_isolate_as_config(FAKE_DIR, mac, None)
@@ -281,8 +271,6 @@ class IsolateFormatTest(auto_stub.TestCase):
         'isolate_dir': FAKE_DIR,
       },
     }
-    # Pylint is confused about union() return type.
-    # pylint: disable=E1103
     configs = isolate_format.Configs(None, ()).union(
         isolate_format.load_isolate_as_config(FAKE_DIR, linux, None)).union(
             isolate_format.load_isolate_as_config(FAKE_DIR, mac, None)).union(
@@ -393,8 +381,6 @@ class IsolateFormatTest(auto_stub.TestCase):
     self.assertEqual(expected, out.flatten())
 
   def test_configs_comment(self):
-    # Pylint is confused with isolate_format.union() return type.
-    # pylint: disable=E1103
     configs = isolate_format.load_isolate_as_config(
             FAKE_DIR, {}, '# Yo dawg!\n# Chill out.\n').union(
         isolate_format.load_isolate_as_config(FAKE_DIR, {}, None))
@@ -814,8 +800,8 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
       isolate_format.pretty_print(isolate2, f)
 
     # The 'isolate_dir' are important, they are what will be used when
-    # definining the final isolate_dir to use to run the command in the
-    # .isolated file.
+    # defining the final isolate_dir to use to run the command in the .isolated
+    # file.
     actual = isolate_format.load_isolate_as_config(dir_3, isolate3, None)
     expected = {
       (None,): {
@@ -949,8 +935,8 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
       isolate_format.pretty_print(isolate2, f)
 
     # The 'isolate_dir' are important, they are what will be used when
-    # definining the final isolate_dir to use to run the command in the
-    # .isolated file.
+    # defining the final isolate_dir to use to run the command in the .isolated
+    # file.
     actual = isolate_format.load_isolate_as_config(dir_3, isolate3, None)
     expected = {
       (None,): {
@@ -996,10 +982,4 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  fix_encoding.fix_encoding()
-  logging.basicConfig(
-      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR,
-      format='%(levelname)5s %(filename)15s(%(lineno)3d): %(message)s')
-  if '-v' in sys.argv:
-    unittest.TestCase.maxDiff = None
-  unittest.main()
+  test_env.main()

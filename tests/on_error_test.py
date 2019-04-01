@@ -17,26 +17,19 @@ import ssl
 import subprocess
 import sys
 import threading
-import unittest
 import urllib
 import urlparse
 
-TESTS_DIR = os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding())))
-ROOT_DIR = os.path.dirname(TESTS_DIR)
-sys.path.insert(0, ROOT_DIR)
-sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
+# Mutates sys.path.
+import test_env
 
+# third_party/
 from depot_tools import auto_stub
-from depot_tools import fix_encoding
 
 from utils import on_error
 
 
-PEM = os.path.join(TESTS_DIR, 'self_signed.pem')
-
-
-# Access to a protected member XXX of a client class - pylint: disable=W0212
+PEM = os.path.join(test_env.TESTS_DIR, 'self_signed.pem')
 
 
 def _serialize_env():
@@ -93,7 +86,7 @@ class HttpsServer(BaseHTTPServer.HTTPServer):
 
 
 class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
-  def log_message(self, fmt, *args):
+  def log_message(self, fmt, *args):  # pylint: disable=arguments-differ
     logging.debug(
         '%s - - [%s] %s',
         self.address_string(), self.log_date_time_string(), fmt % args)
@@ -109,6 +102,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
       length = int(self.headers['Content-Length'])
       return json.loads(self.rfile.read(length))
     assert False, ctype
+    return None
 
   def do_GET(self):
     self.server.register_call(self)
@@ -136,6 +130,7 @@ def start_server():
   # verification for more recent version.
   create_unverified_https_context = getattr(
       ssl, '_create_unverified_context', None)
+  # pylint: disable=using-constant-test
   if create_unverified_https_context:
     ssl._create_default_https_context = create_unverified_https_context
   httpd = HttpsServer(('127.0.0.1', 0), Handler, 'localhost', pem=PEM)
@@ -148,7 +143,7 @@ class OnErrorBase(auto_stub.TestCase):
 
   def setUp(self):
     super(OnErrorBase, self).setUp()
-    os.chdir(TESTS_DIR)
+    os.chdir(test_env.TESTS_DIR)
     self._atexit = []
     self.mock(atexit, 'register', self._atexit.append)
     self.mock(on_error, '_ENABLED_DOMAINS', (self.HOSTNAME,))
@@ -176,10 +171,12 @@ class OnErrorTest(OnErrorBase):
 
 class OnErrorServerTest(OnErrorBase):
   def call(self, url, arg, returncode):
-    cmd = [sys.executable, 'on_error_test.py', 'run_shell_out', url, arg]
+    cmd = [sys.executable, '-u', 'main.py', url, arg]
+    logging.info('Running: %s', ' '.join(cmd))
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=os.environ,
-        universal_newlines=True)
+        universal_newlines=True,
+        cwd=os.path.join(test_env.TESTS_DIR, 'on_error'))
     out = proc.communicate()[0]
     logging.debug('\n%s', out)
     self.assertEqual(returncode, proc.returncode)
@@ -214,17 +211,15 @@ class OnErrorServerTest(OnErrorBase):
     actual = self.one_request(httpd)
     self.assertGreater(actual.pop('duration'), 0.000001)
     expected = {
-      u'args': [
-        u'on_error_test.py', u'run_shell_out', unicode(httpd.url), u'report',
-      ],
+      u'args': [u'main.py', unicode(httpd.url), u'report'],
       u'category': u'report',
-      u'cwd': unicode(os.getcwd()),
+      u'cwd': os.path.join(test_env.TESTS_DIR, 'on_error'),
       u'env': _serialize_env(),
       u'hostname': unicode(socket.getfqdn()),
       u'message': u'Oh dang',
       u'os': unicode(sys.platform),
       u'python_version': unicode(platform.python_version()),
-      u'source': u'on_error_test.py',
+      u'source': u'main.py',
       u'user': unicode(getpass.getuser()),
       # The version was added dynamically for testing purpose.
       u'version': u'123',
@@ -247,10 +242,8 @@ class OnErrorServerTest(OnErrorBase):
     # Remove numbers so editing the code doesn't invalidate the expectation.
     actual['stack'] = re.sub(r' \d+', ' 0', actual['stack'])
     expected = {
-      u'args': [
-        u'on_error_test.py', u'run_shell_out', unicode(httpd.url), u'exception',
-      ],
-      u'cwd': unicode(os.getcwd()),
+      u'args': [u'main.py', unicode(httpd.url), u'exception'],
+      u'cwd': os.path.join(test_env.TESTS_DIR, 'on_error'),
       u'category': u'exception',
       u'env': _serialize_env(),
       u'exception_type': u'TypeError',
@@ -258,9 +251,9 @@ class OnErrorServerTest(OnErrorBase):
       u'message': u'Really\nYou are not my type',
       u'os': unicode(sys.platform),
       u'python_version': unicode(platform.python_version()),
-      u'source': u'on_error_test.py',
+      u'source': u'main.py',
       u'stack':
-        u'File "on_error_test.py", line 0, in run_shell_out\n'
+        u'File "main.py", line 0, in run_shell_out\n'
         u'  raise TypeError(\'You are not my type\')',
       u'user': unicode(getpass.getuser()),
     }
@@ -282,21 +275,18 @@ class OnErrorServerTest(OnErrorBase):
     # Remove numbers so editing the code doesn't invalidate the expectation.
     actual['stack'] = re.sub(r' \d+', ' 0', actual['stack'])
     expected = {
-      u'args': [
-        u'on_error_test.py', u'run_shell_out', unicode(httpd.url),
-        u'exception_no_msg',
-      ],
+      u'args': [u'main.py', unicode(httpd.url), u'exception_no_msg'],
       u'category': u'exception',
-      u'cwd': unicode(os.getcwd()),
+      u'cwd': os.path.join(test_env.TESTS_DIR, 'on_error'),
       u'env': _serialize_env(),
       u'exception_type': u'TypeError',
       u'hostname': unicode(socket.getfqdn()),
       u'message': u'You are not my type #2',
       u'os': unicode(sys.platform),
       u'python_version': unicode(platform.python_version()),
-      u'source': u'on_error_test.py',
+      u'source': u'main.py',
       u'stack':
-        u'File "on_error_test.py", line 0, in run_shell_out\n'
+        u'File "main.py", line 0, in run_shell_out\n'
         u'  raise TypeError(\'You are not my type #2\')',
       u'user': unicode(getpass.getuser()),
     }
@@ -308,16 +298,16 @@ class OnErrorServerTest(OnErrorBase):
     httpd = start_server()
     out = self.call(httpd.url, 'crash', 1)
     expected = (
-        'Traceback (most recent call last):\n'
-        '  File "on_error_test.py", line 0, in <module>\n'
-        '    sys.exit(run_shell_out(sys.argv[2], sys.argv[3]))\n'
-        '  File "on_error_test.py", line 0, in run_shell_out\n'
-        '    raise ValueError(\'Oops\')\n'
-        'ValueError: Oops\n'
-        'Sending the crash report ... done.\n'
-        'Report URL: https://localhost/error/1234\n'
-        'Process exited due to exception\n'
-        'Oops\n')
+        u'Traceback (most recent call last):\n'
+        u'  File "main.py", line 0, in <module>\n'
+        u'    sys.exit(run_shell_out(*sys.argv[1:]))\n'
+        u'  File "main.py", line 0, in run_shell_out\n'
+        u'    raise ValueError(\'Oops\')\n'
+        u'ValueError: Oops\n'
+        u'Sending the crash report ... done.\n'
+        u'Report URL: https://localhost/error/1234\n'
+        u'Process exited due to exception\n'
+        u'Oops\n')
     # Remove numbers so editing the code doesn't invalidate the expectation.
     self.assertEqual(expected, re.sub(r' \d+', ' 0', out))
 
@@ -326,23 +316,21 @@ class OnErrorServerTest(OnErrorBase):
     actual['stack'] = re.sub(r' \d+', ' 0', actual['stack'])
     self.assertGreater(actual.pop('duration'), 0.000001)
     expected = {
-      u'args': [
-        u'on_error_test.py', u'run_shell_out', unicode(httpd.url), u'crash',
-      ],
+      u'args': [u'main.py', unicode(httpd.url), u'crash'],
       u'category': u'exception',
-      u'cwd': unicode(os.getcwd()),
+      u'cwd': os.path.join(test_env.TESTS_DIR, 'on_error'),
       u'env': _serialize_env(),
       u'exception_type': u'ValueError',
       u'hostname': unicode(socket.getfqdn()),
       u'message': u'Process exited due to exception\nOops',
       u'os': unicode(sys.platform),
       u'python_version': unicode(platform.python_version()),
-      u'source': u'on_error_test.py',
+      u'source': u'main.py',
       # The stack trace is stripped off the heading and absolute paths.
       u'stack':
-        u'File "on_error_test.py", line 0, in <module>\n'
-        u'  sys.exit(run_shell_out(sys.argv[2], sys.argv[3]))\n'
-        u'File "on_error_test.py", line 0, in run_shell_out\n'
+        u'File "main.py", line 0, in <module>\n'
+        u'  sys.exit(run_shell_out(*sys.argv[1:]))\n'
+        u'File "main.py", line 0, in run_shell_out\n'
         u'  raise ValueError(\'Oops\')',
       u'user': unicode(getpass.getuser()),
     }
@@ -353,78 +341,20 @@ class OnErrorServerTest(OnErrorBase):
     # Rerun itself, report an error, ensure the error was reported.
     out = self.call('https://localhost:1', 'crash', 1)
     expected = (
-        'Traceback (most recent call last):\n'
-        '  File "on_error_test.py", line 0, in <module>\n'
-        '    sys.exit(run_shell_out(sys.argv[2], sys.argv[3]))\n'
-        '  File "on_error_test.py", line 0, in run_shell_out\n'
-        '    raise ValueError(\'Oops\')\n'
-        'ValueError: Oops\n'
-        'Sending the crash report ... failed!\n'
-        'Process exited due to exception\n'
-        'Oops\n')
+        u'Traceback (most recent call last):\n'
+        u'  File "main.py", line 0, in <module>\n'
+        u'    sys.exit(run_shell_out(*sys.argv[1:]))\n'
+        u'  File "main.py", line 0, in run_shell_out\n'
+        u'    raise ValueError(\'Oops\')\n'
+        u'ValueError: Oops\n'
+        u'Sending the crash report ... failed!\n'
+        u'Process exited due to exception\n'
+        u'Oops\n')
     # Remove numbers so editing the code doesn't invalidate the expectation.
     self.assertEqual(expected, re.sub(r' \d+', ' 0', out))
 
 
-def run_shell_out(url, mode):
-  # Enable 'report_on_exception_exit' even though main file is *_test.py.
-  on_error._is_in_test = lambda: False
-
-  # Hack it out so registering works.
-  on_error._ENABLED_DOMAINS = (socket.getfqdn(),)
-
-  # Don't try to authenticate into localhost.
-  on_error.authenticators.OAuthAuthenticator = lambda *_: None
-
-  if not on_error.report_on_exception_exit(url):
-    print 'Failure to register the handler'
-    return 1
-
-  # Hack out certificate verification because we are using a self-signed
-  # certificate here. In practice, the SSL certificate is signed to guard
-  # against MITM attacks.
-  on_error._SERVER.engine.session.verify = False
-
-  if mode == 'crash':
-    # Sadly, net is a bit overly verbose, which breaks
-    # test_shell_out_crash_server_down.
-    logging.error = lambda *_, **_kwargs: None
-    logging.warning = lambda *_, **_kwargs: None
-    raise ValueError('Oops')
-
-  if mode == 'report':
-    # Generate a manual report without an exception frame. Also set the version
-    # value.
-    setattr(sys.modules['__main__'], '__version__', '123')
-    on_error.report('Oh dang')
-
-  if mode == 'exception':
-    # Report from inside an exception frame.
-    try:
-      raise TypeError('You are not my type')
-    except TypeError:
-      on_error.report('Really')
-
-  if mode == 'exception_no_msg':
-    # Report from inside an exception frame.
-    try:
-      raise TypeError('You are not my type #2')
-    except TypeError:
-      on_error.report(None)
-  return 0
-
-
 if __name__ == '__main__':
-  fix_encoding.fix_encoding()
-
   # Ignore _DISABLE_ENVVAR if set.
   os.environ.pop(on_error._DISABLE_ENVVAR, None)
-
-  if len(sys.argv) == 4 and sys.argv[1] == 'run_shell_out':
-    sys.exit(run_shell_out(sys.argv[2], sys.argv[3]))
-
-  if '-v' in sys.argv:
-    unittest.TestCase.maxDiff = None
-  logging.basicConfig(
-      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
-  unittest.main()
+  test_env.main()

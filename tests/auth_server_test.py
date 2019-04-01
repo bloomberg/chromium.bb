@@ -6,36 +6,23 @@
 import contextlib
 import httplib
 import json
-import logging
-import os
 import socket
-import sys
 import time
-import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
-sys.path.insert(0, ROOT_DIR)
-sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
+# Mutates sys.path.
+import test_env
 
+# third_party/
 from depot_tools import auto_stub
-from depot_tools import fix_encoding
-from third_party import requests
+import requests
 
+from libs import luci_context
 from utils import authenticators
 from utils import auth_server
 from utils import net
 from utils import oauth
 
-from libs import luci_context
-
 import net_utils
-
-
-def global_test_setup():
-  # Terminate HTTP server in tests 50x faster. Impacts performance though so
-  # do it only in tests.
-  auth_server._HTTPServer.poll_interval = 0.01
 
 
 def call_rpc(account_id, scopes):
@@ -374,8 +361,7 @@ class LocalAuthHttpServiceTest(auto_stub.TestCase):
 
 
 if __name__ == '__main__':
-  fix_encoding.fix_encoding()
-  logging.basicConfig(
-      level=logging.DEBUG if '-v' in sys.argv else logging.CRITICAL)
-  global_test_setup()
-  unittest.main()
+  # Terminate HTTP server in tests 50x faster. Impacts performance though so
+  # do it only in tests.
+  auth_server._HTTPServer.poll_interval = 0.01
+  test_env.main()

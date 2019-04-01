@@ -15,12 +15,13 @@ import tempfile
 import unicodedata
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
-sys.path.insert(0, ROOT_DIR)
+# Mutates sys.path.
+import test_env
+
+# third_party/
+from depot_tools import fix_encoding
 
 import trace_inputs
-from third_party.depot_tools import fix_encoding
 from utils import file_path
 from utils import threading_utils
 
@@ -62,14 +63,15 @@ class CalledProcessError(subprocess.CalledProcessError):
 class TraceInputsBase(unittest.TestCase):
   def setUp(self):
     self.tempdir = None
-    self.trace_inputs_path = os.path.join(ROOT_DIR, 'trace_inputs.py')
+    self.trace_inputs_path = os.path.join(
+        test_env.CLIENT_DIR, 'trace_inputs.py')
 
     # Wraps up all the differences between OSes here.
     # - Windows doesn't track initial_cwd.
     # - OSX replaces /usr/bin/python with /usr/bin/python2.7.
-    self.cwd = os.path.join(ROOT_DIR, u'tests')
-    self.initial_cwd = unicode(self.cwd)
-    self.expected_cwd = unicode(ROOT_DIR)
+    self.cwd = test_env.TESTS_DIR
+    self.initial_cwd = self.cwd
+    self.expected_cwd = test_env.CLIENT_DIR
     if sys.platform == 'win32':
       # Not supported on Windows.
       self.initial_cwd = None
@@ -121,7 +123,7 @@ class TraceInputsBase(unittest.TestCase):
 
   @staticmethod
   def _size(*args):
-    return os.stat(os.path.join(ROOT_DIR, *args)).st_size
+    return os.stat(os.path.join(test_env.CLIENT_DIR, *args)).st_size
 
 
 class TraceInputs(TraceInputsBase):
@@ -151,9 +153,9 @@ class TraceInputs(TraceInputsBase):
 
   def _trace(self, from_data):
     if from_data:
-      cwd = os.path.join(ROOT_DIR, 'tests')
+      cwd = test_env.TESTS_DIR
     else:
-      cwd = ROOT_DIR
+      cwd = test_env.CLIENT_DIR
     return self._execute('trace', self.get_child_command(from_data), cwd=cwd)
 
   @check_can_trace
@@ -170,19 +172,19 @@ class TraceInputs(TraceInputsBase):
       '  trace_inputs.py',
     )) + '\n'
     trace_expected = '\n'.join((
-      'child from %s' % ROOT_DIR,
+      'child from %s' % test_env.CLIENT_DIR,
       'child2',
     )) + '\n'
     trace_actual = self._trace(False)
     actual = self._execute(
         'read',
         [
-          '--root-dir', ROOT_DIR,
+          '--root-dir', test_env.CLIENT_DIR,
           '--trace-blacklist', '.+\\.pyc',
           '--trace-blacklist', '.*\\.svn',
           '--trace-blacklist', '.*do_not_care\\.txt',
         ],
-        cwd=unicode(ROOT_DIR))
+        cwd=test_env.CLIENT_DIR)
     self.assertEqual(expected, actual)
     self.assertEqual(trace_expected, trace_actual)
 
@@ -248,21 +250,19 @@ class TraceInputs(TraceInputsBase):
         #u'pid': 123,
       },
     }
-    trace_expected = '\n'.join((
-      'child_gyp from %s' % os.path.join(ROOT_DIR, 'tests'),
-      'child2',
-    )) + '\n'
+    trace_expected = '\n'.join(
+      ('child_gyp from %s' % test_env.TESTS_DIR, 'child2')) + '\n'
     trace_actual = self._trace(True)
     actual_text = self._execute(
         'read',
         [
-          '--root-dir', ROOT_DIR,
+          '--root-dir', test_env.CLIENT_DIR,
           '--trace-blacklist', '.+\\.pyc',
           '--trace-blacklist', '.*\\.svn',
           '--trace-blacklist', '.*do_not_care\\.txt',
           '--json',
         ],
-        cwd=unicode(ROOT_DIR))
+        cwd=test_env.CLIENT_DIR)
     actual_json = json.loads(actual_text)
     self.assertEqual(list, actual_json.__class__)
     self.assertEqual(1, len(actual_json))
@@ -295,7 +295,7 @@ class TraceInputsImport(TraceInputsBase):
           data[0]['exception'][1], \
           data[0]['exception'][2]
 
-    return data[0]['results'].strip_root(unicode(ROOT_DIR))
+    return data[0]['results'].strip_root(test_env.CLIENT_DIR)
 
   def _gen_dict_wrong_path(self):
     """Returns the expected flattened Results when child1.py is called with the
@@ -471,7 +471,7 @@ class TraceInputsImport(TraceInputsBase):
     def blacklist(f):
       return f.endswith(('.pyc', 'do_not_care.txt', '.git', '.svn'))
     simplified = trace_inputs.extract_directories(
-        file_path.get_native_path_case(unicode(ROOT_DIR)),
+        file_path.get_native_path_case(test_env.CLIENT_DIR),
         results.files,
         blacklist)
     self.assertEqual(files, [f.path for f in simplified])
@@ -491,11 +491,13 @@ class TraceInputsImport(TraceInputsBase):
       api = trace_inputs.get_api()
       with api.get_tracer(self.log) as tracer:
         pool.add_task(
-            0, trace, tracer, self.get_child_command(False), ROOT_DIR, 'trace1')
+            0, trace, tracer, self.get_child_command(False),
+            test_env.CLIENT_DIR, 'trace1')
         pool.add_task(
             0, trace, tracer, self.get_child_command(True), self.cwd, 'trace2')
         pool.add_task(
-            0, trace, tracer, self.get_child_command(False), ROOT_DIR, 'trace3')
+            0, trace, tracer, self.get_child_command(False),
+            test_env.CLIENT_DIR, 'trace3')
         pool.add_task(
             0, trace, tracer, self.get_child_command(True), self.cwd, 'trace4')
         # Have this one fail since it's started from the wrong directory.
@@ -504,7 +506,8 @@ class TraceInputsImport(TraceInputsBase):
         pool.add_task(
             0, trace, tracer, self.get_child_command(True), self.cwd, 'trace6')
         pool.add_task(
-            0, trace, tracer, self.get_child_command(False), ROOT_DIR, 'trace7')
+            0, trace, tracer, self.get_child_command(False),
+            test_env.CLIENT_DIR, 'trace7')
         pool.add_task(
             0, trace, tracer, self.get_child_command(True), self.cwd, 'trace8')
         trace_results = pool.join()
@@ -545,7 +548,7 @@ class TraceInputsImport(TraceInputsBase):
 
       self.assertEqual(['output', 'results'], sorted(actual_results[key]))
       results = actual_results[key]['results']
-      results = results.strip_root(unicode(ROOT_DIR))
+      results = results.strip_root(test_env.CLIENT_DIR)
       actual = results.flatten()
       self.assertTrue(actual['root'].pop('pid'))
       if index != busted:
@@ -595,7 +598,7 @@ class TraceInputsImport(TraceInputsBase):
       def blacklist(f):
         return f.endswith(('.pyc', '.svn', 'do_not_care.txt'))
       simplified = trace_inputs.extract_directories(
-          unicode(ROOT_DIR), results.files, blacklist)
+          test_env.CLIENT_DIR, results.files, blacklist)
       self.assertEqual(files, [f.path for f in simplified])
 
   @check_can_trace

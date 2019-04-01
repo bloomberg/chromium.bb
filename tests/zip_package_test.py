@@ -4,7 +4,6 @@
 # that can be found in the LICENSE file.
 
 import cStringIO as StringIO
-import logging
 import os
 import subprocess
 import sys
@@ -12,11 +11,9 @@ import tempfile
 import unittest
 import zipfile
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
-sys.path.insert(0, ROOT_DIR)
+# Mutates sys.path.
+import test_env
 
-from third_party.depot_tools import fix_encoding
 from utils import file_path
 from utils import zip_package
 
@@ -228,11 +225,11 @@ class ZipPackageTest(unittest.TestCase):
     self.assertFalse(zip_package.is_zipped_module(sys.modules[__name__]))
     self.assertIsNone(zip_package.get_module_zip_archive(sys.modules[__name__]))
     self.assertTrue(os.path.abspath(
-        zip_package.get_main_script_path()).startswith(ROOT_DIR))
+        zip_package.get_main_script_path()).startswith(test_env.CLIENT_DIR))
 
     # Build executable zip that calls same functions.
     pkg = zip_package.ZipPackage(self.temp_dir)
-    pkg.add_directory(os.path.join(ROOT_DIR, 'utils'), 'utils')
+    pkg.add_directory(os.path.join(test_env.CLIENT_DIR, 'utils'), 'utils')
     pkg.add_buffer('__main__.py', '\n'.join([
       'import sys',
       '',
@@ -251,7 +248,7 @@ class ZipPackageTest(unittest.TestCase):
 
   def test_extract_resource(self):
     pkg = zip_package.ZipPackage(self.temp_dir)
-    pkg.add_directory(os.path.join(ROOT_DIR, 'utils'), 'utils')
+    pkg.add_directory(os.path.join(test_env.CLIENT_DIR, 'utils'), 'utils')
     pkg.add_buffer('cert.pem', 'Certificate\n')
     pkg.add_buffer('__main__.py', '\n'.join([
       'import sys',
@@ -268,7 +265,7 @@ class ZipPackageTest(unittest.TestCase):
 
   def test_extract_resource_temp_dir(self):
     pkg = zip_package.ZipPackage(self.temp_dir)
-    pkg.add_directory(os.path.join(ROOT_DIR, 'utils'), 'utils')
+    pkg.add_directory(os.path.join(test_env.CLIENT_DIR, 'utils'), 'utils')
     pkg.add_buffer('cert.pem', 'Certificate\n')
     pkg.add_buffer('__main__.py', '\n'.join([
       'import sys',
@@ -287,7 +284,4 @@ class ZipPackageTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  fix_encoding.fix_encoding()
-  VERBOSE = '-v' in sys.argv
-  logging.basicConfig(level=logging.DEBUG if VERBOSE else logging.ERROR)
-  unittest.main()
+  test_env.main()
