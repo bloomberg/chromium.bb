@@ -99,7 +99,7 @@ class CONTENT_EXPORT CacheStorageManager
 
   // This method is called when the last CacheStorageHandle for a particular
   // instance is destroyed and its reference count drops to zero.
-  void CacheStorageUnreferenced(CacheStorage* cache_storage,
+  void CacheStorageUnreferenced(LegacyCacheStorage* cache_storage,
                                 const url::Origin& origin,
                                 CacheStorageOwner owner);
 
@@ -114,7 +114,7 @@ class CONTENT_EXPORT CacheStorageManager
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
 
   typedef std::map<std::pair<url::Origin, CacheStorageOwner>,
-                   std::unique_ptr<CacheStorage>>
+                   std::unique_ptr<LegacyCacheStorage>>
       CacheStorageMap;
 
   CacheStorageManager(
@@ -146,7 +146,7 @@ class CONTENT_EXPORT CacheStorageManager
   void DeleteOriginDidClose(const url::Origin& origin,
                             CacheStorageOwner owner,
                             storage::QuotaClient::DeletionCallback callback,
-                            std::unique_ptr<CacheStorage> cache_storage,
+                            std::unique_ptr<LegacyCacheStorage> cache_storage,
                             int64_t origin_size);
 
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context() const {
