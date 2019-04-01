@@ -522,19 +522,10 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
   if (gc_type == BlinkGC::kV8MajorGC) {
     // In case of unified heap garbage collections a V8 major GC also collects
     // the Blink heap.
-    if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled())
-      return;
-
-    // This CompleteSweep() will do nothing in common cases since we've
-    // called CompleteSweep() before V8 starts minor/major GCs.
-    // TODO(ulan): Try removing this for Major V8 GC too.
-    CompleteSweep();
-    DCHECK(!IsSweepingInProgress());
-    DCHECK(!SweepForbidden());
+    return;
   }
 
-  if ((gc_type == BlinkGC::kV8MajorGC && ShouldForceMemoryPressureGC()) ||
-      ShouldScheduleV8FollowupGC()) {
+  if (ShouldScheduleV8FollowupGC()) {
     // When we want to optimize for load time, we should prioritize throughput
     // over latency and not do incremental marking.
     if (RuntimeEnabledFeatures::HeapIncrementalMarkingEnabled() &&
@@ -548,10 +539,6 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
               << "ScheduleV8FollowupGCIfNeeded: Scheduled precise GC";
       SchedulePreciseGC();
     }
-  } else if (gc_type == BlinkGC::kV8MajorGC && ShouldScheduleIdleGC()) {
-    VLOG(2) << "[state:" << this << "] "
-            << "ScheduleV8FollowupGCIfNeeded: Scheduled idle GC";
-    ScheduleIdleGC();
   }
 }
 
@@ -661,14 +648,6 @@ void ThreadState::ScheduleGCIfNeeded() {
                      BlinkGC::GCReason::kConservativeGC);
       return;
     }
-  }
-
-  if (!RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled() &&
-      ShouldScheduleIdleGC()) {
-    VLOG(2) << "[state:" << this << "] "
-            << "ScheduleGCIfNeeded: Scheduled idle GC";
-    ScheduleIdleGC();
-    return;
   }
 
   if (GetGCState() == kNoGCScheduled &&

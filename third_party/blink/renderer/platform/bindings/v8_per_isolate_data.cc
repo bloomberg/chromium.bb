@@ -168,13 +168,11 @@ void V8PerIsolateData::WillBeDestroyed(v8::Isolate* isolate) {
   data->active_script_wrappables_.Clear();
 
   // Detach V8's garbage collector.
-  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled()) {
-    // Need to finalize an already running garbage collection as otherwise
-    // callbacks are missing and state gets out of sync.
-    ThreadState::Current()->FinishIncrementalMarkingIfRunning(
-        BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
-        BlinkGC::kEagerSweeping, BlinkGC::GCReason::kThreadTerminationGC);
-  }
+  // Need to finalize an already running garbage collection as otherwise
+  // callbacks are missing and state gets out of sync.
+  ThreadState::Current()->FinishIncrementalMarkingIfRunning(
+      BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
+      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kThreadTerminationGC);
   isolate->SetEmbedderHeapTracer(nullptr);
   if (data->script_wrappable_visitor_->WrapperTracingInProgress())
     data->script_wrappable_visitor_->AbortTracingForTermination();

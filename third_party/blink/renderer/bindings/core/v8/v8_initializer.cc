@@ -610,17 +610,9 @@ static void HostGetImportMetaProperties(v8::Local<v8::Context> context,
 static void InitializeV8Common(v8::Isolate* isolate) {
   isolate->AddGCPrologueCallback(V8GCController::GcPrologue);
   isolate->AddGCEpilogueCallback(V8GCController::GcEpilogue);
-
-  isolate->SetEmbedderHeapTracer(
-      RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled()
-          ? static_cast<v8::EmbedderHeapTracer*>(
-                V8PerIsolateData::From(isolate)->GetUnifiedHeapController())
-          : static_cast<v8::EmbedderHeapTracer*>(
-                V8PerIsolateData::From(isolate)
-                    ->GetScriptWrappableMarkingVisitor()));
-
+  isolate->SetEmbedderHeapTracer(static_cast<v8::EmbedderHeapTracer*>(
+      V8PerIsolateData::From(isolate)->GetUnifiedHeapController()));
   isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kScoped);
-
   isolate->SetUseCounterCallback(&UseCounterCallback);
   isolate->SetWasmModuleCallback(WasmModuleOverride);
   isolate->SetWasmInstanceCallback(WasmInstanceOverride);
@@ -702,15 +694,9 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
   // as setting the tracer indicates that a V8 garbage collection should trace
   // over to Blink.
   DCHECK(ThreadState::MainThreadState());
-  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled()) {
+
     ThreadState::MainThreadState()->RegisterTraceDOMWrappers(
         isolate, V8GCController::TraceDOMWrappers, nullptr, nullptr);
-  } else {
-    ThreadState::MainThreadState()->RegisterTraceDOMWrappers(
-        isolate, V8GCController::TraceDOMWrappers,
-        ScriptWrappableMarkingVisitor::InvalidateDeadObjectsInMarkingDeque,
-        ScriptWrappableMarkingVisitor::PerformCleanup);
-  }
 
   InitializeV8Common(isolate);
 

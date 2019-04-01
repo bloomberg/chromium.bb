@@ -219,11 +219,7 @@ class PLATFORM_EXPORT V8PerIsolateData {
   }
 
   v8::EmbedderHeapTracer* GetEmbedderHeapTracer() const {
-    return RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled()
-               ? static_cast<v8::EmbedderHeapTracer*>(
-                     GetUnifiedHeapController())
-               : static_cast<v8::EmbedderHeapTracer*>(
-                     GetScriptWrappableMarkingVisitor());
+    return static_cast<v8::EmbedderHeapTracer*>(GetUnifiedHeapController());
   }
 
  private:
