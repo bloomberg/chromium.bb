@@ -1747,7 +1747,9 @@ const gchar* GetName(AtkObject* atk_object) {
       name_from != ax::mojom::NameFrom::kAttributeExplicitlyEmpty)
     return nullptr;
 
-  return obj->GetStringAttribute(ax::mojom::StringAttribute::kName).c_str();
+  obj->accessible_name_ =
+      obj->GetStringAttribute(ax::mojom::StringAttribute::kName);
+  return obj->accessible_name_.c_str();
 }
 
 const gchar* GetDescription(AtkObject* atk_object) {
@@ -3149,22 +3151,30 @@ void AXPlatformNodeAuraLinux::OnValueChanged() {
 }
 
 void AXPlatformNodeAuraLinux::OnNameChanged() {
-  std::string name;
-  GetStringAttribute(ax::mojom::StringAttribute::kName, &name);
+  std::string name = GetStringAttribute(ax::mojom::StringAttribute::kName);
 
-  AtkPropertyValues property_values;
-  property_values.property_name = "accessible-name";
-  property_values.new_value = G_VALUE_INIT;
-  g_value_init(&property_values.new_value, G_TYPE_STRING);
-  g_value_set_string(&property_values.new_value, name.c_str());
-  g_signal_emit_by_name(G_OBJECT(atk_object_),
-                        "property-change::accessible-name", &property_values,
-                        nullptr);
+  std::string previous_accessible_name = accessible_name_;
+  // Calling atk_object_get_name will update the value of accessible_name_.
+  if (!g_strcmp0(atk_object_get_name(atk_object_),
+                 previous_accessible_name.c_str()))
+    return;
+
+  g_object_notify(G_OBJECT(atk_object_), "accessible-name");
+}
+
+void AXPlatformNodeAuraLinux::OnDocumentTitleChanged() {
+  DCHECK(atk_object_);
+  if (!g_active_top_level_frame)
+    return;
+
+  // We always want to notify on the top frame.
+  AXPlatformNodeAuraLinux* window =
+      AtkObjectToAXPlatformNodeAuraLinux(g_active_top_level_frame);
+  window->OnNameChanged();
 }
 
 void AXPlatformNodeAuraLinux::OnInvalidStatusChanged() {
   DCHECK(atk_object_);
-
   atk_object_notify_state_change(
       ATK_OBJECT(atk_object_), ATK_STATE_INVALID_ENTRY,
       GetData().GetInvalidState() != ax::mojom::InvalidState::kFalse);
@@ -3200,6 +3210,9 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
       break;
     case ax::mojom::Event::kSelection:
       OnSelected();
+      // When changing tabs also fire a name changed event.
+      if (GetData().role == ax::mojom::Role::kTab)
+        OnDocumentTitleChanged();
       break;
     case ax::mojom::Event::kSelectedChildrenChanged:
       OnSelectedChildrenChanged();
@@ -3218,6 +3231,17 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
       break;
     case ax::mojom::Event::kWindowDeactivated:
       OnWindowDeactivated();
+      break;
+    case ax::mojom::Event::kLoadComplete:
+    case ax::mojom::Event::kDocumentTitleChanged:
+      // Sometimes, e.g. upon navigating away from the page, the tree is
+      // rebuilt rather than modified. The kDocumentTitleChanged event occurs
+      // prior to the rebuild and so is added on the previous root node. When
+      // the tree is rebuilt and the old node removed, the events on the old
+      // node are removed and no new kDocumentTitleChanged will be emitted. To
+      // ensure we still fire the event, though, we also pay attention to
+      // kLoadComplete.
+      OnDocumentTitleChanged();
       break;
     default:
       break;
