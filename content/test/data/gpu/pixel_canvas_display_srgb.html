@@ -3,7 +3,7 @@
 <head>
 <script>
 // This browser pixel test checks if the 2D canvas is properly displayed
-// when the color space is set to linear-rgb.
+// when the color space is set to srgb.
 // We use float16 pixelFormat for increased precision with the wide
 // color gamut
 
@@ -18,7 +18,7 @@ function main()
 function draw()
 {
   var ctx = document.getElementById("c").getContext("2d",
-    {colorSpace:"linear-rgb", pixelFormat: "float16"});
+    {colorSpace:"srgb", pixelFormat: "float16"});
   ctx.fillStyle = 'red';
   ctx.fillRect(20,20,50,50);
   ctx.fillStyle = 'green';

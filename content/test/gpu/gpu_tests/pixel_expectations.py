@@ -27,7 +27,7 @@ class PixelExpectations(GpuTestExpectations):
     self.Skip('Pixel_OffscreenCanvasWebGLSoftwareCompositing', ['android'])
     self.Skip('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
               ['android'])
-    self.Skip('Pixel_CanvasDisplayLinearRGBUnaccelerated2D', ['android'])
+    # self.Skip('Pixel_CanvasDisplayLinearRGBUnaccelerated2D', ['android'])
     self.Skip('Pixel_CanvasUnacceleratedLowLatency2D', ['android'])
     self.Skip('Pixel_RepeatedWebGLTo2D_SoftwareCompositing', ['android'])
 
@@ -138,6 +138,17 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_OffscreenCanvasWebGLPaintAfterResize',
               ['android', 'nvidia'], bug=868596)
 
+    # New tests, mark as failing
+    self.Fail('Pixel_CanvasDisplaySRGBUnaccelerated2D')
+    self.Fail('Pixel_CanvasDisplaySRGBUnaccelerated2DGPUCompositing')
+    # float16 is not yet supported for accelerated canvases
+    self.Fail('Pixel_CanvasDisplaySRGBAccelerated2D', bug=948141)
+
+    # Color space has changed here so we need to rebaseline
+    self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2D')
+    self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing')
+    self.Fail('Pixel_CanvasDisplayLinearRGBAccelerated2D')
+
     # Fails on Nexus 5, 6 and 6P
     self.Fail('Pixel_BackgroundImage',
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=883500)
@@ -214,12 +225,12 @@ class PixelExpectations(GpuTestExpectations):
     #     bug=907935)
     self.Fail('Pixel_Canvas2DRedBox', ['android-webview-instrumentation'],
         bug=907935)
-    self.Fail('Pixel_CanvasDisplayLinearRGBAccelerated2D',
-              ['android-webview-instrumentation'], bug=907935)
+    # self.Fail('Pixel_CanvasDisplayLinearRGBAccelerated2D',
+    #           ['android-webview-instrumentation'], bug=907935)
     self.Fail('Pixel_CanvasLowLatency2D', ['android-webview-instrumentation'],
         bug=907935)
-    self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
-              ['android-webview-instrumentation'], bug=907935)
+    # self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
+    #           ['android-webview-instrumentation'], bug=907935)
     self.Fail('Pixel_WebGLGreenTriangle_AA_Alpha',
               ['android-webview-instrumentation'], bug=907935)
     self.Fail('Pixel_WebGLGreenTriangle_AA_NoAlpha',
