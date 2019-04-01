@@ -597,6 +597,8 @@ source_set("common") {
     "browser/net/aw_network_change_notifier_factory.h",
     "browser/net/aw_network_delegate.cc",
     "browser/net/aw_network_delegate.h",
+    "browser/net/aw_proxy_config_monitor.cc",
+    "browser/net/aw_proxy_config_monitor.h",
     "browser/net/aw_request_interceptor.cc",
     "browser/net/aw_request_interceptor.h",
     "browser/net/aw_url_request_context_getter.cc",

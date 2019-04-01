@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/net/aw_proxy_config_monitor.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -70,11 +71,14 @@ ScopedJavaLocalRef<jstring> JNI_AwProxyController_SetProxyOverride(
   std::vector<std::string> bypass_rules;
   base::android::AppendJavaStringArrayToStringVector(env, jbypass_rules,
                                                      &bypass_rules);
-
   std::string result;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // TODO(laisminchillo): implement the Network Service code path
-    // (http://crbug.com/902658).
+    result = AwProxyConfigMonitor::GetInstance()->SetProxyOverride(
+        proxy_rules, bypass_rules,
+        base::BindOnce(&ProxyOverrideChanged,
+                       ScopedJavaGlobalRef<jobject>(env, obj),
+                       ScopedJavaGlobalRef<jobject>(env, listener),
+                       ScopedJavaGlobalRef<jobject>(env, executor)));
   } else {
     result =
         AwBrowserContext::GetDefault()
@@ -95,8 +99,10 @@ void JNI_AwProxyController_ClearProxyOverride(
     const JavaParamRef<jobject>& listener,
     const JavaParamRef<jobject>& executor) {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // TODO(laisminchillo): implement the Network Service code path
-    // (http://crbug.com/902658).
+    AwProxyConfigMonitor::GetInstance()->ClearProxyOverride(base::BindOnce(
+        &ProxyOverrideChanged, ScopedJavaGlobalRef<jobject>(env, obj),
+        ScopedJavaGlobalRef<jobject>(env, listener),
+        ScopedJavaGlobalRef<jobject>(env, executor)));
   } else {
     AwBrowserContext::GetDefault()
         ->GetAwURLRequestContext()

@@ -51,6 +51,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyConfigServiceMojo
   // mojom::ProxyConfigClient implementation:
   void OnProxyConfigUpdated(
       const net::ProxyConfigWithAnnotation& proxy_config) override;
+  void FlushProxyConfig(FlushProxyConfigCallback callback) override;
 
   mojom::ProxyConfigPollerClientPtr proxy_poller_client_;
 

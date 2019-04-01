@@ -22,14 +22,6 @@
 # https://crbug.com/893580
 -org.chromium.android_webview.test.LoadDataWithBaseUrlTest.testLoadDataWithBaseUrlAccessingFile
 
-# https://crbug.com/902658
--org.chromium.android_webview.test.AwProxyControllerTest.testProxyOverride
--org.chromium.android_webview.test.AwProxyControllerTest.testProxyOverrideLocalhost
--org.chromium.android_webview.test.AwProxyControllerTest.testCallbacks
--org.chromium.android_webview.test.AwProxyControllerTest.testValidInput
--org.chromium.android_webview.test.AwProxyControllerTest.testInvalidProxyUrls
--org.chromium.android_webview.test.AwProxyControllerTest.testInvalidBypassRules
-
 # Flaky tests on android_mojo and android_mojo_rel bots
 # https://crbug.com/936757, https://crbug.com/939355
 -org.chromium.android_webview.test.AwContentsClientFullScreenTest.testOnShowCustomViewAndPlayWithHtmlControl_videoInsideDiv
