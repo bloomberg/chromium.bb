@@ -174,7 +174,6 @@ NGLayoutOpportunity CreateLayoutOpportunity(
 NGExclusionSpaceInternal::NGExclusionSpaceInternal()
     : exclusions_(RefVector<scoped_refptr<const NGExclusion>>::Create()),
       num_exclusions_(0),
-      both_clear_offset_(LayoutUnit::Min()),
       track_shape_exclusions_(false),
       derived_geometry_(nullptr) {}
 
@@ -182,7 +181,9 @@ NGExclusionSpaceInternal::NGExclusionSpaceInternal(
     const NGExclusionSpaceInternal& other)
     : exclusions_(other.exclusions_),
       num_exclusions_(other.num_exclusions_),
-      both_clear_offset_(other.both_clear_offset_),
+      left_clear_offset_(other.left_clear_offset_),
+      right_clear_offset_(other.right_clear_offset_),
+      last_float_block_start_(other.last_float_block_start_),
       track_shape_exclusions_(other.track_shape_exclusions_),
       derived_geometry_(std::move(other.derived_geometry_)) {
   // This copy-constructor does fun things. It moves the derived_geometry_ to
@@ -197,7 +198,9 @@ NGExclusionSpaceInternal& NGExclusionSpaceInternal::operator=(
     const NGExclusionSpaceInternal& other) {
   exclusions_ = other.exclusions_;
   num_exclusions_ = other.num_exclusions_;
-  both_clear_offset_ = other.both_clear_offset_;
+  left_clear_offset_ = other.left_clear_offset_;
+  right_clear_offset_ = other.right_clear_offset_;
+  last_float_block_start_ = other.last_float_block_start_;
   track_shape_exclusions_ = other.track_shape_exclusions_;
   derived_geometry_ = std::move(other.derived_geometry_);
   other.derived_geometry_ = nullptr;
@@ -209,10 +212,7 @@ NGExclusionSpaceInternal& NGExclusionSpaceInternal::operator=(
 
 NGExclusionSpaceInternal::DerivedGeometry::DerivedGeometry(
     bool track_shape_exclusions)
-    : track_shape_exclusions_(track_shape_exclusions),
-      last_float_block_start_(LayoutUnit::Min()),
-      left_float_clear_offset_(LayoutUnit::Min()),
-      right_float_clear_offset_(LayoutUnit::Min()) {
+    : track_shape_exclusions_(track_shape_exclusions) {
   // The exclusion space must always have at least one shelf, at -Infinity.
   shelves_.emplace_back(/* block_offset */ LayoutUnit::Min(),
                         track_shape_exclusions_);
@@ -253,8 +253,15 @@ void NGExclusionSpaceInternal::Add(scoped_refptr<const NGExclusion> exclusion) {
   if (derived_geometry_)
     derived_geometry_->Add(*exclusion);
 
-  both_clear_offset_ =
-      std::max(both_clear_offset_, exclusion->rect.BlockEndOffset());
+  // Update the members used for clearance calculations.
+  LayoutUnit clear_offset = exclusion->rect.BlockEndOffset();
+  if (exclusion->type == EFloat::kLeft)
+    left_clear_offset_ = std::max(left_clear_offset_, clear_offset);
+  else if (exclusion->type == EFloat::kRight)
+    right_clear_offset_ = std::max(right_clear_offset_, clear_offset);
+
+  last_float_block_start_ =
+      std::max(last_float_block_start_, exclusion->rect.BlockStartOffset());
 
   if (!already_exists)
     exclusions_->emplace_back(std::move(exclusion));
@@ -263,25 +270,13 @@ void NGExclusionSpaceInternal::Add(scoped_refptr<const NGExclusion> exclusion) {
 
 void NGExclusionSpaceInternal::DerivedGeometry::Add(
     const NGExclusion& exclusion) {
-  last_float_block_start_ =
-      std::max(last_float_block_start_, exclusion.rect.BlockStartOffset());
-
-  const LayoutUnit exclusion_end_offset = exclusion.rect.BlockEndOffset();
-
-  // Update the members used for clearance calculations.
-  if (exclusion.type == EFloat::kLeft) {
-    left_float_clear_offset_ =
-        std::max(left_float_clear_offset_, exclusion.rect.BlockEndOffset());
-  } else if (exclusion.type == EFloat::kRight) {
-    right_float_clear_offset_ =
-        std::max(right_float_clear_offset_, exclusion.rect.BlockEndOffset());
-  }
-
   // If the exclusion takes up no inline space, we shouldn't pay any further
   // attention to it. The only thing it can affect is block-axis positioning of
   // subsequent floats (dealt with above).
   if (exclusion.rect.LineEndOffset() <= exclusion.rect.LineStartOffset())
     return;
+
+  const LayoutUnit exclusion_end_offset = exclusion.rect.BlockEndOffset();
 
 #if DCHECK_IS_ON()
   bool inserted = false;
@@ -636,24 +631,6 @@ void NGExclusionSpaceInternal::DerivedGeometry::IterateAllLayoutOpportunities(
     }
     ++shelves_it;
   }
-}
-
-LayoutUnit NGExclusionSpaceInternal::DerivedGeometry::ClearanceOffset(
-    EClear clear_type) const {
-  switch (clear_type) {
-    case EClear::kNone:
-      return LayoutUnit::Min();  // Nothing to do here.
-    case EClear::kLeft:
-      return left_float_clear_offset_;
-    case EClear::kRight:
-      return right_float_clear_offset_;
-    case EClear::kBoth:
-      return std::max(left_float_clear_offset_, right_float_clear_offset_);
-    default:
-      NOTREACHED();
-  }
-
-  return LayoutUnit::Min();
 }
 
 const NGExclusionSpaceInternal::DerivedGeometry&
