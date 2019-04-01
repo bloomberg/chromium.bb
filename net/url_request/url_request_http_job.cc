@@ -823,10 +823,11 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
     RecordCTHistograms(ssl_info);
   }
 
+  if (transaction_ && transaction_->GetResponseInfo()) {
+    SetProxyServer(transaction_->GetResponseInfo()->proxy_server);
+  }
+
   if (result == OK) {
-    if (transaction_ && transaction_->GetResponseInfo()) {
-      SetProxyServer(transaction_->GetResponseInfo()->proxy_server);
-    }
     scoped_refptr<HttpResponseHeaders> headers = GetResponseHeaders();
 
     if (network_delegate()) {

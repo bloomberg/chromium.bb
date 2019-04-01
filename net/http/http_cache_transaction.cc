@@ -1740,6 +1740,8 @@ int HttpCache::Transaction::DoSendRequestComplete(int result) {
 
   const HttpResponseInfo* response = network_trans_->GetResponseInfo();
   response_.network_accessed = response->network_accessed;
+  response_.was_fetched_via_proxy = response->was_fetched_via_proxy;
+  response_.proxy_server = response->proxy_server;
 
   // Do not record requests that have network errors or restarts.
   UpdateCacheEntryStatus(CacheEntryStatus::ENTRY_OTHER);

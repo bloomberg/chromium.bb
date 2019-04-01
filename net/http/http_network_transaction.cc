@@ -74,6 +74,8 @@
 #include "net/reporting/reporting_service.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
+namespace net {
+
 namespace {
 
 // Max number of |retry_attempts| (excluding the initial request) after which
@@ -90,9 +92,18 @@ const size_t kMaxRetryAttempts = 2;
 // looping forever, bound the number of restarts.
 const size_t kMaxRestarts = 32;
 
-}  // namespace
+void SetProxyInfoInReponse(const ProxyInfo& proxy_info,
+                           HttpResponseInfo* response_info) {
+  response_info->was_fetched_via_proxy = !proxy_info.is_direct();
+  if (response_info->was_fetched_via_proxy && !proxy_info.is_empty())
+    response_info->proxy_server = proxy_info.proxy_server();
+  else if (!response_info->was_fetched_via_proxy && proxy_info.is_direct())
+    response_info->proxy_server = ProxyServer::Direct();
+  else
+    response_info->proxy_server = ProxyServer();
+}
 
-namespace net {
+}  // namespace
 
 const int HttpNetworkTransaction::kDrainBodyBufferSize;
 
@@ -547,13 +558,7 @@ void HttpNetworkTransaction::OnStreamReady(const SSLConfig& used_ssl_config,
   response_.alpn_negotiated_protocol =
       NextProtoToString(stream_request_->negotiated_protocol());
   response_.was_fetched_via_spdy = stream_request_->using_spdy();
-  response_.was_fetched_via_proxy = !proxy_info_.is_direct();
-  if (response_.was_fetched_via_proxy && !proxy_info_.is_empty())
-    response_.proxy_server = proxy_info_.proxy_server();
-  else if (!response_.was_fetched_via_proxy && proxy_info_.is_direct())
-    response_.proxy_server = ProxyServer::Direct();
-  else
-    response_.proxy_server = ProxyServer();
+  SetProxyInfoInReponse(used_proxy_info, &response_);
   OnIOComplete(OK);
 }
 
@@ -574,13 +579,16 @@ void HttpNetworkTransaction::OnWebSocketHandshakeStreamReady(
 void HttpNetworkTransaction::OnStreamFailed(
     int result,
     const NetErrorDetails& net_error_details,
-    const SSLConfig& used_ssl_config) {
+    const SSLConfig& used_ssl_config,
+    const ProxyInfo& used_proxy_info) {
   DCHECK_EQ(STATE_CREATE_STREAM_COMPLETE, next_state_);
   DCHECK_NE(OK, result);
   DCHECK(stream_request_.get());
   DCHECK(!stream_.get());
   server_ssl_config_ = used_ssl_config;
   net_error_details_ = net_error_details;
+  proxy_info_ = used_proxy_info;
+  SetProxyInfoInReponse(used_proxy_info, &response_);
 
   OnIOComplete(result);
 }
@@ -1799,6 +1807,8 @@ void HttpNetworkTransaction::ResetConnectionAndRequestForResend() {
   network_error_logging_report_generated_ = false;
   start_timeticks_ = base::TimeTicks::Now();
 #endif  // BUILDFLAG(ENABLE_REPORTING)
+
+  ResetStateForRestart();
 }
 
 bool HttpNetworkTransaction::ShouldApplyProxyAuth() const {
