@@ -1577,6 +1577,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-save-data",
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "enable-scroll-anchor-serialization",
     "owners": [ "pnoland" ],
     "expiry_milestone": 76

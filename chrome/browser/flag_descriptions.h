@@ -331,6 +331,9 @@ extern const char kEnableBrotliDescription[];
 extern const char kEnableDataSaverLiteModeRebrandName[];
 extern const char kEnableDataSaverLiteModeRebrandDescription[];
 
+extern const char kEnableSaveDataName[];
+extern const char kEnableSaveDataDescription[];
+
 extern const char kEnableClientLoFiName[];
 extern const char kEnableClientLoFiDescription[];
 
