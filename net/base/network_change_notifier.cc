@@ -455,13 +455,11 @@ NetworkChangeNotifier::ConnectionTypeFromInterfaceList(
       continue;
 #endif
 #if defined(OS_MACOSX)
-    // Ignore tunnel and airdrop interfaces.
-    if (base::StartsWith(interfaces[i].friendly_name, "utun",
-                         base::CompareCase::SENSITIVE) ||
-        base::StartsWith(interfaces[i].friendly_name, "awdl",
-                         base::CompareCase::SENSITIVE)) {
+    // Ignore link-local addresses as they aren't globally routable.
+    // Mac assigns these to disconnected interfaces like tunnel interfaces
+    // ("utun"), airdrop interfaces ("awdl"), and ethernet ports ("en").
+    if (interfaces[i].address.IsLinkLocal())
       continue;
-    }
 #endif
 
     // Remove VMware network interfaces as they're internal and should not be
