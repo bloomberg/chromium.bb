@@ -4935,6 +4935,416 @@
       }
     ]
   },
+  "linux-blink-heap-concurrent-marking-tsan-rel": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "angle_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blink_common_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blink_heap_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blink_platform_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "name": "webkit_unit_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blink_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "boringssl_crypto_tests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "boringssl_ssl_tests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "cacheinvalidation_unittests"
+      },
+      {
+        "args": [
+          "--gtest_filter=-*UsingRealWebcam*",
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "capture_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "cast_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_browsertests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 6
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
+          "--disable-perfetto",
+          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*",
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "name": "nonperfetto_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "crypto_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "events_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gcm_unit_tests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gin_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "google_apis_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gpu_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ipc_tests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "jingle_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "latency_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "libjingle_xmpp_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "media_blink_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "media_service_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "media_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "midi_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mojo_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "net_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "perfetto_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "services_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "shell_dialogs_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "skia_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "sql_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "storage_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ui_base_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ui_touch_selection_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "url_unittests"
+      },
+      {
+        "args": [
+          "--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "wtf_unittests"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--num-retries=3",
+          "--release",
+          "--additional-driver-flag=--enable-blink-features=HeapConcurrentMarking"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 12
+        }
+      }
+    ]
+  },
   "linux-blink-heap-unified-gc": {
     "gtest_tests": [
       {
