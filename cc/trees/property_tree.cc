@@ -2324,10 +2324,18 @@ DrawTransforms& PropertyTrees::GetDrawTransforms(int transform_id,
 
 void PropertyTrees::ResetCachedData() {
   cached_data_.transform_tree_update_number = 0;
-  cached_data_.animation_scales = std::vector<AnimationScaleData>(
-      transform_tree.nodes().size(), AnimationScaleData());
-  cached_data_.draw_transforms = std::vector<std::vector<DrawTransformData>>(
-      transform_tree.nodes().size(), std::vector<DrawTransformData>(1));
+  const auto transform_count = transform_tree.nodes().size();
+  cached_data_.animation_scales.resize(transform_count);
+  for (auto& animation_scale : cached_data_.animation_scales)
+    animation_scale.update_number = -1;
+
+  cached_data_.draw_transforms.resize(transform_count,
+                                      std::vector<DrawTransformData>(1));
+  for (auto& draw_transforms_for_id : cached_data_.draw_transforms) {
+    draw_transforms_for_id.resize(1);
+    draw_transforms_for_id[0].update_number = -1;
+    draw_transforms_for_id[0].target_id = EffectTree::kInvalidNodeId;
+  }
 }
 
 void PropertyTrees::UpdateTransformTreeUpdateNumber() {
