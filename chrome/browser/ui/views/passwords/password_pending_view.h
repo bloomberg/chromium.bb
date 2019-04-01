@@ -11,7 +11,7 @@
 #include "ui/views/view.h"
 
 namespace views {
-class Combobox;
+class EditableCombobox;
 class Label;
 class ToggleImageButton;
 }  // namespace views
@@ -79,7 +79,7 @@ class PasswordPendingView : public PasswordBubbleViewBase,
 
   // The view for the password value. Only one of |password_dropdown_| and
   // |password_label_| should be available.
-  views::Combobox* password_dropdown_;
+  views::EditableCombobox* password_dropdown_;
   views::Label* password_label_;
 
   bool are_passwords_revealed_;
