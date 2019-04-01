@@ -236,6 +236,7 @@ typedef enum {
   DECODE_RATE_TOO_HIGH,
   CR_TOO_SMALL,
   TILE_SIZE_HEADER_RATE_TOO_HIGH,
+  BITRATE_TOO_HIGH,
 
   TARGET_LEVEL_FAIL_IDS,
   TARGET_LEVEL_OK,
@@ -260,6 +261,7 @@ static const char *level_fail_messages[TARGET_LEVEL_FAIL_IDS] = {
   "The decoded luma sample rate is too high.",
   "The compression ratio is too small.",
   "The product of max tile size and header rate is too high.",
+  "The bitrate is too high.",
 };
 
 void av1_init_level_info(AV1LevelInfo *level_info) {
@@ -304,6 +306,16 @@ static void get_temporal_parallel_params(int scalability_mode_idc,
   }
 }
 
+static double get_max_bitrate(const AV1LevelSpec *const level_spec, int tier,
+                              BITSTREAM_PROFILE profile) {
+  if (level_spec->level < SEQ_LEVEL_4_0) tier = 0;
+  const double bitrate_basis =
+      (tier ? level_spec->high_mbps : level_spec->main_mbps) * 1e6;
+  const double bitrate_profile_factor =
+      profile == PROFILE_0 ? 1.0 : (profile == PROFILE_1 ? 2.0 : 3.0);
+  return bitrate_basis * bitrate_profile_factor;
+}
+
 #define MAX_TILE_SIZE (4096 * 2304)
 #define MIN_CROPPED_TILE_WIDTH 8
 #define MIN_CROPPED_TILE_HEIGHT 8
@@ -314,9 +326,11 @@ static void get_temporal_parallel_params(int scalability_mode_idc,
 static TARGET_LEVEL_FAIL_ID check_level_constraints(
     const AV1LevelSpec *const target_level_spec,
     const AV1LevelSpec *const level_spec,
-    const AV1LevelStats *const level_stats, int tier, int is_still_picture) {
+    const AV1LevelStats *const level_stats, int tier, int is_still_picture,
+    BITSTREAM_PROFILE profile) {
   const double min_cr = get_min_cr(target_level_spec, tier, is_still_picture,
                                    level_spec->max_decode_rate);
+  const double max_bitrate = get_max_bitrate(target_level_spec, tier, profile);
   TARGET_LEVEL_FAIL_ID fail_id = TARGET_LEVEL_OK;
 
   do {
@@ -405,6 +419,11 @@ static TARGET_LEVEL_FAIL_ID check_level_constraints(
       break;
     }
 
+    if ((double)level_stats->max_bitrate > max_bitrate) {
+      fail_id = BITRATE_TOO_HIGH;
+      break;
+    }
+
     if (target_level_spec->level > SEQ_LEVEL_5_1) {
       int temporal_parallel_num;
       int temporal_parallel_denom;
@@ -484,7 +503,8 @@ static void get_tile_stats(const AV1_COMP *const cpi, int *max_tile_size,
   }
 }
 
-static int store_frame_record(int64_t ts_start, int64_t ts_end, int pic_size,
+static int store_frame_record(int64_t ts_start, int64_t ts_end,
+                              size_t encoded_size, int pic_size,
                               int frame_header_count, int tiles, int show_frame,
                               int show_existing_frame,
                               FrameWindowBuffer *const buffer) {
@@ -497,6 +517,7 @@ static int store_frame_record(int64_t ts_start, int64_t ts_end, int pic_size,
   FrameRecord *const record = &buffer->buf[new_idx];
   record->ts_start = ts_start;
   record->ts_end = ts_end;
+  record->encoded_size_in_bytes = encoded_size;
   record->pic_size = pic_size;
   record->frame_header_count = frame_header_count;
   record->tiles = tiles;
@@ -532,13 +553,15 @@ static int count_frames(const FrameWindowBuffer *const buffer,
 // Scan previously encoded frames and update level metrics accordingly.
 static void scan_past_frames(const FrameWindowBuffer *const buffer,
                              int num_frames_to_scan,
-                             AV1LevelSpec *const level_spec) {
+                             AV1LevelSpec *const level_spec,
+                             AV1LevelStats *const level_stats) {
   const int num_frames_in_buffer = buffer->num;
   int index = (buffer->start + num_frames_in_buffer - 1) % FRAME_WINDOW_SIZE;
   int frame_headers = 0;
   int tiles = 0;
   int64_t display_samples = 0;
   int64_t decoded_samples = 0;
+  size_t encoded_size_in_bytes = 0;
   for (int i = 0; i < AOMMIN(num_frames_in_buffer, num_frames_to_scan); ++i) {
     const FrameRecord *const record = &buffer->buf[index];
     if (!record->show_existing_frame) {
@@ -549,6 +572,7 @@ static void scan_past_frames(const FrameWindowBuffer *const buffer,
       display_samples += record->pic_size;
     }
     tiles += record->tiles;
+    encoded_size_in_bytes += record->encoded_size_in_bytes;
     --index;
     if (index < 0) index = FRAME_WINDOW_SIZE - 1;
   }
@@ -559,6 +583,8 @@ static void scan_past_frames(const FrameWindowBuffer *const buffer,
   level_spec->max_decode_rate =
       AOMMAX(level_spec->max_decode_rate, decoded_samples);
   level_spec->max_tile_rate = AOMMAX(level_spec->max_tile_rate, tiles);
+  level_stats->max_bitrate =
+      AOMMAX(level_stats->max_bitrate, (int)encoded_size_in_bytes * 8);
 }
 
 void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
@@ -577,8 +603,8 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
 
   // Store info. of current frame into FrameWindowBuffer.
   FrameWindowBuffer *const buffer = &cpi->frame_window_buffer;
-  store_frame_record(ts_start, ts_end, luma_pic_size, frame_header_count, tiles,
-                     show_frame, show_existing_frame, buffer);
+  store_frame_record(ts_start, ts_end, size, luma_pic_size, frame_header_count,
+                     tiles, show_frame, show_existing_frame, buffer);
   // Count the number of frames encoded in the past 1 second.
   const int encoded_frames_in_last_second =
       show_frame ? count_frames(buffer, TICKS_PER_SEC) : 0;
@@ -633,7 +659,6 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
     level_stats->min_frame_width = AOMMIN(level_stats->min_frame_width, width);
     level_stats->min_frame_height =
         AOMMIN(level_stats->min_frame_height, height);
-    level_stats->total_compressed_size += frame_compressed_size;
     if (show_frame) level_stats->total_time_encoded = total_time_encoded;
     level_stats->min_cr = AOMMIN(level_stats->min_cr, compression_ratio);
 
@@ -649,7 +674,8 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
     level_spec->max_tiles = AOMMAX(level_spec->max_tiles, tiles);
 
     if (show_frame) {
-      scan_past_frames(buffer, encoded_frames_in_last_second, level_spec);
+      scan_past_frames(buffer, encoded_frames_in_last_second, level_spec,
+                       level_stats);
     }
 
     // Check whether target level is met.
@@ -658,8 +684,9 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
       const AV1LevelSpec *const target_level_spec =
           av1_level_defs + target_seq_level_idx;
       const int tier = seq_params->tier[i];
-      const TARGET_LEVEL_FAIL_ID fail_id = check_level_constraints(
-          target_level_spec, level_spec, level_stats, tier, is_still_picture);
+      const TARGET_LEVEL_FAIL_ID fail_id =
+          check_level_constraints(target_level_spec, level_spec, level_stats,
+                                  tier, is_still_picture, profile);
       if (fail_id != TARGET_LEVEL_OK) {
         const int target_level_major = 2 + (target_seq_level_idx >> 2);
         const int target_level_minor = target_seq_level_idx & 3;
@@ -682,6 +709,7 @@ aom_codec_err_t av1_get_seq_level_idx(const AV1_COMP *cpi, int *seq_level_idx) {
   }
 
   const int is_still_picture = seq_params->still_picture;
+  const BITSTREAM_PROFILE profile = seq_params->profile;
   for (int op = 0; op < seq_params->operating_points_cnt_minus_1 + 1; ++op) {
     seq_level_idx[op] = (int)SEQ_LEVEL_MAX;
     const int tier = seq_params->tier[op];
@@ -690,8 +718,9 @@ aom_codec_err_t av1_get_seq_level_idx(const AV1_COMP *cpi, int *seq_level_idx) {
     const AV1LevelSpec *const level_spec = &level_info->level_spec;
     for (int level = 0; level < SEQ_LEVELS; ++level) {
       const AV1LevelSpec *const target_level_spec = av1_level_defs + level;
-      const TARGET_LEVEL_FAIL_ID fail_id = check_level_constraints(
-          target_level_spec, level_spec, level_stats, tier, is_still_picture);
+      const TARGET_LEVEL_FAIL_ID fail_id =
+          check_level_constraints(target_level_spec, level_spec, level_stats,
+                                  tier, is_still_picture, profile);
       if (fail_id == TARGET_LEVEL_OK) {
         seq_level_idx[op] = level;
         break;

@@ -37,6 +37,7 @@ typedef struct {
 typedef struct {
   int64_t ts_start;
   int64_t ts_end;
+  size_t encoded_size_in_bytes;
   int pic_size;
   int frame_header_count;
   int tiles;
@@ -54,7 +55,7 @@ typedef struct {
 
 // Used to keep track of AV1 Level Stats. Currently unimplemented.
 typedef struct {
-  uint64_t total_compressed_size;
+  int max_bitrate;  // In bps.
   int max_tile_size;
   int max_superres_tile_width;
   int min_cropped_tile_width;
