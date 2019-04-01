@@ -1511,28 +1511,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderServerRedirectInIframe) {
   NavigateToDestURL();
 }
 
-// Prerenders a page that contains an automatic download triggered through an
-// iframe. This should not prerender successfully.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadIframe) {
-  PrerenderTestURL("/prerender/prerender_download_iframe.html",
-                   FINAL_STATUS_DOWNLOAD, 0);
-}
-
-// Prerenders a page that contains an automatic download triggered through
-// Javascript changing the window.location. This should not prerender
-// successfully
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadLocation) {
-  PrerenderTestURL(CreateClientRedirect("/download-test1.lib"),
-                   FINAL_STATUS_DOWNLOAD, 1);
-}
-
-// Prerenders a page that contains an automatic download triggered through a
-// client-issued redirect. This should not prerender successfully.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadClientRedirect) {
-  PrerenderTestURL("/prerender/prerender_download_refresh.html",
-                   FINAL_STATUS_DOWNLOAD, 1);
-}
-
 // Checks that the referrer is set when prerendering.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrer) {
   PrerenderTestURL("/prerender/prerender_referrer.html", FINAL_STATUS_USED, 1);
@@ -1913,12 +1891,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderImageJpeg) {
   DisableJavascriptCalls();
   PrerenderTestURL(kPrefetchJpeg, FINAL_STATUS_USED, 1);
   NavigateToDestURL();
-}
-
-// Checks that a prerender of a CRX will result in a cancellation due to
-// download.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCrx) {
-  PrerenderTestURL("/prerender/extension.crx", FINAL_STATUS_DOWNLOAD, 0);
 }
 
 // Checks that xhr GET requests allow prerenders.
