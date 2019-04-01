@@ -22,6 +22,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/test/gtest_util.h"
 #include "base/thread_annotations.h"
@@ -317,6 +318,11 @@ class VaapiJpegDecoderTest : public testing::TestWithParam<TestParam> {
 
   std::unique_ptr<ScopedVAImage> Decode(
       base::span<const uint8_t> encoded_image,
+      uint32_t preferred_fourcc,
+      VaapiJpegDecodeStatus* status = nullptr);
+
+  std::unique_ptr<ScopedVAImage> Decode(
+      base::span<const uint8_t> encoded_image,
       VaapiJpegDecodeStatus* status = nullptr);
 
   base::Lock* GetVaapiWrapperLock() const
@@ -350,14 +356,35 @@ base::FilePath VaapiJpegDecoderTest::FindTestDataFilePath(
 
 std::unique_ptr<ScopedVAImage> VaapiJpegDecoderTest::Decode(
     base::span<const uint8_t> encoded_image,
+    uint32_t preferred_fourcc,
     VaapiJpegDecodeStatus* status) {
   VaapiJpegDecodeStatus tmp_status;
   std::unique_ptr<ScopedVAImage> scoped_image =
-      decoder_.DoDecode(encoded_image, &tmp_status);
+      decoder_.DoDecode(encoded_image, preferred_fourcc, &tmp_status);
   EXPECT_EQ(!!scoped_image, tmp_status == VaapiJpegDecodeStatus::kSuccess);
   if (status)
     *status = tmp_status;
   return scoped_image;
+}
+
+std::unique_ptr<ScopedVAImage> VaapiJpegDecoderTest::Decode(
+    base::span<const uint8_t> encoded_image,
+    VaapiJpegDecodeStatus* status) {
+  return Decode(encoded_image, VA_FOURCC_I420, status);
+}
+
+TEST_F(VaapiJpegDecoderTest, MinimalImageFormatSupport) {
+  // All drivers should support at least I420.
+  ASSERT_TRUE(VaapiWrapper::IsImageFormatSupported({.fourcc = VA_FOURCC_I420}));
+
+  // Additionally, the mesa VAAPI driver should support YV12 and YUYV.
+  if (base::StartsWith(VaapiWrapper::GetVendorStringForTesting(),
+                       "Mesa Gallium driver", base::CompareCase::SENSITIVE)) {
+    ASSERT_TRUE(
+        VaapiWrapper::IsImageFormatSupported({.fourcc = VA_FOURCC_YV12}));
+    ASSERT_TRUE(VaapiWrapper::IsImageFormatSupported(
+        {.fourcc = VA_FOURCC('Y', 'U', 'Y', 'V')}));
+  }
 }
 
 TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {
@@ -365,7 +392,6 @@ TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {
   std::string jpeg_data;
   ASSERT_TRUE(base::ReadFileToString(input_file, &jpeg_data))
       << "failed to read input data from " << input_file.value();
-
   const auto encoded_image = base::make_span<const uint8_t>(
       reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size());
 
@@ -384,9 +410,33 @@ TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {
   if (!VaapiWrapper::IsJpegDecodingSupportedForInternalFormat(rt_format))
     GTEST_SKIP();
 
-  std::unique_ptr<ScopedVAImage> scoped_image = Decode(encoded_image);
-  ASSERT_TRUE(scoped_image);
-  ASSERT_TRUE(CompareImages(encoded_image, scoped_image.get()));
+  // Note that this test together with
+  // VaapiJpegDecoderTest.MinimalImageFormatSupport gives us two guarantees:
+  //
+  // 1) Every combination of supported internal format (returned by
+  //    GetJpegDecodeSupportedInternalFormats()) and supported image format
+  //    works with vaGetImage() (for JPEG decoding).
+  //
+  // 2) The FOURCC returned by VaapiWrapper::GetJpegDecodeSuitableImageFourCC()
+  //    corresponds to a supported image format.
+  const std::vector<VAImageFormat>& supported_image_formats =
+      VaapiWrapper::GetSupportedImageFormatsForTesting();
+  ASSERT_GE(supported_image_formats.size(), 1u);
+  for (const auto& image_format : supported_image_formats) {
+    std::unique_ptr<ScopedVAImage> scoped_image =
+        Decode(encoded_image, image_format.fourcc);
+    ASSERT_TRUE(scoped_image);
+    const uint32_t actual_fourcc = scoped_image->image()->format.fourcc;
+    // TODO(andrescj): CompareImages() only supports I420, YUY2, and YUYV. Make
+    // it support all the image formats we expect and call it unconditionally.
+    if (actual_fourcc == VA_FOURCC_I420 || actual_fourcc == VA_FOURCC_YUY2 ||
+        actual_fourcc == VA_FOURCC('Y', 'U', 'Y', 'V')) {
+      ASSERT_TRUE(CompareImages(encoded_image, scoped_image.get()));
+    }
+    DVLOG(1) << "Got a " << FourccToString(scoped_image->image()->format.fourcc)
+             << " VAImage (preferred " << FourccToString(image_format.fourcc)
+             << ")";
+  }
 }
 
 // Make sure that JPEGs whose size is in the supported size range are decoded
@@ -532,7 +582,7 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForAboveMaxSize) {
 }
 
 TEST_F(VaapiJpegDecoderTest, DecodeFails) {
-  // Not supported by VAAPI.
+  // A grayscale image (4:0:0) should be rejected.
   base::FilePath input_file = FindTestDataFilePath(kUnsupportedFilename);
   std::string jpeg_data;
   ASSERT_TRUE(base::ReadFileToString(input_file, &jpeg_data))

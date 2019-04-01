@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
+#include "media/base/video_types.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
@@ -23,18 +24,6 @@
 namespace media {
 
 namespace {
-
-constexpr VAImageFormat kImageFormatI420 = {
-    .fourcc = VA_FOURCC_I420,
-    .byte_order = VA_LSB_FIRST,
-    .bits_per_pixel = 12,
-};
-
-constexpr VAImageFormat kImageFormatYUYV = {
-    .fourcc = VA_FOURCC('Y', 'U', 'Y', 'V'),
-    .byte_order = VA_LSB_FIRST,
-    .bits_per_pixel = 16,
-};
 
 static void FillPictureParameters(
     const JpegFrameHeader& frame_header,
@@ -194,21 +183,6 @@ static bool IsVaapiSupportedJpeg(const JpegParseResult& jpeg) {
   return true;
 }
 
-// Convert the specified surface format to the associated output image format.
-static bool VaSurfaceFormatToImageFormat(unsigned int va_rt_format,
-                                         VAImageFormat* va_image_format) {
-  switch (va_rt_format) {
-    case VA_RT_FORMAT_YUV420:
-      *va_image_format = kImageFormatI420;
-      return true;
-    case VA_RT_FORMAT_YUV422:
-      *va_image_format = kImageFormatYUYV;
-      return true;
-    default:
-      return false;
-  }
-}
-
 }  // namespace
 
 unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header) {
@@ -251,6 +225,7 @@ bool VaapiJpegDecoder::Initialize(const base::RepeatingClosure& error_uma_cb) {
 
 std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::DoDecode(
     base::span<const uint8_t> encoded_image,
+    uint32_t preferred_image_fourcc,
     VaapiJpegDecodeStatus* status) {
   if (!vaapi_wrapper_) {
     VLOGF(1) << "VaapiJpegDecoder has not been initialized";
@@ -357,29 +332,33 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::DoDecode(
     return nullptr;
   }
 
-  // Specify which image format we will request from the VAAPI. As the expected
-  // output format is I420, we will first try this format. If converting to I420
-  // is not supported by the decoder, we will request the image in its original
-  // chroma sampling format.
-  VAImageFormat va_image_format = kImageFormatI420;
-  if (!VaapiWrapper::IsImageFormatSupported(va_image_format) &&
-      !VaSurfaceFormatToImageFormat(va_rt_format_, &va_image_format)) {
-    VLOGF(1) << "Unsupported surface format";
-    *status = VaapiJpegDecodeStatus::kUnsupportedSurfaceFormat;
+  // Get the decode output as a ScopedVAImage.
+  uint32_t image_fourcc;
+  if (!VaapiWrapper::GetJpegDecodeSuitableImageFourCC(
+          va_rt_format_, preferred_image_fourcc, &image_fourcc)) {
+    VLOGF(1) << "Cannot determine the output FOURCC";
+    *status = VaapiJpegDecodeStatus::kCannotGetImage;
     return nullptr;
   }
-
-  auto scoped_image = vaapi_wrapper_->CreateVaImage(
-      va_surface_id_, &va_image_format, coded_size_);
+  VAImageFormat image_format{.fourcc = image_fourcc};
+  auto scoped_image =
+      vaapi_wrapper_->CreateVaImage(va_surface_id_, &image_format, coded_size_);
   if (!scoped_image) {
-    VLOGF(1) << "Cannot get VAImage";
+    VLOGF(1) << "Cannot get VAImage, FOURCC = "
+             << FourccToString(image_format.fourcc);
     *status = VaapiJpegDecodeStatus::kCannotGetImage;
     return nullptr;
   }
 
-  DCHECK_EQ(va_image_format.fourcc, scoped_image->image()->format.fourcc);
   *status = VaapiJpegDecodeStatus::kSuccess;
   return scoped_image;
+}
+
+std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::DoDecode(
+    base::span<const uint8_t> encoded_image,
+    VaapiJpegDecodeStatus* status) {
+  return DoDecode(encoded_image, VA_FOURCC_I420 /* preferred_image_fourcc */,
+                  status);
 }
 
 }  // namespace media
