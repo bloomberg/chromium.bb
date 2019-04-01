@@ -282,7 +282,7 @@ class CacheStorageTest : public PageTestBase {
         mojo::AssociatedBinding<mojom::blink::CacheStorageCache>>(
         cache_.get(), std::move(request));
     return Cache::Create(
-        fetcher, nullptr /* cache_storage */, cache_ptr.PassInterface(),
+        fetcher, cache_ptr.PassInterface(),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
