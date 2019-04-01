@@ -178,13 +178,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Upon destruction, child processes should unregister themselves by calling
   // this method exactly once. This call must be made on the UI thread.
-  //
-  // Note: Pre-Remove() permissions remain in effect on the IO thread until
-  // the task posted to the IO thread by this call runs and removes the entry
-  // from |pending_remove_state_|.
-  // This UI -> IO task sequence ensures that any pending tasks, on the IO
-  // thread, for this |child_id| are allowed to run before access is completely
-  // revoked.
   void Remove(int child_id);
 
   // Whenever the browser processes commands the child process to commit a URL,
@@ -427,10 +420,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   ChildProcessSecurityPolicyImpl();
   friend struct base::DefaultSingletonTraits<ChildProcessSecurityPolicyImpl>;
 
-  // Adds child process during registration.
-  void AddChild(int child_id, BrowserContext* browser_context)
-      EXCLUSIVE_LOCKS_REQUIRED(lock_);
-
   // Determines if certain permissions were granted for a file to given child
   // process. |permissions| is an internally defined bit-set.
   bool ChildProcessHasPermissionsForFile(int child_id,
@@ -498,14 +487,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // owned by this object and are protected by |lock_|.  References to them must
   // not escape this class.
   SecurityStateMap security_state_ GUARDED_BY(lock_);
-
-  // This map holds the SecurityState for a child process after Remove()
-  // is called on the UI thread. An entry stays in this map until a task has
-  // run on the IO thread. This is necessary to provide consistent security
-  // decisions and avoid races between the UI & IO threads during child process
-  // shutdown. This separate map is used to preserve SecurityState info AND
-  // preventing mutation of that state after Remove() is called.
-  SecurityStateMap pending_remove_state_ GUARDED_BY(lock_);
 
   FileSystemPermissionPolicyMap file_system_policy_map_ GUARDED_BY(lock_);
 
