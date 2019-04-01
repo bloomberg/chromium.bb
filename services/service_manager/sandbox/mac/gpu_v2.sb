@@ -74,4 +74,6 @@
 
 (allow file-read*
   (subpath "/Library/GPUBundles")
+  (subpath "/Library/Video/Plug-Ins")
+  (subpath "/System/Library/Video/Plug-Ins")
 )
