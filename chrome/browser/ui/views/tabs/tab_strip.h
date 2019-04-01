@@ -613,6 +613,9 @@ class TabStrip : public views::AccessiblePaneView,
   // whenever any input of the computation of the border's sizing changes.
   void UpdateNewTabButtonBorder();
 
+  // Returns true if the hover card is showing for the given tab.
+  bool HoverCardIsShowingForTab(Tab* tab);
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 

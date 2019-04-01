@@ -668,6 +668,9 @@ void TabStrip::SetTabData(int model_index, TabRendererData data) {
   const bool pinned_state_changed = tab->data().pinned != data.pinned;
   tab->SetData(std::move(data));
 
+  if (HoverCardIsShowingForTab(tab))
+    UpdateHoverCard(tab, true);
+
   if (pinned_state_changed) {
     if (touch_layout_) {
       int pinned_tab_count = 0;
@@ -2716,6 +2719,14 @@ void TabStrip::UpdateNewTabButtonBorder() {
   constexpr int kHorizontalInset = 8;
   new_tab_button_->SetBorder(views::CreateEmptyBorder(gfx::Insets(
       extra_vertical_space / 2, kHorizontalInset, 0, kHorizontalInset)));
+}
+
+bool TabStrip::HoverCardIsShowingForTab(Tab* tab) {
+  if (!base::FeatureList::IsEnabled(features::kTabHoverCards))
+    return false;
+
+  return hover_card_ && hover_card_->GetWidget()->IsVisible() &&
+         hover_card_->GetAnchorView() == tab;
 }
 
 void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {
