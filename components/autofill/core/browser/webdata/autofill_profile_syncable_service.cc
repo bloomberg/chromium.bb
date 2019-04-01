@@ -94,6 +94,12 @@ AutofillProfileSyncableService::FromWebDataService(
 AutofillProfileSyncableService::AutofillProfileSyncableService()
     : webdata_backend_(nullptr), scoped_observer_(this) {}
 
+void AutofillProfileSyncableService::WaitUntilReadyToSync(
+    base::OnceClosure done) {
+  // Not used in the legacy directory-based architecture.
+  NOTREACHED();
+}
+
 syncer::SyncMergeResult
 AutofillProfileSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,

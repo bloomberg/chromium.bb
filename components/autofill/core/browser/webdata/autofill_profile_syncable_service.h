@@ -70,6 +70,7 @@ class AutofillProfileSyncableService
   static syncer::ModelType model_type() { return syncer::AUTOFILL_PROFILE; }
 
   // syncer::SyncableService implementation.
+  void WaitUntilReadyToSync(base::OnceClosure done) override;
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
