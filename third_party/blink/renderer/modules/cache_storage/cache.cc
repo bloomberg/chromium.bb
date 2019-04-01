@@ -572,11 +572,9 @@ class Cache::CodeCacheHandleCallbackForPut final
 
 Cache* Cache::Create(
     GlobalFetch::ScopedFetcher* fetcher,
-    CacheStorage* cache_storage,
     mojom::blink::CacheStorageCacheAssociatedPtrInfo cache_ptr_info,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return MakeGarbageCollected<Cache>(fetcher, cache_storage,
-                                     std::move(cache_ptr_info),
+  return MakeGarbageCollected<Cache>(fetcher, std::move(cache_ptr_info),
                                      std::move(task_runner));
 }
 
@@ -704,16 +702,14 @@ ScriptPromise Cache::keys(ScriptState* script_state,
 }
 
 Cache::Cache(GlobalFetch::ScopedFetcher* fetcher,
-             CacheStorage* cache_storage,
              mojom::blink::CacheStorageCacheAssociatedPtrInfo cache_ptr_info,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : scoped_fetcher_(fetcher), cache_storage_(cache_storage) {
+    : scoped_fetcher_(fetcher) {
   cache_ptr_.Bind(std::move(cache_ptr_info), std::move(task_runner));
 }
 
 void Cache::Trace(blink::Visitor* visitor) {
   visitor->Trace(scoped_fetcher_);
-  visitor->Trace(cache_storage_);
   ScriptWrappable::Trace(visitor);
 }
 

@@ -101,6 +101,8 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
     return promise;
   }
 
+  ever_used_ = true;
+
   // Make sure to bind the CacheStorage object to keep the mojo interface
   // pointer alive during the operation.  Otherwise GC might prevent the
   // callback from ever being executed.
@@ -109,8 +111,7 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver,
              GlobalFetch::ScopedFetcher* fetcher, base::TimeTicks start_time,
-             int64_t trace_id, CacheStorage* cache_storage,
-             mojom::blink::OpenResultPtr result) {
+             int64_t trace_id, mojom::blink::OpenResultPtr result) {
             UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Renderer.Open",
                                 base::TimeTicks::Now() - start_time);
             if (!resolver->GetExecutionContext() ||
@@ -138,14 +139,14 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
                   TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_IN, "status",
                   "success");
               // See https://bit.ly/2S0zRAS for task types.
-              resolver->Resolve(Cache::Create(
-                  fetcher, cache_storage, std::move(result->get_cache()),
-                  resolver->GetExecutionContext()->GetTaskRunner(
-                      blink::TaskType::kMiscPlatformAPI)));
+              resolver->Resolve(
+                  Cache::Create(fetcher, std::move(result->get_cache()),
+                                resolver->GetExecutionContext()->GetTaskRunner(
+                                    blink::TaskType::kMiscPlatformAPI)));
             }
           },
           WrapPersistent(resolver), WrapPersistent(scoped_fetcher_.Get()),
-          TimeTicks::Now(), trace_id, WrapPersistent(this)));
+          TimeTicks::Now(), trace_id));
 
   return promise;
 }
@@ -165,6 +166,8 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
     return promise;
   }
 
+  ever_used_ = true;
+
   // Make sure to bind the CacheStorage object to keep the mojo interface
   // pointer alive during the operation.  Otherwise GC might prevent the
   // callback from ever being executed.
@@ -172,8 +175,7 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
       cache_name, trace_id,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
-             int64_t trace_id, CacheStorage* _,
-             mojom::blink::CacheStorageError result) {
+             int64_t trace_id, mojom::blink::CacheStorageError result) {
             UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Renderer.Has",
                                 base::TimeTicks::Now() - start_time);
             TRACE_EVENT_WITH_FLOW1(
@@ -195,8 +197,7 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
                 break;
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now(), trace_id,
-          WrapPersistent(this)));
+          WrapPersistent(resolver), TimeTicks::Now(), trace_id));
 
   return promise;
 }
@@ -216,6 +217,8 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
     return promise;
   }
 
+  ever_used_ = true;
+
   // Make sure to bind the CacheStorage object to keep the mojo interface
   // pointer alive during the operation.  Otherwise GC might prevent the
   // callback from ever being executed.
@@ -223,8 +226,7 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
       cache_name, trace_id,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
-             int64_t trace_id, CacheStorage* _,
-             mojom::blink::CacheStorageError result) {
+             int64_t trace_id, mojom::blink::CacheStorageError result) {
             UMA_HISTOGRAM_TIMES(
                 "ServiceWorkerCache.CacheStorage.Renderer.Delete",
                 base::TimeTicks::Now() - start_time);
@@ -248,8 +250,7 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
                 break;
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now(), trace_id,
-          WrapPersistent(this)));
+          WrapPersistent(resolver), TimeTicks::Now(), trace_id));
 
   return promise;
 }
@@ -267,6 +268,8 @@ ScriptPromise CacheStorage::keys(ScriptState* script_state) {
     return promise;
   }
 
+  ever_used_ = true;
+
   // Make sure to bind the CacheStorage object to keep the mojo interface
   // pointer alive during the operation.  Otherwise GC might prevent the
   // callback from ever being executed.
@@ -274,7 +277,7 @@ ScriptPromise CacheStorage::keys(ScriptState* script_state) {
       trace_id,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
-             int64_t trace_id, CacheStorage* _, const Vector<String>& keys) {
+             int64_t trace_id, const Vector<String>& keys) {
             UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Renderer.Keys",
                                 base::TimeTicks::Now() - start_time);
             TRACE_EVENT_WITH_FLOW1(
@@ -286,8 +289,7 @@ ScriptPromise CacheStorage::keys(ScriptState* script_state) {
               return;
             resolver->Resolve(keys);
           },
-          WrapPersistent(resolver), TimeTicks::Now(), trace_id,
-          WrapPersistent(this)));
+          WrapPersistent(resolver), TimeTicks::Now(), trace_id));
 
   return promise;
 }
@@ -333,6 +335,8 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
     return promise;
   }
 
+  ever_used_ = true;
+
   // Make sure to bind the CacheStorage object to keep the mojo interface
   // pointer alive during the operation.  Otherwise GC might prevent the
   // callback from ever being executed.
@@ -341,7 +345,7 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
              const MultiCacheQueryOptions* options, int64_t trace_id,
-             CacheStorage* _, mojom::blink::MatchResultPtr result) {
+             mojom::blink::MatchResultPtr result) {
             base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
             if (!options->hasCacheName() || options->cacheName().IsEmpty()) {
               UMA_HISTOGRAM_LONG_TIMES(
@@ -382,14 +386,14 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
             }
           },
           WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(options),
-          trace_id, WrapPersistent(this)));
+          trace_id));
 
   return promise;
 }
 
 CacheStorage::CacheStorage(ExecutionContext* context,
                            GlobalFetch::ScopedFetcher* fetcher)
-    : scoped_fetcher_(fetcher) {
+    : ContextClient(context), scoped_fetcher_(fetcher), ever_used_(false) {
   // See https://bit.ly/2S0zRAS for task types.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       context->GetTaskRunner(blink::TaskType::kMiscPlatformAPI);
@@ -411,9 +415,21 @@ CacheStorage::CacheStorage(ExecutionContext* context,
 
 CacheStorage::~CacheStorage() = default;
 
+bool CacheStorage::HasPendingActivity() const {
+  // Once the CacheStorage has been used once we keep it alive until the
+  // context goes away.  This allows us to use the existence of this
+  // context as a hint to optimizations such as keeping backend disk_caches
+  // open in the browser process.
+  //
+  // Note, this also keeps the CacheStorage alive during active Cache and
+  // CacheStorage operations.
+  return ever_used_;
+}
+
 void CacheStorage::Trace(blink::Visitor* visitor) {
   visitor->Trace(scoped_fetcher_);
   ScriptWrappable::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 bool CacheStorage::IsAllowed(ScriptState* script_state) {
