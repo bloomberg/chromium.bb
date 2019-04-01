@@ -121,7 +121,9 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   }
   void WillNotFollowRedirect() override;
   void ResponseReceived(const ResourceResponse&) override;
-  void ResponseBodyReceived(ResponseBodyLoaderDrainableInterface&) override;
+  void ResponseBodyReceived(
+      ResponseBodyLoaderDrainableInterface&,
+      scoped_refptr<base::SingleThreadTaskRunner> loader_task_runner) override;
   void DidSendData(uint64_t bytes_sent,
                    uint64_t total_bytes_to_be_sent) override;
   void DidDownloadData(uint64_t) override;
