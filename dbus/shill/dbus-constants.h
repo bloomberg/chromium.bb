@@ -211,6 +211,9 @@ const char kStateAssociation[] = "association";
 const char kStateConfiguration[] = "configuration";
 const char kStateReady[] = "ready";
 const char kStatePortal[] = "portal";
+const char kStateNoConnectivity[] = "no-connectivity";
+const char kStateRedirectFound[] = "redirect-found";
+const char kStatePortalSuspected[] = "portal-suspected";
 const char kStateOffline[] = "offline";
 const char kStateOnline[] = "online";
 const char kStateDisconnect[] = "disconnect";
@@ -226,6 +229,7 @@ const char kPortalDetectionPhaseUnknown[] = "Unknown";
 const char kPortalDetectionStatusFailure[] = "Failure";
 const char kPortalDetectionStatusTimeout[] = "Timeout";
 const char kPortalDetectionStatusSuccess[] = "Success";
+const char kPortalDetectionStatusRedirect[] = "Redirect";
 
 // Flimflam property names for SIMLock status.
 const char kSIMLockStatusProperty[] = "Cellular.SIMLockStatus";
