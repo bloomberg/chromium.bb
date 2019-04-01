@@ -25,12 +25,14 @@ import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintManager;
 import android.provider.Browser;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
@@ -45,7 +47,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -72,7 +73,7 @@ import java.util.regex.Pattern;
  * It takes an optional URL as an argument, and displays the page. There is a URL bar
  * on top of the webview for manually specifying URLs to load.
  */
-public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenuItemClickListener {
+public class WebViewBrowserActivity extends AppCompatActivity {
     private static final String TAG = "WebViewShell";
 
     // Our imaginary Android permission to associate with the WebKit geo permission
@@ -232,17 +233,16 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
         super.onCreate(savedInstanceState);
         WebView.setWebContentsDebuggingEnabled(true);
         setContentView(R.layout.activity_webview_browser);
+        setSupportActionBar((Toolbar) findViewById(R.id.browser_toolbar));
         mUrlBar = (EditText) findViewById(R.id.url_field);
-        mUrlBar.setOnKeyListener(new OnKeyListener() {
-            @Override
-            public boolean onKey(View view, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
-                    loadUrlFromUrlBar(view);
-                    return true;
-                }
-                return false;
+        mUrlBar.setOnKeyListener((View view, int keyCode, KeyEvent event) -> {
+            if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
+                loadUrlFromUrlBar(view);
+                return true;
             }
+            return false;
         });
+        findViewById(R.id.btn_load_url).setOnClickListener((view) -> loadUrlFromUrlBar(view));
 
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
                 .detectAll()
@@ -292,6 +292,7 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
         // Deliberately don't catch TransactionTooLargeException here.
         mWebView.saveState(savedInstanceState);
 
@@ -331,7 +332,8 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
         } else {
             mWebViewVersion = "-";
         }
-        setTitle(getResources().getString(R.string.title_activity_browser) + " " + mWebViewVersion);
+        getSupportActionBar().setTitle(getResources().getString(R.string.title_activity_browser));
+        getSupportActionBar().setSubtitle(mWebViewVersion);
 
         webview.setWebViewClient(new WebViewClient() {
             @Override
@@ -504,17 +506,21 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
         hideKeyboard(mUrlBar);
     }
 
-    public void showPopup(View v) {
-        PopupMenu popup = new PopupMenu(this, v);
-        popup.setOnMenuItemClickListener(this);
-        popup.inflate(R.menu.main_menu);
-        popup.getMenu().findItem(R.id.menu_enable_tracing).setChecked(mEnableTracing);
-        popup.show();
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.findItem(R.id.menu_enable_tracing).setChecked(mEnableTracing);
+        return true;
     }
 
     @Override
     @SuppressLint("NewApi") // TracingController related methods require API level 28.
-    public boolean onMenuItemClick(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.menu_reset_webview:
                 if (mWebView != null) {
@@ -566,8 +572,9 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
                 hideKeyboard(mUrlBar);
                 return true;
             default:
-                return false;
+                break;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     // setGeolocationDatabasePath deprecated in api level 24,
