@@ -254,7 +254,7 @@ Bug(none) virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundar
 Bug(none) virtual/threaded/fast/scroll-behavior/first-scroll-runs-on-compositor.html [ Failure ]
 Bug(none) virtual/threaded/compositing/visibility/layer-visible-content.html [ Failure ]
 Bug(none) virtual/threaded/compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
-Bug(none) virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure ]
+Bug(none) virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Timeout ]
 
 Bug(none) fast/block/float/float-change-composited-scrolling.html [ Failure ]
 
@@ -399,6 +399,15 @@ crbug.com/909749 fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 crbug.com/909749 fast/events/touch/touch-rect-crash-on-unpromote-layer.html [ Failure ]
 crbug.com/924680 virtual/threaded/fast/events/pinch/pinch-zoom-into-center.html [ Failure ]
 crbug.com/924680 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad.html [ Failure ]
+
+# These were introduced when we started setting the scrolls_outer_viewport bit on ScrollNodes
+Bug(none) virtual/fractional_scrolling_threaded/fast/scrolling/hover-during-scroll.html [ Failure ]
+Bug(none) virtual/fractional_scrolling_threaded/fast/scrolling/no-hover-during-scroll.html [ Failure ]
+Bug(none) virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-disabled-frame-no-scroll-manual.tentative.html [ Failure ]
+Bug(none) virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Failure ]
+Bug(none) virtual/threaded/fast/scrolling/hover-during-scroll.html [ Failure ]
+Bug(none) virtual/threaded/fast/scrolling/no-hover-during-scroll.html [ Failure ]
+Bug(none) virtual/threaded/synthetic_gestures/animated-wheel-tiny-delta.html [ Failure ]
 
 # Backdrop filter
 crbug.com/923429 css3/filters/backdrop-filter-basic-blur.html [ Failure ]

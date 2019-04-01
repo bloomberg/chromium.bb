@@ -1760,6 +1760,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
       state.user_scrollable_vertical =
           scrollable_area->UserInputScrollable(kVerticalScrollbar);
 
+      state.scrolls_outer_viewport = box.IsGlobalRootScroller();
+
       auto ancestor_reasons =
           context_.current.scroll->GetMainThreadScrollingReasons();
       state.main_thread_scrolling_reasons =
