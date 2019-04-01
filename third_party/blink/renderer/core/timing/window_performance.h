@@ -85,7 +85,8 @@ class CORE_EXPORT WindowPerformance final : public Performance,
                         TimeTicks start_time,
                         TimeTicks response_end,
                         const AtomicString& identifier,
-                        const IntSize& intrinsic_size);
+                        const IntSize& intrinsic_size,
+                        const AtomicString& id);
 
   void AddLayoutJankFraction(double jank_fraction);
 
