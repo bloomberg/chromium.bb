@@ -34,7 +34,6 @@
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
@@ -332,18 +331,11 @@ TEST_F(ServiceWorkerVersionTest, DispatchEventToStoppedWorker) {
   EXPECT_TRUE(version_->HasNoWork());
   SimulateDispatchEvent(ServiceWorkerMetrics::EventType::INSTALL);
 
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    // The worker may still be handling events dispatched directly from
-    // controllees. We cannot say the version doesn't handle any tasks until the
-    // worker reports "No Work" (= ServiceWorkerVersion::OnRequestTermination()
-    // is called).
-    EXPECT_FALSE(version_->HasNoWork());
-  } else {
-    // In non-S13nServiceWorker case, ServiceWorkerVersion manages all of events
-    // dispatched to the service worker. Once all events have finished in the
-    // browser, the version should have no work.
-    EXPECT_TRUE(version_->HasNoWork());
-  }
+  // The worker may still be handling events dispatched directly from
+  // controllees. We cannot say the version doesn't handle any tasks until the
+  // worker reports "No Work" (= ServiceWorkerVersion::OnRequestTermination()
+  // is called).
+  EXPECT_FALSE(version_->HasNoWork());
 
   // The worker should be now started.
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
@@ -354,18 +346,11 @@ TEST_F(ServiceWorkerVersionTest, DispatchEventToStoppedWorker) {
   SimulateDispatchEvent(ServiceWorkerMetrics::EventType::INSTALL);
   EXPECT_TRUE(has_stopped);
 
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    // The worker may still be handling events dispatched directly from
-    // controllees. We cannot say the version doesn't handle any tasks until the
-    // worker reports "No Work" (= ServiceWorkerVersion::OnRequestTermination()
-    // is called).
-    EXPECT_FALSE(version_->HasNoWork());
-  } else {
-    // In non-S13nServiceWorker case, ServiceWorkerVersion manages all of events
-    // dispatched to the service worker. Once all events have finished in the
-    // browser, the version should have no work.
-    EXPECT_TRUE(version_->HasNoWork());
-  }
+  // The worker may still be handling events dispatched directly from
+  // controllees. We cannot say the version doesn't handle any tasks until the
+  // worker reports "No Work" (= ServiceWorkerVersion::OnRequestTermination()
+  // is called).
+  EXPECT_FALSE(version_->HasNoWork());
 
   // The worker should be now started again.
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());

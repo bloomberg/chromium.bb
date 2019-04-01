@@ -72,8 +72,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   // Init and Shutdown are for use on the UI thread when the profile,
   // storagepartition is being setup and torn down.
-  // |blob_context| and |url_loader_factory_getter| are used only
-  // when IsServicificationEnabled is true.
   void Init(const base::FilePath& user_data_directory,
             storage::QuotaManagerProxy* quota_manager_proxy,
             storage::SpecialStoragePolicy* special_storage_policy,

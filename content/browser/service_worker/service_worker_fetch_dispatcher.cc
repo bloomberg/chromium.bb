@@ -49,7 +49,6 @@
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/throttling/throttling_controller.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -475,10 +474,7 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
       fetch_callback_(std::move(fetch_callback)),
       did_complete_(false),
       weak_factory_(this) {
-#if DCHECK_IS_ON()
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    DCHECK(!request_->blob);
-#endif  // DCHECK_IS_ON()
+  DCHECK(!request_->blob);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
       "ServiceWorker", "ServiceWorkerFetchDispatcher::DispatchFetchEvent", this,
       "event_type", ServiceWorkerMetrics::EventTypeToString(GetEventType()));

@@ -77,7 +77,6 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -1734,17 +1733,13 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
   // If the NavigationThrottles allowed the navigation to continue, have the
   // processing of the response resume in the network stack.
   if (result.action() == NavigationThrottle::PROCEED) {
-    // NetworkService doesn't use ResourceDispatcherHost.
-    bool served_via_resource_dispatcher_host =
-        !base::FeatureList::IsEnabled(network::features::kNetworkService);
-    // When S13nServiceWorker is on, it doesn't use ResourceDispatcherHost when
+    // ResourceDispatcherHost is not used when the network service is on or when
     // a service worker serves the response.
-    served_via_resource_dispatcher_host =
-        served_via_resource_dispatcher_host &&
-        !(blink::ServiceWorkerUtils::IsServicificationEnabled() &&
-          response_->head.was_fetched_via_service_worker);
+    bool served_via_resource_dispatcher_host =
+        !base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+        !response_->head.was_fetched_via_service_worker;
 
-    // NetworkService or S13nServiceWorker: If this is a download, intercept the
+    // If this is a download without ResourceDispatcherHost, intercept the
     // navigation response and pass it to DownloadManager, and cancel the
     // navigation.
     if (is_download_ && !served_via_resource_dispatcher_host) {
