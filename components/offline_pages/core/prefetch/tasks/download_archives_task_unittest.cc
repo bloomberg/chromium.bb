@@ -307,15 +307,15 @@ TEST_F(DownloadArchivesTaskTest,
   // Enable limitless prefetching.
   prefetch_prefs::SetLimitlessPrefetchingEnabled(prefs(), true);
 
-  // Check the concurrent downloads limit is greater for limitless.
-  ASSERT_GT(DownloadArchivesTask::kMaxConcurrentDownloadsForLimitless,
-            DownloadArchivesTask::kMaxConcurrentDownloads);
+  // Configure max concurrent downloads.
+  const size_t limitless_max_concurrent_downloads =
+      DownloadArchivesTask::kMaxConcurrentDownloads + 1;
+  prefetch_downloader()->SetMaxConcurrentDownloads(
+      limitless_max_concurrent_downloads);
 
   // Create more archives than we allow to download in parallel with limitless
   // and put them in the fresher |item_ids| in front.
-  const size_t max_concurrent_downloads = base::checked_cast<size_t>(
-      DownloadArchivesTask::kMaxConcurrentDownloadsForLimitless);
-  const size_t total_items = max_concurrent_downloads + 2;
+  const size_t total_items = limitless_max_concurrent_downloads + 1;
   std::vector<int64_t> item_ids;
   for (size_t i = 0; i < total_items; ++i)
     item_ids.insert(item_ids.begin(), InsertItemToDownload(kLargeArchiveSize));
@@ -332,11 +332,11 @@ TEST_F(DownloadArchivesTaskTest,
 
   const TestPrefetchDownloader::RequestMap& requested_downloads =
       prefetch_downloader()->requested_downloads();
-  EXPECT_EQ(max_concurrent_downloads, requested_downloads.size());
+  EXPECT_EQ(limitless_max_concurrent_downloads, requested_downloads.size());
 
-  // The freshest |kMaxConcurrentDownloadsForLimitless| items should be started
+  // The freshest |limitless_max_concurrent_downloads| items should be started
   // as with limitless enabled there's no download size restrictions.
-  for (size_t i = 0; i < max_concurrent_downloads; ++i) {
+  for (size_t i = 0; i < limitless_max_concurrent_downloads; ++i) {
     const PrefetchItem* download_item =
         FindPrefetchItemByOfflineId(items_after_run, item_ids[i]);
     ASSERT_TRUE(download_item);
@@ -348,7 +348,7 @@ TEST_F(DownloadArchivesTaskTest,
   }
 
   // Remaining items shouldn't have been started.
-  for (size_t i = max_concurrent_downloads; i < total_items; ++i) {
+  for (size_t i = limitless_max_concurrent_downloads; i < total_items; ++i) {
     const PrefetchItem* download_item_before =
         FindPrefetchItemByOfflineId(items_before_run, item_ids[i]);
     const PrefetchItem* download_item_after =
@@ -361,7 +361,7 @@ TEST_F(DownloadArchivesTaskTest,
 
   histogram_tester.ExpectUniqueSample(
       "OfflinePages.Prefetching.DownloadExpectedFileSize",
-      kLargeArchiveSize / 1024, max_concurrent_downloads);
+      kLargeArchiveSize / 1024, limitless_max_concurrent_downloads);
 }
 
 TEST_F(DownloadArchivesTaskTest, SingleArchiveSecondAttempt) {

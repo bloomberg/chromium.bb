@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/download/public/background_service/download_service.h"
+#include "components/download/public/background_service/service_config.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_event_logger.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
@@ -215,6 +216,10 @@ void PrefetchDownloaderImpl::OnDownloadFailed(const std::string& download_id) {
   prefetch_service_->GetLogger()->RecordActivity(
       "Downloader: Download failed, download_id=" + download_id);
   NotifyDispatcher(prefetch_service_, result);
+}
+
+int PrefetchDownloaderImpl::GetMaxConcurrentDownloads() {
+  return download_service_->GetConfig().GetMaxConcurrentDownloads();
 }
 
 void PrefetchDownloaderImpl::OnStartDownload(

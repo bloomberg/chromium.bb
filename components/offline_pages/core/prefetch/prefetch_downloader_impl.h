@@ -52,6 +52,7 @@ class PrefetchDownloaderImpl : public PrefetchDownloader {
                            const base::FilePath& file_path,
                            int64_t file_size) override;
   void OnDownloadFailed(const std::string& download_id) override;
+  int GetMaxConcurrentDownloads() override;
 
  private:
   enum class DownloadServiceStatus {
