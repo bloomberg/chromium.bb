@@ -1138,15 +1138,21 @@ TEST_P(WebStateObserverTest, WebStateUnsupportedSchemeNavigation) {
 
   // Perform a navigation to url with unsupported scheme.
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
-  EXPECT_CALL(observer_, DidStopLoading(web_state()));
   if (!web::features::StorePendingItemInContext()) {
-    WebStatePolicyDecider::RequestInfo expected_request_info(
-        ui::PageTransition::PAGE_TRANSITION_TYPED,
-        /*target_main_frame=*/true, /*has_user_gesture=*/false);
-    EXPECT_CALL(*decider_,
-                ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
-        .WillOnce(Return(true));
+    EXPECT_CALL(observer_, DidStopLoading(web_state()));
   }
+  // ShouldAllowRequest is called to give embedder a chance to handle
+  // this unsupported URL scheme.
+  WebStatePolicyDecider::RequestInfo expected_request_info(
+      ui::PageTransition::PAGE_TRANSITION_TYPED,
+      /*target_main_frame=*/true, /*has_user_gesture=*/false);
+  EXPECT_CALL(*decider_,
+              ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
+      .WillOnce(Return(true));
+  if (web::features::StorePendingItemInContext()) {
+    EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  }
+
   test::LoadUrl(web_state(), url);
   ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
 

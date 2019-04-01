@@ -4175,23 +4175,22 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                                                      transition:transition];
   }
 
+  BOOL webControllerCanShow =
+      web::UrlHasWebScheme(requestURL) ||
+      web::GetWebClient()->IsAppSpecificURL(requestURL) ||
+      requestURL.SchemeIs(url::kFileScheme) ||
+      requestURL.SchemeIs(url::kAboutScheme) ||
+      requestURL.SchemeIs(url::kBlobScheme);
+
   if (allowLoad) {
     // If the URL doesn't look like one that can be shown as a web page, it may
     // handled by the embedder. In that case, update the web controller to
     // correctly reflect the current state.
-    BOOL webControllerCanShow =
-        web::UrlHasWebScheme(requestURL) ||
-        web::GetWebClient()->IsAppSpecificURL(requestURL) ||
-        requestURL.SchemeIs(url::kFileScheme) ||
-        requestURL.SchemeIs(url::kAboutScheme) ||
-        requestURL.SchemeIs(url::kBlobScheme);
     if (!webControllerCanShow) {
       if (!web::features::StorePendingItemInContext()) {
         if ([self isMainFrameNavigationAction:action]) {
           [self stopLoading];
         }
-      } else {
-        allowLoad = NO;
       }
 
       // Purge web view if last committed URL is different from the document
@@ -4231,6 +4230,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       decisionHandler(WKNavigationActionPolicyCancel);
       return;
     }
+  }
+
+  if (!webControllerCanShow && web::features::StorePendingItemInContext()) {
+    allowLoad = NO;
   }
 
   if (allowLoad) {
