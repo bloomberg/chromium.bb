@@ -168,7 +168,7 @@ public class AutofillAssistantUiTest {
                         -> assistantCoordinator.getModel().getDetailsModel().set(
                                 AssistantDetailsModel.DETAILS,
                                 new AssistantDetails(movieTitle, /* imageUrl = */ "",
-                                        /* showAttribution = */ false,
+                                        /* allowImageClickThrough = */ false,
                                         /* showImage = */ false,
                                         /* totalPriceLabel = */ "",
                                         /* totalPrice = */ "", Calendar.getInstance().getTime(),

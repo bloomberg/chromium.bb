@@ -622,7 +622,7 @@ void UiControllerAndroid::OnDetailsChanged(const Details* details) {
   auto jdetails = Java_AssistantDetails_create(
       env, base::android::ConvertUTF8ToJavaString(env, proto.title()),
       base::android::ConvertUTF8ToJavaString(env, proto.image_url()),
-      proto.show_attribution(), proto.show_image_placeholder(),
+      proto.allow_image_clickthrough(), proto.show_image_placeholder(),
       base::android::ConvertUTF8ToJavaString(env, proto.total_price_label()),
       base::android::ConvertUTF8ToJavaString(env, proto.total_price()),
       base::android::ConvertUTF8ToJavaString(env, details->GetDatetime()),

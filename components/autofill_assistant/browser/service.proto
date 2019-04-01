@@ -742,7 +742,7 @@ message DetailsProto {
 
   // Whether to show the original URL where image is extracted from. Only useful
   // when 'image_url' is set.
-  optional bool show_attribution = 12;
+  optional bool allow_image_clickthrough = 12;
 
   // Optional label to provide additional price information.
   optional string total_price_label = 9;

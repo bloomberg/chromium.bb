@@ -160,7 +160,7 @@ class AssistantDetailsViewBinder
                     CachedImageFetcher.ASSISTANT_DETAILS_UMA_CLIENT_NAME, image -> {
                         if (image != null) {
                             viewHolder.mImageView.setImageDrawable(getRoundedImage(image));
-                            if (details.getShowAttribution()) {
+                            if (details.getAllowImageClickthrough()) {
                                 viewHolder.mImageView.setOnClickListener(unusedView
                                         -> onImageClicked(mContext, details.getImageUrl()));
                             } else {
