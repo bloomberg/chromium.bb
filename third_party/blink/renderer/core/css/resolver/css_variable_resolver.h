@@ -173,7 +173,6 @@ class CORE_EXPORT CSSVariableResolver {
   scoped_refptr<CSSVariableData> ResolveCustomProperty(AtomicString name,
                                                        const CSSVariableData&,
                                                        const Options&,
-                                                       bool resolve_urls,
                                                        bool& cycle_detected);
   // Like ResolveCustomProperty, but returns the incoming CSSVariableData if
   // no resolution is needed.
@@ -182,9 +181,6 @@ class CORE_EXPORT CSSVariableResolver {
       CSSVariableData*,
       const Options&,
       bool& cycle_detected);
-
-  bool ShouldResolveRelativeUrls(const AtomicString& name,
-                                 const CSSVariableData&);
 
   bool IsVariableDisallowed(const CSSVariableData&,
                             const Options&,

@@ -1649,14 +1649,17 @@ static const CSSValue& ComputeRegisteredPropertyValue(
     const Document& document,
     const StyleResolverState* state,
     const CSSToLengthConversionData& css_to_length_conversion_data,
-    const CSSValue& value) {
+    const CSSValue& value,
+    const String& base_url,
+    const WTF::TextEncoding& charset) {
   // TODO(timloh): Images values can also contain lengths.
   if (const auto* function_value = DynamicTo<CSSFunctionValue>(value)) {
     CSSFunctionValue* new_function =
         MakeGarbageCollected<CSSFunctionValue>(function_value->FunctionType());
     for (const CSSValue* inner_value : To<CSSValueList>(value)) {
       new_function->Append(ComputeRegisteredPropertyValue(
-          document, state, css_to_length_conversion_data, *inner_value));
+          document, state, css_to_length_conversion_data, *inner_value,
+          base_url, charset));
     }
     return *new_function;
   }
@@ -1665,7 +1668,8 @@ static const CSSValue& ComputeRegisteredPropertyValue(
     CSSValueList* new_list = CSSValueList::CreateWithSeparatorFrom(*old_list);
     for (const CSSValue* inner_value : *old_list) {
       new_list->Append(ComputeRegisteredPropertyValue(
-          document, state, css_to_length_conversion_data, *inner_value));
+          document, state, css_to_length_conversion_data, *inner_value,
+          base_url, charset));
     }
     return *new_list;
   }
@@ -1729,21 +1733,28 @@ static const CSSValue& ComputeRegisteredPropertyValue(
     }
   }
 
+  if (const auto* uri_value = DynamicTo<CSSURIValue>(value))
+    return *uri_value->ValueWithURLMadeAbsolute(KURL(base_url), charset);
+
   return value;
 }
 
 const CSSValue& StyleBuilderConverter::ConvertRegisteredPropertyInitialValue(
     const Document& document,
     const CSSValue& value) {
-  return ComputeRegisteredPropertyValue(document, nullptr /* state */,
-                                        CSSToLengthConversionData(), value);
+  return ComputeRegisteredPropertyValue(
+      document, nullptr /* state */, CSSToLengthConversionData(), value,
+      document.BaseURL(), document.Encoding());
 }
 
 const CSSValue& StyleBuilderConverter::ConvertRegisteredPropertyValue(
     const StyleResolverState& state,
-    const CSSValue& value) {
-  return ComputeRegisteredPropertyValue(
-      state.GetDocument(), &state, state.CssToLengthConversionData(), value);
+    const CSSValue& value,
+    const String& base_url,
+    const WTF::TextEncoding& charset) {
+  return ComputeRegisteredPropertyValue(state.GetDocument(), &state,
+                                        state.CssToLengthConversionData(),
+                                        value, base_url, charset);
 }
 
 // Registered properties need to substitute as absolute values. This means
@@ -1773,9 +1784,9 @@ StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
   const bool has_root_font_units = false;
   const bool absolutized = true;
 
-  return CSSVariableData::CreateResolved(tokens, std::move(backing_strings),
-                                         is_animation_tainted, has_font_units,
-                                         has_root_font_units, absolutized);
+  return CSSVariableData::CreateResolved(
+      tokens, std::move(backing_strings), is_animation_tainted, has_font_units,
+      has_root_font_units, absolutized, g_null_atom, WTF::TextEncoding());
 }
 
 const CSSToLengthConversionData&

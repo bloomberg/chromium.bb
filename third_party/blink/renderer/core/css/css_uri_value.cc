@@ -69,6 +69,15 @@ bool CSSURIValue::Equals(const CSSURIValue& other) const {
   return absolute_url_ == other.absolute_url_;
 }
 
+CSSURIValue* CSSURIValue::ValueWithURLMadeAbsolute(
+    const KURL& base_url,
+    const WTF::TextEncoding& charset) const {
+  if (!charset.IsValid())
+    return Create(AtomicString(KURL(base_url, relative_url_).GetString()));
+  return Create(
+      AtomicString(KURL(base_url, relative_url_, charset).GetString()));
+}
+
 void CSSURIValue::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(resource_);
   CSSValue::TraceAfterDispatch(visitor);
