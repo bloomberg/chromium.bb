@@ -27,6 +27,7 @@
 #include "android_webview/browser/aw_speech_recognition_manager_delegate.h"
 #include "android_webview/browser/aw_web_contents_view_delegate.h"
 #include "android_webview/browser/cookie_manager.h"
+#include "android_webview/browser/net/aw_proxy_config_monitor.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/network_service/aw_cookie_manager_wrapper.h"
 #include "android_webview/browser/network_service/aw_proxying_url_loader_factory.h"
@@ -359,6 +360,11 @@ AwContentBrowserClient::GetNetworkContextParams() {
   g_created_network_context_params = true;
 #endif
   context_params->check_clear_text_permitted = g_check_cleartext_permitted;
+
+  // Add proxy settings
+  AwProxyConfigMonitor::GetInstance()->AddProxyToNetworkContextParams(
+      context_params);
+
   return context_params;
 }
 

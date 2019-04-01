@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "android_webview/browser/aw_ssl_host_state_delegate.h"
+#include "android_webview/browser/net/aw_proxy_config_monitor.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
