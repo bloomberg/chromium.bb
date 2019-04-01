@@ -20,10 +20,10 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.File;
@@ -170,21 +170,21 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
         // Initialize Paints to use.
         mEmptyThumbnailPaint = new Paint();
         mEmptyThumbnailPaint.setStyle(Paint.Style.FILL);
-        mEmptyThumbnailPaint.setColor(
-                ApiCompatibilityUtils.getColor(context.getResources(), R.color.modern_grey_100));
+        mEmptyThumbnailPaint.setColor(ApiCompatibilityUtils.getColor(
+                context.getResources(), org.chromium.chrome.R.color.modern_grey_100));
         mEmptyThumbnailPaint.setAntiAlias(true);
 
         mThumbnailFramePaint = new Paint();
         mThumbnailFramePaint.setStyle(Paint.Style.STROKE);
         mThumbnailFramePaint.setStrokeWidth(
                 context.getResources().getDimension(R.dimen.tab_list_mini_card_frame_size));
-        mThumbnailFramePaint.setColor(
-                ApiCompatibilityUtils.getColor(context.getResources(), R.color.modern_grey_300));
+        mThumbnailFramePaint.setColor(ApiCompatibilityUtils.getColor(
+                context.getResources(), org.chromium.chrome.R.color.modern_grey_300));
         mThumbnailFramePaint.setAntiAlias(true);
 
         mTextPaint = new Paint();
-        mTextPaint.setTextSize(
-                context.getResources().getDimension(R.dimen.compositor_tab_title_text_size));
+        mTextPaint.setTextSize(context.getResources().getDimension(
+                org.chromium.chrome.R.dimen.compositor_tab_title_text_size));
         mTextPaint.setFakeBoldText(true);
         mTextPaint.setAntiAlias(true);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
