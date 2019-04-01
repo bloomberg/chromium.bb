@@ -24,9 +24,15 @@ class IdleActionWarningObserver : public PowerManagerClient::Observer {
   void IdleActionImminent(
       const base::TimeDelta& time_until_idle_action) override;
   void IdleActionDeferred() override;
+  void PowerChanged(const power_manager::PowerSupplyProperties& proto) override;
 
  private:
+  void HideDialogIfPresent();
+
   IdleActionWarningDialogView* warning_dialog_;  // Not owned.
+
+  // Used to derive the correct idle action (IdleActionAC/IdleActionBattery).
+  bool on_battery_power_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(IdleActionWarningObserver);
 };
