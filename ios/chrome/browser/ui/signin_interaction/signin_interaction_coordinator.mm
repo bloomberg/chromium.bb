@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/settings/google_services/advanced_signin_settings_coordinator.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_presenting.h"
 
@@ -17,7 +18,9 @@
 #error "This file requires ARC support."
 #endif
 
-@interface SigninInteractionCoordinator ()<SigninInteractionPresenting>
+@interface SigninInteractionCoordinator () <
+    AdvancedSigninSettingsCoordinatorDelegate,
+    SigninInteractionPresenting>
 
 // Coordinator to present alerts.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
@@ -39,6 +42,10 @@
 
 // Sign-in completion.
 @property(nonatomic, copy) signin_ui::CompletionCallback signinCompletion;
+
+// Advanced sign-in settings coordinator.
+@property(nonatomic, strong)
+    AdvancedSigninSettingsCoordinator* advancedSigninSettingsCoordinator;
 
 @end
 
@@ -111,14 +118,26 @@
 
 - (void)cancel {
   [self.controller cancel];
+  [self.advancedSigninSettingsCoordinator cancelWithDismiss:NO];
 }
 
 - (void)cancelAndDismiss {
   [self.controller cancelAndDismiss];
+  [self.advancedSigninSettingsCoordinator cancelWithDismiss:YES];
 }
 
 - (BOOL)isActive {
   return self.controller != nil;
+}
+
+#pragma mark - AdvancedSigninSettingsCoordinatorDelegates
+
+- (void)advancedSigninSettingsCoordinatorDidClose:
+            (AdvancedSigninSettingsCoordinator*)coordinator
+                                          success:(BOOL)success {
+  DCHECK_EQ(self.advancedSigninSettingsCoordinator, coordinator);
+  self.advancedSigninSettingsCoordinator = nil;
+  [self signinDoneWithSuccess:success];
 }
 
 #pragma mark - SigninInteractionPresenting
@@ -217,22 +236,38 @@
   self.alertCoordinator = nil;
   if (signinResult == SigninResultSignedInnAndOpennSettings) {
     [self showAccountsSettings];
-  }
-  if (self.signinCompletion) {
-    self.signinCompletion(signinResult != SigninResultCanceled);
-    self.signinCompletion = nil;
+  } else {
+    [self signinDoneWithSuccess:signinResult != SigninResultCanceled];
   }
 }
 
 // Shows the accounts settings UI.
 - (void)showAccountsSettings {
   if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    [self.dispatcher showGoogleServicesSettingsFromViewController:
-                         self.presentingViewController];
+    DCHECK(!self.advancedSigninSettingsCoordinator);
+    self.advancedSigninSettingsCoordinator =
+        [[AdvancedSigninSettingsCoordinator alloc]
+            initWithBaseViewController:self.presentingViewController
+                          browserState:self.browserState];
+    self.advancedSigninSettingsCoordinator.delegate = self;
+    [self.advancedSigninSettingsCoordinator start];
   } else {
+    [self signinDoneWithSuccess:YES];
     [self.dispatcher
         showAccountsSettingsFromViewController:self.presentingViewController];
   }
+}
+
+// Called when the sign-in is done.
+- (void)signinDoneWithSuccess:(BOOL)success {
+  DCHECK(!self.controller);
+  DCHECK(!self.topViewController);
+  DCHECK(!self.alertCoordinator);
+  if (self.signinCompletion) {
+    self.signinCompletion(success);
+    self.signinCompletion = nil;
+  }
+  self.advancedSigninSettingsCoordinator = nil;
 }
 
 @end

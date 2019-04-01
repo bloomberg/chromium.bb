@@ -7,6 +7,10 @@ source_set("google_services") {
   sources = [
     "accounts_table_view_controller.h",
     "accounts_table_view_controller.mm",
+    "advanced_signin_settings_coordinator.h",
+    "advanced_signin_settings_coordinator.mm",
+    "advanced_signin_settings_navigation_controller.h",
+    "advanced_signin_settings_navigation_controller.mm",
     "google_services_navigation_coordinator.h",
     "google_services_navigation_coordinator.mm",
     "google_services_settings_command_handler.h",
@@ -69,6 +73,8 @@ source_set("google_services") {
     "//services/identity/public/objc",
     "//ui/base",
   ]
+  allow_circular_includes_from =
+      [ "//ios/chrome/browser/ui/signin_interaction" ]
 }
 
 source_set("eg_tests") {
