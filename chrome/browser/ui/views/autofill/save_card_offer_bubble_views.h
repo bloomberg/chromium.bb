@@ -7,7 +7,7 @@
 
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 
-#include "chrome/browser/ui/autofill/autofill_dialog_models.h"
+#include "chrome/browser/ui/autofill/payments/autofill_dialog_models.h"
 #include "chrome/browser/ui/views/autofill/view_util.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/styled_label_listener.h"
