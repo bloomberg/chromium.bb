@@ -836,6 +836,7 @@ void RenderFrameProxy::Navigate(
     bool is_opener_navigation,
     bool has_download_sandbox_flag,
     bool blocking_downloads_in_sandbox_without_user_activation_enabled,
+    bool initiator_frame_is_ad,
     mojo::ScopedMessagePipeHandle blob_url_token) {
   // The request must always have a valid initiator origin.
   DCHECK(!request.RequestorOrigin().IsNull());
@@ -857,11 +858,14 @@ void RenderFrameProxy::Navigate(
   params.triggering_event_info = blink::WebTriggeringEventInfo::kUnknown;
   params.blob_url_token = blob_url_token.release();
 
-  RenderFrameImpl::MaybeSetOpenerAndSandboxDownloadPolicy(
+  // Note: For the AdFrame download policy here it only covers the case where
+  // the navigation initiator frame is ad.
+  // TODO(yaoxia): Also cover the case where the navigating frame is ad.
+  RenderFrameImpl::MaybeSetDownloadFramePolicy(
       is_opener_navigation, request, web_frame_->GetSecurityOrigin(),
       has_download_sandbox_flag,
       blocking_downloads_in_sandbox_without_user_activation_enabled,
-      &params.download_policy);
+      initiator_frame_is_ad, &params.download_policy);
 
   Send(new FrameHostMsg_OpenURL(routing_id_, params));
 }

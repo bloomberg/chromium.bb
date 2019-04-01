@@ -97,11 +97,19 @@ enum class NavigationDownloadType {
   // The navigation was initiated on a x-origin opener.
   kOpenerCrossOrigin = 5,
 
-  // The navigation occurred in an iframe with |kSandboxDownloads| flag set
-  // and without user activation.
+  // The navigation was initiated from or occurred in an iframe with
+  // |kSandboxDownloads| flag set and without user activation.
   kSandboxNoGesture = 7,
 
-  kMaxValue = kSandboxNoGesture
+  // The navigation was initiated from or occurred in an ad frame without user
+  // activation.
+  kAdFrameNoGesture = 8,
+
+  // The navigation was initiated from or occurred in an ad frame with user
+  // activation.
+  kAdFrameGesture = 9,
+
+  kMaxValue = kAdFrameGesture
 };
 
 // Stores the navigation types that may be of interest to the download-related

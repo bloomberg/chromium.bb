@@ -469,6 +469,15 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // See navigation_history_offset_ for more details.
   int EstimateHistoryOffset();
 
+  // Record download related UseCounters when navigation is a download before
+  // filtered by download_policy.
+  void RecordDownloadUseCountersPrePolicyCheck(
+      NavigationDownloadPolicy download_policy);
+
+  // Record download related UseCounters when navigation is a download after
+  // filtered by download_policy.
+  void RecordDownloadUseCountersPostPolicyCheck();
+
   FrameTreeNode* frame_tree_node_;
 
   RenderFrameHostImpl* render_frame_host_ = nullptr;

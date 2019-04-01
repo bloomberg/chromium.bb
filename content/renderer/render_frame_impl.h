@@ -287,12 +287,13 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Possibly set the kOpenerCrossOrigin and kSandboxNoGesture policy in
   // |download_policy|.
-  static void MaybeSetOpenerAndSandboxDownloadPolicy(
+  static void MaybeSetDownloadFramePolicy(
       bool is_opener_navigation,
       const blink::WebURLRequest& request,
       const blink::WebSecurityOrigin& current_origin,
       bool has_download_sandbox_flag,
       bool blocking_downloads_in_sandbox_without_user_activation_enabled,
+      bool from_ad,
       NavigationDownloadPolicy* download_policy);
 
   // Overwrites the given URL to use an HTML5 embed if possible.

@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
@@ -389,18 +390,24 @@ void HTMLAnchorElement::HandleClick(Event& event) {
       NavigationPolicyFromEvent(&event) != kNavigationPolicyDownload &&
       GetDocument().GetSecurityOrigin()->CanReadContent(completed_url)) {
     UseCounter::Count(GetDocument(), WebFeature::kDownloadPrePolicyCheck);
+    bool has_gesture = LocalFrame::HasTransientUserActivation(frame);
     if (frame->IsAdSubframe()) {
       // Note: Here it covers download originated from clicking on <a download>
       // link that results in direct download. These two features can also be
       // logged from browser for download due to navigations to
       // non-web-renderable content.
       UseCounter::Count(GetDocument(),
-                        LocalFrame::HasTransientUserActivation(frame)
+                        has_gesture
                             ? WebFeature::kDownloadInAdFrameWithUserGesture
                             : WebFeature::kDownloadInAdFrameWithoutUserGesture);
+      if (!has_gesture &&
+          base::FeatureList::IsEnabled(
+              blink::features::
+                  kBlockingDownloadsInAdFrameWithoutUserActivation))
+        return;
     }
     if (GetDocument().IsSandboxed(kSandboxDownloads)) {
-      if (!LocalFrame::HasTransientUserActivation(frame)) {
+      if (!has_gesture) {
         UseCounter::Count(GetDocument(),
                           WebFeature::kDownloadInSandboxWithoutUserGesture);
         if (RuntimeEnabledFeatures::

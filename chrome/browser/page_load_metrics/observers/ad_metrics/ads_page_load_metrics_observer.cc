@@ -236,23 +236,6 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
   // granting security permissions.
   content::RenderFrameHost* ad_host = FindFrameMaybeUnsafe(navigation_handle);
 
-  if (navigation_handle->IsDownload()) {
-    bool has_gesture = navigation_handle->HasUserGesture();
-
-    std::vector<blink::mojom::WebFeature> web_features;
-    if (is_adframe) {
-      // Note: Here it covers download due to navigations to non-web-renderable
-      // content. These two features can also be logged from blink for download
-      // originated from clicking on <a download> link that results in direct
-      // download.
-      blink::mojom::WebFeature web_feature =
-          has_gesture
-              ? blink::mojom::WebFeature::kDownloadInAdFrameWithUserGesture
-              : blink::mojom::WebFeature::kDownloadInAdFrameWithoutUserGesture;
-      RecordSingleFeatureUsage(ad_host, web_feature);
-    }
-  }
-
   RecordAdFrameData(frame_tree_node_id, is_adframe, ad_host,
                     /*frame_navigated=*/true);
   ProcessOngoingNavigationResource(ad_host);
