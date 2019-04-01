@@ -208,6 +208,11 @@ Compositor::Compositor(
     settings.enable_latency_recovery = false;
   }
 
+  if (base::FeatureList::IsEnabled(
+          features::kCompositorThreadedScrollbarScrolling)) {
+    settings.compositor_threaded_scrollbar_scrolling = true;
+  }
+
   animation_host_ = cc::AnimationHost::CreateMainInstance();
 
   cc::LayerTreeHost::InitParams params;

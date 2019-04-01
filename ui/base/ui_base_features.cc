@@ -72,6 +72,11 @@ const base::Feature kUiCompositorScrollWithLayers = {
 #endif
 };
 
+// Enables compositor threaded scrollbar scrolling by mapping pointer events to
+// gesture events.
+const base::Feature kCompositorThreadedScrollbarScrolling = {
+    "CompositorThreadedScrollbarScrolling", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_WIN)
 // Enables InputPane API for controlling on screen keyboard.
 const base::Feature kInputPaneOnScreenKeyboard = {

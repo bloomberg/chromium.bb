@@ -2782,6 +2782,10 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
   const base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
   cc::LayerTreeSettings settings;
 
+  settings.compositor_threaded_scrollbar_scrolling =
+      base::FeatureList::IsEnabled(
+          features::kCompositorThreadedScrollbarScrolling);
+
   settings.resource_settings.use_r16_texture =
       base::FeatureList::IsEnabled(media::kUseR16Texture);
 

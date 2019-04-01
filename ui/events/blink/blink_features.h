@@ -9,10 +9,6 @@
 
 namespace features {
 
-// Enables compositor threaded scrollbar scrolling by mapping pointer events to
-// gesture events.
-extern const base::Feature kCompositorThreadedScrollbarScrolling;
-
 // Enables resampling GestureScroll events on compositor thread.
 extern const base::Feature kResamplingScrollEvents;
 
