@@ -305,7 +305,7 @@ void ProducerClient::NotifyFlushComplete(perfetto::FlushRequestID id) {
 
   DCHECK_NE(pending_replies_for_latest_flush_.second, 0u);
   if (--pending_replies_for_latest_flush_.second == 0) {
-    producer_host_->NotifyFlushComplete(id);
+    shared_memory_arbiter_->NotifyFlushComplete(id);
   }
 }
 

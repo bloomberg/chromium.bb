@@ -114,10 +114,6 @@ void ProducerHost::RegisterDataSource(
   producer_endpoint_->RegisterDataSource(registration_info);
 }
 
-void ProducerHost::NotifyFlushComplete(uint64_t flush_request_id) {
-  producer_endpoint_->NotifyFlushComplete(flush_request_id);
-}
-
 void ProducerHost::RegisterTraceWriter(uint32_t writer_id,
                                        uint32_t target_buffer) {
   producer_endpoint_->RegisterTraceWriter(writer_id, target_buffer);
