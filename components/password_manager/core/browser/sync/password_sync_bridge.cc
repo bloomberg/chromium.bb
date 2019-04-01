@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
@@ -274,6 +275,7 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
       password_store_sync_->ReadAllLogins(&key_to_local_form_map);
 
   if (read_result == FormRetrievalResult::kDbError) {
+    metrics_util::LogPasswordSyncState(metrics_util::NOT_SYNCING_FAILED_READ);
     return syncer::ModelError(FROM_HERE,
                               "Failed to load entries from password store.");
   }
@@ -291,6 +293,7 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
     // Clean up done successfully, try to read again.
     read_result = password_store_sync_->ReadAllLogins(&key_to_local_form_map);
     if (read_result != FormRetrievalResult::kSuccess) {
+      metrics_util::LogPasswordSyncState(metrics_util::NOT_SYNCING_FAILED_READ);
       return syncer::ModelError(
           FROM_HERE,
           "Failed to load entries from password store after cleanup.");
@@ -454,6 +457,7 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
     password_store_sync_->NotifyLoginsChanged(password_store_changes);
   }
 
+  metrics_util::LogPasswordSyncState(metrics_util::SYNCING_OK);
   return error;
 }
 
@@ -639,10 +643,14 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::CleanupPasswordStore() {
     case DatabaseCleanupResult::kSuccess:
       break;
     case DatabaseCleanupResult::kEncryptionUnavailable:
+      metrics_util::LogPasswordSyncState(
+          metrics_util::NOT_SYNCING_FAILED_DECRYPTION);
       return syncer::ModelError(
           FROM_HERE, "Failed to get encryption key during database cleanup.");
     case DatabaseCleanupResult::kItemFailure:
     case DatabaseCleanupResult::kDatabaseUnavailable:
+      metrics_util::LogPasswordSyncState(
+          metrics_util::NOT_SYNCING_FAILED_CLEANUP);
       return syncer::ModelError(FROM_HERE, "Failed to cleanup database.");
   }
   return base::nullopt;
