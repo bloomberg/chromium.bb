@@ -267,6 +267,9 @@ bool ServiceWorkerInstalledScriptsManager::IsScriptInstalled(
 std::unique_ptr<InstalledScriptsManager::ScriptData>
 ServiceWorkerInstalledScriptsManager::GetScriptData(const KURL& script_url) {
   DCHECK(!IsMainThread());
+  TRACE_EVENT1("ServiceWorker",
+               "ServiceWorkerInstalledScriptsManager::GetScriptData", "url",
+               script_url.GetString().Utf8().data());
   if (!IsScriptInstalled(script_url))
     return nullptr;
 
