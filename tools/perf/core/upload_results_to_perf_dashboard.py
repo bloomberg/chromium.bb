@@ -77,7 +77,10 @@ def _GetDashboardHistogramData(options):
   is_reference_build = 'reference' in options.name
   stripped_test_name = options.name.replace('.reference', '')
 
-  max_bytes = 1 << 20
+  # 30 MB max_bytes was chosen to be large enough that we rarely have to break
+  # up perf data into chunks since it is slow (crbug.com/947035) but small
+  # enough that we don't cause crbug.com/909961.
+  max_bytes = 30 << 20
   output_dir = tempfile.mkdtemp()
 
   try:
