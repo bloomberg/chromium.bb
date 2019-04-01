@@ -552,37 +552,19 @@ void ChildProcessSecurityPolicyImpl::Add(int child_id,
   DCHECK(browser_context);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
-  AddChild(child_id, browser_context);
+  if (security_state_.count(child_id) != 0) {
+    NOTREACHED() << "Add child process at most once.";
+    return;
+  }
+
+  security_state_[child_id] =
+      base::MakeRefCounted<SecurityState>(browser_context);
 }
 
 void ChildProcessSecurityPolicyImpl::Remove(int child_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
-
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
-    return;
-
-  // Moving the existing SecurityState object into a pending map so
-  // that we can preserve permission state and avoid mutations to this
-  // state after Remove() has been called.
-  pending_remove_state_[child_id] = std::move(state->second);
   security_state_.erase(child_id);
-
-  // |child_id| could be inside tasks that are on the IO thread task queues. We
-  // need to keep the |pending_remove_state_| entry around until we have
-  // successfully executed a task on the IO thread. This should ensure that any
-  // pending tasks on the IO thread will have completed before we remove the
-  // entry.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          [](ChildProcessSecurityPolicyImpl* policy, int child_id) {
-            DCHECK_CURRENTLY_ON(BrowserThread::IO);
-            base::AutoLock lock(policy->lock_);
-            policy->pending_remove_state_.erase(child_id);
-          },
-          base::Unretained(this), child_id));
 }
 
 void ChildProcessSecurityPolicyImpl::RegisterWebSafeScheme(
@@ -675,19 +657,19 @@ void ChildProcessSecurityPolicyImpl::GrantCommitURL(int child_id,
 
   base::AutoLock lock(lock_);
 
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return;
 
   if (origin.opaque()) {
     // If it's impossible to grant commit rights to just the origin (among other
     // things, URLs with non-standard schemes will be treated as opaque
     // origins), then grant access to commit all URLs of that scheme.
-    state->second->GrantCommitScheme(url.scheme());
+    state->GrantCommitScheme(url.scheme());
   } else {
     // When the child process has been commanded to request this scheme, grant
     // it the capability to request all URLs of that scheme.
-    state->second->GrantRequestScheme(url.scheme());
+    state->GrantRequestScheme(url.scheme());
   }
 }
 
@@ -699,15 +681,15 @@ void ChildProcessSecurityPolicyImpl::GrantRequestSpecificFileURL(
 
   {
     base::AutoLock lock(lock_);
-    auto state = security_state_.find(child_id);
-    if (state == security_state_.end())
+    auto* state = GetSecurityState(child_id);
+    if (!state)
       return;
 
     // When the child process has been commanded to request a file:// URL,
     // then we grant it the capability for that URL only.
     base::FilePath path;
     if (net::FileURLToFilePath(url, &path))
-      state->second->GrantRequestOfSpecificFile(path);
+      state->GrantRequestOfSpecificFile(path);
   }
 }
 
@@ -735,22 +717,22 @@ void ChildProcessSecurityPolicyImpl::GrantPermissionsForFile(
     int child_id, const base::FilePath& file, int permissions) {
   base::AutoLock lock(lock_);
 
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return;
 
-  state->second->GrantPermissionsForFile(file, permissions);
+  state->GrantPermissionsForFile(file, permissions);
 }
 
 void ChildProcessSecurityPolicyImpl::RevokeAllPermissionsForFile(
     int child_id, const base::FilePath& file) {
   base::AutoLock lock(lock_);
 
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return;
 
-  state->second->RevokeAllPermissionsForFile(file);
+  state->RevokeAllPermissionsForFile(file);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantReadFileSystem(
@@ -787,11 +769,11 @@ void ChildProcessSecurityPolicyImpl::GrantDeleteFromFileSystem(
 void ChildProcessSecurityPolicyImpl::GrantSendMidiSysExMessage(int child_id) {
   base::AutoLock lock(lock_);
 
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return;
 
-  state->second->GrantPermissionForMidiSysEx();
+  state->GrantPermissionForMidiSysEx();
 }
 
 void ChildProcessSecurityPolicyImpl::GrantCommitOrigin(
@@ -799,11 +781,11 @@ void ChildProcessSecurityPolicyImpl::GrantCommitOrigin(
     const url::Origin& origin) {
   base::AutoLock lock(lock_);
 
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return;
 
-  state->second->GrantCommitOrigin(origin);
+  state->GrantCommitOrigin(origin);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantRequestOrigin(
@@ -811,11 +793,11 @@ void ChildProcessSecurityPolicyImpl::GrantRequestOrigin(
     const url::Origin& origin) {
   base::AutoLock lock(lock_);
 
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return;
 
-  state->second->GrantRequestOrigin(origin);
+  state->GrantRequestOrigin(origin);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantRequestScheme(
@@ -823,11 +805,11 @@ void ChildProcessSecurityPolicyImpl::GrantRequestScheme(
     const std::string& scheme) {
   base::AutoLock lock(lock_);
 
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return;
 
-  state->second->GrantRequestScheme(scheme);
+  state->GrantRequestScheme(scheme);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantWebUIBindings(int child_id,
@@ -838,37 +820,37 @@ void ChildProcessSecurityPolicyImpl::GrantWebUIBindings(int child_id,
 
   base::AutoLock lock(lock_);
 
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return;
 
-  state->second->GrantBindings(bindings);
+  state->GrantBindings(bindings);
 
   // Web UI bindings need the ability to request chrome: URLs.
-  state->second->GrantRequestScheme(kChromeUIScheme);
+  state->GrantRequestScheme(kChromeUIScheme);
 
   // Web UI pages can contain links to file:// URLs.
-  state->second->GrantRequestScheme(url::kFileScheme);
+  state->GrantRequestScheme(url::kFileScheme);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantReadRawCookies(int child_id) {
   base::AutoLock lock(lock_);
 
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return;
 
-  state->second->GrantReadRawCookies();
+  state->GrantReadRawCookies();
 }
 
 void ChildProcessSecurityPolicyImpl::RevokeReadRawCookies(int child_id) {
   base::AutoLock lock(lock_);
 
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return;
 
-  state->second->RevokeReadRawCookies();
+  state->RevokeReadRawCookies();
 }
 
 bool ChildProcessSecurityPolicyImpl::CanRequestURL(
@@ -906,13 +888,13 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
   {
     base::AutoLock lock(lock_);
 
-    auto state = security_state_.find(child_id);
-    if (state == security_state_.end())
+    auto* state = GetSecurityState(child_id);
+    if (!state)
       return false;
 
     // Otherwise, we consult the child process's security state to see if it is
     // allowed to request the URL.
-    if (state->second->CanRequestURL(url))
+    if (state->CanRequestURL(url))
       return true;
   }
 
@@ -994,13 +976,13 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
     if (base::ContainsKey(schemes_okay_to_commit_in_any_process_, scheme))
       return true;
 
-    auto state = security_state_.find(child_id);
-    if (state == security_state_.end())
+    auto* state = GetSecurityState(child_id);
+    if (!state)
       return false;
 
     // Otherwise, we consult the child process's security state to see if it is
     // allowed to commit the URL.
-    return state->second->CanCommitURL(url);
+    return state->CanCommitURL(url);
   }
 }
 
@@ -1256,41 +1238,29 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForWebSocket(
 bool ChildProcessSecurityPolicyImpl::HasWebUIBindings(int child_id) {
   base::AutoLock lock(lock_);
 
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return false;
 
-  return state->second->has_web_ui_bindings();
+  return state->has_web_ui_bindings();
 }
 
 bool ChildProcessSecurityPolicyImpl::CanReadRawCookies(int child_id) {
   base::AutoLock lock(lock_);
 
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return false;
 
-  return state->second->can_read_raw_cookies();
-}
-
-void ChildProcessSecurityPolicyImpl::AddChild(int child_id,
-                                              BrowserContext* browser_context) {
-  DCHECK(browser_context);
-  if (security_state_.count(child_id) != 0) {
-    NOTREACHED() << "Add child process at most once.";
-    return;
-  }
-
-  security_state_[child_id] =
-      base::MakeRefCounted<SecurityState>(browser_context);
+  return state->can_read_raw_cookies();
 }
 
 bool ChildProcessSecurityPolicyImpl::ChildProcessHasPermissionsForFile(
     int child_id, const base::FilePath& file, int permissions) {
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return false;
-  return state->second->HasPermissionsForFile(file, permissions);
+  return state->HasPermissionsForFile(file, permissions);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
@@ -1369,27 +1339,27 @@ void ChildProcessSecurityPolicyImpl::LockToOrigin(
 #endif
 
   base::AutoLock lock(lock_);
-  auto state = security_state_.find(child_id);
-  DCHECK(state != security_state_.end());
-  state->second->LockToOrigin(gurl, context.browsing_instance_id());
+  auto* state = GetSecurityState(child_id);
+  DCHECK(state);
+  state->LockToOrigin(gurl, context.browsing_instance_id());
 }
 
 ChildProcessSecurityPolicyImpl::CheckOriginLockResult
 ChildProcessSecurityPolicyImpl::CheckOriginLock(int child_id,
                                                 const GURL& site_url) {
   base::AutoLock lock(lock_);
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK;
-  return state->second->CheckOriginLock(site_url);
+  return state->CheckOriginLock(site_url);
 }
 
 GURL ChildProcessSecurityPolicyImpl::GetOriginLock(int child_id) {
   base::AutoLock lock(lock_);
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return GURL();
-  return state->second->origin_lock();
+  return state->origin_lock();
 }
 
 void ChildProcessSecurityPolicyImpl::GrantPermissionsForFileSystem(
@@ -1398,10 +1368,10 @@ void ChildProcessSecurityPolicyImpl::GrantPermissionsForFileSystem(
     int permission) {
   base::AutoLock lock(lock_);
 
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return;
-  state->second->GrantPermissionsForFileSystem(filesystem_id, permission);
+  state->GrantPermissionsForFileSystem(filesystem_id, permission);
 }
 
 bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystem(
@@ -1410,10 +1380,10 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystem(
     int permission) {
   base::AutoLock lock(lock_);
 
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return false;
-  return state->second->HasPermissionsForFileSystem(filesystem_id, permission);
+  return state->HasPermissionsForFileSystem(filesystem_id, permission);
 }
 
 void ChildProcessSecurityPolicyImpl::RegisterFileSystemPermissionPolicy(
@@ -1426,11 +1396,11 @@ void ChildProcessSecurityPolicyImpl::RegisterFileSystemPermissionPolicy(
 bool ChildProcessSecurityPolicyImpl::CanSendMidiSysExMessage(int child_id) {
   base::AutoLock lock(lock_);
 
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return false;
 
-  return state->second->can_send_midi_sysex();
+  return state->can_send_midi_sysex();
 }
 
 void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
@@ -1522,10 +1492,6 @@ void ChildProcessSecurityPolicyImpl::OnBrowserContextBeingDestroyed(
     // Clear any references we may have to |browser_context|.
     base::AutoLock lock(lock_);
     for (auto& itr : security_state_) {
-      itr.second->ClearMatchingContexts(&browser_context);
-    }
-
-    for (auto& itr : pending_remove_state_) {
       itr.second->ClearMatchingContexts(&browser_context);
     }
   }
@@ -1669,15 +1635,6 @@ ChildProcessSecurityPolicyImpl::GetSecurityState(int child_id) {
   auto itr = security_state_.find(child_id);
   if (itr != security_state_.end())
     return itr->second.get();
-
-  // Check to see if |child_id| is in the pending removal map since this
-  // may be a call that was already on the IO thread's task queue when the
-  // Remove() call occurred.
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    itr = pending_remove_state_.find(child_id);
-    if (itr != pending_remove_state_.end())
-      return itr->second.get();
-  }
 
   return nullptr;
 }
