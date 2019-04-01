@@ -178,6 +178,10 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) CryptohomeAuthenticator
   void OnPasswordChangeDetected();
   void OnOldEncryptionDetected(bool has_incomplete_migration);
 
+  // Migrate cryptohome key for |user_context| using |old_password|.
+  void MigrateKey(const UserContext& user_context,
+                  const std::string& old_password);
+
  protected:
   ~CryptohomeAuthenticator() override;
 

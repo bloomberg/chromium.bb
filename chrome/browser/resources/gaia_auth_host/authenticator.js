@@ -217,7 +217,8 @@ cr.define('cr.login', function() {
 
       this.webview_ = typeof webview == 'string' ? $(webview) : webview;
 
-      this.samlHandler_ = new cr.login.SamlHandler(this.webview_);
+      this.samlHandler_ =
+          new cr.login.SamlHandler(this.webview_, false /* startsOnSamlPage */);
       this.webviewEventManager_.addEventListener(
           this.samlHandler_, 'insecureContentBlocked',
           this.onInsecureContentBlocked_.bind(this));

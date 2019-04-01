@@ -182,6 +182,8 @@ const char kChromeUIWebApksHost[] = "webapks";
 #endif
 
 #if defined(OS_CHROMEOS)
+const char kChromeUIPasswordChangeHost[] = "password-change";
+const char kChromeUIPasswordChangeUrl[] = "chrome://password-change";
 const char kChromeUIAccountManagerWelcomeHost[] = "account-manager-welcome";
 const char kChromeUIAccountManagerWelcomeURL[] =
     "chrome://account-manager-welcome";

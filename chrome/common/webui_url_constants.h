@@ -160,6 +160,8 @@ extern const char kChromeUIUsbInternalsHost[];
 extern const char kChromeUIUserActionsHost[];
 extern const char kChromeUIVersionHost[];
 extern const char kChromeUIVersionURL[];
+extern const char kChromeUIPasswordChangeHost[];
+extern const char kChromeUIPasswordChangeUrl[];
 extern const char kChromeUIWelcomeHost[];
 extern const char kChromeUIWelcomeURL[];
 extern const char kChromeUIWelcomeWin10Host[];
