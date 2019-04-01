@@ -195,8 +195,14 @@ void SetBookmarkAppHelperOptions(const web_app::InstallOptions& options,
       break;
   }
 
-  if (!options.create_shortcuts)
-    helper->set_skip_shortcut_creation();
+  if (!options.add_to_applications_menu)
+    helper->set_skip_adding_to_applications_menu();
+
+  if (!options.add_to_desktop)
+    helper->set_skip_adding_to_desktop();
+
+  if (!options.add_to_quick_launch_bar)
+    helper->set_skip_adding_to_quick_launch_bar();
 
   if (options.bypass_service_worker_check)
     helper->set_bypass_service_worker_check();

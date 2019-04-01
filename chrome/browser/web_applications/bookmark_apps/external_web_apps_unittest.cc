@@ -188,7 +188,9 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
         GURL("https://www.chromestatus.com/features"),
         web_app::LaunchContainer::kTab,
         web_app::InstallSource::kExternalDefault);
-    install_options.create_shortcuts = true;
+    install_options.add_to_applications_menu = true;
+    install_options.add_to_desktop = true;
+    install_options.add_to_quick_launch_bar = true;
     install_options.require_manifest = true;
     test_install_options_list.push_back(std::move(install_options));
   }
@@ -197,7 +199,9 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
         GURL("https://events.google.com/io2016/?utm_source=web_app_manifest"),
         web_app::LaunchContainer::kWindow,
         web_app::InstallSource::kExternalDefault);
-    install_options.create_shortcuts = false;
+    install_options.add_to_applications_menu = false;
+    install_options.add_to_desktop = false;
+    install_options.add_to_quick_launch_bar = false;
     install_options.require_manifest = true;
     test_install_options_list.push_back(std::move(install_options));
   }

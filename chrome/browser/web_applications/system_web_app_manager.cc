@@ -37,7 +37,9 @@ InstallOptions CreateInstallOptionsForSystemApp(const GURL& url) {
 
   web_app::InstallOptions install_options(url, LaunchContainer::kWindow,
                                           InstallSource::kSystemInstalled);
-  install_options.create_shortcuts = false;
+  install_options.add_to_applications_menu = false;
+  install_options.add_to_desktop = false;
+  install_options.add_to_quick_launch_bar = false;
   install_options.bypass_service_worker_check = true;
   install_options.always_update = true;
   return install_options;

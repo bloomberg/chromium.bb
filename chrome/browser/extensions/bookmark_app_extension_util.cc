@@ -30,6 +30,20 @@
 
 namespace extensions {
 
+namespace {
+
+#if !defined(OS_CHROMEOS)
+bool CanOsAddDesktopShortcuts() {
+#if defined(OS_LINUX) || defined(OS_WIN)
+  return true;
+#else
+  return false;
+#endif
+}
+#endif  // !defined(OS_CHROMEOS)
+
+}  // namespace
+
 bool CanBookmarkAppCreateOsShortcuts() {
 #if defined(OS_CHROMEOS)
   return false;
@@ -41,18 +55,17 @@ bool CanBookmarkAppCreateOsShortcuts() {
 void BookmarkAppCreateOsShortcuts(
     Profile* profile,
     const Extension* extension,
+    bool add_to_desktop,
     base::OnceCallback<void(bool created_shortcuts)> callback) {
   DCHECK(CanBookmarkAppCreateOsShortcuts());
 #if !defined(OS_CHROMEOS)
   web_app::ShortcutLocations creation_locations;
-#if defined(OS_LINUX) || defined(OS_WIN)
-  creation_locations.on_desktop = true;
-#else
-  creation_locations.on_desktop = false;
-#endif
   creation_locations.applications_menu_location =
       web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
   creation_locations.in_quick_launch_bar = false;
+
+  if (CanOsAddDesktopShortcuts())
+    creation_locations.on_desktop = add_to_desktop;
 
   Profile* current_profile = profile->GetOriginalProfile();
   web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,

@@ -50,7 +50,9 @@ base::Value GetWindowedItem() {
 InstallOptions GetWindowedInstallOptions() {
   InstallOptions options(GURL(kWindowedUrl), LaunchContainer::kWindow,
                          InstallSource::kExternalPolicy);
-  options.create_shortcuts = false;
+  options.add_to_applications_menu = false;
+  options.add_to_desktop = false;
+  options.add_to_quick_launch_bar = false;
   return options;
 }
 
@@ -65,7 +67,9 @@ base::Value GetTabbedItem() {
 InstallOptions GetTabbedInstallOptions() {
   InstallOptions options(GURL(kTabbedUrl), LaunchContainer::kTab,
                          InstallSource::kExternalPolicy);
-  options.create_shortcuts = false;
+  options.add_to_applications_menu = false;
+  options.add_to_desktop = false;
+  options.add_to_quick_launch_bar = false;
   return options;
 }
 
@@ -78,7 +82,9 @@ base::Value GetNoContainerItem() {
 InstallOptions GetNoContainerInstallOptions() {
   InstallOptions options(GURL(kNoContainerUrl), LaunchContainer::kTab,
                          InstallSource::kExternalPolicy);
-  options.create_shortcuts = false;
+  options.add_to_applications_menu = false;
+  options.add_to_desktop = false;
+  options.add_to_quick_launch_bar = false;
   return options;
 }
 
@@ -91,7 +97,9 @@ base::Value GetCreateDesktopShorcutDefaultItem() {
 InstallOptions GetCreateDesktopShorcutDefaultInstallOptions() {
   InstallOptions options(GURL(kNoContainerUrl), LaunchContainer::kTab,
                          InstallSource::kExternalPolicy);
-  options.create_shortcuts = false;
+  options.add_to_applications_menu = false;
+  options.add_to_desktop = false;
+  options.add_to_quick_launch_bar = false;
   return options;
 }
 
@@ -105,7 +113,9 @@ base::Value GetCreateDesktopShorcutFalseItem() {
 InstallOptions GetCreateDesktopShorcutFalseInstallOptions() {
   InstallOptions options(GURL(kNoContainerUrl), LaunchContainer::kTab,
                          InstallSource::kExternalPolicy);
-  options.create_shortcuts = false;
+  options.add_to_applications_menu = false;
+  options.add_to_desktop = false;
+  options.add_to_quick_launch_bar = false;
   return options;
 }
 
@@ -119,7 +129,9 @@ base::Value GetCreateDesktopShorcutTrueItem() {
 InstallOptions GetCreateDesktopShorcutTrueInstallOptions() {
   InstallOptions options(GURL(kNoContainerUrl), LaunchContainer::kTab,
                          InstallSource::kExternalPolicy);
-  options.create_shortcuts = true;
+  options.add_to_applications_menu = true;
+  options.add_to_desktop = true;
+  options.add_to_quick_launch_bar = false;
   return options;
 }
 

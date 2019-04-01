@@ -21,6 +21,7 @@ bool CanBookmarkAppCreateOsShortcuts();
 void BookmarkAppCreateOsShortcuts(
     Profile* profile,
     const Extension* extension,
+    bool add_to_desktop,
     base::OnceCallback<void(bool created_shortcuts)> callback);
 
 bool CanBookmarkAppBePinnedToShelf();

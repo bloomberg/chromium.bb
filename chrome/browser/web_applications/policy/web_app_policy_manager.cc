@@ -92,11 +92,12 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
     if (create_desktop_shortcut)
       create_shortcut = create_desktop_shortcut->GetBool();
 
-    // This currently pins the app to the shelf on Chrome OS, which we don't
-    // want to do because there is a separate policy for that.
-    // TODO(ortuno): Introduce an option to specifically create desktop
-    // shortcuts and not pin the app to the shelf.
-    install_options.create_shortcuts = create_shortcut;
+    install_options.add_to_applications_menu = create_shortcut;
+    install_options.add_to_desktop = create_shortcut;
+
+    // It's not yet clear how pinning to shelf will work for policy installed
+    // Web Apps, but for now never pin them. See crbug.com/880125.
+    install_options.add_to_quick_launch_bar = false;
 
     install_options_list.push_back(std::move(install_options));
   }

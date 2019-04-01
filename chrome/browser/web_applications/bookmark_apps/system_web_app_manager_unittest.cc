@@ -41,7 +41,9 @@ const char kAppUrl3[] = "chrome://system-app3";
 InstallOptions GetWindowedInstallOptions() {
   InstallOptions options(GURL(kAppUrl1), LaunchContainer::kWindow,
                          InstallSource::kSystemInstalled);
-  options.create_shortcuts = false;
+  options.add_to_applications_menu = false;
+  options.add_to_desktop = false;
+  options.add_to_quick_launch_bar = false;
   options.bypass_service_worker_check = true;
   options.always_update = true;
   return options;
