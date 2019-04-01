@@ -20,22 +20,6 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
-namespace {
-
-class MockPaintWorkletProxyClient : public PaintWorkletProxyClient {
- public:
-  MockPaintWorkletProxyClient()
-      : PaintWorkletProxyClient(1, nullptr), did_set_global_scope_(false) {}
-  void SetGlobalScope(WorkletGlobalScope*) override {
-    did_set_global_scope_ = true;
-  }
-  bool did_set_global_scope() { return did_set_global_scope_; }
-
- private:
-  bool did_set_global_scope_;
-};
-
-}  // namespace
 
 // TODO(smcgruer): Extract a common base class between this and
 // AnimationWorkletGlobalScope.
