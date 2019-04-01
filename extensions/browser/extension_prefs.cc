@@ -1840,7 +1840,7 @@ void ExtensionPrefs::RegisterProfilePrefs(
   registry->RegisterListPref(pref_names::kInstallAllowList);
   registry->RegisterListPref(pref_names::kInstallDenyList);
   registry->RegisterDictionaryPref(pref_names::kInstallForceList);
-  registry->RegisterDictionaryPref(pref_names::kInstallLoginScreenAppList);
+  registry->RegisterDictionaryPref(pref_names::kLoginScreenExtensions);
   registry->RegisterListPref(pref_names::kAllowedTypes);
   registry->RegisterBooleanPref(pref_names::kStorageGarbageCollect, false);
   registry->RegisterListPref(pref_names::kAllowedInstallSites);

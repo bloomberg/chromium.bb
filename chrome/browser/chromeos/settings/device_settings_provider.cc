@@ -75,7 +75,7 @@ const char* const kKnownSettings[] = {
     kDeviceDisabledMessage,
     kDeviceDisplayResolution,
     kDeviceHostnameTemplate,
-    kDeviceLoginScreenAppInstallList,
+    kDeviceLoginScreenExtensions,
     kDeviceLoginScreenInputMethods,
     kDeviceLoginScreenLocales,
     kDeviceOffHours,
@@ -352,13 +352,14 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                                base::Value(std::move(list)));
   }
 
-  if (policy.has_device_login_screen_app_install_list()) {
+  if (policy.has_device_login_screen_extensions()) {
     std::vector<base::Value> apps;
-    const em::DeviceLoginScreenAppInstallListProto& proto(
-        policy.device_login_screen_app_install_list());
-    for (const auto& app : proto.device_login_screen_app_install_list())
+    const em::DeviceLoginScreenExtensionsProto& proto(
+        policy.device_login_screen_extensions());
+    for (const auto& app : proto.device_login_screen_extensions()) {
       apps.push_back(base::Value(app));
-    new_values_cache->SetValue(kDeviceLoginScreenAppInstallList,
+    }
+    new_values_cache->SetValue(kDeviceLoginScreenExtensions,
                                base::Value(std::move(apps)));
   }
 

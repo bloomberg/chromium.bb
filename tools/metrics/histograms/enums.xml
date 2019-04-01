@@ -16249,7 +16249,7 @@ Called by update_net_error_codes.py.-->
   <int value="333" label="EnableMediaRouter"/>
   <int value="334" label="DHEEnabled"/>
   <int value="335" label="CertificateTransparencyEnforcementDisabledForUrls"/>
-  <int value="336" label="DeviceLoginScreenAppInstallList"/>
+  <int value="336" label="DeviceLoginScreenExtensions"/>
   <int value="337" label="ArcBackupRestoreEnabled"/>
   <int value="338" label="NTPContentSuggestionsEnabled"/>
   <int value="339" label="WebRtcUdpPortRange"/>

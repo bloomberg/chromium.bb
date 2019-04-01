@@ -3862,11 +3862,11 @@
     ]
   },
 
-  "DeviceLoginScreenAppInstallList": {
+  "DeviceLoginScreenExtensions": {
     "os": ["chromeos"],
-    "test_policy": { "DeviceLoginScreenAppInstallList": [ "abcdefghijklmnopabcdefghijklmnop" ] },
+    "test_policy": { "DeviceLoginScreenExtensions": [ "abcdefghijklmnopabcdefghijklmnop" ] },
     "pref_mappings": [
-      { "pref": "cros.device.login_screen_app_install_list" }
+      { "pref": "cros.device.login_screen_extensions" }
     ]
   },
 
