@@ -121,8 +121,9 @@ class ProcessorEntityTest : public ::testing::Test {
   }
 
   std::unique_ptr<ProcessorEntity> RestoreFromMetadata(
-      sync_pb::EntityMetadata* entity_metadata) {
-    return ProcessorEntity::CreateFromMetadata(kKey, entity_metadata);
+      sync_pb::EntityMetadata entity_metadata) {
+    return ProcessorEntity::CreateFromMetadata(kKey,
+                                               std::move(entity_metadata));
   }
 
   const base::Time ctime_;
@@ -536,7 +537,7 @@ TEST_F(ProcessorEntityTest, RestoredLocalChangeWithUpdatedSpecifics) {
 
   // Restore entity from metadata and emulate bridge passing different specifics
   // to SetCommitData.
-  entity = RestoreFromMetadata(&entity_metadata);
+  entity = RestoreFromMetadata(std::move(entity_metadata));
   auto entity_data = GenerateEntityData(kHash, kName, kValue2);
   entity->SetCommitData(entity_data.get());
 

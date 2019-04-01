@@ -141,7 +141,7 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
 
     for (auto it = metadata_map.begin(); it != metadata_map.end(); it++) {
       std::unique_ptr<ProcessorEntity> entity =
-          ProcessorEntity::CreateFromMetadata(it->first, &it->second);
+          ProcessorEntity::CreateFromMetadata(it->first, std::move(it->second));
       storage_key_to_tag_hash_[entity->storage_key()] =
           entity->metadata().client_tag_hash();
       entities_[entity->metadata().client_tag_hash()] = std::move(entity);
