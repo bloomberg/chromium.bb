@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <utility>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -362,6 +363,12 @@ void AutofillWalletMetadataSyncableService::OnWalletDataTrackingStateChanged(
   if (is_tracking && sync_processor_) {
     MergeData(cache_);
   }
+}
+
+void AutofillWalletMetadataSyncableService::WaitUntilReadyToSync(
+    base::OnceClosure done) {
+  // Not used in the legacy directory-based architecture.
+  NOTREACHED();
 }
 
 syncer::SyncMergeResult
