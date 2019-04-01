@@ -15,6 +15,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/macros.h"
 #include "base/native_library.h"
+#include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_surface.h"
@@ -108,7 +109,8 @@ bool VulkanImplementationScenic::GetPhysicalDevicePresentationSupport(
 
 std::vector<const char*>
 VulkanImplementationScenic::GetRequiredDeviceExtensions() {
-  return {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+  return {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+          VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME};
 }
 
 VkFence VulkanImplementationScenic::CreateVkFenceForGpuFence(
@@ -122,6 +124,66 @@ VulkanImplementationScenic::ExportVkFenceToGpuFence(VkDevice vk_device,
                                                     VkFence vk_fence) {
   NOTIMPLEMENTED();
   return nullptr;
+}
+
+VkSemaphore VulkanImplementationScenic::ImportSemaphoreHandle(
+    VkDevice vk_device,
+    gpu::SemaphoreHandle handle) {
+  if (!handle.is_valid())
+    return VK_NULL_HANDLE;
+
+  if (handle.vk_handle_type() !=
+      VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA) {
+    return VK_NULL_HANDLE;
+  }
+
+  VkSemaphore semaphore = VK_NULL_HANDLE;
+  VkSemaphoreCreateInfo info = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+  VkResult result = vkCreateSemaphore(vk_device, &info, nullptr, &semaphore);
+  if (result != VK_SUCCESS)
+    return VK_NULL_HANDLE;
+
+  zx::event event = handle.TakeHandle();
+  VkImportSemaphoreZirconHandleInfoFUCHSIA import = {
+      VK_STRUCTURE_TYPE_TEMP_IMPORT_SEMAPHORE_ZIRCON_HANDLE_INFO_FUCHSIA};
+  import.semaphore = semaphore;
+  import.handleType =
+      VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA;
+  import.handle = event.get();
+
+  result = vkImportSemaphoreZirconHandleFUCHSIA(vk_device, &import);
+  if (result != VK_SUCCESS) {
+    vkDestroySemaphore(vk_device, semaphore, nullptr);
+    return VK_NULL_HANDLE;
+  }
+
+  // Vulkan took ownership of the handle.
+  ignore_result(event.release());
+
+  return semaphore;
+}
+
+gpu::SemaphoreHandle VulkanImplementationScenic::GetSemaphoreHandle(
+    VkDevice vk_device,
+    VkSemaphore vk_semaphore) {
+  // Create VkSemaphoreGetFdInfoKHR structure.
+  VkSemaphoreGetZirconHandleInfoFUCHSIA info = {
+      VK_STRUCTURE_TYPE_TEMP_SEMAPHORE_GET_ZIRCON_HANDLE_INFO_FUCHSIA};
+  info.semaphore = vk_semaphore;
+  info.handleType =
+      VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA;
+
+  zx_handle_t handle;
+  VkResult result =
+      vkGetSemaphoreZirconHandleFUCHSIA(vk_device, &info, &handle);
+  if (result != VK_SUCCESS) {
+    LOG(ERROR) << "vkGetSemaphoreFuchsiaHandleKHR failed : " << result;
+    return gpu::SemaphoreHandle();
+  }
+
+  return gpu::SemaphoreHandle(
+      VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA,
+      zx::event(handle));
 }
 
 }  // namespace ui
