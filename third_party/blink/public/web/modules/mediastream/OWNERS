@@ -1,0 +1,4 @@
+file://third_party/blink/common/mediastream/OWNERS
+
+# TEAM: media-capture-and-streams@grotations.appspotmail.com
+# COMPONENT: Blink>GetUserMedia
