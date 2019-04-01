@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/observer_list.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_url_parameters.h"
 
@@ -25,12 +26,8 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManager {
     Observer() = default;
     virtual ~Observer() = default;
 
-    virtual void OnDownloadsInitialized(bool active_downloads_only) {}
     virtual void OnManagerGoingDown() {}
     virtual void OnDownloadCreated(DownloadItem* item) {}
-    virtual void OnDownloadUpdated(DownloadItem* item) {}
-    virtual void OnDownloadOpened(DownloadItem* item) {}
-    virtual void OnDownloadRemoved(DownloadItem* item) {}
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
@@ -38,6 +35,9 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManager {
 
   SimpleDownloadManager();
   virtual ~SimpleDownloadManager();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Calls the callback if this object becomes initialized.
   void NotifyWhenInitialized(base::OnceClosure callback);
@@ -61,6 +61,9 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManager {
 
   // Whether this object is initialized.
   bool initialized_ = false;
+
+  // Observers that want to be notified of changes to the set of downloads.
+  base::ObserverList<Observer>::Unchecked simple_download_manager_observers_;
 
  private:
   // Callbacks to call once this object is initialized.
