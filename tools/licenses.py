@@ -466,7 +466,7 @@ def FindThirdPartyDirs(prune_paths, root):
             for dir in dirs:
                 dirpath = os.path.join(path, dir)
                 additional_paths_file = os.path.join(
-                        dirpath, ADDITIONAL_PATHS_FILENAME)
+                    root, dirpath, ADDITIONAL_PATHS_FILENAME)
                 if os.path.exists(additional_paths_file):
                     with open(additional_paths_file) as paths_file:
                         extra_paths = json.load(paths_file)
