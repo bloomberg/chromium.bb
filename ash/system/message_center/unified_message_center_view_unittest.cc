@@ -107,6 +107,7 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
         std::make_unique<TestUnifiedMessageCenterView>(model_.get());
     message_center_view_->AddObserver(this);
     message_center_view_->SetMaxHeight(max_height);
+    message_center_view_->SetAvailableHeight(max_height);
     message_center_view_->set_owned_by_client();
     OnViewPreferredSizeChanged(message_center_view_.get());
     size_changed_count_ = 0;
@@ -238,6 +239,19 @@ TEST_F(UnifiedMessageCenterViewTest, ContentsRelayout) {
   EXPECT_TRUE(message_center_view()->visible());
   EXPECT_GT(previous_contents_height, GetScrollerContents()->height());
   EXPECT_GT(previous_list_height, GetMessageListView()->height());
+}
+
+TEST_F(UnifiedMessageCenterViewTest, InsufficientHeight) {
+  CreateMessageCenterView();
+  AddNotification();
+  EXPECT_TRUE(message_center_view()->visible());
+
+  message_center_view()->SetAvailableHeight(kUnifiedNotificationMinimumHeight -
+                                            1);
+  EXPECT_FALSE(message_center_view()->visible());
+
+  message_center_view()->SetAvailableHeight(kUnifiedNotificationMinimumHeight);
+  EXPECT_TRUE(message_center_view()->visible());
 }
 
 TEST_F(UnifiedMessageCenterViewTest, NotVisibleWhenLocked) {
