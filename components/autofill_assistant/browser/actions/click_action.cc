@@ -22,8 +22,8 @@ ClickAction::~ClickAction() {}
 void ClickAction::InternalProcessAction(ActionDelegate* delegate,
                                         ProcessActionCallback callback) {
   DCHECK_GT(proto_.click().element_to_click().selectors_size(), 0);
-  delegate->ShortWaitForElementExist(
-      Selector(proto_.click().element_to_click()),
+  delegate->ShortWaitForElement(
+      kVisibilityCheck, Selector(proto_.click().element_to_click()),
       base::BindOnce(&ClickAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      std::move(callback)));

@@ -102,9 +102,9 @@ class ScriptExecutor : public ActionDelegate {
 
   // Override ActionDelegate:
   std::unique_ptr<BatchElementChecker> CreateBatchElementChecker() override;
-  void ShortWaitForElementExist(
-      const Selector& selector,
-      base::OnceCallback<void(bool)> callback) override;
+  void ShortWaitForElement(ElementCheckType check_type,
+                           const Selector& selector,
+                           base::OnceCallback<void(bool)> callback) override;
   void WaitForElementVisible(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,

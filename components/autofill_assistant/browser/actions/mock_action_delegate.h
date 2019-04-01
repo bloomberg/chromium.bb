@@ -25,14 +25,16 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(CreateBatchElementChecker,
                std::unique_ptr<BatchElementChecker>());
 
-  void ShortWaitForElementExist(
-      const Selector& selector,
-      base::OnceCallback<void(bool)> callback) override {
-    OnShortWaitForElementExist(selector, callback);
+  void ShortWaitForElement(ElementCheckType check_type,
+                           const Selector& selector,
+                           base::OnceCallback<void(bool)> callback) override {
+    OnShortWaitForElement(check_type, selector, callback);
   }
 
-  MOCK_METHOD2(OnShortWaitForElementExist,
-               void(const Selector& selector, base::OnceCallback<void(bool)>&));
+  MOCK_METHOD3(OnShortWaitForElement,
+               void(ElementCheckType check_type,
+                    const Selector& selector,
+                    base::OnceCallback<void(bool)>&));
 
   void WaitForElementVisible(
       base::TimeDelta max_wait_time,

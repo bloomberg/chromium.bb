@@ -29,8 +29,8 @@ void FocusElementAction::InternalProcessAction(ActionDelegate* delegate,
   if (!focus_element.title().empty()) {
     delegate->SetStatusMessage(focus_element.title());
   }
-  delegate->ShortWaitForElementExist(
-      Selector(focus_element.element()),
+  delegate->ShortWaitForElement(
+      kVisibilityCheck, Selector(focus_element.element()),
       base::BindOnce(&FocusElementAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      std::move(callback)));

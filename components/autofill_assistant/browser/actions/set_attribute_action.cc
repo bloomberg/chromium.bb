@@ -22,8 +22,8 @@ SetAttributeAction::~SetAttributeAction() {}
 
 void SetAttributeAction::InternalProcessAction(ActionDelegate* delegate,
                                                ProcessActionCallback callback) {
-  delegate->ShortWaitForElementExist(
-      Selector(proto_.set_attribute().element()),
+  delegate->ShortWaitForElement(
+      kExistenceCheck, Selector(proto_.set_attribute().element()),
       base::BindOnce(&SetAttributeAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      std::move(callback)));
