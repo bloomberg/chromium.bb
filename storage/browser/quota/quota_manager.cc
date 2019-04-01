@@ -544,7 +544,7 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
         type_(type),
         quota_client_mask_(quota_client_mask),
         error_count_(0),
-        remaining_clients_(-1),
+        remaining_clients_(0),
         skipped_clients_(0),
         is_eviction_(is_eviction),
         callback_(std::move(callback)),
@@ -599,7 +599,7 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
  private:
   void DidDeleteOriginData(int tracing_id,
                            blink::mojom::QuotaStatusCode status) {
-    DCHECK_GT(remaining_clients_, 0);
+    DCHECK_GT(remaining_clients_, 0U);
     TRACE_EVENT_ASYNC_END0("browsing_data", "QuotaManager::OriginDataDeleter",
                            tracing_id);
 
@@ -618,7 +618,7 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
   StorageType type_;
   int quota_client_mask_;
   int error_count_;
-  int remaining_clients_;
+  size_t remaining_clients_;
   int skipped_clients_;
   bool is_eviction_;
   StatusCallback callback_;
@@ -639,8 +639,8 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
         type_(type),
         quota_client_mask_(quota_client_mask),
         error_count_(0),
-        remaining_clients_(-1),
-        remaining_deleters_(-1),
+        remaining_clients_(0),
+        remaining_deleters_(0),
         callback_(std::move(callback)),
         weak_factory_(this) {}
 
@@ -679,7 +679,7 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
 
  private:
   void DidGetOriginsForHost(const std::set<url::Origin>& origins) {
-    DCHECK_GT(remaining_clients_, 0);
+    DCHECK_GT(remaining_clients_, 0U);
 
     for (const auto& origin : origins)
       origins_.insert(origin);
@@ -704,7 +704,7 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
   }
 
   void DidDeleteOriginData(blink::mojom::QuotaStatusCode status) {
-    DCHECK_GT(remaining_deleters_, 0);
+    DCHECK_GT(remaining_deleters_, 0U);
 
     if (status != blink::mojom::QuotaStatusCode::kOk)
       ++error_count_;
@@ -722,8 +722,8 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
   int quota_client_mask_;
   std::set<url::Origin> origins_;
   int error_count_;
-  int remaining_clients_;
-  int remaining_deleters_;
+  size_t remaining_clients_;
+  size_t remaining_deleters_;
   StatusCallback callback_;
 
   base::WeakPtrFactory<HostDataDeleter> weak_factory_;

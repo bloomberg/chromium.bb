@@ -141,7 +141,8 @@ void QuotaTemporaryStorageEvictor::Start() {
       this, &QuotaTemporaryStorageEvictor::ReportPerHourHistogram);
 }
 
-void QuotaTemporaryStorageEvictor::StartEvictionTimerWithDelay(int delay_ms) {
+void QuotaTemporaryStorageEvictor::StartEvictionTimerWithDelay(
+    int64_t delay_ms) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (eviction_timer_.IsRunning() || timer_disabled_for_testing_)
     return;
