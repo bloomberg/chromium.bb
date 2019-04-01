@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromite.api',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x18\x63hromite/api/image.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"|\n\x05Image\x12\x0c\n\x04path\x18\x01 \x01(\t\x12&\n\x04type\x18\x02 \x01(\x0e\x32\x18.chromite.api.Image.Type\"=\n\x04Type\x12\x18\n\x14IMAGE_TYPE_UNDEFINED\x10\x00\x12\x08\n\x04\x42\x41SE\x10\x01\x12\x07\n\x03\x44\x45V\x10\x02\x12\x08\n\x04TEST\x10\x03\"\xd3\x01\n\x12\x43reateImageRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12-\n\x0bimage_types\x18\x02 \x03(\x0e\x32\x18.chromite.api.Image.Type\x12#\n\x1b\x64isable_rootfs_verification\x18\x03 \x01(\x08\x12\x0f\n\x07version\x18\x04 \x01(\t\x12\x13\n\x0b\x64isk_layout\x18\x05 \x01(\t\x12\x14\n\x0c\x62uilder_path\x18\x06 \x01(\t\"I\n\x11\x43reateImageResult\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12#\n\x06images\x18\x02 \x03(\x0b\x32\x13.chromite.api.Image\"\xb9\x01\n\x10TestImageRequest\x12\"\n\x05image\x18\x01 \x01(\x0b\x32\x13.chromite.api.Image\x12-\n\x0c\x62uild_target\x18\x02 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x35\n\x06result\x18\x03 \x01(\x0b\x32%.chromite.api.TestImageRequest.Result\x1a\x1b\n\x06Result\x12\x11\n\tdirectory\x18\x01 \x01(\t\"\"\n\x0fTestImageResult\x12\x0f\n\x07success\x18\x01 \x01(\x08\x32\xbf\x01\n\x0cImageService\x12S\n\x06\x43reate\x12 .chromite.api.CreateImageRequest\x1a\x1f.chromite.api.CreateImageResult\"\x06\xc2\xed\x1a\x02\x10\x01\x12M\n\x04Test\x12\x1e.chromite.api.TestImageRequest\x1a\x1d.chromite.api.TestImageResult\"\x06\xc2\xed\x1a\x02\x10\x01\x1a\x0b\xc2\xed\x1a\x07\n\x05imageb\x06proto3')
+  serialized_pb=_b('\n\x18\x63hromite/api/image.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"|\n\x05Image\x12\x0c\n\x04path\x18\x01 \x01(\t\x12&\n\x04type\x18\x02 \x01(\x0e\x32\x18.chromite.api.Image.Type\"=\n\x04Type\x12\x18\n\x14IMAGE_TYPE_UNDEFINED\x10\x00\x12\x08\n\x04\x42\x41SE\x10\x01\x12\x07\n\x03\x44\x45V\x10\x02\x12\x08\n\x04TEST\x10\x03\"\xd3\x01\n\x12\x43reateImageRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12-\n\x0bimage_types\x18\x02 \x03(\x0e\x32\x18.chromite.api.Image.Type\x12#\n\x1b\x64isable_rootfs_verification\x18\x03 \x01(\x08\x12\x0f\n\x07version\x18\x04 \x01(\t\x12\x13\n\x0b\x64isk_layout\x18\x05 \x01(\t\x12\x14\n\x0c\x62uilder_path\x18\x06 \x01(\t\"{\n\x11\x43reateImageResult\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12#\n\x06images\x18\x02 \x03(\x0b\x32\x13.chromite.api.Image\x12\x30\n\x0f\x66\x61iled_packages\x18\x03 \x03(\x0b\x32\x17.chromiumos.PackageInfo\"\xb9\x01\n\x10TestImageRequest\x12\"\n\x05image\x18\x01 \x01(\x0b\x32\x13.chromite.api.Image\x12-\n\x0c\x62uild_target\x18\x02 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x35\n\x06result\x18\x03 \x01(\x0b\x32%.chromite.api.TestImageRequest.Result\x1a\x1b\n\x06Result\x12\x11\n\tdirectory\x18\x01 \x01(\t\"\"\n\x0fTestImageResult\x12\x0f\n\x07success\x18\x01 \x01(\x08\x32\xb1\x01\n\x0cImageService\x12K\n\x06\x43reate\x12 .chromite.api.CreateImageRequest\x1a\x1f.chromite.api.CreateImageResult\x12\x45\n\x04Test\x12\x1e.chromite.api.TestImageRequest\x1a\x1d.chromite.api.TestImageResult\x1a\r\xc2\xed\x1a\t\n\x05image\x10\x01\x62\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,])
 
@@ -184,6 +184,13 @@ _CREATEIMAGERESULT = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='failed_packages', full_name='chromite.api.CreateImageResult.failed_packages', index=2,
+      number=3, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -197,7 +204,7 @@ _CREATEIMAGERESULT = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=437,
-  serialized_end=510,
+  serialized_end=560,
 )
 
 
@@ -227,8 +234,8 @@ _TESTIMAGEREQUEST_RESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=671,
-  serialized_end=698,
+  serialized_start=721,
+  serialized_end=748,
 )
 
 _TESTIMAGEREQUEST = _descriptor.Descriptor(
@@ -271,8 +278,8 @@ _TESTIMAGEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=513,
-  serialized_end=698,
+  serialized_start=563,
+  serialized_end=748,
 )
 
 
@@ -302,8 +309,8 @@ _TESTIMAGERESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=700,
-  serialized_end=734,
+  serialized_start=750,
+  serialized_end=784,
 )
 
 _IMAGE.fields_by_name['type'].enum_type = _IMAGE_TYPE
@@ -311,6 +318,7 @@ _IMAGE_TYPE.containing_type = _IMAGE
 _CREATEIMAGEREQUEST.fields_by_name['build_target'].message_type = chromiumos_dot_common__pb2._BUILDTARGET
 _CREATEIMAGEREQUEST.fields_by_name['image_types'].enum_type = _IMAGE_TYPE
 _CREATEIMAGERESULT.fields_by_name['images'].message_type = _IMAGE
+_CREATEIMAGERESULT.fields_by_name['failed_packages'].message_type = chromiumos_dot_common__pb2._PACKAGEINFO
 _TESTIMAGEREQUEST_RESULT.containing_type = _TESTIMAGEREQUEST
 _TESTIMAGEREQUEST.fields_by_name['image'].message_type = _IMAGE
 _TESTIMAGEREQUEST.fields_by_name['build_target'].message_type = chromiumos_dot_common__pb2._BUILDTARGET
@@ -372,9 +380,9 @@ _IMAGESERVICE = _descriptor.ServiceDescriptor(
   full_name='chromite.api.ImageService',
   file=DESCRIPTOR,
   index=0,
-  serialized_options=_b('\302\355\032\007\n\005image'),
-  serialized_start=737,
-  serialized_end=928,
+  serialized_options=_b('\302\355\032\t\n\005image\020\001'),
+  serialized_start=787,
+  serialized_end=964,
   methods=[
   _descriptor.MethodDescriptor(
     name='Create',
@@ -383,7 +391,7 @@ _IMAGESERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_CREATEIMAGEREQUEST,
     output_type=_CREATEIMAGERESULT,
-    serialized_options=_b('\302\355\032\002\020\001'),
+    serialized_options=None,
   ),
   _descriptor.MethodDescriptor(
     name='Test',
@@ -392,7 +400,7 @@ _IMAGESERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_TESTIMAGEREQUEST,
     output_type=_TESTIMAGERESULT,
-    serialized_options=_b('\302\355\032\002\020\001'),
+    serialized_options=None,
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_IMAGESERVICE)
