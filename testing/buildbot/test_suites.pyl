@@ -457,9 +457,13 @@
     },
 
     'chromeos_device_friendly_gtests_experimental': {
-      'base_unittests': {},
       'chrome_login_tast_tests': {},
-      'cros_vm_sanity_test': {},
+      'interactive_ui_tests': {
+        'args': [
+          '--dbus-stubs',
+          '--gtest_filter=SplitViewTest.SplitViewResize',
+        ],
+      },
       'services_unittests': {
         'args': [
           '--vpython-dir=../../vpython_dir_linux_amd64',
