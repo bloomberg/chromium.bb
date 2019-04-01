@@ -439,8 +439,7 @@ void V8EmbedderGraphBuilder::BuildEmbedderGraph() {
   // Stage 3: find transitive closure of the unknown nodes.
   // Nodes reachable only via pending activities are treated as unknown.
   VisitPendingActivities();
-  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled())
-    VisitBlinkRoots();
+  VisitBlinkRoots();
   while (!unknown_worklist_.empty()) {
     auto item = std::move(unknown_worklist_.back());
     unknown_worklist_.pop_back();
