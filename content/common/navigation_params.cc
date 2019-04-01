@@ -73,10 +73,12 @@ bool NavigationDownloadPolicy::IsType(NavigationDownloadType type) const {
 
 ResourceInterceptPolicy NavigationDownloadPolicy::GetResourceInterceptPolicy()
     const {
-  // Note: Will need to check each NavigationDownloadType case by case if some
-  // correspond to the |kAllowPluginOnly| policy. Currently every single
-  // NavigationDownloadType corresponds to |kAllowNone|, so it's fine to just
-  // check whether |disallowed_types| contains any bit at all.
+  if (disallowed_types.test(
+          static_cast<size_t>(NavigationDownloadType::kSandboxNoGesture)) ||
+      disallowed_types.test(
+          static_cast<size_t>(NavigationDownloadType::kOpenerCrossOrigin))) {
+    return ResourceInterceptPolicy::kAllowPluginOnly;
+  }
   return disallowed_types.any() ? ResourceInterceptPolicy::kAllowNone
                                 : ResourceInterceptPolicy::kAllowAll;
 }
