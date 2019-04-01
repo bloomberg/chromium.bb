@@ -11,11 +11,14 @@
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/test/test_data_retriever.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -115,10 +118,195 @@ TEST_F(BookmarkAppInstallManagerTest, FromInfo_InstallManagerDestroyed) {
         run_loop.Quit();
       }));
 
-  // Destroy InstallManager.
+  // Destroy InstallManager: Call Reset as if Profile gets destroyed.
   install_manager_->Reset();
   run_loop.Run();
 
+  // Delete InstallManager object.
+  install_manager_.reset();
+  EXPECT_TRUE(callback_called);
+}
+
+TEST_F(BookmarkAppInstallManagerTest, WithOptions_WebContentsDestroyed) {
+  const GURL app_url("https://example.com/path");
+  NavigateAndCommit(app_url);
+
+  web_app::InstallOptions install_options(
+      app_url, web_app::LaunchContainer::kWindow,
+      web_app::InstallSource::kExternalPolicy);
+
+  base::RunLoop run_loop;
+  bool callback_called = false;
+
+  install_manager_->InstallWebAppWithOptions(
+      web_contents(), install_options,
+      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                     web_app::InstallResultCode code) {
+        EXPECT_EQ(web_app::InstallResultCode::kWebContentsDestroyed, code);
+        EXPECT_EQ(web_app::AppId(), installed_app_id);
+        callback_called = true;
+        run_loop.Quit();
+      }));
+  EXPECT_FALSE(callback_called);
+
+  // Destroy WebContents.
+  DeleteContents();
+  EXPECT_EQ(nullptr, web_contents());
+
+  run_loop.Run();
+
+  EXPECT_TRUE(callback_called);
+}
+
+TEST_F(BookmarkAppInstallManagerTest,
+       WithOptions_WebContentsDestroyedAfterDataRetrieval) {
+  const GURL app_url("https://example.com/path");
+  NavigateAndCommit(app_url);
+
+  web_app::InstallOptions install_options(
+      app_url, web_app::LaunchContainer::kWindow,
+      web_app::InstallSource::kExternalPolicy);
+
+  base::RunLoop retrieval_run_loop;
+  bool data_retrieval_passed = false;
+
+  install_manager_->SetDataRetrieverFactoryForTesting(
+      base::BindLambdaForTesting([&]() {
+        WebApplicationInfo info;
+        info.app_url = app_url;
+        auto data_retriever = std::make_unique<web_app::TestDataRetriever>(
+            std::make_unique<WebApplicationInfo>(std::move(info)));
+
+        return std::unique_ptr<web_app::WebAppDataRetriever>(
+            std::move(data_retriever));
+      }));
+
+  install_manager_->SetBookmarkAppHelperFactoryForTesting(
+      base::BindLambdaForTesting([&](Profile* profile,
+                                     const WebApplicationInfo& web_app_info,
+                                     content::WebContents* web_contents,
+                                     WebappInstallSource install_source) {
+        data_retrieval_passed = true;
+        retrieval_run_loop.Quit();
+        return std::make_unique<BookmarkAppHelper>(
+            profile, web_app_info, web_contents, install_source);
+      }));
+
+  base::RunLoop install_run_loop;
+  bool callback_called = false;
+
+  install_manager_->InstallWebAppWithOptions(
+      web_contents(), install_options,
+      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                     web_app::InstallResultCode code) {
+        EXPECT_EQ(web_app::InstallResultCode::kWebContentsDestroyed, code);
+        EXPECT_EQ(web_app::AppId(), installed_app_id);
+        callback_called = true;
+        install_run_loop.Quit();
+      }));
+  EXPECT_FALSE(callback_called);
+
+  retrieval_run_loop.Run();
+  EXPECT_TRUE(data_retrieval_passed);
+  EXPECT_FALSE(callback_called);
+
+  // Destroy WebContents.
+  DeleteContents();
+  EXPECT_EQ(nullptr, web_contents());
+
+  install_run_loop.Run();
+  EXPECT_TRUE(callback_called);
+}
+
+TEST_F(BookmarkAppInstallManagerTest, WithOptions_InstallManagerDestroyed) {
+  const GURL app_url("https://example.com/path");
+  NavigateAndCommit(app_url);
+
+  web_app::InstallOptions install_options(
+      app_url, web_app::LaunchContainer::kWindow,
+      web_app::InstallSource::kExternalPolicy);
+
+  base::RunLoop run_loop;
+  bool callback_called = false;
+
+  install_manager_->InstallWebAppWithOptions(
+      web_contents(), install_options,
+      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                     web_app::InstallResultCode code) {
+        EXPECT_EQ(web_app::InstallResultCode::kInstallManagerDestroyed, code);
+        EXPECT_EQ(web_app::AppId(), installed_app_id);
+        callback_called = true;
+        run_loop.Quit();
+      }));
+  EXPECT_FALSE(callback_called);
+
+  // Destroy InstallManager: Call Reset as if Profile gets destroyed.
+  install_manager_->Reset();
+  run_loop.Run();
+
+  // Delete InstallManager object.
+  install_manager_.reset();
+
+  EXPECT_TRUE(callback_called);
+}
+
+TEST_F(BookmarkAppInstallManagerTest,
+       WithOptions_InstallManagerDestroyedAfterDataRetrieval) {
+  const GURL app_url("https://example.com/path");
+  NavigateAndCommit(app_url);
+
+  web_app::InstallOptions install_options(
+      app_url, web_app::LaunchContainer::kWindow,
+      web_app::InstallSource::kExternalPolicy);
+
+  base::RunLoop retrieval_run_loop;
+  bool data_retrieval_passed = false;
+
+  install_manager_->SetDataRetrieverFactoryForTesting(
+      base::BindLambdaForTesting([&]() {
+        WebApplicationInfo info;
+        info.app_url = app_url;
+        auto data_retriever = std::make_unique<web_app::TestDataRetriever>(
+            std::make_unique<WebApplicationInfo>(std::move(info)));
+
+        return std::unique_ptr<web_app::WebAppDataRetriever>(
+            std::move(data_retriever));
+      }));
+
+  install_manager_->SetBookmarkAppHelperFactoryForTesting(
+      base::BindLambdaForTesting([&](Profile* profile,
+                                     const WebApplicationInfo& web_app_info,
+                                     content::WebContents* web_contents,
+                                     WebappInstallSource install_source) {
+        data_retrieval_passed = true;
+        retrieval_run_loop.Quit();
+        return std::make_unique<BookmarkAppHelper>(
+            profile, web_app_info, web_contents, install_source);
+      }));
+
+  base::RunLoop install_run_loop;
+  bool callback_called = false;
+
+  install_manager_->InstallWebAppWithOptions(
+      web_contents(), install_options,
+      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                     web_app::InstallResultCode code) {
+        EXPECT_EQ(web_app::InstallResultCode::kInstallManagerDestroyed, code);
+        EXPECT_EQ(web_app::AppId(), installed_app_id);
+        callback_called = true;
+        install_run_loop.Quit();
+      }));
+  EXPECT_FALSE(callback_called);
+
+  retrieval_run_loop.Run();
+  EXPECT_TRUE(data_retrieval_passed);
+  EXPECT_FALSE(callback_called);
+
+  // Destroy InstallManager: Call Reset as if Profile gets destroyed.
+  install_manager_->Reset();
+  install_run_loop.Run();
+
+  // Delete InstallManager object.
   install_manager_.reset();
   EXPECT_TRUE(callback_called);
 }
