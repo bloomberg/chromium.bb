@@ -117,6 +117,12 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return depends_on_percentage_block_size_;
   }
 
+  // Returns true if we have a descendant within this formatting context, which
+  // is potentially above our block-start edge.
+  bool MayHaveDescendantAboveBlockStart() const {
+    return may_have_descendant_above_block_start_;
+  }
+
   // Returns true if the space stored with this layout result, is valid.
   bool HasValidConstraintSpaceForCaching() const { return has_valid_space_; }
 
@@ -180,6 +186,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   unsigned adjoining_floats_ : 2;  // NGFloatTypes
 
   unsigned has_orthogonal_flow_roots_ : 1;
+  unsigned may_have_descendant_above_block_start_ : 1;
   unsigned depends_on_percentage_block_size_ : 1;
 
   unsigned status_ : 1;

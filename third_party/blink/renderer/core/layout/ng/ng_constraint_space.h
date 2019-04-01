@@ -421,8 +421,7 @@ class CORE_EXPORT NGConstraintSpace final {
   // to verify that any constraint space size (available size, percentage size,
   // and so on) and BFC offset changes won't require re-layout, before skipping.
   bool MaySkipLayout(const NGConstraintSpace& other) const {
-    if (!bitfields_.MaySkipLayout(other.bitfields_) ||
-        exclusion_space_ != other.exclusion_space_)
+    if (!bitfields_.MaySkipLayout(other.bitfields_))
       return false;
 
     if (!HasRareData() && !other.HasRareData())
@@ -531,7 +530,6 @@ class CORE_EXPORT NGConstraintSpace final {
     bool MaySkipLayout(const RareData& other) const {
       return margin_strut == other.margin_strut &&
              floats_bfc_block_offset == other.floats_bfc_block_offset &&
-             clearance_offset == other.clearance_offset &&
              fragmentainer_block_size == other.fragmentainer_block_size &&
              fragmentainer_space_at_bfc_start ==
                  other.fragmentainer_space_at_bfc_start &&
@@ -543,7 +541,6 @@ class CORE_EXPORT NGConstraintSpace final {
     bool IsInitialForMaySkipLayout() const {
       return margin_strut == NGMarginStrut() &&
              floats_bfc_block_offset == base::nullopt &&
-             clearance_offset == LayoutUnit::Min() &&
              fragmentainer_block_size == NGSizeIndefinite &&
              fragmentainer_space_at_bfc_start == NGSizeIndefinite &&
              block_direction_fragmentation_type == kFragmentNone;

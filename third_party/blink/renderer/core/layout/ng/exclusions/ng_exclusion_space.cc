@@ -237,9 +237,6 @@ void NGExclusionSpaceInternal::Add(scoped_refptr<const NGExclusion> exclusion) {
           exclusions_->GetVector().begin(),
           exclusions_->GetVector().begin() + num_exclusions_);
       std::swap(exclusions_, exclusions);
-
-      // The derived_geometry_ member is now invalid.
-      derived_geometry_ = nullptr;
     }
   }
 

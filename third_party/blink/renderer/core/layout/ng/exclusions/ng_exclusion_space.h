@@ -101,6 +101,31 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     exclusions_ = other.exclusions_;
   }
 
+  // See |NGExclusionSpace::MoveAndUpdateDerivedGeometry|.
+  void MoveAndUpdateDerivedGeometry(const NGExclusionSpaceInternal& other) {
+    if (!other.derived_geometry_)
+      return;
+
+    derived_geometry_ = std::move(other.derived_geometry_);
+    other.derived_geometry_ = nullptr;
+
+    // Iterate through all the exclusions which were added by the layout, and
+    // update the DerivedGeometry.
+    for (wtf_size_t i = other.num_exclusions_; i < num_exclusions_; ++i) {
+      const NGExclusion& exclusion = *exclusions_->at(i);
+
+      // If we come across an exclusion with shape data, we opt-out of this
+      // optimization.
+      if (!track_shape_exclusions_ && exclusion.shape_data) {
+        track_shape_exclusions_ = true;
+        derived_geometry_ = nullptr;
+        return;
+      }
+
+      derived_geometry_->Add(exclusion);
+    }
+  }
+
   // See |NGExclusionSpace::MergeExclusionSpaces|.
   void MergeExclusionSpaces(const NGBfcDelta& offset_delta,
                             const NGExclusionSpaceInternal& previous_output,
@@ -410,6 +435,15 @@ class CORE_EXPORT NGExclusionSpace {
 
     exclusion_space_ = std::make_unique<NGExclusionSpaceInternal>();
     exclusion_space_->PreInitialize(*other.exclusion_space_);
+  }
+
+  // Shifts the DerivedGeometry data-structure to this exclusion space, and
+  // adds any new exclusions.
+  void MoveAndUpdateDerivedGeometry(const NGExclusionSpace& other) const {
+    if (!exclusion_space_ || !other.exclusion_space_)
+      return;
+
+    exclusion_space_->MoveAndUpdateDerivedGeometry(*other.exclusion_space_);
   }
 
   // This produces a new exclusion space for a |NGLayoutResult| which is being

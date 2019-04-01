@@ -71,6 +71,8 @@ NGLayoutResult::NGLayoutResult(
       is_pushed_by_floats_(other.is_pushed_by_floats_),
       adjoining_floats_(other.adjoining_floats_),
       has_orthogonal_flow_roots_(other.has_orthogonal_flow_roots_),
+      may_have_descendant_above_block_start_(
+          other.may_have_descendant_above_block_start_),
       depends_on_percentage_block_size_(
           other.depends_on_percentage_block_size_),
       status_(other.status_) {}
@@ -90,6 +92,8 @@ NGLayoutResult::NGLayoutResult(NGContainerFragmentBuilder* builder,
       is_pushed_by_floats_(builder->is_pushed_by_floats_),
       adjoining_floats_(builder->adjoining_floats_),
       has_orthogonal_flow_roots_(builder->has_orthogonal_flow_roots_),
+      may_have_descendant_above_block_start_(
+          builder->may_have_descendant_above_block_start_),
       depends_on_percentage_block_size_(DependsOnPercentageBlockSize(*builder)),
       status_(kSuccess) {}
 
