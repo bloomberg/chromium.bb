@@ -121,11 +121,6 @@ char kTSanDefaultSuppressions[] =
     "race:content::"
     "VideoCaptureImplTest::MockVideoCaptureImpl::~MockVideoCaptureImpl\n"
 
-    // http://crbug.com/334140
-    "race:CommandLine::HasSwitch\n"
-    "race:CommandLine::current_process_commandline_\n"
-    "race:CommandLine::GetSwitchValueASCII\n"
-
     // http://crbug.com/347534
     "race:v8::internal::V8::TearDown\n"
 
@@ -208,6 +203,9 @@ char kTSanDefaultSuppressions[] =
 
     // http://crbug.com/797998
     "race:content::SandboxIPCHandler::HandleLocaltime\n"
+
+    // https://crbug.com/946481
+    "race:content::DumpAccessibilityTestBase::RunTestForPlatform\n"
 
     // End of suppressions.
     ;  // Please keep this semicolon.
