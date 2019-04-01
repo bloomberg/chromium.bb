@@ -78,6 +78,11 @@ class XmlStyle(object):
     self.tags_that_allow_single_line = tags_that_allow_single_line
     self.tags_alphabetization_rules = tags_alphabetization_rules
 
+    self.wrapper = textwrap.TextWrapper()
+    self.wrapper.break_on_hyphens = False
+    self.wrapper.break_long_words = False
+    self.wrapper.width = WRAP_COLUMN
+
   def PrettyPrintXml(self, tree):
     tree = self._TransformByAlphabetizing(tree)
     tree = self.PrettyPrintNode(tree)
@@ -158,6 +163,127 @@ class XmlStyle(object):
       self._TransformByAlphabetizing(c)
     return node
 
+  def _PrettyPrintText(self, node, indent):
+    # Wrap each paragraph in the text to fit in the 80 column limit.
+    self.wrapper.initial_indent = ' ' * indent
+    self.wrapper.subsequent_indent = ' ' * indent
+    text = XmlEscape(node.data)
+    paragraphs = SplitParagraphs(text)
+    # Wrap each paragraph and separate with two newlines.
+    return '\n\n'.join(self.wrapper.fill(p) for p in paragraphs)
+
+  def _PrettyPrintElement(self, node, indent):
+    # Check if tag name is valid.
+    if node.tagName not in self.attribute_order:
+      logging.error('Unrecognized tag "%s"', node.tagName)
+      raise Error('Unrecognized tag "%s"', node.tagName)
+
+    # Newlines.
+    newlines_after_open, newlines_before_close, newlines_after_close = (
+        self.tags_that_have_extra_newline.get(node.tagName, (1, 1, 0)))
+    # Open the tag.
+    s = ' ' * indent + '<' + node.tagName
+
+    # Calculate how much space to allow for the '>' or '/>'.
+    closing_chars = 1
+    if not node.childNodes:
+      closing_chars = 2
+
+    attributes = node.attributes.keys()
+    required_attributes = [attribute for attribute in self.required_attributes
+                           if attribute in self.attribute_order[node.tagName]]
+    missing_attributes = [attribute for attribute in required_attributes
+                          if attribute not in attributes]
+
+    for attribute in missing_attributes:
+      logging.error(
+          'Missing attribute "%s" in tag "%s"', attribute, node.tagName)
+    if missing_attributes:
+      missing_attributes_str = (
+          ', '.join('"%s"' % attribute for attribute in missing_attributes))
+      present_attributes = [
+          ' {0}="{1}"'.format(name, value)
+          for name, value in node.attributes.items()]
+      node_str = '<{0}{1}>'.format(node.tagName, ''.join(present_attributes))
+      raise Error(
+          'Missing attributes {0} in tag "{1}"'.format(
+              missing_attributes_str, node_str))
+
+    # Pretty-print the attributes.
+    if attributes:
+      # Reorder the attributes.
+      unrecognized_attributes = (
+          [a for a in attributes
+           if a not in self.attribute_order[node.tagName]])
+      attributes = [a for a in self.attribute_order[node.tagName]
+                    if a in attributes]
+
+      for a in unrecognized_attributes:
+        logging.error(
+            'Unrecognized attribute "%s" in tag "%s"', a, node.tagName)
+      if unrecognized_attributes:
+        raise Error(
+            'Unrecognized attributes {0} in tag "{1}"'.format(
+                ', '.join('"{0}"'.format(a) for a in unrecognized_attributes),
+                node.tagName))
+
+      for a in attributes:
+        value = XmlEscape(node.attributes[a].value)
+        # Replace sequences of whitespace with single spaces.
+        words = value.split()
+        a_str = ' %s="%s"' % (a, ' '.join(words))
+        # Start a new line if the attribute will make this line too long.
+        if LastLineLength(s) + len(a_str) + closing_chars > WRAP_COLUMN:
+          s += '\n' + ' ' * (indent + 3)
+        # Output everything up to the first quote.
+        s += ' %s="' % (a)
+        value_indent_level = LastLineLength(s)
+        # Output one word at a time, splitting to the next line where
+        # necessary.
+        column = value_indent_level
+        for i, word in enumerate(words):
+          # This is slightly too conservative since not every word will be
+          # followed by the closing characters...
+          if i > 0 and (column + len(word) + 1 + closing_chars > WRAP_COLUMN):
+            s = s.rstrip()  # remove any trailing whitespace
+            s += '\n' + ' ' * value_indent_level
+            column = value_indent_level
+          s += word + ' '
+          column += len(word) + 1
+        s = s.rstrip()  # remove any trailing whitespace
+        s += '"'
+      s = s.rstrip()  # remove any trailing whitespace
+
+    # Pretty-print the child nodes.
+    if node.childNodes:
+      s += '>'
+      # Calculate the new indent level for child nodes.
+      new_indent = indent
+      if node.tagName not in self.tags_that_dont_indent:
+        new_indent += 2
+      child_nodes = node.childNodes
+
+      # Recursively pretty-print the child nodes.
+      child_nodes = [self.PrettyPrintNode(n, indent=new_indent)
+                     for n in child_nodes]
+      child_nodes = [c for c in child_nodes if c.strip()]
+
+      # Determine whether we can fit the entire node on a single line.
+      close_tag = '</%s>' % node.tagName
+      space_left = WRAP_COLUMN - LastLineLength(s) - len(close_tag)
+      if (node.tagName in self.tags_that_allow_single_line and
+          len(child_nodes) == 1 and
+          len(child_nodes[0].strip()) <= space_left):
+        s += child_nodes[0].strip()
+      else:
+        s += '\n' * newlines_after_open + '\n'.join(child_nodes)
+        s += '\n' * newlines_before_close + ' ' * indent
+      s += close_tag
+    else:
+      s += '/>'
+    s += '\n' * newlines_after_close
+    return s
+
   def PrettyPrintNode(self, node, indent=0):
     """Pretty-prints the given XML node at the given indent level.
 
@@ -177,130 +303,11 @@ class XmlStyle(object):
 
     # Handle text nodes.
     if node.nodeType == xml.dom.minidom.Node.TEXT_NODE:
-      # Wrap each paragraph in the text to fit in the 80 column limit.
-      wrapper = textwrap.TextWrapper()
-      wrapper.initial_indent = ' ' * indent
-      wrapper.subsequent_indent = ' ' * indent
-      wrapper.break_on_hyphens = False
-      wrapper.break_long_words = False
-      wrapper.width = WRAP_COLUMN
-      text = XmlEscape(node.data)
-      paragraphs = SplitParagraphs(text)
-      # Wrap each paragraph and separate with two newlines.
-      return '\n\n'.join(wrapper.fill(p) for p in paragraphs)
+      return self._PrettyPrintText(node, indent)
 
     # Handle element nodes.
     if node.nodeType == xml.dom.minidom.Node.ELEMENT_NODE:
-      # Check if tag name is valid.
-      if node.tagName not in self.attribute_order:
-        logging.error('Unrecognized tag "%s"', node.tagName)
-        raise Error('Unrecognized tag "%s"', node.tagName)
-
-      # Newlines.
-      newlines_after_open, newlines_before_close, newlines_after_close = (
-          self.tags_that_have_extra_newline.get(node.tagName, (1, 1, 0)))
-      # Open the tag.
-      s = ' ' * indent + '<' + node.tagName
-
-      # Calculate how much space to allow for the '>' or '/>'.
-      closing_chars = 1
-      if not node.childNodes:
-        closing_chars = 2
-
-      attributes = node.attributes.keys()
-      required_attributes = [attribute for attribute in self.required_attributes
-                             if attribute in self.attribute_order[node.tagName]]
-      missing_attributes = [attribute for attribute in required_attributes
-                            if attribute not in attributes]
-
-      for attribute in missing_attributes:
-        logging.error(
-            'Missing attribute "%s" in tag "%s"', attribute, node.tagName)
-      if missing_attributes:
-        missing_attributes_str = (
-            ', '.join('"%s"' % attribute for attribute in missing_attributes))
-        present_attributes = [
-            ' {0}="{1}"'.format(name, value)
-            for name, value in node.attributes.items()]
-        node_str = '<{0}{1}>'.format(node.tagName, ''.join(present_attributes))
-        raise Error(
-            'Missing attributes {0} in tag "{1}"'.format(
-                missing_attributes_str, node_str))
-
-      # Pretty-print the attributes.
-      if attributes:
-        # Reorder the attributes.
-        unrecognized_attributes = (
-            [a for a in attributes
-             if a not in self.attribute_order[node.tagName]])
-        attributes = [a for a in self.attribute_order[node.tagName]
-                      if a in attributes]
-
-        for a in unrecognized_attributes:
-          logging.error(
-              'Unrecognized attribute "%s" in tag "%s"', a, node.tagName)
-        if unrecognized_attributes:
-          raise Error(
-              'Unrecognized attributes {0} in tag "{1}"'.format(
-                  ', '.join('"{0}"'.format(a) for a in unrecognized_attributes),
-                  node.tagName))
-
-        for a in attributes:
-          value = XmlEscape(node.attributes[a].value)
-          # Replace sequences of whitespace with single spaces.
-          words = value.split()
-          a_str = ' %s="%s"' % (a, ' '.join(words))
-          # Start a new line if the attribute will make this line too long.
-          if LastLineLength(s) + len(a_str) + closing_chars > WRAP_COLUMN:
-            s += '\n' + ' ' * (indent + 3)
-          # Output everything up to the first quote.
-          s += ' %s="' % (a)
-          value_indent_level = LastLineLength(s)
-          # Output one word at a time, splitting to the next line where
-          # necessary.
-          column = value_indent_level
-          for i, word in enumerate(words):
-            # This is slightly too conservative since not every word will be
-            # followed by the closing characters...
-            if i > 0 and (column + len(word) + 1 + closing_chars > WRAP_COLUMN):
-              s = s.rstrip()  # remove any trailing whitespace
-              s += '\n' + ' ' * value_indent_level
-              column = value_indent_level
-            s += word + ' '
-            column += len(word) + 1
-          s = s.rstrip()  # remove any trailing whitespace
-          s += '"'
-        s = s.rstrip()  # remove any trailing whitespace
-
-      # Pretty-print the child nodes.
-      if node.childNodes:
-        s += '>'
-        # Calculate the new indent level for child nodes.
-        new_indent = indent
-        if node.tagName not in self.tags_that_dont_indent:
-          new_indent += 2
-        child_nodes = node.childNodes
-
-        # Recursively pretty-print the child nodes.
-        child_nodes = [self.PrettyPrintNode(n, indent=new_indent)
-                       for n in child_nodes]
-        child_nodes = [c for c in child_nodes if c.strip()]
-
-        # Determine whether we can fit the entire node on a single line.
-        close_tag = '</%s>' % node.tagName
-        space_left = WRAP_COLUMN - LastLineLength(s) - len(close_tag)
-        if (node.tagName in self.tags_that_allow_single_line and
-            len(child_nodes) == 1 and
-            len(child_nodes[0].strip()) <= space_left):
-          s += child_nodes[0].strip()
-        else:
-          s += '\n' * newlines_after_open + '\n'.join(child_nodes)
-          s += '\n' * newlines_before_close + ' ' * indent
-        s += close_tag
-      else:
-        s += '/>'
-      s += '\n' * newlines_after_close
-      return s
+      return self._PrettyPrintElement(node, indent)
 
     # Handle comment nodes.
     if node.nodeType == xml.dom.minidom.Node.COMMENT_NODE:
