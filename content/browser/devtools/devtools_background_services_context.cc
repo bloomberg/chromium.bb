@@ -56,6 +56,12 @@ DevToolsBackgroundServicesContext::DevToolsBackgroundServicesContext(
   for (const auto& expiration_time : expiration_times) {
     DCHECK(devtools::proto::BackgroundService_IsValid(expiration_time.first));
     expiration_times_[expiration_time.first] = expiration_time.second;
+
+    auto service =
+        static_cast<devtools::proto::BackgroundService>(expiration_time.first);
+    // If the recording permission for |service| has expired, set it to null.
+    if (IsRecordingExpired(service))
+      expiration_times_[expiration_time.first] = base::Time();
   }
 }
 
@@ -75,8 +81,6 @@ void DevToolsBackgroundServicesContext::StartRecording(
     devtools::proto::BackgroundService service) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  DCHECK(!IsRecording(service));
-
   // TODO(rayankans): Make the time delay finch configurable.
   base::Time expiration_time = base::Time::Now() + base::TimeDelta::FromDays(3);
   expiration_times_[service] = expiration_time;
@@ -92,9 +96,7 @@ void DevToolsBackgroundServicesContext::StopRecording(
     devtools::proto::BackgroundService service) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  DCHECK(IsRecording(service));
   expiration_times_[service] = base::Time();
-
   GetContentClient()->browser()->UpdateDevToolsBackgroundServiceExpiration(
       browser_context_, service, base::Time());
 
@@ -104,7 +106,16 @@ void DevToolsBackgroundServicesContext::StopRecording(
 
 bool DevToolsBackgroundServicesContext::IsRecording(
     devtools::proto::BackgroundService service) {
-  return base::Time::Now() < expiration_times_[service];
+  // Returns whether |service| has been enabled. When the expiration time has
+  // been met it will be lazily updated to be null.
+  return !expiration_times_[service].is_null();
+}
+
+bool DevToolsBackgroundServicesContext::IsRecordingExpired(
+    devtools::proto::BackgroundService service) {
+  // Copy the expiration time to avoid data races.
+  const base::Time expiration_time = expiration_times_[service];
+  return !expiration_time.is_null() && expiration_time < base::Time::Now();
 }
 
 void DevToolsBackgroundServicesContext::GetLoggedBackgroundServiceEvents(
@@ -198,6 +209,17 @@ void DevToolsBackgroundServicesContext::LogBackgroundServiceEvent(
   if (!IsRecording(service))
     return;
 
+  if (IsRecordingExpired(service)) {
+    // We should stop recording because of the expiration time. We should
+    // also inform the observers that we stopped recording.
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(
+            &DevToolsBackgroundServicesContext::OnRecordingTimeExpired,
+            weak_ptr_factory_.GetWeakPtr(), service));
+    return;
+  }
+
   devtools::proto::BackgroundServiceEvent event;
   event.set_timestamp(
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
@@ -226,6 +248,16 @@ void DevToolsBackgroundServicesContext::NotifyEventObservers(
 
   for (EventObserver& observer : observers_)
     observer.OnEventReceived(event);
+}
+
+void DevToolsBackgroundServicesContext::OnRecordingTimeExpired(
+    devtools::proto::BackgroundService service) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // This could have been stopped by the user in the meanwhile, or we
+  // received duplicate time expiry events.
+  if (IsRecordingExpired(service))
+    StopRecording(service);
 }
 
 }  // namespace content
