@@ -730,13 +730,6 @@
       Jika anda menetapkan dasar ini, pengguna tidak boleh menukar atau mengatasinya. Namun begitu, pengguna masih boleh mendayakan/melumpuhkan kebolehaksesan papan kekunci pada skrin yang akan diutamakan berbanding papan kekunci maya yang dikawal oleh dasar ini. Lihat dasar |VirtualKeyboardEnabled| untuk mengawal kebolehaksesan papan kekunci pada skrin.
 
       Jika dasar ini dibiarkan tanpa ditetapkan, papan kekunci pada skrin dilumpuhkan pada mulanya tetapi pengguna boleh mendayakannya pada bila-bila masa. Peraturan heuristik turut boleh digunakan untuk memutuskan masa papan kekunci dipaparkan.</translation>
-<translation id="228659285074633994">Menetapkan penjang masa tanpa input pengguna selepas dialog amaran dipaparkan apabila dijalankan dengan kuasa AC.
-
-          Apabila dasar ini ditetapkan, ia menetapkan panjang masa yang pengguna mesti kekal melahu sebelum <ph name="PRODUCT_OS_NAME" /> memaparkan dialog amaran yang memberitahu pengguna bahawa tindakan melahu akan diambil.
-
-          Apabila dasar ini tidak ditetapkan, dialog amaran tidak akan dipaparkan.
-
-          Nilai dasar harus dinyatakan dalam milisaat. Nilai diapit supaya kurang daripada atau sama dengan kelewatan melahu.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> boleh menggunakan perkhidmatan web Google untuk membantu menyelesaikan kesilapan ejaan. Jika tetapan ini didayakan, maka perkhidmatan ini sentiasa akan digunakan. Jika tetapan ini dilumpuhkan, maka perkhidmatan ini tidak akan digunakan.
 
       Semakan ejaan masih boleh dilakukan menggunakan kamus yang dimuat turun; dasar ini hanya mengawal penggunaan perkhidmatan dalam talian.
@@ -762,9 +755,6 @@
 <translation id="2299220924812062390">Tentukan senarai pemalam yang didayakan</translation>
 <translation id="2303795211377219696">Dayakan Autolengkap untuk kad kredit</translation>
 <translation id="2309390639296060546">Tetapan geolokasi lalai</translation>
-<translation id="2312134445771258233">Membenarkan anda mengkonfigurasi halaman yang dimuatkan pada permulaan.
-
-      Kandungan senarai 'URL untuk dibuka semasa permulaan' diabaikan melainkan anda memilih 'Buka senarai URL' dalam 'Tindakan pada permulaan'.</translation>
 <translation id="2327252517317514801">Tentukan domain yang dibenarkan untuk mengakses G Suite</translation>
 <translation id="237494535617297575">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang dibenarkan untuk memaparkan pemberitahuan.
 
@@ -2219,13 +2209,6 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
 
       Jika dasar ini tidak ditetapkan, atau ditetapkan pada rentetan kosong atau julat port yang tidak sah, WebRTC dibenarkan untuk menggunakan mana-mana port UDP setempat yang tersedia.</translation>
 <translation id="5290940294294002042">Tentukan senarai pemalam yang boleh didayakan atau dilumpuhkan pengguna</translation>
-<translation id="5304269353650269372">Menetapkan penjang masa tanpa input pengguna selepas dialog amaran dipaparkan apabila dijalankan dengan kuasa bateri.
-
-          Apabila dasar ini ditetapkan, panjang masa yang pengguna mesti kekal melahu sebelum <ph name="PRODUCT_OS_NAME" /> memaparkan dialog amaran ditentukan yang memberitahu pengguna bahawa tindakan melahu akan diambil.
-
-          Apabila dasar ini tidak ditetapkan, dialog amaran tidak akan dipaparkan.
-
-          Nilai dasar harus dinyatakan dalam milisaat. Nilai diapit supaya kurang daripada atau sama dengan kelewatan melahu.</translation>
 <translation id="5307432759655324440">Ketersediaan mod Inkognito</translation>
 <translation id="5318185076587284965">Dayakan penggunaan pelayan ganti oleh hos akses jauh.</translation>
 <translation id="5323128137188992869">Benarkan kandungan dihantar ke peranti menggunakan <ph name="PRODUCT_NAME" />.
@@ -3237,17 +3220,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Main balik automatik hanya dibenarkan untuk domain yang disenaraikan dalam dasar <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> dengan jelas. Jika anda mahu mendayakan main balik automatik untuk semua tapak, pertimbangkan untuk menambahkan http://* dan https://* pada senarai ini.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, pengguna akan dapat menukar tetapan ini secara manual.</translation>
-<translation id="7229876938563670511">Mengkonfigurasi URL halaman utama lalai dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukarnya.
-
-          Halaman utama ialah halaman yang dibuka oleh butang Skrin Utama. Halaman yang dibuka semasa permulaan dikawal oleh dasar RestoreOnStartup.
-
-          Jenis halaman utama boleh ditetapkan kepada URL yang anda tentukan di sini atau ditetapkan kepada Halaman Tab Baharu. Jika anda memilih Halaman Tab Baharu, maka dasar ini tidak terpakai.
-
-          Jika anda mendayakan tetapan ini, pengguna tidak boleh menukar URL halaman utama mereka dalam <ph name="PRODUCT_NAME" />, tetapi mereka masih boleh memilih Halaman Tab Baharu sebagai halaman utama mereka.
-
-          Membiarkan dasar ini tidak ditetapkan akan membolehkan pengguna memilih sendiri halaman utama mereka jika HomepageIsNewTabPage tidak ditetapkan juga.
-
-          Dasar ini hanya tersedia pada tika Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" /> atau tika Windows 10 Pro atau Enterprise yang didaftarkan untuk pengurusan peranti.</translation>
 <translation id="7229975860249300121">Mengandungi ungkapan nalar yang digunakan untuk menentukan akaun Google yang boleh ditetapkan sebagai akaun utama penyemak imbas dalam <ph name="PRODUCT_NAME" /> (iaitu akaun yang dipilih semasa aliran ikut serta Penyegerakan).
 
       Ralat yang berkenaan akan dipaparkan jika pengguna cuba menetapkan akaun utama penyemak imbas dengan nama pengguna yang tidak sepadan dengan corak ini.
@@ -4205,30 +4177,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
           Disokong pada <ph name="PRODUCT_OS_NAME" /> versi 70 ke atas. Untuk klien lama, nilai ini bermakna pengunduran telah dilumpuhkan.</translation>
 <translation id="9096086085182305205">Senarai putih pelayan pengesahan</translation>
 <translation id="9098553063150791878">Dasar untuk pengesahan HTTP</translation>
-<translation id="9103061223348895346">Dasar ini mengawal berbilang tetapan untuk strategi pengurusan kuasa apabila pengguna melahu.
-
-          Terdapat empat jenis tindakan:
-          * Skrin akan dimalapkan jika pengguna terus melahu sepanjang tempoh yang ditetapkan oleh |ScreenDim|.
-          * Skrin akan dimatikan jika pengguna terus melahu sepanjang tempoh yang ditetapkan oleh |ScreenOff|.
-          * Dialog amaran akan dipaparkan jika pengguna terus melahu sepanjang tempoh yang ditetapkan oleh |IdleWarning|, yang memberitahu pengguna bahawa tindakan melahu akan diambil.
-          * Tindakan yang ditetapkan oleh |IdleAction| akan diambil jika pengguna terus melahu sepanjang tempoh yang ditetapkan oleh |Idle|.
-
-          Bagi setiap tindakan di atas, kelewatan harus dinyatakan dalam milisaat dan perlu ditetapkan kepada nilai yang lebih besar daripada sifar untuk mencetuskan tindakan yang ditetapkan. Sekiranya kelewatan ditetapkan kepada sifar, <ph name="PRODUCT_OS_NAME" /> tidak akan mengambil tindakan yang ditetapkan.
-
-          Bagi setiap kelewatan di atas, apabila tempoh masa tidak ditetapkan, nilai lalai akan digunakan.
-
-          Sila ambil perhatian bahawa nilai |ScreenDim| akan dihadkan kepada kurang daripada atau sama dengan |ScreenOff|, |ScreenOff| dan |IdleWarning| akan dihadkan kepada kurang daripada atau sama dengan |Idle|.
-
-          |IdleAction| boleh jadi satu daripada empat tindakan yang berkemungkinan:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu penggantungan.
-
-          Terdapat juga tetapan berasingan untuk kuasa AC dan bateri.
-          </translation>
 <translation id="9105265795073104888">Hanya subset pilihan konfigurasi proksi disediakan kepada apl Android. Apl Android boleh memilih untuk menggunakan proksi secara sukarela. Anda tidak boleh memaksanya untuk menggunakan proksi.</translation>
 <translation id="9106865192244721694">Benarkan WebUSB di tapak ini</translation>
 <translation id="9112727953998243860">Fail konfigurasi pencetak perusahaan</translation>
@@ -4287,13 +4235,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Jika dasar ini ditetapkan kepada palsu, 'Pengepala dan pengaki' tidak dipilih dalam dialog prapaparan cetak dan pengguna tidak dapat mengubahnya.
 
       Jika dasar ditetapkan kepada benar, 'Pengepala dan pengaki' dipilih dalam dialog prapaparan cetak dan pengguna tidak dapat mengubahnya.</translation>
-<translation id="9210953373038593554">Mengkonfigurasi jenis pengesahan untuk log masuk SAML.
-
-      Apabila dasar ini tidak ditetapkan atau ditetapkan kepada Lalai (nilai 0), gelagat log masuk SAML ditentukan oleh penyemak imbas bergantung pada faktor lain. Dalam senario paling asas, pengesahan pengguna dan perlindungan data pengguna dicache adalah berdasarkan kata laluan yang dimasukkan secara manual oleh pengguna.
-
-      Apabila dasar ini ditetapkan kepada ClientCertificate (nilai 1), pengesahan sijil pelanggan digunakan untuk pengguna yang baru ditambahkan, yang log masuk melalui SAML. Tiada kata laluan digunakan untuk pengguna sedemikian dan data setempat mereka yang dicache dilindungi menggunakan kunci kriptografi yang sepadan. Contohnya, tetapan ini membenarkan konfigurasi kad pintar dilakukan berdasarkan pengesahan pengguna (harap maklum bahawa apl perisian tengah kad pintar perlu dipasang melalui dasar DeviceLoginScreenAppInstallList).
-
-      Dasar ini hanya memberi kesan pada pengguna yang membuat pengesahan menggunakan SAML.</translation>
 <translation id="9213347477683611358">Mengkonfigurasikan imej kertas dinding tahap peranti yang dipaparkan pada skrin log masuk jika belum ada pengguna yang pernah log masuk ke peranti. Dasar ini ditetapkan dengan menentukan URL tempat peranti OS Chrome boleh memuat turun imej kertas dinding itu dan cincangan kriptografi digunakan untuk mengesahkan integriti muat turun itu. Imej mestilah dalam format JPEG dan saiznya tidak boleh melebihi 16MB. URL mestilah boleh diakses tanpa sebarang pengesahan. Imej kertas dinding dimuat turun dan dicache. Imej kertas dinding akan dimuat turun semula setiap kali URL atau cincangan berubah.
 
       Dasar ini hendaklah ditetapkan sebagai rentetan yang menyatakan URL dan cincangan dalam format JSON, mis.,

@@ -8,6 +8,7 @@
 <translation id="1664224225747386870">Ништа није снимљено</translation>
 <translation id="1862930711583847113">Извоз датотеке <ph name="FILE" /> није успео</translation>
 <translation id="2036868001356139588">Трајање тајмера</translation>
+<translation id="2050339315714019657">Вертикално</translation>
 <translation id="2064538373111010176">Kamera <ph name="CAMERA" /> је активна</translation>
 <translation id="229579744168541441">Извези на диск</translation>
 <translation id="2501278716633472235">Назад</translation>
@@ -21,13 +22,16 @@
 <translation id="3183731565330012717">Тип мреже</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3569311554794739032">Желите ли стварно да уклоните датотеку <ph name="FILE" />?</translation>
+<translation id="3810838688059735925">Видео</translation>
 <translation id="4279490309300973883">Пресликавање</translation>
 <translation id="4445542136948522167">Заустави снимање слике</translation>
+<translation id="4628948037717959914">Слика</translation>
 <translation id="4649291346448517080">Чување датотеке није успело</translation>
 <translation id="4890010094662541459">3×3</translation>
 <translation id="5057360777601936059">Камера тренутно није доступна.
         Проверите да ли је камера исправно повезана.</translation>
 <translation id="5152121255775685072">Иди у галерију</translation>
+<translation id="5671277269877808209">Квадрат</translation>
 <translation id="5869546221129391014">Мрежа</translation>
 <translation id="6073451960410192870">Заустави снимање</translation>
 <translation id="6233780560267770709">3 са 3</translation>

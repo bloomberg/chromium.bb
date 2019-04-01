@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
+<translation id="1002439864875515590">Nếu bạn đặt chính sách này thành một chuỗi trống hoặc không định cấu hình, thì <ph name="PRODUCT_OS_NAME" /> sẽ không hiển thị tùy chọn tự động hoàn thành trong luồng đăng nhập của người dùng.
+      Nếu bạn đặt chính sách này thành một chuỗi biểu thị tên miền, thì <ph name="PRODUCT_OS_NAME" /> sẽ hiển thị tùy chọn tự động hoàn thành khi người dùng đăng nhập để họ chỉ cần nhập tên người dùng mà không cần nhập phần mở rộng tên miền.  Người dùng có thể ghi đè phần mở rộng tên miền này.
+      Nếu giá trị của chính sách không phải là một miền hợp lệ, thì chính sách sẽ không áp dụng.</translation>
 <translation id="101438888985615157">Xoay màn hình 180 độ</translation>
 <translation id="1016912092715201525">Định cấu hình các lần kiểm tra trình duyệt mặc định trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi những cấu hình này.
 
@@ -722,13 +725,6 @@
       Nếu bạn đặt chính sách này, người dùng không thể thay đổi hoặc ghi đè chính sách. Tuy nhiên, người dùng sẽ vẫn có thể bật/tắt bàn phím trên màn hình trợ năng. Bàn phím này được ưu tiên hơn bàn phím ảo do chính sách này kiểm soát. Hãy xem chính sách |VirtualKeyboardEnabled| để kiểm soát bàn phím trên màn hình trợ năng.
 
       Nếu chính sách này không được đặt, bàn phím trên màn hình lúc đầu bị tắt nhưng người dùng có thể bật lại bất kỳ lúc nào. Các quy tắc suy nghiệm cũng có thể được sử dụng để quyết định thời điểm hiển thị bàn phím.</translation>
-<translation id="228659285074633994">Chỉ định thời lượng không có thao tác nhập của người dùng mà sau thời lượng đó, hộp thoại cảnh báo sẽ hiển thị khi chạy trên nguồn AC.
-
-          Khi được đặt, chính sách này sẽ chỉ định thời lượng mà người dùng phải duy trì ở trạng thái không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> hiển thị hộp thoại cảnh báo thông báo cho người dùng rằng hành động dành cho việc không sử dụng sắp được thực hiện.
-
-          Khi chính sách này không được đặt, không có hộp thoại cảnh báo nào được hiển thị.
-
-          Giá trị của chính sách được chỉ định theo mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi không sử dụng.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> có thể sử dụng dịch vụ web của Google để giúp giải quyết các lỗi chính tả. Nếu cài đặt này được bật thì dịch vụ này sẽ luôn được sử dụng. Nếu cài đặt này bị tắt thì dịch vụ này sẽ không bao giờ được sử dụng.
 
       Kiểm tra lỗi chính tả có thể vẫn được thực hiện bằng từ điển đã tải xuống; chính sách này chỉ kiểm soát việc sử dụng dịch vụ trực tuyến.
@@ -754,7 +750,6 @@
 <translation id="2299220924812062390">Chỉ định danh sách plugin được phép</translation>
 <translation id="2303795211377219696">Bật tính năng Tự động điền cho thẻ tín dụng</translation>
 <translation id="2309390639296060546">Cài đặt vị trí địa lý mặc định</translation>
-<translation id="2312134445771258233">Cho phép bạn định cấu hình các trang được tải khi khởi động. Nội dung của danh sách 'Các URL được mở khi khởi động' bị bỏ qua trừ khi bạn chọn 'Mở danh sách các URL' trong' Tác vụ khi khởi động'.</translation>
 <translation id="2327252517317514801">Xác định miền được phép truy cập vào G Suite</translation>
 <translation id="237494535617297575">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web được phép hiển thị thông báo.
 
@@ -944,6 +939,16 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu cài đặt này tắt, các trang web không thể sử dụng JavaScript và người dùng không thể thay đổi cài đặt đó.
 
       Nếu cài đặt này bật hoặc không được thiết lập, các trang web có thể sử dụng JavaScript nhưng người dùng có thể thay đổi cài đặt đó.</translation>
+<translation id="2747157663401642394">Định cấu hình tùy chọn cài đặt quản lý tiện ích cho <ph name="PRODUCT_NAME" />.
+
+          Chính sách này kiểm soát nhiều tùy chọn cài đặt, bao gồm cả những tùy chọn cài đặt do bất cứ chính sách hiện có nào liên quan đến tiện ích kiểm soát. Chính sách này sẽ ghi đè bất cứ chính sách cũ nào nếu bạn đặt cả hai.
+
+          Chính sách này liên kết một mã tiện ích hoặc URL cập nhật với cấu hình tương ứng. Với mã tiện ích, cấu hình sẽ chỉ áp dụng cho tiện ích đã chỉ định. Bạn có thể đặt cấu hình mặc định cho mã đặc biệt <ph name="DEFAULT_SCOPE" />. Cấu hình này sẽ được áp dụng cho tất cả tiện ích chưa đặt cấu hình tùy chỉnh trong chính sách này. Với URL cập nhật, cấu hình sẽ được áp dụng cho tất cả tiện ích có URL cập nhật chính xác nêu trong tệp kê khai của tiện ích này, như mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Đối với các phiên bản Windows không liên kết với miền <ph name="MS_AD_NAME" />, bản cài đặt bắt buộc chỉ giới hạn ở các ứng dụng và tiện ích liệt kê trong Cửa hàng Chrome trực tuyến.
+
+          Để xem phần mô tả đầy đủ về các tùy chọn cài đặt có thể có và cấu trúc của chính sách này, vui lòng truy cập vào https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="2753637905605932878">Hạn chế phạm vi của cổng UDP cục bộ do WebRTC sử dụng</translation>
 <translation id="2755385841634849932">Chính sách này kiểm soát khả năng sử dụng tính năng sao lưu và khôi phục trên Android.
 
@@ -2079,6 +2084,7 @@ Khi bạn không đặt chính sách này thì sẽ không có trang web nào đ
 Khi bạn đặt chính sách này thì mỗi mục được coi là một quy tắc, tương tự như chính sách <ph name="URL_LIST_POLICY_NAME" />. Tuy nhiên, logic bị đảo ngược: các quy tắc trùng khớp sẽ không mở một trình duyệt thay thế.
 
 Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụng cho cả hai chiều. Tức là, khi có tiện ích bổ trợ Internet Explorer và tiện ích này được bật, thì chính sách này cũng sẽ kiểm soát việc <ph name="IE_PRODUCT_NAME" /> có mở những URL này trong <ph name="PRODUCT_NAME" /> hay không.</translation>
+<translation id="5124368997194894978">Bật tính năng khởi động trên AC (dòng điện xoay chiều)</translation>
 <translation id="5130288486815037971">Bộ mã hóa RC4 trong TLS có được bật không</translation>
 <translation id="5141670636904227950">Đặt loại kính lúp màn hình mặc định được bật trên màn hình đăng nhập</translation>
 <translation id="5142301680741828703">Luôn hiển thị các mẫu URL sau đây trong <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2199,17 +2205,6 @@ Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụn
 
       Nếu chưa đặt chính sách hoặc nếu chính sách được đặt thành chuỗi trống hoặc phạm vi cổng không hợp lệ thì WebRTC được phép sử dụng bất kỳ cổng UDP cục bộ khả dụng nào.</translation>
 <translation id="5290940294294002042">Chỉ định danh sách plugin mà người dùng có thể bật hoặc tắt</translation>
-<translation id="5304269353650269372">Chỉ định thời lượng không có thao tác nhập của người dùng mà sau thời lượng đó, hộp thoại cảnh báo sẽ hiển thị khi chạy trên nguồn pin.
-
-          Khi được đặt, chính sách này sẽ chỉ định thời lượng mà người dùng phải duy trì trạng thái không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> hiển thị hộp thoại cảnh báo thông báo cho người dùng rằng hành động dành cho việc không sử dụng sắp được thực hiện.
-
-
-
-          Khi chính sách này không được đặt, không có hộp thoại cảnh báo nào được hiển thị.
-
-
-
-          Giá trị của chính sách được chỉ định theo mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi không sử dụng.</translation>
 <translation id="5307432759655324440">Tính khả dụng của chế độ ẩn danh</translation>
 <translation id="5318185076587284965">Cho phép máy chủ truy cập từ xa sử dụng máy chủ chuyển tiếp</translation>
 <translation id="5323128137188992869">Cho phép truyền nội dung đến thiết bị này bằng cách sử dụng <ph name="PRODUCT_NAME" />.
@@ -2891,6 +2886,17 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
           Nếu chính sách này không được đặt, '3' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="663685822663765995">Hạn chế chế độ in màu</translation>
 <translation id="6641981670621198190">Tắt hỗ trợ dành cho API đồ họa 3D</translation>
+<translation id="6646056064606561298">Bật chính sách quản lý tính năng khởi động trên nguồn AC.
+
+          Tính năng khởi động trên AC cho phép hệ thống tự động khởi động từ trạng thái TẮT/Ngủ đông khi bạn cắm dây nguồn.
+
+          Nếu bạn đặt chính sách này thành true, thì tính năng khởi động trên AC sẽ luôn bật nếu thiết bị hỗ trợ.
+
+          Nếu bạn đặt chính sách này thành false, thì tính năng khởi động trên AC sẽ luôn tắt.
+
+          Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hoặc ghi đè chính sách.
+
+          Nếu bạn không đặt chính sách này, thì tính năng khởi động trên AC sẽ tắt và người dùng không thể bật được.</translation>
 <translation id="6647965994887675196">Nếu đặt thành đúng, bạn có thể tạo và sử dụng tài khoản người dùng bị giám sát.
 
           Nếu đặt thành sai hoặc không định cấu hình, tính năng tạo và đăng nhập tài khoản người dùng bị giám sát sẽ bị tắt. Tất cả tài khoản người dùng bị giám sát hiện có sẽ bị ẩn.
@@ -3209,17 +3215,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
           Chỉ các miền nêu rõ ràng trong chính sách <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> mới được phép tự động phát lại. Nếu bạn muốn bật tự động phát lại cho tất cả các trang web, hãy cân nhắc việc thêm http://* và https://* vào danh sách này.
 
           Nếu bạn không đặt chính sách này, người dùng sẽ có thể thay đổi cài đặt này theo cách thủ công.</translation>
-<translation id="7229876938563670511">Định cấu hình URL trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn không cho người dùng thay đổi URL đó.
-
-          Trang chủ là trang mở ra khi người dùng nhấn nút Trang chủ. Các trang mở ra khi khởi động do chính sách RestoreOnStartup kiểm soát.
-
-          Bạn có thể đặt loại trang chủ thành một URL mà bạn chỉ định tại đây hoặc đặt thành Trang tab mới. Nếu bạn chọn Trang tab mới, thì chính sách này không có hiệu lực.
-
-          Nếu bạn bật tùy chọn cài đặt này, thì người dùng không thể thay đổi URL trang chủ của họ trong <ph name="PRODUCT_NAME" /> nhưng vẫn có thể chọn Trang tab mới làm trang chủ.
-
-          Nếu bạn không đặt chính sách này, thì người dùng sẽ được phép tự chọn trang chủ của họ trong trường hợp bạn cũng không đặt chính sách HomepageIsNewTabPage.
-
-          Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="7229975860249300121">Có chứa một biểu thức chính quy dùng để xác định Tài khoản Google nào có thể đặt làm tài khoản chính của trình duyệt trong <ph name="PRODUCT_NAME" /> (tức là tài khoản này được chọn trong quy trình chọn tham gia Đồng bộ hóa).
 
       Một lỗi phù hợp sẽ hiển thị nếu người dùng cố gắng đặt tài khoản chính của trình duyệt bằng một tên người dùng không khớp với mẫu này.
@@ -4161,30 +4156,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           Hỗ trợ trên <ph name="PRODUCT_OS_NAME" /> phiên bản 70 trở lên. Với các ứng dụng cũ, giá trị này nghĩa là khả năng hạ cấp đã bị vô hiệu hóa.</translation>
 <translation id="9096086085182305205">Danh sách trắng máy chủ xác thực</translation>
 <translation id="9098553063150791878">Chính sách xác thực HTTP</translation>
-<translation id="9103061223348895346">Chính sách này kiểm soát nhiều tùy chọn cài đặt cho chiến lược quản lý nguồn khi người dùng không sử dụng.
-
-          Có 4 loại hành động sau đây:
-          * Màn hình sẽ mờ nếu người dùng không sử dụng trong khoảng thời gian do |ScreenDim| chỉ định.
-          * Màn hình sẽ tắt nếu người dùng không sử dụng trong khoảng thời gian do |ScreenOff| chỉ định.
-          * Hộp thoại cảnh báo sẽ hiển thị nếu người dùng không sử dụng trong khoảng thời gian do |IdleWarning| chỉ định, qua đó cho người dùng biết hành động khi không sử dụng nào sắp được thực hiện.
-          * Hành động mà |IdleAction| chỉ định sẽ được thực hiện nếu người dùng không sử dụng trong khoảng thời gian do |Idle| chỉ định.
-
-          Đối với từng hành động nêu trên, thời gian chờ phải được chỉ định bằng mili giây và cần đặt ở giá trị lớn hơn 0 để kích hoạt hành động tương ứng. Trong trường hợp thời gian chờ được đặt thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không thực hiện hành động tương ứng.
-
-          Đối với từng loại thời gian chờ nêu trên, khi khoảng thời gian không được đặt, giá trị mặc định sẽ được sử dụng.
-
-          Xin lưu ý rằng các giá trị |ScreenDim| sẽ được giới hạn ở mức nhỏ hơn hoặc bằng |ScreenOff|, |ScreenOff| và |IdleWarning| sẽ được giới hạn ở mức nhỏ hơn hoặc bằng |Idle|.
-
-          |IdleAction| có thể là một trong 4 hành động sau đây:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Khi bạn không đặt |IdleAction|, hành động mặc định là tạm ngừng sẽ được thực hiện.
-
-          Ngoài ra còn có các tùy chọn cài đặt riêng cho nguồn AC và pin.
-          </translation>
 <translation id="9105265795073104888">Chỉ một tập hợp con các tùy chọn cấu hình proxy được cung cấp cho các ứng dụng Android. Các ứng dụng Android có thể chọn sử dụng proxy một cách tự nguyện. Bạn không thể buộc các ứng dụng này sử dụng proxy.</translation>
 <translation id="9106865192244721694">Cho phép WebUSB trên các trang web này</translation>
 <translation id="9112727953998243860">Tệp cấu hình máy in dành cho doanh nghiệp</translation>
@@ -4243,13 +4214,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu đặt chính sách này thành false, thì tùy chọn 'Đầu trang và chân trang' sẽ không được chọn trong hộp thoại xem trước bản in và người dùng không thể thay đổi điều này.
 
       Nếu đặt chính sách này thành true, thì tùy chọn 'Đầu trang và chân trang' sẽ được chọn trong hộp thoại xem trước bản in và người dùng không thể thay đổi điều này.</translation>
-<translation id="9210953373038593554">Định cấu hình loại xác thực cho đăng nhập SAML.
-
-      Khi bạn đặt hoặc không đặt chính sách này thành Default (giá trị 0), hành vi đăng nhập SAML sẽ do trình duyệt xác định dựa trên các yếu tố khác. Trong tình huống cơ bản nhất, tính năng xác thực người dùng và bảo vệ dữ liệu người dùng đã lưu vào bộ nhớ đệm được dựa trên mật khẩu mà người dùng nhập theo cách thủ công.
-
-      Khi bạn đặt chính sách này thành ClientCertificate (giá trị 1), tính năng xác thực chứng chỉ ứng dụng khách được dùng cho người dùng mới thêm đăng nhập qua SAML. Không có mật khẩu nào dùng cho những người dùng đó và dữ liệu đã lưu vào bộ nhớ đệm trên máy được bảo vệ bằng cách sử dụng các khóa mật mã tương ứng. Ví dụ: tùy chọn cài đặt này cho phép định cấu hình thẻ thông minh dựa trên tính năng xác thực người dùng (xin lưu ý rằng bạn phải cài đặt ứng dụng trung gian của thẻ thông minh thông qua chính sách DeviceLoginScreenAppInstallList).
-
-      Chính sách này chỉ ảnh hưởng đến người dùng xác thực bằng cách sử dụng SAML.</translation>
 <translation id="9213347477683611358">Định cấu hình hình nền cấp thiết bị được hiển thị trên màn hình đăng nhập nếu chưa có người dùng nào đăng nhập vào thiết bị. Bạn có thể đặt chính sách bằng cách chỉ định URL mà từ đó thiết bị Chrome OS có thể tải xuống hình nền và sử dụng một hàm băm mật mã hóa để xác minh tính toàn vẹn của nội dung tải xuống. Hình ảnh phải ở định dạng JPEG với kích thước tệp hình ảnh không được vượt quá 16MB. URL phải truy cập được mà không cần bất kỳ hình thức xác thực nào. Hình nền được tải xuống và lưu vào bộ nhớ đệm. Hình ảnh sẽ được tải xuống lại mỗi khi URL hoặc hàm băm thay đổi.
 
       Chính sách phải được chỉ định dưới dạng một chuỗi biểu thị URL và hàm băm ở định dạng JSON, ví dụ:

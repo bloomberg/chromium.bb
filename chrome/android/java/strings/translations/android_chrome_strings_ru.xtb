@@ -262,6 +262,7 @@
 <translation id="290376772003165898">Язык страницы не <ph name="LANGUAGE" />?</translation>
 <translation id="2910701580606108292">Запрашивать разрешение на воспроизведение защищенного контента</translation>
 <translation id="2913331724188855103">Разрешить сайтам сохранять и читать файлы cookie (рекомендуется)</translation>
+<translation id="2923908459366352541">Имя недействительно</translation>
 <translation id="2932150158123903946">Хранилище Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Этим аккаунтом управляют <ph name="PARENT_NAME_1" /> и <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">© Google Inc., <ph name="YEAR" />. Все права защищены.</translation>
@@ -363,6 +364,7 @@
 <translation id="3745176700485982507">На этой странице собраны ссылки на ваши любимые сайты</translation>
 <translation id="3771001275138982843">Не удалось скачать обновление.</translation>
 <translation id="3773755127849930740">Чтобы разрешить подключение, <ph name="BEGIN_LINK" />включите Bluetooth<ph name="END_LINK" /></translation>
+<translation id="3775705724665058594">Отправка на свои устройства</translation>
 <translation id="3778956594442850293">Добавлено на главный экран</translation>
 <translation id="3781011235031427080">Панель "Показать похожие страницы" открыта наполовину</translation>
 <translation id="3789841737615482174">Установить</translation>
@@ -528,6 +530,7 @@
 <translation id="4958708863221495346">Сайту <ph name="URL_OF_THE_CURRENT_TAB" /> предоставлен доступ к вашему экрану</translation>
 <translation id="4961107849584082341">Эту страницу можно перевести на любой язык</translation>
 <translation id="4961700429721424617">Вы выходите из аккаунта, которым управляет администратор домена <ph name="MANAGED_DOMAIN" />. Обратите внимание, что данные Chrome будут удалены с устройства, но сохранятся в аккаунте Google.</translation>
+<translation id="4970824347203572753">Функция недоступна в вашей стране.</translation>
 <translation id="497421865427891073">Вперед</translation>
 <translation id="4988210275050210843">Скачивание файла (<ph name="MEGABYTES" /> МБ).</translation>
 <translation id="4988526792673242964">Страницы</translation>
@@ -597,6 +600,7 @@
 <translation id="5487521232677179737">Удалить данные</translation>
 <translation id="5494752089476963479">Блокировать объявления на сайтах, которые показывают навязчивую или вводящую в заблуждение рекламу</translation>
 <translation id="5497272504048921382">Открытые вкладки</translation>
+<translation id="5500777121964041360">Возможно, эта функция недоступна в вашей стране.</translation>
 <translation id="550684401320795253">Chrome обновляется…</translation>
 <translation id="5512137114520586844">Этим аккаунтом управляет <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Отключено администратором устройства</translation>
@@ -848,6 +852,7 @@
 <translation id="7250468141469952378">Выбрано: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Добавьте аккаунт Google в настройках устройства (раздел "Аккаунты").</translation>
 <translation id="7274013316676448362">Заблокированный сайт</translation>
+<translation id="7290209999329137901">Переименование невозможно</translation>
 <translation id="7291387454912369099">Оплата через Ассистента</translation>
 <translation id="729975465115245577">На устройстве не установлено приложение для хранения файлов паролей.</translation>
 <translation id="7302081693174882195">Сортировка по объему сэкономленного трафика</translation>
@@ -878,7 +883,7 @@
 <translation id="7475688122056506577">SD-карта не найдена. Некоторые файлы могут отсутствовать.</translation>
 <translation id="7479104141328977413">Управление вкладками</translation>
 <translation id="7481312909269577407">Вперед</translation>
-<translation id="7482697587265222445">Вкладка отправлена на другие устройства.</translation>
+<translation id="7482697587265222445">Вкладка отправлена на другие устройства</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (последнее обновление: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Показать пароли</translation>
 <translation id="7494974237137038751">сэкономлено</translation>
@@ -981,6 +986,7 @@
 <translation id="8200772114523450471">Возобновить</translation>
 <translation id="8209050860603202033">Открыть изображение</translation>
 <translation id="8220488350232498290">Скачанные файлы: <ph name="GIGABYTES" /> ГБ</translation>
+<translation id="8224471946457685718">Скачивать "Новости для вас" только по Wi-Fi</translation>
 <translation id="8232956427053453090">Не удалять данные</translation>
 <translation id="8249310407154411074">Переместить в начало</translation>
 <translation id="8250920743982581267">Документы</translation>

@@ -199,6 +199,7 @@
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="3995138139523574647">อุปกรณ์ USB-C (พอร์ตด้านหลังขวา)</translation>
 <translation id="4017989525502048489">ตัวชี้เลเซอร์</translation>
+<translation id="4042660782729322247">คุณกำลังแชร์หน้าจอ</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ปิดไว้สำหรับ 1 แอป}other{ปิดไว้สำหรับ # แอป}}</translation>
 <translation id="4072264167173457037">สัญญาณแรงปานกลาง</translation>
 <translation id="4129129681837227511">หากต้องการดูการแจ้งเตือนในหน้าจอล็อก ให้ปลดล็อกเพื่อเปลี่ยนการตั้งค่า</translation>
@@ -376,6 +377,7 @@
 <translation id="7067196344162293536">หมุนอัตโนมัติ</translation>
 <translation id="7068360136237591149">เปิดไฟล์</translation>
 <translation id="7076293881109082629">กำลังลงชื่อเข้าใช้</translation>
+<translation id="7088960765736518739">การเข้าถึงด้วยสวิตช์</translation>
 <translation id="7092922358121866860">แสดงการตั้งค่าแสงตอนกลางคืน</translation>
 <translation id="7098389117866926363">อุปกรณ์ USB-C (พอร์ตด้านหลังซ้าย)</translation>
 <translation id="7131634465328662194">คุณจะออกจากระบบโดยอัตโนมัติ</translation>
@@ -502,6 +504,7 @@
 <translation id="9074739597929991885">บลูทูธ</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">ใช้ไมโครโฟนอยู่</translation>
+<translation id="9084606467167974638">เปลี่ยนตำแหน่งเมนู</translation>
 <translation id="9089416786594320554">วิธีการป้อนข้อมูล</translation>
 <translation id="9091626656156419976">นำจอแสดงผล <ph name="DISPLAY_NAME" /> ออกแล้ว</translation>
 <translation id="9151726767154816831">รีสตาร์ทและ Powerwash เพื่ออัปเดต</translation>

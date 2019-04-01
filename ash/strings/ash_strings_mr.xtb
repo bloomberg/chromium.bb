@@ -199,6 +199,7 @@
 <translation id="397105322502079400">गणना करत आहे...</translation>
 <translation id="3995138139523574647">USB-C डिव्‍हाइस (उजव्या बाजूचे मागील पोर्ट)</translation>
 <translation id="4017989525502048489">लेझर पॉइंट</translation>
+<translation id="4042660782729322247">तुम्ही तुमची स्क्रीन शेअर करत आहात</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{एका अॅपसाठी बंद}one{# अॅपसाठी बंद}other{# अॅप्ससाठी बंद}}</translation>
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
 <translation id="4129129681837227511">तुमच्या लॉक स्क्रीनवर सूचना पाहाण्यासाठी, सेटिंग बदलण्याकरिता अनलॉक करा</translation>
@@ -375,6 +376,7 @@
 <translation id="7067196344162293536">स्वयं फिरवा</translation>
 <translation id="7068360136237591149">फायली उघडा</translation>
 <translation id="7076293881109082629">साइन इन करीत आहे</translation>
+<translation id="7088960765736518739">स्विच अॅक्सेस</translation>
 <translation id="7092922358121866860">रात्रीचा प्रकाश सेटिंग्ज दाखवा</translation>
 <translation id="7098389117866926363">USB-C डिव्‍हाइस (मागील बाजूचे डावे पोर्ट)</translation>
 <translation id="7131634465328662194">तुम्हाला आपोआप साइन आउट केले जाईल.</translation>
@@ -501,6 +503,7 @@
 <translation id="9074739597929991885">ब्लूटूथ</translation>
 <translation id="9079731690316798640">वाय-फाय: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">मायक्रोफोन वापरात आहे.</translation>
+<translation id="9084606467167974638">मेनूची जागा टॉगल करा</translation>
 <translation id="9089416786594320554">इनपुट पद्धती</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> डिस्प्ले काढले</translation>
 <translation id="9151726767154816831">अपडेटसाठी रीस्टार्ट करा आणि powerwash करा</translation>

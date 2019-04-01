@@ -262,6 +262,7 @@
 <translation id="290376772003165898">పేజీ <ph name="LANGUAGE" />లో లేదా?</translation>
 <translation id="2910701580606108292">సైట్‌లు రక్షిత కంటెంట్‌ను ప్లే చేయడానికి ముందు అనుమతి కోసం అడుగుతాయి</translation>
 <translation id="2913331724188855103">కుక్కీ డేటాను సేవ్ చేయడానికి, చదవడానికి సైట్‌లను అనుమతిస్తుంది (సిఫార్సు చేయబడింది)</translation>
+<translation id="2923908459366352541">పేరు చెల్లదు</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> నిల్వ</translation>
 <translation id="2956410042958133412">ఈ ఖాతా <ph name="PARENT_NAME_1" /> మరియు <ph name="PARENT_NAME_2" /> నిర్వహణలో ఉంది.</translation>
 <translation id="2960796085439532066">కాపీరైట్ <ph name="YEAR" /> Google Inc. అన్ని హ‌క్కులు రిజ‌ర్వ్ చేయ‌బ‌డ్డాయి.</translation>
@@ -363,6 +364,7 @@
 <translation id="3745176700485982507">మీ ఇష్టమైన వెబ్‌సైట్‌ల లింక్‌లను ఈ పేజీలో పొందవచ్చు</translation>
 <translation id="3771001275138982843">అప్‌డేట్‌ను డౌన్‌లోడ్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="3773755127849930740">జత చేయడాన్ని అనుమతించడానికి <ph name="BEGIN_LINK" />బ్లూటూత్‌ను ఆన్ చేయండి<ph name="END_LINK" /></translation>
+<translation id="3775705724665058594">మీ పరికరాలకు పంపండి</translation>
 <translation id="3778956594442850293">హోమ్ స్క్రీన్‌కు జోడించబడింది</translation>
 <translation id="3781011235031427080">సగం ఎత్తులో ఇలాంటివి మరిన్ని షీట్ తెరవబడింది</translation>
 <translation id="3789841737615482174">ఇన్‌స్టాల్ చేయి</translation>
@@ -528,6 +530,7 @@
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> మీ స్క్రీన్‌ని భాగస్వామ్యం చేస్తోంది</translation>
 <translation id="4961107849584082341">ఈ పేజీని ఏ భాషలోకైనా అనువదించుకోవచ్చు</translation>
 <translation id="4961700429721424617">మీరు <ph name="MANAGED_DOMAIN" /> నిర్వహణలో ఉన్న ఖాతా నుండి సైన్ అవుట్ చేస్తున్నారు. దీని వలన మీ Chrome డేటా ఈ పరికరం నుండి తొలగించబడుతుంది. కానీ మీ డేటా మీ Google ఖాతాలో అలాగే ఉంటుంది.</translation>
+<translation id="4970824347203572753">మీ స్థానంలో అందుబాటులో లేదు</translation>
 <translation id="497421865427891073">ముందుకు వెళ్ళు</translation>
 <translation id="4988210275050210843">ఫైల్‌ను డౌన్‌లోడ్ చేస్తోంది (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">పేజీలు</translation>
@@ -597,6 +600,7 @@
 <translation id="5487521232677179737">డేటాని తీసివేయి</translation>
 <translation id="5494752089476963479">అనుచితమైన లేదా తప్పుదారి పట్టించే ప్రకటనలను చూపించే సైట్‌లలో ప్రకటనలను బ్లాక్ చేయి</translation>
 <translation id="5497272504048921382">తెరిచిన ట్యాబ్‌లు</translation>
+<translation id="5500777121964041360">మీ స్థానంలో అందుబాటులో ఉండకపోవచ్చు</translation>
 <translation id="550684401320795253">Chromeని నవీకరిస్తోంది...</translation>
 <translation id="5512137114520586844">ఈ ఖాతా <ph name="PARENT_NAME" /> నిర్వహణలో ఉంది.</translation>
 <translation id="5514904542973294328">ఈ పరికర నిర్వాహకులు నిలిపివేశారు</translation>
@@ -848,6 +852,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ఎంచుకోబడ్డాయి</translation>
 <translation id="7253272406652746122">మీ పరికర సెట్టింగ్‌ల యాప్‌లో ఖాతాల పేజీ నుండి Google ఖాతాను జోడించండి.</translation>
 <translation id="7274013316676448362">బ్లాక్ చేసిన సైట్</translation>
+<translation id="7290209999329137901">పేరు మార్పు అందుబాటులో లేదు</translation>
 <translation id="7291387454912369099">అసిస్టెంట్ ప్రేరేపిత చెక్‌అవుట్</translation>
 <translation id="729975465115245577">పాస్‌వర్డ్‌ల ఫైల్‌ను నిల్వ చేయడానికి మీ పరికరంలో యాప్ లేదు.</translation>
 <translation id="7302081693174882195">వివరాలు: సేవ్ చేసిన డేటా మొత్తం ద్వారా క్రమీకరించబడ్డాయి</translation>
@@ -981,6 +986,7 @@
 <translation id="8200772114523450471">మ‌ళ్లీ ప్రారంభించు</translation>
 <translation id="8209050860603202033">చిత్రాన్ని తెరువు</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB డౌన్‌లోడ్ అయింది</translation>
+<translation id="8224471946457685718">Wi-Fiలో మీ కోసం అందించే కథనాలను డౌన్‌లోడ్ చేసుకోండి</translation>
 <translation id="8232956427053453090">డేటాను అలాగే ఉంచు</translation>
 <translation id="8249310407154411074">ఎగువకు తరలించు</translation>
 <translation id="8250920743982581267">పత్రాలు</translation>

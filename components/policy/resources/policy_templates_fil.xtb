@@ -726,13 +726,6 @@
       Kung itatakda mo ang patakarang ito, hindi ito mababago o ma-o-override ng mga user. Gayunpaman, magagawa pa rin ng mga user na mag-enable/mag-disable ng isang on-screen na keyboard para sa accessibility na binibigyan ng priyoridad sa virtual na keyboard na kinokontrol ng patakarang ito. Tingnan ang patakaran sa |VirtualKeyboardEnabled| para sa pagkontrol ng on-screen na keyboard para sa accessibility.
 
       Kung iiwanang hindi nakatakda ang patakarang ito, idi-disable sa umpisa ang on-screen na keyboard, ngunit maaari itong i-enable ng user kahit kailan. Maaari ding gamitin ang mga heuristic na panuntunan upang mapagpasyahan kung kailan ipapakita ang keyboard.</translation>
-<translation id="228659285074633994">Tinutukoy ang haba ng oras nang walang input ng user pagkatapos ipakita ang dialog ng babala kapag gumagamit ng AC power.
-
-          Kapag nakatakda ang patakarang ito, tinutukoy nito ang haba ng oras na dapat manatiling idle ang user bago magpakita ang <ph name="PRODUCT_OS_NAME" /> ng dialog ng babala na nagsasabi sa user na isasagawa na ang pagkilos kapag idle.
-
-          Kapag hindi nakatakda ang patakarang ito, walang ipapakitang dialog ng babala.
-
-          Dapat tukuyin ang halaga ng patakaran gamit ang milliseconds. Nililimitahan ang mga halaga upang maging mas mababa sa o katumbas ng delay bago mag-idle.</translation>
 <translation id="2292084646366244343">Makakagamit ang <ph name="PRODUCT_NAME" /> ng serbisyo sa web ng Google upang makatulong na resolbahin ang mga error sa spelling. Kung pinapagana ang setting na ito, palaging gagamitin ang serbisyong ito. Kung hindi pinapagana ang setting na ito, hindi kailanman gagamitin ang serbisyong ito.
 
       Maisasagawa pa rin ang pag-spell check gamit ang isang na-download na diksyunaryo; ang paggamit ng online na serbisyo lang ang kinokontrol ng patakarang ito.
@@ -758,7 +751,6 @@
 <translation id="2299220924812062390">Tukuyin ang isang listahan ng mga pinapaganang plugin</translation>
 <translation id="2303795211377219696">I-enable ang AutoFill para sa mga credit card</translation>
 <translation id="2309390639296060546">Default na setting ng geolocation</translation>
-<translation id="2312134445771258233">Pinapayagan kang i-configure ang mga pahina na na-load sa startup. Ang mga nilalaman ng listahan ng 'Mga URL upang buksan sa startup' ay binabalewala maliban kung piliin mo ang 'Magbukas ng listahan ng mga URL' sa 'Pagkilos sa startup'.</translation>
 <translation id="2327252517317514801">Tumutukoy sa mga domain na pinapayagang i-access ang G Suite</translation>
 <translation id="237494535617297575">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magpakita ng mga notification.
 
@@ -768,9 +760,9 @@
 <translation id="2411919772666155530">I-block ang mga notification sa mga site na ito</translation>
 <translation id="2418507228189425036">Dini-disable ang pagse-save ng history ng browser sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user sa pagbabago sa setting na ito.
 
-      Kung naka-enable ang setting na ito, hindi ise-save ang history ng pagba-browse. Dini-disable din ng setting na ito ang pagsi-syng ng tab.
+      Kung naka-enable ang setting na ito, hindi ise-save ang history ng pag-browse. Dini-disable din ng setting na ito ang pagsi-syng ng tab.
 
-      Kung naka-disable o hindi nakatakda ang setting na ito, sine-save ang history ng pagba-browse.</translation>
+      Kung naka-disable o hindi nakatakda ang setting na ito, sine-save ang history ng pag-browse.</translation>
 <translation id="2426782419955104525">Ine-enable ang Instant na feature ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang setting na ito.
 
       Kung ie-enable mo ang setting na ito, mae-enable ang <ph name="PRODUCT_NAME" /> Instant.
@@ -837,7 +829,7 @@
           Kung pipiliin mo ang 'Buksan ang Page ng Bagong Tab,' palaging bubuksan ang Page ng bagong Tab kapag sinimulan mo ang <ph name="PRODUCT_NAME" />.
 
           Kung pipiliin mo ang 'I-restore ang nakaraang session,' bubuksang muli ang mga URL na nakabukas noong huling isinara ang <ph name="PRODUCT_NAME" />, at mare-restore ang session ng pag-browse kung paano ito iniwan.
-          Kung pipiliin ang opsyong ito, madi-disable ang ilang setting na nakabatay sa mga session o nagsasagawa ng mga pagkilos kapag lumabas sa session (gaya ng Pag-clear ng data mula sa pag-browse kapag lumabas o cookies na para lang sa session).
+          Kung pipiliin ang opsyong ito, madi-disable ang ilang setting na nakabatay sa mga session o nagsasagawa ng mga pagkilos kapag lumabas sa session (gaya ng Pag-clear ng data sa pag-browse kapag lumabas o cookies na para lang sa session).
 
           Kung pipiliin mo ang 'Magbukas ng listahan ng mga URL,' bubuksan ang listahan ng 'Mga URL na bubuksan sa startup' kapag sinimulan ng user ang <ph name="PRODUCT_NAME" />.
 
@@ -2207,13 +2199,6 @@
 
       Kung hindi nakatakda ang patakaran, o kung nakatakda ito sa walang lamang string o di-wastong hanay ng port, pinapayagan ang WebRTC na gamitin ang anumang available na lokal na UDP port.</translation>
 <translation id="5290940294294002042">Tumukoy ng listahan ng mga plugin na maaaring paganahin o hindi paganahin ng user</translation>
-<translation id="5304269353650269372">Tinutukoy ang haba ng panahon nang walang input ng user pagkatapos ipakita ang dialog ng babala kapag gumagamit ng baterya.
-
-          Kapag naitakda ang patakarang ito, tinutukoy nito ang haba ng panahon na dapat manatiling idle ang user bago magpakita ang <ph name="PRODUCT_OS_NAME" /> ng dialog ng babala na nagsasabi sa user na gagawin na ang pagkilos kapag idle.
-
-          Kapag hindi nakatakda ang patakarang ito, walang ipapakitang dialog ng babala.
-
-          Ang halaga ng patakaran ay dapat tukuyin gamit ang milliseconds. Nililimitahan ang mga halaga upang maging mas mababa sa o katumbas ng delay bago mag-idle.</translation>
 <translation id="5307432759655324440">Availability ng mode na incognito</translation>
 <translation id="5318185076587284965">I-enable ang paggamit ng mga relay server ng host ng malayuang pag-access</translation>
 <translation id="5323128137188992869">Binibigyang-daan ang content na ma-cast sa device gamit ang <ph name="PRODUCT_NAME" />.
@@ -3214,17 +3199,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Pinapayagan lang ang awtomatikong pag-playback para sa mga domain na tahasang nakalista sa patakarang <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Kung gusto mong i-enable ang awtomatikong pag-playback para sa lahat ng site, pag-isipang magdagdag ng http://* at https://* sa listahang ito.
 
           Kung iiwanang hindi nakatakda ang patakarang ito, manual na mababago ng user ang setting na ito.</translation>
-<translation id="7229876938563670511">Nagko-configure sa URL ng default na home page sa <ph name="PRODUCT_NAME" /> at pumipigil na mabago ito ng mga user.
-
-          Mabubuksan ang home page sa pamamagitan ng button ng Home. Kinokontrol ng mga patakaran ng RestoreOnStartup ang mga page na magbubukas kapag nag-start up.
-
-          Ang uri ng home page ay maaaring itakda sa URL na tutukuyin mo rito, o maaari itong itakda sa Page ng Bagong Tab. Kung pipiliin mo ang Page ng Bagong Tab, hindi magkakaroon ng bisa ang patakarang ito.
-
-          Kung ie-enable mo ang setting na ito, hindi mababago ng mga user ang URL ng kanilang home page sa <ph name="PRODUCT_NAME" />, ngunit mapipili pa rin nila ang Page ng Bagong Tab bilang home page nila.
-
-          Kung iiwang hindi nakatakda ang patakarang ito, papayagan ang user na siya mismo ang pumili ng kanyang home page, kung hindi rin nakatakda ang HomepageIsNewTabPage.
-
-          Available lang ang patakarang ito sa mga instance ng Windows na kasama sa domain ng<ph name="MS_AD_NAME" />. O kaya, sa mga instance ng Windows 10 Pro o Enterprise na naka-enroll para sa pamamahala sa device.</translation>
 <translation id="7229975860249300121">Naglalaman ng karaniwang expression na ginagamit para tukuyin kung aling Google account ang maaaring itakda bilang mga pangunahing account sa browser sa <ph name="PRODUCT_NAME" /> (ibig sabihin, ang account na napili sa panahon ng proseso ng pag-opt in sa Pag-sync).
 
       May ipapakitang naaangkop na error kung susubukan ng isang user na magtakda ng pangunahing account sa browser gamit ang isang username na hindi tumutugma sa pattern na ito.
@@ -3282,7 +3256,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Sinusunod lang ang patakarang ito kung pinagana ang patakarang 'DefaultSearchProviderEnabled'.</translation>
 <translation id="7302043767260300182">Delay ng screen lock kapag tumatakbo habang nakasaksak sa kuryente</translation>
-<translation id="7311458740754205918">Kung itinakda ito sa true o hindi ito itinakda, ang page ng Bagong Tab ay maaaring magpakita ng mga suhestyon sa content batay sa history ng pagba-browse, mga interes o lokasyon ng user.
+<translation id="7311458740754205918">Kung itinakda ito sa true o hindi ito itinakda, ang page ng Bagong Tab ay maaaring magpakita ng mga suhestyon sa content batay sa history ng pag-browse, mga interes o lokasyon ng user.
 
       Kung itinakda ito sa false, hindi makikita ang awtomatikong ginawang suhestyon sa content sa page ng Bagong Tab.</translation>
 <translation id="7313793931637495417">Kinokontrol ng patakarang ito kung mag-uulat ng impormasyon ng bersyon, gaya ng bersyon ng OS, platform ng OS, architecture ng OS, bersyon ng <ph name="PRODUCT_NAME" />, at channel ng <ph name="PRODUCT_NAME" />
@@ -4177,30 +4151,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
           Sinusuportahan sa bersyon 70 pataas ng <ph name="PRODUCT_OS_NAME" />. Para sa mga dati nang kliyente, nangangahulugan ang value na ito na naka-disable ang pag-roll back.</translation>
 <translation id="9096086085182305205">Whitelist ng server sa pagpapatotoo</translation>
 <translation id="9098553063150791878">Mga patakaran para sa pagpapatotoo ng HTTP</translation>
-<translation id="9103061223348895346">Kinokontrol ng patakarang ito ang maraming setting para sa istratehiya ng pamamahala sa power kapag naging idle ang user.
-
-          May apat na uri ng pagkilos:
-          * Magdi-dim ang screen kung mananatiling idle ang user para sa oras na tinukoy ng |ScreenDim|.
-          * Mag-o-off ang screen kung mananatiling idle ang user para sa oras na tinukoy ng |ScreenOff|.
-          * May ipapakitang dialog ng babala kung mananatiling idle ang user para sa oras na tinukoy ng |IdleWarning|, kung saan sinasabi sa user na isasagawa na ang pagkilos sa idle.
-          * Isasagawa ang pagkilos na tinukoy ng |IdleAction| kung mananatiling idle ang user para sa oras na tinukoy ng |Idle|.
-
-          Para sa bawat isa sa mga pagkilos na nasa itaas, dapat tukuyin ang delay gamit ang millisecond, at kailangan itong itakda sa isang value na mas mataas sa zero para ma-trigger ang kaukulang pagkilos. Kung sakaling maitakda sa zero ang delay, hindi isasagawa ng <ph name="PRODUCT_OS_NAME" /> ang kaukulang pagkilos.
-
-          Para sa bawat isa sa mga delay sa itaas, kapag hindi nakatakda ang haba ng oras, gagamitin ang default na value.
-
-          Tandaang papanatilihin ang mga value ng |ScreenDim| para maging mas mababa sa o katumbas ng |ScreenOff|, papanatilihin ang |ScreenOff| at |IdleWarning| para maging mas mababa sa o katumbas ng |Idle|.
-
-          Ang |IdleAction| ay puwedeng isa sa apat na posibleng pagkilos:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Kapag hindi nakatakda ang |IdleAction|, isasagawa ang default na pagkilos, ang pagsususpinde.
-
-          Mayroon ding mga hiwalay na setting para sa AC na power at baterya.
-          </translation>
 <translation id="9105265795073104888">Mayroon lang subset ng opsyon sa configuration ng proxy sa mga Android app. Maaaring boluntaryong piliin ng mga Android app na gamitin ang proxy. Hindi mo maaaring puwersahin ang mga ito na gumamit ng proxy.</translation>
 <translation id="9106865192244721694">Payagan ang WebUSB sa mga site na ito</translation>
 <translation id="9112727953998243860">File ng configuration ng printer ng enterprise</translation>
@@ -4259,13 +4209,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kung nakatakda sa false ang patakaran, hindi napili ang 'Mga header at footer' sa dialog ng preview ng pag-print, at hindi ito mababago ng user.
 
       Kung nakatakda sa true ang patakaran, napili ang 'Mga header at footer' sa dialog ng preview ng pag-print, at hindi ito mababago ng user.</translation>
-<translation id="9210953373038593554">Kino-configure ang uri ng pag-authenticate para sa mga SAML na pag-log in.
-
-      Kapag hindi nakatakda o nakatakda sa Default (value 0) ang patakarang ito, tutukuyin ng browser ang gawi ng mga SAML na pag-log in depende sa iba pang salik. Sa pinakapangunahing sitwasyon, nakabatay ang pag-authenticate ng user at ang proteksyon ng naka-cache na data ng user sa mga password na manual na inilagay ng mga user.
-
-      Kung nakatakda ang patakarang ito sa ClientCertificate (value 1), gagamitin ang pag-authenticate ng certificate ng kliyente para sa mga bagong naidagdag na user na nagla-log in sa pamamagitan ng SAML. Walang ginagamit na password para sa mga nasabing user, at pinoprotektahan ang kanilang naka-cache na lokal na data gamit ang mga kaukulang cryptographic key. Halimbawa, nagagamit ang setting na ito para ma-configure ang smart card batay sa pag-authenticate ng user (tandaang kailangang i-install ang mga smart card middleware app sa pamamagitan ng patakarang DeviceLoginScreenAppInstallList).
-
-      Maaapektuhan lang ng patakarang ito ang mga user na nao-authenticate gamit ang SAML.</translation>
 <translation id="9213347477683611358">Nagko-configure ng larawan ng wallpaper sa device na ipinapakita sa screen ng pag-login kung wala pang naka-sign in na user sa device. Itinatakda ang patakaran sa pamamagitan ng pagtukoy sa URL kung saan maaaring i-download ng Chrome OS device ang larawan ng wallpaper at isang cryptographic hash na ginagamit upang i-verify ang integridad ng pag-download. Dapat ay nasa format na JPEG ang larawan, at hindi dapat lumampas ang laki ng file sa 16MB. Dapat ay naa-access ang URL nang walang anumang pag-authenticate. Na-download at na-cache ang larawan ng wallpaper. Ida-download itong muli sa tuwing magbabago ang URL o ang hash.
 
       Dapat ay tukuyin ang patakaran bilang isang string na nagpapakita ng URL at hash sa format na JSON, hal.,
