@@ -71,21 +71,8 @@ public class PasswordAccessoryIntegrationTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({ChromeFeatureList.EXPERIMENTAL_UI})
-    public void testPasswordSheetIsAvailableInExperimentalUi() throws InterruptedException {
-        mHelper.loadTestPage(false);
-
-        CriteriaHelper.pollUiThread(()
-                                            -> mHelper.getOrCreatePasswordAccessorySheet() != null,
-                "Password Sheet should be bound to accessory sheet.");
-    }
-
-    @Test
-    @SmallTest
-    @DisableFeatures(
-            {ChromeFeatureList.EXPERIMENTAL_UI, ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
-    public void
-    testPasswordSheetUnavailableWithoutFeature() throws InterruptedException {
+    @DisableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
+    public void testPasswordSheetUnavailableWithoutFeature() throws InterruptedException {
         mHelper.loadTestPage(false);
 
         Assert.assertNull("Password Sheet should not have been created.",

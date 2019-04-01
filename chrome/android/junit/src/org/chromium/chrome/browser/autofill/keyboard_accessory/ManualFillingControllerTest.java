@@ -60,7 +60,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -79,7 +78,6 @@ import java.util.concurrent.atomic.AtomicReference;
 @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY,
         ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY,
         ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
-@DisableFeatures({ChromeFeatureList.EXPERIMENTAL_UI})
 public class ManualFillingControllerTest {
     @Mock
     private ChromeWindow mMockWindow;
