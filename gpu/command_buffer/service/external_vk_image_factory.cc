@@ -154,13 +154,13 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
   ExternalVkImageBacking* vk_backing =
       static_cast<ExternalVkImageBacking*>(backing.get());
 
-  std::vector<base::ScopedFD> fds;
-  if (!vk_backing->BeginAccess(false /* readonly */, &fds)) {
+  std::vector<SemaphoreHandle> handles;
+  if (!vk_backing->BeginAccess(false /* readonly */, &handles)) {
     LOG(ERROR) << "Failed to request write access of backing.";
     return nullptr;
   }
 
-  DCHECK(fds.empty());
+  DCHECK(handles.empty());
 
   // Create backend render target from the VkImage.
   GrVkAlloc alloc(vk_backing->memory(), 0 /* offset */,
@@ -179,14 +179,15 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
   surface->writePixels(pixmap, 0, 0);
 
   VkSemaphore semaphore = vk_backing->CreateExternalVkSemaphore();
-  base::ScopedFD fd;
   auto* vk_implementation =
       context_state_->vk_context_provider()->GetVulkanImplementation();
   VkDevice device = context_state_->vk_context_provider()
                         ->GetDeviceQueue()
                         ->GetVulkanDevice();
-  if (!vk_implementation->GetSemaphoreFdKHR(device, semaphore, &fd)) {
-    LOG(ERROR) << "GetSemaphoreFdKHR failed..";
+  SemaphoreHandle semaphore_handle =
+      vk_implementation->GetSemaphoreHandle(device, semaphore);
+  if (!semaphore_handle.is_valid()) {
+    LOG(ERROR) << "GetSemaphoreHandle() failed.";
     vkDestroySemaphore(device, semaphore, nullptr /* pAllocator */);
     return nullptr;
   }
@@ -199,7 +200,7 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
     vkDestroySemaphore(device, semaphore, nullptr /* pAllocator */);
     return nullptr;
   }
-  vk_backing->EndAccess(false /* readonly */, std::move(fd));
+  vk_backing->EndAccess(false /* readonly */, std::move(semaphore_handle));
   VkQueue queue =
       context_state_->vk_context_provider()->GetDeviceQueue()->GetVulkanQueue();
   // TODO(https://crbug.com/932260): avoid blocking CPU thread.

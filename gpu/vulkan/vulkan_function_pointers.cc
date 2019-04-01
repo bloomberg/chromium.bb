@@ -328,6 +328,24 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
 
 #endif
 
+#if defined(OS_FUCHSIA)
+
+  vkImportSemaphoreZirconHandleFUCHSIAFn =
+      reinterpret_cast<PFN_vkImportSemaphoreZirconHandleFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device,
+                                "vkImportSemaphoreZirconHandleFUCHSIA"));
+  if (!vkImportSemaphoreZirconHandleFUCHSIAFn)
+    return false;
+
+  vkGetSemaphoreZirconHandleFUCHSIAFn =
+      reinterpret_cast<PFN_vkGetSemaphoreZirconHandleFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device,
+                                "vkGetSemaphoreZirconHandleFUCHSIA"));
+  if (!vkGetSemaphoreZirconHandleFUCHSIAFn)
+    return false;
+
+#endif
+
   // Queue functions
   vkQueueSubmitFn = reinterpret_cast<PFN_vkQueueSubmit>(
       vkGetDeviceProcAddrFn(vk_device, "vkQueueSubmit"));

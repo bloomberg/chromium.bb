@@ -500,10 +500,12 @@ void AwDrawFnImpl::DrawVkInterop(AwDrawFn_DrawVkParams* params) {
   // If we have a |gl_done_fd|, create a Skia GrBackendSemaphore from
   // |gl_done_fd| and wait.
   if (gl_done_fd.is_valid()) {
-    VkSemaphore gl_done_semaphore;
-    if (!vulkan_context_provider_->implementation()->ImportSemaphoreFdKHR(
-            vulkan_context_provider_->device(), std::move(gl_done_fd),
-            &gl_done_semaphore)) {
+    VkSemaphore gl_done_semaphore =
+        vulkan_context_provider_->implementation()->ImportSemaphoreHandle(
+            vulkan_context_provider_->device(),
+            gpu::SemaphoreHandle(VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT,
+                                 std::move(gl_done_fd)));
+    if (gl_done_semaphore == VK_NULL_HANDLE) {
       LOG(ERROR) << "Could not create Vulkan semaphore for GL completion.";
       return;
     }
@@ -624,12 +626,15 @@ void AwDrawFnImpl::PostDrawVkInterop(AwDrawFn_PostDrawVkParams* params) {
     LOG(ERROR) << "Skia could not submit GrSemaphore.";
     return;
   }
-  if (!vulkan_context_provider_->implementation()->GetSemaphoreFdKHR(
-          vulkan_context_provider_->device(), pending_draw->post_draw_semaphore,
-          &pending_draw->sync_fd)) {
+  gpu::SemaphoreHandle semaphore_handle =
+      vulkan_context_provider_->implementation()->GetSemaphoreHandle(
+          vulkan_context_provider_->device(),
+          pending_draw->post_draw_semaphore);
+  if (!semaphore_handle.is_valid()) {
     LOG(ERROR) << "Could not retrieve SyncFD from |post_draw_semaphore|.";
     return;
   }
+  pending_draw->sync_fd = semaphore_handle.TakeHandle();
 
   DCHECK(VK_NULL_HANDLE == pending_draw->post_draw_fence);
 

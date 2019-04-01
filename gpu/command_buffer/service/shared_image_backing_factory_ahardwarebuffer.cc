@@ -158,7 +158,9 @@ void EndVulkanAccess(gpu::VulkanImplementation* vk_implementation,
   (*surface) = nullptr;
 
   // Export a sync fd from the semaphore.
-  vk_implementation->GetSemaphoreFdKHR(vk_device, vk_semaphore, sync_fd);
+  SemaphoreHandle semaphore_handle =
+      vk_implementation->GetSemaphoreHandle(vk_device, vk_semaphore);
+  *sync_fd = semaphore_handle.TakeHandle();
 
   // TODO(vikassoni): We need to wait for the queue submission to complete
   // before we can destroy the semaphore. This will decrease the performance.
@@ -488,8 +490,11 @@ class SharedImageRepresentationSkiaVkAHB
     for (size_t i = 0; i < sync_fds.size(); ++i) {
       DCHECK(sync_fds[i].is_valid());
 
-      if (!vk_implementation()->ImportSemaphoreFdKHR(
-              vk_device(), std::move(sync_fds[i]), &semaphores[i])) {
+      semaphores[i] = vk_implementation()->ImportSemaphoreHandle(
+          vk_device(),
+          SemaphoreHandle(VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT,
+                          std::move(sync_fds[i])));
+      if (semaphores[i] == VK_NULL_HANDLE) {
         failed_to_insert_semaphores = true;
         break;
       }
@@ -561,10 +566,12 @@ class SharedImageRepresentationSkiaVkAHB
     // We need to wait only if there is a valid fd.
     if (sync_fd.is_valid()) {
       // Import the above sync fd into a semaphore.
-      if (!vk_implementation()->ImportSemaphoreFdKHR(
-              vk_device(), std::move(sync_fd), &semaphore)) {
+      semaphore = vk_implementation()->ImportSemaphoreHandle(
+          vk_device(),
+          SemaphoreHandle(VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT,
+                          std::move(sync_fd)));
+      if (semaphore == VK_NULL_HANDLE)
         return nullptr;
-      }
 
       // Submit wait semaphore to the queue. Note that Skia uses the same queue
       // exposed by vk_queue(), so this will work due to Vulkan queue ordering.

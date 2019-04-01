@@ -90,6 +90,11 @@ VULKAN_DEVICE_FUNCTIONS_LINUX = [
 { 'name': 'vkGetMemoryFdKHR'},
 ]
 
+VULKAN_DEVICE_FUNCTIONS_FUCHSIA = [
+{ 'name': 'vkImportSemaphoreZirconHandleFUCHSIA' },
+{ 'name': 'vkGetSemaphoreZirconHandleFUCHSIA' },
+]
+
 VULKAN_QUEUE_FUNCTIONS = [
 { 'name': 'vkQueueSubmit' },
 { 'name': 'vkQueueWaitIdle' },
@@ -144,8 +149,9 @@ def GenerateHeaderFile(file, unassociated_functions, instance_functions,
                        physical_device_functions, device_functions,
                        device_functions_android,
                        device_functions_linux_or_android,
-                       device_functions_linux, queue_functions,
-                       command_buffer_functions, swapchain_functions):
+                       device_functions_linux, device_functions_fuchsia,
+                       queue_functions, command_buffer_functions,
+                       swapchain_functions):
   """Generates gpu/vulkan/vulkan_function_pointers.h"""
 
   file.write(LICENSE_AND_HEADER +
@@ -156,13 +162,17 @@ def GenerateHeaderFile(file, unassociated_functions, instance_functions,
 
 #include <vulkan/vulkan.h>
 
+#include "base/native_library.h"
+#include "build/build_config.h"
+#include "gpu/vulkan/vulkan_export.h"
+
 #if defined(OS_ANDROID)
 #include <vulkan/vulkan_android.h>
 #endif
 
-#include "base/native_library.h"
-#include "build/build_config.h"
-#include "gpu/vulkan/vulkan_export.h"
+#if defined(OS_FUCHSIA)
+#include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
+#endif
 
 namespace gpu {
 
@@ -252,6 +262,18 @@ struct VulkanFunctionPointers {
 """)
 
   WriteFunctionDeclarations(file, device_functions_linux)
+
+  file.write("""\
+#endif
+""")
+
+  file.write("""\
+
+  // Fuchsia only device functions.
+#if defined(OS_FUCHSIA)
+""")
+
+  WriteFunctionDeclarations(file, device_functions_fuchsia)
 
   file.write("""\
 #endif
@@ -351,6 +373,17 @@ struct VulkanFunctionPointers {
 
   file.write("""\
 
+#if defined(OS_FUCHSIA)
+""")
+
+  WriteMacros(file, device_functions_fuchsia)
+
+  file.write("""\
+#endif
+""")
+
+  file.write("""\
+
 // Queue functions
 """)
 
@@ -403,8 +436,9 @@ def GenerateSourceFile(file, unassociated_functions, instance_functions,
                        physical_device_functions, device_functions,
                        device_functions_android,
                        device_functions_linux_or_android,
-                       device_functions_linux, queue_functions,
-                       command_buffer_functions, swapchain_functions):
+                       device_functions_linux, device_functions_fuchsia,
+                       queue_functions, command_buffer_functions,
+                       swapchain_functions):
   """Generates gpu/vulkan/vulkan_function_pointers.cc"""
 
   file.write(LICENSE_AND_HEADER +
@@ -515,6 +549,18 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
 
   file.write("""\
 
+#if defined(OS_FUCHSIA)
+
+""")
+
+  WriteDeviceFunctionPointerInitialization(file, device_functions_fuchsia)
+
+  file.write("""\
+#endif
+""")
+
+  file.write("""\
+
   // Queue functions
 """)
   WriteDeviceFunctionPointerInitialization(file, queue_functions)
@@ -569,6 +615,7 @@ def main(argv):
                      VULKAN_DEVICE_FUNCTIONS_ANDROID,
                      VULKAN_DEVICE_FUNCTIONS_LINUX_OR_ANDROID,
                      VULKAN_DEVICE_FUNCTIONS_LINUX,
+                     VULKAN_DEVICE_FUNCTIONS_FUCHSIA,
                      VULKAN_QUEUE_FUNCTIONS, VULKAN_COMMAND_BUFFER_FUNCTIONS,
                      VULKAN_SWAPCHAIN_FUNCTIONS)
   header_file.close()
@@ -582,6 +629,7 @@ def main(argv):
                      VULKAN_DEVICE_FUNCTIONS_ANDROID,
                      VULKAN_DEVICE_FUNCTIONS_LINUX_OR_ANDROID,
                      VULKAN_DEVICE_FUNCTIONS_LINUX,
+                     VULKAN_DEVICE_FUNCTIONS_FUCHSIA,
                      VULKAN_QUEUE_FUNCTIONS, VULKAN_COMMAND_BUFFER_FUNCTIONS,
                      VULKAN_SWAPCHAIN_FUNCTIONS)
   source_file.close()
