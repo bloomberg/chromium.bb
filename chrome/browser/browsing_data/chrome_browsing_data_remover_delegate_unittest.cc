@@ -118,6 +118,11 @@
 #include "components/user_manager/scoped_user_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#include "chrome/common/chrome_paths.h"
+#include "components/upload_list/crash_upload_list.h"
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -2954,3 +2959,34 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, WipeOriginVerifierData) {
       customtabs::OriginVerifier::GetClearBrowsingDataCallCountForTesting());
 }
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, WipeCrashData) {
+  base::FilePath crash_dir_path;
+  base::PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dir_path);
+  base::FilePath upload_log_path =
+      crash_dir_path.AppendASCII(CrashUploadList::kReporterLogFilename);
+
+  constexpr char kCrashEntry1[] = "12345,abc\n";
+  constexpr char kCrashEntry2[] = "67890,def\n";
+  std::string initial_contents = kCrashEntry1;
+  initial_contents.append(kCrashEntry2);
+  ASSERT_GT(base::WriteFile(upload_log_path, initial_contents.c_str(),
+                            static_cast<int>(initial_contents.size())),
+            0);
+
+  BlockUntilBrowsingDataRemoved(
+      base::Time::FromTimeT(67890u), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, false);
+
+  std::string contents;
+  base::ReadFileToString(upload_log_path, &contents);
+  EXPECT_EQ(kCrashEntry1, contents);
+
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, false);
+
+  EXPECT_FALSE(base::PathExists(upload_log_path));
+}
+#endif
