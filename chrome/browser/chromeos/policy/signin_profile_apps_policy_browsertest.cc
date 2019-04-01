@@ -191,8 +191,8 @@ class SigninProfileAppsPolicyTestBase : public DevicePolicyCrosBrowserTest {
         "$1;$2", {extension_id, update_manifest_url.spec()}, nullptr);
     device_policy()
         ->payload()
-        .mutable_device_login_screen_app_install_list()
-        ->add_device_login_screen_app_install_list(policy_item_value);
+        .mutable_device_login_screen_extensions()
+        ->add_device_login_screen_extensions(policy_item_value);
     RefreshDevicePolicy();
   }
 

@@ -367,8 +367,8 @@ class SigninExtensionsDeviceCloudPolicyBrowserTest
 
     device_policy()
         ->payload()
-        .mutable_device_login_screen_app_install_list()
-        ->add_device_login_screen_app_install_list(policy_item_value);
+        .mutable_device_login_screen_extensions()
+        ->add_device_login_screen_extensions(policy_item_value);
 
     device_policy()->Build();
     session_manager_client()->set_device_policy(device_policy()->GetBlob());
