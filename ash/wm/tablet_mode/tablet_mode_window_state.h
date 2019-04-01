@@ -34,7 +34,8 @@ class TabletModeWindowState : public wm::WindowState::State {
   TabletModeWindowState(aura::Window* window,
                         TabletModeWindowManager* creator,
                         bool snap,
-                        bool animate_bounds_on_attach);
+                        bool animate_bounds_on_attach,
+                        bool entering_tablet_mode);
   ~TabletModeWindowState() override;
 
   void set_ignore_wm_events(bool ignore) { ignore_wm_events_ = ignore; }

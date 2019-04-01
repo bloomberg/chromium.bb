@@ -171,7 +171,8 @@ void TabletModeWindowState::UpdateWindowPosition(wm::WindowState* window_state,
 TabletModeWindowState::TabletModeWindowState(aura::Window* window,
                                              TabletModeWindowManager* creator,
                                              bool snap,
-                                             bool animate_bounds_on_attach)
+                                             bool animate_bounds_on_attach,
+                                             bool entering_tablet_mode)
     : window_(window),
       creator_(creator),
       animate_bounds_on_attach_(animate_bounds_on_attach) {
@@ -180,7 +181,8 @@ TabletModeWindowState::TabletModeWindowState(aura::Window* window,
   DCHECK(!snap || CanSnapInSplitview(window));
   state_type_on_attach_ =
       snap ? current_state_type_ : GetMaximizedOrCenteredWindowType(state);
-  set_enter_animation_type(IsTopWindow(window) ? DEFAULT : STEP_END);
+  if (entering_tablet_mode)
+    set_enter_animation_type(IsTopWindow(window) ? DEFAULT : STEP_END);
   old_state_.reset(
       state->SetStateObject(std::unique_ptr<State>(this)).release());
 }
