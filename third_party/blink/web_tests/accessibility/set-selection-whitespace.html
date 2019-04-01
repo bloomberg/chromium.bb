@@ -61,13 +61,12 @@
 
         var selection = window.getSelection();
         var range = selection.getRangeAt(0);
-        assert_equals(range.toString(), "Hello2");
+        assert_equals(selection.toString(), "Hello2");
 
         var heading = document.getElementById("heading");
-        var textNode = heading.firstChild;
-        assert_equals(range.startContainer, textNode);
+        assert_equals(range.startContainer, heading.firstChild);
         assert_equals(range.startOffset, 2);
-        assert_equals(range.endContainer, textNode);
-        assert_equals(range.endOffset, 8);
+        assert_equals(range.endContainer, heading);
+        assert_equals(range.endOffset, 1);
     }, "Use accessible APIs to set selection on element rather than static text node.");
 </script>
