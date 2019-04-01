@@ -2587,8 +2587,6 @@ if (enable_java_templates) {
                                "android_manifest",
                                "android_manifest_dep",
                                "apk_under_test",
-                               "base_module_build_config",
-                               "base_module_build_config_target",
                                "chromium_code",
                                "classpath_deps",
                                "emma_never_instrument",
@@ -3296,15 +3294,10 @@ if (enable_java_templates) {
         _base_module_target_gen_dir =
             get_label_info(_base_module_target, "target_gen_dir")
         _base_module_target_name = get_label_info(_base_module_target, "name")
-
         base_module_arsc_resource =
             "$_base_module_target_gen_dir/$_base_module_target_name.arsc.ap_"
         base_module_arsc_resource_target =
             "${_base_module_target}__compile_arsc_resources"
-        base_module_build_config = "$_base_module_target_gen_dir/" +
-                                   "$_base_module_target_name.build_config"
-        base_module_build_config_target =
-            "${_base_module_target}$build_config_target_suffix"
       }
     }
   }

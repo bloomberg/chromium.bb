@@ -13,7 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.chrome.tab_ui.R;
+import org.chromium.chrome.R;
 import org.chromium.ui.widget.ButtonCompat;
 
 /**
@@ -35,14 +35,14 @@ class TabGridViewHolder extends RecyclerView.ViewHolder {
         this.favicon = itemView.findViewById(R.id.tab_favicon);
         this.closeButton = itemView.findViewById(R.id.close_button);
         DrawableCompat.setTint(this.closeButton.getDrawable(),
-                ApiCompatibilityUtils.getColor(
-                        itemView.getResources(), org.chromium.chrome.R.color.light_icon_color));
+                ApiCompatibilityUtils.getColor(itemView.getResources(), R.color.light_icon_color));
         this.createGroupButton = itemView.findViewById(R.id.create_group_button);
     }
 
     public static TabGridViewHolder create(ViewGroup parent, int itemViewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                            .inflate(R.layout.tab_grid_card_item, parent, false);
+        View view =
+                LayoutInflater.from(parent.getContext())
+                        .inflate(org.chromium.chrome.R.layout.tab_grid_card_item, parent, false);
         return new TabGridViewHolder(view);
     }
 

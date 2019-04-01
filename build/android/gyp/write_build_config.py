@@ -939,11 +939,6 @@ def main(argv):
                     help='Dump the Markdown .build_config format documentation '
                     'then exit immediately.')
 
-  parser.add_option(
-      '--base-module-build-config',
-      help='Path to the base module\'s build config '
-      'if this is a feature module.')
-
   options, args = parser.parse_args(argv)
 
   if args:
@@ -1053,11 +1048,6 @@ def main(argv):
   all_library_deps = deps.All('java_library')
   all_resources_deps = deps.All('android_resources')
   all_classpath_library_deps = classpath_deps.All('java_library')
-
-  base_module_build_config = None
-  if options.base_module_build_config:
-    with open(options.base_module_build_config, 'r') as f:
-      base_module_build_config = json.load(f)
 
   # Initialize some common config.
   # Any value that needs to be queryable by dependents must go within deps_info.
@@ -1243,36 +1233,16 @@ def main(argv):
       'android_resources', 'android_apk', 'junit_binary', 'resource_rewriter',
       'dist_aar', 'android_app_bundle_module'):
     config['resources'] = {}
-
-    dependency_zips = [
-        c['resources_zip'] for c in all_resources_deps if c['resources_zip']
-    ]
+    config['resources']['dependency_zips'] = [
+        c['resources_zip'] for c in all_resources_deps]
     extra_package_names = []
     extra_r_text_files = []
-
     if options.type != 'android_resources':
       extra_package_names = [
           c['package_name'] for c in all_resources_deps if 'package_name' in c]
       extra_r_text_files = [
           c['r_text'] for c in all_resources_deps if 'r_text' in c]
 
-    # For feature modules, remove any resources that already exist in the base
-    # module.
-    if base_module_build_config:
-      dependency_zips = [
-          c for c in dependency_zips
-          if c not in base_module_build_config['resources']['dependency_zips']
-      ]
-      extra_package_names = [
-          c for c in extra_package_names if c not in
-          base_module_build_config['resources']['extra_package_names']
-      ]
-      extra_r_text_files = [
-          c for c in extra_r_text_files if c not in
-          base_module_build_config['resources']['extra_r_text_files']
-      ]
-
-    config['resources']['dependency_zips'] = dependency_zips
     config['resources']['extra_package_names'] = extra_package_names
     config['resources']['extra_r_text_files'] = extra_r_text_files
 
