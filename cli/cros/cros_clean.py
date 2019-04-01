@@ -157,6 +157,16 @@ class CleanCommand(command.CliCommand):
       logging.debug('Clean the common cache')
       CleanNoBindMount(self.options.cache_dir)
 
+      # Recreate dirs that cros_sdk does when entering.
+      # TODO: When sdk_lib/enter_chroot.sh is moved to chromite, we should unify
+      # with those code paths.
+      if not self.options.dry_run:
+        for subdir in ('ccache', 'host', 'target'):
+          osutils.SafeMakedirs(
+              os.path.join(self.options.cache_dir, 'distfiles', subdir))
+        os.chmod(os.path.join(self.options.cache_dir, 'distfiles', 'ccache'),
+                 0o2775)
+
     if self.options.chromite:
       logging.debug('Clean chromite workdirs')
       Clean(os.path.join(constants.CHROMITE_DIR, 'venv', 'venv'))
