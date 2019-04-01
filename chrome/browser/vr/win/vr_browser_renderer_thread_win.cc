@@ -57,8 +57,6 @@ void VRBrowserRendererThreadWin::StopOverlay() {
   started_ = false;
   graphics_ = nullptr;
   scheduler_ = nullptr;
-  ui_ = nullptr;
-  scheduler_ui_ = nullptr;
 }
 
 void VRBrowserRendererThreadWin::SetVRDisplayInfo(
@@ -117,13 +115,6 @@ void VRBrowserRendererThreadWin::StopWebXrTimeout() {
   OnSpinnerVisibilityChanged(false);
 }
 
-int VRBrowserRendererThreadWin::GetNextRequestId() {
-  current_request_id_++;
-  if (current_request_id_ >= 0x10000)
-    current_request_id_ = 0;
-  return current_request_id_;
-}
-
 void VRBrowserRendererThreadWin::OnWebXrTimeoutImminent() {
   OnSpinnerVisibilityChanged(true);
   scheduler_ui_->OnWebXrTimeoutImminent();
@@ -144,46 +135,14 @@ void VRBrowserRendererThreadWin::SetVisibleExternalPromptNotification(
 
   ui_->SetVisibleExternalPromptNotification(prompt);
 
-  if (overlay_)
-    overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
-                                           draw_state_.ShouldDrawWebXR());
+  overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
+                                         draw_state_.ShouldDrawWebXR());
   if (draw_state_.ShouldDrawUI()) {
-    if (overlay_)  // False only while testing
-      overlay_->RequestNextOverlayPose(
-          base::BindOnce(&VRBrowserRendererThreadWin::OnPose,
-                         base::Unretained(this), GetNextRequestId()));
+    overlay_->RequestNextOverlayPose(base::BindOnce(
+        &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
   } else {
     StopOverlay();
   }
-}
-
-void VRBrowserRendererThreadWin::SetIndicatorsVisible(bool visible) {
-  if (!draw_state_.SetIndicatorsVisible(visible))
-    return;
-
-  if (draw_state_.ShouldDrawUI())
-    StartOverlay();
-
-  if (overlay_)
-    overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
-                                           draw_state_.ShouldDrawWebXR());
-  if (draw_state_.ShouldDrawUI()) {
-    if (overlay_)  // False only while testing
-      overlay_->RequestNextOverlayPose(
-          base::BindOnce(&VRBrowserRendererThreadWin::OnPose,
-                         base::Unretained(this), GetNextRequestId()));
-  } else {
-    StopOverlay();
-  }
-}
-
-void VRBrowserRendererThreadWin::SetCapturingState(
-    const CapturingStateModel& active_capturing,
-    const CapturingStateModel& background_capturing,
-    const CapturingStateModel& potential_capturing) {
-  if (ui_)
-    ui_->SetCapturingState(active_capturing, background_capturing,
-                           potential_capturing);
 }
 
 VRBrowserRendererThreadWin*
@@ -304,24 +263,22 @@ void VRBrowserRendererThreadWin::StartOverlay() {
 }
 
 void VRBrowserRendererThreadWin::OnSpinnerVisibilityChanged(bool visible) {
-  if (!draw_state_.SetSpinnerVisible(visible))
-    return;
-  if (draw_state_.ShouldDrawUI()) {
-    StartOverlay();
-  }
+  if (draw_state_.SetSpinnerVisible(visible)) {
+    if (draw_state_.ShouldDrawUI()) {
+      StartOverlay();
+    }
 
-  if (overlay_) {
-    overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
-                                           draw_state_.ShouldDrawWebXR());
-  }
+    if (overlay_) {
+      overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
+                                             draw_state_.ShouldDrawWebXR());
+    }
 
-  if (draw_state_.ShouldDrawUI()) {
-    if (overlay_)  // False only while testing.
-      overlay_->RequestNextOverlayPose(
-          base::BindOnce(&VRBrowserRendererThreadWin::OnPose,
-                         base::Unretained(this), GetNextRequestId()));
-  } else {
-    StopOverlay();
+    if (draw_state_.ShouldDrawUI()) {
+      overlay_->RequestNextOverlayPose(base::BindOnce(
+          &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
+    } else {
+      StopOverlay();
+    }
   }
 }
 
@@ -331,16 +288,12 @@ void VRBrowserRendererThreadWin::OnWebXRSubmitted() {
   StopWebXrTimeout();
 }
 
-void VRBrowserRendererThreadWin::OnPose(int request_id,
-                                        device::mojom::XRFrameDataPtr data) {
-  if (request_id != current_request_id_) {
-    // Old request. Do nothing.
-    return;
-  }
+void VRBrowserRendererThreadWin::OnPose(device::mojom::XRFrameDataPtr data) {
   if (!draw_state_.ShouldDrawUI()) {
     // We shouldn't be showing UI.
     overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
                                            draw_state_.ShouldDrawWebXR());
+
     if (graphics_)
       graphics_->ResetMemoryBuffer();
     return;
@@ -377,8 +330,7 @@ void VRBrowserRendererThreadWin::OnPose(int request_id,
   // calling the callback if we are destroyed.
   scheduler_->OnPose(base::BindOnce(&VRBrowserRendererThreadWin::SubmitFrame,
                                     base::Unretained(this), std::move(data)),
-                     head_from_world, draw_state_.ShouldDrawWebXR(),
-                     draw_state_.ShouldDrawUI());
+                     head_from_world, draw_state_.ShouldDrawUI());
 }
 
 void VRBrowserRendererThreadWin::SubmitFrame(
@@ -393,28 +345,24 @@ void VRBrowserRendererThreadWin::SubmitFrame(
 }
 
 void VRBrowserRendererThreadWin::SubmitResult(bool success) {
-  if (!success && graphics_) {
+  if (!success) {
     graphics_->ResetMemoryBuffer();
   }
-  if (scheduler_ui_ && success)
-    scheduler_ui_->OnWebXrFrameAvailable();
   if (draw_state_.ShouldDrawUI() && started_) {
-    overlay_->RequestNextOverlayPose(
-        base::BindOnce(&VRBrowserRendererThreadWin::OnPose,
-                       base::Unretained(this), GetNextRequestId()));
+    overlay_->RequestNextOverlayPose(base::BindOnce(
+        &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
   }
 }
 
 // VRBrowserRendererThreadWin::DrawContentType functions.
 bool VRBrowserRendererThreadWin::DrawState::ShouldDrawUI() {
   return prompt_ != ExternalPromptNotificationType::kPromptNone ||
-         spinner_visible_ || indicators_visible_;
+         spinner_visible_;
 }
 
 bool VRBrowserRendererThreadWin::DrawState::ShouldDrawWebXR() {
-  return (prompt_ == ExternalPromptNotificationType::kPromptNone &&
-          !spinner_visible_) ||
-         indicators_visible_;
+  return prompt_ == ExternalPromptNotificationType::kPromptNone &&
+         !spinner_visible_;
 }
 
 bool VRBrowserRendererThreadWin::DrawState::SetPrompt(
@@ -429,13 +377,6 @@ bool VRBrowserRendererThreadWin::DrawState::SetSpinnerVisible(bool visible) {
   bool old_ui = ShouldDrawUI();
   bool old_webxr = ShouldDrawWebXR();
   spinner_visible_ = visible;
-  return old_ui != ShouldDrawUI() || old_webxr != ShouldDrawWebXR();
-}
-
-bool VRBrowserRendererThreadWin::DrawState::SetIndicatorsVisible(bool visible) {
-  bool old_ui = ShouldDrawUI();
-  bool old_webxr = ShouldDrawWebXR();
-  indicators_visible_ = visible;
   return old_ui != ShouldDrawUI() || old_webxr != ShouldDrawWebXR();
 }
 

@@ -1307,7 +1307,6 @@ TEST_F(UiTest, RepositionHostedUi) {
 
 // Ensures that permissions do not appear after showing hosted UI.
 TEST_F(UiTest, DoNotShowIndicatorsAfterHostedUi) {
-#if !defined(OS_WIN)
   CreateScene(kInWebVr);
   auto browser_ui = ui_->GetBrowserUiWeakPtr();
   browser_ui->SetWebVrMode(true);
@@ -1324,14 +1323,12 @@ TEST_F(UiTest, DoNotShowIndicatorsAfterHostedUi) {
   model_->web_vr.showing_hosted_ui = false;
   OnBeginFrame();
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
-#endif
 }
 
 // Ensures that permissions appear on long press, and that when the menu button
 // is released that we do not show the exclusive screen toast. Distinguishing
 // these cases requires knowledge of the previous state.
 TEST_F(UiTest, LongPressMenuButtonInWebVrMode) {
-#if !defined(OS_WIN)
   CreateScene(kInWebVr);
   auto browser_ui = ui_->GetBrowserUiWeakPtr();
   browser_ui->SetWebVrMode(true);
@@ -1363,7 +1360,6 @@ TEST_F(UiTest, LongPressMenuButtonInWebVrMode) {
       std::make_unique<InputEvent>(InputEvent::kMenuButtonLongPressEnd));
   ui_->HandleMenuButtonEvents(&events);
   EXPECT_FALSE(model_->menu_button_long_pressed);
-#endif
 }
 
 TEST_F(UiTest, MenuItems) {

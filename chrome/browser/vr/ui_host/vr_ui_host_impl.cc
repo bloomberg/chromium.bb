@@ -7,21 +7,18 @@
 #include <memory>
 
 #include "base/task/post_task.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
-#include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
-#include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/vr/win/vr_browser_renderer_thread_win.h"
+#include "components/strings/grit/components_strings.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace vr {
@@ -29,18 +26,11 @@ namespace vr {
 namespace {
 static constexpr base::TimeDelta kPermissionPromptTimeout =
     base::TimeDelta::FromSeconds(5);
-
-static constexpr base::TimeDelta kPollCapturingStateInterval =
-    base::TimeDelta::FromSecondsD(0.2);
-
-const CapturingStateModel g_default_capturing_state;
 }  // namespace
 
 VRUiHostImpl::VRUiHostImpl(device::mojom::XRDeviceId device_id,
                            device::mojom::XRCompositorHostPtr compositor)
-    : compositor_(std::move(compositor)),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {
+    : compositor_(std::move(compositor)), weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << __func__;
 
@@ -49,10 +39,6 @@ VRUiHostImpl::VRUiHostImpl(device::mojom::XRDeviceId device_id,
   if (runtime) {
     runtime->AddObserver(this);
   }
-
-  auto* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(device::mojom::kServiceName, &geolocation_config_);
 }
 
 VRUiHostImpl::~VRUiHostImpl() {
@@ -123,10 +109,7 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
   web_contents_ = contents;
   if (contents) {
     StartUiRendering();
-    InitCapturingStates();
     ui_rendering_thread_->SetWebXrPresenting(true);
-
-    PollCapturingState();
 
     PermissionRequestManager::CreateForWebContents(contents);
     permission_request_manager_ =
@@ -146,8 +129,6 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
       DVLOG(1) << __func__ << ": No PermissionRequestManager";
     }
   } else {
-    poll_capturing_state_task_.Cancel();
-
     if (ui_rendering_thread_)
       ui_rendering_thread_->SetWebXrPresenting(false);
     StopUiRendering();
@@ -178,7 +159,6 @@ void VRUiHostImpl::StartUiRendering() {
 void VRUiHostImpl::StopUiRendering() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << __func__;
-
   ui_rendering_thread_ = nullptr;
 }
 
@@ -205,130 +185,30 @@ void VRUiHostImpl::OnBubbleAdded() {
 
   SetLocationInfoOnUi();
 
-  if (indicators_visible_) {
-    indicators_visible_ = false;
-    ui_rendering_thread_->SetIndicatorsVisible(false);
-  }
-
   ui_rendering_thread_->SetVisibleExternalPromptNotification(
       ExternalPromptNotificationType::kPromptGenericPermission);
 
-  is_external_prompt_showing_in_headset_ = true;
-  external_prompt_timeout_task_.Reset(
-      base::BindRepeating(&VRUiHostImpl::RemoveHeadsetNotificationPrompt,
-                          weak_ptr_factory_.GetWeakPtr()));
-  main_thread_task_runner_->PostDelayedTask(
-      FROM_HERE, external_prompt_timeout_task_.callback(),
+  is_prompt_showing_in_headset_ = true;
+  current_prompt_sequence_num_++;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&VRUiHostImpl::RemoveHeadsetNotificationPrompt,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     current_prompt_sequence_num_),
       kPermissionPromptTimeout);
 }
 
 void VRUiHostImpl::OnBubbleRemoved() {
-  external_prompt_timeout_task_.Cancel();
-  RemoveHeadsetNotificationPrompt();
+  RemoveHeadsetNotificationPrompt(current_prompt_sequence_num_);
 }
 
-void VRUiHostImpl::RemoveHeadsetNotificationPrompt() {
-  if (!is_external_prompt_showing_in_headset_)
+void VRUiHostImpl::RemoveHeadsetNotificationPrompt(int prompt_sequence_num) {
+  if (!is_prompt_showing_in_headset_)
     return;
-  is_external_prompt_showing_in_headset_ = false;
+  if (prompt_sequence_num != current_prompt_sequence_num_)
+    return;
+  is_prompt_showing_in_headset_ = false;
   ui_rendering_thread_->SetVisibleExternalPromptNotification(
       ExternalPromptNotificationType::kPromptNone);
-  indicators_shown_start_time_ = base::Time::Now();
 }
-
-void VRUiHostImpl::InitCapturingStates() {
-  active_capturing_ = g_default_capturing_state;
-  potential_capturing_ = g_default_capturing_state;
-
-  DCHECK(web_contents_);
-  PermissionManager* permission_manager = PermissionManager::Get(
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
-  const GURL& origin = web_contents_->GetLastCommittedURL();
-  content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
-  potential_capturing_.audio_capture_enabled =
-      permission_manager
-          ->GetPermissionStatusForFrame(
-              ContentSettingsType::CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, rfh,
-              origin)
-          .content_setting == CONTENT_SETTING_ALLOW;
-  potential_capturing_.video_capture_enabled =
-      permission_manager
-          ->GetPermissionStatusForFrame(
-              ContentSettingsType::CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-              rfh, origin)
-          .content_setting == CONTENT_SETTING_ALLOW;
-  potential_capturing_.location_access_enabled =
-      permission_manager
-          ->GetPermissionStatusForFrame(
-              ContentSettingsType::CONTENT_SETTINGS_TYPE_GEOLOCATION, rfh,
-              origin)
-          .content_setting == CONTENT_SETTING_ALLOW;
-
-  indicators_shown_start_time_ = base::Time::Now();
-  indicators_visible_ = false;
-}
-
-void VRUiHostImpl::PollCapturingState() {
-  poll_capturing_state_task_.Reset(base::BindRepeating(
-      &VRUiHostImpl::PollCapturingState, base::Unretained(this)));
-  main_thread_task_runner_->PostDelayedTask(
-      FROM_HERE, poll_capturing_state_task_.callback(),
-      kPollCapturingStateInterval);
-
-  // Microphone, Camera, location.
-  CapturingStateModel active_capturing = active_capturing_;
-  TabSpecificContentSettings* settings =
-      TabSpecificContentSettings::FromWebContents(web_contents_);
-  if (settings) {
-    const ContentSettingsUsagesState& usages_state =
-        settings->geolocation_usages_state();
-    if (!usages_state.state_map().empty()) {
-      unsigned int state_flags = 0;
-      usages_state.GetDetailedInfo(nullptr, &state_flags);
-      active_capturing.location_access_enabled = !!(
-          state_flags & ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED);
-    }
-    active_capturing.audio_capture_enabled =
-        (settings->GetMicrophoneCameraState() &
-         TabSpecificContentSettings::MICROPHONE_ACCESSED) &&
-        !(settings->GetMicrophoneCameraState() &
-          TabSpecificContentSettings::MICROPHONE_BLOCKED);
-    active_capturing.video_capture_enabled =
-        (settings->GetMicrophoneCameraState() &
-         TabSpecificContentSettings::CAMERA_ACCESSED) &
-        !(settings->GetMicrophoneCameraState() &
-          TabSpecificContentSettings::CAMERA_BLOCKED);
-  }
-
-  // Screen capture, bluetooth.
-  scoped_refptr<MediaStreamCaptureIndicator> indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()
-          ->GetMediaStreamCaptureIndicator();
-  active_capturing.screen_capture_enabled =
-      indicator->IsBeingMirrored(web_contents_);
-  active_capturing.bluetooth_connected =
-      web_contents_->IsConnectedToBluetoothDevice();
-
-  if (active_capturing_ != active_capturing) {
-    indicators_shown_start_time_ = base::Time::Now();
-  }
-
-  active_capturing_ = active_capturing;
-  ui_rendering_thread_->SetCapturingState(
-      active_capturing_, g_default_capturing_state, potential_capturing_);
-
-  if (indicators_shown_start_time_ + kPermissionPromptTimeout >
-      base::Time::Now()) {
-    if (!indicators_visible_ && !is_external_prompt_showing_in_headset_) {
-      indicators_visible_ = true;
-      ui_rendering_thread_->SetIndicatorsVisible(true);
-    }
-  } else {
-    if (indicators_visible_) {
-      indicators_visible_ = false;
-      ui_rendering_thread_->SetIndicatorsVisible(false);
-    }
-  }
-}
-
 }  // namespace vr

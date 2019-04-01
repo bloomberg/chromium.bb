@@ -685,9 +685,8 @@ void BindIndicatorText(Model* model, Text* text, const IndicatorSpec& spec) {
 
 std::unique_ptr<UiElement> CreateWebVrIndicator(Model* model,
                                                 UiBrowserInterface* browser,
-                                                IndicatorSpec spec,
-                                                DrawPhase phase) {
-  auto container = Create<Rect>(spec.webvr_name, phase);
+                                                IndicatorSpec spec) {
+  auto container = Create<Rect>(spec.webvr_name, kPhaseOverlayForeground);
   VR_BIND_COLOR(model, container.get(),
                 &ColorScheme::webvr_permission_background, &Rect::SetColor);
   container->set_corner_radius(kWebVrPermissionCornerRadius);
@@ -700,7 +699,7 @@ std::unique_ptr<UiElement> CreateWebVrIndicator(Model* model,
   auto layout = Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kRight);
   layout->set_margin(kWebVrPermissionMargin);
 
-  auto icon_element = Create<VectorIcon>(kNone, phase, 128);
+  auto icon_element = Create<VectorIcon>(kNone, kPhaseOverlayForeground, 128);
   VR_BIND_COLOR(model, icon_element.get(),
                 &ColorScheme::webvr_permission_foreground,
                 &VectorIcon::SetColor);
@@ -718,12 +717,12 @@ std::unique_ptr<UiElement> CreateWebVrIndicator(Model* model,
   std::unique_ptr<UiElement> description_element;
   if (spec.is_url) {
     auto url_text = Create<UrlText>(
-        kNone, phase, kWebVrPermissionFontHeight,
+        kNone, kPhaseOverlayForeground, kWebVrPermissionFontHeight,
         base::BindRepeating(&UiBrowserInterface::OnUnsupportedMode,
                             base::Unretained(browser),
                             UiUnsupportedMode::kUnhandledCodePoint)
 
-    );
+            );
     url_text->SetFieldWidth(kWebVrPermissionTextWidth);
     url_text->AddBinding(VR_BIND_FUNC(GURL, Model, model,
                                       model->location_bar_state.gurl, UrlText,
@@ -737,7 +736,8 @@ std::unique_ptr<UiElement> CreateWebVrIndicator(Model* model,
     description_element = std::move(url_text);
 
   } else {
-    auto text_element = Create<Text>(kNone, phase, kWebVrPermissionFontHeight);
+    auto text_element = Create<Text>(kNone, kPhaseOverlayForeground,
+                                     kWebVrPermissionFontHeight);
     text_element->SetLayoutMode(kMultiLineFixedWidth);
     text_element->SetAlignment(kTextAlignmentLeft);
     text_element->SetColor(SK_ColorWHITE);
@@ -758,11 +758,12 @@ std::unique_ptr<UiElement> CreateWebVrIndicator(Model* model,
   return container;
 }
 
-std::unique_ptr<UiElement> CreateHostedUi(Model* model,
-                                          UiBrowserInterface* browser,
-                                          UiElementName name,
-                                          UiElementName element_name,
-                                          float distance) {
+std::unique_ptr<UiElement> CreateHostedUi(
+    Model* model,
+    UiBrowserInterface* browser,
+    UiElementName name,
+    UiElementName element_name,
+    float distance) {
   auto hosted_ui = Create<PlatformUiElement>(element_name, kPhaseForeground);
   hosted_ui->SetSize(kContentWidth * kHostedUiWidthRatio,
                      kContentHeight * kHostedUiHeightRatio);
@@ -940,178 +941,6 @@ std::unique_ptr<TransientElement> CreateTextToast(
   parent->AddChild(std::move(background_element));
   return parent;
 }
-
-#if defined(OS_WIN)
-void BindIndicatorTranscienceForWin(
-    TransientElement* e,
-    Model* model,
-    UiScene* scene,
-    const base::Optional<
-        std::tuple<bool, CapturingStateModel, CapturingStateModel>>& last_value,
-    const std::tuple<bool, CapturingStateModel, CapturingStateModel>& value) {
-  const bool in_web_vr_presentation = model->web_vr_enabled() &&
-                                      model->web_vr.IsImmersiveWebXrVisible() &&
-                                      model->web_vr.has_received_permissions;
-
-  const CapturingStateModel active_capture = std::get<1>(value);
-  const CapturingStateModel potential_capture = std::get<2>(value);
-  const CapturingStateModel last_active_capture =
-      last_value ? std::get<1>(last_value.value()) : CapturingStateModel();
-  const CapturingStateModel last_potential_capture =
-      last_value ? std::get<2>(last_value.value()) : CapturingStateModel();
-
-  // Update the visibility state of the indicators based on the capturing state
-  // diff. potential_capture represents the permissions granted to the site
-  // before the presentation. active_capture members are set when a relevant
-  // device starts to get used.
-  // When the session starts, indicators display which permissions are granted
-  // upfront (struct potential_capture). Then, when a device gets accessed,
-  // an indicator notifies the user about its usage.
-  // The below logic tries to capture this logic.
-  bool initial_toasts = !active_capture.IsAnyCapturingEnabled();
-  if (active_capture != last_active_capture ||
-      potential_capture != last_potential_capture) {
-    auto specs = GetIndicatorSpecs();
-    for (const auto& spec : specs) {
-      bool allowed = potential_capture.*spec.signal;
-      bool triggered =
-          !(last_active_capture.*spec.signal) && (active_capture.*spec.signal);
-      bool show_ui = initial_toasts ? allowed : triggered;
-      SetVisibleInLayout(scene->GetUiElementByName(spec.webvr_name), show_ui);
-    }
-  }
-
-  if (!in_web_vr_presentation) {
-    e->SetVisibleImmediately(false);
-    return;
-  }
-
-  e->SetVisible(true);
-  e->RefreshVisible();
-  SetVisibleInLayout(scene->GetUiElementByName(kWebVrExclusiveScreenToast),
-                     !model->browsing_disabled);
-
-  e->RemoveKeyframeModels(TRANSFORM);
-
-  e->SetTranslate(0, kWebVrPermissionOffsetStart, 0);
-
-  // Build up a keyframe model for the initial transition.
-  std::unique_ptr<cc::KeyframedTransformAnimationCurve> curve(
-      cc::KeyframedTransformAnimationCurve::Create());
-
-  cc::TransformOperations value_1;
-  value_1.AppendTranslate(0, kWebVrPermissionOffsetStart, 0);
-  curve->AddKeyframe(cc::TransformKeyframe::Create(
-      base::TimeDelta(), value_1,
-      cc::CubicBezierTimingFunction::CreatePreset(
-          cc::CubicBezierTimingFunction::EaseType::EASE)));
-
-  cc::TransformOperations value_2;
-  value_2.AppendTranslate(0, kWebVrPermissionOffsetOvershoot, 0);
-  curve->AddKeyframe(cc::TransformKeyframe::Create(
-      base::TimeDelta::FromMilliseconds(kWebVrPermissionOffsetMs), value_2,
-      cc::CubicBezierTimingFunction::CreatePreset(
-          cc::CubicBezierTimingFunction::EaseType::EASE)));
-
-  cc::TransformOperations value_3;
-  value_3.AppendTranslate(0, kWebVrPermissionOffsetFinal, 0);
-  curve->AddKeyframe(cc::TransformKeyframe::Create(
-      base::TimeDelta::FromMilliseconds(kWebVrPermissionAnimationDurationMs),
-      value_3,
-      cc::CubicBezierTimingFunction::CreatePreset(
-          cc::CubicBezierTimingFunction::EaseType::EASE)));
-
-  e->AddKeyframeModel(cc::KeyframeModel::Create(
-      std::move(curve), Animation::GetNextKeyframeModelId(),
-      Animation::GetNextGroupId(), TRANSFORM));
-}
-
-#else
-
-void BindIndicatorTranscience(
-    TransientElement* e,
-    Model* model,
-    UiScene* scene,
-    const base::Optional<std::tuple<bool, bool, bool>>& last_value,
-    const std::tuple<bool, bool, bool>& value) {
-  const bool in_web_vr_presentation = std::get<0>(value);
-  const bool in_long_press = std::get<1>(value);
-  const bool showing_hosted_ui = std::get<2>(value);
-  const bool was_in_long_press = last_value && std::get<1>(last_value.value());
-  const bool was_showing_hosted_ui =
-      last_value && std::get<2>(last_value.value());
-
-  if (!in_web_vr_presentation) {
-    e->SetVisibleImmediately(false);
-    return;
-  }
-
-  // The reason we need the previous state is to disguish the
-  // situation where the app button has been released after a long
-  // press, and the situation when we want to initially show the
-  // indicators.
-  if (was_in_long_press && !in_long_press)
-    return;
-
-  // Similarly, we need to know when we've finished presenting hosted
-  // ui because we should not show indicators then.
-  if (was_showing_hosted_ui && !showing_hosted_ui)
-    return;
-
-  e->SetVisible(true);
-  e->RefreshVisible();
-  SetVisibleInLayout(scene->GetUiElementByName(kWebVrExclusiveScreenToast),
-                     !model->browsing_disabled && !in_long_press);
-
-  auto specs = GetIndicatorSpecs();
-  for (const auto& spec : specs) {
-    SetVisibleInLayout(scene->GetUiElementByName(spec.webvr_name),
-                       model->active_capturing.*spec.signal ||
-                           model->potential_capturing.*spec.signal ||
-                           model->background_capturing.*spec.signal);
-  }
-
-  e->RemoveKeyframeModels(TRANSFORM);
-  if (in_long_press) {
-    // We do not do a translation animation for long press.
-    e->SetTranslate(0, 0, 0);
-    return;
-  }
-
-  e->SetTranslate(0, kWebVrPermissionOffsetStart, 0);
-
-  // Build up a keyframe model for the initial transition.
-  std::unique_ptr<cc::KeyframedTransformAnimationCurve> curve(
-      cc::KeyframedTransformAnimationCurve::Create());
-
-  cc::TransformOperations value_1;
-  value_1.AppendTranslate(0, kWebVrPermissionOffsetStart, 0);
-  curve->AddKeyframe(cc::TransformKeyframe::Create(
-      base::TimeDelta(), value_1,
-      cc::CubicBezierTimingFunction::CreatePreset(
-          cc::CubicBezierTimingFunction::EaseType::EASE)));
-
-  cc::TransformOperations value_2;
-  value_2.AppendTranslate(0, kWebVrPermissionOffsetOvershoot, 0);
-  curve->AddKeyframe(cc::TransformKeyframe::Create(
-      base::TimeDelta::FromMilliseconds(kWebVrPermissionOffsetMs), value_2,
-      cc::CubicBezierTimingFunction::CreatePreset(
-          cc::CubicBezierTimingFunction::EaseType::EASE)));
-
-  cc::TransformOperations value_3;
-  value_3.AppendTranslate(0, kWebVrPermissionOffsetFinal, 0);
-  curve->AddKeyframe(cc::TransformKeyframe::Create(
-      base::TimeDelta::FromMilliseconds(kWebVrPermissionAnimationDurationMs),
-      value_3,
-      cc::CubicBezierTimingFunction::CreatePreset(
-          cc::CubicBezierTimingFunction::EaseType::EASE)));
-
-  e->AddKeyframeModel(cc::KeyframeModel::Create(
-      std::move(curve), Animation::GetNextKeyframeModelId(),
-      Animation::GetNextGroupId(), TRANSFORM));
-}
-
-#endif
 
 }  // namespace
 
@@ -2016,7 +1845,8 @@ void UiSceneCreator::CreateContentRepositioningAffordance() {
       float, Model, model_,
       model->reposition_window_enabled() ? kRepositionContentOpacity : 1.0f,
       UiElement, content_toggle.get(), SetOpacity));
-  scene_->AddParentUiElement(k2dBrowsingForeground, std::move(content_toggle));
+  scene_->AddParentUiElement(k2dBrowsingForeground,
+                             std::move(content_toggle));
 
   auto hit_plane =
       Create<InvisibleHitTarget>(kContentRepositionHitPlane, kPhaseForeground);
@@ -2481,8 +2311,7 @@ void UiSceneCreator::CreateOverflowMenu() {
   };
   std::vector<MenuItem> menu_items = {
       {
-          kOverflowMenuNewIncognitoTabItem,
-          new_incognito_tab_res_id,
+          kOverflowMenuNewIncognitoTabItem, new_incognito_tab_res_id,
           base::BindRepeating(
               [](UiBrowserInterface* browser) { browser->OpenNewTab(true); }),
           base::BindRepeating([](Model* m) { return !m->incognito; }),
@@ -2974,8 +2803,6 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
   indicators->SetTranslate(0, 0, kWebVrPermissionDepth);
   indicators->set_margin(kWebVrPermissionOuterMargin);
 
-  DrawPhase phase = kPhaseOverlayForeground;
-
   IndicatorSpec app_button_spec = {kNone,
                                    kWebVrExclusiveScreenToast,
                                    GetVrIcon(kVrRemoveCircleOutlineIcon),
@@ -2984,34 +2811,15 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
                                    0,
                                    nullptr,
                                    false};
-  indicators->AddChild(
-      CreateWebVrIndicator(model_, browser_, app_button_spec, phase));
+  indicators->AddChild(CreateWebVrIndicator(model_, browser_, app_button_spec));
 
   auto specs = GetIndicatorSpecs();
   for (const auto& spec : specs) {
-    indicators->AddChild(CreateWebVrIndicator(model_, browser_, spec, phase));
+    indicators->AddChild(CreateWebVrIndicator(model_, browser_, spec));
   }
 
   auto parent = CreateTransientParent(kWebVrIndicatorTransience,
                                       kToastTimeoutSeconds, true);
-#if defined(OS_WIN)
-  parent->AddBinding(
-      std::make_unique<
-          Binding<std::tuple<bool, CapturingStateModel, CapturingStateModel>>>(
-          VR_BIND_LAMBDA(
-              [](Model* model) {
-                return std::tuple<bool, CapturingStateModel,
-                                  CapturingStateModel>(
-                    model->web_vr_enabled() &&
-                        model->web_vr.IsImmersiveWebXrVisible() &&
-                        model->web_vr.has_received_permissions,
-                    model->active_capturing, model->potential_capturing);
-              },
-              base::Unretained(model_)),
-          VR_BIND_LAMBDA(BindIndicatorTranscienceForWin,
-                         base::Unretained(parent.get()),
-                         base::Unretained(model_), base::Unretained(scene_))));
-#else
   parent->AddBinding(std::make_unique<Binding<std::tuple<bool, bool, bool>>>(
       VR_BIND_LAMBDA(
           [](Model* model) {
@@ -3023,9 +2831,93 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
                 model->web_vr.showing_hosted_ui);
           },
           base::Unretained(model_)),
-      VR_BIND_LAMBDA(BindIndicatorTranscience, base::Unretained(parent.get()),
-                     base::Unretained(model_), base::Unretained(scene_))));
-#endif
+      VR_BIND_LAMBDA(
+          [](TransientElement* e, Model* model, UiScene* scene,
+             const base::Optional<std::tuple<bool, bool, bool>>& last_value,
+             const std::tuple<bool, bool, bool>& value) {
+            const bool in_web_vr_presentation = std::get<0>(value);
+            const bool in_long_press = std::get<1>(value);
+            const bool showing_hosted_ui = std::get<2>(value);
+            const bool was_in_long_press =
+                last_value && std::get<1>(last_value.value());
+            const bool was_showing_hosted_ui =
+                last_value && std::get<2>(last_value.value());
+
+            if (!in_web_vr_presentation) {
+              e->SetVisibleImmediately(false);
+              return;
+            }
+
+            // The reason we need the previous state is to disguish the
+            // situation where the app button has been released after a long
+            // press, and the situation when we want to initially show the
+            // indicators.
+            if (was_in_long_press && !in_long_press)
+              return;
+
+            // Similarly, we need to know when we've finished presenting hosted
+            // ui because we should not show indicators then.
+            if (was_showing_hosted_ui && !showing_hosted_ui)
+              return;
+
+            e->SetVisible(true);
+            e->RefreshVisible();
+            SetVisibleInLayout(
+                scene->GetUiElementByName(kWebVrExclusiveScreenToast),
+                !model->browsing_disabled && !in_long_press);
+
+            auto specs = GetIndicatorSpecs();
+            for (const auto& spec : specs) {
+              SetVisibleInLayout(
+                  scene->GetUiElementByName(spec.webvr_name),
+                  model->active_capturing.*spec.signal ||
+                      model->potential_capturing.*spec.signal ||
+                      model->background_capturing.*spec.signal);
+            }
+
+            e->RemoveKeyframeModels(TRANSFORM);
+            if (in_long_press) {
+              // We do not do a translation animation for long press.
+              e->SetTranslate(0, 0, 0);
+              return;
+            }
+
+            e->SetTranslate(0, kWebVrPermissionOffsetStart, 0);
+
+            // Build up a keyframe model for the initial transition.
+            std::unique_ptr<cc::KeyframedTransformAnimationCurve> curve(
+                cc::KeyframedTransformAnimationCurve::Create());
+
+            cc::TransformOperations value_1;
+            value_1.AppendTranslate(0, kWebVrPermissionOffsetStart, 0);
+            curve->AddKeyframe(cc::TransformKeyframe::Create(
+                base::TimeDelta(), value_1,
+                cc::CubicBezierTimingFunction::CreatePreset(
+                    cc::CubicBezierTimingFunction::EaseType::EASE)));
+
+            cc::TransformOperations value_2;
+            value_2.AppendTranslate(0, kWebVrPermissionOffsetOvershoot, 0);
+            curve->AddKeyframe(cc::TransformKeyframe::Create(
+                base::TimeDelta::FromMilliseconds(kWebVrPermissionOffsetMs),
+                value_2,
+                cc::CubicBezierTimingFunction::CreatePreset(
+                    cc::CubicBezierTimingFunction::EaseType::EASE)));
+
+            cc::TransformOperations value_3;
+            value_3.AppendTranslate(0, kWebVrPermissionOffsetFinal, 0);
+            curve->AddKeyframe(cc::TransformKeyframe::Create(
+                base::TimeDelta::FromMilliseconds(
+                    kWebVrPermissionAnimationDurationMs),
+                value_3,
+                cc::CubicBezierTimingFunction::CreatePreset(
+                    cc::CubicBezierTimingFunction::EaseType::EASE)));
+
+            e->AddKeyframeModel(cc::KeyframeModel::Create(
+                std::move(curve), Animation::GetNextKeyframeModelId(),
+                Animation::GetNextGroupId(), TRANSFORM));
+          },
+          base::Unretained(parent.get()), base::Unretained(model_),
+          base::Unretained(scene_))));
 
   auto scaler = std::make_unique<ScaledDepthAdjuster>(kWebVrToastDistance);
   scaler->AddChild(std::move(indicators));
