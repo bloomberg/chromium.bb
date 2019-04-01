@@ -5,24 +5,12 @@
 #include "ash/shelf/back_button.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
-#include "ash/shelf/shelf_view.h"
-#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/tray/tray_popup_utils.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/events/event_sink.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
-#include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -36,15 +24,18 @@ BackButton::BackButton(ShelfView* shelf_view) : ShelfControlButton(shelf_view) {
 
 BackButton::~BackButton() = default;
 
-void BackButton::OnGestureEvent(ui::GestureEvent* event) {
-  ShelfButton::OnGestureEvent(event);
-  if (event->type() == ui::ET_GESTURE_TAP)
-    GenerateAndSendBackEvent();
-}
+void BackButton::NotifyClick(const ui::Event& event) {
+  Button::NotifyClick(event);
 
-void BackButton::OnMouseReleased(const ui::MouseEvent& event) {
-  ShelfButton::OnMouseReleased(event);
-  GenerateAndSendBackEvent();
+  // Send up event as well as down event as ARC++ clients expect this sequence.
+  // TODO: Investigate if we should be using the current modifiers.
+  aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
+  ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED, ui::VKEY_BROWSER_BACK,
+                               ui::EF_NONE);
+  ignore_result(root_window->GetHost()->SendEventToSink(&press_key_event));
+  ui::KeyEvent release_key_event(ui::ET_KEY_RELEASED, ui::VKEY_BROWSER_BACK,
+                                 ui::EF_NONE);
+  ignore_result(root_window->GetHost()->SendEventToSink(&release_key_event));
 }
 
 void BackButton::PaintButtonContents(gfx::Canvas* canvas) {
@@ -57,20 +48,6 @@ void BackButton::PaintButtonContents(gfx::Canvas* canvas) {
 
 const char* BackButton::GetClassName() const {
   return kViewClassName;
-}
-
-void BackButton::GenerateAndSendBackEvent() {
-  base::RecordAction(base::UserMetricsAction("Tablet_BackButton"));
-
-  // Send the back event to the root window of the back button's widget.
-  const views::Widget* widget = GetWidget();
-  if (widget && widget->GetNativeWindow()) {
-    aura::Window* root_window = widget->GetNativeWindow()->GetRootWindow();
-    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_BROWSER_BACK,
-                           ui::EF_NONE);
-    ignore_result(
-        root_window->GetHost()->event_sink()->OnEventFromSource(&key_event));
-  }
 }
 
 }  // namespace ash
