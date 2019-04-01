@@ -136,17 +136,6 @@ NavigationPredictor::NavigationPredictor(
               blink::features::kNavigationPredictor,
               "same_origin_preconnecting_allowed",
               false))
-#ifdef OS_ANDROID
-      ,
-      application_status_listener_(
-          base::android::ApplicationStatusListener::New(base::BindRepeating(
-              &NavigationPredictor::OnApplicationStateChange,
-              // It's safe to use base::Unretained here since the application
-              // state listener is owned by |this|. So, no callbacks can
-              // arrive after |this| has been destroyed.
-              base::Unretained(this)))),
-      application_state_(base::android::ApplicationStatusListener::GetState())
-#endif  // OS_ANDROID
 {
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -271,7 +260,7 @@ void NavigationPredictor::OnVisibilityChanged(content::Visibility visibility) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Check if the visibility changed from HIDDEN to VISIBLE. Since navigation
-  // predictor is currently restriced to Android, it is okay to disregard the
+  // predictor is currently restricted to Android, it is okay to disregard the
   // occluded state.
   if (current_visibility_ != content::Visibility::HIDDEN ||
       visibility != content::Visibility::VISIBLE) {
@@ -283,17 +272,7 @@ void NavigationPredictor::OnVisibilityChanged(content::Visibility visibility) {
 
   // Previously, the visibility was HIDDEN, and now it is VISIBLE implying that
   // the web contents that was fully hidden is now fully visible.
-  TakeActionNowOnTabOrAppVisibilityChange(
-      Action::kPreconnectOnVisibilityChange);
-
-  // To keep the overhead as low, Pre* action on tab foreground is taken at most
-  // once per page.
-  Observe(nullptr);
-}
-
-void NavigationPredictor::TakeActionNowOnTabOrAppVisibilityChange(
-    Action log_action) {
-  MaybePreconnectNow(log_action);
+  MaybePreconnectNow(Action::kPreconnectOnVisibilityChange);
 }
 
 void NavigationPredictor::MaybePreconnectNow(Action log_action) {
@@ -938,32 +917,3 @@ void NavigationPredictor::RecordMetricsOnLoad(
   UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Visible.IsUrlIncrementedByOne",
                         metric.is_url_incremented_by_one);
 }
-
-#ifdef OS_ANDROID
-void NavigationPredictor::OnApplicationStateChange(
-    base::android::ApplicationState application_state) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!application_status_listener_)
-    return;
-
-  if (application_state_ !=
-          base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES ||
-      application_state !=
-          base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {
-    application_state_ = application_state;
-    return;
-  }
-
-  application_state_ = application_state;
-
-  // The app was moved from background to foreground.
-  TakeActionNowOnTabOrAppVisibilityChange(Action::kPreconnectOnAppForeground);
-
-  // To keep the overhead as low, Pre* action on app foreground is taken at most
-  // once per page. Stop listening to application change events only if
-  // OnLoad() has been fired implying that prediction computation has finished.
-  if (document_loaded_timing_ != base::TimeTicks())
-    application_status_listener_.reset();
-}
-#endif  // OS_ANDROID
