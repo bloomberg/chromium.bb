@@ -140,8 +140,9 @@ AXObject* AXInlineTextBox::ComputeParent() const {
   DCHECK(!IsDetached());
   if (!inline_text_box_ || !ax_object_cache_)
     return nullptr;
-
   LineLayoutText line_layout_text = inline_text_box_->GetLineLayoutItem();
+  if (!line_layout_text)
+    return nullptr;
   return ax_object_cache_->GetOrCreate(
       LineLayoutAPIShim::LayoutObjectFrom(line_layout_text));
 }
