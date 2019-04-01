@@ -918,6 +918,10 @@ void LayoutFlexibleBox::LayoutFlexItems(bool relayout_children,
   }
 
   UpdateLogicalHeight();
+  if (!HasOverrideLogicalHeight() && IsColumnFlow()) {
+    SetIntrinsicContentLogicalHeight(
+        flex_algorithm.IntrinsicContentBlockSize());
+  }
   RepositionLogicalHeightDependentFlexItems(flex_algorithm.FlexLines());
 }
 

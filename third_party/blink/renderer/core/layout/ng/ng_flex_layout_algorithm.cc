@@ -268,7 +268,9 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   container_builder_.SetInlineSize(border_box_size_.inline_size);
   container_builder_.SetBorders(borders_);
   container_builder_.SetPadding(padding_);
-  container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
+  container_builder_.SetIntrinsicBlockSize(
+      algorithm_->IntrinsicContentBlockSize() +
+      border_scrollbar_padding_.BlockSum());
 
   GiveLinesAndItemsFinalPositionAndSize();
 
