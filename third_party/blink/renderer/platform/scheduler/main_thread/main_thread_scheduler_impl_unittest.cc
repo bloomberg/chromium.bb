@@ -2079,9 +2079,9 @@ class MainThreadSchedulerImplWithMessageLoopTest
   void SetUp() override {
     clock_.Advance(base::TimeDelta::FromMilliseconds(5));
     Initialize(std::make_unique<MainThreadSchedulerImplForTest>(
-        base::sequence_manager::SequenceManagerForTest::Create(
-            message_loop_->GetMessageLoopBase(), message_loop_->task_runner(),
-            &clock_),
+        base::sequence_manager::SequenceManagerForTest::CreateOnCurrentThread(
+            base::sequence_manager::SequenceManager::Settings{.clock =
+                                                                  &clock_}),
         base::nullopt));
   }
 

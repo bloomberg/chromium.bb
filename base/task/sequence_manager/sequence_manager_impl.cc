@@ -222,11 +222,18 @@ SequenceManagerImpl::MainThreadOnly::MainThreadOnly(
 SequenceManagerImpl::MainThreadOnly::~MainThreadOnly() = default;
 
 // static
+std::unique_ptr<ThreadControllerImpl>
+SequenceManagerImpl::CreateThreadControllerImplForCurrentThread(
+    const TickClock* clock) {
+  auto* sequence_manager = GetTLSSequenceManagerImpl()->Get();
+  return ThreadControllerImpl::Create(sequence_manager, clock);
+}
+
+// static
 std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateOnCurrentThread(
     SequenceManager::Settings settings) {
-  MessageLoopBase* message_loop_base = GetTLSSequenceManagerImpl()->Get();
   std::unique_ptr<SequenceManagerImpl> manager(new SequenceManagerImpl(
-      ThreadControllerImpl::Create(message_loop_base, settings.clock),
+      CreateThreadControllerImplForCurrentThread(settings.clock),
       std::move(settings)));
   manager->BindToCurrentThread();
   return manager;
@@ -251,19 +258,13 @@ SequenceManagerImpl::CreateSequenceFunneled(
                               std::move(settings)));
 }
 
-void SequenceManagerImpl::BindToMessageLoop(
-    MessageLoopBase* message_loop_base) {
-  controller_->BindToCurrentThread(message_loop_base);
-  CompleteInitializationOnBoundThread();
-}
-
 void SequenceManagerImpl::BindToMessagePump(std::unique_ptr<MessagePump> pump) {
   controller_->BindToCurrentThread(std::move(pump));
   CompleteInitializationOnBoundThread();
 
   // On Android attach to the native loop when there is one.
 #if defined(OS_ANDROID)
-  if (type_ == TYPE_UI || type_ == TYPE_JAVA)
+  if (type_ == MessageLoop::TYPE_UI || type_ == MessageLoop::TYPE_JAVA)
     controller_->AttachToMessagePump();
 #endif
 }

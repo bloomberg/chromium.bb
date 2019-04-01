@@ -65,7 +65,7 @@ class SequenceManager {
     // so we are making Settings move-only in preparation.
     Settings(Settings&& move_from) noexcept = default;
 
-    MessageLoop::Type message_loop_type = MessageLoop::Type::TYPE_DEFAULT;
+    MessageLoop::Type message_loop_type = MessageLoop::TYPE_DEFAULT;
     bool randomised_sampling_enabled = false;
     const TickClock* clock = DefaultTickClock::GetInstance();
 
@@ -78,12 +78,6 @@ class SequenceManager {
   // only be called once. Note that CreateSequenceManagerOnCurrentThread()
   // performs this initialization automatically.
   virtual void BindToCurrentThread() = 0;
-
-  // Finishes the initialization for a SequenceManager created via
-  // CreateUnboundSequenceManager(nullptr). Must not be called in any other
-  // circumstances. Note it's assumed |message_loop| outlives the
-  // SequenceManager.
-  virtual void BindToMessageLoop(MessageLoopBase* message_loop_base) = 0;
 
   // Finishes the initialization for a SequenceManager created via
   // CreateUnboundSequenceManagerWithPump(). Must not be called in any other

@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump.h"
 #include "base/run_loop.h"
 #include "base/task/sequence_manager/lazy_now.h"
+#include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/trace_event/trace_event.h"
 
@@ -22,18 +22,19 @@ namespace internal {
 using ShouldScheduleWork = WorkDeduplicator::ShouldScheduleWork;
 
 ThreadControllerImpl::ThreadControllerImpl(
-    MessageLoopBase* message_loop_base,
+    SequenceManagerImpl* funneled_sequence_manager,
     scoped_refptr<SingleThreadTaskRunner> task_runner,
     const TickClock* time_source)
-    : message_loop_base_(message_loop_base),
+    : funneled_sequence_manager_(funneled_sequence_manager),
       task_runner_(task_runner),
       associated_thread_(AssociatedThreadId::CreateUnbound()),
-      message_loop_task_runner_(
-          message_loop_base ? message_loop_base->GetTaskRunner() : nullptr),
+      message_loop_task_runner_(funneled_sequence_manager
+                                    ? funneled_sequence_manager->GetTaskRunner()
+                                    : nullptr),
       time_source_(time_source),
       work_deduplicator_(associated_thread_),
       weak_factory_(this) {
-  if (task_runner_ || message_loop_base_)
+  if (task_runner_ || funneled_sequence_manager_)
     work_deduplicator_.BindToCurrentThread();
   immediate_do_work_closure_ =
       BindRepeating(&ThreadControllerImpl::DoWork, weak_factory_.GetWeakPtr(),
@@ -50,11 +51,12 @@ ThreadControllerImpl::MainSequenceOnly::MainSequenceOnly() = default;
 ThreadControllerImpl::MainSequenceOnly::~MainSequenceOnly() = default;
 
 std::unique_ptr<ThreadControllerImpl> ThreadControllerImpl::Create(
-    MessageLoopBase* message_loop_base,
+    SequenceManagerImpl* funneled_sequence_manager,
     const TickClock* time_source) {
   return WrapUnique(new ThreadControllerImpl(
-      message_loop_base,
-      message_loop_base ? message_loop_base->GetTaskRunner() : nullptr,
+      funneled_sequence_manager,
+      funneled_sequence_manager ? funneled_sequence_manager->GetTaskRunner()
+                                : nullptr,
       time_source));
 }
 
@@ -75,9 +77,9 @@ void ThreadControllerImpl::SetSequencedTaskSource(
 }
 
 void ThreadControllerImpl::SetTimerSlack(TimerSlack timer_slack) {
-  if (!message_loop_base_)
+  if (!funneled_sequence_manager_)
     return;
-  message_loop_base_->SetTimerSlack(timer_slack);
+  funneled_sequence_manager_->SetTimerSlack(timer_slack);
 }
 
 void ThreadControllerImpl::ScheduleWork() {
@@ -134,36 +136,20 @@ void ThreadControllerImpl::SetDefaultTaskRunner(
 #if DCHECK_IS_ON()
   default_task_runner_set_ = true;
 #endif
-  if (!message_loop_base_)
+  if (!funneled_sequence_manager_)
     return;
-  message_loop_base_->SetTaskRunner(task_runner);
+  funneled_sequence_manager_->SetTaskRunner(task_runner);
 }
 
 scoped_refptr<SingleThreadTaskRunner>
 ThreadControllerImpl::GetDefaultTaskRunner() {
-  return message_loop_base_->GetTaskRunner();
+  return funneled_sequence_manager_->GetTaskRunner();
 }
 
 void ThreadControllerImpl::RestoreDefaultTaskRunner() {
-  if (!message_loop_base_)
+  if (!funneled_sequence_manager_)
     return;
-  message_loop_base_->SetTaskRunner(message_loop_task_runner_);
-}
-
-void ThreadControllerImpl::BindToCurrentThread(
-    MessageLoopBase* message_loop_base) {
-  DCHECK(!message_loop_base_);
-  DCHECK(message_loop_base);
-#if DCHECK_IS_ON()
-  DCHECK(!default_task_runner_set_) << "This would undo SetDefaultTaskRunner";
-#endif
-  message_loop_base_ = message_loop_base;
-  task_runner_ = message_loop_base->GetTaskRunner();
-  message_loop_task_runner_ = message_loop_base->GetTaskRunner();
-
-  if (work_deduplicator_.BindToCurrentThread() ==
-      ShouldScheduleWork::kScheduleImmediate)
-    task_runner_->PostTask(FROM_HERE, immediate_do_work_closure_);
+  funneled_sequence_manager_->SetTaskRunner(message_loop_task_runner_);
 }
 
 void ThreadControllerImpl::BindToCurrentThread(
