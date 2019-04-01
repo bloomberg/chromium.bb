@@ -485,8 +485,7 @@ class ManualFillingMediator extends EmptyTabObserver
     @Nullable
     PasswordAccessorySheetCoordinator getOrCreatePasswordSheet() {
         if (!isInitialized()) return null;
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.EXPERIMENTAL_UI)
-                && !ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY)) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY)) {
             return null;
         }
         WebContents webContents = mActivity.getCurrentWebContents();
@@ -515,8 +514,7 @@ class ManualFillingMediator extends EmptyTabObserver
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID)) {
             return null;
         }
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.EXPERIMENTAL_UI)
-                && !ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY)) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY)) {
             return null;
         }
         WebContents webContents = mActivity.getCurrentWebContents();
