@@ -187,11 +187,12 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
                                 bool* out_chose_delayed_over_immediate) const {
     // Select an immediate work queue if we are starving immediate tasks.
     if (immediate_starvation_count_ >= kMaxDelayedStarvationTasks) {
+      *out_chose_delayed_over_immediate = false;
       WorkQueue* queue =
-          ChooseImmediateTaskWithPriority<SetOperation>(priority);
+          SetOperation::GetWithPriority(immediate_work_queue_sets_, priority);
       if (queue)
         return queue;
-      return ChooseDelayedTaskWithPriority<SetOperation>(priority);
+      return SetOperation::GetWithPriority(delayed_work_queue_sets_, priority);
     }
     return ChooseImmediateOrDelayedTaskWithPriority<SetOperation>(
         priority, out_chose_delayed_over_immediate);
@@ -209,23 +210,11 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
 #endif
 
   template <typename SetOperation>
-  WorkQueue* ChooseImmediateTaskWithPriority(
-      TaskQueue::QueuePriority priority) const {
-    return SetOperation::GetWithPriority(immediate_work_queue_sets_, priority);
-  }
-
-  template <typename SetOperation>
-  WorkQueue* ChooseDelayedTaskWithPriority(
-      TaskQueue::QueuePriority priority) const {
-    return SetOperation::GetWithPriority(delayed_work_queue_sets_, priority);
-  }
-
-  template <typename SetOperation>
   WorkQueue* ChooseImmediateOrDelayedTaskWithPriority(
       TaskQueue::QueuePriority priority,
       bool* out_chose_delayed_over_immediate) const {
-    DCHECK_EQ(*out_chose_delayed_over_immediate, false);
     EnqueueOrder immediate_enqueue_order;
+    *out_chose_delayed_over_immediate = false;
     WorkQueue* immediate_queue = SetOperation::GetWithPriorityAndEnqueueOrder(
         immediate_work_queue_sets_, priority, &immediate_enqueue_order);
     if (immediate_queue) {

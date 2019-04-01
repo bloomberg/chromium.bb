@@ -181,7 +181,7 @@ WorkQueue* TaskQueueSelector::SelectWorkQueueToService() {
   // the highest priority for which we have work, unless we are starving a lower
   // priority.
   TaskQueue::QueuePriority priority = active_priorities_.min_id();
-  bool chose_delayed_over_immediate = false;
+  bool chose_delayed_over_immediate;
 
   // Control tasks are allowed to indefinitely stave out other work and any
   // control tasks we run should not be counted for task starvation purposes.
