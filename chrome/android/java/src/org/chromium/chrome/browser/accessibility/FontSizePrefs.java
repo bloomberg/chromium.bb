@@ -48,6 +48,7 @@ public class FontSizePrefs {
     private final ObserverList<FontSizePrefsObserver> mObserverList;
 
     private Float mSystemFontScaleForTests;
+    private boolean mTouchlessMode;
 
     /**
      * Interface for observing changes in font size-related preferences.
@@ -154,6 +155,15 @@ public class FontSizePrefs {
     }
 
     /**
+     * Enables touchless mode. This overrides user's preference and always enables force enable
+     * zoom.
+     */
+    public void enableTouchlessMode() {
+        mTouchlessMode = true;
+        nativeSetForceEnableZoom(mFontSizePrefsAndroidPtr, true);
+    }
+
+    /**
      * Returns whether forceEnableZoom is enabled.
      */
     public boolean getForceEnableZoom() {
@@ -174,6 +184,9 @@ public class FontSizePrefs {
     }
 
     private void setForceEnableZoom(boolean enabled, boolean fromUser) {
+        // Force enable zoom is always enabled in touchless mode and it should not be changed.
+        if (mTouchlessMode) return;
+
         SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
         sharedPreferencesEditor.putBoolean(PREF_USER_SET_FORCE_ENABLE_ZOOM, fromUser);
         sharedPreferencesEditor.apply();

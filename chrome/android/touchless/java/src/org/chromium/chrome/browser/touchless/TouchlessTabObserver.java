@@ -8,10 +8,10 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.content_public.browser.NavigationHandle;
-import org.chromium.ui.base.TouchlessEventHandler;
+import org.chromium.ui.touchless.TouchlessEventHandler;
 
 /**
- * Bridge to org.chromium.ui.base.TouchlessEventHandler
+ * Bridge to org.chromium.ui.touchless.TouchlessEventHandler
  */
 public class TouchlessTabObserver extends EmptyTabObserver {
     @Override

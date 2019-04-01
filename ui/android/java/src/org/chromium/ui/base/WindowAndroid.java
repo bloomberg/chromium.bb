@@ -44,6 +44,8 @@ import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.VSyncMonitor;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
+import org.chromium.ui.touchless.CursorObserver;
+import org.chromium.ui.touchless.TouchlessEventHandler;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.ref.WeakReference;

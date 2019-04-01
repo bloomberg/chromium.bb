@@ -48,6 +48,9 @@ public class NoTouchActivity extends SingleTabActivity {
     private TooltipView mTooltipView;
     private ProgressBarView mProgressBarView;
 
+    /** The class that enables zooming for all websites and handles touchless zooming. */
+    private TouchlessZoomHelper mTouchlessZoomHelper;
+
     /** The class that controls the UI for touchless devices. */
     private TouchlessUiController mUiController;
 
@@ -129,6 +132,7 @@ public class NoTouchActivity extends SingleTabActivity {
                 new KeyFunctionsIPHCoordinator(mTooltipView, getActivityTabProvider());
         mProgressBarCoordinator =
                 new ProgressBarCoordinator(mProgressBarView, getActivityTabProvider());
+        mTouchlessZoomHelper = new TouchlessZoomHelper(getActivityTabProvider());
 
         // By this point if we were going to restore a URL from savedInstanceState we would already
         // have done so.
@@ -238,6 +242,7 @@ public class NoTouchActivity extends SingleTabActivity {
         super.onDestroyInternal();
         if (mKeyFunctionsIPHCoordinator != null) mKeyFunctionsIPHCoordinator.destroy();
         if (mProgressBarCoordinator != null) mProgressBarCoordinator.destroy();
+        if (mTouchlessZoomHelper != null) mTouchlessZoomHelper.destroy();
         if (mUiController != null) {
             mUiController.destroy();
             mUiController = null;
