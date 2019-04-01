@@ -556,7 +556,7 @@ public class CookieManagerTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
-    public void testThirdPartyCookie_redirectFromThirdToFirst() throws Throwable {
+    public void testThirdPartyCookie_redirectFromThirdPartyToFirst() throws Throwable {
         TestWebServer webServer = TestWebServer.start();
         try {
             allowFirstPartyCookies();
