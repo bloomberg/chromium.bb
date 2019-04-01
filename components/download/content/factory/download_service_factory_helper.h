@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_CONTENT_FACTORY_DOWNLOAD_SERVICE_FACTORY_H_
-#define COMPONENTS_DOWNLOAD_CONTENT_FACTORY_DOWNLOAD_SERVICE_FACTORY_H_
+#ifndef COMPONENTS_DOWNLOAD_CONTENT_FACTORY_DOWNLOAD_SERVICE_FACTORY_HELPER_H_
+#define COMPONENTS_DOWNLOAD_CONTENT_FACTORY_DOWNLOAD_SERVICE_FACTORY_HELPER_H_
 
 #include <memory>
 
@@ -24,7 +24,7 @@ class BrowserContext;
 namespace network {
 class NetworkConnectionTracker;
 class SharedURLLoaderFactory;
-}
+}  // namespace network
 
 namespace download {
 
@@ -64,4 +64,4 @@ DownloadService* BuildInMemoryDownloadService(
 
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_CONTENT_FACTORY_DOWNLOAD_SERVICE_FACTORY_H_
+#endif  // COMPONENTS_DOWNLOAD_CONTENT_FACTORY_DOWNLOAD_SERVICE_FACTORY_HELPER_H_

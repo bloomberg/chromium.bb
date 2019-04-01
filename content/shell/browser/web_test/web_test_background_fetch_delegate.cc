@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/download/content/factory/download_service_factory.h"
+#include "components/download/content/factory/download_service_factory_helper.h"
 #include "components/download/public/background_service/clients.h"
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/download/public/background_service/download_params.h"
