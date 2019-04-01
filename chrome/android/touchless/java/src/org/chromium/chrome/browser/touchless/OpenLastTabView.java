@@ -38,6 +38,8 @@ public class OpenLastTabView extends FrameLayout {
 
         mPlaceholder = findViewById(R.id.placeholder);
         mLastTabChip = findViewById(R.id.last_tab_chip);
+        // Allow the system ui to control our background.
+        mLastTabChip.setBackground(null);
 
         TextView primaryTextView = mLastTabChip.getPrimaryTextView();
         TextView secondaryTextView = mLastTabChip.getSecondaryTextView();
