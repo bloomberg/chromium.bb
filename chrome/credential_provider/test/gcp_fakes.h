@@ -95,6 +95,9 @@ class FakeOSUserManager : public OSUserManager {
                           const wchar_t* username,
                           base::string16* fullname) override;
 
+  HRESULT ModifyUserAccessWithLogonHours(const wchar_t* domain,
+                                         const wchar_t* username,
+                                         bool allow) override;
   struct UserInfo {
     UserInfo(const wchar_t* domain,
              const wchar_t* password,
@@ -173,7 +176,6 @@ class FakeScopedLsaPolicy : public ScopedLsaPolicy {
                               wchar_t* value,
                               size_t length) override;
   HRESULT AddAccountRights(PSID sid, const wchar_t* right) override;
-  HRESULT RemoveAccountRights(PSID sid, const wchar_t* right) override;
   HRESULT RemoveAccount(PSID sid) override;
 
  private:

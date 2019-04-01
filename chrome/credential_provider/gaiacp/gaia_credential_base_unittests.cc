@@ -528,12 +528,8 @@ TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
   validator.DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON);
 
   // User should have invalid token handle and be locked.
-  DWORD reg_value = 0;
   EXPECT_FALSE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
   EXPECT_EQ(true, validator.IsUserAccessBlocked(OLE2W(sid)));
-  EXPECT_EQ(S_OK,
-            GetMachineRegDWORD(kWinlogonUserListRegKey, username, &reg_value));
-  EXPECT_EQ(0u, reg_value);
 
   FakeGaiaCredentialProvider provider;
 
@@ -566,8 +562,6 @@ TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
   EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
 
   EXPECT_EQ(false, validator.IsUserAccessBlocked(OLE2W(sid)));
-  EXPECT_NE(S_OK,
-            GetMachineRegDWORD(kWinlogonUserListRegKey, username, &reg_value));
 
   ASSERT_EQ(S_OK, gaia_cred->Terminate());
 

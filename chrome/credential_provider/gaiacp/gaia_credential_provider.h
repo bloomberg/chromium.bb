@@ -53,11 +53,6 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   static bool CanNewUsersBeCreated(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus);
 
  private:
-  // Checks whether anonymous reauth credentials should be created given the
-  // usage scenario and also whether an "Other User" tile exists on the sign on
-  // screen.
-  bool ShouldCreateAnonymousReauthCredential(bool other_user_credential_exists);
-
   HRESULT DestroyCredentials();
 
   // Functions to create credentials during the processing of SetUserArray.
@@ -72,13 +67,6 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   // credential was created.
   HRESULT CreateReauthCredentials(ICredentialProviderUserArray* users,
                                   std::set<base::string16>* reauth_sids);
-
-  // If needed, creates anonymous reauth credentials for any users that have had
-  // their sign permissions revoked and thus do not appear in the users list
-  // passed into SetUserArray.
-  HRESULT CreateAnonymousReauthCredentialsIfNeeded(
-      bool showing_other_user,
-      const std::set<base::string16>& reauth_sids);
 
   void ClearTransient();
   void CleanupOlderVersions();
@@ -117,7 +105,6 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   DWORD cpus_flags_ = 0;
   UINT_PTR advise_context_;
   CComPtr<ICredentialProviderEvents> events_;
-
   // List of credentials exposed by this provider.  The first is always the
   // Gaia credential for creating new users.  The rest are reauth credentials.
   std::vector<CComPtr<IGaiaCredential>> users_;

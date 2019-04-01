@@ -32,9 +32,6 @@ class [[clang::lto_visibility_public]] ScopedLsaPolicy {
   // Adds the given right to the given user.
   virtual HRESULT AddAccountRights(PSID sid, const wchar_t* right);
 
-  // Removes the given right from the given user.
-  virtual HRESULT RemoveAccountRights(PSID sid, const wchar_t* right);
-
   // Removes the user account from the system.
   virtual HRESULT RemoveAccount(PSID sid);
 
