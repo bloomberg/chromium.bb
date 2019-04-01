@@ -35,14 +35,6 @@ namespace {
 void* const kProcessedLocalAudioSourceIdentifier =
     const_cast<void**>(&kProcessedLocalAudioSourceIdentifier);
 
-bool ApmInAudioServiceEnabled() {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-  return base::FeatureList::IsEnabled(features::kWebRtcApmInAudioService);
-#else
-  return false;
-#endif
-}
-
 void LogAudioProcesingProperties(
     const blink::AudioProcessingProperties& properties) {
   auto aec_to_string =
@@ -86,6 +78,14 @@ void LogAudioProcesingProperties(
   WebRtcLogMessage(str);
 }
 }  // namespace
+
+bool IsApmInAudioServiceEnabled() {
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  return base::FeatureList::IsEnabled(features::kWebRtcApmInAudioService);
+#else
+  return false;
+#endif
+}
 
 ProcessedLocalAudioSource::ProcessedLocalAudioSource(
     int consumer_render_frame_id,
@@ -260,7 +260,7 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
   DCHECK(params.IsValid());
   media::AudioSourceParameters source_params(device().session_id);
   const bool use_remote_apm =
-      ApmInAudioServiceEnabled() &&
+      IsApmInAudioServiceEnabled() &&
       MediaStreamAudioProcessor::WouldModifyAudio(audio_processing_properties_);
   if (use_remote_apm) {
     audio_processor_proxy_ =

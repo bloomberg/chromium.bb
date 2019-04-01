@@ -25,6 +25,8 @@ class AudioBus;
 
 namespace content {
 
+CONTENT_EXPORT bool IsApmInAudioServiceEnabled();
+
 class PeerConnectionDependencyFactory;
 
 // Represents a local source of audio data that is routed through the WebRTC
