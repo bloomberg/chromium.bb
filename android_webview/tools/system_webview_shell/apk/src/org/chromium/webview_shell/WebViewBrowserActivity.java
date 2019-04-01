@@ -49,6 +49,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 
@@ -647,7 +648,9 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
     }
 
     private void setUrlFail(boolean fail) {
-        mUrlBar.setTextColor(fail ? Color.RED : Color.BLACK);
+        mUrlBar.setTextColor(fail ?
+            ApiCompatibilityUtils.getColor(getResources(), R.color.url_error_color) :
+            ApiCompatibilityUtils.getColor(getResources(), R.color.url_color));
     }
 
     /**
