@@ -421,10 +421,9 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
       ^void(LocationBarCoordinator* self,
             TemplateURLRef::PostContent* postContent, const GURL& url,
             ui::PageTransition transition) {
-        web::NavigationManager::WebLoadParams params(replacementURL);
-        params.transition_type = transition;
         UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-            ->Load(UrlLoadParams::InCurrentTab(params));
+            ->Load(UrlLoadParams::InCurrentTab(replacementURL)
+                       ->Transition(transition));
         [self cancelOmniboxEdit];
       };
   load_GURL_from_location_bar_swizzler_.reset(new ScopedBlockSwizzler(

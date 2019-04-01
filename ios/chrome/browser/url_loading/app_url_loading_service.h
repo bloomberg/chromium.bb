@@ -39,7 +39,7 @@ class ChromeBrowserState;
 // If the current tab in |targetMode| is a NTP, it can be reused to open URL.
 // |completion| is executed after the tab is opened. After Tab is open the
 // virtual URL is set to the pending navigation item.
-- (Tab*)openSelectedTabInMode:(ApplicationMode)targetMode
+- (void)openSelectedTabInMode:(ApplicationMode)targetMode
                       withURL:(const GURL&)url
                    virtualURL:(const GURL&)virtualURL
                    transition:(ui::PageTransition)transition
