@@ -88,11 +88,6 @@ class CORE_EXPORT InspectorPageAgent final
     kOtherResource
   };
 
-  static InspectorPageAgent* Create(InspectedFrames*,
-                                    Client*,
-                                    InspectorResourceContentLoader*,
-                                    v8_inspector::V8InspectorSession*);
-
   static HeapVector<Member<Document>> ImportsForFrame(LocalFrame*);
   static bool CachedResourceContent(Resource*,
                                     String* result,

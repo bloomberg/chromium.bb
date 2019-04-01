@@ -363,15 +363,6 @@ bool InspectorPageAgent::CachedResourceContent(Resource* cached_resource,
   }
 }
 
-InspectorPageAgent* InspectorPageAgent::Create(
-    InspectedFrames* inspected_frames,
-    Client* client,
-    InspectorResourceContentLoader* resource_content_loader,
-    v8_inspector::V8InspectorSession* v8_session) {
-  return MakeGarbageCollected<InspectorPageAgent>(
-      inspected_frames, client, resource_content_loader, v8_session);
-}
-
 String InspectorPageAgent::ResourceTypeJson(
     InspectorPageAgent::ResourceType resource_type) {
   switch (resource_type) {

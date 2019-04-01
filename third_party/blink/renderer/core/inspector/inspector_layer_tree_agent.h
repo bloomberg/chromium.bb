@@ -57,12 +57,6 @@ class CORE_EXPORT InspectorLayerTreeAgent final
     virtual bool IsInspectorLayer(const cc::Layer*) = 0;
   };
 
-  static InspectorLayerTreeAgent* Create(InspectedFrames* inspected_frames,
-                                         Client* client) {
-    return MakeGarbageCollected<InspectorLayerTreeAgent>(inspected_frames,
-                                                         client);
-  }
-
   InspectorLayerTreeAgent(InspectedFrames*, Client*);
   ~InspectorLayerTreeAgent() override;
   void Trace(blink::Visitor*) override;

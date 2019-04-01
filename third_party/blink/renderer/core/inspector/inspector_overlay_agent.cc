@@ -282,11 +282,6 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
 class InspectorOverlayAgent::InspectorOverlayChromeClient final
     : public EmptyChromeClient {
  public:
-  static InspectorOverlayChromeClient* Create(ChromeClient& client,
-                                              InspectorOverlayAgent& overlay) {
-    return MakeGarbageCollected<InspectorOverlayChromeClient>(client, overlay);
-  }
-
   InspectorOverlayChromeClient(ChromeClient& client,
                                InspectorOverlayAgent& overlay)
       : client_(&client), overlay_(&overlay) {}
@@ -824,7 +819,7 @@ Page* InspectorOverlayAgent::OverlayPage() {
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
   DCHECK(!overlay_chrome_client_);
-  overlay_chrome_client_ = InspectorOverlayChromeClient::Create(
+  overlay_chrome_client_ = MakeGarbageCollected<InspectorOverlayChromeClient>(
       GetFrame()->GetPage()->GetChromeClient(), *this);
   page_clients.chrome_client = overlay_chrome_client_.Get();
   overlay_page_ = Page::CreateNonOrdinary(page_clients);

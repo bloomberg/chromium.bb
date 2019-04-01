@@ -237,8 +237,8 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
       isolate, inspected_frames, session->V8Session());
   session->Append(dom_agent);
 
-  InspectorLayerTreeAgent* layer_tree_agent =
-      InspectorLayerTreeAgent::Create(inspected_frames, this);
+  auto* layer_tree_agent =
+      MakeGarbageCollected<InspectorLayerTreeAgent>(inspected_frames, this);
   session->Append(layer_tree_agent);
 
   InspectorNetworkAgent* network_agent =
@@ -246,7 +246,7 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
                                                   session->V8Session());
   session->Append(network_agent);
 
-  InspectorCSSAgent* css_agent = InspectorCSSAgent::Create(
+  auto* css_agent = MakeGarbageCollected<InspectorCSSAgent>(
       dom_agent, inspected_frames, network_agent,
       resource_content_loader_.Get(), resource_container_.Get());
   session->Append(css_agent);
@@ -256,19 +256,21 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
                                                       session->V8Session());
   session->Append(dom_debugger_agent);
 
-  session->Append(
-      InspectorDOMSnapshotAgent::Create(inspected_frames, dom_debugger_agent));
+  session->Append(MakeGarbageCollected<InspectorDOMSnapshotAgent>(
+      inspected_frames, dom_debugger_agent));
 
   session->Append(MakeGarbageCollected<InspectorAnimationAgent>(
       inspected_frames, css_agent, session->V8Session()));
 
-  session->Append(InspectorMemoryAgent::Create(inspected_frames));
+  session->Append(MakeGarbageCollected<InspectorMemoryAgent>(inspected_frames));
 
-  session->Append(InspectorPerformanceAgent::Create(inspected_frames));
+  session->Append(
+      MakeGarbageCollected<InspectorPerformanceAgent>(inspected_frames));
 
-  session->Append(InspectorApplicationCacheAgent::Create(inspected_frames));
+  session->Append(
+      MakeGarbageCollected<InspectorApplicationCacheAgent>(inspected_frames));
 
-  InspectorPageAgent* page_agent = InspectorPageAgent::Create(
+  auto* page_agent = MakeGarbageCollected<InspectorPageAgent>(
       inspected_frames, this, resource_content_loader_.Get(),
       session->V8Session());
   session->Append(page_agent);
@@ -333,8 +335,9 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     : worker_client_(worker_client),
       web_local_frame_impl_(web_local_frame_impl),
       probe_sink_(web_local_frame_impl_->GetFrame()->GetProbeSink()),
-      resource_content_loader_(InspectorResourceContentLoader::Create(
-          web_local_frame_impl_->GetFrame())),
+      resource_content_loader_(
+          MakeGarbageCollected<InspectorResourceContentLoader>(
+              web_local_frame_impl_->GetFrame())),
       inspected_frames_(MakeGarbageCollected<InspectedFrames>(
           web_local_frame_impl_->GetFrame())),
       resource_container_(

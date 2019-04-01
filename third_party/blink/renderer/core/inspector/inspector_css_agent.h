@@ -95,17 +95,6 @@ class CORE_EXPORT InspectorCSSAgent final
   static CSSStyleRule* AsCSSStyleRule(CSSRule*);
   static CSSMediaRule* AsCSSMediaRule(CSSRule*);
 
-  static InspectorCSSAgent* Create(
-      InspectorDOMAgent* dom_agent,
-      InspectedFrames* inspected_frames,
-      InspectorNetworkAgent* network_agent,
-      InspectorResourceContentLoader* resource_content_loader,
-      InspectorResourceContainer* resource_container) {
-    return MakeGarbageCollected<InspectorCSSAgent>(
-        dom_agent, inspected_frames, network_agent, resource_content_loader,
-        resource_container);
-  }
-
   static void CollectAllDocumentStyleSheets(Document*,
                                             HeapVector<Member<CSSStyleSheet>>&);
 
