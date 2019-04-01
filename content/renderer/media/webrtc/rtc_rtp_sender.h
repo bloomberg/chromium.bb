@@ -140,7 +140,7 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
                      webrtc::DegradationPreference,
                      blink::WebRTCVoidRequest) override;
   void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
-                blink::RTCStatsFilter) override;
+                const std::vector<webrtc::NonStandardGroupId>&) override;
 
   // The ReplaceTrack() that takes a blink::WebRTCVoidRequest is implemented on
   // top of this, which returns the result in a callback instead. Allows doing

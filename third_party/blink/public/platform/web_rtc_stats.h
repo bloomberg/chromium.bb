@@ -34,11 +34,6 @@ enum WebRTCStatsMemberType {
   kWebRTCStatsMemberTypeSequenceString,  // WebVector<WebString>
 };
 
-enum class RTCStatsFilter {
-  kIncludeOnlyStandardMembers,
-  kIncludeNonStandardMembers,
-};
-
 class BLINK_PLATFORM_EXPORT WebRTCStatsReport {
  public:
   virtual ~WebRTCStatsReport();

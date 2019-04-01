@@ -49,7 +49,7 @@ class FakeRTCRtpSender : public blink::WebRTCRtpSender {
                      webrtc::DegradationPreference,
                      blink::WebRTCVoidRequest) override;
   void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
-                blink::RTCStatsFilter) override;
+                const std::vector<webrtc::NonStandardGroupId>&) override;
 
  private:
   base::Optional<std::string> track_id_;
@@ -75,7 +75,7 @@ class FakeRTCRtpReceiver : public blink::WebRTCRtpReceiver {
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpSource>> GetSources()
       override;
   void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
-                blink::RTCStatsFilter) override;
+                const std::vector<webrtc::NonStandardGroupId>&) override;
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override;
 
  private:

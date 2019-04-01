@@ -2012,7 +2012,7 @@ ScriptPromise RTCPeerConnection::PromiseBasedGetStats(
     ScriptPromise promise = resolver->Promise();
     peer_handler_->GetStats(
         std::make_unique<WebRTCStatsReportCallbackResolver>(resolver),
-        GetRTCStatsFilter(script_state));
+        GetExposedGroupIds(script_state));
 
     return promise;
   }

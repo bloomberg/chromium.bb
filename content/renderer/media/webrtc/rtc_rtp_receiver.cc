@@ -167,12 +167,13 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
     return sources;
   }
 
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
-                blink::RTCStatsFilter filter) {
+  void GetStats(
+      std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
+      const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
     signaling_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&RTCRtpReceiverInternal::GetStatsOnSignalingThread, this,
-                       std::move(callback), filter));
+                       std::move(callback), exposed_group_ids));
   }
 
   std::unique_ptr<webrtc::RtpParameters> GetParameters() {
@@ -189,11 +190,11 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
 
   void GetStatsOnSignalingThread(
       std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
-      blink::RTCStatsFilter filter) {
+      const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
     native_peer_connection_->GetStats(
         webrtc_receiver_.get(),
-        RTCStatsCollectorCallbackImpl::Create(main_task_runner_,
-                                              std::move(callback), filter));
+        RTCStatsCollectorCallbackImpl::Create(
+            main_task_runner_, std::move(callback), exposed_group_ids));
   }
 
   const scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
@@ -291,8 +292,8 @@ RTCRtpReceiver::GetSources() {
 
 void RTCRtpReceiver::GetStats(
     std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
-    blink::RTCStatsFilter filter) {
-  internal_->GetStats(std::move(callback), filter);
+    const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+  internal_->GetStats(std::move(callback), exposed_group_ids);
 }
 
 std::unique_ptr<webrtc::RtpParameters> RTCRtpReceiver::GetParameters() const {

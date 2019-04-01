@@ -506,11 +506,11 @@ void GetRTCStatsOnSignalingThread(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
     std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
-    blink::RTCStatsFilter filter) {
+    const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   TRACE_EVENT0("webrtc", "GetRTCStatsOnSignalingThread");
 
   native_peer_connection->GetStats(RTCStatsCollectorCallbackImpl::Create(
-      main_thread, std::move(callback), filter));
+      main_thread, std::move(callback), exposed_group_ids));
 }
 
 void ConvertOfferOptionsToWebrtcOfferOptions(
@@ -1553,12 +1553,12 @@ void RTCPeerConnectionHandler::GetStats(
 
 void RTCPeerConnectionHandler::GetStats(
     std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
-    blink::RTCStatsFilter filter) {
+    const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   signaling_thread()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&GetRTCStatsOnSignalingThread, task_runner_,
-                     native_peer_connection_, std::move(callback), filter));
+      FROM_HERE, base::BindOnce(&GetRTCStatsOnSignalingThread, task_runner_,
+                                native_peer_connection_, std::move(callback),
+                                exposed_group_ids));
 }
 
 webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>

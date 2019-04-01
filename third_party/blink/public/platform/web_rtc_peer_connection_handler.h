@@ -42,6 +42,7 @@
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtc_error.h"
 #include "third_party/webrtc/api/rtp_transceiver_interface.h"
+#include "third_party/webrtc/api/stats/rtc_stats.h"
 
 namespace webrtc {
 enum class RTCErrorType;
@@ -114,7 +115,7 @@ class WebRTCPeerConnectionHandler {
   // third_party/webrtc/api/stats/.  These will replace the old stats collection
   // API when the new API has matured enough.
   virtual void GetStats(std::unique_ptr<WebRTCStatsReportCallback>,
-                        RTCStatsFilter) = 0;
+                        const std::vector<webrtc::NonStandardGroupId>&) = 0;
   virtual scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const WebString& label,
       const WebRTCDataChannelInit&) = 0;
