@@ -830,6 +830,27 @@ def ExperimentalCanvasFeaturesPages(base_name):
       browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
 
     PixelTestPage(
+      'pixel_canvas_display_srgb.html',
+      base_name + '_CanvasDisplaySRGBAccelerated2D',
+      test_rect=[0, 0, 140, 140],
+      revision=0, # not used, unsupported, see crbug/TODO
+      browser_args=browser_args),
+
+    PixelTestPage(
+      'pixel_canvas_display_srgb.html',
+      base_name + '_CanvasDisplaySRGBUnaccelerated2D',
+      test_rect=[0, 0, 140, 140],
+      revision=1,
+      browser_args=browser_args + unaccelerated_args),
+
+    PixelTestPage(
+      'pixel_canvas_display_srgb.html',
+      base_name + '_CanvasDisplaySRGBUnaccelerated2DGPUCompositing',
+      test_rect=[0, 0, 140, 140],
+      revision=1,
+      browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
+
+    PixelTestPage(
       'pixel_canvas_low_latency_2d.html',
       base_name + '_CanvasLowLatency2D',
       test_rect=[0, 0, 100, 100],
