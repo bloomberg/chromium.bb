@@ -694,10 +694,8 @@ void Tab::SetData(TabRendererData data) {
   if (old.pinned != data_.pinned)
     showing_alert_indicator_ = false;
 
-  if (data_.alert_state != old.alert_state || data_.title != old.title) {
+  if (data_.alert_state != old.alert_state || data_.title != old.title)
     TooltipTextChanged();
-    controller_->UpdateHoverCard(this, mouse_hovered_);
-  }
 
   Layout();
   SchedulePaint();
