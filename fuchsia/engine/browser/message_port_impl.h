@@ -6,9 +6,9 @@
 #define FUCHSIA_ENGINE_BROWSER_MESSAGE_PORT_IMPL_H_
 
 #include <lib/fidl/cpp/binding.h>
-#include <deque>
 #include <memory>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
@@ -61,7 +61,7 @@ class MessagePortImpl : public chromium::web::MessagePort,
   // mojo::MessageReceiver implementation.
   bool Accept(mojo::Message* message) override;
 
-  std::deque<chromium::web::WebMessage> message_queue_;
+  base::circular_deque<chromium::web::WebMessage> message_queue_;
   ReceiveMessageCallback pending_client_read_cb_;
   std::unique_ptr<mojo::Connector> connector_;
 
