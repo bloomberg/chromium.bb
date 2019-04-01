@@ -897,8 +897,6 @@ void ServiceWorkerVersion::SetClockForTesting(base::Clock* clock) {
 }
 
 bool ServiceWorkerVersion::HasNoWork() const {
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled())
-    return !HasWorkInBrowser();
   return !HasWorkInBrowser() && worker_is_idle_on_renderer_;
 }
 
@@ -1475,12 +1473,10 @@ std::string ServiceWorkerVersion::VersionStatusToString(
 }
 
 void ServiceWorkerVersion::IncrementPendingUpdateHintCount() {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   pending_update_hint_count_++;
 }
 
 void ServiceWorkerVersion::DecrementPendingUpdateHintCount() {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK_GT(pending_update_hint_count_, 0);
   pending_update_hint_count_--;
   if (pending_update_hint_count_ == 0)

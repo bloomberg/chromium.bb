@@ -44,10 +44,7 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   if (!CheckIfScriptRequestIsValid(resource_request)) {
-    // TODO(kinuko): Record the reason like what we do with netlog in
-    // ServiceWorkerContextRequestHandler.
     client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
     return;
   }

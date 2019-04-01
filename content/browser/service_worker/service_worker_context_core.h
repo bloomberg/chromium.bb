@@ -108,8 +108,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // ServiceWorkerContextWrapper. When Notify() of |observer_list| is called in
   // ServiceWorkerContextCore, the methods of ServiceWorkerContextCoreObserver
   // will be called on the thread which called AddObserver() of |observer_list|.
-  // |url_loader_factory_getter| is used only when IsServicificationEnabled is
-  // true.
   ServiceWorkerContextCore(
       const base::FilePath& user_data_directory,
       scoped_refptr<base::SequencedTaskRunner> database_task_runner,
@@ -349,7 +347,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   std::map<int64_t /* version_id */, FailureInfo> failure_counts_;
 
-  // IsServicificationEnabled
   scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
 
   bool force_update_on_page_load_;

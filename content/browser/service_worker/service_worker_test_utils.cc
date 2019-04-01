@@ -24,7 +24,6 @@
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_info.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -264,11 +263,9 @@ CreateProviderHostForServiceWorkerContext(
           std::move(context), base::WrapRefCounted(hosted_version),
           &provider_info);
 
-  scoped_refptr<network::SharedURLLoaderFactory> loader_factory;
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    loader_factory = network::SharedURLLoaderFactory::Create(
-        std::make_unique<MockSharedURLLoaderFactoryInfo>());
-  }
+  scoped_refptr<network::SharedURLLoaderFactory> loader_factory =
+      network::SharedURLLoaderFactory::Create(
+          std::make_unique<MockSharedURLLoaderFactoryInfo>());
 
   provider_info = host->CompleteStartWorkerPreparation(
       process_id, loader_factory, std::move(provider_info));

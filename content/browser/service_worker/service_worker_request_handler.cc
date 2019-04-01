@@ -26,7 +26,6 @@
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -57,7 +56,6 @@ ServiceWorkerRequestHandler::InitializeForNavigation(
     scoped_refptr<network::ResourceRequestBody> body,
     base::RepeatingCallback<WebContents*()> web_contents_getter,
     base::WeakPtr<ServiceWorkerProviderHost>* out_provider_host) {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(navigation_handle_core);
 
   // Create the handler even for insecure HTTP since it's used in the
@@ -101,7 +99,6 @@ std::unique_ptr<NavigationLoaderInterceptor>
 ServiceWorkerRequestHandler::InitializeForWorker(
     const network::ResourceRequest& resource_request,
     base::WeakPtr<ServiceWorkerProviderHost> host) {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(resource_request.resource_type == RESOURCE_TYPE_WORKER ||
          resource_request.resource_type == RESOURCE_TYPE_SHARED_WORKER)
       << resource_request.resource_type;

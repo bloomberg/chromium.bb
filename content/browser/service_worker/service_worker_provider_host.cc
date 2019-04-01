@@ -301,13 +301,6 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   service_worker_object_hosts_.clear();
   registration_object_hosts_.clear();
 
-  // This host may be destroyed before it received the anticipated
-  // HintToUpdateServiceWorker IPC from the renderer. This can occur on
-  // navigation failure or if the frame closed soon after navigation. The
-  // PendingVersionUpdate objects decrement the hint count upon destruction.
-  DCHECK(versions_to_update_.empty() ||
-         blink::ServiceWorkerUtils::IsServicificationEnabled());
-
   // Ensure callbacks awaiting execution ready are notified.
   RunExecutionReadyCallbacks();
 }
@@ -387,7 +380,6 @@ void ServiceWorkerProviderHost::OnSkippedWaiting(
 
 blink::mojom::ControllerServiceWorkerPtr
 ServiceWorkerProviderHost::GetControllerServiceWorkerPtr() {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(controller_);
   if (controller_->fetch_handler_existence() ==
       ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST) {
@@ -597,7 +589,6 @@ void ServiceWorkerProviderHost::NotifyControllerLost() {
 
 void ServiceWorkerProviderHost::AddServiceWorkerToUpdate(
     scoped_refptr<ServiceWorkerVersion> version) {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   // This is only called for windows now, but it should be called for all
   // clients someday.
   DCHECK_EQ(provider_type(),
@@ -729,16 +720,14 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
   render_process_id_ = process_id;
 
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    network::mojom::URLLoaderFactoryAssociatedPtrInfo
-        script_loader_factory_ptr_info;
-    mojo::MakeStrongAssociatedBinding(
-        std::make_unique<ServiceWorkerScriptLoaderFactory>(
-            context_, AsWeakPtr(), std::move(loader_factory)),
-        mojo::MakeRequest(&script_loader_factory_ptr_info));
-    provider_info->script_loader_factory_ptr_info =
-        std::move(script_loader_factory_ptr_info);
-  }
+  network::mojom::URLLoaderFactoryAssociatedPtrInfo
+      script_loader_factory_ptr_info;
+  mojo::MakeStrongAssociatedBinding(
+      std::make_unique<ServiceWorkerScriptLoaderFactory>(
+          context_, AsWeakPtr(), std::move(loader_factory)),
+      mojo::MakeRequest(&script_loader_factory_ptr_info));
+  provider_info->script_loader_factory_ptr_info =
+      std::move(script_loader_factory_ptr_info);
 
   interface_provider_binding_.Bind(FilterRendererExposedInterfaces(
       blink::mojom::kNavigation_ServiceWorkerSpec, process_id,
@@ -839,10 +828,8 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
 
   controller_info->mode = GetControllerMode();
 
-  // S13nServiceWorker: Pass an endpoint for the client to talk to this
-  // controller.
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    controller_info->endpoint = GetControllerServiceWorkerPtr().PassInterface();
+  // Pass an endpoint for the client to talk to this controller.
+  controller_info->endpoint = GetControllerServiceWorkerPtr().PassInterface();
 
   // Set the info for the JavaScript ServiceWorkerContainer#controller object.
   base::WeakPtr<ServiceWorkerObjectHost> object_host =
@@ -1156,7 +1143,6 @@ void ServiceWorkerProviderHost::GetRegistrationForReady(
 void ServiceWorkerProviderHost::StartControllerComplete(
     blink::mojom::ControllerServiceWorkerRequest controller_request,
     blink::ServiceWorkerStatusCode status) {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   if (status == blink::ServiceWorkerStatusCode::kOk)
     controller_->controller()->Clone(std::move(controller_request));
 }
@@ -1168,7 +1154,6 @@ void ServiceWorkerProviderHost::EnsureControllerServiceWorker(
   if (!IsContextAlive() || !controller_)
     return;
 
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   controller_->RunAfterStartWorker(
       PurposeToEventType(purpose),
       base::BindOnce(&ServiceWorkerProviderHost::StartControllerComplete,
@@ -1177,7 +1162,6 @@ void ServiceWorkerProviderHost::EnsureControllerServiceWorker(
 
 void ServiceWorkerProviderHost::CloneContainerHost(
     blink::mojom::ServiceWorkerContainerHostRequest container_host_request) {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   additional_bindings_.AddBinding(this, std::move(container_host_request));
 }
 
@@ -1186,7 +1170,6 @@ void ServiceWorkerProviderHost::Ping(PingCallback callback) {
 }
 
 void ServiceWorkerProviderHost::HintToUpdateServiceWorker() {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   if (!IsProviderForClient()) {
     mojo::ReportBadMessage("SWPH_HTUSW_NOT_CLIENT");
     return;

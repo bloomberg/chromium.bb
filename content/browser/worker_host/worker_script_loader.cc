@@ -13,7 +13,6 @@
 #include "content/public/browser/resource_context.h"
 #include "net/url_request/redirect_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -41,8 +40,6 @@ WorkerScriptLoader::WorkerScriptLoader(
       traffic_annotation_(traffic_annotation),
       url_loader_client_binding_(this),
       weak_factory_(this) {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
-
   if (service_worker_provider_host_) {
     std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
         ServiceWorkerRequestHandler::InitializeForWorker(

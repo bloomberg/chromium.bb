@@ -39,7 +39,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -267,27 +266,24 @@ void SetupOnUIThread(int embedded_worker_id,
   devtools_proxy = std::make_unique<EmbeddedWorkerInstance::DevToolsProxy>(
       process_id, routing_id);
 
-  // S13nServiceWorker: Create factory bundles for this worker to do loading.
-  // These bundles don't support reconnection to the network service, see
-  // below comments.
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    const url::Origin origin = url::Origin::Create(params->script_url);
+  // Create factory bundles for this worker to do loading. These bundles don't
+  // support reconnection to the network service, see below comments.
+  const url::Origin origin = url::Origin::Create(params->script_url);
 
-    // The bundle for the browser is passed to ServiceWorkerScriptLoaderFactory
-    // and used to request non-installed service worker scripts. It's OK to not
-    // support reconnection to then network service because it can only used
-    // until the service worker reaches the 'installed' state.
-    //
-    // TODO(falken): Only make this bundle for non-installed service workers.
-    factory_bundle_for_browser = CreateFactoryBundle(rph, routing_id, origin);
+  // The bundle for the browser is passed to ServiceWorkerScriptLoaderFactory
+  // and used to request non-installed service worker scripts. It's OK to not
+  // support reconnection to then network service because it can only used
+  // until the service worker reaches the 'installed' state.
+  //
+  // TODO(falken): Only make this bundle for non-installed service workers.
+  factory_bundle_for_browser = CreateFactoryBundle(rph, routing_id, origin);
 
-    // The bundle for the renderer is passed to the service worker, and
-    // used for subresource loading from the service worker (i.e., fetch()).
-    // It's OK to not support reconnection to the network service because the
-    // service worker terminates itself when the connection breaks, so a new
-    // instance can be started.
-    factory_bundle_for_renderer = CreateFactoryBundle(rph, routing_id, origin);
-  }
+  // The bundle for the renderer is passed to the service worker, and
+  // used for subresource loading from the service worker (i.e., fetch()).
+  // It's OK to not support reconnection to the network service because the
+  // service worker terminates itself when the connection breaks, so a new
+  // instance can be started.
+  factory_bundle_for_renderer = CreateFactoryBundle(rph, routing_id, origin);
 
   // TODO(crbug.com/862854): Support changes to
   // blink::mojom::RendererPreferences while the worker is running.
@@ -639,18 +635,16 @@ class EmbeddedWorkerInstance::StartTask {
 
     // S13nServiceWorker: Build the URLLoaderFactory for loading new scripts.
     scoped_refptr<network::SharedURLLoaderFactory> factory_for_new_scripts;
-    if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-      DCHECK(factory_bundle_for_browser);
-      factory_for_new_scripts =
-          base::MakeRefCounted<blink::URLLoaderFactoryBundle>(
-              std::move(factory_bundle_for_browser));
+    DCHECK(factory_bundle_for_browser);
+    factory_for_new_scripts =
+        base::MakeRefCounted<blink::URLLoaderFactoryBundle>(
+            std::move(factory_bundle_for_browser));
 
-      // Send the factory bundle for subresource loading from the service worker
-      // (i.e. fetch()).
-      DCHECK(factory_bundle_for_renderer);
-      params->subresource_loader_factories =
-          std::move(factory_bundle_for_renderer);
-    }
+    // Send the factory bundle for subresource loading from the service worker
+    // (i.e. fetch()).
+    DCHECK(factory_bundle_for_renderer);
+    params->subresource_loader_factories =
+        std::move(factory_bundle_for_renderer);
 
     instance_->SendStartWorker(std::move(params),
                                std::move(factory_for_new_scripts),
@@ -853,14 +847,6 @@ void EmbeddedWorkerInstance::SendStartWorker(
 
 void EmbeddedWorkerInstance::RequestTermination(
     RequestTerminationCallback callback) {
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    mojo::ReportBadMessage(
-        "Invalid termination request: RequestTermination() was called but "
-        "S13nServiceWorker is not enabled");
-    std::move(callback).Run(true /* will_be_terminated */);
-    return;
-  }
-
   if (status() != EmbeddedWorkerStatus::RUNNING &&
       status() != EmbeddedWorkerStatus::STOPPING) {
     mojo::ReportBadMessage(
