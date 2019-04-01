@@ -241,8 +241,16 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest, UpdateServerAddressMetadata) {
   EXPECT_EQ(kLaterTime, server_addresses[0]->use_date());
 }
 
+// Disabled due to flakiness: https://crbug.com/947692.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_UpdateServerAddressMetadataWhileNotSyncing \
+  DISABLED_UpdateServerAddressMetadataWhileNotSyncing
+#else
+#define MAYBE_UpdateServerAddressMetadataWhileNotSyncing \
+  UpdateServerAddressMetadataWhileNotSyncing
+#endif
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
-                       UpdateServerAddressMetadataWhileNotSyncing) {
+                       MAYBE_UpdateServerAddressMetadataWhileNotSyncing) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData()});
