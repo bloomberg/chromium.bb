@@ -463,6 +463,7 @@ TEST_F(GcpGaiaCredentialBaseTest, NewUserDisabledThroughMdm) {
 
   // Enforce single user mode for MDM.
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
   GoogleMdmEnrolledStatusForTesting force_success(true);
 
@@ -508,6 +509,7 @@ TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
   FakeAssociatedUserValidator validator;
   FakeInternetAvailabilityChecker internet_checker;
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
   GoogleMdmEnrollmentStatusForTesting force_success(true);
 
   USES_CONVERSION;
@@ -750,6 +752,126 @@ TEST_F(GcpGaiaCredentialBaseTest, EmailIsAtDotCom) {
 
   ASSERT_EQ(S_OK, gaia_cred->Terminate());
 }
+
+// Tests various sign in scenarios with consumer and non-consumer domains.
+// Parameters are:
+// 1. Is mdm enrollment enabled.
+// 2. The mdm_aca reg key setting:
+//    - 0: Set reg key to 0.
+//    - 1: Set reg key to 1.
+//    - 2: Don't set reg key.
+// 3. Whether the mdm_aca reg key is set to 1 or 0.
+// 4. Whether an existing associated user is already present.
+// 5. Whether the user being created (or existing) uses a consumer account.
+class GcpGaiaCredentialBaseConsumerEmailTest
+    : public GcpGaiaCredentialBaseTest,
+      public ::testing::WithParamInterface<std::tuple<bool, int, bool, bool>> {
+};
+
+TEST_P(GcpGaiaCredentialBaseConsumerEmailTest, ConsumerEmailSignin) {
+  USES_CONVERSION;
+  const bool mdm_enabled = std::get<0>(GetParam());
+  const int mdm_consumer_accounts_reg_key_setting = std::get<1>(GetParam());
+  const bool user_created = std::get<2>(GetParam());
+  const bool user_is_consumer = std::get<3>(GetParam());
+
+  FakeAssociatedUserValidator validator;
+  FakeInternetAvailabilityChecker internet_checker;
+  GoogleMdmEnrollmentStatusForTesting force_success(true);
+
+  if (mdm_enabled)
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+
+  const bool mdm_consumer_accounts_reg_key_set =
+      mdm_consumer_accounts_reg_key_setting >= 0 &&
+      mdm_consumer_accounts_reg_key_setting < 2;
+  if (mdm_consumer_accounts_reg_key_set) {
+    ASSERT_EQ(S_OK,
+              SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts,
+                                      mdm_consumer_accounts_reg_key_setting));
+  }
+
+  std::string user_email = user_is_consumer ? kDefaultEmail : "foo@imfl.info";
+
+  CComBSTR sid;
+  base::string16 username(user_is_consumer ? L"foo" : L"foo_imfl");
+
+  // Create a fake user that has the same gaia id as the test gaia id.
+  if (user_created) {
+    ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                        username, L"password", L"name", L"comment",
+                        base::UTF8ToUTF16(kDefaultGaiaId),
+                        base::UTF8ToUTF16(user_email), &sid));
+    ASSERT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+  }
+
+  FakeGaiaCredentialProvider provider;
+
+  // Start logon.
+  CComPtr<IGaiaCredential> gaia_cred;
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  test->SetGlsEmailAddress(user_email);
+
+  ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
+
+  bool should_signin_succeed = !mdm_enabled ||
+                               (mdm_consumer_accounts_reg_key_set &&
+                                mdm_consumer_accounts_reg_key_setting) ||
+                               !user_is_consumer;
+
+  // Sign in success.
+  if (should_signin_succeed) {
+    CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
+    CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
+    wchar_t* status_text;
+    CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
+    ASSERT_EQ(S_OK, cred->GetSerialization(&cpgsr, &cpcs, &status_text,
+                                           &status_icon));
+    EXPECT_EQ(nullptr, status_text);
+    EXPECT_EQ(CPSI_SUCCESS, status_icon);
+    EXPECT_EQ(CPGSR_RETURN_CREDENTIAL_FINISHED, cpgsr);
+    EXPECT_LT(0u, cpcs.cbSerialization);
+    EXPECT_NE(nullptr, cpcs.rgbSerialization);
+
+    // User should have been associated.
+    EXPECT_EQ(test->GetFinalUsername(), username);
+    // Email should be the same as the default one.
+    EXPECT_EQ(test->GetFinalEmail(), user_email);
+  } else {
+    // Nothing was propagated to the provider.
+    EXPECT_EQ(0u, provider.username().Length());
+    EXPECT_EQ(0u, provider.password().Length());
+    EXPECT_EQ(0u, provider.sid().Length());
+    EXPECT_EQ(FALSE, provider.credentials_changed_fired());
+
+    // Error message concerning invalid domain is sent.
+    EXPECT_STREQ(test->GetErrorText(),
+                 GetStringResource(IDS_INVALID_EMAIL_DOMAIN_BASE).c_str());
+  }
+
+  gaia_cred->Terminate();
+
+  if (user_created) {
+    // No new user should be created.
+    EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+  } else {
+    // New user created only if their domain is valid for the sign in.
+    EXPECT_EQ(1ul + (should_signin_succeed ? 1ul : 0ul),
+              fake_os_user_manager()->GetUserCount());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         GcpGaiaCredentialBaseConsumerEmailTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Values(0, 1, 2),
+                                            ::testing::Bool(),
+                                            ::testing::Bool()));
 
 }  // namespace testing
 }  // namespace credential_provider

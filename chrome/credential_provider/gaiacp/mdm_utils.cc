@@ -28,6 +28,7 @@ namespace credential_provider {
 
 constexpr wchar_t kRegMdmUrl[] = L"mdm";
 constexpr wchar_t kRegMdmSupportsMultiUser[] = L"mdm_mu";
+constexpr wchar_t kRegMdmAllowConsumerAccounts[] = L"mdm_aca";
 
 // Overridden in tests to force the MDM enrollment to either succeed or fail.
 enum class EnrollmentStatus {
