@@ -4,15 +4,20 @@
 
 package org.chromium.chrome.browser.touchless;
 
+import static org.chromium.chrome.browser.UrlConstants.NTP_URL;
+
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.ChromeInactivityTracker;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
@@ -40,6 +45,9 @@ import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 public class NoTouchActivity extends SingleTabActivity {
     private static final String BUNDLE_TAB_ID = "tabId";
 
+    @VisibleForTesting
+    static final String LAST_BACKGROUNDED_TIME_MS_PREF = "NoTouchActivity.BackgroundTimeMs";
+
     // Time at which an intent was received and handled.
     private long mIntentHandlingTimeMs;
 
@@ -53,6 +61,9 @@ public class NoTouchActivity extends SingleTabActivity {
 
     /** The class that controls the UI for touchless devices. */
     private TouchlessUiController mUiController;
+
+    /** The class that finishes this activity after a timeout */
+    private ChromeInactivityTracker mInactivityTracker;
 
     /**
      * Internal class which performs the intent handling operations delegated by IntentHandler.
@@ -121,6 +132,7 @@ public class NoTouchActivity extends SingleTabActivity {
                 (ViewGroup) findViewById(android.R.id.content), null /* controlContainer */);
 
         getFullscreenManager().setTab(getActivityTab());
+
         mUiController = AppHooks.get().createTouchlessUiController(this);
         super.finishNativeInitialization();
     }
@@ -133,6 +145,8 @@ public class NoTouchActivity extends SingleTabActivity {
         mProgressBarCoordinator =
                 new ProgressBarCoordinator(mProgressBarView, getActivityTabProvider());
         mTouchlessZoomHelper = new TouchlessZoomHelper(getActivityTabProvider());
+        mInactivityTracker = new ChromeInactivityTracker(
+                LAST_BACKGROUNDED_TIME_MS_PREF, this.getLifecycleDispatcher());
 
         // By this point if we were going to restore a URL from savedInstanceState we would already
         // have done so.
@@ -154,6 +168,18 @@ public class NoTouchActivity extends SingleTabActivity {
     public void onNewIntent(Intent intent) {
         mIntentHandlingTimeMs = SystemClock.uptimeMillis();
         super.onNewIntent(intent);
+    }
+
+    @Override
+    public void onNewIntentWithNative(Intent intent) {
+        if (mInactivityTracker.inactivityThresholdPassed()) {
+            if (!mIntentHandler.shouldIgnoreIntent(intent)) {
+                if (!NTP_URL.equals(getActivityTab().getUrl())) {
+                    intent.setData(Uri.parse(NTP_URL));
+                }
+            }
+        }
+        super.onNewIntentWithNative(intent);
     }
 
     @Override

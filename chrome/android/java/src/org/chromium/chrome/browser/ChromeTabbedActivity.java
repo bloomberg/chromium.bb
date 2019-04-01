@@ -231,9 +231,7 @@ public class ChromeTabbedActivity
             "com.google.android.apps.chrome.ACTION_CLOSE_TABS";
 
     @VisibleForTesting
-    public static final String LAST_BACKGROUNDED_TIME_MS_PREF =
-            "ChromeTabbedActivity.BackgroundTimeMs";
-    private static final String NTP_LAUNCH_DELAY_IN_MINS_PARAM = "delay_in_mins";
+    static final String LAST_BACKGROUNDED_TIME_MS_PREF = "ChromeTabbedActivity.BackgroundTimeMs";
 
     @VisibleForTesting
     public static final String STARTUP_UMA_HISTOGRAM_SUFFIX = ".Tabbed";
@@ -297,6 +295,11 @@ public class ChromeTabbedActivity
      * Keeps track of whether or not a specific tab was created based on the startup intent.
      */
     private boolean mCreatedTabOnStartup;
+
+    /**
+     *  Keeps track of the pref for the last time since this activity was stopped.
+     */
+    private ChromeInactivityTracker mInactivityTracker;
 
     // Whether or not chrome was launched with an intent to open a tab.
     private boolean mIntentWithEffect;
@@ -834,11 +837,6 @@ public class ChromeTabbedActivity
 
         mTabModelSelectorImpl.saveState();
         mActivityStopMetrics.onStopWithNative(this);
-
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putLong(LAST_BACKGROUNDED_TIME_MS_PREF, System.currentTimeMillis())
-                .apply();
     }
 
     @Override
@@ -1029,13 +1027,22 @@ public class ChromeTabbedActivity
 
     private void logMainIntentBehavior(Intent intent) {
         assert isMainIntentFromLauncher(intent);
-        mMainIntentMetrics.onMainIntentWithNative(getTimeSinceLastBackgroundedMs());
+        // TODO(tedchoc): We should cache the last visible time and reuse it to avoid different
+        //                values of this depending on when it is called after the activity was
+        //                shown.
+        mMainIntentMetrics.onMainIntentWithNative(
+                mInactivityTracker.getTimeSinceLastBackgroundedMs());
     }
 
     /** Access the main intent metrics for test validation. */
     @VisibleForTesting
     public MainIntentBehaviorMetrics getMainIntentBehaviorMetricsForTesting() {
         return mMainIntentMetrics;
+    }
+
+    @VisibleForTesting
+    public ChromeInactivityTracker getInactivityTrackerForTesting() {
+        return mInactivityTracker;
     }
 
     /**
@@ -1050,29 +1057,7 @@ public class ChromeTabbedActivity
 
         if (!mIntentHandler.isIntentUserVisible()) return false;
 
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_LAUNCH_AFTER_INACTIVITY)) {
-            return false;
-        }
-
-        int ntpLaunchDelayInMins = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.NTP_LAUNCH_AFTER_INACTIVITY, NTP_LAUNCH_DELAY_IN_MINS_PARAM, -1);
-        if (ntpLaunchDelayInMins == -1) {
-            Log.e(TAG, "No NTP launch delay specified despite enabled field trial");
-            return false;
-        }
-
-        long lastBackgroundedTimeMs =
-                ContextUtils.getAppSharedPreferences().getLong(LAST_BACKGROUNDED_TIME_MS_PREF, -1);
-        if (lastBackgroundedTimeMs == -1) return false;
-
-        long backgroundDurationMinutes =
-                (System.currentTimeMillis() - lastBackgroundedTimeMs) / DateUtils.MINUTE_IN_MILLIS;
-
-        if (backgroundDurationMinutes < ntpLaunchDelayInMins) {
-            Log.i(TAG, "Not launching NTP due to inactivity, background time: %d, launch delay: %d",
-                    backgroundDurationMinutes, ntpLaunchDelayInMins);
-            return false;
-        }
+        if (!mInactivityTracker.inactivityThresholdPassed()) return false;
 
         if (isInOverviewMode() && !isTablet()) {
             mOverviewModeController.hideOverview(false);
@@ -1116,19 +1101,6 @@ public class ChromeTabbedActivity
         return true;
     }
 
-    /**
-     * Returns the number of milliseconds since Chrome was last backgrounded.
-     */
-    private long getTimeSinceLastBackgroundedMs() {
-        // TODO(tedchoc): We should cache the last visible time and reuse it to avoid different
-        //                values of this depending on when it is called after the activity was
-        //                shown.
-        long currentTime = System.currentTimeMillis();
-        long lastBackgroundedTimeMs = ContextUtils.getAppSharedPreferences().getLong(
-                LAST_BACKGROUNDED_TIME_MS_PREF, currentTime);
-        return currentTime - lastBackgroundedTimeMs;
-    }
-
     @Override
     public void initializeState() {
         // This method goes through 3 steps:
@@ -1167,6 +1139,8 @@ public class ChromeTabbedActivity
                 mTabModelSelectorImpl.loadState(ignoreIncognitoFiles);
             }
 
+            mInactivityTracker = new ChromeInactivityTracker(
+                    LAST_BACKGROUNDED_TIME_MS_PREF, this.getLifecycleDispatcher());
             mIntentWithEffect = false;
             if (getSavedInstanceState() == null && intent != null) {
                 if (!mIntentHandler.shouldIgnoreIntent(intent)) {
