@@ -1224,9 +1224,6 @@ extern const char kWebglDraftExtensionsDescription[];
 extern const char kWebMidiName[];
 extern const char kWebMidiDescription[];
 
-extern const char kWebrtcH264WithOpenh264FfmpegName[];
-extern const char kWebrtcH264WithOpenh264FfmpegDescription[];
-
 extern const char kWebrtcHideLocalIpsWithMdnsName[];
 extern const char kWebrtcHideLocalIpsWithMdnsDecription[];
 

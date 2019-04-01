@@ -2152,12 +2152,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"user-activation-v2", flag_descriptions::kUserActivationV2Name,
      flag_descriptions::kUserActivationV2Description, kOsAll,
      FEATURE_VALUE_TYPE(features::kUserActivationV2)},
-#if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-    {"enable-webrtc-h264-with-openh264-ffmpeg",
-     flag_descriptions::kWebrtcH264WithOpenh264FfmpegName,
-     flag_descriptions::kWebrtcH264WithOpenh264FfmpegDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(content::kWebRtcH264WithOpenH264FFmpeg)},
-#endif  // BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 #if defined(OS_ANDROID)
     {"offlining-recent-pages", flag_descriptions::kOffliningRecentPagesName,
      flag_descriptions::kOffliningRecentPagesDescription, kOsAndroid,
