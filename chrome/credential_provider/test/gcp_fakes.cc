@@ -464,8 +464,7 @@ FakeScopedUserProfile::FakeScopedUserProfile(const base::string16& sid,
 
 FakeScopedUserProfile::~FakeScopedUserProfile() {}
 
-HRESULT FakeScopedUserProfile::SaveAccountInfo(
-    const base::DictionaryValue& properties) {
+HRESULT FakeScopedUserProfile::SaveAccountInfo(const base::Value& properties) {
   if (!is_valid_)
     return E_INVALIDARG;
 

@@ -82,7 +82,7 @@ base::string16 GetEmailDomains() {
 // since only local users can be created. |sid| will be empty until the user is
 // created later on. |is_consumer_account| will be set to true if the email used
 // to sign in is gmail or googlemail.
-void MakeUsernameForAccount(const base::DictionaryValue* result,
+void MakeUsernameForAccount(const base::Value* result,
                             base::string16* gaia_id,
                             wchar_t* username,
                             DWORD username_length,
@@ -181,7 +181,7 @@ HRESULT WaitForLoginUIAndGetResult(
   const int kBufferSize = 4096;
   std::vector<char> output_buffer(kBufferSize, '\0');
   base::ScopedClosureRunner zero_buffer_on_exit(
-      base::BindOnce(base::IgnoreResult(&RtlSecureZeroMemory),
+      base::BindOnce(base::IgnoreResult(&::RtlSecureZeroMemory),
                      &output_buffer[0], kBufferSize));
 
   HRESULT hr = WaitForProcess(uiprocinfo->procinfo.process_handle(),
@@ -208,7 +208,7 @@ HRESULT WaitForLoginUIAndGetResult(
 // This function validates the response from GLS and makes sure it contained
 // all the fields required to proceed with logon.  This does not necessarily
 // guarantee that the logon will succeed, only that GLS response seems correct.
-HRESULT ValidateResult(const base::DictionaryValue* result, BSTR* status_text) {
+HRESULT ValidateResult(const base::Value* result, BSTR* status_text) {
   DCHECK(result);
   DCHECK(status_text);
 
@@ -272,6 +272,8 @@ HRESULT ValidateResult(const base::DictionaryValue* result, BSTR* status_text) {
   if (password.empty()) {
     LOGFN(ERROR) << "Password is empty";
     has_error = true;
+  } else {
+    ::RtlSecureZeroMemory(const_cast<char*>(password.data()), password.size());
   }
 
   std::string refresh_token = GetDictStringUTF8(result, kKeyRefreshToken);
@@ -618,9 +620,13 @@ void CGaiaCredentialBase::ResetInternalState() {
   LOGFN(INFO);
   username_.Empty();
   domain_.Empty();
+
+  ::RtlSecureZeroMemory((BSTR)password_, password_.ByteLength());
   password_.Empty();
+
   current_windows_password_.Empty();
-  authentication_results_.reset();
+
+  SecurelyClearDictionaryValue(&authentication_results_);
   needs_windows_password_ = false;
   result_status_ = STATUS_SUCCESS;
 
@@ -1290,7 +1296,7 @@ HRESULT CGaiaCredentialBase::ForkGaiaLogonStub(
 }
 
 HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(
-    const std::unique_ptr<base::DictionaryValue>& dict,
+    const std::unique_ptr<base::Value>& dict,
     BSTR* status_text) {
   LOGFN(INFO);
   DCHECK(status_text);
@@ -1384,9 +1390,19 @@ unsigned __stdcall CGaiaCredentialBase::WaitForLoginUI(void* param) {
     // CGaiaCredentialBase::Advise() call. Seems to work for now though, but I
     // suspect there could be a problem if this call races with a call to
     // CGaiaCredentialBase::Unadvise().
-    hr = uiprocinfo->credential->OnUserAuthenticated(
-        CComBSTR(A2COLE(json_result.c_str())), &status_text);
+    base::string16 json_result16 = base::UTF8ToUTF16(json_result);
+    CComBSTR result_string(W2COLE(json_result16.c_str()));
+    ::RtlSecureZeroMemory(
+        const_cast<wchar_t*>(json_result16.data()),
+        json_result16.size() * sizeof(decltype(json_result16[0])));
+
+    hr = uiprocinfo->credential->OnUserAuthenticated(result_string,
+                                                     &status_text);
+    ::RtlSecureZeroMemory((BSTR)result_string, result_string.ByteLength());
   }
+
+  ::RtlSecureZeroMemory(const_cast<char*>(json_result.data()),
+                        json_result.size());
 
   // If the process was killed by the credential in Terminate(), don't process
   // the error message since it is possible that the credential and/or the
@@ -1412,8 +1428,7 @@ unsigned __stdcall CGaiaCredentialBase::WaitForLoginUI(void* param) {
 }
 
 // static
-HRESULT CGaiaCredentialBase::SaveAccountInfo(
-    const base::DictionaryValue& properties) {
+HRESULT CGaiaCredentialBase::SaveAccountInfo(const base::Value& properties) {
   LOGFN(INFO);
 
   base::string16 sid = GetDictString(&properties, kKeySID);
@@ -1438,6 +1453,10 @@ HRESULT CGaiaCredentialBase::SaveAccountInfo(
 
   // Load the user's profile so that their registry hive is available.
   auto profile = ScopedUserProfile::Create(sid, domain, username, password);
+
+  ::RtlSecureZeroMemory(const_cast<wchar_t*>(password.data()),
+                        password.size() * sizeof(decltype(password[0])));
+
   if (!profile) {
     LOGFN(ERROR) << "Could not load user profile";
     return E_UNEXPECTED;
@@ -1518,7 +1537,7 @@ void CGaiaCredentialBase::TerminateLogonProcess() {
 }
 
 HRESULT CGaiaCredentialBase::ValidateOrCreateUser(
-    const base::DictionaryValue* result,
+    const base::Value* result,
     BSTR* domain,
     BSTR* username,
     BSTR* sid,
@@ -1531,7 +1550,6 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(
   DCHECK(sid);
 
   *error_text = nullptr;
-  base::string16 local_password = GetDictString(result, kKeyPassword);
 
   wchar_t found_username[kWindowsUsernameBufferLength];
   wchar_t found_domain[kWindowsDomainBufferLength];
@@ -1594,12 +1612,16 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(
     return HRESULT_FROM_WIN32(ERROR_LOGON_TYPE_NOT_GRANTED);
   }
 
+  base::string16 local_password = GetDictString(result, kKeyPassword);
   base::string16 local_fullname = GetDictString(result, kKeyFullname);
   base::string16 comment(GetStringResource(IDS_USER_ACCOUNT_COMMENT_BASE));
   HRESULT hr = CreateNewUser(
       OSUserManager::Get(), found_username, local_password.c_str(),
       local_fullname.c_str(), comment.c_str(),
       /*add_to_users_group=*/true, kMaxUsernameAttempts, username, sid);
+  ::RtlSecureZeroMemory(
+      const_cast<wchar_t*>(local_password.data()),
+      local_password.size() * sizeof(decltype(local_password[0])));
 
   // May return user exists if this is the anonymous credential and the maximum
   // attempts to generate a new username has been reached.
@@ -1631,37 +1653,50 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
   std::string json_string;
   base::UTF16ToUTF8(OLE2CW(authentication_info),
                     ::SysStringLen(authentication_info), &json_string);
+
   std::unique_ptr<base::Value> properties = base::JSONReader::ReadDeprecated(
       json_string, base::JSON_ALLOW_TRAILING_COMMAS);
+
+  ::RtlSecureZeroMemory(const_cast<char*>(json_string.data()),
+                        json_string.size());
+  json_string.clear();
+
   if (!properties || !properties->is_dict()) {
     LOGFN(ERROR) << "base::JSONReader::Read failed to translate to JSON";
     *status_text = AllocErrorString(IDS_INVALID_UI_RESPONSE_BASE);
     return E_FAIL;
   }
 
-  std::unique_ptr<base::DictionaryValue> dict =
-      base::DictionaryValue::From(std::move(properties));
+  {
+    base::ScopedClosureRunner zero_dict_on_exit(base::BindOnce(
+        &SecurelyClearDictionaryValue, base::Unretained(&properties)));
 
-  HRESULT hr = ValidateResult(dict.get(), status_text);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "ValidateResult hr=" << putHR(hr);
-    return hr;
+    HRESULT hr = ValidateResult(properties.get(), status_text);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "ValidateResult hr=" << putHR(hr);
+      return hr;
+    }
+
+    // The value in |dict| is now known to contain everything that is needed
+    // from the GLS. Try to validate the user that wants to sign in and then
+    // add additional information into |dict| as needed.
+    hr = ValidateOrCreateUser(properties.get(), &domain_, &username_,
+                              &user_sid_, status_text);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "ValidateOrCreateUser hr=" << putHR(hr);
+      return hr;
+    }
+
+    base::IgnoreResult(zero_dict_on_exit.Release());
+    authentication_results_ = std::move(properties);
   }
 
-  // The value in |dict| is now known to contain everything that is needed
-  // from the GLS. Try to validate the user that wants to sign in and then
-  // add additional information into |dict| as needed.
-  hr = ValidateOrCreateUser(dict.get(), &domain_, &username_, &user_sid_,
-                            status_text);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "ValidateOrCreateUser hr=" << putHR(hr);
-    return hr;
-  }
-
-  authentication_results_ = std::move(dict);
-
-  password_ = ::SysAllocString(
-      GetDictString(authentication_results_, kKeyPassword).c_str());
+  base::string16 local_password =
+      GetDictString(authentication_results_, kKeyPassword);
+  password_ = ::SysAllocString(local_password.c_str());
+  ::RtlSecureZeroMemory(
+      const_cast<wchar_t*>(local_password.data()),
+      local_password.size() * sizeof(decltype(local_password[0])));
 
   // Disable the submit button. Either the signon will succeed with the given
   // credentials or a password update will be needed and that flow will handle

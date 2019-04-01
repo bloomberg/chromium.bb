@@ -173,15 +173,17 @@ void CALLBACK SaveAccountInfoW(HWND /*hwnd*/,
   // Don't log |buffer| since it contains sensitive info like password.
 
   HRESULT hr = S_OK;
-  base::DictionaryValue* dict = nullptr;
   std::unique_ptr<base::Value> properties = base::JSONReader::ReadDeprecated(
       buffer, base::JSON_ALLOW_TRAILING_COMMAS);
-  if (!properties || !properties->GetAsDictionary(&dict)) {
+
+  ::RtlSecureZeroMemory(buffer, base::size(buffer));
+
+  if (!properties || !properties->is_dict()) {
     LOGFN(ERROR) << "base::JSONReader::Read failed length=" << buffer_len_bytes;
     hr = E_FAIL;
   }
 
-  hr = credential_provider::CGaiaCredentialBase::SaveAccountInfo(*dict);
+  hr = credential_provider::CGaiaCredentialBase::SaveAccountInfo(*properties);
   if (FAILED(hr))
     LOGFN(ERROR) << "SaveAccountInfoW hr=" << putHR(hr);
 
@@ -197,10 +199,12 @@ void CALLBACK SaveAccountInfoW(HWND /*hwnd*/,
     // on to an interactive session to succeed and when we call this function
     // the user should have been successfully signed on at that point and able
     // to finish the enrollment.
-    HRESULT hr = credential_provider::EnrollToGoogleMdmIfNeeded(*dict);
+    HRESULT hr = credential_provider::EnrollToGoogleMdmIfNeeded(*properties);
     if (FAILED(hr))
       LOGFN(ERROR) << "EnrollToGoogleMdmIfNeeded hr=" << putHR(hr);
   }
+
+  credential_provider::SecurelyClearDictionaryValue(&properties);
 
   LOGFN(INFO) << "Done";
 }

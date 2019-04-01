@@ -5,6 +5,7 @@
 #ifndef CHROME_CREDENTIAL_PROVIDER_GAIACP_GCP_UTILS_H_
 #define CHROME_CREDENTIAL_PROVIDER_GAIACP_GCP_UTILS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -228,16 +229,18 @@ base::FilePath GetUserSizedAccountPictureFilePath(
 // Gets the language selected by the base::win::i18n::LanguageSelector.
 base::string16 GetSelectedLanguage();
 
-// Helpers to get strings from DictionaryValues.
-base::string16 GetDictString(const base::DictionaryValue* dict,
+// Securely clear a base::Value that may be a dictionary value that may
+// have a password field.
+void SecurelyClearDictionaryValue(std::unique_ptr<base::Value>* value);
+
+// Helpers to get strings from base::Values that are expected to be
+// DictionaryValues.
+base::string16 GetDictString(const base::Value* dict, const char* name);
+base::string16 GetDictString(const std::unique_ptr<base::Value>& dict,
                              const char* name);
-base::string16 GetDictString(const std::unique_ptr<base::DictionaryValue>& dict,
-                             const char* name);
-std::string GetDictStringUTF8(const base::DictionaryValue* dict,
+std::string GetDictStringUTF8(const base::Value* dict, const char* name);
+std::string GetDictStringUTF8(const std::unique_ptr<base::Value>& dict,
                               const char* name);
-std::string GetDictStringUTF8(
-    const std::unique_ptr<base::DictionaryValue>& dict,
-    const char* name);
 
 // Returns the major build version of Windows by reading the registry.
 // See:

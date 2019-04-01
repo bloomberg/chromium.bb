@@ -151,7 +151,7 @@ bool MdmEnrollmentEnabled() {
   return !mdm_url.empty();
 }
 
-HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties) {
+HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties) {
   USES_CONVERSION;
   LOGFN(INFO);
 

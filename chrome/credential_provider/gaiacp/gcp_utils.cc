@@ -665,29 +665,41 @@ base::string16 GetSelectedLanguage() {
   return GetLanguageSelector().matched_candidate();
 }
 
-base::string16 GetDictString(const base::DictionaryValue* dict,
-                             const char* name) {
+void SecurelyClearDictionaryValue(std::unique_ptr<base::Value>* value) {
+  if (!value || !(*value) || !((*value)->is_dict()))
+    return;
+
+  const std::string* password_value = (*value)->FindStringKey(kKeyPassword);
+  if (password_value) {
+    ::RtlSecureZeroMemory(const_cast<char*>(password_value->data()),
+                          password_value->size());
+  }
+
+  (*value).reset();
+}
+
+base::string16 GetDictString(const base::Value* dict, const char* name) {
   DCHECK(name);
+  DCHECK(dict->is_dict());
   auto* value = dict->FindKey(name);
   return value && value->is_string() ? base::UTF8ToUTF16(value->GetString())
                                      : base::string16();
 }
 
-base::string16 GetDictString(const std::unique_ptr<base::DictionaryValue>& dict,
+base::string16 GetDictString(const std::unique_ptr<base::Value>& dict,
                              const char* name) {
   return GetDictString(dict.get(), name);
 }
 
-std::string GetDictStringUTF8(const base::DictionaryValue* dict,
-                              const char* name) {
+std::string GetDictStringUTF8(const base::Value* dict, const char* name) {
   DCHECK(name);
+  DCHECK(dict->is_dict());
   auto* value = dict->FindKey(name);
   return value && value->is_string() ? value->GetString() : std::string();
 }
 
-std::string GetDictStringUTF8(
-    const std::unique_ptr<base::DictionaryValue>& dict,
-    const char* name) {
+std::string GetDictStringUTF8(const std::unique_ptr<base::Value>& dict,
+                              const char* name) {
   return GetDictStringUTF8(dict.get(), name);
 }
 
