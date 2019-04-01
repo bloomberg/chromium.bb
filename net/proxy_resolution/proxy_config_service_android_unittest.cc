@@ -96,6 +96,14 @@ class ProxyConfigServiceAndroidTestBase : public TestWithScopedTaskEnvironment {
     return it->second;
   }
 
+  void ProxySettingsChangedTo(const std::string& host,
+                              int port,
+                              const std::string& pac_url,
+                              const std::vector<std::string>& exclusion_list) {
+    service_.ProxySettingsChangedTo(host, port, pac_url, exclusion_list);
+    base::RunLoop().RunUntilIdle();
+  }
+
   void ProxySettingsChanged() {
     service_.ProxySettingsChanged();
     base::RunLoop().RunUntilIdle();
@@ -187,6 +195,17 @@ TEST_F(ProxyConfigServiceAndroidWithInitialConfigTest, TestInitialConfig) {
   AddProperty("http.proxyHost", "httpproxy.com");
   ProxySettingsChanged();
   TestMapping("http://example.com/", "PROXY httpproxy.com:80");
+}
+
+TEST_F(ProxyConfigServiceAndroidTest, TestClearProxy) {
+  AddProperty("http.proxyHost", "httpproxy.com");
+  ProxySettingsChanged();
+  TestMapping("http://example.com/", "PROXY httpproxy.com:80");
+
+  // These values are used in ProxyChangeListener.java to indicate a direct
+  // proxy connection.
+  ProxySettingsChangedTo("", 0, "", {});
+  TestMapping("http://example.com/", "DIRECT");
 }
 
 struct ProxyCallback {
