@@ -29,7 +29,23 @@ struct InstallOptions {
   LaunchContainer launch_container;
   InstallSource install_source;
 
-  bool create_shortcuts = true;
+  // If true, a shortcut is added to the Applications folder on macOS, and Start
+  // Menu on Linux and Windows. On Chrome OS, all installed apps show up in the
+  // app list, so there is no need to do anything there. If false, we skip
+  // adding a shortcut to desktop as well, regardless of the value of
+  // |add_to_desktop|.
+  // TODO(ortuno): Make adding a shortcut to the applications menu independent
+  // from adding a shortcut to desktop.
+  bool add_to_applications_menu = true;
+
+  // If true, a shortcut is added to the desktop on Linux and Windows. Has no
+  // effect on macOS and Chrome OS.
+  bool add_to_desktop = true;
+
+  // If true, a shortcut is added to the "quick launch bar" of the OS: the Shelf
+  // for Chrome OS, the Dock for macOS, and the Quick Launch Bar or Taskbar on
+  // Windows. Currently this only works on Chrome OS.
+  bool add_to_quick_launch_bar = true;
 
   // Whether the app should be reinstalled even if the user has previously
   // uninstalled it.

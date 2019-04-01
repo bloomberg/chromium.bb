@@ -463,9 +463,11 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
 
   web_app::RecordAppBanner(contents_, web_app_info_.app_url);
 
-  if (create_shortcuts_ && CanBookmarkAppCreateOsShortcuts()) {
+  // TODO(ortuno): Make adding a shortcut to the applications menu independent
+  // from adding a shortcut to desktop.
+  if (add_to_applications_menu_ && CanBookmarkAppCreateOsShortcuts()) {
     BookmarkAppCreateOsShortcuts(
-        profile_, extension,
+        profile_, extension, add_to_desktop_,
         base::BindOnce(&BookmarkAppHelper::OnShortcutCreationCompleted,
                        weak_factory_.GetWeakPtr(), extension->id()));
   } else {
@@ -486,7 +488,7 @@ void BookmarkAppHelper::OnShortcutCreationCompleted(
     return;
   }
 
-  if (create_shortcuts_ && CanBookmarkAppBePinnedToShelf())
+  if (add_to_quick_launch_bar_ && CanBookmarkAppBePinnedToShelf())
     BookmarkAppPinToShelf(extension);
 
   // If there is a browser, it means that the app is being installed in the

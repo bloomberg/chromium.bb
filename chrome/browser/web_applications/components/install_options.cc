@@ -26,11 +26,14 @@ InstallOptions& InstallOptions::operator=(const InstallOptions& other) =
     default;
 
 bool InstallOptions::operator==(const InstallOptions& other) const {
-  return std::tie(url, launch_container, install_source, create_shortcuts,
-                  override_previous_user_uninstall, bypass_service_worker_check,
-                  require_manifest, always_update) ==
+  return std::tie(url, launch_container, install_source,
+                  add_to_applications_menu, add_to_desktop,
+                  add_to_quick_launch_bar, override_previous_user_uninstall,
+                  bypass_service_worker_check, require_manifest,
+                  always_update) ==
          std::tie(other.url, other.launch_container, other.install_source,
-                  other.create_shortcuts,
+                  other.add_to_applications_menu, other.add_to_desktop,
+                  other.add_to_quick_launch_bar,
                   other.override_previous_user_uninstall,
                   other.bypass_service_worker_check, other.require_manifest,
                   other.always_update);
@@ -42,7 +45,11 @@ std::ostream& operator<<(std::ostream& out,
              << static_cast<int32_t>(install_options.launch_container)
              << "\n install_source: "
              << static_cast<int32_t>(install_options.install_source)
-             << "\n create_shortcuts: " << install_options.create_shortcuts
+             << "\n add_to_applications_menu: "
+             << install_options.add_to_applications_menu
+             << "\n add_to_desktop: " << install_options.add_to_desktop
+             << "\n add_to_quick_launch_bar: "
+             << install_options.add_to_quick_launch_bar
              << "\n override_previous_user_uninstall: "
              << install_options.override_previous_user_uninstall
              << "\n bypass_service_worker_check: "

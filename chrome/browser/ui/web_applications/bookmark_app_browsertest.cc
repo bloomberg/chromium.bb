@@ -45,7 +45,9 @@ web_app::InstallOptions CreateInstallOptions(const GURL& url) {
                                           web_app::LaunchContainer::kWindow,
                                           web_app::InstallSource::kInternal);
   // Avoid creating real shortcuts in tests.
-  install_options.create_shortcuts = false;
+  install_options.add_to_applications_menu = false;
+  install_options.add_to_desktop = false;
+  install_options.add_to_quick_launch_bar = false;
   return install_options;
 }
 

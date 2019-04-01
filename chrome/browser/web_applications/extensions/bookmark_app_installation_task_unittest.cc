@@ -183,7 +183,9 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
             EXPECT_EQ(result.app_id.value(), id.value());
 
-            EXPECT_TRUE(test_helper().create_shortcuts());
+            EXPECT_TRUE(test_helper().add_to_quick_launch_bar());
+            EXPECT_TRUE(test_helper().add_to_desktop());
+            EXPECT_TRUE(test_helper().add_to_quick_launch_bar());
             EXPECT_FALSE(test_helper().forced_launch_type().has_value());
             EXPECT_TRUE(test_helper().is_default_app());
             EXPECT_FALSE(test_helper().is_policy_installed_app());
@@ -236,11 +238,11 @@ TEST_F(BookmarkAppInstallationTaskTest,
 }
 
 TEST_F(BookmarkAppInstallationTaskTest,
-       WebAppOrShortcutFromContents_NoShortcuts) {
+       WebAppOrShortcutFromContents_NoDesktopShortcut) {
   web_app::InstallOptions install_options(app_url(),
                                           web_app::LaunchContainer::kWindow,
                                           web_app::InstallSource::kInternal);
-  install_options.create_shortcuts = false;
+  install_options.add_to_desktop = false;
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), std::move(install_options));
 
@@ -252,7 +254,71 @@ TEST_F(BookmarkAppInstallationTaskTest,
                                 result.code);
                       EXPECT_TRUE(result.app_id.has_value());
 
-                      EXPECT_FALSE(test_helper().create_shortcuts());
+                      EXPECT_TRUE(test_helper().add_to_applications_menu());
+                      EXPECT_TRUE(test_helper().add_to_quick_launch_bar());
+                      EXPECT_FALSE(test_helper().add_to_desktop());
+
+                      callback_called = true;
+                    }));
+  content::RunAllTasksUntilIdle();
+
+  test_helper().CompleteInstallation();
+  EXPECT_TRUE(callback_called);
+}
+
+TEST_F(BookmarkAppInstallationTaskTest,
+       WebAppOrShortcutFromContents_NoQuickLaunchBarShortcut) {
+  web_app::InstallOptions install_options(app_url(),
+                                          web_app::LaunchContainer::kWindow,
+                                          web_app::InstallSource::kInternal);
+  install_options.add_to_quick_launch_bar = false;
+  auto task = std::make_unique<BookmarkAppInstallationTask>(
+      profile(), std::move(install_options));
+
+  bool callback_called = false;
+  task->Install(web_contents(),
+                base::BindLambdaForTesting(
+                    [&](BookmarkAppInstallationTask::Result result) {
+                      EXPECT_EQ(web_app::InstallResultCode::kSuccess,
+                                result.code);
+                      EXPECT_TRUE(result.app_id.has_value());
+
+                      EXPECT_TRUE(test_helper().add_to_applications_menu());
+                      EXPECT_FALSE(test_helper().add_to_quick_launch_bar());
+                      EXPECT_TRUE(test_helper().add_to_desktop());
+
+                      callback_called = true;
+                    }));
+
+  content::RunAllTasksUntilIdle();
+
+  test_helper().CompleteInstallation();
+  EXPECT_TRUE(callback_called);
+}
+
+TEST_F(
+    BookmarkAppInstallationTaskTest,
+    WebAppOrShortcutFromContents_NoDesktopShortcutAndNoQuickLaunchBarShortcut) {
+  web_app::InstallOptions install_options(app_url(),
+                                          web_app::LaunchContainer::kWindow,
+                                          web_app::InstallSource::kInternal);
+  install_options.add_to_desktop = false;
+  install_options.add_to_quick_launch_bar = false;
+  auto task = std::make_unique<BookmarkAppInstallationTask>(
+      profile(), std::move(install_options));
+
+  bool callback_called = false;
+  task->Install(web_contents(),
+                base::BindLambdaForTesting(
+                    [&](BookmarkAppInstallationTask::Result result) {
+                      EXPECT_EQ(web_app::InstallResultCode::kSuccess,
+                                result.code);
+                      EXPECT_TRUE(result.app_id.has_value());
+
+                      EXPECT_TRUE(test_helper().add_to_applications_menu());
+                      EXPECT_FALSE(test_helper().add_to_quick_launch_bar());
+                      EXPECT_FALSE(test_helper().add_to_desktop());
+
                       callback_called = true;
                     }));
 
