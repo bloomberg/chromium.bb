@@ -24,8 +24,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
-#include "chromeos/disks/disk_mount_manager.h"
-#include "chromeos/disks/mock_disk_mount_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -40,7 +38,6 @@ namespace {
 using ::chromeos::DBusMethodCallback;
 using ::chromeos::DBusThreadManager;
 using ::chromeos::FakeCiceroneClient;
-using ::chromeos::disks::MockDiskMountManager;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::IsEmpty;
@@ -155,13 +152,6 @@ class CrostiniPackageServiceTest : public testing::Test {
         DBusThreadManager::Get()->GetCiceroneClient());
     ASSERT_TRUE(fake_cicerone_client_);
 
-    mock_disk_mount_manager_ = new MockDiskMountManager;
-    ON_CALL(*mock_disk_mount_manager_, MountPath(_, _, _, _, _, _))
-        .WillByDefault(Invoke(
-            this,
-            &CrostiniPackageServiceTest::HandleDiskMountManagerMountPath));
-    chromeos::disks::DiskMountManager::InitializeForTesting(
-        mock_disk_mount_manager_);
     test_browser_thread_bundle_ =
         std::make_unique<content::TestBrowserThreadBundle>(
             base::test::ScopedTaskEnvironment::MainThreadType::UI,
@@ -194,8 +184,6 @@ class CrostiniPackageServiceTest : public testing::Test {
     crostini_test_helper_.reset();
     profile_.reset();
     test_browser_thread_bundle_.reset();
-    chromeos::disks::DiskMountManager::Shutdown();
-    mock_disk_mount_manager_ = nullptr;  // Destroyed in Shutdown()
     DBusThreadManager::Shutdown();
   }
 
@@ -211,29 +199,6 @@ class CrostiniPackageServiceTest : public testing::Test {
                                                 // kDifferentContainerAppFileId.
   const std::string kDifferentContainerApp2Id;  // App_id for app with
                                                 // kDifferentContainerApp2FileId
-
-  // Called when our MockDiskMountManager has its MountPath called. Needed so
-  // that CrostiniManager::CrostiniRestarter::OnMountEvent gets called properly
-  // after CrostiniManager::CrostiniRestarter::GetContainerSshKeysFinished.
-  void HandleDiskMountManagerMountPath(
-      const std::string& source_path,
-      const std::string& source_format,
-      const std::string& mount_label,
-      const std::vector<std::string>& mount_options,
-      chromeos::MountType type,
-      chromeos::MountAccessMode access_mode) {
-    if (mock_disk_mount_manager_) {
-      chromeos::disks::DiskMountManager::MountPointInfo info(
-          source_path, "/tmp/fake_mount_path", type,
-          chromeos::disks::MOUNT_CONDITION_NONE);
-      base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::UI},
-          base::BindOnce(&MockDiskMountManager::NotifyMountEvent,
-                         base::Unretained(mock_disk_mount_manager_),
-                         chromeos::disks::DiskMountManager::MOUNTING,
-                         chromeos::MOUNT_ERROR_NONE, info));
-    }
-  }
 
   UninstallPackageProgressSignal MakeUninstallSignal(
       const UninstallPackageOwningFileRequest& request) {
@@ -331,9 +296,6 @@ class CrostiniPackageServiceTest : public testing::Test {
 
   // Owned by DBusThreadManager
   FakeCiceroneClient* fake_cicerone_client_ = nullptr;
-
-  // Owned by chromeos::disks::DiskMountManager
-  MockDiskMountManager* mock_disk_mount_manager_ = nullptr;
 
   std::unique_ptr<content::TestBrowserThreadBundle> test_browser_thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
