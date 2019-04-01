@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -502,8 +503,17 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyDynamicTest,
 // A second Profile is created when no QuicAllowed policy is in effect for the
 // first profile.
 // Then QuicAllowed=false policy is dynamically set for both profiles.
+//
+// Disabled due to flakiness on windows: https://crbug.com/947931.
+#if defined(OS_WIN)
+#define MAYBE_QuicAllowedFalseAfterTwoProfilesCreated \
+  DISABLED_QuicAllowedFalseAfterTwoProfilesCreated
+#else
+#define MAYBE_QuicAllowedFalseAfterTwoProfilesCreated \
+  QuicAllowedFalseAfterTwoProfilesCreated
+#endif
 IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyDynamicTest,
-                       QuicAllowedFalseAfterTwoProfilesCreated) {
+                       MAYBE_QuicAllowedFalseAfterTwoProfilesCreated) {
   // If multiprofile mode is not enabled, you can't switch between profiles.
   if (!profiles::IsMultipleProfilesEnabled())
     return;
