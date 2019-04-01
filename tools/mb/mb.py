@@ -391,17 +391,17 @@ class MetaBuildWrapper(object):
     # crbug.com/812428
 
     # Add in required base software. This should be kept in sync with the
-    # `swarming` recipe module in build.git. All references to `swarming_module`
-    # below are purely due to this.
+    # `chromium_swarming` recipe module in build.git. All references to
+    # `swarming_module` below are purely due to this.
     cipd_packages = [
       ('infra/python/cpython/${platform}',
        'version:2.7.14.chromium14'),
       ('infra/tools/luci/logdog/butler/${platform}',
        'git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c'),
       ('infra/tools/luci/vpython-native/${platform}',
-       'git_revision:b6cdec8586c9f8d3d728b1bc0bd4331330ba66fc'),
+       'git_revision:2973c0809cdc7122b7123e42b163a54d4983503f'),
       ('infra/tools/luci/vpython/${platform}',
-       'git_revision:b6cdec8586c9f8d3d728b1bc0bd4331330ba66fc'),
+       'git_revision:2973c0809cdc7122b7123e42b163a54d4983503f'),
     ]
     for pkg, vers in cipd_packages:
       cmd.append('--cipd-package=.swarming_module:%s:%s' % (pkg, vers))
