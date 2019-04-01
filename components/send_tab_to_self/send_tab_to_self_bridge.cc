@@ -26,9 +26,9 @@ namespace send_tab_to_self {
 
 namespace {
 
-// Status of the AddEntry when it ends, for UMA report.
-// These match tools/metrics/histograms/histograms.xml.
-
+// Status of the result of AddEntry.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum UMAAddEntryStatus {
   // The add entry call was successful.
   SUCCESS = 0,
