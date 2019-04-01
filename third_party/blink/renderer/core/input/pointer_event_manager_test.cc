@@ -18,10 +18,6 @@ namespace blink {
 namespace {
 class CheckPointerEventListenerCallback final : public NativeEventListener {
  public:
-  static CheckPointerEventListenerCallback* Create() {
-    return MakeGarbageCollected<CheckPointerEventListenerCallback>();
-  }
-
   void Invoke(ExecutionContext*, Event* event) override {
     const String pointer_type = ((PointerEvent*)event)->pointerType();
     if (pointer_type == "mouse")
@@ -159,8 +155,7 @@ TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
       "<body style='padding: 0px; width: 400px; height: 400px;'>"
       "<div draggable='true' style='width: 150px; height: 150px;'></div>"
       "</body>");
-  CheckPointerEventListenerCallback* callback =
-      CheckPointerEventListenerCallback::Create();
+  auto* callback = MakeGarbageCollected<CheckPointerEventListenerCallback>();
   GetDocument().body()->addEventListener(event_type_names::kPointercancel,
                                          callback);
 
