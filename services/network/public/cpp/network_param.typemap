@@ -26,11 +26,11 @@ sources = [
 
 deps = [
   "//ipc",
-  "//services/network/public/cpp:cpp_base",
 ]
 
 public_deps = [
   "//net",
+  "//services/network/public/cpp:cpp_base",
 ]
 type_mappings = [
   "network.mojom.AuthChallengeInfo=scoped_refptr<net::AuthChallengeInfo>[nullable_is_same_type]",
