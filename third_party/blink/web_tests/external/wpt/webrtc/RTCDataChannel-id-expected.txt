@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
 PASS DTLS client uses odd data channel IDs
 PASS DTLS server uses even data channel IDs
-FAIL In-band negotiation with a specific ID should not be allowed assert_unreached: Channel established with same ID using negotiated=false Reached unreachable code
-FAIL Odd/even role should not be violated when mixing with negotiated channels assert_equals: Channel id must be null before DTLS role has been determined expected (object) null but got (number) 0
+FAIL In-band negotiation with a specific ID should not work assert_equals: expected (object) null but got (number) 42
+PASS Odd/even role should not be violated when mixing with negotiated channels
 Harness: the test ran to completion.
 
