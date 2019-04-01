@@ -142,7 +142,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // the texture will have advanced paint effects (rpdq)
   void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
                            const DrawQuadParams& params);
-  void DrawPictureQuad(const PictureDrawQuad* quad, SkPaint* paint);
+  void DrawPictureQuad(const PictureDrawQuad* quad,
+                       const DrawQuadParams& params);
   void DrawRenderPassQuad(const RenderPassDrawQuad* quad, SkPaint* paint);
   void DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
                                   sk_sp<SkImage> content_image,
