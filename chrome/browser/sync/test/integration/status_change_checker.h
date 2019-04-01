@@ -43,9 +43,6 @@ class StatusChangeChecker {
  protected:
   virtual ~StatusChangeChecker();
 
-  // Timeout length when blocking.
-  virtual base::TimeDelta GetTimeoutDuration();
-
   // Stop the nested running of the message loop started in StartBlockingWait().
   void StopWaiting();
 
