@@ -166,9 +166,12 @@ class WebController {
   // kVisibilityCheck: Checks whether at least on element given by |selector|
   // is visible on the web page.
   //
+  // If strict, there must be exactly one element.
+  //
   // Normally done through BatchElementChecker.
   virtual void ElementCheck(ElementCheckType type,
                             const Selector& selector,
+                            bool strict,
                             base::OnceCallback<void(bool)> callback);
 
   // Get the value of |selector| and return the result through |callback|. The
@@ -289,17 +292,15 @@ class WebController {
   void OnDispatchTouchEventEnd(
       base::OnceCallback<void(const ClientStatus&)> callback,
       std::unique_ptr<input::DispatchTouchEventResult> result);
-  void OnFindElementForCheck(ElementCheckType check_type,
-                             base::OnceCallback<void(bool)> callback,
+  void OnFindElementForCheck(base::OnceCallback<void(bool)> callback,
                              const ClientStatus& status,
                              std::unique_ptr<FindElementResult> result);
-  void OnGetBoxModelForVisible(base::OnceCallback<void(bool)> callback,
-                               std::unique_ptr<dom::GetBoxModelResult> result);
 
   // Find the element given by |selector|. If multiple elements match
   // |selector| and if |strict_mode| is false, return the first one that is
   // found. Otherwise if |strict-mode| is true, do not return any.
   void FindElement(const Selector& selector,
+                   ElementCheckType check_type,
                    bool strict_mode,
                    FindElementCallback callback);
   void OnFindElementResult(ElementFinder* finder_to_release,
