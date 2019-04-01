@@ -281,11 +281,20 @@ config("runtime_library") {
   }
 }
 
-# Sets the default Windows build version. This is separated because some
-# targets need to manually override it for their compiles.
+# Chromium supports running on Windows 7, but if these constants are set to
+# Windows 7, then newer APIs aren't made available by the Windows SDK.
+# So we set this to Windows 10 and then are careful to check at runtime
+# to only call newer APIs when they're available.
+# Some third-party libraries assume that these defines set what version of
+# Windows is available at runtime. Targets using these libraries need to
+# manually override this config for their compiles.
 config("winver") {
   defines = [
-    "NTDDI_VERSION=0x0A000003",  # NTDDI_WIN10_RS2
+    "NTDDI_VERSION=NTDDI_WIN10_RS2",
+    
+    # We can't say `=_WIN32_WINNT_WIN10` here because some files do
+    # `#if WINVER < 0x0600` without including windows.h before,
+    # and then _WIN32_WINNT_WIN10 isn't yet known to be 0x0A00.
     "_WIN32_WINNT=0x0A00",
     "WINVER=0x0A00",
   ]
