@@ -24,6 +24,7 @@ public class AssistantDetails {
 
     private final String mTitle;
     private final String mImageUrl;
+    private final boolean mShowAttribution;
     private final boolean mShowImagePlaceholder;
     @Nullable
     private final Date mDate;
@@ -47,13 +48,15 @@ public class AssistantDetails {
     /** An optional price label, such as 'Estimated Total incl. VAT'. */
     private final String mTotalPriceLabel;
 
-    public AssistantDetails(String title, String imageUrl, boolean showImagePlaceholder,
-            String totalPriceLabel, String totalPrice, @Nullable Date date, String descriptionLine1,
-            String descriptionLine2, boolean userApprovalRequired, boolean highlightTitle,
-            boolean highlightLine1, boolean highlightLine2, boolean animatePlaceholders) {
+    public AssistantDetails(String title, String imageUrl, boolean showAttribution,
+            boolean showImagePlaceholder, String totalPriceLabel, String totalPrice,
+            @Nullable Date date, String descriptionLine1, String descriptionLine2,
+            boolean userApprovalRequired, boolean highlightTitle, boolean highlightLine1,
+            boolean highlightLine2, boolean animatePlaceholders) {
         this.mTotalPriceLabel = totalPriceLabel;
         this.mTitle = title;
         this.mImageUrl = imageUrl;
+        this.mShowAttribution = showAttribution;
         this.mShowImagePlaceholder = showImagePlaceholder;
         this.mTotalPrice = totalPrice;
         this.mDate = date;
@@ -73,6 +76,10 @@ public class AssistantDetails {
 
     String getImageUrl() {
         return mImageUrl;
+    }
+
+    boolean getShowAttribution() {
+        return mShowAttribution;
     }
 
     boolean getShowImagePlaceholder() {
@@ -124,7 +131,7 @@ public class AssistantDetails {
      * Create details with the given values.
      */
     @CalledByNative
-    private static AssistantDetails create(String title, String imageUrl,
+    private static AssistantDetails create(String title, String imageUrl, boolean showAttribution,
             boolean showImagePlaceholder, String totalPriceLabel, String totalPrice,
             String datetime, long year, int month, int day, int hour, int minute, int second,
             String descriptionLine1, String descriptionLine2, boolean userApprovalRequired,
@@ -148,8 +155,9 @@ public class AssistantDetails {
             }
         }
 
-        return new AssistantDetails(title, imageUrl, showImagePlaceholder, totalPriceLabel,
-                totalPrice, date, descriptionLine1, descriptionLine2, userApprovalRequired,
-                highlightTitle, highlightLine1, highlightLine2, animatePlaceholders);
+        return new AssistantDetails(title, imageUrl, showAttribution, showImagePlaceholder,
+                totalPriceLabel, totalPrice, date, descriptionLine1, descriptionLine2,
+                userApprovalRequired, highlightTitle, highlightLine1, highlightLine2,
+                animatePlaceholders);
     }
 }
