@@ -966,8 +966,15 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptIfLinkClicked) {
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
 
+// Disabled due to flakiness on windows.
+#if defined(OS_WIN)
+#define MAYBE_VerifyPasswordGenerationUpload \
+  DISABLED_VerifyPasswordGenerationUpload
+#else
+#define MAYBE_VerifyPasswordGenerationUpload VerifyPasswordGenerationUpload
+#endif
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       VerifyPasswordGenerationUpload) {
+                       MAYBE_VerifyPasswordGenerationUpload) {
   // Prevent Autofill requests from actually going over the wire.
   net::TestURLFetcherFactory factory;
   // Disable Autofill requesting access to AddressBook data. This causes
