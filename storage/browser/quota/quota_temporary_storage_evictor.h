@@ -80,7 +80,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaTemporaryStorageEvictor {
  private:
   friend class content::QuotaTemporaryStorageEvictorTest;
 
-  void StartEvictionTimerWithDelay(int delay_ms);
+  void StartEvictionTimerWithDelay(int64_t delay_ms);
   void ConsiderEviction();
   void OnGotEvictionRoundInfo(blink::mojom::QuotaStatusCode status,
                               const QuotaSettings& settings,

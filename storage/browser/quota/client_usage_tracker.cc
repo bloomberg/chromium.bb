@@ -257,6 +257,7 @@ void ClientUsageTracker::SetUsageCacheEnabled(const url::Origin& origin,
 void ClientUsageTracker::AccumulateLimitedOriginUsage(AccumulateInfo* info,
                                                       UsageCallback callback,
                                                       int64_t usage) {
+  DCHECK_GT(info->pending_jobs, 0U);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   info->limited_usage += usage;
   if (--info->pending_jobs)
@@ -301,6 +302,7 @@ void ClientUsageTracker::AccumulateHostUsage(AccumulateInfo* info,
                                              GlobalUsageCallback callback,
                                              int64_t limited_usage,
                                              int64_t unlimited_usage) {
+  DCHECK_GT(info->pending_jobs, 0U);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   info->limited_usage += limited_usage;
   info->unlimited_usage += unlimited_usage;
@@ -358,6 +360,7 @@ void ClientUsageTracker::AccumulateOriginUsage(
     const std::string& host,
     const base::Optional<url::Origin>& origin,
     int64_t usage) {
+  DCHECK_GT(info->pending_jobs, 0U);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (origin.has_value()) {
     DCHECK(!origin->GetURL().is_empty());
