@@ -22,8 +22,8 @@ UploadDomAction::~UploadDomAction() {}
 void UploadDomAction::InternalProcessAction(ActionDelegate* delegate,
                                             ProcessActionCallback callback) {
   DCHECK_GT(proto_.upload_dom().tree_root().selectors_size(), 0);
-  delegate->ShortWaitForElementExist(
-      Selector(proto_.upload_dom().tree_root()),
+  delegate->ShortWaitForElement(
+      kExistenceCheck, Selector(proto_.upload_dom().tree_root()),
       base::BindOnce(&UploadDomAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      std::move(callback)));

@@ -74,10 +74,11 @@ void AutofillAction::EndAction(const ClientStatus& status) {
 }
 
 void AutofillAction::FillFormWithData(ActionDelegate* delegate) {
-  delegate->ShortWaitForElementExist(
-      selector_, base::BindOnce(&AutofillAction::OnWaitForElement,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                base::Unretained(delegate)));
+  delegate->ShortWaitForElement(
+      kExistenceCheck, selector_,
+      base::BindOnce(&AutofillAction::OnWaitForElement,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Unretained(delegate)));
 }
 
 void AutofillAction::OnWaitForElement(ActionDelegate* delegate,

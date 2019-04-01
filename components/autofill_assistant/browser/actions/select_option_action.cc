@@ -27,8 +27,8 @@ void SelectOptionAction::InternalProcessAction(ActionDelegate* delegate,
   DCHECK(select_option.has_selected_option());
   DCHECK_GT(select_option.element().selectors_size(), 0);
 
-  delegate->ShortWaitForElementExist(
-      Selector(select_option.element()),
+  delegate->ShortWaitForElement(
+      kExistenceCheck, Selector(select_option.element()),
       base::BindOnce(&SelectOptionAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      std::move(callback)));

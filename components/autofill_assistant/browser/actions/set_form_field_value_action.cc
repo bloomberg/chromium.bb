@@ -25,8 +25,8 @@ SetFormFieldValueAction::~SetFormFieldValueAction() {}
 void SetFormFieldValueAction::InternalProcessAction(
     ActionDelegate* delegate,
     ProcessActionCallback callback) {
-  delegate->ShortWaitForElementExist(
-      Selector(proto_.set_form_value().element()),
+  delegate->ShortWaitForElement(
+      kVisibilityCheck, Selector(proto_.set_form_value().element()),
       base::BindOnce(&SetFormFieldValueAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      std::move(callback)));

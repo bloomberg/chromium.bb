@@ -118,10 +118,11 @@ ScriptExecutor::CreateBatchElementChecker() {
   return delegate_->GetWebController()->CreateBatchElementChecker();
 }
 
-void ScriptExecutor::ShortWaitForElementExist(
+void ScriptExecutor::ShortWaitForElement(
+    ElementCheckType check_type,
     const Selector& selector,
     base::OnceCallback<void(bool)> callback) {
-  WaitForElement(kShortWaitForElementDeadline, kExistenceCheck, selector,
+  WaitForElement(kShortWaitForElementDeadline, check_type, selector,
                  std::move(callback));
 }
 
