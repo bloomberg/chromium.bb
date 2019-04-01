@@ -221,17 +221,26 @@ NGExclusionSpaceInternal::DerivedGeometry::DerivedGeometry(
 void NGExclusionSpaceInternal::Add(scoped_refptr<const NGExclusion> exclusion) {
   DCHECK_LE(num_exclusions_, exclusions_->size());
 
-  // Perform a copy-on-write if the number of exclusions has gone out of sync.
-  if (num_exclusions_ != exclusions_->size()) {
-    scoped_refptr<RefVector<scoped_refptr<const NGExclusion>>> exclusions =
-        RefVector<scoped_refptr<const NGExclusion>>::Create();
-    exclusions->GetMutableVector()->AppendRange(
-        exclusions_->GetVector().begin(),
-        exclusions_->GetVector().begin() + num_exclusions_);
-    std::swap(exclusions_, exclusions);
+  bool already_exists = false;
 
-    // The derived_geometry_ member is now invalid.
-    derived_geometry_ = nullptr;
+  if (num_exclusions_ < exclusions_->size()) {
+    if (*exclusion == *exclusions_->at(num_exclusions_) &&
+        !exclusion->shape_data) {
+      // We might be adding an exclusion seen in a previous layout pass.
+      already_exists = true;
+    } else {
+      // Perform a copy-on-write if the number of exclusions has gone out of
+      // sync.
+      scoped_refptr<RefVector<scoped_refptr<const NGExclusion>>> exclusions =
+          RefVector<scoped_refptr<const NGExclusion>>::Create();
+      exclusions->GetMutableVector()->AppendRange(
+          exclusions_->GetVector().begin(),
+          exclusions_->GetVector().begin() + num_exclusions_);
+      std::swap(exclusions_, exclusions);
+
+      // The derived_geometry_ member is now invalid.
+      derived_geometry_ = nullptr;
+    }
   }
 
   // If this is the first exclusion with shape_data, the derived_geometry_
@@ -247,7 +256,8 @@ void NGExclusionSpaceInternal::Add(scoped_refptr<const NGExclusion> exclusion) {
   both_clear_offset_ =
       std::max(both_clear_offset_, exclusion->rect.BlockEndOffset());
 
-  exclusions_->emplace_back(std::move(exclusion));
+  if (!already_exists)
+    exclusions_->emplace_back(std::move(exclusion));
   num_exclusions_++;
 }
 

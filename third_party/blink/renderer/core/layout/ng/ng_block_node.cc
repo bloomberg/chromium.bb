@@ -220,6 +220,16 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   if (block_flow && !first_child)
     block_flow->ClearNGInlineNodeData();
 
+  // The exclusion space internally is a pointer to a shared vector, and
+  // equality of exclusion spaces is performed using pointer comparison on this
+  // internal shared vector.
+  // In order for the caching logic to work correctly we need to set the
+  // pointer to the value previous shared vector.
+  if (const NGLayoutResult* previous_result = box_->GetCachedLayoutResult()) {
+    constraint_space.ExclusionSpace().PreInitialize(
+        previous_result->GetConstraintSpaceForCaching().ExclusionSpace());
+  }
+
   scoped_refptr<const NGLayoutResult> layout_result =
       box_->CachedLayoutResult(constraint_space, break_token);
   if (layout_result) {

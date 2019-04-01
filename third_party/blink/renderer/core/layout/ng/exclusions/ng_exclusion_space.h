@@ -83,6 +83,15 @@ class CORE_EXPORT NGExclusionSpaceInternal {
 
   bool IsEmpty() const { return !num_exclusions_; }
 
+  // Pre-initializes the exclusions vector to something used in a previous
+  // layout pass, however keeps the number of exclusions as zero.
+  void PreInitialize(const NGExclusionSpaceInternal& other) {
+    DCHECK_EQ(exclusions_->size(), 0u);
+    DCHECK_GT(other.exclusions_->size(), 0u);
+
+    exclusions_ = other.exclusions_;
+  }
+
   bool operator==(const NGExclusionSpaceInternal& other) const;
   bool operator!=(const NGExclusionSpaceInternal& other) const {
     return !(*this == other);
@@ -371,6 +380,21 @@ class CORE_EXPORT NGExclusionSpace {
     return !exclusion_space_ || exclusion_space_->IsEmpty();
   }
 
+  // See |NGExclusionSpaceInternal::PreInitialize|.
+  void PreInitialize(const NGExclusionSpace& other) const {
+    // Don't pre-initialize if we've already got an exclusions vector.
+    if (exclusion_space_)
+      return;
+
+    // Don't pre-initialize if the other exclusion space didn't have an
+    // exclusions vector.
+    if (!other.exclusion_space_)
+      return;
+
+    exclusion_space_ = std::make_unique<NGExclusionSpaceInternal>();
+    exclusion_space_->PreInitialize(*other.exclusion_space_);
+  }
+
   bool operator==(const NGExclusionSpace& other) const {
     if (exclusion_space_ == other.exclusion_space_)
       return true;
@@ -383,7 +407,7 @@ class CORE_EXPORT NGExclusionSpace {
   }
 
  private:
-  std::unique_ptr<NGExclusionSpaceInternal> exclusion_space_;
+  mutable std::unique_ptr<NGExclusionSpaceInternal> exclusion_space_;
 };
 
 }  // namespace blink

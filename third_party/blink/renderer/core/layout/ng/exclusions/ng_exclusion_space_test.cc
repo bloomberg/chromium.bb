@@ -341,5 +341,59 @@ TEST(NGExclusionSpaceTest, NegativeInlineSizeOpportunityRight) {
                    NGBfcOffset(LayoutUnit(100), LayoutUnit::Max()));
 }
 
+TEST(NGExclusionSpaceTest, PreInitialization) {
+  NGExclusionSpace original_exclusion_space;
+
+  original_exclusion_space.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(), LayoutUnit()),
+                NGBfcOffset(LayoutUnit(20), LayoutUnit(15))),
+      EFloat::kLeft));
+  original_exclusion_space.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(65), LayoutUnit()),
+                NGBfcOffset(LayoutUnit(85), LayoutUnit(15))),
+      EFloat::kRight));
+
+  NGExclusionSpace exclusion_space1;
+  exclusion_space1.PreInitialize(original_exclusion_space);
+  EXPECT_NE(original_exclusion_space, exclusion_space1);
+
+  exclusion_space1.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(), LayoutUnit()),
+                NGBfcOffset(LayoutUnit(20), LayoutUnit(15))),
+      EFloat::kLeft));
+  EXPECT_NE(original_exclusion_space, exclusion_space1);
+
+  // Adding the same exclusions will make the spaces equal.
+  exclusion_space1.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(65), LayoutUnit()),
+                NGBfcOffset(LayoutUnit(85), LayoutUnit(15))),
+      EFloat::kRight));
+  EXPECT_EQ(original_exclusion_space, exclusion_space1);
+
+  // Adding a third exclusion will make the spaces non-equal.
+  exclusion_space1.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(10), LayoutUnit(25)),
+                NGBfcOffset(LayoutUnit(30), LayoutUnit(40))),
+      EFloat::kLeft));
+  EXPECT_NE(original_exclusion_space, exclusion_space1);
+
+  NGExclusionSpace exclusion_space2;
+  exclusion_space2.PreInitialize(original_exclusion_space);
+  EXPECT_NE(original_exclusion_space, exclusion_space2);
+
+  exclusion_space2.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(), LayoutUnit()),
+                NGBfcOffset(LayoutUnit(20), LayoutUnit(15))),
+      EFloat::kLeft));
+  EXPECT_NE(original_exclusion_space, exclusion_space2);
+
+  // Adding a different second exclusion will make the spaces non-equal.
+  exclusion_space2.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(10), LayoutUnit(25)),
+                NGBfcOffset(LayoutUnit(30), LayoutUnit(40))),
+      EFloat::kLeft));
+  EXPECT_NE(original_exclusion_space, exclusion_space2);
+}
+
 }  // namespace
 }  // namespace blink
