@@ -187,6 +187,12 @@ PositionWithAffinityTemplate<Strategy> StartPositionForLine(
         << "Logical line boundary for BidiCaretAffinity is not implemented yet";
 
     const NGCaretPosition caret_position = ComputeNGCaretPosition(adjusted);
+    if (caret_position.IsNull()) {
+      // TODO(crbug.com/947593): Support |ComputeNGCaretPosition()| on content
+      // hidden by 'text-overflow:ellipsis' so that we always have a non-null
+      // |caret_position| here.
+      return PositionWithAffinityTemplate<Strategy>();
+    }
     DCHECK(caret_position.fragment);
     DCHECK(caret_position.fragment->ContainerLineBox());
     const NGPaintFragment* line_box_paint =
@@ -465,6 +471,12 @@ static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
         << "Logical line boundary for BidiCaretAffinity is not implemented yet";
 
     const NGCaretPosition caret_position = ComputeNGCaretPosition(adjusted);
+    if (caret_position.IsNull()) {
+      // TODO(crbug.com/947593): Support |ComputeNGCaretPosition()| on content
+      // hidden by 'text-overflow:ellipsis' so that we always have a non-null
+      // |caret_position| here.
+      return PositionWithAffinityTemplate<Strategy>();
+    }
     DCHECK(caret_position.fragment);
     DCHECK(caret_position.fragment->ContainerLineBox());
     const NGPaintFragment* line_box_paint =
