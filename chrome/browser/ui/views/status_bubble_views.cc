@@ -554,6 +554,8 @@ class StatusBubbleViews::StatusViewExpander : public gfx::LinearAnimation,
   // Widths at expansion start and end.
   int expansion_start_ = 0;
   int expansion_end_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(StatusViewExpander);
 };
 
 void StatusBubbleViews::StatusViewExpander::AnimateToState(double state) {
@@ -562,8 +564,10 @@ void StatusBubbleViews::StatusViewExpander::AnimateToState(double state) {
 
 void StatusBubbleViews::StatusViewExpander::AnimationEnded(
     const gfx::Animation* animation) {
-  SetBubbleWidth(expansion_end_);
   status_view_->SetText(expanded_text_, false);
+  SetBubbleWidth(expansion_end_);
+  // WARNING: crash data seems to indicate |this| may be deleted by the time
+  // SetBubbleWidth() returns.
 }
 
 void StatusBubbleViews::StatusViewExpander::StartExpansion(
@@ -587,8 +591,10 @@ int StatusBubbleViews::StatusViewExpander::GetCurrentBubbleWidth() {
 }
 
 void StatusBubbleViews::StatusViewExpander::SetBubbleWidth(int width) {
-  status_bubble_->SetBubbleWidth(width);
   status_view_->SchedulePaint();
+  status_bubble_->SetBubbleWidth(width);
+  // WARNING: crash data seems to indicate |this| may be deleted by the time
+  // SetBubbleWidth() returns.
 }
 
 
