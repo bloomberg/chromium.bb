@@ -15,6 +15,7 @@ PRETTY_XML = """
 
 <event name="Event1">
   <owner>owner@chromium.org</owner>
+  <owner>anotherowner@chromium.org</owner>
   <summary>
     Event1 summary.
   </summary>
@@ -23,6 +24,15 @@ PRETTY_XML = """
     <summary>
       Metric1 summary.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="Metric2"/>
 </event>
