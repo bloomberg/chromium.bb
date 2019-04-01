@@ -1034,8 +1034,8 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
       return;
     if (http_body && upload_) {
       upload_events = upload_->HasEventListeners();
-      upload_->DispatchEvent(
-          *ProgressEvent::Create(event_type_names::kLoadstart, false, 0, 0));
+      upload_->DispatchEvent(*ProgressEvent::Create(
+          event_type_names::kLoadstart, true, 0, http_body->SizeInBytes()));
       // See above.
       if (!send_flag_ || loader_)
         return;
